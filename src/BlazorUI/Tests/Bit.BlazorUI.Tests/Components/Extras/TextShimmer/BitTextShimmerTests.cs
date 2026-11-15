@@ -25,10 +25,14 @@ public class BitTextShimmerTests : BunitTestContext
         if (isEnabled)
         {
             Assert.IsFalse(root.ClassList.Contains("bit-dis"));
+            Assert.IsFalse(root.HasAttribute("aria-disabled"));
         }
         else
         {
             Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+            // The dimming says the text is unavailable, so the markup says so too: it is what a screen reader reads,
+            // and what keeps a contrast checker from weighing the dimmed glyphs as text meant to be read in full.
+            Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
         }
     }
 
@@ -45,6 +49,7 @@ public class BitTextShimmerTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-tsh").ClassList.Contains("bit-dis"));
+        Assert.AreEqual("true", component.Find(".bit-tsh").GetAttribute("aria-disabled"));
     }
 
     [TestMethod]

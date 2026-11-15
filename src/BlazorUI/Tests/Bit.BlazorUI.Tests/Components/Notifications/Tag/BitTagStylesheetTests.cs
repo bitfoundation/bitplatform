@@ -72,6 +72,20 @@ public class BitTagStylesheetTests
     ];
 
     [TestMethod]
+    public void BitTagFillOverlayShouldDeepenTheFillAwayFromItsText()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // An overlay of the text color itself takes the label's contrast as the tag is hovered or pressed (white on the
+        // primary fill drops to 3.9:1), so where relative colors are known the overlay is the inverse of the text.
+        var supports = stylesheet.IndexOf("@supports (color: rgb(from red r g b))", System.StringComparison.Ordinal);
+        Assert.IsTrue(supports >= 0, "The inverted overlay is not behind @supports.");
+        var block = stylesheet[supports..];
+        StringAssert.Contains(block, "--bit-tag-v-hover-bg: var(--bit-Tag-fill-hover-background, var(--bit-Tag-hover-background, rgb(from var(--bit-tag-fg) calc(255 - r) calc(255 - g) calc(255 - b) / 12%)));");
+        StringAssert.Contains(block, "--bit-tag-v-active-bg: var(--bit-Tag-fill-active-background, var(--bit-Tag-active-background, rgb(from var(--bit-tag-fg) calc(255 - r) calc(255 - g) calc(255 - b) / 20%)));");
+    }
+
+    [TestMethod]
     public void BitTagShouldReadEveryPublicVariableWithAFallback()
     {
         var stylesheet = ReadStylesheet();

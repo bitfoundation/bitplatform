@@ -2320,6 +2320,23 @@ public class BitAccordionTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionShouldSeparateTheTitleFromTheDescriptionInTheTextItShows()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Title, "General");
+            parameters.Add(p => p.Description, "The general settings");
+        });
+
+        // The header is named "General The general settings", so the text it shows has the same space in it (Label in Name).
+        Assert.AreEqual("General The general settings", com.Find(".bit-acd-wrp").TextContent.Trim());
+
+        com.Render(parameters => parameters.Add(p => p.Description, null));
+
+        Assert.AreEqual("General", com.Find(".bit-acd-wrp").TextContent.Trim());
+    }
+
+    [TestMethod]
     public void BitAccordionShouldNameTheHeaderByTheTitleAloneWithoutADescription()
     {
         var com = RenderComponent<BitAccordion>(parameters =>

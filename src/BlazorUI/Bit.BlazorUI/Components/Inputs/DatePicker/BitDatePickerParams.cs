@@ -824,7 +824,7 @@ public partial class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, 
     public CalendarWeekRule? WeekNumberRule { get; set; }
 
     /// <summary>
-    /// The accessible name of the empty column header above the week numbers.
+    /// The accessible name of the column header above the week numbers, which shows a number sign (#).
     /// </summary>
     public string? WeekNumbersHeaderTitle { get; set; }
 

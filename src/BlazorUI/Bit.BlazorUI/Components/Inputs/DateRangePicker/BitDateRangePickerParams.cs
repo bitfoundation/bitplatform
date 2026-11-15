@@ -826,7 +826,7 @@ public partial class BitDateRangePickerParams : BitInputBaseParams<BitDateRangeP
     public string? WeekNumberTitle { get; set; }
 
     /// <summary>
-    /// The accessible name of the empty header cell above the week numbers column.
+    /// The accessible name of the header cell above the week numbers column, which shows a number sign (#).
     /// </summary>
     public string? WeekNumbersHeaderTitle { get; set; }
 

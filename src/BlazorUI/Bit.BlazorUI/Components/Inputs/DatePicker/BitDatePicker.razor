@@ -205,12 +205,14 @@
                     var isFirstMonth = monthIndex == 0;
                     var isLastMonth = monthIndex == _renderedMonths.Length - 1;
                     var monthTitle = _monthTitles[monthIndex];
+                    // The id of the title that names the days grid, or none where the title is the month picker's toggle.
+                    var titleId = GetMonthTitleId(monthIndex);
 
                     <div style="@Styles?.DayPickerWrapper" class="bit-dtp-dwp @Classes?.DayPickerWrapper">
                         <div style="@Styles?.DayPickerHeader" class="bit-dtp-pkh @Classes?.DayPickerHeader">
                             @* The month title is only a button where there is a month picker for it to reveal;
                                with the month picker turned off it would toggle a panel that never comes. *@
-                            @if (isFirstMonth && IsMonthPickerVisible && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && ShowTimePickerAsOverlay is false)))
+                            @if (titleId is null)
                             {
                                 var title = string.Format(MonthPickerToggleTitle, monthTitle);
                                 <button @onclick="@ToggleMonthPickerOverlay"
@@ -229,7 +231,8 @@
                             }
                             else
                             {
-                                <div style="@Styles?.DayPickerMonth"
+                                <div id="@titleId"
+                                     style="@Styles?.DayPickerMonth"
                                      class="bit-dtp-pkt @Classes?.DayPickerMonth"
                                      aria-live="polite"
                                      aria-atomic="true"
@@ -323,16 +326,22 @@
                             </div>
                         </div>
 
-                        <div role="grid" aria-label="@monthTitle" style="@Styles?.DaysGrid" class="bit-dtp-grd @Classes?.DaysGrid">
+                        <div role="grid"
+                             aria-label="@(titleId is null ? monthTitle : null)"
+                             aria-labelledby="@titleId"
+                             aria-disabled="@(Disabled ? "true" : null)"
+                             style="@Styles?.DaysGrid"
+                             class="bit-dtp-grd @Classes?.DaysGrid">
                             <div role="row" style="@Styles?.DaysHeaderRow" class="bit-dtp-dgh @Classes?.DaysHeaderRow">
                                 @if (ShowWeekNumbers)
                                 {
-                                    @* The corner above the week numbers is empty, so it is named rather than read out
-                                       as a blank column header before the first weekday of every row. *@
+                                    @* The corner above the week numbers shows a number sign and is named by WeekNumbersHeaderTitle: a column
+                                       header with no text of its own is an empty one to every reader that goes by what is shown, and the name
+                                       is what a screen reader reads before the number of every week. *@
                                     <div role="columnheader"
                                          aria-label="@WeekNumbersHeaderTitle"
                                          style="@Styles?.WeekNumbersHeader"
-                                         class="bit-dtp-wlb @Classes?.WeekNumbersHeader"></div>
+                                         class="bit-dtp-wlb @Classes?.WeekNumbersHeader">#</div>
                                 }
 
                                 @for (var index = 0; index < 7; index++)
@@ -533,6 +542,11 @@
                                         @* In the MonthPicker mode a month is selected by the value; beside the day
                                            picker the month grid navigates, and the month on display is its selection. *@
                                         var selected = Mode == BitDatePickerMode.MonthPicker ? IsSelectedMonth(month) : month == _currentMonth;
+                                        @* The default cell shows the abbreviated month ("Jan") and is named by that text, with the full name in its
+                                           title as the description: an aria-label of the full name would name it with words it does not show, which
+                                           fails Label in Name (WCAG 2.5.3) wherever the abbreviation is not a word of the full name. A MonthCellTemplate
+                                           is named the same way, by whatever text it shows, with the full name in the title still describing it - and
+                                           naming it where the template shows no text at all. *@
                                         <button @onclick="async () => await SelectMonth(month)"
                                                 @onkeydown="e => HandleMonthKeyDown(e, month)"
                                                 type="button"
@@ -540,7 +554,6 @@
                                                 title="@monthName"
                                                 id="@GetMonthButtonId(month)"
                                                 aria-readonly="@(ReadOnly ? "true" : null)"
-                                                aria-label="@monthName"
                                                 disabled="@disabled"
                                                 aria-disabled="@(disabled ? "true" : null)"
                                                 tabindex="@(month == focusableMonth ? "0" : "-1")"

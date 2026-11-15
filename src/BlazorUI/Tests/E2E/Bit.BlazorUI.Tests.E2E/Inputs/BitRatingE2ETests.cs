@@ -260,6 +260,8 @@ public class BitRatingE2ETests : E2ETestBase
         await Expect(root).ToHaveAttributeAsync("aria-label", "3.5 of 5");
         await Expect(root).Not.ToHaveAttributeAsync("aria-orientation", new Regex(".*"));
         await Expect(root.Locator("input.bit-input-hidden")).ToHaveAttributeAsync("readonly", "");
+        // The value is still carried for the form, but by an input nothing can reach inside the img.
+        await Expect(root.Locator("input.bit-input-hidden")).ToHaveAttributeAsync("type", "hidden");
         await Expect(root.Locator("[aria-live]")).ToHaveCountAsync(0);
         await Expect(root.Locator(".bit-rtg-seg")).ToHaveCountAsync(0);
 

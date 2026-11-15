@@ -20,6 +20,9 @@ public partial class BitFcMonthEventBadge
     /// </summary>
     [Parameter] public bool IsLead { get; set; } = true;
 
+    // The ids a badge drawn by an EventTemplate is named through (BitFcEventTemplateHost).
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
+
     private string MarginStyle
     {
         get

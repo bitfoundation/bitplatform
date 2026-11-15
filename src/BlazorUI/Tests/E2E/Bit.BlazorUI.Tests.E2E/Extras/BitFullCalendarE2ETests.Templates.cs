@@ -21,8 +21,8 @@ public partial class BitFullCalendarE2ETests
         var badge = Badge(Tpl, "p1");
         await Expect(badge.Locator(".month-badge")).ToHaveTextAsync("Pin: Planning");
         await Expect(badge.Locator(".bit-bfc-event-badge-title")).ToHaveCountAsync(0);
-        // the calendar keeps the badge's name, color and drag
-        await Expect(badge).ToHaveAttributeAsync("aria-label", "Planning, 7/16/2025 09:00 - 7/16/2025 10:00");
+        // the calendar keeps the badge's color and drag, and names it by what the template shows and then the details
+        await Expect(badge).ToHaveAccessibleNameAsync(new Regex("^Pin: Planning Planning, 09:00 - 10:00"));
         await Expect(badge).ToHaveAttributeAsync("draggable", "true");
         await Expect(badge).ToHaveAttributeAsync("style", new Regex("--bit-bfc-evt-color"));
 
@@ -48,7 +48,7 @@ public partial class BitFullCalendarE2ETests
         await Expect(block.Locator(".event-card-title")).ToHaveTextAsync("Planning");
         await Expect(block.Locator(".event-card-desc")).ToHaveTextAsync("Quarter goals.");
         await Expect(block.Locator(".bit-bfc-event-block-title")).ToHaveCountAsync(0);
-        await Expect(block).ToHaveAttributeAsync("aria-label", "Planning, 09:00 - 10:00");
+        await Expect(block).ToHaveAccessibleNameAsync(new Regex(@"^Planning.*Quarter goals\..*Planning, 09:00 - 10:00"));
         await Expect(block.Locator(".bit-bfc-resize-handle")).ToHaveCountAsync(2);
 
         await block.FocusAsync();

@@ -532,6 +532,22 @@ public class BitMarkdownEditorAccessibilityTests : BunitTestContext
         StringAssert.Contains(component.Find(".bit-mde-des").GetAttribute("style"), "color:violet");
     }
 
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public void BitMarkdownEditorStatusBarShouldSayItIsUnavailableWhileTheEditorIsDisabled(bool disabled)
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        // A group of the editor's readouts, as unavailable as the field they read while it is disabled.
+        var statusBar = component.Find(".bit-mde-sbr");
+        Assert.AreEqual("group", statusBar.GetAttribute("role"));
+        Assert.AreEqual(disabled ? "true" : null, statusBar.GetAttribute("aria-disabled"));
+    }
+
     [TestMethod]
     public void BitMarkdownEditorShouldSeedItsTextAreaAndItsCountsFromTheDefaultValue()
     {

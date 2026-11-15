@@ -55,6 +55,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     // restored from, and the heading it takes its accessible name from.
     private string _eventDialogId => $"{_Id}-event-dialog";
     private string _eventDialogTitleId => $"{_Id}-event-dialog-title";
+    // The hidden text that describes the days grid of a Required calendar as required.
+    private string _RequiredId => $"{_Id}-required";
 
 
 
@@ -746,7 +748,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public CalendarWeekRule? WeekNumberRule { get; set; }
 
     /// <summary>
-    /// The accessible name of the empty column header above the week numbers.
+    /// The accessible name of the column header above the week numbers, which shows a number sign (#).
     /// </summary>
     [Parameter] public string WeekNumbersHeaderTitle { get; set; } = "Week";
 
@@ -2064,6 +2066,20 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private string GetMonthButtonId(int month)
     {
         return FormattableString.Invariant($"{_Id}-month-{month:D2}");
+    }
+
+    // The id of the title of the month shown at the given index, which names the days grid of that month - or null
+    // where the title is the button that toggles the month picker, which the markup renders in its place, so the
+    // grid is never labelled by an id that was not rendered. A title that is only text names the grid it heads: the
+    // grid carries the disabled state of the calendar, so its name is read as a part of the control that is
+    // unavailable rather than as text of its own, and the title of a disabled calendar is let off the contrast of
+    // body text the way the rest of the calendar is (WCAG 1.4.3). The toggle is a control with a name of its own,
+    // so the grid keeps its aria-label beside one. BitDatePicker and BitDateRangePicker do the same.
+    private string? GetMonthTitleId(int monthIndex)
+    {
+        if (monthIndex == 0 && ShowMonthPicker && (ShowMonthPickerAsOverlay || (ShowTimePicker && ShowTimePickerAsOverlay is false))) return null;
+
+        return FormattableString.Invariant($"{_Id}-title-{monthIndex}");
     }
 
     private string GetYearButtonId(int year)

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -64,7 +65,9 @@ public class BitSwiperTests : BunitTestContext
         Assert.AreEqual("region", root.GetAttribute("role"));
         Assert.AreEqual("carousel", root.GetAttribute("aria-roledescription"));
         Assert.AreEqual("Photos", root.GetAttribute("aria-label"));
-        Assert.AreEqual("0", root.GetAttribute("tabindex"));
+        // The tab stop is the box the items scroll in, not the region around it.
+        Assert.IsNull(root.GetAttribute("tabindex"));
+        Assert.AreEqual("0", component.Find(".bit-swp-cnt").GetAttribute("tabindex"));
 
         var items = component.FindAll(".bit-swpi");
 
@@ -149,8 +152,9 @@ public class BitSwiperTests : BunitTestContext
 
         Assert.AreEqual(isEnabled is false, root.ClassList.Contains("bit-dis"));
 
-        // a disabled swiper is neither focusable nor operable
-        Assert.AreEqual(isEnabled ? "0" : null, root.GetAttribute("tabindex"));
+        // a disabled swiper is neither focusable nor operable: its scrolling box is taken out of the tab order
+        Assert.IsNull(root.GetAttribute("tabindex"));
+        Assert.AreEqual(isEnabled ? "0" : "-1", component.Find(".bit-swp-cnt").GetAttribute("tabindex"));
         Assert.AreEqual(isEnabled is false, component.Find(".bit-swp-rbt").HasAttribute("disabled"));
         Assert.AreEqual(isEnabled is false, component.Find(".bit-swp-lbt").HasAttribute("disabled"));
     }
@@ -164,6 +168,52 @@ public class BitSwiperTests : BunitTestContext
         });
 
         Assert.IsNull(component.Find(".bit-swp").GetAttribute("tabindex"));
+        Assert.AreEqual("-1", component.Find(".bit-swp-cnt").GetAttribute("tabindex"));
+
+        var options = LastInvocation("BitBlazorUI.Swiper.setup").Arguments[4]!;
+        Assert.AreEqual(false, ReadOption(options, "Keyboard"));
+    }
+
+    [TestMethod,
+        DataRow("tabindex"),
+        DataRow("TABINDEX")]
+    public void BitSwiperShouldRouteASplattedTabIndexToTheContainer(string name)
+    {
+        var component = RenderSplattedSwiper(builder =>
+        {
+            builder.AddAttribute(1, name, "-1");
+        });
+
+        // one tab stop: the splatted tabindex lands on the scrolling box, never on the root as well
+        Assert.IsNull(component.Find(".bit-swp").GetAttribute("tabindex"));
+        Assert.AreEqual("-1", component.Find(".bit-swp-cnt").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitSwiperShouldKeepNoKeyboardOverASplattedTabIndex()
+    {
+        var component = RenderSplattedSwiper(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitSwiper.NoKeyboard), true);
+            builder.AddAttribute(2, "tabindex", "2");
+        });
+
+        Assert.IsNull(component.Find(".bit-swp").GetAttribute("tabindex"));
+        Assert.AreEqual("-1", component.Find(".bit-swp-cnt").GetAttribute("tabindex"));
+    }
+
+    private IRenderedComponent<BitParams> RenderSplattedSwiper(Action<RenderTreeBuilder> attributes)
+    {
+        return RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitSwiper>(0);
+                attributes(builder);
+                builder.CloseComponent();
+            });
+        });
     }
 
     [TestMethod]
@@ -1526,6 +1576,7 @@ public class BitSwiperTests : BunitTestContext
         Assert.AreEqual(true, ReadOption(options, "NoDrag"));
         Assert.AreEqual(true, ReadOption(options, "Wheel"));
         Assert.AreEqual(true, ReadOption(options, "Enabled"));
+        Assert.AreEqual(true, ReadOption(options, "Keyboard"));
         Assert.AreEqual(true, ReadOption(options, "Snap"));
         Assert.AreEqual(0.5, ReadOption(options, "Align"));
         Assert.AreEqual(0.25, ReadOption(options, "Duration"));

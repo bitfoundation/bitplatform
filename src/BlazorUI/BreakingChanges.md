@@ -5,6 +5,33 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### What axe-core found inside the components is fixed, and the markup it changed ([#14891](https://github.com/bitfoundation/bitplatform/issues/14891))
+
+No public API is renamed or removed, but an app's stylesheets, scripts and tests written against the markup below
+see a difference:
+
+| Component | Before | After |
+|---|---|---|
+| `BitSwiper` | The root was the tab stop (`tabindex`, `TabIndex`, the focus ring) | The box the items scroll in (`.bit-swp-cnt`, `Classes.Container`) is: `TabIndex` lands there, and `NoKeyboard` / `Disabled` give it `tabindex="-1"`. The root keeps its region role and its keyboard handling |
+| `BitInfiniteScrolling` | No tab index unless `TabIndex` was set | A list whose own content overflows it is given `tabindex="0"` by its script, and loses it once the content fits again - unless `TabIndex` or a plain `tabindex` attribute says otherwise (not in `Feed` mode, nor with a `ScrollerSelector`). A list of no height, which the page scrolls, gets none |
+| `BitPhoneInput` | The country selector was named `Country: United States` | It ends with the dial code it shows: `Country: United States, +1` (unless `NoDialCode`); a `DropdownTemplate` makes it `aria-labelledby` the country (`Country: Portugal`, visually hidden) and the template's own content |
+| `BitCalendar`, `BitDatePicker`, `BitDateRangePicker` | A month cell had `aria-label="January"` | It is named by the text it shows (`Jan`, or what a `MonthCellTemplate` shows), the full month staying its `title` |
+| `BitCalendar`, `BitDatePicker`, `BitDateRangePicker` | The corner above the week numbers was empty | It shows `#`, still named by `WeekNumbersHeaderTitle` |
+| `BitCalendar`, `BitDatePicker`, `BitDateRangePicker` | The days grid had `aria-label` | It is `aria-labelledby` the month title above it, when that title is not the month picker's toggle; the pickers' grid is also `aria-disabled="true"` while disabled, as the calendar's already was |
+| `BitRating` | A read-only rating carried its value in an `<input type="number">` | In an `<input type="hidden">` |
+| The callouts (`BitDropdown`, `BitDatePicker`, `BitMenuButton`, every popup moved to the body) | The copies of the ancestors a popup leaves behind kept the tag of a `main`, `dt`, `dd` or `caption` | They are `div`s, since none of those tags permits the `role="none"` a copy takes to stay out of the accessibility tree: a page selector naming one of them as an ancestor (`main .menu`, `dd > .x`) no longer reaches the popup - one naming a class of that ancestor still does |
+| `BitMarkdownEditor` | The status bar was a plain `div` | It is a `role="group"`, `aria-disabled="true"` while the editor is disabled |
+| `BitText`, `BitTextShimmer` | A disabled one carried `bit-dis` only | It writes `aria-disabled="true"` too, whatever its tag |
+| `BitSwiper` | A disabled swiper's box still scrolled under a touch, a trackpad or a wheel | It stops scrolling (`overflow: hidden`) while disabled |
+| `BitFullCalendar` | A week number link was named `Go to week 27`, a week view column header `Go to Monday, January 5, 2026` | Each is named by the text it shows first: `W27, Go to week 27`, `Mon 5, Go to Monday, January 5, 2026` (the link's text now has a space between the day and its number, and a day or week view event block one between its title and its time) |
+| `BitFullCalendar` | An event drawn by a `MonthEventTemplate`, `WeekEventTemplate`, `DayEventTemplate` or `TimelineEventTemplate` was named `Planning, 09:00 - 10:00, 7/16/2025`, the template's content sitting straight in the badge or block | The event carries an `id` and is `aria-labelledby` itself (its own content, the template's) and then a `hidden` span of those details: `Pin: Planning Planning, 09:00 - 10:00, 7/16/2025` |
+| `BitCalendar` | A `Required` calendar's days grid had `aria-required="true"` | The grid takes no `aria-required`; it is `aria-describedby` a `hidden` span reading `BitStrings.Current.Required` ("Required") instead, except while the calendar is disabled or read-only |
+| `BitFullCalendar` | A month badge of a timed event spanning days was named `Title, 7/16/2025 22:00 - 7/17/2025 23:59` (`d` dates, an end at midnight read as 23:59 of the day before) | It is named the way the other views name it: `Title, Jul 16, 2025 22:00 - Jul 18, 2025 00:00`; a badge of a single day keeps `Title, 09:00 - 10:00, 7/16/2025` |
+
+A test that located a month cell by the name `January`, a swiper by focusing its root, a phone selector, a FullCalendar
+nav link or a templated FullCalendar event by its old name moves to the new one, as does one reading `aria-required`
+off the calendar's grid (it reads its accessible description instead).
+
 ### The empty and no-results slots have one name each ([#15029](https://github.com/bitfoundation/bitplatform/issues/15029))
 
 What a component shows when it has nothing to show was spelled five ways. It now has two names, one per meaning:

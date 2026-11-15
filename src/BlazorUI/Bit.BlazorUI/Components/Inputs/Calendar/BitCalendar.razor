@@ -7,6 +7,9 @@
     var todayMonth = _culture.DateTimeFormat.Calendar.GetMonth(today);
     var focusableDay = GetFocusableDay();
     var isInvalid = ValueInvalid is true;
+    // A calendar that picks nothing (disabled, read-only) asks for nothing, the way a disabled field is never a
+    // required one.
+    var isRequired = Required && Disabled is false && ReadOnly is false;
 
     var prevMonthNavIconCss = BitIconInfo.From(PrevMonthNavIcon, PrevMonthNavIconName ?? "Up")?.GetCssClasses();
     var nextMonthNavIconCss = BitIconInfo.From(NextMonthNavIcon, NextMonthNavIconName ?? "Up bit-ico-r180")?.GetCssClasses();
@@ -52,6 +55,12 @@
             @(CurrentValueAsString.HasValue() ? string.Format(SelectedDateAriaAtomic, CurrentValueAsString) : null)
         </div>
 
+        @if (isRequired)
+        {
+            @* What describes the days grid of every month as required (see the grid). *@
+            <span id="@_RequiredId" hidden>@BitStrings.Current.Required</span>
+        }
+
         @if (DayPickerIsVisible())
         {
             var prevDisabled = CanChangeMonth(false) is false;
@@ -66,10 +75,12 @@
                 var isFirstMonth = index == 0;
                 var isLastMonth = index == _monthCount - 1;
                 var monthTitle = _monthTitles[index];
+                // The id of the title that names the days grid, or none where the title is the month picker's toggle.
+                var titleId = GetMonthTitleId(index);
 
                 <div style="@Styles?.DayPickerWrapper" class="bit-cal-dwp @Classes?.DayPickerWrapper">
                     <div style="@Styles?.DayPickerHeader" class="bit-cal-pkh @Classes?.DayPickerHeader">
-                        @if (isFirstMonth && ShowMonthPicker && (ShowMonthPickerAsOverlay || (ShowTimePicker && ShowTimePickerAsOverlay is false)))
+                        @if (titleId is null)
                         {
                             var title = string.Format(MonthPickerToggleTitle, monthTitle);
                             <button @onclick="@ToggleMonthPickerOverlay"
@@ -87,7 +98,8 @@
                         }
                         else
                         {
-                            <div aria-live="polite"
+                            <div id="@titleId"
+                                 aria-live="polite"
                                  aria-atomic="true"
                                  style="@Styles?.DayPickerMonth"
                                  class="bit-cal-pkt @Classes?.DayPickerMonth">
@@ -160,22 +172,24 @@
                         </div>
                     </div>
                     <div role="grid"
-                         aria-label="@monthTitle"
+                         aria-label="@(titleId is null ? monthTitle : null)"
+                         aria-labelledby="@titleId"
                          aria-readonly="@(ReadOnly ? "true" : null)"
                          aria-disabled="@(Disabled ? "true" : null)"
-                         aria-required="@(Required ? "true" : null)"
                          aria-invalid="@(isInvalid ? "true" : null)"
+                         aria-describedby="@(isRequired ? _RequiredId : null)"
                          style="@Styles?.DaysGrid"
                          class="bit-cal-grd @Classes?.DaysGrid">
                         <div role="row" style="@Styles?.DaysHeaderRow" class="bit-cal-dgh @Classes?.DaysHeaderRow">
                             @if (ShowWeekNumbers)
                             {
-                                @* The corner above the week numbers is empty, so it is named rather than read out
-                                   as a blank column header before the first weekday of every row. *@
+                                @* The corner above the week numbers shows a number sign and is named by WeekNumbersHeaderTitle: a column
+                                   header with no text of its own is an empty one to every reader that goes by what is shown, and the name
+                                   is what a screen reader reads before the number of every week. *@
                                 <div role="columnheader"
                                      aria-label="@WeekNumbersHeaderTitle"
                                      style="@Styles?.WeekNumbersHeader"
-                                     class="bit-cal-wlb @Classes?.WeekNumbersHeader"></div>
+                                     class="bit-cal-wlb @Classes?.WeekNumbersHeader">#</div>
                             }
 
                             @for (var dayIndex = 0; dayIndex < 7; dayIndex++)
@@ -239,7 +253,13 @@
 
                                        Only the selected cell carries aria-selected, the way the APG's own date
                                        picker does: an explicit false on the other forty-one would have a screen
-                                       reader say "not selected" on every day arrowed over. *@
+                                       reader say "not selected" on every day arrowed over.
+
+                                       Nor does a day carry aria-required: a Required calendar says so once, in the
+                                       description of its grid, which a screen reader reads as the focus enters it
+                                       rather than after every day arrowed over - and which holds whether any day of
+                                       the month can be picked or not. The grid itself takes no aria-required, which
+                                       is not a state of its role. *@
                                     <button @onclick="() => HandleDayClick(date, dayEvents)"
                                             @onkeydown="e => HandleDayKeyDown(e, date)"
                                             type="button"
@@ -407,13 +427,17 @@
                                     @* The current month and year are reported whether or not they are painted:
                                        HighlightCurrentMonth decides how the grid looks, not what a screen reader
                                        is able to find in it. *@
+                                    @* The default cell shows the abbreviated month ("Jan") and is named by that text, with the full name in its
+                                       title as the description: an aria-label of the full name would name it with words it does not show, which
+                                       fails Label in Name (WCAG 2.5.3) wherever the abbreviation is not a word of the full name. A MonthCellTemplate
+                                       is named the same way, by whatever text it shows, with the full name in the title still describing it - and
+                                       naming it where the template shows no text at all. *@
                                     <button @onclick="() => SelectMonth(month)"
                                             @onkeydown="e => HandleMonthKeyDown(e, month)"
                                             type="button"
                                             role="gridcell"
                                             title="@monthName"
                                             id="@GetMonthButtonId(month)"
-                                            aria-label="@monthName"
                                             disabled="@disabled"
                                             aria-disabled="@(disabled ? "true" : null)"
                                             aria-current="@((todayYear == _currentYear && month == todayMonth) ? "date" : null)"

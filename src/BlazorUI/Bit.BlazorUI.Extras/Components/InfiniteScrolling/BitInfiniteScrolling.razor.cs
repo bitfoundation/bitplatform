@@ -99,6 +99,21 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
                              || GetSplattedAttribute("aria-label").HasValue()
                              || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null;
 
+    // The tab index the page gave the list - its TabIndex, or a tabindex written as a plain attribute, which the one
+    // written after the splatted attributes would otherwise replace - and none otherwise.
+    private string? _TabIndex => TabIndex ?? GetSplattedAttribute("tabindex");
+
+    // Who decides whether the root is a tab stop. A list that scrolls its own content is one of its own while that
+    // content overflows it, unless the page says otherwise: a keyboard can scroll a box only once it is in it
+    // (WCAG 2.1.1), and items of plain text bring no focusable element in for it to start from. Whether it overflows
+    // is a measurement, so the script makes it a tab stop ("auto") - a list of no height grows with its items, the
+    // page scrolls it, and it would be a silent stop that scrolls nothing. A tab index of the page's own is the
+    // page's ("page"). A feed is reached through its articles, each a tab stop already, and a list that hands its
+    // scrolling to another element (ScrollerSelector) has nothing of its own to scroll ("none").
+    private string _tabStopMode => TabIndex is not null || HasSplattedAttribute("tabindex") ? "page"
+                                   : ScrollerSelector.HasNoValue() && Feed is false ? "auto"
+                                   : "none";
+
     // The size of the set the articles of a feed belong to: what the provider reported, the loaded items once
     // nothing more can arrive, and -1 (unknown) until then.
     private int _feedSetSize => _totalCount ?? (_hasMore ? -1 : _items.Count);
@@ -1035,7 +1050,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         _items.RemoveRange(fromStart ? 0 : _items.Count - surplus, surplus);
     }
 
-    private string BuildJsSetupKey() => $"{ScrollerSelector}|{Threshold}|{RootMargin}|{Reversed}|{Horizontal}|{_isManual}|{Disabled}|{Feed}";
+    private string BuildJsSetupKey() => $"{ScrollerSelector}|{Threshold}|{RootMargin}|{Reversed}|{Horizontal}|{_isManual}|{Disabled}|{Feed}|{_tabStopMode}";
 
     private async Task SetupJsAsync()
     {
@@ -1048,7 +1063,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         var autoLoad = _canAutoLoad && _pendingScrollToEnd is false && _pendingScrollAdjust is false;
 
         await _js.BitInfiniteScrollingSetup(UniqueId, ScrollerSelector, RootElement, _lastElementRef,
-                                            Threshold, RootMargin, Horizontal, autoLoad, Feed, _dotnetObj);
+                                            Threshold, RootMargin, Horizontal, autoLoad, Feed, _tabStopMode, _dotnetObj);
     }
 
     // In the automatic mode the first page arrives because the sentinel starts out visible; the manual mode has

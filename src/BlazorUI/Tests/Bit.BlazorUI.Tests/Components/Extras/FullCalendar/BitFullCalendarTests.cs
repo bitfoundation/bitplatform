@@ -2826,6 +2826,35 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.AreEqual(BitFullCalendarView.Day, component.Instance.State.View);
     }
 
+    // A nav link is named by the text it shows first, then by where it goes: a name leaving the shown text out fails
+    // Label in Name (WCAG 2.5.3), and neither "W27" nor an abbreviated "Mon" is a word of the spoken form.
+    [TestMethod]
+    public void BitFullCalendarNavLinksShouldBeNamedByTheTextTheyShowFirst()
+    {
+        var component = RenderWithSettings(
+            new BitFullCalendarSettings { NavLinks = true, ShowWeekNumbers = true },
+            BitFullCalendarView.Month);
+
+        foreach (var link in component.FindAll(".bit-bfc-weeknum-cell.bit-bfc-navlink"))
+        {
+            var shown = link.TextContent.Trim();
+            StringAssert.Matches(shown, new System.Text.RegularExpressions.Regex(@"^W\d+$"));
+            Assert.AreEqual($"{shown}, Go to week {shown[1..]}", link.GetAttribute("aria-label"));
+        }
+
+        component = RenderWithSettings(
+            new BitFullCalendarSettings { NavLinks = true },
+            BitFullCalendarView.Week);
+
+        foreach (var header in component.FindAll(".bit-bfc-week-header-day-link"))
+        {
+            // The two parts are set apart by a space in the text as well, rather than read as "Mon5".
+            var shown = header.TextContent.Trim();
+            StringAssert.Matches(shown, new System.Text.RegularExpressions.Regex(@"^\S+ \S+$"));
+            StringAssert.StartsWith(header.GetAttribute("aria-label"), $"{shown}, Go to ");
+        }
+    }
+
     #endregion
 
     #region Event surface

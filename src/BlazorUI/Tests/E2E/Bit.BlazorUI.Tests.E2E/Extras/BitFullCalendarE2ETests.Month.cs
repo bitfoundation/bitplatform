@@ -75,13 +75,13 @@ public partial class BitFullCalendarE2ETests
         await Expect(Dialog(cal)).ToHaveCountAsync(0);
 
         await SwitchViewAsync(cal, "Month");
-        await cal.Locator("button.bit-bfc-weeknum-cell[aria-label='Go to week 30']").ClickAsync();
+        await cal.Locator("button.bit-bfc-weeknum-cell[aria-label='W30, Go to week 30']").ClickAsync();
         await Expect(cal.Locator(".bit-bfc-week-layout")).ToBeVisibleAsync();
         await Expect(Title(cal)).ToHaveTextAsync("Jul 20, 2025 - Jul 26, 2025");
         await Expect(Page.Locator("#grid-view")).ToHaveTextAsync("Week");
 
         // the week view's column headers are nav links too
-        await cal.Locator("button.bit-bfc-week-header-day-link[aria-label='Go to Tuesday, July 22, 2025']").ClickAsync();
+        await cal.Locator("button.bit-bfc-week-header-day-link[aria-label='Tue 22, Go to Tuesday, July 22, 2025']").ClickAsync();
         await Expect(Title(cal)).ToHaveTextAsync("Jul 22, 2025");
 
         await SwitchViewAsync(cal, "Month");

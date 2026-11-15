@@ -39,16 +39,21 @@
     var directionSign = State.IsRtl ? -1 : 1;
     var blockStyle = $"{colorStyleVar}{widthOverride}transform:translateX({(translateXPx * directionSign).ToString("F2", inv)}px);";
     var canResize = PixelsPerMinute > 0 && CanResize;
+    var ariaLabel = BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel);
+    var templated = EventTemplate is not null;
 }
 
-<div class="bit-bfc-timeline-event @colorClass @(passThrough ? "bit-bfc-timeline-event-pass-through" : "") @resizeClasses @Parts.Classes?.Event @Event.CssClass"
+@* A block an EventTemplate draws is named by the text it shows first and the details after it (BitFcEventTemplateHost). *@
+<div id="@(templated ? BitFcEventTemplateHost.SurfaceId(_instanceId) : null)"
+     class="bit-bfc-timeline-event @colorClass @(passThrough ? "bit-bfc-timeline-event-pass-through" : "") @resizeClasses @Parts.Classes?.Event @Event.CssClass"
      style="@($"{blockStyle}{Parts.Styles?.Event}")"
      data-bit-bfc-event="@Event.Id"
      data-bit-bfc-move="@(CanMove ? "x" : null)"
      data-bit-bfc-resize="@(CanResize ? "x" : null)"
      role="button"
      tabindex="0"
-     aria-label="@BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
+     aria-label="@(templated ? null : ariaLabel)"
+     aria-labelledby="@(templated ? BitFcEventTemplateHost.LabelledBy(_instanceId) : null)"
      draggable="@(CanMove ? "true" : "false")"
      title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
      @ondragstart="OnDragStart"
@@ -69,7 +74,7 @@
 
     @if (EventTemplate != null)
     {
-        @EventTemplate(Event)
+        <BitFcEventTemplateHost Template="EventTemplate" Event="Event" InstanceId="@_instanceId" Details="@ariaLabel" />
     }
     else
     {

@@ -3628,13 +3628,13 @@ public class BitDatePickerTests : BunitTestContext
 
         component.FindAll(".bit-dtp-nbt")[1].Click();
 
-        Assert.AreEqual("February 2026", component.Find(".bit-dtp-grd").GetAttribute("aria-label"));
+        Assert.AreEqual("February 2026", GridName(component.Find(".bit-dtp-grd")));
 
         // The ancestor holding the BitParams rerenders and cascades exactly what it cascaded before, which
         // must leave the calendar on the month it was navigated to.
         component.Render();
 
-        Assert.AreEqual("February 2026", component.Find(".bit-dtp-grd").GetAttribute("aria-label"));
+        Assert.AreEqual("February 2026", GridName(component.Find(".bit-dtp-grd")));
     }
 
     [TestMethod]
@@ -3927,9 +3927,9 @@ public class BitDatePickerTests : BunitTestContext
         var grids = component.FindAll(".bit-dtp-grd");
 
         Assert.HasCount(3, grids);
-        Assert.AreEqual("November 2026", grids[0].GetAttribute("aria-label"));
-        Assert.AreEqual("December 2026", grids[1].GetAttribute("aria-label"));
-        Assert.AreEqual("January 2027", grids[2].GetAttribute("aria-label"));
+        Assert.AreEqual("November 2026", GridName(grids[0]));
+        Assert.AreEqual("December 2026", GridName(grids[1]));
+        Assert.AreEqual("January 2027", GridName(grids[2]));
     }
 
     [TestMethod]
@@ -4009,7 +4009,7 @@ public class BitDatePickerTests : BunitTestContext
 
         component.FindAll(".bit-dtp-nbt")[1].Click();
 
-        Assert.AreEqual(expectedFirstMonth, component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
+        Assert.AreEqual(expectedFirstMonth, GridName(component.FindAll(".bit-dtp-grd")[0]));
     }
 
     [TestMethod]
@@ -4032,8 +4032,8 @@ public class BitDatePickerTests : BunitTestContext
 
         // A whole strip of two would land on March + April, so the move stops one month short: March is the
         // last month the bound allows, and it has to stay on screen rather than be stepped over.
-        Assert.AreEqual("February 2026", component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
-        Assert.AreEqual("March 2026", component.FindAll(".bit-dtp-grd")[1].GetAttribute("aria-label"));
+        Assert.AreEqual("February 2026", GridName(component.FindAll(".bit-dtp-grd")[0]));
+        Assert.AreEqual("March 2026", GridName(component.FindAll(".bit-dtp-grd")[1]));
 
         // And with the month of the bound on screen the strip cannot move any further forward.
         Assert.IsTrue(component.FindAll(".bit-dtp-nbt")[1].HasAttribute("disabled"));
@@ -4060,7 +4060,7 @@ public class BitDatePickerTests : BunitTestContext
         // The strip opens on the month of the value, so it is walked back onto January first.
         component.FindAll(".bit-dtp-nbt")[0].Click();
 
-        Assert.AreEqual("January 2026", component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
+        Assert.AreEqual("January 2026", GridName(component.FindAll(".bit-dtp-grd")[0]));
 
         component.Find(".bit-dtp-dbs").Click();
 
@@ -4068,7 +4068,7 @@ public class BitDatePickerTests : BunitTestContext
 
         // The deselected day is in the second pane, which the strip already shows - so the strip stays where
         // it is rather than sliding its start onto February.
-        Assert.AreEqual("January 2026", component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
+        Assert.AreEqual("January 2026", GridName(component.FindAll(".bit-dtp-grd")[0]));
     }
 
     [TestMethod]
@@ -4091,7 +4091,7 @@ public class BitDatePickerTests : BunitTestContext
         februaryGrid.QuerySelectorAll(".bit-dtp-dbt").First(b => b.TextContent.Trim() == "10").Click();
 
         Assert.AreEqual(new DateTime(2026, 2, 10), value!.Value.DateTime.Date);
-        Assert.AreEqual("January 2026", component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
+        Assert.AreEqual("January 2026", GridName(component.FindAll(".bit-dtp-grd")[0]));
     }
 
     [TestMethod]
@@ -4113,7 +4113,7 @@ public class BitDatePickerTests : BunitTestContext
         // The first of February lives in the second pane, and the strip does not scroll to reach it.
         var focused = component.Find(".bit-dtp-dbt[tabindex='0']");
         Assert.AreEqual("1", focused.TextContent.Trim());
-        Assert.AreEqual("January 2026", component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
+        Assert.AreEqual("January 2026", GridName(component.FindAll(".bit-dtp-grd")[0]));
     }
 
     [TestMethod]
@@ -5935,5 +5935,39 @@ public class BitDatePickerTests : BunitTestContext
 
         Assert.IsTrue(picker.ReadOnly);
         Assert.IsTrue(picker.Required);
+    }
+
+    // A title that is only text names the days grid of its month, and the grid says the picker is disabled: the
+    // dimmed title is then read as a part of the unavailable control rather than as text failing its contrast.
+    [TestMethod]
+    public void BitDatePickerDaysGridShouldBeNamedByTheTitleOfItsMonth()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        var title = component.Find(".bit-dtp-pkt");
+        var grid = component.Find(".bit-dtp-grd");
+        Assert.IsFalse(string.IsNullOrEmpty(title.GetAttribute("id")));
+        Assert.AreEqual(title.GetAttribute("id"), grid.GetAttribute("aria-labelledby"));
+        Assert.IsNull(grid.GetAttribute("aria-label"));
+        Assert.AreEqual("true", grid.GetAttribute("aria-disabled"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        Assert.IsNull(component.Find(".bit-dtp-grd").GetAttribute("aria-disabled"));
+    }
+
+    // The name of a days grid: its month title where that title is only text (aria-labelledby), else its aria-label.
+    private static string? GridName(AngleSharp.Dom.IElement grid)
+    {
+        var labelledBy = grid.GetAttribute("aria-labelledby");
+        if (string.IsNullOrEmpty(labelledBy)) return grid.GetAttribute("aria-label");
+
+        AngleSharp.Dom.INode root = grid;
+        while (root.Parent is not null) root = root.Parent;
+        return ((AngleSharp.Dom.IParentNode)root).QuerySelector($"[id='{labelledBy}']")?.TextContent.Trim();
     }
 }

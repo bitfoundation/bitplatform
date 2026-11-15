@@ -76,10 +76,6 @@ $swp-private-properties:
     // The axis the swiper scrolls on, which the snapping below is written in terms of so a single class
     // covers both orientations.
     --bit-swp-axis: x;
-
-    &:focus-visible {
-        @include focus-ring-own(var(--bit-swp-focus));
-    }
 }
 
 // The box the items scroll in, holding the next/prev buttons alongside it so they stay in place while the
@@ -126,6 +122,13 @@ $swp-private-properties:
 
     &::-webkit-scrollbar {
         display: none;
+    }
+
+    // The box the items scroll in is the tab stop of the swiper (see BitSwiper.razor), and it sits inside a viewport
+    // that clips its overflow, so its indicator is drawn inside it, with the separator band on its inner side so it
+    // keeps its contrast over whatever the slide shows.
+    &:focus-visible {
+        @include focus-ring-inset(var(--bit-swp-focus, #{$clr-pri-focus}), $band: true);
     }
 }
 
@@ -210,6 +213,15 @@ $swp-private-properties:
         scroll-padding-inline: 0;
         scroll-padding-block: min(var(--bit-swp-peek), var(--bit-swp-pmx, var(--bit-swp-peek)));
     }
+}
+
+// A disabled swiper takes its buttons, dots, keys, drag and wheel away, and the box stops scrolling as well: a touch,
+// a trackpad or a wheel the swiper leaves to the browser would otherwise still move it, and a box that scrolls but
+// is out of the tab order is one a keyboard cannot follow it into. The focus still brings a control inside a slide
+// into view, and the swiper still scrolls it itself, which a hidden overflow allows. Child combinators keep it to
+// this swiper's own box, since a swiper in one of its slides stays live.
+.bit-swp.bit-dis > .bit-swp-vwp > .bit-swp-cnt {
+    overflow: hidden;
 }
 
 .bit-swp-rbt,

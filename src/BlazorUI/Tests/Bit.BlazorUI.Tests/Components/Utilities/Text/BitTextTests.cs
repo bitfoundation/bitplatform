@@ -157,9 +157,9 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
-        var cssClass = isEnabled ? null : " bit-dis";
+        var disabledMarkup = isEnabled ? null : @" bit-dis"" aria-disabled=""true";
 
-        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{disabledMarkup}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -174,7 +174,33 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Disabled, true);
         });
 
-        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-dis"" id:ignore></div>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-dis"" aria-disabled=""true"" id:ignore></div>");
+    }
+
+    // Dimmed text that is not said to be disabled reads to a screen reader as ordinary text, and to a contrast checker
+    // as text failing its contrast; an aria-disabled the page wrote itself is kept while the text is enabled.
+    [TestMethod,
+        DataRow("p"),
+        DataRow("h2"),
+        DataRow("span")
+    ]
+    public void BitTextShouldSayItIsDisabledWhateverItsTag(string element)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        Assert.AreEqual("true", component.Find(element).GetAttribute("aria-disabled"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Disabled, false);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["aria-disabled"] = "false" });
+        });
+
+        Assert.AreEqual("false", component.Find(element).GetAttribute("aria-disabled"));
     }
 
     [TestMethod,

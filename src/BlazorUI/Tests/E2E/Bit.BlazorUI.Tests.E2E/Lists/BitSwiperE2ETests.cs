@@ -70,9 +70,11 @@ public class BitSwiperE2ETests : E2ETestBase
     {
         await OpenAsync("/e2e/swiper");
 
-        var root = Page.Locator("#basic");
-        await Expect(root).ToHaveAttributeAsync("tabindex", "0");
-        await root.FocusAsync();
+        // The tab stop is the box the items scroll in, not the region around it.
+        Assert.IsNull(await Page.Locator("#basic").GetAttributeAsync("tabindex"));
+        var box = Page.Locator("#basic .bit-swp-cnt");
+        await Expect(box).ToHaveAttributeAsync("tabindex", "0");
+        await box.FocusAsync();
 
         await Page.Keyboard.PressAsync("ArrowRight");
         await ExpectScrollAsync("basic", 100);
@@ -95,7 +97,7 @@ public class BitSwiperE2ETests : E2ETestBase
         await ExpectScrollAsync("basic", 0);
         await Expect(Page.Locator("#basic-log")).ToContainTextAsync("start");
         await Expect(Page.Locator("#basic .bit-swpi-cur")).ToHaveTextAsync(new[] { "I1" });
-        await Expect(root).ToBeFocusedAsync();
+        await Expect(box).ToBeFocusedAsync();
     }
 
     [TestMethod]
@@ -219,7 +221,7 @@ public class BitSwiperE2ETests : E2ETestBase
         AssertClose((await BoxAsync("#vertical .bit-swp-vwp")).Bottom, (await BoxAsync("#vertical .bit-swp-rbt")).Bottom, "the next button at the bottom");
         await Expect(Page.Locator("#vertical .bit-swp-rbt i")).ToHaveClassAsync(HasClass("bit-icon--ChevronDown"));
 
-        await root.FocusAsync();
+        await Page.Locator("#vertical .bit-swp-cnt").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowDown");
         await ExpectScrollAsync("vertical", 80);
         await Page.Keyboard.PressAsync("ArrowRight");
@@ -306,13 +308,13 @@ public class BitSwiperE2ETests : E2ETestBase
         await Page.Mouse.MoveAsync(0, 0);
         await ExpectAutoPlayStateAsync("autoplay", "playing=True;paused=False");
 
-        await Page.Locator("#autoplay").FocusAsync();
+        await Page.Locator("#autoplay .bit-swp-cnt").FocusAsync();
         await ExpectAutoPlayStateAsync("autoplay", "playing=False;paused=False");
         await Page.Locator("#btn-read-autoplay").FocusAsync();
         await ExpectAutoPlayStateAsync("autoplay", "playing=True;paused=False");
 
         await Page.Locator("#no-pause .bit-swp-cnt").HoverAsync();
-        await Page.Locator("#no-pause").FocusAsync();
+        await Page.Locator("#no-pause .bit-swp-cnt").FocusAsync();
         await ExpectAutoPlayStateAsync("no-pause", "playing=True;paused=False");
 
         await SetPageHiddenAsync(true);
@@ -401,6 +403,7 @@ public class BitSwiperE2ETests : E2ETestBase
         await Page.Locator("#basic .bit-swp-cnt").ExpectScrollbarWidthAsync("none");
 
         Assert.IsNull(await Page.Locator("#no-keyboard").GetAttributeAsync("tabindex"));
+        await Expect(Page.Locator("#no-keyboard .bit-swp-cnt")).ToHaveAttributeAsync("tabindex", "-1");
         await Page.Locator("#no-keyboard .bit-swp-rbt").FocusAsync();
         await Page.Keyboard.PressAsync("End");
         await NextFramesAsync();
@@ -424,6 +427,7 @@ public class BitSwiperE2ETests : E2ETestBase
         await Expect(root).ToHaveClassAsync(HasClass("bit-dis"));
         await Expect(root).ToHaveClassAsync(HasClass("bit-swp-ndr"));
         Assert.IsNull(await root.GetAttributeAsync("tabindex"));
+        await Expect(Page.Locator("#disabled .bit-swp-cnt")).ToHaveAttributeAsync("tabindex", "-1");
         foreach (var selector in new[] { "#disabled .bit-swp-rbt", "#disabled .bit-swp-ppb", "#disabled .bit-swp-dot >> nth=1" })
         {
             await Expect(Page.Locator(selector)).ToBeDisabledAsync();
@@ -498,7 +502,7 @@ public class BitSwiperE2ETests : E2ETestBase
         await Expect(Page.Locator("#loaded-count")).ToHaveTextAsync("8");
         await Expect(Page.Locator("#load-more .bit-swpi")).ToHaveCountAsync(8);
 
-        await Page.Locator("#load-more").FocusAsync();
+        await Page.Locator("#load-more .bit-swp-cnt").FocusAsync();
         await Page.Keyboard.PressAsync("End");
         await Expect(Page.Locator("#loaded-count")).ToHaveTextAsync("12");
         await Expect(Page.Locator("#load-more .bit-swpi")).ToHaveCountAsync(12);
@@ -534,8 +538,10 @@ public class BitSwiperE2ETests : E2ETestBase
         await Expect(a11y.Locator(".bit-swp-lbt")).ToHaveAttributeAsync("aria-label", "Backwards");
         await Expect(a11y.Locator(".bit-swp-ppb")).ToHaveAttributeAsync("aria-label", "Pause it");
 
-        // The play/pause button is the first stop inside the swiper.
-        await a11y.FocusAsync();
+        // The play/pause button is the first stop inside the swiper: the one before it is outside of it.
+        await a11y.Locator(".bit-swp-ppb").FocusAsync();
+        await Page.Keyboard.PressAsync("Shift+Tab");
+        Assert.IsFalse(await a11y.EvaluateAsync<bool>("el => el.contains(document.activeElement)"), "nothing of the swiper comes before it");
         await Page.Keyboard.PressAsync("Tab");
         await Expect(a11y.Locator(".bit-swp-ppb")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Enter");
@@ -693,13 +699,13 @@ public class BitSwiperE2ETests : E2ETestBase
         await current.HoverAsync();
         await Expect(current).ToHaveCSSAsync("background-color", "rgb(22, 23, 24)");
 
-        // The focus ring of the keyboard-focused root.
+        // The focus ring of the keyboard-focused box the items scroll in, drawn inside it since the viewport clips it.
         await Page.Mouse.MoveAsync(0, 0);
-        await Page.Locator("#vars").FocusAsync();
+        await Page.Locator("#vars .bit-swp-cnt").FocusAsync();
         await Page.Keyboard.PressAsync("Tab");
         await Page.Keyboard.PressAsync("Shift+Tab");
-        await Expect(Page.Locator("#vars")).ToBeFocusedAsync();
-        StringAssert.Contains(await ComputedStyleAsync("#vars", "box-shadow"), "rgb(9, 9, 9)");
+        await Expect(Page.Locator("#vars .bit-swp-cnt")).ToBeFocusedAsync();
+        StringAssert.Contains(await ComputedStyleAsync("#vars .bit-swp-cnt", "outline-color"), "rgb(9, 9, 9)");
 
         await Expect(Page.Locator("#vars-color .bit-swp-cud")).ToHaveCSSAsync("background-color", await ResolveAsync("var(--bit-clr-err)"));
     }
@@ -721,13 +727,13 @@ public class BitSwiperE2ETests : E2ETestBase
         await ExpectScrollAsync("rtl", 100);
         await Expect(Page.Locator("#rtl .bit-swpi-cur")).ToHaveTextAsync(new[] { "I2" });
 
-        await rtl.FocusAsync();
+        await Page.Locator("#rtl .bit-swp-cnt").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
         await ExpectScrollAsync("rtl", 200);
         await Page.Keyboard.PressAsync("ArrowRight");
         await ExpectScrollAsync("rtl", 100);
 
-        await Page.Locator("#rtl-inherited").FocusAsync();
+        await Page.Locator("#rtl-inherited .bit-swp-cnt").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
         await ExpectScrollAsync("rtl-inherited", 100);
     }

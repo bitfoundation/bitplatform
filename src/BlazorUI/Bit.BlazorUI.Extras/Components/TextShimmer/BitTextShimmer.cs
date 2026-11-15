@@ -389,18 +389,23 @@ public partial class BitTextShimmer : BitComponentBase
         builder.AddAttribute(5, "dir", Dir?.ToString().ToLowerInvariant() ?? GetSplattedAttribute("dir"));
         builder.AddAttribute(6, "aria-label", ResolveAriaLabel());
         builder.AddAttribute(7, "tabindex", TabIndex ?? GetSplattedAttribute("tabindex"));
-        builder.AddElementReferenceCapture(8, v => RootElement = v);
+        // The dimming of a disabled shimmer says the text stands for something unavailable, so assistive technologies
+        // are told the same - and a contrast checker, which leaves text that is said to be disabled alone, no longer
+        // weighs the dimmed glyphs as if they were text meant to be read at full strength. The text is the element
+        // that is unavailable rather than a wrapper of one, so the state goes on it whatever its tag, as on BitText.
+        builder.AddAttribute(8, "aria-disabled", Disabled ? "true" : GetSplattedAttribute("aria-disabled"));
+        builder.AddElementReferenceCapture(9, v => RootElement = v);
         // A void element is defined to hold no content: the static renderer writes it self-closed, so anything put
         // inside it would either be dropped or end up as a sibling of the element in the rendered markup.
         if (IsVoidElement(element!) is false)
         {
             if (ChildContent is not null)
             {
-                builder.AddContent(9, ChildContent);
+                builder.AddContent(10, ChildContent);
             }
             else
             {
-                builder.AddContent(10, Text);
+                builder.AddContent(11, Text);
             }
         }
         builder.CloseElement();

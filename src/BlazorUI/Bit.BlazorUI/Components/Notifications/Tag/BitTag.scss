@@ -76,7 +76,7 @@
 // color above that its role paints - at rest, selected, hovered in Outline and Text, and disabled - an explicit Size
 // over the min height, the paddings, the gap, the two font sizes and the image size, and an explicit Shape over the
 // radius. The variables keep what a Color leaves alone: the transparent background (and, in Text, rule) of the
-// Outline and Text variants, the hover and pressed overlay a Fill tag composites from its own text color, the icon
+// Outline and Text variants, the hover and pressed overlay a Fill tag composites from (the inverse of) its text color, the icon
 // and focus colors. The variables restyle the default, not a choice - which is why Color, Size and Shape publish
 // nothing while they are left unset: a class that always carried the default would be indistinguishable from one
 // that was asked for. So the variables keep the last word over the default a component of the library gives the
@@ -452,6 +452,19 @@ $tag-private-properties:
     // pressed variables still replace it under a Color.
     --bit-tag-v-hover-bg: var(--bit-Tag-fill-hover-background, var(--bit-Tag-hover-background, #{translucent(var(--bit-tag-fg), 12%)}));
     --bit-tag-v-active-bg: var(--bit-Tag-fill-active-background, var(--bit-Tag-active-background, #{translucent(var(--bit-tag-fg), 20%)}));
+}
+
+// An overlay of the text color itself moves the fill towards the text, which costs the label its contrast exactly while
+// it is pointed at or pressed: white text over the primary fill drops from 4.7:1 to 3.9:1 under the hover and to 3.4:1
+// under the press. So where the engine can compute it, the overlay is the inverse of the text color - black under white
+// text, white under dark text - which deepens the fill away from its text in every role, the neutral ones and a
+// background a --bit-Tag-* variable set included, and only ever raises the contrast. An engine without relative colors
+// keeps the overlay above, since a custom property holding a color it cannot read would leave no hover paint at all.
+@supports (color: rgb(from red r g b)) {
+    .bit-tag-fil {
+        --bit-tag-v-hover-bg: var(--bit-Tag-fill-hover-background, var(--bit-Tag-hover-background, rgb(from var(--bit-tag-fg) calc(255 - r) calc(255 - g) calc(255 - b) / 12%)));
+        --bit-tag-v-active-bg: var(--bit-Tag-fill-active-background, var(--bit-Tag-active-background, rgb(from var(--bit-tag-fg) calc(255 - r) calc(255 - g) calc(255 - b) / 20%)));
+    }
 }
 
 // The unfilled variants answer the pointer, and mark a selected chip, with a translucent wash of the role (role-wash in

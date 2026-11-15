@@ -464,7 +464,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         // The starting value only opens the calendar on its month, so the time fields show its times while the field
         // itself holds no value yet.
         Assert.IsFalse(input.HasAttribute("value"));
-        Assert.AreEqual("March 2024", component.Find(".bit-dtrp-grd").GetAttribute("aria-label"));
+        Assert.AreEqual("March 2024", GridName(component.Find(".bit-dtrp-grd")));
     }
 
     [TestMethod]
@@ -591,13 +591,13 @@ public class BitDateRangePickerParamsTests : BunitTestContext
 
         component.Find(".bit-dtrp-dwp [title='Go to next month']").Click();
 
-        Assert.AreEqual("February 2026", component.Find(".bit-dtrp-grd").GetAttribute("aria-label"));
+        Assert.AreEqual("February 2026", GridName(component.Find(".bit-dtrp-grd")));
 
         // The ancestor holding the BitParams rerenders and cascades exactly what it cascaded before, which
         // must leave the calendar on the month it was navigated to.
         component.Render();
 
-        Assert.AreEqual("February 2026", component.Find(".bit-dtrp-grd").GetAttribute("aria-label"));
+        Assert.AreEqual("February 2026", GridName(component.Find(".bit-dtrp-grd")));
     }
 
     [TestMethod]
@@ -723,5 +723,39 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         // A false written on the picker is a choice as much as a true is.
         Assert.IsFalse(picker.ReadOnly);
         Assert.IsFalse(picker.Required);
+    }
+
+    // A title that is only text names the days grid of its month, and the grid says the picker is disabled: the
+    // dimmed title is then read as a part of the unavailable control rather than as text failing its contrast.
+    [TestMethod]
+    public void BitDateRangePickerDaysGridShouldBeNamedByTheTitleOfItsMonth()
+    {
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        var title = component.Find(".bit-dtrp-pkt");
+        var grid = component.Find(".bit-dtrp-grd");
+        Assert.IsFalse(string.IsNullOrEmpty(title.GetAttribute("id")));
+        Assert.AreEqual(title.GetAttribute("id"), grid.GetAttribute("aria-labelledby"));
+        Assert.IsNull(grid.GetAttribute("aria-label"));
+        Assert.AreEqual("true", grid.GetAttribute("aria-disabled"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        Assert.IsNull(component.Find(".bit-dtrp-grd").GetAttribute("aria-disabled"));
+    }
+
+    // The name of a days grid: its month title where that title is only text (aria-labelledby), else its aria-label.
+    private static string? GridName(AngleSharp.Dom.IElement grid)
+    {
+        var labelledBy = grid.GetAttribute("aria-labelledby");
+        if (string.IsNullOrEmpty(labelledBy)) return grid.GetAttribute("aria-label");
+
+        AngleSharp.Dom.INode root = grid;
+        while (root.Parent is not null) root = root.Parent;
+        return ((AngleSharp.Dom.IParentNode)root).QuerySelector($"[id='{labelledBy}']")?.TextContent.Trim();
     }
 }

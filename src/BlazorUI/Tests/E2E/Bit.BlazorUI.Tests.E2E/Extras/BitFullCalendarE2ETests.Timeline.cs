@@ -32,11 +32,11 @@ public partial class BitFullCalendarE2ETests
         await Expect(rows.Nth(0).Locator(".bit-bfc-timeline-event")).ToHaveCountAsync(2);
         await Expect(rows.Nth(3).Locator("[data-bit-bfc-event='t5']")).ToBeVisibleAsync();
 
-        // the template draws the content; the block keeps its name, its drag and its handles
+        // the template draws the content and names the block, followed by the details; the block keeps its drag and its handles
         var block = TlBlock("t1");
         await Expect(block.Locator(".tl-card")).ToHaveTextAsync("Design Review room-bay");
         await Expect(block.Locator(".bit-bfc-timeline-event-title")).ToHaveCountAsync(0);
-        await Expect(block).ToHaveAttributeAsync("aria-label", "Design Review, 10:00 - 11:00");
+        await Expect(block).ToHaveAccessibleNameAsync(new Regex("^Design Review.*room-bay.*Design Review, 10:00 - 11:00"));
         await Expect(block).ToHaveAttributeAsync("draggable", "true");
         await Expect(block.Locator(".bit-bfc-resize-handle-h")).ToHaveCountAsync(2);
 
