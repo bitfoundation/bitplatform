@@ -72,6 +72,43 @@ public sealed class TourTests : BonboardingTest
     }
 
     [TestMethod]
+    public async Task Focus_the_application_moved_while_the_tour_ended_stays_where_it_was_moved()
+    {
+        var page = await StartWelcomeTourAsync();
+
+        // The application takes the focus - into a field it opened, say - and the tour ends.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Restart from the top" }).EvaluateAsync("el => el.focus()");
+        await page.Keyboard.PressAsync("Escape");
+        await Assertions.Expect(page.Locator(".bit-bonboarding-root")).ToHaveCountAsync(0);
+
+        StringAssert.Contains(await FocusedAsync(page), "Restart from the top");
+    }
+
+    [TestMethod]
+    public async Task Without_its_card_on_the_page_a_tour_leaves_the_keys_to_the_application()
+    {
+        var page = await StartWelcomeTourAsync();
+
+        // The host that drew the card is gone - removed with a layout the user navigated away from - while the
+        // tour, owned by the service, keeps its step: here the card is taken out of the page as that removal would.
+        await page.EvaluateAsync("() => document.querySelector('.bit-bonboarding-root').remove()");
+        var start = page.GetByRole(AriaRole.Button, new() { Name = "Take the tour" });
+        await start.FocusAsync();
+
+        await page.Keyboard.PressAsync("Tab");
+        Assert.IsFalse(await start.EvaluateAsync<bool>("el => document.activeElement === el"), "Tab moved the focus on");
+        var prevented = await page.EvaluateAsync<bool>(
+            """
+            () => {
+              const e = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true });
+              document.body.dispatchEvent(e);
+              return e.defaultPrevented;
+            }
+            """);
+        Assert.IsFalse(prevented, "the arrow keys are the page's");
+    }
+
+    [TestMethod]
     public async Task Focus_moves_into_each_step_and_tab_cannot_leave_a_modal_step()
     {
         var page = await StartWelcomeTourAsync();

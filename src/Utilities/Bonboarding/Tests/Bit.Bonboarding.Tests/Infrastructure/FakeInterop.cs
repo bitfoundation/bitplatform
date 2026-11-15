@@ -46,6 +46,9 @@ internal sealed class FakeInterop : IBonboardingInterop
 
     public List<BonboardingStepActivation> Activations { get; } = [];
 
+    /// <summary>The token each activation arrived with: the real interop refuses a cancelled one without calling the browser.</summary>
+    public List<CancellationToken> ActivationTokens { get; } = [];
+
     public int DeactivateCount { get; private set; }
 
     public int DetachCount { get; private set; }
@@ -94,6 +97,7 @@ internal sealed class FakeInterop : IBonboardingInterop
     {
         Throw();
         Activations.Add(activation);
+        ActivationTokens.Add(cancellationToken);
 
         var invalid = new[] { activation.Target }.Concat(activation.AdditionalTargets ?? [])
             .Select(descriptor => descriptor.Selector)

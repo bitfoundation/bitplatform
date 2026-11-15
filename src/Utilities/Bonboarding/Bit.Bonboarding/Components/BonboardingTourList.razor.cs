@@ -131,7 +131,8 @@ public sealed partial class BonboardingTourList : ComponentBase, IDisposable
                 items.Add(new BonboardingTourListItem(tour, progress, running) { StartAsync = () => StartAsync(tour, progress) });
             }
         }
-        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
+        // Any failure, a custom store's included: this runs after a render, where an exception ends the circuit.
+        catch (Exception ex)
         {
             Logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingTourList could not read the tours' progress.");
         }

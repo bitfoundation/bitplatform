@@ -237,7 +237,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
                 }
             }
 
-            if (tour.CanStart is not null && !await tour.CanStart(new BonboardingTourContext(tour, _services)))
+            if (tour.CanStart is not null && !await CanStartAsync(tour, startOptions.Automatic))
             {
                 throw new BonboardingException($"Tour '{tour.Id}' declined to start.") { TourId = tour.Id };
             }
@@ -263,6 +263,23 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     /// What <see cref="BonboardingOptions.CanAutoStart"/> says; true when it is not set. It is application code, and
     /// one that throws holds the tour back rather than escaping an automatic start that has no caller to catch it.
     /// </summary>
+    private async ValueTask<bool> CanStartAsync(BonboardingTourDefinition tour, bool automatic)
+    {
+        if (!automatic) return await tour.CanStart!(new BonboardingTourContext(tour, _services));
+
+        // An automatic start has no caller to hand a failure to: the component that asked for it would take the
+        // circuit down with it. Held back instead, as a CanAutoStart that throws is.
+        try
+        {
+            return await tour.CanStart!(new BonboardingTourContext(tour, _services));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "CanStart threw for tour {TourId}; the automatic start is held back.", tour.Id);
+            return false;
+        }
+    }
+
     private async ValueTask<bool> AllowsAutoStartAsync(BonboardingTourDefinition tour)
     {
         if (_options.CanAutoStart is not { } gate) return true;
@@ -687,7 +704,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
             stored = new(await ReadRecordAsync(tour.Id, cancellationToken));
             if (!IsDueOnce(tour, stored.Value)) return null;
 
-            if (tour.CanStart is not null && !await tour.CanStart(new BonboardingTourContext(tour, _services))) return null;
+            if (tour.CanStart is not null && !await CanStartAsync(tour, automatic: true)) return null;
 
             // A once-only start is never one the user asked for. IsDueOnce has already passed over a snooze.
             if (!await AllowsAutoStartAsync(tour)) return null;

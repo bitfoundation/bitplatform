@@ -1877,6 +1877,11 @@ The same holds for every wait on a route: while the engine navigates to a step's
 waits for the user to get to a wildcard route or to a route the engine was told not to navigate to. The page
 stays fully usable, because using it is how the user gets there.
 
+A step without a `Route` belongs to the page it was shown on, and holds the same way when the user leaves that page:
+its target is not there to be waited for, and waiting it out would skip the steps after it one by one - or complete
+the tour - while the user is somewhere else. It is shown again when they come back. A step that should follow the
+user to any page (one pointing at the site's navigation, say) gets `Route = "*"`.
+
 The library deliberately does not drag the user back. Fighting someone for control of the address bar
 is never the right call, and a user who navigated away usually meant it.
 
@@ -2622,8 +2627,9 @@ The popover is a `role="dialog"` with `tabindex="-1"`, so it can receive focus.
 
 #### Focus management
 
-- The element focused before the tour started is remembered and restored when it ends.
-  `RestoreFocus = false` opts out.
+- The element focused before the tour started is remembered and restored when it ends - unless the
+  application has moved focus elsewhere meanwhile (into the form the last step had the user open, say), which
+  stays where it is. `RestoreFocus = false` opts out.
 - Focus moves into the popover when a step is shown, once per step, after the content has rendered
   and the popover has been placed (it is hidden until its first measurement, and a hidden element
   cannot take focus).
@@ -2640,8 +2646,8 @@ The popover is a `role="dialog"` with `tabindex="-1"`, so it can receive focus.
 | Key | Action |
 |---|---|
 | `Escape` | Ends the tour, unless `CloseOnEscape` is false |
-| `→` / `←` | Next / previous, reversed in RTL |
-| `Home` / `End` | First / last step |
+| `→` / `←` | Next / previous, reversed in RTL - as the card's buttons do, so not on a step that shows no Next (or Previous) |
+| `Home` / `End` | First / last step - `Home` only where Previous shows, `End` only where Next, pressed step by step, would get there: no step on the way has `CanAdvance`, `ResolveNext` or a hidden Next |
 | `Tab` / `Shift+Tab` | Cycles inside the trap |
 | `Enter` / `Space` | Activates the focused button, as any button does |
 
@@ -2822,7 +2828,10 @@ new BonboardingTourDefinition { Id = "welcome", Version = 2, ... }
 
 A record written by an older version is discarded rather than resumed into, and
 `IsCompletedAsync` / `IsClosedAsync` report `false`, so `StartOnceAsync` offers the updated tour
-again.
+again. Those two take only an id, so they can tell an old record from a current one only for a tour whose definition
+the service holds: one that is registered (every tour declared in markup is, and `Register` adds one defined in code)
+or running. For a tour defined in code that is neither, they read the stored record as it is, whatever its `Version`.
+Register such a tour when anything asks after it by id - a checklist item with a `TourId` does too.
 
 When a bump should not mean "everyone sees it again", migrate the old record instead. Return it unchanged
 to keep everything (the right choice after rewording a tour), map renamed step ids, or return `null` to

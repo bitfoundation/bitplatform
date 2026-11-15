@@ -90,6 +90,57 @@ public class StorageTests
     // ---- The same site in two tabs ---------------------------------------------------
 
     [TestMethod]
+    public async Task A_Tour_Another_Tab_Ended_Ends_Here_On_The_Context_The_Change_Came_In_On()
+    {
+        // whose progress it is takes a real wait (a database, a service), as StorageScope may
+        await using var harness = BrowserStoreHarness(options => options.StorageScope = async (_, _) =>
+        {
+            await Task.Delay(1);
+            return "alice";
+        });
+        SynchronizationContext? endedOn = null;
+        var ended = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tour = Tour();
+        tour.OnEnded = _ =>
+        {
+            endedOn = SynchronizationContext.Current;
+            ended.TrySetResult();
+            return ValueTask.CompletedTask;
+        };
+        await harness.Service.StartAsync(tour);
+
+        // The change arrives on the renderer's context (Blazor Server's dispatcher), and the tour's hooks - which may
+        // touch a component - must run there too.
+        var renderer = new MarkingContext();
+        var previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(renderer);
+        try
+        {
+            var dismissed = new BonboardingRecord { TourId = "shared", Dismissed = true, CurrentStepId = "a", UpdatedAt = DateTimeOffset.UtcNow };
+            await harness.Interop.ChangeStorageInAnotherTabAsync("bit-bonboarding:@alice/shared", Json(dismissed));
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+        await ended.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.AreSame(renderer, endedOn);
+    }
+
+    /// <summary>A context that runs what is posted to it on the thread pool, as itself: a stand-in for a renderer's.</summary>
+    private sealed class MarkingContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state) => ThreadPool.QueueUserWorkItem(_ =>
+        {
+            SetSynchronizationContext(this);
+            d(state);
+        });
+
+        public override SynchronizationContext CreateCopy() => this;
+    }
+
+    [TestMethod]
     public async Task A_Tour_Dismissed_In_Another_Tab_Stops_Here_Without_Writing_Over_It()
     {
         await using var harness = BrowserStoreHarness();

@@ -64,6 +64,61 @@ public class RoutingTests
     }
 
     [TestMethod]
+    [DataRow("", DisplayName = "shown on the home page")]
+    [DataRow("projects", DisplayName = "shown on another page")]
+    public async Task A_Step_Without_A_Route_Holds_On_The_Page_It_Was_Shown_On(string page)
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b");
+        harness.Navigation!.SimulateUserNavigation(page);
+
+        var session = await harness.Service.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "one-page",
+            Steps =
+            [
+                new BonboardingStepDefinition { Id = "a", Target = BonboardingStepTarget.Css("#a") },
+                new BonboardingStepDefinition { Id = "b", Target = BonboardingStepTarget.Css("#b") },
+            ],
+        });
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+
+        // the user leaves the page; there, the step's target is nowhere, and its wait runs out
+        harness.Navigation.SimulateUserNavigation("placement");
+        Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
+        Assert.AreEqual(BonboardingWaitReason.Route, session.WaitReason);
+        await harness.Interop.LoseTargetAsync(session.Id);
+        await harness.Interop.TimeOutWaitAsync(session.Id);
+
+        Assert.AreEqual("a", session.CurrentStep!.Id, "nothing is skipped while the user is away");
+        Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
+        Assert.IsNull((await harness.Service.GetRecordAsync("one-page"))?.CompletedAt);
+
+        // a query string or a fragment is the same page
+        harness.Interop.ExistingSelectors.Add("#a");
+        harness.Navigation.SimulateUserNavigation(page + "?tab=2");
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        Assert.AreEqual("a", session.CurrentStep!.Id);
+    }
+
+    [TestMethod]
+    public async Task A_Step_With_A_Wildcard_Route_Follows_The_User_To_Any_Page()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#nav");
+
+        var session = await harness.Service.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "site-wide",
+            Steps = [new BonboardingStepDefinition { Id = "nav", Target = BonboardingStepTarget.Css("#nav"), Route = "*" }],
+        });
+
+        harness.Navigation!.SimulateUserNavigation("anywhere");
+
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+    }
+
+    [TestMethod]
     public async Task Holds_The_Tour_When_The_User_Navigates_Away_And_Restores_It_On_Return()
     {
         await using var harness = new BonboardingHarness();
@@ -182,7 +237,7 @@ public class RoutingTests
     }
 
     [TestMethod]
-    public async Task A_Navigation_That_Takes_The_Target_Away_Is_A_Lost_Target()
+    public async Task A_Navigation_That_Takes_The_Target_Away_Holds_The_Step_Rather_Than_Skipping_It()
     {
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
@@ -204,9 +259,21 @@ public class RoutingTests
 
         var session = await harness.Service.StartAsync(tour);
 
-        // The browser's Back button: another page replaced this one, and the target went with it.
+        // The browser's Back button: another page replaced this one, and the target went with it. The step belongs to
+        // the page it was shown on, so it waits there for the user rather than skipping (and, step after step,
+        // completing the tour) while they are somewhere else.
         harness.Interop.ExistingSelectors.Clear();
         harness.Navigation!.SimulateUserNavigation("elsewhere");
+        await harness.Interop.LoseTargetAsync(session.Id);
+
+        Assert.AreEqual("a", session.CurrentStep!.Id);
+        Assert.AreEqual(BonboardingWaitReason.Route, session.WaitReason);
+
+        // On the same page, a target that is gone still applies its missing-target behaviour.
+        harness.Interop.ExistingSelectors.Add("#a");
+        harness.Navigation.SimulateUserNavigation("");
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        await harness.Interop.LoseTargetAsync(session.Id);
 
         Assert.AreEqual("b", session.CurrentStep!.Id, "A step whose target is gone applies its missing-target behaviour.");
     }

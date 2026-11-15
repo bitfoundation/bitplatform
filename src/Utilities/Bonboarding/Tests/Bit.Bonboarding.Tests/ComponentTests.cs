@@ -807,6 +807,38 @@ public class ComponentTests : BunitContext
     }
 
     [TestMethod]
+    [DataRow(BonboardingAutoStart.Once)]
+    [DataRow(BonboardingAutoStart.Always)]
+    public void An_Auto_Started_Tour_Whose_CanStart_Throws_Does_Not_Start_And_Does_Not_Throw(BonboardingAutoStart autoStart)
+    {
+        Func<BonboardingTourContext, ValueTask<bool>> canStart = _ => throw new InvalidOperationException("the application's own bug");
+
+        // escaping OnAfterRenderAsync, the exception would end a Blazor Server circuit
+        Render<BonboardingTour>(parameters => parameters
+            .Add(tour => tour.Id, "page-tour")
+            .Add(tour => tour.AutoStart, autoStart)
+            .Add(tour => tour.CanStart, canStart)
+            .Add(tour => tour.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BonboardingStep>(0);
+                builder.AddAttribute(1, nameof(BonboardingStep.Id), "p1");
+                builder.AddAttribute(2, nameof(BonboardingStep.Title), "Page tour");
+                builder.CloseComponent();
+            })));
+
+        Assert.IsNull(BonboardingService.Active);
+    }
+
+    [TestMethod]
+    public async Task A_Tour_Started_By_The_Application_Still_Reports_A_CanStart_That_Throws()
+    {
+        var tour = Tour(Step("a"));
+        tour.CanStart = _ => throw new InvalidOperationException("the application's own bug");
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => BonboardingService.StartAsync(tour));
+    }
+
+    [TestMethod]
     public void An_Auto_Started_Tour_That_Declines_To_Start_Does_Not_Throw()
     {
         var cut = Render<ToggleableTourHarness>(parameters => parameters

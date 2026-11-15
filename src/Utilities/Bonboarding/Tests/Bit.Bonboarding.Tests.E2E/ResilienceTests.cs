@@ -223,4 +223,37 @@ public sealed class ResilienceTests : BonboardingTest
         await page.Keyboard.PressAsync("Enter");
         await WaitForStepAsync(page, "Nicely done");
     }
+
+    [TestMethod]
+    public async Task No_key_moves_an_interactive_step_on_and_the_control_it_asks_for_keeps_its_keys()
+    {
+        var page = await OpenAsync("/dynamic");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Run the interactive tour" }).ClickAsync();
+        await WaitForStepAsync(page, "Try it yourself");
+        await page.Locator("[data-bonboarding-action='next']").ClickAsync();
+        var card = await WaitForStepAsync(page, "Now click this button");
+        var control = page.Locator("[data-bonboarding-anchor='do-it']");
+        // what reaches the control: a radio group's arrows, a menu's Escape
+        await control.EvaluateAsync("el => { window.controlKeys = []; el.addEventListener('keydown', e => window.controlKeys.push(e.key + (e.defaultPrevented ? '!' : ''))); }");
+
+        // Focus in the application's control: the keys are the control's own, and the tour stays.
+        await control.FocusAsync();
+        foreach (var key in new[] { "ArrowRight", "End", "Escape" }) await page.Keyboard.PressAsync(key);
+        await WaitForSettledAsync(page);
+        await Assertions.Expect(card.Locator(".bit-bonboarding-title")).ToHaveTextAsync("Now click this button");
+        CollectionAssert.AreEqual(new[] { "ArrowRight", "End", "Escape" }, await page.EvaluateAsync<string[]>("() => window.controlKeys"));
+
+        // Focus in the card, which shows no Next: the keys stand in for its buttons, so they do not move it on either.
+        await card.FocusAsync();
+        foreach (var key in new[] { "ArrowRight", "End" }) await page.Keyboard.PressAsync(key);
+        await WaitForSettledAsync(page);
+        await Assertions.Expect(card.Locator(".bit-bonboarding-title")).ToHaveTextAsync("Now click this button");
+
+        // Using the control is the way on - once End, which was the page's, has scrolled it back from the page's end.
+        await control.EvaluateAsync("el => el.scrollIntoView({ block: 'center' })");
+        await WaitForSettledAsync(page);
+        await control.ClickAsync();
+        await WaitForStepAsync(page, "Nicely done");
+        AssertNoConsoleErrors("the interactive tour");
+    }
 }

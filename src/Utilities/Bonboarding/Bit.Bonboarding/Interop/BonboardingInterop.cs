@@ -76,9 +76,17 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
 
             // During prerendering this throws InvalidOperationException, which is a normal state
             // rather than an error: the engine simply runs without a browser until hydration.
-            _module = await _js.InvokeAsync<IJSObjectReference>("import", cancellationToken, ModulePath)
+            var module = await _js.InvokeAsync<IJSObjectReference>("import", cancellationToken, ModulePath)
                 .ConfigureAwait(false);
 
+            // Disposed while the module was on its way: nothing releases it, nor a reference made to this, but here.
+            if (_disposed)
+            {
+                await DisposeModuleAsync(module).ConfigureAwait(false);
+                return null;
+            }
+
+            _module = module;
             _self = DotNetObjectReference.Create(this);
             return _module;
         }
@@ -212,7 +220,8 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
 
             try
             {
-                await watcher(key).ConfigureAwait(false);
+                // Not ConfigureAwait(false): the next watcher runs after it, on the context the change came in on.
+                await watcher(key);
             }
             catch (Exception ex)
             {
@@ -347,17 +356,19 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
         var module = _module;
         ReleaseLocalResources();
 
-        if (module is not null)
+        if (module is not null) await DisposeModuleAsync(module).ConfigureAwait(false);
+    }
+
+    private async ValueTask DisposeModuleAsync(IJSObjectReference module)
+    {
+        try
         {
-            try
-            {
-                await module.DisposeAsync().ConfigureAwait(false);
-            }
-            catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
-            {
-                // The circuit is already gone; there is nothing left to clean up in the browser.
-                _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not dispose its browser module.");
-            }
+            await module.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
+        {
+            // The circuit is already gone; there is nothing left to clean up in the browser.
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not dispose its browser module.");
         }
     }
 
@@ -379,6 +390,7 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
         _module = null;
         _self?.Dispose();
         _self = null;
-        _importGate.Dispose();
+        // _importGate is left undisposed: an import still in flight releases it as it finishes, and a semaphore with no
+        // wait handle holds nothing to free.
     }
 }

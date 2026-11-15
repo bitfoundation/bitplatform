@@ -98,6 +98,51 @@ public class InteropTests : BunitContext
         Interaction = "blocked",
     };
 
+    [TestMethod]
+    public async Task A_Module_That_Arrives_After_Disposal_Is_Released_And_Nothing_Throws()
+    {
+        var js = new GatedImportRuntime();
+        var interop = new BonboardingInterop(js, Options.Create(new BonboardingOptions()), NullLogger<BonboardingInterop>.Instance);
+
+        // the scope goes away while the module is still being imported
+        var initializing = interop.InitializeAsync().AsTask();
+        await interop.DisposeAsync();
+        js.Module.SetResult(js.Imported);
+
+        Assert.AreEqual(BonboardingBrowserEnvironment.Unknown, await initializing);
+        Assert.IsTrue(js.Imported.Disposed, "the module imported for a disposed interop is released");
+    }
+
+    /// <summary>A runtime whose module import waits until the test lets it through.</summary>
+    private sealed class GatedImportRuntime : IJSRuntime
+    {
+        public TaskCompletionSource<IJSObjectReference> Module { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public ReleasedModule Imported { get; } = new();
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+            => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+
+        public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+            => (TValue)await Module.Task;
+    }
+
+    private sealed class ReleasedModule : IJSObjectReference
+    {
+        public bool Disposed { get; private set; }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => ValueTask.FromResult(default(TValue)!);
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+            => ValueTask.FromResult(default(TValue)!);
+
+        public ValueTask DisposeAsync()
+        {
+            Disposed = true;
+            return ValueTask.CompletedTask;
+        }
+    }
+
     private static long LastActivationId(BunitJSModuleInterop module)
         => ((BonboardingStepActivation)module.Invocations["activateStep"][^1].Arguments[0]!).Activation;
 
