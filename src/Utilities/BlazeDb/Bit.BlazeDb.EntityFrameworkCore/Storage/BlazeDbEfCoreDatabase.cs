@@ -66,6 +66,16 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
             static state => Apply(state.Entries, state.Bindings),
             joiner: _transactions);
 
+        // Committed: the token values this save wrote are now the ones a later save has to start from.
+        for (var i = 0; i < entries.Count; i++)
+        {
+            if (entries[i].EntityState is EntityState.Added or EntityState.Modified
+                && BlazeDbConcurrencyTokens.Of(entries[i].EntityType) is { Length: > 0 } tokens)
+            {
+                BlazeDbConcurrencyTokens.Record(entries[i].ToEntityEntry().Entity, tokens);
+            }
+        }
+
         try
         {
             database.DeliverChanges();
@@ -126,6 +136,15 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
             var entity = entry.ToEntityEntry().Entity;
             try
             {
+                // Checked against what was last committed before anything is written, as a relational
+                // provider's WHERE clause would; a row that is gone is reported by the write itself.
+                if (entry.EntityState is EntityState.Modified or EntityState.Deleted
+                    && BlazeDbConcurrencyTokens.Of(entry.EntityType) is { Length: > 0 } tokens
+                    && binding.HeldRow(entity) is { } held)
+                {
+                    BlazeDbConcurrencyTokens.Check(entry, tokens, held);
+                }
+
                 switch (entry.EntityState)
                 {
                     case EntityState.Added:

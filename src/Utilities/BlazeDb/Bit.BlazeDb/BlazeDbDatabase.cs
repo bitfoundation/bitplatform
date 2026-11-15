@@ -32,6 +32,9 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
     private long _nextSeq;
     private volatile bool _disposed;
     private int _disposeState;
+    // Completes once DisposeAsync has finished, its final flush included, so a cache that finds the
+    // database disposed can wait for that flush before it opens the same storage again.
+    private readonly TaskCompletionSource _closed = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     internal readonly object SyncRoot = new();
 
@@ -66,6 +69,12 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
         if (options.Storage is not null)
         {
             db._wal = await BlazeDbWalManager.OpenAsync(db, options, cancellationToken).ConfigureAwait(false);
+            if (OperatingSystem.IsBrowser() && !db.IsReadOnly)
+            {
+                // A page that is hidden or unloaded right after a commit would otherwise lose it, the
+                // flusher's next tick never coming; see BlazeDbPageLifecycle.
+                Browser.BlazeDbPageLifecycle.Watch(db);
+            }
         }
         if (!db.IsReadOnly && options.Migrations.Count > 0)
         {
@@ -523,6 +532,18 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
         {
             return;
         }
+        try
+        {
+            await CloseAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            _closed.TrySetResult();
+        }
+    }
+
+    private async ValueTask CloseAsync()
+    {
         Exception? revertFailure = null;
         lock (SyncRoot)
         {
@@ -561,6 +582,12 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
     }
 
     // ---- Internals used by tables, transactions and the WAL manager ----
+
+    /// <summary>Whether <see cref="DisposeAsync"/> has been called, whether or not it has finished.</summary>
+    internal bool IsDisposed => Volatile.Read(ref _disposeState) != 0;
+
+    /// <summary>Completes once <see cref="DisposeAsync"/> has finished, its final flush included.</summary>
+    internal Task Closed => _closed.Task;
 
     internal bool HasActiveTransaction => _activeTransaction is not null;
 

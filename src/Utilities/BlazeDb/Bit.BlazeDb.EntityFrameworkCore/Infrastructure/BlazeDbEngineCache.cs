@@ -67,6 +67,18 @@ internal sealed class BlazeDbEngineCache
                 {
                     continue; // Released while we waited; the dictionary has a fresh slot by now.
                 }
+                if (slot.Database is { IsDisposed: true } disposed)
+                {
+                    // Disposed by the application rather than released here: it counts as closed, and
+                    // the store opens again - once its final flush is done, so that two engines never
+                    // work on one storage.
+                    if (!disposed.Closed.IsCompleted)
+                    {
+                        ThrowIfCannotBlock();
+                    }
+                    disposed.Closed.GetAwaiter().GetResult();
+                    slot.Database = null;
+                }
                 if (slot.Database is null)
                 {
                     slot.Database = Open(slot, extension, model);
@@ -105,6 +117,12 @@ internal sealed class BlazeDbEngineCache
                 {
                     continue;
                 }
+                if (slot.Database is { IsDisposed: true } disposed)
+                {
+                    // Disposed by the application rather than released here; see GetOrCreate.
+                    await disposed.Closed.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    slot.Database = null;
+                }
                 if (slot.Database is null)
                 {
                     // An open a synchronous caller had to leave running is finished here rather than
@@ -137,28 +155,29 @@ internal sealed class BlazeDbEngineCache
         }
     }
 
-    /// <summary>Disposes the store's engine and forgets it, so the next access opens afresh.</summary>
-    public async ValueTask ReleaseAsync(object key)
+    /// <summary>
+    /// Disposes the store's engine - its final flush included - and forgets it, so the next access
+    /// opens afresh. <paramref name="afterClose"/>, when given, runs once the engine is closed and
+    /// before anyone can open the store again: <c>EnsureDeleted</c> deletes the storage there.
+    /// Returns whether an engine was open.
+    /// </summary>
+    public async ValueTask<bool> ReleaseAsync(object key, Func<ValueTask>? afterClose = null)
     {
-        Slot? slot;
-        lock (_gate)
-        {
-            if (!_slots.TryGetValue(key, out slot))
-            {
-                return;
-            }
-        }
+        // A slot even for a store this process never opened: the delete that may follow is then
+        // made under its gate too, where no open can start on the storage until it is done.
+        var slot = SlotFor(key);
 
         // Taken so an open in flight finishes first and is then disposed, rather than escaping
-        // into a slot nobody can find any more.
+        // into a slot nobody can find any more. The slot stays registered, and its gate held,
+        // until the engine is closed and afterClose has run: a context that asks for the store
+        // meanwhile waits here instead of opening a second engine on storage the first is still
+        // flushing to, or that is about to be deleted under it.
         await slot.Gate.WaitAsync().ConfigureAwait(false);
+        var closed = false;
         try
         {
-            lock (_gate)
-            {
-                _slots.Remove(key);
-                slot.Removed = true;
-            }
+            // Bumped first, so contexts that cached the engine look it up again - and wait at the
+            // gate - rather than keep writing to an engine that is being disposed.
             Interlocked.Increment(ref _version);
             if (slot.PendingOpen is { } pending)
             {
@@ -178,11 +197,26 @@ internal sealed class BlazeDbEngineCache
             if (slot.Database is { } database)
             {
                 slot.Database = null;
+                closed = true;
+                // Disposing twice does nothing, so an engine the application disposed itself is
+                // waited for instead: its final flush is still going on.
                 await database.DisposeAsync().ConfigureAwait(false);
+                await database.Closed.ConfigureAwait(false);
             }
+            if (afterClose is not null)
+            {
+                await afterClose().ConfigureAwait(false);
+            }
+            return closed;
         }
         finally
         {
+            lock (_gate)
+            {
+                _slots.Remove(key);
+                slot.Removed = true;
+            }
+            Interlocked.Increment(ref _version);
             slot.Gate.Release();
         }
     }

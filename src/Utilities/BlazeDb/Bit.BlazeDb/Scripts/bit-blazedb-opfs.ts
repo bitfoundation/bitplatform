@@ -6,6 +6,8 @@
 interface HeldLock {
     release: () => void;
     clientId: string | null;
+    // The request's own promise, which settles once the browser has actually let the lock go.
+    settled: Promise<unknown> | null;
 }
 
 // Locks this document holds: name -> { release, clientId }. clientId is what navigator.locks.query()
@@ -14,6 +16,10 @@ interface HeldLock {
 const heldLocks = new Map<string, HeldLock>();
 // Locks this document believed it held but can no longer vouch for. See revalidateLocks.
 const lostLocks = new Set<string>();
+// Locks this document has released whose release the browser has not completed yet: resolving the holding
+// promise lets the lock go only once its reaction has run, so a request made in the same turn - a database
+// closed and opened again at once - would find it still held, by this very document.
+const releasing = new Map<string, Promise<unknown>>();
 // Set from the moment a restored document starts asking who holds its locks until the answer is in. The
 // question is asynchronous and the flusher's timer fires as soon as the page is back, so without this a
 // write could slip in while another tab holds the lock and before this one has noticed.
@@ -31,14 +37,22 @@ export async function acquireLock(lockName: string, allowWithoutWebLocks: boolea
         if (!allowWithoutWebLocks) {
             return false;
         }
-        heldLocks.set(lockName, { release: () => { }, clientId: null });
+        heldLocks.set(lockName, { release: () => { }, clientId: null, settled: null });
         return true;
+    }
+    const released = releasing.get(lockName);
+    if (released) {
+        await released.catch(() => undefined);
+        if (releasing.get(lockName) === released) {
+            releasing.delete(lockName);
+        }
     }
     return await requestLock(lockName);
 }
 
 async function requestLock(lockName: string): Promise<boolean> {
     let entry: HeldLock | undefined;
+    let settled: Promise<unknown> | null = null;
     const granted = await new Promise<boolean>((resolve) => {
         const request = navigator.locks.request(lockName, { ifAvailable: true }, (lock) => {
             if (lock === null) {
@@ -47,7 +61,7 @@ async function requestLock(lockName: string): Promise<boolean> {
             }
             // Hold the lock until releaseLock is called (or the document goes away).
             const holding = new Promise<void>((release) => {
-                entry = { release, clientId: null };
+                entry = { release, clientId: null, settled: null };
                 heldLocks.set(lockName, entry);
             });
             resolve(true);
@@ -57,6 +71,7 @@ async function requestLock(lockName: string): Promise<boolean> {
         // with { steal: true }: from then on writes from this document would interleave with the new
         // holder's, so the lock is marked lost. A release of our own leaves no entry, and is not marked.
         // Only this request's own entry: one re-taken under the same name since (see revalidateLocks) is not lost.
+        settled = request;
         request.then(undefined, () => {
             if (entry !== undefined && heldLocks.get(lockName) === entry) {
                 lostLocks.add(lockName);
@@ -68,6 +83,7 @@ async function requestLock(lockName: string): Promise<boolean> {
         lostLocks.delete(lockName);
         const entry = heldLocks.get(lockName);
         if (entry) {
+            entry.settled = settled;
             entry.clientId = await holderOf(lockName);
         }
     }
@@ -93,6 +109,9 @@ export function releaseLock(lockName: string): void {
     if (entry) {
         heldLocks.delete(lockName);
         entry.release();
+        if (entry.settled) {
+            releasing.set(lockName, entry.settled);
+        }
     }
 }
 
@@ -156,6 +175,34 @@ if (typeof window !== 'undefined') {
     });
     document.addEventListener('resume', () => {
         void beginRevalidation();
+    });
+}
+
+// Called when the page is hidden or goes away (see watchPageHide), so the databases of this document can start
+// flushing what they committed since the last tick of their flusher.
+let onPageHide: (() => void) | null = null;
+
+// A best-effort flush when the page is hidden - switched away from, minimised, closed - or unloaded by a reload or
+// a navigation. Neither event waits for the writes it starts, so commits from the last FlushInterval can still be
+// lost; this only narrows that window, above all for a navigation right after a commit. visibilitychange comes
+// first where the browser fires both, and pagehide covers a page unloaded while hidden.
+export function watchPageHide(callback: () => void): void {
+    onPageHide = callback;
+}
+
+if (typeof window !== 'undefined') {
+    const pageHidden = () => {
+        try {
+            onPageHide?.();
+        } catch {
+            // Nothing a hiding page could do with the failure; the flusher retries on its next tick.
+        }
+    };
+    window.addEventListener('pagehide', pageHidden);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            pageHidden();
+        }
     });
 }
 

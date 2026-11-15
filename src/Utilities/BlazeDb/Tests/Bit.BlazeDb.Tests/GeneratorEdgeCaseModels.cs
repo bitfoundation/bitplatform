@@ -56,3 +56,14 @@ public partial class DecimalKeyed
 
     public string Note { get; set; } = "";
 }
+
+// A type named with a keyword: the generated partial has to declare and name it escaped, as @operator.
+[BlazeDbTable("keyword_type")]
+public partial class @operator
+{
+    [BlazeDbKey]
+    public int Id { get; set; }
+
+    [BlazeDbIndex]
+    public string Name { get; set; } = "";
+}

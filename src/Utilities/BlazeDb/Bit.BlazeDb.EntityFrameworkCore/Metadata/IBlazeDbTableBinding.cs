@@ -36,6 +36,12 @@ internal interface IBlazeDbTableBinding
     void Insert(object row);
 
     /// <summary>
+    /// The row the table holds under <paramref name="row"/>'s key - <paramref name="row"/> itself when
+    /// it is the live instance, another object when it is a detached one - or null when there is none.
+    /// </summary>
+    object? HeldRow(object row);
+
+    /// <summary>
     /// Applies an update where <paramref name="row"/> is normally the instance the table already
     /// holds, mutated in place. <paramref name="previousValues"/> carries the values the indexes
     /// were built from, without which stale index entries would be left behind. A detached

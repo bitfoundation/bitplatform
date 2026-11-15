@@ -43,6 +43,8 @@ internal sealed class BlazeDbTableBinding<TKey, TRow> : IBlazeDbTableBinding
 
     public void Insert(object row) => _table.Insert((TRow)row);
 
+    public object? HeldRow(object row) => _table.Get(_table.Descriptor.KeySelector((TRow)row));
+
     public void UpdateInPlace(object row, object previousValues) =>
         _table.UpdateInPlace((TRow)row, (TRow)previousValues);
 

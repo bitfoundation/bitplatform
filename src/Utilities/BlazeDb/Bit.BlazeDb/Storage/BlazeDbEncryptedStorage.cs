@@ -40,6 +40,7 @@ public sealed class BlazeDbEncryptedStorage : IBlazeDbQuotaAwareStorage, IBlazeD
     private readonly IBlazeDbStorage _inner;
     private readonly IBlazeDbAeadCipher _cipher;
     private readonly bool _ownsCipher;
+    private readonly bool _ownsInner;
 
     // Files whose last read stopped at a torn frame, and the offset that frame starts at.
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, long> _tornTails = new();
@@ -48,10 +49,24 @@ public sealed class BlazeDbEncryptedStorage : IBlazeDbQuotaAwareStorage, IBlazeD
     /// <param name="cipher">The cipher to seal each frame with.</param>
     /// <param name="ownsCipher">When true, disposing this also disposes <paramref name="cipher"/>.</param>
     public BlazeDbEncryptedStorage(IBlazeDbStorage inner, IBlazeDbAeadCipher cipher, bool ownsCipher = false)
+        : this(inner, cipher, ownsCipher, ownsInner: false)
+    {
+    }
+
+    /// <param name="inner">The storage that ends up holding the ciphertext.</param>
+    /// <param name="cipher">The cipher to seal each frame with.</param>
+    /// <param name="ownsCipher">When true, disposing this also disposes <paramref name="cipher"/>.</param>
+    /// <param name="ownsInner">
+    /// When true, disposing this also disposes <paramref name="inner"/> - which, for a browser or file
+    /// backend, is what releases the database's writer lock. Pass true when nothing else keeps a reference
+    /// to <paramref name="inner"/>, as when it is created inline.
+    /// </param>
+    public BlazeDbEncryptedStorage(IBlazeDbStorage inner, IBlazeDbAeadCipher cipher, bool ownsCipher, bool ownsInner)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         _cipher = cipher ?? throw new ArgumentNullException(nameof(cipher));
         _ownsCipher = ownsCipher;
+        _ownsInner = ownsInner;
     }
 
     private int HeaderSize => 1 + _cipher.NonceSizeInBytes + LengthPrefixSize + HeaderCrcSize;
@@ -284,6 +299,10 @@ public sealed class BlazeDbEncryptedStorage : IBlazeDbQuotaAwareStorage, IBlazeD
         if (_ownsCipher && _cipher is IDisposable disposable)
         {
             disposable.Dispose();
+        }
+        if (_ownsInner && _inner is IDisposable inner)
+        {
+            inner.Dispose();
         }
     }
 }

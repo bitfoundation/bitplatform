@@ -572,7 +572,7 @@ foreach (var issue in db.VerifyIntegrity())
 | Configuration | What survives |
 | --- | --- |
 | `Storage = null` | Nothing: the database is memory only, gone with the instance. |
-| A storage backend | Every commit flushed to it. Commits reach storage on the background flusher within `FlushInterval` (100 ms by default), or at once with `await db.FlushAsync()`; a crash loses what was committed since the last flush, never part of a commit. |
+| A storage backend | Every commit flushed to it. Commits reach storage on the background flusher within `FlushInterval` (100 ms by default), or at once with `await db.FlushAsync()`; a crash loses what was committed since the last flush, never part of a commit. In the browser, a tab that is reloaded, closed or navigated away from within `FlushInterval` of a commit counts as a crash: the page starts a flush when it is hidden or unloaded, but the browser does not wait for it, so await `db.FlushAsync()` after a commit that must survive a reload or `NavigateTo(..., forceLoad: true)`. |
 | After a flush fails | Committed data stays in memory and the flusher retries; `db.LastBackgroundError` reports the standing failure. |
 
 A flush counts as done only once the backend says the bytes are durable: `BlazeDbFileStorage` flushes each
@@ -833,8 +833,13 @@ inside the browser sandbox:
 ```csharp
 var key = BlazeDbEncryptedStorage.DeriveKey(passphrase, salt);   // PBKDF2, works everywhere
 var cipher = await BlazeDbWebCryptoCipher.CreateAsync(key);      // BlazeDbAesGcmCipher on desktop
-var storage = new BlazeDbEncryptedStorage(await BlazeDbOpfsStorage.CreateAsync("mydb"), cipher, ownsCipher: true);
+var storage = new BlazeDbEncryptedStorage(
+    await BlazeDbOpfsStorage.CreateAsync("mydb"), cipher, ownsCipher: true, ownsInner: true);
 ```
+
+`ownsInner: true` hands the wrapped storage over with the cipher: disposing the encrypted storage - after the
+database, as with any storage - then disposes the OPFS storage too, which is what releases the tab's writer lock.
+Without it the wrapper leaves the inner storage alone, and whoever created it disposes it.
 
 What this does and does not protect: every frame is sealed with a fresh random 96-bit nonce and the
 file name as associated data, so contents cannot be read or altered without the key and a frame
@@ -1027,6 +1032,13 @@ as it does with other providers. `EnsureDeleted` removes the store's files as we
 for a persistent store in the browser, or under a synchronization context, use
 `EnsureDeletedAsync` - the synchronous call refuses there rather than block the only thread.
 
+The provider opens one engine per store and keeps it open for the life of the process, shared by every
+context. `await context.Database.CloseBlazeDbAsync()` closes it without deleting anything - its last
+flush included, and for a persistent store its lock released - and the next access opens it again. A
+server or a Blazor Hybrid app calls it when it stops (`IHostApplicationLifetime.ApplicationStopping`, a
+MAUI window's `Destroying`), so the commits of the last `FlushInterval` reach storage. An engine disposed
+through `GetBlazeDb().DisposeAsync()` counts as closed in the same way.
+
 ### What follows from memory-first
 
 Three things are worth knowing, because they follow from the engine being memory-first rather than
@@ -1049,13 +1061,20 @@ from anything EF does:
   transaction you opened - `Database.BeginTransaction()` or one on the engine itself - it joins that
   transaction behind a savepoint, so a failure part-way takes back what that save had applied and
   leaves the transaction as it was before the save, as a relational provider does.
-- **Two contexts on one store track the same objects.** Each keeps its own original values, so if
-  both load a row and both save it, the second save describes a state the row has moved past and
-  fails with `DbUpdateConcurrencyException`; reload and retry, as with any provider. Updating or
-  deleting a row another context has since deleted is a `DbUpdateConcurrencyException` too. A
-  detached entity - `context.Update(dto)`, or `Attach` and then a change - is a different object
-  from the row the store holds, so it replaces that row by key, last writer wins, as an `UPDATE ...
-  WHERE Id = @id` would. A save cannot join a transaction another context has open. And after a
+- **Two contexts on one store track the same objects.** Each keeps its own original values. Without
+  concurrency tokens, a conflict is noticed only through the indexes: when both load a row and the
+  first save changes an *indexed* property, the second save describes index entries the row has
+  moved past and fails with `DbUpdateConcurrencyException`. When the first save changed only
+  properties no index covers, the second save goes through, last writer wins. Updating or deleting
+  a row another context has since deleted is a `DbUpdateConcurrencyException` too. A detached
+  entity - `context.Update(dto)`, or `Attach` and then a change - is a different object from the
+  row the store holds, so it replaces that row by key, last writer wins, as an `UPDATE ... WHERE
+  Id = @id` would. To catch every conflict, mark concurrency tokens - `[ConcurrencyCheck]`,
+  `IsConcurrencyToken()` or `IsRowVersion()`: an update or delete whose original token values are
+  not the ones the row was last saved with fails with `DbUpdateConcurrencyException`, detached
+  entities included, as a relational provider's `WHERE Token = @original` would. BlazeDb generates
+  no row versions: change the token yourself in each save (`ticket.Version++`). Reload and retry,
+  as with any provider. A save cannot join a transaction another context has open. And after a
   rollback, the entities whose saves were undone are detached - the objects still hold the undone
   values, and the next query loads the rows as the database actually has them.
 

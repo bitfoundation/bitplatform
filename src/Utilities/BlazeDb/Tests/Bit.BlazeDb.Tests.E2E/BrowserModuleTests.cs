@@ -117,6 +117,53 @@ public class BrowserModuleTests : BlazeDbTest
     }
 
     [TestMethod]
+    public async Task A_lock_released_and_taken_again_in_the_same_turn_is_won_by_the_same_tab()
+    {
+        var page = await OpenAsync("/mcp-server");
+
+        // What BlazeDbOpfsStorage.Dispose followed at once by CreateAsync on the same name does once the module is
+        // imported: both calls in one JS turn. The browser lets the lock go only after the release's promise
+        // reaction has run, so the second request used to find it held - by this very tab - and the reopen
+        // reported "already open in another tab".
+        var result = await page.EvaluateAsync<bool[]>(
+            """
+            async () => {
+              const opfs = await import('./_content/Bit.BlazeDb/bit-blazedb-opfs.js');
+              const name = 'e2e-relock-' + crypto.randomUUID();
+              const first = await opfs.acquireLock(name, false);
+              opfs.releaseLock(name);
+              const reacquired = await opfs.acquireLock(name, false);
+              const held = opfs.isLockHeld(name);
+              opfs.releaseLock(name);
+              return [first, reacquired, held];
+            }
+            """);
+
+        CollectionAssert.AreEqual(new[] { true, true, true }, result);
+    }
+
+    [TestMethod]
+    public async Task Hiding_or_leaving_the_page_calls_the_flush_hook()
+    {
+        var page = await OpenAsync("/mcp-server");
+
+        // BlazeDbPageLifecycle hands this hook the flush of every open database: a commit made right before a
+        // reload or a forced navigation then does not wait for a flusher tick that never comes.
+        var calls = await page.EvaluateAsync<int>(
+            """
+            async () => {
+              const opfs = await import('./_content/Bit.BlazeDb/bit-blazedb-opfs.js');
+              let calls = 0;
+              opfs.watchPageHide(() => calls++);
+              window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: false }));
+              return calls;
+            }
+            """);
+
+        Assert.AreEqual(1, calls);
+    }
+
+    [TestMethod]
     public async Task WebCrypto_seals_and_opens_a_frame_and_refuses_a_tampered_one()
     {
         var page = await OpenAsync("/");
