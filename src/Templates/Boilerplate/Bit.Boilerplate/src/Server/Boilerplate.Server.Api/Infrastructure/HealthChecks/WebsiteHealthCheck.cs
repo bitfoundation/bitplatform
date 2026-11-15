@@ -5,29 +5,19 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace Boilerplate.Server.Api.Infrastructure.HealthChecks;
 
 /// <summary>
-/// The project's other sites, such as its landing page, a blog or the docs, which /health requests too, so a monitor that
-/// reads it watches them along with the app (See <c>HealthChecks:Websites</c> in appsettings.json). Each one gets a GET that
-/// has to end, after its redirects, in a success status: behind a CDN such as Cloudflare, a TCP connection succeeds whatever
-/// state the site is in. Five are requested at a time, and each site that failed is in the result's data with what went wrong.
+/// One of the project's other sites, such as its landing page, a blog or the docs, which /health requests too, so a monitor that
+/// reads it watches them along with the app (See <c>HealthChecks:Websites</c> in appsettings.json). Each site is a check of its own,
+/// so the Operations page shows a card for each. It gets a GET that has to end, after its redirects, in a success status: behind a
+/// CDN such as Cloudflare, a TCP connection succeeds whatever state the site is in. A failed check's description says what went wrong.
 /// </summary>
-public class WebsitesHealthCheck(IHttpClientFactory httpClientFactory, string[] websites) : IHealthCheck
+public class WebsiteHealthCheck(IHttpClientFactory httpClientFactory, string site) : IHealthCheck
 {
     public const string HttpClientName = "Websites";
 
     /// <summary>
-    /// A monitor waits about 15 seconds for /health, so the whole check stays within this however many sites hang.
+    /// A monitor waits about 15 seconds for /health, so the check stays within this however long the site hangs.
     /// </summary>
     public static readonly TimeSpan CheckTimeout = TimeSpan.FromSeconds(10);
-
-    private static readonly TimeSpan requestTimeout = TimeSpan.FromSeconds(5);
-
-    private const int concurrentRequests = 5;
-
-    /// <summary>
-    /// Each site once, by the address it is requested at: <c>example.com</c> and <c>https://EXAMPLE.com/</c> are one site,
-    /// while <c>/A</c> and <c>/a</c> are two, as a path's case can tell sites apart.
-    /// </summary>
-    private readonly string[] sites = Distinct(websites);
 
     /// <summary>
     /// The sites <paramref name="section"/> lists: an array in appsettings.json, one value separated by commas or spaces,
@@ -39,6 +29,14 @@ public class WebsitesHealthCheck(IHttpClientFactory httpClientFactory, string[] 
             .Concat(section.GetChildren().Select(child => child.Value?.Trim()).OfType<string>().Where(site => site.Length > 0))]);
     }
 
+    public static string NameOf(string site) => $"website:{RequestKeyOf(site)}";
+
+    public static string TitleOf(string site) => TryGetAddress(site, out var address) ? $"{address.Authority}{address.PathAndQuery.TrimEnd('/')}" : site;
+
+    /// <summary>
+    /// Each site once, by the address it is requested at: <c>example.com</c> and <c>https://EXAMPLE.com/</c> are one site,
+    /// while <c>/A</c> and <c>/a</c> are two, as a path's case can tell sites apart.
+    /// </summary>
     private static string[] Distinct(string[] websites) => [.. websites.DistinctBy(RequestKeyOf, StringComparer.Ordinal)];
 
     /// <summary>
@@ -56,51 +54,21 @@ public class WebsitesHealthCheck(IHttpClientFactory httpClientFactory, string[] 
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        using var checkTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        checkTimeout.CancelAfter(CheckTimeout);
-        using var slots = new SemaphoreSlim(concurrentRequests);
-        var httpClient = httpClientFactory.CreateClient(HttpClientName);
+        if (TryGetAddress(site, out var address) is false)
+            return new HealthCheckResult(context.Registration.FailureStatus, "Not an http or https address.");
 
-        var results = await Task.WhenAll(sites.Select(async site =>
-        {
-            if (TryGetAddress(site, out var address) is false)
-                return (Site: site, Problem: (string?)"Not an http or https address.");
-
-            try
-            {
-                await slots.WaitAsync(checkTimeout.Token);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested is false)
-            {
-                return (Site: address.AbsoluteUri, Problem: $"Not requested: the other sites took the check's {CheckTimeout.TotalSeconds:0} seconds.");
-            }
-
-            try
-            {
-                return (Site: address.AbsoluteUri, Problem: await ProblemOf(httpClient, address, checkTimeout.Token, cancellationToken));
-            }
-            finally
-            {
-                slots.Release();
-            }
-        }));
-
-        var failed = results.Where(result => result.Problem is not null).ToArray();
-
-        if (failed.Length is 0)
-            return HealthCheckResult.Healthy(sites.Length is 1 ? "The site answers" : $"All {sites.Length} sites answer");
-
-        return new HealthCheckResult(context.Registration.FailureStatus, $"{failed.Length} of {sites.Length} sites failed",
-            data: failed.ToDictionary(result => result.Site, result => (object)result.Problem!));
+        return await ProblemOf(httpClientFactory.CreateClient(HttpClientName), address, cancellationToken) is { } problem
+            ? new HealthCheckResult(context.Registration.FailureStatus, problem)
+            : HealthCheckResult.Healthy("The site answers");
     }
 
     /// <summary>
     /// Null when <paramref name="address"/> answers with a success status, otherwise what went wrong, as the report shows it.
     /// </summary>
-    private static async Task<string?> ProblemOf(HttpClient httpClient, Uri address, CancellationToken checkToken, CancellationToken cancellationToken)
+    private static async Task<string?> ProblemOf(HttpClient httpClient, Uri address, CancellationToken cancellationToken)
     {
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(checkToken);
-        timeout.CancelAfter(requestTimeout);
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(CheckTimeout);
         var startedAt = Stopwatch.GetTimestamp();
 
         try

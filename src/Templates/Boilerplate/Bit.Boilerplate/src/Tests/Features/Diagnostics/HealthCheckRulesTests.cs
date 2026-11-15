@@ -413,7 +413,7 @@ public partial class HealthCheckRulesTests
     /// not: <c>example.com</c> and <c>https://EXAMPLE.com/</c> are one site, <c>/A</c> and <c>/a</c> two.
     /// </summary>
     [TestMethod]
-    public void WebsitesHealthCheck_Should_ListEachSiteOnce_ByTheAddressItIsRequestedAt()
+    public void WebsiteHealthCheck_Should_ListEachSiteOnce_ByTheAddressItIsRequestedAt()
     {
         var section = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -422,35 +422,7 @@ public partial class HealthCheckRulesTests
         }).Build().GetSection("Websites");
 
         Assert.AreSequenceEqual(new[] { "example.com", "https://example.com/A", "https://example.com/a", "http://example.com" },
-            WebsitesHealthCheck.Read(section));
-    }
-
-    /// <summary>
-    /// Two entries for one address are requested once: requested twice, their two failures would be one key of the
-    /// result's data, and the check would throw instead of saying what went wrong.
-    /// </summary>
-    [TestMethod]
-    public async Task WebsitesHealthCheck_Should_ReportASiteListedTwiceOnce()
-    {
-        var websitesHealthCheck = new WebsitesHealthCheck(new UnavailableSitesHttpClientFactory(), ["site.example", "https://SITE.example/"]);
-
-        var result = await Check(websitesHealthCheck);
-
-        Assert.AreEqual(HealthStatus.Degraded, result.Status);
-        Assert.AreEqual("1 of 1 sites failed", result.Description);
-        Assert.AreEqual("503 Service Unavailable.", result.Data["https://site.example/"]);
-    }
-
-    /// <summary>Every site it is asked for answers 503, without a request leaving the machine.</summary>
-    private sealed class UnavailableSitesHttpClientFactory : IHttpClientFactory
-    {
-        public HttpClient CreateClient(string name) => new(new UnavailableHandler());
-
-        private sealed class UnavailableHandler : HttpMessageHandler
-        {
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-                => Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable) { RequestMessage = request });
-        }
+            WebsiteHealthCheck.Read(section));
     }
 
     private async Task<HealthCheckResult> Check(IHealthCheck healthCheck)

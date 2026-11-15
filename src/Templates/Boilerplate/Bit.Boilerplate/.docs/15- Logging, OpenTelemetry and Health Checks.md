@@ -382,12 +382,12 @@ under **Web server** with a `web:` prefix (`web:binStorage`, `web:serverApi`). I
 It also adds checks for remote dependencies. Each one has a timeout and reports **Degraded** rather than Unhealthy, so a
 provider outage does not take an otherwise healthy instance out of the load balancer:
 - **`userProfileImages`**: the blob storage.
-- **`websites`**: your other sites, listed in `HealthChecks:Websites`, such as the landing page, a blog on WordPress or
-  the docs, so a monitor reading `/healthz` watches them along with the app. Each one gets a GET that has to end, after
-  its redirects, in a success status: behind a CDN such as Cloudflare a TCP connection succeeds whatever state the site
-  is in. Five are requested at a time, each within 5 seconds and all of them within 10, so a site that hangs can't hold
-  `/health` past a monitor's timeout. Each one that failed is in the entry's data with what went wrong: its status code,
-  a Cloudflare challenge, a name that doesn't resolve, a TLS or connection error, or no answer in time. A bare host is
+- **`website:<address>`**: one check for each of your other sites, listed in `HealthChecks:Websites`, such as the landing
+  page, a blog on WordPress or the docs, so a monitor reading `/healthz` watches them along with the app and the Operations
+  page shows a card for each. Each one gets a GET that has to end, after its redirects, in a success status: behind a CDN
+  such as Cloudflare a TCP connection succeeds whatever state the site is in. It gets 10 seconds, so a site that hangs
+  can't hold `/health` past a monitor's timeout. A check that failed says what went wrong in its description: its status
+  code, a Cloudflare challenge, a name that doesn't resolve, a TLS or connection error, or no answer in time. A bare host is
   requested over https. List them in `appsettings.json`, or as one value separated by commas or spaces, which a single
   environment variable carries (`HealthChecks__Websites`), and so does one GitHub variable of the deployment. With none
   listed there's no entry, as the check is optional.

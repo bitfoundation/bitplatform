@@ -1041,18 +1041,24 @@ public static partial class Program
 
         // The project's other sites, such as its landing page or a blog, so a monitor reading /health watches them too. Optional,
         // so with none listed there's no entry rather than a missing configuration. No retries: the check reports the first answer.
-        if (WebsitesHealthCheck.Read(configuration.GetSection("HealthChecks:Websites")) is { Length: > 0 } websites)
+        if (WebsiteHealthCheck.Read(configuration.GetSection("HealthChecks:Websites")) is { Length: > 0 } websites)
         {
 #pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is still marked experimental.
-            builder.Services.AddHttpClient(WebsitesHealthCheck.HttpClientName, httpClient => httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; Boilerplate-HealthCheck)"))
+            builder.Services.AddHttpClient(WebsiteHealthCheck.HttpClientName, httpClient => httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; Boilerplate-HealthCheck)"))
                 .RemoveAllResilienceHandlers();
 #pragma warning restore EXTEXP0001
 
-            // The check bounds itself; the registration's timeout only backs that up, as the report would lose which sites failed.
+            // The check bounds itself; the registration's timeout only backs that up, as the report would lose what went wrong.
             // A healthy result is kept for half of a one-minute monitoring interval, so a monitor reading once a minute always gets
             // a run of its own and learns a site is down on its next read, while probes in the same half minute share one request.
-            healthChecksBuilder.AddCachedCheck("websites", HealthCheckCategories.Websites, sp => ActivatorUtilities.CreateInstance<WebsitesHealthCheck>(sp, (object)websites),
-                cacheDuration: TimeSpan.FromSeconds(30), timeout: WebsitesHealthCheck.CheckTimeout + TimeSpan.FromSeconds(2));
+            foreach (var site in websites)
+            {
+                var name = WebsiteHealthCheck.NameOf(site);
+
+                healthChecksBuilder.AddCachedCheck(name, HealthCheckCategories.Websites, sp => ActivatorUtilities.CreateInstance<WebsiteHealthCheck>(sp, site),
+                        cacheDuration: TimeSpan.FromSeconds(30), timeout: WebsiteHealthCheck.CheckTimeout + TimeSpan.FromSeconds(2))
+                    .Describe(name, WebsiteHealthCheck.TitleOf(site), about: "A site in HealthChecks:Websites. It answers a GET with a success status, after its redirects.");
+            }
         }
 
         // Outside development, a missing configuration is most likely a deployment mistake, so it reports Degraded.
