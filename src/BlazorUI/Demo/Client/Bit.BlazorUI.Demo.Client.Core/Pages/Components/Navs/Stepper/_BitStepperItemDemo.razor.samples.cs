@@ -29,7 +29,9 @@ private readonly List<BitStepperItem> basicItems =
 ];";
 
     private readonly string example2RazorCode = @"
-<BitStepper Vertical Items=""basicItems"" CurrentIndex=""1"" />";
+<BitStepper Vertical Items=""basicItems"" CurrentIndex=""1"" />
+
+<BitStepper Responsive Items=""basicItems"" CurrentIndex=""1"" />";
     private readonly string example2CsharpCode = @"
 private readonly List<BitStepperItem> basicItems =
 [

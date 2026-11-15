@@ -126,6 +126,18 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
     public bool ReadOnly { get; set; }
 
     /// <summary>
+    /// Lays the steps of a horizontal stepper out from top to bottom on small screens, instead of letting a row that does
+    /// not fit stick out of its container.
+    /// </summary>
+    /// <remarks>
+    /// The steps take the vertical layout below the small breakpoint (600px wide) and stand in a row again on wider
+    /// screens. It is the stylesheet that switches, so the stepper renders the same markup on every screen and nothing
+    /// has to be measured. It has nothing to do on a stepper that is <see cref="Vertical"/> already.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Responsive { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for the different parts of the stepper.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -146,6 +158,8 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => Vertical ? "bit-stp-vrt" : "bit-stp-hrz");
+
+        ClassBuilder.Register(() => Responsive && Vertical is false ? "bit-stp-rsp" : string.Empty);
 
         ClassBuilder.Register(() => ReadOnly ? "bit-stp-rdo" : string.Empty);
     }

@@ -116,6 +116,13 @@ public partial class BitStepperDemo
         },
         new()
         {
+            Name = "Responsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lays the steps of a horizontal stepper out from top to bottom on screens narrower than 600px, instead of letting a row that does not fit stick out of its container, and in a row again on wider screens. The stylesheet does the switch, so no BitMediaQuery is needed. It has nothing to do on a Vertical stepper.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitStepperClassStyles?",
             DefaultValue = "null",

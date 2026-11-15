@@ -23,7 +23,8 @@ public class BitStepperTests : BunitTestContext
         bool linear = false,
         bool readOnly = false,
         bool disabled = false,
-        bool vertical = false)
+        bool vertical = false,
+        bool responsive = false)
     {
         return RenderComponent<BitStepper<BitStepperItem>>(parameters =>
         {
@@ -33,6 +34,7 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.ReadOnly, readOnly);
             parameters.Add(p => p.Disabled, disabled);
             parameters.Add(p => p.Vertical, vertical);
+            parameters.Add(p => p.Responsive, responsive);
         });
     }
 
@@ -67,6 +69,33 @@ public class BitStepperTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-stp-vrt"));
         Assert.IsFalse(root.ClassList.Contains("bit-stp-hrz"));
+    }
+
+    [TestMethod,
+        DataRow(false, false, false),
+        DataRow(true, false, true),
+        DataRow(true, true, false),
+        DataRow(false, true, false)]
+    public void BitStepperShouldMarkAHorizontalStepperResponsive(bool responsive, bool vertical, bool expected)
+    {
+        var com = Render(vertical: vertical, responsive: responsive);
+
+        var root = com.Find(".bit-stp");
+
+        // A vertical stepper is the layout a Responsive one switches to, so it has nothing to switch.
+        Assert.AreEqual(expected, root.ClassList.Contains("bit-stp-rsp"));
+        Assert.AreEqual(vertical is false, root.ClassList.Contains("bit-stp-hrz"));
+    }
+
+    [TestMethod]
+    public void BitStepperShouldRenderTheSameStepsWhetherResponsiveOrNot()
+    {
+        var plain = Render(currentIndex: 1);
+        var responsive = Render(currentIndex: 1, responsive: true);
+
+        Assert.AreEqual(plain.FindAll("li.bit-stp-stp").Count, responsive.FindAll("li.bit-stp-stp").Count);
+        Assert.AreEqual(plain.FindAll(".bit-stp-con").Count, responsive.FindAll(".bit-stp-con").Count);
+        CollectionAssert.AreEqual(States(plain), States(responsive));
     }
 
     [TestMethod]

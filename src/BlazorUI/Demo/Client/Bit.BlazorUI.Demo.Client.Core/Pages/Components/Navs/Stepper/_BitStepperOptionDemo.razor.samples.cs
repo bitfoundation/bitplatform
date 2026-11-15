@@ -32,6 +32,13 @@ private int basicIndex;";
     <BitStepperOption Text=""Address"" />
     <BitStepperOption Text=""Payment"" />
     <BitStepperOption Text=""Review"" />
+</BitStepper>
+
+<BitStepper TItem=""BitStepperOption"" Responsive CurrentIndex=""1"">
+    <BitStepperOption Text=""Account"" />
+    <BitStepperOption Text=""Address"" />
+    <BitStepperOption Text=""Payment"" />
+    <BitStepperOption Text=""Review"" />
 </BitStepper>";
 
     private readonly string example3RazorCode = @"

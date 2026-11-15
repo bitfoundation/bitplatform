@@ -132,6 +132,15 @@ public class BitStepperParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitStepperParamsShouldCascadeResponsive()
+    {
+        var component = RenderWithParams(new BitStepperParams { Responsive = true });
+
+        Assert.IsTrue(component.FindComponent<BitStepper<BitStepperItem>>().Instance.Responsive);
+        Assert.IsTrue(component.Find(".bit-stp").ClassList.Contains("bit-stp-rsp"));
+    }
+
+    [TestMethod]
     public void BitStepperShouldKeepItsOwnValuesOverTheCascadedOnes()
     {
         var component = RenderWithParams(new BitStepperParams { Vertical = true, CompletedIconName = "Accept", ReadOnly = true }, builder =>

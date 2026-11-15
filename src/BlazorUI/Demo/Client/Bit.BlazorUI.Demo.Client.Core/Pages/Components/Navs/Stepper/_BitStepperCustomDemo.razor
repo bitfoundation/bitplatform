@@ -18,10 +18,15 @@
 </DemoExample>
 
 <DemoExample Title="Vertical" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-    <div>Vertical lays the steps out from top to bottom.</div>
+    <div>
+        Vertical lays the steps out from top to bottom. Responsive keeps the steps of a horizontal stepper in a row and
+        lays them out from top to bottom on screens narrower than 600px, where a row of steps would not fit.
+    </div>
     <br />
     <div>
         <BitStepper Vertical Items="basicItems" NameSelectors="nameSelectors" CurrentIndex="1" />
+        <br />
+        <BitStepper Responsive Items="basicItems" NameSelectors="nameSelectors" CurrentIndex="1" />
     </div>
 </DemoExample>
 

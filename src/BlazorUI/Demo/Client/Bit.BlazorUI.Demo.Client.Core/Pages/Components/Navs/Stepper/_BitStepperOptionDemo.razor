@@ -23,10 +23,20 @@
 </DemoExample>
 
 <DemoExample Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
-    <div>Vertical lays the steps out from top to bottom.</div>
+    <div>
+        Vertical lays the steps out from top to bottom. Responsive keeps the steps of a horizontal stepper in a row and
+        lays them out from top to bottom on screens narrower than 600px, where a row of steps would not fit.
+    </div>
     <br />
     <div>
         <BitStepper TItem="BitStepperOption" Vertical CurrentIndex="1">
+            <BitStepperOption Text="Account" />
+            <BitStepperOption Text="Address" />
+            <BitStepperOption Text="Payment" />
+            <BitStepperOption Text="Review" />
+        </BitStepper>
+        <br />
+        <BitStepper TItem="BitStepperOption" Responsive CurrentIndex="1">
             <BitStepperOption Text="Account" />
             <BitStepperOption Text="Address" />
             <BitStepperOption Text="Payment" />

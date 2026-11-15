@@ -53,7 +53,9 @@ private readonly List<Milestone> basicItems =
 ];";
 
     private readonly string example2RazorCode = @"
-<BitStepper Vertical Items=""basicItems"" NameSelectors=""nameSelectors"" CurrentIndex=""1"" />";
+<BitStepper Vertical Items=""basicItems"" NameSelectors=""nameSelectors"" CurrentIndex=""1"" />
+
+<BitStepper Responsive Items=""basicItems"" NameSelectors=""nameSelectors"" CurrentIndex=""1"" />";
     private readonly string example2CsharpCode = @"
 private static readonly BitStepperNameSelectors<Milestone> nameSelectors = new()
 {

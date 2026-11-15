@@ -8,7 +8,8 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// them, the way already come drawn in the active color, a click and the keyboard moving the current step, the page
 /// moving it forward, the names a screen reader reads and axe; the vertical layout with its line under the middle of the
 /// indicators; a linear stepper keeping the steps ahead out of reach and out of the tab order; a step in error and a
-/// disabled one; right to left; and forced colors.
+/// disabled one; right to left; and forced colors. Responsive has a page of its own (/e2e/stepper/responsive): the row
+/// it stays on a wide screen is covered here, its vertical layout on a phone by BitStepperMobileE2ETests.
 /// </summary>
 [TestClass]
 public class BitStepperE2ETests : E2ETestBase
@@ -207,6 +208,27 @@ public class BitStepperE2ETests : E2ETestBase
         Assert.IsTrue(line.Height >= 16, "the line runs down between the two steps.");
         Assert.IsTrue(line.Y >= first.Y + first.Height && line.Y + line.Height <= second.Y, "the line sits between the indicators.");
         Near(first.X + first.Width / 2, line.X + line.Width / 2, "the line under the middle of the indicator");
+    }
+
+    [TestMethod]
+    public async Task AResponsiveStepper_OnAWideScreen_StandsInARow()
+    {
+        await OpenAsync("/e2e/stepper/responsive");
+
+        await Expect(Page.Locator("#stp-responsive")).ToHaveCSSAsync("flex-direction", "row");
+
+        var first = await Indicators("stp-responsive").Nth(0).BoxAsync();
+        var last = await Indicators("stp-responsive").Nth(2).BoxAsync();
+        var line = await Connectors("stp-responsive").Nth(0).BoxAsync();
+
+        // The vertical layout is only what a phone gets (BitStepperMobileE2ETests): here it is the row of a stepper that
+        // is not Responsive.
+        Near(first.Y, last.Y, "the indicators in one row");
+        Assert.IsTrue(last.X > first.X + first.Width, "the last step after the first.");
+        Assert.IsTrue(line.Width >= 16 && line.Height < 8, $"the line runs across between the steps ({line.Width}x{line.Height}px).");
+
+        var fixedLast = await Indicators("stp-fixed").Nth(2).BoxAsync();
+        Near(fixedLast.X, last.X, "the steps where a stepper that is not Responsive puts them");
     }
 
     [TestMethod]

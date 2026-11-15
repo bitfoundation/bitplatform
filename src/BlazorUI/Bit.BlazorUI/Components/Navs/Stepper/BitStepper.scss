@@ -1,4 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
 // Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
 // ancestor, on the Style of a stepper or on the Style of a single step inherits down to whatever reads it:
@@ -37,8 +38,9 @@
 // A step takes what its label needs plus an equal share of the room left in the row, which its connector fills up to
 // the next step, so the lines come out equally long and a label only wraps once the row is too narrow for them all.
 // A step never shrinks past the longest word of its label, so a row too narrow for every step makes the stepper wider
-// than its container rather than run a label into the line next to it; a vertical stepper is the layout for that room.
-// The last one has no connector, so it only takes what its own label needs.
+// than its container rather than run a label into the line next to it; a vertical stepper is the layout for that room,
+// which a Responsive one takes by itself on a small screen (below). The last one has no connector, so it only takes
+// what its own label needs.
 .bit-stp-hrz > .bit-stp-stp {
     flex: 1 1 auto;
     align-items: center;
@@ -48,9 +50,13 @@
     }
 }
 
-.bit-stp-vrt > .bit-stp-stp {
+@mixin stp-vertical-step {
     flex-direction: column;
     align-items: stretch;
+}
+
+.bit-stp-vrt > .bit-stp-stp {
+    @include stp-vertical-step;
 }
 
 // The clickable part of a step: a button when the step can be gone to, a plain block when it cannot. Both are laid
@@ -161,11 +167,41 @@ button.bit-stp-btn {
 
 // The line runs down from the middle of the indicator above it: past the padding of the step, half the indicator,
 // less half the line.
-.bit-stp-vrt .bit-stp-con {
+@mixin stp-vertical-connector {
     min-height: spacing(3);
     margin-block: spacing(0.5);
     width: var(--bit-Stepper-connector-width, #{$shp-border-width-thick});
     margin-inline-start: calc(#{spacing(0.5)} + var(--bit-Stepper-indicator-size, #{spacing(4)}) / 2 - var(--bit-Stepper-connector-width, #{$shp-border-width-thick}) / 2);
+}
+
+.bit-stp-vrt .bit-stp-con {
+    @include stp-vertical-connector;
+}
+
+// A Responsive horizontal stepper on a small screen (below 600px wide), where a row of steps that never shrink past the
+// longest word of their labels sticks out of a phone: it takes the vertical layout, and stands in a row again on a wider
+// screen. The rules qualify the horizontal ones with the class of the mode, so they win over them at any place in the
+// bundle, and undo what the row sets that the column does not: the centered steps, the share of the row a step and its
+// line take, and the width and the side margins of the line. The line is reached through the steps of this stepper
+// alone, so a horizontal stepper nested in a step keeps its own row.
+@include lt-sm {
+    .bit-stp-hrz.bit-stp-rsp {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bit-stp-hrz.bit-stp-rsp > .bit-stp-stp,
+    .bit-stp-hrz.bit-stp-rsp > .bit-stp-stp:last-child {
+        flex: 0 1 auto;
+        @include stp-vertical-step;
+    }
+
+    .bit-stp-hrz.bit-stp-rsp > .bit-stp-stp > .bit-stp-con {
+        height: auto;
+        min-width: 0;
+        margin-inline: 0;
+        @include stp-vertical-connector;
+    }
 }
 
 // The way already come is drawn in the active color, up to the current step.

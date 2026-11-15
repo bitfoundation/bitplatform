@@ -73,6 +73,11 @@ public partial class BitStepperParams : BitComponentBaseParams, IBitComponentPar
     public bool? ReadOnly { get; set; }
 
     /// <summary>
+    /// Lays the steps of a horizontal stepper out from top to bottom on small screens.
+    /// </summary>
+    public bool? Responsive { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for the different parts of the stepper.
     /// </summary>
     public BitStepperClassStyles? Styles { get; set; }
@@ -134,6 +139,11 @@ public partial class BitStepperParams : BitComponentBaseParams, IBitComponentPar
         if (ReadOnly.HasValue)
         {
             bitStepper.TakeFromCascade(nameof(ReadOnly), ReadOnly.Value, static s => s.ReadOnly, static (s, v) => s.ReadOnly = v);
+        }
+
+        if (Responsive.HasValue)
+        {
+            bitStepper.TakeFromCascade(nameof(Responsive), Responsive.Value, static s => s.Responsive, static (s, v) => s.Responsive = v);
         }
 
         if (Styles is not null)
