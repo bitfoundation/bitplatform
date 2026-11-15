@@ -195,12 +195,18 @@ public class BitSwiperBrowserTests : PerformanceTestBase
         await Page.Mouse.UpAsync();
     }
 
-    // The keyboard reaches the swiper the way a reader's does: from the control before it.
+    // The keyboard reaches the swiper the way a reader's does: from the control before it, past the controls the swiper
+    // renders ahead of the box the items scroll in, which is its tab stop.
     private async Task TabToSwiper(string probe)
     {
         await Probe(probe).Locator(".before").FocusAsync();
-        await Page.Keyboard.PressAsync("Tab");
 
-        await Expect(Probe(probe).Locator(".bit-swp")).ToBeFocusedAsync();
+        var box = Probe(probe).Locator(".bit-swp-cnt");
+        for (var i = 0; i < 6 && await box.EvaluateAsync<bool>("el => el !== document.activeElement"); i++)
+        {
+            await Page.Keyboard.PressAsync("Tab");
+        }
+
+        await Expect(box).ToBeFocusedAsync();
     }
 }

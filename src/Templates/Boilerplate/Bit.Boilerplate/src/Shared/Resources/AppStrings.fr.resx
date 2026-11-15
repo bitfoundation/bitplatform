@@ -1604,7 +1604,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Révoker toutes les sessions</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>Êtes-vous sûr de vouloir révoquer toutes les sessions de {0} ?</value>
+    <value>Êtes-vous sûr de vouloir révoquer toutes les sessions de {0} ? Les applications autorisées sont conservées.</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
     <value>Vous ne pouvez pas retirer cet utilisateur du groupe d'utilisateurs SuperAdmin.</value>
@@ -2008,8 +2008,14 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>Lire le rapport de santé.</value>
   </data>
-    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
-    <value>Application autorisée</value>
+    <data name="OAuthSessionsTitle" xml:space="preserve">
+    <value>Applications autorisées</value>
+  </data>
+    <data name="OAuthSessionsHint" xml:space="preserve">
+    <value>Ce ne sont pas des appareils, elles ne comptent donc pas parmi les appareils autorisés pour les fonctionnalités complètes. Chacune se révoque séparément.</value>
+  </data>
+    <data name="OAuthSessionRevokeConfirmMessage" xml:space="preserve">
+    <value>Révoquer l'accès de {0} ? Elle cessera de fonctionner jusqu'à ce qu'elle soit de nouveau autorisée.</value>
   </data>
     <data name="OAuthClients" xml:space="preserve">
     <value>Applications</value>

@@ -1604,7 +1604,7 @@
     <value>撤销所有会话</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>您确定要撤销 {0} 的所有会话吗？</value>
+    <value>您确定要撤销 {0} 的所有会话吗？已授权的应用会保留。</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
     <value>您不能从 SuperAdmin 用户组中移除此用户。</value>
@@ -2008,8 +2008,14 @@
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>读取健康报告。</value>
   </data>
-    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <data name="OAuthSessionsTitle" xml:space="preserve">
     <value>已授权的应用</value>
+  </data>
+    <data name="OAuthSessionsHint" xml:space="preserve">
+    <value>它们不是设备，因此不计入允许使用完整功能的设备数量。每个应用需单独撤销。</value>
+  </data>
+    <data name="OAuthSessionRevokeConfirmMessage" xml:space="preserve">
+    <value>撤销 {0} 的访问权限？在重新授权之前它将无法工作。</value>
   </data>
     <data name="OAuthClients" xml:space="preserve">
     <value>应用</value>

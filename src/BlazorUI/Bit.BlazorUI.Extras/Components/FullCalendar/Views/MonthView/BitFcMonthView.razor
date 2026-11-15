@@ -37,24 +37,27 @@
             {
                 var weekNumber = BitFullCalendarHelpers.GetWeekNumberForRow(cell.Date, State.Culture, State.FirstDayOfWeekOverride);
                 var weekDate = cell.Date;
+                var weekText = string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber);
                 @* With nav links on, the week number opens that week - the affordance every calendar
-                   puts on the rail - and stays a plain label otherwise. *@
+                   puts on the rail - and stays a plain label otherwise. The link is named by the text it
+                   shows first ("W27, Go to week 27"): a name without it fails Label in Name (WCAG 2.5.3),
+                   and a speech-input user reading "W27" off the rail has to find it there. *@
                 @if (State.NavLinks)
                 {
                     var outOfRange = State.IsDateInAllowedRange(weekDate) is false;
                     <button type="button" class="bit-bfc-weeknum-cell bit-bfc-navlink"
-                            aria-label="@string.Format(State.Culture, Texts.NavLinkWeekAriaLabelFormat, weekNumber)"
+                            aria-label="@($"{weekText}, {string.Format(State.Culture, Texts.NavLinkWeekAriaLabelFormat, weekNumber)}")"
                             disabled="@outOfRange"
                             aria-disabled="@(outOfRange ? "true" : null)"
                             @onclick="() => GoToWeek(weekDate)">
-                        @string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)
+                        @weekText
                     </button>
                 }
                 else
                 {
                     @* A name on a role-less div is not read, so the spoken form travels as hidden text. *@
                     <div class="bit-bfc-weeknum-cell">
-                        <span aria-hidden="true">@string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)</span>
+                        <span aria-hidden="true">@weekText</span>
                         <span class="bit-bfc-sr-only">@string.Format(State.Culture, Texts.WeekNumberAriaLabelFormat, weekNumber)</span>
                     </div>
                 }

@@ -89,8 +89,28 @@ public partial class MainLayout : IAsyncDisposable
             {
                 if (IsOnline == (bool?)payload)
                     return;
+                var wasOffline = IsOnline is false;
                 telemetryContext.IsOnline = IsOnline = (bool?)payload;
                 await InvokeAsync(StateHasChanged);
+
+                // Back online: what couldn't load while offline, such as the signed-in user's profile, loads now rather than on
+                // the next reload. Only what's missing loads, and a load on its way isn't cancelled.
+                if (wasOffline && IsOnline is true)
+                {
+                    await InvokeAsync(async () =>
+                    {
+                        var authUser = (await authManager.GetAuthenticationStateAsync()).User;
+                        if (authUser.IsAuthenticated() is false) return;
+                        await Task.WhenAll(
+                        [
+                            LoadCurrentUser(authUser, getCurrentUserCts.Token),
+                            //#if (multitenant == true)
+                            SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token),
+                            //#endif
+                        ]);
+                        StateHasChanged();
+                    });
+                }
             }));
 
             unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.PROFILE_UPDATED, async payload =>
@@ -292,7 +312,6 @@ public partial class MainLayout : IAsyncDisposable
         if (getCurrentUserCts is not null)
         {
             await getCurrentUserCts.TryCancel();
-            getCurrentUserCts.Dispose();
         }
 
         authManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;

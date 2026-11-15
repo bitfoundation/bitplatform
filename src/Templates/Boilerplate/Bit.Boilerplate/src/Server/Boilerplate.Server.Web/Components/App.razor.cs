@@ -14,6 +14,7 @@ public partial class App
     [AutoInject] ServerWebSettings serverWebSettings = default!;
     [AutoInject] AbsoluteServerAddressProvider absoluteServerAddress = default!;
     [AutoInject] ClientCoreSettings clientCoreSettings = default!;
+    [AutoInject] IConfiguration configuration = default!;
 
     protected override void OnInitialized()
     {
@@ -21,7 +22,7 @@ public partial class App
 
         if (AppEnvironment.IsDevelopment() is false)
         {
-            HttpContext.Response.Headers.ContentSecurityPolicy = $"{ContentSecurityPolicy.BuildCspString(clientCoreSettings, absoluteServerAddress)} frame-ancestors 'self';";
+            HttpContext.Response.Headers.ContentSecurityPolicy = $"{ContentSecurityPolicy.BuildCspString(clientCoreSettings, absoluteServerAddress, configuration)} frame-ancestors 'self';";
             HttpContext.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
         }
 

@@ -6,7 +6,7 @@ namespace Boilerplate.Tests.Features.TemplateConfig;
 /// <summary>
 /// A document has ONE HeadOutlet, and only the LAST <c>HeadContent</c> rendered into it survives - the earlier ones
 /// are not merged, they are dropped. So the moment a second component opens a <c>HeadContent</c> of its own, whatever
-/// the app put in the head stops being there: the Content-Security-Policy meta tag, the App Insights snippet, the
+/// the app put in the head stops being there: the Content-Security-Policy meta tag, the robots meta tag, the
 /// page's canonical url. Nothing errors, nothing warns, no build and no test notices, and the loss shows up as
 /// "the CSP is not applied on this one page" months later.
 /// <para>

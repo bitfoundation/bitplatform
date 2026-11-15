@@ -561,11 +561,18 @@ let attention = 0;
 let titleWatcher: MutationObserver | null = null;
 
 function showAttention() {
-    const title = document.title.replace(/^\(\d+\) /, '');
+    // The count goes into the text node PageTitle rendered: setting document.title would swap it for a new one, and Blazor would keep writing each later title to the old one.
+    const text = Array.from(document.querySelector('title')?.childNodes ?? []).find(node => node.nodeType === Node.TEXT_NODE);
+
+    if (!text) {
+        return;
+    }
+
+    const title = text.nodeValue!.replace(/^\(\d+\) /, '');
     const shown = attention > 0 ? `(${attention}) ${title}` : title;
 
-    if (document.title !== shown) {
-        document.title = shown;
+    if (text.nodeValue !== shown) {
+        text.nodeValue = shown;
     }
 }
 

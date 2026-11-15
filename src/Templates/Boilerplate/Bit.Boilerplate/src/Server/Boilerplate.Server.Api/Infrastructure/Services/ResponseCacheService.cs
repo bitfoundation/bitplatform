@@ -8,7 +8,7 @@ namespace Boilerplate.Server.Api.Infrastructure.Services;
 
 /// <summary>
 ///
-/// The default Boilerplate project template includes:
+/// The bit-bp project template sets up:
 /// 1. `Static` file caching on browsers and CDN edge servers.
 /// 2. Caching JSON and dynamic files responses on CDN edge servers and ASP.NET Core's Output Cache by using `AppResponseCache` attribute in controllers like `StatisticsController`, `AttachmentController` and minimal apis.
 /// 3. Caching pre-rendered HTML results of Blazor pages on CDN edge servers and ASP.NET Core's Output by using `AppResponseCache` attribute in pages like HomePage.razor

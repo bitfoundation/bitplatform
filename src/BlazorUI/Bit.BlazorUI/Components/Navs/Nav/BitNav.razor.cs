@@ -20,8 +20,6 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
-    private const int TYPE_AHEAD_RESET_MS = 1000;
-
     internal List<TItem> _items = [];
     private bool _selectionDirty;
     // The item an option of the interactive first render was selected as, before the render that reports it.
@@ -30,8 +28,7 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
     private bool _optionsOrderDirty;
     private TItem? _focusedItem;
     private TItem? _pendingFocusItem;
-    private string _typeAheadBuffer = string.Empty;
-    private DateTime _lastTypeAheadAt = DateTime.MinValue;
+    private readonly BitTypeahead _typeahead = new();
     internal Dictionary<TItem, bool> _itemExpandStates = [];
     private readonly HashSet<TItem> _initializedItems = [];
     // What each item answers to across a rebuild of the tree: its key, or failing one its place in the tree,
@@ -1000,27 +997,11 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
 
     private async Task TypeAhead(string key, List<TItem> visibleItems, int index)
     {
-        // Consecutive keystrokes build a search term; a pause starts a new one, exactly like a native
-        // list box. Repeating the same character walks the items starting with it instead.
-        var now = DateTime.UtcNow;
-        _typeAheadBuffer = (now - _lastTypeAheadAt).TotalMilliseconds > TYPE_AHEAD_RESET_MS ? key : _typeAheadBuffer + key;
-        _lastTypeAheadAt = now;
+        // The visible items are the ones the keyboard can reach already, so none of them is skipped.
+        var found = _typeahead.Find(key, visibleItems.Count, index, i => GetText(visibleItems[i]));
+        if (found < 0) return;
 
-        var term = _typeAheadBuffer;
-        if (term.Length > 1 && term.Distinct().Count() == 1)
-        {
-            term = term[..1];
-        }
-
-        for (var i = 1; i <= visibleItems.Count; i++)
-        {
-            var candidate = visibleItems[(index + i + visibleItems.Count) % visibleItems.Count];
-            if (GetText(candidate)?.StartsWith(term, StringComparison.OrdinalIgnoreCase) is true)
-            {
-                await FocusItemElement(candidate);
-                return;
-            }
-        }
+        await FocusItemElement(visibleItems[found]);
     }
 
     private async Task FocusItemAt(List<TItem> visibleItems, int index)

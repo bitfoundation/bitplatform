@@ -85,7 +85,7 @@ floor, so once a new major ships, a range that starts at its preview or release 
 prerelease bound also makes nuget.org list the package as SemVer 2.0.0, which older clients' searches leave out. An
 EF Core range is the exception, see the EF Core rule below.
 
-**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-19`. Never read
+**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-20`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
@@ -382,14 +382,18 @@ Finish every sweep with an issue, a PR and a full CI run. `upstream` is `bitfoun
 4. PR from `<fork-owner>:<n>` into `upstream/develop`, title `Update project dependencies (#<n>)`.
    The body starts with `closes #<n>` and carries the report: Changed, Breaking or important,
    Held back, Missed / drifted, Not verified.
-5. Run `all.ci.yml` and `all.ci.utilities.yml` on the fork against the branch and give both URLs
-   with the PR link:
+5. Run All Other CI (`all.other.ci.yml`), All Toolings CI (`all.toolings.ci.yml`), All Utilities CI
+   (`all.utilities.ci.yml`) and CI Templates E2E (`ci.templates.e2e.yml`, the Boilerplate's tests against each database)
+   on the fork against the branch and give the four URLs with the PR link. All CI is split by folder now, so no one run
+   covers every project:
 
    ```bash
-   gh workflow run all.ci.yml --repo <fork-owner>/bitplatform --ref <n>
-   gh workflow run all.ci.utilities.yml --repo <fork-owner>/bitplatform --ref <n>
-   gh run list --repo <fork-owner>/bitplatform --workflow all.ci.yml --branch <n> --limit 1 --json url --jq '.[0].url'
-   gh run list --repo <fork-owner>/bitplatform --workflow all.ci.utilities.yml --branch <n> --limit 1 --json url --jq '.[0].url'
+   for w in all.other.ci.yml all.toolings.ci.yml all.utilities.ci.yml ci.templates.e2e.yml; do
+     gh workflow run $w --repo <fork-owner>/bitplatform --ref <n>
+   done
+   for w in all.other.ci.yml all.toolings.ci.yml all.utilities.ci.yml ci.templates.e2e.yml; do
+     gh run list --repo <fork-owner>/bitplatform --workflow $w --branch <n> --limit 1 --json url --jq '.[0].url'
+   done
    ```
 
    A red job goes into the PR as a comment, with the failing step and its first error line.

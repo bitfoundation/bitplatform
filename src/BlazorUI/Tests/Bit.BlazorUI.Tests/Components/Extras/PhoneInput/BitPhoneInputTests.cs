@@ -2055,6 +2055,53 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPhoneInputShouldEndTheNameOfTheCountrySelectorWithTheDialCodeItShows()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.Germany);
+        });
+
+        // The button shows "+49", so its name holds it (Label in Name).
+        var selector = component.Find("button.bit-phi-drp");
+        Assert.AreEqual($"+{BitCountries.Germany.Code}", selector.QuerySelector(".bit-phi-cod")!.TextContent.Trim());
+        Assert.AreEqual($"Country: Germany, +{BitCountries.Germany.Code}", selector.GetAttribute("aria-label"));
+
+        component.Render(parameters => parameters.Add(p => p.NoDialCode, true));
+
+        Assert.AreEqual("Country: Germany", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNameATemplatedCountrySelectorByTheCountryAndWhatTheTemplateShows()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.Portugal);
+            parameters.Add(p => p.DropdownTemplate, c => builder => builder.AddContent(0, c?.Iso2));
+        });
+
+        // The template's "PT" is on the button, so the name is read off it rather than replaced by an aria-label
+        // of the country alone (Label in Name): the country first, from a visually hidden label, then the template.
+        var selector = component.Find("button.bit-phi-drp");
+        Assert.IsFalse(selector.HasAttribute("aria-label"));
+
+        var ids = selector.GetAttribute("aria-labelledby")!.Split(' ');
+        Assert.AreEqual(2, ids.Length);
+        Assert.AreEqual("Country: Portugal", selector.QuerySelector($"[id='{ids[0]}']")!.TextContent.Trim());
+        Assert.IsTrue(selector.QuerySelector($"[id='{ids[0]}']")!.ClassList.Contains("bit-phi-vhd"));
+        Assert.AreEqual("PT", selector.QuerySelector($"[id='{ids[1]}']")!.TextContent.Trim());
+
+        // Without the template the name is the aria-label again, and the template's ids are gone.
+        component.Render(parameters => parameters.Add(p => p.DropdownTemplate, (RenderFragment<BitCountry?>?)null));
+
+        selector = component.Find("button.bit-phi-drp");
+        Assert.IsFalse(selector.HasAttribute("aria-labelledby"));
+        Assert.AreEqual($"Country: Portugal, +{BitCountries.Portugal.Code}", selector.GetAttribute("aria-label"));
+        Assert.IsNull(selector.QuerySelector(".bit-phi-vhd"));
+    }
+
+    [TestMethod]
     public void BitPhoneInputShouldNameTheCountrySelectorWithoutASelection()
     {
         var component = RenderComponent<BitPhoneInput>();
@@ -3204,7 +3251,7 @@ public class BitPhoneInputTests : BunitTestContext
         var input = component.Find("input.bit-phi-inp");
 
         // A fixed country is no control, so the input points at it to have it read out at all.
-        Assert.AreEqual("Country: Japan", selector.QuerySelector(".bit-phi-vhd")!.TextContent);
+        Assert.AreEqual($"Country: Japan, +{BitCountries.Japan.Code}", selector.QuerySelector(".bit-phi-vhd")!.TextContent);
         Assert.AreEqual("true", selector.QuerySelector(".bit-phi-tcn")!.GetAttribute("aria-hidden"));
         Assert.AreEqual(selector.Id, input.GetAttribute("aria-describedby")!.Split(' ')[0]);
         StringAssert.Contains(input.GetAttribute("aria-describedby"), component.Find(".bit-phi-des").Id);
@@ -3368,7 +3415,7 @@ public class BitPhoneInputTests : BunitTestContext
         component.Instance.SetNumberAsync("+49 170 1234567").GetAwaiter().GetResult();
 
         Assert.AreEqual("1701234567", component.Find("input.bit-phi-inp").GetAttribute("value"));
-        Assert.AreEqual("Country: Germany", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+        Assert.AreEqual($"Country: Germany, +{BitCountries.Germany.Code}", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
     }
 
     [TestMethod]

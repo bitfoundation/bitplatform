@@ -42,10 +42,9 @@
     <meta charset="utf-8" />
 
     @* First after base and charset on purpose: the CSP has to be in force before anything else in the document runs. *@
-    @*#if (appInsights == true)*@
-    @* And App Insights has to be watching before blazor.web.js, so a crash while the app boots still gets reported. *@
-    @*#endif*@
     <AppHeadCoordinator @rendermode="null" InHead />
+    @* And Belemetry has to be watching before blazor.web.js, so a crash while the app boots still gets reported. *@
+    <Bit.Belemetry.BelemetryScript />
     @* [mirror] The PWA status bar / browser chrome color: BitThemeHead writes it for the theme painted first, and bit-theme-color-meta keeps it on the live --bit-clr-bg-pri. *@
     @* Keep in sync with: src/Client/Boilerplate.Client.Web/wwwroot/index.html, src/Client/Boilerplate.Client.Maui/wwwroot/index.html, src/Client/Boilerplate.Client.Web/wwwroot/manifest.json *@
     <BitThemeHead PersistedPreference="@themePreference" Options="@themeOptions" ThemeColors="@BitExtraThemeSurfaces.BackgroundPrimary" />

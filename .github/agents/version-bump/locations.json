@@ -186,6 +186,10 @@
     "<PackageVersion Include=\"Bit.BlazorUI.Assets\" Version=\"{V}\" />",
     "<PackageVersion Include=\"Bit.BlazorUI.Extras\" Version=\"{V}\" />",
     "<PackageVersion Include=\"Bit.BlazorUI.AI\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorUI.AI.Core\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorUI.AI.Server\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorUI.AI.SignalR\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorUI.AI.ChatClient\" Version=\"{V}\" />",
     "<PackageVersion Include=\"Bit.Bmage\" Version=\"{V}\" />",
     "<PackageVersion Include=\"Bit.Bmage.Blazor\" Version=\"{V}\" />",
     "<PackageVersion Include=\"Bit.BevTools\" Version=\"{V}\" />",
@@ -202,6 +206,9 @@
     "<PackageVersion Include=\"Bit.Blow\" Version=\"{V}\" />",
     "<PackageVersion Include=\"Bit.Bonboarding\" Version=\"{V}\" />",
     "<PackageVersion Include=\"Bit.Belemetry\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Belemetry.EntityFrameworkCore\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Belemetry.Hangfire\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BevTools.Belemetry\" Version=\"{V}\" />",
     "<PackageVersion Condition=\" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''\" Include=\"Bit.Bsqlite\" Version=\"{V}\" />"
   ],
   "src/Templates/Boilerplate/Bit.Boilerplate/src/LandingPage/Boilerplate.LandingPage.Client/wwwroot/service-worker.published.js": [

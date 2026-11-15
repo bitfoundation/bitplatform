@@ -24,23 +24,32 @@
     // appears instead of pointing at the next day's midnight.
     var endIsExclusiveMidnight = Event.EndDate > Event.StartDate && Event.EndDate.TimeOfDay == TimeSpan.Zero;
     var displayEnd = endIsExclusiveMidnight ? Event.EndDate.AddTicks(-1) : Event.EndDate;
-    var startLabel = $"{Event.StartDate.ToString("d", State.Culture)} {BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)}";
-    var endLabel = $"{displayEnd.ToString("d", State.Culture)} {BitFullCalendarHelpers.FormatTime(displayEnd, State.Use24HourFormat, State.Culture)}";
+    // A badge shows its title and its start time side by side, and a name that does not hold that text in that order
+    // fails Label in Name (WCAG 2.5.3): "Opening, 11/1/2026 07:00 - ..." leaves out the "Opening 07:00" a speech-input
+    // user reads off it. So a timed event is named the way every other view names it (BuildEventAriaLabel: the title,
+    // then a clock range, with the dates in it once the event crosses a day), and one of a single day adds the date
+    // after it, which a block in a day column shows by where it sits and a badge does not.
     var badgeAriaLabel = Event.IsAllDay
         ? $"{Event.Title}, {Texts.AllDayLabel}, {Event.StartDate.ToString("d", State.Culture)} - {displayEnd.ToString("d", State.Culture)}"
-        : $"{Event.Title}, {startLabel} - {endLabel}";
+        : Event.IsSingleDay
+            ? $"{BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture)}, {Event.StartDate.ToString("d", State.Culture)}"
+            : BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture);
+    var templated = EventTemplate is not null;
 }
 
 @* A badge is the narrowest surface an event is drawn on - the title alone rarely survives the cell
-   width - so the full title, span, and description are offered on hover as well. *@
-<div class="bit-bfc-event-badge @colorClass @positionClass @(Event.IsAllDay ? "bit-bfc-event-allday" : null) @Parts.Classes?.Event @Event.CssClass"
+   width - so the full title, span, and description are offered on hover as well.
+   A badge an EventTemplate draws is named by the text it shows first and the details after it (BitFcEventTemplateHost). *@
+<div id="@(IsLead && templated ? BitFcEventTemplateHost.SurfaceId(_instanceId) : null)"
+     class="bit-bfc-event-badge @colorClass @positionClass @(Event.IsAllDay ? "bit-bfc-event-allday" : null) @Parts.Classes?.Event @Event.CssClass"
      style="@($"{colorStyleVar}{MarginStyle}{Parts.Styles?.Event}")"
      title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
      data-bit-bfc-event="@Event.Id"
      data-bit-bfc-move="@(IsLead && canDrag ? "x" : null)"
      role="@(IsLead ? "button" : null)"
      tabindex="@(IsLead ? "0" : null)"
-     aria-label="@(IsLead ? badgeAriaLabel : null)"
+     aria-label="@(IsLead && templated is false ? badgeAriaLabel : null)"
+     aria-labelledby="@(IsLead && templated ? BitFcEventTemplateHost.LabelledBy(_instanceId) : null)"
      aria-hidden="@(IsLead ? null : "true")"
      draggable="@(canDrag ? "true" : "false")"
      @ondragstart="OnDragStart"
@@ -52,7 +61,8 @@
 
     @if (EventTemplate != null)
     {
-        @EventTemplate(Event)
+        @* A segment that is not the lead is hidden from assistive technology, so it has no name to hold details for. *@
+        <BitFcEventTemplateHost Template="EventTemplate" Event="Event" InstanceId="@_instanceId" Details="@(IsLead ? badgeAriaLabel : null)" />
     }
     else
     {
@@ -67,6 +77,13 @@
             }
         </div>
 
+        @* The title and the time are read as two words, not one run of text: Razor drops the whitespace between the
+           two boxes, and the name the badge carries has a separator there. A whitespace-only run inside the flex
+           badge draws nothing. *@
+        @if (showTitle && (showTime || (Event.IsAllDay && Position is "last" or "none")))
+        {
+            @(" ")
+        }
         @if (showTime)
         {
             <span class="bit-bfc-event-badge-time">@BitFullCalendarHelpers.FormatTime(Position == "last" ? displayEnd : Event.StartDate, State.Use24HourFormat, State.Culture)</span>

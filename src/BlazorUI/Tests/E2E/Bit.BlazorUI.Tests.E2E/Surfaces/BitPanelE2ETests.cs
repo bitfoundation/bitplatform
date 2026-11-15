@@ -486,6 +486,22 @@ public class BitPanelE2ETests : E2ETestBase
         await Expect(Page.Locator("#modeless-open")).ToHaveTextAsync("True");
     }
 
+    // The focus is only the panel's to hand back while it is lost; one the user has moved out onto the page belongs to
+    // the user, and closing the panel from there leaves it where it was moved.
+    [TestMethod]
+    public async Task Modeless_FocusMovedOutWhileOpen_IsLeftWhereItWasMovedWhenThePanelCloses()
+    {
+        await OpenAsync(PagePath);
+        await OpenPanelAsync("btn-modeless-open", "modeless-panel");
+
+        await PressAsync(Page.Locator("#btn-modeless-close"));
+        await Expect(Page.Locator("#modeless-open")).ToHaveTextAsync("False");
+        await WaitForTransitionsAsync("modeless-panel");
+        await NextFramesAsync();
+
+        await Expect(Page.Locator("#btn-modeless-close")).ToBeFocusedAsync();
+    }
+
     // ---------- Refusing a dismissal ----------
 
     [TestMethod]
@@ -885,6 +901,26 @@ public class BitPanelE2ETests : E2ETestBase
         Assert.AreEqual(box.X + box.Width - 1, panel.X + panel.Width, 2, "against the box's right edge");
         Assert.AreEqual(220, panel.Width, 1);
         Assert.IsTrue(overlay.Width <= box.Width && overlay.Height <= box.Height, "The overlay covers the box only.");
+    }
+
+    // The panel holding its own scroller (AutoToggleScroll) takes the box's overflow away, and the offset the box was
+    // scrolled to is what an absolutely positioned panel is pushed down by, so it covers the part of the box on the screen.
+    [TestMethod]
+    public async Task AbsolutePosition_AutoToggleScroll_HoldsItsBoxAndCoversItAtTheScrolledOffset()
+    {
+        await OpenAsync(PagePath);
+
+        var box = Page.Locator("#pnl-abs-scroll-box");
+        await box.EvaluateAsync("el => el.scrollTop = 200");
+        await OpenPanelAsync("btn-abs-scroll-open", "abs-scroll-panel");
+
+        await Expect(box).ToHaveCSSAsync("overflow-y", "hidden");
+        await Expect(Root("abs-scroll-panel")).ToHaveCSSAsync("top", "200px");
+        Assert.AreNotEqual("hidden", await BodyOverflowAsync(), "A panel holding its own box leaves the page alone.");
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Page.Locator("#abs-scroll-open")).ToHaveTextAsync("False");
+        await Expect(box).ToHaveCSSAsync("overflow-y", "auto");
     }
 
     // ---------- Rendering and events ----------

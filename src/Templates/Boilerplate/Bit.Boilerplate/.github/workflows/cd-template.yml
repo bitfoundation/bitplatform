@@ -17,6 +17,14 @@ permissions:
 
 jobs:
 
+  # ci.yml's checks: the build with the code style enforced, the formatting, the api's compatibility and the tests. Nothing
+  # is deployed or published until they pass, while the server's images build alongside them.
+  ci:
+    name: ci
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+
 #if (aspire == true)
   # The server is a Docker Compose project that .NET Aspire publishes from the app host. This job builds its images on
   # a GitHub-hosted runner, pushes them to GitHub Container Registry tagged with the environment and the commit, and
@@ -49,7 +57,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-20
         with:
           arguments: --no-build
 
@@ -70,6 +78,9 @@ jobs:
           files: 'src/**/appsettings*json'
         env:
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+          # The pages and the apps post their telemetry to the web app's own address, whose /v1/ paths go to the dashboard
+          # (See .docs/15, In a Deployment). The landing page's servers override it with the landing page's own address.
+          Belemetry.OtlpEndpoint: ${{ vars.SERVER_ADDRESS }}
 #if (notification == true)
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
@@ -123,7 +134,7 @@ jobs:
   # Compose project in ~/deployments/<project>-<environment> of the runner's user.
   deploy_server:
     name: deploy server
-    needs: build_server
+    needs: [ci, build_server]
     runs-on: [self-hosted, "${{ inputs.ENV_NAME }}"]
     permissions:
       contents: read
@@ -350,14 +361,18 @@ jobs:
           )
           #if (cloudflare != true)
 
-          # Anyone can post to the landing page's /v1/ paths, so each request's body is capped. A rate limit needs a Caddy
+          # The web app's and the landing page's /v1/ paths, where their pages and the apps post their telemetry, go to the
+          # dashboard's OTLP/HTTP port. Anyone can post there, so each request's body is capped. A rate limit needs a Caddy
           # build with a plugin, so without Cloudflare nothing limits how often.
+          site_with_telemetry() {
+            printf '%s {\n\t@otlp path_regexp ^/v1/(traces|logs|metrics)$\n\thandle @otlp {\n\t\trequest_body {\n\t\t\tmax_size 2MB\n\t\t}\n\t\treverse_proxy compose-dashboard:18890\n\t}\n\thandle {\n\t\treverse_proxy %s\n\t}\n}\n\n' "$1" "$2"
+          }
           {
-            printf '%s {\n\treverse_proxy serverweb:8080\n}\n\n' "$(origin "$SERVER_ADDRESS")"
+            site_with_telemetry "$(origin "$SERVER_ADDRESS")" serverweb:8080
           #if (api == "Standalone")
             printf '%s {\n\treverse_proxy serverapi:8080\n}\n\n' "$(origin "$SERVER_API_ADDRESS")"
           #endif
-            printf '%s {\n\t@otlp path_regexp ^/v1/(traces|logs|metrics)$\n\thandle @otlp {\n\t\trequest_body {\n\t\t\tmax_size 2MB\n\t\t}\n\t\treverse_proxy compose-dashboard:18890\n\t}\n\thandle {\n\t\treverse_proxy landingpage:8080\n\t}\n}\n' "$(origin "$LANDING_PAGE_ADDRESS")"
+            site_with_telemetry "$(origin "$LANDING_PAGE_ADDRESS")" landingpage:8080
           } > "$deploy_dir/Caddyfile"
           #endif
 
@@ -642,6 +657,7 @@ jobs:
     # Off until the app ships on this platform: every run spends Actions minutes. Turn it on for the environments that
     # build it, such as `if: inputs.ENV_NAME == 'Production'`, and set its secrets (.docs/16).
     if: false
+    needs: ci
     runs-on: windows-2025
     timeout-minutes: 45
     permissions:
@@ -662,7 +678,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-20
         with:
           arguments: --platforms windows --no-build
 
@@ -679,12 +695,13 @@ jobs:
           files: 'src\**\appsettings*json'
         env:
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+          Belemetry.OtlpEndpoint: ${{ vars.SERVER_ADDRESS }}
           WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
 
       # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
       - name: Sign the app with Artifact Signing
         if: vars.CODE_SIGNING_ACCOUNT != ''
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/artifact-signing@v-11.0.0-pre-19
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/artifact-signing@v-11.0.0-pre-20
         with:
           endpoint: ${{ vars.CODE_SIGNING_ENDPOINT }}
           account: ${{ vars.CODE_SIGNING_ACCOUNT }}
@@ -725,6 +742,7 @@ jobs:
     # Off until the app ships on this platform: every run spends Actions minutes. Turn it on for the environments that
     # build it, such as `if: inputs.ENV_NAME == 'Production'`, and set its secrets (.docs/16).
     if: false
+    needs: ci
     runs-on: ubuntu-26.04
     timeout-minutes: 45
     permissions:
@@ -745,7 +763,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-20
         with:
           arguments: --platforms android --no-build
 
@@ -769,6 +787,7 @@ jobs:
           files: 'src/**/appsettings*json'
         env:
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+          Belemetry.OtlpEndpoint: ${{ vars.SERVER_ADDRESS }}
 
       - name: Publish aab
         env:
@@ -798,6 +817,7 @@ jobs:
     # Off until the app ships on this platform: every run spends Actions minutes. Turn it on for the environments that
     # build it, such as `if: inputs.ENV_NAME == 'Production'`, and set its secrets (.docs/16).
     if: false
+    needs: ci
     runs-on: xcode-27
     timeout-minutes: 60
     permissions:
@@ -823,7 +843,7 @@ jobs:
           xcode-version: '27.2'
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-20
         with:
           arguments: --platforms ios --no-build
 
@@ -840,6 +860,7 @@ jobs:
           files: 'src/**/appsettings*json'
         env:
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+          Belemetry.OtlpEndpoint: ${{ vars.SERVER_ADDRESS }}
 
       - name: Import Code-Signing Certificates
         uses: apple-actions/import-codesign-certs@288b8ec97b82c66b6f2a6baaf7acc8dfbcbe331c # v7.2.0

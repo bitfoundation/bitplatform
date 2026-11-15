@@ -78,6 +78,14 @@
                                 }
                             </div>
                         }
+                        @* The header is named by the title and the description with a space between them, so the text it
+                           shows has one there too: Razor drops the whitespace between the two boxes, and a reader that runs
+                           their text together ("TitleDescription") finds a name that does not contain it (Label in Name,
+                           WCAG 2.5.3). A whitespace-only run inside the flex container draws nothing, so nothing moves. *@
+                        @if (_HasTitle && _HasDescription)
+                        {
+                            @(" ")
+                        }
                         @if (_HasDescription)
                         {
                             <div id="@_DescriptionId" style="@Styles?.Description" class="bit-acd-des @Classes?.Description">

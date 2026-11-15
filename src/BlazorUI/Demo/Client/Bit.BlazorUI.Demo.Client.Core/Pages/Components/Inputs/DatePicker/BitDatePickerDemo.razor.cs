@@ -1148,7 +1148,7 @@ public partial class BitDatePickerDemo
             Name = "WeekNumbersHeaderTitle",
             Type = "string",
             DefaultValue = "Week",
-            Description = "The accessible name of the empty column header above the week numbers."
+            Description = "The accessible name of the column header above the week numbers, which shows a number sign (#)."
         },
         new()
         {

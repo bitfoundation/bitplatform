@@ -738,6 +738,24 @@ public class BitModalE2ETests : E2ETestBase
         AssertPlaced(root, await BoxAsync(Content("abs-modal")), "center", "center");
     }
 
+    [TestMethod]
+    public async Task AbsolutePosition_AutoToggleScroll_HoldsItsBoxAndCoversItAtTheScrolledOffset()
+    {
+        await OpenAsync(PagePath);
+
+        var box = Page.Locator("#mdl-abs-scroll-box");
+        await box.EvaluateAsync("el => el.scrollTop = 200");
+        await OpenModalAsync("btn-abs-scroll-open", "abs-scroll-modal");
+
+        await Expect(box).ToHaveCSSAsync("overflow-y", "hidden");
+        await Expect(Root("abs-scroll-modal")).ToHaveCSSAsync("top", "200px");
+        Assert.AreNotEqual("hidden", await BodyOverflowAsync(), "A Modal holding its own box leaves the page alone.");
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Page.Locator("#abs-scroll-open")).ToHaveTextAsync("False");
+        await Expect(box).ToHaveCSSAsync("overflow-y", "auto");
+    }
+
     // ---------- Draggable ----------
 
     [TestMethod]

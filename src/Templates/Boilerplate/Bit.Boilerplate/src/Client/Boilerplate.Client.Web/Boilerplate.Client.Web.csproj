@@ -10,9 +10,9 @@
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <StaticWebAssetPublishCompressAllAssets>true</StaticWebAssetPublishCompressAllAssets>
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
 
         <WasmApplicationEnvironmentName>$(Environment)</WasmApplicationEnvironmentName>
         <WasmEnableWebcil Condition="'$(Environment)' == 'Development'">false</WasmEnableWebcil>
@@ -28,10 +28,9 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
         <PackageReference Include="Bit.Bswup" />
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(offlineDb)' != 'true' " Include="Bit.Minifier" PrivateAssets="all" />
-        <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" />
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
     <ItemGroup>
@@ -44,17 +43,18 @@
         <Using Include="Boilerplate.Client.Core.Infrastructure.Services.Contracts" />
     </ItemGroup>
 
-    <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
     <ItemGroup Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == '' ">
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
     </ItemGroup>
-    <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
 
     <!-- Lazy loading can cause trouble in AOT builds, and next to the size of an AOT app it saves little. -->
     <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' AND '$(PublishAot)' != 'true' ">
         <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
         <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.Blazor.wasm" />
         <BlazorWebAssemblyLazyLoad Condition=" '$(Environment)' != 'Development' " Include="Bit.BevTools.wasm" />
+        <BlazorWebAssemblyLazyLoad Condition=" '$(Environment)' != 'Development' " Include="Bit.BevTools.Belemetry.wasm" />
         <!--#if (signalR == true)-->
         <!-- The AI chat, downloaded the first time its panel is reached for (See AppAiChatPanel.lazyAssemblies). -->
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.wasm" />

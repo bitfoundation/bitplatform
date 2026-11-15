@@ -17,6 +17,10 @@ public static class UserSessionDtoExtensions
                                     ? $"{OsImagesUrl}/{GetOsImage(session.DeviceInfo)}"
                                     : $"{OsImagesUrl}/oauth.png";
 
+        public bool IsAuthorizedApplication => string.IsNullOrEmpty(session.OAuthClientId) is false;
+
+        public string? ApplicationName => session.OAuthClientName ?? session.OAuthClientId;
+
         /// <summary>Where the session comes from, falling back to its IP when no address was resolved for it.</summary>
         public string? DisplayAddress => string.IsNullOrEmpty(session.Address) ? session.IP : session.Address;
 

@@ -20,15 +20,20 @@
   </Folder>
   <Folder Name="/.Solution Items/.github/" />
   <Folder Name="/.Solution Items/.github/workflows/">
-    <File Path="../.github/workflows/admin-sample.cd.yml" />
-    <File Path="../.github/workflows/bit.ci.yml" />
-    <File Path="../.github/workflows/bit.full.ci.yml" />
-    <File Path="../.github/workflows/blazorui.demo.cd.yml" />
-    <File Path="../.github/workflows/nuget.org.yml" />
-    <File Path="../.github/workflows/platform.website.cd.yml" />
-    <File Path="../.github/workflows/prerelease.nuget.org.yml" />
-    <File Path="../.github/workflows/sales.website.cd.yml" />
-    <File Path="../.github/workflows/todo-sample.cd.yml" />
+    <File Path="../.github/workflows/all.apps.cd.yml" />
+    <File Path="../.github/workflows/all.other.ci.yml" />
+    <File Path="../.github/workflows/all.other.e2e.ci.yml" />
+    <File Path="../.github/workflows/all.release.build.yml" />
+    <File Path="../.github/workflows/all.toolings.ci.yml" />
+    <File Path="../.github/workflows/all.utilities.ci.yml" />
+    <File Path="../.github/workflows/all.utilities.e2e.ci.yml" />
+    <File Path="../.github/workflows/cd.adminpanel.demo.yml" />
+    <File Path="../.github/workflows/cd.blazorui.demo.yml" />
+    <File Path="../.github/workflows/cd.nuget.packages.yml" />
+    <File Path="../.github/workflows/cd.platform.website.yml" />
+    <File Path="../.github/workflows/cd.prerelease.nuget.packages.yml" />
+    <File Path="../.github/workflows/cd.sales.website.yml" />
+    <File Path="../.github/workflows/cd.todo.demo.yml" />
   </Folder>
   <Folder Name="/Utilities/" />
   <Folder Name="/Utilities/Blex/">
@@ -80,6 +85,8 @@
   </Folder>
   <Folder Name="/Utilities/Bmage/">
     <File Path="Utilities/Bmage/README.md" />
+    <Project Path="Utilities/Bmage/Bit.Bmage.BbScanner/Bit.Bmage.BbScanner.csproj" />
+    <Project Path="Utilities/Bmage/Bit.Bmage.Bink/Bit.Bmage.Bink.csproj" />
     <Project Path="Utilities/Bmage/Bit.Bmage.Blazor/Bit.Bmage.Blazor.csproj" />
     <Project Path="Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj" />
   </Folder>
@@ -112,6 +119,7 @@
   </Folder>
   <Folder Name="/Utilities/Bmage/Tests/">
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Benchmarks/Bit.Bmage.Benchmarks.csproj" />
+    <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests.Integrations/Bit.Bmage.Tests.Integrations.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests.Hosting/Bit.Bmage.Tests.Hosting.csproj" />
@@ -252,6 +260,7 @@
   </Folder>
   <Folder Name="/Utilities/BbScanner/">
     <File Path="Utilities/BbScanner/README.md" />
+    <Project Path="Utilities/BbScanner/Bit.BbScanner.Maui/Bit.BbScanner.Maui.csproj" />
     <Project Path="Utilities/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj" />
   </Folder>
   <Folder Name="/Utilities/BbScanner/Demo/">
@@ -319,6 +328,7 @@
     <Project Path="Utilities/Bdnd/Samples/Wasm/Bit.Bdnd.Samples.Wasm.Client/Bit.Bdnd.Samples.Wasm.Client.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bdnd/Tests/">
+    <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Benchmarks/Bit.Bdnd.Benchmarks.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj" />
@@ -326,6 +336,8 @@
   </Folder>
   <Folder Name="/Utilities/BlazeDb/">
     <File Path="Utilities/BlazeDb/README.md" />
+    <Project Path="Utilities/BlazeDb/Bit.BlazeDb.Bcrdt/Bit.BlazeDb.Bcrdt.csproj" />
+    <Project Path="Utilities/BlazeDb/Bit.BlazeDb.Blex/Bit.BlazeDb.Blex.csproj" />
     <Project Path="Utilities/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj" />
     <Project Path="Utilities/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj" />
     <Project Path="Utilities/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj" />
@@ -358,6 +370,7 @@
     <Project Path="Utilities/BlazeDb/Samples/Wasm/Bit.BlazeDb.Samples.Wasm.Client/Bit.BlazeDb.Samples.Wasm.Client.csproj" />
   </Folder>
   <Folder Name="/Utilities/BlazeDb/Tests/">
+    <Project Path="Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.Integrations/Bit.BlazeDb.Tests.Integrations.csproj" />
     <Project Path="Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests/Bit.BlazeDb.Tests.csproj" />
     <Project Path="Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp/Bit.BlazeDb.Tests.Mcp.csproj" />
     <Project Path="Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj" />
@@ -428,6 +441,7 @@
     <Project Path="Utilities/Borm/Samples/Wasm/Bit.Borm.Samples.Wasm.Client/Bit.Borm.Samples.Wasm.Client.csproj" />
   </Folder>
   <Folder Name="/Utilities/Borm/Tests/">
+    <Project Path="Utilities/Borm/Tests/Bit.Borm.Benchmarks/Bit.Borm.Benchmarks.csproj" />
     <Project Path="Utilities/Borm/Tests/Bit.Borm.Tests/Bit.Borm.Tests.csproj" />
     <Project Path="Utilities/Borm/Tests/Bit.Borm.Tests.Mcp/Bit.Borm.Tests.Mcp.csproj" />
     <Project Path="Utilities/Borm/Tests/Bit.Borm.Tests.E2E/Bit.Borm.Tests.E2E.csproj" />
@@ -447,6 +461,7 @@
   </Folder>
   <Folder Name="/Utilities/Bcrdt/Demo/">
     <Project Path="Utilities/Bcrdt/Demo/Client/Bit.Bcrdt.Demo.Client.csproj" />
+    <Project Path="Utilities/Bcrdt/Demo/Samples/Bit.Bcrdt.Demo.Samples.csproj" />
     <Project Path="Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bcrdt/Samples/" />
@@ -581,6 +596,7 @@
     <Project Path="Utilities/Belemetry/Samples/WinForms/Bit.Belemetry.Samples.WinForms.csproj" />
   </Folder>
   <Folder Name="/Utilities/Belemetry/Tests/">
+    <Project Path="Utilities/Belemetry/Tests/Bit.Belemetry.Benchmarks/Bit.Belemetry.Benchmarks.csproj" />
     <Project Path="Utilities/Belemetry/Tests/Bit.Belemetry.Tests/Bit.Belemetry.Tests.csproj" />
     <Project Path="Utilities/Belemetry/Tests/Bit.Belemetry.Tests.EntityFrameworkCore/Bit.Belemetry.Tests.EntityFrameworkCore.csproj" />
     <Project Path="Utilities/Belemetry/Tests/Bit.Belemetry.Tests.Hangfire/Bit.Belemetry.Tests.Hangfire.csproj" />
@@ -597,6 +613,9 @@
   <Folder Name="/Utilities/BevTools/">
     <File Path="Utilities/BevTools/CLAUDE.md" />
     <File Path="Utilities/BevTools/README.md" />
+    <Project Path="Utilities/BevTools/Bit.BevTools.Belemetry/Bit.BevTools.Belemetry.csproj" />
+    <Project Path="Utilities/BevTools/Bit.BevTools.Blex/Bit.BevTools.Blex.csproj" />
+    <Project Path="Utilities/BevTools/Bit.BevTools.Cli/Bit.BevTools.Cli.csproj" />
     <Project Path="Utilities/BevTools/Bit.BevTools/Bit.BevTools.csproj" />
     <Project Path="Utilities/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj" />
     <Project Path="Utilities/BevTools/Bit.BevTools.Loader/Bit.BevTools.Loader.csproj" />
@@ -663,11 +682,21 @@
     <Project Path="BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.SourceGenerators/Bit.BlazorUI.SourceGenerators.csproj" />
+    <Project Path="BlazorUI/Tests/Bit.BlazorUI.Tests.Consumer/Bit.BlazorUI.Tests.Consumer.csproj" />
+    <Project Path="BlazorUI/Tests/Bit.BlazorUI.Tests.Mcp/Bit.BlazorUI.Tests.Mcp.csproj" />
+    <Project Path="BlazorUI/Tests/Bit.BlazorUI.Tests.Trimming/Bit.BlazorUI.Tests.Trimming.csproj" />
     <Project Path="BlazorUI/Tests/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
   </Folder>
   <Folder Name="/BlazorUI/Tests/Performance/">
+    <Project Path="BlazorUI/Tests/Performance/Bit.BlazorUI.Tests.PdfPerformance/Bit.BlazorUI.Tests.PdfPerformance.csproj" />
+    <Project Path="BlazorUI/Tests/Performance/Bit.BlazorUI.Tests.Performance.TestHost.Client/Bit.BlazorUI.Tests.Performance.TestHost.Client.csproj" />
     <Project Path="BlazorUI/Tests/Performance/Bit.BlazorUI.Tests.Performance/Bit.BlazorUI.Tests.Performance.csproj" />
     <Project Path="BlazorUI/Tests/Performance/Bit.BlazorUI.Tests.Performance.TestHost/Bit.BlazorUI.Tests.Performance.TestHost.csproj" />
+  </Folder>
+  <Folder Name="/BlazorUI/Tests/E2E/">
+    <Project Path="BlazorUI/Tests/E2E/Bit.BlazorUI.Tests.E2E.TestHost.Client/Bit.BlazorUI.Tests.E2E.TestHost.Client.csproj" />
+    <Project Path="BlazorUI/Tests/E2E/Bit.BlazorUI.Tests.E2E.TestHost/Bit.BlazorUI.Tests.E2E.TestHost.csproj" />
+    <Project Path="BlazorUI/Tests/E2E/Bit.BlazorUI.Tests.E2E/Bit.BlazorUI.Tests.E2E.csproj" />
   </Folder>
   <Folder Name="/BlazorUI/Demo/">
     <File Path="BlazorUI/Demo/.gitignore" />
@@ -787,6 +816,7 @@
     <Project Path="Butil/Samples/Web/Bit.Butil.Samples.Web.csproj" />
   </Folder>
   <Folder Name="/Butil/Tests/">
+    <Project Path="Butil/Tests/Bit.Butil.Tests.Benchmarks/Bit.Butil.Tests.Benchmarks.csproj" />
     <Project Path="Butil/Tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj" />
     <Project Path="Butil/Tests/Bit.Butil.Tests.Hosting/Bit.Butil.Tests.Hosting.csproj" />
     <Project Path="Butil/Tests/Bit.Butil.Tests.Manual/Bit.Butil.Tests.Manual.csproj" />
@@ -865,7 +895,22 @@
     <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Shared/Boilerplate.Shared.csproj" />
   </Folder>
   <Folder Name="/Templates/Boilerplate/Tests/">
+    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Internal/Boilerplate.Tests.E2E/Boilerplate.Tests.E2E.csproj" />
     <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Tests/Boilerplate.Tests.csproj" />
+    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/WorkbenchTests/Boilerplate.WorkbenchTests.csproj" />
+  </Folder>
+  <Folder Name="/Templates/Boilerplate/LandingPage/">
+    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/LandingPage/Boilerplate.LandingPage.Client/Boilerplate.LandingPage.Client.csproj" />
+    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/LandingPage/Boilerplate.LandingPage.Server/Boilerplate.LandingPage.Server.csproj" />
+    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/LandingPage/Boilerplate.LandingPage.Tests/Boilerplate.LandingPage.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Templates/Boilerplate/Workbench/">
+    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Workbench/Boilerplate.Workbench.csproj" />
+  </Folder>
+  <Folder Name="/Templates/BlazorEmpty/">
+    <Project Path="Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj" />
+    <Project Path="Templates/BlazorEmpty/Bit.BlazorEmpty/BlazorEmpty.Client/BlazorEmpty.Client.csproj" />
+    <Project Path="Templates/BlazorEmpty/Bit.BlazorEmpty/BlazorEmpty/BlazorEmpty.csproj" />
   </Folder>
   <Folder Name="/Websites/" />
   <Folder Name="/Websites/Careers/">

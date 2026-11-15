@@ -25,7 +25,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     tabindex="@TabIndex"
+     tabindex="@_TabIndex"
      aria-busy="@(_isLoading ? "true" : "false")">
     @if (template is not null && Feed)
     {

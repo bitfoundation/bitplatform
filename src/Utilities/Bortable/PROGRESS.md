@@ -245,7 +245,7 @@ Release checks (all run, all passing):
   were fixed.
 - `Bit.Bortable.Tests`: 654 / 654 (218 tests x net8, net9, net10). `Bit.Bortable.Tests.Mcp`: 111 / 111.
 - `Bit.Bortable.Tests.E2E` against the Debug build: 89 / 89 (4 m 57 s).
-- The demo published trimmed in Release (as `bortable.demo.cd.yml` does, `InvariantGlobalization=true`): no trim
+- The demo published trimmed in Release (as `cd.bortable.demo.yml` does, `InvariantGlobalization=true`): no trim
   warnings; the full browser suite against it: 89 / 89 (4 m 16 s) - the interop payloads survive trimming.
 - Benchmark on that publish (`LargeListTests`, 300 rows; Playwright's Chromium, headless; Intel Core i9-14900K,
   Windows 11): a drag of 60 pointer moves fired 43 `dragover` events and sent 15 positions to .NET; average round

@@ -12,9 +12,10 @@ internal static class BitInfiniteScrollingJsRuntimeExtensions
                                                               bool horizontal,
                                                               bool autoLoad,
                                                               bool feed,
+                                                              string tabStop,
                                                               DotNetObjectReference<BitInfiniteScrolling<T>> dotnetObj)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.InfiniteScrolling.setup", id, scrollerSelector, rootElement, lastElement, threshold, rootMargin, horizontal, autoLoad, feed, dotnetObj);
+        return jsRuntime.InvokeVoid("BitBlazorUI.InfiniteScrolling.setup", id, scrollerSelector, rootElement, lastElement, threshold, rootMargin, horizontal, autoLoad, feed, tabStop, dotnetObj);
     }
 
     public static ValueTask BitInfiniteScrollingReobserve(this IJSRuntime jsRuntime,

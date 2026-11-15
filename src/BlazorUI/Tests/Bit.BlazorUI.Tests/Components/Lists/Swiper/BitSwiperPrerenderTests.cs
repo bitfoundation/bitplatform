@@ -24,10 +24,11 @@ public class BitSwiperPrerenderTests
         StringAssert.Contains(html, "slide-0");
         StringAssert.Contains(html, "slide-2");
 
-        // The two buttons need no measurement to be there, and the keyboard reaches the root from the first paint.
+        // The two buttons need no measurement to be there, and the keyboard reaches the box the items scroll in from
+        // the first paint.
         StringAssert.Contains(html, "bit-swp-lbt");
         StringAssert.Contains(html, "bit-swp-rbt");
-        StringAssert.Contains(html, @"tabindex=""0""");
+        Assert.IsTrue(Regex.IsMatch(html, @"<div[^>]*tabindex=""0""[^>]*class=""bit-swp-cnt"));
     }
 
     [TestMethod]

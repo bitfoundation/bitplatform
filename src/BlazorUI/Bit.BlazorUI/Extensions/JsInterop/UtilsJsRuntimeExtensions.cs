@@ -253,43 +253,6 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    // Remembers the element the focus was on when a popup took it over, so the popup can hand the keyboard
-    // back to where it came from once it closes.
-    internal static ValueTask BitUtilsCaptureFocusOrigin(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.captureFocusOrigin", elementId);
-    }
-
-
-    // The same capture, reporting whether an origin was remembered, which it is not for a focus that was on the body
-    // or already inside the element.
-    internal static ValueTask<bool> BitUtilsTryCaptureFocusOrigin(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.captureFocusOrigin", elementId);
-    }
-
-
-    internal static ValueTask BitUtilsRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
-    }
-
-
-    // The same hand-back, reporting whether the focus was taken care of: false when there was no origin to
-    // hand it back to (the focus was on the body when the popup opened) or the origin has left the page, which
-    // leaves the caller the focus to place itself.
-    internal static ValueTask<bool> BitUtilsTryRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
-    }
-
-
-    internal static ValueTask BitUtilsDisposeFocusOrigin(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeFocusOrigin", elementId);
-    }
-
-
     // Reports the end of the transform transition of an element back to .NET, which is when a surface that
     // slides has actually finished sliding.
     internal static ValueTask BitUtilsSetupTransitionEnd<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
@@ -306,10 +269,23 @@ internal static class UtilsJsRuntimeExtensions
 
 
     // Records the element the focus is on right now under the given key, so that a popup which is about to
-    // take the focus over can hand it back to whatever opened it once it closes.
-    internal static ValueTask BitUtilsStoreFocus(this IJSRuntime jsRuntime, string key)
+    // take the focus over can hand it back to whatever opened it once it closes. scopeId names the popup itself,
+    // for one whose focus may already be inside it: that focus is no origin, and one stored earlier is kept.
+    internal static ValueTask BitUtilsStoreFocus(this IJSRuntime jsRuntime, string key, string? scopeId = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.storeFocus", key);
+        return scopeId is null
+            ? jsRuntime.InvokeVoid("BitBlazorUI.Utils.storeFocus", key)
+            : jsRuntime.InvokeVoid("BitBlazorUI.Utils.storeFocus", key, scopeId);
+    }
+
+
+    // The same store, reporting whether an origin was stored, which it is not for a focus that was on the body
+    // or already inside the scope.
+    internal static ValueTask<bool> BitUtilsTryStoreFocus(this IJSRuntime jsRuntime, string key, string? scopeId = null)
+    {
+        return scopeId is null
+            ? jsRuntime.Invoke<bool>("BitBlazorUI.Utils.storeFocus", key)
+            : jsRuntime.Invoke<bool>("BitBlazorUI.Utils.storeFocus", key, scopeId);
     }
 
 
@@ -324,6 +300,15 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // The same hand-back, reporting whether the focus was taken care of - handed back, or left where the user put
+    // it: false when there was no origin to hand it back to (the focus was on the body when the popup opened) or
+    // the origin has left the page, which leaves the caller the focus to place itself.
+    internal static ValueTask<bool> BitUtilsTryRestoreFocus(this IJSRuntime jsRuntime, string key, bool onlyWhenLost = true, string? scopeId = null)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.restoreFocus", key, onlyWhenLost, scopeId);
+    }
+
+
     // Drops the element stored under the given key without focusing it, for a component disposed while its
     // popup is still open.
     internal static ValueTask BitUtilsForgetFocus(this IJSRuntime jsRuntime, string key)
@@ -335,10 +320,13 @@ internal static class UtilsJsRuntimeExtensions
     // Stops the given element (the page itself when no selector is given) from scrolling while the popup
     // registered under the given key is open. The locks are counted, so a page held by more than one popup
     // is only handed back once the last of them lets go, and the room the scrollbar took is added back as
-    // padding so that taking it away does not shift the page sideways.
-    internal static ValueTask BitUtilsLockScroll(this IJSRuntime jsRuntime, string key, string? selector = null)
+    // padding so that taking it away does not shift the page sideways - unless the caller is one that has
+    // always let the page shift by the width of the scrollbar, which turns the compensation off.
+    internal static ValueTask BitUtilsLockScroll(this IJSRuntime jsRuntime, string key, string? selector = null, bool compensate = true)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.lockScroll", key, selector);
+        return compensate
+            ? jsRuntime.InvokeVoid("BitBlazorUI.Utils.lockScroll", key, selector)
+            : jsRuntime.InvokeVoid("BitBlazorUI.Utils.lockScroll", key, selector, false);
     }
 
     // The same hold, taken on an element the caller already has a reference to rather than on one named by a
@@ -346,6 +334,20 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsLockScroll(this IJSRuntime jsRuntime, string key, ElementReference scroller)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.lockScroll", key, scroller);
+    }
+
+
+    // The same hold, reporting the scroll offset of the scroller it took, which an absolutely positioned surface
+    // laid out inside that scroller is pushed down by. The compensation for the room the scrollbar took can be
+    // turned off for the callers that have always let the page shift by its width.
+    internal static ValueTask<float> BitUtilsLockScrollWithOffset(this IJSRuntime jsRuntime, string key, string? selector, bool compensate = true)
+    {
+        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.lockScroll", key, selector, compensate);
+    }
+
+    internal static ValueTask<float> BitUtilsLockScrollWithOffset(this IJSRuntime jsRuntime, string key, ElementReference scroller, bool compensate = true)
+    {
+        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.lockScroll", key, scroller, compensate);
     }
 
 
@@ -480,22 +482,5 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsSetStyle(this IJSRuntime jsRuntime, ElementReference element, string key, string value)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setStyle", element, key, value);
-    }
-
-
-    // The key is the component holding the scroller, so that the hold is counted alongside every other
-    // popup holding the same one: a component letting go of a scroller another one is still holding would
-    // otherwise hand back a page that is meant to stay held.
-    // The compensation is opt-in so that the callers that have always let the page shift by the width of
-    // the scrollbar it took away carry on doing exactly that; the ones that ask for it get the room back
-    // as padding, the way the counted lock above gives it back.
-    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, string scrollerSelector, bool isHidden, bool compensate = false)
-    {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerSelector, isHidden, compensate);
-    }
-
-    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, ElementReference scrollerElement, bool isHidden, bool compensate = false)
-    {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerElement, isHidden, compensate);
     }
 }

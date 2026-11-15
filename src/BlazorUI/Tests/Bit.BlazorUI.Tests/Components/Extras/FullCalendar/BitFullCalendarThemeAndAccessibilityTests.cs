@@ -354,12 +354,83 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
         {
             parameters.Add(p => p.Events, Events());
             parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
-            parameters.Add(p => p.DayEventTemplate, (RenderFragment<BitFullCalendarEvent>)(_ => builder => builder.AddContent(0, "custom")));
         });
 
         var label = component.Find(".bit-bfc-event-block").GetAttribute("aria-label");
 
         StringAssert.StartsWith(label, "Standup, ");
+    }
+
+    [TestMethod]
+    [DataRow(BitFullCalendarView.Month, ".bit-bfc-event-badge")]
+    [DataRow(BitFullCalendarView.Week, ".bit-bfc-event-block")]
+    [DataRow(BitFullCalendarView.Day, ".bit-bfc-event-block")]
+    public void BitFullCalendarTemplatedEventShouldBeNamedByWhatTheTemplateShowsAndThenItsDetails(BitFullCalendarView view, string selector)
+    {
+        RenderFragment<BitFullCalendarEvent> template = e => builder => builder.AddContent(0, $"Pin: {e.Title}");
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.DefaultView, view);
+            parameters.Add(p => p.MonthEventTemplate, template);
+            parameters.Add(p => p.WeekEventTemplate, template);
+            parameters.Add(p => p.DayEventTemplate, template);
+        });
+
+        var templated = component.Find(selector);
+
+        AssertNamedByTemplateThenDetails(component, templated);
+
+        // Without a template the details are the name, and nothing is left behind for one.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.MonthEventTemplate, (RenderFragment<BitFullCalendarEvent>?)null);
+            parameters.Add(p => p.WeekEventTemplate, (RenderFragment<BitFullCalendarEvent>?)null);
+            parameters.Add(p => p.DayEventTemplate, (RenderFragment<BitFullCalendarEvent>?)null);
+        });
+
+        var plain = component.Find(selector);
+
+        StringAssert.StartsWith(plain.GetAttribute("aria-label"), "Standup, ");
+        Assert.IsFalse(plain.HasAttribute("aria-labelledby"));
+        Assert.IsFalse(plain.HasAttribute("id"));
+        Assert.IsEmpty(plain.QuerySelectorAll("[hidden]"));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarTemplatedTimelineEventShouldBeNamedByWhatTheTemplateShowsAndThenItsDetails()
+    {
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, [new BitFullCalendarEvent { Id = "1", Title = "Standup", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Resource = "r1" }]);
+            parameters.Add(p => p.Resources, [new BitFullCalendarResource { Id = "r1", Title = "Room 1" }]);
+            parameters.Add(p => p.DefaultMode, BitFullCalendarMode.Timeline);
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+            parameters.Add(p => p.TimelineEventTemplate, (RenderFragment<BitFullCalendarEvent>)(e => builder => builder.AddContent(0, $"Pin: {e.Title}")));
+        });
+
+        AssertNamedByTemplateThenDetails(component, component.Find(".bit-bfc-timeline-event"));
+    }
+
+    private static void AssertNamedByTemplateThenDetails(IRenderedComponent<BitFullCalendar> component, AngleSharp.Dom.IElement eventElement)
+    {
+        Assert.IsFalse(eventElement.HasAttribute("aria-label"));
+
+        var ids = eventElement.GetAttribute("aria-labelledby")!.Split(' ');
+        Assert.HasCount(2, ids);
+
+        // The event's own content comes first, so the name holds what a speech-input user reads off the event. The
+        // event points at itself, so the template needs no box of its own to be named by (one of display: contents
+        // is one some engines leave out of the name).
+        Assert.AreEqual(eventElement.Id, ids[0]);
+        StringAssert.StartsWith(eventElement.TextContent, "Pin: Standup");
+        Assert.IsEmpty(eventElement.QuerySelectorAll(".bit-bfc-event-tpl"));
+
+        // Then the details the template may leave out, kept off the screen.
+        var details = component.Find($"#{ids[1]}");
+        Assert.IsTrue(details.HasAttribute("hidden"));
+        StringAssert.StartsWith(details.TextContent, "Standup, ");
+        Assert.IsTrue(eventElement.Contains(details));
     }
 
     [TestMethod]

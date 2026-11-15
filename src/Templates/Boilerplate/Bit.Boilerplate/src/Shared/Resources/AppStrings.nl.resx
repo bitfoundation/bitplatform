@@ -1604,7 +1604,7 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Alle sessies intrekken</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>Weet je zeker dat je alle sessies van {0} wilt intrekken?</value>
+    <value>Weet je zeker dat je alle sessies van {0} wilt intrekken? Geautoriseerde applicaties blijven behouden.</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
     <value>Je kunt deze gebruiker niet verwijderen uit de SuperAdmin-gebruikersgroep.</value>
@@ -2008,8 +2008,14 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>Het statusrapport lezen.</value>
   </data>
-    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
-    <value>Geautoriseerde applicatie</value>
+    <data name="OAuthSessionsTitle" xml:space="preserve">
+    <value>Geautoriseerde applicaties</value>
+  </data>
+    <data name="OAuthSessionsHint" xml:space="preserve">
+    <value>Dit zijn geen apparaten, dus ze tellen niet mee voor de apparaten die volledige functies mogen gebruiken. Elke applicatie wordt apart ingetrokken.</value>
+  </data>
+    <data name="OAuthSessionRevokeConfirmMessage" xml:space="preserve">
+    <value>Toegang van {0} intrekken? De applicatie werkt pas weer als ze opnieuw is geautoriseerd.</value>
   </data>
     <data name="OAuthClients" xml:space="preserve">
     <value>Applicaties</value>

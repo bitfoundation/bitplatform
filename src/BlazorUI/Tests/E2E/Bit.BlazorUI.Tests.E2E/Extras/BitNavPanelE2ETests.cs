@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// announcement, NoSearchBox, the rail's search button), navigation selecting the item (Automatic) and the Manual
 /// selection with its binding, the expansion modes, custom items, the templates, the events, every public method, a
 /// drawer on a wide screen (DrawerBreakpoint Always / Never: overlay, dialog role, focus trap and restore, Escape,
-/// close button, Placement End, AutoFocus, NoOverlay), StickyEnds, the BitParams cascade, Accent / Color / Size,
+/// close button, Placement End, AutoFocus, NoOverlay, NoFocusTrap), StickyEnds, the BitParams cascade, Accent / Color / Size,
 /// external icons, Style / Class / Styles / Classes, every --bit-NavPanel-* variable, RTL, Disabled, prerendering and
 /// unmounting. The phone viewport is covered by BitNavPanelPhoneE2ETests.
 /// </summary>
@@ -590,6 +590,32 @@ public class BitNavPanelE2ETests : E2ETestBase
         await Expect(Page.Locator("#npn-section")).ToHaveTextAsync("home");
         await Expect(Page.Locator("#nonmodal-open")).ToHaveTextAsync("True");
         await Expect(panel).ToBeVisibleAsync();
+    }
+
+    // A drawer that takes the focus without trapping it lets the keyboard leave it while it is open. The focus is
+    // only the drawer's to hand back while it is lost; one moved out onto the page belongs to whoever moved it, and
+    // closing the drawer from there leaves it where it was moved. The page is reached with the keyboard, since the
+    // overlay covers it for the pointer.
+    [TestMethod]
+    public async Task Drawer_NoFocusTrap_AFocusMovedOutIsLeftWhereItWasMovedWhenItCloses()
+    {
+        await OpenAsync(Route);
+
+        var opener = Page.Locator("#btn-open-notrap");
+        await opener.FocusAsync();
+        await opener.PressAsync("Enter");
+        var panel = Panel("npn-drawer-notrap");
+        await Expect(Page.Locator("#notrap-open")).ToHaveTextAsync("True");
+        await Expect(panel).ToBeVisibleAsync();
+        await Page.WaitForFunctionAsync("p => p.contains(document.activeElement)", await panel.ElementHandleAsync());
+
+        var close = Page.Locator("#btn-close-notrap");
+        await close.FocusAsync();
+        await close.PressAsync("Enter");
+        await Expect(Page.Locator("#notrap-open")).ToHaveTextAsync("False");
+        await Expect(panel).ToBeHiddenAsync();
+
+        await Expect(close).ToBeFocusedAsync();
     }
 
     [TestMethod]

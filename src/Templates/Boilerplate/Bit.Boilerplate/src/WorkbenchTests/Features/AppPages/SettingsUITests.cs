@@ -1,7 +1,7 @@
 //+:cnd:noEmit
 namespace Boilerplate.WorkbenchTests.Features.AppPages;
 
-/// <summary>The copy of the app's Settings page as a whole: who may open it, and its sections, of which one is open at a time.</summary>
+/// <summary>The app's Settings page in the Workbench as a whole: who may open it, and its sections, of which one is open at a time.</summary>
 [TestClass, TestCategory("UITest")]
 public class SettingsUITests : SettingsPageTest
 {
@@ -18,7 +18,7 @@ public class SettingsUITests : SettingsPageTest
     ];
 
     [TestMethod, EverySurface]
-    public async Task TheSettingsCopy_Should_AskASignedOutVisitorToSignIn(WorkbenchSurface surface)
+    public async Task TheSettingsPage_Should_AskASignedOutVisitorToSignIn(WorkbenchSurface surface)
     {
         await OpenWorkbench("settings", "?auth=signedout");
 
@@ -77,11 +77,13 @@ public class SettingsUITests : SettingsPageTest
     }
 
     [TestMethod, EverySurface]
-    public async Task AnOpenSection_Should_CloseWithItsHeaderAndStayAsItWasAfterAReload(WorkbenchSurface surface)
+    public async Task TheSectionSwitch_Should_OpenThePageOnItsSectionAgainAfterAReload(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.SessionsTitle);
 
-        await ReloadTheViewOnceSaved($"\"ExpandedSection\":\"{PageUrls.SettingsSections.Sessions}\"");
+        await Expect(SectionHeader(AppStrings.ProfileTitle)).ToHaveAttributeAsync("aria-expanded", "false");
+
+        await ReloadTheView();
 
         await Expect(Section(AppStrings.SessionsTitle)).ToBeVisibleAsync();
         await Expect(SectionHeader(AppStrings.ProfileTitle)).ToHaveAttributeAsync("aria-expanded", "false");
@@ -90,9 +92,5 @@ public class SettingsUITests : SettingsPageTest
 
         await Expect(SectionHeader(AppStrings.SessionsTitle)).ToHaveAttributeAsync("aria-expanded", "false");
         await Expect(Section(AppStrings.SessionsTitle)).Not.ToBeVisibleAsync();
-
-        await ReloadTheViewOnceSaved("\"ExpandedSection\":null");
-
-        await Expect(SectionHeader(AppStrings.SessionsTitle)).ToHaveAttributeAsync("aria-expanded", "false");
     }
 }

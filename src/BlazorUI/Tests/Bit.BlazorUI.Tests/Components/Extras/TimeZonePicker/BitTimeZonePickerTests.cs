@@ -468,7 +468,9 @@ public class BitTimeZonePickerTests : BunitTestContext
         // The box reports what it holds through its binding, which is what searches for it.
         component.Find(".bit-tzp-srch").Input("teh");
 
-        Assert.AreEqual("teh", component.Find(".bit-tzp-srch").GetAttribute("value"));
+        // The open's continuations, released above, may still hold the renderer's dispatcher, in which case the input is
+        // queued behind them rather than dispatched at once, so its render is waited for.
+        component.WaitForAssertion(() => Assert.AreEqual("teh", component.Find(".bit-tzp-srch").GetAttribute("value")));
     }
 
     [TestMethod]

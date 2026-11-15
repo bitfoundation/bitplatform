@@ -929,6 +929,7 @@
                         "src/Tests/Features/Identity/GetAccessTokenTests.cs",
                         "src/Tests/Features/Identity/AccessTokenCookieTests.cs",
                         "src/Tests/Features/Identity/IStorageServiceContractTests.cs",
+                        "src/Tests/Features/Identity/ProfileBackOnlineUITests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Infrastructure/Components/BitSnackBarUtils.cs",
                         "src/Tests/Infrastructure/Components/AppMenuUtils.cs",
@@ -937,7 +938,6 @@
                         "src/Tests/Features/Urls/ODataQueryFilterTests.cs",
                         "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",
                         "src/Tests/Features/Diagnostics/LoggingConfigurationTests.cs",
-                        "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs",
                         "src/Tests/Features/Diagnostics/DiagnosticModalVirtualizationTests.cs",
                         "src/Tests/Features/TemplateConfig/SourceNameLeakTests.cs",
                         "src/Tests/Features/TemplateConfig/HybridHostHardeningTests.cs",
@@ -1251,14 +1251,6 @@
                     ]
                 },
                 {
-                    "condition": "(appInsights != true)",
-                    "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs",
-                        "src/Shared/ApplicationInsightsOptions.cs",
-                        "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs"
-                    ]
-                },
-                {
                     "condition": "(database != PostgreSQL)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Data/Configurations/PostgresDateTimeOffsetConverter.cs",
@@ -1315,7 +1307,7 @@
                     "condition": "(ads != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Settings/UpgradeAccountSection*.*",
-                        "src/Workbench/Components/Pages/AppPages/Settings/UpgradeAccountSection*.*",
+                        "src/Workbench/Components/Pages/AppPages/Settings/Data/WorkbenchAdsService.cs",
                         "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IAdsService.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AdsService.cs",

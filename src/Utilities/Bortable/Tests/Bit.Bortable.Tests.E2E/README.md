@@ -96,9 +96,9 @@ BORTABLE_E2E_BROWSER=firefox dotnet test
 The built test assembly is also an executable test host, which takes the same options:
 `dotnet bin/Debug/net10.0/Bit.Bortable.Tests.E2E.dll --filter "FullyQualifiedName~.PluginTests."`.
 
-The workflow `.github/workflows/bit.ci.Bortable.e2e.yml` does the same in Release. It is started by hand
+The workflow `.github/workflows/ci.bortable.e2e.yml` does the same in Release. It is started by hand
 (`workflow_dispatch`) only, since the suite takes far longer than the build-and-unit pipeline in
-`bit.ci.Bortable.yml`:
+`ci.bortable.yml`:
 
 ```bash
 dotnet build src/Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj -c Release

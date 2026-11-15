@@ -87,8 +87,8 @@ cannot emulate something a test needs (forced colors, say) reports that test Inc
 passed. Every test has a three-minute timeout (`testconfig.json`), so a hang is reported as a failure rather than
 holding up the run.
 
-CI does the same in Release (`.github/workflows/bit.ci.Bonboarding.e2e.yml`), against the demo published the way
-`bonboarding.demo.cd.yml` publishes it rather than a build output: only a publish trims the WebAssembly client, so an
+CI does the same in Release (`.github/workflows/ci.bonboarding.e2e.yml`), against the demo published the way
+`cd.bonboarding.demo.yml` publishes it rather than a build output: only a publish trims the WebAssembly client, so an
 interop payload the trimmer breaks fails there and nowhere else. That workflow runs only when started by hand, once
 per engine. To run the suite the same way, from the repository root:
 
@@ -114,5 +114,5 @@ cd src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E && BONBOARDING_E2E_
 To go back to the lazy publish afterwards, delete the sample's `bin/Release` and `obj/Release` folders (both projects)
 first: published over the AOT output, it reuses part of it, and the app it leaves does not start in the browser.
 
-The pull-request pipeline, `bit.ci.Bonboarding.yml`, runs the build, engine, component and MCP tests on .NET 10
+The pull-request pipeline, `ci.bonboarding.yml`, runs the build, engine, component and MCP tests on .NET 10
 and 11.

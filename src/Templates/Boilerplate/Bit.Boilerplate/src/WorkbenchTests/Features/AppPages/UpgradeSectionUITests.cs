@@ -13,7 +13,7 @@ public class UpgradeSectionUITests : SettingsPageTest
     private ILocator Watch => Upgrade.GetByRole(AriaRole.Button, new() { Name = AppStrings.Upgrade, Exact = true });
 
     [TestMethod, EverySurface]
-    public async Task WatchingAnAd_Should_TakeTheConsentFirstAndThenUpgradeForGood(WorkbenchSurface surface)
+    public async Task WatchingAnAd_Should_TakeTheConsentFirstAndThenUpgrade(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.UpgradeTitle);
 
@@ -29,9 +29,10 @@ public class UpgradeSectionUITests : SettingsPageTest
         await Expect(Upgrade.GetByText(AppStrings.UpgradeSuccessMessage)).ToBeVisibleAsync();
         await Expect(Watch).ToHaveCountAsync(0);
 
-        await ReloadTheViewOnceSaved("\"IsAdWatched\":true");
+        // The consent stays with the view's device, so a reload offers the ad again without asking.
+        await ReloadTheViewOnceSaved("Advertising=1");
 
-        await Expect(Upgrade.GetByText(AppStrings.UpgradeSuccessMessage)).ToBeVisibleAsync();
+        await Expect(Watch).ToBeVisibleAsync();
     }
 
     [TestMethod, EverySurface]
@@ -51,15 +52,19 @@ public class UpgradeSectionUITests : SettingsPageTest
         await Press(consent);
         await Expect(consent).Not.ToBeCheckedAsync();
 
+        // As in the app, the ad that was ready isn't shown once the consent is withdrawn.
         await Press(SectionHeader(AppStrings.UpgradeTitle));
+        await Press(Watch);
 
-        await Expect(Agree).ToBeVisibleAsync();
+        await Expect(View().GetByText(AppStrings.UpgradeFailMessage).First).ToBeVisibleAsync();
     }
 
     [TestMethod, EverySurface]
     public async Task AFailedLoad_Should_SayNoAdIsAvailable(WorkbenchSurface surface)
     {
-        await OpenSection(AppStrings.UpgradeTitle, "?data=error");
+        await OpenWithTheConsent();
+
+        await PressInTheTools(WorkbenchStrings.DataError);
 
         await Expect(Upgrade.GetByText(AppStrings.UpgradeAdNotAvailableMessage)).ToBeVisibleAsync();
         await Expect(Agree).ToHaveCountAsync(0);
@@ -69,10 +74,22 @@ public class UpgradeSectionUITests : SettingsPageTest
     [TestMethod, EverySurface]
     public async Task ALoadThatNeverEnds_Should_KeepItsSpinner(WorkbenchSurface surface)
     {
-        await OpenSection(AppStrings.UpgradeTitle, "?data=loading");
+        await OpenWithTheConsent();
+
+        await PressInTheTools(WorkbenchStrings.DataLoading);
 
         await Expect(Upgrade.Locator(".bit-ldn-rsq")).ToBeVisibleAsync();
         await Expect(Agree).ToHaveCountAsync(0);
+    }
+
+    /// <summary>Opens the section with the advertising consent given, which the app asks for before it loads an ad.</summary>
+    private async Task OpenWithTheConsent()
+    {
+        await OpenSection(AppStrings.UpgradeTitle);
+
+        await Press(Agree);
+        await Expect(Watch).ToBeVisibleAsync();
+        await WaitUntilSaved("Advertising=1");
     }
 }
 //#endif

@@ -60,9 +60,9 @@ dotnet test --filter "FullyQualifiedName~.OpfsTests."
 dotnet test --filter "FullyQualifiedName~Persistence_survives_a_worker_restart"
 ```
 
-CI does the same in Release (`.github/workflows/bit.ci.Bsqlite.e2e.yml`), only when started by hand (Actions >
-"bit platform CI - Bsqlite E2E" > Run workflow), and uploads the test results (TRX) and the demo's output as an
-artifact. Its demo tests drive the demo published the way `bsqlite.demo.cd.yml` publishes it rather than a build
+CI does the same in Release (`.github/workflows/ci.bsqlite.e2e.yml`), only when started by hand (Actions >
+"CI Bsqlite E2E" > Run workflow), and uploads the test results (TRX) and the demo's output as an
+artifact. Its demo tests drive the demo published the way `cd.bsqlite.demo.yml` publishes it rather than a build
 output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
 constructor lost its parameter names, a getter nothing but System.Text.Json reads) fails there and nowhere else. The
 lazy loading tests drive the sample published for the same reason, and because only a publish writes the lazy marks into
@@ -85,11 +85,21 @@ dotnet publish src/Utilities/Bsqlite/Samples/Lazy/Bit.Bsqlite.Samples.Lazy/Bit.B
 cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && BSQLITE_E2E_LAZY_AOT=1 dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
 ```
 
+The `demo-aot` job does the same for the demo and runs `DemoTests` alone against it: the demo marks
+`System.Private.Xml.wasm` lazy, and `Bit.Bsqlite.targets` drops that mark from an AOT build and leaves
+`BsqliteBuilder.LazyLoadsXml` unset, so its `BeforeFirstOpen` step loads nothing:
+
+```bash
+dotnet publish src/Utilities/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true -p:RunAOTCompilation=true
+(cd demo && dotnet Bit.Bsqlite.Demo.Server.dll --urls http://127.0.0.1:5000 &)
+cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && BSQLITE_E2E_DEMO_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --filter "FullyQualifiedName~DemoTests"
+```
+
 Locally, delete the sample's `bin/Release` and `obj/Release` folders before publishing it without AOT again: a publish over
 the AOT one's intermediates can ship the assemblies with their IL stripped, and the runtime then fails to start
 (`Assertion: should not be reached at ... interp.c`).
 
-The pull-request pipeline, `bit.ci.Bsqlite.yml`, runs the build, unit, MCP server and JavaScript tests only.
+The pull-request pipeline, `ci.bsqlite.yml`, runs the build, unit, MCP server and JavaScript tests only.
 
 Without PowerShell 7, the browser can be installed with the Node.js runtime Playwright ships:
 `bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.

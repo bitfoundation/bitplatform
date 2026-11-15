@@ -297,6 +297,21 @@ public class BitImageViewerE2ETests : E2ETestBase
         await viewport.ScrollIntoViewIfNeededAsync();
         (box, _) = await BoxesAsync("imv-dis");
 
+        // The disabled viewer leaves the Ctrl+wheel to the page, whose default is the browser's own zoom - which would
+        // zoom the page itself (Firefox keeps that zoom per site, for every test the browser runs afterwards). The page
+        // takes the default away once the press has passed the viewer, noting whether anything claimed it before.
+        await Page.EvaluateAsync("""
+            () => {
+                window.__imvCtrlWheelClaimed = null;
+                window.addEventListener('wheel', e => {
+                    if (!e.ctrlKey) return;
+                    window.__imvCtrlWheelClaimed = e.defaultPrevented;
+                    e.preventDefault();
+                }, { passive: false });
+            }
+            """);
+        var pixelRatio = await Page.EvaluateAsync<double>("() => window.devicePixelRatio");
+
         await Page.Mouse.DblClickAsync(box.X + 200, box.Y + 150);
         await Page.Keyboard.DownAsync("Control");
         await Page.Mouse.WheelAsync(0, -200);
@@ -305,5 +320,8 @@ public class BitImageViewerE2ETests : E2ETestBase
 
         await Expect(ZoomText("imv-dis")).ToHaveTextAsync("100%");
         Near(400, (await Image("imv-dis").BoundingBoxAsync())!.Width, "still fitted");
+        Assert.IsFalse(await Page.EvaluateAsync<bool?>("() => window.__imvCtrlWheelClaimed"), "the viewer left the Ctrl+wheel to the page");
+        // A browser's page zoom shows as a change of the device pixel ratio.
+        Assert.AreEqual(pixelRatio, await Page.EvaluateAsync<double>("() => window.devicePixelRatio"), "the page is not zoomed");
     }
 }

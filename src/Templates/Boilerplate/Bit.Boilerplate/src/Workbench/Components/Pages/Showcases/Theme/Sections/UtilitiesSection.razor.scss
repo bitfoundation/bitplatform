@@ -3,7 +3,8 @@
 .overlay-stage,
 .pull-stage,
 .sticky-stage,
-.swipe-stage {
+.swipe-stage,
+.press-box ::deep .press-stage {
     height: 9rem;
     position: relative;
     border-radius: $bit-shape-radius-surface;
@@ -32,15 +33,19 @@
     background-color: $bit-color-background-secondary;
 }
 
-.swipe-stage {
+.swipe-stage,
+.press-box ::deep .press-stage {
     gap: 0.5rem;
     display: flex;
     align-items: center;
     flex-direction: column;
     justify-content: center;
+    background-color: $bit-color-background-secondary;
+}
+
+.swipe-stage {
     touch-action: none;
     user-select: none;
-    background-color: $bit-color-background-secondary;
 }
 
 .quote-stage ::deep .quote {

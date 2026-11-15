@@ -95,6 +95,13 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "DraftKey",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A key under which the unsent text of the composer is kept in the session storage of the browser, so it survives a reload or a dropped circuit; drafts are not kept while it is null. Handed to the built-in composer as its DraftKey (a ComposerTemplate keeps its own drafts). Use a key naming the conversation and the user, such as $\"chat-{userId}-{conversationId}\", so drafts neither bleed between conversations nor reach the next person to sign in on the same browser. When the key changes, the text and the files staged under the old key stay with it and come back with it, and the draft kept under the new key is shown; a key set where there was none, or changed while a submission is in flight (a conversation named once it is created), keeps what the composer holds.",
+        },
+        new()
+        {
             Name = "EmptyDescription",
             Type = "string?",
             DefaultValue = "null",
@@ -205,6 +212,15 @@ public partial class BitAiChatDemo
             Description = "The callback for when the user activates a numbered citation in a reply.",
             LinkType = LinkType.Link,
             Href = "/components/ai/citationmarker#citation",
+        },
+        new()
+        {
+            Name = "OnDictationError",
+            Type = "EventCallback<string>",
+            DefaultValue = "",
+            Description = "The callback for a dictation of the composer that fails, with the name of what failed (not-allowed when the microphone is refused, audio-capture when there is none, ...). The user is told either way; this is the same information for the application. Only raised when AllowDictation is on.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/voiceinput",
         },
         new()
         {

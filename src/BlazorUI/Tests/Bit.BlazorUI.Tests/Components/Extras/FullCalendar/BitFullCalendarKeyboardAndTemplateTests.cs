@@ -119,6 +119,41 @@ public class BitFullCalendarKeyboardAndTemplateTests : BunitTestContext
         StringAssert.Contains(badges.Single(b => b.GetAttribute("data-bit-bfc-event") == "2").GetAttribute("style"), "--bit-bfc-evt-color:#db2777;");
     }
 
+    [TestMethod]
+    public void BitFullCalendarMonthBadgeShouldBeNamedByTheTextItShowsFirst()
+    {
+        var component = RenderCalendar();
+
+        var badge = component.FindAll(".bit-bfc-event-badge").Single(b => b.GetAttribute("data-bit-bfc-event") == "1");
+        var time = badge.QuerySelector(".bit-bfc-event-badge-time")!.TextContent.Trim();
+
+        // The badge shows "Standup 9:00 AM" as two words, and its name holds that text in that order (Label in Name),
+        // with the end time and the date after it.
+        StringAssert.Contains(badge.TextContent, $"Standup {time}");
+        var label = badge.GetAttribute("aria-label")!;
+        StringAssert.StartsWith(label, $"Standup, {time} - ");
+        StringAssert.EndsWith(label, ", 3/18/2026");
+
+        // It is the name every other view gives the event, with the date the badge does not show by where it sits.
+        var dayBlock = RenderCalendar(p => p.Add(c => c.DefaultView, BitFullCalendarView.Day))
+            .FindAll(".bit-bfc-event-block").Single(b => b.GetAttribute("data-bit-bfc-event") == "1");
+        Assert.AreEqual($"{dayBlock.GetAttribute("aria-label")}, 3/18/2026", label);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDayViewBlockShouldSeparateTheTitleFromTheTimeInTheTextItShows()
+    {
+        var component = RenderCalendar(p => p.Add(c => c.DefaultView, BitFullCalendarView.Day));
+
+        var block = component.FindAll(".bit-bfc-event-block").Single(b => b.GetAttribute("data-bit-bfc-event") == "1");
+        var time = block.QuerySelector(".bit-bfc-event-block-time")!.TextContent.Trim();
+
+        // The block is named "Standup, 9:00 AM - 10:00 AM", so the text it shows keeps the two apart as well, rather
+        // than reading as "Standup9:00 AM" (Label in Name).
+        StringAssert.StartsWith(block.GetAttribute("aria-label")!, $"Standup, {time}");
+        StringAssert.Contains(System.Text.RegularExpressions.Regex.Replace(block.TextContent, @"\s+", " "), $"Standup {time}");
+    }
+
     #endregion
 
     #region Templates

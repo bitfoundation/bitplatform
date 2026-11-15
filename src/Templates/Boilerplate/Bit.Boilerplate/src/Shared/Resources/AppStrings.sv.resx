@@ -1604,7 +1604,7 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Återkalla alla sessioner</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>Är du säker på att du vill återkalla alla sessioner för {0}?</value>
+    <value>Är du säker på att du vill återkalla alla sessioner för {0}? Auktoriserade applikationer behålls.</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
     <value>Du kan inte ta bort denna användare från SuperAdmin-användargruppen.</value>
@@ -2008,8 +2008,14 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>Läsa hälsorapporten.</value>
   </data>
-    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
-    <value>Auktoriserad applikation</value>
+    <data name="OAuthSessionsTitle" xml:space="preserve">
+    <value>Auktoriserade applikationer</value>
+  </data>
+    <data name="OAuthSessionsHint" xml:space="preserve">
+    <value>Det här är inga enheter, så de räknas inte till de enheter som tillåts fulla funktioner. Var och en återkallas för sig.</value>
+  </data>
+    <data name="OAuthSessionRevokeConfirmMessage" xml:space="preserve">
+    <value>Återkalla åtkomsten för {0}? Den slutar fungera tills den auktoriseras igen.</value>
   </data>
     <data name="OAuthClients" xml:space="preserve">
     <value>Applikationer</value>

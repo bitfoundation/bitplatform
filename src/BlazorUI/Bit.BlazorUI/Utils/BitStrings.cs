@@ -386,6 +386,16 @@ public class BitStrings
 
 
 
+    // ===== BitCalendar =====
+
+    /// <summary>
+    /// What a screen reader reads as the focus enters the days of a <see cref="BitCalendar"/> that is
+    /// <c>Required</c>: the description of its days grid, which takes no aria-required of its own.
+    /// </summary>
+    public virtual string Required => "Required";
+
+
+
     // ===== BitSwiper =====
 
     /// <summary>

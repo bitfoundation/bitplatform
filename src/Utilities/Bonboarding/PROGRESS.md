@@ -11,7 +11,7 @@ maintainers, not user documentation: the README is the user guide.
   (`Bit.Bonboarding.Tests.Mcp/McpSurfaceTests.cs:55`).
 - `dotnet test --solution Bit.Bonboarding.slnx -f net10.0`: 276 / 276 passing (226 engine and component tests,
   50 MCP tests). The net8.0 and net9.0 test runs cannot start on this machine because only the .NET 10 runtime is
-  installed. That is an environment limit, not a code failure: CI (`bit.ci.Bonboarding.yml`) runs all three.
+  installed. That is an environment limit, not a code failure: CI (`ci.bonboarding.yml`) runs all three.
 - No browser-level tests exist. `bit-bonboarding.ts` never executes in any automated check.
 - Since `Samples` were added, `Bit.Bonboarding.slnx` also holds the MAUI sample, which needs the `maui-*` workloads
   and cannot be built with `-f net10.0`. The solution-level commands in this file are run against
@@ -202,7 +202,7 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
 
 | Round | Scope | Outcome |
 | --- | --- | --- |
-| 1 | Defects D1-D13, demo accessibility, browser test suite (moved forward from round 8, since every later round changes the browser layer too) | All fixed. +14 engine/component tests (240), +1 MCP test (51), new `Bit.Bonboarding.Tests.E2E` with 31 tests passing in Chromium (installed Chrome 156), Firefox and WebKit, `bit.ci.Bonboarding.e2e.yml` (manual, three engines). New public API: `BonboardingWaitReason`, `IBonboardingTourSession.WaitReason` (default interface implementation, so existing implementations still compile), `BonboardingStepGeometry.InvalidSelector`, `BonboardingStepRenderContext.IsRunning(action)`. Behaviour changes, each a fix of documented intent: the system theme follows a dark OS; nothing blocks the page while a step waits for its target or route; completion is sticky per version; hidden targets count as missing |
+| 1 | Defects D1-D13, demo accessibility, browser test suite (moved forward from round 8, since every later round changes the browser layer too) | All fixed. +14 engine/component tests (240), +1 MCP test (51), new `Bit.Bonboarding.Tests.E2E` with 31 tests passing in Chromium (installed Chrome 156), Firefox and WebKit, `ci.bonboarding.e2e.yml` (manual, three engines). New public API: `BonboardingWaitReason`, `IBonboardingTourSession.WaitReason` (default interface implementation, so existing implementations still compile), `BonboardingStepGeometry.InvalidSelector`, `BonboardingStepRenderContext.IsRunning(action)`. Behaviour changes, each a fix of documented intent: the system theme follows a dark OS; nothing blocks the page while a step waits for its target or route; completion is sticky per version; hidden targets count as missing |
 
 | 2 | Authoring safety and feedback | `BonboardingTourDefinition.Validate()` with 13 rules (errors refuse `StartAsync` with every problem listed, warnings are logged); validation feedback (`ValidationMessage` on the step and on `BonboardingStepContext`, shown with `role="alert"`, `AdvanceBlocked` event); application signals (`AdvanceOnSignal`, `IBonboardingService.SignalAsync`, brought forward from round 3); declarative parity (16 more `BonboardingStep` and 20 more `BonboardingTour` parameters, including `CanStart`). A declarative `AutoStart` of an invalid tour logs instead of throwing out of a lifecycle method. +14 tests |
 | 3 | Orchestration and eligibility | Competing tours: `BonboardingStartOptions.WhenBusy` (`Replace` default, `Queue`, `Skip`) and `BonboardingTourDefinition.Priority`; queued starts re-check eligibility when their turn comes; declarative `AutoStart` queues (fixing a page's auto tour cancelling the multi-page tour the user was taking) and withdraws its queued start with its page. Snooze: `SnoozeAsync`, `BonboardingTourStatus/EndReason.Snoozed`, `TourSnoozed`, `BonboardingRecord.SnoozedUntil`, `BonboardingStepAction.RemindMeLater`, honoured by automatic starts only. `MigrateRecord` for version bumps. `TimeProvider` registered and used for every record time. +17 tests (271 total) |
@@ -271,7 +271,7 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
 
 ### Follow-up backlog (prioritised)
 
-1. Run the new `bit.ci.Bonboarding.e2e.yml` workflow once on GitHub (it has only run locally) and the unit tests on
+1. Run the new `ci.bonboarding.e2e.yml` workflow once on GitHub (it has only run locally) and the unit tests on
    net8.0/net9.0 there.
 2. Verify on MAUI Blazor Hybrid (WebView) on a device - `Samples/Maui` builds for Android and Windows and is the app
    to run; nothing browser-only is used beyond `localStorage`.

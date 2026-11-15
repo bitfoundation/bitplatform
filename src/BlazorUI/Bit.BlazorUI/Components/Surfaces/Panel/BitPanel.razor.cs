@@ -40,10 +40,7 @@ public partial class BitPanel : BitComponentBase
     private float _offsetTop;
     // Whether the overflow of a scroller was actually toggled during the open sequence, so the close
     // sequence hands it back if and only if it was taken, regardless of later changes to AutoToggleScroll.
-    // The scroller is snapshotted with it, so the close restores the same one.
     private bool _scrollToggledOnOpen;
-    private ElementReference? _scrollerElementOnToggle;
-    private string? _scrollerSelectorOnToggle;
     private string? _swipesKey;
     private string _headerId = default!;
     private string _containerId = default!;
@@ -850,9 +847,9 @@ public partial class BitPanel : BitComponentBase
         // consumer's callbacks are all dealt with once, in one place, and against a DOM that is up to date.
         if (IsOpen)
         {
-            // Remembered before anything else is done, so that what is captured is the element the focus was
+            // Remembered before anything else is done, so that what is stored is the element the focus was
             // on when the panel opened rather than wherever it may have gone while the rest of this ran.
-            await CaptureFocusOrigin();
+            await StoreFocusOrigin();
 
             await LockScroll();
 
@@ -1371,7 +1368,9 @@ public partial class BitPanel : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    private async Task CaptureFocusOrigin()
+    // The container is the scope of both: a focus already inside the panel as it opens is no origin, and a
+    // focus still inside the panel as it slides out - inert already - is as lost as one dropped on the body.
+    private async Task StoreFocusOrigin()
     {
         // Nothing is handed back by a panel that was told not to hand anything back, so nothing is recorded
         // for it either - the map would otherwise keep the element alive until the panel closes.
@@ -1379,7 +1378,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsCaptureFocusOrigin(_containerId);
+            await _js.BitUtilsStoreFocus(_containerId, scopeId: _containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1390,7 +1389,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsRestoreFocusOrigin(_containerId);
+            await _js.BitUtilsRestoreFocus(_containerId, onlyWhenLost: true, scopeId: _containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1498,31 +1497,34 @@ public partial class BitPanel : BitComponentBase
     // closes, and the room that gave back is what an absolutely positioned panel is pushed down by.
     private async Task ToggleScroll(bool isOpen)
     {
-        if (isOpen)
-        {
-            // The decision is taken at open time; the close reuses it instead of re-reading
-            // AutoToggleScroll, which may have changed since the panel was opened.
-            _scrollToggledOnOpen = AutoToggleScroll && IsDisposed is false && IsRendered;
-            if (_scrollToggledOnOpen is false) return;
-
-            // The scroller is snapshotted with it, so the close hands back the same one even if
-            // ScrollerElement / ScrollerSelector changed in the meantime.
-            _scrollerElementOnToggle = ScrollerElementTarget;
-            _scrollerSelectorOnToggle = ScrollerSelector;
-        }
-        else
-        {
-            // Only hand the overflow back if it was actually taken away, regardless of the current value.
-            if (_scrollToggledOnOpen is false) return;
-
-            _scrollToggledOnOpen = false;
-        }
-
         try
         {
-            _offsetTop = _scrollerElementOnToggle.HasValue
-                ? await _js.BitUtilsToggleOverflow(_containerId, _scrollerElementOnToggle.Value, isOpen)
-                : await _js.BitUtilsToggleOverflow(_containerId, _scrollerSelectorOnToggle ?? "body", isOpen);
+            if (isOpen)
+            {
+                // The decision is taken at open time; the close reuses it instead of re-reading
+                // AutoToggleScroll, which may have changed since the panel was opened.
+                _scrollToggledOnOpen = AutoToggleScroll && IsDisposed is false && IsRendered;
+                if (_scrollToggledOnOpen is false) return;
+
+                // The panel has always let the scroller shift by the width of the scrollbar it takes away,
+                // so the room is not given back as padding.
+                var element = ScrollerElementTarget;
+                _offsetTop = element.HasValue
+                    ? await _js.BitUtilsLockScrollWithOffset(_containerId, element.Value, compensate: false)
+                    : await _js.BitUtilsLockScrollWithOffset(_containerId, ScrollerSelector ?? "body", compensate: false);
+            }
+            else
+            {
+                // Only hand the overflow back if it was actually taken away, regardless of the current value.
+                if (_scrollToggledOnOpen is false) return;
+
+                _scrollToggledOnOpen = false;
+
+                // The hold is registered under the key, against the scroller it was taken on, so releasing the
+                // key hands back that scroller even if ScrollerElement / ScrollerSelector changed since the
+                // panel was opened.
+                await _js.BitUtilsUnlockScroll(_containerId);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1545,7 +1547,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsDisposeFocusOrigin(_containerId);
+            await _js.BitUtilsForgetFocus(_containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

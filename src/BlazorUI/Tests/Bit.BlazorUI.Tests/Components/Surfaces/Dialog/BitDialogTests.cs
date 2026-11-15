@@ -2189,9 +2189,8 @@ public class BitDialogTests : BunitTestContext
         Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"]);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]);
-        // The third argument is the one that says whether the overflow is being taken or handed back.
-        Assert.IsFalse(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]
-                              .Any(i => i.Arguments[2] is false));
+        // The overtaken closing never let go of the scroller the opening holds again.
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"]);
     }
 
     [TestMethod]
@@ -2206,25 +2205,26 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.ScrollerSelector, ".my-scroller");
         });
 
-        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
-        Assert.AreEqual(".my-scroller", invocation.Arguments[1]);
-        Assert.AreEqual(true, invocation.Arguments[2]);
+        var hold = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][0];
+        Assert.AreEqual(".my-scroller", hold.Arguments[1]);
+        // The Dialog has always let the scroller shift by the width of its scrollbar, so no room is given back.
+        Assert.AreEqual(false, hold.Arguments[2]);
 
         component.Find(".bit-dlg-cls").Click();
 
+        // Released by the key it was taken under, which is what hands back the scroller it was taken on.
         component.WaitForAssertion(() =>
         {
-            var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
-            Assert.HasCount(2, invocations);
-            Assert.AreEqual(".my-scroller", invocations[1].Arguments[1]);
-            Assert.AreEqual(false, invocations[1].Arguments[2]);
+            var releases = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"];
+            Assert.HasCount(1, releases);
+            Assert.AreEqual(hold.Arguments[0], releases[0].Arguments[0]);
         }, TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
     public void BitDialogAbsolutePositionShouldCarryTheScrollTopOffsetOfTheLockedScroller()
     {
-        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
+        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.lockScroll", _ => true).SetResult(120);
 
         var component = RenderComponent<BitDialog>(parameters =>
         {
@@ -2241,9 +2241,9 @@ public class BitDialogTests : BunitTestContext
     [TestMethod]
     public void BitDialogFixedDialogShouldNeverCarryTheScrollTopOffset()
     {
-        // toggleOverflow reports the scroller's scrollTop, which only an absolutely positioned Dialog uses
+        // lockScroll reports the scroller's scrollTop, which only an absolutely positioned Dialog uses
         // to re-align itself; on a fixed one the same declaration would push it off the bottom of the screen.
-        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
+        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.lockScroll", _ => true).SetResult(120);
 
         var component = RenderComponent<BitDialog>(parameters =>
         {
@@ -2285,7 +2285,7 @@ public class BitDialogTests : BunitTestContext
         {
             Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
             Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
-            Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
+            Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -2304,7 +2304,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][0];
         Assert.AreEqual(shell, invocation.Arguments[1]);
     }
 
@@ -2322,7 +2322,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.ScrollerSelector, "#own-scroller");
         });
 
-        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][0];
         Assert.AreEqual("#own-scroller", invocation.Arguments[1]);
     }
 
@@ -2335,7 +2335,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][0];
         Assert.AreEqual("body", invocation.Arguments[1]);
     }
 
@@ -2344,7 +2344,7 @@ public class BitDialogTests : BunitTestContext
     {
         RenderComponent<BitDialog>(parameters => parameters.Add(p => p.IsOpen, true));
 
-        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
     }
 
     [TestMethod]
@@ -2363,13 +2363,16 @@ public class BitDialogTests : BunitTestContext
 
         component.Find(".bit-dlg-cls").Click();
 
+        // The scroller that was locked is the one that gets unlocked, not the one named now: the release goes by the
+        // key the hold was taken under, and nothing is taken on the scroller named since.
         component.WaitForAssertion(() =>
         {
-            var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
-            Assert.HasCount(2, invocations);
-            // The scroller that was locked is the one that gets unlocked, not the one named now.
-            Assert.AreEqual(".first-scroller", invocations[1].Arguments[1]);
-            Assert.AreEqual(false, invocations[1].Arguments[2]);
+            var holds = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"];
+            var releases = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"];
+            Assert.HasCount(1, holds);
+            Assert.AreEqual(".first-scroller", holds[0].Arguments[1]);
+            Assert.HasCount(1, releases);
+            Assert.AreEqual(holds[0].Arguments[0], releases[0].Arguments[0]);
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -2382,13 +2385,13 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
 
         await component.Instance.DisposeAsync();
 
-        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
-        Assert.HasCount(2, invocations);
-        Assert.AreEqual(false, invocations[1].Arguments[2]);
+        var releases = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"];
+        Assert.HasCount(1, releases);
+        Assert.AreEqual(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][0].Arguments[0], releases[0].Arguments[0]);
     }
 
     [TestMethod]

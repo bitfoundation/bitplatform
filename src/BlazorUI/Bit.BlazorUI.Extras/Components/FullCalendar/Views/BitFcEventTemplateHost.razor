@@ -1,0 +1,9 @@
+﻿@namespace Bit.BlazorUI
+
+@* The template draws the content of the surface as it would on its own, with no box around it, and the details follow
+   it hidden: read only where the name of the surface points at them (see LabelledBy). *@
+@Template(Event)
+@if (Details is not null)
+{
+    <span id="@DetailsId(InstanceId)" hidden>@Details</span>
+}

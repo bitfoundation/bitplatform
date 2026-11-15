@@ -35,7 +35,14 @@ internal sealed class BitPdfOutlineBuilder
         {
             return Array.Empty<BitPdfOutlineItem>();
         }
-        return BuildSiblings(outlines.GetRaw("First"), new HashSet<int>(), depth: 0);
+
+        // In a Range pass, a bookmark or sibling chain whose bytes are missing is
+        // deferred so the rest of the tree is still walked and every missing range
+        // is acquired at once; the incomplete tree itself is never returned.
+        int mark = BitPdfMissingDataBatch.Mark(_xref);
+        var items = BuildSiblings(outlines.GetRaw("First"), new HashSet<int>(), depth: 0);
+        BitPdfMissingDataBatch.ThrowIfDeferred(_xref, mark);
+        return items;
     }
 
     private List<BitPdfOutlineItem> BuildSiblings(object? firstRaw, HashSet<int> visited, int depth)
@@ -56,26 +63,47 @@ internal sealed class BitPdfOutlineBuilder
         while (current is not null && guard++ < 8192)
         {
             BitPdfDict? node;
-            if (current is BitPdfRef r)
+            string title;
+            object? first;
+            try
             {
-                if (!visited.Add(r.Num))
+                if (current is BitPdfRef r)
+                {
+                    if (!visited.Add(r.Num))
+                    {
+                        break;
+                    }
+                    node = _xref.Fetch(r) as BitPdfDict;
+                }
+                else
+                {
+                    node = current as BitPdfDict;
+                }
+                if (node is null)
                 {
                     break;
                 }
-                node = _xref.Fetch(r) as BitPdfDict;
+
+                title = (node.Get("Title") as BitPdfString)?.AsText() ?? "";
+                first = node.GetRaw("First");
             }
-            else
+            catch (BitPdfMissingDataException missing) when (BitPdfMissingDataBatch.Defer(_xref, missing))
             {
-                node = current as BitPdfDict;
-            }
-            if (node is null)
-            {
+                // The rest of this chain hangs off the missing node's /Next.
                 break;
             }
 
-            string title = (node.Get("Title") as BitPdfString)?.AsText() ?? "";
-            BitPdfDestination? dest = ResolveDestinationInfo(node);
-            var children = BuildSiblings(node.GetRaw("First"), visited, depth + 1);
+            BitPdfDestination? dest;
+            try
+            {
+                dest = ResolveDestinationInfo(node);
+            }
+            catch (BitPdfMissingDataException missing) when (BitPdfMissingDataBatch.Defer(_xref, missing))
+            {
+                dest = null; // independent of the walk; the pass is discarded anyway
+            }
+
+            var children = BuildSiblings(first, visited, depth + 1);
 
             items.Add(new BitPdfOutlineItem
             {

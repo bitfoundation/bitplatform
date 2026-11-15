@@ -1604,7 +1604,7 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Revocar todas las sesiones</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>¿Estás seguro de que quieres revocar todas las sesiones de {0}?</value>
+    <value>¿Estás seguro de que quieres revocar todas las sesiones de {0}? Las aplicaciones autorizadas se mantienen.</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
     <value>No puedes remover este usuario del grupo de usuarios SuperAdmin.</value>
@@ -2008,8 +2008,14 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>Leer el informe de estado.</value>
   </data>
-    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
-    <value>Aplicación autorizada</value>
+    <data name="OAuthSessionsTitle" xml:space="preserve">
+    <value>Aplicaciones autorizadas</value>
+  </data>
+    <data name="OAuthSessionsHint" xml:space="preserve">
+    <value>No son dispositivos, así que no cuentan entre los dispositivos permitidos para funciones completas. Cada una se revoca por separado.</value>
+  </data>
+    <data name="OAuthSessionRevokeConfirmMessage" xml:space="preserve">
+    <value>¿Revocar el acceso de {0}? Dejará de funcionar hasta que se vuelva a autorizar.</value>
   </data>
     <data name="OAuthClients" xml:space="preserve">
     <value>Aplicaciones</value>

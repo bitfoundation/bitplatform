@@ -49,7 +49,6 @@ When you modify the structure, scripts, stylesheets, or metadata in `App.razor`,
 ```html
 <link rel="preconnect" href="https://www.google.com">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://js.monitor.azure.com" crossorigin>
 ```
 
 **PWA support:**
@@ -81,8 +80,8 @@ When you modify the structure, scripts, stylesheets, or metadata in `App.razor`,
 <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></script>
 ```
 
-**Application Insights initialization:**
-Both files include the Application Insights snippet for telemetry and monitoring.
+**Telemetry:**
+App.razor renders `<BelemetryScript />` in the head, so bit Belemetry sees the page from its first moment; in `index.html`, `<BelemetryInitializer />` starts it once Blazor runs.
 
 ### Key Differences Between Files
 

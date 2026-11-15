@@ -227,8 +227,8 @@ public partial class DevMcpDiagnosticTools
             Recaptcha = string.IsNullOrWhiteSpace(settings.GoogleRecaptchaSecretKey) is false,
             //#endif
             //#if (appInsights == true)
-            // What is actually wired is the Azure Monitor OpenTelemetry exporter, off the same connection string the
-            // client's Application Insights JS SDK binds (See AddOpenTelemetryExporters).
+            // What is actually wired is Belemetry's Azure Monitor exporter, off the same connection string the
+            // clients' Belemetry uses (See ConfigureAppTelemetry).
             AzureMonitorExporter = string.IsNullOrWhiteSpace(configuration["ApplicationInsights:ConnectionString"]) is false,
             //#endif
             OtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false

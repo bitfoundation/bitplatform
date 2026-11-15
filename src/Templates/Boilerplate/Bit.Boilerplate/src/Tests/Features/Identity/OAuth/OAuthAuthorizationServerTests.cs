@@ -332,8 +332,8 @@ public class OAuthAuthorizationServerTests
 
     /// <summary>
     /// <c>/healthz</c>'s document offers <c>healthz</c> alone, as its 401 does, and, anonymous like the rest of the
-    /// document, names the template version <c>bit.json</c> records, so a monitor can tell a bit Boilerplate app and
-    /// its age before it asks anyone for a token.
+    /// document, names the template version <c>bit.json</c> records, so a monitor can tell an app made from bit-bp
+    /// and its age before it asks anyone for a token.
     /// </summary>
     [TestMethod]
     public async Task TheHealthzProtectedResourceMetadata_Should_NameTheTemplateVersion()
@@ -580,6 +580,93 @@ public class OAuthAuthorizationServerTests
                 "elevated-access code, the second factor or a password-reset token gets pushed to. The column is only " +
                 "written by IdentityController.SignIn, and this asserts OAuthTokenService never starts writing it too.");
         }
+    }
+
+    [TestMethod]
+    public async Task RevokingAllOfAUsersSessions_Should_LeaveTheApplicationsTheyAuthorized()
+    {
+        await using var server = new AppTestServer();
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
+                    .Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+        var (email, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
+        await using var _ = grant;
+
+        var (verifier, challenge) = GeneratePkcePair();
+
+        var approval = await client.GetController<IOAuthController>()
+                                   .Approve(BuildRequest(server, challenge, OAuthScopes.Healthz, resourcePath: "/healthz"), TestContext.CancellationToken);
+
+        var granted = await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
+        var applicationSessionId = SessionIdOf(granted.GetProperty("access_token").GetString()!);
+
+        await using var adminClient = server.CreateAppClient();
+        var (adminEmail, adminUserId) = await TestAccountUtils.CreateAndSignIn(adminClient, TestContext.CancellationToken);
+        await using var __ = await TestAccountUtils.MakeGlobalAdmin(adminClient, adminUserId, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(adminClient, adminEmail, TestContext.CancellationToken);
+
+        var userId = await TestAccountUtils.ReadUserId(server, email, TestContext.CancellationToken);
+        var userManagement = adminClient.GetController<IUserManagementController>();
+
+        var sessionsBefore = await userManagement.GetUserSessions(userId, TestContext.CancellationToken);
+
+        Assert.Contains(session => session.OAuthClientId is null, sessionsBefore,
+            "The control: the user's own device is there for Revoke all sessions to take.");
+
+        await userManagement.RevokeAllUserSessions(userId, TestContext.CancellationToken);
+
+        var sessionsAfter = await userManagement.GetUserSessions(userId, TestContext.CancellationToken);
+
+        Assert.AreEqual(applicationSessionId, sessionsAfter.Single().Id,
+            "Revoke all sessions takes the user's devices and leaves the applications they authorized, which are revoked one by one.");
+    }
+
+    [TestMethod, DoNotParallelize]
+    public async Task AnAuthorizedApplication_Should_NotCountItsUserAsOnline()
+    {
+        await using var server = new AppTestServer();
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
+                    .Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+        var (email, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
+        await using var _ = grant;
+
+        var (verifier, challenge) = GeneratePkcePair();
+
+        var approval = await client.GetController<IOAuthController>()
+                                   .Approve(BuildRequest(server, challenge, OAuthScopes.Healthz, resourcePath: "/healthz"), TestContext.CancellationToken);
+
+        await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
+
+        await using var adminClient = server.CreateAppClient();
+        var (_, adminUserId) = await TestAccountUtils.CreateAndSignIn(adminClient, TestContext.CancellationToken);
+        await using var __ = await TestAccountUtils.MakeGlobalAdmin(adminClient, adminUserId, TestContext.CancellationToken);
+
+        var userId = await TestAccountUtils.ReadUserId(server, email, TestContext.CancellationToken);
+        var userManagement = adminClient.GetController<IUserManagementController>();
+
+        await SetDeviceSessionsLastSeen(server, userId, TimeSpan.FromDays(1));
+        var onlineWithTheApplicationAlone = await userManagement.GetOnlineUsersCount(TestContext.CancellationToken);
+
+        await SetDeviceSessionsLastSeen(server, userId, TimeSpan.Zero);
+        var onlineWithADevice = await userManagement.GetOnlineUsersCount(TestContext.CancellationToken);
+
+        Assert.AreEqual(onlineWithTheApplicationAlone + 1, onlineWithADevice,
+            "A user is online on a device of theirs, not because an application they authorized keeps refreshing its token.");
+    }
+
+    private async Task SetDeviceSessionsLastSeen(AppTestServer server, Guid userId, TimeSpan ago)
+    {
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var lastSeen = scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow().Subtract(ago).ToUnixTimeSeconds();
+        var grantedSessionIds = dbContext.OAuthGrants.Select(grant => grant.UserSessionId);
+
+        await dbContext.UserSessions
+            .Where(us => us.UserId == userId && !grantedSessionIds.Contains(us.Id))
+            .ExecuteUpdateAsync(us => us.SetProperty(s => s.StartedOn, lastSeen).SetProperty(s => s.RenewedOn, lastSeen), TestContext.CancellationToken);
     }
 
     /// <summary>

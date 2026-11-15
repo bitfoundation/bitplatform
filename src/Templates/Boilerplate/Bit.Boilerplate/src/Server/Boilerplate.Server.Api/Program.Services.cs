@@ -376,7 +376,8 @@ public static partial class Program
         void AddDbContext(IServiceProvider sp, DbContextOptionsBuilder options)
         {
             options.EnableSensitiveDataLogging(env.IsDevelopment())
-                .EnableDetailedErrors(env.IsDevelopment());
+                .EnableDetailedErrors(env.IsDevelopment())
+                .UseBitBelemetry(belemetry => belemetry.Filter = (command, data) => data.Context is AppDbContext /* Ignore Hangfire */);
 
             //#if (database == "Sqlite")
             var connectionStringBuilder = new SqliteConnectionStringBuilder(configuration.GetRequiredConnectionString("sqlite"));
@@ -762,6 +763,7 @@ public static partial class Program
             hangfireConfiguration.UseSimpleAssemblyNameTypeSerializer();
             hangfireConfiguration.UseIgnoredAssemblyVersionTypeResolver();
             hangfireConfiguration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
+            hangfireConfiguration.UseBitBelemetry();
         });
 
         services.AddHangfireServer(options =>

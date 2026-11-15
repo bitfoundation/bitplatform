@@ -84,6 +84,13 @@
     "why": "Tells the dependency-update skill which Bit.* version is ours"
   },
   {
+    "id": "boilerplate-workaround",
+    "kind": "kept",
+    "files": ["src/Templates/Boilerplate/Bit.Boilerplate/specs/workarounds.md"],
+    "regex": "\\bBit\\.[\\w.]+ {V}",
+    "why": "The Boilerplate's workarounds record the bit package version a defect was seen in; it stays until someone checks the entry again"
+  },
+  {
     "id": "mcp-url",
     "kind": "core",
     "files": ["*"],

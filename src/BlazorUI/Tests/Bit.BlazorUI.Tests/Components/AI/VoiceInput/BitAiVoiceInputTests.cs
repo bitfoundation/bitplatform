@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.AI.VoiceInput;
@@ -103,8 +106,250 @@ public class BitAiVoiceInputTests : BitAiTestBase
 
         Assert.AreEqual("not-allowed", error);
         Assert.IsFalse(voice.Instance.IsListening);
-        Assert.AreEqual("Dictation failed: not-allowed", voice.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual("Dictation failed: microphone access was denied", voice.Find("[role=status]").TextContent.Trim());
         Assert.AreEqual("Dictate", voice.Find("button").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void ListeningThroughTheSpeechApiGivesTheRootItsListeningLookButNotTheRecordingClass()
+    {
+        SetUpDictation(handle: 3);
+
+        var voice = RenderComponent<BitAiVoiceInput>(p =>
+        {
+            p.Add(c => c.Classes, new BitAiVoiceInputClassStyles { Root = "root-class", Listening = "listening-class" });
+            p.Add(c => c.Styles, new BitAiVoiceInputClassStyles { Root = "margin: 1px", Listening = "outline: 2px solid red" });
+        });
+        var root = voice.WaitForElement(".bit-aivci");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-aivci-lsn"));
+        Assert.IsFalse(root.ClassList.Contains("listening-class"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("outline", System.StringComparison.Ordinal));
+
+        voice.Find("button").Click();
+
+        root = voice.Find(".bit-aivci");
+        Assert.IsTrue(root.ClassList.Contains("bit-aivci-lsn"));
+
+        // bit-aivci-rec keeps meaning a recording for the transcriber, which the speech API of the browser makes none of.
+        Assert.IsFalse(root.ClassList.Contains("bit-aivci-rec"));
+        Assert.IsTrue(root.ClassList.Contains("listening-class"));
+        Assert.IsTrue(root.ClassList.Contains("root-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "outline: 2px solid red");
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+
+        voice.Find("button").Click();
+
+        root = voice.Find(".bit-aivci");
+        Assert.IsFalse(root.ClassList.Contains("bit-aivci-lsn"));
+        Assert.IsFalse(root.ClassList.Contains("listening-class"));
+        Assert.IsTrue(root.ClassList.Contains("root-class"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("outline", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task AFailureIsShownBesideTheButtonUntilTheNextDictation()
+    {
+        SetUpDictation(handle: 3);
+
+        var voice = RenderComponent<BitAiVoiceInput>(p =>
+        {
+            p.Add(c => c.Classes, new BitAiVoiceInputClassStyles { Error = "error-class" });
+            p.Add(c => c.Styles, new BitAiVoiceInputClassStyles { Error = "color: red" });
+        });
+        voice.WaitForElement("button").Click();
+
+        Assert.AreEqual(0, voice.FindAll(".bit-aivci-err").Count);
+
+        await voice.InvokeAsync(() => voice.Instance._OnDictationError("audio-capture"));
+
+        var error = voice.Find(".bit-aivci > .bit-aivci-err");
+        Assert.AreEqual("Dictation failed: no microphone was found", error.TextContent.Trim());
+        Assert.AreEqual("Dictation failed: no microphone was found", error.GetAttribute("title"));
+
+        // The live region announces the same text, so the visible copy is not read a second time.
+        Assert.AreEqual("true", error.GetAttribute("aria-hidden"));
+        Assert.AreEqual(error.TextContent.Trim(), voice.Find("[role=status]").TextContent.Trim());
+        Assert.IsTrue(error.ClassList.Contains("error-class"));
+        Assert.AreEqual("color: red", error.GetAttribute("style"));
+        Assert.IsFalse(voice.Find(".bit-aivci").ClassList.Contains("bit-aivci-lsn"));
+
+        voice.Find("button").Click();
+
+        Assert.IsTrue(voice.Instance.IsListening);
+        Assert.AreEqual(0, voice.FindAll(".bit-aivci-err").Count);
+    }
+
+    // A failure whose OnListeningChanged(false) is still pending when the user starts the next dictation does not show its
+    // reason once that callback completes: the reason is shown before the callbacks are awaited, and the new dictation
+    // clears it, so nothing of the failure lands on the session that followed it.
+    [TestMethod]
+    public async Task AFailureStillReportingDoesNotShowItsReasonDuringTheNextDictation()
+    {
+        SetUpDictation(handle: 3);
+        var stopped = new TaskCompletionSource();
+        var errors = new List<string>();
+
+        var voice = RenderComponent<BitAiVoiceInput>(p =>
+        {
+            p.Add(c => c.OnListeningChanged, listening => listening ? Task.CompletedTask : stopped.Task);
+            p.Add(c => c.OnError, e => errors.Add(e));
+        });
+        voice.WaitForElement("button").Click();
+
+        var failing = voice.InvokeAsync(() => voice.Instance._OnDictationError("audio-capture"));
+        Assert.IsFalse(failing.IsCompleted);
+
+        voice.Find("button").Click();
+        Assert.IsTrue(voice.Instance.IsListening);
+        Assert.AreEqual(0, voice.FindAll(".bit-aivci-err").Count);
+
+        await voice.InvokeAsync(() => stopped.SetResult());
+        await failing;
+
+        CollectionAssert.AreEqual(new[] { "audio-capture" }, errors);
+        Assert.IsTrue(voice.Instance.IsListening);
+        Assert.AreEqual(0, voice.FindAll(".bit-aivci-err").Count);
+        Assert.AreEqual("Listening", voice.Find("[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void AnUnknownErrorIsShownByItsName()
+    {
+        Assert.AreEqual("Dictation failed: something-new", new BitAiStrings().DictationFailed("something-new"));
+        Assert.IsNull(new BitAiStrings().DictationErrorReason("something-new"));
+    }
+
+    [TestMethod]
+    [DataRow("not-allowed")]
+    [DataRow("service-not-allowed")]
+    [DataRow("audio-capture")]
+    [DataRow("no-speech")]
+    [DataRow("aborted")]
+    [DataRow("network")]
+    [DataRow("language-not-supported")]
+    [DataRow("bad-grammar")]
+    [DataRow("unknown")]
+    [DataRow("recording-failed")]
+    [DataRow("too-large")]
+    [DataRow("transcription-failed")]
+    public void EveryErrorTheBrowserOrARecordingReportsHasAReasonInWords(string error)
+    {
+        var strings = new BitAiStrings();
+        var reason = strings.DictationErrorReason(error);
+
+        Assert.IsFalse(string.IsNullOrWhiteSpace(reason));
+        Assert.AreEqual($"Dictation failed: {reason}", strings.DictationFailed(error));
+        Assert.IsFalse(strings.DictationFailed(error).Contains(error, System.StringComparison.Ordinal));
+    }
+
+    // A translation of the reasons alone reaches the sentence the default DictationFailed builds around them.
+    [TestMethod]
+    public void TheReasonsCanBeTranslatedOnTheirOwn()
+    {
+        Assert.AreEqual("Dictation failed: micro refusé", new TranslatedReasons().DictationFailed("not-allowed"));
+        Assert.AreEqual("Dictation failed: network", new TranslatedReasons().DictationFailed("network"));
+    }
+
+    private sealed class TranslatedReasons : BitAiStrings
+    {
+        public override string? DictationErrorReason(string error) => error is "not-allowed" ? "micro refusé" : null;
+    }
+
+    // A microphone refused twice fails twice in the same words, with nothing in between (the recording never starts). The
+    // live region's text and the reason are keyed by the announcement, so each failure renders them as new elements - an
+    // addition to the region a screen reader announces, where text set to what it already was changes nothing - and the
+    // reason's entrance plays again for the eye.
+    [TestMethod]
+    public void TheSameFailureTwiceIsAnnouncedAndShownAgain()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.AiVoiceRecorder.isSupported", _ => true).SetResult(true);
+        Context.JSInterop.Setup<int>("BitBlazorUI.AiVoiceRecorder.start", _ => true).SetResult(-1);
+
+        var voice = RenderComponent<BitAiVoiceInput>(p => p.Add(c => c.Transcriber, (_, _, _) => Task.FromResult<string?>(null)));
+        voice.WaitForElement("button").Click();
+
+        var (status, error) = (Version(voice.Instance, "_statusVersion"), Version(voice.Instance, "_errorVersion"));
+
+        voice.Find("button").Click();
+
+        Assert.AreEqual("Dictation failed: microphone access was denied", voice.Find("[role=status] > span").TextContent);
+        Assert.AreEqual("Dictation failed: microphone access was denied", voice.Find(".bit-aivci-err").TextContent.Trim());
+        Assert.IsGreaterThan(status, Version(voice.Instance, "_statusVersion"));
+        Assert.IsGreaterThan(error, Version(voice.Instance, "_errorVersion"));
+
+        static int Version(BitAiVoiceInput voice, string field) =>
+            (int)typeof(BitAiVoiceInput).GetField(field, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(voice)!;
+    }
+
+    [TestMethod]
+    public async Task TheReasonOfAFailureGoesOnceTheDictationIsStoppedOrDisabled()
+    {
+        SetUpDictation(handle: 3);
+
+        var voice = RenderComponent<BitAiVoiceInput>();
+        voice.WaitForElement("button").Click();
+        await voice.InvokeAsync(() => voice.Instance._OnDictationError("audio-capture"));
+        Assert.AreEqual(1, voice.FindAll(".bit-aivci-err").Count);
+
+        // An end reported late, after the failure, is not a new state of the button: the reason stays.
+        await voice.InvokeAsync(() => voice.Instance._OnDictationEnded());
+        Assert.AreEqual(1, voice.FindAll(".bit-aivci-err").Count);
+
+        // Started and stopped again: the reason was about the dictation before.
+        voice.Find("button").Click();
+        voice.Find("button").Click();
+        Assert.IsFalse(voice.Instance.IsListening);
+        Assert.AreEqual(0, voice.FindAll(".bit-aivci-err").Count);
+
+        voice.Find("button").Click();
+        await voice.InvokeAsync(() => voice.Instance._OnDictationError("audio-capture"));
+        Assert.AreEqual(1, voice.FindAll(".bit-aivci-err").Count);
+
+        voice.Render(p => p.Add(c => c.Disabled, true));
+        Assert.AreEqual(0, voice.FindAll(".bit-aivci-err").Count);
+    }
+
+    // A parent removing the voice input from inside the callbacks a failure raises leaves no timer of the reason behind
+    // to render it after it went away.
+    [TestMethod]
+    public async Task AVoiceInputRemovedWhileAFailureIsReportedLeavesNothingRunning()
+    {
+        SetUpDictation(handle: 3);
+        var errors = new List<string>();
+
+        var host = RenderComponent<VoiceInputHost>(p => p.Add(c => c.OnError, EventCallback.Factory.Create<string>(this, e => errors.Add(e))));
+        host.WaitForElement("button").Click();
+
+        var voice = host.FindComponent<BitAiVoiceInput>().Instance;
+        await host.InvokeAsync(() => voice._OnDictationError("not-allowed"));
+
+        Assert.AreEqual(0, host.FindAll(".bit-aivci").Count);
+        CollectionAssert.AreEqual(new[] { "not-allowed" }, errors);
+
+        const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+        var timer = typeof(BitAiVoiceInput).GetField("_errorTimer", Private)!.GetValue(voice)!;
+        Assert.IsNull(timer.GetType().GetField("_cts", Private)!.GetValue(timer));
+    }
+
+    private sealed class VoiceInputHost : ComponentBase
+    {
+        private bool _shown = true;
+
+        [Parameter] public EventCallback<string> OnError { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (_shown is false) return;
+
+            builder.OpenComponent<BitAiVoiceInput>(0);
+            builder.AddAttribute(1, nameof(BitAiVoiceInput.OnListeningChanged), EventCallback.Factory.Create<bool>(this, listening =>
+            {
+                if (listening is false) _shown = false;
+            }));
+            builder.AddAttribute(2, nameof(BitAiVoiceInput.OnError), OnError);
+            builder.CloseComponent();
+        }
     }
 
     [TestMethod]

@@ -61,6 +61,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private string _calloutId = string.Empty;
     private string _overlayId = string.Empty;
     private string _dropdownId = string.Empty;
+    private string _dropdownLabelId = string.Empty;
+    private string _dropdownTextId = string.Empty;
     private string _fieldGroupId = string.Empty;
     private string _scrollContainerId = string.Empty;
 
@@ -217,7 +219,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// <summary>
     /// The accessible name of the country selector, "Country" by default. The name of the selected country is
     /// appended to it ("Country: Germany"), so a selector showing only a flag still says which country it is on,
-    /// and it is also the name of the country list. Set it to translate the selector for a screen reader.
+    /// and the dial code it shows ends it ("Country: Germany, +49") unless NoDialCode is set. It is also the name of
+    /// the country list. Set it to translate the selector for a screen reader.
     /// </summary>
     [Parameter] public string? DropdownAriaLabel { get; set; }
 
@@ -228,6 +231,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     /// <summary>
     /// The custom template for the content of the country dropdown button, receiving the selected country.
+    /// The button is then named by the country followed by the text the template shows ("Country: Portugal PT").
     /// </summary>
     [Parameter] public RenderFragment<BitCountry?>? DropdownTemplate { get; set; }
 
@@ -1017,6 +1021,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         _searchId = $"BitPhoneInput-{UniqueId}-search";
         _listId = $"BitPhoneInput-{UniqueId}-list";
         _dropdownId = $"BitPhoneInput-{UniqueId}-dropdown";
+        _dropdownLabelId = $"BitPhoneInput-{UniqueId}-dropdown-label";
+        _dropdownTextId = $"BitPhoneInput-{UniqueId}-dropdown-text";
         _fieldGroupId = $"BitPhoneInput-{UniqueId}-field-group";
         _calloutId = $"BitPhoneInput-{UniqueId}-callout";
         _overlayId = $"BitPhoneInput-{UniqueId}-overlay";
@@ -1321,9 +1327,15 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // aria-label replaces the content of the button for a screen reader: without the name in it, a
     // selector showing only a flag (NoDialCode) would be announced as "country" and nothing else,
     // whatever country it is actually on - which is why a translated DropdownAriaLabel is a prefix
-    // rather than the whole name.
+    // rather than the whole name. The dial code the selector shows ends it, set off by a comma: a name
+    // that leaves out the text on the button fails Label in Name (WCAG 2.5.3), and a speech-input user
+    // reading "+1" off the button has to find it in the name. A DropdownTemplate draws content this
+    // cannot see into, so the name is the country there, and the button is named by it followed by
+    // whatever the template shows (aria-labelledby, in the markup).
     private string DropdownLabel => Country is not null
-                                        ? $"{DropdownAriaLabel ?? "Country"}: {Country.Name}"
+                                        ? (NoDialCode || DropdownTemplate is not null
+                                            ? $"{DropdownAriaLabel ?? "Country"}: {Country.Name}"
+                                            : $"{DropdownAriaLabel ?? "Country"}: {Country.Name}, +{Country.Code}")
                                         : DropdownPlaceholder ?? DropdownAriaLabel ?? "Select country";
 
     // The tooltip of the selector names the country its flag stands for.

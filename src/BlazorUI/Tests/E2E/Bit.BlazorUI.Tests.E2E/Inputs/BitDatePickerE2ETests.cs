@@ -918,6 +918,9 @@ public class BitDatePickerE2ETests : BitDatePickersE2ETestBase
         await Expect(panes.Nth(0).Locator(".bit-dtp-ptb")).ToHaveTextAsync("June 2024");
         await Expect(panes.Nth(0).Locator(".bit-dtp-ptb")).ToHaveAttributeAsync("title", "Choose another month than June 2024");
         await Expect(panes.Nth(2).Locator(".bit-dtp-pkt")).ToHaveTextAsync("August 2024");
+        // The pane whose title is the toggle names its grid with an aria-label, the others through their title.
+        await Expect(panes.Nth(0).Locator("[role=grid]")).ToHaveAccessibleNameAsync("June 2024");
+        await Expect(panes.Nth(2).Locator("[role=grid]")).ToHaveAccessibleNameAsync("August 2024");
 
         await panes.Nth(2).Locator(".bit-dtp-nbt[title='Go to next month']").ClickAsync();
         await Expect(panes.Nth(0).Locator(".bit-dtp-ptb")).ToHaveTextAsync("September 2024");
@@ -1210,7 +1213,9 @@ public class BitDatePickerE2ETests : BitDatePickersE2ETestBase
         var callout = Callout(pid);
 
         await Expect(Page.Locator($"#{pid}-dialog")).ToHaveAttributeAsync("aria-label", "Stay calendar");
-        await Expect(callout.Locator(".bit-dtp-dwp [role=grid]")).ToHaveAttributeAsync("aria-label", "June 2024");
+        // The grid is named by the month title it heads (aria-labelledby) here, and by an aria-label only where that
+        // title is the month picker's toggle (see Layout_PagedNavigationMovesAWholeStripOfMonths) - the name is the same.
+        await Expect(callout.Locator(".bit-dtp-dwp [role=grid]")).ToHaveAccessibleNameAsync("June 2024");
         await Expect(callout.Locator(".bit-dtp-dgh [role=columnheader]").First).ToHaveAttributeAsync("aria-label", "Wk");
         await Expect(callout.Locator(".bit-dtp-dgh [role=columnheader]").Nth(1)).ToHaveAttributeAsync("aria-label", "Sunday");
         var week = WeekOfYear(new DateTime(2024, 5, 26), CalendarWeekRule.FirstFullWeek, DayOfWeek.Sunday);

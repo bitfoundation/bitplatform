@@ -1,6 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Theme.Sections;
 
-/// <summary>The Navs category: breadcrumbs, the drop menu, the nav and its tree, the nav bar, pagination and tabs.</summary>
+/// <summary>The Navs category: breadcrumbs, the drop menu, the nav and its tree, the nav bar, pagination, tabs and the stepper.</summary>
 public partial class NavsSection
 {
     private List<BitBreadcrumbItem> crumbs = [];
@@ -8,6 +8,9 @@ public partial class NavsSection
     private List<BitNavItem> navItems = [];
     private List<BitNavItem> treeItems = [];
     private List<BitNavBarItem> navBarItems = [];
+    private List<BitStepperItem> checkoutSteps = [];
+    private List<BitStepperItem> failedSteps = [];
+    private bool isPhone;
 
     private string SampleText => Localizer[nameof(WorkbenchStrings.ThemeSampleText)];
 
@@ -58,5 +61,23 @@ public partial class NavsSection
             new() { Key = "profile", Text = AppLocalizer[nameof(AppStrings.ProfileTitle)], IconName = BitIconName.Contact },
             new() { Key = "settings", Text = AppLocalizer[nameof(AppStrings.Settings)], IconName = BitIconName.Settings }
         ];
+
+        checkoutSteps = CreateCheckoutSteps(failed: false);
+        failedSteps = CreateCheckoutSteps(failed: true);
     }
+
+    private List<BitStepperItem> CreateCheckoutSteps(bool failed) =>
+    [
+        new() { Key = "order", Text = Localizer[nameof(WorkbenchStrings.PosOrder)], Description = $"{Localizer[nameof(WorkbenchStrings.ThemeListsBreakfastBox)]} × 2" },
+        new() { Key = "delivery", Text = Localizer[nameof(WorkbenchStrings.ThemeExtrasDelivery)], Description = Localizer[nameof(WorkbenchStrings.ThemeAiFriday700)] },
+        new()
+        {
+            Key = "payment",
+            Text = Localizer[nameof(WorkbenchStrings.PosPayment)],
+            Description = Localizer[failed ? nameof(WorkbenchStrings.ThemeExtrasPaymentFailed) : nameof(WorkbenchStrings.PosPaymentCard)],
+            IsError = failed
+        }
+    ];
+
+    private void OnPhoneChanged(bool phone) => isPhone = phone;
 }

@@ -19,7 +19,7 @@
         <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
     </PropertyGroup>
 
-    <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
     <!-- The template version bit.json records, served as bit_template_version in the OAuth protected resource metadata (See OAuthProtectedResource). -->
     <PropertyGroup Condition="'$(BitTemplateVersion)' == '' AND Exists('$(MSBuildThisFileDirectory)../../../bit.json')">
         <BitTemplateVersion>$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)../../../bit.json')), '"version"\s*:\s*"([^"]+)"').Groups[1].Value)</BitTemplateVersion>
@@ -28,7 +28,7 @@
     <ItemGroup Condition="'$(BitTemplateVersion)' != ''">
         <AssemblyMetadata Include="BitTemplateVersion" Value="$(BitTemplateVersion)" />
     </ItemGroup>
-    <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
 
     <ItemGroup>
         <Using Include="System.Text" />
@@ -103,7 +103,8 @@
         <PackageReference Include="System.Linq.Dynamic.Core" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server.EntityFrameworkCore" />
-        <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" />
+        <PackageReference Include="Bit.Belemetry.EntityFrameworkCore" />
+        <PackageReference Include="Bit.Belemetry.Hangfire" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="all" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
         <PackageReference Include="AspNetCore.HealthChecks.Uris" />

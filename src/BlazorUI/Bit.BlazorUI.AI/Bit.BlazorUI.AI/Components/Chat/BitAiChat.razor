@@ -69,6 +69,7 @@
                 {
                     <BitAiPromptInput @ref="_composer"
                                       Session="ActiveSession"
+                                      DraftKey="@DraftKey"
                                       Disabled="Disabled"
                                       Placeholder="@Placeholder"
                                       AllowAttachments="AllowAttachments"
@@ -77,6 +78,7 @@
                                       OnAttachmentRejected="OnAttachmentRejected"
                                       AllowDictation="AllowDictation"
                                       Transcriber="Transcriber"
+                                      OnDictationError="OnDictationError"
                                       Commands="Commands"
                                       Mentions="Mentions"
                                       PrefixTemplate="ComposerPrefixTemplate"

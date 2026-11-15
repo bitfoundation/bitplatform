@@ -601,20 +601,34 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                     <BitText Element="p">
                         In the project you publish, mark the two AI assemblies and the library holding your chat pages as lazy
                         (their published names end in <code>.wasm</code>), and turn the lazy scripts on, so no script tag
-                        downloads the AI package's script at startup either:
+                        downloads the AI package's script at startup either.
+                    </BitText>
+                    <BitText Element="p">
+                        Leave the marks out of an AOT build. AOT compiles every assembly into <code>dotnet.native.wasm</code>,
+                        so there is little left to download later, and the runtime can abort as the app starts - an assertion
+                        at <code>method-builder-ilgen.c</code> - when it needs a type of an assembly that is not loaded yet.
+                        The marks therefore go in an item group that an AOT build skips, together with a switch that tells the
+                        router whether they are there: with no marks, <code>LoadAssembliesAsync</code> throws
+                        <code>No assemblies have been marked as lazy-loadable</code>.
                     </BitText>
                     <CodeBox Language="xml">&lt;PropertyGroup>
     &lt;BitBlazorUILazyScripts>true&lt;/BitBlazorUILazyScripts>
 &lt;/PropertyGroup>
 
-&lt;ItemGroup>
+&lt;!-- An AOT build loads these with the app. -->
+&lt;ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
     &lt;BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.wasm" />
     &lt;BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.Core.wasm" />
     &lt;BlazorWebAssemblyLazyLoad Include="MyApp.Chat.wasm" />
+    &lt;RuntimeHostConfigurationOption Include="MyApp.LazyLoadsChat" Value="true" Trim="true" />
 &lt;/ItemGroup></CodeBox>
                     <BitText Element="p">
-                        Then load them in the router before it routes to a chat page, and hand it the loaded assemblies to
-                        find the page in:
+                        Then, where the switch is on, load them in the router before it routes to a chat page, and hand it the
+                        loaded assemblies to find the page in. Where it is off - an AOT build, or a server prerendering the
+                        router - the chat's library came with the app, and the router is handed it by name instead. The switch
+                        only decides whether <code>LoadAssembliesAsync</code> runs: the library goes into
+                        <code>AdditionalAssemblies</code> either way, or the router never finds the chat pages and
+                        <code>/chat</code> falls to <code>NotFound</code>.
                     </BitText>
                     <CodeBox Language="razor">@@using System.Reflection
 @@using Microsoft.AspNetCore.Components.WebAssembly.Services
@@ -628,6 +642,9 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
 &lt;/Router>
 
 @@code {
+    // Set only where the assemblies are marked (the project file): loading an assembly that is not marked throws.
+    private static readonly bool LazyLoadsChat = AppContext.TryGetSwitch("MyApp.LazyLoadsChat", out var on) &amp;&amp; on;
+
     private readonly List&lt;Assembly> _lazyLoaded = [];
 
     private async Task OnNavigateAsync(NavigationContext context)
@@ -638,8 +655,15 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
         if ((path.Equals("chat", StringComparison.OrdinalIgnoreCase) || path.StartsWith("chat/", StringComparison.OrdinalIgnoreCase))
             &amp;&amp; _lazyLoaded.Count == 0)
         {
-            _lazyLoaded.AddRange(await AssemblyLoader.LoadAssembliesAsync(
-                ["Bit.BlazorUI.AI.Core.wasm", "Bit.BlazorUI.AI.wasm", "MyApp.Chat.wasm"]));
+            // The switch decides how the chat's library is loaded, never whether the router is handed it.
+            IEnumerable&lt;Assembly> chat = LazyLoadsChat
+                ? await AssemblyLoader.LoadAssembliesAsync(
+                    ["Bit.BlazorUI.AI.Core.wasm", "Bit.BlazorUI.AI.wasm", "MyApp.Chat.wasm"])
+                // Loaded with the app. It is named, not reached through one of its types: naming
+                // a type here would load the library at startup in the builds that lazy-load it.
+                : [Assembly.Load("MyApp.Chat")];
+
+            _lazyLoaded.AddRange(chat);
         }
     }
 }</CodeBox>

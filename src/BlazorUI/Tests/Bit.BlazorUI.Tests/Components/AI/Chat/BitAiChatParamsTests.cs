@@ -19,7 +19,8 @@ namespace Bit.BlazorUI.Tests.Components.AI.Chat;
 [TestClass]
 public class BitAiChatParamsTests : BitAiTestBase
 {
-    // What makes one chat the one it is: its session and conversation, its templates and its callbacks.
+    // What makes one chat the one it is: its session and conversation (and the draft key naming them), its templates and
+    // its callbacks.
     private static readonly string[] _notCascaded =
     [
         nameof(BitAiChat.CascadingParameters),
@@ -30,6 +31,7 @@ public class BitAiChatParamsTests : BitAiTestBase
         nameof(BitAiChat.ComposerSuffixTemplate),
         nameof(BitAiChat.ComposerTemplate),
         nameof(BitAiChat.Conversation),
+        nameof(BitAiChat.DraftKey),
         nameof(BitAiChat.EmptyTemplate),
         nameof(BitAiChat.FooterTemplate),
         nameof(BitAiChat.HeaderTemplate),
@@ -40,6 +42,7 @@ public class BitAiChatParamsTests : BitAiTestBase
         nameof(BitAiChat.MessageTemplate),
         nameof(BitAiChat.OnAttachmentRejected),
         nameof(BitAiChat.OnCitationClick),
+        nameof(BitAiChat.OnDictationError),
         nameof(BitAiChat.OnFeedback),
         nameof(BitAiChat.OnSourceClick),
         nameof(BitAiChat.OnSubmit),

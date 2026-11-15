@@ -783,10 +783,10 @@ Final runs, from `src/Utilities/Blow`:
 ### Round 13 - every demo page in Chromium, Firefox and WebKit
 
 All 107 demo pages driven with Playwright in Chromium, Firefox and WebKit, on the demo published the way
-`blow.demo.cd.yml` publishes it: each page loaded, every button clicked, the console and the requests watched,
+`cd.blow.demo.yml` publishes it: each page loaded, every button clicked, the console and the requests watched,
 screenshots compared across the engines in the light and dark site themes and at phone width (390 px), every node
 checked for an overlay covering it after the initial fit, and each page's promised behaviour exercised by hand-written
-scripts. The E2E suite gained `BLOW_E2E_BROWSER` and runs in all three engines; `bit.ci.Blow.e2e.yml` runs it once per
+scripts. The E2E suite gained `BLOW_E2E_BROWSER` and runs in all three engines; `ci.blow.e2e.yml` runs it once per
 engine.
 
 Library, found only outside Chromium:

@@ -1,4 +1,6 @@
 //+:cnd:noEmit
+using Bit.Belemetry;
+
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 /// <summary>
@@ -16,6 +18,8 @@ public partial class ConsentService
 
     /// <summary>Public so a UI test can answer the banner before the app opens it - see <c>AppPageTest</c>.</summary>
     public const string StorageKey = "consent";
+
+    public const BelemetryFeatures TelemetryWithoutAnalytics = BelemetryFeatures.Diagnostics | BelemetryFeatures.Monitoring;
 
     /// <summary>Cached: every gate calls this, and the store behind it is a JS interop call on the web.</summary>
     private Dictionary<ConsentCategory, bool>? decisions;
@@ -40,6 +44,11 @@ public partial class ConsentService
     public async Task<bool> IsGranted(ConsentCategory category)
     {
         return (await Read()).GetValueOrDefault(category);
+    }
+
+    public async Task<BelemetryFeatures> GetTelemetryFeatures()
+    {
+        return await IsGranted(ConsentCategory.Analytics) ? BelemetryFeatures.All : TelemetryWithoutAnalytics;
     }
 
     /// <summary>True while the user has answered nothing at all, which is what opens the banner.</summary>

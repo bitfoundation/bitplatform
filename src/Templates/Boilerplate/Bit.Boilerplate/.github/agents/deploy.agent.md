@@ -109,8 +109,8 @@ domain and the services of section 5. Then go through the steps with them.
   80 and 443 stay open, for Caddy (section 8).
 <!--#endif-->
 - A self-hosted runner runs whatever a workflow hands it. Register it only with a private repository, and give it only
-  the deploy jobs. CI and every workflow a pull request starts stay on GitHub-hosted runners, so a pull request never
-  runs code on the VM.
+  the deploy jobs. CI stays on GitHub-hosted runners or on the developer's machine (`bit ci`), and a pull request starts
+  no workflow, so a pull request never runs code on the VM.
 - `bit pipeline` (section 6) also lets only collaborators open pull requests and makes the workflows' token read-only,
   so a repository made public by mistake doesn't hand the VM to strangers. A repository that has to be public keeps
   the deploy jobs in a separate private repository.
@@ -380,8 +380,8 @@ there, and the setting or secret that carries it. Every environment gets its own
   Windows installs each Velopack package id in a folder of its own. Each id is a store record of its own too (Google
   Play, App Store Connect and its provisioning profile). Settle Production's id before the first release of a native
   app: changing it later leaves the copies already installed without updates.
-- With GitHub Pro or Team, protect `main`, so it takes changes only through a pull request whose CI
-  passed.
+- With GitHub Pro or Team, protect `main`, so it takes changes only through a pull request. A pull request starts no
+  workflow, so CI is `bit ci` on the developer's machine, and each CD runs it again before it deploys.
 
 ## 7. The pipeline
 
@@ -485,13 +485,13 @@ have taken requests, so a failure from then on leaves the database ahead and und
 - The api gets a hostname of its own, pointed at `http://serverapi:8080`, and that address goes into `SERVER_API_ADDRESS`
   (section 6).
 <!--#endif-->
-- On the landing page's hostname, ahead of its own rule, send `/v1/traces`, `/v1/logs` and `/v1/metrics` to
-  `http://compose-dashboard:18890`, where its browser posts its telemetry, and give those paths a rate limiting rule.
-  Only those paths: the rest of that port is the dashboard's own.
+- On the web app's hostname and on the landing page's, ahead of each one's own rule, send `/v1/traces`, `/v1/logs` and
+  `/v1/metrics` to `http://compose-dashboard:18890`, where the pages and the apps post their telemetry, and give those
+  paths a rate limiting rule. Only those paths: the rest of that port is the dashboard's own.
 <!--#else-->
 - This project was created without the `cloudflare` option, so Caddy takes the place of the tunnel: point each
-  hostname's DNS at the VM. The deploy job writes Caddy's sites from the environment's addresses, the landing page's
-  `/v1/` paths to the dashboard included.
+  hostname's DNS at the VM. The deploy job writes Caddy's sites from the environment's addresses, the web app's and the
+  landing page's `/v1/` paths to the dashboard included.
 <!--#if (api == "Standalone")-->
 - The api gets a hostname of its own, in the `SERVER_API_ADDRESS` variable.
 <!--#endif-->

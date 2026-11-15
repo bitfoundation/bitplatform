@@ -29,7 +29,9 @@ public class BitCalendarCultureTests : BunitTestContext
 
         Assert.IsInstanceOfType<PersianCalendar>(culture.Calendar);
         Assert.AreEqual($"{culture.DateTimeFormat.GetMonthName(12)} 1403", GetMonthTitle(component));
-        Assert.AreEqual(GetMonthTitle(component), component.Find(".bit-cal-dwp .bit-cal-grd").GetAttribute("aria-label"));
+        // The grid is named by the title above it.
+        var titleId = component.Find(".bit-cal-dwp .bit-cal-grd").GetAttribute("aria-labelledby");
+        Assert.AreEqual(GetMonthTitle(component), component.Find($"[id='{titleId}']").TextContent.Trim());
         Assert.AreEqual("1403", component.Find(".bit-cal-mwp .bit-cal-ptb").TextContent.Trim());
     }
 

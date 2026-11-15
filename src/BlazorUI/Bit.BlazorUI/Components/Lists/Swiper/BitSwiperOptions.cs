@@ -30,6 +30,12 @@ internal class BitSwiperOptions
     public bool Enabled { get; set; }
 
     /// <summary>
+    /// Whether the swiper navigates with the keyboard, which makes the box its items scroll in a place the focus
+    /// can be handed to - even one a negative TabIndex keeps out of the tab order.
+    /// </summary>
+    public bool Keyboard { get; set; }
+
+    /// <summary>
     /// Whether the swiper settles on an item instead of stopping wherever the scrolling ran out.
     /// </summary>
     public bool Snap { get; set; }

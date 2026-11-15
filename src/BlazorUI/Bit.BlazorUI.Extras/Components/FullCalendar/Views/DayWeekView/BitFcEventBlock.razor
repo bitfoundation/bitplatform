@@ -31,9 +31,13 @@
         if (_resizeDirection is "top" or "bottom")
             resizeClasses += $" bit-bfc-resize-dir-{_resizeDirection}";
     }
+    var ariaLabel = BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel);
+    var templated = EventTemplate is not null;
 }
 
-<div class="bit-bfc-event-block @colorClass @(State.IsDragging && State.DraggedEvent?.Id != Event.Id ? "bit-bfc-event-block-pass-through" : "") @resizeClasses @Parts.Classes?.Event @Event.CssClass"
+@* A block an EventTemplate draws is named by the text it shows first and the details after it (BitFcEventTemplateHost). *@
+<div id="@(templated ? BitFcEventTemplateHost.SurfaceId(_instanceId) : null)"
+     class="bit-bfc-event-block @colorClass @(State.IsDragging && State.DraggedEvent?.Id != Event.Id ? "bit-bfc-event-block-pass-through" : "") @resizeClasses @Parts.Classes?.Event @Event.CssClass"
      style="@($"{blockStyle}{Parts.Styles?.Event}")"
      title="@tooltip"
      data-bit-bfc-event="@Event.Id"
@@ -41,7 +45,8 @@
      data-bit-bfc-resize="@(CanResize ? "y" : null)"
      role="button"
      tabindex="0"
-     aria-label="@BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
+     aria-label="@(templated ? null : ariaLabel)"
+     aria-labelledby="@(templated ? BitFcEventTemplateHost.LabelledBy(_instanceId) : null)"
      draggable="@(CanMove ? "true" : "false")"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
@@ -61,7 +66,7 @@
 
     @if (EventTemplate != null)
     {
-        @EventTemplate(Event)
+        <BitFcEventTemplateHost Template="EventTemplate" Event="Event" InstanceId="@_instanceId" Details="@ariaLabel" />
     }
     else
     {
@@ -75,6 +80,11 @@
 
         @if (durationMin > 25)
         {
+            @* The block is named "Title, 09:00 - 10:00", so the text it shows keeps a space between the two as well:
+               Razor drops the whitespace between the boxes, and a reader running their text together ("Title09:00")
+               finds a name that does not hold it (Label in Name, WCAG 2.5.3). Whitespace between two blocks draws
+               nothing, so nothing moves. *@
+            @(" ")
             <div class="bit-bfc-event-block-time">
                 @BitFullCalendarHelpers.FormatTime(displayStart, State.Use24HourFormat, State.Culture) - @BitFullCalendarHelpers.FormatTime(displayEnd, State.Use24HourFormat, State.Culture)
             </div>

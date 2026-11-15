@@ -1102,6 +1102,7 @@ public partial class BitSwiper : BitComponentBase
             NoDrag = NoDrag,
             Wheel = Wheel,
             Enabled = Disabled is false,
+            Keyboard = NoKeyboard is false,
             // None is the snap type that says "do not snap", so it has to read the same way an unset SnapAlign
             // does - the class builder above already leaves both of them without the snapping classes.
             Snap = SnapAlign is not null and not BitScrollSnapAlign.None,

@@ -33,6 +33,10 @@
            share (recognizing the target, hardening the rel, placing the announcement) without
            InternalsVisibleTo. -->
       <Compile Include="..\..\Bit.BlazorUI\Utils\BitNewTabUtils.cs" Link="Utils\BitNewTabUtils.cs" />
+      <!-- Compile-linked so BitTypeaheadTests can pin the typeahead the lists, menus and trees of the
+           library share (what makes a term, where the search starts, what a term matches in which
+           culture) on a clock of their own, without InternalsVisibleTo. -->
+      <Compile Include="..\..\Bit.BlazorUI\Utils\BitTypeahead.cs" Link="Utils\BitTypeahead.cs" />
       <!-- What BitNewTabUtils turns a set of BitLinkRels flags into a rel with. -->
       <Compile Include="..\..\Bit.BlazorUI\Utils\Enums\BitLinkRelUtils.cs" Link="Utils\Enums\BitLinkRelUtils.cs" />
       <!-- Compile-linked so BitPublicCssVariablesTests can pin how a style string is cut into declarations

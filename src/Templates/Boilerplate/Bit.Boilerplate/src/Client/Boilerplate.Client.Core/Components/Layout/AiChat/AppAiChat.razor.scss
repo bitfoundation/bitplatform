@@ -16,13 +16,6 @@ $space: calc(#{$bit-spacing-scaling-factor} * #{$bit-layout-density-scale});
         --bit-AiChat-background: transparent;
     }
 
-    // The containing block of what a message positions absolutely - the hidden read-aloud status of every answer - so
-    // it scrolls with the transcript instead of sticking out of the panel and giving it a second scrollbar.
-    // See specs/workarounds.md.
-    .transcript {
-        position: relative;
-    }
-
     // The tags of what a step of an answer called: the step's title already says it, in the user's language, where the
     // tags would only repeat it by the tool's name (See AppAiChat's BitAiAgentRunViewParams).
     .step-tool-calls {

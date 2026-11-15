@@ -1215,7 +1215,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public CalendarWeekRule? WeekNumberRule { get; set; }
 
     /// <summary>
-    /// The accessible name of the empty header cell above the week numbers column.
+    /// The accessible name of the header cell above the week numbers column, which shows a number sign (#).
     /// </summary>
     [Parameter] public string WeekNumbersHeaderTitle { get; set; } = "Week";
 
@@ -3243,6 +3243,16 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private string GetMonthButtonId(int month)
     {
         return FormattableString.Invariant($"{_dateRangePickerId}-month-{month:D2}");
+    }
+
+    // The id of the title of the month shown at the given index, which names the days grid of that month - or null
+    // where the title is the button that toggles the month picker, which the markup renders in its place: see
+    // BitCalendar.GetMonthTitleId.
+    private string? GetMonthTitleId(int monthIndex)
+    {
+        if (monthIndex == 0 && IsMonthPickerVisible && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false))) return null;
+
+        return FormattableString.Invariant($"{_dateRangePickerId}-title-{monthIndex}");
     }
 
     private string GetYearButtonId(int year)

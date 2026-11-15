@@ -160,7 +160,7 @@ public class BitPhoneInputParamsTests : BunitTestContext
         Assert.AreEqual("Cascaded placeholder", input.GetAttribute("placeholder"));
         Assert.AreEqual("12", input.GetAttribute("maxlength"));
 
-        Assert.AreEqual("Land: Germany", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+        Assert.AreEqual($"Land: Germany, +{BitCountries.Germany.Code}", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
         Assert.AreEqual("Löschen", component.Find(".bit-phi-cbt").GetAttribute("aria-label"));
     }
 
@@ -201,7 +201,7 @@ public class BitPhoneInputParamsTests : BunitTestContext
             builder.AddAttribute(1, nameof(BitPhoneInput.ValueChanged), EventCallback.Factory.Create<string?>(this, v => value = v));
         });
 
-        Assert.AreEqual("Country: France", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+        Assert.AreEqual($"Country: France, +{BitCountries.France.Code}", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
 
         component.Find("input.bit-phi-inp").Change("612345678");
 
@@ -230,7 +230,7 @@ public class BitPhoneInputParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("bit-phi-sm"));
         Assert.IsFalse(root.ClassList.Contains("bit-phi-lg"));
-        Assert.AreEqual("Country: Japan", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+        Assert.AreEqual($"Country: Japan, +{BitCountries.Japan.Code}", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
 
         // What the field did not write for itself still comes from the cascade.
         Assert.AreEqual("Cascaded placeholder", component.Find("input.bit-phi-inp").GetAttribute("placeholder"));

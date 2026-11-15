@@ -117,6 +117,21 @@ public partial class BitAiChat : BitAiComponentBase
     [Parameter] public BitAiConversation? Conversation { get; set; }
 
     /// <summary>
+    /// A key under which the unsent text of the composer is kept in the session storage of the browser, so it survives a
+    /// reload or a dropped circuit. Drafts are not persisted when it is null. Handed to the built-in composer as its
+    /// <see cref="BitAiPromptInput.DraftKey"/>; a <see cref="ComposerTemplate"/> keeps its own drafts.
+    /// </summary>
+    /// <remarks>
+    /// Use a key that identifies the conversation and the user (such as <c>$"chat-{userId}-{conversationId}"</c>), so
+    /// drafts neither bleed between conversations nor reach the next person to sign in on the same browser. The composer
+    /// stays on the page when the key changes: the text and the files staged under the old key stay with that key and
+    /// come back with it, and the draft kept under the new one is shown. A key set where there was none, or changed while
+    /// a submission is in flight (a conversation named once it is created), keeps what the composer holds instead - see
+    /// <see cref="BitAiPromptInput.DraftKey"/>.
+    /// </remarks>
+    [Parameter] public string? DraftKey { get; set; }
+
+    /// <summary>
     /// The supporting line of the empty state.
     /// </summary>
     [Parameter] public string? EmptyDescription { get; set; }
@@ -198,6 +213,13 @@ public partial class BitAiChat : BitAiComponentBase
     /// The callback for when the user activates a citation.
     /// </summary>
     [Parameter] public EventCallback<BitAiCitation> OnCitationClick { get; set; }
+
+    /// <summary>
+    /// The callback for a dictation of the composer that fails, with the name of what failed (see
+    /// <see cref="BitAiVoiceInput.OnError"/>). The user is told either way; this is the same information for the
+    /// application. Only raised when <see cref="AllowDictation"/> is on.
+    /// </summary>
+    [Parameter] public EventCallback<string> OnDictationError { get; set; }
 
     /// <summary>
     /// The callback for when the user records feedback on a reply, so a host can persist it.
@@ -537,8 +559,13 @@ public partial class BitAiChat : BitAiComponentBase
             return;
         }
 
-        // A session that took nothing - a turn it could not interrupt was in flight - leaves the prompt the user's.
-        if (await ActiveSession.SubmitAsync(submission.Text, submission.Attachments) is null)
+        // Sent only to the session it was typed for: one the chat has moved on from since the user submitted (the host
+        // switched threads while the composer cleared its draft) gets nothing, and neither does the one now shown. A session
+        // that took nothing - a turn it could not interrupt was in flight - leaves the prompt the user's too.
+        var session = submission.Session ?? ActiveSession;
+
+        if (ReferenceEquals(session, ActiveSession) is false
+            || await session.SubmitAsync(submission.Text, submission.Attachments) is null)
         {
             submission.Reject();
         }

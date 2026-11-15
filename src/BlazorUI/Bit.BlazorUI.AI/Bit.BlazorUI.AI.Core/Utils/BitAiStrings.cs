@@ -626,14 +626,46 @@ public class BitAiStrings
     /// <summary>Announced when dictation stops.</summary>
     public virtual string DictationStopped => "Dictation stopped";
 
-    /// <summary>Announced when dictation fails.</summary>
+    /// <summary>
+    /// Announced when dictation fails, and shown by the dictation button for a few seconds: the reason in words
+    /// (<see cref="DictationErrorReason"/>) for an error name it knows, else the name itself.
+    /// </summary>
+    /// <remarks>
+    /// A translation overrides <see cref="DictationErrorReason"/> for the reasons and this for the sentence around one,
+    /// building it on the reason rather than on the name, which is a code meant for the app (it is what
+    /// <c>BitAiVoiceInput.OnError</c> reports) rather than for the user.
+    /// </remarks>
     /// <param name="error">
     /// The error name the browser reported, such as <c>not-allowed</c> (the microphone was refused) or
     /// <c>audio-capture</c> (there is no microphone to open) - or, where the app transcribes the recording itself,
     /// <c>recording-failed</c>, <c>too-large</c> or <c>transcription-failed</c>.
     /// </param>
     /// <returns>The announcement.</returns>
-    public virtual string DictationFailed(string error) => $"Dictation failed: {error}";
+    public virtual string DictationFailed(string error) => $"Dictation failed: {DictationErrorReason(error) ?? error}";
+
+    /// <summary>
+    /// The reason a dictation failed, in words, that <see cref="DictationFailed"/> says: for every error name the speech
+    /// API of the browser reports, and those of a recording the app transcribes; null for a name it does not know, which
+    /// <see cref="DictationFailed"/> then says as it is.
+    /// </summary>
+    /// <param name="error">The error name, as <see cref="DictationFailed"/> is handed it.</param>
+    /// <returns>The reason, or null.</returns>
+    public virtual string? DictationErrorReason(string error) => error switch
+    {
+        "not-allowed" => "microphone access was denied",
+        "service-not-allowed" => "speech recognition is not allowed",
+        "audio-capture" => "no microphone was found",
+        "no-speech" => "no speech was heard",
+        "aborted" => "speech recognition was interrupted",
+        "network" => "speech recognition is unreachable",
+        "language-not-supported" => "the language is not supported",
+        "bad-grammar" => "speech recognition could not be set up",
+        "unknown" => "something went wrong",
+        "recording-failed" => "the recording failed",
+        "too-large" => "the recording is too large",
+        "transcription-failed" => "the recording could not be transcribed",
+        _ => null,
+    };
 
     /// <summary>Announced when the microphone starts recording a take the app transcribes.</summary>
     /// <param name="remaining">How long the take may last.</param>

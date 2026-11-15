@@ -7,9 +7,10 @@ description: Designs and reviews a page's UI and UX in the Workbench (`src/Workb
 
 The Workbench is a web app of its own in `src/Workbench`. It runs pages on sample data, shows them on device frames
 side by side, and switches what a page would otherwise wait for: the data's state, the theme, the language, the
-signed-in user. It references Client.Core for the theme, the styles and the components, and nothing that needs the
-API, the database or a session. A page designed here is built from the components and the theme the app ships, so
-what the user approves is how the real page will look.
+signed-in user. It references Client.Core for the theme, the styles and the components, and stands in for what needs
+the API, the database or a session. A page designed here is built from the components and the theme the app ships, so
+what the user approves is how the real page will look, and a page the app already has is shown as the app's own
+component, so what the user reviews is what ships.
 
 ## 1. Run it
 
@@ -101,13 +102,32 @@ what the user approves is how the real page will look.
 
 ## 3. A page the app already has
 
-- When the user wants screenshots or design changes of a page that already exists in the app, bring a copy of it into
-  `src/Workbench/Components/Pages/AppPages`, the way the Settings page is there: the same markup, styles, strings and
-  validation, with the server calls replaced by sample data and a store, and the same template conditions as the
-  original. Both copies start with a `[mirror]` comment that names the other.
-- A page of the landing page (`src/LandingPage`) comes over the same way, the way
-  `src/Workbench/Components/Pages/LandingPages/Minimal` is there. It isn't a page of the app, so its catalog entry sets
-  `HasAppShell` to false and no app shell is drawn around it.
+- When the user wants screenshots, a review or every state of a page that already exists in the app, render the app's
+  own component from Client.Core in a host page, the way `settings` and `dashboard` are
+  (`src/Workbench/Components/Pages/AppPages`). A copy starts to drift the day it is made; the app's own page is what
+  ships, and a change to it shows here by itself.
+  - **Its data:** stand-ins of the controllers the page calls, on `WorkbenchStandIn` and registered after Client.Core's,
+    answer from sample data the way the server answers. Every read goes through the scenario state, so the data states
+    reach the page as the app shows them, and a write changes the view's own copy of the data. Keep that copy in a Blex
+    store, so a reload and a screenshot keep what was done on the page; what the page keeps on the device itself, such
+    as the dashboard's layout, is the view's own through `WorkbenchViewStorage`.
+  - **What the app's layout gives the page**, the host gives it: the signed-in user MainLayout cascades, the download
+    anchor of a page that saves files. The access token, confirming it's the user and the device's passkeys are already
+    stood in for (`Infrastructure/Services/StandIns`). What the page fetches or posts by address, such as a picture or
+    an export, the Workbench serves at the app's address.
+  - **Its cases:** what isn't data, such as the section that is open or a feature already set up, becomes a page switch
+    the host maps to the page's parameter or query.
+  - **Nothing in the app changes for it:** no check for the Workbench and no hook, and no Workbench package reaches the
+    app. A finding in the page is fixed in the app, and shows here by itself.
+  - Use the template conditions of the page and of what it calls, so a project without one of its features builds
+    without its stand-ins too.
+- Bring a copy into `src/Workbench/Components/Pages/AppPages` only when the user wants to redesign the page here: the
+  same markup, styles, strings and validation, with sample data and a store, and the same template conditions as the
+  original. Both copies then start with a `[mirror]` comment that names the other, until the redesign is built into the
+  app (section 8).
+- A page of the landing page (`src/LandingPage`), an app of its own that the Workbench doesn't reference, comes over as
+  such a copy, the way `src/Workbench/Components/Pages/LandingPages/Minimal` is there. It isn't a page of the app, so
+  its catalog entry sets `HasAppShell` to false and no app shell is drawn around it.
 - Each app of the product can have its pages here with a theme of its own: such a page sets the theme's tokens for itself
   while it is on the screen, as that landing page does, and the other pages keep theirs.
 
@@ -239,8 +259,10 @@ what the user approves is how the real page will look.
 - Read the Workbench page again and build it into the app the way the rest of the app is built, following `AGENTS.md`:
   its base classes, services and conventions, its own resources, and real data from the server (DTOs, the controller,
   the client calls, the **scaffold-entity** skill for CRUD). Keep the markup and the styles the user approved.
-- Keep the Workbench copy only when the user wants to go on designing it there. Then each copy starts with a `[mirror]`
-  comment that names the other (`AGENTS.md` section 5). Otherwise remove it and its catalog entry.
+- Then replace the design with a host of the app's own page under the same catalog key, as section 3 says, so the
+  page stays in the Workbench for review and screenshots with nothing to keep in sync. Keep the design only while the
+  user goes on redesigning the page there; then each copy starts with a `[mirror]` comment that names the other
+  (`AGENTS.md` section 5).
 - Then validate it in the running app the way phase 5 of the **ai-dlc** skill describes.
 
 ## 9. Show a long task's progress

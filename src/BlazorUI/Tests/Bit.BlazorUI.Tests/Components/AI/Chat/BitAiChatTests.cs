@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -260,6 +261,148 @@ public class BitAiChatTests : BitAiTestBase
         Assert.IsNotNull(component.Find(".bit-aicht-ftc > .own-composer"));
         Assert.IsNotNull(component.Find(".bit-aicht-ftc > .own-footer"));
         Assert.IsEmpty(component.FindComponents<BitAiPromptInput>());
+
+        await session.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task TheDraftKeyKeepsTheUnsentTextOfTheComposer()
+    {
+        Interactive();
+        Context.JSInterop.Setup<string?>("BitBlazorUI.AiPromptInput.readDraft", _ => true).SetResult("saved text");
+        var session = NewSession();
+
+        var component = RenderComponent<BitAiChat>(p => p
+            .Add(c => c.Session, session)
+            .Add(c => c.DraftKey, "chat-user-1"));
+
+        component.WaitForAssertion(() => Assert.AreEqual("saved text", component.Find(".bit-aicht-ftc textarea").GetAttribute("value")));
+        Assert.AreEqual("chat-user-1", Context.JSInterop.VerifyInvoke("BitBlazorUI.AiPromptInput.readDraft").Arguments[0]);
+
+        component.Find(".bit-aicht-ftc textarea").Input("saved text and more");
+        var saved = Context.JSInterop.VerifyInvoke("BitBlazorUI.AiPromptInput.writeDraft");
+        Assert.AreEqual("chat-user-1", saved.Arguments[0]);
+        Assert.AreEqual("saved text and more", saved.Arguments[1]);
+
+        component.Find(".bit-aicht-ftc textarea").KeyDown(Key.Enter);
+
+        component.WaitForAssertion(() =>
+            Assert.AreEqual("chat-user-1", Context.JSInterop.VerifyInvoke("BitBlazorUI.AiPromptInput.clearDraft").Arguments[0]));
+
+        await session.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task ANewDraftKeyRestoresItsOwnDraftRatherThanCarryTheOldText()
+    {
+        Interactive();
+        Context.JSInterop.Setup<string?>("BitBlazorUI.AiPromptInput.readDraft", i => Equals(i.Arguments[0], "chat-1")).SetResult(null);
+        Context.JSInterop.Setup<string?>("BitBlazorUI.AiPromptInput.readDraft", i => Equals(i.Arguments[0], "chat-2")).SetResult("draft of two");
+        var session = NewSession();
+
+        var component = RenderComponent<BitAiChat>(p => p
+            .Add(c => c.Session, session)
+            .Add(c => c.DraftKey, "chat-1"));
+
+        component.Find(".bit-aicht-ftc textarea").Input("typed for one");
+        var composer = component.FindComponent<BitAiPromptInput>();
+        var first = composer.Instance;
+        await composer.InvokeAsync(() => first._OnDroppedFile(new BitAiComposerFile("notes.txt", "text/plain", 1, "QQ==")));
+        Assert.HasCount(1, first.Attachments);
+
+        component.Render(p => p.Add(c => c.DraftKey, "chat-2"));
+
+        component.WaitForAssertion(() => Assert.AreEqual("draft of two", component.Find(".bit-aicht-ftc textarea").GetAttribute("value")));
+        // The composer stays - its focus, its dictation, its uploads and its listeners with it - and shows the second key.
+        Assert.AreSame(first, component.FindComponent<BitAiPromptInput>().Instance);
+        Assert.AreEqual("chat-2", first.DraftKey);
+        Assert.IsEmpty(first.Attachments);
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.AiPromptInput.unregisterSubmitKey");
+
+        // Nothing typed for the first key was written under the second.
+        foreach (var write in Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.writeDraft"])
+        {
+            Assert.AreEqual("chat-1", write.Arguments[0]);
+        }
+
+        // Back to the first key: its text and its file come back with it.
+        component.Render(p => p.Add(c => c.DraftKey, "chat-1"));
+
+        component.WaitForAssertion(() => Assert.AreEqual("typed for one", component.Find(".bit-aicht-ftc textarea").GetAttribute("value")));
+        Assert.AreEqual("notes.txt", Assert.ContainsSingle(first.Attachments).Name);
+
+        await session.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task AConversationNamedOnItsFirstSubmissionKeepsTheComposer()
+    {
+        Interactive();
+        var gate = new TaskCompletionSource();
+        var session = NewSession();
+
+        var component = RenderComponent<BitAiChat>(p => p
+            .Add(c => c.Session, session)
+            .Add(c => c.DraftKey, "chat-user-new")
+            .Add(c => c.OnSubmit, async _ => await gate.Task));
+        var composer = component.FindComponent<BitAiPromptInput>().Instance;
+
+        component.Find(".bit-aicht-ftc textarea").Input("first");
+        component.Find(".bit-aicht-ftc textarea").KeyDown(Key.Enter);
+
+        // Typed while the turn is out, and the conversation named meanwhile.
+        component.Find(".bit-aicht-ftc textarea").Input("second");
+        component.Render(p => p.Add(c => c.DraftKey, "chat-user-42"));
+
+        Assert.AreSame(composer, component.FindComponent<BitAiPromptInput>().Instance);
+        Assert.AreEqual("second", component.Find(".bit-aicht-ftc textarea").GetAttribute("value"));
+        Assert.AreEqual("second", Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.writeDraft"].Last(i => Equals(i.Arguments[0], "chat-user-42")).Arguments[1]);
+
+        gate.SetResult();
+        await session.DisposeAsync();
+    }
+
+    // The composer clears the draft before the chat sends: a session switched meanwhile is not where the prompt goes, and
+    // nor is the one it was typed for, which the chat no longer shows - the prompt is put back in the composer.
+    [TestMethod]
+    public async Task APromptIsNotSentToASessionSwitchedToWhileItWasBeingSubmitted()
+    {
+        Interactive();
+        var clear = Context.JSInterop.SetupVoid("BitBlazorUI.AiPromptInput.clearDraft", _ => true);
+        var first = NewSession();
+        var second = NewSession();
+
+        var component = RenderComponent<BitAiChat>(p => p
+            .Add(c => c.Session, first)
+            .Add(c => c.DraftKey, "chat-1"));
+
+        component.Find(".bit-aicht-ftc textarea").Input("hello");
+        component.Find(".bit-aicht-ftc textarea").KeyDown(Key.Enter);
+
+        component.Render(p => p.Add(c => c.Session, second));
+
+        clear.SetVoidResult();
+
+        component.WaitForAssertion(() => Assert.AreEqual("hello", component.Find(".bit-aicht-ftc textarea").GetAttribute("value")));
+        Assert.IsEmpty(first.Conversation.Messages);
+        Assert.IsEmpty(second.Conversation.Messages);
+
+        await first.DisposeAsync();
+        await second.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task NoDraftIsKeptWithoutADraftKey()
+    {
+        Interactive();
+        var session = NewSession();
+
+        var component = RenderComponent<BitAiChat>(p => p.Add(c => c.Session, session));
+
+        component.Find(".bit-aicht-ftc textarea").Input("typed");
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.readDraft"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.writeDraft"]);
 
         await session.DisposeAsync();
     }

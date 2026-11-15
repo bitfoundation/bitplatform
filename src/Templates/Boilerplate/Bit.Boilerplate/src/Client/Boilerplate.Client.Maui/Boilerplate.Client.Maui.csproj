@@ -23,13 +23,13 @@
         <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
     </PropertyGroup>
 
-    <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
     <PropertyGroup Condition=" '$(framework)' == 'net10.0' ">
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
         <UseInterpreter Condition="'$(Environment)' == 'Development'">True</UseInterpreter>
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
     </PropertyGroup>
-    <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
 
     <PropertyGroup>
         <CompressionEnabled>false</CompressionEnabled>
@@ -65,23 +65,23 @@
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' != 'Development'">
         <AndroidLinkTool>r8</AndroidLinkTool>
         <AndroidUseAapt2>True</AndroidUseAapt2>
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
         <UseMonoRuntime Condition=" '$(framework)' == 'net10.0' ">false</UseMonoRuntime>
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Development'">
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
         <EnableSGenConc Condition=" '$(framework)' == 'net10.0' ">True</EnableSGenConc>
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
         <CodesignEntitlements>Platforms/iOS/Entitlements.Development.plist</CodesignEntitlements>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' != 'Development'">
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
         <EnableSGenConc Condition=" '$(framework)' == 'net10.0' ">True</EnableSGenConc>
         <MtouchInterpreter Condition=" '$(framework)' == 'net10.0' ">-all</MtouchInterpreter>
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
         <CodesignEntitlements>Platforms/iOS/Entitlements.Production.plist</CodesignEntitlements>
     </PropertyGroup>
 
@@ -94,18 +94,18 @@
     <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Environment)' != 'Development'">
         <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Production.plist</CodesignEntitlements>
         <UseHardenedRuntime>true</UseHardenedRuntime>
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
         <MtouchInterpreter Condition=" '$(framework)' == 'net10.0' ">-all</MtouchInterpreter>
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidResource Include="Platforms\Android\Resources\**\styles.xml" />
         <GoogleServicesJson Condition="Exists('Platforms\Android\google-services.json')" Include="Platforms\Android\google-services.json" />
         <PackageReference Include="Xamarin.GooglePlayServices.Auth.Api.Phone" />
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" />
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
@@ -125,9 +125,9 @@
         <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
         <Using Include="Boilerplate.Client.Core.Infrastructure.Services.Contracts" />
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
         <Using Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" />
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
     <ItemGroup>
@@ -168,15 +168,12 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
-        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
-        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
         <PackageReference Include="Oscore.Maui.AppStoreInfo" />
         <PackageReference Include="Plugin.Maui.AppRating" />
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" />
-        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Exporter" />
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" />
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" BeforeTargets="ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">

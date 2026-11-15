@@ -16,16 +16,16 @@
         }
 
         // The one place an element's overflow is taken over. Every popup that holds a scroller comes
-        // through here - the counted lock below and the older toggle further down alike - because two
-        // mechanisms writing element.style.overflow with bookkeeping of their own undo each other:
+        // through here, by way of lockScroll and unlockScroll below, because two mechanisms writing
+        // element.style.overflow with bookkeeping of their own undo each other:
         // whichever hands the element back last wins, which leaves the page scrolling behind a popup that
         // is still open, or frozen after every popup has closed.
         // The holds are counted rather than toggled: two popups open at once both hold the page, and the
         // page is only handed back once the last of them lets go.
         // Taking the scrollbar away narrows the element by its width, which shifts the whole page sideways
         // in the same frame the popup appears in; the room it took is added back as padding so nothing
-        // moves. Only the callers that ask for that compensation get it, so the older toggle keeps behaving
-        // exactly as it always did.
+        // moves. Only the callers that ask for that compensation get it, so the ones that have always let
+        // the scroller shift by the width of the scrollbar keep behaving exactly as they always did.
         export function holdScroll(key: string, element: HTMLElement | null, compensate: boolean) {
             if (!element || Utils._scrollLockOwners.has(key)) return;
 
@@ -90,10 +90,18 @@
         // The scroller is named by the caller, as an element or as a selector; the page is what is held when
         // it names neither. An application shell that scrolls a region of its own names that region, since
         // the body of such a page never scrolls and holding it would hold nothing.
-        export function lockScroll(key: string, scroller: string | HTMLElement | null) {
+        // The room the scrollbar took is given back as padding unless the caller asks otherwise, for the
+        // callers that have always let the page shift by the width of the scrollbar.
+        // Reports the scroller's scroll offset, which an absolutely positioned surface laid out inside the
+        // scroller is pushed down by, so that it stays where the eye left it.
+        export function lockScroll(key: string, scroller: string | HTMLElement | null, compensate?: boolean): number {
             try {
-                Utils.holdScroll(key, Utils.resolveScroller(scroller), true);
-            } catch (e) { console.error("BitBlazorUI.Utils.lockScroll:", e); }
+                const element = Utils.resolveScroller(scroller);
+
+                Utils.holdScroll(key, element, compensate !== false);
+
+                return element?.scrollTop ?? 0;
+            } catch (e) { console.error("BitBlazorUI.Utils.lockScroll:", e); return 0; }
         }
 
         // Gives up the hold the given key took, if it still has one.
@@ -232,30 +240,6 @@
             }
 
             return false;
-        }
-
-        // The older shape of the hold above, for the components that take a scroller for as long as they
-        // are open and want its scroll offset back. It goes through the same counted registry, so one of
-        // these can no longer hand back a scroller that a lock - or another one of these - is still
-        // holding. The scrollbar room is only compensated for where the caller asks for it, so the callers
-        // that have always let the page shift by the width of the scrollbar carry on doing exactly that.
-        export function toggleOverflow(key: string, selector: string | HTMLElement, isOpen: boolean, compensate?: boolean) {
-            const element = Utils.resolveScroller(selector);
-
-            if (!element) return 0;
-
-            try {
-                if (isOpen) {
-                    Utils.holdScroll(key, element, compensate === true);
-                } else {
-                    Utils.releaseScroll(key);
-                }
-
-                return element.scrollTop;
-            } catch (e) {
-                console.error("BitBlazorUI.Utils.toggleOverflow:", e);
-                return 0;
-            }
         }
 
         // Scrolls a scroll container to an absolute offset on its scrolling axis. The axis is passed in

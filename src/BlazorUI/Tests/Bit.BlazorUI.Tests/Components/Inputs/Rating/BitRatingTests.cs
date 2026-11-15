@@ -72,6 +72,23 @@ public class BitRatingTests : BunitTestContext
         }
     }
 
+    [TestMethod,
+        DataRow(true, "hidden"),
+        DataRow(false, "number")]
+    public void BitRatingReadOnlyShouldCarryItsValueInAHiddenInput(bool readOnly, string expected)
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Value, 3);
+            parameters.Add(p => p.ReadOnly, readOnly);
+        });
+
+        // A number input inside the img of a read-only rating is still a control a screen reader can reach (nested-interactive).
+        var input = component.Find(".bit-input-hidden");
+        Assert.AreEqual(expected, input.GetAttribute("type"));
+        Assert.AreEqual("3", input.GetAttribute("value"));
+    }
+
     [TestMethod]
     public void BitRatingReadOnlyShouldDropTheAriaOfAnInteractiveGroup()
     {
