@@ -17,8 +17,6 @@ public static partial class ToolCatalog
         new HomebrewTool(),
         new WslTool(),
         new DockerTool(),
-        new ActTool(),
-        new PowerShellTool(),
         new AspireCliTool(),
         new DevCertificateTool(),
         new LongPathsTool(),
@@ -56,7 +54,7 @@ public static partial class ToolCatalog
             checks[docker] = checks[docker] with { Action = DockerTool.AfterWslRestart(checks[docker].Action!) };
         }
 
-        var brewNeeded = checks.Any(c => c.Status.IsSatisfied is false && c.Tool is not HomebrewTool && c.Action is null && context.Environment.IsMacOS && context.PackageManagers.Brew is null && c.Tool is NodeTool or GitTool or DockerTool or ActTool or PowerShellTool or VsCodeTool);
+        var brewNeeded = checks.Any(c => c.Status.IsSatisfied is false && c.Tool is not HomebrewTool && c.Action is null && context.Environment.IsMacOS && context.PackageManagers.Brew is null && c.Tool is NodeTool or GitTool or DockerTool or VsCodeTool);
         checks.RemoveAll(c => c.Tool is HomebrewTool && (c.Status.IsSatisfied || brewNeeded is false));
 
         return checks;
@@ -791,91 +789,6 @@ public static partial class ToolCatalog
             using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Docker Desktop");
             return (key?.GetValue("InstallLocation") as string) is { Length: > 0 } location ? location : null;
         }
-    }
-
-    private sealed class ActTool : Tool
-    {
-        public override string Id => "act";
-
-        public override string Name => "act";
-
-        public override bool AppliesInCi(ToolContext context) => false;
-
-        public override bool AppliesTo(ToolContext context) => context.Needs.Ci;
-
-        public override string Why(ToolContext context) => "bit ci runs the project's CI workflow on this machine with it";
-
-        public override bool IsNeeded(ToolContext context) => true;
-
-        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
-        {
-            var result = await context.RunAsync("act", ["--version"], cancellationToken);
-            return result.Succeeded ? ToolStatus.Installed(ParseVersion(result.Output)?.ToString()) : ToolStatus.Missing();
-        }
-
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
-        {
-            var action = context.Environment.Os switch
-            {
-                HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install act", "nektos.act", admin: false),
-                HostOs.MacOS => context.PackageManagers.BrewInstall(Id, "Install act", "act"),
-                _ => new ToolAction
-                {
-                    ToolId = Id,
-                    Title = "Install act",
-                    Elevation = Elevation.Sudo,
-                    Commands = [PackageManagers.Sudo("bash", "-c", "set -o pipefail; curl --proto '=https' -fsSL https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s -- -b /usr/local/bin")]
-                }
-            };
-
-            // The app builds and runs without it; only bit ci needs it.
-            return action is null ? null : action with { Optional = true };
-        }
-
-        public override string? ManualInstructions(ToolContext context) => "https://nektosact.com/installation/";
-    }
-
-    private sealed class PowerShellTool : Tool
-    {
-        public override string Id => "pwsh";
-
-        public override string Name => "PowerShell 7";
-
-        public override bool AppliesInCi(ToolContext context) => false;
-
-        public override bool AppliesTo(ToolContext context) => context.Needs.Ci;
-
-        public override string Why(ToolContext context) => "bit ci runs the workflow's steps in it, as GitHub's runners do";
-
-        public override bool IsNeeded(ToolContext context) => true;
-
-        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
-        {
-            var result = await context.RunAsync("pwsh", ["--version"], cancellationToken);
-            return result.Succeeded ? ToolStatus.Installed(ParseVersion(result.Output)?.ToString()) : ToolStatus.Missing();
-        }
-
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
-        {
-            var action = context.Environment.Os switch
-            {
-                HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install PowerShell 7", "Microsoft.PowerShell"),
-                HostOs.MacOS => context.PackageManagers.BrewInstall(Id, "Install PowerShell 7", "powershell", cask: true),
-                _ when context.PackageManagers.Snap is not null => new ToolAction
-                {
-                    ToolId = Id,
-                    Title = "Install PowerShell 7",
-                    Elevation = Elevation.Sudo,
-                    Commands = [PackageManagers.Sudo("snap", "install", "powershell", "--classic")]
-                },
-                _ => null
-            };
-
-            // The app builds and runs without it; only bit ci needs it.
-            return action is null ? null : action with { Optional = true };
-        }
-
-        public override string? ManualInstructions(ToolContext context) => "https://aka.ms/install-powershell";
     }
 
     private sealed class AspireCliTool : Tool
