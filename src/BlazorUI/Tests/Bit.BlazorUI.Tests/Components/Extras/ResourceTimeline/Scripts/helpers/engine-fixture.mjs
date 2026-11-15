@@ -106,6 +106,7 @@ export function makeBareEngine(overrides = {}) {
         barMargin: 2,
         stackLabelClearance: true,
         stackOnLabelCollision: true,
+        collapseMatchingEdgeLabels: false,
         minBarWidth: 2,
         minBarWidthForLabels: 24,
         barLabelGap: 3,
@@ -183,6 +184,7 @@ export function makeBareEngine(overrides = {}) {
     engine._labelWidths = null;
     engine._labelWidthsGen = 0;
     engine._spanScratch = { lead: 0, trail: 0 };
+    engine._edgeLabels = new WeakMap();
     engine._laneScale = null;
     engine._configSnap = null;
     engine._configSnapGen = -1;

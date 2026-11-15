@@ -111,6 +111,34 @@ public class BitResourceTimelineOptions
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? StackOnLabelCollision { get; set; }
 
+    /// <summary>
+    /// When <c>true</c>, two bars of a row that do not overlap in time and whose
+    /// facing labels say the same - the first bar's
+    /// <see cref="BitResourceTimelineAllocation.TextEnd"/> and the next one's
+    /// <see cref="BitResourceTimelineAllocation.TextStart"/>, such as the airport
+    /// between two legs of a flight - draw that text once instead of twice into
+    /// the gap between them. The labels are compared trimmed and ignoring case;
+    /// empty ones and placeholders never match: a label with no letter or digit
+    /// (<c>—</c>, <c>--</c>, <c>?</c>, <c>...</c>) and <c>N/A</c>, <c>NA</c>,
+    /// <c>TBD</c>, <c>TBA</c>, <c>TBC</c>, <c>Unknown</c>, <c>None</c> and <c>Null</c>.
+    /// <para>
+    /// A pair is merged while the gap holds the whole word but is narrower than
+    /// both labels side by side plus room for one more, not only once they would
+    /// touch. The label is then drawn once, centered in the gap, and the pair is
+    /// kept on one lane: it does not, by itself, push the next bar onto another
+    /// lane (<see cref="StackOnLabelCollision"/>), and a bar overlapping the pair
+    /// does not split it. A gap too narrow for the word (touching bars, for
+    /// one) merges nothing, so both labels are drawn as they would be without this
+    /// option; different labels still stack. Like a collision, this is measured in
+    /// pixels and recomputed when the zoom changes, so a gap that grows wide
+    /// enough shows both labels again.
+    /// </para>
+    /// Only the drawing changes: the allocations keep both texts, and so do their
+    /// tooltips and accessible names. Defaults to <c>false</c>.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? CollapseMatchingEdgeLabels { get; set; }
+
     /// <summary>Minimum drawn bar width so very short allocations stay visible, in pixels.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MinBarWidth { get; set; }

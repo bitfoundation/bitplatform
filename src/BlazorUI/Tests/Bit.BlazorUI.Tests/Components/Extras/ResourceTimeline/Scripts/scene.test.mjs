@@ -689,7 +689,7 @@ test('the date row measures a format only once it needs it, and once per locale 
     for (const [what, change] of [
         ['a new date font', () => { engine.config.dateLabelFont = '20px serif'; }],
         ['a new locale', () => { engine.config.locale = 'de-DE'; engine._rebuildDateFormatters(); }],
-        ['a loaded web font', () => { engine.render = () => { }; engine._handleFontsLoaded(); }]
+        ['a loaded web font', () => { engine.render = () => { }; engine._relayout = () => { }; engine._handleFontsLoaded(); }]
     ]) {
         change();
         measured = 0;
