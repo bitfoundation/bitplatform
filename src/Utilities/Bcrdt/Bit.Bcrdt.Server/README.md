@@ -25,7 +25,9 @@ app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}");
   (`AuthorizationDenied`, then `Faulted`) rather than a failure to retry: both relays send it as an `Auth` message
   granting nothing, which a browser's WebSocket hears as well as any other client.
 - One hub connection may join at most 16 documents, with identifiers of at most 256 characters; register a
-  `BcrdtHubOptions` of your own to change either.
+  `BcrdtHubOptions` of your own to change either. The WebSocket endpoint takes its own limit on identifiers in
+  `BcrdtWebSocketEndpointOptions.MaxDocumentIdLength`, and pings its clients (`KeepAliveInterval`,
+  `KeepAliveTimeout`) so a connection that died without a word is dropped within 45 seconds.
 - End or narrow a grant while the connection is open through `BcrdtRelayConnections`, which both relays list their
   connections in - registered by `AddBitBcrdtHub`, or by `AddBitBcrdtRelayConnections` in an application that maps
   only the WebSocket endpoint. `RevokeAsync` refuses the matching connections, in a `BcrdtDocumentHost` too when there

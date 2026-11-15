@@ -734,6 +734,38 @@ public class AccessAndHostingTests
     }
 
     [TestMethod]
+    public async Task With_a_host_a_departure_of_a_client_nobody_holds_does_not_hold_back_the_others_in_its_message()
+    {
+        await using var documentHost = new BcrdtDocumentHost();
+        await using LoopbackHost host = await HostedWebSocketAsync(documentHost);
+
+        using ClientWebSocket owner = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/timeouts");
+        using ClientWebSocket peer = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/timeouts");
+        using ClientWebSocket observer = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/timeouts");
+
+        using var presence = new BcrdtAwarenessStore(42);
+        byte[]? update = null;
+        presence.Updated += published => update = published;
+        presence.SetLocalField("name", "Ada");
+        await owner.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(update!), WebSocketMessageType.Binary, true, CancellationToken.None);
+        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, (await RawSocket.ReceiveAsync(observer, Patience))?.Kind);
+        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, (await RawSocket.ReceiveAsync(peer, Patience))?.Kind);
+
+        // The peer times out two clients at once: one somebody here holds, and one whose connection already left.
+        byte[] timeouts = BcrdtAwarenessStore.EncodeRemovals([(42UL, 0L), (43UL, 0L)]);
+        await peer.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(timeouts), WebSocketMessageType.Binary, true, CancellationToken.None);
+
+        BcrdtSyncMessage? heard = await RawSocket.ReceiveAsync(observer, Patience);
+        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, heard?.Kind, "the departure of the held client must still go out");
+        CollectionAssert.AreEqual(
+            new[] { (42UL, 0L, false) },
+            BcrdtAwarenessStore.ReadEntries(heard!.Value.Payload).ToArray(),
+            "with the other one left out");
+        Assert.IsNull(await RawSocket.ReceiveAsync(peer, QuietPeriod), "and nothing goes back to the sender");
+        Assert.IsNull(await RawSocket.ReceiveAsync(observer, QuietPeriod), "nor anything twice");
+    }
+
+    [TestMethod]
     public async Task Nobody_else_takes_over_the_presence_of_a_tab_that_withdrew_it_and_stayed_connected()
     {
         await using var documentHost = new BcrdtDocumentHost(new BcrdtDocumentHostOptions { PresenceTakeoverAfter = TimeSpan.FromMilliseconds(200) });
@@ -911,6 +943,65 @@ public class AccessAndHostingTests
 
         CollectionAssert.DoesNotContain(documentHost.LoadedDocuments.ToArray(), "d");
         CollectionAssert.DoesNotContain(documentHost.LoadedDocuments.ToArray(), new string('x', 11));
+    }
+
+    [TestMethod]
+    public async Task Joins_running_side_by_side_cannot_slip_past_the_limit_together()
+    {
+        await using LoopbackHost host = await LoopbackHost.StartAsync(
+            app => app.MapHub<SlowToAuthorizeHub>("/hub"),
+            builder =>
+            {
+                builder.Services.AddSingleton(new BcrdtHubOptions { MaxDocumentsPerConnection = 3 });
+                builder.Services.AddBitBcrdtHub<SlowToAuthorizeHub>()
+                    .AddHubOptions<SlowToAuthorizeHub>(options => options.MaximumParallelInvocationsPerClient = 20);
+                builder.Services.AddBitBcrdtDocumentHost();
+            });
+        BcrdtDocumentHost documentHost = host.App.Services.GetRequiredService<BcrdtDocumentHost>();
+
+        HubConnection connection = new HubConnectionBuilder().WithUrl(host.BaseUrl + "/hub").Build();
+        TaskCompletionSource closed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        connection.Closed += _ =>
+        {
+            closed.TrySetResult();
+            return Task.CompletedTask;
+        };
+
+        await using (connection)
+        {
+            await connection.StartAsync();
+
+            // All sent before any is authorized: each saw no document joined yet, and the limit counted only those.
+            foreach (int i in Enumerable.Range(0, 20)) await connection.SendAsync(BcrdtSignalRTransport.JoinMethod, $"doc-{i}");
+            await closed.Task.WaitAsync(Patience);
+        }
+
+        await Task.Delay(SlowToAuthorizeHub.Delay * 2);
+        Assert.IsTrue(documentHost.LoadedDocuments.Count <= 3, $"{documentHost.LoadedDocuments.Count} documents loaded for one connection");
+    }
+
+    [TestMethod]
+    public async Task The_websocket_relay_refuses_an_identifier_past_its_limit_before_anything_else()
+    {
+        int authorized = 0;
+        await using var documentHost = new BcrdtDocumentHost();
+        await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket(
+            "/ws/{documentId}",
+            (_, _) =>
+            {
+                Interlocked.Increment(ref authorized);
+                return ValueTask.FromResult(true);
+            },
+            new BcrdtWebSocketEndpointOptions { DocumentHost = documentHost, MaxDocumentIdLength = 10 }));
+
+        using var raw = new ClientWebSocket();
+        await raw.ConnectAsync(new Uri(host.WebSocketBase + "/ws/" + new string('x', 11)), CancellationToken.None);
+        BcrdtSyncMessage? refusal = await RawSocket.ReceiveAsync(raw, Patience);
+        Assert.AreEqual(BcrdtSyncMessageKind.Auth, refusal?.Kind);
+        Assert.AreEqual(BcrdtDocumentAccess.None, BcrdtSyncProtocol.DecodeAuthAccess(refusal!.Value.Payload).Access);
+
+        Assert.AreEqual(0, authorized, "the callback is not consulted");
+        Assert.AreEqual(0, documentHost.LoadedDocuments.Count, "nor anything loaded");
     }
 
     [TestMethod]
@@ -1157,6 +1248,18 @@ public class AccessAndHostingTests
         }
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+}
+
+/// <summary>A hub whose authorization takes a while, so joins of one connection overlap.</summary>
+public sealed class SlowToAuthorizeHub : BcrdtHub
+{
+    public static readonly TimeSpan Delay = TimeSpan.FromMilliseconds(300);
+
+    protected override async ValueTask<bool> AuthorizeAsync(string documentId)
+    {
+        await Task.Delay(Delay);
+        return true;
     }
 }
 

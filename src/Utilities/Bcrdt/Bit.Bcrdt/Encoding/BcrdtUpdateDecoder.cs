@@ -237,14 +237,6 @@ public static class BcrdtUpdateDecoder
             if (!missing.ContainsClient(client) || missing.Get(client) > clock) missing.Set(client, clock);
         }
 
-        void NoteUnmet(ulong author, BcrdtItemId? reference)
-        {
-            if (reference is not { } id || id.Client == author) return;
-
-            long state = store.GetState(id.Client);
-            if (id.Clock >= state) NoteMissing(id.Client, state);
-        }
-
         void DeferStack()
         {
             foreach (BcrdtAbstractStruct blocked in stack)
@@ -256,9 +248,10 @@ public static class BcrdtUpdateDecoder
                 // until the next handshake.
                 if (blocked is BcrdtItem item)
                 {
-                    NoteUnmet(item.Id.Client, item.Origin);
-                    NoteUnmet(item.Id.Client, item.RightOrigin);
-                    NoteUnmet(item.Id.Client, item.Parent as BcrdtItemId?);
+                    for (int dependency = 0; dependency < BcrdtItem.DependencyCount; dependency++)
+                    {
+                        if (item.GetUnmetDependency(dependency, store) is { } unmet) NoteMissing(unmet.Client, store.GetState(unmet.Client));
+                    }
                 }
 
                 ulong client = blocked.Id.Client;

@@ -895,7 +895,8 @@ A transport moves opaque messages between peers. bit Bcrdt ships three:
 On their own, both relays only relay: neither decodes a message, holds a replica or knows what a state vector is. Both
 take an authorization hook - override `BcrdtHub.AuthorizeAccessAsync` (or `AuthorizeAsync` for a plain yes or no), or
 set `BcrdtWebSocketEndpointOptions.AuthorizeAccess` (or pass `authorize` to `MapBitBcrdtWebSocket`) - consulted before
-a client joins a document; a refusal reaches the client as a final `BcrdtTransportAuthorizationException`. Both list
+a client joins a document; a refusal reaches the client as an `Auth` message granting nothing, which its provider
+reports as a final refusal (`AuthorizationDenied`, then `Faulted`). Both list
 the connections they carry in `BcrdtRelayConnections`, which ends or narrows a grant while the connection is open (see
 [Access control and security](#access-control-and-security)). Every client of the WebSocket relay gets its own bounded
 outbound queue, so one client on a bad connection cannot hold up the others. Neither relays an `Auth` verdict, a `Ping` or a `Pong` from a client: the first would be a forgery, the others
@@ -1849,11 +1850,16 @@ Changes since the previous release that an application may notice:
   rather than waiting for the client to.
 - **A hub connection may join at most 16 documents, with identifiers of at most 256 characters** (`BcrdtHubOptions`). A
   join past either limit is refused like an unauthorized one. An application with longer identifiers, or clients of its
-  own that share one connection between more documents, registers a `BcrdtHubOptions` with higher limits.
+  own that share one connection between more documents, registers a `BcrdtHubOptions` with higher limits. The WebSocket
+  relay refuses identifiers longer than `BcrdtWebSocketEndpointOptions.MaxDocumentIdLength`, 256 by default, too.
+- **The WebSocket relay pings its clients** every `KeepAliveInterval` (15 seconds) and drops one that has not answered
+  within `KeepAliveTimeout` (30 seconds), so a connection that died without a word leaves its room - and a document
+  host's presence - instead of staying until TCP gives up. Every browser and `ClientWebSocket` answers on its own.
 - **A document host no longer lets another connection take over a withdrawn presence identity.** A connection that
   withdrew its entry and stayed connected - a hidden tab - keeps its identity until it leaves; an anonymous takeover
-  needs the holder to have gone quiet with its entry published. The host also drops a presence message announcing the
-  departure of a client no connection holds.
+  needs the holder to have gone quiet with its entry published; a holder that died meanwhile releases it once its
+  relay notices. The host also leaves out of a presence message the departure of a client no connection holds, and
+  sends the rest on itself.
 - **A `/` in a document identifier reaches the WebSocket relay as itself.** The client escapes it in the address as
   `%2F`, which the server does not decode in a path, so the relay, its authorization callbacks and a document host used
   to see `team%2Fnotes` where the hub and the application's own code saw `team/notes`. Documents a host stored under

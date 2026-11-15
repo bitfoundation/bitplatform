@@ -107,6 +107,42 @@ public sealed class BcrdtWebSocketEndpointOptions
     /// before their sockets are aborted.
     /// </summary>
     public TimeSpan ShutdownGracePeriod { get; init; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// The longest document identifier, in characters, a client may ask for: 256 by default, as for
+    /// <see cref="BcrdtHubOptions.MaxDocumentIdLength"/>.
+    /// </summary>
+    /// <remarks>
+    /// A longer one is refused like an unauthorized request, before any authorization callback runs. Raise it for
+    /// an application whose identifiers are long by design; an identifier is held in memory by the relay and the
+    /// host, and named in every log line about its document.
+    /// </remarks>
+    public int MaxDocumentIdLength { get; init; } = BcrdtHubOptions.DefaultMaxDocumentIdLength;
+
+    /// <summary>How often the server pings a client to find out whether it is still there: 15 seconds by default.</summary>
+    /// <remarks>
+    /// Zero turns the keep-alive off. See <see cref="KeepAliveTimeout"/>.
+    /// </remarks>
+    public TimeSpan KeepAliveInterval { get; init; } = TimeSpan.FromSeconds(15);
+
+    /// <summary>
+    /// How long a ping may go unanswered before the server gives the client up for gone: 30 seconds by default.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A client whose network vanished without a word - a laptop put to sleep, a NAT entry expiring - leaves a
+    /// socket that looks open until TCP itself gives up, often many minutes later. Until the server notices, the
+    /// dead connection keeps its place in the room and, with a <see cref="DocumentHost"/>, the presence identity
+    /// it published - which the same client, back on a new connection, may not be able to take over in the
+    /// meantime. Every browser and <see cref="System.Net.WebSockets.ClientWebSocket"/> answers a ping on its own,
+    /// so a live client, a hidden tab included, is never dropped by this.
+    /// </para>
+    /// <para>
+    /// <see cref="Timeout.InfiniteTimeSpan"/> sends pings without waiting for their answers, as the server did
+    /// before this setting existed.
+    /// </para>
+    /// </remarks>
+    public TimeSpan KeepAliveTimeout { get; init; } = TimeSpan.FromSeconds(30);
 }
 
 /// <summary>
@@ -163,7 +199,8 @@ public static class BcrdtWebSocketEndpoint
     /// right for a demo and wrong for anything reachable from outside. A refused socket is accepted only
     /// to be sent an <c>Auth</c> message granting nothing, and closed: the client's provider reports that
     /// as a final refusal rather than a failure to retry - in a browser too, whose WebSocket never shows
-    /// the status of a refused upgrade.
+    /// the status of a refused upgrade. A request naming a document identifier longer than
+    /// <see cref="BcrdtWebSocketEndpointOptions.MaxDocumentIdLength"/> is refused the same way, before this is consulted.
     /// </param>
     /// <param name="options">Message size, queue and shutdown settings; defaults when omitted.</param>
     /// <returns>The mapped endpoint, for further conventions such as authorization policies.</returns>
@@ -180,6 +217,12 @@ public static class BcrdtWebSocketEndpoint
         ArgumentOutOfRangeException.ThrowIfLessThan(options.MaxMessageSize, 2, nameof(options));
         ArgumentOutOfRangeException.ThrowIfLessThan(options.OutboundQueueCapacity, 1, nameof(options));
         ArgumentOutOfRangeException.ThrowIfLessThan(options.OutboundQueueByteLimit, options.MaxMessageSize, nameof(options));
+        ArgumentOutOfRangeException.ThrowIfLessThan(options.MaxDocumentIdLength, 1, nameof(options));
+        ArgumentOutOfRangeException.ThrowIfLessThan(options.KeepAliveInterval, TimeSpan.Zero, nameof(options));
+        if (options.KeepAliveTimeout != Timeout.InfiniteTimeSpan)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(options.KeepAliveTimeout, TimeSpan.Zero, nameof(options));
+        }
 
         // One relay - and so one set of rooms - per mapping.
         var relay = new Relay(authorize, options, options.Connections ?? endpoints.ServiceProvider.GetService<BcrdtRelayConnections>());
@@ -190,9 +233,6 @@ public static class BcrdtWebSocketEndpoint
     {
         /// <summary>How long a close frame may take before the socket is abandoned.</summary>
         private static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(2);
-
-        /// <summary>The reason a refused client is given, the hub's own.</summary>
-        private const string AccessDeniedReason = "Not authorized to join this document.";
 
         private readonly BcrdtRoomRegistry<Member> _rooms = new();
 
@@ -217,9 +257,15 @@ public static class BcrdtWebSocketEndpoint
             // Refused after the upgrade, with an Auth message, the way the hub refuses: a browser's WebSocket
             // never shows the page the status of a failed upgrade, so a 403 there reads as a network failure the
             // client would retry for ever.
+            if (BcrdtRelayRefusals.IsTooLong(documentId, options.MaxDocumentIdLength))
+            {
+                await RefuseAsync(context, BcrdtRelayRefusals.DocumentIdTooLong).ConfigureAwait(false);
+                return;
+            }
+
             if (authorize is not null && !await authorize(context, documentId).ConfigureAwait(false))
             {
-                await RefuseAsync(context).ConfigureAwait(false);
+                await RefuseAsync(context, BcrdtRelayRefusals.AccessDenied).ConfigureAwait(false);
                 return;
             }
 
@@ -229,7 +275,7 @@ public static class BcrdtWebSocketEndpoint
 
             if (access == BcrdtDocumentAccess.None)
             {
-                await RefuseAsync(context).ConfigureAwait(false);
+                await RefuseAsync(context, BcrdtRelayRefusals.AccessDenied).ConfigureAwait(false);
                 return;
             }
 
@@ -254,7 +300,7 @@ public static class BcrdtWebSocketEndpoint
 
             try
             {
-                using WebSocket socket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
+                using WebSocket socket = await context.WebSockets.AcceptWebSocketAsync(AcceptContext()).ConfigureAwait(false);
                 await RelayAsync(documentId, socket, context, connection, session).ConfigureAwait(false);
             }
             finally
@@ -263,43 +309,64 @@ public static class BcrdtWebSocketEndpoint
             }
         }
 
+        /// <summary>How the endpoint accepts a socket: with the keep-alive the options ask for.</summary>
+        private WebSocketAcceptContext AcceptContext() => new()
+        {
+            KeepAliveInterval = options.KeepAliveInterval,
+            KeepAliveTimeout = options.KeepAliveTimeout,
+        };
+
         /// <summary>
         /// Accepts the socket only to refuse it: an <c>Auth</c> message granting nothing - which the client's provider
         /// treats as final, in a browser as anywhere - and then a close frame.
         /// </summary>
-        private static async Task RefuseAsync(HttpContext context)
+        /// <remarks>
+        /// The whole exchange - the refusal, the close frame and the client's answer to it - shares one
+        /// <see cref="CloseTimeout"/>, so a refused request holds its socket no longer than that, however the client
+        /// behaves; one that answers at once, as every browser does, holds it for a round trip. A client gone before
+        /// the upgrade completed is simply let go.
+        /// </remarks>
+        private static async Task RefuseAsync(HttpContext context, string reason)
         {
-            using WebSocket socket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
+            WebSocket socket;
             try
             {
-                using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
-                timeout.CancelAfter(CloseTimeout);
-                await socket
-                    .SendAsync(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.None, AccessDeniedReason), WebSocketMessageType.Binary, endOfMessage: true, timeout.Token)
-                    .ConfigureAwait(false);
+                socket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
             }
             catch (Exception)
             {
-                // The client went away before it heard; the close below is all that is left.
+                // The client dropped during the upgrade: nobody is left to tell, and nothing worth reporting happened.
+                return;
             }
 
-            await CloseRefusedAsync(socket).ConfigureAwait(false);
-
-            // Waits briefly for the client's answer to the close frame, so the socket ends cleanly.
-            try
+            using (socket)
             {
-                using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
-                timeout.CancelAfter(CloseTimeout);
-                byte[] buffer = new byte[256];
-                while (socket.State is WebSocketState.CloseSent or WebSocketState.Open)
+                using CancellationTokenSource deadline = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
+                deadline.CancelAfter(CloseTimeout);
+
+                try
                 {
-                    WebSocketReceiveResult result = await socket.ReceiveAsync(buffer, timeout.Token).ConfigureAwait(false);
-                    if (result.MessageType == WebSocketMessageType.Close) break;
+                    await socket
+                        .SendAsync(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.None, reason), WebSocketMessageType.Binary, endOfMessage: true, deadline.Token)
+                        .ConfigureAwait(false);
+
+                    await socket
+                        .CloseOutputAsync(WebSocketCloseStatus.PolicyViolation, "Refused", deadline.Token)
+                        .ConfigureAwait(false);
+
+                    // Waits for the client's answer to the close frame, so the socket ends cleanly and the refusal
+                    // is read before the connection goes.
+                    byte[] buffer = new byte[256];
+                    while (socket.State is WebSocketState.CloseSent)
+                    {
+                        WebSocketReceiveResult result = await socket.ReceiveAsync(buffer, deadline.Token).ConfigureAwait(false);
+                        if (result.MessageType == WebSocketMessageType.Close) break;
+                    }
                 }
-            }
-            catch (Exception)
-            {
-                // A client that does not answer is dropped with the request.
+                catch (Exception)
+                {
+                    // The client went away, or did not answer in time: the socket is dropped with the request.
+                }
             }
         }
 

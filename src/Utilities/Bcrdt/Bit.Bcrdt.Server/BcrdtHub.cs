@@ -66,12 +66,14 @@ public class BcrdtHub : Hub
 
     private const string JoinedDocumentsKey = "Bit.Bcrdt.JoinedDocuments";
 
+    private const string DocumentSlotsKey = "Bit.Bcrdt.DocumentSlots";
+
     /// <summary>The reason sent to a client whose join was refused.</summary>
     /// <remarks>
     /// Deliberately vague by default: a message that explains whether a document exists, or why
     /// exactly access was denied, tells an unauthorized caller more than it tells a legitimate one.
     /// </remarks>
-    protected virtual string AccessDeniedReason => "Not authorized to join this document.";
+    protected virtual string AccessDeniedReason => BcrdtRelayRefusals.AccessDenied;
 
     /// <summary>The most documents one connection may have joined at once.</summary>
     /// <remarks>
@@ -167,6 +169,8 @@ public class BcrdtHub : Hub
     /// <para>
     /// A join naming an identifier longer than <see cref="MaxDocumentIdLength"/>, or one document more than
     /// <see cref="MaxDocumentsPerConnection"/>, is refused the same way, before anything is authorized or loaded.
+    /// A join counts against the limit from the moment it starts, so joins running side by side - with
+    /// <c>MaximumParallelInvocationsPerClient</c> raised - cannot all slip under it together.
     /// </para>
     /// </remarks>
     /// <param name="documentId">The document to subscribe to.</param>
@@ -174,27 +178,64 @@ public class BcrdtHub : Hub
     {
         ArgumentException.ThrowIfNullOrEmpty(documentId);
 
-        ConcurrentDictionary<string, JoinedDocument> joined = JoinedDocuments();
-        if (documentId.Length > MaxDocumentIdLength)
+        if (BcrdtRelayRefusals.IsTooLong(documentId, MaxDocumentIdLength))
         {
-            await RefuseCallerAsync("The document identifier is too long.").ConfigureAwait(false);
+            await RefuseCallerAsync(BcrdtRelayRefusals.DocumentIdTooLong).ConfigureAwait(false);
             return;
         }
 
-        if (!joined.ContainsKey(documentId) && joined.Count >= MaxDocumentsPerConnection)
+        DocumentSlots slots = Slots();
+        if (!slots.TryReserve(documentId, MaxDocumentsPerConnection))
         {
-            await RefuseCallerAsync("Too many documents on one connection.").ConfigureAwait(false);
+            await RefuseCallerAsync(BcrdtRelayRefusals.TooManyDocuments).ConfigureAwait(false);
             return;
         }
+
+        // The slot is kept only by the join that admits the connection - until it leaves - and every other way
+        // out gives it back.
+        HubHostConnection? admitted = null;
+        try
+        {
+            admitted = await AdmitAsync(documentId).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (admitted is null) slots.Release(documentId);
+        }
+
+        if (admitted is null) return;
+
+        // Listed once admitted, so that a revocation from here on reaches it.
+        RelayConnections?.Add(admitted);
+
+        // Revoked in the meantime: the refusal is the last thing it hears.
+        if (admitted.Refused) return;
+        BcrdtDocumentAccess access = admitted.Access;
+        await Clients.Caller.SendAsync(ReceiveMethod, BcrdtSyncProtocol.EncodeAuth(access, null)).ConfigureAwait(false);
+
+        // Narrowed while the grant was on its way, and the narrowed grant may have overtaken it: say it again.
+        if (admitted.Access != access && !admitted.Refused)
+        {
+            await Clients.Caller.SendAsync(ReceiveMethod, BcrdtSyncProtocol.EncodeAuth(admitted.Access, null)).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// The rest of <see cref="Join"/>, once a slot is reserved: the connection this call admitted, or
+    /// <see langword="null"/> when it was refused or had already joined.
+    /// </summary>
+    private async Task<HubHostConnection?> AdmitAsync(string documentId)
+    {
+        ConcurrentDictionary<string, JoinedDocument> joined = JoinedDocuments();
 
         BcrdtDocumentAccess access = await AuthorizeAccessAsync(documentId).ConfigureAwait(false);
         if (access == BcrdtDocumentAccess.None)
         {
             await RefuseCallerAsync(AccessDeniedReason).ConfigureAwait(false);
-            return;
+            return null;
         }
 
-        if (joined.ContainsKey(documentId)) return;
+        if (joined.ContainsKey(documentId)) return null;
 
         // Every hub type is a relay of its own: SignalR keeps groups per hub.
         var connection = new HubHostConnection(Context, Clients.Client(Context.ConnectionId), Groups, documentId, access, "signalr:" + GetType().FullName);
@@ -214,7 +255,7 @@ public class BcrdtHub : Hub
             if (!joined.TryAdd(documentId, new JoinedDocument(session, connection)))
             {
                 session?.Dispose();
-                return;
+                return null;
             }
         }
         catch
@@ -223,18 +264,7 @@ public class BcrdtHub : Hub
             throw;
         }
 
-        // Listed once admitted, so that a revocation from here on reaches it.
-        RelayConnections?.Add(connection);
-
-        // Revoked in the meantime: the refusal is the last thing it hears.
-        if (connection.Refused) return;
-        await Clients.Caller.SendAsync(ReceiveMethod, BcrdtSyncProtocol.EncodeAuth(access, null)).ConfigureAwait(false);
-
-        // Narrowed while the grant was on its way, and the narrowed grant may have overtaken it: say it again.
-        if (connection.Access != access && !connection.Refused)
-        {
-            await Clients.Caller.SendAsync(ReceiveMethod, BcrdtSyncProtocol.EncodeAuth(connection.Access, null)).ConfigureAwait(false);
-        }
+        return connection;
     }
 
     /// <summary>Refuses the caller for good: a refusal it understands, then the end of its connection.</summary>
@@ -260,7 +290,12 @@ public class BcrdtHub : Hub
     {
         ArgumentException.ThrowIfNullOrEmpty(documentId);
 
-        if (JoinedDocuments().TryRemove(documentId, out JoinedDocument? left)) Release(left);
+        if (JoinedDocuments().TryRemove(documentId, out JoinedDocument? left))
+        {
+            Release(left);
+            Slots().Release(documentId);
+        }
+
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, GroupName(documentId)).ConfigureAwait(false);
     }
 
@@ -353,21 +388,66 @@ public class BcrdtHub : Hub
     /// connection that ended unexpectedly. A concurrent dictionary, because an application may raise
     /// <c>MaximumParallelInvocationsPerClient</c> and run a client's invocations side by side.
     /// </remarks>
-    private ConcurrentDictionary<string, JoinedDocument> JoinedDocuments()
+    private ConcurrentDictionary<string, JoinedDocument> JoinedDocuments() =>
+        ConnectionItem(JoinedDocumentsKey, static () => new ConcurrentDictionary<string, JoinedDocument>(StringComparer.Ordinal));
+
+    /// <summary>The documents this connection has joined or is joining, as counted against <see cref="MaxDocumentsPerConnection"/>.</summary>
+    private DocumentSlots Slots() => ConnectionItem(DocumentSlotsKey, static () => new DocumentSlots());
+
+    /// <summary>An object kept for the life of the connection in <see cref="HubCallerContext.Items"/>, created on first use.</summary>
+    private T ConnectionItem<T>(string key, Func<T> create)
+        where T : class
     {
-        object? existing = Context.Items.TryGetValue(JoinedDocumentsKey, out object? found) ? found : null;
-        if (existing is ConcurrentDictionary<string, JoinedDocument> joined) return joined;
+        if (Context.Items.TryGetValue(key, out object? found) && found is T existing) return existing;
 
         lock (Context.Items)
         {
-            if (Context.Items.TryGetValue(JoinedDocumentsKey, out found) && found is ConcurrentDictionary<string, JoinedDocument> raced)
-            {
-                return raced;
-            }
+            if (Context.Items.TryGetValue(key, out found) && found is T raced) return raced;
 
-            ConcurrentDictionary<string, JoinedDocument> created = new(StringComparer.Ordinal);
-            Context.Items[JoinedDocumentsKey] = created;
+            T created = create();
+            Context.Items[key] = created;
             return created;
+        }
+    }
+
+    /// <summary>
+    /// The documents one connection holds a place in: those it has joined, and those a join is still on its way to.
+    /// </summary>
+    /// <remarks>
+    /// A place is taken when a join starts, not when it completes, so the limit holds however many joins of one
+    /// connection run side by side. Each join holds its own place in a document; one that ends without admitting
+    /// the connection gives its place back, and the one that admitted it gives it back when the connection leaves.
+    /// </remarks>
+    private sealed class DocumentSlots
+    {
+        private readonly Dictionary<string, int> _held = new(StringComparer.Ordinal);
+
+        /// <summary>Takes a place in a document, unless the connection holds places in <paramref name="max"/> others.</summary>
+        public bool TryReserve(string documentId, int max)
+        {
+            lock (_held)
+            {
+                if (_held.TryGetValue(documentId, out int holders))
+                {
+                    _held[documentId] = holders + 1;
+                    return true;
+                }
+
+                if (_held.Count >= max) return false;
+                _held[documentId] = 1;
+                return true;
+            }
+        }
+
+        /// <summary>Gives back one place in a document.</summary>
+        public void Release(string documentId)
+        {
+            lock (_held)
+            {
+                if (!_held.TryGetValue(documentId, out int holders)) return;
+                if (holders <= 1) _held.Remove(documentId);
+                else _held[documentId] = holders - 1;
+            }
         }
     }
 

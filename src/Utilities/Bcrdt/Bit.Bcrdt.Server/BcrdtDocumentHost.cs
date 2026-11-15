@@ -165,6 +165,14 @@ public sealed class BcrdtDocumentHostOptions
     /// the room - who knows its client identifier from the presence traffic - could otherwise claim it meanwhile
     /// and keep its owner out. The owner's connection releasing it, by leaving, frees it for anyone.
     /// </para>
+    /// <para>
+    /// A connection that withdrew its entry and then died without a goodbye - a hidden tab on a laptop put to
+    /// sleep - holds its identity until its relay notices it is gone: within SignalR's
+    /// <c>ClientTimeoutInterval</c> (30 seconds by default) on the hub, and within
+    /// <see cref="BcrdtWebSocketEndpointOptions.KeepAliveInterval"/> plus
+    /// <see cref="BcrdtWebSocketEndpointOptions.KeepAliveTimeout"/> (45 seconds by default) on the WebSocket
+    /// endpoint. An anonymous client back on a new connection is shown again once that has happened.
+    /// </para>
     /// </remarks>
     public TimeSpan PresenceTakeoverAfter { get; init; } = TimeSpan.FromSeconds(15);
 
@@ -616,8 +624,15 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
     /// gone. Here an entry with state is accepted only from the connection that owns that client, and
     /// a departure announced for somebody else's client only at a clock that client has already
     /// published, which is what a peer timing them out legitimately sends and which their own next
-    /// update supersedes. A departure of a client no connection holds is not passed on - the host
-    /// announced it already, if it was ever here. A message breaking any of these rules is dropped whole.
+    /// update supersedes. A message breaking either rule is dropped whole.
+    /// </para>
+    /// <para>
+    /// A departure of a client no connection holds is left out - the host announced it already, if it was
+    /// ever here - and the rest of the message goes on: the host sends what is left to every other
+    /// connection itself, rather than letting the sender's relay pass on the message as it came. Behind a
+    /// backplane (<see cref="BcrdtDocumentHostOptions.ScaleOut"/>) what is left reaches only this instance's
+    /// connections; the clients elsewhere time those departures out themselves. A message of nothing but
+    /// such departures is dropped.
     /// </para>
     /// <para>
     /// Owning an entry also lets the host announce its departure the moment the connection goes, rather
@@ -637,6 +652,8 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         }
 
         long now = Environment.TickCount64;
+        byte[]? relayed = null;
+        IBcrdtHostConnection[]? others = null;
         lock (document.Connections)
         {
             // Revoked since HandleAsync looked: revoking released this connection's claims under this same lock,
@@ -650,8 +667,10 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             }
 
             HashSet<ulong>? claiming = null;
-            foreach ((ulong clientId, long clock, bool online) in entries)
+            HashSet<int>? unknown = null;
+            for (int index = 0; index < entries.Count; index++)
             {
+                (ulong clientId, long clock, bool online) = entries[index];
                 if (document.AwarenessClaims.TryGetValue(clientId, out AwarenessClaim? claim))
                 {
                     if (ReferenceEquals(claim.Owner, connection)) continue;
@@ -679,12 +698,21 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                 {
                     // The departure of a client nobody here holds: one that left, which the host announced
                     // itself, or one that never was. Relayed, a message of made-up identifiers - a million fit
-                    // in a few megabytes - would fill every peer's presence until they timed out.
-                    return Drop("unknown_presence");
+                    // in a few megabytes - would fill every peer's presence until they timed out. Left out
+                    // rather than refusing the message, so a peer timing out several clients at once still
+                    // reaches everyone about those somebody here does hold.
+                    (unknown ??= []).Add(index);
                 }
             }
 
             if (claiming is not null && owned + claiming.Count > MaxAwarenessClientsPerConnection) return Drop("presence_limit");
+
+            if (unknown is not null)
+            {
+                if (unknown.Count == entries.Count) return Drop("unknown_presence");
+                relayed = BcrdtSyncProtocol.EncodeAwarenessUpdate(BcrdtAwarenessStore.WithoutEntries(payload, unknown));
+                others = [.. document.Connections.Where(other => !ReferenceEquals(other, connection) && !document.Revoked.Contains(other))];
+            }
 
             foreach ((ulong clientId, long clock, bool online) in entries)
             {
@@ -704,14 +732,20 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             }
         }
 
-        return true;
+        if (relayed is null) return true;
+
+        // What is left of the message goes out from here, to every connection of every relay, instead of the
+        // message itself; the sender's relay passes nothing on.
+        foreach (IBcrdtHostConnection other in others!) other.Send(relayed);
+        return false;
     }
 
     /// <summary>
     /// Whether <paramref name="connection"/> may take over a presence identity another connection holds:
     /// at once when both are the same signed-in user, otherwise once the holder has gone quiet with its entry
     /// still published - a connection lost without a goodbye. A holder that withdrew its entry - a hidden tab -
-    /// is still connected, and keeps its identity until it leaves.
+    /// is still connected, and keeps its identity until it leaves; one that died meanwhile is noticed by its
+    /// relay's keep-alive and released then (see <see cref="BcrdtDocumentHostOptions.PresenceTakeoverAfter"/>).
     /// </summary>
     private static bool CanTakeOver(AwarenessClaim claim, IBcrdtHostConnection connection, long now, long takeoverAfterMilliseconds) =>
         (connection.UserId is { } user && string.Equals(claim.Owner.UserId, user, StringComparison.Ordinal)) ||
