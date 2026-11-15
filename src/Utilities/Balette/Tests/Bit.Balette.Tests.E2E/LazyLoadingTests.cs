@@ -1,4 +1,5 @@
-﻿using Bit.Balette.Tests.E2E.Infrastructure;
+﻿using System.Text.RegularExpressions;
+using Bit.Balette.Tests.E2E.Infrastructure;
 using Bit.Utilities.Testing;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
@@ -105,6 +106,69 @@ public sealed class LazyLoadingTests : BaletteTest
         await ApprovePendingRequestsAsync(page);
 
         _sample.AssertLoadedOnce(requests);
+        AssertNoProblems(problems);
+    }
+
+    [TestMethod]
+    public async Task Leaving_the_admin_page_while_the_palette_starts_leaves_nothing_listening_to_the_page()
+    {
+        var page = await NewPageAsync(await NewContextAsync());
+        var problems = TrackProblems(page, BaseUrl);
+        await GotoAsync(page, "/");
+        await WaitForInteractiveAsync(page);
+
+        // The palette's module is held back until the home page shows, so the admin page is left while its palette is still
+        // starting: the palette is disposed before init has run, and init then reaches a dialog that is no longer in the
+        // document.
+        var module = new Regex(@"bit-balette[^/]*\.js(\?|$)");
+        var held = 0;
+        var intercepted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await page.RouteAsync(module, async route =>
+        {
+            Interlocked.Increment(ref held);
+            intercepted.TrySetResult();
+            await release.Task;
+            await route.ContinueAsync();
+        });
+        try
+        {
+            await page.GetByRole(AriaRole.Link, new() { Name = "Admin", Exact = true }).ClickAsync();
+            await Expect(page.Locator("h1")).ToHaveTextAsync("Admin");
+            await Task.WhenAny(intercepted.Task, Task.Delay(TimeSpan.FromSeconds(90)));
+            Assert.IsGreaterThan(0, held, "the palette's module was never requested, so the test raced nothing");
+
+            await page.GetByRole(AriaRole.Link, new() { Name = "Home", Exact = true }).ClickAsync();
+            await Expect(page.Locator("h1")).ToHaveTextAsync("Lazy loading");
+
+            // Released, the import completes on the home page, with the palette that asked for it gone.
+            await page.RunAndWaitForRequestFinishedAsync(() =>
+            {
+                release.TrySetResult();
+                return Task.CompletedTask;
+            }, new() { Predicate = request => module.IsMatch(request.Url), Timeout = 90_000 });
+        }
+        finally
+        {
+            // A failure before the release must not leave the request held while the page closes.
+            release.TrySetResult();
+        }
+
+        // Keys on the page reach no listener the palette left behind: one would read the missing dialog and throw.
+        await page.Locator("h1").ClickAsync();
+        await page.Keyboard.PressAsync("Control+k");
+        await page.Keyboard.PressAsync("g");
+        await page.WaitForTimeoutAsync(500);
+        Assert.AreEqual(0, await page.Locator("[data-balette]").CountAsync());
+
+        // And the palette starts as usual the next time the page opens.
+        await page.UnrouteAllAsync();
+        await page.GetByRole(AriaRole.Link, new() { Name = "Admin", Exact = true }).ClickAsync();
+        await Expect(page.Locator("h1")).ToHaveTextAsync("Admin");
+        await WaitForReadyAsync(page);
+        await OpenPaletteAsync(page);
+        await ApprovePendingRequestsAsync(page);
+
         AssertNoProblems(problems);
     }
 

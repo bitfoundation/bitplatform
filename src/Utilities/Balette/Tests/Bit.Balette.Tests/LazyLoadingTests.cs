@@ -133,13 +133,13 @@ public sealed class LazyLoadingTests : BunitContext
         var trigger = Render<BaletteTrigger>();
         var palette = Render<Balette>(p => p
             .Add(x => x.ToggleShortcut, "Mod+P")
-            .Add(x => x.Strings, new BaletteStrings { OpenPalette = "فرمان‌ها", Search = "جستجو" }));
+            .Add(x => x.Strings, new BaletteStrings { OpenPalette = "فرمان‌ها", Search = "جستجو", TriggerNameSeparator = "، " }));
 
         trigger.WaitForAssertion(() =>
         {
             var button = trigger.Find("button");
             Assert.AreEqual("Control+P", button.GetAttribute("aria-keyshortcuts"));
-            Assert.AreEqual("فرمان‌ها", button.GetAttribute("aria-label"));
+            Assert.AreEqual("جستجو، فرمان‌ها", button.GetAttribute("aria-label"));
             Assert.AreEqual("جستجو", trigger.Find(".bit-balette-trigger-label").TextContent);
         });
 

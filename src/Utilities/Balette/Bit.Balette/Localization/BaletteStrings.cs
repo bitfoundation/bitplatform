@@ -124,8 +124,19 @@ public class BaletteStrings
     /// <summary>The accessible name of the breadcrumb navigation.</summary>
     public virtual string Breadcrumb { get; set; } = "Breadcrumb";
 
-    /// <summary>The accessible name of <see cref="BaletteTrigger"/>.</summary>
+    /// <summary>
+    /// What <see cref="BaletteTrigger"/>'s accessible name says it does, after its visible label and
+    /// <see cref="TriggerNameSeparator"/> (WCAG 2.5.3: the name starts with what is shown), and its whole name when the
+    /// trigger shows no label. A string that already holds the label - a whole name such as "Search commands" for the
+    /// label "Search" - is the name on its own, as is a label that already holds this string.
+    /// </summary>
     public virtual string OpenPalette { get; set; } = "Open command palette";
+
+    /// <summary>
+    /// What joins <see cref="BaletteTrigger"/>'s visible label and <see cref="OpenPalette"/> in its accessible name; a
+    /// language with a comma of its own uses it ("، " in Persian and Arabic).
+    /// </summary>
+    public virtual string TriggerNameSeparator { get; set; } = ", ";
 
     /// <summary>The label of <see cref="BaletteTrigger"/> when it sets none of its own.</summary>
     public virtual string Search { get; set; } = "Search";

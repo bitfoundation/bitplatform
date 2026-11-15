@@ -612,6 +612,14 @@ is never rethrown, so it can neither end a Blazor Server circuit nor vanish into
 handler that throws `OperationCanceledException` simply stops - unless it wraps a `TimeoutException`, which is how
 `HttpClient` reports a timeout, and is reported like any other failure.
 
+The application's own listeners are another matter: a `CommandExecuted` handler, `OnCommandExecuted`, `OnClosed` or
+`OnQueryChanged` that throws is a bug in the app, not a failed command. The command's result is still applied - the
+palette closes, shows its page or its toast - and the exception then goes where one thrown from a click goes, whether
+the palette was driven by the mouse, a key or a global shortcut: to the nearest `ErrorBoundary`, or, without one, to
+the host's unhandled-exception handling, which logs it and, on Blazor Server, ends the circuit. Wrap the palette in an
+`ErrorBoundary` to keep a throwing listener from taking the circuit down. A listener that stops on a cancelled token
+is no failure, except a timeout, as above.
+
 When the reader leaves the page a handler was started on while it runs - `Esc` out of a prompt whose submit is still
 working - its answer about pages (`Back`, a page, a prompt, `Reset`) is dropped rather than applied to the page they are
 on now; closing, toasts and errors still apply.
@@ -1245,7 +1253,13 @@ so people who learned the English name still find it, as VS Code does with its E
   `aria-keyshortcuts`.
 - Pointer hover only moves the selection once the pointer actually moves, so a list scrolling under a resting mouse
   does not steal the keyboard's selection (`DisablePointerSelection` turns hover off completely).
-- The close button's accessible name holds its visible "Esc" (WCAG 2.5.3), and the buttons are at least 24 px.
+- The close button's accessible name holds its visible "Esc", and the trigger's starts with its visible label
+  ("Search, Open command palette") - WCAG 2.5.3, label in name; the buttons are at least 24 px. The separator is
+  `Strings.TriggerNameSeparator` (", "; a language with its own comma uses it), and an `OpenPalette` that already holds
+  the label ("Search commands") is the whole name. A trigger given its own `ChildContent` is named by what that content
+  shows, followed by a visually hidden ", Open command palette"; one whose content is only an icon sets `Label=""` and
+  is named "Open command palette", and one that sets `Label` to the text its content shows is named as the default
+  trigger is.
 
 The browser suite runs axe-core (WCAG 2.2 A and AA rules) over the root list, search results, a nested page, a
 multi-select page and a prompt, in light and dark, with the demo's theme and with the library's defaults. An automated
