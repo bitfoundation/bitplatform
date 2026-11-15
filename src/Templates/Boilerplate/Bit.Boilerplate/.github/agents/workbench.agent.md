@@ -99,9 +99,10 @@ component, so what the user reviews is what ships.
 - Follow `AGENTS.md` section 5 as for any page of the app: bit BlazorUI components as they are, styled through their
   parameters and the theme tokens, never through their internal classes, and no color the theme already has. That is
   what makes the page follow the app's theme now and change with it later.
-- Write text as `Localizer["..."]` literals while the design moves, the catalog entry's texts too, and put it into
-  `WorkbenchStrings.resx` once the user approves it: a `.resx` edit restarts the Workbench, and its tests check that every
-  entry's texts are there.
+- Write text as `Localizer["..."]` literals while the design moves, and put it into `WorkbenchStrings.resx` once the
+  user approves it. The catalog entry's texts wait the same way: the plain text where its `nameof(WorkbenchStrings.…)`
+  key goes, which the Workbench shows as written, until it moves into the `.resx` with the rest. A `.resx` edit restarts
+  the Workbench, and its tests check that every entry's texts are there.
 - A package the page needs goes into the Workbench's project only, never into Client.Core: the app's size must not grow
   for a page that is only being designed.
 
