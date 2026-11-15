@@ -18,10 +18,22 @@
                         </BitLink>
                     }
                 </BitStack>
-                <BitTag Class="dep-license"
-                        Text="@dep.License"
-                        Size="BitSize.Small"
-                        Variant="BitVariant.Outline" />
+                @if (dep.LicenseUrl is not null)
+                {
+                    <BitLink Href="@dep.LicenseUrl" Target="_blank" AriaLabel="@($"{dep.Name} license: {dep.License}")">
+                        <BitTag Class="dep-license"
+                                Text="@dep.License"
+                                Size="BitSize.Small"
+                                Variant="BitVariant.Outline" />
+                    </BitLink>
+                }
+                else
+                {
+                    <BitTag Class="dep-license"
+                            Text="@dep.License"
+                            Size="BitSize.Small"
+                            Variant="BitVariant.Outline" />
+                }
             </div>
         }
     </BitStack>;

@@ -50,7 +50,7 @@
                             </div>
                             <div class="plan-card-item">
                                 <BitIcon IconName="CheckMark" Class="plan-check-icon" />
-                                <BitText Typography="BitTypography.H6" Gutter>Unlimited commercial apps that don't compete with bit platform</BitText>
+                                <BitText Typography="BitTypography.H6" Gutter>Unlimited commercial apps</BitText>
                             </div>
                             <div class="plan-card-item">
                                 <BitIcon IconName="CheckMark" Class="plan-check-icon" />
@@ -110,6 +110,21 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section class="page-section">
+        <div class="page-section-content">
+            <BitText Typography="BitTypography.H5" Gutter>Commercial license</BitText>
+            <BitText Typography="BitTypography.Body1" Gutter>
+                Any app you build with bit platform, commercial or not, is covered by the free
+                <a href="https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE" target="_blank" rel="noopener">license</a>
+                and its <a href="https://github.com/bitfoundation/bitplatform/blob/develop/NOTICE.md" target="_blank" rel="noopener">additional permission</a>.
+                A commercial license is needed only for a product that competes with bit platform itself, such as a UI component
+                library, a project template or developer tooling built from its code, until that code becomes MIT two years after
+                its release.
+            </BitText>
+            <BitButton Variant="BitVariant.Outline" OnClick=@(WrapHandled(() => ShowBuyModal()))>Ask about a commercial license</BitButton>
         </div>
     </section>
 

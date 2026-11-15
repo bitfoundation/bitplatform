@@ -8,8 +8,10 @@ FSL-1.1-MIT
 
 Copyright 2016-2026 bit platform (https://bitplatform.dev)
 
-Parts of this software are under other licenses, listed in NOTICE.md
-(https://github.com/bitfoundation/bitplatform/blob/develop/NOTICE.md).
+NOTICE.md (https://github.com/bitfoundation/bitplatform/blob/develop/NOTICE.md)
+grants additional permissions, among them that building apps with this software
+is never a Competing Use, says when each version becomes available under the MIT
+license, and lists the parts of this software that are under other licenses.
 
 ## Terms and Conditions
 

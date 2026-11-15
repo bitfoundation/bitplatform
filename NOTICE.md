@@ -4,6 +4,36 @@ bit platform is licensed under the Functional Source License, FSL-1.1-MIT (see [
 listed below, which stay under the licenses they were received under. Anyone who distributes bit platform, or any part
 of it, passes this file on with it.
 
+## Additional permission
+
+bit platform, as the licensor, grants the following permissions in addition to the FSL-1.1-MIT. They only widen what
+the license allows; where they and the license differ, the wider reading applies.
+
+1. **Building apps is never a Competing Use.** Building an application with bit platform - referencing its packages,
+   or starting from a project created with one of its templates - and using, selling, hosting or distributing that
+   application is a Permitted Purpose, whatever the application does. An application does not compete with bit
+   platform because it has features that bit platform's templates, samples or demos also have, such as sign-in, an
+   admin panel, a dashboard, a todo list, an AI chat or a landing page.
+2. **Template code is yours to keep and change.** Code that a bit platform template generates into your project may be
+   modified, kept and distributed as part of that project under the same permission. Your application only has to
+   link to the license, for example from its about or acknowledgements page.
+3. **What a Competing Use is.** A Competing Use is limited to making bit platform, or a part of it, available to others
+   in a commercial product or service that substitutes for bit platform itself as a developer product: for example a
+   UI component library, a set of Blazor libraries, a project template or starter kit, or developer tooling, built
+   from bit platform's code.
+4. **Professional services are permitted.** Consulting, outsourcing, development, support and training that you
+   provide using bit platform are Permitted Purposes, even where bit platform offers similar services.
+
+For a use these permissions and the license do not settle, or for a commercial license, contact
+[info@bitplatform.dev](mailto:info@bitplatform.dev).
+
+## When a version becomes MIT
+
+Each version of bit platform becomes available under the MIT License two years after it is made available: a commit
+two years after it is pushed to this repository, and a package two years after it is published to nuget.org. Every
+version published before the move to the FSL-1.1-MIT
+([#14834](https://github.com/bitfoundation/bitplatform/issues/14834)) is available under the MIT License already.
+
 ## Contributions made under the MIT License
 
 Until bit platform moved to the Functional Source License (FSL-1.1-MIT)
@@ -35,8 +65,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-Every release published before that change remains available under the MIT License alone.
-
 ## Third-party components
 
 These libraries are bundled with the bit platform packages named beside them. Each keeps its own license, and its
@@ -51,8 +79,9 @@ copyright notice also stays at the top of its files.
 | [Quill](https://quilljs.com) 2.0.3 | `Bit.BlazorUI.Legacy` | BSD-3-Clause | Copyright (c) 2017-2024, Slab; Copyright (c) 2014, Jason Chen; Copyright (c) 2013, salesforce.com |
 | [Leaflet](https://leafletjs.com) 1.9.4 | `Bit.BlazorUI.Extras` | BSD-2-Clause | (c) 2010-2023 Vladimir Agafonkin, (c) 2010-2011 CloudMade |
 | [wa-sqlite](https://github.com/rhashimoto/wa-sqlite) | `Bit.Bsqlite` | MIT | See its license, which ships next to the engine under `_content/Bit.Bsqlite/engine` |
+| [BWIPP](https://bwipp.terryburton.co.uk) data: the PDF417 symbol character table and the MaxiCode module map | `Bit.BbScanner` | MIT | Copyright (c) 2004-2024 Terry Burton |
 
-### MIT License (Chart.js, chartjs-adapter-date-fns, marked)
+### MIT License (Chart.js, chartjs-adapter-date-fns, marked, BWIPP)
 
 ```text
 Permission is hereby granted, free of charge, to any person obtaining a copy
