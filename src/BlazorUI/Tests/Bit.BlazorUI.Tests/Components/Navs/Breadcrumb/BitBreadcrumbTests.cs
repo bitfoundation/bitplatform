@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -1521,6 +1522,107 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual("f", handler.Invocations.Last().Arguments[3]);
         // The items that are not actionable are part of the rotation too.
         Assert.AreEqual(".bit-brc-ofi, .bit-brc-ofn", handler.Invocations.Last().Arguments[1]);
+    }
+
+    // What each key typed into the overflow menu handed the script: the search string, whether the focused item is
+    // searched too, and the culture it is matched in.
+    private static List<(string? Text, bool FromCurrent, string? Culture)> OverflowSearches(JSRuntimeInvocationHandler handler)
+    {
+        return handler.Invocations
+                      .Where(i => (string?)i.Arguments[2] == "char")
+                      .Select(i => ((string?)i.Arguments[3], (bool)i.Arguments[5]!, (string?)i.Arguments[6]))
+                      .ToList();
+    }
+
+    private IRenderedComponent<BitBreadcrumb<BitBreadcrumbItem>> RenderWithTheOverflowMenuOpen()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        component.Find(".bit-brc-obt").KeyDown(Key.Down);
+
+        return component;
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldSearchTheKeysTypedTogetherInTheOverflowMenuAsOneString()
+    {
+        var culture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+        try
+        {
+            var handler = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.focusItem", _ => true);
+            var component = RenderWithTheOverflowMenuOpen();
+
+            var callout = component.Find(".bit-brc-cal");
+            callout.KeyDown("f");
+            callout.KeyDown("o");
+
+            // A string typed further is searched from the focused item, which it may still match.
+            CollectionAssert.AreEqual(new[] { ("f", false, "en-US"), ("fo", true, "en-US") }, OverflowSearches(handler));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldCycleWhenTheSameLetterIsTypedAgainInTheOverflowMenuInTheOtherCase()
+    {
+        var handler = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.focusItem", _ => true);
+        var component = RenderWithTheOverflowMenuOpen();
+
+        var callout = component.Find(".bit-brc-cal");
+        callout.KeyDown("f");
+        callout.KeyDown("F");
+
+        CollectionAssert.AreEqual(new[] { ("f", false), ("f", false) },
+                                  OverflowSearches(handler).Select(s => (s.Text, s.FromCurrent)).ToList());
+    }
+
+    [TestMethod]
+    [DataRow("en-US")]
+    [DataRow("sv-SE")]
+    public void BitBreadcrumbShouldMatchTheOverflowSearchInTheCurrentCulture(string name)
+    {
+        var culture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(name);
+
+        try
+        {
+            var handler = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.focusItem", _ => true);
+            var component = RenderWithTheOverflowMenuOpen();
+
+            component.Find(".bit-brc-cal").KeyDown("f");
+
+            Assert.AreEqual(name, OverflowSearches(handler).Single().Culture);
+            // The moves that are no search are matched in no culture.
+            Assert.IsNull(handler.Invocations.First(i => (string?)i.Arguments[2] == "first").Arguments[6]);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldStartTheOverflowSearchOverWhenTheMenuIsOpenedAgain()
+    {
+        var handler = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.focusItem", _ => true);
+        var component = RenderWithTheOverflowMenuOpen();
+
+        component.Find(".bit-brc-cal").KeyDown("f");
+        component.Find(".bit-brc-cal").KeyDown(Key.Escape);
+        component.Find(".bit-brc-obt").KeyDown(Key.Down);
+        component.Find(".bit-brc-cal").KeyDown("o");
+
+        CollectionAssert.AreEqual(new[] { ("f", false), ("o", false) },
+                                  OverflowSearches(handler).Select(s => (s.Text, s.FromCurrent)).ToList());
     }
 
     [TestMethod]

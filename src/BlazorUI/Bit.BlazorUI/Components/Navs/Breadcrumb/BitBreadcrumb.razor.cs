@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -32,6 +33,7 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
     // The width each collapsed item took while it was still in the trail, newest first, so an item is
     // only brought back when the room that freed up is at least the room it needs again.
     private readonly Stack<double> _collapsedWidths = new();
+    private readonly BitTypeahead _typeahead = new();
     private List<TItem> _items = [];
     private List<TItem> _internalItems = [];
     private readonly List<TItem> _displayItems = [];
@@ -1447,6 +1449,8 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
         if (_isCalloutOpen || Disabled) return;
 
         _isCalloutOpen = true;
+        // A menu opened again is a fresh one, so nothing typed into it before carries over.
+        _typeahead.Reset();
         await ToggleCallout();
 
         if (_focusFirstItemOnOpen)
@@ -1554,23 +1558,27 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
                 await FocusOverflowButton();
                 break;
             default:
-                // The typeahead of the menu pattern: a printable character jumps to the next item whose
-                // text starts with it. A space is left alone since it activates the focused item.
+                // The typeahead of the menu pattern, with the rules every typeahead of the library shares (BitTypeahead):
+                // the keys typed in quick succession are one search string, and the same character typed again
+                // cycles through the items starting with it. A space is left alone since it activates the focused item.
                 if (e.Key.Length == 1 && char.IsControl(e.Key[0]) is false && char.IsWhiteSpace(e.Key[0]) is false)
                 {
-                    await FocusOverflowItem("char", e.Key);
+                    var search = _typeahead.Type(e.Key);
+                    await FocusOverflowItem("char", search.Text, fromCurrent: search.FromNext is false);
                 }
                 break;
         }
     }
 
     // The items that are not actionable are part of the rotation too, they are steps of the trail the
-    // arrow keys have to reach; the script leaves the disabled ones out on its own.
-    private async Task FocusOverflowItem(string mode, string? character = null)
+    // arrow keys have to reach; the script leaves the disabled ones out on its own. A search is matched in the
+    // current culture, by the script, against the labels the items render.
+    private async Task FocusOverflowItem(string mode, string? character = null, bool fromCurrent = false)
     {
         try
         {
-            await _js.BitUtilsFocusItem(_calloutId, ".bit-brc-ofi, .bit-brc-ofn", mode, character);
+            await _js.BitUtilsFocusItem(_calloutId, ".bit-brc-ofi, .bit-brc-ofn", mode, character, fromCurrent,
+                                        mode == "char" ? CultureInfo.CurrentCulture.Name : null);
         }
         catch (JSDisconnectedException) { } // the circuit is gone, nothing to focus
         catch (JSException) { } // the callout may already be gone with the items it held

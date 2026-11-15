@@ -461,9 +461,11 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask BitUtilsFocusItem(this IJSRuntime jsRuntime, string containerId, string selector, string mode, string? character)
+    // fromCurrent and culture are the ones of a "char" search (see Utils.focusItem): whether the focused item is searched
+    // too, and the culture the search is matched in.
+    internal static ValueTask BitUtilsFocusItem(this IJSRuntime jsRuntime, string containerId, string selector, string mode, string? character, bool fromCurrent = false, string? culture = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusItem", containerId, selector, mode, character);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusItem", containerId, selector, mode, character, false, fromCurrent, culture);
     }
 
 
