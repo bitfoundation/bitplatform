@@ -165,12 +165,18 @@ private static BitResourceTimelineConfig CreateHierarchyConfig()
     }
 </style>
 
+<BitToggle @bind-Value="stickyBarLabels" @bind-Value:after="UpdateAppearanceOptions" Label="StickyBarLabels" Inline />
+<br />
 <div class="timeline">
-    <BitResourceTimeline Config="appearanceConfig" />
+    <BitResourceTimeline Config="appearanceConfig" Options="appearanceOptions" />
 </div>
 """;
     private readonly string example3CsharpCode = """
 private readonly BitResourceTimelineConfig appearanceConfig = CreateAppearanceConfig();
+private bool stickyBarLabels = true;
+private BitResourceTimelineOptions appearanceOptions = new() { StickyBarLabels = true };
+
+private void UpdateAppearanceOptions() => appearanceOptions = new() { StickyBarLabels = stickyBarLabels };
 
 private static BitResourceTimelineConfig CreateAppearanceConfig()
 {
@@ -179,8 +185,8 @@ private static BitResourceTimelineConfig CreateAppearanceConfig()
     return new()
     {
         StartDate = today,
-        EndDate = today.AddDays(1),
-        Resources = BitResourceTimelineDemoData.Gates(4),
+        EndDate = today.AddDays(3),
+        Resources = BitResourceTimelineDemoData.Gates(5),
         Allocations =
         [
             new()
@@ -248,6 +254,29 @@ private static BitResourceTimelineConfig CreateAppearanceConfig()
                     new() { Source = BitResourceTimelineDemoData.PlaneIcon, Position = BitResourceTimelineBarIconPosition.Start, Inside = true },
                     new() { Source = BitResourceTimelineDemoData.LockIcon, Position = BitResourceTimelineBarIconPosition.Center },
                     new() { Source = BitResourceTimelineDemoData.CheckIcon, Position = BitResourceTimelineBarIconPosition.End, Inside = true, Size = 14 },
+                ],
+            },
+            new()
+            {
+                // Two days long: scroll along it with StickyBarLabels on and its labels stay in view.
+                Id = "D-ABYT",
+                ResourceId = "A5",
+                StartTime = today.AddHours(10),
+                EndTime = today.AddDays(2).AddHours(14),
+                Color = "#495057",
+                Height = 16,
+                TextAbove = "D-ABYT heavy maintenance",
+                TextBelow = "Hangar 5",
+                TextStart = "Day 1 10:00",
+                TextEnd = "Day 3 14:00",
+                Icons =
+                [
+                    new() { Source = BitResourceTimelineDemoData.LockIcon, Position = BitResourceTimelineBarIconPosition.Above },
+                ],
+                Sections =
+                [
+                    new() { EndPercent = 40, ForegroundColor = "#ffffff", Text = "Inspection" },
+                    new() { StartPercent = 40, BackgroundColor = "#868e96", ForegroundColor = "#ffffff", Text = "Repairs" },
                 ],
             },
         ],

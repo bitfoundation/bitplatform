@@ -347,6 +347,23 @@ public class BitResourceTimelineWireFormatTests
     }
 
     [TestMethod]
+    public void BitResourceTimelineOptionsShouldSerializeStickyBarLabelsWithTheExpectedName()
+    {
+        var root = Serialize(new BitResourceTimelineOptions { StickyBarLabels = true });
+
+        // The engine reads this exact camelCased key off its config object.
+        Assert.IsTrue(root.GetProperty("stickyBarLabels").GetBoolean());
+    }
+
+    [TestMethod]
+    public void BitResourceTimelineOptionsShouldOmitStickyBarLabelsWhenNull()
+    {
+        var root = Serialize(new BitResourceTimelineOptions());
+
+        Assert.IsFalse(root.TryGetProperty("stickyBarLabels", out _));
+    }
+
+    [TestMethod]
     public void BitResourceTimelineOptionsShouldSerializeNothingWhileNothingIsSet()
     {
         // Every option left null keeps the default of the engine (and a color or a font, the theme in force).

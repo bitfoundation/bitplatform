@@ -91,8 +91,17 @@
                     within it, in a box of <b>Size</b> pixels. Labels and icons are left out of bars too narrow for them.
                 </div>
                 <br />
+                <div>
+                    A label above or below a bar is centered on it, which a long bar can have far out of view.
+                    <b>StickyBarLabels</b> has what is centered on a bar - TextAbove, TextBelow, the Above, Below and Center
+                    icons and the centered text of its sections - follow the part of the bar in view, never leaving the bar:
+                    scroll along the two-day maintenance of Gate A5.
+                </div>
+                <br />
+                <BitToggle @bind-Value="stickyBarLabels" @bind-Value:after="UpdateAppearanceOptions" Label="StickyBarLabels" Inline />
+                <br />
                 <div class="timeline">
-                    <BitResourceTimeline Config="appearanceConfig" />
+                    <BitResourceTimeline Config="appearanceConfig" Options="appearanceOptions" />
                 </div>
             </DemoExample>
 

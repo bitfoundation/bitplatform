@@ -504,6 +504,7 @@
         stackLabelClearance: boolean;
         stackOnLabelCollision: boolean;
         collapseMatchingEdgeLabels: boolean;
+        stickyBarLabels: boolean;
         minBarWidth: number;
         minBarWidthForLabels: number;
         barLabelFont: string;
@@ -819,6 +820,13 @@
                 // in pixels like a collision, so it follows the zoom (see
                 // _resolveSharedEdgeLabels).
                 collapseMatchingEdgeLabels: false,
+                // Keeps what is centered on a bar (or on a section) - its above and
+                // below labels and icons, its center icons, a section's centered
+                // text - inside the bars area while the bar is scrolled partly out
+                // of it, instead of at the bar's center, which a long bar can have
+                // far off screen. Never moves it past the bar's (or the section's)
+                // own edges (see _stickyCenter).
+                stickyBarLabels: false,
                 minBarWidth: 2,
                 // Decorations are skipped when the main bar's drawn width falls
                 // below this threshold, keeping dense timelines readable.
@@ -3615,12 +3623,22 @@
             let insideTopY = barTop;
             let insideBottomY = barBottom;
 
+            // With stickyBarLabels, everything centered on the bar is drawn on one
+            // vertical line, `centerX`, kept within the bars area as far as the bar
+            // allows (see _stickyCenter). It is chosen once the widest of those
+            // items is known; the above/below icons are placed before that, at the
+            // bar's center, and moved over with the rest once it is.
+            const sticky = c.stickyBarLabels;
+            let stickyIcons: any[] | null = null;
+            let stickyWidth = 0;
+            let centerX = barCenterX;
+
+            // Center-anchored icons are measured in the loop below and placed
+            // after it, once the group's total width is known.
+            let centered: { source: string; width: number; height: number }[] | null = null;
+            let centeredWidth = 0;
             if (alloc.icons && alloc.icons.length) {
                 const defaultSize = c.barIconSize;
-                // Center-anchored icons are measured in this pass and placed after
-                // it, once the group's total width is known.
-                let centered = null;
-                let centeredWidth = 0;
                 for (const icon of alloc.icons) {
                     if (!icon || !icon.source) continue;
                     const img = this._getImage(icon.source);
@@ -3683,30 +3701,46 @@
                         y = barCenterY - h / 2;
                         startEdgeX = x;
                     }
+                    const placed = { source: icon.source, x, y, width: w, height: h };
                     node.icons = node._icons;
-                    node._icons.push({ source: icon.source, x, y, width: w, height: h });
-                }
-
-                if (centered !== null) {
-                    let x = barCenterX - centeredWidth / 2;
-                    node.icons = node._icons;
-                    for (const icon of centered) {
-                        node._icons.push({
-                            source: icon.source,
-                            x, y: barCenterY - icon.height / 2,
-                            width: icon.width, height: icon.height
-                        });
-                        x += icon.width + gap;
+                    node._icons.push(placed);
+                    if (sticky && (pos === 'above' || pos === 'below')) {
+                        (stickyIcons || (stickyIcons = [])).push(placed);
+                        if (w > stickyWidth) stickyWidth = w;
                     }
+                }
+            }
+
+            if (sticky) {
+                if (centeredWidth > stickyWidth) stickyWidth = centeredWidth;
+                if (alloc.textAbove) stickyWidth = Math.max(stickyWidth, this._labelWidth(alloc.textAbove));
+                if (alloc.textBelow) stickyWidth = Math.max(stickyWidth, this._labelWidth(alloc.textBelow));
+                centerX = this._stickyCenter(barCenterX, stickyWidth, barX, barEndX);
+                const dx = centerX - barCenterX;
+                if (dx !== 0 && stickyIcons !== null) {
+                    for (const icon of stickyIcons) icon.x += dx;
+                }
+            }
+
+            if (centered !== null) {
+                let x = centerX - centeredWidth / 2;
+                node.icons = node._icons;
+                for (const icon of centered) {
+                    node._icons.push({
+                        source: icon.source,
+                        x, y: barCenterY - icon.height / 2,
+                        width: icon.width, height: icon.height
+                    });
+                    x += icon.width + gap;
                 }
             }
 
             const labels = node._labels;
             if (alloc.textAbove) {
-                labels.push({ text: alloc.textAbove, x: barCenterX, y: aboveY, align: 'center', baseline: 'bottom' });
+                labels.push({ text: alloc.textAbove, x: centerX, y: aboveY, align: 'center', baseline: 'bottom' });
             }
             if (alloc.textBelow) {
-                labels.push({ text: alloc.textBelow, x: barCenterX, y: belowY, align: 'center', baseline: 'top' });
+                labels.push({ text: alloc.textBelow, x: centerX, y: belowY, align: 'center', baseline: 'top' });
             }
             // A start label the bar before already draws, or an end label shared
             // with the bar after - drawn once, centered in the gap between them
@@ -3723,6 +3757,28 @@
                 }
             }
             if (labels.length) node.labels = labels;
+        }
+
+        // Where stickyBarLabels draws content `width` pixels wide that is centered
+        // at `centerX` within [lo, hi] - a bar's or a section's span: where it is
+        // while all of it is in the bars area, pushed in from the area's edge
+        // (by the label gap) while it would be cut off there, the way a date-row
+        // label is pinned within its period, but never out past `lo` or `hi`, so
+        // it leaves the view with the edge of its bar. Content wider than [lo, hi]
+        // has nowhere to slide and stays centered.
+        private _stickyCenter(centerX: number, width: number, lo: number, hi: number): number {
+            const half = width / 2;
+            const min = lo + half;
+            const max = hi - half;
+            if (!(max > min)) return centerX;
+            const c = this.config;
+            const pad = c.barLabelGap;
+            let x = centerX;
+            const viewMin = c.resourceAxisWidth + pad + half;
+            const viewMax = this._viewportW - pad - half;
+            if (x < viewMin) x = viewMin;
+            else if (x > viewMax) x = viewMax;
+            return x < min ? min : x > max ? max : x;
         }
 
         // The end label a bar shares with the next one, centered in the gap
@@ -3849,14 +3905,18 @@
 
             const centerX = (left + right) / 2;
             const fits = (width: number) => centerX - width / 2 >= lo && centerX + width / 2 <= hi;
+            // With stickyBarLabels the centered group follows the section's
+            // visible part, within the room the edge items left it.
+            const at = (width: number) => this.config.stickyBarLabels ? this._stickyCenter(centerX, width, lo, hi) : centerX;
             if (icon && centerText && fits(icon.width + gap + textWidth)) {
-                const x = centerX - (icon.width + gap + textWidth) / 2;
+                const width = icon.width + gap + textWidth;
+                const x = at(width) - width / 2;
                 placeIcon(x);
                 placeText(x + icon.width + gap, 'left');
             } else if (icon && fits(icon.width)) {
-                placeIcon(centerX - icon.width / 2);
+                placeIcon(at(icon.width) - icon.width / 2);
             } else if (centerText && fits(textWidth)) {
-                placeText(centerX, 'center');
+                placeText(at(textWidth), 'center');
             }
         }
 

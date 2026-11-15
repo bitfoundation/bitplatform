@@ -107,6 +107,7 @@ export function makeBareEngine(overrides = {}) {
         stackLabelClearance: true,
         stackOnLabelCollision: true,
         collapseMatchingEdgeLabels: false,
+        stickyBarLabels: false,
         minBarWidth: 2,
         minBarWidthForLabels: 24,
         barLabelGap: 3,
