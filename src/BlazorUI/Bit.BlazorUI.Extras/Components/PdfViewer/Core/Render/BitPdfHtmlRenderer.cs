@@ -26,7 +26,7 @@ public sealed class BitPdfHtmlRenderer
 
     private readonly BitPdfPage _page;
     private readonly IBitPdfXRef _xref;
-    private readonly Dictionary<object, BitPdfFont> _fontCache;
+    private readonly BitPdfFontStore _fontStore;        // shared, an attempt overlay, or page-private
 
     /// <summary>
     /// Optional resolver mapping a GoTo/named destination to a 1-based page
@@ -198,8 +198,6 @@ public sealed class BitPdfHtmlRenderer
         }
     }
 
-    private readonly StringBuilder _fontFaces;         // document-wide accumulator (shared)
-    private readonly HashSet<string> _emittedFamilies; // dedup across pages (shared)
     private readonly StringBuilder _pageFaces = new();  // faces first seen on THIS page
     private readonly bool _ownFontFaces;                // emit faces inline (no shared store)
     private readonly Dictionary<object, string?> _patternCache = new();
@@ -245,20 +243,8 @@ public sealed class BitPdfHtmlRenderer
         _resources = page.Resources;
         _rotationOffset = ((rotationOffset % 360) + 360) % 360;
 
-        if (fontStore is not null)
-        {
-            _fontCache = fontStore.Fonts;
-            _emittedFamilies = fontStore.EmittedFamilies;
-            _fontFaces = fontStore.FontFaces;
-            _ownFontFaces = false; // the viewer emits the shared @font-face style
-        }
-        else
-        {
-            _fontCache = new Dictionary<object, BitPdfFont>();
-            _emittedFamilies = new HashSet<string>();
-            _fontFaces = new StringBuilder();
-            _ownFontFaces = true;
-        }
+        _fontStore = fontStore ?? new BitPdfFontStore();
+        _ownFontFaces = fontStore is null; // with a store, the viewer emits the shared @font-face style
     }
 
     /// <summary>Renders the page and returns a single positioned <c>&lt;div&gt;</c>.</summary>
@@ -1522,14 +1508,14 @@ public sealed class BitPdfHtmlRenderer
         // for different fonts, so a name-based key returned the wrong font.
         object? raw = fonts.GetRaw(name);
         object cacheKey = raw is BitPdfRef r ? r : _xref.FetchIfRef(raw) ?? name;
-        if (_fontCache.TryGetValue(cacheKey, out var cached))
+        if (_fontStore.TryGetFont(cacheKey, out var cached))
         {
             return cached;
         }
         if (_xref.FetchIfRef(raw) is BitPdfDict fontDict)
         {
             var font = BitPdfFont.Create(fontDict, _xref);
-            _fontCache[cacheKey] = font;
+            _fontStore.AddFont(cacheKey, font);
             return font;
         }
         return null;
@@ -2093,13 +2079,13 @@ public sealed class BitPdfHtmlRenderer
             return font.GenericFamily;
         }
         string family = font.FontFaceFamily;
-        if (_emittedFamilies.Add(family))
+        if (_fontStore.TryAddFamily(family))
         {
             string b64 = Convert.ToBase64String(font.EmbeddedProgram!);
             string fmt = font.EmbeddedFormat!;
             string face =
                 $"@font-face{{font-family:'{family}';src:url(data:font/{fmt};base64,{b64}) format('{fmt}');}}";
-            _fontFaces.Append(face);
+            _fontStore.AppendFace(face);
             _pageFaces.Append(face);
         }
         return $"{family},{font.GenericFamily}";

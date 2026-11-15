@@ -23,7 +23,10 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         internal int PinnedBytes;
         internal int Requests;
         private readonly Operation? _previous = previous;
-        internal bool Released;
+        internal volatile bool Released;
+        // Advances whenever this operation's pins are released while it stays
+        // current, so a cursor's cached block is never trusted past that point.
+        internal volatile int PinEpoch;
         internal void CountRequest()
         {
             for (Operation? owner = this; owner is not null; owner = owner._previous)
@@ -81,6 +84,7 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
     private int _requestCount;
     private int _restartCount;
     private long _fetchedBytes;
+    private long _blockLookups;
 
     private BitPdfHttpRangeByteSource(HttpClient http, BitPdfSource source, int length, string etag, CancellationToken token)
     {
@@ -124,6 +128,9 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
     internal void RecordRestart() => Interlocked.Increment(ref _restartCount);
 
     internal long FetchedBytes => Interlocked.Read(ref _fetchedBytes);
+
+    // Locked block-table lookups made by synchronous reads (cursor cache misses).
+    internal long BlockLookups => Interlocked.Read(ref _blockLookups);
 
     internal Operation BeginOperation()
     {
@@ -474,21 +481,20 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
             return;
         }
 
+        Interlocked.Increment(ref _blockLookups);
         lock (_gate)
         {
             Copy(GetBlocks(offset, destination.Length), offset, destination);
         }
     }
 
-    private int ReadByte(int offset)
+    // The block holding offset, pinned in the current operation. owner is that
+    // operation, or null when there is none to hold the pin.
+    private Block ReadBlock(int offset, out Operation? owner)
     {
         CheckRead();
-        ValidateRange(offset, 0);
-        if (offset == Length)
-        {
-            return -1;
-        }
-
+        ValidateRange(offset, 1);
+        Interlocked.Increment(ref _blockLookups);
         lock (_gate)
         {
             if (!_blocks.TryGetValue(StartOf(offset), out var block))
@@ -496,11 +502,27 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
                 throw new BitPdfMissingDataException(offset, 1);
             }
 
-            _operation.Value?.Pin(block);
+            owner = _operation.Value;
+            if (owner is { Released: false })
+            {
+                owner.Pin(block);
+            }
+            else
+            {
+                owner = null;
+            }
+
             Touch(block);
-            return block.Bytes[offset - block.Start];
+            return block;
         }
     }
+
+    // A cursor may keep reading a block without the cache lock while the operation
+    // that pinned it is still current, unreleased and has not dropped its pins:
+    // pinned blocks are never evicted and stay inside the raw-byte budget. Source
+    // retirement and failures are still checked on every read (CheckRead).
+    private bool IsPinnedFor(Operation? owner, int epoch)
+        => owner is { Released: false } && owner.PinEpoch == epoch && ReferenceEquals(_operation.Value, owner);
 
     private void Touch(Block block)
     {
@@ -550,6 +572,7 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
 
         operation.Pins.Clear();
         operation.PinnedBytes = 0;
+        operation.PinEpoch++;
         Pulse();
     }
 
@@ -733,7 +756,11 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
                 long alignedEnd = Math.Min(Length,
                     (mergedEnd + _options.ChunkSize - 1) / _options.ChunkSize * _options.ChunkSize);
                 long reservedLength = alignedEnd - StartOf(last.Offset);
-                if (range.Offset <= lastEnd && reservedLength <= Math.Min(_options.CacheSize, 1024 * 1024))
+                // A range starting inside the last one's final chunk costs no extra
+                // request or byte, so a pass's many small misses share their chunks.
+                long lastChunkEnd = Math.Min(Length,
+                    (lastEnd + _options.ChunkSize - 1) / _options.ChunkSize * _options.ChunkSize);
+                if (range.Offset <= Math.Max(lastEnd, lastChunkEnd - 1) && reservedLength <= Math.Min(_options.CacheSize, 1024 * 1024))
                 {
                     merged[^1] = (last.Offset, (int)(mergedEnd - last.Offset));
                     continue;
@@ -922,6 +949,10 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
     private sealed class Cursor : BitPdfBaseStream
     {
         private readonly BitPdfHttpRangeByteSource _source;
+        // The raw block of the last read; trusted only while IsPinnedFor holds.
+        private Block? _block;
+        private Operation? _blockOwner;
+        private int _blockEpoch;
         internal override IBitPdfByteSource ByteSource => _source;
 
         internal Cursor(BitPdfHttpRangeByteSource source, int start, int length)
@@ -945,16 +976,49 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
                 return -1;
             }
 
+            if (CachedBlock(Pos, 1) is { } cached)
+            {
+                return cached.Bytes[Pos++ - cached.Start];
+            }
+
             try
             {
-                int value = _source.ReadByte(Pos);
-                Pos++;
-                return value;
+                var block = Remember(_source.ReadBlock(Pos, out var owner), owner);
+                return block.Bytes[Pos++ - block.Start];
             }
             catch (BitPdfMissingDataException) when (Dict is not null)
             {
                 throw new BitPdfMissingDataException(Start, Length);
             }
+        }
+
+        private Block? CachedBlock(int offset, int count)
+        {
+            var block = _block;
+            if (block is null
+                || offset < block.Start
+                || (long)offset + count > (long)block.Start + block.Bytes.Length)
+            {
+                return null;
+            }
+
+            if (_source.IsPinnedFor(_blockOwner, _blockEpoch))
+            {
+                return block;
+            }
+
+            _block = null;
+            _blockOwner = null;
+            return null;
+        }
+
+        private Block Remember(Block block, Operation? owner)
+        {
+            // Without an owning operation nothing pins the block, so it is not kept.
+            _block = owner is null ? null : block;
+            _blockOwner = owner;
+            _blockEpoch = owner?.PinEpoch ?? 0;
+            return block;
         }
 
         public override byte[] GetBytes(int length = 0)
@@ -968,6 +1032,13 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
 
             int count = length <= 0 ? End - Pos : Math.Min(length, End - Pos);
             byte[] bytes = new byte[count];
+            if (count > 0 && CachedBlock(Pos, count) is { } cached)
+            {
+                cached.Bytes.AsSpan(Pos - cached.Start, count).CopyTo(bytes);
+                Pos += count;
+                return bytes;
+            }
+
             try
             {
                 _source.ReadExactly(Pos, bytes);
@@ -1028,11 +1099,19 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         // Copies own their responses and bypass the LRU. Usually one open-ended
         // request suffices; shortened responses resume at the first unread byte.
         private readonly CancellationTokenSource _cancellation = CancellationTokenSource.CreateLinkedTokenSource(source._token);
+        // A server may answer an open-ended copy with tiny but valid 206 segments.
+        // After a few segments, each further request has to be earned by an
+        // average of a quarter chunk per request, which bounds a copy to about
+        // 4 * Length / ChunkSize requests and fails a one-byte server early.
+        // A short final segment ends the copy and is never counted against it.
+        private const int GraceRequests = 16;
         private readonly byte[] _probe = new byte[1];
         private HttpResponseMessage? _response;
         private Stream? _body;
         private int _position;
         private int _responseEnd;
+        private int _requests;
+        private long _copied;
         private bool _disposed;
         public override bool CanRead => !_disposed;
         public override bool CanSeek => !_disposed;
@@ -1102,6 +1181,14 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
                 {
                     // Each validated segment advances the position, so copies do
                     // not consume the parser's missing-data restart/request budget.
+                    // They have their own, measured in bytes per request.
+                    long minimumSegment = Math.Max(1, source._options.ChunkSize / 4);
+                    if (_requests >= GraceRequests && _copied < (_requests - GraceRequests + 1) * minimumSegment)
+                    {
+                        throw new BitPdfRangePermanentException("The PDF server returned too few bytes per range response to copy the document.");
+                    }
+
+                    _requests++;
                     using var request = CreateRequest(source._source, _position, null, source._etag);
                     Interlocked.Increment(ref source._requestCount);
                     var response = await source._http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, _cancellation.Token).ConfigureAwait(false);
@@ -1136,6 +1223,7 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
                 source.CheckRead();
                 readCancellation.Token.ThrowIfCancellationRequested();
                 _position += read;
+                _copied += read;
                 if (_position == _responseEnd)
                 {
                     CloseResponse();

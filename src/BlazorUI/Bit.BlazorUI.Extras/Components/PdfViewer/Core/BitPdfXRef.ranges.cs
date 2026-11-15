@@ -216,6 +216,18 @@ public sealed partial class BitPdfXRef
         return _hints?.Ranges(page, maxBytes) ?? [];
     }
 
+    /// <summary>The page count of a validated linearization header, or <c>null</c>.</summary>
+    internal int? LinearizedPageCount => _linearization?.PageCount;
+
+    /// <summary>
+    /// When every entry of <paramref name="kids"/> is, in order, the page object the
+    /// validated hint tables name for consecutive pages, the index of the first of
+    /// those pages; otherwise <c>null</c>. Hints are read by <see cref="HintRanges"/>;
+    /// before that, and for files without usable hints, there is no run.
+    /// </summary>
+    internal int? HintedPageRun(List<object?> kids)
+        => _hints is { } hints && kids.Count > 0 ? hints.PageRun(kids) : null;
+
     internal (int Offset, int Length)? MetadataRange(object? value, int chunkSize)
     {
         if (value is not BitPdfRef reference
