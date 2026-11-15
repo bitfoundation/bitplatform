@@ -51,14 +51,15 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         // The session predicate has to be tenant scoped too, otherwise a tenant admin's "online users" count includes
         // members of their tenant who are currently active only in a DIFFERENT tenant - a wrong number and a cross-tenant
         // presence signal. GetUserSessions applies the same rule.
-        return await usersQuery.CountAsync(u => u.Sessions.Any(us => (currentTenantId == null || us.TenantId == currentTenantId) &&
+        return await usersQuery.CountAsync(u => u.Sessions.Any(us => us.OAuthGrant == null &&
+                                                                     (currentTenantId == null || us.TenantId == currentTenantId) &&
                                                                      (now - (us.RenewedOn ?? us.StartedOn)) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds), cancellationToken);
         //#endif
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
         //#if (multitenant != true)
-        return await usersQuery.CountAsync(u => u.Sessions.Any(us => (now - (us.RenewedOn ?? us.StartedOn)) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds), cancellationToken);
+        return await usersQuery.CountAsync(u => u.Sessions.Any(us => us.OAuthGrant == null && (now - (us.RenewedOn ?? us.StartedOn)) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds), cancellationToken);
         //#endif
         //#if (IsInsideProjectTemplate == true)
         */
