@@ -85,7 +85,7 @@ floor, so once a new major ships, a range that starts at its preview or release 
 prerelease bound also makes nuget.org list the package as SemVer 2.0.0, which older clients' searches leave out. An
 EF Core range is the exception, see the EF Core rule below.
 
-**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-19`. Never read
+**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-20`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 

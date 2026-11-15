@@ -22,7 +22,7 @@ pre, the stable release, or the first pre of a new version), ask.
 
 ## Where the version lives
 
-Two kinds of place:
+Three kinds of place:
 
 - **Full**: the release version itself, moved on every bump. Bit.* package references and package versions,
   `ReleaseVersion`, the `Bit.Cli` install and `dnx` commands in docs, pages, scripts and the dev container, the version
@@ -31,6 +31,8 @@ Two kinds of place:
   dependency-update skill's note on our own version.
 - **Core**: only major.minor.patch, moved only when that changes (from a stable release to the next version's first pre,
   or to a patch). These are the `bitplatform.dev/mcp?v=` URLs in the coding agents' MCP configs.
+- **Kept**: a version written down on purpose, never moved. The Boilerplate's `specs/workarounds.md` names the bit
+  package version a defect was seen in; whoever comes back to the entry checks it again and updates it.
 
 A plain search and replace only works while the version is a unique prerelease string. A stable `X.Y.Z` is shared with
 Microsoft packages of the same major after its GA, version ranges, changelog headings, examples and test data, and the
@@ -39,8 +41,8 @@ are added, moved or removed.
 
 `.github/agents/version-bump/version-bump.ps1` (PowerShell 7) works from what sits next to it:
 
-- `rules.json`: each place as a line rule, a regex holding `{V}` (full) or `{CORE}` (core) exactly once, the file
-  patterns it applies to (`*` also crosses folders), and why it exists.
+- `rules.json`: each place as a line rule, a regex holding `{V}` (full or kept) or `{CORE}` (core) exactly once, the
+  file patterns it applies to (`*` also crosses folders), and why it exists. Kept places stay out of `locations.json`.
 - `reviewed.json`: lines that look like ours but are not, as the file and the whole trimmed line, with why.
 - `locations.json`: every file and line pattern the rules match today, version free, so each bump PR's diff on it shows
   which places came or went.
@@ -51,11 +53,13 @@ Run the helper with `scan` and make it clean before bumping:
 
 - **UNCOVERED** (only while the current version is a prerelease, where a plain search is the truth): an occurrence no
   rule matches, so a new kind of place. Add a rule with enough context that it could never match someone else's line
-  at a stable version. Never widen a rule into "any line with the version".
+  at a stable version. Never widen a rule into "any line with the version". When the line records the version on
+  purpose, as history rather than as the version in use, the rule is of kind `kept`.
 - **SUSPECTS**: a bare version next to a bit hint that no rule matches. Ours: a rule. Not ours: a `reviewed.json` entry.
 - **Compared with locations.json**: files and lines that came or went since the last bump. New demos and moved
   projects are expected; make sure each one makes sense.
-- A rule that matches nothing: delete it once its place is gone for good.
+- A full or core rule that matches nothing: delete it once its place is gone for good. A kept rule matches only while
+  a line records the current version, so it often matches nothing.
 
 Doing this on every prerelease is the point: by the stable release, where a plain search no longer tells ours from
 theirs, the rules are already complete.
@@ -64,8 +68,8 @@ theirs, the rules are already complete.
 
 Run `bump -To <version>`, with `-DryRun` first when in doubt. It refuses while anything is uncovered, and while
 suspects are open when the bump moves a bare version (a stable version on either side, or the core moving). It keeps
-every file's encoding, BOM and line endings, checks that `ReleaseVersion` moved, that no old prerelease string is left,
-and that the rules match as many places after the bump as before, then rewrites `locations.json`.
+every file's encoding, BOM and line endings, checks that `ReleaseVersion` moved, that no old prerelease string is left
+outside kept places, and that the rules match as many places after the bump as before, then rewrites `locations.json`.
 
 Read the diff: every changed line is a version line, apart from the helper's own files.
 

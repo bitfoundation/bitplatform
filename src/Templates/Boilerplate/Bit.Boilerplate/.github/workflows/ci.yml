@@ -49,7 +49,7 @@ jobs:
 
     - name: Set up and build with bit setup
       if: ${{ !env.ACT }}
-      uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
+      uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-20
       with:
         arguments: --platforms android -p:EnforceCodeStyleInBuild=true
 
