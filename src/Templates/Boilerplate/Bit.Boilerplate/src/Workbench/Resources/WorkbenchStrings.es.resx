@@ -4146,6 +4146,21 @@
     <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
         <value>Para clientes, doce plazas</value>
     </data>
+    <data name="ThemeExtrasRightClickOrPressAnd" xml:space="preserve">
+        <value>Clic derecho o mantén pulsado</value>
+    </data>
+    <data name="ThemeExtrasListsWhatTheSnackBars" xml:space="preserve">
+        <value>Enumera lo que mostraron los avisos emergentes</value>
+    </data>
+    <data name="ThemeExtrasUnreadCount" xml:space="preserve">
+        <value>{0} sin leer</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductTitle" xml:space="preserve">
+        <value>¿Eliminar este producto?</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductBody" xml:space="preserve">
+        <value>{0} se quitará de la carta.</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>Números de semana, hora</value>
     </data>
@@ -4485,6 +4500,9 @@
     <data name="ThemeNotificationsDismissible" xml:space="preserve">
         <value>Se puede cerrar</value>
     </data>
+    <data name="ThemeNotificationsSetAGoal" xml:space="preserve">
+        <value>Definir un objetivo</value>
+    </data>
     <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
         <value>Plazos de entrega</value>
     </data>
@@ -4799,6 +4817,15 @@
     </data>
     <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
         <value>Limitado a dos líneas</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldTheBox" xml:space="preserve">
+        <value>Mantén pulsado el cuadro</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldHere" xml:space="preserve">
+        <value>Mantén pulsado aquí</value>
+    </data>
+    <data name="ThemeUtilitiesPressedAndHeld" xml:space="preserve">
+        <value>Mantenido pulsado</value>
     </data>
     <data name="ThemeSectionsOfThisPage" xml:space="preserve">
         <value>Secciones de esta página</value>

@@ -4146,6 +4146,21 @@
     <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
         <value>برای مشتری‌ها، دوازده نفر</value>
     </data>
+    <data name="ThemeExtrasRightClickOrPressAnd" xml:space="preserve">
+        <value>کلیک راست کنید یا لمس کنید و نگه دارید</value>
+    </data>
+    <data name="ThemeExtrasListsWhatTheSnackBars" xml:space="preserve">
+        <value>فهرست پیام‌های پایین صفحه‌ای که نمایش داده شدند</value>
+    </data>
+    <data name="ThemeExtrasUnreadCount" xml:space="preserve">
+        <value>{0} خوانده‌نشده</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductTitle" xml:space="preserve">
+        <value>این محصول حذف شود؟</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductBody" xml:space="preserve">
+        <value>{0} از منو حذف می‌شود.</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>شمارهٔ هفته، ساعت</value>
     </data>
@@ -4485,6 +4500,9 @@
     <data name="ThemeNotificationsDismissible" xml:space="preserve">
         <value>قابل بستن</value>
     </data>
+    <data name="ThemeNotificationsSetAGoal" xml:space="preserve">
+        <value>تعیین هدف</value>
+    </data>
     <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
         <value>زمان‌های تحویل</value>
     </data>
@@ -4799,6 +4817,15 @@
     </data>
     <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
         <value>محدود به دو خط</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldTheBox" xml:space="preserve">
+        <value>کادر را لمس کنید و نگه دارید</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldHere" xml:space="preserve">
+        <value>این‌جا را لمس کنید و نگه دارید</value>
+    </data>
+    <data name="ThemeUtilitiesPressedAndHeld" xml:space="preserve">
+        <value>لمس و نگه داشته شد</value>
     </data>
     <data name="ThemeSectionsOfThisPage" xml:space="preserve">
         <value>بخش‌های این صفحه</value>

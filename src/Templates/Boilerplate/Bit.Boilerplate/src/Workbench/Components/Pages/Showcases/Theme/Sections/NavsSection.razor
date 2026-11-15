@@ -129,4 +129,17 @@
             </BitPivot>
         </StateSample>
     </ComponentStates>
+
+    <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" NoWrapper OnChange="OnPhoneChanged" />
+    <ComponentStates Name="BitStepper" Full>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitStepper Items="checkoutSteps" CurrentIndex="1" Vertical="isPhone" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitStepper Items="failedSteps" CurrentIndex="2" Vertical="isPhone" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeLayoutsVertical)]">
+            <BitStepper Items="checkoutSteps" CurrentIndex="1" Vertical />
+        </StateSample>
+    </ComponentStates>
 </ThemeSection>

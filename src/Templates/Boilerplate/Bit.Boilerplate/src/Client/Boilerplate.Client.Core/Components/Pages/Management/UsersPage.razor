@@ -145,12 +145,12 @@
                                                   Placeholder="@Localizer[nameof(AppStrings.SearchUserSessionsPlaceholder)]" />
                                 </BitStack>
                                 <BitBasicList Items="filteredDeviceSessions" FullWidth FitHeight AriaLabel="@Localizer[nameof(AppStrings.SessionsTitle)]">
-                                    <EmptyContent>
+                                    <EmptyTemplate>
                                         @if (filteredApplicationSessions.Count == 0)
                                         {
                                             <BitText>@Localizer[nameof(AppStrings.NoMatchingUserSessionMessage)]</BitText>
                                         }
-                                    </EmptyContent>
+                                    </EmptyTemplate>
                                     <RowTemplate Context="session">
                                         <BitCard role="listitem" NoShadow Class="session-card" FullWidth Background="BitColorKind.Tertiary">
                                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">

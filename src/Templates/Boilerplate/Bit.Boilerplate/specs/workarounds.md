@@ -12,16 +12,6 @@ Code that works around a defect in a library, a tool or the platform this app bu
 - **Upstream:** the report, or why there is none yet.
 - **Remove when:** how to tell the fix has arrived, and how to check it.
 -->
-<!--#if (signalR == true)-->
-
-## The AI chat panel shows a second scrollbar
-
-- **Symptom:** once a conversation is longer than the AI chat panel, the panel scrolls its body beside the transcript's own scrollbar, and scrolling it moves the message box away.
-- **Cause:** while it has nothing to say, the read-aloud status of each answer (`.bit-aimac-ras` of `BitAiMessageActions`, Bit.BlazorUI.AI 11.0.0-pre-19) is hidden with `position: absolute`. `BitAiMessageList`, the transcript's scroll container, is not positioned, so the status is placed against the chat's root instead, where the transcript neither scrolls nor clips it.
-- **Workaround:** `AppAiChat` (`src/Client/Boilerplate.Client.Core/Components/Layout/AiChat/AppAiChat.razor` and its `.razor.scss`) gives the message list a `transcript` class through `Classes.MessageList.Root`, and that class positions it. `AiChatPanelLayoutUITests` fails when the panel's body scrolls.
-- **Upstream:** https://github.com/bitfoundation/bitplatform/issues/14995 (Bit.BlazorUI.AI 11.0.0-pre-19, reported 2026-11-13).
-- **Remove when:** `BitAiMessageList` is the containing block of its messages. To check, remove the `transcript` class and its rule, then run `AiChatPanelLayoutUITests`.
-<!--#endif-->
 
 ## The landing page's chat doesn't show that it's listening
 
@@ -37,7 +27,7 @@ Code that works around a defect in a library, a tool or the platform this app bu
 - **Symptom:** in the Docker Compose project `aspire publish` writes, the persistent Redis that holds Hangfire's jobs and the distributed lock runs with `appendonly no`, so a restart of its container loses them. Running the app with `aspire start` is not affected.
 - **Cause:** Aspire publishes Redis as `/bin/sh -c "redis-server ..."` and writes every `WithArgs` value after that string, where the shell takes them as its own positional parameters and `redis-server` never sees them.
 - **Workaround:** `PublishAsComposeRedis` in `src/Server/Boilerplate.Server.AppHost/Infrastructure/Extensions/DockerComposePublishingExtensions.cs` folds the arguments into the `-c` string, the way run mode does.
-- **Upstream:** https://github.com/microsoft/aspire/issues/21400 (Aspire 13.6.4, reported 2026-10-29).
+- **Upstream:** https://github.com/microsoft/aspire/issues/21400 (Aspire 13.6.4, reported 2026-10-29), fixed by https://github.com/microsoft/aspire/pull/21447 for Aspire 17.1.
 - **Remove when:** Aspire's published Redis passes `WithArgs` on to `redis-server`. To check, remove `PublishAsComposeRedis`, publish and deploy, then `CONFIG GET appendonly` on the persistent Redis must still answer `yes`.
 
 ## DbGate can't open Redis
@@ -45,6 +35,6 @@ Code that works around a defect in a library, a tool or the platform this app bu
 - **Symptom:** DbGate's Redis connections never open. In run mode its log says `self-signed certificate`; on the server it speaks TLS to a Redis that has none. A password with a `/`, `?`, `#` or `%` in it breaks the connection as well.
 - **Cause:** the `WithDbGate` of CommunityToolkit.Aspire.Hosting.Redis.Extensions writes DbGate's Redis URL by hand: always `rediss://`, and with the password as it is, unencoded. In run mode Aspire serves Redis over TLS with the developer certificate, which DbGate doesn't trust, and the published Redis has no TLS at all.
 - **Workaround:** `ConfigureDbGate` in `src/Server/Boilerplate.Server.AppHost/Infrastructure/Extensions/IDistributedApplicationBuilderExtensions.cs` turns DbGate's certificate check off in run mode only (`NODE_TLS_REJECT_UNAUTHORIZED=0`), and `ConfigureDockerComposePublishing` in `src/Server/Boilerplate.Server.AppHost/Infrastructure/Extensions/DockerComposePublishingExtensions.cs` rewrites the published URLs to `redis://`. `bit pipeline` creates a deployment's Redis passwords from letters and digits, and the deploy skill (`.github/agents/deploy.agent.md`) and `.docs/16` keep the ones set by hand to the same, which the passwords Aspire generates in run mode already are.
-- **Upstream:** https://github.com/CommunityToolkit/Aspire/issues/2343 (CommunityToolkit.Aspire 13.6.1, reported 2026-10-30), after https://github.com/CommunityToolkit/Aspire/issues/1548 was closed as stale without a fix.
+- **Upstream:** https://github.com/CommunityToolkit/Aspire/issues/2343 (CommunityToolkit.Aspire 13.6.1, reported 2026-10-30), after https://github.com/CommunityToolkit/Aspire/issues/1548 was closed as stale without a fix. Fixed by https://github.com/CommunityToolkit/Aspire/pull/2371, in the release after 13.6.1.
 - **Remove when:** the toolkit takes the URL from the Redis resource, with its scheme and an encoded password, and DbGate trusts Aspire's certificate. To check, remove the code above, then open each Redis in DbGate with `aspire start`, and on a test server with a Redis password that has a `/` in it. The letters and digits rule stays even then, since StackExchange.Redis can't take a comma in a password; only its mention of DbGate goes.
 <!--#endif-->

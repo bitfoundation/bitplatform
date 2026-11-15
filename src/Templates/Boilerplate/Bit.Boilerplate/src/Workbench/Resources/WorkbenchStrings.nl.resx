@@ -4146,6 +4146,21 @@
     <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
         <value>Voor klanten, twaalf plaatsen</value>
     </data>
+    <data name="ThemeExtrasRightClickOrPressAnd" xml:space="preserve">
+        <value>Klik met rechts of houd ingedrukt</value>
+    </data>
+    <data name="ThemeExtrasListsWhatTheSnackBars" xml:space="preserve">
+        <value>Toont wat de snackbars lieten zien</value>
+    </data>
+    <data name="ThemeExtrasUnreadCount" xml:space="preserve">
+        <value>{0} ongelezen</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductTitle" xml:space="preserve">
+        <value>Dit product verwijderen?</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductBody" xml:space="preserve">
+        <value>{0} wordt van de kaart gehaald.</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>Weeknummers, tijd</value>
     </data>
@@ -4485,6 +4500,9 @@
     <data name="ThemeNotificationsDismissible" xml:space="preserve">
         <value>Sluitbaar</value>
     </data>
+    <data name="ThemeNotificationsSetAGoal" xml:space="preserve">
+        <value>Doel instellen</value>
+    </data>
     <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
         <value>Levertijden</value>
     </data>
@@ -4799,6 +4817,15 @@
     </data>
     <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
         <value>Afgekapt op twee regels</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldTheBox" xml:space="preserve">
+        <value>Houd het vak ingedrukt</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldHere" xml:space="preserve">
+        <value>Houd hier ingedrukt</value>
+    </data>
+    <data name="ThemeUtilitiesPressedAndHeld" xml:space="preserve">
+        <value>Ingedrukt gehouden</value>
     </data>
     <data name="ThemeSectionsOfThisPage" xml:space="preserve">
         <value>Onderdelen van deze pagina</value>

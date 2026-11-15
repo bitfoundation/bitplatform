@@ -1,6 +1,9 @@
 //+:cnd:noEmit
 using System.Text;
 using Bit.BevTools;
+//#if (offlineDb == true)
+using Bit.Bsqlite.EntityFrameworkCore;
+//#endif
 
 namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 
@@ -109,9 +112,16 @@ public partial class AppDiagnosticModal
         //#if (offlineDb == true)
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(CurrentCancellationToken);
-            await dbContext.Database.EnsureDeletedAsync(CurrentCancellationToken); // Blazor Hybrid stores the db outside webview's storage.
-            await dbContext.Database.MigrateAsync(CurrentCancellationToken);
+            if (dbContextFactory is IBsqliteDbContextFactory<AppOfflineDbContext> bsqliteDbContextFactory)
+            {
+                await bsqliteDbContextFactory.Database.DeleteAsync(CurrentCancellationToken); // Blazor Hybrid stores the db outside webview's storage.
+            }
+            else
+            {
+                await using var dbContext = await dbContextFactory.CreateDbContextAsync(CurrentCancellationToken);
+                await dbContext.Database.EnsureDeletedAsync(CurrentCancellationToken);
+                await dbContext.Database.MigrateAsync(CurrentCancellationToken);
+            }
         }
         catch (Exception exp)
         {

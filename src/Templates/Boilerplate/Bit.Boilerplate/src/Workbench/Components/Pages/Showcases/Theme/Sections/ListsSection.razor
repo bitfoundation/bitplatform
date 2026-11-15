@@ -31,9 +31,9 @@
                     <RowTemplate Context="person">
                         <div class="list-row" role="listitem">@Localizer[person.NameKey]</div>
                     </RowTemplate>
-                    <EmptyContent>
+                    <EmptyTemplate>
                         <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary" Class="list-empty">@Localizer[nameof(WorkbenchStrings.ThemeListsNobodyIsOnShiftYet)]</BitText>
-                    </EmptyContent>
+                    </EmptyTemplate>
                 </BitBasicList>
             </div>
         </StateSample>

@@ -12,8 +12,8 @@ public partial class ProfileBackOnlineUITests : AppPageTest
     /// <item>Let that call through again, and have the app reach the server with another call, the Sessions section's.</item>
     /// <item>The Profile section shows the user's profile, with no reload.</item>
     /// </list>
-    /// It runs in Blazor WebAssembly mode, where the browser itself makes the app's calls, so a failed one is a call
-    /// that couldn't reach the server, as it is for an app opened offline.
+    /// It runs in Blazor WebAssembly mode without prerendering, where the browser itself makes the app's calls, so a
+    /// failed one is a call that couldn't reach the server, as it is for an app opened offline.
     /// </summary>
     [TestMethod]
     public async Task Profile_Should_Load_OnceTheAppIsBackOnline()
@@ -23,8 +23,11 @@ public partial class ProfileBackOnlineUITests : AppPageTest
         await using var server = new AppTestServer(Context);
         var serverAddress = server.WebAppAddress;
 
-        await server.Build(configureTestConfiguration: configuration => configuration["WebAppRender:BlazorMode"] = nameof(BlazorWebAppMode.BlazorWebAssembly))
-            .Start(TestContext.CancellationToken);
+        await server.Build(configureTestConfiguration: configuration =>
+        {
+            configuration["WebAppRender:BlazorMode"] = nameof(BlazorWebAppMode.BlazorWebAssembly);
+            configuration["WebAppRender:PrerenderEnabled"] = "false";
+        }).Start(TestContext.CancellationToken);
 
         await Page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
         await SignInPanelUtils.FillCredentials(Page, TestData.DefaultTestEmail, TestData.DefaultTestPassword);

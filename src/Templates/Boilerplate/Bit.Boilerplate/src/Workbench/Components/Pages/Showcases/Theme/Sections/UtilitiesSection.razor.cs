@@ -1,6 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Theme.Sections;
 
-/// <summary>The Utilities category: elements, icons, images, links, media queries, overlays, pull to refresh, separators, sticky parts, swipes and text.</summary>
+/// <summary>The Utilities category: elements, icons, images, links, long presses, media queries, overlays, pull to refresh, separators, sticky parts, swipes and text.</summary>
 public partial class UtilitiesSection
 {
     /// <summary>The demo people whose avatars the circular images show, by their name's resource key.</summary>
@@ -10,6 +10,10 @@ public partial class UtilitiesSection
 
     /// <summary>The resource key that says which way the last swipe in the swipe box went; the hint to swipe before the first.</summary>
     private string swipeKey = nameof(WorkbenchStrings.ThemeUtilitiesSwipeOrDragHere);
+
+    private string pressKey = nameof(WorkbenchStrings.ThemeUtilitiesPressAndHoldHere);
+
+    private string PressLabel => Localizer[nameof(WorkbenchStrings.ThemeUtilitiesPressAndHoldTheBox)];
 
     protected override void OnInitialized()
     {
@@ -27,4 +31,6 @@ public partial class UtilitiesSection
         BitPlacement.Left => nameof(WorkbenchStrings.ThemeUtilitiesSwipedLeft),
         _ => nameof(WorkbenchStrings.ThemeUtilitiesSwipedRight)
     };
+
+    private void OnHeld() => pressKey = nameof(WorkbenchStrings.ThemeUtilitiesPressedAndHeld);
 }
