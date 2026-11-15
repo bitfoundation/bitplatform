@@ -7,6 +7,10 @@ namespace Bit.Bmotion;
 /// </summary>
 internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 {
+    // Bm.Spring's defaults: what a stiffness or damping that could never settle falls back to.
+    private const double DefaultStiffness = 100;
+    private const double DefaultDamping = 10;
+
     private double _target;
     private double _from;
     private readonly double _origFrom;
@@ -23,6 +27,12 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 
     /// <summary>The mass the driver runs with (a mass &lt;= 0 falls back to 1).</summary>
     internal double Mass => _m;
+
+    /// <summary>
+    /// False when the configured (or derived) stiffness isn't positive or the damping is negative - a spring that
+    /// could never settle, which runs with the defaults instead.
+    /// </summary>
+    internal bool Settles { get; }
     private readonly double _initialVel;
     private readonly double _baseRestSpeed;
     private readonly double _baseRestDelta;
@@ -92,8 +102,12 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
             (k, d) = BmotionTransitionConfig.SpringFromBounce(vd, config.Bounce.Value, _m);
         }
 
-        _k = k;
-        _d = d;
+        // Likewise a stiffness <= 0 (nothing pulls towards the target) or a negative damping (the oscillation grows
+        // without bound, to Infinity and NaN): the rest test would never pass, the driver would tick forever, and an
+        // exit using it would never complete. Fall back to the defaults, the values BmSpring.Analyze rejects them for.
+        Settles = k > 0 && d >= 0;
+        _k = k > 0 ? k : DefaultStiffness;
+        _d = d >= 0 ? d : DefaultDamping;
         _vel = _initialVel = config.Velocity;
         _baseRestSpeed = config.RestSpeed;
         _baseRestDelta = config.RestDelta;

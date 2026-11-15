@@ -509,6 +509,9 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         // activation is still reading or interrupting must find the layer to remove, or the overlay
         // would apply after the gesture already ended and stay on.
         if (state.ActivateGestureLayer(gesture, values, transition) is not { } request) return;
+        // While the element plays its exit, the exit has priority over every gesture layer: the layer is recorded (a
+        // re-entry finds the gestures as they are) but does not animate the properties the exit owns.
+        if (state.Exiting) return;
         var generation = ++_gestureGeneration;
         _gestureGenerations[(elementId, gesture)] = generation;
         // A gesture's target is not the element's own: what it borrows from the stylesheet stays borrowed.
@@ -520,9 +523,20 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
         _gestureGenerations.Remove((elementId, gesture));
-        if (state.DeactivateGestureLayer(gesture) is not { } request) return;
+        // Not while it exits either (see ActivateGestureLayerAsync): going back to the Animate target would cancel the
+        // exit for those properties.
+        if (state.DeactivateGestureLayer(gesture) is not { } request || state.Exiting) return;
         await PlayAsync(elementId, state, request.Values, request.Transition, tcs: null, claim: false,
             stylesheetKeys: request.StylesheetKeys);
+    }
+
+    /// <summary>
+    /// Marks an element as playing its exit, or as back from one (a presence that re-entered): while it exits, its
+    /// exit takes priority over every gesture layer - see <see cref="ActivateGestureLayerAsync"/>.
+    /// </summary>
+    internal void SetExiting(string elementId, bool exiting)
+    {
+        if (_elements.TryGetValue(elementId, out var state)) state.Exiting = exiting;
     }
 
     // Which activation of a gesture on an element is the live one: an activation that resumes after its gesture
@@ -578,11 +592,16 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     public (double x, double y) GetCurrentXY(string elementId)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return (0, 0);
-        // Drag start: the JS bridge has just committed+cancelled any compositor animations on
-        // this element, so fold their current values (from the mirrored plans) into state.
-        state.RealizeWaapiPlans(null);
+        // Drag start: the JS bridge has just committed+cancelled the compositor animations that move
+        // this element's transform, so fold their current values (from the mirrored plans) into state.
+        // The rest - a fade, a colour, a scroll-linked animation - play on: a drag takes the transform
+        // over and nothing else, and what a cancelled plan animated besides it carries on from where it was.
+        if (state.RealizeWaapiPlans(DragKeys, continueOthers: true) != null) KickFlush(elementId, state);
         return state.GetCurrentXY();
     }
+
+    /// <summary>The keys a drag takes over; see <see cref="GetCurrentXY(string)"/>.</summary>
+    private static readonly string[] DragKeys = ["x", "y"];
 
     /// <summary>
     /// Completes a drag and optionally starts inertia animations.
@@ -597,7 +616,8 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         bool momentum,
         BmDragConstraints? constraints,
         string? axis,
-        BmotionTransitionConfig? snapTransition)
+        BmotionTransitionConfig? snapTransition,
+        bool reducedMotion = false)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
 
@@ -646,17 +666,30 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
                 return c;
             }
 
-            if (axis != "y" && (Math.Abs(velX) > 0.5 || alwaysCoast))
+            // Under reduced motion there is no coast, as in Motion: the element stays where it was let go - unless the
+            // throw snaps to a target (a slider's stops), where it lands on that target at once.
+            bool Coasts(double velocity) => reducedMotion ? alwaysCoast : Math.Abs(velocity) > 0.5 || alwaysCoast;
+            void Coast(string key, double from, BmotionTransitionConfig inertia)
             {
-                target["x"] = posX;
-                perAxis["x"] = BuildInertia(velX, constraints?.Left, constraints?.Right);
+                if (reducedMotion)
+                {
+                    target[key] = BmotionInertiaDriver.ProjectRest(from, inertia);
+                    perAxis[key] = Bmotion.InstantTransition();
+                    return;
+                }
+                target[key] = from;
+                perAxis[key] = inertia;
+            }
+
+            if (axis != "y" && Coasts(velX))
+            {
+                Coast("x", posX, BuildInertia(velX, constraints?.Left, constraints?.Right));
                 inertiaXStarted = true;
             }
 
-            if (axis != "x" && (Math.Abs(velY) > 0.5 || alwaysCoast))
+            if (axis != "x" && Coasts(velY))
             {
-                target["y"] = posY;
-                perAxis["y"] = BuildInertia(velY, constraints?.Top, constraints?.Bottom);
+                Coast("y", posY, BuildInertia(velY, constraints?.Top, constraints?.Bottom));
                 inertiaYStarted = true;
             }
         }
@@ -669,7 +702,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             // Snap to constraint bounds
             double cx = posX, cy = posY;
             bool snap = false;
-            var snapT = snapTransition ?? new BmotionTransitionConfig
+            var snapT = reducedMotion ? Bmotion.InstantTransition() : snapTransition ?? new BmotionTransitionConfig
                 { Type = BmotionTransitionType.Spring, Stiffness = DragSnapStiffness, Damping = DragSnapDamping };
 
             if (axis != "y" && !inertiaXStarted)
@@ -1822,6 +1855,16 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         // has the element), or playback never started (element missing / easing rejected).
         const double neverStartedWithinMs = 50;
         bool wasStillRegistered = state.TryRealizeWaapiPlan(offload.Plan.Token, out double elapsedMs, neverStartedWithinMs);
+
+        // Dropped without the browser saying it ended - the call failed, or the circuit gave up waiting for it: the
+        // browser may still be playing it (forever, for one that repeats forever), where nothing would ever stop it
+        // again now that no plan names it. It is ended here, at the values it had got to, which the state now holds.
+        if (wasStillRegistered)
+        {
+            try { await _interop.CancelWaapiAnimationAsync(elementId, offload.Plan.Token, commit: true); }
+            catch { /* best-effort: the element or the circuit is gone */ }
+        }
+
         if (wasStillRegistered && elapsedMs < neverStartedWithinMs)
         {
             // Playback never started - replay through the regular path so the animation isn't lost. It is a frame-loop
@@ -1845,6 +1888,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             return;
         }
 
+        if (wasStillRegistered) KickFlush(elementId, state);
         tcs?.TrySetResult(false);
     }
 

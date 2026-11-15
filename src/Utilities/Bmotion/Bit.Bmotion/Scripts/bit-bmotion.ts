@@ -445,8 +445,10 @@ function _ensureReducedMotionListener(): void {
     _reducedMotionMql = matchMedia('(prefers-reduced-motion: reduce)');
     _reducedMotionListener = (e: MediaQueryListEvent) => {
         for (const ref of _reducedMotionRefs.values()) {
-            try { ref.invokeMethodAsync('OnReducedMotionChanged', e.matches); }
-            catch { /* a disposed/faulted engine ref must not break the others */ }
+            // A disposed/faulted engine ref must not break the others - nor leave an unhandled rejection behind, which
+            // is how a call to a disposed reference fails.
+            try { ref.invokeMethodAsync('OnReducedMotionChanged', e.matches).catch(() => { }); }
+            catch { /* thrown synchronously by some runtimes */ }
         }
     };
     // addEventListener is the modern API; addListener is the deprecated Safari fallback.
@@ -549,6 +551,14 @@ export function unregisterElement(elementId: string): void {
     _detachFromObservers(el, elementId);
     _vpRefs.delete(elementId);
     _popped.delete(elementId);
+    // A FLIP still playing ends with its element - without its callback, which would reach the .NET object the
+    // component disposed as it went.
+    const flip = _flips.get(elementId);
+    if (flip) {
+        flip.anim.onfinish = null;
+        flip.anim.oncancel = null;
+        try { flip.anim.cancel(); } catch { /* detached element */ }
+    }
     _flips.delete(elementId);
     _interruptedAt.delete(elementId);
 }
@@ -649,6 +659,11 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
             dotnetRef.invokeMethodAsync('OnPointerCancel');
         };
 
+        // Enter and Space reach only an element that can take focus: one that takes none of its own (a div) and has no
+        // tabindex from the app is given one, as motion.dev's press() does, and loses it again with the listeners.
+        const madeFocusable = !el.hasAttribute('tabindex') && el.tabIndex < 0;
+        if (madeFocusable) el.setAttribute('tabindex', '0');
+
         el.addEventListener('pointerdown', onDown);
         window.addEventListener('pointerup',     onUp);
         window.addEventListener('pointercancel', onCancel);
@@ -656,6 +671,7 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
         el.addEventListener('keyup',   onKeyUp);
         el.addEventListener('blur',    onBlur);
         cleanups.push(() => {
+            if (madeFocusable && el.getAttribute('tabindex') === '0') el.removeAttribute('tabindex');
             el.removeEventListener('pointerdown', onDown);
             window.removeEventListener('pointerup',     onUp);
             window.removeEventListener('pointercancel', onCancel);
@@ -781,19 +797,21 @@ function _attachDrag(
     // callback rides in the same frame, after the position, so a handler always reads the position
     // it was raised for.
     const asyncMode      = !!opts.dragAsync;
+    // Only when .NET has an OnDrag handler to raise.
+    const moveEvents     = opts.dragMoveEvents !== false;
     let pendingX = 0, pendingY = 0, reportFrame: number | null = null;
     // The last position sent this drag: once that call completes .NET has it, and every transform it writes after
     // follows from it.
     let lastSent: Promise<unknown> | null = null;
     const sendPendingMove = () => {
         lastSent = dotnetRef.invokeMethodAsync('SetDragPosition', pendingX, pendingY);
-        dotnetRef.invokeMethodAsync('OnDragMove');
+        if (moveEvents) dotnetRef.invokeMethodAsync('OnDragMove');
     };
     const reportMove = (x: number, y: number) => {
         if (!asyncMode) {
             // Synchronously, so ComputeFrame picks the position up this frame.
             dotnetRef.invokeMethod('SetDragPosition', x, y);
-            dotnetRef.invokeMethodAsync('OnDragMove');
+            if (moveEvents) dotnetRef.invokeMethodAsync('OnDragMove');
             return;
         }
         pendingX = x; pendingY = y;
@@ -835,8 +853,9 @@ function _attachDrag(
     const begin = (pointerId: number, clientX: number, clientY: number, time?: number) => {
         // A compositor (WAAPI) animation may own the transform; commit its current values inline
         // and cancel it so the drag takes over seamlessly. C# resolves its own state from the
-        // mirrored plan inside GetCurrentXY below.
-        _cancelWaapiForElement(elementId, true);
+        // mirrored plan inside GetCurrentXY below. Only those: a fade or a scroll-linked animation
+        // on the same element is none of the drag's business, and plays on.
+        _cancelWaapiForElement(elementId, true, true);
         // So does a layout (FLIP) animation in flight - a reordered row grabbed as it slides into its new place:
         // settled where it is heading, it stops projecting the old layout over the drag.
         const flip = _flips.get(elementId);
@@ -1662,12 +1681,24 @@ export function cancelWaapiAnimation(elementId: string, token: string, commit: b
     _cancelNoting(anim); // rejects anim.finished → cleanup runs in playWaapiAnimation's handler
 }
 
-function _cancelWaapiForElement(elementId: string, commit: boolean): void {
+function _cancelWaapiForElement(elementId: string, commit: boolean, onlyTransform = false): void {
     const map = _waapiAnims.get(elementId);
     if (!map) return;
     for (const anim of [...map.values()]) {
+        if (onlyTransform && !_animatesTransform(anim)) continue;
         if (commit) { try { commitStylesChecked(anim); } catch { } }
         _cancelNoting(anim);
+    }
+}
+
+// Whether an offloaded animation moves the element's transform - all of it one CSS property, as the engine's
+// mirrored plans treat it - which is what a drag takes over.
+function _animatesTransform(anim: Animation): boolean {
+    try {
+        const frames = (anim.effect as KeyframeEffect | null)?.getKeyframes() ?? [];
+        return frames.some(f => 'transform' in f || 'translate' in f || 'rotate' in f || 'scale' in f);
+    } catch {
+        return true;
     }
 }
 
@@ -2247,7 +2278,8 @@ export function playWaapiFlip(
         ended = true;
         if (_flips.get(elementId)?.anim === anim) _flips.delete(elementId);
         settle();
-        dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted');
+        // The component can be gone by the time the animation ends (or its circuit with it): an expected end.
+        dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted').catch(() => { });
     };
     anim.onfinish = end;
     anim.oncancel = end;

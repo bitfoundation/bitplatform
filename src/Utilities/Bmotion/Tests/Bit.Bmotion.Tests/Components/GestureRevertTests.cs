@@ -236,4 +236,40 @@ public class GestureRevertTests
         await ctx.RunFramesAsync(616, 1000);
         Assert.AreEqual(1.0, State(ctx, "child").NumericValues["opacity"], 1e-6);
     }
+
+    [TestMethod]
+    public async Task AHoverEndingDuringTheExit_LeavesTheExitAlone()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
+        RenderFragment card = b =>
+        {
+            b.OpenComponent<Bmotion>(0);
+            b.AddComponentParameter(1, nameof(Bmotion.Id), "card");
+            b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 1, scale: 1));
+            b.AddComponentParameter(3, nameof(Bmotion.WhileHover), (BmTarget?)Bm.To(scale: 1.5));
+            b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmTarget?)Bm.To(opacity: 0, scale: 0.5));
+            b.AddComponentParameter(5, nameof(Bmotion.Transition), (BmTransition?)Bm.Tween(1, ease: BmEase.Linear));
+            b.AddComponentParameter(6, nameof(Bmotion.ChildContent), Div);
+            b.CloseComponent();
+        };
+        var cut = ctx.Render<BmotionAnimatePresence>(ps => ps
+            .Add(p => p.IsPresent, true)
+            .Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(0, 1100);
+        await cut.InvokeAsync(Events(ctx, "card").OnPointerEnter);
+        await ctx.RunFramesAsync(1116, 2200);
+        Assert.AreEqual(1.5, State(ctx, "card").Transforms["scale"], 1e-6);
+
+        // The exit starts under the pointer, and the pointer leaves the element - made inert - as it plays.
+        cut.Render(ps => ps.Add(p => p.IsPresent, false).Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(2216, 2400);
+        await cut.InvokeAsync(Events(ctx, "card").OnPointerLeave);
+        var scales = await SampleFramesAsync(ctx, "card", s => s.Transforms["scale"], 2416, 3100);
+
+        // The exit keeps heading for its own scale: going back to Animate's 1 would end above where it is now.
+        for (var i = 1; i < scales.Count; i++)
+            Assert.IsLessThanOrEqualTo(scales[i - 1] + 1e-9, scales[i], $"the scale turned back: {string.Join(", ", scales)}");
+        Assert.IsLessThan(1.0, scales[^1]);
+    }
 }

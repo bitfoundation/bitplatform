@@ -960,6 +960,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // exiting flag (otherwise the component stays frozen forever) and force the enter
             // animation to replay by invalidating the cached previous target.
             _isExiting = false;
+            Engine.SetExiting(_id, false);
             _exitGeneration++;
             _prevAnimate = null;
             _prevInheritedVariant = null;
@@ -1100,7 +1101,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 var transition = BuildEffectiveTransition(animateProps);
                 await Engine.AnimateToAsync(_id, values,
                     ApplyAfterChildren(transition?.Clone()),
-                    () => OnAnimationComplete.InvokeAsync(animateProps), setAsBase: true, baseTransition: transition ?? new());
+                    () => RaiseAnimationCompleteAsync(animateProps), setAsBase: true, baseTransition: transition ?? new());
             }
         }
         else if (!timelineOwns && VariantCtx != null && (Variants != null || VariantCtx.Variants != null))
@@ -1120,7 +1121,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                     await OnAnimationStart.InvokeAsync(props);
                     await Engine.AnimateToAsync(_id, values,
                         BuildEffectiveTransitionWithDelay(VariantCtx.GetChildDelay(_variantChildIndex), props),
-                        () => OnAnimationComplete.InvokeAsync(props),
+                        () => RaiseAnimationCompleteAsync(props),
                         setAsBase: true, baseTransition: BuildEffectiveTransition(props) ?? new());
                 }
             }
@@ -1209,7 +1210,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 var transition = BuildEffectiveTransition(animateProps);
                 await Engine.AnimateToAsync(_id, values,
                     ApplyAfterChildren(transition?.Clone()),
-                    () => OnAnimationComplete.InvokeAsync(animateProps), setAsBase: true, baseTransition: transition ?? new());
+                    () => RaiseAnimationCompleteAsync(animateProps), setAsBase: true, baseTransition: transition ?? new());
             }
             _prevAnimate = EffectiveAnimate;
         }
@@ -1239,7 +1240,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                         await OnAnimationStart.InvokeAsync(props);
                         await Engine.AnimateToAsync(_id, values,
                             BuildEffectiveTransitionWithDelay(delay, props),
-                            () => OnAnimationComplete.InvokeAsync(props), setAsBase: true,
+                            () => RaiseAnimationCompleteAsync(props), setAsBase: true,
                             baseTransition: BuildEffectiveTransition(props) ?? new());
                     }
                 }
@@ -1258,6 +1259,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     internal async Task PlayExitAsync()
     {
         int generation = _exitGeneration;
+        // From here the exit has priority over the gestures: one that ends while it plays - the pointer leaving an
+        // element made inert, focus moving out of it - leaves the properties the exit animates alone.
+        Engine.SetExiting(_id, true);
         var exitProps = ResolveProps(EffectiveExit);
         if (exitProps != null)
         {
@@ -1389,6 +1393,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnLayoutAnimationCompleted() => await OnLayoutAnimationComplete.InvokeAsync();
 
+    // Raised by the engine once the animation settles, outside any event the renderer dispatched: a handler that fails
+    // reaches the renderer (an ErrorBoundary, the circuit) as a failing event handler's exception does, not dropped
+    // with the engine's fire-and-forget continuation.
+    private async Task RaiseAnimationCompleteAsync(BmProps? props)
+    {
+        try { await OnAnimationComplete.InvokeAsync(props); }
+        catch (Exception ex) when (!_disposed) { await DispatchExceptionAsync(ex); }
+    }
+
     // ── Shared-element transitions (LayoutId) ──────────────────────────────────
 
     // While a FLIP is in flight, getBoundingClientRect includes its transform; recording then
@@ -1496,9 +1509,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // clobber unrelated animations on the same element). The registration lives as long as the
         // animation does - AnimateToAsync returns once it has started, so disposing it then made a
         // token cancelled mid-flight do nothing - and is released when the animation settles, so
-        // repeated calls with a long-lived token don't accumulate callbacks.
+        // repeated calls with a long-lived token don't accumulate callbacks. The engine is single-threaded: a token
+        // cancelled from another thread (CancelAfter's timer) stops it on the renderer's context, where it was started.
         var registration = cancellationToken.CanBeCanceled
-            ? cancellationToken.Register(() => Engine.Stop(_id, values.Keys.ToArray()))
+            ? cancellationToken.RegisterOnCallerContext(() => Engine.Stop(_id, values.Keys.ToArray()))
             : default;
         try
         {
@@ -1678,8 +1692,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             var dragT = DragTransition?.ToConfig();
             var snapT = dragT is { Type: not BmotionTransitionType.Inertia } ? dragT : new BmotionTransitionConfig
                 { Type = BmotionTransitionType.Spring, Stiffness = 400, Damping = 35 };
+            // A movement like any other: under reduced motion it lands (or does what ReducedMotion says).
             await Engine.AnimateToAsync(_id,
-                new Dictionary<string, object?> { ["x"] = 0.0, ["y"] = 0.0 }, snapT);
+                new Dictionary<string, object?> { ["x"] = 0.0, ["y"] = 0.0 }, IsMotionReduced() ? ReducedVariant(snapT) : snapT);
         }
         else
         {
@@ -1692,7 +1707,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             await Engine.EndDragAsync(
                 _id, velX, velY, DragMomentum, constraints,
                 Drag.Axis == BmDragAxis.Both ? null : Drag.Axis.ToString().ToLowerInvariant(),
-                DragTransition?.ToConfig());
+                DragTransition?.ToConfig(),
+                reducedMotion: IsMotionReduced());
         }
 
         await OnDragEnd.InvokeAsync();
@@ -1811,15 +1827,28 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private bool ShouldReduceMotion()
     {
         // A local <BmotionConfig ReduceMotion="true|false"> is always an explicit override.
-        if (ConfigCtx?.ReduceMotion is bool configReduce) return configReduce;
+        return IsMotionReduced(Options.ReducedMotion, Engine.OsPrefersReducedMotion, ConfigCtx?.ReduceMotion, ConfigCtx is not null);
+    }
 
-        return Options.ReducedMotion switch
+    /// <summary>
+    /// Whether motion is reduced, by <paramref name="mode"/> (<see cref="BitBmotionOptions.ReducedMotion"/>): the one
+    /// rule every path that animates follows - this element, a drag's release, a reorder group's siblings and
+    /// <see cref="BmotionAnimateService"/>. A local <see cref="BmotionConfig"/>'s <paramref name="configReduce"/> is
+    /// always an explicit override; under the default <see cref="BmReducedMotionMode.IgnoreUnlessConfigured"/> the OS
+    /// preference counts only <paramref name="insideConfig"/>.
+    /// </summary>
+    internal static bool IsMotionReduced(
+        BmReducedMotionMode mode, bool osPrefersReducedMotion, bool? configReduce = null, bool insideConfig = false)
+    {
+        if (configReduce is bool reduce) return reduce;
+
+        return mode switch
         {
             BmReducedMotionMode.Always => true,
             BmReducedMotionMode.Never => false,
-            BmReducedMotionMode.User => Engine.OsPrefersReducedMotion,
+            BmReducedMotionMode.User => osPrefersReducedMotion,
             // IgnoreUnlessConfigured (back-compat): OS preference matters only inside a config.
-            _ => ConfigCtx is not null && Engine.OsPrefersReducedMotion,
+            _ => insideConfig && osPrefersReducedMotion,
         };
     }
 
@@ -1831,7 +1860,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
          "filter", "backdropFilter", "boxShadow", "textShadow"];
 
     /// <summary>An instant (zero-duration) transition used when motion is reduced.</summary>
-    private static BmotionTransitionConfig InstantTransition()
+    internal static BmotionTransitionConfig InstantTransition()
         => new() { Type = BmotionTransitionType.Tween, Duration = 0, Delay = 0 };
 
     /// <summary>
@@ -1864,6 +1893,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     /// <summary>Whether motion is reduced here, and this element gives any of it up (it isn't kept in full).</summary>
     private bool IsMotionReduced() => ReducedMotionBehavior != BmReducedMotionBehavior.Full && ShouldReduceMotion();
+
+    /// <summary>
+    /// <paramref name="normal"/> as this element plays it: reduced when motion is reduced here. For what animates the
+    /// element from outside it - a <see cref="BmotionReorderGroup{TItem}"/> moving its siblings out of the way.
+    /// </summary>
+    internal BmotionTransitionConfig? AsPlayedHere(BmotionTransitionConfig? normal) => IsMotionReduced() ? ReducedVariant(normal) : normal;
 
     /// <summary>The transition <paramref name="normal"/> becomes when motion is reduced, by <see cref="ReducedMotionBehavior"/>.</summary>
     private BmotionTransitionConfig? ReducedVariant(BmotionTransitionConfig? normal) => ReducedMotionBehavior switch
@@ -1965,6 +2000,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // Without synchronous interop (Blazor Server) the bridge reports drag positions through
             // async calls, one per animation frame, instead of reading and writing them inline.
             if (!Interop.IsInProcess) d["dragAsync"] = true;
+            // OnDrag is raised per move from the bridge: with no handler it would be a call for nothing - a SignalR
+            // message per frame of every drag on Blazor Server.
+            if (!OnDrag.HasDelegate) d["dragMoveEvents"] = false;
         }
         return d;
     }

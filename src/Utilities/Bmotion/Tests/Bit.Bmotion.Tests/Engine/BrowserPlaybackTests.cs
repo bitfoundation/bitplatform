@@ -402,6 +402,55 @@ public partial class BrowserPlaybackTests
     }
 
     [TestMethod]
+    public async Task Server_AnAnimationTheCircuitStoppedWaitingFor_IsCancelledInTheBrowser()
+    {
+        var (engine, interop) = NewEngine(inProcess: false);
+        await using var _ = engine;
+        // A forever animation whose play call outlasts the circuit's patience: the call fails as a timeout would,
+        // while the browser goes on playing it.
+        interop.PlayWaapiHandler = async (_, _, _, _) =>
+        {
+            await Task.Delay(120);
+            throw new TaskCanceledException("the JS call timed out");
+        };
+        engine.RegisterElement("el", Values(("rotate", 0.0)));
+
+        await engine.AnimateToAsync("el", Values(("rotate", new double[] { 0, 360 })),
+            Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever).ToConfig());
+        var token = (int)interop.ArgsOf("playWaapiAnimation").Single()[1]!;
+        await WaitUntilAsync(() => interop.WasCalled("cancelWaapiAnimation"));
+
+        var cancel = interop.ArgsOf("cancelWaapiAnimation").Single();
+        Assert.AreEqual("el", cancel[0]);
+        Assert.AreEqual(token, cancel[1], "the very animation the plan played is the one ended");
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task ADragStart_TakesOverTheTransformAndLeavesAFadeToTheBrowser(bool inProcess)
+    {
+        var (engine, interop) = NewEngine(inProcess);
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("x", 0.0), ("opacity", 0.0)));
+
+        await engine.AnimateToAsync("el", Values(("opacity", 1.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        CollectionAssert.AreEquivalent(new[] { "opacity", "x" }, State(engine).BrowserProperties.ToArray());
+
+        engine.GetCurrentXY("el");
+
+        // The bridge cancelled the transform's animation and nothing else: the fade is still the browser's to finish.
+        CollectionAssert.AreEqual(new[] { "opacity" }, State(engine).BrowserProperties.ToArray());
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        while (!condition() && clock.ElapsedMilliseconds < 5_000) await Task.Delay(10);
+    }
+
+    [TestMethod]
     public async Task Server_GestureOverlays_PlayInTheBrowser()
     {
         var (engine, interop) = NewEngine(inProcess: false);

@@ -71,8 +71,9 @@ public sealed class BmotionAnimateService
     /// </param>
     /// <param name="keyframes">Target animation properties.</param>
     /// <param name="transition">
-    /// Optional transition configuration (easing, duration, spring parameters, etc.).
-    /// Falls back to the global <see cref="BmotionConfig"/> default when omitted.
+    /// Optional transition configuration (easing, duration, spring parameters, etc.); the engine's default when
+    /// omitted. A <see cref="BmotionConfig"/> in the markup has no say over this call: under reduced motion
+    /// (<see cref="BitBmotionOptions.ReducedMotion"/>) transforms, layout and sizes land at once, as on an element.
     /// </param>
     /// <param name="stagger">
     /// Optional per-element start-delay generator (see <see cref="BmStagger"/>) applied in
@@ -96,9 +97,21 @@ public sealed class BmotionAnimateService
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
         // Checked before any element is registered, so a rejection leaves none behind.
         var values = CheckedValues(keyframes, selector);
-        var config = (keyframes.Transition ?? transition)?.ToConfig();
+        var (config, reduced) = await AsPlayedAsync((keyframes.Transition ?? transition)?.ToConfig());
         var ids = await ResolveAsync(selector);
-        return WithCancellation(await StartAnimationsAsync(ids, values, config, stagger), cancellationToken);
+        // Reduced, a staggered list appears at once rather than trickling in, as a Bmotion element's children do.
+        return WithCancellation(await StartAnimationsAsync(ids, values, config, reduced ? null : stagger), cancellationToken);
+    }
+
+    // The transition as it plays, and whether motion is reduced: by BitBmotionOptions.ReducedMotion, the rule a Bmotion
+    // element follows (Bmotion.IsMotionReduced) - with no <BmotionConfig> around a call to scope it - so transforms,
+    // layout and sizes land at once while fades and colours still animate.
+    private async ValueTask<(BmotionTransitionConfig? Config, bool Reduced)> AsPlayedAsync(BmotionTransitionConfig? normal)
+    {
+        if (_options.ReducedMotion == BmReducedMotionMode.User) await _engine.EnsureReducedMotionDetectedAsync();
+        return Bmotion.IsMotionReduced(_options.ReducedMotion, _engine.OsPrefersReducedMotion)
+            ? (Bmotion.BuildReducedTransition(normal), true)
+            : (normal, false);
     }
 
     // The elements a selector names. One the engine has never addressed starts from what it shows, not from the values
@@ -127,7 +140,9 @@ public sealed class BmotionAnimateService
     {
         if (!cancellationToken.CanBeCanceled) return controls;
         if (cancellationToken.IsCancellationRequested) { controls.Stop(); return controls; }
-        var registration = cancellationToken.Register(controls.Stop);
+        // On the caller's context - the renderer's, on Blazor Server - however the token is cancelled: the engine is
+        // single-threaded, and CancelAfter's timer cancels from the thread pool.
+        var registration = cancellationToken.RegisterOnCallerContext(controls.Stop);
         controls.WhenCompleteAsync().OnCallerContext(_ => registration.Dispose());
         return controls;
     }
@@ -154,7 +169,7 @@ public sealed class BmotionAnimateService
         ArgumentNullException.ThrowIfNull(keyframes);
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
         var values = CheckedValues(keyframes, elementReference.Id);
-        var config = (keyframes.Transition ?? transition)?.ToConfig();
+        var (config, _) = await AsPlayedAsync((keyframes.Transition ?? transition)?.ToConfig());
         var (id, isNew) = await _interop.ResolveByRefAsync(elementReference);
         if (isNew) _engine.ForgetRetained(id);
         return WithCancellation(await StartAnimationsAsync([id], values, config, stagger: null), cancellationToken);
@@ -270,8 +285,8 @@ public sealed class BmotionAnimateService
         {
             var ids = await ResolveAsync(segment.Selector);
             if (ids.Length == 0) continue;
-            var config = (segment.Transition ?? new BmTween()).ToConfig();
-            starts.Add((ids, segment.Values, config, segment.Start));
+            var (config, _) = await AsPlayedAsync((segment.Transition ?? new BmTween()).ToConfig());
+            starts.Add((ids, segment.Values, config!, segment.Start));
         }
 
         // One refcount per (segment, element) occurrence, released exactly once by the controls.

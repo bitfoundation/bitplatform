@@ -93,6 +93,51 @@ public class AnimateServiceTests
     }
 
     [TestMethod]
+    public async Task BySelector_CancelledFromAnotherThread_StopsOnTheCallersContext()
+    {
+        var (service, engine, interop) = Create(inProcess: false);
+        await using var _ = engine;
+        using var cts = new CancellationTokenSource();
+        var context = new ManualSynchronizationContext();
+
+        var start = ManualSynchronizationContext.RunUnder(context, () =>
+            service.AnimateAsync("#box", Bm.To(opacity: 0.5), Bm.Tween(1), cancellationToken: cts.Token).AsTask());
+        context.Pump();
+        var controls = await start;
+
+        // CancelAfter's timer cancels on the thread pool; the single-threaded engine must not be stopped there.
+        await Task.Run(cts.Cancel);
+        Assert.IsFalse(interop.WasCalled("cancelWaapiAnimation"), "stopped off the caller's context");
+
+        context.Pump();
+        Assert.IsTrue(interop.WasCalled("cancelWaapiAnimation"));
+        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+    }
+
+    [TestMethod]
+    public async Task UnderReducedMotion_TransformsLand_AndFadesStillAnimate()
+    {
+        var interop = new FakeBmotionInterop();
+        var engine = new BmotionAnimationEngine(interop, null, new BitBmotionOptions { ReducedMotion = BmReducedMotionMode.Always });
+        await using var _ = engine;
+        var service = new BmotionAnimateService(engine, interop);
+        interop.SelectorResolver = _ => ["li-0", "li-1"];
+
+        await service.AnimateAsync(".item", Bm.To(x: 300, opacity: 0.5), Bm.Tween(1), Bm.Stagger(0.2));
+
+        var plays = interop.ArgsOf("playWaapiAnimation");
+        Assert.HasCount(2, plays);
+        foreach (var play in plays)
+        {
+            var keyframes = (Dictionary<string, object>[])play[2]!;
+            Assert.IsTrue(keyframes.All(k => !k.ContainsKey("transform")), "the slide is played in the browser");
+            Assert.AreEqual(1000.0, (double)Timing(play)["duration"]!, "the fade keeps its timing");
+            Assert.AreEqual(0.0, (double)Timing(play)["delay"]!, "and drops the stagger");
+        }
+        Assert.AreEqual(300, engine.GetDiagnostics().Single(d => d.Id == "li-1").Transforms["x"], 1e-6, "the slide landed");
+    }
+
+    [TestMethod]
     public async Task BySelector_CancellingTheTokenMidFlight_StopsTheAnimation()
     {
         var (service, engine, interop) = Create();

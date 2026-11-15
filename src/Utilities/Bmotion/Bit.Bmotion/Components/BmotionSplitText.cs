@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Bmotion;
 
@@ -114,6 +115,40 @@ public sealed class BmotionSplitText : ComponentBase
     // The surrounding <BmotionConfig>'s default transition is the basis of every unit's staggered
     // one when no Transition is set, as it would be for a <Bmotion> of its own.
     [CascadingParameter] private BmotionConfigContext? ConfigCtx { get; set; }
+
+    // Taken as the Bmotion element takes them (from BitBmotion.GetBmotionServices, so a lazy loading app needs no
+    // registration), to tell whether motion is reduced: the stagger is then dropped, as for any staggered children.
+    [Inject]
+    private IServiceProvider Services
+    {
+        set
+        {
+            var services = BitBmotion.GetBmotionServices(value);
+            Engine = services.GetRequiredService<BmotionAnimationEngine>();
+            Options = services.GetRequiredService<BitBmotionOptions>();
+        }
+    }
+    private BmotionAnimationEngine Engine { get; set; } = null!;
+    private BitBmotionOptions Options { get; set; } = null!;
+
+    // The rule every Bmotion element follows (Bmotion.IsMotionReduced), with this one's config.
+    private bool MotionReduced
+        => Bmotion.IsMotionReduced(Options.ReducedMotion, Engine.OsPrefersReducedMotion, ConfigCtx?.ReduceMotion, ConfigCtx is not null);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The OS preference is read from the browser once; the units re-render without their stagger if it asks for
+        // less motion - before they play, which waits for the same reading.
+        bool osPreferenceMatters = ConfigCtx?.ReduceMotion is null && Options.ReducedMotion switch
+        {
+            BmReducedMotionMode.User => true,
+            BmReducedMotionMode.Always or BmReducedMotionMode.Never => false,
+            _ => ConfigCtx is not null,
+        };
+        if (!firstRender || !osPreferenceMatters || Engine.OsPrefersReducedMotion) return;
+        await Engine.EnsureReducedMotionDetectedAsync();
+        if (Engine.OsPrefersReducedMotion) StateHasChanged();
+    }
 
     // ── Cached split ───────────────────────────────────────────────────────────
     private string? _splitText;
@@ -284,7 +319,9 @@ public sealed class BmotionSplitText : ComponentBase
     /// </summary>
     private BmTransition StaggeredTransition(BmStagger stagger, int index)
     {
-        double offset = stagger.DelayFor(index, _unitCount);
+        // Reduced motion drops the stagger (the units appear together), as it does for a variant's children: the
+        // delay would otherwise reach each unit as its own, which reduced motion keeps for the fade.
+        double offset = MotionReduced ? 0 : stagger.DelayFor(index, _unitCount);
         var basis = Transition ?? ConfigCtx?.DefaultTransition;
         if (basis is null) return offset > 0 ? new BmTween { Delay = offset } : new BmTween();
         return offset > 0 ? basis.WithDelay(basis.Delay + offset) : basis;

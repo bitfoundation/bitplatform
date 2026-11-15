@@ -128,6 +128,9 @@ internal sealed class BmotionElementAnimationState
     internal IReadOnlyCollection<string> ActiveDriverKeys => _activeAnims.Keys;
     internal bool IsDragging => _isDragging;
 
+    /// <summary>True while the element plays its exit, which then has priority over every gesture layer.</summary>
+    internal bool Exiting { get; set; }
+
     /// <summary>
     /// Optional per-frame callback invoked with the CSS declarations flushed this frame
     /// (the <c>Bmotion.OnUpdate</c> parameter).

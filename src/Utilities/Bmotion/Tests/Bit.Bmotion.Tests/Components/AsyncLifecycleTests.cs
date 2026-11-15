@@ -56,6 +56,29 @@ public class AsyncLifecycleTests
     }
 
     [TestMethod]
+    public async Task OnAnimationComplete_AHandlerThatThrows_ReachesTheRenderer()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
+        ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.Initial, Bm.To(opacity: 0))
+            .Add(p => p.Animate, Bm.To(opacity: 1))
+            .Add(p => p.Transition, Bm.Tween(0.2))
+            .Add(p => p.OnAnimationComplete, EventCallback.Factory.Create<BmProps?>(this, async _ =>
+            {
+                await Task.Yield();
+                throw new InvalidOperationException("OnAnimationComplete failed");
+            }))
+            .Add(p => p.ChildContent, Div));
+
+        await ctx.RunFramesAsync(0, 600);
+
+        var failure = await ctx.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.AreEqual("OnAnimationComplete failed", failure.Message);
+    }
+
+    [TestMethod]
     public async Task AnimateAsync_TokenCancelledAfterTheAnimationSettled_LeavesLaterAnimationsAlone()
     {
         using var ctx = new BmotionTestContext();

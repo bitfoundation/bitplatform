@@ -24,6 +24,24 @@ public class SpringDriverTests
     }
 
     [TestMethod]
+    [DataRow(0.0, 10.0)]
+    [DataRow(-50.0, 10.0)]
+    [DataRow(100.0, -5.0)]
+    public void ASpringThatCouldNeverSettle_StillSettlesOnItsTarget(double stiffness, double damping)
+    {
+        // Nothing pulling it to the target, or an oscillation that grows without bound: the rest test could never
+        // pass, and an exit with this spring kept its element mounted for good.
+        double lastValue = double.NaN;
+        var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = stiffness, Damping = damping }, v => lastValue = v);
+
+        bool done = false;
+        for (double ts = 0; !done && ts < 10_000; ts += 1000.0 / 60) done = driver.Tick(ts);
+
+        Assert.IsTrue(done, "the spring never came to rest");
+        Assert.AreEqual(100.0, lastValue, 1e-2);
+    }
+
+    [TestMethod]
     public void Tick_EventuallySettlesAtTarget()
     {
         double lastValue = double.NaN;

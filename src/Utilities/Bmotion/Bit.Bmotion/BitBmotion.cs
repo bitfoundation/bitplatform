@@ -15,10 +15,12 @@ namespace Bit.Bmotion;
 /// <b>Platform support:</b> on <b>Blazor WebAssembly</b> everything works: compositor-eligible
 /// animations (tweens and zero-velocity springs on transform/opacity) offload to the browser's
 /// Web Animations API, and the C# rAF engine drives the rest over synchronous JS interop.
-/// On <b>Blazor Server</b> the compositor path still works (it needs only async interop), so
-/// enter/exit/hover/tap/variant animations on transform + opacity play normally; features that
-/// require the per-frame loop - inertia, color/dimension interpolation, keyframe arrays, drag,
-/// motion values - degrade to instant state changes.
+/// On <b>Blazor Server</b> the browser plays the same animations (it needs only async interop):
+/// transforms, opacity, colours, sizes, filters, keyframes, springs, inertia and arcs - what a
+/// two-keyframe timeline can't express is recorded by the engine and played as keyframes - and drag
+/// follows the pointer. Only what needs the per-frame loop lands on its target at once: per-frame
+/// callbacks (<c>OnUpdate</c>/<c>OnFrame</c>), SVG <c>d</c>/<c>points</c> morphs, and the motion values
+/// <see cref="BmotionAnimateService"/> animates (<see cref="BmValue{T}"/>, raw numbers, springs that follow a value).
 /// </para>
 /// <para>
 /// <b>Prerendering / static SSR:</b> no browser is attached, so the engine doesn't run. By default

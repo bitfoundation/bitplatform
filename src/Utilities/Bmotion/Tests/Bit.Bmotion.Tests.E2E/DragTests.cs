@@ -26,6 +26,21 @@ public sealed class DragTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task GrabbedWhileItFades_TheDragTakesTheTransform_AndTheFadePlaysOn()
+    {
+        await ExpectEventAsync("armed:fading");
+        await ClickAsync("fade-start");
+        await WaitForStateAsync("#fading", "s => s.opacity < 0.85");
+
+        await DragByAsync("#fading", 40, 10);
+        await ExpectEventAsync("fading:end");
+
+        // A drag owns the transform and nothing else: cancelled with it, the fade would hold where it was grabbed.
+        await WaitForStateAsync("#fading", "s => Math.abs(s.opacity - 0.1) < 0.02", timeout: 5_000);
+        await WaitForStateAsync("#fading", "s => Math.abs(s.x - 40) < 1 && Math.abs(s.y - 10) < 1");
+    }
+
+    [TestMethod]
     public async Task WhileDragging_TheElementIsUnderThePointer_WithoutWaitingForDotNet()
     {
         await ExpectEventAsync("armed:free");

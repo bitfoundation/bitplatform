@@ -32,6 +32,21 @@ internal static class BmotionContinuations
         return true;
     }
 
+    /// <summary>
+    /// Runs <paramref name="work"/> when <paramref name="token"/> is cancelled, posted to the caller's context - so a
+    /// token cancelled from another thread (<c>CancelAfter</c>'s timer) still stops the engine from the thread that
+    /// started the animation. Run at once when cancelled on that context, or when there is none.
+    /// </summary>
+    internal static CancellationTokenRegistration RegisterOnCallerContext(this CancellationToken token, Action work)
+    {
+        var context = SynchronizationContext.Current;
+        return token.Register(() =>
+        {
+            if (context is null || context == SynchronizationContext.Current) work();
+            else context.Post(_ => work(), null);
+        });
+    }
+
     private static TaskScheduler CallerScheduler()
         => SynchronizationContext.Current is null
             ? TaskScheduler.Default

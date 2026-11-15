@@ -67,7 +67,8 @@ and `BmotionAnimateService` for the complete API surface.
   alike. What only a timeline can't express is recorded by the engine and played by the browser.
   Drag stays under the pointer: the browser shows it until .NET catches up, and `OnDrag` runs
   once per frame, a round trip behind. Only what needs the per-frame loop - `OnUpdate`/`OnFrame`
-  callbacks and SVG `d`/`points` morphs - lands on its target at once.
+  callbacks, SVG `d`/`points` morphs and the motion values `BmotionAnimateService` animates (a
+  `BmValue`, a raw number, a spring that follows a value) - lands on its target at once.
 - ✅ **Prerendering / static SSR** - by default elements render their `Initial` state and animate
   once interactive. Set `o.Prerender = BmPrerenderMode.Final` to serve them at rest (visible,
   indexable), or `BmPrerenderMode.Animate` to play the enter animation in pure CSS straight from the
