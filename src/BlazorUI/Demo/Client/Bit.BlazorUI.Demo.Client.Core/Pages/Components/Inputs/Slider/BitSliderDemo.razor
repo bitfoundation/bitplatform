@@ -160,7 +160,7 @@
 
     <DemoExample Title="Vertical" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            <b>IsVertical</b> stands the slider upright and fills it from the bottom up, so "more" is up - the
+            <b>Vertical</b> stands the slider upright and fills it from the bottom up, so "more" is up - the
             direction <b>ArrowUp</b> already means. The marks, their labels and the floating thumb label follow,
             and the value labels stack instead of flanking. An upright slider has no length of its own to inherit,
             so it takes one from the <b>--bit-Slider-length</b> CSS variable, per instance or globally. Reach for
@@ -168,17 +168,17 @@
         </div>
         <br />
         <div class="example-box row">
-            <BitSlider Label="Basic" IsVertical DefaultValue="4" />
+            <BitSlider Label="Basic" Vertical DefaultValue="4" />
 
-            <BitSlider Label="Disabled" IsVertical DefaultValue="4" Disabled />
+            <BitSlider Label="Disabled" Vertical DefaultValue="4" Disabled />
 
-            <BitSlider Label="Formatted" IsVertical DefaultValue="2" ValueFormat="0 cm" />
+            <BitSlider Label="Formatted" Vertical DefaultValue="2" ValueFormat="0 cm" />
 
-            <BitSlider Label="Ranged" IsVertical IsRanged DefaultLowerValue="2" DefaultUpperValue="7" />
+            <BitSlider Label="Ranged" Vertical IsRanged DefaultLowerValue="2" DefaultUpperValue="7" />
 
-            <BitSlider Label="Marks" IsVertical ShowMarks ShowMarkLabels MarkStep="2" DefaultValue="6" />
+            <BitSlider Label="Marks" Vertical ShowMarks ShowMarkLabels MarkStep="2" DefaultValue="6" />
 
-            <BitSlider Label="Taller" IsVertical Style="--bit-Slider-length: 18rem" DefaultValue="8" />
+            <BitSlider Label="Taller" Vertical Style="--bit-Slider-length: 18rem" DefaultValue="8" />
         </div>
     </DemoExample>
 
@@ -257,7 +257,7 @@
             <br />
             <div>Vertical:</div>
             <div class="row">
-                <BitSlider Label="Gain" IsVertical ThumbLabel="BitSliderThumbLabel.On" ShowValue="false" DefaultValue="6" ValueFormat="0 dB" />
+                <BitSlider Label="Gain" Vertical ThumbLabel="BitSliderThumbLabel.On" ShowValue="false" DefaultValue="6" ValueFormat="0 dB" />
             </div>
             <br />
             <div>ThumbLabelTemplate, an icon that follows the level:</div>
@@ -362,7 +362,7 @@
             <br />
             <div>Vertical:</div>
             <div class="row">
-                <BitSlider Label="Band" IsVertical IsRanged DraggableTrack Max="100" Step="5"
+                <BitSlider Label="Band" Vertical IsRanged DraggableTrack Max="100" Step="5"
                            DefaultLowerValue="30"
                            DefaultUpperValue="60" />
             </div>
@@ -774,9 +774,9 @@
             <br />
             <div>Vertical, in all three:</div>
             <div class="row">
-                <BitSlider Size="BitSize.Small" IsVertical DefaultValue="6" />
-                <BitSlider Size="BitSize.Medium" IsVertical DefaultValue="6" />
-                <BitSlider Size="BitSize.Large" IsVertical DefaultValue="6" />
+                <BitSlider Size="BitSize.Small" Vertical DefaultValue="6" />
+                <BitSlider Size="BitSize.Medium" Vertical DefaultValue="6" />
+                <BitSlider Size="BitSize.Large" Vertical DefaultValue="6" />
             </div>
         </div>
     </DemoExample>

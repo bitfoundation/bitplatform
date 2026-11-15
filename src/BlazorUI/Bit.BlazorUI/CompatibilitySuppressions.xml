@@ -1270,6 +1270,20 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitSlider.get_IsVertical</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitSlider.set_IsVertical(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitSnackBar.get_Position</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
