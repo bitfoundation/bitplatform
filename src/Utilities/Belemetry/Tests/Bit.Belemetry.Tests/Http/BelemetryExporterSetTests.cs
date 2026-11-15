@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
+using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.Belemetry.Tests.Http;
@@ -148,5 +150,48 @@ public class BelemetryExporterSetTests
         foreach (var s in new[] { span, failed }) host.Pipeline.Enqueue(s);
 
         CollectionAssert.AreEqual(new object[] { error, failed }, accepted, "Sentry sends neither a span without an exception, a page view nor a log below its level.");
+    }
+
+    [TestMethod]
+    public async Task AnExport_UnderTheAppsActivity_CarriesNoTraceparent_AndLeavesTheActivityCurrent()
+    {
+        // FlushAsync from an event handler exports under the handler's activity. HttpClient's DiagnosticsHandler puts
+        // the current activity's context on every request it sends (the handler below does what it does): the export
+        // would carry the user's trace, and from a WebAssembly page need a CORS preflight the collector may refuse.
+        var handler = new PropagatingHandler();
+        await using var host = TestHost.Create(o => o.AddOtlpExporter("http://collector.test", e => e.Protocol = BelemetryOtlpProtocol.HttpJson),
+            configureServices: s => s.AddSingleton(new BelemetryHttpMessageHandlerProvider(handler)));
+        host.StartLogging().CreateLogger("Tests").LogError("broken");
+
+        var click = new Activity("click").Start();
+        try
+        {
+            await host.FlushAsync();
+
+            Assert.IsNotEmpty(handler.Traceparents, "The export was sent.");
+            Assert.IsTrue(handler.Traceparents.All(t => t is null), "No export request carries the app's trace: " + string.Join(", ", handler.Traceparents));
+            Assert.AreSame(click, Activity.Current, "The app's activity is current again once the export is done.");
+        }
+        finally
+        {
+            click.Stop();
+        }
+    }
+
+    /// <summary>Propagates the current activity as HttpClient's DiagnosticsHandler does, and records what each request carried.</summary>
+    private sealed class PropagatingHandler : HttpMessageHandler
+    {
+        public List<string?> Traceparents { get; } = [];
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (Activity.Current is { } current)
+            {
+                DistributedContextPropagator.Current.Inject(current, request.Headers, static (carrier, key, value) => ((HttpRequestHeaders)carrier!).TryAddWithoutValidation(key, value));
+            }
+
+            Traceparents.Add(request.Headers.TryGetValues("traceparent", out var values) ? values.Single() : null);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent([]) });
+        }
     }
 }

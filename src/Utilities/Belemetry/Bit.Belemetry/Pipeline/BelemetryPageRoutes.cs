@@ -14,6 +14,11 @@ internal static class BelemetryPageRoutes
 
     private static readonly string? _componentsName = typeof(IComponent).Assembly.GetName().Name;
 
+    // .NET 11 marks Assembly.GetReferencedAssemblies as trim-unsafe: a trimmed app may list a reference whose assembly the
+    // trimmer removed. Every reference read here is only a name to try: one that cannot be loaded is skipped, and an
+    // assembly whose references cannot be read still gives its own routes.
+    private const string GetReferencedAssembliesJustification = "A reference the trimmer removed fails to load and is skipped: it routes no page anyone can visit.";
+
     // Belemetry's own assembly uses components but routes none.
     private static readonly string? _ownName = typeof(BelemetryPageRoutes).Assembly.GetName().Name;
 
@@ -57,6 +62,7 @@ internal static class BelemetryPageRoutes
     /// (not deployed, or lazy-loaded in WebAssembly and not loaded yet) or read. An assembly whose references cannot be
     /// read (NativeAOT keeps no metadata of them) still gives its own routes.
     /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = GetReferencedAssembliesJustification)]
     public static string[] Discover(params Assembly[] roots)
     {
         var routes = new List<string>();
@@ -115,6 +121,7 @@ internal static class BelemetryPageRoutes
         return [.. routes];
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = GetReferencedAssembliesJustification)]
     private static bool? UsesComponents(Assembly assembly)
     {
         try

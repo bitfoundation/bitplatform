@@ -3,7 +3,7 @@
 namespace Bit.Belemetry.Demo.Client.Services;
 
 /// <summary>
-/// A processor, as an app would write one: it drops the spans that are the demo talking to itself
+/// A processor, as an app would write one: it drops the spans and request logs that are the demo talking to itself
 /// (its OTLP receiver, the live feed it polls) and, on the server, the requests for static files and
 /// the WebAssembly payload - which would otherwise be most of what the server pipeline records.
 /// </summary>
@@ -28,11 +28,24 @@ public sealed class DemoNoiseFilter : IBelemetryProcessor
                ?? span.Attributes.GetString(BelemetrySemanticConventions.UrlPath)
                ?? span.Attributes.GetString(BelemetrySemanticConventions.HttpRoute);
 
-        if (url is null) return true;
+        return url is null || IsNoise(url) is false;
+    }
 
+    /// <inheritdoc />
+    public bool OnLog(BelemetryLogRecord log)
+    {
+        // ASP.NET Core's own logs of the same requests ("Request starting HTTP/1.1 GET .../api/telemetry?sessionId=...")
+        // carry the request's path in their logging scope. They would be the shared records every reader can list,
+        // naming the session id each poll of the live feed carries.
+        var path = log.Attributes.GetString("RequestPath") ?? log.Attributes.GetString("Path");
+        return path is null || IsNoise(path) is false;
+    }
+
+    private static bool IsNoise(string url)
+    {
         foreach (var noise in _noise)
         {
-            if (url.Contains(noise, StringComparison.OrdinalIgnoreCase)) return false;
+            if (url.Contains(noise, StringComparison.OrdinalIgnoreCase)) return true;
         }
 
         var path = url.AsSpan();
@@ -41,9 +54,9 @@ public sealed class DemoNoiseFilter : IBelemetryProcessor
 
         foreach (var extension in _staticFiles)
         {
-            if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase)) return false;
+            if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase)) return true;
         }
 
-        return true;
+        return false;
     }
 }

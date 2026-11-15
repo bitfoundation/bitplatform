@@ -41,6 +41,11 @@ builder.Services.AddBitBelemetryServices(options =>
     // share a trace with the reader's fetch spans.
     options.Server.CollectDotnetTelemetry = true;
 
+    // A reader's session id is the only key to their records on the Live telemetry page, and every poll of
+    // /api/telemetry carries it: the server's request spans and logs - which any reader can list as shared records -
+    // must never name it.
+    options.Privacy.RedactQueryParameters.Add("sessionId");
+
     // Only when the deployment is given one: the demo must not ship telemetry to anyone's Azure
     // resource by default.
     if (builder.Configuration["ApplicationInsights:ConnectionString"] is { Length: > 0 } connectionString)

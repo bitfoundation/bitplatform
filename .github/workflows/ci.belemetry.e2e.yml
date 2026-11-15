@@ -1,4 +1,4 @@
-name: CI Belemetry E2E
+﻿name: CI Belemetry E2E
 
 # On demand only (Actions > CI Belemetry E2E > Run workflow). The regular build and test pipeline is
 # ci.belemetry.yml. See src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.E2E/README.md for what each job proves and how
@@ -196,11 +196,13 @@ jobs:
         New-Item -Path $key -Force | Out-Null
         Set-ItemProperty -Path $key -Name '*' -Value '--remote-debugging-port=9333'
 
-    # Unpackaged, with the Windows App SDK inside it, so the suite can start the executable without installing an MSIX.
+    # Unpackaged, with the Windows App SDK inside it, so the suite can start the executable without installing an MSIX;
+    # into the folders the suite builds it in (MauiSampleApp.BuildProperties), apart from a packaged build's.
     - name: Build the MAUI sample
       run: >
         dotnet build src/Utilities/Belemetry/Samples/Maui/Bit.Belemetry.Samples.Maui.csproj -c Release
         -f net11.0-windows10.0.19041.0 -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true
+        -p:BaseOutputPath=bin/e2e/ -p:IntermediateOutputPath=obj/e2e/
 
     # The app exports to the receiver of the static SSR web host, which the suite starts from this build output.
     - name: Build the web harness host

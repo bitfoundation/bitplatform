@@ -61,6 +61,13 @@ describe('scrub', () => {
         expect(scrub('short 4242424242')).toBe('short 4242424242');
     });
 
+    it('keeps an all-zero id, a repeated digit and a leading 0, which pass the checksum but are no card (as the C# side does)', () => {
+        expect(luhn('0000000000000000') && luhn('8888888888888888') && luhn('0412345678901233')).toBe(true);
+        expect(scrub('ParentId 0000000000000000')).toBe('ParentId 0000000000000000');
+        expect(scrub('8888888888888888 0412345678901233')).toBe('8888888888888888 0412345678901233');
+        expect(scrub('4111111111111111')).toBe('[card]');
+    });
+
     it('replaces IPv4 addresses', () => {
         expect(scrub('from 192.168.0.12:443')).toBe('from [ip]:443');
         expect(scrub('not 999.1.1.1')).toBe('not 999.1.1.1');
@@ -94,6 +101,21 @@ describe('applyPrivacy', () => {
         applyPrivacy(record, privacy());
         expect(record.status.message).toBe('Bearer [token]');
         expect(record.events[0].attributes['url.full']).toBe('https://x.test/?secret=REDACTED');
+    });
+
+    it('redacts the URLs in a log body and the QueryString and Uri values, as the C# side does', () => {
+        const record = log({
+            body: 'Request starting HTTP/1.1 GET https://x.test/orders?token=abc&page=2 - - -',
+            attributes: { QueryString: '?token=abc&page=2', Uri: 'https://api.test/v1?api_key=k&q=1', Path: '/orders' },
+        });
+        applyPrivacy(record, privacy());
+        expect(record.body).toBe('Request starting HTTP/1.1 GET https://x.test/orders?token=REDACTED&page=2 - - -');
+        expect(record.attributes).toEqual({ QueryString: '?token=REDACTED&page=2', Uri: 'https://api.test/v1?api_key=REDACTED&q=1', Path: '/orders' });
+
+        const stripped = log({ body: 'GET https://x.test/a?token=abc', attributes: { QueryString: '?token=abc' } });
+        applyPrivacy(stripped, privacy({ stripQueryString: true }));
+        expect(stripped.body).toBe('GET https://x.test/a');
+        expect(stripped.attributes).toEqual({});
     });
 
     it('does not scrub patterns when disabled', () => {

@@ -1,8 +1,9 @@
 ﻿import type { PrivacyConfig } from './config';
 import { isSpan, type Attributes, type TelemetryRecord } from './model';
 
-// Attributes that hold URLs: their query parameters and fragment are redacted before scrubbing.
-const URL_ATTRIBUTES = ['url.full', 'page.referrer', 'url.original', 'http.url'];
+// Attributes that hold URLs: their query parameters and fragment are redacted before scrubbing. "Uri" is the URL of
+// HttpClient's own logs, as in C#.
+const URL_ATTRIBUTES = ['url.full', 'page.referrer', 'url.original', 'http.url', 'Uri'];
 
 // Attributes added by the enrichment step after privacy: ids, never scrubbed - only blocked, by the operator's choice.
 const ID_ATTRIBUTES = ['session.id', 'enduser.pseudo.id', 'user.id'];
@@ -39,6 +40,14 @@ export function luhn(digits: string): boolean {
     return sum % 10 === 0;
 }
 
+/**
+ * Whether digits read as a payment card number: Luhn-valid, and neither starting with 0 (no card issuer's number does)
+ * nor one digit repeated - an all-zero id (a W3C parent id) passes the checksum. Matches the C# side.
+ */
+export function isCardNumber(digits: string): boolean {
+    return luhn(digits) && digits.charAt(0) !== '0' && !/^(\d)\1*$/.test(digits);
+}
+
 const BEARER_WORD = /bearer/i;
 const ABSOLUTE = /^https?:\/\//i;
 const QUERY_FRAGMENT_OR_CREDENTIALS = /[?#@]/;
@@ -66,7 +75,7 @@ export function scrub(text: string, addresses = true): string {
     if (digits >= 13) {
         text = text.replace(CARD, match => {
             const cardDigits = match.replace(/[ -]/g, '');
-            return cardDigits.length >= 13 && cardDigits.length <= 19 && luhn(cardDigits) ? '[card]' : match;
+            return cardDigits.length >= 13 && cardDigits.length <= 19 && isCardNumber(cardDigits) ? '[card]' : match;
         });
     }
     if (addresses && digits >= 4 && dots >= 3) text = text.replace(IPV4, '[ip]');
@@ -139,8 +148,25 @@ export function redactUrl(url: string, privacy: PrivacyConfig): string {
 // as in the host of a URL); and the user agent, whose four-part versions ("Chrome/120.0.0.0") read as IPv4 addresses.
 const HOST_ATTRIBUTES = ['server.address', 'user_agent.original'];
 
-// A bare query string (without the `?`, per the conventions): its parameters are redacted like a URL's.
+// A bare query string (without the `?`, per the conventions): its parameters are redacted like a URL's. ASP.NET
+// Core's request logs call theirs QueryString (with the `?`), as C# knows.
 const URL_QUERY = 'url.query';
+const QUERY_ATTRIBUTES = [URL_QUERY, 'QueryString'];
+
+// An absolute URL in free text: a scheme, "://", and everything up to whitespace, a quote or an angle bracket.
+const URL_IN_TEXT = /\b[A-Za-z][A-Za-z0-9+.-]*:\/\/[^\s"'<>]+/g;
+
+/**
+ * Redacts the URLs a text carries as a URL attribute's (a log body: "GET https://host/path?token=..."), and scrubs
+ * them as one when `scrubPatterns` is on. Matches the C# side.
+ */
+export function redactUrls(text: string, privacy: PrivacyConfig): string {
+    if (!text || text.indexOf('://') < 0 || !QUERY_FRAGMENT_OR_CREDENTIALS.test(text)) return text;
+    return text.replace(URL_IN_TEXT, url => {
+        const redacted = redactUrl(url, privacy);
+        return privacy.scrubPatterns ? scrubUrl(redacted) : redacted;
+    });
+}
 
 /**
  * Scrubs a URL after its origin: the host (an IP literal included) names the server that was called, not the user,
@@ -204,7 +230,7 @@ export function isRedacted(key: string, privacy: PrivacyConfig): boolean {
 
 function cleanText(key: string, value: string, privacy: PrivacyConfig): string {
     const isUrl = URL_ATTRIBUTES.indexOf(key) >= 0;
-    let next = isUrl ? redactUrl(value, privacy) : key === URL_QUERY ? redactQuery(value, redactionNames(privacy)) : value;
+    let next = isUrl ? redactUrl(value, privacy) : QUERY_ATTRIBUTES.indexOf(key) >= 0 ? redactQuery(value, redactionNames(privacy)) : value;
     if (privacy.scrubPatterns) next = isUrl ? scrubUrl(next) : scrub(next, !isVersionKey(key));
     return next;
 }
@@ -216,7 +242,7 @@ function clean(attributes: Attributes, privacy: PrivacyConfig): void {
             continue;
         }
         if (ID_ATTRIBUTES.indexOf(key) >= 0) continue;
-        if (key === URL_QUERY && privacy.stripQueryString) {
+        if (QUERY_ATTRIBUTES.indexOf(key) >= 0 && privacy.stripQueryString) {
             delete attributes[key];
             continue;
         }
@@ -228,7 +254,7 @@ function clean(attributes: Attributes, privacy: PrivacyConfig): void {
         if (typeof value === 'string') {
             if (HOST_ATTRIBUTES.indexOf(key) >= 0) continue;
             attributes[key] = cleanText(key, value, privacy);
-        } else if (Array.isArray(value) && typeof value[0] === 'string' && (URL_ATTRIBUTES.indexOf(key) >= 0 || key === URL_QUERY)) {
+        } else if (Array.isArray(value) && typeof value[0] === 'string' && (URL_ATTRIBUTES.indexOf(key) >= 0 || QUERY_ATTRIBUTES.indexOf(key) >= 0)) {
             attributes[key] = (value as string[]).map(item => cleanText(key, item, privacy));
         } else if (privacy.scrubPatterns && Array.isArray(value) && typeof value[0] === 'string') {
             // Not .map(scrub): map passes the index as the second argument.
@@ -244,7 +270,8 @@ export function applyPrivacy(record: TelemetryRecord, privacy: PrivacyConfig): v
     if (isSpan(record)) {
         if (privacy.scrubPatterns && record.status.message) record.status.message = scrub(record.status.message);
         for (const event of record.events) clean(event.attributes, privacy);
-    } else if (privacy.scrubPatterns) {
-        record.body = scrub(record.body);
+    } else {
+        record.body = redactUrls(record.body, privacy);
+        if (privacy.scrubPatterns) record.body = scrub(record.body);
     }
 }

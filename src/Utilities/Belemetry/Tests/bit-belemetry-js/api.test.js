@@ -97,6 +97,40 @@ describe('public API', () => {
         expect(record.attributes['enduser.pseudo.id']).toBeUndefined();
     });
 
+    it('relays in parts of at most maxRelayBytes, as a Blazor Server circuit needs, and drops a record too large alone', async () => {
+        // A circuit's connection closes on a message over 32 KB: 25 JS errors with their stacks used to make one.
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 } }));
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true, maxRelayBytes: 4096 });
+        for (let i = 0; i < 25; i++) api.trackEvent('checkout.failed', { detail: 'x'.repeat(600), i });
+        api.trackEvent('huge', { detail: 'y'.repeat(8000) });
+        await api.flush();
+
+        const relays = dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').map(c => c[1]);
+        expect(relays.length).toBeGreaterThan(1);
+        for (const part of relays) {
+            expect(new TextEncoder().encode(JSON.stringify(part)).length).toBeLessThanOrEqual(4096);
+            expect(part.resource['service.name']).toBe('shop');
+        }
+        const events = relays.flatMap(part => part.logs).filter(log => log.eventName === 'checkout.failed');
+        expect(events.map(log => log.attributes.i)).toEqual(Array.from({ length: 25 }, (_, i) => i));
+        expect(relays.flatMap(part => part.logs).some(log => log.eventName === 'huge')).toBe(false);
+        expect(api.getStats().dropped.size_limit).toBe(1);
+    });
+
+    it('relays a batch whole without maxRelayBytes', async () => {
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 } }));
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        for (let i = 0; i < 25; i++) api.trackEvent('checkout.failed', { detail: 'x'.repeat(600), i });
+        await api.flush();
+
+        const relays = dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').map(c => c[1]);
+        expect(relays.filter(part => part.logs.some(log => log.eventName === 'checkout.failed')), 'the events go in one call').toHaveLength(1);
+    });
+
     it('syncs the context with .NET and keeps user ids only with UserTracking', async () => {
         await load();
         api.start(relayConfig());

@@ -30,8 +30,10 @@ namespace Bit.Belemetry.Tests.E2E.Infrastructure;
 /// </para>
 /// <para>
 /// The sample is built unpackaged and with the Windows App SDK inside it (<see cref="BuildProperties"/>): the default,
-/// packaged (MSIX) build only runs once installed. Building it needs the MAUI workloads, and running it the WebView2
-/// Runtime.
+/// packaged (MSIX) build only runs once installed. It is built into folders of its own (<c>bin/e2e</c>, <c>obj/e2e</c>):
+/// an unpackaged build over the output of a packaged one - the sample built or run from the IDE - starts an executable
+/// that fails inside Microsoft.UI.Xaml before its window opens. Building it needs the MAUI workloads, and running it the
+/// WebView2 Runtime.
 /// </para>
 /// </remarks>
 public sealed class MauiSampleApp : IAsyncDisposable
@@ -47,7 +49,13 @@ public sealed class MauiSampleApp : IAsyncDisposable
     /// <summary>The web harness host whose receiver collects the app's exports.</summary>
     public const string CollectorHostMode = HybridSession.CollectorHostMode;
 
-    public static readonly string[] BuildProperties = ["-p:WindowsPackageType=None", "-p:WindowsAppSDKSelfContained=true"];
+    public static readonly string[] BuildProperties =
+    [
+        "-p:WindowsPackageType=None", "-p:WindowsAppSDKSelfContained=true",
+        // IntermediateOutputPath rather than BaseIntermediateOutputPath: the referenced projects get it too, and a project
+        // whose base folder moved would compile the generated sources of its usual one, which no longer count as obj.
+        $"-p:BaseOutputPath={RepoLayout.MauiSampleOutputFolder}/", $"-p:IntermediateOutputPath={RepoLayout.MauiSampleIntermediateFolder}/",
+    ];
 
     private static readonly Lazy<Task<MauiSampleApp>> _shared = new(StartAsync);
 
