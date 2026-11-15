@@ -183,6 +183,14 @@ break recorded in `BreakingChanges.md` - never kept beside the new name as an `[
   with the template rendered inside it. A component with both meanings keeps them apart: a fruitless search never
   falls back to the empty text, and an empty component searched stays empty. A component that keeps its words in a
   texts object (`BitDataGridStrings`) keeps them there, with a getter that falls back to `BitStrings.Current`.
+- **A component's own state has no `Is`.** `Disabled`, `Vertical`, `Loading`, `Open`, `Expanded`, `Selected` - and
+  the bindable pair and its uncontrolled default follow the value (`Open` / `OpenChanged` / `DefaultOpen`). Only a
+  model of one item of a parent spells its flags with one (`BitDropdownOption.IsDisabled`, `BitPivotItem.IsSelected`,
+  `BitNavOption.IsExpanded`), which keeps the per-item setting apart from the component's own; so does a predicate
+  asked of one item at a time (`IsDateDisabled`, `IsStickyItem`). The parameters spelled with an `Is` before the rule
+  (`IsOpen` on the overlays and pickers, `IsLoading` on the buttons and some inputs, `IsVertical`, `IsShown`, ...)
+  are listed in `BitParameterNamingContractTests`, which fails on a new one; each is renamed one concept at a time,
+  and the rename takes it off the list.
 
 ## Every component has a root class of its own
 
