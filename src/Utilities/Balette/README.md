@@ -1246,7 +1246,9 @@ so people who learned the English name still find it, as VS Code does with its E
 - Pointer hover only moves the selection once the pointer actually moves, so a list scrolling under a resting mouse
   does not steal the keyboard's selection (`DisablePointerSelection` turns hover off completely).
 - The close button's accessible name holds its visible "Esc", and the trigger's starts with its visible label
-  ("Search, Open command palette") - WCAG 2.5.3, label in name; the buttons are at least 24 px.
+  ("Search, Open command palette") - WCAG 2.5.3, label in name; the buttons are at least 24 px. A trigger given its own
+  `ChildContent` is named by what that content shows, followed by a visually hidden "Open command palette", so an
+  icon alone (`aria-hidden`) still leaves it named.
 
 The browser suite runs axe-core (WCAG 2.2 A and AA rules) over the root list, search results, a nested page, a
 multi-select page and a prompt, in light and dark, with the demo's theme and with the library's defaults. An automated

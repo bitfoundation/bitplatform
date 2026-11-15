@@ -895,18 +895,25 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     /// palette's <see cref="OnClosed"/> or <see cref="OnQueryChanged"/> - may throw, and an exception left to the call
     /// would go back to the browser, where nothing reports it. It is dispatched to the palette instead, as one thrown from a
     /// click is, so an error boundary or the host's error handling sees it and it is logged, from whichever input it came.
+    /// A call that ends cancelled - a listener that stopped on the application's own token - is no failure, and the renderer
+    /// drops one from a click just the same.
     /// </summary>
     private async Task FromBrowserAsync(Func<Task> work)
     {
+        Task? task = null;
         try
         {
-            await work();
+            task = work();
+            await task;
         }
         catch (Exception ex)
         {
-            // What the call changed before it failed is shown, as the click it stands for would have shown it.
+            // What the call changed before it ended is shown, as the click it stands for would have shown it.
             await InvokeAsync(StateHasChanged);
-            await InvokeAsync(() => DispatchExceptionAsync(ex));
+            if (task?.IsCanceled != true)
+            {
+                await InvokeAsync(() => DispatchExceptionAsync(ex));
+            }
         }
     }
 

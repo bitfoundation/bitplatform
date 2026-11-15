@@ -96,6 +96,27 @@ public class BaletteBrowserCallTests : BunitContext
     }
 
     [TestMethod]
+    public async Task A_listener_stopped_by_the_application_s_cancelled_token_after_a_command_run_from_a_key_is_no_failure()
+    {
+        JSInterop.SetupModule(ModulePath).SetupModule("init", _ => true);
+        using var stopping = new CancellationTokenSource();
+        await stopping.CancelAsync();
+        var ran = false;
+        Service.Register(BaletteCmd.Action("Deploy", () => ran = true));
+        Service.CommandExecuted += (_, _) => stopping.Token.ThrowIfCancellationRequested();
+        var cut = Render<Balette>();
+        await cut.InvokeAsync(() => Service.OpenAsync("deploy"));
+
+        // The cancellation is not dispatched to the renderer, as one ending a click is not.
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+
+        Assert.IsTrue(ran);
+        Assert.IsFalse(Renderer.UnhandledException.IsCompleted);
+        Assert.IsFalse(Service.IsOpen);
+        Assert.AreEqual("false", cut.Find("dialog").GetAttribute("data-open"));
+    }
+
+    [TestMethod]
     public async Task A_listener_that_throws_after_a_global_shortcut_reaches_the_renderer()
     {
         JSInterop.SetupModule(ModulePath).SetupModule("init", _ => true);
@@ -144,12 +165,38 @@ public class BaletteBrowserCallTests : BunitContext
     }
 
     [TestMethod]
-    public void A_trigger_with_its_own_content_is_named_by_the_string()
+    public void A_trigger_with_its_own_icon_is_named_by_the_string()
     {
         var trigger = Render<BaletteTrigger>(p => p.AddChildContent("<span aria-hidden=\"true\">⌘</span>"));
 
-        Assert.AreEqual("Open command palette", trigger.Find("button").GetAttribute("aria-label"));
+        // No aria-label: the browser names the button from its content, of which the icon is hidden and the string is not.
+        var button = trigger.Find("button");
+        Assert.IsFalse(button.HasAttribute("aria-label"));
+        Assert.AreEqual("Open command palette", button.QuerySelector(".bit-balette-sr-only")!.TextContent.Trim());
     }
+
+    [TestMethod]
+    public void A_trigger_with_its_own_text_is_named_by_that_text_first()
+    {
+        var trigger = Render<BaletteTrigger>(p => p.AddChildContent("<kbd>&gt;</kbd> Commands mode"));
+
+        // The name the browser computes from the content starts with the text it shows, and goes on to say what it does.
+        var button = trigger.Find("button");
+        Assert.IsFalse(button.HasAttribute("aria-label"));
+        Assert.AreEqual("> Commands mode Open command palette", NormalizeSpace(button.TextContent));
+    }
+
+    [TestMethod]
+    public void An_aria_label_the_app_gives_a_trigger_with_its_own_content_is_its_name()
+    {
+        var trigger = Render<BaletteTrigger>(p => p
+            .AddUnmatched("aria-label", "Commands mode")
+            .AddChildContent("<kbd>&gt;</kbd> Commands mode"));
+
+        Assert.AreEqual("Commands mode", trigger.Find("button").GetAttribute("aria-label"));
+    }
+
+    private static string NormalizeSpace(string text) => string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
