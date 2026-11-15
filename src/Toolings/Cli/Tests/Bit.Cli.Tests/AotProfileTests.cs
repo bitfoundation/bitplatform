@@ -637,6 +637,30 @@ public class AotProfileTests
     }
 
     [TestMethod]
+    public async Task AProfileWrittenAfterAPageSettles_Should_LoadTheNextPageAsANewDocument()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root) { WritesProfileAfterSettling = page => page == "/scan" };
+        browser.Links["/"] = ["/scan", "/editor", "/batch"];
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--max-pages", "10"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "Used the app 4 pages");
+        // The profile written after /scan settled is put down to /scan, and /editor is loaded as a new document rather than
+        // navigated to in the one whose runtime records nothing more.
+        StringAssert.Contains(host.FlatOutput, "The profile was written during /scan");
+        Assert.IsFalse(host.FlatOutput.Contains("The profile was written during /editor", StringComparison.Ordinal), host.Output);
+        Assert.AreEqual(2, browser.Loads);
+        var methods = AotProfile.Read(File.ReadAllBytes(Path.Combine(host.WorkingDirectory, "App.Client.aotprofile"))).Methods.Select(m => m.Name).ToList();
+        CollectionAssert.IsSubsetOf(new[] { "Load1", "Load2" }, methods);
+    }
+
+    [TestMethod]
     public async Task ACrawlThatStopsShort_Should_SayWhichPagesItLeftOut()
     {
         if (OperatingSystem.IsWindows() is false)
@@ -870,6 +894,9 @@ public class AotProfileTests
         /// <summary>The pages that read a .NET exception's stack trace as they settle, which has the profiler write the profile.</summary>
         public Func<string, bool>? WritesProfileOn { get; init; }
 
+        /// <summary>The pages whose work that runs on after they settle has the profiler write the profile.</summary>
+        public Func<string, bool>? WritesProfileAfterSettling { get; init; }
+
         /// <summary>The selector of the page's one file input.</summary>
         public string? FileInput { get; init; }
 
@@ -1033,7 +1060,10 @@ public class AotProfileTests
             }
 
             if (function.Contains("a[href]", StringComparison.Ordinal))
+            {
+                profileWritten |= WritesProfileAfterSettling?.Invoke(page) is true;
                 return new JsonArray([.. Links.GetValueOrDefault(page, []).Select(link => JsonValue.Create($"http://localhost:5000{link}"))]);
+            }
 
             if (function.Contains("scrollIntoView", StringComparison.Ordinal))
             {

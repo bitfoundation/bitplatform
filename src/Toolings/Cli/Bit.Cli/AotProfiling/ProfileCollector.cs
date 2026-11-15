@@ -183,6 +183,8 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
     // The runtime on the page has written its profile: the next page is loaded as a new document, whose runtime profiles
     // afresh, rather than navigated to.
     private bool written;
+    // The page or step that ran last, which a profile the runtime wrote since is put down to.
+    private string lastPageOrStep = "";
 
     public IReadOnlyList<string> Errors => errors;
 
@@ -220,6 +222,7 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
         earlier.Clear();
         writtenAt.Clear();
         written = false;
+        lastPageOrStep = startPath;
 
         await LoadNewDocumentAsync(startPath, cancellationToken);
         var visited = new List<string> { (await SettleAsync(startPath, cancellationToken)).GetString()! };
@@ -275,10 +278,13 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
     /// <summary>
     /// Goes to the page the way a link in the app does, or, once the runtime on the page has written its profile, loads it
     /// as a new document whose runtime profiles afresh: 'ok', 'reloaded' when the app reloaded since it started, or
-    /// 'no-blazor'.
+    /// 'no-blazor'. A profile the runtime wrote after the last page or step settled, from work that ran on after it, is
+    /// taken first and put down to that page or step.
     /// </summary>
     private async Task<string?> GoAsync(string path, CancellationToken cancellationToken)
     {
+        await TakeEarlyProfileAsync(lastPageOrStep, cancellationToken);
+
         if (written is false)
             return (await page.EvaluateAsync(Navigate, path, cancellationToken)).GetString();
 
@@ -295,6 +301,8 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
     /// </summary>
     private async Task TakeEarlyProfileAsync(string during, CancellationToken cancellationToken)
     {
+        lastPageOrStep = during;
+
         if (written || (await page.EvaluateAsync(IsWritten, cancellationToken: cancellationToken)).ValueKind is not JsonValueKind.True)
             return;
 
