@@ -11,6 +11,10 @@ public sealed class AppReloadedException(string path) : Exception($"{path} reloa
     public string Path { get; } = path;
 }
 
+/// <param name="Visited">The pages visited, in order.</param>
+/// <param name="NotVisited">The pages the visited ones link to that <c>--max-pages</c> left out.</param>
+public sealed record PageVisit(IReadOnlyList<string> Visited, IReadOnlyList<string> NotVisited);
+
 public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app, CliLog log)
 {
     public const string WriteAt = "System.Runtime.InteropServices.JavaScript.JavaScriptExports::GetManagedStackTrace";
@@ -160,11 +164,35 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
         }
         """;
 
+    // Whether the profiler has written the profile of the runtime on the page: it writes once, the first time anything
+    // reads a .NET exception's stack trace (WriteAt), and records nothing after that.
+    private const string IsWritten = "() => !!globalThis.getDotnetRuntime?.(0)?.INTERNAL?.aotProfileData";
+
+    private const string FileInput = """
+        selector => {
+            const input = document.querySelector(selector);
+            if (!(input instanceof HTMLInputElement) || input.type !== 'file') return null;
+            input.scrollIntoView({ block: 'center', inline: 'center' });
+            return input;
+        }
+        """;
+
     private readonly List<string> errors = [];
+    private readonly List<byte[]> earlier = [];
+    private readonly List<string> writtenAt = [];
+    // The runtime on the page has written its profile: the next page is loaded as a new document, whose runtime profiles
+    // afresh, rather than navigated to.
+    private bool written;
+    // The page or step that ran last, which a profile the runtime wrote since is put down to.
+    private string lastPageOrStep = "";
 
     public IReadOnlyList<string> Errors => errors;
 
-    public bool WrittenEarly { get; private set; }
+    /// <summary>
+    /// The pages and steps during which the runtime on the page wrote its profile before the end of the run. What ran
+    /// after that on the same page went unprofiled; the run carried on from the next page in a new document.
+    /// </summary>
+    public IReadOnlyList<string> WrittenAt => writtenAt;
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -173,6 +201,8 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
         await page.SendAsync("Page.enable", cancellationToken: cancellationToken);
         await page.SendAsync("Runtime.enable", cancellationToken: cancellationToken);
         await page.SendAsync("Page.setBypassCSP", new { enabled = true }, cancellationToken);
+        // A step that exports or saves runs the app's code for it without leaving a file in the machine's downloads.
+        await page.SendAsync("Page.setDownloadBehavior", new { behavior = "deny" }, cancellationToken);
         await page.SendAsync("Page.addScriptToEvaluateOnNewDocument", new { source = InitScript.Replace("__WRITE_AT__", WriteAt).Replace("__SEND_TO__", SendTo) }, cancellationToken);
         await page.SendAsync("Fetch.enable", new
         {
@@ -182,16 +212,25 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
         }, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<string>> VisitAsync(string startPath, int maxPages, IReadOnlyCollection<string> skipped, Action<string> progress, CancellationToken cancellationToken)
+    /// <summary>
+    /// Visits the start page and then, breadth first, the pages its links lead to, up to <paramref name="maxPages"/>.
+    /// Returns the pages visited and those linked from them that the cap left out.
+    /// </summary>
+    public async Task<PageVisit> VisitAsync(string startPath, int maxPages, IReadOnlyCollection<string> skipped, Action<string> progress, CancellationToken cancellationToken)
     {
-        await LoadAsync(new Uri(app.Origin, startPath).ToString(), cancellationToken);
+        // A visit after the app reloaded starts the profile over, so what an earlier one collected goes with it.
+        earlier.Clear();
+        writtenAt.Clear();
+        written = false;
+        lastPageOrStep = startPath;
 
-        await page.EvaluateAsync("() => { window.__bitAotProfile = 1; }", cancellationToken: cancellationToken);
+        await LoadNewDocumentAsync(startPath, cancellationToken);
         var visited = new List<string> { (await SettleAsync(startPath, cancellationToken)).GetString()! };
         progress(visited[0]);
+        await TakeEarlyProfileAsync(visited[0], cancellationToken);
         var queue = new Queue<string>();
 
-        while (visited.Count < maxPages)
+        async Task QueueLinksAsync()
         {
             foreach (var link in (await page.EvaluateAsync(Links, cancellationToken: cancellationToken)).EnumerateArray())
             {
@@ -200,28 +239,80 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
                     queue.Enqueue(path);
                 }
             }
+        }
 
-            if (queue.TryDequeue(out var next) is false)
+        while (true)
+        {
+            await QueueLinksAsync();
+
+            if (visited.Count >= maxPages || queue.TryDequeue(out var next) is false)
                 break;
 
-            switch ((await page.EvaluateAsync(Navigate, next, cancellationToken)).GetString())
+            switch (await GoAsync(next, cancellationToken))
             {
                 case "reloaded":
                     throw new AppReloadedException(visited[^1]);
                 case "no-blazor":
-                    return visited;
+                    return new(visited, [.. queue]);
             }
 
             await SettleAsync(next, cancellationToken);
             visited.Add(next);
             progress(next);
+            await TakeEarlyProfileAsync(next, cancellationToken);
         }
 
         if ((await page.EvaluateAsync("() => window.__bitAotProfile === 1", cancellationToken: cancellationToken)).ValueKind is not JsonValueKind.True)
             throw new AppReloadedException(visited[^1]);
 
-        return visited;
+        return new(visited, [.. queue]);
     }
+
+    private async Task LoadNewDocumentAsync(string path, CancellationToken cancellationToken)
+    {
+        await LoadAsync(new Uri(app.Origin, path).ToString(), cancellationToken);
+        await page.EvaluateAsync("() => { window.__bitAotProfile = 1; }", cancellationToken: cancellationToken);
+        written = false;
+    }
+
+    /// <summary>
+    /// Goes to the page the way a link in the app does, or, once the runtime on the page has written its profile, loads it
+    /// as a new document whose runtime profiles afresh: 'ok', 'reloaded' when the app reloaded since it started, or
+    /// 'no-blazor'. A profile the runtime wrote after the last page or step settled, from work that ran on after it, is
+    /// taken first and put down to that page or step.
+    /// </summary>
+    private async Task<string?> GoAsync(string path, CancellationToken cancellationToken)
+    {
+        await TakeEarlyProfileAsync(lastPageOrStep, cancellationToken);
+
+        if (written is false)
+            return (await page.EvaluateAsync(Navigate, path, cancellationToken)).GetString();
+
+        if ((await page.EvaluateAsync("() => window.__bitAotProfile === 1", cancellationToken: cancellationToken)).ValueKind is not JsonValueKind.True)
+            return "reloaded";
+
+        await LoadNewDocumentAsync(path, cancellationToken);
+        return "ok";
+    }
+
+    /// <summary>
+    /// Keeps the profile the runtime on the page wrote while the page or step ran, if it did: the profiler writes once,
+    /// the first time anything reads a .NET exception's stack trace, and records nothing after that.
+    /// </summary>
+    private async Task TakeEarlyProfileAsync(string during, CancellationToken cancellationToken)
+    {
+        lastPageOrStep = during;
+
+        if (written || (await page.EvaluateAsync(IsWritten, cancellationToken: cancellationToken)).ValueKind is not JsonValueKind.True)
+            return;
+
+        earlier.Add(await ReadAsync(cancellationToken));
+        writtenAt.Add(during);
+        written = true;
+    }
+
+    private async Task<byte[]> ReadAsync(CancellationToken cancellationToken)
+        => Convert.FromBase64String((await page.EvaluateAsync(Read, cancellationToken: cancellationToken)).GetString()!);
 
     // Loads the page until the .NET runtime runs it, at most twice (see WaitForRuntime), within 3 minutes in all. Each load
     // goes through about:blank: a Page.navigate to the URL the tab is already on only scrolls when the URL has a fragment.
@@ -255,7 +346,17 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
     {
         if (step.StartsWith('/'))
         {
-            await page.EvaluateAsync(Navigate, step, cancellationToken);
+            if (await GoAsync(step, cancellationToken) is "reloaded")
+                throw new AppReloadedException(step);
+        }
+        else if (step.StartsWith("file:", StringComparison.Ordinal))
+        {
+            var (file, selector) = FileStep(step)!.Value;
+            if (await page.EvaluateHandleAsync(FileInput, selector, cancellationToken) is not { } input)
+                return false;
+
+            // Like a file picked in the browser's dialog: the input gets the file, and the change and input events.
+            await page.SendAsync("DOM.setFileInputFiles", new { files = new[] { file }, objectId = input }, cancellationToken);
         }
         else if (step.StartsWith("click:", StringComparison.Ordinal))
         {
@@ -285,6 +386,7 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
         if ((await page.EvaluateAsync("() => window.__bitAotProfile === 1", cancellationToken: cancellationToken)).ValueKind is not JsonValueKind.True)
             throw new AppReloadedException(step);
 
+        await TakeEarlyProfileAsync(step, cancellationToken);
         return true;
     }
 
@@ -300,8 +402,16 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
         }
     }
 
-    public async Task<byte[]> WriteAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// Has the runtime on the page write its profile, and returns it after each one an earlier runtime wrote before the
+    /// end (see <see cref="WrittenAt"/>): together they hold every method the run profiled.
+    /// </summary>
+    public async Task<IReadOnlyList<byte[]>> WriteAsync(string lastPageOrStep, CancellationToken cancellationToken)
     {
+        // The runtime on the page wrote its profile during the last page or step, which is in already.
+        if (written)
+            return [.. earlier];
+
         var result = (await page.EvaluateAsync(Write, cancellationToken: cancellationToken)).GetString();
 
         switch (result)
@@ -310,10 +420,12 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
                 throw new InvalidOperationException("The page has no DotNet object: bit aot-profile works with Blazor WebAssembly apps.");
             case "missing":
                 throw new InvalidOperationException("The app didn't hand over a profile. Check that it runs on WebAssembly in the browser, not on the server.");
+            case "early":
+                writtenAt.Add(lastPageOrStep);
+                break;
         }
 
-        WrittenEarly = result == "early";
-        return Convert.FromBase64String((await page.EvaluateAsync(Read, cancellationToken: cancellationToken)).GetString()!);
+        return [.. earlier, await ReadAsync(cancellationToken)];
     }
 
     public static bool IsValidStep(string step)
@@ -321,8 +433,28 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
         return step.StartsWith('/')
             || (step.StartsWith("click:", StringComparison.Ordinal) && step.Length > "click:".Length)
             || (step.StartsWith("key:", StringComparison.Ordinal) && step.Length > "key:".Length)
-            || (step.StartsWith("wait:", StringComparison.Ordinal) && int.TryParse(step["wait:".Length..], out var wait) && wait >= 0);
+            || (step.StartsWith("wait:", StringComparison.Ordinal) && int.TryParse(step["wait:".Length..], out var wait) && wait >= 0)
+            || FileStep(step) is not null;
     }
+
+    /// <summary>
+    /// The file and the CSS selector of its input in a <c>file:&lt;path&gt;|&lt;css selector&gt;</c> step, split at the
+    /// first <c>|</c>, which a Windows path can't have; null for any other step.
+    /// </summary>
+    public static (string File, string Selector)? FileStep(string step)
+    {
+        if (step.StartsWith("file:", StringComparison.Ordinal) is false)
+            return null;
+
+        var separator = step.IndexOf('|', StringComparison.Ordinal);
+        return separator > "file:".Length && separator < step.Length - 1 && step[(separator + 1)..].Trim() is { Length: > 0 } selector
+            ? (step["file:".Length..separator], selector)
+            : null;
+    }
+
+    /// <summary>The step with its file, for a <c>file:</c> step, made a full path from <paramref name="currentDirectory"/>.</summary>
+    public static string WithFullPath(string step, string currentDirectory)
+        => FileStep(step) is { } file ? $"file:{Path.GetFullPath(file.File, currentDirectory)}|{file.Selector}" : step;
 
     public static string LeftOut(string reloaded)
     {

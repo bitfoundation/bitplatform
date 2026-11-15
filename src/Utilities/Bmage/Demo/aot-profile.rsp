@@ -1,0 +1,26 @@
+﻿# The bit aot-profile options the demo's profile is collected with, by cd.bmage.demo.yml for the deployed demo and by
+# ci.bmage.e2e.yml for the demo its E2E suite tests: bit aot-profile @src/Utilities/Bmage/Demo/aot-profile.rsp, from the
+# repository root, followed by the -o and -p options of the publish that compiles with the profile.
+#
+# A page the profile never ran mixes compiled and interpreted framework code in the AOT build, and Mono can stop the app
+# there with an assertion at interp.c (#15100: the editor, once an image is dropped on it). So every page is visited, not
+# just the start page bit aot-profile visits by default; bit warns if --max-pages leaves any out. With the steps below,
+# that costs about 0.4 MB more of the brotli download than the start page alone (2.70 MB against 2.31 MB for
+# dotnet.native.wasm), which is the price of not crashing on a page or an action the profile left out.
+#
+# A page only loaded runs what it renders, so the steps then do in the editor what a visitor does: drop an image (the file
+# read and the interop byte[] marshalling, OnImageLoaded and OnDocumentChanged printing the document), flip its theme,
+# direction and language switches, and export from the Export tab.
+
+src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj
+--max-pages 50
+--include Bit.Bmage
+--include Bit.Bmage.Blazor
+--step /editor
+--step "file:src/Utilities/Bmage/Demo/Server/wwwroot/icon-512.png|.bmg-editor input[type=file]"
+--step "click:[aria-labelledby=editor-theme-label] button:last-child"
+--step "click:[aria-labelledby=editor-direction-label] button:last-child"
+--step "click:[aria-labelledby=editor-language-label] button:nth-child(2)"
+--step "click:[aria-labelledby=editor-language-label] button:last-child"
+--step "click:.bmg-panel-tab[id$=-tab-Export]"
+--step "click:.bmg-panel-body .bmg-button-primary"

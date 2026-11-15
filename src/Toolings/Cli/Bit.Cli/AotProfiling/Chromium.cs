@@ -364,4 +364,19 @@ public sealed class DevToolsPage
 
         return result.GetProperty("result").TryGetProperty("value", out var value) ? value : default;
     }
+
+    /// <summary>Calls the function and returns the remote object id of the DOM node it returns, or null when it returns something else.</summary>
+    public async Task<string?> EvaluateHandleAsync(string function, object? argument = null, CancellationToken cancellationToken = default)
+    {
+        var expression = $"({function})({(argument is null ? "" : JsonSerializer.Serialize(argument, argument.GetType()))})";
+        var result = await SendAsync("Runtime.evaluate", new { expression }, cancellationToken);
+
+        if (result.TryGetProperty("exceptionDetails", out _))
+            return null;
+
+        var remote = result.GetProperty("result");
+        return remote.TryGetProperty("subtype", out var subtype) && subtype.GetString() == "node" && remote.TryGetProperty("objectId", out var objectId)
+            ? objectId.GetString()
+            : null;
+    }
 }

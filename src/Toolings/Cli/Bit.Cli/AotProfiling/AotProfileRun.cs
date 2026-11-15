@@ -40,7 +40,12 @@ public sealed class AotProfileRun(CliServices cli)
 
         if (request.Steps.FirstOrDefault(s => ProfileCollector.IsValidStep(s) is false) is { } invalid)
         {
-            return cli.UsageError("step-invalid", $"--step {invalid} isn't a step. Use a path like /settings, click:<css selector>, key:<key> or wait:<milliseconds>.");
+            return cli.UsageError("step-invalid", $"--step {invalid} isn't a step. Use a path like /settings, click:<css selector>, key:<key>, wait:<milliseconds> or file:<path>|<css selector>.");
+        }
+
+        if (request.Steps.FirstOrDefault(s => ProfileCollector.FileStep(s) is { } file && File.Exists(Path.GetFullPath(file.File, current)) is false) is { } missing)
+        {
+            return cli.UsageError("step-file-missing", $"--step {missing}: there's no file at {ProfileCollector.FileStep(missing)!.Value.File}.");
         }
 
         var browser = request.Browser ?? Chromium.Find(cli.Environment, cli.Runner.FindExecutable);
@@ -102,15 +107,15 @@ public sealed class AotProfileRun(CliServices cli)
 
             var skipped = new HashSet<string>(StringComparer.Ordinal);
             var reloads = 0;
-            IReadOnlyList<string> visited = [];
+            PageVisit visit = new([], []);
             IReadOnlyList<string> steps = [];
-            byte[] data;
+            IReadOnlyList<byte[]> data;
 
             while (true)
             {
                 try
                 {
-                    visited = await cli.Console.RunWithStatusAsync($"Using the app at {app.Origin}", progress => collector.VisitAsync(request.StartPath, Math.Max(1, request.MaxPages), skipped, progress, cancellationToken));
+                    visit = await cli.Console.RunWithStatusAsync($"Using the app at {app.Origin}", progress => collector.VisitAsync(request.StartPath, Math.Max(1, request.MaxPages), skipped, progress, cancellationToken));
                     steps = [.. request.Steps.Where(step => ProfileCollector.IsLeftOut(step, skipped) is false)];
 
                     if (steps.Count > 0)
@@ -118,11 +123,11 @@ public sealed class AotProfileRun(CliServices cli)
 
                     foreach (var step in steps)
                     {
-                        if (await collector.RunStepAsync(step, cancellationToken) is false)
+                        if (await collector.RunStepAsync(ProfileCollector.WithFullPath(step, current), cancellationToken) is false)
                             cli.Console.StepWarning($"--step {step}: nothing on the page matches it.");
                     }
 
-                    data = await collector.WriteAsync(cancellationToken);
+                    data = await collector.WriteAsync(steps.Count > 0 ? steps[^1] : visit.Visited[^1], cancellationToken);
                     break;
                 }
                 catch (AppReloadedException reload) when (reloads < MaxReloads)
@@ -134,18 +139,32 @@ public sealed class AotProfileRun(CliServices cli)
                 }
             }
 
+            var visited = visit.Visited;
             cli.Console.Step(StepStatus.Succeeded, "Used the app", $"{visited.Count} page{(visited.Count == 1 ? "" : "s")}{(steps.Count > 0 ? $", {steps.Count} step{(steps.Count == 1 ? "" : "s")}" : "")}", stopwatch.Elapsed);
             cli.Console.StepHint(string.Join(" ", visited));
 
-            if (collector.WrittenEarly)
-                cli.Console.StepWarning("The profile was written before the last page: something read a .NET exception's stack trace in the browser, which is the moment the profiler writes.");
+            // The start page alone is the default; a crawl asked for that stops short says so, rather than leaving the
+            // pages it didn't reach on the interpreter unnoticed.
+            if (request.MaxPages > 1 && visit.NotVisited.Count > 0)
+                cli.Console.StepWarning($"--max-pages {request.MaxPages} left out {visit.NotVisited.Count} more page{(visit.NotVisited.Count == 1 ? "" : "s")} the app links to: {string.Join(" ", visit.NotVisited.Take(10))}{(visit.NotVisited.Count > 10 ? " ..." : "")}");
+
+            foreach (var during in collector.WrittenAt)
+            {
+                cli.Console.StepWarning($"The profile was written during {during}: something read a .NET exception's stack trace in the browser, which is the moment the profiler writes. What ran after that isn't in it until the next page or path step, which bit loaded as a new document whose runtime profiles afresh.");
+            }
 
             foreach (var error in collector.Errors.Take(5))
             {
                 cli.Console.StepHint($"page error: {error}");
             }
 
-            var profile = AotProfile.Read(data);
+            // Each runtime that wrote its profile before the end added one; together they hold every method that ran.
+            var profile = AotProfile.Read(data[0]);
+            foreach (var part in data.Skip(1))
+            {
+                profile.AddRange(AotProfile.Read(part).Methods);
+            }
+
             var collected = profile.Methods.Count;
             using var images = new AppAssemblies(assemblies.Select(a => a.Path));
             // Each count is how many of its kind the profile has, whether the run had already put them there or not.
