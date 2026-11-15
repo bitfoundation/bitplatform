@@ -165,7 +165,7 @@ private static BitResourceTimelineConfig CreateHierarchyConfig()
     }
 </style>
 
-<BitToggle @bind-Value="stickyBarLabels" @bind-Value:after="UpdateAppearanceOptions" Label="StickyBarLabels" Inline />
+<BitToggle @bind-Value="StickyBarLabels" Label="StickyBarLabels" Inline />
 <br />
 <div class="timeline">
     <BitResourceTimeline Config="appearanceConfig" Options="appearanceOptions" />
@@ -173,10 +173,14 @@ private static BitResourceTimelineConfig CreateHierarchyConfig()
 """;
     private readonly string example3CsharpCode = """
 private readonly BitResourceTimelineConfig appearanceConfig = CreateAppearanceConfig();
-private bool stickyBarLabels = true;
 private BitResourceTimelineOptions appearanceOptions = new() { StickyBarLabels = true };
 
-private void UpdateAppearanceOptions() => appearanceOptions = new() { StickyBarLabels = stickyBarLabels };
+// Options is compared by reference: a new instance is what applies the change.
+private bool StickyBarLabels
+{
+    get => appearanceOptions.StickyBarLabels is true;
+    set => appearanceOptions = new() { StickyBarLabels = value };
+}
 
 private static BitResourceTimelineConfig CreateAppearanceConfig()
 {
@@ -272,11 +276,6 @@ private static BitResourceTimelineConfig CreateAppearanceConfig()
                 Icons =
                 [
                     new() { Source = BitResourceTimelineDemoData.LockIcon, Position = BitResourceTimelineBarIconPosition.Above },
-                ],
-                Sections =
-                [
-                    new() { EndPercent = 40, ForegroundColor = "#ffffff", Text = "Inspection" },
-                    new() { StartPercent = 40, BackgroundColor = "#868e96", ForegroundColor = "#ffffff", Text = "Repairs" },
                 ],
             },
         ],

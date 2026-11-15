@@ -512,7 +512,7 @@ public partial class BitResourceTimelineDemo
                 new() { Name = "StackLabelClearance", Type = "bool?", DefaultValue = "null", Description = "Whether stacked bars also keep room for their labels and icons (true). Independent of the zoom." },
                 new() { Name = "StackOnLabelCollision", Type = "bool?", DefaultValue = "null", Description = "Whether bars whose labels, icons or edge bars would collide stack too, not only overlapping times (true)." },
                 new() { Name = "CollapseMatchingEdgeLabels", Type = "bool?", DefaultValue = "null", Description = "Whether neighbouring bars whose facing labels match (one's TextEnd, the next one's TextStart) draw that text once in the gap between them, without stacking for it, while the gap holds the word but is too narrow to show both clearly (false). Follows the zoom; the allocations keep both texts." },
-                new() { Name = "StickyBarLabels", Type = "bool?", DefaultValue = "null", Description = "Whether what is centered on a bar - TextAbove, TextBelow, the Above, Below and Center icons, a section's centered text and icon - follows the part of the bar in view, so a long bar keeps its labels on screen while it is scrolled (false). They never leave their bar; one wider than its bar stays centered, and the start and end labels stay beside it." },
+                new() { Name = "StickyBarLabels", Type = "bool?", DefaultValue = "null", Description = "Whether what is centered on a bar - TextAbove, TextBelow, the Above, Below and Center icons, a section's centered text and icon - follows the part of the bar in view, so a long bar keeps its labels on screen while it is scrolled (false). They never leave their bar; they keep the BarLabelGap clear of the edge of the timeline, one wider than its bar stays centered without holding the others back, the Center icons stay between the icons inside the bar while a section's centered content steps aside for them, and the start and end labels stay beside the bar." },
                 new() { Name = "MinBarWidth", Type = "int?", DefaultValue = "null", Description = "Minimum drawn width of a bar in px (2)." },
                 new() { Name = "MinBarWidthForLabels", Type = "int?", DefaultValue = "null", Description = "Minimum bar width for its labels and icons to be drawn, in px (24)." },
                 new() { Name = "BarLabelFont", Type = "string?", DefaultValue = "null", Description = "CSS font of the bar labels (11px, theme font family)." },
@@ -1057,10 +1057,14 @@ public partial class BitResourceTimelineDemo
 
 
     private readonly BitResourceTimelineConfig appearanceConfig = CreateAppearanceConfig();
-    private bool stickyBarLabels = true;
     private BitResourceTimelineOptions appearanceOptions = new() { StickyBarLabels = true };
 
-    private void UpdateAppearanceOptions() => appearanceOptions = new() { StickyBarLabels = stickyBarLabels };
+    // Options is compared by reference: a new instance is what applies the change.
+    private bool StickyBarLabels
+    {
+        get => appearanceOptions.StickyBarLabels is true;
+        set => appearanceOptions = new() { StickyBarLabels = value };
+    }
 
     private static BitResourceTimelineConfig CreateAppearanceConfig()
     {
@@ -1156,11 +1160,6 @@ public partial class BitResourceTimelineDemo
                     Icons =
                     [
                         new() { Source = BitResourceTimelineDemoData.LockIcon, Position = BitResourceTimelineBarIconPosition.Above },
-                    ],
-                    Sections =
-                    [
-                        new() { EndPercent = 40, ForegroundColor = "#ffffff", Text = "Inspection" },
-                        new() { StartPercent = 40, BackgroundColor = "#868e96", ForegroundColor = "#ffffff", Text = "Repairs" },
                     ],
                 },
             ],

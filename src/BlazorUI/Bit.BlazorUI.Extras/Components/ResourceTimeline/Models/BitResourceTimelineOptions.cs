@@ -148,13 +148,17 @@ public class BitResourceTimelineOptions
     /// at the bar's center, so a long bar keeps its labels on screen wherever it
     /// is scrolled to.
     /// <para>
-    /// The labels stay where they are while they are fully in view, are pushed in
-    /// from the edge of the timeline while they would be cut off there, and never
-    /// leave their bar (or section): once the bar's visible part is too narrow to
-    /// hold them, they scroll out of view with its edge. A label wider than its bar
-    /// stays centered. The start and end labels, which are drawn beside the bar,
-    /// are not moved. Only the drawing changes: stacking, tooltips and accessible
-    /// names are the same either way. Defaults to <c>false</c>.
+    /// The labels stay where they are while they are in view and at least
+    /// <see cref="BarLabelGap"/> clear of the edge of the timeline, are held that
+    /// gap in from the edge while they would come closer to it, and never leave
+    /// their bar (or section): once the bar's visible part is too narrow to hold
+    /// them, they scroll out of view with its edge. The labels and icons above and
+    /// below a bar move together; a label or icon wider than its bar stays
+    /// centered without holding the others back. The center icons move between
+    /// the icons inside the bar's start and end, and a section's centered content
+    /// steps aside for them. The start and end labels, which are drawn beside the
+    /// bar, are not moved. Only the drawing changes: stacking, tooltips and
+    /// accessible names are the same either way. Defaults to <c>false</c>.
     /// </para>
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

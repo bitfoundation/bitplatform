@@ -186,6 +186,7 @@ export function makeBareEngine(overrides = {}) {
     engine._labelWidths = null;
     engine._labelWidthsGen = 0;
     engine._spanScratch = { lead: 0, trail: 0 };
+    engine._stickySections = [];
     engine._edgeLabels = new WeakMap();
     engine._laneScale = null;
     engine._configSnap = null;

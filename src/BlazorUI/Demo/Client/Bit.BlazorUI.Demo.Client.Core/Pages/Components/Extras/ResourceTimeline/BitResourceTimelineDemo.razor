@@ -93,12 +93,12 @@
                 <br />
                 <div>
                     A label above or below a bar is centered on it, which a long bar can have far out of view.
-                    <b>StickyBarLabels</b> has what is centered on a bar - TextAbove, TextBelow, the Above, Below and Center
-                    icons and the centered text of its sections - follow the part of the bar in view, never leaving the bar:
-                    scroll along the two-day maintenance of Gate A5.
+                    <b>StickyBarLabels</b> has what is centered on a bar - TextAbove, TextBelow and the Above, Below and
+                    Center icons - follow the part of the bar in view, never leaving the bar: scroll along the two-day
+                    maintenance of Gate A5.
                 </div>
                 <br />
-                <BitToggle @bind-Value="stickyBarLabels" @bind-Value:after="UpdateAppearanceOptions" Label="StickyBarLabels" Inline />
+                <BitToggle @bind-Value="StickyBarLabels" Label="StickyBarLabels" Inline />
                 <br />
                 <div class="timeline">
                     <BitResourceTimeline Config="appearanceConfig" Options="appearanceOptions" />
@@ -113,7 +113,9 @@
                     neither way is the bar's own, and it always stays within the bar. <b>BackgroundColor</b>,
                     <b>BorderColor</b> and <b>ForegroundColor</b> paint it, and its <b>Text</b> and <b>Icon</b> (fitted in
                     <b>IconSize</b>) sit at their <b>TextPosition</b> and <b>IconPosition</b>. What does not fit is left out
-                    rather than cut, so give a sectioned bar a Height its text fits in.
+                    rather than cut, so give a sectioned bar a Height its text fits in. With <b>StickyBarLabels</b>, a
+                    section's centered text and icon follow the part of the section in view, as a bar's labels do, and
+                    step aside for the bar's Center icons.
                 </div>
                 <br />
                 <div class="timeline">

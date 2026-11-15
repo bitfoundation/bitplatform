@@ -1,10 +1,12 @@
-// stickyBarLabels: what is centered on a bar - its above/below labels and icons,
+﻿// stickyBarLabels: what is centered on a bar - its above/below labels and icons,
 // its center icons, a section's centered content - follows the part of the bar
 // that is in view, so a long bar keeps its labels on screen while it is scrolled.
 // These lock where that content lands: at the bar's center while it is fully in
 // view, pushed in from the edge of the bars area while it would be cut off
 // there, never past the bar's own edges, and left alone when the option is off,
-// for a bar too narrow to slide in, and for the start/end labels.
+// for a bar too narrow to slide in, and for the start/end labels. A label wider
+// than its bar holds nothing else back, the center icons slide between the
+// icons inside the bar and a section's centered content steps aside for them.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -124,7 +126,7 @@ test('a label wider than its bar stays centered', () => {
     assert.equal(label(node, TEXT).x, 150);
 });
 
-test('above, below and center icons move with the labels', () => {
+test('above and below icons move with the labels, center icons on a line of their own', () => {
     const engine = makeSceneEngine([longBar({
         textAbove: TEXT,
         icons: [
@@ -137,14 +139,93 @@ test('above, below and center icons move with the labels', () => {
     })]);
     scrollTo(engine, 1000);
     const node = barNode(engine);
+    const gap = engine.config.barLabelGap;
     const x = label(node, TEXT).x;
     const icons = Object.fromEntries(node.icons.map(i => [i.source, i]));
 
-    for (const source of ['above.png', 'below.png', 'center.png', 'inside.png']) {
+    for (const source of ['above.png', 'below.png', 'inside.png']) {
         assert.equal(icons[source].x + icons[source].width / 2, x, `${source} must share the label's line`);
     }
+    // The center icon is pinned by its own width, not the label's.
+    assert.equal(icons['center.png'].x, 150 + gap);
     // The start icon hugs the bar's start edge, scrolled out of view.
     assert.ok(icons['start.png'].x + icons['start.png'].width < node.x);
+});
+
+test('a label wider than its bar does not hold the others back', () => {
+    // Bar 10h-15h: x 550-750 unscrolled (200px), at x 50-250 scrolled, its
+    // center (150) at the edge of the bars area.
+    const wide = 'X'.repeat(40); // 280px
+    const engine = makeSceneEngine([longBar({ startTime: at(10), endTime: at(15), textAbove: 'A1', textBelow: wide })]);
+    scrollTo(engine, 500);
+    const node = barNode(engine);
+    const gap = engine.config.barLabelGap;
+
+    assert.equal(label(node, 'A1').x, 150 + gap + 'A1'.length * CHAR / 2);
+    assert.equal(label(node, wide).x, 150);
+});
+
+test('the center icons stay clear of the icons inside the bar\'s end', () => {
+    const engine = makeSceneEngine([longBar({
+        icons: [
+            { source: 'center.png', position: 'center' },
+            { source: 'end.png', position: 'end', inside: true }
+        ]
+    })]);
+    // The bar ends at x 180: its end icon covers x 161-177.
+    scrollTo(engine, 1850);
+    const node = barNode(engine);
+    const gap = engine.config.barLabelGap;
+    const icons = Object.fromEntries(node.icons.map(i => [i.source, i]));
+
+    assert.equal(icons['end.png'].x, 161);
+    assert.equal(icons['center.png'].x + icons['center.png'].width, icons['end.png'].x - gap);
+});
+
+test('a section\'s centered text steps aside for the bar\'s center icons', () => {
+    const engine = makeSceneEngine([longBar({
+        height: 20,
+        icons: [{ source: 'center.png', position: 'center' }],
+        sections: [{ text: 'Hold' }]
+    })]);
+    scrollTo(engine, 1000);
+    const node = barNode(engine);
+    const gap = engine.config.barLabelGap;
+    const icon = node.icons.find(i => i.source === 'center.png');
+    const text = label(node, 'Hold');
+
+    // Both would be pinned at the left edge; the text moves to the nearer side.
+    assert.equal(icon.x, 150 + gap);
+    assert.equal(text.x - 'Hold'.length * CHAR / 2, icon.x + icon.width + gap);
+});
+
+test('a section\'s centered text with no room beside the center icons is left out', () => {
+    // Bar 10h-11h: x 550-590, room for the 16px icon but not the text beside it.
+    const engine = makeSceneEngine([longBar({
+        startTime: at(10), endTime: at(11), height: 20,
+        icons: [{ source: 'center.png', position: 'center' }],
+        sections: [{ text: 'Go' }]
+    })]);
+    const node = barNode(engine);
+
+    assert.equal(node.icons.length, 1);
+    assert.equal(node.labels, null);
+
+    // The option off draws both at the center, as it always has.
+    engine.config.stickyBarLabels = false;
+    assert.equal(label(barNode(engine), 'Go').x, 570);
+});
+
+test('a label wider than the bars area is centered in it', () => {
+    const wide = 'X'.repeat(42); // 294px
+    const engine = makeSceneEngine([longBar({ textAbove: wide })]);
+    // A 250px bars area: x 150-400.
+    engine._viewportW = 400;
+    engine._visibleWidth = 250;
+    scrollTo(engine, 1000);
+    const node = barNode(engine);
+
+    assert.equal(label(node, wide).x, 275);
 });
 
 test('the start and end labels stay beside the bar', () => {
