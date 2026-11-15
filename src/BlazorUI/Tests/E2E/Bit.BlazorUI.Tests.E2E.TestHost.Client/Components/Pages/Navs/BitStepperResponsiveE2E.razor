@@ -1,0 +1,44 @@
+﻿@page "/e2e/stepper/responsive"
+
+<PageTitle>BitStepper Responsive E2E</PageTitle>
+
+@* Responsive steppers: the vertical layout on a phone (BitStepperMobileE2ETests), and on a wider screen the row they
+   stand in once they are wide enough and the column they take in a narrow container (BitStepperE2ETests). A page of its
+   own with nothing on it wider than a phone, since a page wider than the screen would let the row of a stepper that
+   sticks out pass for one that fits: the stepper that is not Responsive, there to compare the row with, is clipped by
+   its box, which stays as wide as the screen. *@
+<h1>BitStepper (Responsive)</h1>
+
+<div style="display: flex; flex-direction: column; gap: 24px;">
+    <div id="responsive-box">
+        <BitStepper Id="stp-responsive" Responsive Items="_items" @bind-CurrentIndex="_current" />
+        <div id="responsive-index">@_current</div>
+    </div>
+
+    <div id="fixed-box" style="overflow: hidden;">
+        <BitStepper Id="stp-fixed" Items="_items" CurrentIndex="1" />
+    </div>
+
+    <div id="narrow-box" style="width: 320px;">
+        <BitStepper Id="stp-responsive-narrow" Responsive Items="_items" CurrentIndex="1" />
+    </div>
+
+    <div id="vertical-box">
+        <BitStepper Id="stp-responsive-vertical" Responsive Vertical Items="_items" CurrentIndex="1" />
+    </div>
+</div>
+
+<E2EStatus />
+
+@code {
+    private int _current = 1;
+
+    // Three steps with a description each, which a phone has no room for in a row: a step never shrinks past the longest
+    // word of its label.
+    private readonly List<BitStepperItem> _items =
+    [
+        new() { Text = "Registration", Description = "Personal information" },
+        new() { Text = "Destination", Description = "Shipping address" },
+        new() { Text = "Confirmation", Description = "Everything reviewed" }
+    ];
+}

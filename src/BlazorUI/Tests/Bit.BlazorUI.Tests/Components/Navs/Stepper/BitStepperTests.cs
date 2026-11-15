@@ -23,7 +23,8 @@ public class BitStepperTests : BunitTestContext
         bool linear = false,
         bool readOnly = false,
         bool disabled = false,
-        bool vertical = false)
+        bool vertical = false,
+        bool responsive = false)
     {
         return RenderComponent<BitStepper<BitStepperItem>>(parameters =>
         {
@@ -33,6 +34,7 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.ReadOnly, readOnly);
             parameters.Add(p => p.Disabled, disabled);
             parameters.Add(p => p.Vertical, vertical);
+            parameters.Add(p => p.Responsive, responsive);
         });
     }
 
@@ -67,6 +69,39 @@ public class BitStepperTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-stp-vrt"));
         Assert.IsFalse(root.ClassList.Contains("bit-stp-hrz"));
+    }
+
+    [TestMethod,
+        DataRow(false, false, "bit-stp-hrz", false),
+        DataRow(true, false, "bit-stp-rsp", true),
+        DataRow(true, true, "bit-stp-vrt", false),
+        DataRow(false, true, "bit-stp-vrt", false)]
+    public void BitStepperShouldMarkAHorizontalStepperResponsive(bool responsive, bool vertical, string layout, bool wrapped)
+    {
+        var com = Render(vertical: vertical, responsive: responsive);
+
+        var root = com.Find("ol.bit-stp");
+
+        // A Responsive horizontal stepper is a row or a column by its width, so it carries one layout class of its own
+        // instead of either; a vertical stepper is the layout a Responsive one switches to, so it has nothing to switch.
+        var layouts = new[] { "bit-stp-hrz", "bit-stp-vrt", "bit-stp-rsp" };
+        CollectionAssert.AreEqual(new[] { layout }, layouts.Where(root.ClassList.Contains).ToArray());
+
+        // The list stands in the wrapper that is the query container of its layout only when it is Responsive.
+        Assert.AreEqual(wrapped, root.ParentElement?.ClassList.Contains("bit-stp-rsw") is true);
+        Assert.AreEqual(wrapped ? 1 : 0, com.FindAll(".bit-stp-rsw").Count);
+        Assert.AreEqual(wrapped ? "DIV" : "OL", com.Nodes.OfType<AngleSharp.Dom.IElement>().First().TagName);
+    }
+
+    [TestMethod]
+    public void BitStepperShouldRenderTheSameStepsWhetherResponsiveOrNot()
+    {
+        var plain = Render(currentIndex: 1);
+        var responsive = Render(currentIndex: 1, responsive: true);
+
+        Assert.AreEqual(plain.FindAll("li.bit-stp-stp").Count, responsive.FindAll("li.bit-stp-stp").Count);
+        Assert.AreEqual(plain.FindAll(".bit-stp-con").Count, responsive.FindAll(".bit-stp-con").Count);
+        CollectionAssert.AreEqual(States(plain), States(responsive));
     }
 
     [TestMethod]

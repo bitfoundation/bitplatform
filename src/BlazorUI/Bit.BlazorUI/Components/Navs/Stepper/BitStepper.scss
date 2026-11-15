@@ -1,4 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
 // Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
 // ancestor, on the Style of a stepper or on the Style of a single step inherits down to whatever reads it:
@@ -21,13 +22,23 @@
     font-family: $tg-font-family;
 }
 
-.bit-stp-hrz {
+// Each layout is written once, as a mixin, and taken by a stepper of that orientation and by a Responsive one while it
+// is in that layout (at the foot of the file), so a Responsive stepper never has a rule of the other layout to undo.
+@mixin stp-horizontal-root {
     flex-direction: row;
     align-items: center;
 }
 
-.bit-stp-vrt {
+@mixin stp-vertical-root {
     flex-direction: column;
+}
+
+.bit-stp-hrz {
+    @include stp-horizontal-root;
+}
+
+.bit-stp-vrt {
+    @include stp-vertical-root;
 }
 
 .bit-stp-stp {
@@ -37,9 +48,10 @@
 // A step takes what its label needs plus an equal share of the room left in the row, which its connector fills up to
 // the next step, so the lines come out equally long and a label only wraps once the row is too narrow for them all.
 // A step never shrinks past the longest word of its label, so a row too narrow for every step makes the stepper wider
-// than its container rather than run a label into the line next to it; a vertical stepper is the layout for that room.
-// The last one has no connector, so it only takes what its own label needs.
-.bit-stp-hrz > .bit-stp-stp {
+// than its container rather than run a label into the line next to it; a vertical stepper is the layout for that room,
+// which a Responsive one takes by itself while it is narrow (below). The last one has no connector, so it only takes
+// what its own label needs.
+@mixin stp-horizontal-step {
     flex: 1 1 auto;
     align-items: center;
 
@@ -48,9 +60,17 @@
     }
 }
 
-.bit-stp-vrt > .bit-stp-stp {
+@mixin stp-vertical-step {
     flex-direction: column;
     align-items: stretch;
+}
+
+.bit-stp-hrz > .bit-stp-stp {
+    @include stp-horizontal-step;
+}
+
+.bit-stp-vrt > .bit-stp-stp {
+    @include stp-vertical-step;
 }
 
 // The clickable part of a step: a button when the step can be gone to, a plain block when it cannot. Both are laid
@@ -153,19 +173,66 @@ button.bit-stp-btn {
     background-color: var(--bit-Stepper-connector-color, #{$clr-brd-sec});
 }
 
-.bit-stp-hrz .bit-stp-con {
+@mixin stp-horizontal-connector {
     min-width: spacing(2);
     margin-inline: spacing(1);
     height: var(--bit-Stepper-connector-width, #{$shp-border-width-thick});
 }
 
+.bit-stp-hrz .bit-stp-con {
+    @include stp-horizontal-connector;
+}
+
 // The line runs down from the middle of the indicator above it: past the padding of the step, half the indicator,
 // less half the line.
-.bit-stp-vrt .bit-stp-con {
+@mixin stp-vertical-connector {
     min-height: spacing(3);
     margin-block: spacing(0.5);
     width: var(--bit-Stepper-connector-width, #{$shp-border-width-thick});
     margin-inline-start: calc(#{spacing(0.5)} + var(--bit-Stepper-indicator-size, #{spacing(4)}) / 2 - var(--bit-Stepper-connector-width, #{$shp-border-width-thick}) / 2);
+}
+
+.bit-stp-vrt .bit-stp-con {
+    @include stp-vertical-connector;
+}
+
+// A Responsive horizontal stepper is a row while it is 600px wide or more and a column below that, by the width of its
+// own container rather than the screen's: one in a sidebar, a card or a dialog takes the column on a wide screen too.
+// An element cannot be queried against its own width, so the list stands in a wrapper (bit-stp-rsw) that is the query
+// container; it takes the full width of its container, which also keeps it from collapsing in a flex row, where a
+// size-contained box would otherwise have no width of its own. The root carries bit-stp-rsp instead of bit-stp-hrz, so
+// each layout is taken whole from its mixins, at the weight of the rules of a stepper of that orientation.
+.bit-stp-rsw {
+    width: 100%;
+    container: bit-stepper / inline-size;
+}
+
+@container bit-stepper (width >= #{$mq-sm-min}) {
+    .bit-stp-rsp {
+        @include stp-horizontal-root;
+    }
+
+    .bit-stp-rsp > .bit-stp-stp {
+        @include stp-horizontal-step;
+    }
+
+    .bit-stp-rsp .bit-stp-con {
+        @include stp-horizontal-connector;
+    }
+}
+
+@container bit-stepper (width < #{$mq-sm-min}) {
+    .bit-stp-rsp {
+        @include stp-vertical-root;
+    }
+
+    .bit-stp-rsp > .bit-stp-stp {
+        @include stp-vertical-step;
+    }
+
+    .bit-stp-rsp .bit-stp-con {
+        @include stp-vertical-connector;
+    }
 }
 
 // The way already come is drawn in the active color, up to the current step.

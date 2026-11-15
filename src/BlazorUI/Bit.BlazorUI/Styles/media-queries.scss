@@ -1,15 +1,19 @@
 ﻿// https://github.com/Necromancerx/media-queries-scss-mixins
 
-$mq-xs-max: 599px;
+$mq-xs-max: 599.98px;
 $mq-sm-min: 600px;
-$mq-sm-max: 959px;
+$mq-sm-max: 959.98px;
 $mq-md-min: 960px;
-$mq-md-max: 1279px;
+$mq-md-max: 1279.98px;
 $mq-lg-min: 1280px;
-$mq-lg-max: 1919px;
+$mq-lg-max: 1919.98px;
 $mq-xl-min: 1920px;
-$mq-xl-max: 2559px;
+$mq-xl-max: 2559.98px;
 $mq-xxl-min: 2560px;
+
+// The upper bounds sit 0.02px under the next breakpoint, as BitMediaQuery writes them, rather than a whole pixel under
+// it: browser zoom and device scaling give the viewport fractional widths, and one of 599.5px would match neither
+// "max-width: 599px" nor "min-width: 600px".
 
 // Mixins and variables only: this file writes no CSS, since every component stylesheet using a mixin imports it. The
 // --bit-bp-* custom properties built from the values above are declared once, in general.scss.
