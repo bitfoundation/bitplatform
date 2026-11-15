@@ -128,6 +128,42 @@ public partial class BitFullCalendarE2ETests
     }
 
     [TestMethod]
+    public async Task Recurrence_TheScopePrompt_KeepsTabInside_AndClosingItHandsTheFocusBackToTheButton()
+    {
+        await OpenAsync(RecurrencePage);
+        await Occurrence("board", "20250715").ClickAsync();
+        var details = RecCal.Locator(".bit-bfc-dialog[role='dialog']:not(.bit-bfc-scope-dialog)");
+        await Expect(details).ToBeVisibleAsync();
+        // The dialog takes the focus once it is open; a button focused before it got there would lose it again.
+        await Page.WaitForFunctionAsync("d => d.contains(document.activeElement)", await details.ElementHandleAsync());
+
+        var delete = details.GetByRole(AriaRole.Button, new() { Name = "Delete" });
+        await delete.FocusAsync();
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(ScopeDialog).ToBeVisibleAsync();
+        await Page.WaitForFunctionAsync("d => d.contains(document.activeElement)", await ScopeDialog.ElementHandleAsync());
+
+        // The prompt on top of the details dialog holds the keyboard on its own.
+        for (var i = 0; i < 6; i++)
+        {
+            await Page.Keyboard.PressAsync("Tab");
+            Assert.IsTrue(await ScopeDialog.EvaluateAsync<bool>("d => d.contains(document.activeElement)"), $"Tab {i + 1} left the prompt.");
+        }
+
+        for (var i = 0; i < 6; i++)
+        {
+            await Page.Keyboard.PressAsync("Shift+Tab");
+            Assert.IsTrue(await ScopeDialog.EvaluateAsync<bool>("d => d.contains(document.activeElement)"), $"Shift+Tab {i + 1} left the prompt.");
+        }
+
+        await PressEscapeAsync();
+        await Expect(ScopeDialog).ToHaveCountAsync(0);
+
+        // The focus goes back to the button the prompt was opened from.
+        await Expect(delete).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
     public async Task Recurrence_EditingOneOccurrence_DetachesItAsAOneOff()
     {
         await OpenAsync(RecurrencePage);

@@ -33,6 +33,8 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     private readonly string _groupName = $"bfc-scope-{Guid.NewGuid():N}";
 
     private ElementReference _dialogRef;
+    // The id of the dialog element: the focus trap and the focus it hands back as it closes are kept by it.
+    private readonly string _dialogId = $"bfc-dlg-{Guid.NewGuid():N}";
     private Scope _scope;
 
     private enum Scope { This, Following, All }
@@ -41,7 +43,7 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     {
         // A modal of its own on top of the details dialog, so it takes focus and traps Tab the same way.
         if (firstRender)
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _titleId);
+            await BitFcDialogInterop.SetupAsync(JS, _dialogId);
     }
 
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
@@ -58,6 +60,6 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await BitFcDialogInterop.TeardownAsync(JS, _titleId);
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogId);
     }
 }

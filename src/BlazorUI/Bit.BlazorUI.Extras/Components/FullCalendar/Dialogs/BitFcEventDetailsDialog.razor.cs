@@ -23,6 +23,8 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     private bool _isDeleting;
     private bool _deleteCommitted;
     private ElementReference _dialogRef;
+    // The id of the dialog element: the focus trap and the focus it hands back as it closes are kept by it.
+    private readonly string _dialogId = $"bfc-dlg-{Guid.NewGuid():N}";
     private readonly string _dialogTitleId = $"bfc-details-title-{Guid.NewGuid():N}";
     // Which Escapes something inside the dialog claimed first (see _OnEscapeVerdict), for OnDialogKeyDown. Made on
     // first use, so a dialog disposed before it rendered never starts watching.
@@ -93,7 +95,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         // DisposeAsync restores focus to the element that was focused before it opened.
         if (firstRender)
         {
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _dialogTitleId);
+            await BitFcDialogInterop.SetupAsync(JS, _dialogId);
             await EscapeWatch.WatchAsync(_dialogRef);
         }
     }
@@ -344,6 +346,6 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await EscapeWatch.DisposeAsync();
-        await BitFcDialogInterop.TeardownAsync(JS, _dialogTitleId);
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogId);
     }
 }

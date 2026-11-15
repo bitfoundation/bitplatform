@@ -598,61 +598,47 @@
         }
 
         /**
-         * Focus management for the calendar's modal dialogs. Stores the element that was focused
-         * before the dialog opened, moves focus into the dialog, and keeps Tab/Shift+Tab navigation
-         * contained within it. Pair every setupDialog call with teardownDialog so focus is restored
-         * to the previously focused element when the dialog closes. Both are called with the same key rather than
-         * the element: the teardown runs as the dialog is disposed, once its element has already left the DOM, where
-         * an element reference no longer resolves - keyed by the element, the focus was never given back.
+         * Focus management for the calendar's modal dialogs, on the pieces every surface of the library shares: the
+         * element that was focused before the dialog opened is stored (Utils.storeFocus), the focus moves into the
+         * dialog, Tab/Shift+Tab stay inside it (Utils.setupFocusTrap, which also leaves the key to a dialog opened on
+         * top of this one inside it), and closing the dialog hands the focus back (Utils.restoreFocus). Pair every
+         * setupDialog call with teardownDialog. Both are called with the id of the dialog element rather than the
+         * element: the teardown runs as the dialog is disposed, once its element has already left the DOM, where an
+         * element reference no longer resolves - keyed by the element, the focus was never given back.
          */
-        private static dialogFocusState = new Map<string, { container: HTMLElement; previous: Element | null; root: HTMLElement | null; handler: (e: KeyboardEvent) => void }>();
+        private static dialogFocusState = new Map<string, { root: HTMLElement | null; stored: boolean; previous: Element | null }>();
 
-        public static setupDialog(container: HTMLElement, key: string): void {
-            if (!container || !key || FullCalendar.dialogFocusState.has(key)) return;
+        public static setupDialog(id: string): void {
+            if (!id || FullCalendar.dialogFocusState.has(id)) return;
 
+            const container = document.getElementById(id);
+            if (!container) return;
+
+            // Nothing is stored when the focus was on nothing (the body): there is nothing to hand it back to then.
+            // The element itself is kept here as well, for the event it tells the calendar about once it has left
+            // the page (see teardownDialog).
             const previous = document.activeElement;
+            const stored = Utils.storeFocus(id, id);
 
-            const handler = (e: KeyboardEvent) => {
-                if (e.key !== 'Tab') return;
-                const focusable = Utils.getFocusables(container);
-                if (focusable.length === 0) {
-                    e.preventDefault();
-                    container.focus();
-                    return;
-                }
-                const first = focusable[0];
-                const last = focusable[focusable.length - 1];
-                const active = document.activeElement as HTMLElement | null;
-                if (e.shiftKey) {
-                    if (active === first || active == null || !container.contains(active)) {
-                        e.preventDefault();
-                        last.focus();
-                    }
-                } else if (active === last || active == null || !container.contains(active)) {
-                    e.preventDefault();
-                    first.focus();
-                }
-            };
-
-            container.addEventListener('keydown', handler);
-            FullCalendar.dialogFocusState.set(key, { container, previous, root: container.closest<HTMLElement>('.bit-bfc'), handler });
+            Utils.setupFocusTrap(id);
+            FullCalendar.dialogFocusState.set(id, { root: container.closest<HTMLElement>('.bit-bfc'), stored, previous });
 
             (Utils.firstFocusable(container) ?? container).focus();
         }
 
-        public static teardownDialog(key: string): void {
-            if (!key) return;
-            const state = FullCalendar.dialogFocusState.get(key);
+        public static teardownDialog(id: string): void {
+            if (!id) return;
+            const state = FullCalendar.dialogFocusState.get(id);
             if (!state) return;
 
-            state.container.removeEventListener('keydown', state.handler);
-            FullCalendar.dialogFocusState.delete(key);
+            Utils.disposeFocusTrap(id);
+            FullCalendar.dialogFocusState.delete(id);
 
-            const previous = state.previous as HTMLElement | null;
-            if (previous && typeof previous.focus === 'function' && document.contains(previous)) {
-                previous.focus();
-                return;
-            }
+            if (!state.stored) return;
+
+            if (Utils.restoreFocus(id, false)) return;
+
+            const previous = state.previous;
 
             // The element that opened the dialog is gone - the event was deleted, or saved and re-rendered - so the
             // focus goes to the same event where it now is, or to the grid, once the render has landed. Only while
