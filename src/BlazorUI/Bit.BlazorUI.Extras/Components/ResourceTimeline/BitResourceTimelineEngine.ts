@@ -53,24 +53,21 @@
     // barMargin apart, as they always did.
     const NO_CLEARANCE = Object.freeze({ above: 0, below: 0 });
 
-    // Painted span used when stackOnLabelCollision is off: bars then claim their own
-    // time span only, so nothing but a real time overlap stacks them.
-    const NO_SPAN = Object.freeze({ lead: 0, trail: 0 });
+    function newEdgeLabels(): ResourceTimelineEdgeLabels {
+        return { hideStart: false, shareEnd: false, anchorTime: 0 };
+    }
 
     // Edge-label state of a bar whose start/end labels are drawn as they are:
     // every bar while collapseMatchingEdgeLabels is off, and every bar it leaves
     // alone while it is on.
-    const NO_EDGE: ResourceTimelineEdgeLabels = Object.freeze({
-        hideStart: false, hideEnd: false, shareEnd: false, anchorTime: 0
-    });
-
-    function newEdgeLabels(): ResourceTimelineEdgeLabels {
-        return { hideStart: false, hideEnd: false, shareEnd: false, anchorTime: 0 };
-    }
+    const NO_EDGE: ResourceTimelineEdgeLabels = Object.freeze(newEdgeLabels());
 
     // Edge labels that only stand in for a missing value. Two of them meeting
-    // say nothing in common, so they are never collapsed into one.
-    const EDGE_LABEL_PLACEHOLDERS = Object.freeze(['—', '–', '-', '…', '...']);
+    // say nothing in common, so they are never collapsed into one. Besides these
+    // words (compared upper-cased), any label without a letter or a digit - a
+    // dash, a run of them, a question mark, an ellipsis - is one too.
+    const EDGE_LABEL_PLACEHOLDERS = Object.freeze(['N/A', 'NA', 'TBD', 'TBA', 'TBC', 'UNKNOWN', 'NONE', 'NULL']);
+    const EDGE_LABEL_HAS_WORD = /[\p{L}\p{N}]/u;
 
     // The steps the date row (the top row of the time axis) can take, finest
     // first. Each is a run of `n` calendar units, labelled in one of the zoned
@@ -282,6 +279,11 @@
         maxStartEdgeMs: number;
         maxSpanMs: number;
         maxCluster?: ResourceTimelineCluster | null;
+        // Whether two successive bars of the row could have their edge labels
+        // merged by collapseMatchingEdgeLabels at some zoom (they do not overlap
+        // and their facing labels match). Independent of the zoom, so a zoom only
+        // has to redo the rows that have one (see _syncLanesToScale).
+        edgePairs?: boolean;
     }
 
     /** A run of transitively overlapping bars of a row, stacked in lanes. */
@@ -310,22 +312,21 @@
         left: number;
         right: number;
         width: number;
-        // The edge-label state the box was measured under (see
-        // ResourceTimelineEdgeLabels): a change in it invalidates the box.
-        hideStart: boolean;
-        hideEnd: boolean;
-        shareEnd: boolean;
+        // The part of `left`/`right` taken by the icons drawn outside that end of
+        // the bar, which the edge label there is pushed beyond. The rest is the
+        // label itself, which collapseMatchingEdgeLabels may draw elsewhere.
+        startIcons: number;
+        endIcons: number;
     }
 
     /**
      * How a bar's start/end labels are drawn when collapseMatchingEdgeLabels
      * merges them with a neighbour's: the start label hidden (the bar before
-     * draws it), the end label hidden, or the end label drawn once, centered at
-     * `anchorTime` in the gap before the next bar.
+     * draws it), or the end label drawn once, centered at `anchorTime` in the
+     * gap before the next bar.
      */
     export interface ResourceTimelineEdgeLabels {
         hideStart: boolean;
-        hideEnd: boolean;
         shareEnd: boolean;
         anchorTime: number;
     }
@@ -1979,13 +1980,24 @@
         // row heights are read, and a no-op in the common case.
         private _syncLanesToScale(): void {
             if (this._laneScale === this._pixelsPerMs) return;
-            // Which edge labels collapseMatchingEdgeLabels merges is decided in
-            // pixels by the lane pass too, so it is redone even when lanes are
-            // stacked by time alone.
-            if (!this.config.stackOnLabelCollision && !this.config.collapseMatchingEdgeLabels) {
+            if (!this.config.stackOnLabelCollision) {
                 // Nothing to redo, but record the scale so switching the option on
                 // later is what triggers the reassignment.
                 this._laneScale = this._pixelsPerMs;
+                // Which edge labels collapseMatchingEdgeLabels merges is decided in
+                // pixels by the lane pass, so it is redone even when lanes are
+                // stacked by time alone - only for the rows that have a pair to
+                // merge at all, which most do not.
+                if (!this.config.collapseMatchingEdgeLabels) return;
+                let changed = false;
+                for (const row of this.allocationsByResource.values()) {
+                    if (!row.edgePairs) continue;
+                    this._assignStackLanes(row.items, row);
+                    changed = true;
+                }
+                if (!changed) return;
+                this._recomputeRowMetrics();
+                this._reportResourceRows();
                 return;
             }
             this._reassignAllLanes();
@@ -3195,6 +3207,8 @@
                 // candidate has startTime >= visStart - the row's widest span, so
                 // the scan starts there and breaks once startTime passes the window.
                 const firstIndex = this._firstVisibleAllocationIndex(row, visStart);
+                // The last bar of the row whose labels were laid out this frame.
+                let decorated: ResourceTimelineAllocation | null = null;
                 for (let i = firstIndex; i < resourceAllocations.length; i++) {
                     const alloc = resourceAllocations[i];
                     const laneInfo = this._laneInfo.get(alloc);
@@ -3287,14 +3301,30 @@
                         this._buildBarSections(alloc, node, barX, barWidth, barTop, stackCenterY, barHeight);
                     }
 
+                    // The label the bar before shares with this one is drawn by that
+                    // bar - unless it was culled, scrolled out of view while the gap
+                    // between them is not. The stacker keeps a merged pair on one
+                    // lane, so this bar's center line is that bar's too.
+                    if (i > 0 && decorated !== resourceAllocations[i - 1]) {
+                        const before = resourceAllocations[i - 1];
+                        const shared = this._edgeLabelState(before);
+                        if (shared.shareEnd) {
+                            node.labels = node._labels;
+                            node._labels.push(this._sharedEndLabel(before, shared, stackCenterY));
+                        }
+                    }
+
                     // Per-bar labels and icons (only when present, to keep the
                     // common path cheap). Level-of-detail: skip decorations for
                     // bars too narrow to sit beside without overlapping their
                     // neighbours, which also avoids a flood of unreadable,
-                    // overlapping text on dense timelines.
+                    // overlapping text on dense timelines. The width test is the
+                    // one the lane pass makes, not one on the pixels above, so the
+                    // two never disagree at the threshold.
                     const hasDecorations = alloc.icons?.length || alloc.textAbove || alloc.textBelow || alloc.textStart || alloc.textEnd;
-                    if (hasDecorations && (barEndX - barX) >= c.minBarWidthForLabels) {
+                    if (hasDecorations && this._carriesLabels(alloc, this._pixelsPerMs)) {
                         this._buildBarDecorations(alloc, node, barX, barEndX, drawStartX, drawEndX, barTop, stackCenterY, barHeight, c);
+                        decorated = alloc;
                     }
 
                     scene.bars.push(node);
@@ -3437,14 +3467,20 @@
             if (alloc.textStart && !edge.hideStart) {
                 labels.push({ text: alloc.textStart, x: startEdgeX - gap, y: barCenterY, align: 'right', baseline: 'middle' });
             }
-            if (alloc.textEnd && !edge.hideEnd) {
+            if (alloc.textEnd) {
                 if (edge.shareEnd) {
-                    labels.push({ text: alloc.textEnd, x: this.getTimeToX(edge.anchorTime), y: barCenterY, align: 'center', baseline: 'middle' });
+                    labels.push(this._sharedEndLabel(alloc, edge, barCenterY));
                 } else {
                     labels.push({ text: alloc.textEnd, x: endEdgeX + gap, y: barCenterY, align: 'left', baseline: 'middle' });
                 }
             }
             if (labels.length) node.labels = labels;
+        }
+
+        // The end label a bar shares with the next one, centered in the gap
+        // between them on the line both are drawn on.
+        private _sharedEndLabel(alloc: ResourceTimelineAllocation, edge: ResourceTimelineEdgeLabels, centerY: number): any {
+            return { text: alloc.textEnd, x: this.getTimeToX(edge.anchorTime), y: centerY, align: 'center', baseline: 'middle' };
         }
 
         // Lays out the optional sections of a single bar: spans of the main bar,
@@ -6207,20 +6243,14 @@
         //
         // With collapseMatchingEdgeLabels, which edge labels are merged is decided
         // first, since a merged label no longer widens the span its bars paint.
-        // A merge only stands for a pair the lanes then keep side by side: one
-        // split onto two lanes (by a third bar overlapping them, or the lane cap)
-        // draws its labels as usual again, and the lanes are rebuilt with them.
+        // The lanes then keep a merged pair on one line, the second bar following
+        // the first onto its lane and into its cluster, since the label drawn
+        // once beside the first would say nothing about a bar on another line.
+        // Only where that cannot be - the lane cap hid the first bar - is the
+        // merge undone, before the second bar is placed, so one pass settles it.
         private _assignStackLanes(list: ResourceTimelineAllocation[], row?: ResourceTimelineRowIndex | null): void {
-            const merged = this._resolveSharedEdgeLabels(list, this._pixelsPerMs);
-            this._stackLanes(list, row);
-            // Each round restores at least one pair, so this ends; in practice a
-            // split pair is rare and one round settles it.
-            if (merged) {
-                while (this._splitEdgeLabels(list)) this._stackLanes(list, row);
-            }
-        }
+            this._resolveSharedEdgeLabels(list, this._pixelsPerMs, row);
 
-        private _stackLanes(list: ResourceTimelineAllocation[], row?: ResourceTimelineRowIndex | null): void {
             let clusterStart = 0;
             let clusterMaxEnd = -Infinity;
             let laneEnds: number[] = [];
@@ -6247,11 +6277,13 @@
             const scale = c.stackOnLabelCollision && this._pixelsPerMs > 0 ? this._pixelsPerMs : 0;
             // Bound on how far back into the row any bar paints. Padded starts are
             // not in the list's (raw) start order, so a cluster may only be closed
-            // where no bar still to come could reach back into it.
+            // where no bar still to come could reach back into it. Measured with
+            // every start label drawn, so it still bounds a bar whose merge is
+            // undone below.
             let maxLead = 0;
             if (scale) {
                 for (let i = 0; i < list.length; i++) {
-                    const lead = this._paintedSpan(list[i], scale, this._spanScratch).lead;
+                    const lead = this._paintedSpan(list[i], scale, this._spanScratch, NO_EDGE).lead;
                     if (lead > maxLead) maxLead = lead;
                 }
             }
@@ -6276,13 +6308,32 @@
 
             for (let i = 0; i < list.length; i++) {
                 const alloc = list[i];
-                const span = scale ? this._paintedSpan(alloc, scale, this._spanScratch) : NO_SPAN;
                 // Both ends of the interval this bar claims: its time span widened by
                 // everything painted around it. With no padding these are its own
                 // start and end times, and the layout is purely time-based.
-                const start = alloc.startTime - span.lead;
-                const end = Math.max(alloc.endTime + span.trail, start);
-                if (i > clusterStart && alloc.startTime - maxLead >= clusterMaxEnd) {
+                let start = this._claimedStart(alloc, scale);
+                // The lane of the bar before, when this bar shares its end label
+                // and can follow it there (see above).
+                let pairLane = -1;
+                if (i > 0 && this._edgeLabelState(list[i - 1]).shareEnd) {
+                    const before = list[i - 1];
+                    const info = laneInfo.get(before)!;
+                    if (!info.overflow && laneEnds[info.lane] <= start) {
+                        pairLane = info.lane;
+                    } else {
+                        // The cap hid the bar before, or (a rounding apart) the
+                        // pair does not fit side by side: both labels come back.
+                        // The bar before was the last one placed, so its own
+                        // claim simply grows by its label.
+                        this._unshareEdgeLabels(before, alloc);
+                        const beforeEnd = before.endTime + (scale ? this._paintedSpan(before, scale, this._spanScratch, NO_EDGE).trail : 0);
+                        if (!info.overflow && beforeEnd > laneEnds[info.lane]) laneEnds[info.lane] = beforeEnd;
+                        if (beforeEnd > clusterMaxEnd) clusterMaxEnd = beforeEnd;
+                        start = this._claimedStart(alloc, scale);
+                    }
+                }
+                const end = Math.max(alloc.endTime + (scale ? this._paintedSpan(alloc, scale, this._spanScratch, this._edgeLabelState(alloc)).trail : 0), start);
+                if (i > clusterStart && pairLane < 0 && alloc.startTime - maxLead >= clusterMaxEnd) {
                     closeCluster(i);
                     clusterStart = i;
                     laneEnds = [];
@@ -6292,7 +6343,9 @@
                     laneEndLowerBound = Infinity;
                 }
                 let lane;
-                if (laneEndLowerBound > start) {
+                if (pairLane >= 0) {
+                    lane = pairLane;
+                } else if (laneEndLowerBound > start) {
                     lane = laneEnds.length;
                 } else {
                     lane = 0;
@@ -6375,23 +6428,21 @@
         // Icons are measured by their box rather than their loaded, aspect-fitted
         // size, so the geometry does not shift as images arrive.
         //
-        // Which edge labels are drawn (collapseMatchingEdgeLabels) changes with the
-        // zoom, so a box is measured again when that differs from what it was
-        // measured under.
+        // The box counts every edge label as drawn beside its bar; which ones
+        // collapseMatchingEdgeLabels draws elsewhere changes with the zoom, so that
+        // is taken off it where it is read (_paintedSpan), from the icon runs kept
+        // apart for it (`startIcons`/`endIcons`).
         private _decorationBox(alloc: ResourceTimelineAllocation): ResourceTimelineDecorationBox {
-            const edge = this._edgeLabelState(alloc);
             let box = this._decorBoxes.get(alloc);
-            if (box === undefined || box.gen !== this._decorGen
-                || box.hideStart !== edge.hideStart || box.hideEnd !== edge.hideEnd
-                || box.shareEnd !== edge.shareEnd) {
-                box = this._measureDecorations(alloc, edge);
+            if (box === undefined || box.gen !== this._decorGen) {
+                box = this._measureDecorations(alloc);
                 box.gen = this._decorGen;
                 this._decorBoxes.set(alloc, box);
             }
             return box;
         }
 
-        private _measureDecorations(alloc: ResourceTimelineAllocation, edge: ResourceTimelineEdgeLabels): ResourceTimelineDecorationBox {
+        private _measureDecorations(alloc: ResourceTimelineAllocation): ResourceTimelineDecorationBox {
             const c = this.config;
             const metrics = this._labelMetrics();
             const gap = metrics.gap;
@@ -6416,11 +6467,7 @@
             let centerWidth = 0;
             let centerGroup = 0;
 
-            // A hidden edge label takes no room; a shared one is still drawn on the
-            // bar's center line, just not beside the bar (see below).
-            const showStart = !!alloc.textStart && !edge.hideStart;
-            const showEnd = !!alloc.textEnd && !edge.hideEnd;
-            if (showStart || showEnd) centerHeight = lineHeight;
+            if (alloc.textStart || alloc.textEnd) centerHeight = lineHeight;
 
             if (alloc.icons) {
                 for (const icon of alloc.icons) {
@@ -6463,11 +6510,10 @@
                 below = Math.max(below, belowRun + lineHeight);
                 if (measure) centerWidth = Math.max(centerWidth, this._labelWidth(alloc.textBelow));
             }
-            if (showStart && measure) left += gap + this._labelWidth(alloc.textStart!);
-            // A shared end label sits in the gap before the next bar, which only
-            // shares it when the word fits there: it does not widen this bar's
-            // trail, or it would push that bar onto another lane by itself.
-            if (showEnd && measure && !edge.shareEnd) right += gap + this._labelWidth(alloc.textEnd!);
+            const startIcons = left;
+            const endIcons = right;
+            if (alloc.textStart && measure) left += gap + this._labelWidth(alloc.textStart);
+            if (alloc.textEnd && measure) right += gap + this._labelWidth(alloc.textEnd);
 
             const spill = (centerHeight - barHeight) / 2;
             return {
@@ -6478,9 +6524,8 @@
                 left,
                 right,
                 width: Math.max(centerWidth, centerGroup),
-                hideStart: edge.hideStart,
-                hideEnd: edge.hideEnd,
-                shareEnd: edge.shareEnd
+                startIcons,
+                endIcons
             };
         }
 
@@ -6488,22 +6533,42 @@
         // start (`lead`) and past its end (`trail`) at the given scale in pixels per
         // ms. Its delay bars always count; its labels and icons count only at a zoom
         // where they are drawn at all, which is what keeps a zoomed-out row from
-        // stacking every bar in it. Written into `out` to keep the lane pass
-        // allocation-free.
-        private _paintedSpan(alloc: ResourceTimelineAllocation, scale: number, out: ResourceTimelineSpan): ResourceTimelineSpan {
+        // stacking every bar in it. A start label the bar before draws, or an end
+        // label shared with the bar after (see `edge`), takes no room beside the
+        // bar: counting it would push the pair apart by itself. Written into `out`
+        // to keep the lane pass allocation-free.
+        private _paintedSpan(alloc: ResourceTimelineAllocation, scale: number, out: ResourceTimelineSpan, edge: ResourceTimelineEdgeLabels): ResourceTimelineSpan {
             const startEdge = alloc.startBar && alloc.startBar.duration > 0 ? alloc.startBar.duration : 0;
             const endEdge = alloc.endBar && alloc.endBar.duration > 0 ? alloc.endBar.duration : 0;
             out.lead = startEdge;
             out.trail = endEdge;
 
-            const width = (alloc.endTime - alloc.startTime) * scale;
-            if (width < this.config.minBarWidthForLabels) return out;
+            if (!this._carriesLabels(alloc, scale)) return out;
 
             const box = this._decorationBox(alloc);
+            const width = (alloc.endTime - alloc.startTime) * scale;
             const overhang = Math.max(0, (box.width - width) / 2) / scale;
-            out.lead = Math.max(startEdge + box.left / scale, overhang);
-            out.trail = Math.max(endEdge + box.right / scale, overhang);
+            const left = edge.hideStart ? box.startIcons : box.left;
+            const right = edge.shareEnd ? box.endIcons : box.right;
+            out.lead = Math.max(startEdge + left / scale, overhang);
+            out.trail = Math.max(endEdge + right / scale, overhang);
             return out;
+        }
+
+        // Where a bar's claim on its lane starts, at the given scale (0 for its
+        // time alone), with its start label drawn as collapseMatchingEdgeLabels
+        // has it now.
+        private _claimedStart(alloc: ResourceTimelineAllocation, scale: number): number {
+            if (!scale) return alloc.startTime;
+            return alloc.startTime - this._paintedSpan(alloc, scale, this._spanScratch, this._edgeLabelState(alloc)).lead;
+        }
+
+        // Whether a bar is drawn wide enough to carry its labels and icons at the
+        // given scale (minBarWidthForLabels). The one test the lane pass, the merge
+        // of edge labels and the scene all make, so they never disagree on a bar
+        // right at the threshold.
+        private _carriesLabels(alloc: ResourceTimelineAllocation, scale: number): boolean {
+            return (alloc.endTime - alloc.startTime) * scale >= this.config.minBarWidthForLabels;
         }
 
         // How collapseMatchingEdgeLabels has a bar draw its start/end labels.
@@ -6518,26 +6583,9 @@
         // trimmed, ignoring case. Empty text and placeholders never match.
         private _edgeLabelsMatch(endText: string | null | undefined, startText: string | null | undefined): boolean {
             if (!endText || !startText) return false;
-            const a = String(endText).trim();
-            const b = String(startText).trim();
-            if (!a || !b || EDGE_LABEL_PLACEHOLDERS.indexOf(a) >= 0) return false;
-            return a.toUpperCase() === b.toUpperCase();
-        }
-
-        // Width, in pixels, of the icons drawn outside one end of a bar, which the
-        // label at that end is pushed beyond (as _measureDecorations counts them).
-        private _edgeIconRun(alloc: ResourceTimelineAllocation, end: boolean): number {
-            if (!alloc.icons) return 0;
-            const metrics = this._labelMetrics();
-            let run = 0;
-            for (const icon of alloc.icons) {
-                if (!icon || !icon.source || icon.inside) continue;
-                const pos = String(icon.position || 'start').toLowerCase();
-                if (pos === 'above' || pos === 'below' || pos === 'center') continue;
-                if ((pos === 'end') !== end) continue;
-                run += metrics.gap + (icon.size && icon.size > 0 ? icon.size : metrics.iconSize);
-            }
-            return run;
+            const a = String(endText).trim().toUpperCase();
+            if (!a || !EDGE_LABEL_HAS_WORD.test(a) || EDGE_LABEL_PLACEHOLDERS.indexOf(a) >= 0) return false;
+            return a === String(startText).trim().toUpperCase();
         }
 
         // Decides, for one row's startTime-sorted list at the given scale (pixels
@@ -6545,109 +6593,83 @@
         // of successive bars that do not overlap in time (touching is a junction)
         // and whose facing labels match - the first one's end, the next one's
         // start - is merged while the clear space between them, past their delay
-        // bars and edge icons, is narrower than both labels side by side plus room
-        // for one more of them: wide enough to tell apart, and the two would still
-        // read as one stop drawn twice. A merged pair keeps the next bar's start
-        // label hidden and draws the end label once, centered in that space, when
-        // the whole word fits between the bars; otherwise neither copy is drawn,
-        // rather than one running under a bar. A bar too narrow to carry labels
-        // draws neither: as the first of a pair there is nothing to merge, as the
-        // second there is nothing to hide, yet its neighbour's label still moves.
+        // bars and edge icons, holds the word with a label gap either side yet is
+        // narrower than both labels side by side plus room for one more of them:
+        // the two would still read as one stop drawn twice. A merged pair draws
+        // the end label once, centered in that space, and keeps the next bar's
+        // start label hidden. A space too narrow for the word merges nothing, so
+        // both labels are drawn as they would be without the option (and
+        // stackOnLabelCollision stacks the pair to keep them readable) rather than
+        // dropping the stop from view. A bar too narrow to carry labels draws
+        // neither: as the first of a pair there is nothing to merge, as the second
+        // there is nothing to hide, yet its neighbour's label still moves.
         //
         // The states are kept off the allocations (host objects); the strings
         // themselves stay as they are for the tooltip and the accessible name.
-        // Returns whether any pair was merged.
-        private _resolveSharedEdgeLabels(list: ResourceTimelineAllocation[], scale: number): boolean {
+        // The lane pass keeps every merged pair on one lane (_assignStackLanes).
+        // Records on `row` whether it has a pair that could merge at any zoom.
+        private _resolveSharedEdgeLabels(list: ResourceTimelineAllocation[], scale: number, row?: ResourceTimelineRowIndex | null): void {
             const c = this.config;
-            if (!c.collapseMatchingEdgeLabels) return false;
+            if (!c.collapseMatchingEdgeLabels) return;
             const map = this._edgeLabels;
+            const gap = c.barLabelGap;
+            let pairs = false;
             // Allocated on the first merge: most rows have none.
             let states: (ResourceTimelineEdgeLabels | undefined)[] | null = null;
 
-            // There is no scale before the first layout; _syncLanesToScale
-            // resolves again once there is one.
-            if (scale > 0) {
-                const gap = c.barLabelGap;
-                const minWidth = c.minBarWidthForLabels;
-                for (let i = 1; i < list.length; i++) {
-                    const left = list[i - 1];
-                    const right = list[i];
-                    if (!(left.endTime <= right.startTime)) continue;
-                    if (!this._edgeLabelsMatch(left.textEnd, right.textStart)) continue;
-                    if ((left.endTime - left.startTime) * scale < minWidth) continue;
-                    const rightShows = (right.endTime - right.startTime) * scale >= minWidth;
+            for (let i = 1; i < list.length; i++) {
+                const left = list[i - 1];
+                const right = list[i];
+                if (!(left.endTime <= right.startTime)) continue;
+                if (!this._edgeLabelsMatch(left.textEnd, right.textStart)) continue;
+                pairs = true;
+                // There is no scale before the first layout; _syncLanesToScale
+                // resolves again once there is one.
+                if (!(scale > 0) || !this._carriesLabels(left, scale)) continue;
+                const rightShows = this._carriesLabels(right, scale);
 
-                    // The clear space between the pair, as times: from past the
-                    // first bar's end delay bar and end icons to before the next
-                    // one's start icons and start delay bar.
-                    const from = this._effectiveEndTime(left) + this._edgeIconRun(left, true) / scale;
-                    const to = this._effectiveStartTime(right) - (rightShows ? this._edgeIconRun(right, false) / scale : 0);
-                    const gapPx = (to - from) * scale;
-                    const endWidth = this._labelWidth(left.textEnd!);
-                    const startWidth = rightShows ? this._labelWidth(right.textStart!) : 0;
-                    const collideAt = endWidth + gap + (rightShows ? startWidth + gap : 0);
-                    if (gapPx >= collideAt + Math.max(endWidth, startWidth)) continue;
+                // The clear space between the pair, as times: from past the first
+                // bar's end delay bar and end icons to before the next one's start
+                // icons and start delay bar.
+                const from = this._effectiveEndTime(left) + this._decorationBox(left).endIcons / scale;
+                const to = this._effectiveStartTime(right) - (rightShows ? this._decorationBox(right).startIcons / scale : 0);
+                const gapPx = (to - from) * scale;
+                const endWidth = this._labelWidth(left.textEnd!);
+                if (gapPx < endWidth + 2 * gap) continue;
+                const startWidth = rightShows ? this._labelWidth(right.textStart!) : 0;
+                const collideAt = endWidth + gap + (rightShows ? startWidth + gap : 0);
+                if (gapPx >= collideAt + Math.max(endWidth, startWidth)) continue;
 
-                    if (states === null) states = new Array(list.length);
-                    if (rightShows) (states[i] || (states[i] = newEdgeLabels())).hideStart = true;
-                    const shared = states[i - 1] || (states[i - 1] = newEdgeLabels());
-                    if (gapPx >= endWidth + 2 * gap) {
-                        shared.shareEnd = true;
-                        shared.anchorTime = (from + to) / 2;
-                    } else {
-                        shared.hideEnd = true;
-                    }
-                }
+                if (states === null) states = new Array(list.length);
+                if (rightShows) (states[i] || (states[i] = newEdgeLabels())).hideStart = true;
+                const shared = states[i - 1] || (states[i - 1] = newEdgeLabels());
+                shared.shareEnd = true;
+                shared.anchorTime = (from + to) / 2;
             }
 
+            if (row) row.edgePairs = pairs;
             for (let i = 0; i < list.length; i++) {
                 const state = states !== null ? states[i] : undefined;
                 if (state) map.set(list[i], state);
                 else map.delete(list[i]);
             }
-            return states !== null;
         }
 
-        // Undoes the merges of collapseMatchingEdgeLabels whose two bars the lane
-        // pass did not keep on one line: a third bar overlapping them, or the lane
-        // cap, can put them on different lanes, where the label drawn once beside
-        // the first bar would say nothing about the second. Returns whether any
-        // merge was undone, so the lanes are built again with those labels.
-        private _splitEdgeLabels(list: ResourceTimelineAllocation[]): boolean {
+        // Undoes the merge of one pair (see _resolveSharedEdgeLabels), drawing
+        // both its labels beside their bars again.
+        private _unshareEdgeLabels(left: ResourceTimelineAllocation, right: ResourceTimelineAllocation): void {
             const map = this._edgeLabels;
-            const laneInfo = this._laneInfo;
-            let split = false;
-            for (let i = 1; i < list.length; i++) {
-                const left = list[i - 1];
-                const right = list[i];
-                const l = map.get(left);
-                const r = map.get(right);
-                if (!(l && (l.hideEnd || l.shareEnd)) && !(r && r.hideStart)) continue;
-
-                const a = laneInfo.get(left);
-                const b = laneInfo.get(right);
-                if (a && b && !a.overflow && !b.overflow && a.cluster && b.cluster
-                    && a.lane === b.lane
-                    // Lanes of one cluster share their offsets; a bar alone in its
-                    // cluster sits on the row's center line whatever cluster it is.
-                    && (a.cluster === b.cluster
-                        || (a.cluster.laneHeights.length <= 1 && b.cluster.laneHeights.length <= 1))) {
-                    continue;
-                }
-
-                if (l) {
-                    l.hideEnd = false;
-                    l.shareEnd = false;
-                    l.anchorTime = 0;
-                    if (!l.hideStart) map.delete(left);
-                }
-                if (r) {
-                    r.hideStart = false;
-                    if (!r.hideEnd && !r.shareEnd) map.delete(right);
-                }
-                split = true;
+            const l = map.get(left);
+            if (l) {
+                l.shareEnd = false;
+                l.anchorTime = 0;
+                if (!l.hideStart) map.delete(left);
             }
-            return split;
+            const r = map.get(right);
+            if (r) {
+                r.hideStart = false;
+                if (!r.shareEnd) map.delete(right);
+            }
         }
 
         // Vertical offset (in pixels) of a bar's center from its row's center line.

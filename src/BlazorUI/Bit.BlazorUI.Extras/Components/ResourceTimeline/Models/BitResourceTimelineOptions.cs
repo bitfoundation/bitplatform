@@ -118,17 +118,20 @@ public class BitResourceTimelineOptions
     /// <see cref="BitResourceTimelineAllocation.TextStart"/>, such as the airport
     /// between two legs of a flight - draw that text once instead of twice into
     /// the gap between them. The labels are compared trimmed and ignoring case;
-    /// empty ones and placeholders (<c>—</c>, <c>–</c>, <c>-</c>, <c>…</c>,
-    /// <c>...</c>) never match.
+    /// empty ones and placeholders never match: a label with no letter or digit
+    /// (<c>—</c>, <c>--</c>, <c>?</c>, <c>...</c>) and <c>N/A</c>, <c>NA</c>,
+    /// <c>TBD</c>, <c>TBA</c>, <c>TBC</c>, <c>Unknown</c>, <c>None</c> and <c>Null</c>.
     /// <para>
-    /// A pair is merged while the gap is narrower than both labels side by side
-    /// plus room for one more, not only once they would touch. The remaining label
-    /// is centered in the gap when the whole word fits there, and omitted when it
-    /// would run under either bar. Either way it does not, by itself, push the next
-    /// bar onto another lane (<see cref="StackOnLabelCollision"/>); different
-    /// labels still stack. Like a collision, this is measured in pixels and
-    /// recomputed when the zoom changes, so a gap that grows wide enough shows
-    /// both labels again.
+    /// A pair is merged while the gap holds the whole word but is narrower than
+    /// both labels side by side plus room for one more, not only once they would
+    /// touch. The label is then drawn once, centered in the gap, and the pair is
+    /// kept on one lane: it does not, by itself, push the next bar onto another
+    /// lane (<see cref="StackOnLabelCollision"/>), and a bar overlapping the pair
+    /// does not split it. A gap too narrow for the word (touching bars, for
+    /// one) merges nothing, so both labels are drawn as they would be without this
+    /// option; different labels still stack. Like a collision, this is measured in
+    /// pixels and recomputed when the zoom changes, so a gap that grows wide
+    /// enough shows both labels again.
     /// </para>
     /// Only the drawing changes: the allocations keep both texts, and so do their
     /// tooltips and accessible names. Defaults to <c>false</c>.
