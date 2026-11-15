@@ -55,6 +55,8 @@
         nonWorking: SvgNodePool;
         gridH: SvgNodePool;
         gridV: SvgNodePool;
+        separatorFills: SvgNodePool;
+        separatorDashes: SvgNodePool;
         barShapes: SvgNodePool;
         barIcons: SvgNodePool;
         barLabels: SvgNodePool;
@@ -69,6 +71,8 @@
         axisTickLabels: SvgNodePool;
         resourceAxis: SvgNodePool;
         resourceTints: SvgNodePool;
+        resourceSeparatorFills: SvgNodePool;
+        resourceSeparatorDashes: SvgNodePool;
         resourceBorder: SvgNodePool;
         resourceLines: SvgNodePool;
         resChevrons: SvgNodePool;
@@ -201,6 +205,9 @@
                 nonWorking: pool(this._washGroup),
                 gridH: pool(this._gridGroup),
                 gridV: pool(this._gridGroup),
+                // The group separators, over the grid lines they stand in for.
+                separatorFills: pool(this._gridGroup),
+                separatorDashes: pool(this._gridGroup),
                 barShapes: pool(this._barsGroup, clearBarIdentity),
                 barIcons: pool(this._barsGroup),
                 barLabels: pool(this._barsGroup),
@@ -216,6 +223,9 @@
                 axisTickLabels: pool(this._timeAxisTickLabelGroup),
                 resourceAxis: pool(this._resourceFillGroup),
                 resourceTints: pool(this._resourceTintGroup),
+                // Under the column's border, as the canvas draws them.
+                resourceSeparatorFills: pool(this._resourceMarkGroup),
+                resourceSeparatorDashes: pool(this._resourceMarkGroup),
                 resourceBorder: pool(this._resourceMarkGroup),
                 resourceLines: pool(this._resourceMarkGroup),
                 resChevrons: pool(this._resourceLabelGroup),
@@ -363,6 +373,31 @@
             }
             for (const line of scene.gridV) {
                 this._line(this._pools.gridV, line.x, v.axisHeight, line.x, v.height, line.color || grid);
+            }
+            this._buildSeparators(scene.groupSeparators, v.axisWidth, v.width, false,
+                this._pools.separatorFills, this._pools.separatorDashes);
+        }
+
+        // The strips of the group separators from x0 to x1: a solid strip is a
+        // rect, a dashed one a line as thick as the strip. Only those that cross
+        // the resource column too when axisOnly is set.
+        private _buildSeparators(strips: ResourceTimelineSceneSeparator[] | null | undefined,
+            x0: number, x1: number, axisOnly: boolean, fills: SvgNodePool, dashes: SvgNodePool): void {
+            if (!strips || !strips.length || !(x1 > x0)) return;
+            for (const s of strips) {
+                if (axisOnly && !s.axis) continue;
+                if (s.dash > 0) {
+                    const node = dashes.acquire('line');
+                    const y = s.y + s.height / 2;
+                    ResourceTimelineNodePool.applyAttrs(node, {
+                        x1: x0, y1: y, x2: x1, y2: y,
+                        stroke: s.color,
+                        'stroke-width': s.height,
+                        'stroke-dasharray': `${s.dash} ${s.gap}`
+                    });
+                } else {
+                    this._rect(fills, x0, s.y, x1 - x0, s.height, s.color);
+                }
             }
         }
 
@@ -539,6 +574,8 @@
                     this._line(this._pools.resourceLines, 0, line.y, v.axisWidth, line.y, line.color);
                 }
             }
+            this._buildSeparators(scene.groupSeparators, 0, v.axisWidth, true,
+                this._pools.resourceSeparatorFills, this._pools.resourceSeparatorDashes);
             this._line(this._pools.resourceBorder, v.axisWidth, startY, v.axisWidth, v.height, colors.axisBorder);
 
             // When the HTML resource-column template overlay is active it renders

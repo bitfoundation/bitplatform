@@ -14,4 +14,9 @@
 /// engine measured it: the rows of the overlay stack on one another as the engine's do, so a height rounded off here
 /// would put every row below it a little further from the one it labels.
 /// </param>
-internal sealed record BitResourceTimelineResourceRow(string Id, string Name, int Depth, bool HasChildren, bool Collapsed, double Height);
+/// <param name="Gap">
+/// The height in pixels of the group separator the engine draws above the row (see
+/// <see cref="BitResourceTimelineOptions.GroupSeparators"/>), which the overlay leaves empty so its rows stay on the
+/// engine's; 0 when there is none.
+/// </param>
+internal sealed record BitResourceTimelineResourceRow(string Id, string Name, int Depth, bool HasChildren, bool Collapsed, double Height, double Gap = 0);

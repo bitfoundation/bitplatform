@@ -2463,13 +2463,13 @@ public class BitResourceTimelineTests : BunitTestContext
             }, layout: Layout(150, 60, 36, 20));
 
             // A height the engine measured in fractions is kept (so the rows below stay on the ones they label), a row it
-            // does not know the height of takes the minimum height of the layout, and every nesting level indents by the
-            // indent of the layout.
+            // does not know the height of takes the minimum height of the layout, every nesting level indents by the
+            // indent of the layout, and the room of a group separator above a row is left as its top margin.
             await component.InvokeAsync(() => component.Instance._OnResourceRowsChanged(Json("""
                 [
                     { "id": "grp", "name": "Group", "depth": 0, "hasChildren": true, "collapsed": false, "height": 47.6 },
                     { "id": "r1", "name": "Resource 1", "depth": 1, "hasChildren": false, "collapsed": false, "height": 0 },
-                    { "id": "r2", "name": "Resource 2", "depth": 2, "hasChildren": false, "collapsed": false, "height": 52 }
+                    { "id": "r2", "name": "Resource 2", "depth": 2, "hasChildren": false, "collapsed": false, "height": 52, "gap": 6.5 }
                 ]
                 """)));
 
@@ -2480,7 +2480,7 @@ public class BitResourceTimelineTests : BunitTestContext
             var rows = component.FindAll(".bit-rtm-rrw");
             Assert.AreEqual("height:47.6px;padding-left:8px", rows[0].GetAttribute("style"));
             Assert.AreEqual("height:36px;padding-left:28px", rows[1].GetAttribute("style"));
-            Assert.AreEqual("height:52px;padding-left:48px", rows[2].GetAttribute("style"));
+            Assert.AreEqual(FormattableString.Invariant($"height:52px;margin-top:{6.5}px;padding-left:48px"), rows[2].GetAttribute("style"));
             Assert.AreEqual(FormattableString.Invariant($"left:{12.5}px;top:{-3.75}px"), component.Find(".bit-rtm-tov").GetAttribute("style"));
             Assert.AreEqual("width:150px;height:60px", component.Find(".bit-rtm-cnr").GetAttribute("style"));
             Assert.AreEqual("top:60px;width:150px", component.Find(".bit-rtm-rov").GetAttribute("style"));

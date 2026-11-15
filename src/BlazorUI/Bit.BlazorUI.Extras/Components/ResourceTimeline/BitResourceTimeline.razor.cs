@@ -678,8 +678,11 @@ public partial class BitResourceTimeline : BitComponentBase
     {
         double height = row.Height > 0 ? row.Height : _layout.ResourceHeight;
 
-        // The engine lays its rows out left to right whatever the direction of the page, and the overlay sits on them.
-        return FormattableString.Invariant($"height:{height}px;padding-left:{8 + row.Depth * _layout.ResourceIndent}px");
+        // The engine lays its rows out left to right whatever the direction of the page, and the overlay sits on them. A
+        // group separator above the row is left as a margin, so the engine's separator shows through the overlay.
+        return row.Gap > 0
+            ? FormattableString.Invariant($"height:{height}px;margin-top:{row.Gap}px;padding-left:{8 + row.Depth * _layout.ResourceIndent}px")
+            : FormattableString.Invariant($"height:{height}px;padding-left:{8 + row.Depth * _layout.ResourceIndent}px");
     }
 
     // Where the overlay of the TooltipTemplate is drawn until the script has measured it (PlaceTooltipOverlayAsync): at
@@ -1329,7 +1332,7 @@ public partial class BitResourceTimeline : BitComponentBase
     /// expanded), so the overlay of the ResourceTemplate renders them. Public only because the interop requires it; not
     /// part of the API of the component.
     /// </summary>
-    /// <param name="rows">The visible rows in display order, as objects of id, name, depth, hasChildren, collapsed and height.</param>
+    /// <param name="rows">The visible rows in display order, as objects of id, name, depth, hasChildren, collapsed, height and gap (the group separator above the row).</param>
     [JSInvokable("OnResourceRowsChanged")]
     public void _OnResourceRowsChanged(JsonElement rows)
     {
@@ -1753,7 +1756,8 @@ public partial class BitResourceTimeline : BitComponentBase
                                                                  Depth: ReadInt(row, "depth"),
                                                                  HasChildren: ReadBool(row, "hasChildren"),
                                                                  Collapsed: ReadBool(row, "collapsed"),
-                                                                 Height: ReadDouble(row, "height"));
+                                                                 Height: ReadDouble(row, "height"),
+                                                                 Gap: ReadDouble(row, "gap"));
         }
 
         return result;

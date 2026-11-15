@@ -29,6 +29,7 @@
         nonWorking: HtmlNodePool;
         gridH: HtmlNodePool;
         gridV: HtmlNodePool;
+        separators: HtmlNodePool;
         barShapes: HtmlNodePool;
         barIcons: HtmlNodePool;
         barLabels: HtmlNodePool;
@@ -38,6 +39,7 @@
         axisTints: HtmlNodePool;
         resourceTints: HtmlNodePool;
         resourceLines: HtmlNodePool;
+        resourceSeparators: HtmlNodePool;
         axisLines: HtmlNodePool;
         axisDayLabels: HtmlNodePool;
         axisTicks: HtmlNodePool;
@@ -174,6 +176,8 @@
                 nonWorking: new ResourceTimelineNodePool(this._washLayer),
                 gridH: new ResourceTimelineNodePool(this._gridLayer),
                 gridV: new ResourceTimelineNodePool(this._gridLayer),
+                // The group separators, over the grid lines they stand in for.
+                separators: new ResourceTimelineNodePool(this._gridLayer),
                 barShapes: new ResourceTimelineNodePool(this._barsLayer, null, clearBarIdentity),
                 barIcons: new ResourceTimelineNodePool(this._barsLayer),
                 barLabels: new ResourceTimelineNodePool(this._barsLayer),
@@ -183,6 +187,7 @@
                 axisTints: new ResourceTimelineNodePool(this._timeAxisTint),
                 resourceTints: new ResourceTimelineNodePool(this._resourceAxisTint),
                 resourceLines: new ResourceTimelineNodePool(this._resourceAxisTint),
+                resourceSeparators: new ResourceTimelineNodePool(this._resourceAxisTint),
                 axisLines: new ResourceTimelineNodePool(this._timeAxisInner),
                 axisDayLabels: new ResourceTimelineNodePool(this._timeAxisInner),
                 axisTicks: new ResourceTimelineNodePool(this._timeAxisInner),
@@ -292,6 +297,32 @@
             }
             for (const line of scene.gridV) {
                 this._rect(this._pools.gridV, line.x, v.axisHeight, 1, v.height - v.axisHeight, line.color || grid);
+            }
+            this._buildSeparators(this._pools.separators, scene.groupSeparators, v.axisWidth, v.width, false);
+        }
+
+        // The strips of the group separators from x0 to x1: a solid strip is
+        // filled, a dashed one painted as a run of dashes that starts at x0, as
+        // the canvas strokes it. Only those that cross the resource column too
+        // when axisOnly is set.
+        private _buildSeparators(pool: HtmlNodePool, strips: ResourceTimelineSceneSeparator[] | null | undefined,
+            x0: number, x1: number, axisOnly: boolean): void {
+            if (!strips || !strips.length || !(x1 > x0)) return;
+            for (const s of strips) {
+                if (axisOnly && !s.axis) continue;
+                const dashed = s.dash > 0;
+                const node = pool.acquire('div');
+                ResourceTimelineNodePool.applyStyle(node, {
+                    position: 'absolute',
+                    left: px(x0),
+                    top: px(s.y),
+                    width: px(x1 - x0),
+                    height: px(s.height),
+                    backgroundColor: dashed ? '' : s.color,
+                    backgroundImage: dashed
+                        ? `repeating-linear-gradient(to right, ${s.color} 0 ${s.dash}px, transparent ${s.dash}px ${s.dash + s.gap}px)`
+                        : ''
+                });
             }
         }
 
@@ -500,6 +531,7 @@
                     this._rect(p.resourceLines, 0, line.y, v.axisWidth, 1, line.color);
                 }
             }
+            this._buildSeparators(p.resourceSeparators, scene.groupSeparators, 0, v.axisWidth, true);
 
             // When the HTML resource-column template overlay is active it renders
             // the labels/chevrons; only the axis background/border is painted.

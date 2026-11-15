@@ -140,6 +140,7 @@ export function makeBareEngine(overrides = {}) {
         workingHoursStart: null,
         workingHoursEnd: null,
         maxStackLanes: 0,
+        groupSeparators: null,
         allowDelete: false,
         showTooltips: true,
         tooltipDelayMs: 300,
@@ -190,6 +191,7 @@ export function makeBareEngine(overrides = {}) {
     engine._configSnapGen = -1;
     engine._rowHeights = [];
     engine._rowTops = [0];
+    engine._rowGaps = [];
 
     engine.scrollX = 0;
     engine.scrollY = 0;

@@ -29,6 +29,20 @@
         color: string;
     }
 
+    /**
+     * A strip of a separator between resource groups, running across the timeline: a solid band, or with dash set a
+     * line of dashes `dash` long `gap` apart, as thick as the strip, from the left edge of the area it crosses.
+     */
+    export interface ResourceTimelineSceneSeparator {
+        y: number;
+        height: number;
+        color: string;
+        dash: number;
+        gap: number;
+        /** Whether the strip crosses the resource column too, not only the content pane. */
+        axis: boolean;
+    }
+
     /** A vertical grid line (a null color is colors.grid). */
     export interface ResourceTimelineSceneVLine {
         x: number;
@@ -168,6 +182,8 @@
         gridV: ResourceTimelineSceneVLine[];
         /** Row lines inside the resource column, only for rows that have their own line color. */
         resourceAxisLines: ResourceTimelineSceneRowLine[] | null;
+        /** The strips of the separators between resource groups, over the grid and under the bars. */
+        groupSeparators: ResourceTimelineSceneSeparator[] | null;
         /** Null when the HTML resource-column template overlay is active. */
         resourceRows: ResourceTimelineSceneResourceRow[] | null;
         bars: ResourceTimelineSceneBar[];
@@ -390,6 +406,7 @@
             this._drawSurface(scene);
             this._drawNonWorking(scene);
             this._drawGrid(scene);
+            this._drawSeparators(scene.groupSeparators, scene.viewport.axisWidth, scene.viewport.width, false);
             // The bars are clipped to the content area: the axes drawn after them
             // cover the rest of their overhang, but not the top-start corner.
             this.ctx.save();
@@ -478,6 +495,32 @@
                 (line) => line.y, (line) => line.color);
             this._strokeVLines(scene.gridV, v.axisHeight, v.height, fallback,
                 (line) => line.x, (line) => line.color);
+        }
+
+        // The strips of the group separators from x0 to x1: a solid strip filled,
+        // a dashed one stroked as thick as it is. Only those that cross the
+        // resource column too when axisOnly is set.
+        private _drawSeparators(strips: ResourceTimelineSceneSeparator[] | null | undefined,
+            x0: number, x1: number, axisOnly: boolean): void {
+            if (!strips || !strips.length || !(x1 > x0)) return;
+            const ctx = this.ctx;
+            for (const s of strips) {
+                if (axisOnly && !s.axis) continue;
+                if (s.dash > 0) {
+                    ctx.save();
+                    ctx.strokeStyle = s.color;
+                    ctx.lineWidth = s.height;
+                    ctx.setLineDash([s.dash, s.gap]);
+                    ctx.beginPath();
+                    ctx.moveTo(x0, s.y + s.height / 2);
+                    ctx.lineTo(x1, s.y + s.height / 2);
+                    ctx.stroke();
+                    ctx.restore();
+                } else {
+                    ctx.fillStyle = s.color;
+                    ctx.fillRect(x0, s.y, x1 - x0, s.height);
+                }
+            }
         }
 
         private _strokeHLines<T>(lines: T[], x0: number, x1: number, fallback: string,
@@ -751,6 +794,7 @@
                 this._strokeHLines(rowLines, 0, axisWidth, colors.grid,
                     (line) => line.y, (line) => line.color);
             }
+            this._drawSeparators(scene.groupSeparators, 0, axisWidth, true);
 
             ctx.strokeStyle = colors.axisBorder;
             ctx.lineWidth = 1;

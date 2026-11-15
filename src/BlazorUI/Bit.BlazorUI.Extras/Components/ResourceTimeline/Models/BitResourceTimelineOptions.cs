@@ -530,4 +530,14 @@ public class BitResourceTimelineOptions
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public BitResourceTimelineAxisLines? AxisLines { get; set; }
+
+    /// <summary>
+    /// Separator bands between resource groups, drawn across the resource column and
+    /// the content pane: their height, background, borders and the depth of the groups
+    /// they separate. A separator takes room of its own between the rows, so the rows
+    /// below it move down. <c>null</c> leaves whatever was applied before; assign an
+    /// empty <see cref="BitResourceTimelineGroupSeparators"/> to clear it.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BitResourceTimelineGroupSeparators? GroupSeparators { get; set; }
 }

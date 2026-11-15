@@ -23,6 +23,7 @@ internal static class BitResourceTimelineJsRuntimeExtensions
     [DynamicDependency(All, typeof(BitResourceTimelineColumnStripes))]
     [DynamicDependency(All, typeof(BitResourceTimelineRowStripes))]
     [DynamicDependency(All, typeof(BitResourceTimelineAxisLines))]
+    [DynamicDependency(All, typeof(BitResourceTimelineGroupSeparators))]
     [DynamicDependency(All, typeof(BitResourceTimelineTexts))]
     public static ValueTask<BitResourceTimelineLayout?> BitResourceTimelineSetup(this IJSRuntime jsRuntime,
                                                                                     string id,
@@ -43,6 +44,7 @@ internal static class BitResourceTimelineJsRuntimeExtensions
     [DynamicDependency(All, typeof(BitResourceTimelineColumnStripes))]
     [DynamicDependency(All, typeof(BitResourceTimelineRowStripes))]
     [DynamicDependency(All, typeof(BitResourceTimelineAxisLines))]
+    [DynamicDependency(All, typeof(BitResourceTimelineGroupSeparators))]
     [DynamicDependency(All, typeof(BitResourceTimelineTexts))]
     public static ValueTask<BitResourceTimelineLayout?> BitResourceTimelineSetOptions(this IJSRuntime jsRuntime,
                                                                                          string id,
