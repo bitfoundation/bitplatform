@@ -701,6 +701,11 @@ public static class BcrdtMergeLab
                 addWins = true;
                 notes.Add($"{Join(removing)} removed {element.Key} while {Join(effectiveAdders)} added it: add wins - it is in the set on every replica, because a remove deletes the entry its replica saw and the add made a new one.");
             }
+            else if (present is false && effectiveAdders.Length > 1)
+            {
+                removeStands = true;
+                notes.Add($"{Join(effectiveAdders)} each added {element.Key} while apart, and {Join(removing)} removed it. Concurrent adds of one element keep one entry, the way concurrent writes of one map key keep one value, and the entry kept is the one the remove deleted - so it is gone on every replica, though the other add was never seen by the remove. An add wins over a concurrent remove only when its own entry is the one kept.");
+            }
             else if (present is false && effectiveAdders.Length == 0)
             {
                 removeStands = true;
@@ -782,7 +787,7 @@ public static class BcrdtMergeLab
         if (kinds.Contains("map")) notes.Add("BcrdtMap: a key written concurrently keeps one value and loses the other. Fields a person types prose into belong in a nested BcrdtText - created once, before people edit it - where both edits merge.");
         if (kinds.Contains("text")) notes.Add("BcrdtText: every concurrent insertion survives, each author's run contiguous. Write an input's new value with BcrdtTextSynchronizer.Apply (BcrdtTextArea does), never by replacing the whole text, or every concurrent edit is lost.");
         if (kinds.Contains("array")) notes.Add("BcrdtArray: concurrent insertions all survive. Replace and Move are a delete plus an insert, so a concurrent edit to that element is lost and two concurrent moves of one element leave two copies - mutate a nested type in place when that matters.");
-        if (kinds.Contains("set")) notes.Add("BcrdtSet: an add wins over a concurrent remove of an entry the adder had not seen. Adding an element already present is a no-op, so it does not save that element from a concurrent remove.");
+        if (kinds.Contains("set")) notes.Add("BcrdtSet: an add wins over a concurrent remove of an entry the adder had not seen. Adding an element already present is a no-op, so it does not save that element from a concurrent remove; and concurrent adds of one element keep one entry, so a remove of the entry kept takes the element out though another add was never seen.");
         if (kinds.Contains("counter")) notes.Add("BcrdtCounter: every concurrent increment and decrement is summed - each replica's changes live under a key of its own, its client id, so none overwrites another, where a number in a BcrdtMap written back as count + 1 keeps one of two concurrent writes. A nested counter, like a nested text, is created once, before people change it.");
 
         if (decisions.Length == 0)

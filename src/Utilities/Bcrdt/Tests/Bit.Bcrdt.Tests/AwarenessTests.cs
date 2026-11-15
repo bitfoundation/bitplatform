@@ -271,4 +271,30 @@ public class AwarenessTests
 
         Assert.IsTrue(colours >= 5, $"Only {colours} distinct colours across 50 users; the palette is not spreading.");
     }
+
+    [TestMethod]
+    public void Departures_of_clients_never_seen_are_not_recorded()
+    {
+        // One message naming a hundred thousand made-up identifiers as gone - a peer flooding the room.
+        using var forger = new BcrdtAwarenessStore(1);
+        byte[] flood = forger.EncodeUpdate([.. Enumerable.Range(0, 100_000).Select(i => (ulong)(1_000_000 + i))]);
+
+        using var victim = new BcrdtAwarenessStore(2);
+        victim.SetLocalState(State(("name", "Ada")));
+        int changes = 0;
+        victim.Changed += _ => changes++;
+        victim.ApplyUpdate(flood);
+
+        Assert.AreEqual(1, victim.Entries.Count, "only the local entry");
+        Assert.AreEqual(0, changes);
+
+        // The departure of a client that was here still lands.
+        using var peer = new BcrdtAwarenessStore(3);
+        peer.SetLocalState(State(("name", "Grace")));
+        victim.ApplyUpdate(peer.EncodeAll());
+        Assert.AreEqual(1, victim.OnlineClients.Count(id => id == 3));
+        peer.SetLocalState(null);
+        victim.ApplyUpdate(peer.EncodeAll());
+        Assert.IsFalse(victim.OnlineClients.Contains(3UL));
+    }
 }

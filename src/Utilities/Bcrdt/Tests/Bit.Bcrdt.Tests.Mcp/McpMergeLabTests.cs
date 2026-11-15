@@ -153,6 +153,23 @@ public class McpMergeLabTests
     }
 
     [TestMethod]
+    public async Task Concurrent_adds_of_one_element_keep_one_entry_which_a_remove_can_take_out()
+    {
+        // A and B both add the element while apart; B then removes the entry it holds. The two adds are one key written
+        // twice and keep one entry - B's here - so B's remove takes the element out everywhere, A's add unseen.
+        var report = await InspectAsync("""
+            A: set tags add "urgent"
+            B: set tags add "urgent"
+            B: set tags remove "urgent"
+            """);
+
+        Assert.IsTrue(report.Converged);
+        Assert.AreEqual("[]", report.Merged!["tags"]!.ToJsonString());
+        Assert.AreEqual("the remove wins", report.Decisions!.Single().Outcome);
+        Assert.Contains("keep one entry", report.Decisions!.Single().Detail);
+    }
+
+    [TestMethod]
     public async Task Two_concurrent_moves_of_one_element_leave_two_copies()
     {
         var report = await InspectAsync("""

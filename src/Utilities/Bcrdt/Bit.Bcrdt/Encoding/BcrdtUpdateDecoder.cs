@@ -237,10 +237,30 @@ public static class BcrdtUpdateDecoder
             if (!missing.ContainsClient(client) || missing.Get(client) > clock) missing.Set(client, clock);
         }
 
+        void NoteUnmet(ulong author, BcrdtItemId? reference)
+        {
+            if (reference is not { } id || id.Client == author) return;
+
+            long state = store.GetState(id.Client);
+            if (id.Clock >= state) NoteMissing(id.Client, state);
+        }
+
         void DeferStack()
         {
             foreach (BcrdtAbstractStruct blocked in stack)
             {
+                // What each held block itself waits for. Only the block on top of the stack noted its own wait;
+                // the ones below it jumped to another author's blocks in this update, and when one of those turns
+                // out to be out of order it notes its own clock, which lies past what the block below needs. Content
+                // from that author arriving later would then release nothing, and the blocks held here would wait
+                // until the next handshake.
+                if (blocked is BcrdtItem item)
+                {
+                    NoteUnmet(item.Id.Client, item.Origin);
+                    NoteUnmet(item.Id.Client, item.RightOrigin);
+                    NoteUnmet(item.Id.Client, item.Parent as BcrdtItemId?);
+                }
+
                 ulong client = blocked.Id.Client;
                 if (groups.TryGetValue(client, out BcrdtClientBlocks? group))
                 {

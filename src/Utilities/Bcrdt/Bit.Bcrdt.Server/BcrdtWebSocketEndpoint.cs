@@ -2,6 +2,7 @@
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -159,8 +160,10 @@ public static class BcrdtWebSocketEndpoint
     /// <param name="pattern">The route pattern, optionally containing a <c>{documentId}</c> segment.</param>
     /// <param name="authorize">
     /// Consulted before the socket is accepted. Omitted means every request is accepted, which is
-    /// right for a demo and wrong for anything reachable from outside. A refusal is answered with 403,
-    /// which the client transport reports as a final refusal rather than a failure to retry.
+    /// right for a demo and wrong for anything reachable from outside. A refused socket is accepted only
+    /// to be sent an <c>Auth</c> message granting nothing, and closed: the client's provider reports that
+    /// as a final refusal rather than a failure to retry - in a browser too, whose WebSocket never shows
+    /// the status of a refused upgrade.
     /// </param>
     /// <param name="options">Message size, queue and shutdown settings; defaults when omitted.</param>
     /// <returns>The mapped endpoint, for further conventions such as authorization policies.</returns>
@@ -188,6 +191,9 @@ public static class BcrdtWebSocketEndpoint
         /// <summary>How long a close frame may take before the socket is abandoned.</summary>
         private static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(2);
 
+        /// <summary>The reason a refused client is given, the hub's own.</summary>
+        private const string AccessDeniedReason = "Not authorized to join this document.";
+
         private readonly BcrdtRoomRegistry<Member> _rooms = new();
 
         // This mapping, as a document host tells relays apart: its rooms are its own.
@@ -208,11 +214,12 @@ public static class BcrdtWebSocketEndpoint
                 return;
             }
 
-            // Refused before the upgrade, so the client is told with an HTTP status it can read rather
-            // than by a socket that opens and closes again for no stated reason.
+            // Refused after the upgrade, with an Auth message, the way the hub refuses: a browser's WebSocket
+            // never shows the page the status of a failed upgrade, so a 403 there reads as a network failure the
+            // client would retry for ever.
             if (authorize is not null && !await authorize(context, documentId).ConfigureAwait(false))
             {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await RefuseAsync(context).ConfigureAwait(false);
                 return;
             }
 
@@ -222,7 +229,7 @@ public static class BcrdtWebSocketEndpoint
 
             if (access == BcrdtDocumentAccess.None)
             {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await RefuseAsync(context).ConfigureAwait(false);
                 return;
             }
 
@@ -256,15 +263,101 @@ public static class BcrdtWebSocketEndpoint
             }
         }
 
+        /// <summary>
+        /// Accepts the socket only to refuse it: an <c>Auth</c> message granting nothing - which the client's provider
+        /// treats as final, in a browser as anywhere - and then a close frame.
+        /// </summary>
+        private static async Task RefuseAsync(HttpContext context)
+        {
+            using WebSocket socket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
+            try
+            {
+                using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
+                timeout.CancelAfter(CloseTimeout);
+                await socket
+                    .SendAsync(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.None, AccessDeniedReason), WebSocketMessageType.Binary, endOfMessage: true, timeout.Token)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // The client went away before it heard; the close below is all that is left.
+            }
+
+            await CloseRefusedAsync(socket).ConfigureAwait(false);
+
+            // Waits briefly for the client's answer to the close frame, so the socket ends cleanly.
+            try
+            {
+                using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
+                timeout.CancelAfter(CloseTimeout);
+                byte[] buffer = new byte[256];
+                while (socket.State is WebSocketState.CloseSent or WebSocketState.Open)
+                {
+                    WebSocketReceiveResult result = await socket.ReceiveAsync(buffer, timeout.Token).ConfigureAwait(false);
+                    if (result.MessageType == WebSocketMessageType.Close) break;
+                }
+            }
+            catch (Exception)
+            {
+                // A client that does not answer is dropped with the request.
+            }
+        }
+
         private static string? ResolveDocumentId(HttpContext context)
         {
             if (context.Request.RouteValues.TryGetValue(DocumentIdKey, out object? routeValue) &&
                 routeValue?.ToString() is { Length: > 0 } fromRoute)
             {
-                return fromRoute;
+                return UnescapeSlashes(context, fromRoute);
             }
 
             return context.Request.Query[DocumentIdKey].ToString() is { Length: > 0 } fromQuery ? fromQuery : null;
+        }
+
+        /// <summary>
+        /// The identifier a route value stands for, with the slashes it holds put back.
+        /// </summary>
+        /// <remarks>
+        /// The client escapes a <c>/</c> in an identifier as <c>%2F</c>, and the server decodes every escape of a
+        /// path but that one, so the route value of <c>team/notes</c> is <c>team%2Fnotes</c> - a different document
+        /// from the one the hub, the host and the application's own code call <c>team/notes</c>. Nor can the route
+        /// value simply be unescaped: an identifier that holds the text <c>%2F</c> arrives as the same route value.
+        /// So the segment is read again from the path as the client sent it, and unescaped once.
+        /// </remarks>
+        private static string UnescapeSlashes(HttpContext context, string routeValue)
+        {
+            if (!routeValue.Contains("%2F", StringComparison.OrdinalIgnoreCase)) return routeValue;
+
+            string? rawTarget = context.Features.Get<IHttpRequestFeature>()?.RawTarget;
+            if (string.IsNullOrEmpty(rawTarget)) return routeValue;
+
+            int query = rawTarget.IndexOfAny(['?', '#']);
+            string rawPath = query < 0 ? rawTarget : rawTarget[..query];
+
+            foreach (string segment in rawPath.Split('/'))
+            {
+                if (string.Equals(UnescapeAllButSlashes(segment), routeValue, StringComparison.Ordinal))
+                {
+                    return Uri.UnescapeDataString(segment);
+                }
+            }
+
+            return routeValue;
+
+            // What the server makes of a raw segment: every escape decoded but %2F.
+            static string UnescapeAllButSlashes(string segment)
+            {
+                var decoded = new System.Text.StringBuilder(segment.Length);
+                int start = 0;
+                while (true)
+                {
+                    int slash = segment.IndexOf("%2F", start, StringComparison.OrdinalIgnoreCase);
+                    decoded.Append(Uri.UnescapeDataString(slash < 0 ? segment[start..] : segment[start..slash]));
+                    if (slash < 0) return decoded.ToString();
+                    decoded.Append(segment, slash, 3);
+                    start = slash + 3;
+                }
+            }
         }
 
         /// <summary>The signed-in user, the way SignalR identifies one by default, or null for an anonymous request.</summary>
@@ -321,9 +414,8 @@ public static class BcrdtWebSocketEndpoint
                     if (message is null) break;
                     if (message.Length == 0) continue;
 
-                    // Only the server may refuse a client, and this endpoint does so with a 403 before
-                    // the upgrade; an Auth frame from a client is a forgery that would disconnect the
-                    // whole room for good.
+                    // Only the server may refuse a client; an Auth frame from a client is a forgery that
+                    // would disconnect the whole room for good.
                     if (!BcrdtSyncProtocol.IsRelayable(message)) continue;
 
                     // What a reader writes reaches nobody, nor anything from a connection refused while this

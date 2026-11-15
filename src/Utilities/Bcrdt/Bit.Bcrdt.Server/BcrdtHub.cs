@@ -73,6 +73,27 @@ public class BcrdtHub : Hub
     /// </remarks>
     protected virtual string AccessDeniedReason => "Not authorized to join this document.";
 
+    /// <summary>The most documents one connection may have joined at once.</summary>
+    /// <remarks>
+    /// Defaults to the <see cref="BcrdtHubOptions"/> registered in the container -
+    /// <see cref="BcrdtHubOptions.DefaultMaxDocumentsPerConnection"/> unless the application registered its own.
+    /// A join past it is refused, and the connection aborted.
+    /// </remarks>
+    protected virtual int MaxDocumentsPerConnection => Options.MaxDocumentsPerConnection;
+
+    /// <summary>The longest document identifier, in characters, a connection may join.</summary>
+    /// <remarks>
+    /// Defaults to the <see cref="BcrdtHubOptions"/> registered in the container -
+    /// <see cref="BcrdtHubOptions.DefaultMaxDocumentIdLength"/> unless the application registered its own.
+    /// A join naming a longer one is refused, and the connection aborted.
+    /// </remarks>
+    protected virtual int MaxDocumentIdLength => Options.MaxDocumentIdLength;
+
+    private BcrdtHubOptions Options =>
+        Context.GetHttpContext()?.RequestServices.GetService<BcrdtHubOptions>() ?? DefaultOptions;
+
+    private static readonly BcrdtHubOptions DefaultOptions = new();
+
     /// <summary>
     /// The host that keeps a replica of the documents this hub carries, or <see langword="null"/> to
     /// only relay.
@@ -143,24 +164,36 @@ public class BcrdtHub : Hub
     /// An admitted client is told what it was granted the same way, before the join completes, so it
     /// knows whether it may write before it sends anything.
     /// </para>
+    /// <para>
+    /// A join naming an identifier longer than <see cref="MaxDocumentIdLength"/>, or one document more than
+    /// <see cref="MaxDocumentsPerConnection"/>, is refused the same way, before anything is authorized or loaded.
+    /// </para>
     /// </remarks>
     /// <param name="documentId">The document to subscribe to.</param>
     public virtual async Task Join(string documentId)
     {
         ArgumentException.ThrowIfNullOrEmpty(documentId);
 
-        BcrdtDocumentAccess access = await AuthorizeAccessAsync(documentId).ConfigureAwait(false);
-        if (access == BcrdtDocumentAccess.None)
+        ConcurrentDictionary<string, JoinedDocument> joined = JoinedDocuments();
+        if (documentId.Length > MaxDocumentIdLength)
         {
-            await Clients.Caller
-                .SendAsync(ReceiveMethod, BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.None, AccessDeniedReason))
-                .ConfigureAwait(false);
-
-            Context.Abort();
+            await RefuseCallerAsync("The document identifier is too long.").ConfigureAwait(false);
             return;
         }
 
-        ConcurrentDictionary<string, JoinedDocument> joined = JoinedDocuments();
+        if (!joined.ContainsKey(documentId) && joined.Count >= MaxDocumentsPerConnection)
+        {
+            await RefuseCallerAsync("Too many documents on one connection.").ConfigureAwait(false);
+            return;
+        }
+
+        BcrdtDocumentAccess access = await AuthorizeAccessAsync(documentId).ConfigureAwait(false);
+        if (access == BcrdtDocumentAccess.None)
+        {
+            await RefuseCallerAsync(AccessDeniedReason).ConfigureAwait(false);
+            return;
+        }
+
         if (joined.ContainsKey(documentId)) return;
 
         // Every hub type is a relay of its own: SignalR keeps groups per hub.
@@ -202,6 +235,16 @@ public class BcrdtHub : Hub
         {
             await Clients.Caller.SendAsync(ReceiveMethod, BcrdtSyncProtocol.EncodeAuth(connection.Access, null)).ConfigureAwait(false);
         }
+    }
+
+    /// <summary>Refuses the caller for good: a refusal it understands, then the end of its connection.</summary>
+    private async Task RefuseCallerAsync(string reason)
+    {
+        await Clients.Caller
+            .SendAsync(ReceiveMethod, BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.None, reason))
+            .ConfigureAwait(false);
+
+        Context.Abort();
     }
 
     /// <summary>

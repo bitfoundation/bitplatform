@@ -387,6 +387,11 @@ public sealed class BcrdtAwarenessStore : IDisposable
                     continue;
                 }
 
+                // The departure of a client never seen tells this replica nothing, and keeping a record of it
+                // would let one message of made-up identifiers - a million fit in a few megabytes - fill the store
+                // until they time out.
+                if (existing is null && state is null) continue;
+
                 if (existing is not null)
                 {
                     if (clock < existing.Clock) continue;

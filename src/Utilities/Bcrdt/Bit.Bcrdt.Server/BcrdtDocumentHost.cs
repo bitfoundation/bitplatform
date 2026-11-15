@@ -159,6 +159,12 @@ public sealed class BcrdtDocumentHostOptions
     /// signed-in user takes it over at once; an anonymous one once the old connection has gone quiet for
     /// this long. Keep it above the clients' presence heartbeat (10 seconds by default), so a live owner
     /// always refreshes its entry first.
+    /// <para>
+    /// An identity whose connection withdrew its entry is not taken over at all, but by the same signed-in user:
+    /// a tab merely hidden withdraws its entry and stays connected, quiet until it is shown again, and anybody in
+    /// the room - who knows its client identifier from the presence traffic - could otherwise claim it meanwhile
+    /// and keep its owner out. The owner's connection releasing it, by leaving, frees it for anyone.
+    /// </para>
     /// </remarks>
     public TimeSpan PresenceTakeoverAfter { get; init; } = TimeSpan.FromSeconds(15);
 
@@ -610,7 +616,8 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
     /// gone. Here an entry with state is accepted only from the connection that owns that client, and
     /// a departure announced for somebody else's client only at a clock that client has already
     /// published, which is what a peer timing them out legitimately sends and which their own next
-    /// update supersedes. A message breaking either rule is dropped whole.
+    /// update supersedes. A departure of a client no connection holds is not passed on - the host
+    /// announced it already, if it was ever here. A message breaking any of these rules is dropped whole.
     /// </para>
     /// <para>
     /// Owning an entry also lets the host announce its departure the moment the connection goes, rather
@@ -654,7 +661,8 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                     // later clock. Withdrawing an entry does not free it for anybody else: the owner's
                     // connection is still open - a tab merely hidden withdraws its entry and publishes it
                     // again when shown - so the identity changes hands only as any held one does, to the
-                    // same signed-in user at once and to anyone else once the holder has gone quiet.
+                    // same signed-in user at once and to anyone else once the holder has gone quiet with its
+                    // entry still published.
                     if (online && clock > claim.Clock && CanTakeOver(claim, connection, now, takeoverAfterMilliseconds))
                     {
                         (claiming ??= []).Add(clientId);
@@ -666,6 +674,13 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                 else if (online)
                 {
                     (claiming ??= []).Add(clientId);
+                }
+                else
+                {
+                    // The departure of a client nobody here holds: one that left, which the host announced
+                    // itself, or one that never was. Relayed, a message of made-up identifiers - a million fit
+                    // in a few megabytes - would fill every peer's presence until they timed out.
+                    return Drop("unknown_presence");
                 }
             }
 
@@ -679,11 +694,12 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
 
                     claim.Owner = connection;
                     claim.LastActive = now;
+                    if (clock > claim.Clock || (clock == claim.Clock && !online)) claim.Online = online;
                     if (clock > claim.Clock) claim.Clock = clock;
                 }
                 else if (online)
                 {
-                    document.AwarenessClaims[clientId] = new AwarenessClaim(connection, clock) { LastActive = now };
+                    document.AwarenessClaims[clientId] = new AwarenessClaim(connection, clock) { LastActive = now, Online = true };
                 }
             }
         }
@@ -693,11 +709,13 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
 
     /// <summary>
     /// Whether <paramref name="connection"/> may take over a presence identity another connection holds:
-    /// at once when both are the same signed-in user, otherwise once the holder has gone quiet.
+    /// at once when both are the same signed-in user, otherwise once the holder has gone quiet with its entry
+    /// still published - a connection lost without a goodbye. A holder that withdrew its entry - a hidden tab -
+    /// is still connected, and keeps its identity until it leaves.
     /// </summary>
     private static bool CanTakeOver(AwarenessClaim claim, IBcrdtHostConnection connection, long now, long takeoverAfterMilliseconds) =>
         (connection.UserId is { } user && string.Equals(claim.Owner.UserId, user, StringComparison.Ordinal)) ||
-        now - claim.LastActive > takeoverAfterMilliseconds;
+        (claim.Online && now - claim.LastActive > takeoverAfterMilliseconds);
 
     /// <summary>A fingerprint of deletions waiting for their targets, zero when none are.</summary>
     /// <remarks>
@@ -1142,6 +1160,9 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
 
         /// <summary>When the owner last published this identity, by <see cref="Environment.TickCount64"/>.</summary>
         public long LastActive { get; set; }
+
+        /// <summary>Whether the owner's latest entry is published rather than withdrawn.</summary>
+        public bool Online { get; set; }
     }
 
     /// <summary>One loaded document: the replica, its writer, and who is connected to it.</summary>

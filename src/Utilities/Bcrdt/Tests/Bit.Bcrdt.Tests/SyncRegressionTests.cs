@@ -895,20 +895,43 @@ public class SyncRegressionTests
     }
 
     [TestMethod]
-    public async Task A_403_is_reported_as_a_refusal_and_not_retried()
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task A_refused_socket_is_reported_as_a_refusal_and_not_retried(bool byAccess)
     {
+        // Refused after the upgrade, with an Auth message granting nothing, rather than with a 403 a browser's
+        // WebSocket cannot read - so a browser stops as surely as any other client.
         int requests = 0;
         await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket(
             "/ws/{documentId}",
-            (_, _) =>
+            byAccess ? null : (_, _) =>
             {
                 Interlocked.Increment(ref requests);
                 return ValueTask.FromResult(false);
-            }));
+            },
+            byAccess ? new BcrdtWebSocketEndpointOptions
+            {
+                AuthorizeAccess = (_, _) =>
+                {
+                    Interlocked.Increment(ref requests);
+                    return ValueTask.FromResult(BcrdtDocumentAccess.None);
+                }
+            } : null));
 
-        await using (var direct = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/doc")))
+        using (var raw = new ClientWebSocket())
         {
-            await Assert.ThrowsExactlyAsync<BcrdtTransportAuthorizationException>(() => direct.ConnectAsync().AsTask());
+            await raw.ConnectAsync(new Uri(host.WebSocketBase + "/ws/doc"), CancellationToken.None);
+            byte[] buffer = new byte[1024];
+            using var patience = new CancellationTokenSource(Patience);
+            WebSocketReceiveResult first = await raw.ReceiveAsync(buffer, patience.Token);
+            Assert.AreEqual(WebSocketMessageType.Binary, first.MessageType);
+            BcrdtSyncMessage refusal = BcrdtSyncProtocol.Decode(buffer.AsMemory(0, first.Count).ToArray());
+            Assert.AreEqual(BcrdtSyncMessageKind.Auth, refusal.Kind);
+            Assert.AreEqual(BcrdtDocumentAccess.None, BcrdtSyncProtocol.DecodeAuthAccess(refusal.Payload).Access);
+
+            WebSocketReceiveResult closing = await raw.ReceiveAsync(buffer, patience.Token);
+            Assert.AreEqual(WebSocketMessageType.Close, closing.MessageType);
+            Assert.AreEqual(WebSocketCloseStatus.PolicyViolation, closing.CloseStatus);
         }
 
         await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/doc"));

@@ -141,8 +141,9 @@
         The labels are a nested <code>BcrdtSet</code>: a member is a value, present or not. Labels ticked by two
         people at once are both kept, the same label ticked by both is kept once, and a label one person unticks
         while the other unticks and ticks it again stays ticked - an add wins over a concurrent remove. (A tick of a
-        label that is already ticked writes nothing, so it cannot outvote a removal; the
-        <a href="conflicts">conflict lab</a> runs both cases.)
+        label that is already ticked writes nothing, so it cannot outvote a removal; nor can a tick that races
+        somebody else's tick of the same label, when the tick kept is the one removed. The
+        <a href="conflicts">conflict lab</a> runs the first two cases.)
     </p>
     <p class="bb-card-desc">
         The notes field at the bottom is a nested <code>BcrdtText</code> instead. Concurrent edits to
