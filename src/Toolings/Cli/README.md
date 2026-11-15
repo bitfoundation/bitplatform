@@ -78,7 +78,7 @@ And these of its own:
 
 | Option | What it does |
 |---|---|
-| `-o, --output <dir>` | Create the project there. Default: `./<name>`. |
+| `-o, --output <dir>` | Create the project there. Default: `./<name>`. A folder in a system folder (like `C:\Windows\System32`, where some terminals start) or one bit can't write to becomes `~/source/repos/<name>`. |
 | `--platforms web,android,ios,macos,windows` | Platforms to set up and build on this machine now. Every project has all of them; the web app is always set up. Any native app means building the whole solution, which adds several GB of build support and minutes of build, so it can wait for `bit setup`. iOS and macOS build on Windows and on a Mac, Windows builds on Windows, and Linux builds web and Android. Running the iOS app from Windows needs a Mac on the network, and the macOS app runs on macOS. |
 | `--tools node,docker,...` | Tools to install when missing. Default: the ones the project needs. `none` installs nothing. |
 | `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: VS Code; `none` in CI. bit installs and sets up VS Code only; Visual Studio and Rider are opened when they're already installed. |

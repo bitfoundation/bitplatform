@@ -128,7 +128,7 @@ public class ToolTests
         var start = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker").Action!;
         var app = Path.Combine(host.Root, "long-running-app.cmd");
         File.WriteAllText(app, "@ping -n 6 127.0.0.1 >nul & exit\r\n");
-        var command = start.Commands.Single();
+        var command = start.Commands[0];
         using var guard = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
@@ -137,6 +137,126 @@ public class ToolTests
         Assert.AreEqual("Start Docker Desktop", start.Title);
         Assert.IsTrue(result.Succeeded, result.Output);
         Assert.IsLessThan(4.0, stopwatch.Elapsed.TotalSeconds, "Docker Desktop keeps what bit reads open until it quits.");
+    }
+
+    [TestMethod]
+    public async Task DockerDesktopOutsideProgramFiles_Should_BeStartedAndWaitedFor()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        host.Runner.On("docker", "version", 1, "failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine");
+        var installation = Directory.CreateDirectory(Path.Combine(host.Root, "Apps", "Docker")).FullName;
+        var desktop = Path.Combine(installation, "Docker Desktop.exe");
+        File.WriteAllText(desktop, "");
+        host.Runner.Executables["docker"] = Path.Combine(Directory.CreateDirectory(Path.Combine(installation, "resources", "bin")).FullName, "docker.exe");
+        var needs = new ToolNeeds { Aspire = true, ContainersRequired = true };
+        var docker = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "docker");
+
+        Assert.AreEqual("Start Docker Desktop", docker.Action?.Title, "Docker Desktop installed with --installation-dir is still Docker Desktop.");
+        StringAssert.Contains(docker.Action!.Commands[0].Arguments[^1], desktop);
+
+        host.Runner.On("powershell", "-NoProfile -NonInteractive -Command $deadline", _ =>
+        {
+            host.Runner.On("docker", "version", 0, "29.8.0");
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        var steps = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, steps).InstallAsync([docker], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single(r => r.Id == "docker").Result;
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, $"{result.Title}: {result.Detail}");
+        Assert.AreEqual("Started Docker Desktop", result.Title);
+        Assert.IsTrue(host.Runner.Calls.FindIndex(c => c.Arguments.LastOrDefault()?.StartsWith("Start-Process", StringComparison.Ordinal) is true)
+            < host.Runner.Calls.FindIndex(c => c.Arguments.LastOrDefault()?.StartsWith("$deadline", StringComparison.Ordinal) is true), "The steps after it need the engine, not only the app.");
+    }
+
+    [TestMethod]
+    public async Task DockerDesktopThatDoesntAnswer_Should_SayWhatItMayBeWaitingFor()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        host.Runner.On("docker", "version", 1, "failed to connect to the docker API");
+        var desktop = Path.Combine(host.Environment.GetVariable("ProgramFiles")!, "Docker", "Docker", "Docker Desktop.exe");
+        Directory.CreateDirectory(Path.GetDirectoryName(desktop)!);
+        File.WriteAllText(desktop, "");
+        host.Runner.On("powershell", "-NoProfile -NonInteractive -Command $deadline", 2);
+        var needs = new ToolNeeds { Aspire = true, ContainersRequired = true };
+        var docker = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "docker");
+
+        var steps = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, steps).InstallAsync([docker], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single(r => r.Id == "docker").Result;
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("it didn't answer within 3 minutes", result.Detail);
+        StringAssert.Contains(result.Hint, "accept its terms");
+    }
+
+    [TestMethod]
+    public async Task WaitingForTheDockerEngine_Should_EndOnceItAnswers()
+    {
+        using var host = new TestHost();
+        var bin = Directory.CreateDirectory(Path.Combine(host.Root, "fake-docker")).FullName;
+
+        if (OperatingSystem.IsWindows())
+        {
+            File.WriteAllText(Path.Combine(bin, "docker.cmd"), "@exit /b 0\r\n");
+        }
+        else
+        {
+            var script = Path.Combine(bin, "docker");
+            File.WriteAllText(script, "#!/bin/sh\nexit 0\n");
+            File.SetUnixFileMode(script, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+
+        var wait = ToolCatalog.WaitForDockerEngine(host.Environment);
+        using var guard = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        var result = await new ProcessRunner(host.Environment, CliLog.None).RunAsync(wait with { Environment = new Dictionary<string, string?> { ["PATH"] = bin + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH") } }, guard.Token);
+
+        Assert.AreEqual(0, result.ExitCode, result.Output);
+        Assert.IsLessThan(30.0, stopwatch.Elapsed.TotalSeconds);
+    }
+
+    [TestMethod]
+    public async Task InstalledButStoppedDocker_Should_BeStartedNotReinstalled()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        host.Runner.On("docker", "version", 1, "failed to connect to the docker API");
+        var needs = new ToolNeeds { Aspire = true };
+        var docker = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "docker");
+
+        Assert.AreEqual("start Docker Desktop, or whatever runs the engine of your docker command", docker.Manual, "Podman's install page doesn't help someone whose Docker is installed.");
+
+        var steps = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, steps).InstallAsync([docker with { Action = null }], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        Assert.AreEqual("Start Docker or Podman yourself", steps.Reports.Single().Result.Title);
+    }
+
+    [TestMethod]
+    public async Task AnAspireUpdateThatFailsAfterUpdating_Should_CountAsDone()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Aspire = true, AspireVersion = new Version(13, 6, 5) };
+        host.Runner.On("aspire", "--version", 0, "13.6.3+38294b1b31552dae42a516cffa0cbc737ec08976");
+        var aspire = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
+        host.Runner.On("dotnet", "tool update --global Aspire.Cli", _ =>
+        {
+            host.Runner.On("aspire", "--version", 0, "13.6.5+b33d222049f1ecc3bc7257ec07b622fe550b2580");
+            return new ProcessResult { ExitCode = 1, Output = "Tool 'aspire.cli' was successfully updated from version '13.6.3' to version '13.6.5'.\nUnhandled exception: Access to the path 'aspire.exe' is denied." };
+        });
+
+        var steps = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, steps).InstallAsync([aspire], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single(r => r.Id == "aspire").Result;
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, "A running aspire held the old aspire.exe, after dotnet tool had put the new one in place.");
+        Assert.AreEqual("13.6.5", result.Detail);
     }
 
     [TestMethod]

@@ -16,7 +16,9 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         var afterHomebrew = context.Environment.IsMacOS && context.PackageManagers.Brew is null && selected.Any(c => c.Tool.Id is "homebrew" && c.Action is not null);
         var withActions = selected.Where(c => c.Action is not null || afterHomebrew).ToList();
 
-        void InstallYourself(ToolCheck manual) => steps.Add(manual.Tool.Id, StepResult.Warning($"Install {manual.Tool.Name} yourself", manual.Manual ?? "bit can't install it on this machine", manual.Manual));
+        void InstallYourself(ToolCheck manual) => steps.Add(manual.Tool.Id, StepResult.Warning($"{(manual.Status.State is ToolState.NotRunning ? "Start" : "Install")} {manual.Tool.Name} yourself", manual.Manual ?? "bit can't install it on this machine", manual.Manual));
+
+        Func<CancellationToken, Task<ToolStatus>> Detect(ToolCheck check) => ct => check.Tool.DetectAsync(new ToolContext(context.Environment, context.Runner, context.Needs, PackageManagers.Detect(context.Environment, context.Runner)), ct);
 
         foreach (var manual in selected.Where(c => c.Action is null && afterHomebrew is false))
         {
@@ -34,13 +36,14 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
         if (cli.Environment.IsWindows)
         {
-            var adminActions = withActions.Select(c => c.Action!).Where(a => a.Elevation is Elevation.Admin).ToList();
+            var adminChecks = withActions.Where(c => c.Action!.Elevation is Elevation.Admin).ToList();
+            var adminActions = adminChecks.Select(c => c.Action!).ToList();
 
             if (adminActions.Count > 0 && cli.Administrator is { } administrator)
             {
-                foreach (var action in adminActions)
+                foreach (var check in adminChecks)
                 {
-                    await RunActionAsync(action, useSudo: false, cancellationToken, administrator: administrator);
+                    await RunActionAsync(check.Action!, useSudo: false, cancellationToken, Detect(check), administrator);
                 }
             }
             else if (adminActions.Count > 0 && cli.AdministratorDeclined)
@@ -55,9 +58,9 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                 await RunWindowsAdministratorBatchAsync(adminActions, cancellationToken);
             }
 
-            foreach (var action in withActions.Select(c => c.Action!).Where(a => a.Elevation is not Elevation.Admin))
+            foreach (var check in withActions.Where(c => c.Action!.Elevation is not Elevation.Admin))
             {
-                await RunActionAsync(action, useSudo: false, cancellationToken);
+                await RunActionAsync(check.Action!, useSudo: false, cancellationToken, Detect(check));
             }
         }
         else
@@ -94,8 +97,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                         continue;
                     }
 
-                    await RunActionAsync(action, useSudo: action.Elevation is Elevation.Sudo && cli.Environment.IsElevated is false, cancellationToken,
-                        ct => check.Tool.DetectAsync(new ToolContext(context.Environment, context.Runner, context.Needs, PackageManagers.Detect(context.Environment, context.Runner)), ct));
+                    await RunActionAsync(action, useSudo: action.Elevation is Elevation.Sudo && cli.Environment.IsElevated is false, cancellationToken, Detect(check));
 
                     if (action.ToolId is "homebrew")
                     {
@@ -182,7 +184,15 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                     : StepResult.Warning(done, action.AfterInstall, hint: action.AfterInstall);
 
             if (action.Partial is { } partial && last is { NotFound: false, TimedOut: false } && last.ExitCode == partial.ExitCode)
-                return StepResult.Succeeded(done, partial.Detail, partial.Hint);
+                return new StepResult { Status = partial.Status, Title = done, Detail = partial.Detail, Hint = partial.Hint };
+
+            if (detect is not null)
+            {
+                RefreshPath();
+
+                if (await detect(ct) is { IsSatisfied: true } installedAnyway)
+                    return StepResult.Succeeded(done, installedAnyway.Version);
+            }
 
             var failed = StepResult.FromProcess(last ?? new ProcessResult { ExitCode = -1 }, done, $"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", string.Join(" && ", action.Commands.Select(c => (useSudo ? "sudo " : "") + c.ShellCommandLine(cli.Environment.Os))));
             return action.Optional ? failed with { Status = StepStatus.Warning } : failed;

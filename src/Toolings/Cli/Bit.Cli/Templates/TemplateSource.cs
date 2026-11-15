@@ -71,7 +71,7 @@ public sealed partial class TemplateSource(CliEnvironment environment, IProcessR
             return (new TemplatePackage(version, cached, hive), new ProcessResult { ExitCode = 0, Output = "Already installed." });
         }
 
-        var result = await InstallAsync($"{PackageId}::{version}", hive, onOutput, cancellationToken);
+        var result = await InstallAsync($"{PackageId}@{version}", hive, onOutput, cancellationToken);
         var installed = FindPackage(hive);
 
         if (result.Succeeded is false || installed is null)
