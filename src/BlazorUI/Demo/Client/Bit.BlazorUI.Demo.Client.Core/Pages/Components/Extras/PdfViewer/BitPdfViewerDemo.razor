@@ -484,7 +484,7 @@
                     page. A browser-only URL keeps the loading state until interactive rendering can fetch it.
                 </div>
                 <br />
-                <BitButton Disabled="rangeSource is not null" OnClick="() => rangeSource = CreateArticleSource().WithRangeLoading()">Load document</BitButton>
+                <BitButton Disabled="rangeSource is not null" OnClick="() => rangeSource = CreateRangeSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="rangeSource" Height="450px" />
             </DemoExample>
