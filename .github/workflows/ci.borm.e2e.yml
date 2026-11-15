@@ -59,10 +59,11 @@ jobs:
     - name: Install Playwright Chromium
       run: pwsh src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
-    # Without its appsettings files, as cd.borm.demo.yml ships it, and in the Production environment it is deployed to.
+    # In the Production environment it is deployed to. cd.borm.demo.yml strips the appsettings files from what it ships
+    # because the server keeps its own copies, which CI does not have, so the repository's appsettings.json stays as
+    # the stand-in for them: a setting only the server's copy holds is not exercised here.
     - name: Start the published demo
       run: |
-        rm -fv demo/appsettings*.json
         cd demo
         nohup dotnet Bit.Borm.Demo.Server.dll --urls http://127.0.0.1:5000 > ../demo.log 2>&1 &
         for attempt in $(seq 1 60); do

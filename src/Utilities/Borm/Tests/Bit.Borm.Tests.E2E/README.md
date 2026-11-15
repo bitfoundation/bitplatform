@@ -70,12 +70,13 @@ dotnet test --filter "FullyQualifiedName!~Every_demo_page"
 ```
 
 The workflow `.github/workflows/ci.borm.e2e.yml` drives the demo published the way `cd.borm.demo.yml` publishes it
-instead - trimmed, with `InvariantGlobalization`, without its appsettings files and in the Production environment,
-which no build output is - and points the suite at it with `BORM_E2E_BASE_URL`:
+instead - trimmed, with `InvariantGlobalization` and in the Production environment, which no build output is - and
+points the suite at it with `BORM_E2E_BASE_URL`. The deployed site reads the appsettings files the server keeps (the
+deploy strips the published ones), which CI does not have, so the run keeps the repository's `appsettings.json` as
+their stand-in: a setting only the server's copy holds is not exercised.
 
 ```bash
 dotnet publish src/Utilities/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o demo -p:InvariantGlobalization=true
-rm -f demo/appsettings*.json
 (cd demo && dotnet Bit.Borm.Demo.Server.dll --urls http://127.0.0.1:5000 &)
 dotnet build src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E/Bit.Borm.Tests.E2E.csproj -c Release
 pwsh src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
