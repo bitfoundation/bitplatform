@@ -809,7 +809,9 @@ public class BitCountryPickerTests : BunitTestContext
         // The box reports what it holds through its binding, which is what searches for it.
         component.Find(".bit-cnp-srch").Input("nor");
 
-        Assert.AreEqual("nor", component.Find(".bit-cnp-srch").GetAttribute("value"));
+        // The open's continuations, released above, may still hold the renderer's dispatcher, in which case the input is
+        // queued behind them rather than dispatched at once, so its render is waited for.
+        component.WaitForAssertion(() => Assert.AreEqual("nor", component.Find(".bit-cnp-srch").GetAttribute("value")));
         StringAssert.StartsWith(component.Find("button.bit-cnp-act").GetAttribute("title"), "Nor");
     }
 

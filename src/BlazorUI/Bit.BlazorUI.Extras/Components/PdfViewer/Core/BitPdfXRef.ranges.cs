@@ -216,6 +216,31 @@ public sealed partial class BitPdfXRef
         return _hints?.Ranges(page, maxBytes) ?? [];
     }
 
+    // The missing-data batch of the Range pass reading this xref, if any.
+    internal BitPdfMissingDataBatch? MissingDataBatch { get; set; }
+
+    // A parsed Kids array never changes, so its hint run is computed once
+    // (an O(kids) scan) rather than at every lookup that meets it.
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<List<object?>, object> _pageRuns = new();
+    private static readonly object NoPageRun = new();
+
+    /// <summary>
+    /// When every entry of <paramref name="kids"/> is, in order, the page object the
+    /// validated hint tables name for consecutive pages, the index of the first of
+    /// those pages; otherwise <c>null</c>. Hints are read by <see cref="HintRanges"/>;
+    /// before that, and for files without usable hints (a linearization page
+    /// count the tree contradicts included), there is no run.
+    /// </summary>
+    internal int? HintedPageRun(List<object?> kids)
+    {
+        if (_hints is not { } hints || kids.Count == 0)
+        {
+            return null;
+        }
+
+        return _pageRuns.GetValue(kids, k => hints.PageRun(k) is int start ? start : NoPageRun) is int run ? run : null;
+    }
+
     internal (int Offset, int Length)? MetadataRange(object? value, int chunkSize)
     {
         if (value is not BitPdfRef reference

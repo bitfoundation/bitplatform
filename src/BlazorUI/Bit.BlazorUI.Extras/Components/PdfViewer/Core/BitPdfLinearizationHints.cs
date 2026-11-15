@@ -1,7 +1,9 @@
 ﻿namespace Bit.BlazorUI;
 
-// ISO 32000-1 Annex F: hints are advisory acquisition ranges, never xref entries
-// or proof of page-tree order. Every bit count, allocation and file range is bounded.
+// ISO 32000-1 Annex F: hints are advisory acquisition ranges, never xref entries.
+// Alone they are no proof of page-tree order; a page walk trusts them only where
+// a node's whole Kids array is the hinted page-object run and its /Count agrees
+// (PageRun). Every bit count, allocation and file range is bounded.
 internal sealed class BitPdfLinearizationHints
 {
     internal sealed record Header(int PageCount, int FirstPage, int FirstObject, int FirstEnd,
@@ -9,8 +11,28 @@ internal sealed class BitPdfLinearizationHints
     private sealed record Page(int Object, int Offset, int Length, int[] Shared);
     private readonly Page[] _pages;
     private readonly (int Offset, int Length)[] _shared;
+    private readonly Dictionary<int, int> _pageByObject = [];
     private BitPdfLinearizationHints(Page[] pages, (int Offset, int Length)[] shared)
-    { _pages = pages; _shared = shared; }
+    {
+        _pages = pages; _shared = shared;
+        for (int i = 0; i < pages.Length; i++)
+        {
+            // Two pages naming one object make the sequence useless for order.
+            if (!_pageByObject.TryAdd(pages[i].Object, i)) { _pageByObject.Clear(); break; }
+        }
+    }
+
+    // The first page index when kids are, in order, the hinted page objects of
+    // consecutive pages (generation 0, as the hint table numbers them).
+    internal int? PageRun(List<object?> kids)
+    {
+        if (kids[0] is not BitPdfRef { Gen: 0 } first || !_pageByObject.TryGetValue(first.Num, out int start)
+            || kids.Count > _pages.Length - start)
+            return null;
+        for (int i = 1; i < kids.Count; i++)
+            if (kids[i] is not BitPdfRef { Gen: 0 } kid || _pages[start + i].Object != kid.Num) return null;
+        return start;
+    }
 
     internal List<(int Offset, int Length)> Ranges(int page, int maxBytes)
     {

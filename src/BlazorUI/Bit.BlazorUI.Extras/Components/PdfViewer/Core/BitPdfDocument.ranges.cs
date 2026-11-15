@@ -84,6 +84,7 @@ public sealed partial class BitPdfDocument
         private List<object?>? _kids;
         private readonly HashSet<BitPdfDict> _visited = new(ReferenceEqualityComparer.Instance);
         private bool _complete;
+        private bool _hinted;
         private int _prefetchedUntil;
         internal List<(int Offset, int Length)> TakeMetadataRanges(int chunkSize, int maxBytes)
         {
@@ -166,6 +167,12 @@ public sealed partial class BitPdfDocument
                 }
 
                 var child = document._xref.FetchIfRef(kids[_nextChild]) as BitPdfDict;
+                if (_hinted && (child is null || !BitPdfPrimitives.IsName(child.Get("Type"), "Page")))
+                {
+                    // The hints promised a page here; they do not describe this tree.
+                    throw InvalidTree();
+                }
+
                 int count = child is null ? 0 : PartialNodeCount(child);
                 if (_remaining < count)
                 {
@@ -210,18 +217,120 @@ public sealed partial class BitPdfDocument
                 throw InvalidTree();
             }
 
+            // A node whose Kids are exactly the validated hint run of the pages it
+            // covers, with a Count to match, holds only pages: jump to the target
+            // instead of fetching every preceding sibling (a flat, interleaved tree
+            // otherwise reads most of the file to reach a distant page). The
+            // resolver trusts a run on exactly the same terms (ResolvePartialPageIndex).
+            bool hinted = _remaining < children.Count
+                && document.HintedPageRun(_node, children) == _index - _remaining;
+
             // All possibly missing reads completed; only now advance the walk.
             _visited.Add(_node);
             _depth++;
             _inherited = inherited;
             _kids = children;
-            _nextChild = 0;
+            _nextChild = hinted ? _remaining : 0;
+            _remaining = hinted ? 0 : _remaining;
+            _hinted = hinted;
             _prefetchedUntil = 0;
             return false;
         }
 
         private static BitPdfRangeFallbackException InvalidTree() => new("The PDF page tree cannot resolve the requested page safely.");
     }
+
+    // The publication check sums at most this many root kids.
+    internal const int MaxVerifiedRootKids = 64;
+
+    /// <summary>
+    /// A cheap consistency check of the root /Count before a Range document is
+    /// published: it must match the linearization page count and, where the root
+    /// has at most <see cref="MaxVerifiedRootKids"/> kids that are all readable
+    /// from bytes already cached, the sum of their counts (one level, never a
+    /// whole-tree traversal). It never makes a request, so it never delays the
+    /// first page; a scattered root (a flat, interleaved tree) is simply not
+    /// summed. A mismatch requests buffered loading, which recovers files whose
+    /// counts are wrong.
+    /// </summary>
+    internal void VerifyPartialPageCount()
+    {
+        // A linearization /N the root /Count contradicts is not checked here: the
+        // hints are then never read (HintRanges ignores them), so the tree is
+        // walked as in any unlinearized file and HintedPageRun finds no run.
+        int declared = PartialPageCount;
+        var root = (BitPdfDict)Catalog.Get("Pages")!;
+        if (root.Get("Kids") is not List<object?> kids)
+        {
+            if (declared == 0)
+            {
+                return;
+            }
+
+            throw new BitPdfRangeFallbackException("The PDF page tree root has no Kids.");
+        }
+
+        if (_xref.HintedPageRun(kids) == 0)
+        {
+            // A validated hint run says every kid is a page: no reads needed.
+            if (kids.Count != declared)
+            {
+                throw new BitPdfRangeFallbackException("The PDF page tree root Count does not match its children.");
+            }
+
+            return;
+        }
+
+        if (kids.Count > MaxVerifiedRootKids)
+        {
+            return;
+        }
+
+        long sum = 0;
+        try
+        {
+            foreach (var kid in kids)
+            {
+                if (_xref.FetchIfRef(kid) is BitPdfDict child)
+                {
+                    sum += PartialNodeCount(child);
+                }
+            }
+        }
+        catch (BitPdfMissingDataException)
+        {
+            // Not cached yet: skip the sum rather than delay publication. The
+            // complete kids already read stay in the xref cache.
+            return;
+        }
+
+        if (sum != declared)
+        {
+            throw new BitPdfRangeFallbackException("The PDF page tree root Count does not match its children.");
+        }
+    }
+
+    /// <summary>
+    /// The first page index of <paramref name="kids"/> when <paramref name="node"/>
+    /// declares one page per kid and the kids are, in order, the validated hint run
+    /// of consecutive pages; otherwise <c>null</c>. The cheap /Count comparison
+    /// runs first, and the xref computes each Kids array's run once.
+    /// </summary>
+    /// <remarks>
+    /// The hints name each page's object, not its /Type, and checking the type of
+    /// every skipped sibling would read the very page dictionaries the jump avoids.
+    /// So the page walk and the index resolver trust a run on exactly the same
+    /// terms: a run is used only at the target's own parent, its start must be the
+    /// index the tree gives that parent's first page, and the kid a walk or a
+    /// lookup lands on must itself be a /Page. A page's index and the page a walk
+    /// returns for it therefore always agree, so a link or bookmark always lands
+    /// on the slot that shows its target; a kid the hints misdescribe fails the
+    /// lookup (a fallback error) when a walk or a lookup reaches it.
+    /// </remarks>
+    private int? HintedPageRun(BitPdfDict node, List<object?> kids)
+        => node.Get("Count") is double count && count == kids.Count ? _xref.HintedPageRun(kids) : null;
+
+    private static BitPdfRangeFallbackException InvalidPageTree() => new("The PDF page tree cannot resolve the requested page safely.");
 
     private static int PartialNodeCount(BitPdfDict node)
     {
@@ -241,7 +350,9 @@ public sealed partial class BitPdfDocument
         throw new BitPdfRangeFallbackException("The PDF page tree has an invalid subtree Count.");
     }
 
-    private int? ResolvePartialPageIndex(BitPdfDict target)
+    private int? ResolvePartialPageIndex(BitPdfDict target) => ResolvePartialPageIndex(target, useHints: true);
+
+    private int? ResolvePartialPageIndex(BitPdfDict target, bool useHints)
     {
         if (_pageIndexByDict.TryGetValue(target, out int known))
         {
@@ -256,10 +367,24 @@ public sealed partial class BitPdfDocument
         var child = target;
         var visited = new HashSet<BitPdfDict>(ReferenceEqualityComparer.Instance);
         int index = 0;
+        // The index a hint run asserts for target, checked against the tree at the root.
+        int? hintedIndex = null;
+        // Preceding siblings are independent: in a Range pass their misses are
+        // deferred and the walk continues upward, so one pass finds them all.
+        int mark = BitPdfMissingDataBatch.Mark(_xref);
         for (int depth = 0; depth <= 64 && visited.Add(child); depth++)
         {
             if (ReferenceEquals(child, root))
             {
+                BitPdfMissingDataBatch.ThrowIfDeferred(_xref, mark);
+                if (hintedIndex is int asserted && asserted != index)
+                {
+                    // The run's start is not where the tree puts its parent's first
+                    // page: the walk does not jump there, so neither may this
+                    // lookup. Count the siblings, as the walk does.
+                    return ResolvePartialPageIndex(target, useHints: false);
+                }
+
                 if ((uint)index >= (uint)PartialPageCount)
                 {
                     return null;
@@ -272,6 +397,7 @@ public sealed partial class BitPdfDocument
 
             if (child.Get("Parent") is not BitPdfDict parent || parent.Get("Kids") is not List<object?> kids)
             {
+                BitPdfMissingDataBatch.ThrowIfDeferred(_xref, mark);
                 return null;
             }
 
@@ -279,20 +405,45 @@ public sealed partial class BitPdfDocument
             int position = kids.FindIndex(k => ReferenceEquals(k, child) || (reference is not null && Equals(k, reference)));
             if (position < 0)
             {
+                BitPdfMissingDataBatch.ThrowIfDeferred(_xref, mark);
                 return null;
             }
 
-            for (int i = 0; i < position; i++)
+            if (useHints && HintedPageRun(parent, kids) is int start)
             {
-                if (_xref.FetchIfRef(kids[i]) is BitPdfDict sibling)
+                // A run describes pages, so it may only hold the page itself, and
+                // the tree must place it where the run starts (checked at the root):
+                // the terms on which the page walk jumps (see HintedPageRun). A
+                // walk landing on a kid that breaks them fails over, and so does this.
+                if (!ReferenceEquals(child, target) || !BitPdfPrimitives.IsName(target.Get("Type"), "Page"))
                 {
-                    index = checked(index + PartialNodeCount(sibling));
+                    throw InvalidPageTree();
+                }
+
+                hintedIndex = start + position;
+                index = checked(index + position);
+            }
+            else
+            {
+                for (int i = 0; i < position; i++)
+                {
+                    try
+                    {
+                        if (_xref.FetchIfRef(kids[i]) is BitPdfDict sibling)
+                        {
+                            index = checked(index + PartialNodeCount(sibling));
+                        }
+                    }
+                    catch (BitPdfMissingDataException missing) when (BitPdfMissingDataBatch.Defer(_xref, missing))
+                    {
+                    }
                 }
             }
 
             child = parent;
         }
 
+        BitPdfMissingDataBatch.ThrowIfDeferred(_xref, mark);
         return null;
     }
 
@@ -321,7 +472,7 @@ public sealed partial class BitPdfDocument
         }
         catch (BitPdfMissingDataException missing)
         {
-            pending.Add((missing.Offset, missing.Length));
+            pending.AddRange(missing.Ranges);
         }
         catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex))
         {
@@ -403,7 +554,7 @@ public sealed partial class BitPdfDocument
             }
             catch (BitPdfMissingDataException missing)
             {
-                pending.Add((missing.Offset, missing.Length));
+                pending.AddRange(missing.Ranges);
             }
         }
 

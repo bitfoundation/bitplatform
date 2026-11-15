@@ -403,6 +403,11 @@ public partial class BitPdfRangeSourceTests
         internal BitPdfBaseStream Cursor(int start, int length) => (BitPdfBaseStream)Invoke("CreateStream", start, (int?)length)!;
         internal int Int(string name) => (int)SourceType.GetProperty(name, Flags)!.GetValue(instance)!;
         internal long Long(string name) => (long)SourceType.GetProperty(name, Flags)!.GetValue(instance)!;
+        internal object? Field(string name) => SourceType.GetField(name, Flags)!.GetValue(instance);
+        internal void ReleasePins(IDisposable operation)
+        {
+            lock (Field("_gate")!) Invoke("ReleasePins", operation);
+        }
         public ValueTask DisposeAsync() => (ValueTask)Invoke("DisposeAsync")!;
     }
 }

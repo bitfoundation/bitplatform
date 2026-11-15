@@ -48,7 +48,7 @@ public partial class BitPdfViewer
             }
             finally { _renderGate.Release(); }
             source.RecordRestart();
-            await source.EnsureAsync(missing!.Offset, missing.Length, token);
+            await source.EnsureRangesAsync(missing!.Ranges, token);
         }
         throw new BitPdfRangeLimitException("The PDF load exceeded its missing-data retry limit.");
     }
@@ -83,6 +83,9 @@ public partial class BitPdfViewer
                     RangeAttempt<T> Execute()
                     {
                         using var transaction = document.BeginPartialAttempt();
+                        // Independent detail units defer their misses, so one pass
+                        // reports every range it found rather than one per restart.
+                        using var batch = BitPdfMissingDataBatch.Begin(document.XRef, source.MetadataBatchSize, source.MetadataChunkSize);
                         try
                         {
                             if (pageIndex is int page)
@@ -96,13 +99,20 @@ public partial class BitPdfViewer
                                 }
                             }
                             T value = build(document);
+                            if (batch.Count > 0)
+                            {
+                                // A deferred miss means the value may be incomplete: never publish it.
+                                transaction.CommitObjects();
+                                return new(default, batch.Collect());
+                            }
+
                             transaction.Commit();
                             return new(value, null);
                         }
                         catch (BitPdfMissingDataException missing)
                         {
                             transaction.CommitObjects();
-                            return new(default, [(missing.Offset, missing.Length)]);
+                            return new(default, batch.Collect(missing));
                         }
                         finally { document.ReleaseByteWindows(); }
                     }
@@ -191,6 +201,10 @@ public partial class BitPdfViewer
                 await PrepareRangePageAsync(document, owned, version, Math.Clamp(CurrentPage - 1, 0, pageCount - 1), token);
             var prepared = await RunRangeWorkAsync(document, d =>
             {
+                // A root Count the tree contradicts falls back to buffered loading here,
+                // before publication, rather than failing distant pages later. It makes
+                // no request, so it shares this pass instead of taking one of its own.
+                d.VerifyPartialPageCount();
                 int count = d.PageCount;
                 int index = count == 0 ? 0 : Math.Clamp(CurrentPage - 1, 0, count - 1);
                 var first = count == 0 ? null : d.Pages[index];
@@ -340,15 +354,17 @@ public partial class BitPdfViewer
             var token = _streamLoadCancellation?.Token ?? default;
             var result = await RetryRangeReadAsync(source, version, () => RunRangeWorkAsync(document, d =>
             {
-                var store = (_fontStore ?? new BitPdfFontStore()).Fork();
+                // The attempt reads the shared store through an overlay instead of
+                // copying it; only the render published below commits the fonts it
+                // added, never one RunRangeWorkAsync discards or the guard drops.
+                var store = (_fontStore ??= new BitPdfFontStore()).BeginOverlay();
                 var page = d.Pages[index];
                 var built = thumbnail ? BuildThumb(index, rotation, coalescing, mode, store)
                     : BuildPage(index, rotation, coalescing, mode, false, store);
-                // Only a completed render publishes its document-wide font registrations.
-                _fontStore = store;
-                return (Build: built, Width: page.Width, Height: page.Height);
+                return (Build: built, Width: page.Width, Height: page.Height, Fonts: store);
             }, pageIndex: index), token, epoch, retry: _rangePublished);
             if (IsDisposed || version != _loadVersion || epoch != _renderEpoch || index >= slots.Count || slots[index] is not null) return false;
+            result.Fonts.Commit();
             double width = rotation % 180 == 90 ? result.Height : result.Width;
             double height = rotation % 180 == 90 ? result.Width : result.Height;
             if (_pageWidths[index] != width || _pageHeights[index] != height)
