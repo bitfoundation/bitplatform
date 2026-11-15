@@ -238,10 +238,14 @@
         <span id="@_valueTextId" class="bit-rtg-alb">@_ValueText</span>
     }
 
+    @* A read-only rating is an img, whose content is presentational, and a number input inside it is still a
+       control a screen reader can move to, whatever its tabindex says (nested-interactive). Its value goes with
+       the form all the same - a read-only field is submitted, it is only left out of constraint validation - so
+       there it is carried by a hidden input, which nothing reaches, rather than by a number one. *@
     <input @attributes="InputHtmlAttributes"
            max="@max"
            name="@Name"
-           type="number"
+           type="@(ReadOnly ? "hidden" : "number")"
            tabindex="-1"
            aria-hidden="true"
            required="@Required"

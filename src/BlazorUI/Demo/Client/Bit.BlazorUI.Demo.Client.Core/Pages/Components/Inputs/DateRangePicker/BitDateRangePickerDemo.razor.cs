@@ -1143,7 +1143,7 @@ public partial class BitDateRangePickerDemo
             Name = "WeekNumbersHeaderTitle",
             Type = "string",
             DefaultValue = "Week",
-            Description = "The accessible name of the empty header cell above the week numbers column.",
+            Description = "The accessible name of the header cell above the week numbers column, which shows a number sign (#).",
         },
         new()
         {

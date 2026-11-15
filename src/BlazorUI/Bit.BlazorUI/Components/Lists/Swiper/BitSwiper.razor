@@ -2,8 +2,7 @@
 @inherits BitComponentBase
 
 @{
-    // The region role and its "carousel" description are the pattern's own and stay after the splatted attributes, as
-    // does the tab index, which NoKeyboard and Disabled take off the root on purpose.
+    // The region role and its "carousel" description are the pattern's own and stay after the splatted attributes.
     var ariaLabel = ResolveAriaLabel();
 }
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -14,7 +13,6 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     tabindex="@((NoKeyboard || Disabled) ? null : (TabIndex ?? "0"))"
      @onkeydown="HandleKeyDown"
      @onfocusin="HandleFocusIn"
      @onfocusout="HandleFocusOut"
@@ -108,8 +106,15 @@
             </button>
         }
 
+        @* The box the items scroll in is the one tab stop of the swiper, rather than the root around it: it is what a
+           keyboard has to reach for the content to be scrolled at all (WCAG 2.1.1), and an engine that makes a scrolling
+           box focusable by itself (Chromium) would otherwise add it as a second stop after the root. The keys pressed on
+           it bubble up to the root, whose handler navigates. NoKeyboard and Disabled keep it out of the tab order - with
+           -1 rather than no tab index, which would leave it to that engine to put it back. A disabled box stops
+           scrolling as well (the stylesheet), so it is not a scrolling box left out of the tab order. *@
         <div @ref="_swiperContainer"
              id="@_ContainerId"
+             tabindex="@((NoKeyboard || Disabled) ? "-1" : (TabIndex ?? "0"))"
              class="bit-swp-cnt @Classes?.Container"
              style="@JoinStyles(_directionStyle, Styles?.Container)">
             <CascadingValue Value="this" IsFixed="true">

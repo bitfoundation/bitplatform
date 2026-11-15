@@ -249,7 +249,13 @@
 
     @if (ShowStatusBar)
     {
-        <div style="@Styles?.StatusBar" class="bit-mde-sbr @Classes?.StatusBar">
+        @* The status bar is a group of the editor's readouts, and a disabled editor's readouts are as unavailable as the
+           field they read: aria-disabled says so on the group, so its dimmed text is read as a part of an inactive
+           control (exempt from the contrast of body text, WCAG 1.4.3) rather than as text of the page. *@
+        <div role="group"
+             aria-disabled="@(Disabled ? "true" : null)"
+             style="@Styles?.StatusBar"
+             class="bit-mde-sbr @Classes?.StatusBar">
             <span class="bit-mde-mod">@ActiveTexts.GetModeLabel(Mode)</span>
             @if (ShowCursorPosition)
             {

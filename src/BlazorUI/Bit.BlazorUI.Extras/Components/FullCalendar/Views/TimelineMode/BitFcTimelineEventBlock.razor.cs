@@ -38,6 +38,12 @@ public partial class BitFcTimelineEventBlock
     private string _startHandleId => $"bit-bfc-tl-resize-start-{_instanceId}";
     private string _endHandleId => $"bit-bfc-tl-resize-end-{_instanceId}";
 
+    // A block drawn by an EventTemplate is named by what the template shows followed by the details of the event:
+    // the first holds the text a speech-input user reads off the block (Label in Name, WCAG 2.5.3), the second
+    // what the template may well leave out.
+    private string _templateId => $"bit-bfc-tl-tpl-{_instanceId}";
+    private string _detailsId => $"bit-bfc-tl-dtl-{_instanceId}";
+
     private int EffectiveMinDurationMinutes => MinDurationMinutes ?? Math.Max(1, SnapMinutes);
 
     /// <summary>

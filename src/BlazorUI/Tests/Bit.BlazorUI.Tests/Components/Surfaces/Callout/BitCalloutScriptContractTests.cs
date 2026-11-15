@@ -93,6 +93,27 @@ public class BitCalloutScriptContractTests
         }
     }
 
+    [TestMethod]
+    public void TheChainShouldCopyAsADivEveryElementThatPermitsNoRoleNone()
+    {
+        var script = StripComments(ReadFile("Bit.BlazorUI", "Scripts", "Callouts.ts"));
+
+        var list = Regex.Match(script, @"MIRRORED_TAGS\s*=\s*\[(?<tags>[^\]]*)\]");
+        Assert.IsTrue(list.Success, "MIRRORED_TAGS was not found in Callouts.ts.");
+
+        var tags = Regex.Matches(list.Groups["tags"].Value, "'(?<tag>[a-z0-9]+)'").Select(m => m.Groups["tag"].Value).ToArray();
+
+        // A copy of any other tag than div takes role="none" to stay out of the accessibility tree, which these do
+        // not allow (a <main role="none"> fails aria-allowed-role), so they are copied as a div.
+        foreach (var tag in new[] { "main", "dt", "dd", "caption" })
+        {
+            CollectionAssert.DoesNotContain(tags, tag, $"A copy of <{tag}> would carry a role it does not permit.");
+        }
+
+        CollectionAssert.Contains(tags, "nav");
+        CollectionAssert.Contains(tags, "section");
+    }
+
     private static string StripComments(string source)
     {
         return Regex.Replace(source, @"//[^\n]*", string.Empty);

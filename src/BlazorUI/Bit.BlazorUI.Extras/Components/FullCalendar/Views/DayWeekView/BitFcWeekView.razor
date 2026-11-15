@@ -43,26 +43,30 @@
             {
                 var d = day;
                 var isToday = d.Date == State.Today;
+                var dayName = d.ToString("ddd", State.Culture);
+                var dayNumber = BitFullCalendarHelpers.GetCulturalDayOfMonth(d, State.Culture);
                 <div class="bit-bfc-week-header-day">
                     @* With nav links on, the column header opens that single day - the affordance
-                       every calendar puts there - and stays plain text otherwise. *@
+                       every calendar puts there - and stays plain text otherwise. The link is named by
+                       the text it shows first ("Mon 5, Go to Monday, January 5, 2026"): the abbreviated
+                       day is no word of the full date, and a name without it fails Label in Name
+                       (WCAG 2.5.3). Razor drops the whitespace between the two spans, so the space the
+                       name has between them is put in the text as well. *@
                     @if (State.NavLinks)
                     {
                         var outOfRange = State.IsDateInAllowedRange(d) is false;
                         <button type="button" class="bit-bfc-navlink bit-bfc-week-header-day-link"
                                 aria-current="@(isToday ? "date" : null)"
-                                aria-label="@string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, d.ToString("D", State.Culture))"
+                                aria-label="@($"{dayName} {dayNumber}, {string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, d.ToString("D", State.Culture))}")"
                                 disabled="@outOfRange"
                                 aria-disabled="@(outOfRange ? "true" : null)"
                                 @onclick="() => GoToDayView(d)">
-                            <span class="bit-bfc-week-header-day-name">@d.ToString("ddd", State.Culture)</span>
-                            <span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@BitFullCalendarHelpers.GetCulturalDayOfMonth(d, State.Culture)</span>
+                            <span class="bit-bfc-week-header-day-name">@dayName</span>@(" ")<span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@dayNumber</span>
                         </button>
                     }
                     else
                     {
-                        <span class="bit-bfc-week-header-day-name">@d.ToString("ddd", State.Culture)</span>
-                        <span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@BitFullCalendarHelpers.GetCulturalDayOfMonth(d, State.Culture)</span>
+                        <span class="bit-bfc-week-header-day-name">@dayName</span>@(" ")<span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@dayNumber</span>
                     }
                     <BitFcDayBackgroundLabels Events="State.BackgroundEvents" Day="d" />
                 </div>

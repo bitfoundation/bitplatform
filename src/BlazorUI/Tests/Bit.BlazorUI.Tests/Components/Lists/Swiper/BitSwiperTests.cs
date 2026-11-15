@@ -64,7 +64,9 @@ public class BitSwiperTests : BunitTestContext
         Assert.AreEqual("region", root.GetAttribute("role"));
         Assert.AreEqual("carousel", root.GetAttribute("aria-roledescription"));
         Assert.AreEqual("Photos", root.GetAttribute("aria-label"));
-        Assert.AreEqual("0", root.GetAttribute("tabindex"));
+        // The tab stop is the box the items scroll in, not the region around it.
+        Assert.IsNull(root.GetAttribute("tabindex"));
+        Assert.AreEqual("0", component.Find(".bit-swp-cnt").GetAttribute("tabindex"));
 
         var items = component.FindAll(".bit-swpi");
 
@@ -149,8 +151,9 @@ public class BitSwiperTests : BunitTestContext
 
         Assert.AreEqual(isEnabled is false, root.ClassList.Contains("bit-dis"));
 
-        // a disabled swiper is neither focusable nor operable
-        Assert.AreEqual(isEnabled ? "0" : null, root.GetAttribute("tabindex"));
+        // a disabled swiper is neither focusable nor operable: its scrolling box is taken out of the tab order
+        Assert.IsNull(root.GetAttribute("tabindex"));
+        Assert.AreEqual(isEnabled ? "0" : "-1", component.Find(".bit-swp-cnt").GetAttribute("tabindex"));
         Assert.AreEqual(isEnabled is false, component.Find(".bit-swp-rbt").HasAttribute("disabled"));
         Assert.AreEqual(isEnabled is false, component.Find(".bit-swp-lbt").HasAttribute("disabled"));
     }
@@ -164,6 +167,7 @@ public class BitSwiperTests : BunitTestContext
         });
 
         Assert.IsNull(component.Find(".bit-swp").GetAttribute("tabindex"));
+        Assert.AreEqual("-1", component.Find(".bit-swp-cnt").GetAttribute("tabindex"));
     }
 
     [TestMethod]

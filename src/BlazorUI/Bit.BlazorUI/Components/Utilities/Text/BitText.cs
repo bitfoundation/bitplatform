@@ -618,12 +618,17 @@ public partial class BitText : BitComponentBase
         builder.AddAttribute(10, "aria-level", ariaLevel.HasValue
                                                ? ariaLevel.Value.ToString(CultureInfo.InvariantCulture)
                                                : GetSplattedAttribute("aria-level"));
-        builder.AddElementReferenceCapture(11, v => RootElement = v);
+        // The dimming of a disabled run of text says it stands for something unavailable, so assistive technologies
+        // are told the same - and a contrast checker, which leaves text that is said to be disabled alone, no longer
+        // weighs the dimmed glyphs as if they were text meant to be read at full strength. The text is the element
+        // that is unavailable rather than a wrapper of one, so the state goes on it whatever its tag, as on BitElement.
+        builder.AddAttribute(11, "aria-disabled", Disabled ? "true" : GetSplattedAttribute("aria-disabled"));
+        builder.AddElementReferenceCapture(12, v => RootElement = v);
         // A void element is defined to hold no content: the static renderer writes it self-closed, so anything put
         // inside it would either be dropped or end up as a sibling of the element in the rendered markup.
         if (IsVoidElement(element!) is false)
         {
-            builder.AddContent(12, ChildContent);
+            builder.AddContent(13, ChildContent);
         }
         builder.CloseElement();
 

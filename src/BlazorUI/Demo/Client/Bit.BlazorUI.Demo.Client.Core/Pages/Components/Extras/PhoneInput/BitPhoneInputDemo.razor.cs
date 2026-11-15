@@ -158,7 +158,7 @@ public partial class BitPhoneInputDemo
             Name = "DropdownAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible name of the country selector (\"Country\" by default), which the name of the selected country is appended to (\"Country: Germany\"). It also names the country list. Set it to translate the selector for a screen reader.",
+            Description = "The accessible name of the country selector (\"Country\" by default), which the name of the selected country is appended to (\"Country: Germany\"), followed by the dial code it shows (\"Country: Germany, +49\") unless NoDialCode is set. It also names the country list. Set it to translate the selector for a screen reader.",
         },
         new()
         {
@@ -172,7 +172,7 @@ public partial class BitPhoneInputDemo
             Name = "DropdownTemplate",
             Type = "RenderFragment<BitCountry?>?",
             DefaultValue = "null",
-            Description = "The custom template for the content of the country dropdown button, receiving the selected country.",
+            Description = "The custom template for the content of the country dropdown button, receiving the selected country. The button is then named by the country followed by the text the template shows (\"Country: Portugal PT\").",
         },
         new()
         {

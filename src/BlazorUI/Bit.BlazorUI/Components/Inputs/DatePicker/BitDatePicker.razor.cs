@@ -1215,7 +1215,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public CalendarWeekRule? WeekNumberRule { get; set; }
 
     /// <summary>
-    /// The accessible name of the empty column header above the week numbers.
+    /// The accessible name of the column header above the week numbers, which shows a number sign (#).
     /// </summary>
     [Parameter] public string WeekNumbersHeaderTitle { get; set; } = "Week";
 
@@ -3130,6 +3130,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private string GetMonthButtonId(int month)
     {
         return FormattableString.Invariant($"{_datePickerId}-month-{month:D2}");
+    }
+
+    // The id of the title of the month shown at the given index, which names the days grid of that month.
+    private string GetMonthTitleId(int monthIndex)
+    {
+        return FormattableString.Invariant($"{_datePickerId}-title-{monthIndex}");
     }
 
     private string GetYearButtonId(int year)

@@ -63,6 +63,7 @@ public partial class BitFullCalendar : BitComponentBase
     /// <summary>
     /// Optional template for customizing event rendering in the day view.
     /// When provided, replaces the default event card content inside the time-grid blocks.
+    /// The event is then named by the text the template shows followed by its title, time and date ("Pin: Planning Planning, 09:00 - 10:00, 7/16/2025").
     /// </summary>
     [Parameter] public RenderFragment<BitFullCalendarEvent>? DayEventTemplate { get; set; }
 
@@ -188,6 +189,7 @@ public partial class BitFullCalendar : BitComponentBase
     /// <summary>
     /// Optional template for customizing event rendering in the month view.
     /// When provided, replaces the default event badge content inside month grid cells.
+    /// The event is then named by the text the template shows followed by its title, time and date ("Pin: Planning Planning, 09:00 - 10:00, 7/16/2025").
     /// </summary>
     [Parameter] public RenderFragment<BitFullCalendarEvent>? MonthEventTemplate { get; set; }
 
@@ -326,6 +328,7 @@ public partial class BitFullCalendar : BitComponentBase
     /// <summary>
     /// Optional template for customizing event rendering in the resource timeline view.
     /// When provided, replaces the default event card content inside the timeline blocks.
+    /// The event is then named by the text the template shows followed by its title, time and date ("Pin: Planning Planning, 09:00 - 10:00, 7/16/2025").
     /// </summary>
     [Parameter] public RenderFragment<BitFullCalendarEvent>? TimelineEventTemplate { get; set; }
 
@@ -356,6 +359,7 @@ public partial class BitFullCalendar : BitComponentBase
     /// <summary>
     /// Optional template for customizing event rendering in the week view.
     /// When provided, replaces the default event card content inside the time-grid blocks.
+    /// The event is then named by the text the template shows followed by its title, time and date ("Pin: Planning Planning, 09:00 - 10:00, 7/16/2025").
     /// </summary>
     [Parameter] public RenderFragment<BitFullCalendarEvent>? WeekEventTemplate { get; set; }
 

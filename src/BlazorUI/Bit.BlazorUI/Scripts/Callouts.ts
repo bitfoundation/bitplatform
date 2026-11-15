@@ -15,11 +15,14 @@
         // The elements a link of that chain is created as when it stands for one of them, so that a selector
         // naming the tag of an ancestor (aside, nav, section, li, td, ...) still matches the copy. Everything
         // else - a form, a label, a button, a custom element, an element display: contents would hide, anything
-        // whose copy would act rather than only look like it - is copied as a div.
+        // whose copy would act rather than only look like it - is copied as a div. So is an element HTML allows no
+        // role="none" on (main, dt, dd, caption): a copy takes that role to drop out of the accessibility tree (see
+        // syncChainLink), and a <main role="none"> is a role the element does not permit, while a main left a
+        // landmark would be a second main of the page.
         export const MIRRORED_TAGS = [
-            'div', 'span', 'section', 'article', 'aside', 'nav', 'main', 'header', 'footer', 'search', 'hgroup',
-            'p', 'blockquote', 'address', 'figure', 'figcaption', 'ul', 'ol', 'li', 'menu', 'dl', 'dt', 'dd',
-            'table', 'caption', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th'
+            'div', 'span', 'section', 'article', 'aside', 'nav', 'header', 'footer', 'search', 'hgroup',
+            'p', 'blockquote', 'address', 'figure', 'figcaption', 'ul', 'ol', 'li', 'menu', 'dl',
+            'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th'
         ];
         // How close to a corner of the callout the arrow may be placed, so that it never lands on the
         // rounded corner itself, where half of it would be cut away by the radius.

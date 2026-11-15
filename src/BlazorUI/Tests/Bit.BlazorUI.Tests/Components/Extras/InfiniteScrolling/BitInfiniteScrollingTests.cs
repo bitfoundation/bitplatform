@@ -1065,10 +1065,29 @@ public class BitInfiniteScrollingTests : BunitTestContext
         {
             parameters.Add(p => p.ItemsProvider, Provider);
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
-            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.TabIndex, "-1");
         });
 
-        Assert.AreEqual("0", component.Find(".bit-isc").GetAttribute("tabindex"));
+        Assert.AreEqual("-1", component.Find(".bit-isc").GetAttribute("tabindex"));
+    }
+
+    [TestMethod,
+        DataRow(false, null, "0"),
+        DataRow(true, null, null),
+        DataRow(false, "window", null),
+        DataRow(false, "#outer", null)]
+    public void BitInfiniteScrollingShouldBeATabStopWhileItScrollsItsOwnContent(bool feed, string? scrollerSelector, string? expected)
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, Provider);
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.Feed, feed);
+            parameters.Add(p => p.ScrollerSelector, scrollerSelector);
+        });
+
+        // A keyboard can only scroll the box it is in, and a feed's articles and an outer scroller need no stop of the list.
+        Assert.AreEqual(expected, component.Find(".bit-isc").GetAttribute("tabindex"));
     }
 
     [TestMethod]

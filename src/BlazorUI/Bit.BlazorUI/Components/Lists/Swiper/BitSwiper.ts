@@ -753,7 +753,9 @@
 
             const el = target as HTMLElement;
 
-            if (el === this.root || this.root.contains(el) === false) return false;
+            // The box the items scroll in is the swiper's own tab stop, whose keys are the swiper's - and a closest()
+            // from it would climb past the root into a grid or a listbox the swiper is placed in.
+            if (el === this.root || el === this.container || this.root.contains(el) === false) return false;
             if (el.isContentEditable) return true;
             if (Utils.isInNestedSurface(el, this.root)) return true;
             if (/^(input|textarea|select)$/i.test(el.tagName)) return true;
@@ -860,7 +862,7 @@
         // A next/prev button hides itself at the end it cannot move any further towards, and a button that
         // disappears while it holds the keyboard focus drops it on the body of the page, leaving someone who
         // was pressing it with nowhere to continue from. So the focus is moved on before the button hides:
-        // onto the swiper itself, which the arrow keys keep navigating, or onto the other button when the
+        // onto the box the items scroll in, which the arrow keys keep navigating, or onto the other button when the
         // swiper does not take the focus.
         private keepFocus(state: SwiperState) {
             if (this.options.rewind && state.scrollable) return;
@@ -881,8 +883,8 @@
 
             let target: HTMLElement | null = null;
 
-            if (this.root.hasAttribute('tabindex')) {
-                target = this.root;
+            if (this.container.tabIndex >= 0) {
+                target = this.container;
             } else {
                 const otherHides = state.scrollable === false || (next ? state.atStart : state.atEnd);
 

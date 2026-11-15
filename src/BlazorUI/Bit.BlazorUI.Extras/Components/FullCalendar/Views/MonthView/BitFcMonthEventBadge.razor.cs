@@ -20,6 +20,14 @@ public partial class BitFcMonthEventBadge
     /// </summary>
     [Parameter] public bool IsLead { get; set; } = true;
 
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
+
+    // A badge drawn by an EventTemplate is named by what the template shows followed by the details of the event:
+    // the first holds the text a speech-input user reads off the badge (Label in Name, WCAG 2.5.3), the second
+    // what the template may well leave out.
+    private string _templateId => $"bit-bfc-badge-tpl-{_instanceId}";
+    private string _detailsId => $"bit-bfc-badge-dtl-{_instanceId}";
+
     private string MarginStyle
     {
         get

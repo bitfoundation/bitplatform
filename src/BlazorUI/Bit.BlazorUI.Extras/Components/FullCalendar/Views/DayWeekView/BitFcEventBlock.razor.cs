@@ -29,6 +29,12 @@ public partial class BitFcEventBlock
     private string _topHandleId => $"bit-bfc-resize-top-{_instanceId}";
     private string _bottomHandleId => $"bit-bfc-resize-bottom-{_instanceId}";
 
+    // A block drawn by an EventTemplate is named by what the template shows followed by the details of the event:
+    // the first holds the text a speech-input user reads off the block (Label in Name, WCAG 2.5.3), the second
+    // what the template may well leave out.
+    private string _templateId => $"bit-bfc-block-tpl-{_instanceId}";
+    private string _detailsId => $"bit-bfc-block-dtl-{_instanceId}";
+
     /// <summary>
     /// Minimum event length enforced by resize, and the interval the edges snap to: the calendar's
     /// configured slot duration, so a 15-minute grid resizes in 15-minute steps.

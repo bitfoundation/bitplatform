@@ -72,6 +72,9 @@
         }
         else
         {
+            @* The name of a selector drawn by a DropdownTemplate is the country followed by the text the template shows,
+               read off the template itself, since an aria-label of the country alone would leave out what is on the
+               button (Label in Name, WCAG 2.5.3) - and a combobox takes no name from its content of itself. *@
             <button @onclick="HandleOnDropdownClick"
                     @ref="_dropdownButtonRef"
                     @onkeydown="HandleOnDropdownKeyDown"
@@ -84,14 +87,19 @@
                     aria-expanded="@(IsCalloutShown ? "true" : "false")"
                     aria-controls="@(IsCalloutShown ? _listId : null)"
                     aria-activedescendant="@(IsCalloutShown && NoSearchBox && _list.ActiveIndex >= 0 ? GetOptionId(_list.ActiveIndex) : null)"
-                    aria-label="@DropdownLabel"
+                    aria-label="@(DropdownTemplate is null ? DropdownLabel : null)"
+                    aria-labelledby="@(DropdownTemplate is null ? null : $"{_dropdownLabelId} {_dropdownTextId}")"
                     title="@DropdownTitle"
                     disabled="@(Disabled)"
                     aria-disabled="@(Disabled ? "true" : null)"
                     tabindex="@(Disabled is false && ReadOnly is false ? (TabIndex ?? "0") : "-1")"
                     style="@Styles?.Dropdown"
                     class="bit-phi-drp @Classes?.Dropdown">
-                <span style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
+                @if (DropdownTemplate is not null)
+                {
+                    <span id="@_dropdownLabelId" class="bit-phi-vhd">@DropdownLabel</span>
+                }
+                <span id="@(DropdownTemplate is null ? null : _dropdownTextId)" style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
                     @if (DropdownTemplate is not null)
                     {
                         @DropdownTemplate(Country)

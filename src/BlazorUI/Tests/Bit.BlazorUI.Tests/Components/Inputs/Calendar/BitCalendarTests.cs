@@ -2154,10 +2154,38 @@ public class BitCalendarTests : BunitTestContext
         var grid = component.Find(".bit-cal-grd");
 
         Assert.AreEqual("true", grid.GetAttribute("aria-readonly"));
-        Assert.AreEqual("true", grid.GetAttribute("aria-required"));
+        // A grid takes no aria-required, and a read-only day picks nothing, so it asks for nothing either.
+        Assert.IsFalse(grid.HasAttribute("aria-required"));
+        Assert.IsFalse(component.Find(".bit-cal-dbt").HasAttribute("aria-required"));
         // A read-only day still browses, so it stays focusable and reports that it selects nothing instead.
         Assert.AreEqual("true", component.Find(".bit-cal-dbt").GetAttribute("aria-disabled"));
         Assert.IsFalse(component.Find(".bit-cal-dbt").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitCalendarRequiredShouldBeReportedByTheDaysThatCanBePicked()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 5, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.MinDate, new DateTimeOffset(2024, 5, 10, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        Assert.IsFalse(component.Find(".bit-cal-grd").HasAttribute("aria-required"));
+
+        var days = component.FindAll(".bit-cal-dbt");
+        var pickable = days.Where(d => d.HasAttribute("disabled") is false).ToList();
+        var outOfRange = days.Where(d => d.HasAttribute("disabled")).ToList();
+
+        Assert.IsNotEmpty(pickable);
+        Assert.IsNotEmpty(outOfRange);
+        Assert.IsTrue(pickable.All(d => d.GetAttribute("aria-required") == "true"));
+        Assert.IsTrue(outOfRange.All(d => d.HasAttribute("aria-required") is false));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        Assert.IsEmpty(component.FindAll(".bit-cal-dbt[aria-required]"));
     }
 
     [TestMethod]
@@ -2644,6 +2672,62 @@ public class BitCalendarTests : BunitTestContext
         var months = component.FindAll(".bit-cal-pkb");
         Assert.AreEqual("date", months[4].GetAttribute("aria-current"));
         Assert.IsNull(months[3].GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitCalendarWeekNumbersColumnHeaderShouldShowANumberSign()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.ShowWeekNumbers, true);
+        });
+
+        // A column header with no text of its own is an empty one, whatever its aria-label says.
+        var header = component.Find(".bit-cal-dgh .bit-cal-wlb");
+        Assert.AreEqual("#", header.TextContent.Trim());
+        Assert.AreEqual("Week", header.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitCalendarMonthCellsShouldBeNamedByTheTextTheyShow()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        // Named by the abbreviation it shows (Label in Name), with the full month as its title.
+        var january = component.FindAll(".bit-cal-pkb")[0];
+        Assert.AreEqual("Jan", january.TextContent.Trim());
+        Assert.IsNull(january.GetAttribute("aria-label"));
+        Assert.AreEqual("January", january.GetAttribute("title"));
+
+        // A template is named the same way, by the text it shows, the full month in the title still describing it.
+        component.Render(parameters => parameters.Add(p => p.MonthCellTemplate, (RenderFragment<DateTimeOffset>)(_ => b => b.AddContent(0, "*"))));
+
+        january = component.FindAll(".bit-cal-pkb")[0];
+        Assert.AreEqual("*", january.TextContent.Trim());
+        Assert.IsNull(january.GetAttribute("aria-label"));
+        Assert.AreEqual("January", january.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitCalendarDaysGridShouldBeNamedByTheTitleOfItsMonth()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        // The title names the grid, so its dimmed text is read as a part of the disabled grid.
+        var title = component.Find(".bit-cal-pkt");
+        var grid = component.Find(".bit-cal-grd");
+        Assert.IsFalse(string.IsNullOrEmpty(title.GetAttribute("id")));
+        Assert.AreEqual(title.GetAttribute("id"), grid.GetAttribute("aria-labelledby"));
+        Assert.IsNull(grid.GetAttribute("aria-label"));
+        Assert.AreEqual("true", grid.GetAttribute("aria-disabled"));
     }
 
     [TestMethod]
@@ -3598,11 +3682,12 @@ public class BitCalendarTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCalendarRequiredShouldBeAnnouncedOnTheGridInsideAForm()
+    public void BitCalendarRequiredShouldBeAnnouncedOnTheDaysInsideAForm()
     {
         var component = RenderComponent<BitCalendarValidationTest>(parameters => parameters.Add(p => p.Required, true));
 
-        Assert.AreEqual("true", component.Find(".bit-cal-grd").GetAttribute("aria-required"));
+        Assert.IsFalse(component.Find(".bit-cal-grd").HasAttribute("aria-required"));
+        Assert.AreEqual("true", component.Find(".bit-cal-dbt").GetAttribute("aria-required"));
     }
 
     [TestMethod]

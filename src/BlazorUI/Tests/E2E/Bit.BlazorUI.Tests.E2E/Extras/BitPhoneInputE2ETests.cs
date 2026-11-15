@@ -24,7 +24,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var dropdown = Dropdown("phi-basic");
-        await Expect(dropdown).ToHaveAttributeAsync("aria-label", "Country: United States");
+        await Expect(dropdown).ToHaveAttributeAsync("aria-label", new Regex(@"^Country: United States, \+\d+$"));
         await Expect(dropdown).ToHaveAttributeAsync("title", "United States");
         await Expect(dropdown.Locator(".bit-phi-cod")).ToHaveTextAsync("+1");
         await Expect(dropdown.Locator("img.bit-phi-flg")).ToHaveAttributeAsync("src", "_content/Bit.BlazorUI.Extras/flags/US-flat-16.webp");
@@ -52,7 +52,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#basic-country")).ToHaveTextAsync("GB");
         await Expect(Page.Locator("#basic-value")).ToHaveTextAsync("+442079460958");
-        await Expect(Dropdown("phi-basic")).ToHaveAttributeAsync("aria-label", "Country: United Kingdom");
+        await Expect(Dropdown("phi-basic")).ToHaveAttributeAsync("aria-label", new Regex(@"^Country: United Kingdom, \+\d+$"));
         await Expect(input).ToHaveValueAsync("2079460958");
 
         // The 00 international prefix is read the same way.
@@ -75,7 +75,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
 
         await Page.Locator("#btn-set-country").ClickAsync();
         await Expect(Page.Locator("#basic-value")).ToHaveTextAsync("+3317012345678");
-        await Expect(Dropdown("phi-basic")).ToHaveAttributeAsync("aria-label", "Country: France");
+        await Expect(Dropdown("phi-basic")).ToHaveAttributeAsync("aria-label", new Regex(@"^Country: France, \+\d+$"));
 
         await Page.Locator("#btn-set-number").ClickAsync();
         await Expect(Page.Locator("#basic-value")).ToHaveTextAsync("+33612345678");
@@ -390,7 +390,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         var picked = await options.Nth(10).GetAttributeAsync("title");
         await Page.Keyboard.PressAsync("Enter");
         await Expect(callout).ToBeHiddenAsync();
-        await Expect(Dropdown("phi-nosearch")).ToHaveAttributeAsync("aria-label", $"Country: {picked}");
+        await Expect(Dropdown("phi-nosearch")).ToHaveAttributeAsync("aria-label", new Regex($@"^Country: {Regex.Escape(picked!)}, \+\d+$"));
     }
 
     [TestMethod]
@@ -474,7 +474,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         await Expect(root).ToHaveClassAsync(HasClass("bit-phi-nod"));
         await Expect(root.Locator("button.bit-phi-drp")).ToHaveCountAsync(0);
         var fixedCountry = root.Locator("div.bit-phi-drp");
-        await Expect(fixedCountry.Locator(".bit-phi-vhd")).ToHaveTextAsync("Country: Japan");
+        await Expect(fixedCountry.Locator(".bit-phi-vhd")).ToHaveTextAsync(new Regex(@"^Country: Japan, \+\d+$"));
         await Expect(Input("phi-nodropdown")).ToHaveAttributeAsync("aria-describedby", (await fixedCountry.GetAttributeAsync("id"))!);
 
         await TypeAsync(Input("phi-nodropdown"), "312345678");
@@ -500,7 +500,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         await Expect(Page.Locator("#clear-value")).ToHaveTextAsync("null");
         await Expect(clear).ToHaveCountAsync(0);
         await Expect(Root("phi-clear").Locator(".bit-phi-lvr")).ToHaveTextAsync(new Regex("^Cleared"));
-        await Expect(Dropdown("phi-clear")).ToHaveAttributeAsync("aria-label", "Country: Italy");
+        await Expect(Dropdown("phi-clear")).ToHaveAttributeAsync("aria-label", new Regex(@"^Country: Italy, \+\d+$"));
 
         await TypeAsync(Input("phi-clear"), "1");
         await Input("phi-clear").BlurAsync();
@@ -724,7 +724,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         await Expect(Page.Locator("#is-open")).ToHaveTextAsync("False");
 
         await Page.Locator("#btn-select-japan").ClickAsync();
-        await Expect(Dropdown("phi-controlled")).ToHaveAttributeAsync("aria-label", "Country: Japan");
+        await Expect(Dropdown("phi-controlled")).ToHaveAttributeAsync("aria-label", new Regex(@"^Country: Japan, \+\d+$"));
         await Expect(Input("phi-controlled")).ToBeFocusedAsync();
 
         await Page.Locator("#btn-set-number-async").ClickAsync();
@@ -750,7 +750,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         var callout = await OpenCalloutAsync("phi-nofocus");
         await callout.Locator(".bit-phi-srch").FillAsync("Japan");
         await Page.Keyboard.PressAsync("Enter");
-        await Expect(Dropdown("phi-nofocus")).ToHaveAttributeAsync("aria-label", "Country: Japan");
+        await Expect(Dropdown("phi-nofocus")).ToHaveAttributeAsync("aria-label", new Regex(@"^Country: Japan, \+\d+$"));
         await NextFramesAsync();
         await Expect(Input("phi-nofocus")).Not.ToBeFocusedAsync();
     }
@@ -807,7 +807,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
 
         await Expect(Root("phi-params")).ToHaveClassAsync(HasClass("bit-phi-nbd"));
         await Expect(Root("phi-params")).ToHaveClassAsync(HasClass("bit-phi-sm"));
-        await Expect(Dropdown("phi-params")).ToHaveAttributeAsync("aria-label", "Country: Japan");
+        await Expect(Dropdown("phi-params")).ToHaveAttributeAsync("aria-label", new Regex(@"^Country: Japan, \+\d+$"));
         await Expect(Input("phi-params")).ToHaveAttributeAsync("placeholder", "Cascaded placeholder");
         await TypeAsync(Input("phi-params"), "3");
         await Input("phi-params").BlurAsync();
@@ -816,7 +816,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         await Expect(callout.Locator("[role=option]")).ToHaveCountAsync(5);
         await Page.Keyboard.PressAsync("Escape");
 
-        await Expect(Dropdown("phi-params-own")).ToHaveAttributeAsync("aria-label", "Country: Brazil");
+        await Expect(Dropdown("phi-params-own")).ToHaveAttributeAsync("aria-label", new Regex(@"^Country: Brazil, \+\d+$"));
         await Expect(Root("phi-params-own")).Not.ToHaveClassAsync(HasClass("bit-phi-nbd"));
 
         await Expect(Root("phi-params-outside")).Not.ToHaveClassAsync(HasClass("bit-phi-nbd"));

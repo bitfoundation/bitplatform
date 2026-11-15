@@ -131,10 +131,16 @@ public class BitFullCalendarTexts
     /// <summary>Label of the business-hours toggle in the settings panel.</summary>
     public string HighlightBusinessHoursLabel { get; set; } = "Highlight business hours";
 
-    /// <summary>Accessible name of a day number that navigates to that day ({0} = the formatted date).</summary>
+    /// <summary>
+    /// Accessible name of a day number that navigates to that day ({0} = the formatted date). A column header of the
+    /// week view is named by the text it shows ahead of it ("Mon 5, Go to Monday, January 5, 2026").
+    /// </summary>
     public string NavLinkDayAriaLabelFormat { get; set; } = "Go to {0}";
 
-    /// <summary>Accessible name of a week number that navigates to that week ({0} = the week number).</summary>
+    /// <summary>
+    /// Accessible name of a week number that navigates to that week ({0} = the week number), after the text the
+    /// link shows (<see cref="WeekNumberFormat"/>): "W27, Go to week 27".
+    /// </summary>
     public string NavLinkWeekAriaLabelFormat { get; set; } = "Go to week {0}";
 
     public string ValidationTitleRequired { get; set; } = "Title is required";

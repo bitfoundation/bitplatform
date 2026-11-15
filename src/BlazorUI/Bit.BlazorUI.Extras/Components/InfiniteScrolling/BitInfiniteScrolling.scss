@@ -26,6 +26,12 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
 .bit-isc {
     overflow: auto;
     box-sizing: border-box;
+
+    // The list is a tab stop of its own while it scrolls its content (see _TabIndex), and its own overflow would cut
+    // off a ring drawn outside it where an ancestor clips, so the indicator is drawn inside it.
+    &:focus-visible {
+        @include focus-ring-inset($clr-pri-focus);
+    }
 }
 
 // The reversed (chat) mode inserts each page above the rendered items, so the sentinel and every status

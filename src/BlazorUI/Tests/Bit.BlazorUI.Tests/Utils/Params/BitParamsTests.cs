@@ -478,11 +478,11 @@ public class BitParamsTests : BunitTestContext
             builder.AddChildContent<StaticCalendarHost>();
         });
 
-        var opened = component.Find(".bit-cal-grd").GetAttribute("aria-label");
+        var opened = component.Find(".bit-cal-pkt").TextContent.Trim();
 
         component.Find(".bit-cal-nbt").Click();
 
-        var navigated = component.Find(".bit-cal-grd").GetAttribute("aria-label");
+        var navigated = component.Find(".bit-cal-pkt").TextContent.Trim();
 
         Assert.AreNotEqual(opened, navigated);
 
@@ -491,7 +491,7 @@ public class BitParamsTests : BunitTestContext
         component.Render(builder => builder.Add(p => p.Parameters, [new BitCalendarParams { Culture = new CultureInfo("de-DE"), Class = "second" }]));
 
         Assert.IsTrue(component.Find(".bit-cal").ClassList.Contains("second"));
-        Assert.AreEqual(navigated, component.Find(".bit-cal-grd").GetAttribute("aria-label"));
+        Assert.AreEqual(navigated, component.Find(".bit-cal-pkt").TextContent.Trim());
     }
 
     [TestMethod]

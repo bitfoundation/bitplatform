@@ -99,6 +99,12 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
                              || GetSplattedAttribute("aria-label").HasValue()
                              || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null;
 
+    // A list that scrolls its own content is a tab stop of its own unless the page says otherwise: a keyboard can scroll
+    // a box only once it is in it (WCAG 2.1.1), and items of plain text bring no focusable element in for it to start
+    // from. A feed is reached through its articles, each a tab stop already, and a list that hands its scrolling to
+    // another element (ScrollerSelector) has nothing of its own to scroll.
+    private string? _TabIndex => TabIndex ?? (ScrollerSelector.HasNoValue() && Feed is false ? "0" : null);
+
     // The size of the set the articles of a feed belong to: what the provider reported, the loaded items once
     // nothing more can arrive, and -1 (unknown) until then.
     private int _feedSetSize => _totalCount ?? (_hasMore ? -1 : _items.Count);
