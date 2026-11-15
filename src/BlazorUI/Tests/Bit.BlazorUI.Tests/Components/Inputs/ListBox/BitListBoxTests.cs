@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Bunit;
 using Microsoft.AspNetCore.Components.Web;
@@ -184,6 +185,38 @@ public class BitListBoxTests : BunitTestContext
         Key(com, "v");
 
         Assert.AreEqual("avocado", bound);
+    }
+
+    [TestMethod]
+    public void BitListBoxShouldFindAnAccentedTextByItsPlainLettersWhereTheCultureFoldsThem()
+    {
+        var culture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+        try
+        {
+            string? bound = null;
+
+            var com = RenderComponent<BitListBox<BitListBoxItem<string>, string>>(parameters =>
+            {
+                parameters.Add(p => p.Items,
+                [
+                    new() { Text = "Apple", Value = "apple" },
+                    new() { Text = "Éclair", Value = "eclair" },
+                    new() { Text = "Fig", Value = "fig" }
+                ]);
+                parameters.Bind(p => p.Value, bound, v => bound = v);
+            });
+
+            // The accent is a mark on the letter in English, so the plain letter finds the item.
+            Key(com, "e");
+
+            Assert.AreEqual("eclair", bound);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
     }
 
     [TestMethod]
