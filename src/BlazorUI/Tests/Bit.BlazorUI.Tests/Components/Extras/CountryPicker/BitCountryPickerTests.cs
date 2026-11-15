@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using Bunit;
@@ -845,6 +846,55 @@ public class BitCountryPickerTests : BunitTestContext
 
         Assert.AreEqual("DE", component.Instance.Value?.Iso2);
         Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldCycleThroughTheCountriesStartingWithALetterTypedAgain()
+    {
+        var component = RenderComponent<BitCountryPicker>(parameters =>
+        {
+            parameters.Add(p => p.Countries, [BitCountries.Germany, BitCountries.Ghana, BitCountries.Greece, BitCountries.France]);
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        component.Find("button.bit-cnp-fld").Click();
+
+        component.Find("button.bit-cnp-fld").KeyDown("g");
+        Assert.AreEqual(BitCountries.Ghana.Name, component.Find("button.bit-cnp-act").GetAttribute("title"));
+
+        // The same letter again is the next country starting with it, not a search for one starting with "gg".
+        component.Find("button.bit-cnp-fld").KeyDown("g");
+        Assert.AreEqual(BitCountries.Greece.Name, component.Find("button.bit-cnp-act").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    [DataRow("en-US", "AX")]
+    [DataRow("sv-SE", "AL")]
+    public void BitCountryPickerShouldMatchTheTypeAheadInTheCurrentCulture(string name, string expected)
+    {
+        var culture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(name);
+
+        try
+        {
+            var component = RenderComponent<BitCountryPicker>(parameters =>
+            {
+                parameters.Add(p => p.Countries, [BitCountries.Germany, BitCountries.AlandIslands, BitCountries.Albania]);
+                parameters.Add(p => p.NoSearchBox, true);
+            });
+
+            component.Find("button.bit-cnp-fld").Click();
+            component.Find("button.bit-cnp-fld").KeyDown("a");
+            component.Find("button.bit-cnp-fld").KeyDown("Enter");
+
+            // The ring of Åland is a mark on its letter in English, so "a" finds it; in Swedish å is a letter of its
+            // own, so "a" goes on to Albania.
+            Assert.AreEqual(expected, component.Instance.Value?.Iso2);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
     }
 
     [TestMethod]

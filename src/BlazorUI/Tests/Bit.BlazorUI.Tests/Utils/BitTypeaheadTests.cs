@@ -87,6 +87,27 @@ public sealed class BitTypeaheadTests
     }
 
     [TestMethod]
+    public void IsTypingShouldLastUntilThePauseThatStartsANewTerm()
+    {
+        var typeahead = NewTypeahead();
+
+        Assert.IsFalse(typeahead.IsTyping);
+
+        typeahead.Type("u");
+        Assert.IsTrue(typeahead.IsTyping);
+
+        _now += (long)BitTypeahead.Timeout.TotalMilliseconds;
+        Assert.IsTrue(typeahead.IsTyping);
+
+        _now += 1;
+        Assert.IsFalse(typeahead.IsTyping);
+
+        typeahead.Type("u");
+        typeahead.Reset();
+        Assert.IsFalse(typeahead.IsTyping);
+    }
+
+    [TestMethod]
     public void APauseLongerThanTheTimeoutShouldStartANewTerm()
     {
         var typeahead = NewTypeahead();

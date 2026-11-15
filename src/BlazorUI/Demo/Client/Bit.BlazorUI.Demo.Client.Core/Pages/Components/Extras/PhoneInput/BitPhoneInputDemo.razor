@@ -107,7 +107,9 @@
                 <code>0044</code> and <code>44</code> alike), and the result count is announced to screen readers.
                 <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and <b>NoResultsText</b> set its texts.
                 <b>NoSearchBox</b> removes it; the selector then answers to type-ahead, open or closed
-                (<code>united s</code> reaches the United States).
+                (<code>united s</code> reaches the United States). The same letter typed again cycles through the countries
+                starting with it, and what is typed is matched by the rules of the current culture, which ignore case and
+                the accents that culture treats as marks on a letter.
             </div>
             <br />
             <div class="example-box">

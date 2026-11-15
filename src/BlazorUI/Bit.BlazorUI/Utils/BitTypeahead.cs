@@ -53,6 +53,12 @@ internal sealed class BitTypeahead
 
 
     /// <summary>
+    /// Whether a term is still being typed: one has been started and the pause since its last key is not over yet. A
+    /// list whose names have spaces in them reads a space typed then as part of the term rather than as a choice.
+    /// </summary>
+    internal bool IsTyping => _term.Length > 0 && _clock() - _typedAt <= Timeout.TotalMilliseconds;
+
+    /// <summary>
     /// Adds a typed key to the term, or starts a new term with it after a pause, and returns what to look for: the
     /// text and whether the search starts from the item after the one the keyboard is on.
     /// </summary>

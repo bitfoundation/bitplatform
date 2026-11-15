@@ -1677,6 +1677,31 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPhoneInputShouldCycleThroughTheCountriesStartingWithALetterTypedAgain()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, [BitCountries.UnitedStates, BitCountries.Canada, BitCountries.UnitedKingdom]);
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        var dropdown = component.Find("button.bit-phi-drp");
+        dropdown.Click();
+
+        string? Active() => component.FindAll("button.bit-phi-itm").First(i => i.ClassList.Contains("bit-phi-act")).GetAttribute("title");
+
+        dropdown.KeyDown("u");
+        var first = Active();
+
+        // The same letter again is the next country starting with it, not a search for one starting with "uu".
+        dropdown.KeyDown("u");
+
+        StringAssert.StartsWith(first, "United");
+        StringAssert.StartsWith(Active(), "United");
+        Assert.AreNotEqual(first, Active());
+    }
+
+    [TestMethod]
     public void BitPhoneInputShouldKeepASpaceTypedInTheMiddleOfATypeAheadTerm()
     {
         BitCountry? changed = null;
