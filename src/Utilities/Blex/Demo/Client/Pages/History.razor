@@ -12,9 +12,10 @@
     <div class="bb-card">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Setup</h2>
         <p>
-            Register it once. <code>&lt;BlexProvider&gt;</code> calls <code>Start()</code> for you -
-            deliberately <em>after</em> rehydration, so the baseline that undo ultimately returns to is
-            the state the user actually loaded, not the pre-hydration defaults.
+            Register it once. <code>&lt;BlexProvider&gt;</code> starts it for you, before storage is read: the
+            page takes clicks while it is, and an action dispatched then is an undo step like any other. Each
+            store's stored state becomes the baseline as it arrives, so undo ultimately returns to the state the
+            user actually loaded, not the pre-hydration defaults.
         </p>
 
         <CodeBlock Code="@Setup" FileName="Program.cs" />
@@ -581,7 +582,7 @@
     [
         new("new BlexHistory(manager, maxEntries = 100, filter?, groupBy?)", "A history over every store of a manager, outside DI. Call <code>Start()</code>; dispose it when done."),
         new("new BlexHistory(manager, scope, maxEntries = 100, filter?, groupBy?)", "One over the stores <code>scope</code> admits - what each demo on this page builds for itself."),
-        new("void Start()", "Captures the baseline and begins recording. Idempotent. Called by <code>&lt;BlexProvider&gt;</code> after rehydration."),
+        new("void Start()", "Captures the baseline and begins recording. Idempotent. <code>&lt;BlexProvider&gt;</code> starts it before rehydration and takes each store's stored state into the baseline as it arrives."),
         new("void Undo()", "Restores the previous state. No-op when <code>CanUndo</code> is false. Shorthand for <code>Jump(-1)</code>."),
         new("void Redo()", "Re-applies the most recently undone state. No-op when <code>CanRedo</code> is false. Shorthand for <code>Jump(1)</code>."),
         new("void Jump(int steps)", "Moves several steps in one restore - negative undoes, positive redoes. Clamped to what the stacks hold; intermediate states are never applied."),

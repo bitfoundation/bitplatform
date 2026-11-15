@@ -98,6 +98,9 @@ public class BlexHistory : IDisposable
     private bool _started;
     private bool _restoring;
 
+    // The covered stores whose stored state persistence may still apply (see StartBeforeHydration); null outside that window.
+    private HashSet<string>? _awaitingHydration;
+
     // Set when a restore moved a covered store away from what the present holds, and settled by the
     // StateRestored that follows every restore.
     private bool _restoredAway;
@@ -356,6 +359,70 @@ public class BlexHistory : IDisposable
     }
 
     /// <summary>
+    /// Begins recording before persistence has hydrated the stores -- what <c>&lt;BlexProvider&gt;</c> does, because
+    /// the page is interactive while storage is still being read (a Blazor Server round trip), and an action the user
+    /// dispatches then is a change like any other. Until <see cref="EndHydration"/>, a covered store's first restore
+    /// is taken as its stored state arriving: it becomes that store's slice in the baseline and in every step taken
+    /// since, instead of a move away from them, and a step left changing nothing comes off the stack. Idempotent;
+    /// a history already recording is left as it is.
+    /// </summary>
+    /// <remarks>
+    /// Started after hydration instead, the history took the hydrated state as its baseline, but an action dispatched
+    /// while storage was read was in nothing it held: Undo never offered it, and stopped at the state after it.
+    /// </remarks>
+    internal void StartBeforeHydration()
+    {
+        if (_started)
+            return;
+
+        Start();
+        _awaitingHydration = new HashSet<string>(_present!.Slices.Keys, StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Ends the window <see cref="StartBeforeHydration"/> opened: persistence has read every store it was going to,
+    /// and a restore from here on (DevTools, another tab, another history) moves the state as usual.
+    /// </summary>
+    internal void EndHydration() => _awaitingHydration = null;
+
+    /// <summary>
+    /// Takes in a store's stored state as persistence applies it during <see cref="StartBeforeHydration"/>'s window.
+    /// The applied state replaced whatever the store held, a change made while storage was read included, so it is
+    /// what the store held all along as far as undo is concerned: its slice becomes the arrived one in the present,
+    /// the boundary and both stacks, and a step that now changes nothing comes off the undo stack.
+    /// </summary>
+    private bool TakeHydratedState(IBlexStore store)
+    {
+        if (_awaitingHydration is null || _present is null || !_awaitingHydration.Remove(store.Name))
+            return false;
+
+        var name = store.Name;
+        var arrived = SliceOf(store);
+        RepairAll(snapshot => snapshot.Slices.ContainsKey(name) ? snapshot.With(name, arrived) : snapshot);
+
+        // Newest first: entry i holds the state before the action entry i+1 (or the present) is labelled with. When the
+        // two are now the same, that action undoes nothing any more, and the label of the one that produced entry i's
+        // state moves up to name the step that is left.
+        for (var i = _undo.Count - 1; i >= 0; i--)
+        {
+            var newest = i == _undo.Count - 1;
+            if (!_undo[i].State.SameAs(newest ? _present : _undo[i + 1].State))
+                continue;
+
+            if (newest)
+                _presentLabel = _undo[i].Label;
+            else
+                _undo[i + 1] = _undo[i + 1] with { Label = _undo[i].Label };
+
+            _undo.RemoveAt(i);
+        }
+
+        _lastGroupKey = null;
+        RaiseChanged();
+        return true;
+    }
+
+    /// <summary>
     /// Takes a store that registers after recording began into the present. Left out, the step its first action pushes
     /// would hold nothing of it, and undoing that action would leave the store as it is.
     /// </summary>
@@ -450,7 +517,7 @@ public class BlexHistory : IDisposable
         {
             // Ahead of the restore-away check: the present a restore-away refreshes holds the arrived state as it is,
             // but the steps pushed since the store joined would still hold its declared defaults.
-            if (TakeArrivedState(store) || _restoredAway)
+            if (TakeHydratedState(store) || TakeArrivedState(store) || _restoredAway)
                 return;
 
             // A store the present has never seen -- one that registered without joining it, while this history was
@@ -896,6 +963,7 @@ public class BlexHistory : IDisposable
             _manager.StateRestored -= OnExternalRestore;
             _manager.StoreRolledBack -= OnRolledBack;
             _started = false;
+            _awaitingHydration = null;
         }
 
         GC.SuppressFinalize(this);

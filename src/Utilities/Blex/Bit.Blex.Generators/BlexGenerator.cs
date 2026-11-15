@@ -320,10 +320,12 @@ public sealed class BlexGenerator : IIncrementalGenerator
             if (result.Model is { } model)
             {
                 // Include the namespace in the hint name so equally-named stores in different
-                // namespaces don't collide.
+                // namespaces don't collide. Without the '@' of an escaped keyword ("App.@class"): a hint
+                // name may not contain one, and AddSource throwing fails the whole generator, every
+                // other store in the compilation included.
                 var hint = model.Namespace is null
                     ? $"{model.ClassName}.Blex.g.cs"
-                    : $"{model.Namespace}.{model.ClassName}.Blex.g.cs";
+                    : $"{model.Namespace.Replace("@", string.Empty)}.{model.ClassName}.Blex.g.cs";
                 spc.AddSource(hint, SourceText.From(Emit(model), Encoding.UTF8));
             }
         });
@@ -1352,6 +1354,13 @@ public sealed class BlexGenerator : IIncrementalGenerator
     private static string Id(string name)
         => SyntaxFacts.GetKeywordKind(name) == SyntaxKind.None ? name : "@" + name;
 
+    /// <summary>
+    /// The store's fully qualified type. The class name is the symbol's, which drops the '@' a keyword needs
+    /// (<c>partial class @event</c>), so it is escaped again; the namespace is kept as written.
+    /// </summary>
+    private static string StoreType(BlexStoreModel m)
+        => m.Namespace is null ? $"global::{Id(m.ClassName)}" : $"global::{m.Namespace}.{Id(m.ClassName)}";
+
     /// <summary>Renders a wrapper's parameter list, preserving params modifiers and default values.</summary>
     private static string ParamList(BlexEquatableArray<BlexParamModel> parameters)
         => string.Join(", ", parameters.Select(p =>
@@ -1378,7 +1387,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
     {
         const string Descriptor = "global::Bit.Blex.BlexActionDescriptor";
 
-        var storeType = m.Namespace is null ? $"global::{m.ClassName}" : $"global::{m.Namespace}.{m.ClassName}";
+        var storeType = StoreType(m);
         var described = new List<(string Wrapper, string Label, string Type, string Arguments, string Signature)>();
 
         foreach (var a in m.Actions)
@@ -1625,7 +1634,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
             indent = "    ";
         }
 
-        sb.AppendLine($"{indent}partial class {m.ClassName} : global::Bit.Blex.BlexStoreBase");
+        sb.AppendLine($"{indent}partial class {Id(m.ClassName)} : global::Bit.Blex.BlexStoreBase");
         sb.AppendLine($"{indent}{{");
 
         var body = indent + "    ";
@@ -1678,7 +1687,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 // [BlexState(Comparer = ...)]: the store's comparer decides what counts as a change. Qualified, so a
                 // comparer named like the setter's own parameter ("value") does not bind to it.
                 var comparer = s.ComparerIsStatic
-                    ? $"{(m.Namespace is null ? $"global::{m.ClassName}" : $"global::{m.Namespace}.{m.ClassName}")}.{Id(s.Comparer)}"
+                    ? $"{StoreType(m)}.{Id(s.Comparer)}"
                     : $"this.{Id(s.Comparer)}";
                 sb.AppendLine($"{body}    {setter} => SetState<{s.TypeFqn}>(ref {field}, value, {comparer}, \"{Escape(s.PropertyName)}\");");
             }
