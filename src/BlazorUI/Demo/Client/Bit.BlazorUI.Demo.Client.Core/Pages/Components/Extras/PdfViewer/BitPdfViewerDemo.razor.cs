@@ -1820,6 +1820,9 @@ public partial class BitPdfViewerDemo
     private static BitPdfSource CreateArticleSource()
         => BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
 
+    private static BitPdfSource CreateRangeSource()
+        => BitPdfSource.FromUrl("https://assets.bitplatform.dev/pdf-viewer-sample.pdf", "pdf-viewer-sample.pdf").WithRangeLoading();
+
     private async Task OnBasicFileChange(InputFileChangeEventArgs e)
     {
         basicSource = await ReadFileSource(e) ?? basicSource;
