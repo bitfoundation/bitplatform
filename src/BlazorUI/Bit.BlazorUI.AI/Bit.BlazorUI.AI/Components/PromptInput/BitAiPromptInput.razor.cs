@@ -44,6 +44,11 @@ public partial class BitAiPromptInput : BitAiComponentBase
     private readonly List<MenuEntry> _menuItems = [];
     // The uploads in flight (AttachmentUploader), by the attachment they are for, each cancelled as its file is taken off.
     private readonly Dictionary<string, CancellationTokenSource> _uploads = [];
+    // What the composer held under each draft key it has moved away from - the text and the staged files - so it comes
+    // back with that key. The files are the composer's: their resources stay in _staged and their uploads in _uploads.
+    private readonly Dictionary<string, ParkedDraft> _parked = new(StringComparer.Ordinal);
+    // The submissions in flight, each with the draft key it was written under, which a rename of that key carries along.
+    private readonly List<SubmissionOrigin> _submitting = [];
 
     private BitAiIconClassesCache<BitButtonClassStyles> _attachButtonClasses;
     private BitAiIconClassesCache<BitButtonClassStyles> _sendButtonClasses;
@@ -55,6 +60,9 @@ public partial class BitAiPromptInput : BitAiComponentBase
     private long? _registeredMaxSize;
     private bool? _registeredDisabled;
     private bool? _registeredSubmitOnEnter;
+    // The draft key the composer works under: DraftKey, once a change of it has been applied (ApplyDraftKeyAsync).
+    private string? _draftKey;
+    private bool _draftKeyApplied;
     private string? _restoredDraftKey;
     private string? _resizedValue;
     private int? _resizedRows;
@@ -170,6 +178,17 @@ public partial class BitAiPromptInput : BitAiComponentBase
     /// <remarks>
     /// Restored when the composer first renders with an empty value, saved on every change, and cleared on submit. Use a
     /// key that identifies the conversation, so drafts do not bleed between them.
+    /// <br />
+    /// The key can change while the composer is on the page, and what it holds goes with the key it was written under:
+    /// moving to another key keeps the text and the staged files of the old one (the text in the session storage too) and
+    /// shows those of the new one, restoring its saved draft when the composer has none of its own, so moving back brings
+    /// both back. The files are kept by the composer rather than the storage, so they come back for as long as it lives,
+    /// and not after a reload.
+    /// <br />
+    /// A change that is the same conversation getting its key keeps what the composer holds and moves its text to the new
+    /// key: a key set where there was none, a key taken away (drafts turned off), and a key changed while a submission is
+    /// in flight - one named once the conversation is created, in <see cref="OnSubmit"/> or as its turn streams - which a
+    /// submission turned down afterwards is put back under too.
     /// </remarks>
     [Parameter] public string? DraftKey { get; set; }
 
@@ -450,6 +469,16 @@ public partial class BitAiPromptInput : BitAiComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
+        if (_draftKeyApplied is false)
+        {
+            _draftKeyApplied = true;
+            _draftKey = DraftKey;
+        }
+        else if (string.Equals(_draftKey, DraftKey, StringComparison.Ordinal) is false)
+        {
+            await ApplyDraftKeyAsync(_draftKey, DraftKey);
+        }
+
         // A file staged for one model can be one the next cannot take: switching to a model without vision leaves the
         // images staged for the one before with nowhere to go, and submitting them anyway would hand the new model what it
         // cannot read. So when what the composer accepts moves, the files it no longer would are taken off and named in
@@ -519,15 +548,20 @@ public partial class BitAiPromptInput : BitAiComponentBase
             await _js.BitAiPromptInputRegisterSubmitKey(UniqueId, _textarea, Options.SubmitOnEnter);
         }
 
-        if (string.Equals(_restoredDraftKey, DraftKey, StringComparison.Ordinal) is false)
+        if (string.Equals(_restoredDraftKey, _draftKey, StringComparison.Ordinal) is false)
         {
-            _restoredDraftKey = DraftKey;
+            var key = _restoredDraftKey = _draftKey;
 
-            if (DraftKey is not null && string.IsNullOrEmpty(Value))
+            if (key is not null && string.IsNullOrEmpty(Value))
             {
-                var draft = await _js.BitAiPromptInputReadDraft(DraftKey);
+                var draft = await _js.BitAiPromptInputReadDraft(key);
 
-                if (string.IsNullOrEmpty(draft) is false && IsDisposing is false)
+                // A draft read for a key the composer has moved on from, or for a composer typed into meanwhile, is left
+                // where it is.
+                if (string.IsNullOrEmpty(draft) is false
+                    && IsDisposing is false
+                    && string.Equals(_draftKey, key, StringComparison.Ordinal)
+                    && string.IsNullOrEmpty(Value))
                 {
                     Value = draft;
                     await ValueChanged.InvokeAsync(Value);
@@ -748,43 +782,70 @@ public partial class BitAiPromptInput : BitAiComponentBase
         if (CanSubmit is false) return;
 
         var text = Value;
-        var submission = new BitAiPromptSubmission(Value.Trim(), _attachments.ToArray());
-        var staged = new Dictionary<string, StagedResources>(_staged);
+        var submission = new BitAiPromptSubmission(Value.Trim(), _attachments.ToArray()) { Session = Session };
+        var origin = new SubmissionOrigin(_draftKey);
+
+        // The message owns the attachments now: their browser streams and previews go with them. The files parked under
+        // other keys stay the composer's.
+        var staged = new Dictionary<string, StagedResources>();
+        foreach (var attachment in _attachments)
+        {
+            if (_staged.Remove(attachment.AttachmentId, out var resources))
+            {
+                staged[attachment.AttachmentId] = resources;
+            }
+        }
 
         Value = string.Empty;
         _attachments.Clear();
-        // The message owns the attachments now: their browser streams and previews go with them.
-        _staged.Clear();
         _rejections.Clear();
         _interim = null;
         DismissMenu();
 
-        await ValueChanged.InvokeAsync(Value);
+        // Counted from here, before anything is awaited, so a key changed by anything the submission sets off is seen as
+        // changed during it.
+        _submitting.Add(origin);
 
-        if (DraftKey is not null)
-        {
-            await _js.BitAiPromptInputClearDraft(DraftKey);
-        }
+        var clearedKey = origin.Key;
 
-        if (OnSubmit.HasDelegate)
+        try
         {
-            await OnSubmit.InvokeAsync(submission);
+            await ValueChanged.InvokeAsync(Value);
+
+            if (clearedKey is not null)
+            {
+                await _js.BitAiPromptInputClearDraft(clearedKey);
+            }
+
+            if (OnSubmit.HasDelegate)
+            {
+                await OnSubmit.InvokeAsync(submission);
+            }
+            else if (Session is not null && await Session.SubmitAsync(submission.Text, submission.Attachments) is null)
+            {
+                // The session took nothing - a turn it could not interrupt was in flight - so the prompt is still the user's.
+                submission.Reject();
+            }
         }
-        else if (Session is not null && await Session.SubmitAsync(submission.Text, submission.Attachments) is null)
+        finally
         {
-            // The session took nothing - a turn it could not interrupt was in flight - so the prompt is still the user's.
-            submission.Reject();
+            _submitting.Remove(origin);
         }
 
         if (submission.IsRejected)
         {
-            await RestoreAsync(text, submission.Attachments, staged);
+            await RestoreAsync(origin.Key, text, submission.Attachments, staged);
         }
     }
 
     // Puts back what a submission that was turned down took out of the composer, ahead of anything added since, so the user
-    // can send it again. The resources of its files are the composer's to release again.
-    private async Task RestoreAsync(string text, IReadOnlyList<BitAiAttachment> attachments, Dictionary<string, StagedResources> staged)
+    // can send it again. The resources of its files are the composer's to release again. The key is the one the submission
+    // was written under, renamed along with the composer's (ApplyDraftKeyAsync), so the two differ only once the composer
+    // is gone.
+    private async Task RestoreAsync(string? key,
+                                    string text,
+                                    IReadOnlyList<BitAiAttachment> attachments,
+                                    Dictionary<string, StagedResources> staged)
     {
         if (IsDisposing)
         {
@@ -793,22 +854,141 @@ public partial class BitAiPromptInput : BitAiComponentBase
                 await ReleaseAsync(resources);
             }
 
+            // The files go with the composer, but the text is put back into the storage it was cleared from, where the
+            // next composer under that key finds it.
+            if (key is not null)
+            {
+                await RestoreStoredDraftAsync(key, text);
+            }
+
             return;
         }
-
-        Value = Value.Length == 0 ? text : $"{text}\n{Value}";
-
-        _attachments.InsertRange(0, attachments.Where(a => _attachments.Any(b => b.AttachmentId == a.AttachmentId) is false));
 
         foreach (var (id, resources) in staged)
         {
             _staged[id] = resources;
         }
 
+        Value = Value.Length == 0 ? text : $"{text}\n{Value}";
+
+        _attachments.InsertRange(0, attachments.Where(a => _attachments.Any(b => b.AttachmentId == a.AttachmentId) is false));
+
         await ValueChanged.InvokeAsync(Value);
         await SaveDraftAsync();
 
         StateHasChanged();
+    }
+
+    // The JS runtime may be gone with the composer: a draft that cannot be put back is lost with the page it was on.
+    private async Task RestoreStoredDraftAsync(string key, string text)
+    {
+        try
+        {
+            var stored = await _js.BitAiPromptInputReadDraft(key);
+
+            await _js.BitAiPromptInputWriteDraft(key, string.IsNullOrEmpty(stored) ? text : $"{text}\n{stored}");
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
+        catch (ObjectDisposedException) { }
+        catch (OperationCanceledException) { }
+    }
+
+    // Moves the composer from one draft key to another. What it holds stays with the key it was written under, unless the
+    // change is the same conversation getting its key (see DraftKey): one that comes or goes, or one renamed while a
+    // submission is in flight - which then follows the new key too.
+    private async Task ApplyDraftKeyAsync(string? previous, string? next)
+    {
+        _draftKey = next;
+
+        var carries = previous is null || next is null || _submitting.Count > 0;
+
+        if (carries)
+        {
+            var before = Value;
+
+            foreach (var origin in _submitting)
+            {
+                if (string.Equals(origin.Key, previous, StringComparison.Ordinal))
+                {
+                    origin.Key = next;
+                }
+            }
+
+            // Anything already kept under the new key joins what the composer holds rather than being lost to it.
+            ParkedDraft? kept = null;
+            var merged = next is not null && _parked.Remove(next, out kept);
+            if (merged)
+            {
+                Value = kept!.Text.Length == 0 ? Value : Value.Length == 0 ? kept.Text : $"{Value}\n{kept.Text}";
+                _attachments.AddRange(kept.Attachments.Where(a => _attachments.Exists(b => b.AttachmentId == a.AttachmentId) is false));
+            }
+
+            var holdsText = string.IsNullOrEmpty(Value) is false;
+
+            // An empty composer reads the draft saved under the new key once rendered, as it would have first time round,
+            // so nothing is written over it.
+            _restoredDraftKey = holdsText ? next : null;
+
+            if (string.Equals(before, Value, StringComparison.Ordinal) is false)
+            {
+                await ValueChanged.InvokeAsync(Value);
+            }
+
+            if (holdsText)
+            {
+                if (previous is not null)
+                {
+                    await _js.BitAiPromptInputClearDraft(previous);
+                }
+
+                await SaveDraftAsync();
+            }
+
+            if (merged)
+            {
+                // What the composer accepts may have moved while the files were parked.
+                await DropUnacceptedAttachmentsAsync();
+            }
+
+            return;
+        }
+
+        // Another conversation: what the composer holds is kept for the old key, and what was kept for the new one - in
+        // the composer, else in the storage - comes back.
+        var text = Value;
+        if (text.Length > 0 || _attachments.Count > 0)
+        {
+            _parked[previous!] = new ParkedDraft(text, [.. _attachments]);
+        }
+
+        _attachments.Clear();
+        _rejections.Clear();
+        _interim = null;
+        DismissMenu();
+
+        if (_parked.Remove(next!, out var parked))
+        {
+            Value = parked.Text;
+            _attachments.AddRange(parked.Attachments);
+            _restoredDraftKey = next;
+        }
+        else
+        {
+            Value = string.Empty;
+            _restoredDraftKey = null;
+        }
+
+        // Saved for the old key as it was left - the text may have come in as the Value parameter, never typed.
+        await _js.BitAiPromptInputWriteDraft(previous!, text);
+
+        if (string.Equals(text, Value, StringComparison.Ordinal) is false)
+        {
+            await ValueChanged.InvokeAsync(Value);
+        }
+
+        // What the composer accepts may have moved while the files were parked.
+        await DropUnacceptedAttachmentsAsync();
     }
 
     private async Task StopAsync()
@@ -850,7 +1030,7 @@ public partial class BitAiPromptInput : BitAiComponentBase
 
     private ValueTask SaveDraftAsync()
     {
-        return DraftKey is null ? ValueTask.CompletedTask : _js.BitAiPromptInputWriteDraft(DraftKey, Value);
+        return _draftKey is null ? ValueTask.CompletedTask : _js.BitAiPromptInputWriteDraft(_draftKey, Value);
     }
 
     private async Task OpenFilePickerAsync()
@@ -1055,8 +1235,26 @@ public partial class BitAiPromptInput : BitAiComponentBase
 
     private void ReplaceAttachment(string attachmentId, BitAiAttachment attachment)
     {
-        var index = _attachments.FindIndex(a => a.AttachmentId == attachmentId);
-        if (index >= 0) _attachments[index] = attachment;
+        if (FindAttachment(attachmentId, out var index) is { } list)
+        {
+            list[index] = attachment;
+        }
+    }
+
+    // The list holding a staged file: the composer's own, or the one of the draft key it was parked under, whose uploads
+    // go on while it is away.
+    private List<BitAiAttachment>? FindAttachment(string attachmentId, out int index)
+    {
+        index = _attachments.FindIndex(a => a.AttachmentId == attachmentId);
+        if (index >= 0) return _attachments;
+
+        foreach (var parked in _parked.Values)
+        {
+            index = parked.Attachments.FindIndex(a => a.AttachmentId == attachmentId);
+            if (index >= 0) return parked.Attachments;
+        }
+
+        return null;
     }
 
     private void CancelUpload(string attachmentId)
@@ -1080,10 +1278,10 @@ public partial class BitAiPromptInput : BitAiComponentBase
             {
                 if (owner._uploads.TryGetValue(attachmentId, out var current) is false || ReferenceEquals(current, cts) is false) return;
 
-                var index = owner._attachments.FindIndex(a => a.AttachmentId == attachmentId);
-                if (index < 0 || owner._attachments[index].Status is not BitAiAttachmentStatus.Uploading) return;
+                if (owner.FindAttachment(attachmentId, out var index) is not { } list
+                    || list[index].Status is not BitAiAttachmentStatus.Uploading) return;
 
-                owner._attachments[index] = owner._attachments[index] with { Progress = fraction };
+                list[index] = list[index] with { Progress = fraction };
                 owner.RequestRender();
             });
         }
@@ -1468,4 +1666,17 @@ public partial class BitAiPromptInput : BitAiComponentBase
     /// What a staged attachment holds in the browser, to be released when it is discarded.
     /// </summary>
     private sealed record StagedResources(IJSStreamReference? Content, string? PreviewUrl);
+
+    /// <summary>
+    /// What the composer held under a draft key it has moved away from.
+    /// </summary>
+    private sealed record ParkedDraft(string Text, List<BitAiAttachment> Attachments);
+
+    /// <summary>
+    /// A submission in flight, and the draft key it was written under - moved along when that key is renamed.
+    /// </summary>
+    private sealed class SubmissionOrigin(string? key)
+    {
+        public string? Key { get; set; } = key;
+    }
 }

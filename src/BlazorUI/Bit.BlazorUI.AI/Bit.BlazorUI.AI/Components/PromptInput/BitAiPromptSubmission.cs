@@ -16,6 +16,10 @@ public sealed record BitAiPromptSubmission(string Text, IReadOnlyList<BitAiAttac
     /// </summary>
     public bool IsRejected { get; private set; }
 
+    // The session of the composer at the moment the user submitted, so a handler running after the composer has moved to
+    // another session (a BitAiChat switched threads while the draft was being cleared) does not send it there.
+    internal BitAiChatSession? Session { get; init; }
+
     /// <summary>
     /// Turns the submission down, for a handler that could not send it - an upload or a request that failed: the composer
     /// puts the text and the attachments back once the handler returns, so the user can send them again rather than type

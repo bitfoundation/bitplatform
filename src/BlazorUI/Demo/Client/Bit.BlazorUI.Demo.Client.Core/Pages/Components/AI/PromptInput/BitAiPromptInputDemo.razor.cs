@@ -73,7 +73,7 @@ public partial class BitAiPromptInputDemo
             Name = "DraftKey",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A key under which the draft text is kept in the session storage of the browser, so it survives a reload or a dropped circuit. It is restored when the composer first renders with an empty value, saved on every change and cleared on submit. Use a key that identifies the conversation, so drafts do not bleed between them. Drafts are not kept when it is null.",
+            Description = "A key under which the draft text is kept in the session storage of the browser, so it survives a reload or a dropped circuit. It is restored when the composer first renders with an empty value, saved on every change and cleared on submit. Use a key that identifies the conversation, so drafts do not bleed between them. Drafts are not kept when it is null. The key can change while the composer is on the page: the text and the staged files of the old key stay with it and come back with it (the files for as long as the composer lives, not after a reload), and the draft of the new key is shown. A key set where there was none, taken away, or changed while a submission is in flight (a conversation named once it is created) keeps what the composer holds and moves its text to the new key, where a submission turned down afterwards is put back too.",
         },
         new()
         {
