@@ -139,7 +139,7 @@ public sealed class LazyLoadingTests : BunitContext
         {
             var button = trigger.Find("button");
             Assert.AreEqual("Control+P", button.GetAttribute("aria-keyshortcuts"));
-            Assert.AreEqual("فرمان‌ها", button.GetAttribute("aria-label"));
+            Assert.AreEqual("جستجو, فرمان‌ها", button.GetAttribute("aria-label"));
             Assert.AreEqual("جستجو", trigger.Find(".bit-balette-trigger-label").TextContent);
         });
 

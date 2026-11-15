@@ -124,7 +124,10 @@ public class BaletteStrings
     /// <summary>The accessible name of the breadcrumb navigation.</summary>
     public virtual string Breadcrumb { get; set; } = "Breadcrumb";
 
-    /// <summary>The accessible name of <see cref="BaletteTrigger"/>.</summary>
+    /// <summary>
+    /// What <see cref="BaletteTrigger"/>'s accessible name says after its visible label (WCAG 2.5.3: the name starts with
+    /// what is shown), and its whole name when <see cref="BaletteTrigger.ChildContent"/> replaces the label.
+    /// </summary>
     public virtual string OpenPalette { get; set; } = "Open command palette";
 
     /// <summary>The label of <see cref="BaletteTrigger"/> when it sets none of its own.</summary>

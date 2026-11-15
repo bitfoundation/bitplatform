@@ -6,7 +6,7 @@
         class="bit-balette-trigger @Class"
         data-balette="trigger"
         @onclick="OnClick"
-        aria-label="@(S.OpenPalette)"
+        aria-label="@AccessibleName"
         aria-keyshortcuts="@(ShortcutText)"
         @attributes="AdditionalAttributes">
     @if (ChildContent is not null)
@@ -61,6 +61,24 @@
     private BaletteKeyboardShortcut? Shortcut => Palette.ModalPalette is { } palette ? palette.ToggleShortcut : Runtime.Options.ToggleShortcut;
 
     private BaletteStrings S => Palette.ModalPalette?.Strings ?? Runtime.Options.Strings;
+
+    /// <summary>
+    /// The button's name starts with the label it shows (WCAG 2.5.3, label in name), so someone who says "click Search"
+    /// reaches it, and goes on to say what it does. Content an app puts in the label's place is named by the string alone.
+    /// </summary>
+    private string AccessibleName
+    {
+        get
+        {
+            if (ChildContent is not null)
+            {
+                return S.OpenPalette;
+            }
+
+            var label = Label ?? S.Search;
+            return label.Contains(S.OpenPalette, StringComparison.CurrentCultureIgnoreCase) ? label : $"{label}, {S.OpenPalette}";
+        }
+    }
 
     /// <summary>Value for <c>aria-keyshortcuts</c>, which uses DOM key names (Control, Meta, Shift, Alt).</summary>
     private string? ShortcutText => Shortcut is null ? null : string.Join(" ", Shortcut.Chords.Select(AriaChord));

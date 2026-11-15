@@ -1245,7 +1245,8 @@ so people who learned the English name still find it, as VS Code does with its E
   `aria-keyshortcuts`.
 - Pointer hover only moves the selection once the pointer actually moves, so a list scrolling under a resting mouse
   does not steal the keyboard's selection (`DisablePointerSelection` turns hover off completely).
-- The close button's accessible name holds its visible "Esc" (WCAG 2.5.3), and the buttons are at least 24 px.
+- The close button's accessible name holds its visible "Esc", and the trigger's starts with its visible label
+  ("Search, Open command palette") - WCAG 2.5.3, label in name; the buttons are at least 24 px.
 
 The browser suite runs axe-core (WCAG 2.2 A and AA rules) over the root list, search results, a nested page, a
 multi-select page and a prompt, in light and dark, with the demo's theme and with the library's defaults. An automated

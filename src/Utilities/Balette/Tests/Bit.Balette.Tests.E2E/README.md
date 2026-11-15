@@ -38,7 +38,7 @@ downloads `Bit.Balette.wasm` only when its page with the palette opens.
 | `InlinePaletteTests` | The inline palette in the settings section of /commands: searched and driven in place, its switches following the page; `Ctrl+K` from its box opens only the modal palette and a global shortcut runs once; axe-core finds nothing. |
 | `GuardTests` | The guarded commands of the Options & security page: as a viewer, *Purge the cache* is refused from its row (the guard's message in the footer, the palette left open), from its global shortcut with the palette closed and from `ExecuteAsync`, each reported through `CommandRefused` with what started it; *Rotate API keys*, found from the root under the guarded *Admin tools* page, is refused by the page's guard; as an admin both run. |
 | `DemoPagesTests` | Every demo page loads, turns interactive and logs no error, and every button on it - the site header's included - runs without one; an unknown address gets the not-found page (404), where the palette still works. |
-| `LazyLoadingTests` | The published lazy loading sample - trimmed, `Bit.Balette.wasm` marked `BlazorWebAssemblyLazyLoad` and loaded by the router's `OnNavigateAsync`, no `AddBitBaletteServices` in the browser - as the README's "Lazy loading on WebAssembly" section sets it up: its home page never downloads `Bit.Balette.wasm`; navigating to the admin page downloads it once (and not again on the way back), and a deep link to it is prerendered by the server (which registers Balette's services and the router's `LazyAssemblyLoader`) and then downloads it; either way the palette and the trigger of the layout only that page uses create their services themselves, open from the trigger and with `Ctrl+K`, and run the command the page registered through `GetBaletteService()`; the layout's navigation command leaves for the home page. No console error, unhandled exception or failed request, and not the warning that the services are not registered, which the README's log filter silences. Published with AOT (`BALETTE_E2E_LAZY_AOT=1`), the sample leaves the lazy mark out as the README says an AOT build must, and the same tests check that it loads Bit.Balette with the app and nothing on demand. The sample always runs on WebAssembly, whatever `BALETTE_E2E_RENDER_MODE` says. |
+| `LazyLoadingTests` | The published lazy loading sample - trimmed, `Bit.Balette.wasm` marked `BlazorWebAssemblyLazyLoad` and loaded by the router's `OnNavigateAsync`, no `AddBitBaletteServices` in the browser - as the README's "Lazy loading on WebAssembly" section sets it up: its home page never downloads `Bit.Balette.wasm`; navigating to the admin page downloads it once (and not again on the way back), and a deep link to it is prerendered by the server (which registers Balette's services and the router's `LazyAssemblyLoader`) and then downloads it; either way the palette and the trigger of the layout only that page uses create their services themselves, open from the trigger and with `Ctrl+K`, and run the command the page registered through `GetBaletteService()`; the layout's navigation command leaves for the home page. Leaving the admin page while the palette's module is held back leaves no listener behind on the home page, and the palette starts as usual the next time. No console error, unhandled exception or failed request, and not the warning that the services are not registered, which the README's log filter silences. Published with AOT (`BALETTE_E2E_LAZY_AOT=1`), the sample leaves the lazy mark out as the README says an AOT build must, and the same tests check that it loads Bit.Balette with the app and nothing on demand. The sample always runs on WebAssembly, whatever `BALETTE_E2E_RENDER_MODE` says. |
 
 Every page is prerendered, so its markup - the trigger and the mode buttons included - is on screen before anything
 handles a click, and the browser layer that hears `Ctrl+K` starts a moment after the page turns interactive. Each test
@@ -89,7 +89,7 @@ dotnet publish Samples/Lazy/Bit.Balette.Samples.Lazy/Bit.Balette.Samples.Lazy.cs
 dotnet build Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
-pwsh Tests/Bit.Balette.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium   # and firefox, webkit to run those
+pwsh Tests/Bit.Balette.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium   # and firefox, webkit to run those
 
 cd Tests/Bit.Balette.Tests.E2E && dotnet test
 
@@ -106,7 +106,7 @@ constructor lost its parameter names, a getter nothing but System.Text.Json read
 dotnet publish src/Utilities/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 dotnet publish src/Utilities/Balette/Samples/Lazy/Bit.Balette.Samples.Lazy/Bit.Balette.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj -c Release
-pwsh src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+pwsh src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.Balette.Demo.Server.dll --urls http://127.0.0.1:5000 &)
 cd src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E && BALETTE_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename balette-e2e.trx
 ```
@@ -125,8 +125,8 @@ cd src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E && BALETTE_E2E_LAZY_AOT=1 d
 That workflow only runs when started by hand (Actions > "CI Balette E2E" > Run workflow). The pull-request pipeline, `ci.balette.yml`, runs the build, model, search, component and MCP tests only.
 
 Without PowerShell 7, the browser can be installed with Windows PowerShell
-(`powershell -ExecutionPolicy Bypass -File bin/Debug/net10.0/playwright.ps1 install chromium`), or with the Node.js
-runtime Playwright ships: `bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.
+(`powershell -ExecutionPolicy Bypass -File bin/Debug/net11.0/playwright.ps1 install chromium`), or with the Node.js
+runtime Playwright ships: `bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.
 
 The suite starts the demo server itself (`dotnet Bit.Balette.Demo.Server.dll --urls http://127.0.0.1:<free port>`,
 in the Development environment so the build output finds its static web assets), waits until it answers, shares it

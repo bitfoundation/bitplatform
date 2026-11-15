@@ -42,6 +42,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private IJSObjectReference? _module;
     private IJSObjectReference? _handle;
     private DotNetObjectReference<Balette>? _selfRef;
+    // Set first thing by DisposeAsync: the first render's calls into the browser layer check it as each one returns.
+    private bool _disposed;
 
     private bool _isOpen;
     private bool _pendingOpen;
@@ -348,9 +350,17 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     {
         if (firstRender)
         {
+            // Each await below can outlast the palette - a page left while the module downloads, or while init crosses a
+            // Blazor Server connection - and DisposeAsync releases only what was there when it ran: whatever arrives
+            // after it is released here instead, or the browser layer's listeners and this component outlive the page.
             try
             {
                 _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Bit.Balette/bit-balette.js");
+                if (_disposed)
+                {
+                    return;
+                }
+
                 _selfRef = DotNetObjectReference.Create(this);
                 var toggles = ToggleShortcutStrings();
                 var shortcuts = GlobalShortcutStrings();
@@ -361,11 +371,21 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                 // reflection, and a trimmed app no longer has the metadata it needs for that.
                 _handle = await _module.InvokeAsync<IJSObjectReference>("init", _dialogEl, _selfRef,
                     toggles, shortcuts, Options.SuppressShortcutsInEditableElements, Options.SequenceTimeoutMs, _syncedVim, Inline);
+                if (_disposed)
+                {
+                    return;
+                }
+
                 // Parameters set and commands registered while init was on its way.
                 SyncBrowserOptions();
                 SyncShortcuts();
                 WarnAboutShortcutProblems();
                 _isMac = await _handle.InvokeAsync<bool>("isMac");
+                if (_disposed)
+                {
+                    return;
+                }
+
                 Service.SetPlatform(_isMac);
                 StateHasChanged();
             }
@@ -373,6 +393,18 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             {
                 // Prerendering without JS, module blocked, circuit gone or the arguments not serializable: palette will
                 // still render but without hotkeys.
+            }
+            finally
+            {
+                if (_disposed)
+                {
+                    await ReleaseBrowserLayerAsync();
+                }
+            }
+
+            if (_disposed)
+            {
+                return;
             }
         }
 
@@ -429,6 +461,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        _disposed = true;
         if (_runtime is not null)
         {
             _runtime.Service.OpenRequested -= OpenFromServiceAsync;
@@ -449,17 +482,34 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         CancelAutoClose();
         CancelPageLoads();
 
+        await ReleaseBrowserLayerAsync();
+    }
+
+    /// <summary>
+    /// Removes the browser layer's listeners and releases the references to it. Called by <see cref="DisposeAsync"/>, and
+    /// by the first render for whatever its calls brought back after that: each reference is taken once, so nothing is
+    /// released twice.
+    /// </summary>
+    private async Task ReleaseBrowserLayerAsync()
+    {
+        var handle = _handle;
+        var module = _module;
+        var selfRef = _selfRef;
+        _handle = null;
+        _module = null;
+        _selfRef = null;
+
         try
         {
-            if (_handle is not null)
+            if (handle is not null)
             {
-                await _handle.InvokeVoidAsync("dispose");
-                await _handle.DisposeAsync();
+                await handle.InvokeVoidAsync("dispose");
+                await handle.DisposeAsync();
             }
 
-            if (_module is not null)
+            if (module is not null)
             {
-                await _module.DisposeAsync();
+                await module.DisposeAsync();
             }
         }
         catch (Exception ex) when (IsInteropFailure(ex))
@@ -467,7 +517,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             // The circuit or the page is already gone, and the browser layer with it.
         }
 
-        _selfRef?.Dispose();
+        selfRef?.Dispose();
     }
 
     // ---- Declarative registration (used by BaletteItem) -------------------------------------
@@ -838,7 +888,29 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     /// <summary>Called from JS for navigation keys (already preventDefault-ed).</summary>
     [JSInvokable]
-    public async Task OnKeyDown(string key, bool ctrl, bool shift, bool alt, bool meta)
+    public Task OnKeyDown(string key, bool ctrl, bool shift, bool alt, bool meta) => FromBrowserAsync(() => KeyDownAsync(key, ctrl, shift, alt, meta));
+
+    /// <summary>
+    /// Runs what a call from the browser layer does. The application's code it reaches - a command's listeners, the
+    /// palette's <see cref="OnClosed"/> or <see cref="OnQueryChanged"/> - may throw, and an exception left to the call
+    /// would go back to the browser, where nothing reports it. It is dispatched to the palette instead, as one thrown from a
+    /// click is, so an error boundary or the host's error handling sees it and it is logged, from whichever input it came.
+    /// </summary>
+    private async Task FromBrowserAsync(Func<Task> work)
+    {
+        try
+        {
+            await work();
+        }
+        catch (Exception ex)
+        {
+            // What the call changed before it failed is shown, as the click it stands for would have shown it.
+            await InvokeAsync(StateHasChanged);
+            await InvokeAsync(() => DispatchExceptionAsync(ex));
+        }
+    }
+
+    private async Task KeyDownAsync(string key, bool ctrl, bool shift, bool alt, bool meta)
     {
         if (!_isOpen)
         {
@@ -992,11 +1064,11 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     /// <summary>Called by the browser layer when a toggle shortcut was pressed. Not meant to be called from application code.</summary>
     [JSInvokable]
-    public Task OnToggleShortcut() => InvokeAsync(ToggleAsync);
+    public Task OnToggleShortcut() => FromBrowserAsync(() => InvokeAsync(ToggleAsync));
 
     /// <summary>Called by the browser layer when a command's global shortcut was completed. Not meant to be called from application code.</summary>
     [JSInvokable]
-    public Task OnGlobalShortcut(string normalized) => InvokeAsync(async () =>
+    public Task OnGlobalShortcut(string normalized) => FromBrowserAsync(() => InvokeAsync(async () =>
     {
         if (Inline)
         {
@@ -1011,7 +1083,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
         await ExecuteCommandAsync(cmd, BaletteExecutionTrigger.Shortcut);
         StateHasChanged();
-    });
+    }));
 
     /// <summary>
     /// Called by the browser layer when the focus enters or leaves an inline palette, which announces result counts
@@ -1029,16 +1101,16 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     /// the sequence ended. Not meant to be called from application code.
     /// </summary>
     [JSInvokable]
-    public Task OnSequencePending(string? chords) => InvokeAsync(() =>
+    public Task OnSequencePending(string? chords) => FromBrowserAsync(() => InvokeAsync(() =>
     {
         _pendingSequence = chords is not null && BaletteKeyboardShortcut.TryParse(chords, out var pending) ? pending : null;
-        Service.RaiseSequencePending(_pendingSequence);
         StateHasChanged();
-    });
+        Service.RaiseSequencePending(_pendingSequence);
+    }));
 
     /// <summary>Called by the browser layer when the backdrop was clicked. Not meant to be called from application code.</summary>
     [JSInvokable]
-    public Task OnBackdropClick() => Options.CloseOnBackdropClick ? InvokeAsync(CloseCoreAsync) : Task.CompletedTask;
+    public Task OnBackdropClick() => Options.CloseOnBackdropClick ? FromBrowserAsync(() => InvokeAsync(CloseCoreAsync)) : Task.CompletedTask;
 
     /// <summary>
     /// Called by the browser layer when the pointer first moved after the dialog's <c>data-hover-suspended</c> changed,
@@ -1995,12 +2067,30 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             _ = History.RecordAsync(cmd.Id);
         }
 
-        Service.RaiseExecuted(cmd, result, sw.Elapsed);
-        if (OnCommandExecuted.HasDelegate)
+        // A listener that throws is the application's failure, not the command's: the command ran, so its result is still
+        // applied - the palette closes, shows its page or its toast - and the exception is rethrown after that, to whatever
+        // started the command (see FromBrowserAsync).
+        ExceptionDispatchInfo? listenerFailure = null;
+        try
         {
-            await OnCommandExecuted.InvokeAsync(new BaletteCommandExecutedEventArgs(cmd, result, sw.Elapsed));
+            Service.RaiseExecuted(cmd, result, sw.Elapsed);
+            if (OnCommandExecuted.HasDelegate)
+            {
+                await OnCommandExecuted.InvokeAsync(new BaletteCommandExecutedEventArgs(cmd, result, sw.Elapsed));
+            }
+        }
+        catch (Exception ex)
+        {
+            listenerFailure = ExceptionDispatchInfo.Capture(ex);
         }
 
+        await FinishRunAsync(cmd, result, trigger, cts, startPage);
+        listenerFailure?.Throw();
+    }
+
+    /// <summary>Acts on a handler's <paramref name="result"/>, unless the palette or the page it ran on was left meanwhile.</summary>
+    private async Task FinishRunAsync(BaletteCommand cmd, BaletteCommandResult result, BaletteExecutionTrigger trigger, CancellationTokenSource cts, BalettePageFrame startPage)
+    {
         // Closed (or disposed) while the handler ran: what it answers with must not bring the palette back.
         if (cts.IsCancellationRequested)
         {
