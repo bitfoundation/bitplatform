@@ -678,12 +678,11 @@ public partial class BitResourceTimeline : BitComponentBase
     {
         double height = row.Height > 0 ? row.Height : _layout.ResourceHeight;
 
-        // The engine lays its rows out left to right whatever the direction of the page, and the overlay sits on them. A
-        // group separator above the row is left as a margin, so the engine's separator shows through the overlay.
-        return row.Gap > 0
-            ? FormattableString.Invariant($"height:{height}px;margin-top:{row.Gap}px;padding-left:{8 + row.Depth * _layout.ResourceIndent}px")
-            : FormattableString.Invariant($"height:{height}px;padding-left:{8 + row.Depth * _layout.ResourceIndent}px");
+        // The engine lays its rows out left to right whatever the direction of the page, and the overlay sits on them.
+        return FormattableString.Invariant($"height:{height}px;padding-left:{8 + row.Depth * _layout.ResourceIndent}px");
     }
+
+    private static string GetResourceGapStyle(BitResourceTimelineResourceRow row) => FormattableString.Invariant($"height:{row.Gap}px");
 
     // Where the overlay of the TooltipTemplate is drawn until the script has measured it (PlaceTooltipOverlayAsync): at
     // the pointer, offset by the translate of the stylesheet.

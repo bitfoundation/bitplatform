@@ -320,7 +320,7 @@
                     height: px(s.height),
                     backgroundColor: dashed ? '' : s.color,
                     backgroundImage: dashed
-                        ? `repeating-linear-gradient(to right, ${s.color} 0 ${s.dash}px, transparent ${s.dash}px ${s.dash + s.gap}px)`
+                        ? `repeating-linear-gradient(to right, ${s.color} 0 ${s.dash}px, transparent ${s.dash}px ${s.dash + s.dashGap}px)`
                         : ''
                 });
             }

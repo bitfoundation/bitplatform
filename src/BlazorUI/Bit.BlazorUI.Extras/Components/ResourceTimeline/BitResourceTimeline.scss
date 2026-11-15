@@ -166,6 +166,12 @@ $rtm-private-properties: dir;
     padding-right: spacing(1);
 }
 
+// The room of a group separator between the rows: empty, so the engine's separator shows through it.
+.bit-rtm-rgp {
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
 .bit-rtm-rct {
     min-width: 0;
     overflow: hidden;

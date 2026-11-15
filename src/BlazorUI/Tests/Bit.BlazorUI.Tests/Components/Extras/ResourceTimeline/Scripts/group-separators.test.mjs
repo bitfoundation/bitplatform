@@ -108,18 +108,59 @@ test('a separator with nothing to draw, or a negative depth, takes no room', () 
     assert.deepEqual(separatedRows(makeEngine({ borderWidth: 1 })), [6, 8, 10, 11]);
 });
 
-test('a point over a separator hits no row, while culling and drags count it to the row above', () => {
+test('a point over a separator hits no row, while its slot is the row below it', () => {
     const engine = makeEngine({ height: 10 });
     const c = engine.config;
     const gapTop = engine._rowContentTop(5) + engine._rowHeight(5);
-    const inGap = gapTop + 5;
-    assert.equal(engine._rowIndexAtContentY(inGap), 5);
-    assert.equal(engine._rowAtContentY(inGap), -1);
-    assert.equal(engine.getYToResource(c.timeAxisHeight + inGap), -1);
-    assert.equal(engine._rowAtY(c.timeAxisHeight + inGap), -1);
+    for (const inGap of [gapTop, gapTop + 5, gapTop + 9.5]) {
+        assert.equal(engine._rowIndexAtContentY(inGap), 6, `slot at ${inGap - gapTop}`);
+        assert.equal(engine._rowAtContentY(inGap), -1);
+        assert.equal(engine.getYToResource(c.timeAxisHeight + inGap), -1);
+        assert.equal(engine._rowAtY(c.timeAxisHeight + inGap), -1);
+    }
     // Either side of it, the rows themselves.
+    assert.equal(engine._rowIndexAtContentY(gapTop - 1), 5);
     assert.equal(engine.getYToResource(c.timeAxisHeight + gapTop - 1), 5);
     assert.equal(engine.getYToResource(c.timeAxisHeight + gapTop + 10), 6);
+});
+
+test('a drop over a separator goes to the nearer of the rows it separates', () => {
+    const engine = makeEngine({ height: 20 });
+    const gapTop = engine._rowContentTop(5) + engine._rowHeight(5);
+    assert.equal(engine._nearestRowAtContentY(gapTop - 1), 5);
+    assert.equal(engine._nearestRowAtContentY(gapTop + 1), 5);
+    assert.equal(engine._nearestRowAtContentY(gapTop + 9.5), 5);
+    assert.equal(engine._nearestRowAtContentY(gapTop + 10), 6);
+    assert.equal(engine._nearestRowAtContentY(gapTop + 19), 6);
+    assert.equal(engine._nearestRowAtContentY(gapTop + 20), 6);
+    // Out of range stays out of range, and the first row has no separator above it.
+    assert.equal(engine._nearestRowAtContentY(-1), -1);
+    assert.equal(engine._nearestRowAtContentY(0), 0);
+    assert.equal(engine._nearestRowAtContentY(engine._totalRowsHeight()), -1);
+});
+
+test('the first keyboard focus skips a row scrolled out of view above a separator', () => {
+    const engine = makeEngine({ height: 10 });
+    engine.scrollY = engine._rowContentTop(5) + engine._rowHeight(5) + 3;
+    assert.equal(engine._firstVisibleResourceIndex(), 6);
+});
+
+test('a scroll anchor inside a separator keeps its place when the rows above it change height', () => {
+    const engine = makeEngine({ height: 10 });
+    const c = engine.config;
+    // Short enough to scroll, so _setScrollY does not clamp the view to the top.
+    engine._viewportH = c.timeAxisHeight + 50;
+    const gapTop = engine._rowContentTop(5) + engine._rowHeight(5);
+    engine.scrollY = gapTop + 3;
+    const anchor = engine._captureRowAnchor();
+    assert.equal(anchor.rowId, 'B');
+    assert.equal(anchor.rowOffset, -7);
+
+    // Every row above grows: the view stays 3 pixels into the same separator.
+    c.resourceHeight += 8;
+    engine._recomputeRowMetrics();
+    engine._restoreRowAnchor(anchor);
+    assert.equal(engine.scrollY, engine._rowContentTop(5) + engine._rowHeight(5) + 3);
 });
 
 test('the scene paints a separator as its band and its borders, in place of the grid line', () => {
@@ -156,7 +197,7 @@ test('dashed, dotted and double borders', () => {
         const y = engine.getResourceToY(6) - engine._rowGap(6);
         return strips.filter(s => s.y >= y && s.y < y + engine._rowGap(6))
             .sort((a, b) => a.y - b.y)
-            .map(s => [s.y - y, s.height, s.dash, s.gap]);
+            .map(s => [s.y - y, s.height, s.dash, s.dashGap]);
     };
     assert.deepEqual(borders({ borderStyle: 'Dashed' }), [[0, 3, 9, 6], [3, 3, 9, 6]]);
     assert.deepEqual(borders({ borderStyle: 'dotted' }), [[0, 3, 3, 3], [3, 3, 3, 3]]);

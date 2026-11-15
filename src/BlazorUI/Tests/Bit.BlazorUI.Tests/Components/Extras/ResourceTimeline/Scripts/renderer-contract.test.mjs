@@ -227,8 +227,8 @@ for (const [name, Renderer] of Object.entries(renderers)) {
     test(`the ${name} renderer paints the group separators across the content pane and, where asked, the resource column`, () => {
         const scene = makeSceneEngine([bar('a', 'r0', 1, 3)]).buildScene();
         const v = scene.viewport;
-        const solid = { y: 100, height: 4, color: '#123456', dash: 0, gap: 0, axis: true };
-        const dashed = { y: 200, height: 2, color: '#654321', dash: 6, gap: 4, axis: false };
+        const solid = { y: 100, height: 4, color: '#123456', dash: 0, dashGap: 0, axis: true };
+        const dashed = { y: 200, height: 2, color: '#654321', dash: 6, dashGap: 4, axis: false };
 
         // The visible elements painting a strip of the given color: the left and
         // width of each, as numbers, from the inline style or the attributes.

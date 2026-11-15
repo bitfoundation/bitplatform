@@ -393,7 +393,7 @@
                         x1: x0, y1: y, x2: x1, y2: y,
                         stroke: s.color,
                         'stroke-width': s.height,
-                        'stroke-dasharray': `${s.dash} ${s.gap}`
+                        'stroke-dasharray': `${s.dash} ${s.dashGap}`
                     });
                 } else {
                     this._rect(fills, x0, s.y, x1 - x0, s.height, s.color);

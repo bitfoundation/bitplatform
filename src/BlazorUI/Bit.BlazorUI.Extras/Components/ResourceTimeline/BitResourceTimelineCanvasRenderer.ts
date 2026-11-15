@@ -31,14 +31,14 @@
 
     /**
      * A strip of a separator between resource groups, running across the timeline: a solid band, or with dash set a
-     * line of dashes `dash` long `gap` apart, as thick as the strip, from the left edge of the area it crosses.
+     * line of dashes `dash` long `dashGap` apart, as thick as the strip, from the left edge of the area it crosses.
      */
     export interface ResourceTimelineSceneSeparator {
         y: number;
         height: number;
         color: string;
         dash: number;
-        gap: number;
+        dashGap: number;
         /** Whether the strip crosses the resource column too, not only the content pane. */
         axis: boolean;
     }
@@ -510,7 +510,7 @@
                     ctx.save();
                     ctx.strokeStyle = s.color;
                     ctx.lineWidth = s.height;
-                    ctx.setLineDash([s.dash, s.gap]);
+                    ctx.setLineDash([s.dash, s.dashGap]);
                     ctx.beginPath();
                     ctx.moveTo(x0, s.y + s.height / 2);
                     ctx.lineTo(x1, s.y + s.height / 2);
