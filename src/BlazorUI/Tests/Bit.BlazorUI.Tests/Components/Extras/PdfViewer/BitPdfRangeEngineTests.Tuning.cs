@@ -107,8 +107,13 @@ public partial class BitPdfRangeEngineTests
         var other = BitPdfDocument.Load(WrongRootCount(scattered: false)).XRef;
         using var batch = BeginBatch(xref, 1024L * 1024, 4096);
         Assert.IsFalse(Defer(other, 0, 10), "another document's reads are never deferred into this pass");
-        // Blocking keeps this test on the thread that began the batch.
-        Assert.IsFalse(Task.Run(() => Defer(xref, 0, 10)).GetAwaiter().GetResult(), "nor are reads of another thread");
+        // A dedicated thread, joined: a Task.Run awaited by blocking may be inlined onto this very thread when the pool
+        // is busy, which would make it the thread that began the batch.
+        bool deferredElsewhere = true;
+        var elsewhere = new System.Threading.Thread(() => deferredElsewhere = Defer(xref, 0, 10));
+        elsewhere.Start();
+        elsewhere.Join();
+        Assert.IsFalse(deferredElsewhere, "nor are reads of another thread");
         Assert.IsFalse(Defer(null, 0, 10));
         Assert.AreEqual(0, (int)MissingBatch.GetProperty("Count", TuningFlags)!.GetValue(batch)!);
         Assert.IsTrue(Defer(xref, 0, 10));
