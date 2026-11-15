@@ -5,6 +5,22 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### A grouped `BitDataGrid` with `Virtualize` is virtualized ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+`Virtualize` used to be turned off while the rows were grouped, so every row of every open group was in the DOM: 10,000
+grouped rows took 130,000 elements and seconds to render. A grouped view is now virtualized like a flat one, as one
+list of group rows and data rows, which changes what a grouped grid with `Virtualize` renders:
+
+- **Only a window of the rows is in the DOM**, with the spacers `Virtualize` keeps around it. A script or a test that
+  read every row of a grouped grid off the page reads the rows in view; scroll a row into view first, or call
+  `RevealItemAsync`, which scrolls to its place.
+- **A group row is exactly `RowHeight` tall**, like every other row of a virtualized grid, and keeps its toggle, title,
+  count and aggregates on one line: a title or aggregates that used to wrap end in an ellipsis. A group row carries
+  the class `bit-dtg-group-row-fix` there.
+- **The body has no `rowgroup` role**, as the body of a flat virtualized grid has none: the spacers sit among its rows.
+
+A grouped grid without `Virtualize` renders as it did.
+
 ### Three Extras surfaces stack on the layer scale rather than above it ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 Three surfaces of `Bit.BlazorUI.Extras` were stacked with a literal z-index far above the library's layer scale (the
