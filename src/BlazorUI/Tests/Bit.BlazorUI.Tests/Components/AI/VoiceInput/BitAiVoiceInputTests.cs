@@ -180,6 +180,39 @@ public class BitAiVoiceInputTests : BitAiTestBase
         Assert.AreEqual(0, voice.FindAll(".bit-aivci-err").Count);
     }
 
+    // A failure whose OnListeningChanged(false) is still pending when the user starts the next dictation does not show its
+    // reason once that callback completes: the reason is shown before the callbacks are awaited, and the new dictation
+    // clears it, so nothing of the failure lands on the session that followed it.
+    [TestMethod]
+    public async Task AFailureStillReportingDoesNotShowItsReasonDuringTheNextDictation()
+    {
+        SetUpDictation(handle: 3);
+        var stopped = new TaskCompletionSource();
+        var errors = new List<string>();
+
+        var voice = RenderComponent<BitAiVoiceInput>(p =>
+        {
+            p.Add(c => c.OnListeningChanged, listening => listening ? Task.CompletedTask : stopped.Task);
+            p.Add(c => c.OnError, e => errors.Add(e));
+        });
+        voice.WaitForElement("button").Click();
+
+        var failing = voice.InvokeAsync(() => voice.Instance._OnDictationError("audio-capture"));
+        Assert.IsFalse(failing.IsCompleted);
+
+        voice.Find("button").Click();
+        Assert.IsTrue(voice.Instance.IsListening);
+        Assert.AreEqual(0, voice.FindAll(".bit-aivci-err").Count);
+
+        await voice.InvokeAsync(() => stopped.SetResult());
+        await failing;
+
+        CollectionAssert.AreEqual(new[] { "audio-capture" }, errors);
+        Assert.IsTrue(voice.Instance.IsListening);
+        Assert.AreEqual(0, voice.FindAll(".bit-aivci-err").Count);
+        Assert.AreEqual("Listening", voice.Find("[role=status]").TextContent.Trim());
+    }
+
     [TestMethod]
     public void AnUnknownErrorIsShownByItsName()
     {
