@@ -244,6 +244,18 @@
             Covers the box only.
         </BitModal>
     </div>
+
+    @* A box that scrolls, which the Modal holds itself (AutoToggleScroll): laid out inside it, the Modal is pushed down by
+       the offset the box was scrolled to, so it covers the part of the box on the screen. *@
+    <button id="btn-abs-scroll-open" @onclick="() => _absScrollOpen = true">AbsolutePosition in a scrolled box</button>
+    <span id="abs-scroll-open">@_absScrollOpen</span>
+    <div id="mdl-abs-scroll-box" style="position: relative; height: 240px; overflow: auto; border: 1px solid #888;">
+        <div style="height: 800px;">Tall box content.</div>
+        <BitModal Id="abs-scroll-modal" @bind-IsOpen="_absScrollOpen" AbsolutePosition AutoToggleScroll ScrollerSelector="#mdl-abs-scroll-box"
+                  ShowCloseButton HeaderText="In a scrolled box" MaxWidth="16rem">
+            Pushed down by the offset of its box.
+        </BitModal>
+    </div>
 </E2ESection>
 
 <E2ESection Id="drag" Title="Draggable and DragElementSelector">
@@ -489,6 +501,7 @@
     private string _positionName = string.Empty;
     private bool _positionOpen;
     private bool _absOpen;
+    private bool _absScrollOpen;
 
     private bool _dragOpen;
     private bool _handleOpen;

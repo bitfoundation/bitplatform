@@ -16,16 +16,16 @@
         }
 
         // The one place an element's overflow is taken over. Every popup that holds a scroller comes
-        // through here - the counted lock below and the older toggle further down alike - because two
-        // mechanisms writing element.style.overflow with bookkeeping of their own undo each other:
+        // through here, by way of lockScroll and unlockScroll below, because two mechanisms writing
+        // element.style.overflow with bookkeeping of their own undo each other:
         // whichever hands the element back last wins, which leaves the page scrolling behind a popup that
         // is still open, or frozen after every popup has closed.
         // The holds are counted rather than toggled: two popups open at once both hold the page, and the
         // page is only handed back once the last of them lets go.
         // Taking the scrollbar away narrows the element by its width, which shifts the whole page sideways
         // in the same frame the popup appears in; the room it took is added back as padding so nothing
-        // moves. Only the callers that ask for that compensation get it, so the older toggle keeps behaving
-        // exactly as it always did.
+        // moves. Only the callers that ask for that compensation get it, so the ones that have always let
+        // the scroller shift by the width of the scrollbar keep behaving exactly as they always did.
         export function holdScroll(key: string, element: HTMLElement | null, compensate: boolean) {
             if (!element || Utils._scrollLockOwners.has(key)) return;
 
@@ -240,32 +240,6 @@
             }
 
             return false;
-        }
-
-        // The older shape of the hold above, for the components that take a scroller for as long as they
-        // are open and want its scroll offset back - which lockScroll and unlockScroll now do too: it is
-        // kept until the components still calling it have moved over to them, one at a time, and then
-        // removed. It goes through the same counted registry, so one of
-        // these can no longer hand back a scroller that a lock - or another one of these - is still
-        // holding. The scrollbar room is only compensated for where the caller asks for it, so the callers
-        // that have always let the page shift by the width of the scrollbar carry on doing exactly that.
-        export function toggleOverflow(key: string, selector: string | HTMLElement, isOpen: boolean, compensate?: boolean) {
-            const element = Utils.resolveScroller(selector);
-
-            if (!element) return 0;
-
-            try {
-                if (isOpen) {
-                    Utils.holdScroll(key, element, compensate === true);
-                } else {
-                    Utils.releaseScroll(key);
-                }
-
-                return element.scrollTop;
-            } catch (e) {
-                console.error("BitBlazorUI.Utils.toggleOverflow:", e);
-                return 0;
-            }
         }
 
         // Scrolls a scroll container to an absolute offset on its scrolling axis. The axis is passed in
