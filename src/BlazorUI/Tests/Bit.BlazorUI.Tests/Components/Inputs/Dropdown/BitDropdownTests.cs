@@ -4157,6 +4157,90 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(countBefore, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
     }
 
+    // What each key typed into the list handed the script: the search string, whether the focused option is searched
+    // too, and the culture it is matched in.
+    private List<(string? Text, bool FromCurrent, string? Culture)> TypeaheadSearches()
+    {
+        return Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"]
+                      .Where(i => (string?)i.Arguments[1] == "char")
+                      .Select(i => ((string?)i.Arguments[2], (bool)i.Arguments[7]!, (string?)i.Arguments[8]))
+                      .ToList();
+    }
+
+    private IRenderedComponent<BitDropdown<BitDropdownItem<string>, string>> RenderOpenForTypeahead()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        return component;
+    }
+
+    [TestMethod]
+    public void BitDropdownTypeaheadShouldCycleWhenTheSameLetterIsTypedAgainInTheOtherCase()
+    {
+        var component = RenderOpenForTypeahead();
+
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "b" });
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "B" });
+
+        CollectionAssert.AreEqual(new[] { ("b", false), ("b", false) },
+                                  TypeaheadSearches().Select(s => (s.Text, s.FromCurrent)).ToList());
+    }
+
+    [TestMethod]
+    public void BitDropdownTypeaheadShouldSearchAStringTypedFurtherFromTheFocusedOption()
+    {
+        var component = RenderOpenForTypeahead();
+
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "b" });
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "r" });
+
+        CollectionAssert.AreEqual(new[] { ("b", false), ("br", true) },
+                                  TypeaheadSearches().Select(s => (s.Text, s.FromCurrent)).ToList());
+    }
+
+    [TestMethod]
+    [DataRow("en-US")]
+    [DataRow("sv-SE")]
+    public void BitDropdownTypeaheadShouldHandTheScriptTheCurrentCultureToMatchIn(string name)
+    {
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(name);
+
+        try
+        {
+            var component = RenderOpenForTypeahead();
+
+            component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "b" });
+
+            Assert.AreEqual(name, TypeaheadSearches().Single().Culture);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+        }
+    }
+
+    [TestMethod]
+    public void BitDropdownTypeaheadShouldStartOverWhenTheListIsOpenedAgain()
+    {
+        var component = RenderOpenForTypeahead();
+
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "b" });
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "r" });
+
+        CollectionAssert.AreEqual(new[] { ("b", false), ("r", false) },
+                                  TypeaheadSearches().Select(s => (s.Text, s.FromCurrent)).ToList());
+    }
+
     [TestMethod]
     public void BitDropdownTypingOnTheClosedTriggerShouldGoIntoTheSearchBox()
     {

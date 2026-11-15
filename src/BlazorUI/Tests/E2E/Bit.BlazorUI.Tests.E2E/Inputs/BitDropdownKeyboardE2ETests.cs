@@ -191,7 +191,7 @@ public class BitDropdownKeyboardE2ETests : BitDropdownE2ETestBase
         await Expect(Option(callout, "Carrot")).ToBeFocusedAsync();
 
         // The buffer starts over after a pause: the pause itself is what is tested, so it is waited out.
-        await Page.WaitForTimeoutAsync(700);
+        await Page.WaitForTimeoutAsync(1200);
         await Page.Keyboard.PressAsync("b");
         await Expect(Option(callout, "Banana")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("b");
@@ -199,13 +199,45 @@ public class BitDropdownKeyboardE2ETests : BitDropdownE2ETestBase
         await Page.Keyboard.PressAsync("b");
         await Expect(Option(callout, "Banana")).ToBeFocusedAsync();
 
-        await Page.WaitForTimeoutAsync(700);
+        await Page.WaitForTimeoutAsync(1200);
         await Page.Keyboard.TypeAsync("gr");
         await Expect(Option(callout, "Grape")).ToBeFocusedAsync();
 
-        await Page.WaitForTimeoutAsync(700);
+        await Page.WaitForTimeoutAsync(1200);
         await Page.Keyboard.TypeAsync("br");
         await Expect(Option(callout, "Broccoli")).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task TypeAhead_APauseShorterThanASecond_StillAddsToTheString()
+    {
+        await OpenAsync(Url);
+
+        await Trigger("dd-kb").FocusAsync();
+        await Page.Keyboard.PressAsync("b");
+
+        var callout = await CalloutAsync("dd-kb");
+        await Expect(Option(callout, "Banana")).ToBeFocusedAsync();
+
+        // Within the pause every typeahead of the library shares, "r" adds to the string ("br") rather than
+        // starting one of its own, which no option starts with.
+        await Page.WaitForTimeoutAsync(700);
+        await Page.Keyboard.PressAsync("r");
+        await Expect(Option(callout, "Broccoli")).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task TypeAhead_APlainLetter_FindsTheAccentedOptionTheCultureFoldsItInto()
+    {
+        await OpenAsync(Url);
+
+        await Trigger("dd-kb-desserts").FocusAsync();
+
+        // The host runs in en-US, where the accent of "Éclair" is a mark on its letter.
+        await Page.Keyboard.PressAsync("e");
+
+        var callout = await CalloutAsync("dd-kb-desserts");
+        await Expect(Option(callout, "Éclair")).ToBeFocusedAsync();
     }
 
     [TestMethod]

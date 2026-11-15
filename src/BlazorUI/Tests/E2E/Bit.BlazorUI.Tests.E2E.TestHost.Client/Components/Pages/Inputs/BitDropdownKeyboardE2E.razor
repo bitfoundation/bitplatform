@@ -42,6 +42,14 @@
                  DefaultValue="@string.Empty" />
 </E2ESection>
 
+<E2ESection Id="typeahead" Title="Typeahead">
+    <BitDropdown Id="dd-kb-desserts"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Desserts"
+                 Items="_desserts"
+                 DefaultValue="@string.Empty" />
+</E2ESection>
+
 <E2ESection Id="multi" Title="Multi select">
     <BitDropdown Id="dd-kb-multi"
                  TItem="BitDropdownItem<string>" TValue="string"
@@ -106,6 +114,14 @@
         new() { Text = "Broccoli", Value = "v-bro" },
         new() { Text = "Carrot", Value = "v-car" },
         new() { Text = "Lettuce", Value = "v-let" }
+    ];
+
+    private readonly List<BitDropdownItem<string>> _desserts =
+    [
+        new() { Text = "Apple pie", Value = "d-app" },
+        new() { Text = "Brownie", Value = "d-bro" },
+        new() { Text = "Éclair", Value = "d-ecl" },
+        new() { Text = "Fudge", Value = "d-fud" }
     ];
 
     private readonly List<BitDropdownItem<string>> _long =

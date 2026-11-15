@@ -90,8 +90,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     private ElementReference _comboBoxInputRef;
     private ElementReference _comboBoxInputResponsiveRef;
 
-    private string _typeAheadBuffer = string.Empty;
-    private DateTimeOffset _lastTypeAheadStamp;
+    private readonly BitTypeahead _typeahead = new();
 
 
 
@@ -2353,7 +2352,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (IsOpen is false) return;
 
         _rateLimiter.Reset();
-        _typeAheadBuffer = string.Empty;
+        _typeahead.Reset();
 
         if (await AssignIsOpenInternal(false) is false) return;
 
@@ -2586,7 +2585,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             }
             else
             {
-                await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
+                await FocusItemByTypeahead(e.Key!);
             }
         }
     }
@@ -2682,7 +2681,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
                 // the focus away from the field the character is about to be typed into.
                 else if (Combo is false && HasSearchBox is false && IsPrintableKey(e))
                 {
-                    await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
+                    await FocusItemByTypeahead(e.Key!);
                 }
                 break;
         }
@@ -2694,21 +2693,16 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
         return e.Key?.Length is 1 && e.Key != " " && e.CtrlKey is false && e.AltKey is false && e.MetaKey is false;
     }
 
-    private string GetTypeAheadBuffer(string key)
+    // The type-ahead of the APG listbox, with the rules every typeahead of the library shares (BitTypeahead): the keys
+    // typed in quick succession are one search string, the same character typed again cycles through the options
+    // starting with it, and a real string is searched from the focused option, so typing further into it stays there.
+    // The string is built here and matched by the script against the rendered options, in the current culture.
+    private ValueTask FocusItemByTypeahead(string key)
     {
-        // Accumulates the keys typed in quick succession so the type-ahead matches the
-        // full string, and starts over after a pause (the common 500ms convention).
-        var now = DateTimeOffset.UtcNow;
+        var search = _typeahead.Type(key);
 
-        if ((now - _lastTypeAheadStamp).TotalMilliseconds > 500)
-        {
-            _typeAheadBuffer = string.Empty;
-        }
-
-        _lastTypeAheadStamp = now;
-        _typeAheadBuffer += key;
-
-        return _typeAheadBuffer;
+        return _js.BitDropdownsFocusItem(_calloutId, BitDropdownFocusMode.Char, search.Text, Virtualize, -1, ItemSize, NoWrapNavigation,
+                                         fromCurrent: search.FromNext is false, culture: CultureInfo.CurrentCulture.Name);
     }
 
     private ValueTask FocusItem(BitDropdownFocusMode mode, string? character = null)
@@ -2947,7 +2941,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             {
                 // A type-ahead that was left half typed must not continue into the next opening, the
                 // same way an uncommitted search term does not survive the callout.
-                _typeAheadBuffer = string.Empty;
+                _typeahead.Reset();
 
                 await ClearSearchBox();
                 await ClearComboBoxInput();
