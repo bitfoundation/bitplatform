@@ -43,9 +43,9 @@
     var templated = EventTemplate is not null;
 }
 
-@* A block an EventTemplate draws shows whatever the template shows, which the details alone would not hold, so it is
-   named by the template's text first and the details after it (aria-labelledby, the two ids below). *@
-<div class="bit-bfc-timeline-event @colorClass @(passThrough ? "bit-bfc-timeline-event-pass-through" : "") @resizeClasses @Parts.Classes?.Event @Event.CssClass"
+@* A block an EventTemplate draws is named by the text it shows first and the details after it (BitFcEventTemplateHost). *@
+<div id="@(templated ? BitFcEventTemplateHost.SurfaceId(_instanceId) : null)"
+     class="bit-bfc-timeline-event @colorClass @(passThrough ? "bit-bfc-timeline-event-pass-through" : "") @resizeClasses @Parts.Classes?.Event @Event.CssClass"
      style="@($"{blockStyle}{Parts.Styles?.Event}")"
      data-bit-bfc-event="@Event.Id"
      data-bit-bfc-move="@(CanMove ? "x" : null)"
@@ -53,7 +53,7 @@
      role="button"
      tabindex="0"
      aria-label="@(templated ? null : ariaLabel)"
-     aria-labelledby="@(templated ? $"{_templateId} {_detailsId}" : null)"
+     aria-labelledby="@(templated ? BitFcEventTemplateHost.LabelledBy(_instanceId) : null)"
      draggable="@(CanMove ? "true" : "false")"
      title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
      @ondragstart="OnDragStart"
@@ -74,10 +74,7 @@
 
     @if (EventTemplate != null)
     {
-        @* The wrapper lays nothing out (display: contents), so the template's boxes are the block's as before. The
-           details are hidden, and still read where the name points at them. *@
-        <span id="@_templateId" class="bit-bfc-event-tpl">@EventTemplate(Event)</span>
-        <span id="@_detailsId" hidden>@ariaLabel</span>
+        <BitFcEventTemplateHost Template="EventTemplate" Event="Event" InstanceId="@_instanceId" Details="@ariaLabel" />
     }
     else
     {

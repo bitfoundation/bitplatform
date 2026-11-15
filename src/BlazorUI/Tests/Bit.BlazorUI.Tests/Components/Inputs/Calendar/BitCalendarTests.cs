@@ -2154,16 +2154,17 @@ public class BitCalendarTests : BunitTestContext
         var grid = component.Find(".bit-cal-grd");
 
         Assert.AreEqual("true", grid.GetAttribute("aria-readonly"));
-        // A grid takes no aria-required, and a read-only day picks nothing, so it asks for nothing either.
+        // A grid takes no aria-required, and a read-only calendar picks nothing, so it asks for nothing either.
         Assert.IsFalse(grid.HasAttribute("aria-required"));
-        Assert.IsFalse(component.Find(".bit-cal-dbt").HasAttribute("aria-required"));
+        Assert.IsFalse(grid.HasAttribute("aria-describedby"));
+        Assert.IsEmpty(component.FindAll(".bit-cal-dbt[aria-required]"));
         // A read-only day still browses, so it stays focusable and reports that it selects nothing instead.
         Assert.AreEqual("true", component.Find(".bit-cal-dbt").GetAttribute("aria-disabled"));
         Assert.IsFalse(component.Find(".bit-cal-dbt").HasAttribute("disabled"));
     }
 
     [TestMethod]
-    public void BitCalendarRequiredShouldBeReportedByTheDaysThatCanBePicked()
+    public void BitCalendarRequiredShouldBeReportedOnceByTheDescriptionOfTheDaysGrid()
     {
         var component = RenderComponent<BitCalendar>(parameters =>
         {
@@ -2172,20 +2173,29 @@ public class BitCalendarTests : BunitTestContext
             parameters.Add(p => p.MinDate, new DateTimeOffset(2024, 5, 10, 0, 0, 0, TimeSpan.Zero));
         });
 
-        Assert.IsFalse(component.Find(".bit-cal-grd").HasAttribute("aria-required"));
+        var grid = component.Find(".bit-cal-grd");
 
-        var days = component.FindAll(".bit-cal-dbt");
-        var pickable = days.Where(d => d.HasAttribute("disabled") is false).ToList();
-        var outOfRange = days.Where(d => d.HasAttribute("disabled")).ToList();
+        // A grid takes no aria-required, so the state is its description, read once as the focus enters it rather
+        // than on every day arrowed over - none of which carries it.
+        Assert.IsFalse(grid.HasAttribute("aria-required"));
+        Assert.IsEmpty(component.FindAll(".bit-cal-dbt[aria-required]"));
 
-        Assert.IsNotEmpty(pickable);
-        Assert.IsNotEmpty(outOfRange);
-        Assert.IsTrue(pickable.All(d => d.GetAttribute("aria-required") == "true"));
-        Assert.IsTrue(outOfRange.All(d => d.HasAttribute("aria-required") is false));
+        var descriptionId = grid.GetAttribute("aria-describedby");
+        var description = component.Find($"[id='{descriptionId}']");
+        Assert.AreEqual("Required", description.TextContent);
+        Assert.IsTrue(description.HasAttribute("hidden"));
 
+        // It holds when no day of the month shown can be picked.
+        component.Render(parameters => parameters.Add(p => p.IsDateDisabled, (Func<DateTimeOffset, bool>)(_ => true)));
+
+        Assert.IsTrue(component.FindAll(".bit-cal-dbt").All(d => d.HasAttribute("disabled")));
+        Assert.IsTrue(component.Find(".bit-cal-grd").HasAttribute("aria-describedby"));
+
+        // A disabled calendar picks nothing, so it asks for nothing.
         component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
-        Assert.IsEmpty(component.FindAll(".bit-cal-dbt[aria-required]"));
+        Assert.IsFalse(component.Find(".bit-cal-grd").HasAttribute("aria-describedby"));
+        Assert.IsEmpty(component.FindAll($"[id='{descriptionId}']"));
     }
 
     [TestMethod]
@@ -3682,12 +3692,13 @@ public class BitCalendarTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCalendarRequiredShouldBeAnnouncedOnTheDaysInsideAForm()
+    public void BitCalendarRequiredShouldBeAnnouncedOnTheGridInsideAForm()
     {
         var component = RenderComponent<BitCalendarValidationTest>(parameters => parameters.Add(p => p.Required, true));
 
-        Assert.IsFalse(component.Find(".bit-cal-grd").HasAttribute("aria-required"));
-        Assert.AreEqual("true", component.Find(".bit-cal-dbt").GetAttribute("aria-required"));
+        var grid = component.Find(".bit-cal-grd");
+        Assert.IsFalse(grid.HasAttribute("aria-required"));
+        Assert.AreEqual("Required", component.Find($"[id='{grid.GetAttribute("aria-describedby")}']").TextContent);
     }
 
     [TestMethod]

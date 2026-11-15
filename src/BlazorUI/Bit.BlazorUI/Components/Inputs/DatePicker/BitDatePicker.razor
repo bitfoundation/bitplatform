@@ -205,19 +205,14 @@
                     var isFirstMonth = monthIndex == 0;
                     var isLastMonth = monthIndex == _renderedMonths.Length - 1;
                     var monthTitle = _monthTitles[monthIndex];
-                    var titleIsToggle = isFirstMonth && IsMonthPickerVisible && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && ShowTimePickerAsOverlay is false));
-                    // A title that is only text names the days grid below it, which is the month it heads: the grid carries
-                    // the disabled state of the picker, so its name is read as a part of the control that is unavailable
-                    // rather than as text of its own - which it is - and the title of a disabled picker is let off the
-                    // contrast of body text the way the rest of it is (WCAG 1.4.3), as in BitCalendar. The toggle that stands
-                    // in for it is a control with a name of its own, so the grid keeps its aria-label beside one.
-                    var titleId = titleIsToggle ? null : GetMonthTitleId(monthIndex);
+                    // The id of the title that names the days grid, or none where the title is the month picker's toggle.
+                    var titleId = GetMonthTitleId(monthIndex);
 
                     <div style="@Styles?.DayPickerWrapper" class="bit-dtp-dwp @Classes?.DayPickerWrapper">
                         <div style="@Styles?.DayPickerHeader" class="bit-dtp-pkh @Classes?.DayPickerHeader">
                             @* The month title is only a button where there is a month picker for it to reveal;
                                with the month picker turned off it would toggle a panel that never comes. *@
-                            @if (titleIsToggle)
+                            @if (titleId is null)
                             {
                                 var title = string.Format(MonthPickerToggleTitle, monthTitle);
                                 <button @onclick="@ToggleMonthPickerOverlay"

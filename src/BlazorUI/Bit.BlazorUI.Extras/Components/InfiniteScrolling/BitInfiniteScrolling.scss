@@ -27,7 +27,7 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
     overflow: auto;
     box-sizing: border-box;
 
-    // The list is a tab stop of its own while it scrolls its content (see _TabIndex), and its own overflow would cut
+    // The list is a tab stop of its own while it scrolls its content (see _tabStopMode), and its own overflow would cut
     // off a ring drawn outside it where an ancestor clips, so the indicator is drawn inside it.
     &:focus-visible {
         @include focus-ring-inset($clr-pri-focus);

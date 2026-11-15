@@ -133,6 +133,11 @@ public class BitFullCalendarKeyboardAndTemplateTests : BunitTestContext
         var label = badge.GetAttribute("aria-label")!;
         StringAssert.StartsWith(label, $"Standup, {time} - ");
         StringAssert.EndsWith(label, ", 3/18/2026");
+
+        // It is the name every other view gives the event, with the date the badge does not show by where it sits.
+        var dayBlock = RenderCalendar(p => p.Add(c => c.DefaultView, BitFullCalendarView.Day))
+            .FindAll(".bit-bfc-event-block").Single(b => b.GetAttribute("data-bit-bfc-event") == "1");
+        Assert.AreEqual($"{dayBlock.GetAttribute("aria-label")}, 3/18/2026", label);
     }
 
     [TestMethod]

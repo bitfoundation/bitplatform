@@ -12,13 +12,14 @@
             horizontal: boolean,
             autoLoad: boolean,
             feed: boolean,
+            tabStop: 'auto' | 'page' | 'none',
             dotnetObj: DotNetObject) {
 
             // The observer bakes its root, threshold and margin in at construction, so a setup that arrives
             // for an id that already has one is a change of those options: drop the old one first.
             InfiniteScrolling.dispose(id);
 
-            const instance = new InfiniteScrollingInstance(scrollerSelector, rootElement, lastElement, threshold, rootMargin, horizontal, feed, dotnetObj);
+            const instance = new InfiniteScrollingInstance(scrollerSelector, rootElement, lastElement, threshold, rootMargin, horizontal, feed, tabStop, dotnetObj);
             InfiniteScrolling._instances.set(id, instance);
 
             if (autoLoad) {
@@ -76,6 +77,7 @@
     //     (chat) mode from jumping while older items are inserted above the current one.
     //   * Moves the focus between the articles of a feed with Page Up / Page Down, and out of it with
     //     Ctrl+Home / Ctrl+End, as the WAI-ARIA feed pattern describes.
+    //   * Makes a list that scrolls its own content a tab stop while that content overflows it.
     class InfiniteScrollingInstance {
         // Selectors that all mean "the page itself scrolls". The IntersectionObserver root has to be null
         // for those: passing document.body (which is not the scroll container) makes the sentinel intersect
@@ -101,6 +103,11 @@
         private _pending = false;
         private _prevScrollSize = -1;
         private _keydownHandler: ((e: KeyboardEvent) => void) | null = null;
+        // What keeps the tab stop of a list that scrolls its own content in step with whether it overflows.
+        private _tabStopResize: ResizeObserver | null = null;
+        private _tabStopMutations: MutationObserver | null = null;
+        private _tabStopFrame = 0;
+        private _tabStopSync: (() => void) | null = null;
 
         constructor(
             scrollerSelector: string | undefined,
@@ -110,6 +117,7 @@
             rootMargin: string | undefined,
             horizontal: boolean,
             feed: boolean,
+            tabStop: 'auto' | 'page' | 'none',
             dotnetObj: DotNetObject) {
 
             this._dotnetObj = dotnetObj;
@@ -141,6 +149,77 @@
                 this._keydownHandler = e => this._onFeedKeydown(e);
                 rootElement.addEventListener('keydown', this._keydownHandler);
             }
+
+            this._setupTabStop(tabStop);
+        }
+
+        // A list that scrolls its own content is a tab stop while that content overflows it ("auto"): a keyboard
+        // can scroll a box only once it is in it (WCAG 2.1.1), and one that scrolls nothing - a list of no height,
+        // which grows with its items and is scrolled by the page - would only be a silent stop. Whether it
+        // overflows changes with its size, its items and what loads in them (an image), so it is measured again on
+        // each. The tab index is the script's alone in that mode, since .NET renders none, and one the page gave
+        // ("page") is never touched; a tab stop this script made is taken back once the list stops being its to
+        // make ("none"), the element remembering it across the instances a change of options goes through.
+        private _setupTabStop(tabStop: 'auto' | 'page' | 'none') {
+            const root = this._rootElement as any;
+
+            if (tabStop !== 'auto' || this._scroller !== this._rootElement) {
+                if (root.__bitIscTabStop) {
+                    root.__bitIscTabStop = false;
+                    if (tabStop !== 'page') {
+                        this._rootElement.removeAttribute('tabindex');
+                    }
+                }
+                return;
+            }
+
+            const sync = () => {
+                this._tabStopFrame = 0;
+                if (this._disposed) return;
+
+                this._syncTabStop();
+            };
+            this._tabStopSync = () => {
+                if (this._tabStopFrame) return;
+                this._tabStopFrame = requestAnimationFrame(sync);
+            };
+
+            try {
+                this._tabStopResize = new ResizeObserver(this._tabStopSync);
+                this._tabStopResize.observe(this._rootElement);
+            } catch { /* no ResizeObserver: the items and the loads below still keep it in step */ }
+
+            this._tabStopMutations = new MutationObserver(this._tabStopSync);
+            this._tabStopMutations.observe(this._rootElement, { childList: true });
+
+            // A load does not bubble, so it is heard on the way down; a focus leaving is when a list that no longer
+            // overflows can give up the stop it was kept for while it held the focus.
+            this._rootElement.addEventListener('load', this._tabStopSync, true);
+            this._rootElement.addEventListener('focusout', this._tabStopSync);
+
+            this._syncTabStop();
+        }
+
+        private _syncTabStop() {
+            const el = this._rootElement;
+            const root = el as any;
+
+            // The pixel of slack absorbs the rounding of fractional sizes.
+            const overflows = el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
+
+            if (overflows) {
+                if (el.hasAttribute('tabindex')) return;
+
+                el.setAttribute('tabindex', '0');
+                root.__bitIscTabStop = true;
+                return;
+            }
+
+            // A list holding the focus keeps its stop until the focus leaves it, rather than drop the focus to the body.
+            if (!root.__bitIscTabStop || document.activeElement === el) return;
+
+            el.removeAttribute('tabindex');
+            root.__bitIscTabStop = false;
         }
 
         private static _createObserver(options: IntersectionObserverInit, callback: IntersectionObserverCallback): IntersectionObserver {
@@ -240,6 +319,8 @@
 
             this._lastElement = lastElement;
             this._observing = true;
+            // A page has just landed, which may be what makes the list overflow.
+            this._tabStopSync?.();
             // Every observe() delivers the current state of the sentinel, so both flags start out unknown.
             this._inScroller = false;
             this._inViewport = false;
@@ -456,6 +537,19 @@
             if (this._keydownHandler) {
                 this._rootElement.removeEventListener('keydown', this._keydownHandler);
                 this._keydownHandler = null;
+            }
+
+            // The tab index itself is left as it is: the next setup decides what becomes of it.
+            this._tabStopResize?.disconnect();
+            this._tabStopMutations?.disconnect();
+            if (this._tabStopSync) {
+                this._rootElement.removeEventListener('load', this._tabStopSync, true);
+                this._rootElement.removeEventListener('focusout', this._tabStopSync);
+                this._tabStopSync = null;
+            }
+            if (this._tabStopFrame) {
+                cancelAnimationFrame(this._tabStopFrame);
+                this._tabStopFrame = 0;
             }
         }
     }

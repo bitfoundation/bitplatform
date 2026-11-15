@@ -1072,12 +1072,14 @@ public class BitInfiniteScrollingTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(false, null, "0"),
-        DataRow(true, null, null),
-        DataRow(false, "window", null),
-        DataRow(false, "#outer", null)]
-    public void BitInfiniteScrollingShouldBeATabStopWhileItScrollsItsOwnContent(bool feed, string? scrollerSelector, string? expected)
+        DataRow(false, null, "auto"),
+        DataRow(true, null, "none"),
+        DataRow(false, "window", "none"),
+        DataRow(false, "#outer", "none")]
+    public void BitInfiniteScrollingShouldLeaveItsTabStopToTheScriptWhileItScrollsItsOwnContent(bool feed, string? scrollerSelector, string expected)
     {
+        Context.JSInterop.SetupVoid("BitBlazorUI.InfiniteScrolling.setup");
+
         var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
         {
             parameters.Add(p => p.ItemsProvider, Provider);
@@ -1086,8 +1088,28 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ScrollerSelector, scrollerSelector);
         });
 
-        // A keyboard can only scroll the box it is in, and a feed's articles and an outer scroller need no stop of the list.
-        Assert.AreEqual(expected, component.Find(".bit-isc").GetAttribute("tabindex"));
+        // A keyboard can only scroll the box it is in, so a list scrolling its own content is a tab stop while that
+        // content overflows it - which only the script can measure: a list of no height, scrolled by the page, scrolls
+        // nothing. A feed's articles and an outer scroller need no stop of the list.
+        Assert.IsFalse(component.Find(".bit-isc").HasAttribute("tabindex"));
+        Assert.AreEqual(expected, Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.setup").Arguments[9]);
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldKeepATabIndexThePageWritesAsAnAttribute()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.InfiniteScrolling.setup");
+
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, Provider);
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["tabindex"] = "-1" });
+        });
+
+        // The page's own tab index is the page's: rendered as it is, and never touched by the script.
+        Assert.AreEqual("-1", component.Find(".bit-isc").GetAttribute("tabindex"));
+        Assert.AreEqual("page", Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.setup").Arguments[9]);
     }
 
     [TestMethod]
@@ -2020,7 +2042,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
         });
 
         var setup = Context.JSInterop.Invocations.First(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.setup");
-        var reference = (DotNetObjectReference<BitInfiniteScrolling<int>>)setup.Arguments[9]!;
+        var reference = (DotNetObjectReference<BitInfiniteScrolling<int>>)setup.Arguments[10]!;
         var infiniteScrolling = component.Instance;
 
         var disposal = Context.DisposeComponentsAsync();

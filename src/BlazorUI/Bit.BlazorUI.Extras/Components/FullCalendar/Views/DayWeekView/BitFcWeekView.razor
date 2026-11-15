@@ -51,7 +51,10 @@
                        the text it shows first ("Mon 5, Go to Monday, January 5, 2026"): the abbreviated
                        day is no word of the full date, and a name without it fails Label in Name
                        (WCAG 2.5.3). Razor drops the whitespace between the two spans, so the space the
-                       name has between them is put in the text as well. *@
+                       name has between them is put in the text as well - where it draws nothing, since
+                       the link lays its two parts out as a flex column. The plain header names nothing
+                       and is a block of inline boxes, where a space would be drawn between the day and
+                       its number and could wrap the number under it, so it has none. *@
                     @if (State.NavLinks)
                     {
                         var outOfRange = State.IsDateInAllowedRange(d) is false;
@@ -66,7 +69,8 @@
                     }
                     else
                     {
-                        <span class="bit-bfc-week-header-day-name">@dayName</span>@(" ")<span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@dayNumber</span>
+                        <span class="bit-bfc-week-header-day-name">@dayName</span>
+                        <span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@dayNumber</span>
                     }
                     <BitFcDayBackgroundLabels Events="State.BackgroundEvents" Day="d" />
                 </div>

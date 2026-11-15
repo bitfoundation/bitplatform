@@ -3229,12 +3229,6 @@ button.bit-bfc-cell-add-hint:focus-visible {
     }
 }
 
-/* The box an event template is rendered into, there only to be named by: it lays nothing out, so the template's own
-   boxes sit in the badge or the block as they would without it. */
-.bit-bfc-event-tpl {
-    display: contents;
-}
-
 /* Read by assistive technology, never drawn: the live count of the agenda search. */
 .bit-bfc-sr-only {
     @include visually-hidden;

@@ -7,6 +7,9 @@
     var todayMonth = _culture.DateTimeFormat.Calendar.GetMonth(today);
     var focusableDay = GetFocusableDay();
     var isInvalid = ValueInvalid is true;
+    // A calendar that picks nothing (disabled, read-only) asks for nothing, the way a disabled field is never a
+    // required one.
+    var isRequired = Required && Disabled is false && ReadOnly is false;
 
     var prevMonthNavIconCss = BitIconInfo.From(PrevMonthNavIcon, PrevMonthNavIconName ?? "Up")?.GetCssClasses();
     var nextMonthNavIconCss = BitIconInfo.From(NextMonthNavIcon, NextMonthNavIconName ?? "Up bit-ico-r180")?.GetCssClasses();
@@ -52,6 +55,12 @@
             @(CurrentValueAsString.HasValue() ? string.Format(SelectedDateAriaAtomic, CurrentValueAsString) : null)
         </div>
 
+        @if (isRequired)
+        {
+            @* What describes the days grid of every month as required (see the grid). *@
+            <span id="@_RequiredId" hidden>@BitStrings.Current.Required</span>
+        }
+
         @if (DayPickerIsVisible())
         {
             var prevDisabled = CanChangeMonth(false) is false;
@@ -66,17 +75,12 @@
                 var isFirstMonth = index == 0;
                 var isLastMonth = index == _monthCount - 1;
                 var monthTitle = _monthTitles[index];
-                var titleIsToggle = isFirstMonth && ShowMonthPicker && (ShowMonthPickerAsOverlay || (ShowTimePicker && ShowTimePickerAsOverlay is false));
-                // A title that is only text names the days grid below it, which is the month it heads: the grid carries
-                // the disabled state of the calendar, so its name is read as a part of the control that is unavailable
-                // rather than as text of its own - which it is - and the title of a disabled calendar is let off the
-                // contrast of body text the way the rest of the calendar is (WCAG 1.4.3). The toggle that stands in for
-                // it is a control with a name of its own, so the grid keeps its aria-label beside one.
-                var titleId = titleIsToggle ? null : GetMonthTitleId(index);
+                // The id of the title that names the days grid, or none where the title is the month picker's toggle.
+                var titleId = GetMonthTitleId(index);
 
                 <div style="@Styles?.DayPickerWrapper" class="bit-cal-dwp @Classes?.DayPickerWrapper">
                     <div style="@Styles?.DayPickerHeader" class="bit-cal-pkh @Classes?.DayPickerHeader">
-                        @if (titleIsToggle)
+                        @if (titleId is null)
                         {
                             var title = string.Format(MonthPickerToggleTitle, monthTitle);
                             <button @onclick="@ToggleMonthPickerOverlay"
@@ -173,6 +177,7 @@
                          aria-readonly="@(ReadOnly ? "true" : null)"
                          aria-disabled="@(Disabled ? "true" : null)"
                          aria-invalid="@(isInvalid ? "true" : null)"
+                         aria-describedby="@(isRequired ? _RequiredId : null)"
                          style="@Styles?.DaysGrid"
                          class="bit-cal-grd @Classes?.DaysGrid">
                         <div role="row" style="@Styles?.DaysHeaderRow" class="bit-cal-dgh @Classes?.DaysHeaderRow">
@@ -250,10 +255,11 @@
                                        picker does: an explicit false on the other forty-one would have a screen
                                        reader say "not selected" on every day arrowed over.
 
-                                       A Required calendar says so on the days that can be picked: aria-required is
-                                       a state of a gridcell, not of the grid, which would only have a validator
-                                       report the attribute as one the role does not take. A day that cannot be
-                                       picked asks for nothing, the way a disabled field is never a required one. *@
+                                       Nor does a day carry aria-required: a Required calendar says so once, in the
+                                       description of its grid, which a screen reader reads as the focus enters it
+                                       rather than after every day arrowed over - and which holds whether any day of
+                                       the month can be picked or not. The grid itself takes no aria-required, which
+                                       is not a state of its role. *@
                                     <button @onclick="() => HandleDayClick(date, dayEvents)"
                                             @onkeydown="e => HandleDayKeyDown(e, date)"
                                             type="button"
@@ -262,7 +268,6 @@
                                             disabled="@disabled"
                                             aria-readonly="@(ReadOnly ? "true" : null)"
                                             aria-disabled="@((disabled || ReadOnly) ? "true" : null)"
-                                            aria-required="@(Required && disabled is false && ReadOnly is false ? "true" : null)"
                                             aria-label="@GetDayAriaLabel(date, dayEvents)"
                                             aria-current="@(isToday ? "date" : null)"
                                             aria-haspopup="@(opensEventDialog ? "dialog" : null)"

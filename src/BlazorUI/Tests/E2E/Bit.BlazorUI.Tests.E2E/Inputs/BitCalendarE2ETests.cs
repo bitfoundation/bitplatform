@@ -874,7 +874,7 @@ public class BitCalendarE2ETests : E2ETestBase
 
         var grid = Page.Locator("#cal-validation .bit-cal-grd").First;
         await Expect(grid).Not.ToHaveAttributeAsync("aria-required", "true");
-        await Expect(grid.Locator(".bit-cal-dbt").First).ToHaveAttributeAsync("aria-required", "true");
+        await Expect(grid).ToHaveAccessibleDescriptionAsync("Required");
 
         await Page.Locator("#btn-submit").ClickAsync();
 

@@ -18,7 +18,9 @@
         // whose copy would act rather than only look like it - is copied as a div. So is an element HTML allows no
         // role="none" on (main, dt, dd, caption): a copy takes that role to drop out of the accessibility tree (see
         // syncChainLink), and a <main role="none"> is a role the element does not permit, while a main left a
-        // landmark would be a second main of the page.
+        // landmark would be a second main of the page. That is a trade made on purpose: a selector naming one of
+        // those tags as an ancestor (`main .menu`, `dd > .x`, `caption ...`) no longer reaches a popup moved to the
+        // body, which a class on that ancestor (copied with it) still does.
         export const MIRRORED_TAGS = [
             'div', 'span', 'section', 'article', 'aside', 'nav', 'header', 'footer', 'search', 'hgroup',
             'p', 'blockquote', 'address', 'figure', 'figcaption', 'ul', 'ol', 'li', 'menu', 'dl',

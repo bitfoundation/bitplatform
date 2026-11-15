@@ -3132,9 +3132,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return FormattableString.Invariant($"{_datePickerId}-month-{month:D2}");
     }
 
-    // The id of the title of the month shown at the given index, which names the days grid of that month.
-    private string GetMonthTitleId(int monthIndex)
+    // The id of the title of the month shown at the given index, which names the days grid of that month - or null
+    // where the title is the button that toggles the month picker, which the markup renders in its place: see
+    // BitCalendar.GetMonthTitleId.
+    private string? GetMonthTitleId(int monthIndex)
     {
+        if (monthIndex == 0 && IsMonthPickerVisible && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && ShowTimePickerAsOverlay is false))) return null;
+
         return FormattableString.Invariant($"{_datePickerId}-title-{monthIndex}");
     }
 

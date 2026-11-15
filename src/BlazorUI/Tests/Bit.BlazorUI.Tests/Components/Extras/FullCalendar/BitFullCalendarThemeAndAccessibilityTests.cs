@@ -393,7 +393,8 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
 
         StringAssert.StartsWith(plain.GetAttribute("aria-label"), "Standup, ");
         Assert.IsFalse(plain.HasAttribute("aria-labelledby"));
-        Assert.IsEmpty(component.FindAll(".bit-bfc-event-tpl"));
+        Assert.IsFalse(plain.HasAttribute("id"));
+        Assert.IsEmpty(plain.QuerySelectorAll("[hidden]"));
     }
 
     [TestMethod]
@@ -418,11 +419,12 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
         var ids = eventElement.GetAttribute("aria-labelledby")!.Split(' ');
         Assert.HasCount(2, ids);
 
-        // The template's text comes first, so the name holds what a speech-input user reads off the event.
-        var shown = component.Find($"#{ids[0]}");
-        Assert.AreEqual("Pin: Standup", shown.TextContent);
-        Assert.IsTrue(shown.ClassList.Contains("bit-bfc-event-tpl"));
-        Assert.IsTrue(eventElement.Contains(shown));
+        // The event's own content comes first, so the name holds what a speech-input user reads off the event. The
+        // event points at itself, so the template needs no box of its own to be named by (one of display: contents
+        // is one some engines leave out of the name).
+        Assert.AreEqual(eventElement.Id, ids[0]);
+        StringAssert.StartsWith(eventElement.TextContent, "Pin: Standup");
+        Assert.IsEmpty(eventElement.QuerySelectorAll(".bit-bfc-event-tpl"));
 
         // Then the details the template may leave out, kept off the screen.
         var details = component.Find($"#{ids[1]}");
