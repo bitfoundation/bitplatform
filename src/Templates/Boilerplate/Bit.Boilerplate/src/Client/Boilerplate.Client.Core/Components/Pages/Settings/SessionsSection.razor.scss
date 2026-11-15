@@ -31,7 +31,8 @@ section {
     }
 
     // An IPv6 address is far longer than the place name above it and matters less, so it gets its own quiet line.
-    .session-ip {
+    .session-ip,
+    .session-client-id {
         direction: ltr;
         overflow: hidden;
         line-height: 1.25;
@@ -45,11 +46,5 @@ section {
     .sessions-list {
         padding: 2px;
         height: 20rem;
-    }
-
-    .oauth-session-banner {
-        padding-bottom: 0.5rem;
-        margin-bottom: 0.5rem;
-        border-bottom: 1px solid $bit-color-border-secondary;
     }
 }

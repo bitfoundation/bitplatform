@@ -1604,7 +1604,7 @@
     <value>सभी सत्र रद्द करें</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>क्या आप निश्चित हैं कि आप {0} के सभी सत्र रद्द करना चाहते हैं?</value>
+    <value>क्या आप निश्चित हैं कि आप {0} के सभी सत्र रद्द करना चाहते हैं? अधिकृत एप्लिकेशन बने रहेंगे।</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
     <value>आप इस उपयोगकर्ता को SuperAdmin उपयोगकर्ता समूह से हटा नहीं सकते।</value>
@@ -2008,8 +2008,14 @@
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>हेल्थ रिपोर्ट पढ़ना।</value>
   </data>
-    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <data name="OAuthSessionsTitle" xml:space="preserve">
     <value>अधिकृत एप्लिकेशन</value>
+  </data>
+    <data name="OAuthSessionsHint" xml:space="preserve">
+    <value>ये उपकरण नहीं हैं, इसलिए पूर्ण सुविधाओं के लिए अनुमत उपकरणों में नहीं गिने जाते। हर एक को अलग से रद्द किया जाता है।</value>
+  </data>
+    <data name="OAuthSessionRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} की पहुँच रद्द करें? दोबारा अनुमति मिलने तक यह काम नहीं करेगा।</value>
   </data>
     <data name="OAuthClients" xml:space="preserve">
     <value>एप्लिकेशन</value>

@@ -56,35 +56,9 @@
             <br />
             <BitPullToRefresh OnRefresh="WrapHandled(async () => await LoadSessions(false))" ScrollerSelector=".sessions-list" FullWidth>
                 <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
-                <BitBasicList Items="otherSessions" Virtualize ItemSize="135" FullWidth Class="sessions-list">
+                <BitBasicList Items="otherSessions" Virtualize ItemSize="135" FullWidth Class="sessions-list" AriaLabel="@Localizer[nameof(AppStrings.OtherSessions)]">
                     <RowTemplate Context="session">
                         <BitCard role="listitem" FullWidth Style="margin-bottom:1rem">
-                            @if (string.IsNullOrEmpty(session.OAuthClientId) is false)
-                            {
-                                @* An application the user authorized, not a device of theirs. *@
-                                <BitStack Gap="0.25rem" Class="oauth-session-banner">
-                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
-                                        <BitIcon IconName="@BitIconName.PlugConnected" Color="BitColor.Info" />
-                                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
-                                            @Localizer[nameof(AppStrings.OAuthSessionAuthorizedApplication)]
-                                        </BitText>
-                                        <BitText Typography="BitTypography.Subtitle2">
-                                            @(session.OAuthClientName ?? session.OAuthClientId)
-                                        </BitText>
-                                    </BitStack>
-
-                                    @foreach (var description in session.ScopeDescriptions(Localizer))
-                                    {
-                                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
-                                            @description
-                                        </BitText>
-                                    }
-
-                                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground" NoWrap Monospace Dir="BitDir.Ltr" title="@session.OAuthClientId">
-                                        @session.OAuthClientId
-                                    </BitText>
-                                </BitStack>
-                            }
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                                 <BitPersona PrimaryText="@session.DisplayAddress"
                                             SecondaryText="@session.GetLastSeenOn(TimeProvider.GetUtcNow(), Localizer, TimeZoneService)"
@@ -124,5 +98,54 @@
                 </BitBasicList>
             </BitPullToRefresh>
         }
+
+        @if (applicationSessions.Any())
+        {
+            <br />
+            <BitText>@Localizer[nameof(AppStrings.OAuthSessionsTitle)]</BitText>
+            <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.OAuthSessionsHint)]</BitText>
+            <BitStack role="list" aria-label="@Localizer[nameof(AppStrings.OAuthSessionsTitle)]" Padding="2px" Gap="1rem">
+                @foreach (var session in applicationSessions)
+                {
+                    <BitCard role="listitem" FullWidth>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
+                            <BitPersona PrimaryText="@session.ApplicationName"
+                                        SecondaryText="@session.GetLastSeenOn(TimeProvider.GetUtcNow(), Localizer, TimeZoneService)"
+                                        TertiaryText="@session.DisplayAddress"
+                                        Size="BitPersonaSize.Size72"
+                                        ImageUrl="@session.ImageUrl"
+                                        Class="other-session-persona"
+                                        Styles="@(new() { Image = "width:50%;height:50%" })"
+                                        Presence="@session.GetPresence(TimeProvider.GetUtcNow())">
+                                <PrimaryTextTemplate>
+                                    <div class="session-address">@session.ApplicationName</div>
+                                    <div class="session-client-id" title="@session.OAuthClientId">@session.OAuthClientId</div>
+                                </PrimaryTextTemplate>
+                            </BitPersona>
+                            <BitSpacer />
+                            <BitButton IconOnly
+                                       Color="BitColor.Error"
+                                       Variant="BitVariant.Text"
+                                       IconName="@BitIconName.PlugDisconnected"
+                                       IsLoading="@revokingSessionIds.Contains(session.Id)"
+                                       Title="@Localizer[nameof(AppStrings.OAuthClientRevokeAccess)]"
+                                       AriaLabel="@Localizer[nameof(AppStrings.OAuthClientRevokeAccess)]"
+                                       OnClick="WrapHandled(() => AskToRevokeApplication(session))" />
+                        </BitStack>
+                        @foreach (var description in session.ScopeDescriptions(Localizer))
+                        {
+                            <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@description</BitText>
+                        }
+                    </BitCard>
+                }
+            </BitStack>
+        }
     </BitStack>
 </section>
+
+<BitDialog OnOk="WrapHandled(RevokeApplication)"
+           @bind-IsOpen="isRevokeApplicationDialogOpen"
+           OkText="@Localizer[nameof(AppStrings.OAuthClientRevokeAccess)]"
+           CancelText="@Localizer[nameof(AppStrings.Cancel)]"
+           Title="@Localizer[nameof(AppStrings.OAuthClientRevokeAccess)]"
+           Message="@Localizer[nameof(AppStrings.OAuthSessionRevokeConfirmMessage), applicationToRevoke?.ApplicationName ?? ""]" />

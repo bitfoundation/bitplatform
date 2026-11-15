@@ -16,6 +16,9 @@ public partial class SessionsSection
     private bool hasUnlimitedPrivilegedSessions;
     private List<Guid> revokingSessionIds = [];
     private UserSessionDto[] otherSessions = [];
+    private UserSessionDto[] applicationSessions = [];
+    private UserSessionDto? applicationToRevoke;
+    private bool isRevokeApplicationDialogOpen;
 
     [AutoInject] private IUserController userController = default!;
 
@@ -41,7 +44,8 @@ public partial class SessionsSection
             currentSessionId = user.GetSessionId();
 
             var userSessions = await userController.GetUserSessions(CurrentCancellationToken);
-            otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
+            otherSessions = userSessions.Where(s => s.Id != currentSessionId && s.IsAuthorizedApplication is false).ToArray();
+            applicationSessions = userSessions.Where(s => s.IsAuthorizedApplication).ToArray();
 
             currentSession = userSessions.SingleOrDefault(s => s.Id == currentSessionId);
 
@@ -66,6 +70,15 @@ public partial class SessionsSection
                 isLoading = false;
             }
         }
+    }
+
+    private void AskToRevokeApplication(UserSessionDto session) => (applicationToRevoke, isRevokeApplicationDialogOpen) = (session, true);
+
+    private async Task RevokeApplication()
+    {
+        if (applicationToRevoke is null) return;
+
+        await RevokeSession(applicationToRevoke);
     }
 
     private async Task RevokeSession(UserSessionDto session)

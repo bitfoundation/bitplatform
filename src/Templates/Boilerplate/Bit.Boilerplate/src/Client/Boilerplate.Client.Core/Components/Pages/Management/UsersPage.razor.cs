@@ -19,7 +19,10 @@ public partial class UsersPage
     private bool isRevokeAllUserSessionsDialogOpen;
     private CancellationTokenSource? loadUserSessionsCts;
     private List<UserSessionDto> allUserSessions = [];
-    private List<UserSessionDto> filteredUserSessions = [];
+    private List<UserSessionDto> filteredDeviceSessions = [];
+    private List<UserSessionDto> filteredApplicationSessions = [];
+    private UserSessionDto? applicationToRevoke;
+    private bool isRevokeApplicationDialogOpen;
 
 
     [AutoInject] HttpClient httpClient = default!;
@@ -65,7 +68,8 @@ public partial class UsersPage
             SearchUsers();
 
             allUserSessions = [];
-            filteredUserSessions = [];
+            filteredDeviceSessions = [];
+            filteredApplicationSessions = [];
             selectedUserDto = new();
             selectedUserItem = null;
         }
@@ -143,7 +147,8 @@ public partial class UsersPage
             user.Patch(selectedUserDto);
 
             allUserSessions = [];
-            filteredUserSessions = [];
+            filteredDeviceSessions = [];
+            filteredApplicationSessions = [];
 
             var userSessions = await userManagementController.GetUserSessions(user.Id, loadCts.Token);
 
@@ -174,6 +179,15 @@ public partial class UsersPage
         await userManagementController.RevokeUserSession(session.Id, CurrentCancellationToken);
 
         await HandleOnSelectUser(selectedUserItem);
+    }
+
+    private void AskToRevokeApplication(UserSessionDto session) => (applicationToRevoke, isRevokeApplicationDialogOpen) = (session, true);
+
+    private async Task RevokeApplication()
+    {
+        if (applicationToRevoke is null) return;
+
+        await RevokeUserSession(applicationToRevoke);
     }
 
     private async Task RevokeAllSessions()
@@ -208,13 +222,16 @@ public partial class UsersPage
 
     private void SearchSessions()
     {
-        filteredUserSessions = allUserSessions;
+        var filteredUserSessions = allUserSessions;
 
         if (string.IsNullOrWhiteSpace(sessionSearchText) is false)
         {
             var t = sessionSearchText.Trim();
-            filteredUserSessions = [.. allUserSessions.Where(us => string.Join('|', us.IP, us.Address, us.DeviceInfo, TimeZoneService.ToLocalTime(us.RenewedOnDateTimeOffset), us.Id).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+            filteredUserSessions = [.. allUserSessions.Where(us => string.Join('|', us.IP, us.Address, us.DeviceInfo, us.OAuthClientName, us.OAuthClientId, TimeZoneService.ToLocalTime(us.RenewedOnDateTimeOffset), us.Id).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
         }
+
+        filteredDeviceSessions = [.. filteredUserSessions.Where(us => us.IsAuthorizedApplication is false)];
+        filteredApplicationSessions = [.. filteredUserSessions.Where(us => us.IsAuthorizedApplication)];
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)
