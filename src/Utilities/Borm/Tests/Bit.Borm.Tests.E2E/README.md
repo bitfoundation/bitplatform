@@ -52,12 +52,13 @@ unanswered, and the test would otherwise time out pointing at the wrong thing.
 From `src/Utilities/Borm` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's build output: build it first, in the configuration the tests run in.
+# Without BORM_E2E_BASE_URL the suite runs the demo server's build output: build it first, in the configuration the
+# tests run in.
 dotnet build Demo/Server/Bit.Borm.Demo.Server.csproj
 dotnet build Tests/Bit.Borm.Tests.E2E/Bit.Borm.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
-pwsh Tests/Bit.Borm.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium
+pwsh Tests/Bit.Borm.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium
 
 cd Tests/Bit.Borm.Tests.E2E && dotnet test
 
@@ -68,22 +69,27 @@ dotnet test --filter "FullyQualifiedName~Removing_the_last_line"
 dotnet test --filter "FullyQualifiedName!~Every_demo_page"
 ```
 
-The workflow `.github/workflows/ci.borm.e2e.yml` does the same in Release:
+The workflow `.github/workflows/ci.borm.e2e.yml` drives the demo published the way `cd.borm.demo.yml` publishes it
+instead - trimmed, with `InvariantGlobalization`, without its appsettings files and in the Production environment,
+which no build output is - and points the suite at it with `BORM_E2E_BASE_URL`:
 
 ```bash
-dotnet build src/Utilities/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o demo -p:InvariantGlobalization=true
+rm -f demo/appsettings*.json
+(cd demo && dotnet Bit.Borm.Demo.Server.dll --urls http://127.0.0.1:5000 &)
 dotnet build src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E/Bit.Borm.Tests.E2E.csproj -c Release
-pwsh src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
-cd src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename borm-e2e.trx
+pwsh src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+cd src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E && BORM_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename borm-e2e.trx
 ```
 
 Without PowerShell 7, the browser can be installed with Windows PowerShell
-(`powershell -ExecutionPolicy Bypass -File bin/Debug/net10.0/playwright.ps1 install chromium`) or with the Node.js
+(`powershell -ExecutionPolicy Bypass -File bin/Debug/net11.0/playwright.ps1 install chromium`) or with the Node.js
 runtime Playwright ships:
-`bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.
+`bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.
 
-The suite starts the demo server itself (`dotnet Bit.Borm.Demo.Server.dll --urls http://127.0.0.1:<free port>`, in
-the Development environment so the build output finds its static web assets), waits until it answers, shares it
+Unless `BORM_E2E_BASE_URL` names a running demo, the suite starts the demo server itself
+(`dotnet Bit.Borm.Demo.Server.dll --urls http://127.0.0.1:<free port>`, in the Development environment so the build
+output finds its static web assets), waits until it answers, shares it
 between all tests and stops it when the run ends. Rebuilding the demo while a run is in progress changes the
 fingerprinted assets under the running server and fails the pages that boot afterwards, so rebuild between runs.
 Each test gets a browser context of its own - its own WebAssembly instance, so no form state leaks between tests -

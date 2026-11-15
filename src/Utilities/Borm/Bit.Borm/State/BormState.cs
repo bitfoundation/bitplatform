@@ -3411,8 +3411,25 @@ public sealed class BormState : IDisposable
 
     // A list's rows, before and after a structural edit - an insert, a removal, a move, a swap, a copy, a
     // clear - as the row objects themselves. Restoring a sequence of rows undoes any of them alike, and each
-    // row's messages and touched state follow it by identity.
-    private sealed record RowsEntry(string Path, object?[]? Before, object?[]? After) : HistoryEntry(Path);
+    // row's messages and touched state follow it by identity. A row the edit took away took its state with
+    // it, so what each row carried is kept too, and a row put back by restoring them gets its own back.
+    private sealed record RowsEntry(
+        string Path,
+        object?[]? Before,
+        object?[]? After,
+        Dictionary<object, RowState>? BeforeStates = null,
+        Dictionary<object, RowState>? AfterStates = null) : HistoryEntry(Path);
+
+    // What one row carried besides its values, under the paths it had then: its messages, and whether it was
+    // visited and judged.
+    private sealed class RowState
+    {
+        public List<(string Key, List<BormValidationMessage> Messages)> Messages { get; } = [];
+
+        public List<string> Touched { get; } = [];
+
+        public List<string> Validated { get; } = [];
+    }
 
     private sealed class HistoryStep
     {
@@ -3543,13 +3560,16 @@ public sealed class BormState : IDisposable
                 Write(value.Path, recorded is List<object?> items ? new List<object?>(items) : recorded, markTouched: false);
                 break;
             case RowsEntry rows:
-                RestoreRows(rows.Path, before ? rows.Before : rows.After);
+                RestoreRows(rows.Path, before ? rows.Before : rows.After, before ? rows.BeforeStates : rows.AfterStates);
                 break;
         }
     }
 
-    /// <summary>Puts a list back to <paramref name="rows"/>, each row's state following it by identity.</summary>
-    private void RestoreRows(string arrayPath, object?[]? rows)
+    /// <summary>
+    /// Puts a list back to <paramref name="rows"/>, each row's state following it by identity. A row that comes
+    /// back - one a removal or a clear took away - is given what it carried then (<paramref name="states"/>).
+    /// </summary>
+    private void RestoreRows(string arrayPath, object?[]? rows, Dictionary<object, RowState>? states)
     {
         var current = Data.GetValue(arrayPath) as IList;
         var old = current?.Cast<object?>().ToArray() ?? [];
@@ -3574,14 +3594,68 @@ public sealed class BormState : IDisposable
             for (var i = 0; i < rows.Length; i++)
                 if (rows[i] is { } row && IsRowObject(row)) target.TryAdd(row, i);
             RemapArrayIndices(arrayPath, i => i < old.Length && old[i] is { } row && target.TryGetValue(row, out var j) ? j : null);
+
+            // Removing a row dropped its messages with it, so taking the removal back left the row - its empty
+            // required answer and all - looking valid until something judged it again.
+            if (states is not null)
+            {
+                var stayed = new HashSet<object>(old.OfType<object>(), ReferenceEqualityComparer.Instance);
+                for (var i = 0; i < rows.Length; i++)
+                {
+                    if (rows[i] is { } row && !stayed.Contains(row) && states.TryGetValue(row, out var state))
+                        PutRowState(arrayPath, i, state);
+                }
+            }
         }
 
         TrackDirty(arrayPath, rowsFollowed: true);
         NotifyArrayChanged(arrayPath);
+    }
 
-        // A value in a list of plain values is not a row with an identity of its own: two equal strings are
-        // the same answer, and which one a message belonged to cannot be told.
-        static bool IsRowObject(object row) => row is not string && !row.GetType().IsValueType;
+    // A value in a list of plain values is not a row with an identity of its own: two equal strings are
+    // the same answer, and which one a message belonged to cannot be told.
+    private static bool IsRowObject(object row) => row is not string && !row.GetType().IsValueType;
+
+    /// <summary>What each row of <paramref name="rows"/>, standing at <paramref name="arrayPath"/> now, carries; null when none carries anything.</summary>
+    private Dictionary<object, RowState>? CaptureRowStates(string arrayPath, object?[]? rows)
+    {
+        if (rows is not { Length: > 0 }) return null;
+
+        // One pass over each set, rather than one per row: a long list is exactly where rows get removed.
+        var byIndex = new Dictionary<int, RowState>();
+        RowState? At(string key)
+            => BormPath.IndexIn(key, arrayPath) is { } i && i < rows.Length && rows[i] is { } row && IsRowObject(row)
+                ? byIndex.TryGetValue(i, out var state) ? state : byIndex[i] = new RowState()
+                : null;
+
+        foreach (var (key, messages) in _messages)
+            At(key)?.Messages.Add((key, [.. messages]));
+        foreach (var key in _touched)
+            At(key)?.Touched.Add(key);
+        foreach (var key in _validated)
+            At(key)?.Validated.Add(key);
+
+        if (byIndex.Count == 0) return null;
+
+        var states = new Dictionary<object, RowState>(ReferenceEqualityComparer.Instance);
+        foreach (var (i, state) in byIndex)
+            states.TryAdd(rows[i]!, state);
+        return states;
+    }
+
+    /// <summary>Gives the row now at <paramref name="index"/> the state it carried when <paramref name="state"/> was taken.</summary>
+    private void PutRowState(string arrayPath, int index, RowState state)
+    {
+        foreach (var (key, messages) in state.Messages)
+        {
+            if (BormPath.Reindex(key, arrayPath, index) is not { } path) continue;
+            AppendMessages(path, [.. messages.Select(m => m with { FieldPath = BormPath.Reindex(m.FieldPath, arrayPath, index) ?? m.FieldPath })]);
+        }
+
+        foreach (var key in state.Touched)
+            if (BormPath.Reindex(key, arrayPath, index) is { } path) _touched.Add(path);
+        foreach (var key in state.Validated)
+            if (BormPath.Reindex(key, arrayPath, index) is { } path) _validated.Add(path);
     }
 
     /// <summary>
@@ -3659,6 +3733,7 @@ public sealed class BormState : IDisposable
     {
         using var step = Step();
         var rows = Recording && Data.GetValue(arrayPath) is IList list ? list.Cast<object?>().ToArray() : null;
+        var states = rows is null ? null : CaptureRowStates(arrayPath, rows);
         var at = _openStep?.Entries.Count ?? 0;
         try
         {
@@ -3666,7 +3741,7 @@ public sealed class BormState : IDisposable
         }
         finally
         {
-            RecordRows(arrayPath, rows, at);
+            RecordRows(arrayPath, rows, at, states);
         }
     }
 
@@ -3676,13 +3751,14 @@ public sealed class BormState : IDisposable
         return 0;
     });
 
-    private void RecordRows(string arrayPath, object?[]? before, int at)
+    private void RecordRows(string arrayPath, object?[]? before, int at, Dictionary<object, RowState>? beforeStates)
     {
         if (_openStep is not { } step) return;
         var after = Data.GetValue(arrayPath) is IList list ? list.Cast<object?>().ToArray() : null;
         if ((before?.Length ?? 0) == (after?.Length ?? 0)
             && (before ?? []).SequenceEqual(after ?? [], ReferenceEqualityComparer.Instance)) return;
-        step.Entries.Insert(Math.Min(at, step.Entries.Count), new RowsEntry(arrayPath, before, after));
+        step.Entries.Insert(Math.Min(at, step.Entries.Count),
+            new RowsEntry(arrayPath, before, after, beforeStates, CaptureRowStates(arrayPath, after)));
     }
 
     // ---------------------------------------------------------------- internals

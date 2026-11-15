@@ -165,6 +165,37 @@ public class HistoryTests : ComponentTestBase
     }
 
     [TestMethod]
+    public async Task A_row_put_back_by_undo_brings_its_messages_and_touched_state_back()
+    {
+        // Removing a row drops its messages with it; taking the removal back left the row - its empty required
+        // product and all - looking valid until something judged it again, while the rows around it kept theirs.
+        var model = new RegistrationModel
+        {
+            Items = [new LineItem { Product = "", Quantity = 5 }, new LineItem { Product = "B", Quantity = 500 }]
+        };
+        var state = new BormState(BormSchemaGenerator.Generate<RegistrationModel>(), new BormModelDataAccessor(model)) { HistoryLimit = 50 };
+        await state.ValidateAsync();
+        state.MarkTouched("Items[0].Product");
+        var removed = model.Items[0];
+
+        state.RemoveArrayItem("Items", 0);
+        Assert.IsEmpty(state.MessagesFor("Items[0].Product"));
+        Assert.HasCount(1, state.MessagesFor("Items[0].Quantity"), "the row that moved up keeps its own message");
+
+        await state.UndoAsync();
+
+        Assert.AreSame(removed, model.Items[0]);
+        Assert.AreEqual("Items[0].Product", Assert.ContainsSingle(state.MessagesFor("Items[0].Product")).FieldPath);
+        Assert.IsTrue(state.IsTouched("Items[0].Product"));
+        Assert.HasCount(1, state.MessagesFor("Items[1].Quantity"));
+        Assert.IsEmpty(state.MessagesFor("Items[1].Product"), "the message went back to its own row, not the one now beside it");
+
+        await state.RedoAsync();
+        Assert.IsEmpty(state.MessagesFor("Items[0].Product"));
+        Assert.HasCount(1, state.MessagesFor("Items[0].Quantity"));
+    }
+
+    [TestMethod]
     public async Task A_field_put_back_is_judged_again_as_a_change_would_be()
     {
         var (state, _) = Form();
