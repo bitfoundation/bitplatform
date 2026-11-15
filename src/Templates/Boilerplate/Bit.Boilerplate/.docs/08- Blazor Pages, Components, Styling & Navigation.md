@@ -451,7 +451,7 @@ This project uses **`Bit.BlazorUI`** as the primary UI component library. You MU
 
 <BitSearchBox OnSearch="HandleOnSearch" />
 
-<BitDataGrid TGridItem="ProductDto" ItemsProvider="productsProvider" />
+<BitDataGrid TItem="ProductDto" OnRead="LoadProducts" />
 
 <!-- ❌ Avoid generic HTML when Bit component exists -->
 <button>Add Product</button>
@@ -470,10 +470,10 @@ This project uses **`Bit.BlazorUI`** as the primary UI component library. You MU
 
 **Example using `Classes` parameter from `AppMenu.razor`:**
 ```xml
-<BitCallout @bind-IsOpen="isMenuOpen"
-            Classes="@(new() { Callout = "app-menu-callout" })">
+<BitDropMenu @bind-IsOpen="isOpen"
+             Classes="@(new() { Callout = "app-menu-callout" })">
     <!-- Content -->
-</BitCallout>
+</BitDropMenu>
 ```
 
 **Why this approach?**
