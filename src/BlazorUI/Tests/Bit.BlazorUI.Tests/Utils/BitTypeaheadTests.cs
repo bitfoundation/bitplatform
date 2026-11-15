@@ -69,6 +69,24 @@ public sealed class BitTypeaheadTests
     }
 
     [TestMethod]
+    public void ResetShouldStartANewTermWithTheNextKeyWithoutAPause()
+    {
+        var typeahead = NewTypeahead();
+
+        Assert.AreEqual(("a", true), typeahead.Type("a"));
+        _now += 100;
+        Assert.AreEqual(("ap", false), typeahead.Type("p"));
+
+        typeahead.Reset();
+        _now += 100;
+
+        // Well within the timeout, yet the key after a reset is a term of its own, and a repeat of it is a repeat.
+        Assert.AreEqual(("p", true), typeahead.Type("p"));
+        _now += 100;
+        Assert.AreEqual(("p", true), typeahead.Type("p"));
+    }
+
+    [TestMethod]
     public void APauseLongerThanTheTimeoutShouldStartANewTerm()
     {
         var typeahead = NewTypeahead();

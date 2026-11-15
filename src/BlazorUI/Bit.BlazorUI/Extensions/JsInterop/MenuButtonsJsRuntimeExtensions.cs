@@ -24,8 +24,10 @@ internal static class MenuButtonsJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.MenuButtons.disposeSubmenu", id, calloutId);
     }
 
-    internal static ValueTask BitMenuButtonsFocusItem(this IJSRuntime jsRuntime, string calloutId, string mode, string? character, bool includeDisabled, bool fromCurrent)
+    // The culture is the one a "char" search is matched in (the name of the current culture of .NET, empty for the
+    // invariant one); without one the script matches the way it always has.
+    internal static ValueTask BitMenuButtonsFocusItem(this IJSRuntime jsRuntime, string calloutId, string mode, string? character, bool includeDisabled, bool fromCurrent, string? culture = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.MenuButtons.focusItem", calloutId, mode, character, includeDisabled, fromCurrent);
+        return jsRuntime.InvokeVoid("BitBlazorUI.MenuButtons.focusItem", calloutId, mode, character, includeDisabled, fromCurrent, culture);
     }
 }

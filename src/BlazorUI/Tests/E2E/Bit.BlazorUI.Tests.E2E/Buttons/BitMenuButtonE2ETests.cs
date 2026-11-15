@@ -598,6 +598,40 @@ public class BitMenuButtonE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Typeahead_TheSameLetterInTheOtherCase_MovesOnToTheNextItemStartingWithIt()
+    {
+        await OpenAsync(ItemsApi);
+
+        await Opb("mnb-keys").FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        var items = ItemsOf(await MenuOf("mnb-keys"));
+        await Expect(items.Nth(0)).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("b");
+        await Expect(items.Nth(1)).ToBeFocusedAsync();
+
+        // A repeat whatever its case, not a search for "bB" (which nothing starts with).
+        await Page.Keyboard.PressAsync("B");
+        await Expect(items.Nth(2)).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task Typeahead_APlainLetter_FindsTheAccentedLabelTheCultureFoldsItInto()
+    {
+        await OpenAsync(ItemsApi);
+
+        await Opb("mnb-typeahead").FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        var items = ItemsOf(await MenuOf("mnb-typeahead"));
+        await Expect(items.Nth(0)).ToBeFocusedAsync();
+
+        // The host runs in en-US, where the accent of "Éclair" is a mark on its letter.
+        await Page.Keyboard.PressAsync("e");
+        await Expect(items.Nth(2)).ToBeFocusedAsync();
+        await Expect(items.Nth(2)).ToContainTextAsync("Éclair");
+    }
+
+    [TestMethod]
     [DataRow(ItemsApi)]
     [DataRow(CustomApi)]
     [DataRow(OptionsApi)]
