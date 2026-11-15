@@ -681,6 +681,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private bool _focusPending;
 
     private IReadOnlyList<TItem> _view = Array.Empty<TItem>();      // filtered + sorted (full)
+    // The last sort of the client-side view, handed back when a refresh sorts the same rows by the same keys again.
+    private readonly BitDataGridSortCache<TItem> _sortCache = new();
     private IReadOnlyList<TItem> _pageItems = Array.Empty<TItem>(); // current page slice
     // The rows OnViewChange was last raised with (a read-only copy: the view can be the parent's own list, changed in
     // place, and the handler gets this very list), and whether a refresh since the last render may have changed them.
@@ -1779,19 +1781,21 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         if (IsTreeMode)
         {
+            _sortCache.Clear();
             ProcessTreeData(source);
             return;
         }
 
         if (source is IQueryable<TItem> queryable)
         {
+            _sortCache.Clear();
             ProcessQueryableData(queryable);
             return;
         }
 
         var searched = BitDataGridDataProcessor.Search(source, _search, _columns);
         var filtered = BitDataGridDataProcessor.Filter(searched, _filters, _columnsById);
-        _view = BitDataGridDataProcessor.Sort(filtered, _sorts, _columnsById);
+        _view = _sortCache.Sort(filtered, _sorts, _columnsById);
         _footerAggregates = BitDataGridDataProcessor.Aggregate(_view, _columns);
 
         ClampPage();

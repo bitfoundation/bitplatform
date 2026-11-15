@@ -112,34 +112,63 @@ public static class BitDataGridDataProcessor
         IReadOnlyList<BitDataGridSortDescriptor> sorts,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
     {
-        var active = sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList();
-        if (active.Count == 0) return source;
+        var levels = SortLevels(source, sorts, columns);
+        return levels.Count == 0 ? source : SortByLevels(source, levels);
+    }
 
-        IOrderedEnumerable<TItem>? ordered = null;
-        foreach (var sort in active)
+    /// <summary>
+    /// The levels of a sort, the first one first: each active sort whose column has a sort key, with the keys of the
+    /// rows read once, in the rows' order.
+    /// </summary>
+    internal static List<BitDataGridSortLevel<TItem>> SortLevels<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
+        IReadOnlyList<TItem> source,
+        IReadOnlyList<BitDataGridSortDescriptor> sorts,
+        IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
+    {
+        var levels = new List<BitDataGridSortLevel<TItem>>();
+        foreach (var sort in sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority))
         {
             // SortKey resolves the column's custom SortBy selector when present, falling back to the
             // field accessor - so template-only columns with a SortBy participate in sorting too.
             if (!columns.TryGetValue(sort.ColumnId, out var column) || column.SortKey is not { } key)
                 continue;
+
+            var keys = new object?[source.Count];
+            for (var i = 0; i < keys.Length; i++) keys[i] = key(source[i]);
+
+            levels.Add(new(sort.ColumnId, sort.Direction == BitDataGridSortDirection.Descending, key, column.Comparer, keys));
+        }
+        return levels;
+    }
+
+    /// <summary>
+    /// Sorts the rows by the keys of these levels: by the first level's, then the next one's among the rows the first
+    /// ranks equal, and so on; stable, so rows every level ranks equal keep their order.
+    /// </summary>
+    internal static List<TItem> SortByLevels<TItem>(IReadOnlyList<TItem> source, IReadOnlyList<BitDataGridSortLevel<TItem>> levels)
+    {
+        IOrderedEnumerable<int>? ordered = null;
+        foreach (var level in levels)
+        {
+            var keys = level.Keys;
             // A column may supply its own comparer (e.g. a domain ordering the default value comparer
             // can't express); otherwise the shared null-safe value comparer's order is used, through the
             // comparer it picks for this column's keys (see BitDataGridValueComparer.For).
-            var comparer = column.Comparer ?? BitDataGridValueComparer.For(source.Select(key));
-            if (ordered is null)
-            {
-                ordered = sort.Direction == BitDataGridSortDirection.Ascending
-                    ? source.OrderBy(key, comparer)
-                    : source.OrderByDescending(key, comparer);
-            }
-            else
-            {
-                ordered = sort.Direction == BitDataGridSortDirection.Ascending
-                    ? ordered.ThenBy(key, comparer)
-                    : ordered.ThenByDescending(key, comparer);
-            }
+            var comparer = level.ColumnComparer ?? BitDataGridValueComparer.For(keys);
+            Func<int, object?> key = i => keys[i];
+            ordered = ordered is null
+                ? level.Descending ? Enumerable.Range(0, source.Count).OrderByDescending(key, comparer) : Enumerable.Range(0, source.Count).OrderBy(key, comparer)
+                : level.Descending ? ordered.ThenByDescending(key, comparer) : ordered.ThenBy(key, comparer);
         }
-        return ordered?.ToList() ?? source;
+
+        var rows = new List<TItem>(source.Count);
+        if (ordered is null)
+        {
+            rows.AddRange(source);
+            return rows;
+        }
+        foreach (var index in ordered) rows.Add(source[index]);
+        return rows;
     }
 
     public static List<BitDataGridGroup<TItem>> Group<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
