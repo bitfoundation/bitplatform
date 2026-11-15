@@ -48,8 +48,8 @@ public class BitStepperE2ETests : E2ETestBase
             Near(line.Width, (await Page.StepperConnectors("stp-basic").Nth(i).BoxAsync()).Width, $"line {i} as long as the first", 2);
         }
 
-        var description = await Page.Locator("#stp-basic .bit-stp-dsc").BoxAsync();
-        var lineHeight = await Page.Locator("#stp-basic .bit-stp-dsc").EvaluateAsync<double>("el => parseFloat(getComputedStyle(el).lineHeight) || el.getBoundingClientRect().height");
+        var description = await Page.Locator("#stp-basic .bit-str-dsc").BoxAsync();
+        var lineHeight = await Page.Locator("#stp-basic .bit-str-dsc").EvaluateAsync<double>("el => parseFloat(getComputedStyle(el).lineHeight) || el.getBoundingClientRect().height");
         Assert.IsTrue(description.Height < lineHeight * 1.5, $"the description stays on one line ({description.Height}px).");
 
         // The completed and the current indicators are filled with the primary color, an upcoming one is not; the
@@ -89,8 +89,8 @@ public class BitStepperE2ETests : E2ETestBase
         await Page.StepperButtons("stp-basic").Nth(2).ClickAsync();
 
         await Expect(Page.Locator("#basic-index")).ToHaveTextAsync("2");
-        await Expect(Page.StepperSteps("stp-basic").Nth(2)).ToHaveClassAsync(new Regex(@"\bbit-stp-cur\b"));
-        await Expect(Page.StepperSteps("stp-basic").Nth(1)).ToHaveClassAsync(new Regex(@"\bbit-stp-cmp\b"));
+        await Expect(Page.StepperSteps("stp-basic").Nth(2)).ToHaveClassAsync(new Regex(@"\bbit-str-cur\b"));
+        await Expect(Page.StepperSteps("stp-basic").Nth(1)).ToHaveClassAsync(new Regex(@"\bbit-str-cmp\b"));
 
         // Every step is a button in the tab order, and Enter goes to it.
         await Page.StepperButtons("stp-basic").Nth(2).FocusAsync();
@@ -134,7 +134,7 @@ public class BitStepperE2ETests : E2ETestBase
 
         var error = await Page.ResolveColorAsync("var(--bit-clr-err)");
         await Expect(Page.StepperIndicators("stp-states").Nth(1)).ToHaveCSSAsync("background-color", error);
-        await Expect(Page.Locator("#stp-states .bit-stp-err .bit-stp-txt")).ToHaveCSSAsync("color", error);
+        await Expect(Page.Locator("#stp-states .bit-str-err .bit-str-txt")).ToHaveCSSAsync("color", error);
         await Expect(Page.StepperButtons("stp-states").Nth(1)).ToHaveAccessibleNameAsync(new Regex(@"^Address\s*Error$"));
 
         // The disabled step is a disabled button, so Tab goes past it.
@@ -154,7 +154,7 @@ public class BitStepperE2ETests : E2ETestBase
         // while the text spilled out over the line.
         for (var i = 0; i < 4; i++)
         {
-            var textEnd = await Page.Locator("#stp-narrow > li").Nth(i).Locator(".bit-stp-lbl")
+            var textEnd = await Page.Locator("#stp-narrow > li").Nth(i).Locator(".bit-str-lbl")
                                     .EvaluateAsync<double>("el => { const r = document.createRange(); r.selectNodeContents(el); return Math.max(...[...r.getClientRects()].map(x => x.right)); }");
             var line = await Page.StepperConnectors("stp-narrow").Nth(i).BoxAsync();
 
@@ -163,7 +163,7 @@ public class BitStepperE2ETests : E2ETestBase
         }
 
         // The long descriptions wrap to make that room.
-        var description = await Page.Locator("#stp-narrow .bit-stp-dsc").First.BoxAsync();
+        var description = await Page.Locator("#stp-narrow .bit-str-dsc").First.BoxAsync();
         Assert.IsTrue(description.Height > 20, "the description wraps.");
     }
 
@@ -255,7 +255,7 @@ public class BitStepperE2ETests : E2ETestBase
         Assert.IsTrue(first.X > last.X, "the first step is on the right.");
 
         // The text of a step sits on the inner side of its indicator, the left here.
-        var text = await Page.Locator("#stp-rtl .bit-stp-txt").Nth(0).BoxAsync();
+        var text = await Page.Locator("#stp-rtl .bit-str-txt").Nth(0).BoxAsync();
         Assert.IsTrue(text.X + text.Width <= first.X + 1, "the text is on the left of the indicator.");
     }
 

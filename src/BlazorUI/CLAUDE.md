@@ -184,6 +184,30 @@ break recorded in `BreakingChanges.md` - never kept beside the new name as an `[
   falls back to the empty text, and an empty component searched stays empty. A component that keeps its words in a
   texts object (`BitDataGridStrings`) keeps them there, with a getter that falls back to `BitStrings.Current`.
 
+## Every component has a root class of its own
+
+A component's `RootElementClass` (`bit-xxx`) is also the prefix of every class it renders and styles (`bit-xxx-*`)
+and of its private variables (`--bit-xxx-*`), and the bundles of all the packages are loaded on one page. Two components
+sharing a root share every rule written for either: BitStepper once took `bit-stp`, BitSwipeTrap's root, and its
+`.bit-stp { display: flex }` and `.bit-stp-hrz { align-items: center }` reached the swipe trap inside every
+BitNavPanel, which widened and shifted the panel's content.
+
+- **A new root is unique across every package** - core, Extras, AI and Legacy alike. Check it before using it: grep
+  the packages for `bit-xxx` followed by `-`, `"`, a space or the end of the class, and for a
+  `RootElementClass => "bit-xxx"`. A component written in markup rather than through `RootElementClass`
+  (`BitLoading`'s shell, `BitErrorBoundary`) follows the same rule.
+- **A Legacy twin is no exception.** It ships beside the component it predates, so it takes a prefix of its own
+  (`bit-mel`, `bit-mvl`, `bit-rel`), never the other one's root behind a marker class that scopes its rules: the
+  other component's unscoped rules still reach it.
+- **A root extends another one's only for a part of that component's family** (`BitGridItem`'s `bit-grd-itm`, the
+  `BitLoading` family's `bit-ldn-*`), never by coincidence of letters, and never one of the shared state classes
+  (`bit-dis`, `bit-rtl`, `bit-inv`, `bit-fam`, ...).
+- **Fixing a collision renames the newer component**, its stylesheet, markup, C#, tests, E2E tests and demo samples
+  together, with an entry in `BreakingChanges.md`: an app's stylesheets and test locators are written against the
+  classes.
+- `BitRootClassContractTests` reads the root of every component of the four packages and fails on a root shared by
+  two of them, or one under another component's prefix that is not listed as part of its family.
+
 ## Core components never render each other
 
 A component in the core `Bit.BlazorUI` project draws everything it shows with its own markup and its own

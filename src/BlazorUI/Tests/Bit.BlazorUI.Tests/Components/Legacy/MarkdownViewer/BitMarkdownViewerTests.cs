@@ -40,7 +40,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Markdown, markdown);
         });
 
-        var root = component.Find(".bit-mdv");
+        var root = component.Find(".bit-mvl");
 
         component.WaitForAssertion(() =>
         {
@@ -143,7 +143,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
-        var root = component.Find(".bit-mdv");
+        var root = component.Find(".bit-mvl");
 
         if (isEnabled)
         {
@@ -258,10 +258,10 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var component = RenderComponent<BitMarkdownViewerLegacy>();
 
-        var root = component.Find(".bit-mdv");
+        var root = component.Find(".bit-mvl");
 
-        // The native viewer of the Extras shares the root class, so the legacy stylesheet is keyed to a class of its own.
-        Assert.IsTrue(root.ClassList.Contains("bit-mdv-lgc"));
+        // The root class is the legacy viewer's own, apart from the native viewer of the Extras.
+        Assert.IsFalse(root.ClassList.Contains("bit-mdv"));
         Assert.AreEqual(string.Empty, root.InnerHtml.Trim());
         Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Legacy.MarkdownViewer.parseAsync");
     }
@@ -277,7 +277,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             [nameof(BitMarkdownViewerLegacy.NoPrerender)] = true,
         });
 
-        StringAssert.Contains(html, "bit-mdv-lgc");
+        StringAssert.Contains(html, "bit-mvl");
         Assert.IsFalse(html.Contains("Title"));
     }
 
@@ -298,7 +298,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             builder.CloseComponent();
         });
 
-        var root = component.Find(".bit-mdv");
+        var root = component.Find(".bit-mvl");
 
         Assert.AreEqual("viewer", root.Id);
         Assert.AreEqual("root", root.GetAttribute("data-test"));

@@ -140,17 +140,13 @@ public partial class BitRichTextEditorLegacy : BitComponentBase
 
 
 
-    protected override string RootElementClass => "bit-rte";
+    protected override string RootElementClass => "bit-rel";
 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        // The Extras BitRichTextEditor shares the bit-rte-* class names, so the legacy stylesheet
-        // is scoped under this class to keep its rules off the other editor.
-        ClassBuilder.Register(() => "bit-rte-lgc");
-
-        ClassBuilder.Register(() => Reversed ? "bit-rte-rvs" : string.Empty);
+        ClassBuilder.Register(() => Reversed ? "bit-rel-rvs" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

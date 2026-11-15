@@ -5,6 +5,20 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### Every component has a root class of its own
+
+Two components that shared a root class shared every rule written for it, so each restyled the other wherever both
+were on a page: a `BitNavPanel` lost its width and the top of its list to the `BitStepper` rules that matched the
+`BitSwipeTrap` inside it. The newer component of each pair takes a class prefix of its own; no public API is renamed,
+but an app's stylesheets, scripts and tests written against the old classes move to the new ones:
+
+| Component | Before | After |
+|---|---|---|
+| `BitStepper` | `bit-stp`, `bit-stp-*` (shared with `BitSwipeTrap`) | `bit-str`, `bit-str-*`, and the `data-bit-str-opt` attribute |
+| `BitMarkdownEditorLegacy` | `bit-mde`, `bit-mde-txa` (shared with `BitMarkdownEditor`) | `bit-mel`, `bit-mel-txa` |
+| `BitMarkdownViewerLegacy` | `bit-mdv bit-mdv-lgc` (shared with `BitMarkdownViewer`) | `bit-mvl` |
+| `BitRichTextEditorLegacy` | `bit-rte bit-rte-lgc`, `bit-rte-tlb`, `bit-rte-edt`, `bit-rte-rvs` (shared with `BitRichTextEditor`) | `bit-rel`, `bit-rel-tlb`, `bit-rel-edt`, `bit-rel-rvs` |
+
 ### What axe-core found inside the components is fixed, and the markup it changed ([#14891](https://github.com/bitfoundation/bitplatform/issues/14891))
 
 No public API is renamed or removed, but an app's stylesheets, scripts and tests written against the markup below

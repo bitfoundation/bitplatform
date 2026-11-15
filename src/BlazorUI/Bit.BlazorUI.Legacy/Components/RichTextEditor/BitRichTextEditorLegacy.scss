@@ -1,9 +1,6 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
-// Every rule is scoped under .bit-rte-lgc: the Extras BitRichTextEditor uses the same bit-rte-*
-// class names, and unscoped rules here would restyle it too (e.g. display: flex on its surface
-// defeats the hidden attribute that source view relies on).
-.bit-rte.bit-rte-lgc {
+.bit-rel {
     display: flex;
     flex-direction: column;
 
@@ -74,10 +71,10 @@
         }
     }
 
-    &.bit-rte-rvs {
+    &.bit-rel-rvs {
         flex-direction: column-reverse;
 
-        .bit-rte-edt {
+        .bit-rel-edt {
             &.ql-container.ql-snow {
                 border-bottom: 0;
                 border-top: 1px solid $clr-brd-pri;
@@ -85,10 +82,10 @@
         }
     }
 
-    .bit-rte-tlb {
+    .bit-rel-tlb {
     }
 
-    .bit-rte-edt {
+    .bit-rel-edt {
         flex-grow: 1;
         display: flex;
         flex-direction: column;

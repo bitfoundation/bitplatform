@@ -36,8 +36,8 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.EditorTemplate, b => b.AddContent(1, "Editor"));
         });
 
-        var editor = component.Find(".bit-rte-edt");
-        var toolbar = component.Find(".bit-rte-tlb");
+        var editor = component.Find(".bit-rel-edt");
+        var toolbar = component.Find(".bit-rel-tlb");
 
         Assert.AreEqual("Editor", editor.TextContent);
         Assert.AreEqual("Toolbar", toolbar.TextContent);
@@ -66,16 +66,16 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.Reversed, true);
         });
 
-        var root = component.Find(".bit-rte");
+        var root = component.Find(".bit-rel");
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        Assert.IsTrue(root.ClassList.Contains("bit-rte-rvs"));
-        // The Extras editor shares the bit-rte-* names, so the legacy stylesheet is scoped under a class of its own.
-        Assert.IsTrue(root.ClassList.Contains("bit-rte-lgc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rel-rvs"));
+        // The root class is the legacy editor's own, apart from the BitRichTextEditor of the Extras.
+        Assert.IsFalse(root.ClassList.Contains("bit-rte"));
         StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        Assert.IsTrue(component.Find(".bit-rte-edt").ClassList.Contains("custom-editor"));
-        Assert.AreEqual("color:red", component.Find(".bit-rte-edt").GetAttribute("style"));
-        Assert.IsTrue(component.Find(".bit-rte-tlb").ClassList.Contains("custom-toolbar"));
-        Assert.AreEqual("color:blue", component.Find(".bit-rte-tlb").GetAttribute("style"));
+        Assert.IsTrue(component.Find(".bit-rel-edt").ClassList.Contains("custom-editor"));
+        Assert.AreEqual("color:red", component.Find(".bit-rel-edt").GetAttribute("style"));
+        Assert.IsTrue(component.Find(".bit-rel-tlb").ClassList.Contains("custom-toolbar"));
+        Assert.AreEqual("color:blue", component.Find(".bit-rel-tlb").GetAttribute("style"));
 
         // The toolbar's own style and class are also handed to the script that mounts Quill into it.
         var setup = Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.RichTextEditor.setup");
@@ -90,7 +90,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var component = RenderComponent<BitRichTextEditorLegacy>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-rel-tlb").Count);
         // Quill draws its own toolbar then, so no container is handed to it.
         Assert.IsNull(Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.RichTextEditor.setup").Arguments[3]);
     }
@@ -169,7 +169,7 @@ public class BitRichTextEditorTests : BunitTestContext
         StringAssert.Contains(stylesheets.First(), "quill.bubble");
 
         var setup = Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.RichTextEditor.setup");
-        Assert.AreEqual(component.Find(".bit-rte").Id, setup.Arguments[0]);
+        Assert.AreEqual(component.Find(".bit-rel").Id, setup.Arguments[0]);
         Assert.AreEqual("bubble", setup.Arguments[4]);
         Assert.AreEqual("Type here", setup.Arguments[5]);
         Assert.AreEqual(true, setup.Arguments[6]);
@@ -213,7 +213,7 @@ public class BitRichTextEditorTests : BunitTestContext
         {
             Assert.AreEqual(1, quillReady);
             Assert.AreEqual(1, modulesReady);
-            Assert.AreEqual(component.Find(".bit-rte").Id, editorReady);
+            Assert.AreEqual(component.Find(".bit-rel").Id, editorReady);
         });
     }
 
@@ -229,11 +229,10 @@ public class BitRichTextEditorTests : BunitTestContext
             [nameof(BitRichTextEditorLegacy.Reversed)] = true,
         });
 
-        StringAssert.Contains(html, "bit-rte-lgc");
-        StringAssert.Contains(html, "bit-rte-rvs");
-        StringAssert.Contains(html, "bit-rte-tlb");
+        StringAssert.Contains(html, "bit-rel-rvs");
+        StringAssert.Contains(html, "bit-rel-tlb");
         StringAssert.Contains(html, "Toolbar;");
-        StringAssert.Contains(html, "bit-rte-edt");
+        StringAssert.Contains(html, "bit-rel-edt");
         StringAssert.Contains(html, "Editor;");
     }
 
@@ -254,7 +253,7 @@ public class BitRichTextEditorTests : BunitTestContext
             builder.CloseComponent();
         });
 
-        var root = component.Find(".bit-rte");
+        var root = component.Find(".bit-rel");
 
         Assert.AreEqual("legacy-editor", root.Id);
         Assert.AreEqual("root", root.GetAttribute("data-test"));
@@ -273,7 +272,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var component = RenderComponent<BitRichTextEditorLegacy>(parameters => parameters.Add(p => p.Disabled, disabled));
 
-        Assert.AreEqual(disabled, component.Find(".bit-rte").ClassList.Contains("bit-dis"));
+        Assert.AreEqual(disabled, component.Find(".bit-rel").ClassList.Contains("bit-dis"));
     }
 
     [TestMethod]
@@ -282,7 +281,7 @@ public class BitRichTextEditorTests : BunitTestContext
         SetupJsInterop();
 
         var component = RenderComponent<BitRichTextEditorLegacy>();
-        var id = component.Find(".bit-rte").Id;
+        var id = component.Find(".bit-rel").Id;
 
         await component.Instance.DisposeAsync();
 

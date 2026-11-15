@@ -11,11 +11,11 @@ internal static class StepperE2EHelpers
     /// </summary>
     public static ILocator StepperSteps(this IPage page, string id) => page.Locator($"#{id} > li");
 
-    public static ILocator StepperIndicators(this IPage page, string id) => page.Locator($"#{id} .bit-stp-ind");
+    public static ILocator StepperIndicators(this IPage page, string id) => page.Locator($"#{id} .bit-str-ind");
 
-    public static ILocator StepperButtons(this IPage page, string id) => page.Locator($"#{id} .bit-stp-btn");
+    public static ILocator StepperButtons(this IPage page, string id) => page.Locator($"#{id} .bit-str-btn");
 
-    public static ILocator StepperConnectors(this IPage page, string id) => page.Locator($"#{id} .bit-stp-con");
+    public static ILocator StepperConnectors(this IPage page, string id) => page.Locator($"#{id} .bit-str-con");
 
     /// <summary>
     /// Asserts that a measured length or position is within <paramref name="tolerance"/> pixels of the expected one.

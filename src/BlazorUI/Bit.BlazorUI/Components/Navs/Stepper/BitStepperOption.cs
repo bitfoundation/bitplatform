@@ -5,7 +5,7 @@
 /// </summary>
 public partial class BitStepperOption : ComponentBase, IDisposable
 {
-    internal const string _OPTION_ID_ATTRIBUTE = "data-bit-stp-opt";
+    internal const string _OPTION_ID_ATTRIBUTE = "data-bit-str-opt";
 
     internal string _OptionId { get; } = BitShortId.NewId();
 

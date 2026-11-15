@@ -119,7 +119,7 @@ public partial class BitStepperDemo
             Name = "Responsive",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lays the steps of a horizontal stepper out from top to bottom while the stepper is narrower than 600px, instead of letting a row that does not fit stick out of its container, and in a row again once it is wider. It is the width of the stepper's own container that decides, not the screen's, so one in a narrow sidebar or dialog is a column on a wide screen too. The stylesheet does the switch through a container query, so no BitMediaQuery is needed: the stepper stands in a wrapper (bit-stp-rsw) that takes the full width of its container, and carries bit-stp-rsp in place of bit-stp-hrz. It has nothing to do on a Vertical stepper.",
+            Description = "Lays the steps of a horizontal stepper out from top to bottom while the stepper is narrower than 600px, instead of letting a row that does not fit stick out of its container, and in a row again once it is wider. It is the width of the stepper's own container that decides, not the screen's, so one in a narrow sidebar or dialog is a column on a wide screen too. The stylesheet does the switch through a container query, so no BitMediaQuery is needed: the stepper stands in a wrapper (bit-str-rsw) that takes the full width of its container, and carries bit-str-rsp in place of bit-str-hrz. It has nothing to do on a Vertical stepper.",
         },
         new()
         {

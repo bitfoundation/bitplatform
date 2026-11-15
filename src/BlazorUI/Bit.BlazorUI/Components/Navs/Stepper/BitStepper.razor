@@ -5,10 +5,10 @@
 
 @* A Responsive horizontal stepper is laid out by its own width rather than by the screen's, and an element cannot be
    queried against its own width: the list stands in a wrapper that is the query container of its layout (the
-   stylesheet's bit-stp-rsw). Every other stepper renders the list alone. *@
+   stylesheet's bit-str-rsw). Every other stepper renders the list alone. *@
 @if (IsResponsiveRow)
 {
-    <div class="bit-stp-rsw">
+    <div class="bit-str-rsw">
         @{ RenderList(__builder); }
     </div>
 }
@@ -55,29 +55,29 @@ else
                 var ariaCurrent = state == BitStepperStepState.Current || (state == BitStepperStepState.Error && index == CurrentIndex) ? "step" : null;
 
                 RenderFragment content = @<text>
-                    <span aria-hidden="true" style="@Styles?.Indicator" class="bit-stp-ind @Classes?.Indicator">
+                    <span aria-hidden="true" style="@Styles?.Indicator" class="bit-str-ind @Classes?.Indicator">
                         @if (icon is not null)
                         {
-                            <i style="@Styles?.Icon" class="bit-stp-ico @icon.GetCssClasses() @Classes?.Icon" />
+                            <i style="@Styles?.Icon" class="bit-str-ico @icon.GetCssClasses() @Classes?.Icon" />
                         }
                         else
                         {
-                            <span style="@Styles?.Number" class="bit-stp-num @Classes?.Number">@GetNumber(index)</span>
+                            <span style="@Styles?.Number" class="bit-str-num @Classes?.Number">@GetNumber(index)</span>
                         }
                     </span>
-                    <span style="@Styles?.Label" class="bit-stp-lbl @Classes?.Label">
+                    <span style="@Styles?.Label" class="bit-str-lbl @Classes?.Label">
                         @if (text.HasValue())
                         {
-                            <span style="@Styles?.Text" class="bit-stp-txt @Classes?.Text">@text</span>
+                            <span style="@Styles?.Text" class="bit-str-txt @Classes?.Text">@text</span>
                         }
                         @if (description.HasValue())
                         {
-                            <span style="@Styles?.Description" class="bit-stp-dsc @Classes?.Description">@description</span>
+                            <span style="@Styles?.Description" class="bit-str-dsc @Classes?.Description">@description</span>
                         }
                     </span>
                     @if (stateText.HasValue())
                     {
-                        <span class="bit-stp-sts">@stateText</span>
+                        <span class="bit-str-sts">@stateText</span>
                     }
                 </text>;
 
@@ -92,7 +92,7 @@ else
                                 aria-current="@ariaCurrent"
                                 aria-label="@GetAriaLabel(item)"
                                 style="@Styles?.Button"
-                                class="bit-stp-btn @Classes?.Button">
+                                class="bit-str-btn @Classes?.Button">
                             @content
                         </button>
                     }
@@ -101,14 +101,14 @@ else
                         <div title="@GetTitle(item)"
                              aria-current="@ariaCurrent"
                              style="@Styles?.Button"
-                             class="bit-stp-btn @Classes?.Button">
+                             class="bit-str-btn @Classes?.Button">
                             @content
                         </div>
                     }
 
                     @if (index < _items.Count - 1)
                     {
-                        <span aria-hidden="true" style="@Styles?.Connector" class="bit-stp-con @Classes?.Connector"></span>
+                        <span aria-hidden="true" style="@Styles?.Connector" class="bit-str-con @Classes?.Connector"></span>
                     }
                 </li>
             }
