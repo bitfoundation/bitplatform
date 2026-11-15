@@ -332,8 +332,8 @@ public class OAuthAuthorizationServerTests
 
     /// <summary>
     /// <c>/healthz</c>'s document offers <c>healthz</c> alone, as its 401 does, and, anonymous like the rest of the
-    /// document, names the template version <c>bit.json</c> records, so a monitor can tell a bit Boilerplate app and
-    /// its age before it asks anyone for a token.
+    /// document, names the template version <c>bit.json</c> records, so a monitor can tell an app made from bit-bp
+    /// and its age before it asks anyone for a token.
     /// </summary>
     [TestMethod]
     public async Task TheHealthzProtectedResourceMetadata_Should_NameTheTemplateVersion()

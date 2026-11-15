@@ -13,7 +13,7 @@
         <PackageReference Include="Bit.BlazorUI" />
         <PackageReference Include="Bit.BlazorUI.Icons" />
         <PackageReference Include="Bit.BlazorUI.Assets" />
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
         <Using Condition=" '$(brouter)' == 'true' OR '$(brouter)' == '' " Include="Bit.Brouter" />
         <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" />
         <Using Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore" />
@@ -26,7 +26,7 @@
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Bit.BlazorUI.AI" />
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Bit.BlazorUI.AI.SignalR" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" />
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.BlazorUI.Extras" />
         <PackageReference Include="Bit.Bmage.Blazor" />
         <PackageReference Include="Bit.BevTools" />

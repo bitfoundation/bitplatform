@@ -485,13 +485,13 @@ have taken requests, so a failure from then on leaves the database ahead and und
 - The api gets a hostname of its own, pointed at `http://serverapi:8080`, and that address goes into `SERVER_API_ADDRESS`
   (section 6).
 <!--#endif-->
-- On the landing page's hostname, ahead of its own rule, send `/v1/traces`, `/v1/logs` and `/v1/metrics` to
-  `http://compose-dashboard:18890`, where its browser posts its telemetry, and give those paths a rate limiting rule.
-  Only those paths: the rest of that port is the dashboard's own.
+- On the web app's hostname and on the landing page's, ahead of each one's own rule, send `/v1/traces`, `/v1/logs` and
+  `/v1/metrics` to `http://compose-dashboard:18890`, where the pages and the apps post their telemetry, and give those
+  paths a rate limiting rule. Only those paths: the rest of that port is the dashboard's own.
 <!--#else-->
 - This project was created without the `cloudflare` option, so Caddy takes the place of the tunnel: point each
-  hostname's DNS at the VM. The deploy job writes Caddy's sites from the environment's addresses, the landing page's
-  `/v1/` paths to the dashboard included.
+  hostname's DNS at the VM. The deploy job writes Caddy's sites from the environment's addresses, the web app's and the
+  landing page's `/v1/` paths to the dashboard included.
 <!--#if (api == "Standalone")-->
 - The api gets a hostname of its own, in the `SERVER_API_ADDRESS` variable.
 <!--#endif-->

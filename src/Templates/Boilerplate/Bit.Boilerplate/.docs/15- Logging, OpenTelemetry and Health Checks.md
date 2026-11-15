@@ -246,7 +246,7 @@ Every project sends its telemetry through [bit Belemetry](https://github.com/bit
 
 * **Client.Web**, **Client.Windows** and **Client.Maui**
 
-    The page's own telemetry (page views, clicks, web vitals, JavaScript errors and fetch calls), besides the app's .NET logs, traces and metrics. Page views, clicks, sessions and the ids that recognize a device wait for the Analytics consent (See `ConsentService`).
+    The page's own telemetry (page views, clicks, web vitals, JavaScript errors and fetch calls), besides the app's .NET logs, traces and metrics. Page views, clicks, sessions and the ids that recognize a device wait for the Analytics consent (See `ConsentService`). A deployment's dashboard gets it through `Belemetry:OtlpEndpoint` (See In a Deployment, below).
 
     Client.Maui also runs `Sentry.Maui`, for crashes only: Belemetry's Sentry exporter sends every other error, as in the other projects.
 
@@ -287,10 +287,12 @@ holds 100,000 logs and 100,000 traces at most. Outside Development the server se
 fast successful spans, and every unexpected error and every span slower than a second, though not always the rest of its
 trace (`AppLoggingSampler` and `AppBelemetryProcessor`).
 
-The landing page's browser sends the dashboard its errors, and its logs and traces once the visitor consents. It can't
-reach the gRPC endpoint the apps use inside the Compose network, so the deploy job gives it the landing page's own
-address as `Belemetry:OtlpEndpoint`, and the tunnel (or Caddy, without Cloudflare) sends `/v1/traces`, `/v1/logs` and
-`/v1/metrics` there to the dashboard's OTLP/HTTP port. Anyone can post telemetry to it, as with an Application Insights
+The app's pages, its Windows, Android and iOS apps and the landing page send the dashboard their errors, and their logs
+and traces once the user consents. They can't reach the gRPC endpoint the servers use inside the Compose network, so
+they post over OTLP/HTTP to `Belemetry:OtlpEndpoint` instead: the CD builds the app with the web app's own address
+there, which Server.Web's pages, Blazor Server's included, get as Belemetry's `BrowserEndpoint`, and the deploy job gives
+the landing page its own. The tunnel (or Caddy, without Cloudflare) sends `/v1/traces`, `/v1/logs` and `/v1/metrics` on
+both hostnames to the dashboard's OTLP/HTTP port. Anyone can post telemetry to it, as with an Application Insights
 connection string or a Sentry DSN in a page; the dashboard's pages and its API keep their token and key.
 
 dev-mcp's `ListLogs`, `ListTraces` and `GetTrace` read it through the dashboard's telemetry API, at `AspireDashboard:Url`
@@ -325,7 +327,7 @@ with two factor (`GrantPolicies` on the resource's row), because that token read
 the report without the exceptions, which can carry a server name or a connection string, nor the description a check
 that throws takes from its exception's message; only the app's own session, which the Operations page uses, reads them. The resource's metadata document
 (`/.well-known/oauth-protected-resource/healthz`, anonymous like every RFC 9728 document) lists the `healthz` scope and carries
-`bit_template_version`, the version `bit.json` records, so a monitor can tell a bit Boilerplate app and its version
+`bit_template_version`, the version `bit.json` records, so a monitor can tell an app made from bit-bp and its version
 before it asks for a token. A refused token request says why in `error_description`, such as a revoked approval or
 a new password, so the monitor can tell its user. Every front end also serves `/.well-known/bit-app.json`, anonymously:
 `server`, where `/healthz` and that metadata live, `front_end`, `server` when Server.Web renders the pages and `static`

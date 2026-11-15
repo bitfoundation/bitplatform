@@ -172,8 +172,10 @@ builder.ConfigureDockerComposePublishing(compose, serverWebProject, landingPageP
 
 if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.
 {
-    // Blazor WebAssembly Standalone project.
+    // Blazor WebAssembly Standalone project. Its dev server listens on its launch profile's address itself, not on a port
+    // Aspire gives it, so that endpoint has no proxy in front of it, which would hold the same port.
     builder.AddProject("clientwebwasm", "../../Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj")
+        .WithEndpoint("http", endpoint => endpoint.IsProxied = false)
         .WithExplicitStart();
 
     var mailpit = builder.AddMailPit("smtp") // For testing purposes only, in production, you would use a real SMTP server.

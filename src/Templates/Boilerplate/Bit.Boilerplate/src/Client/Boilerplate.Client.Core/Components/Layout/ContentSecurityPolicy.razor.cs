@@ -47,9 +47,13 @@ public partial class ContentSecurityPolicy
         }
         //#endif
 
-        // --- Add the OTLP collector Belemetry's browser script posts to ---
-        if (configuration["OTEL_EXPORTER_OTLP_PROTOCOL"]?.Trim().ToLowerInvariant() is not "grpc"
-            && Uri.TryCreate(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"], UriKind.Absolute, out var otlpEndpoint)
+        // --- Add the OTLP collector Belemetry's browser script posts to: Belemetry:OtlpEndpoint, else the server's own ---
+        if (Uri.TryCreate(configuration["Belemetry:OtlpEndpoint"], UriKind.Absolute, out var otlpEndpoint) && otlpEndpoint.Scheme is "http" or "https")
+        {
+            connectSrc.Add($"{otlpEndpoint.Scheme}://{otlpEndpoint.Authority}");
+        }
+        else if (configuration["OTEL_EXPORTER_OTLP_PROTOCOL"]?.Trim().ToLowerInvariant() is not "grpc"
+            && Uri.TryCreate(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"], UriKind.Absolute, out otlpEndpoint)
             && otlpEndpoint.Scheme is "http" or "https")
         {
             connectSrc.Add($"{otlpEndpoint.Scheme}://{otlpEndpoint.Authority}");
