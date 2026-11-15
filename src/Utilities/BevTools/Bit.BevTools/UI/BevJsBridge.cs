@@ -36,6 +36,13 @@ public sealed class BevJsCallEntry
 
     /// <summary>Made while a requestAnimationFrame callback ran; false from a hub that does not say.</summary>
     public bool Frame { get; set; }
+
+    /// <summary>
+    /// How many calls the entry stands for: the hub folds the calls of a report window past the ones it reports one by
+    /// one into an entry per identifier, so a page calling .NET thousands of times never sends a report the circuit
+    /// refuses. Null (one call) from a hub that does not fold.
+    /// </summary>
+    public int? Count { get; set; }
 }
 
 public sealed class BevBrowserSnapshot
@@ -296,7 +303,7 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
         var calls = new List<JsCall>(batch.Length);
         foreach (var entry in batch)
         {
-            session.Browser.JsToDotNetCalls++;
+            session.Browser.JsToDotNetCalls += Math.Max(1, entry.Count ?? 1);
             var error = entry.Error is null ? null : BevRedactor.RedactText(entry.Error);
             var age = TimeSpan.FromMilliseconds(Math.Max(0, entry.AgeMs ?? (now - DateTimeOffset.FromUnixTimeMilliseconds(entry.At)).TotalMilliseconds));
             var (identifier, objectId, target) = Resolve(entry.Identifier ?? "?", ref references, ref referencesRead);

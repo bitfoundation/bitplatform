@@ -226,6 +226,18 @@ public sealed class JsToDotNetTests : IDisposable
         Assert.IsTrue(records[0].At <= before.AddSeconds(-1), $"{records[0].At:O} is at least a second before {before:O}");
         Assert.IsTrue(records[0].StartTicks < records[1].StartTicks, "in the order they were made");
     }
+
+    [TestMethod]
+    public void A_folded_entry_counts_every_call_it_stands_for()
+    {
+        // The hub folds a window's calls past the ones it reports one by one, so a report fits in a circuit message.
+        var calls = Calls("App.OnScroll", 2, 0);
+        calls[1].Count = 400;
+
+        _bridge.ReportJsToDotNet(calls);
+
+        Assert.AreEqual(401, _session.Browser.JsToDotNetCalls);
+    }
 }
 
 public sealed class FrameLoop

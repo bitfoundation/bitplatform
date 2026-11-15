@@ -254,6 +254,33 @@ describe('responsiveness', () => {
 
     const element = (tagName, id, inBevTools = false) => ({ nodeType: 1, tagName, id, className: '', closest: selector => (inBevTools && selector === '.bev-root' ? {} : null) });
 
+    it('splits a responsiveness report that would not fit in one circuit message', async () => {
+        // A Blazor Server circuit closes its connection on a message over 32 KB: a janky stretch filled both buffers.
+        installPage();
+        const fake = fakeObservers(['long-animation-frame', 'event', 'longtask']);
+        try {
+            const hub = await loadHub();
+            const server = runtime(1);
+            hub.attach(server, { platform: 'Server' });
+            const frames = fake.observers.find(o => o.options.type === 'long-animation-frame');
+            const long = 'x'.repeat(400);
+            const script = n => ({ invoker: long + n, invokerType: 'event-listener', sourceURL: 'https://app.example/' + long + '.js', sourceFunctionName: long, duration: 40 });
+            const now = performance.now();
+            frames.emit(Array.from({ length: 100 }, (_, i) => ({ startTime: now - 1000 + i, duration: 120, blockingDuration: 70, scripts: [script(1), script(2), script(3)] })));
+            hub.flushResponsiveness();
+
+            const reports = server.reported('ReportResponsiveness');
+            expect(reports.length, 'more than one report').toBeGreaterThan(1);
+            for (const [, reportedFrames, interactions] of reports) {
+                expect(Buffer.byteLength(JSON.stringify([reportedFrames, interactions]))).toBeLessThanOrEqual(16 * 1024);
+            }
+            expect(reports.flatMap(r => r[1]), 'every frame is reported once').toHaveLength(100);
+            hub.detach();
+        } finally {
+            fake.restore();
+        }
+    });
+
     it('reports long animation frames and interactions with ages, each interaction across its entries, and none of BevTools\' own', async () => {
         installPage();
         const fake = fakeObservers(['long-animation-frame', 'event', 'longtask']);
@@ -581,6 +608,30 @@ describe('WebSocket traffic', () => {
         vi.advanceTimersByTime(2100);
         expect(ref.reported('ReportTraffic'), 'nothing new: no report').toHaveLength(1);
         hub.detach();
+    });
+
+    it('keeps the traffic report within one circuit message, the circuit socket last to go, and bounds message kinds', async () => {
+        vi.useFakeTimers();
+        try {
+            installPage();
+            const hub = await loadHub();
+            const ref = runtime(5);
+            hub.attach(ref, { platform: 'Server' });
+            new window.WebSocket('wss://app.example/_blazor?id=circuit');
+            for (let i = 0; i < 40; i++) {
+                const socket = new window.WebSocket(`wss://app.example/hub${i}?id=${i}&q=${'p'.repeat(600)}`);
+                for (let k = 0; k < 40; k++) socket.receive(`{"type":1,"target":"Method${k}","arguments":[]}\x1e`);
+            }
+
+            expect(Object.keys(hub.traffic()[1].messages).length, 'the kinds of one socket are bounded').toBeLessThanOrEqual(31);
+            vi.advanceTimersByTime(2100);
+            const [report] = ref.reported('ReportTraffic');
+            expect(Buffer.byteLength(JSON.stringify(report[1]))).toBeLessThanOrEqual(16 * 1024);
+            expect(report[1].some(s => s.kind === 'blazor-circuit'), "the circuit's own socket is kept").toBe(true);
+            hub.detach();
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it("counts the circuit's calls into BevTools' own module, and their replies, as BevTools' own", async () => {

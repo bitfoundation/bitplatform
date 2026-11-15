@@ -212,6 +212,29 @@ describe('JS -> .NET call tracking', () => {
         expect(DotNetObject.prototype.invokeMethodAsync).toBe(originalAsync);
     });
 
+    it('keeps every call report well under a circuit message, folding a burst per identifier', async () => {
+        // A Blazor Server circuit closes its connection on a message over 32 KB: 400 calls in one window used to make one.
+        installBrowser();
+        const reports = [];
+        const bridge = await loadBridge();
+        bridge.attach({ invokeMethodAsync: (...args) => { reports.push(args); return Promise.resolve(); } }, { trackJsToDotNet: true });
+
+        const calls = [];
+        for (let i = 0; i < 600; i++) calls.push(window.DotNet.invokeMethodAsync('App', i % 2 ? 'OnScroll' : 'OnMove' + (i % 120)));
+        calls.push(window.DotNet.invokeMethodAsync('App', 'L'.repeat(5000)));
+        await Promise.all(calls);
+        await delay(550);
+
+        const batches = reports.filter(args => args[0] === 'ReportJsToDotNet').map(args => args[1]);
+        for (const batch of batches) expect(Buffer.byteLength(JSON.stringify(batch))).toBeLessThanOrEqual(16 * 1024);
+        const entries = batches.flat();
+        expect(entries.reduce((total, entry) => total + (entry.count ?? 1), 0), 'every call is counted').toBe(601);
+        expect(entries.length, 'past 200 calls, one entry per identifier').toBeLessThanOrEqual(251);
+        expect(entries.find(entry => entry.identifier === 'App.OnScroll' && entry.count > 1)).toBeTruthy();
+        expect(entries.every(entry => entry.identifier.length <= 200), 'identifiers are clipped').toBe(true);
+        bridge.detach();
+    });
+
     it('marks the calls made from a requestAnimationFrame callback, and only those', async () => {
         installBrowser();
         const frames = [];

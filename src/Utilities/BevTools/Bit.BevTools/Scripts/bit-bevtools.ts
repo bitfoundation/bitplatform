@@ -27,6 +27,8 @@ interface BevJsCallEntry {
     ageMs?: number;
     /** Made while a requestAnimationFrame callback ran: what tells a per-frame loop from a burst of events or a timer. */
     frame?: boolean;
+    /** How many calls of this identifier the entry stands for, when a report window held more than it keeps one by one. */
+    count?: number;
 }
 
 interface BevStorageEntry {
@@ -64,6 +66,8 @@ interface BevTarget extends BevTargetInfo {
     ref: any;
     moduleObjectId: number | null;
     jsToDotNetBatch: BevJsCallEntry[];
+    /** The calls of the report window past MAX_JS_CALLS_PER_REPORT, one entry per identifier. */
+    jsToDotNetFolded: Map<string, BevJsCallEntry>;
     flushTimer: ReturnType<typeof setTimeout> | null;
     /** Reconnect states that arrived while the circuit was down, delivered in order once it is back. */
     pendingReconnectStates: any[][];
@@ -315,18 +319,71 @@ function targetForDispatcher(dispatcher: any): BevTarget | null {
     return match || (count === 1 ? only : null);
 }
 
+// Everything the hub reports travels on the runtime's own connection, and a Blazor Server circuit closes that
+// connection on a message over HubOptions.MaximumReceiveMessageSize (32 KB by default): every report is split, or
+// bounded, well under it. A page that calls .NET thousands of times in one window is reported one entry per
+// identifier past MAX_JS_CALLS_PER_REPORT, not dropped, so the counts stay true.
+export const MAX_REPORT_BYTES = 16 * 1024;
+const MAX_JS_CALLS_PER_REPORT = 200;
+const MAX_FOLDED_IDENTIFIERS = 50;
+const FOLDED_OTHERS = "(other calls)";
+const MAX_IDENTIFIER_LENGTH = 200;
+const MAX_ERROR_LENGTH = 300;
+const encoder = typeof TextEncoder === "function" ? new TextEncoder() : null;
+
+/** The UTF-8 size of a value as JSON, the way it crosses to .NET. */
+function jsonBytes(value: any) {
+    const json = JSON.stringify(value) ?? "";
+    return encoder ? encoder.encode(json).length : json.length * 3;
+}
+
+/** Consecutive runs of items, each at most maxBytes as a JSON array (an item larger than that alone in its run). */
+export function splitBySize<T>(items: T[], maxBytes = MAX_REPORT_BYTES): T[][] {
+    const runs: T[][] = [];
+    let run: T[] = [];
+    let size = 2;
+    for (const item of items) {
+        const bytes = jsonBytes(item) + 1;
+        if (run.length > 0 && size + bytes > maxBytes) {
+            runs.push(run);
+            run = [];
+            size = 2;
+        }
+        run.push(item);
+        size += bytes;
+    }
+    if (run.length > 0) runs.push(run);
+    return runs;
+}
+
+function foldJsToDotNet(target: BevTarget, entry: BevJsCallEntry) {
+    const key = target.jsToDotNetFolded.has(entry.identifier) || target.jsToDotNetFolded.size < MAX_FOLDED_IDENTIFIERS ? entry.identifier : FOLDED_OTHERS;
+    const folded = target.jsToDotNetFolded.get(key);
+    if (!folded) {
+        target.jsToDotNetFolded.set(key, { ...entry, identifier: key, count: 1 });
+        return;
+    }
+    folded.count = (folded.count || 1) + 1;
+    folded.durationMs = Math.max(folded.durationMs || 0, entry.durationMs || 0);
+    if (!folded.error && entry.error) folded.error = entry.error;
+}
+
 function queueJsToDotNet(target: BevTarget | null, entry: BevJsCallEntry, generation: number) {
     if (!target || generation !== hubGeneration || !targets.has(target.id)) return;
-    target.jsToDotNetBatch.push(entry);
+    entry.identifier = clip(entry.identifier, MAX_IDENTIFIER_LENGTH);
+    if (entry.error) entry.error = clip(entry.error, MAX_ERROR_LENGTH);
+    if (target.jsToDotNetBatch.length < MAX_JS_CALLS_PER_REPORT) target.jsToDotNetBatch.push(entry);
+    else foldJsToDotNet(target, entry);
     if (target.flushTimer) return;
     target.flushTimer = setTimeout(() => {
         target.flushTimer = null;
         if (target.jsToDotNetBatch.length === 0) return;
-        const batch = target.jsToDotNetBatch;
+        const batch = target.jsToDotNetBatch.concat(Array.from(target.jsToDotNetFolded.values()));
         target.jsToDotNetBatch = [];
+        target.jsToDotNetFolded.clear();
         const sent = Date.now();
         for (const entry of batch) entry.ageMs = Math.max(0, sent - entry.at);
-        invoke(target, "ReportJsToDotNet", batch);
+        for (const run of splitBySize(batch)) invoke(target, "ReportJsToDotNet", run);
     }, 500);
 }
 
@@ -453,6 +510,7 @@ function unwrapDotNet() {
 
 const RECORD_SEPARATOR = "\x1e";
 const LARGE_MESSAGE = 64 * 1024;
+const MAX_MESSAGE_KINDS = 30;
 const sockets = new Map<any, BevSocketStats>();
 // The listeners each tracked socket was given, removed when it stops being tracked: a socket outliving a detach (the
 // circuit itself) would otherwise keep decoding every frame for a session that is gone.
@@ -614,7 +672,7 @@ function socketStats(socket: any, observedFromOpen: boolean): BevSocketStats {
         const url = String(socket.url || "");
         s = {
             id: ++nextSocketId,
-            url: redactUrl(url),
+            url: clip(redactUrl(url), 500),
             kind: classify(url),
             protocol: null,
             openedAt: observedFromOpen ? Date.now() : null,
@@ -681,7 +739,10 @@ function noteMessage(s: BevSocketStats, direction: string, kind: string, bytes: 
     // Only application traffic counts as a change worth reporting: BevTools' own reports travel on the same circuit,
     // and counting them as news would make every report schedule the next one.
     trafficVersion++;
-    add(s.messages[direction + " " + kind] ||= stat(), bytes);
+    // Message kinds are the application's hub method names: a fixed number per socket, the rest counted together.
+    let key = direction + " " + kind;
+    if (!s.messages[key] && Object.keys(s.messages).length >= MAX_MESSAGE_KINDS) key = direction + " (other)";
+    add(s.messages[key] ||= stat(), bytes);
     if (bytes >= LARGE_MESSAGE) {
         s.largest.push({ direction, kind, bytes, at: Date.now() });
         s.largest.sort((a, b) => b.bytes - a.bytes);
@@ -1050,10 +1111,30 @@ export function traffic(): BevSocketStats[] {
     return Array.from(sockets.values()).map(s => ({ ...s, messages: { ...s.messages }, largest: s.largest.slice() }));
 }
 
+/**
+ * The traffic snapshot within MAX_REPORT_BYTES. It replaces the one .NET holds, so it cannot be split: closed sockets go
+ * first, oldest first, then the oldest open ones - the circuit's own socket is kept to the last.
+ */
+export function boundedTraffic(snapshot: BevSocketStats[], maxBytes = MAX_REPORT_BYTES): BevSocketStats[] {
+    const kept = snapshot.slice();
+    const removable = () => {
+        const closed = kept.findIndex(s => s.closedAt !== null);
+        if (closed >= 0) return closed;
+        const other = kept.findIndex(s => s.kind !== "blazor-circuit");
+        return other >= 0 ? other : kept.length > 1 ? 0 : -1;
+    };
+    while (jsonBytes(kept) > maxBytes) {
+        const index = removable();
+        if (index < 0) break;
+        kept.splice(index, 1);
+    }
+    return kept;
+}
+
 function reportTraffic() {
     if (reportedTrafficVersion === trafficVersion || targets.size === 0) return;
     reportedTrafficVersion = trafficVersion;
-    const snapshot = traffic();
+    const snapshot = boundedTraffic(traffic());
     broadcast("ReportTraffic", snapshot);
     notify({ type: "traffic" });
 }
@@ -1215,7 +1296,13 @@ export function flushResponsiveness() {
     }));
     pendingFrames = [];
     pendingInteractions.clear();
-    broadcast("ReportResponsiveness", frames, interactions);
+    if (jsonBytes([frames, interactions]) <= MAX_REPORT_BYTES) {
+        broadcast("ReportResponsiveness", frames, interactions);
+    } else {
+        // A janky stretch can fill both buffers with frames that each name three scripts: sent in runs, one kind at a time.
+        for (const run of splitBySize(frames)) broadcast("ReportResponsiveness", run, []);
+        for (const run of splitBySize(interactions)) broadcast("ReportResponsiveness", [], run);
+    }
     notify({ type: "responsiveness" });
 }
 
@@ -2041,6 +2128,7 @@ export function attach(ref: any, options: BevAttachOptions | null) {
         label: options && options.label || (options && options.platform) || "Blazor",
         attachedAt: Date.now(),
         jsToDotNetBatch: [],
+        jsToDotNetFolded: new Map(),
         flushTimer: null,
         pendingReconnectStates: [],
         trackResponsiveness: !options || options.trackResponsiveness !== false,
@@ -2069,6 +2157,7 @@ export function detach(targetId?: string) {
         if (t.flushTimer) clearTimeout(t.flushTimer);
         // Never retain calls across panel/circuit lifetimes: a later attach belongs to a different BevTools session.
         t.jsToDotNetBatch = [];
+        t.jsToDotNetFolded.clear();
         targets.delete(id);
     }
 
