@@ -20,22 +20,25 @@ component, so what the user reviews is what ships.
   the repository, shared by every worktree of the project, so they outlive restarts and a move to another worktree.
   `GET /api/workbench` says which working tree and branch it runs from, and where that folder is.
 - If it answers in dev mode from one of this project's working trees (`git worktree list`), use it, and never start a
-  second one on its address. Otherwise start it in `src/Workbench` in the background, always with `dotnet watch` and never
-  from an app host, and poll its URL with a capped retry loop:
+  second one on its address. Otherwise start it from the project's main working tree, the first that `git worktree list`
+  names, rather than your own, in `src/Workbench` in the background, always with `dotnet watch` and never from an app
+  host, and poll its URL with a capped retry loop:
   `dotnet watch --non-interactive --artifacts-path ../../artifacts/workbench`. The artifacts path keeps its build output
   apart from every other build of it and of the projects it uses, like the editor's whole-solution build or the
   Workbench's tests, which it would otherwise hold locked (`MSB3027`), so they build while it runs; it costs one build of
   its own on the first start.
-- Don't wait on one that stays down while another chat's page changes rebuild it, or on an address another project's
-  holds: run one of your own from your working tree on another port, with an artifacts path of its own
+- It shows the code of the working tree it runs from, and the user follows every chat's task on it while chats add pages,
+  so no chat stops, moves or restarts it for its own pages. A chat whose pages are in another worktree shows them on a
+  Workbench of its own, run from that worktree on another port with an artifacts path of its own
   (`dotnet watch --non-interactive --artifacts-path ../../artifacts/workbench-<port> -- --urls http://localhost:<port>`),
-  and give the user its address. It keeps a review and tasks of its own.
-- It shows the code of the working tree it runs from. A chat that changes pages in another worktree stops it and runs it
-  from its own, and says so on its task (section 9); the other chats keep their tasks and comments and reconnect on their
-  own. Leave it running when your work is done. If one you started stops, check its address before starting it again, as
-  another chat may have started it from its own worktree.
+  puts that address on its task (section 9), and reads the comments on those pages from that Workbench's review; its task
+  stays on the shared one. Run one of your own the same way when the shared address stays down or another project's
+  holds it; it keeps a review and tasks of its own.
+- Leave the shared one running when your work is done, and yours until the user is done with your pages. If the shared
+  one stops, check its address before starting it again, as another chat may have started it.
 - Hot reload carries `.cs`, `.razor`, `.scss` and `.ts` edits as the **run-app** skill (`.github/agents/run-app.agent.md`)
-  describes. A `.resx` edit or startup code needs a restart.
+  describes, and a new page with them, its catalog entry included (section 3). A `.resx` edit or startup code needs a
+  restart.
 - Running under `dotnet watch` is its dev mode, the only one where flows, page statuses, Inspect and Edit text can change
   anything and where `/api/review` answers. A home page that answers doesn't show it, so ask `/api/review`. Any
   other copy, like a published one or a plain `dotnet run`, which is how bit CLI starts it, answers it with a 404: stop
@@ -83,7 +86,10 @@ component, so what the user reviews is what ships.
   has no multitenancy) and a demo user. Pick one in the inspector to see what each gets; signed out, a page that needs
   sign-in shows the app's not-authorized page.
 - Add it to `WorkbenchPageCatalog`: its key, title, description, icon, category, the components it shows off and the
-  caption its store screenshots carry.
+  caption its store screenshots carry. Hot reload brings the page and its entry in while the Workbench runs, so don't
+  restart it for a new page. While the design moves, keep the page's sample data in a class the page creates itself rather
+  than in a service registered at startup, which needs a restart; register it once the user approves the page, if it
+  must be.
 - For a new page, offer two or three directions as design options in its catalog entry (`Variants`) and branch the
   markup on the view's variant; the first is the default. The user compares them side by side. Once they pick one,
   remove the others from the page and from the entry.
@@ -93,8 +99,9 @@ component, so what the user reviews is what ships.
 - Follow `AGENTS.md` section 5 as for any page of the app: bit BlazorUI components as they are, styled through their
   parameters and the theme tokens, never through their internal classes, and no color the theme already has. That is
   what makes the page follow the app's theme now and change with it later.
-- Write text as `Localizer["..."]` literals while the design moves, and put it into `WorkbenchStrings.resx` once the
-  user approves it.
+- Write text as `Localizer["..."]` literals while the design moves, the catalog entry's texts too, and put it into
+  `WorkbenchStrings.resx` once the user approves it: a `.resx` edit restarts the Workbench, and its tests check that every
+  entry's texts are there.
 - A package the page needs goes into the Workbench's project only, never into Client.Core: the app's size must not grow
   for a page that is only being designed.
 
