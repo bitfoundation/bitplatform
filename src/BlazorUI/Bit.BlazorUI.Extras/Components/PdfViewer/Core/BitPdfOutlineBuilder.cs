@@ -39,9 +39,9 @@ internal sealed class BitPdfOutlineBuilder
         // In a Range pass, a bookmark or sibling chain whose bytes are missing is
         // deferred so the rest of the tree is still walked and every missing range
         // is acquired at once; the incomplete tree itself is never returned.
-        int mark = BitPdfMissingDataBatch.Mark;
+        int mark = BitPdfMissingDataBatch.Mark(_xref);
         var items = BuildSiblings(outlines.GetRaw("First"), new HashSet<int>(), depth: 0);
-        BitPdfMissingDataBatch.ThrowIfDeferred(mark);
+        BitPdfMissingDataBatch.ThrowIfDeferred(_xref, mark);
         return items;
     }
 
@@ -87,7 +87,7 @@ internal sealed class BitPdfOutlineBuilder
                 title = (node.Get("Title") as BitPdfString)?.AsText() ?? "";
                 first = node.GetRaw("First");
             }
-            catch (BitPdfMissingDataException missing) when (BitPdfMissingDataBatch.Defer(missing))
+            catch (BitPdfMissingDataException missing) when (BitPdfMissingDataBatch.Defer(_xref, missing))
             {
                 // The rest of this chain hangs off the missing node's /Next.
                 break;
@@ -98,7 +98,7 @@ internal sealed class BitPdfOutlineBuilder
             {
                 dest = ResolveDestinationInfo(node);
             }
-            catch (BitPdfMissingDataException missing) when (BitPdfMissingDataBatch.Defer(missing))
+            catch (BitPdfMissingDataException missing) when (BitPdfMissingDataBatch.Defer(_xref, missing))
             {
                 dest = null; // independent of the walk; the pass is discarded anyway
             }

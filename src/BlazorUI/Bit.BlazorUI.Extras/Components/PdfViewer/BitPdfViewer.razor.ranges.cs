@@ -85,7 +85,7 @@ public partial class BitPdfViewer
                         using var transaction = document.BeginPartialAttempt();
                         // Independent detail units defer their misses, so one pass
                         // reports every range it found rather than one per restart.
-                        using var batch = BitPdfMissingDataBatch.Begin(source.MetadataBatchSize, source.MetadataChunkSize);
+                        using var batch = BitPdfMissingDataBatch.Begin(document.XRef, source.MetadataBatchSize, source.MetadataChunkSize);
                         try
                         {
                             if (pageIndex is int page)
@@ -199,11 +199,12 @@ public partial class BitPdfViewer
             int pageCount = await RunRangeWorkAsync(document, d => d.PageCount, token);
             if (pageCount > 0)
                 await PrepareRangePageAsync(document, owned, version, Math.Clamp(CurrentPage - 1, 0, pageCount - 1), token);
-            // A root Count the tree contradicts falls back to buffered loading here,
-            // before publication, rather than failing distant pages later.
-            await RunRangeWorkAsync(document, d => { d.VerifyPartialPageCount(); return true; }, token);
             var prepared = await RunRangeWorkAsync(document, d =>
             {
+                // A root Count the tree contradicts falls back to buffered loading here,
+                // before publication, rather than failing distant pages later. It makes
+                // no request, so it shares this pass instead of taking one of its own.
+                d.VerifyPartialPageCount();
                 int count = d.PageCount;
                 int index = count == 0 ? 0 : Math.Clamp(CurrentPage - 1, 0, count - 1);
                 var first = count == 0 ? null : d.Pages[index];
@@ -354,15 +355,16 @@ public partial class BitPdfViewer
             var result = await RetryRangeReadAsync(source, version, () => RunRangeWorkAsync(document, d =>
             {
                 // The attempt reads the shared store through an overlay instead of
-                // copying it; only a completed render commits the fonts it added.
+                // copying it; only the render published below commits the fonts it
+                // added, never one RunRangeWorkAsync discards or the guard drops.
                 var store = (_fontStore ??= new BitPdfFontStore()).BeginOverlay();
                 var page = d.Pages[index];
                 var built = thumbnail ? BuildThumb(index, rotation, coalescing, mode, store)
                     : BuildPage(index, rotation, coalescing, mode, false, store);
-                store.Commit();
-                return (Build: built, Width: page.Width, Height: page.Height);
+                return (Build: built, Width: page.Width, Height: page.Height, Fonts: store);
             }, pageIndex: index), token, epoch, retry: _rangePublished);
             if (IsDisposed || version != _loadVersion || epoch != _renderEpoch || index >= slots.Count || slots[index] is not null) return false;
+            result.Fonts.Commit();
             double width = rotation % 180 == 90 ? result.Height : result.Width;
             double height = rotation % 180 == 90 ? result.Width : result.Height;
             if (_pageWidths[index] != width || _pageHeights[index] != height)

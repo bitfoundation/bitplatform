@@ -2085,7 +2085,7 @@ public sealed class BitPdfHtmlRenderer
             string fmt = font.EmbeddedFormat!;
             string face =
                 $"@font-face{{font-family:'{family}';src:url(data:font/{fmt};base64,{b64}) format('{fmt}');}}";
-            _fontStore.AppendFace(face);
+            _fontStore.AppendFace(family, face);
             _pageFaces.Append(face);
         }
         return $"{family},{font.GenericFamily}";

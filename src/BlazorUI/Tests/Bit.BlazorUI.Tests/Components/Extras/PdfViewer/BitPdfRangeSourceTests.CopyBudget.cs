@@ -35,6 +35,41 @@ public partial class BitPdfRangeSourceTests
     }
 
     [TestMethod]
+    public async Task SeeksMustNotSpendTheCopyBudget()
+    {
+        using var handler = new RangeHandler(200_000);
+        using var http = new HttpClient(handler);
+        await using var source = await RangeAccess.Open(http, 1024 * 1024, 4096);
+        await using var stream = source.OpenRead();
+        byte[] buffer = new byte[100];
+
+        // Every seek closes the response, so each short read is a request of its own;
+        // none is a server continuation, so none counts against the copy.
+        for (int i = 0; i < 64; i++)
+        {
+            stream.Position = i * 3000;
+            int read = await stream.ReadAsync(buffer);
+            Assert.IsTrue(read > 0);
+            CollectionAssert.AreEqual(handler.Bytes[(i * 3000)..(i * 3000 + read)], buffer[..read]);
+        }
+
+        Assert.IsTrue(handler.Requests.Count > 64);
+    }
+
+    [TestMethod]
+    public async Task ACdnCappingOpenEndedResponsesAtAFewKilobytesShouldStillCopy()
+    {
+        using var handler = new RangeHandler(300_000) { OpenEndedLimit = 2048 };
+        using var http = new HttpClient(handler);
+        // A quarter chunk would be 16 KiB here; a segment of 1 KiB or more always earns its request.
+        await using var source = await RangeAccess.Open(http, 1024 * 1024, 64 * 1024);
+
+        byte[] bytes = await source.ReadAll();
+
+        CollectionAssert.AreEqual(handler.Bytes, bytes);
+    }
+
+    [TestMethod]
     [DataRow(4096)]
     [DataRow(2048)]
     public async Task ChunkSizedCopySegmentsShouldFinishWithAShortFinalSegment(int segment)

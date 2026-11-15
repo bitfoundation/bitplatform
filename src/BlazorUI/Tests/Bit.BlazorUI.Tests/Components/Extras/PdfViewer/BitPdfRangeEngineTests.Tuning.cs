@@ -55,7 +55,7 @@ public partial class BitPdfRangeEngineTests
         await using var source = await RangeAccess.Open(http, 16 * 1024 * 1024, 4096);
         var document = await source.Load();
         var outlineField = typeof(BitPdfDocument).GetField("_outline", TuningFlags)!;
-        using (var batch = (IDisposable)MissingBatch.GetMethod("Begin", TuningFlags)!.Invoke(null, [1024L * 1024, 4096])!)
+        using (var batch = BeginBatch(document.XRef, 1024L * 1024, 4096))
         {
             Assert.ThrowsExactly<BitPdfMissingDataException>(() => { _ = document.Outline; });
             Assert.IsTrue((int)MissingBatch.GetProperty("Count", TuningFlags)!.GetValue(batch)! > 0);
@@ -67,23 +67,51 @@ public partial class BitPdfRangeEngineTests
     [TestMethod]
     public void MissingBatchShouldStopDeferringAtItsByteBudget()
     {
-        using (var batch = (IDisposable)MissingBatch.GetMethod("Begin", TuningFlags)!.Invoke(null, [8192L, 4096])!)
+        var xref = BitPdfDocument.Load(WrongRootCount(scattered: false)).XRef;
+        using (var batch = BeginBatch(xref, 8192L, 4096))
         {
-            Assert.IsTrue(Defer(0, 10), "the first miss is always taken");
-            Assert.IsTrue(Defer(100, 10), "a range inside an accepted chunk costs nothing");
-            Assert.IsTrue(Defer(5000, 10));
-            Assert.IsFalse(Defer(9000, 10), "a third chunk exceeds the 8 KiB budget");
-            var ranges = (List<(int Offset, int Length)>)MissingBatch.GetMethod("Collect", TuningFlags)!.Invoke(batch, [null])!;
-            CollectionAssert.AreEqual(new[] { (0, 10), (100, 10), (5000, 10) }, ranges.ToArray());
+            Assert.IsTrue(Defer(xref, 0, 10), "the first miss is always taken");
+            Assert.IsTrue(Defer(xref, 100, 10), "a range inside an accepted chunk costs nothing");
+            Assert.IsTrue(Defer(xref, 5000, 10));
+            Assert.IsFalse(Defer(xref, 9000, 10), "a third chunk exceeds the 8 KiB budget");
+            CollectionAssert.AreEqual(new[] { (0, 10), (100, 10), (5000, 10) }, Collect(batch, null).ToArray());
         }
 
-        Assert.IsFalse(Defer(0, 10), "nothing is deferred without an active batch");
+        Assert.IsFalse(Defer(xref, 0, 10), "nothing is deferred without an active batch");
+    }
 
-        static bool Defer(int offset, int length)
+    [TestMethod]
+    public void MissingBatchShouldNeverHandOnAPassMissThatExceedsItsBudget()
+    {
+        var xref = BitPdfDocument.Load(WrongRootCount(scattered: false)).XRef;
+        using (var empty = BeginBatch(xref, 8192L, 4096))
         {
-            var ctor = typeof(BitPdfMissingDataException).GetConstructor(TuningFlags, [typeof(int), typeof(int)])!;
-            return (bool)MissingBatch.GetMethod("Defer", TuningFlags)!.Invoke(null, [ctor.Invoke([offset, length])])!;
+            CollectionAssert.AreEqual(new[] { (0, 100_000) }, Collect(empty, Missing(0, 100_000)).ToArray(),
+                "a pass that deferred nothing hands on its miss, whatever its size");
         }
+
+        using var batch = BeginBatch(xref, 8192L, 4096);
+        Assert.IsTrue(Defer(xref, 0, 10));
+        CollectionAssert.AreEqual(new[] { (0, 10), (5000, 10) }, Collect(batch, Missing(5000, 10)).ToArray(), "a miss that fits joins the batch");
+        Assert.IsTrue(Defer(xref, 5000, 10));
+        // The batch is full: the refused miss is met again by the next pass,
+        // once the deferred ranges are cached, rather than overrun the budget.
+        CollectionAssert.AreEqual(new[] { (0, 10), (5000, 10) }, Collect(batch, Missing(9000, 10)).ToArray());
+        CollectionAssert.AreEqual(new[] { (0, 10), (5000, 10) }, Collect(batch, Missing(0, 10)).ToArray(), "a known range is never repeated");
+    }
+
+    [TestMethod]
+    public void MissingBatchShouldDeferOnlyForItsOwnXRefOnItsOwnThread()
+    {
+        var xref = BitPdfDocument.Load(WrongRootCount(scattered: false)).XRef;
+        var other = BitPdfDocument.Load(WrongRootCount(scattered: false)).XRef;
+        using var batch = BeginBatch(xref, 1024L * 1024, 4096);
+        Assert.IsFalse(Defer(other, 0, 10), "another document's reads are never deferred into this pass");
+        // Blocking keeps this test on the thread that began the batch.
+        Assert.IsFalse(Task.Run(() => Defer(xref, 0, 10)).GetAwaiter().GetResult(), "nor are reads of another thread");
+        Assert.IsFalse(Defer(null, 0, 10));
+        Assert.AreEqual(0, (int)MissingBatch.GetProperty("Count", TuningFlags)!.GetValue(batch)!);
+        Assert.IsTrue(Defer(xref, 0, 10));
     }
 
     [TestMethod]
@@ -125,6 +153,63 @@ public partial class BitPdfRangeEngineTests
     }
 
     [TestMethod]
+    public async Task CursorShouldDropItsCachedBlockWhenItsOperationReleasesItsPins()
+    {
+        using var handler = new RangeHandler(16384);
+        using var http = new HttpClient(handler);
+        await using var source = await RangeAccess.Open(http, 16384, 4096);
+        await source.Ensure(4096, 4096);
+        var cursor = source.Cursor(4096, 4096);
+        var block = cursor.GetType().GetField("_block", TuningFlags)!;
+        var owner = cursor.GetType().GetField("_blockOwner", TuningFlags)!;
+
+        using (source.Operation())
+        {
+            cursor.GetByte();
+            Assert.IsNotNull(block.GetValue(cursor));
+        }
+
+        // A cursor a parsed stream keeps for the document's lifetime must not keep
+        // a block the cache may evict, nor the operation that pinned it.
+        Assert.IsNull(block.GetValue(cursor));
+        Assert.IsNull(owner.GetValue(cursor));
+
+        // A pin release that leaves the operation current drops the reference too.
+        using (var operation = source.Operation())
+        {
+            cursor.Pos = 4096;
+            cursor.GetByte();
+            Assert.IsNotNull(block.GetValue(cursor));
+            source.ReleasePins(operation);
+            Assert.IsNull(block.GetValue(cursor));
+        }
+    }
+
+    [TestMethod]
+    public async Task BlocksACursorKeptReadingShouldBeTheMostRecentlyUsedOnceItsOperationEnds()
+    {
+        using var handler = new RangeHandler(16384);
+        using var http = new HttpClient(handler);
+        await using var source = await RangeAccess.Open(http, 16384, 4096);
+        await source.Ensure(0, 8192);
+        var hot = source.Cursor(4096, 4096);
+        var cold = source.Cursor(0, 4096);
+
+        using (source.Operation())
+        {
+            hot.GetByte();
+            cold.GetBytes(16); // a locked read: block 0 becomes the most recent
+            for (int i = 0; i < 1000; i++) hot.GetByte(); // served by the cursor alone
+        }
+
+        var lru = source.Field("_lru")!;
+        var first = lru.GetType().GetProperty("First")!.GetValue(lru)!;
+        var value = first.GetType().GetProperty("Value")!.GetValue(first)!;
+        Assert.AreEqual(4096, (int)value.GetType().GetField("Start", TuningFlags)!.GetValue(value)!,
+            "the block read most must not look cold to eviction");
+    }
+
+    [TestMethod]
     public void FontStoreOverlayShouldReadItsBaseWithoutCopyingAndCommitOnlyWhenComplete()
     {
         var shared = new BitPdfFontStore();
@@ -132,7 +217,7 @@ public partial class BitPdfRangeEngineTests
         var other = (BitPdfFont)RuntimeHelpers.GetUninitializedObject(typeof(BitPdfFont));
         Invoke(shared, "AddFont", "known", font);
         Assert.IsTrue((bool)Invoke(shared, "TryAddFamily", "Known")!);
-        Invoke(shared, "AppendFace", "@font-face{known}");
+        Invoke(shared, "AppendFace", "Known", "@font-face{known}");
 
         var abandoned = Invoke(shared, "BeginOverlay")!;
         Assert.AreEqual(0, Fonts(abandoned).Count, "an overlay starts empty instead of copying the store");
@@ -142,15 +227,21 @@ public partial class BitPdfRangeEngineTests
         Assert.IsFalse((bool)Invoke(abandoned, "TryAddFamily", "Known")!, "a family of the base is never emitted twice");
         Invoke(abandoned, "AddFont", "new", other);
         Assert.IsTrue((bool)Invoke(abandoned, "TryAddFamily", "New")!);
-        Invoke(abandoned, "AppendFace", "@font-face{new}");
+        Invoke(abandoned, "AppendFace", "New", "@font-face{new}");
         Assert.AreEqual(1, Fonts(shared).Count, "registrations stay in the attempt until it commits");
 
         // A missing byte abandoned that attempt: the next one must emit the face again.
         var completed = (BitPdfFontStore)Invoke(shared, "BeginOverlay")!;
         Assert.IsTrue((bool)Invoke(completed, "TryAddFamily", "New")!);
         Invoke(completed, "AddFont", "new", other);
-        Invoke(completed, "AppendFace", "@font-face{new}");
+        Invoke(completed, "AppendFace", "New", "@font-face{new}");
+
+        // Another render committed the same family first: its face is emitted once.
+        var raced = (BitPdfFontStore)Invoke(shared, "BeginOverlay")!;
+        Assert.IsTrue((bool)Invoke(raced, "TryAddFamily", "New")!);
+        Invoke(raced, "AppendFace", "New", "@font-face{new}");
         Invoke(completed, "Commit");
+        Invoke(raced, "Commit");
 
         Assert.AreEqual(2, Fonts(shared).Count);
         Assert.AreEqual("<style>@font-face{known}@font-face{new}</style>", shared.FontFaceStyle);
@@ -213,6 +304,45 @@ public partial class BitPdfRangeEngineTests
     }
 
     [TestMethod]
+    public async Task ALinearizationPageCountTheTreeContradictsShouldOnlyDisableTheHints()
+    {
+        byte[] bytes = LinearizedFlatPages(40, linearizedCount: 41);
+        var expected = BitPdfDocument.Load(bytes);
+        using var handler = new RangeHandler(bytes);
+        using var http = new HttpClient(handler);
+        await using var source = await RangeAccess.Open(http, 16 * 1024 * 1024, 4096);
+        var document = await source.Load();
+        Assert.AreEqual(40, document.PageCount);
+        Assert.AreEqual(0, (await source.Run(document, d => Hints(d, 35))).Count, "hints for another page count are ignored");
+
+        // The tree is right: the Range document stays, walked as an unlinearized one.
+        await source.Run(document, d => { Verify(d); return true; });
+        Assert.AreEqual(expected.Pages[35].Width, await source.Run(document, d => d.Pages[35].Width));
+        Assert.AreEqual(21, await source.Run(document, d => d.ResolveDestination(new List<object?> { new BitPdfRef(PageObject(20), 0), BitPdfName.Get("Fit") })?.PageNumber));
+    }
+
+    [TestMethod]
+    public async Task AHintRunHoldingAPagesNodeMustNeverPlaceItsPagesByTheHints()
+    {
+        // The hints name page 2's object, which is really a /Pages node over one page.
+        byte[] bytes = LinearizedFlatPages(40, nestedAt: 2);
+        using var handler = new RangeHandler(bytes);
+        using var http = new HttpClient(handler);
+        await using var source = await RangeAccess.Open(http, 16 * 1024 * 1024, 4096);
+        var document = await source.Load();
+        Assert.IsTrue((await source.Run(document, d => Hints(d, 35))).Count > 0, "the fixture's hints must validate");
+
+        // A page of the run is placed where the walk puts it, and the walk agrees.
+        Assert.AreEqual(21, await source.Run(document, d => d.ResolveDestination(new List<object?> { new BitPdfRef(PageObject(20), 0), BitPdfName.Get("Fit") })?.PageNumber));
+        Assert.AreEqual(120d, await source.Run(document, d => d.Pages[20].Width));
+
+        // The page under the misdescribed kid is never placed by the run.
+        var error = await Assert.ThrowsAsync<Exception>(() => source.Run(document,
+            d => d.ResolveDestination(new List<object?> { new BitPdfRef(PageObject(2) + 1, 0), BitPdfName.Get("Fit") })?.PageNumber));
+        Assert.AreEqual("BitPdfRangeFallbackException", error.GetType().Name);
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task RootCountCheckShouldRejectAContradictedCountOnlyFromCachedBytes(bool scattered)
@@ -251,6 +381,18 @@ public partial class BitPdfRangeEngineTests
         { System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex.InnerException).Throw(); }
     }
 
+    private static IDisposable BeginBatch(BitPdfXRef xref, long maxBytes, int chunkSize)
+        => (IDisposable)MissingBatch.GetMethod("Begin", TuningFlags)!.Invoke(null, [xref, maxBytes, chunkSize])!;
+
+    private static BitPdfMissingDataException Missing(int offset, int length)
+        => (BitPdfMissingDataException)typeof(BitPdfMissingDataException).GetConstructor(TuningFlags, [typeof(int), typeof(int)])!.Invoke([offset, length]);
+
+    private static bool Defer(BitPdfXRef? xref, int offset, int length)
+        => (bool)MissingBatch.GetMethod("Defer", TuningFlags)!.Invoke(null, [xref, Missing(offset, length)])!;
+
+    private static List<(int Offset, int Length)> Collect(IDisposable batch, BitPdfMissingDataException? missing)
+        => (List<(int Offset, int Length)>)MissingBatch.GetMethod("Collect", TuningFlags)!.Invoke(batch, [missing])!;
+
     private static async Task<(T Value, int Passes)> RunBatched<T>(RangeAccess source, BitPdfDocument document, Func<BitPdfDocument, T> build)
     {
         using var operation = source.Operation();
@@ -258,7 +400,7 @@ public partial class BitPdfRangeEngineTests
         {
             List<(int Offset, int Length)> ranges;
             using (var frame = (IDisposable)typeof(BitPdfDocument).GetMethod("BeginPartialAttempt", TuningFlags)!.Invoke(document, null)!)
-            using (var batch = (IDisposable)MissingBatch.GetMethod("Begin", TuningFlags)!.Invoke(null, [1024L * 1024, 4096])!)
+            using (var batch = BeginBatch(document.XRef, 1024L * 1024, 4096))
             {
                 try
                 {
@@ -338,7 +480,10 @@ public partial class BitPdfRangeEngineTests
     // chunk, and a hint stream whose page offset table describes them exactly.
     // swapKids exchanges the second and third root kids, so the hints no longer
     // describe the tree's order.
-    private static byte[] LinearizedFlatPages(int pages, bool swapKids = false)
+    // linearizedCount writes another /N than the tree's Count. nestedAt turns that
+    // page's hinted object into a /Pages node over one page (its content object
+    // number), which the hints cannot tell from a page.
+    private static byte[] LinearizedFlatPages(int pages, bool swapKids = false, int? linearizedCount = null, int? nestedAt = null)
     {
         const int section = 9000;
         int m = 2 * (pages - 1);
@@ -353,7 +498,7 @@ public partial class BitPdfRangeEngineTests
             var text = new StringBuilder("%PDF-1.4\n% linearized\n");
             var offsets = new Dictionary<int, int>();
             void Obj(int number, string body) { offsets[number] = text.Length; text.Append($"{number} 0 obj\n{body}\nendobj\n"); }
-            Obj(lin, $"<< /Linearized 1 /L {length:D10} /H [{hintOffset:D10} {hintLength:D10}] /O {first} /E {end:D10} /N {pages} /T {mainXref:D10} >>");
+            Obj(lin, $"<< /Linearized 1 /L {length:D10} /H [{hintOffset:D10} {hintLength:D10}] /O {first} /E {end:D10} /N {linearizedCount ?? pages} /T {mainXref:D10} >>");
             firstXref = text.Length;
             text.Append($"xref\n{lin} 6\n");
             for (int n = lin; n < size; n++) text.Append($"{(n == lin ? offsets[lin] : 0):D10} 00000 n \n");
@@ -373,8 +518,17 @@ public partial class BitPdfRangeEngineTests
             for (int i = 1; i < pages; i++)
             {
                 int start = text.Length;
-                Obj(PageObject(i), $"<< /Type /Page /Parent {root} 0 R /MediaBox [0 0 {100 + i} 792] /Contents {PageObject(i) + 1} 0 R >>");
-                Obj(PageObject(i) + 1, "<< /Length 0 >>\nstream\n\nendstream");
+                if (i == nestedAt)
+                {
+                    Obj(PageObject(i), $"<< /Type /Pages /Parent {root} 0 R /Count 1 /Kids [{PageObject(i) + 1} 0 R] >>");
+                    Obj(PageObject(i) + 1, $"<< /Type /Page /Parent {PageObject(i)} 0 R /MediaBox [0 0 {100 + i} 792] >>");
+                }
+                else
+                {
+                    Obj(PageObject(i), $"<< /Type /Page /Parent {root} 0 R /MediaBox [0 0 {100 + i} 792] /Contents {PageObject(i) + 1} 0 R >>");
+                    Obj(PageObject(i) + 1, "<< /Length 0 >>\nstream\n\nendstream");
+                }
+
                 text.Append(' ', section - (text.Length - start));
             }
 
