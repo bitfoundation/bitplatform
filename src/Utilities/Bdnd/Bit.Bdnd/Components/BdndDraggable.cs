@@ -376,7 +376,15 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
 
         if (rect is null && _registration!.Reference is { } registration)
         {
-            rect = await registration.InvokeAsync<BdndDomRect?>("getDragStartRect");
+            // the measure only refines the drag's start: a call the circuit lost, or the module failed, leaves it be
+            try
+            {
+                rect = await registration.InvokeAsync<BdndDomRect?>("getDragStartRect");
+            }
+            catch (Exception exception) when (exception is JSException or JSDisconnectedException or TaskCanceledException)
+            {
+                rect = null;
+            }
             if (rect is not null && manager.IsDragging(_handlerId))
                 manager.SetInitialSourceClientOffset(new BdndXYCoord(rect.Left, rect.Top));
         }

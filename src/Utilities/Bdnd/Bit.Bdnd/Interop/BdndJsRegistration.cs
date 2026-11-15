@@ -42,6 +42,9 @@ internal sealed class BdndJsRegistration<TOptions> : IAsyncDisposable where TOpt
             }
         }
         catch (JSDisconnectedException) { }
+        // a call whose answer never came (lost with the circuit's connection, then timed out): the element is
+        // registered, or its options pushed, by the next render's sync - a render must not fail for it
+        catch (OperationCanceledException) { }
         // disposed while a call was in flight (e.g. its DotNetObjectReference was released)
         catch (Exception) when (_disposed) { }
         finally

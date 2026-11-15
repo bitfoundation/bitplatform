@@ -306,6 +306,26 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
         Assert.AreEqual("end:crate:True:late", _log[^1]);
     }
 
+    [TestMethod]
+    public async Task AFileDraggedInFromOutsideDuringAKeyboardDragNeitherHoversNorDropsTheKeyboardItem()
+    {
+        var cut = RenderDustbin();
+        var bin = cut.FindComponent<BdndDropTarget<string>>();
+        PlanCount(1);
+        PlanMove(null, "next", TargetIdOf(bin));
+        await StartAsync(Source(cut));
+        await CommandAsync(Source(cut), "next");
+        _log.Clear();
+
+        // the operating system's drag of a file over the bin, and its drop there, while the crate is picked up
+        await HostOf(bin).DragOverAsync(PointerAt(5, 5, "Files"));
+        await HostOf(bin).DropAsync(PointerAt(5, 5, "Files"));
+
+        Assert.IsEmpty(_log, "the file is not the keyboard drag's hover or drop");
+        Assert.IsTrue(Manager.IsDragging(), "the keyboard drag goes on");
+        Assert.IsFalse(Manager.DidDrop());
+    }
+
     // ---- what starts, and what does not ----
 
     [TestMethod]

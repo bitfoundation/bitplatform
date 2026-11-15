@@ -1378,10 +1378,11 @@ function activatePointerDrag(p: PointerSession): void {
 
     const startX = p.startX, startY = p.startY;
     enqueueDrag(() => invokeForResult(source.dotNetRef, 'HandlePointerDragStart', startX, startY, rect).then((begun) => {
+        if (p.ended) return; // given up on (see enqueueDrag): an answer that comes after all changes nothing
         p.begun = begun === true;
         if (!p.begun) endPointerSession(p, false); // refused (an ItemFactory answering null, say): no drag at all
         else schedulePointerFrame(p);
-    }));
+    }), () => endPointerSession(p, false));
     schedulePointerFrame(p);
 }
 
@@ -1446,7 +1447,8 @@ function updatePointerHover(p: PointerSession, dropping = false): void {
         const edge = closestEdge(target.element, p.x, p.y, target.options.edges);
         if (edge === target.edge) continue;
         target.edge = edge;
-        enqueueDrag(() => (p.begun === true ? invokeForResult(target.dotNetRef, 'HandleEdgeChanged', edge) : undefined));
+        enqueueDrag(() => (p.begun === true ? invokeForResult(target.dotNetRef, 'HandleEdgeChanged', edge) : undefined),
+            () => endPointerSession(p, false));
         changed = true;
     }
     // a report already waiting was for the targets (and edges) before this change: it keeps them, and this one gets
@@ -1456,7 +1458,8 @@ function updatePointerHover(p: PointerSession, dropping = false): void {
 }
 
 function enqueueHoverChange(p: PointerSession, target: DropTarget, over: boolean, types: string[]): void {
-    enqueueDrag(() => (p.begun === true ? invokeForResult(target.dotNetRef, 'HandleHoverChanged', over, types) : undefined));
+    enqueueDrag(() => (p.begun === true ? invokeForResult(target.dotNetRef, 'HandleHoverChanged', over, types) : undefined),
+        () => endPointerSession(p, false));
 }
 
 // OnHover moves are coalesced: one report per set of hovered targets waits in the queue at a time, carrying the
@@ -1475,7 +1478,7 @@ function reportPointerHover(p: PointerSession, targets: DropTarget[]): void {
         if (p.hoverSlot === slot) p.hoverSlot = null;
         if (p.begun !== true) return undefined;
         return Promise.all(slot.targets.map((t) => invokeForResult(t.dotNetRef, 'HandlePointerHover', slot.x, slot.y)));
-    });
+    }, () => endPointerSession(p, false));
 }
 
 // releaseUnseen: the drag's pointer was released where the page did not see it - another press tells - so no click
@@ -1542,7 +1545,7 @@ function endPointerSession(p: PointerSession, drop: boolean, releaseUnseen = fal
             if ((await invokeForResult(target.dotNetRef, 'HandlePointerDrop', x, y)) === true) break;
         }
         await invokeForResult(p.source.dotNetRef, 'HandleDragEnd');
-    });
+    }, undefined, DRAG_END_TIMEOUT_MS);
 }
 
 // Swallows the click of the drag's release: right after it, or - when the drag ended before the pointer was
@@ -1550,6 +1553,9 @@ function endPointerSession(p: PointerSession, drop: boolean, releaseUnseen = fal
 // and the button came up elsewhere) leaves nothing to swallow: the next press is a new one, whose click is the page's.
 function suppressClick(p: PointerSession): void {
     const stop = (e: Event) => {
+        // a click no pointer made - Enter or Space on a button, a form's implicit submit, element.click() - is not the
+        // release's: it clicks, and the release's is still to come
+        if ((e as MouseEvent).detail === 0) return;
         e.preventDefault();
         e.stopPropagation();
         done();
@@ -1865,13 +1871,15 @@ function startKeyboardSession(source: DragSource, activator: HTMLElement): void 
         s.observer = new MutationObserver(() => keepKeyboardFocus(s));
         s.observer.observe(document.body, { childList: true, subtree: true });
     }
+    const modal = openModal();
+    if (modal) ensureModalLiveRegion(modal);
     const rect = toRect(source.element);
     const label = labelOf(activator, source.element);
     enqueueDrag(() => invokeForResult(source.dotNetRef, 'HandleKeyboardDragStart', rect, label).then((started) => {
         if (started === true) return;
         s.dotNetDone = true;
         endKeyboardSession(s);
-    }));
+    }), () => abandonKeyboardSession(s));
 }
 
 // The calls into .NET of every keyboard and pointer drag, chained: they reach .NET in the order things happened -
@@ -1879,9 +1887,28 @@ function startKeyboardSession(source: DragSource, activator: HTMLElement): void 
 // handled.
 let dragQueue: Promise<unknown> = Promise.resolve();
 
-function enqueueDrag(call: () => Promise<unknown> | undefined): void {
-    // a link that fails must not stop the ones after it
-    dragQueue = dragQueue.then(call).catch(() => undefined);
+// How long the queue waits for one call into .NET. A call whose answer never comes - Blazor Server drops the calls
+// made while its connection is down, and the answers sent while it is - would otherwise hold up every drag after it
+// until the page is reloaded. A drop and the end of a drag wait longer: they wait for the application's async OnDrop.
+const DRAG_CALL_TIMEOUT_MS = 10000;
+const DRAG_END_TIMEOUT_MS = 60000;
+
+// onTimeout ends here the drag the call belonged to: the answer that would have confirmed or ended it is lost.
+function enqueueDrag(call: () => Promise<unknown> | undefined, onTimeout?: () => void, timeoutMs = DRAG_CALL_TIMEOUT_MS): void {
+    // a link that fails must not stop the ones after it, nor one that never settles
+    dragQueue = dragQueue.then(() => withTimeout(call(), timeoutMs, onTimeout)).catch(() => undefined);
+}
+
+function withTimeout(call: Promise<unknown> | undefined, timeoutMs: number, onTimeout?: () => void): Promise<unknown> | undefined {
+    if (!call) return call;
+    let timer = 0;
+    const expired = new Promise<undefined>((resolve) => {
+        timer = window.setTimeout(() => {
+            if (onTimeout) onTimeout();
+            resolve(undefined);
+        }, timeoutMs);
+    });
+    return Promise.race([call.finally(() => clearTimeout(timer)), expired]);
 }
 
 function onKeyboardSessionKey(s: KeyboardSession, e: KeyboardEvent): void {
@@ -1926,7 +1953,7 @@ function sendKeyboardCommand(s: KeyboardSession, command: string): void {
             s.dotNetDone = true;
             endKeyboardSession(s);
         });
-    });
+    }, () => abandonKeyboardSession(s), command === 'drop' ? DRAG_END_TIMEOUT_MS : DRAG_CALL_TIMEOUT_MS);
     // A drop or a cancel ends the drag here at once: the keys pressed from now on are the page's again - another
     // pickup, say - even before .NET has handled this one. Ended after the call is queued, so the focus is watched
     // until .NET has handled it (and re-rendered what the drop changed).
@@ -1942,6 +1969,13 @@ function cancelKeyboardSession(s: KeyboardSession): void {
 
 const FOCUS_SETTLE_MS = 300;
 
+// The answer of a call of this drag never came: the keys are the page's again, and a next pickup starts afresh (a
+// drag .NET still holds is ended by the next one to begin).
+function abandonKeyboardSession(s: KeyboardSession): void {
+    s.dotNetDone = true;
+    endKeyboardSession(s);
+}
+
 function endKeyboardSession(s: KeyboardSession): void {
     if (s.ended) return;
     s.ended = true;
@@ -1953,11 +1987,19 @@ function endKeyboardSession(s: KeyboardSession): void {
     document.removeEventListener('pointermove', s.onPointerMove, true);
     // the focus stays on (or goes back to) the item - also through the re-render its drop is about to cause
     keepKeyboardFocus(s);
-    dragQueue.then(() => setTimeout(() => {
-        if (s.observer) s.observer.disconnect();
-        s.observer = null;
-        keepKeyboardFocus(s);
-    }, FOCUS_SETTLE_MS));
+    // until .NET has handled the drag's calls - but no longer than one of them may take, whatever holds the queue up
+    let settled = false;
+    const settle = () => {
+        if (settled) return;
+        settled = true;
+        setTimeout(() => {
+            if (s.observer) s.observer.disconnect();
+            s.observer = null;
+            keepKeyboardFocus(s);
+        }, FOCUS_SETTLE_MS);
+    };
+    dragQueue.then(settle);
+    setTimeout(settle, DRAG_CALL_TIMEOUT_MS);
 }
 
 // The focus is on nothing: on the body, or on an element a re-render removed.
@@ -2336,10 +2378,12 @@ function sideX(element: HTMLElement, edge: string | null, down: boolean): number
     return down !== rtl ? r.right : r.left;
 }
 
-// A target the keyboard can go to: in the document, shown (not display:none or hidden), and not inert (behind a
-// modal dialog, say).
+// A target the keyboard can go to: in the document, shown (not display:none or hidden), and not inert - marked so, or
+// behind a modal dialog, which makes the rest of the page inert without marking it.
 function isReachable(element: HTMLElement): boolean {
     if (!element.isConnected || element.closest('[inert]')) return false;
+    const modal = openModal();
+    if (modal && !modal.contains(element)) return false;
     const box = boxElement(element);
     if (box.getClientRects().length === 0) return false;
     return getComputedStyle(box).visibility !== 'hidden';
@@ -2382,6 +2426,34 @@ function ensureLiveRegion(): HTMLElement | null {
     return region;
 }
 
+// The modal dialog open in the document (the last of them, when one opened another), or null. Everything outside it
+// is inert: out of reach of the keyboard and of screen readers.
+function openModal(): HTMLElement | null {
+    try {
+        const modals = document.querySelectorAll<HTMLElement>('dialog:modal');
+        return modals.length > 0 ? modals[modals.length - 1] : null;
+    } catch {
+        return null; // an engine that does not know :modal
+    }
+}
+
+// The live region inside a modal dialog: the one in the body is inert while the dialog is open, and a screen reader
+// reads nothing written to it. Added when a keyboard drag starts in the dialog, since a live region only reads out
+// what changes once it is in the document.
+function ensureModalLiveRegion(modal: HTMLElement): HTMLElement {
+    let region = modal.querySelector<HTMLElement>(':scope > [data-bit-bdnd-live-region]');
+    if (!region) {
+        region = document.createElement('div');
+        region.setAttribute('data-bit-bdnd-live-region', '');
+        region.setAttribute('role', 'status');
+        region.setAttribute('aria-live', 'assertive');
+        region.setAttribute('aria-atomic', 'true');
+        hideVisually(region);
+        modal.appendChild(region);
+    }
+    return region;
+}
+
 // The instructions keyboard-draggable sources reference through aria-describedby: one hidden element per text.
 function ensureInstructions(id: string, text: string): void {
     if (!document.body) return;
@@ -2398,6 +2470,12 @@ function ensureInstructions(id: string, text: string): void {
 export function announce(text: string): void {
     const region = ensureLiveRegion();
     if (!region) return;
+    writeLiveRegion(region, text);
+    const modal = openModal();
+    if (modal) writeLiveRegion(ensureModalLiveRegion(modal), text);
+}
+
+function writeLiveRegion(region: HTMLElement, text: string): void {
     // the same text twice in a row has to be a change too, or it is not read again
     region.textContent = region.textContent === text ? text + '\u00a0' : text;
 }

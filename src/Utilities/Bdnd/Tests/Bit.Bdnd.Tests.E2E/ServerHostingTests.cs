@@ -54,6 +54,52 @@ public sealed class ServerHostingTests : BdndTest
     }
 
     [TestMethod]
+    public async Task A_pickup_whose_answer_was_lost_with_the_connection_does_not_stop_the_drags_after_it()
+    {
+        var page = await NewPageAsync();
+        // the circuit's socket, to drop the connection the way the network would
+        await page.AddInitScriptAsync(
+            """
+            (() => {
+              const Native = window.WebSocket;
+              window.__sockets = [];
+              window.WebSocket = function (...args) {
+                const socket = new Native(...args);
+                window.__sockets.push(socket);
+                return socket;
+              };
+              window.WebSocket.prototype = Native.prototype;
+              Object.assign(window.WebSocket, { CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3 });
+            })();
+            """);
+        await GotoAsync(page, Path);
+        await WaitForInteractiveAsync(page.MainFrame);
+        await WaitForBdndAsync(page.MainFrame);
+        await Expect(page.Locator(".server-check-renderer")).ToHaveTextAsync("Server");
+        // Blazor drops a call made while it reconnects without failing it, and reports that as an error of its own
+        Tolerate(problem => problem.Contains("Cannot send data if the connection is not in the 'Connected' State", StringComparison.Ordinal));
+        var banana = page.Locator(".server-check-box", new() { HasText = "Banana" });
+        var live = page.Locator("#bit-bdnd-live-region");
+        await banana.FocusAsync();
+
+        await page.EvaluateAsync("() => window.__sockets.forEach(socket => socket.close())");
+        await page.Keyboard.PressAsync("Space");
+        await page.WaitForFunctionAsync("() => window.__sockets.some(socket => socket.readyState === WebSocket.OPEN)",
+            null, new PageWaitForFunctionOptions { Timeout = 30_000 });
+        await Expect(live).Not.ToContainTextAsync("Picked up");
+        // the module gives the lost pickup up (after DRAG_CALL_TIMEOUT_MS) and the keys are the page's again
+        await page.WaitForTimeoutAsync(11_000);
+
+        await banana.FocusAsync();
+        await page.Keyboard.PressAsync("Space");
+        await Expect(live).ToContainTextAsync("Picked up Banana.");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(live).ToHaveTextAsync("Banana is over the bin.");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(Bin(page)).ToHaveTextAsync("Dropped: Banana (Keyboard)");
+    }
+
+    [TestMethod]
     public async Task A_pointer_drag_drops_over_the_circuit()
     {
         var page = await OpenServerPageAsync();

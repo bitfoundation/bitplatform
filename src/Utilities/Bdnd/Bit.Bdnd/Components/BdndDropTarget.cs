@@ -318,10 +318,16 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
 
     private BdndEdge? DropEdge(BdndDragDropManager manager) => ClosestEdgeOf(manager, manager.IsOver(_handlerId, shallow: true));
 
-    private Task HandleDragOverAsync(DragEventArgs e) => HoverCoreAsync(new BdndXYCoord(e.ClientX, e.ClientY));
+    // The browser's drag events belong to a native drag only: one of a file or text from outside, arriving while a
+    // keyboard or pointer drag is in progress, is not that drag's hover or drop.
+    private Task HandleDragOverAsync(DragEventArgs e) =>
+        IsNativeDrag() ? HoverCoreAsync(new BdndXYCoord(e.ClientX, e.ClientY)) : Task.CompletedTask;
 
     // the drop event reports the exact final pointer position
-    private Task HandleDropAsync(DragEventArgs e) => DropCoreAsync(new BdndXYCoord(e.ClientX, e.ClientY));
+    private Task HandleDropAsync(DragEventArgs e) =>
+        IsNativeDrag() ? DropCoreAsync(new BdndXYCoord(e.ClientX, e.ClientY)) : Task.CompletedTask;
+
+    private bool IsNativeDrag() => Manager!.GetDragInput() == BdndDragInput.Native;
 
     // A managed dragover, or a keyboard move onto this target (or onto one nested in it).
     private async Task HoverCoreAsync(BdndXYCoord? pointer)

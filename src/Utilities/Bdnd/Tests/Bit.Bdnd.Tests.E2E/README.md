@@ -88,7 +88,7 @@ dotnet publish Samples/Lazy/Bit.Bdnd.Samples.Lazy/Bit.Bdnd.Samples.Lazy.csproj -
 dotnet build Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
-pwsh Tests/Bit.Bdnd.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium
+pwsh Tests/Bit.Bdnd.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium
 
 cd Tests/Bit.Bdnd.Tests.E2E && dotnet test
 
@@ -107,14 +107,14 @@ suite takes far longer than the build-and-unit pipeline in `ci.bdnd.yml`:
 dotnet build src/Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj -c Release
 dotnet publish src/Utilities/Bdnd/Samples/Lazy/Bit.Bdnd.Samples.Lazy/Bit.Bdnd.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj -c Release
-pwsh src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+pwsh src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 cd src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bdnd-e2e.trx
 ```
 
 Without PowerShell 7, the browser can be installed with Windows PowerShell
-(`powershell -ExecutionPolicy Bypass -File bin/Debug/net10.0/playwright.ps1 install chromium`) or with the Node.js
+(`powershell -ExecutionPolicy Bypass -File bin/Debug/net11.0/playwright.ps1 install chromium`) or with the Node.js
 runtime Playwright ships:
-`bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.
+`bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.
 
 `install chromium` downloads both the full Chromium build and Playwright's headless shell. The suite prefers the
 full build, in its new headless mode (the `chromium` channel), because that is the code a person's Chrome runs; it
