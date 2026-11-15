@@ -4,7 +4,8 @@
                   NoLogging
                   HomeUrl="@PageUrls.Home"
                   ShowException="AppEnvironment.IsDevelopment()"
-                  OnError="e => exceptionHandler.Handle(e)"
+                  OnError="HandleError"
+                  Message="@message"
                   HomeText="@localizer[nameof(AppStrings.Home)]"
                   RefreshText="@localizer[nameof(AppStrings.Refresh)]"
                   RecoverText="@localizer[nameof(AppStrings.Recover)]"
