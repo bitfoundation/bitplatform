@@ -73,7 +73,7 @@ public partial class BitStepperParams : BitComponentBaseParams, IBitComponentPar
     public bool? ReadOnly { get; set; }
 
     /// <summary>
-    /// Lays the steps of a horizontal stepper out from top to bottom on small screens.
+    /// Lays the steps of a horizontal stepper out from top to bottom while the stepper is narrower than 600px.
     /// </summary>
     public bool? Responsive { get; set; }
 

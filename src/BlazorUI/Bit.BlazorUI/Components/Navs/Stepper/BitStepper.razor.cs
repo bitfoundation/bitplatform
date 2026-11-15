@@ -126,13 +126,15 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
     public bool ReadOnly { get; set; }
 
     /// <summary>
-    /// Lays the steps of a horizontal stepper out from top to bottom on small screens, instead of letting a row that does
-    /// not fit stick out of its container.
+    /// Lays the steps of a horizontal stepper out from top to bottom while the stepper is narrower than 600px, instead
+    /// of letting a row that does not fit stick out of its container.
     /// </summary>
     /// <remarks>
-    /// The steps take the vertical layout below the small breakpoint (600px wide) and stand in a row again on wider
-    /// screens. It is the stylesheet that switches, so the stepper renders the same markup on every screen and nothing
-    /// has to be measured. It has nothing to do on a stepper that is <see cref="Vertical"/> already.
+    /// It is the width of the stepper's own container that decides, not the screen's: a Responsive stepper in a narrow
+    /// sidebar or dialog takes the vertical layout on a wide screen too. The stylesheet switches through a container
+    /// query, so nothing is measured; the list therefore stands in a wrapper of its own (<c>bit-stp-rsw</c>), which
+    /// takes the full width of its container, and the root carries <c>bit-stp-rsp</c> in place of <c>bit-stp-hrz</c>,
+    /// whichever layout it is in. It has nothing to do on a stepper that is <see cref="Vertical"/> already.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Responsive { get; set; }
@@ -153,13 +155,15 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
 
     protected override string RootElementClass => "bit-stp";
 
+    private bool IsResponsiveRow => Responsive && Vertical is false;
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Vertical ? "bit-stp-vrt" : "bit-stp-hrz");
-
-        ClassBuilder.Register(() => Responsive && Vertical is false ? "bit-stp-rsp" : string.Empty);
+        // A Responsive horizontal stepper is a row or a column by the width of its container, so it carries a layout
+        // class of its own rather than the one of either: the rules an app keys on bit-stp-hrz never land on its column.
+        ClassBuilder.Register(() => Vertical ? "bit-stp-vrt" : IsResponsiveRow ? "bit-stp-rsp" : "bit-stp-hrz");
 
         ClassBuilder.Register(() => ReadOnly ? "bit-stp-rdo" : string.Empty);
     }

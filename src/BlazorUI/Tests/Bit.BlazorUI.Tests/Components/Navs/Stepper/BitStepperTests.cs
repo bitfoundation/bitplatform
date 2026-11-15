@@ -72,19 +72,25 @@ public class BitStepperTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(false, false, false),
-        DataRow(true, false, true),
-        DataRow(true, true, false),
-        DataRow(false, true, false)]
-    public void BitStepperShouldMarkAHorizontalStepperResponsive(bool responsive, bool vertical, bool expected)
+        DataRow(false, false, "bit-stp-hrz", false),
+        DataRow(true, false, "bit-stp-rsp", true),
+        DataRow(true, true, "bit-stp-vrt", false),
+        DataRow(false, true, "bit-stp-vrt", false)]
+    public void BitStepperShouldMarkAHorizontalStepperResponsive(bool responsive, bool vertical, string layout, bool wrapped)
     {
         var com = Render(vertical: vertical, responsive: responsive);
 
-        var root = com.Find(".bit-stp");
+        var root = com.Find("ol.bit-stp");
 
-        // A vertical stepper is the layout a Responsive one switches to, so it has nothing to switch.
-        Assert.AreEqual(expected, root.ClassList.Contains("bit-stp-rsp"));
-        Assert.AreEqual(vertical is false, root.ClassList.Contains("bit-stp-hrz"));
+        // A Responsive horizontal stepper is a row or a column by its width, so it carries one layout class of its own
+        // instead of either; a vertical stepper is the layout a Responsive one switches to, so it has nothing to switch.
+        var layouts = new[] { "bit-stp-hrz", "bit-stp-vrt", "bit-stp-rsp" };
+        CollectionAssert.AreEqual(new[] { layout }, layouts.Where(root.ClassList.Contains).ToArray());
+
+        // The list stands in the wrapper that is the query container of its layout only when it is Responsive.
+        Assert.AreEqual(wrapped, root.ParentElement?.ClassList.Contains("bit-stp-rsw") is true);
+        Assert.AreEqual(wrapped ? 1 : 0, com.FindAll(".bit-stp-rsw").Count);
+        Assert.AreEqual(wrapped ? "DIV" : "OL", com.Nodes.OfType<AngleSharp.Dom.IElement>().First().TagName);
     }
 
     [TestMethod]

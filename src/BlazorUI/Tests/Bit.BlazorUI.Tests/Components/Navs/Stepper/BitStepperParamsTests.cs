@@ -138,6 +138,8 @@ public class BitStepperParamsTests : BunitTestContext
 
         Assert.IsTrue(component.FindComponent<BitStepper<BitStepperItem>>().Instance.Responsive);
         Assert.IsTrue(component.Find(".bit-stp").ClassList.Contains("bit-stp-rsp"));
+        Assert.IsFalse(component.Find(".bit-stp").ClassList.Contains("bit-stp-hrz"));
+        Assert.AreEqual(1, component.FindAll(".bit-stp-rsw > ol.bit-stp").Count);
     }
 
     [TestMethod]
