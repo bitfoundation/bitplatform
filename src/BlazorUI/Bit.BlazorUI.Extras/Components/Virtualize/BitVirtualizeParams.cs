@@ -15,7 +15,7 @@ namespace Bit.BlazorUI;
 /// None of the parameters here depends on the type of the items, so the class is not generic: one instance
 /// reaches every list under the <see cref="BitParams"/> it is given to, whatever it lists.
 /// </remarks>
-public class BitVirtualizeParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitVirtualizeParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitVirtualize{TItem}"/> cascading parameters within <see cref="BitParams"/>.
@@ -54,6 +54,11 @@ public class BitVirtualizeParams : BitComponentBaseParams, IBitComponentParams
     /// The custom template to render when there is no item available.
     /// </summary>
     public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// The text to render when there is no item available.
+    /// </summary>
+    public string? EmptyText { get; set; }
 
     /// <summary>
     /// The assumed size in pixels of the items that have not been measured yet in dynamic mode.
@@ -137,6 +142,11 @@ public class BitVirtualizeParams : BitComponentBaseParams, IBitComponentParams
         if (EmptyTemplate is not null)
         {
             bitVirtualize.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static l => l.EmptyTemplate, static (l, v) => l.EmptyTemplate = v);
+        }
+
+        if (EmptyText is not null)
+        {
+            bitVirtualize.TakeFromCascade(nameof(EmptyText), EmptyText, static l => l.EmptyText, static (l, v) => l.EmptyText = v);
         }
 
         if (EstimatedItemSize.HasValue)

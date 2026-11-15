@@ -35,7 +35,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     private bool _moveToPointAfterRender;
     // Whether the element the focus was on when the menu was opened at a point is remembered, for the menu to hand
     // the focus back to it as it closes rather than to a trigger the user never went near.
-    private bool _focusOriginCaptured;
+    private bool _focusOriginStored;
     private bool _autoFocus;
     private bool _focusFirstItemOnOpen;
     private int _hoverToken;
@@ -1807,13 +1807,13 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     // trigger the menu belongs to.
     private async Task ReturnFocus()
     {
-        if (_focusOriginCaptured && IsDisposed is false)
+        if (_focusOriginStored && IsDisposed is false)
         {
-            _focusOriginCaptured = false;
+            _focusOriginStored = false;
 
             try
             {
-                if (await _js.BitUtilsTryRestoreFocusOrigin(_calloutId)) return;
+                if (await _js.BitUtilsTryRestoreFocus(_calloutId, onlyWhenLost: true, scopeId: _calloutId)) return;
             }
             catch (JSDisconnectedException) { return; } // we can ignore this exception here
         }
@@ -1828,7 +1828,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             // Remembered before the focus moves into the menu. A focus that is already in it - a menu opened against
             // the button and then moved to a point from its own keyboard - is not an origin, and leaves nothing to
             // hand back but the trigger.
-            _focusOriginCaptured = await _js.BitUtilsTryCaptureFocusOrigin(_calloutId);
+            _focusOriginStored = await _js.BitUtilsTryStoreFocus(_calloutId, scopeId: _calloutId);
 
             await ToggleCallout();
 
@@ -2018,7 +2018,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         {
             // An origin remembered for a menu that was opened at a point and then dismissed from outside (a click on
             // the page) was never handed back, and is not where the focus of a menu opened from the button goes.
-            _focusOriginCaptured = false;
+            _focusOriginStored = false;
         }
 
         await _js.BitCalloutToggleCallout(
@@ -2185,9 +2185,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
                 await _js.BitMenuButtonsDispose(_Id);
 
                 // An origin that was never handed back would keep its element alive for as long as the page lives.
-                if (_focusOriginCaptured)
+                if (_focusOriginStored)
                 {
-                    await _js.BitUtilsDisposeFocusOrigin(_calloutId);
+                    await _js.BitUtilsForgetFocus(_calloutId);
                 }
             });
         }

@@ -101,9 +101,14 @@ public interface IBlowContext
     /// Begins a node resize gesture with size bounds, capturing <paramref name="pointerId"/> on
     /// the pane so the gesture survives the pointer leaving the flow.
     /// </summary>
+    /// <remarks>
+    /// Replaces the overload that took the bounds one parameter each (minimum and maximum width and height, the
+    /// aspect-ratio flag and the pointer id - ten in all). An implementation of this interface implements this
+    /// overload instead; <c>BlowCanvas</c> keeps the old one as an obsolete method of its own. No member of this
+    /// interface takes more than eight parameters (see <see cref="BlowResizeOptions"/> for why).
+    /// </remarks>
     void StartResize(string nodeId, BlowResizeDirection direction,
-        double clientX, double clientY, double minWidth, double minHeight, bool keepAspectRatio,
-        double maxWidth, double maxHeight, long pointerId);
+        double clientX, double clientY, BlowResizeOptions options, long pointerId);
 
     /// <summary>Begins dragging a node from a custom <c>BlowDragHandle</c> element.</summary>
     void BeginNodeDrag(BlowNode node, Microsoft.AspNetCore.Components.Web.PointerEventArgs e);

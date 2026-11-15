@@ -193,7 +193,7 @@
                  ShowSearchBox AutoFocusSearchBox Immediate Items="@L("noresults-tpl")" DefaultValue="@string.Empty">
         <NoResultsTemplate><span id="noresults-tpl-content">No match, try again</span></NoResultsTemplate>
     </BitDropdown>
-    <BitDropdown Id="dd-noresults-fallback" TItem="BitDropdownItem<string>" TValue="string" Label="Empty text for no results"
+    <BitDropdown Id="dd-noresults-fallback" TItem="BitDropdownItem<string>" TValue="string" Label="Empty text, not for no results"
                  ShowSearchBox AutoFocusSearchBox Immediate EmptyText="The empty text"
                  Items="@L("noresults-fallback")" DefaultValue="@string.Empty" />
 </E2ESection>

@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the text parts of an app, or of one part of it, agree on - the look of their parts. The
 /// part, its message and the citation callback are left out on purpose: they are what makes one instance the one it is.
 /// </remarks>
-public class BitAiTextPartViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiTextPartViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiTextPartView"/> cascading parameters within <see cref="BitParams"/>.

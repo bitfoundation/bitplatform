@@ -83,7 +83,12 @@ public partial class TestsAssemblyInitializer
         foreach (var connectionString in aspireAppBuilder.Resources.OfType<IResourceWithConnectionString>())
         {
             Environment.SetEnvironmentVariable($"ConnectionStrings__{connectionString.Name}", await aspireApp.GetConnectionStringAsync(connectionString.Name, testContext.CancellationToken));
-            await aspireApp.ResourceNotifications.WaitForResourceAsync(connectionString.Name, [.. KnownResourceStates.TerminalStates, KnownResourceStates.Running], testContext.CancellationToken);
+            // Running, finished, or in the error state, where a resource that couldn't set itself up stays.
+            var state = (await aspireApp.ResourceNotifications.WaitForResourceAsync(connectionString.Name, e => e.Snapshot.State?.Style == KnownResourceStateStyles.Error
+                || e.Snapshot.State?.Text is { } text && (text == KnownResourceStates.Running || KnownResourceStates.TerminalStates.Contains(text)), testContext.CancellationToken)).Snapshot.State!;
+
+            if (state.Style == KnownResourceStateStyles.Error)
+                throw new InvalidOperationException($"{connectionString.Name} couldn't start: {state.Text}");
         }
 
         using var healthBudget = CancellationTokenSource.CreateLinkedTokenSource(testContext.CancellationToken);

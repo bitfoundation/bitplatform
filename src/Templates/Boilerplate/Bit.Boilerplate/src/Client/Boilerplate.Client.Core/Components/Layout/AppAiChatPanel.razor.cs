@@ -24,7 +24,7 @@ public partial class AppAiChatPanel
     private bool hasFailed;
     private bool isSmallScreen;
     private Task<bool>? loading;
-    private AppAiChat? chat;
+    private IAppAiChat? chat;
     private string? initialPrompt;
     private AppAiChatStatus status = new(IsInVoiceCall: false, NeedsAnswer: false);
 

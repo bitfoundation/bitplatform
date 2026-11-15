@@ -63,16 +63,23 @@ public sealed class BsqliteBatch : DbBatch
         => throw BsqliteSynchronousApiNotSupportedException.ForMember(
             nameof(ExecuteReader), nameof(ExecuteReaderAsync));
 
-    /// <summary>Runs every command and returns the sum of their affected rows.</summary>
+    /// <summary>
+    /// Runs every command and returns the sum of their affected rows - -1 when every command was a query, which
+    /// affects none - as ADO.NET adds them up.
+    /// </summary>
     public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default)
     {
         var results = await ExecuteCoreAsync(BsqliteResultKind.NonQuery, rowLimit: null, cancellationToken)
             .ConfigureAwait(false);
 
-        var total = 0;
+        var total = -1;
         for (var i = 0; i < results.Count; i++)
         {
-            total += results[i].RecordsAffected;
+            if (results[i].RecordsAffected >= 0)
+            {
+                total = Math.Max(total, 0) + results[i].RecordsAffected;
+            }
+
             BatchCommands[i].SetRecordsAffected(results[i].RecordsAffected);
         }
 
@@ -90,7 +97,7 @@ public sealed class BsqliteBatch : DbBatch
             BatchCommands[i].SetRecordsAffected(results[i].RecordsAffected);
             if (results[i].Rows.Count > 0 && results[i].Rows[0].Length > 0)
             {
-                return results[i].Rows[0][0];
+                return results[i].Rows[0][0] ?? DBNull.Value;
             }
         }
 

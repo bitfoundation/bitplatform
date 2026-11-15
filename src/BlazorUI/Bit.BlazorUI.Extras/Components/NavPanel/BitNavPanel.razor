@@ -204,14 +204,14 @@
                registrations (and the expansion state of the branches) while a search matches nothing. *@
             @if (isEmpty && isToggled is false)
             {
-                if (EmptyListTemplate is not null)
+                if (NoResultsTemplate is not null)
                 {
-                    @EmptyListTemplate
+                    @NoResultsTemplate
                 }
                 else
                 {
-                    <BitText Style="@Styles?.EmptyListMessage" Class="@Classes?.EmptyListMessage">
-                        @(EmptyListMessage ?? "Nothing found!")
+                    <BitText Style="@Styles?.NoResults" Class="@Classes?.NoResults">
+                        @(NoResultsText ?? BitStrings.Current.NoResultsFound)
                     </BitText>
                 }
             }

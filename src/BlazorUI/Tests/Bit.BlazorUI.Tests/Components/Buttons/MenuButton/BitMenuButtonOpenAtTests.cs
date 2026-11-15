@@ -14,8 +14,8 @@ public class BitMenuButtonOpenAtTests : BunitTestContext
     private const string Toggle = "BitBlazorUI.Callouts.toggle";
     private const string Reposition = "BitBlazorUI.Callouts.reposition";
     private const string FocusItem = "BitBlazorUI.MenuButtons.focusItem";
-    private const string CaptureOrigin = "BitBlazorUI.Utils.captureFocusOrigin";
-    private const string RestoreOrigin = "BitBlazorUI.Utils.restoreFocusOrigin";
+    private const string StoreOrigin = "BitBlazorUI.Utils.storeFocus";
+    private const string RestoreOrigin = "BitBlazorUI.Utils.restoreFocus";
     private const string FocusElement = "Blazor._internal.domWrapper.focus";
 
     private static List<BitMenuButtonItem> Items() =>
@@ -87,11 +87,13 @@ public class BitMenuButtonOpenAtTests : BunitTestContext
         Assert.AreEqual(com.Find(".bit-mnb-cal").Id, focus.Arguments[0]);
         Assert.AreEqual("first", focus.Arguments[1]);
 
-        // The origin is remembered before the focus leaves it.
-        var capture = Context.JSInterop.Invocations[CaptureOrigin].Single();
+        // The origin is remembered before the focus leaves it, under the menu's id with the menu as its scope: a
+        // focus already inside the menu is no origin.
+        var store = Context.JSInterop.Invocations[StoreOrigin].Single();
+        var calloutId = com.Find(".bit-mnb-cal").Id;
 
-        Assert.AreEqual(com.Find(".bit-mnb-cal").Id, capture.Arguments[0]);
-        Assert.IsTrue(Context.JSInterop.Invocations.ToList().IndexOf(capture) < Context.JSInterop.Invocations.ToList().IndexOf(focus));
+        CollectionAssert.AreEqual(new object?[] { calloutId, calloutId }, store.Arguments.ToArray());
+        Assert.IsTrue(Context.JSInterop.Invocations.ToList().IndexOf(store) < Context.JSInterop.Invocations.ToList().IndexOf(focus));
     }
 
     [TestMethod]
@@ -240,7 +242,7 @@ public class BitMenuButtonOpenAtTests : BunitTestContext
         DataRow("Tab")]
     public async Task BitMenuButtonShouldHandTheFocusBackToWhereItWasWhenAMenuOpenedAtAPointCloses(string key)
     {
-        Context.JSInterop.Setup<bool>(CaptureOrigin, _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool>(StoreOrigin, _ => true).SetResult(true);
         Context.JSInterop.Setup<bool>(RestoreOrigin, _ => true).SetResult(true);
 
         var com = Render();
@@ -252,16 +254,18 @@ public class BitMenuButtonOpenAtTests : BunitTestContext
         Assert.IsFalse(com.Instance.IsOpen);
 
         // The origin took the focus back, so the trigger the user never went near is left alone.
+        // Handed back only while the focus is lost - on the body, or still inside the closing menu.
         var restore = Context.JSInterop.Invocations[RestoreOrigin].Single();
+        var calloutId = com.Find(".bit-mnb-cal").Id;
 
-        Assert.AreEqual(com.Find(".bit-mnb-cal").Id, restore.Arguments[0]);
+        CollectionAssert.AreEqual(new object?[] { calloutId, true, calloutId }, restore.Arguments.ToArray());
         Assert.AreEqual(0, Context.JSInterop.Invocations[FocusElement].Count);
     }
 
     [TestMethod]
     public async Task BitMenuButtonShouldHandTheFocusBackToWhereItWasWhenAnItemOfAMenuOpenedAtAPointIsClicked()
     {
-        Context.JSInterop.Setup<bool>(CaptureOrigin, _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool>(StoreOrigin, _ => true).SetResult(true);
         Context.JSInterop.Setup<bool>(RestoreOrigin, _ => true).SetResult(true);
 
         var com = Render();
@@ -278,7 +282,7 @@ public class BitMenuButtonOpenAtTests : BunitTestContext
     [TestMethod]
     public async Task BitMenuButtonShouldHandTheFocusBackToWhereItWasWhenTheOverlayOfAMenuOpenedAtAPointIsClicked()
     {
-        Context.JSInterop.Setup<bool>(CaptureOrigin, _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool>(StoreOrigin, _ => true).SetResult(true);
         Context.JSInterop.Setup<bool>(RestoreOrigin, _ => true).SetResult(true);
 
         var com = Render();
@@ -298,7 +302,7 @@ public class BitMenuButtonOpenAtTests : BunitTestContext
     {
         // Not captured: the focus was on the body when the menu opened. Captured but not restored: the element
         // that had it has left the page since.
-        Context.JSInterop.Setup<bool>(CaptureOrigin, _ => true).SetResult(captured);
+        Context.JSInterop.Setup<bool>(StoreOrigin, _ => true).SetResult(captured);
         Context.JSInterop.Setup<bool>(RestoreOrigin, _ => true).SetResult(false);
 
         var com = Render(split: true);
@@ -316,7 +320,7 @@ public class BitMenuButtonOpenAtTests : BunitTestContext
     [TestMethod]
     public async Task BitMenuButtonShouldNotHandTheFocusToAnOriginLeftOverFromAMenuDismissedFromOutside()
     {
-        Context.JSInterop.Setup<bool>(CaptureOrigin, _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool>(StoreOrigin, _ => true).SetResult(true);
         Context.JSInterop.Setup<bool>(RestoreOrigin, _ => true).SetResult(true);
 
         var com = Render();
@@ -374,7 +378,7 @@ public class BitMenuButtonOpenAtTests : BunitTestContext
         DataRow(false)]
     public async Task BitMenuButtonShouldLetGoOfAnOriginNeverHandedBackWhenItIsDisposed(bool captured)
     {
-        Context.JSInterop.Setup<bool>(CaptureOrigin, _ => true).SetResult(captured);
+        Context.JSInterop.Setup<bool>(StoreOrigin, _ => true).SetResult(captured);
 
         var com = Render();
 
@@ -385,7 +389,7 @@ public class BitMenuButtonOpenAtTests : BunitTestContext
         await Context.DisposeComponentsAsync();
 
         // An origin left in the script would keep its element alive for as long as the page lives.
-        var disposals = Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"];
+        var disposals = Context.JSInterop.Invocations["BitBlazorUI.Utils.forgetFocus"];
 
         Assert.AreEqual(captured ? 1 : 0, disposals.Count);
 

@@ -22,7 +22,6 @@ public partial class BitNotificationCenter : BitComponentBase
     private const string DefaultUnreadAriaLabelFormat = "{0} unread";
     private const string DefaultHeaderText = "Notifications";
     private const string DefaultClearAllText = "Clear all";
-    private const string DefaultEmptyText = "No notifications";
     private const string DefaultUnreadItemText = "Unread";
     private const string DefaultIconName = "Ringer";
 
@@ -66,7 +65,13 @@ public partial class BitNotificationCenter : BitComponentBase
     public BitNotificationCenterClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The text the panel shows when there are no notifications. Defaults to "No notifications".
+    /// The custom content the panel shows when there are no notifications, which takes the place of
+    /// <see cref="EmptyText"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// The text the panel shows when there are no notifications. Default: <see cref="BitStrings.NoItemsFound"/>.
     /// </summary>
     [Parameter] public string? EmptyText { get; set; }
 

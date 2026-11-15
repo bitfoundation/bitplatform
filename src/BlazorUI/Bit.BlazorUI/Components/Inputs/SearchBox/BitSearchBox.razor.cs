@@ -417,12 +417,14 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public bool NoClearOnEscape { get; set; }
 
     /// <summary>
-    /// The custom template rendered in the callout when the search finds no suggest item.
+    /// The custom template rendered in the callout when the search finds no suggest item, which takes the place of
+    /// <see cref="NoResultsText"/>.
     /// </summary>
     [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
 
     /// <summary>
-    /// The text rendered in the callout when the search finds no suggest item.
+    /// The text rendered in the callout, and announced, when the search finds no suggest item. Default:
+    /// <see cref="BitStrings.NoResultsFound"/>.
     /// </summary>
     [Parameter] public string? NoResultsText { get; set; }
 
@@ -1833,7 +1835,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         var count = _viewSuggestedItems.Count;
 
-        if (count == 0) return NoResultsText.HasValue() ? NoResultsText : BitStrings.Current.NoSuggestionFound;
+        if (count == 0) return NoResultsText.HasValue() ? NoResultsText : BitStrings.Current.NoResultsFound;
 
         return $"{count} suggestion{(count == 1 ? string.Empty : "s")} available. " +
                "Use the up and down arrow keys to review them and enter to select one.";
@@ -1864,7 +1866,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (_suggestFailed) return HasSuggestFailedContent;
 
-        return NoResultsText.HasValue() || NoResultsTemplate is not null;
+        // A search that matched nothing always says so, in the words of NoResultsText or of its default.
+        return true;
     }
 
     private async Task OpenOrCloseCallout(bool force = false)

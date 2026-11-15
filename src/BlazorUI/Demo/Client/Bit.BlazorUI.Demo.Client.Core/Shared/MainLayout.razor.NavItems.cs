@@ -108,6 +108,7 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "Badge", Url = "/components/badge" },
+                new() { Text = "EmptyState", Url = "/components/emptystate", AdditionalUrls = ["/components/empty-state"], Description = "Empty, NoData, ZeroState, BlankSlate", Data = "Empty list, No items, No results, No data, Placeholder, Zero state, Blank state, Nothing here, First run" },
                 new() { Text = "Message", Url = "/components/message", AdditionalUrls = ["/components/messagebar", "/components/message-bar"], Description = "Alert, MessageBar" },
                 new() { Text = "Persona", Url = "/components/persona", Description = "Avatar" },
                 new() { Text = "SnackBar", Url = "/components/snackbar", Description = "Toast" },
@@ -137,6 +138,7 @@ public partial class MainLayout
                 new() { Text = "Modal", Url = "/components/modal", AdditionalUrls = ["/components/promodal"] },
                 new() { Text = "ModalService", Url = "/components/modalservice", AdditionalUrls = ["/components/promodalservice"] },
                 new() { Text = "Panel", Url = "/components/panel", AdditionalUrls = ["/components/propanel"], Description = "Drawer, Sheet, BottomSheet, Offcanvas" },
+                new() { Text = "PanelService", Url = "/components/panelservice", AdditionalUrls = ["/components/panel-service"], Description = "SheetService, DrawerService" },
                 new() { Text = "ScrollablePane", Url = "/components/scrollablepane", Description = "ScrollView, ScrollArea" },
                 new() { Text = "Splitter", Url = "/components/splitter", Description = "SplitPane, Resizable" },
                 new() { Text = "Tooltip", Url = "/components/tooltip" },
@@ -154,6 +156,7 @@ public partial class MainLayout
                 new() { Text = "Image", Url = "/components/image", Description = "Img, Picture", Data = "Photo, Figure, Thumbnail, Lazy, Srcset, AspectRatio, Placeholder, Fallback" },
                 new() { Text = "Label",  Url = "/components/label" },
                 new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
+                new() { Text = "LongPress", Url = "/components/longpress", AdditionalUrls = ["/components/long-press"], Description = "PressAndHold, TapAndHold", Data = "Long press, Press and hold, Tap and hold, Hold, Touch hold, Context menu on touch, Secondary action, Gesture" },
                 new() { Text = "MediaQuery", Url = "/components/mediaquery", Description = "Breakpoint, Responsive", Data = "matchMedia, Hidden, Show, Hide, useMediaQuery" },
                 new() { Text = "Overlay", Url = "/components/overlay", Description = "Backdrop, Scrim", Data = "Mask, Dim, BlockUI, ClickCatcher" },
                 new() { Text = "Params", Url = "/components/params" },
@@ -171,6 +174,7 @@ public partial class MainLayout
             [
                 new() { Text = "AccordionList", Url = "/components/accordionlist", Description = "Expander, Accordion" },
                 new() { Text = "AppShell", Url = "/components/appshell", Description = "SafeArea" },
+                new() { Text = "AvatarGroup", Url = "/components/avatargroup", Description = "Facepile, PersonaGroup, AvatarStack", Data = "Avatars, Team members, People, Collaborators, Participants, Overflow, +N, Presence", AdditionalUrls = ["/components/avatar-group"] },
                 new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js" },
                 new() { Text = "ContextMenu", Url = "/components/contextmenu", Description = "RightClickMenu, PopupMenu, ShortcutMenu", Data = "Context menu, Right click, Right-click menu, Shift+F10, Menu key, Popup menu, Actions menu", AdditionalUrls = ["/components/context-menu"] },
                 new() { Text = "CountryPicker", Url = "/components/countrypicker", Description = "CountrySelector, CountrySelect", Data = "Country, Nationality, Country of residence, Billing country, Flag, ISO code" },
@@ -178,6 +182,7 @@ public partial class MainLayout
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "Flag", Url = "/components/flag", Description = "Country, CountryFlag" },
                 new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler, EventCalendar, Planner" },
+                new() { Text = "ImageViewer", Url = "/components/imageviewer", Description = "ZoomableImage, PanZoom, ImageZoom", Data = "Image viewer, Zoom, Pan, Pinch to zoom, Photo viewer, Magnify, Inspect, Floor plan, Diagram", AdditionalUrls = ["/components/image-viewer"] },
                 new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling", Description = "InfiniteScroll, LoadMore", Data = "Endless scroll, Infinite list, Lazy loading, Feed, Chat, Paging" },
                 new() { Text = "Map", Url = "/components/map", Description = "GeoMap, Maps", Data = "Leaflet, MapLibre, Mapbox, OpenLayers, ArcGIS, Azure Maps, Cesium, Globe, Markers, Pins, Clustering, GeoJSON, Tiles, Location, Geolocation, GIS" },
                 new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor", Data = "Markdown, Text editor, Rich text, Comment box, Notes, Preview, Toolbar" },

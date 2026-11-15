@@ -276,7 +276,7 @@ public class BitDropdownSearchE2ETests : BitDropdownE2ETestBase
         var plain = await OpenDropdownAsync("dd-nodiacritics");
         await SearchInput(plain).FillAsync("muller");
         await Expect(Options(plain)).ToHaveCountAsync(0);
-        await Expect(plain.Locator(".bit-drp-emp")).ToHaveTextAsync("No results found");
+        await Expect(plain.Locator(".bit-drp-nor")).ToHaveTextAsync("No results found");
     }
 
     [TestMethod]
@@ -381,7 +381,8 @@ public class BitDropdownSearchE2ETests : BitDropdownE2ETestBase
     [DataRow("dd-noresults", "No results found")]
     [DataRow("dd-noresults-text", "Nothing matched")]
     [DataRow("dd-noresults-tpl", "No match, try again")]
-    [DataRow("dd-noresults-fallback", "The empty text")]
+    // The text of an empty list never stands in for the no-results one: a search falls back to its own default.
+    [DataRow("dd-noresults-fallback", "No results found")]
     public async Task NoResults_ASearchThatMatchesNothing_SaysSoInItsOwnWords(string id, string expected)
     {
         await OpenAsync(Url);
@@ -391,7 +392,7 @@ public class BitDropdownSearchE2ETests : BitDropdownE2ETestBase
         await SearchInput(callout).FillAsync("zzz");
 
         await Expect(Options(callout)).ToHaveCountAsync(0);
-        await Expect(callout.Locator(".bit-drp-emp")).ToHaveTextAsync(expected);
+        await Expect(callout.Locator(".bit-drp-nor")).ToHaveTextAsync(expected);
         await Expect(Root(id).Locator(".bit-drp-lvr")).ToHaveTextAsync("0 results available");
     }
 }

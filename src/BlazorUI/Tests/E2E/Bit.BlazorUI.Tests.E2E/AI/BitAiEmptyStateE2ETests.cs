@@ -3,7 +3,7 @@
 /// <summary>
 /// Drives BitAiEmptyState at /e2e/aiemptystate in a real browser: the default heading and line of the string table, the
 /// sparkle glyph of the AI font hidden from assistive technologies, the centered column, the suggestions as buttons that
-/// raise OnSuggestion by pointer and keyboard and wrap in a narrow box, Title/Body/ChildContent/IconName/IconTemplate,
+/// raise OnSuggestion by pointer and keyboard and wrap in a narrow box, Title/Description/DescriptionTemplate/IconName/IconTemplate,
 /// Disabled, the theme tokens, every --bit-AiEmptyState-* variable, Styles/Classes and RTL.
 /// </summary>
 [TestClass]
@@ -13,7 +13,7 @@ public class BitAiEmptyStateE2ETests : E2ETestBase
 
     private ILocator Root(string id) => Page.Locator($"#{id}");
 
-    private ILocator Suggestions(string id) => Root(id).Locator(".bit-aiems-sgs > .bit-btn");
+    private ILocator Suggestions(string id) => Root(id).Locator(".bit-ems-con > .bit-btn");
 
     // ---------- basic ----------
 
@@ -24,11 +24,11 @@ public class BitAiEmptyStateE2ETests : E2ETestBase
 
         var root = Root("ems-basic");
         await Expect(root).ToHaveClassAsync(HasClass("bit-aiems"));
-        await Expect(root.Locator(".bit-aiems-ttl")).ToHaveTextAsync("How can I help?");
-        await Expect(root.Locator(".bit-aiems-bdy")).ToHaveTextAsync("Ask a question to get started.");
-        await Expect(root.Locator(".bit-aiems-sgs")).ToHaveCountAsync(0);
+        await Expect(root.Locator(".bit-ems-ttl")).ToHaveTextAsync("How can I help?");
+        await Expect(root.Locator(".bit-ems-dsc")).ToHaveTextAsync("Ask a question to get started.");
+        await Expect(root.Locator(".bit-ems-con")).ToHaveCountAsync(0);
 
-        var icon = root.Locator(".bit-aiems-ico");
+        var icon = root.Locator(".bit-ems-ico");
         await icon.AssertAiGlyphAsync("AutoEnhanceOn");
         await Expect(icon).ToHaveAttributeAsync("aria-hidden", "true");
     }
@@ -38,28 +38,30 @@ public class BitAiEmptyStateE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
+        // The parts are laid out by the BitEmptyState the AI one is drawn with.
         var root = Root("ems-basic");
-        await Expect(root).ToHaveCSSAsync("flex-direction", "column");
-        await Expect(root).ToHaveCSSAsync("text-align", "center");
-        var box = await root.RectAsync();
-        foreach (var part in new[] { ".bit-aiems-ico", ".bit-aiems-ttl", ".bit-aiems-bdy" })
+        var core = root.Locator(".bit-ems");
+        await Expect(core).ToHaveCSSAsync("flex-direction", "column");
+        await Expect(root.Locator(".bit-ems-dsc")).ToHaveCSSAsync("text-align", "center");
+        var box = await core.RectAsync();
+        foreach (var part in new[] { ".bit-ems-ico", ".bit-ems-ttl", ".bit-ems-dsc" })
         {
             var rect = await root.Locator(part).RectAsync();
             Assert.AreEqual((box.Left + box.Right) / 2, (rect.Left + rect.Right) / 2, 1.5, $"{part} is centered.");
         }
 
-        var icon = await root.Locator(".bit-aiems-ico").RectAsync();
-        var title = await root.Locator(".bit-aiems-ttl").RectAsync();
-        var body = await root.Locator(".bit-aiems-bdy").RectAsync();
+        var icon = await root.Locator(".bit-ems-ico").RectAsync();
+        var title = await root.Locator(".bit-ems-ttl").RectAsync();
+        var body = await root.Locator(".bit-ems-dsc").RectAsync();
         Assert.IsTrue(icon.Bottom <= title.Top && title.Bottom <= body.Top, "The icon, the heading and the line are stacked in that order.");
 
-        await Expect(root).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-fg-sec)"));
-        await Expect(root.Locator(".bit-aiems-ico")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-pri)"));
-        await Expect(root.Locator(".bit-aiems-ico")).ToHaveCSSAsync("font-size", await root.ResolveLengthInAsync("var(--bit-tpg-fs-4xl)"));
-        await Expect(root.Locator(".bit-aiems-ttl")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-fg-pri)"));
-        await Expect(root.Locator(".bit-aiems-ttl")).ToHaveCSSAsync("font-size", await root.ResolveLengthInAsync("var(--bit-tpg-fs-xl)"));
+        await Expect(root.Locator(".bit-ems-dsc")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-fg-sec)"));
+        await Expect(root.Locator(".bit-ems-ico")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-pri)"));
+        await Expect(root.Locator(".bit-ems-ico")).ToHaveCSSAsync("font-size", await root.ResolveLengthInAsync("var(--bit-tpg-fs-4xl)"));
+        await Expect(root.Locator(".bit-ems-ttl")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-fg-pri)"));
+        await Expect(root.Locator(".bit-ems-ttl")).ToHaveCSSAsync("font-size", await root.ResolveLengthInAsync("var(--bit-tpg-fs-xl)"));
         var weight = await root.EvaluateAsync<string>("e => { const p = document.createElement('div'); p.style.fontWeight = 'var(--bit-tpg-fw-semibold)'; e.appendChild(p); const w = getComputedStyle(p).fontWeight; p.remove(); return w; }");
-        await Expect(root.Locator(".bit-aiems-ttl")).ToHaveCSSAsync("font-weight", weight);
+        await Expect(root.Locator(".bit-ems-ttl")).ToHaveCSSAsync("font-weight", weight);
     }
 
     // ---------- suggestions ----------
@@ -109,7 +111,7 @@ public class BitAiEmptyStateE2ETests : E2ETestBase
         Assert.AreEqual(1, row.Distinct().Count(), "One row in a wide box.");
         var narrow = await Suggestions("ems-narrow").EvaluateAllAsync<double[]>("els => els.map(e => e.getBoundingClientRect().top)");
         Assert.IsTrue(narrow.Distinct().Count() > 1, "The suggestions wrap in a narrow box.");
-        var box = await Root("ems-narrow").Locator(".bit-aiems-sgs").RectAsync();
+        var box = await Root("ems-narrow").Locator(".bit-ems-con").RectAsync();
         var chip = await Suggestions("ems-narrow").Last.RectAsync();
         Assert.AreEqual((box.Left + box.Right) / 2, (chip.Left + chip.Right) / 2, 1.5, "A wrapped suggestion is centered.");
     }
@@ -117,16 +119,16 @@ public class BitAiEmptyStateE2ETests : E2ETestBase
     // ---------- custom ----------
 
     [TestMethod]
-    public async Task Custom_TitleBodyAndIconName_ReplaceTheDefaults()
+    public async Task Custom_TitleDescriptionAndIconName_ReplaceTheDefaults()
     {
         await OpenAsync(Route);
 
         var root = Root("ems-custom");
-        await Expect(root.Locator(".bit-aiems-ttl")).ToHaveTextAsync("Hi, I am the docs assistant");
-        await Expect(root.Locator(".bit-aiems-bdy")).ToHaveTextAsync("Ask about any component.");
+        await Expect(root.Locator(".bit-ems-ttl")).ToHaveTextAsync("Hi, I am the docs assistant");
+        await Expect(root.Locator(".bit-ems-dsc")).ToHaveTextAsync("Ask about any component.");
 
         // An icon the app names is its own: the core font draws it, and the AI subset is not asked for.
-        var icon = root.Locator(".bit-aiems-ico");
+        var icon = root.Locator(".bit-ems-ico");
         await Expect(icon).ToHaveClassAsync(HasClass("bit-icon--Robot"));
         await Expect(icon).Not.ToHaveClassAsync(HasClass("bit-icon-ai"));
         var (family, content) = await icon.GlyphAsync();
@@ -135,14 +137,14 @@ public class BitAiEmptyStateE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task Custom_ChildContentAndIconTemplate_TakeThePlaceOfTheLineAndTheGlyph()
+    public async Task Custom_DescriptionTemplateAndIconTemplate_TakeThePlaceOfTheLineAndTheGlyph()
     {
         await OpenAsync(Route);
 
-        await Expect(Root("ems-child").Locator(".bit-aiems-bdy > #ems-child-content")).ToHaveTextAsync("Pick up where you left off.");
-        await Expect(Root("ems-child").Locator(".bit-aiems-ttl")).ToHaveTextAsync("Welcome back");
+        await Expect(Root("ems-child").Locator(".bit-ems-dsc > #ems-child-content")).ToHaveTextAsync("Pick up where you left off.");
+        await Expect(Root("ems-child").Locator(".bit-ems-ttl")).ToHaveTextAsync("Welcome back");
 
-        await Expect(Root("ems-icon-template").Locator("div.bit-aiems-ico > #ems-icon-template-content")).ToHaveTextAsync("*");
+        await Expect(Root("ems-icon-template").Locator("div.bit-ems-ico > #ems-icon-template-content")).ToHaveTextAsync("*");
         await Expect(Root("ems-icon-template").Locator("i")).ToHaveCountAsync(0);
     }
 
@@ -173,16 +175,18 @@ public class BitAiEmptyStateE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var root = Root("ems-var");
-        await Expect(root).ToHaveCSSAsync("row-gap", "23px");
-        await Expect(root).ToHaveCSSAsync("padding-top", "31px");
-        await Expect(root).ToHaveCSSAsync("padding-left", "32px");
-        await Expect(root).ToHaveCSSAsync("color", "rgb(21, 22, 23)");
-        await Expect(root.Locator(".bit-aiems-ico")).ToHaveCSSAsync("color", "rgb(200, 0, 100)");
-        await Expect(root.Locator(".bit-aiems-ico")).ToHaveCSSAsync("font-size", "50px");
-        await Expect(root.Locator(".bit-aiems-ttl")).ToHaveCSSAsync("color", "rgb(31, 32, 33)");
-        await Expect(root.Locator(".bit-aiems-ttl")).ToHaveCSSAsync("font-size", "27px");
-        await Expect(root.Locator(".bit-aiems-ttl")).ToHaveCSSAsync("font-weight", "300");
-        await Expect(root.Locator(".bit-aiems-sgs")).ToHaveCSSAsync("column-gap", "15px");
+        var core = root.Locator(".bit-ems");
+        await Expect(core).ToHaveCSSAsync("row-gap", "23px");
+        await Expect(core).ToHaveCSSAsync("padding-top", "31px");
+        await Expect(core).ToHaveCSSAsync("padding-left", "32px");
+        await Expect(root.Locator(".bit-ems-dsc")).ToHaveCSSAsync("color", "rgb(21, 22, 23)");
+        await Expect(root.Locator(".bit-ems-dsc")).ToHaveCSSAsync("font-size", "19px");
+        await Expect(root.Locator(".bit-ems-ico")).ToHaveCSSAsync("color", "rgb(200, 0, 100)");
+        await Expect(root.Locator(".bit-ems-ico")).ToHaveCSSAsync("font-size", "50px");
+        await Expect(root.Locator(".bit-ems-ttl")).ToHaveCSSAsync("color", "rgb(31, 32, 33)");
+        await Expect(root.Locator(".bit-ems-ttl")).ToHaveCSSAsync("font-size", "27px");
+        await Expect(root.Locator(".bit-ems-ttl")).ToHaveCSSAsync("font-weight", "300");
+        await Expect(root.Locator(".bit-ems-con")).ToHaveCSSAsync("column-gap", "15px");
 
         var first = await Suggestions("ems-var").Nth(0).RectAsync();
         var second = await Suggestions("ems-var").Nth(1).RectAsync();
@@ -196,12 +200,12 @@ public class BitAiEmptyStateE2ETests : E2ETestBase
 
         var root = Root("ems-classes");
         await Expect(root).ToHaveClassAsync(HasClass("e2e-ems-root"));
-        await Expect(root.Locator(".bit-aiems-ttl")).ToHaveClassAsync(HasClass("e2e-ems-title"));
-        await Expect(root.Locator(".bit-aiems-ttl")).ToHaveCSSAsync("letter-spacing", "4px");
-        await Expect(root.Locator(".bit-aiems-bdy")).ToHaveClassAsync(HasClass("e2e-ems-body"));
-        await Expect(root.Locator(".bit-aiems-ico")).ToHaveClassAsync(HasClass("e2e-ems-icon"));
-        await Expect(root.Locator(".bit-aiems-ico")).ToHaveClassAsync(HasClass("bit-icon-ai--AutoEnhanceOn"));
-        await Expect(root.Locator(".bit-aiems-sgs")).ToHaveClassAsync(HasClass("e2e-ems-sgs"));
+        await Expect(root.Locator(".bit-ems-ttl")).ToHaveClassAsync(HasClass("e2e-ems-title"));
+        await Expect(root.Locator(".bit-ems-ttl")).ToHaveCSSAsync("letter-spacing", "4px");
+        await Expect(root.Locator(".bit-ems-dsc")).ToHaveClassAsync(HasClass("e2e-ems-body"));
+        await Expect(root.Locator(".bit-ems-ico")).ToHaveClassAsync(HasClass("e2e-ems-icon"));
+        await Expect(root.Locator(".bit-ems-ico")).ToHaveClassAsync(HasClass("bit-icon-ai--AutoEnhanceOn"));
+        await Expect(root.Locator(".bit-ems-con")).ToHaveClassAsync(HasClass("e2e-ems-sgs"));
         await Expect(Suggestions("ems-classes").First).ToHaveClassAsync(HasClass("e2e-ems-suggestion"));
         await Expect(Suggestions("ems-classes").First).ToHaveCSSAsync("outline-color", "rgb(6, 7, 8)");
     }

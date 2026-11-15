@@ -45,7 +45,7 @@ public static class E2EEnvironment
 
     /// <summary>
     /// <c>BELEMETRY_E2E_MAUI_DEBUGGING_PORT</c>: the WebView2 debugging port the MAUI sample was given from outside - by
-    /// the machine-wide <c>AdditionalBrowserArguments</c> policy, as <c>bit.ci.Belemetry.e2e.yml</c> sets it. Unset, the
+    /// the machine-wide <c>AdditionalBrowserArguments</c> policy, as <c>ci.belemetry.e2e.yml</c> sets it. Unset, the
     /// suite opens a free port itself through <c>WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS</c>, which an elevated process ignores.
     /// </summary>
     public static int? MauiDebuggingPort { get; } = int.TryParse(Read("BELEMETRY_E2E_MAUI_DEBUGGING_PORT"), out var port) ? port : null;

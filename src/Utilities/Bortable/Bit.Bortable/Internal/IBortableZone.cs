@@ -64,6 +64,18 @@ internal interface IBortableZone
     /// </summary>
     bool TakesDrag(BortableDragContext ctx);
 
+    /// <summary>
+    /// Whether this list, where the drag <paramref name="ctx"/> started, lets the drag take its items out for good: its
+    /// <c>MinItems</c> stays met.
+    /// </summary>
+    bool LetsGo(BortableDragContext ctx);
+
+    /// <summary>
+    /// Whether <paramref name="x"/> and <paramref name="y"/> are the same item to this list: by its <c>ItemKey</c>, so
+    /// that an item the page loaded again is the same item as the copy a drag started with.
+    /// </summary>
+    bool Same(object? x, object? y);
+
     int Count { get; }
     int IndexOf(object item);
     object? ItemAt(int index);
@@ -86,14 +98,23 @@ internal interface IBortableZone
     object CloneItem(object item);
 
     /// <summary>
+    /// Whether this list copies its items with a <c>Clone</c> factory, whose copy may be told apart from its original (a
+    /// key of its own): what a clone brings is then known only once the copy is made.
+    /// </summary>
+    bool ClonesByFactory { get; }
+
+    /// <summary>
     /// Positions the drag at drop position <paramref name="index"/> of this list, inside the gate. Returns 1 when a
     /// list changed, 0 when nothing did, -1 when this list refused the position; <paramref name="change"/> is the
     /// <c>OnChange</c> to raise once the gate is released.
     /// </summary>
     int ApplyOver(BortableDragContext ctx, int index, out BortableMoveInfo? change);
 
-    /// <summary>Moves (or clones) the dragged item into this list at the placeholder position.</summary>
-    void CommitPlaceholder(BortableDragContext ctx);
+    /// <summary>
+    /// Moves (or clones) the dragged item into this list at the placeholder position; <c>false</c> when the drop is
+    /// refused at the last moment (the copy is already here, or the source's minimum would be broken).
+    /// </summary>
+    bool CommitPlaceholder(BortableDragContext ctx);
 
     /// <summary>Snapshots item positions before a change .NET makes on its own (for the FLIP animation).</summary>
     Task CaptureFlipAsync();

@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the steps of an application, or of one part of it, agree on: their look. The step and the
 /// conversation are left out on purpose: they are what makes one step the one it is.
 /// </remarks>
-public class BitAiAgentStepViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiAgentStepViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiAgentStepView"/> cascading parameters within <see cref="BitParams"/>.

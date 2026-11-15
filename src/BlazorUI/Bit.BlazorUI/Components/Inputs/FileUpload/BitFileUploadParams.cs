@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitFileUpload"/> component.
 /// </summary>
-public class BitFileUploadParams : BitInputBaseParams<string?>, IBitComponentParams
+public partial class BitFileUploadParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitFileUpload"/> cascading parameters within <see cref="BitParams"/>.

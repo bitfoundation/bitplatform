@@ -1347,6 +1347,54 @@
     <data name="SettingsCaption" xml:space="preserve">
         <value>Je account, jouw manier</value>
     </data>
+    <data name="SettingsSwitchSection" xml:space="preserve">
+        <value>Sectie</value>
+    </data>
+    <data name="SettingsSectionProfile" xml:space="preserve">
+        <value>Profiel</value>
+    </data>
+    <data name="SettingsSectionAccount" xml:space="preserve">
+        <value>Account</value>
+    </data>
+    <data name="SettingsSectionTfa" xml:space="preserve">
+        <value>Tweestapsverificatie</value>
+    </data>
+    <data name="SettingsSectionSessions" xml:space="preserve">
+        <value>Sessies</value>
+    </data>
+    <data name="SettingsSectionPrivacy" xml:space="preserve">
+        <value>Privacy</value>
+    </data>
+    <data name="SettingsSectionUpgrade" xml:space="preserve">
+        <value>Upgrade</value>
+    </data>
+    <data name="SettingsSwitchTwoFactor" xml:space="preserve">
+        <value>Tweestaps</value>
+    </data>
+    <data name="SettingsTwoFactorOff" xml:space="preserve">
+        <value>Niet ingesteld</value>
+    </data>
+    <data name="SettingsTwoFactorOn" xml:space="preserve">
+        <value>Aan</value>
+    </data>
+    <data name="SettingsSwitchPasskey" xml:space="preserve">
+        <value>Toegangssleutel</value>
+    </data>
+    <data name="SettingsPasskeyOff" xml:space="preserve">
+        <value>Geen</value>
+    </data>
+    <data name="SettingsPasskeyOn" xml:space="preserve">
+        <value>Op dit apparaat</value>
+    </data>
+    <data name="SettingsSwitchConfirm" xml:space="preserve">
+        <value>Bevestigen dat u het bent</value>
+    </data>
+    <data name="SettingsConfirmRecent" xml:space="preserve">
+        <value>Een minuut geleden bevestigd</value>
+    </data>
+    <data name="SettingsConfirmAsk" xml:space="preserve">
+        <value>Vraagt eerst om een code</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>Dag</value>
     </data>
@@ -4098,6 +4146,21 @@
     <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
         <value>Voor klanten, twaalf plaatsen</value>
     </data>
+    <data name="ThemeExtrasRightClickOrPressAnd" xml:space="preserve">
+        <value>Klik met rechts of houd ingedrukt</value>
+    </data>
+    <data name="ThemeExtrasListsWhatTheSnackBars" xml:space="preserve">
+        <value>Toont wat de snackbars lieten zien</value>
+    </data>
+    <data name="ThemeExtrasUnreadCount" xml:space="preserve">
+        <value>{0} ongelezen</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductTitle" xml:space="preserve">
+        <value>Dit product verwijderen?</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductBody" xml:space="preserve">
+        <value>{0} wordt van de kaart gehaald.</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>Weeknummers, tijd</value>
     </data>
@@ -4437,6 +4500,9 @@
     <data name="ThemeNotificationsDismissible" xml:space="preserve">
         <value>Sluitbaar</value>
     </data>
+    <data name="ThemeNotificationsSetAGoal" xml:space="preserve">
+        <value>Doel instellen</value>
+    </data>
     <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
         <value>Levertijden</value>
     </data>
@@ -4751,6 +4817,15 @@
     </data>
     <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
         <value>Afgekapt op twee regels</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldTheBox" xml:space="preserve">
+        <value>Houd het vak ingedrukt</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldHere" xml:space="preserve">
+        <value>Houd hier ingedrukt</value>
+    </data>
+    <data name="ThemeUtilitiesPressedAndHeld" xml:space="preserve">
+        <value>Ingedrukt gehouden</value>
     </data>
     <data name="ThemeSectionsOfThisPage" xml:space="preserve">
         <value>Onderdelen van deze pagina</value>

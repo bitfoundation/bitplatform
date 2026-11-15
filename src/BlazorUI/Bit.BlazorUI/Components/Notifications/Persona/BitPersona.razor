@@ -17,6 +17,8 @@
        this, which is what keeps a list of a hundred faces from deriving a hundred sets of initials it will
        never show. *@
     RenderFragment? coinFallback = null;
+    @* The letters the coin shows, which a coin that is a control has to carry in its name (see GetCoinButtonLabel). *@
+    string? shownInitials = null;
     if (NeedsCoinFallback())
     {
         var (initials, initialsFollowDirection) = GetInitials();
@@ -30,6 +32,8 @@
         }
         else
         {
+            shownInitials = initials;
+
             @* The name is already announced from the details beside the coin, so the pair of letters standing
                in for it is not read out again on top of it. Where there is no name to announce, they are all
                a reader has and stay in the accessibility tree. *@
@@ -152,7 +156,7 @@
                        rel="@_rel"
                        target="@Target"
                        tabindex="@(Disabled ? "-1" : TabIndex)"
-                       aria-label="@GetCoinButtonLabel()"
+                       aria-label="@GetCoinButtonLabel(shownInitials)"
                        aria-disabled="@(Disabled ? "true" : null)"
                        @onclick="HandleImageClick">
                         @coinContent
@@ -166,7 +170,7 @@
                             disabled="@(Disabled)"
                             aria-disabled="@(Disabled ? "true" : null)"
                             tabindex="@TabIndex"
-                            aria-label="@GetCoinButtonLabel()"
+                            aria-label="@GetCoinButtonLabel(shownInitials)"
                             @onclick="HandleImageClick">
                         @coinContent
                     </button>

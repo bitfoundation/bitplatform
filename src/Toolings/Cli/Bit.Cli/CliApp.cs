@@ -14,7 +14,7 @@ public static class CliApp
     public const int ExitUsage = 2;
     public const int ExitCheckFailed = 3;
 
-    private static readonly string[] longRunningCommands = ["new", "setup", "run", "diff", "translate", "doctor", "clean", "aot-profile", "migration", "pipeline", "api"];
+    private static readonly string[] longRunningCommands = ["new", "setup", "run", "ci", "diff", "translate", "doctor", "clean", "aot-profile", "migration", "pipeline", "api"];
 
     public static RootCommand BuildRootCommand(Func<CliServices> services)
     {
@@ -23,6 +23,7 @@ public static class CliApp
             NewCommand.Create(services),
             SetupCommand.Create(services),
             RunCommand.Create(services),
+            CiCommand.Create(services),
             DiffCommand.Create(services),
             DoctorCommand.Create(services),
             TrustCommand.Create(services),
@@ -69,7 +70,7 @@ public static class CliApp
 
         using var log = new CliLog(environment.LogsDirectory, commandName);
         services = new CliServices(environment, console, log: log);
-        log.Write($"bit {BuildInfo.Version} ({BuildInfo.Commit ?? "local build"}) on {environment.Os} {environment.Architecture}: {string.Join(' ', args.Select(ProcessSpec.Quote))}");
+        log.Write($"bit {BuildInfo.Version} ({BuildInfo.Commit ?? "local build"}) on {environment.Os} {environment.Architecture}: {string.Join(' ', ProcessSpec.Redact(args).Select(ProcessSpec.Quote))}");
 
         var isMeta = parseResult.Errors.Count > 0 || command == root || commandName is Tools.AdministratorSession.CommandName || args.Any(a => a is "--help" or "-h" or "-?" or "/?" or "--version");
         var decision = TelemetryDecision.Resolve(environment, services.Settings, BuildInfo.TelemetryConnectionString);

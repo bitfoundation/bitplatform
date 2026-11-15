@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// with, and their classes and styles. The suggestions, the templates and the callback are left out on purpose: they
 /// are what makes one empty state the one it is.
 /// </remarks>
-public class BitAiEmptyStateParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiEmptyStateParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiEmptyState"/> cascading parameters within <see cref="BitParams"/>.
@@ -36,14 +36,19 @@ public class BitAiEmptyStateParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
-    /// The supporting line under the heading.
-    /// </summary>
-    public string? Body { get; set; }
-
-    /// <summary>
     /// Custom CSS classes for different parts of the empty state.
     /// </summary>
     public BitAiEmptyStateClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The supporting line under the heading.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Makes the heading a heading of this level (1 to 6) in the outline of the page.
+    /// </summary>
+    public int? HeadingLevel { get; set; }
 
     /// <summary>
     /// The icon of the empty state, provided as custom CSS classes of an external icon library.
@@ -84,14 +89,19 @@ public class BitAiEmptyStateParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitAiEmptyState);
 
-        if (Body.HasValue())
-        {
-            bitAiEmptyState.TakeFromCascade(nameof(Body), Body, static e => e.Body, static (e, v) => e.Body = v);
-        }
-
         if (Classes is not null)
         {
             bitAiEmptyState.TakeFromCascade(nameof(Classes), Classes, static e => e.Classes, static (e, v) => e.Classes = v);
+        }
+
+        if (Description.HasValue())
+        {
+            bitAiEmptyState.TakeFromCascade(nameof(Description), Description, static e => e.Description, static (e, v) => e.Description = v);
+        }
+
+        if (HeadingLevel.HasValue)
+        {
+            bitAiEmptyState.TakeFromCascade(nameof(HeadingLevel), HeadingLevel.Value, static e => e.HeadingLevel, static (e, v) => e.HeadingLevel = v);
         }
 
         if (Icon is not null)

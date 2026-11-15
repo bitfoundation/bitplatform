@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what every JSON tree of an app or a section of it agrees on - how much of a tree starts open,
 /// and the classes and styles of its parts - rather than the value a single tree shows.
 /// </remarks>
-public class BitAiJsonViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiJsonViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiJsonView"/> cascading parameters within <see cref="BitParams"/>.

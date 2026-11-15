@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// the time zone they count the days of their groups in, and their classes and styles. The conversations, the one that is open and the callbacks are left out on purpose:
 /// they are what makes one list the one it is.
 /// </remarks>
-public class BitAiConversationListParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiConversationListParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiConversationList"/> cascading parameters within <see cref="BitParams"/>.

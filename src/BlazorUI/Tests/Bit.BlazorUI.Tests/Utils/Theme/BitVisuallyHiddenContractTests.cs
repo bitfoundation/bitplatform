@@ -109,6 +109,54 @@ public partial class BitVisuallyHiddenContractTests
     }
 
     [TestMethod]
+    public void AVisuallyHiddenPartOfAnAiComponentShouldStayInsideABoxOfItsOwn()
+    {
+        // The mixin takes a part out of the flow and parks it where it would have been laid out, against the nearest
+        // positioned ancestor. Were that one outside a box that scrolls - BitAiChat around the transcript - the pixel of
+        // a part below the fold would hang past it and give whatever scrolls around it a scrollbar of its own (#14995).
+        // So the component either positions its root, the containing block then being its own, or pins the part to the
+        // start corner of whatever ancestor it is placed against, inside it with the mixin's negative margin taken back
+        // (BitAiMessageActions, whose row is not positioned so that it paints in the order it always has).
+        var stylesheets = Directory.EnumerateFiles(SourceFiles.GetDirectory("Bit.BlazorUI.AI", "Components"), "*.scss", SearchOption.AllDirectories).ToArray();
+
+        // An empty scan would pass whatever the stylesheets say.
+        Assert.IsTrue(stylesheets.Length > 10, $"Only {stylesheets.Length} AI component stylesheets were found under {SourceFiles.Root}.");
+
+        var parts = 0;
+        var offenders = new List<string>();
+
+        foreach (var file in stylesheets)
+        {
+            var rules = SourceFiles.GetScssRules(SourceFiles.ReadFullPath(file));
+            var hidden = rules.Where(rule => rule.Ancestors.Any(a => a.StartsWith("@keyframes", StringComparison.Ordinal)) is false)
+                              .Where(rule => rule.Declarations.Any(d => d is "@include visually-hidden" or "@include visually-hidden-control"))
+                              .ToArray();
+
+            if (hidden.Length == 0) continue;
+
+            var root = rules.FirstOrDefault(rule => rule.Ancestors.Count == 0 && RootSelector().IsMatch(rule.Header));
+            var rootPositioned = root?.Declarations.Any(d => PositionedDeclaration().IsMatch(d)) is true;
+
+            foreach (var rule in hidden)
+            {
+                parts++;
+
+                var pinned = rule.Declarations.Contains("margin: 0") &&
+                             rule.Declarations.Contains("inset-block-start: 0") &&
+                             rule.Declarations.Contains("inset-inline-start: 0");
+
+                if (rootPositioned is false && pinned is false)
+                {
+                    offenders.Add($"{Path.GetRelativePath(SourceFiles.Root, file)}: {string.Join(" ", [.. rule.Ancestors, rule.Header])}");
+                }
+            }
+        }
+
+        Assert.IsTrue(parts > 5, $"Only {parts} visually hidden parts were found in the AI component stylesheets.");
+        Assert.AreEqual(0, offenders.Count, $"These visually hidden parts sit in a component whose root is not positioned and are not pinned to the start corner either: {string.Join(", ", offenders)}");
+    }
+
+    [TestMethod]
     public void NoComponentCodeShouldWriteOutAVisuallyHiddenStyleOfItsOwn()
     {
         // Markup built in C#, Razor or TypeScript with an inline style hides through a copy of the mixin, which no
@@ -197,4 +245,11 @@ public partial class BitVisuallyHiddenContractTests
 
     [GeneratedRegex(@"(?<![\w-])(?:top|left|right|bottom|inset(?:-inline|-block)?(?:-start|-end)?)\s*:")]
     private static partial Regex OffsetDeclaration();
+
+    // The rule of a component's root: one class of the library's, nothing more.
+    [GeneratedRegex(@"^\.bit-[a-z0-9]+$")]
+    private static partial Regex RootSelector();
+
+    [GeneratedRegex(@"^position\s*:\s*(?:relative|absolute|fixed|sticky)$", RegexOptions.IgnoreCase)]
+    private static partial Regex PositionedDeclaration();
 }

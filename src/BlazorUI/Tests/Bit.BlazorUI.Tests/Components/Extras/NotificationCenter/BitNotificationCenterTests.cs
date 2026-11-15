@@ -44,7 +44,7 @@ public class BitNotificationCenterTests : BunitTestContext
         Assert.IsNull(bell.QuerySelector(".bit-ntc-bdg"), "nothing is unread");
         Assert.IsNull(bell.QuerySelector(".bit-drm-chv"), "a bell has no chevron");
 
-        Assert.AreEqual("No notifications", center.Find(".bit-ntc-emp").TextContent.Trim());
+        Assert.AreEqual("No items found", center.Find(".bit-ntc-emp").TextContent.Trim());
         Assert.IsEmpty(center.FindAll(".bit-ntc-clr"), "there is nothing to clear");
     }
 
@@ -223,6 +223,23 @@ public class BitNotificationCenterTests : BunitTestContext
         Assert.AreEqual("Notifications, 100 unread", Bell(center).GetAttribute("aria-label"));
     }
 
+    [TestMethod]
+    public async Task BitNotificationCenterShouldShowItsEmptyTemplateInPlaceOfTheEmptyText()
+    {
+        var service = RegisterService();
+        var center = RenderComponent<BitNotificationCenter>(parameters =>
+        {
+            parameters.Add(p => p.EmptyText, "All caught up");
+            parameters.Add(p => p.EmptyTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<b class=\"caught-up\">Done</b>")));
+        });
+
+        Assert.AreEqual("Done", center.Find(".bit-ntc-emp > .caught-up").TextContent);
+        Assert.IsFalse(center.Find(".bit-ntc-emp").TextContent.Contains("All caught up"));
+
+        await service.Info("first");
+
+        center.WaitForAssertion(() => Assert.AreEqual(0, center.FindAll(".bit-ntc-emp").Count));
+    }
     [TestMethod]
     public async Task BitNotificationCenterShouldTakeItsWords()
     {

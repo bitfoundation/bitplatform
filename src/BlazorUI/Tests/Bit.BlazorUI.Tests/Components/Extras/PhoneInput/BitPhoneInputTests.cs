@@ -1031,11 +1031,11 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPhoneInputShouldRespectNoResultsMessage()
+    public void BitPhoneInputShouldRespectNoResultsText()
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
         {
-            parameters.Add(p => p.NoResultsMessage, "nothing here");
+            parameters.Add(p => p.NoResultsText, "nothing here");
         });
 
         component.Find("button.bit-phi-drp").Click();
@@ -3100,7 +3100,7 @@ public class BitPhoneInputTests : BunitTestContext
         var component = RenderComponent<BitPhoneInput>(parameters =>
         {
             parameters.Add(p => p.Countries, FiveCountries);
-            parameters.Add(p => p.NoResultsMessage, "Kein Land gefunden");
+            parameters.Add(p => p.NoResultsText, "Kein Land gefunden");
             parameters.Add(p => p.SearchResultsAnnouncement, count => $"{count} Länder gefunden");
         });
 

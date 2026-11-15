@@ -5,9 +5,13 @@ public partial class InputsSection
 {
     private static readonly string[] multipleValues = ["1", "3"];
 
+    private static readonly string[] selectedTags = ["vegan", "organic"];
+
     private List<BitDropdownItem<string>> options = [];
     private List<BitChoiceGroupItem<string>> choices = [];
     private List<BitChoiceGroupItem<string>> deliveries = [];
+    private List<BitListBoxItem<string>> deliveryItems = [];
+    private List<BitListBoxItem<string>> tagItems = [];
     private List<string> tags = [];
     private DateTimeOffset[] highlightedDates = [];
     private BitFileInfo[] uploadedFiles = [];
@@ -43,6 +47,8 @@ public partial class InputsSection
 
     private string TagsLabel => Localizer[nameof(WorkbenchStrings.ThemeInputsTags)];
 
+    private string DeliveryLabel => Localizer[nameof(WorkbenchStrings.ThemeExtrasDelivery)];
+
     protected override void OnInitialized()
     {
         options = [.. Enumerable.Range(1, 4).Select(index => new BitDropdownItem<string> { Value = index.ToString(CultureInfo.InvariantCulture), Text = Localizer[nameof(WorkbenchStrings.ThemeOption), index] })];
@@ -53,6 +59,15 @@ public partial class InputsSection
             new() { Value = "bike", Text = Localizer[nameof(WorkbenchStrings.ThemeInputsBike)], IconName = BitIconName.Cycling },
             new() { Value = "van", Text = Localizer[nameof(WorkbenchStrings.ThemeInputsVan)], IconName = BitIconName.DeliveryTruck },
             new() { Value = "pickup", Text = Localizer[nameof(WorkbenchStrings.ThemeInputsPickUp)], IconName = BitIconName.Shop }
+        ];
+
+        deliveryItems = [.. deliveries.Select(delivery => new BitListBoxItem<string> { Value = delivery.Value, Text = delivery.Text, IconName = delivery.IconName })];
+
+        tagItems =
+        [
+            new() { Value = "vegan", Text = Localizer[nameof(WorkbenchStrings.ThemeInputsVegan)] },
+            new() { Value = "gluten-free", Text = Localizer[nameof(WorkbenchStrings.ThemeInputsGlutenFree)] },
+            new() { Value = "organic", Text = Localizer[nameof(WorkbenchStrings.ThemeInputsOrganic)] }
         ];
 
         tags = [Localizer[nameof(WorkbenchStrings.ThemeInputsVegan)], Localizer[nameof(WorkbenchStrings.ThemeInputsGlutenFree)], Localizer[nameof(WorkbenchStrings.ThemeInputsOrganic)]];

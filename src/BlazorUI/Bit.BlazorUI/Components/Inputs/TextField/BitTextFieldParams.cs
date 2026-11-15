@@ -19,7 +19,7 @@ namespace Bit.BlazorUI;
 /// <see cref="BitInputBaseParams{TValue}"/> gives: the first is a dictionary the field writes into, and the second
 /// is read while the parameters are still being set, before any cascade has been applied.
 /// </remarks>
-public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentParams
+public partial class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitTextField"/> cascading parameters within <see cref="BitParams"/>.

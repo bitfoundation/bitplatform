@@ -1347,6 +1347,54 @@
     <data name="SettingsCaption" xml:space="preserve">
         <value>Your account, your way</value>
     </data>
+    <data name="SettingsSwitchSection" xml:space="preserve">
+        <value>Section</value>
+    </data>
+    <data name="SettingsSectionProfile" xml:space="preserve">
+        <value>Profile</value>
+    </data>
+    <data name="SettingsSectionAccount" xml:space="preserve">
+        <value>Account</value>
+    </data>
+    <data name="SettingsSectionTfa" xml:space="preserve">
+        <value>Two-factor authentication</value>
+    </data>
+    <data name="SettingsSectionSessions" xml:space="preserve">
+        <value>Sessions</value>
+    </data>
+    <data name="SettingsSectionPrivacy" xml:space="preserve">
+        <value>Privacy</value>
+    </data>
+    <data name="SettingsSectionUpgrade" xml:space="preserve">
+        <value>Upgrade</value>
+    </data>
+    <data name="SettingsSwitchTwoFactor" xml:space="preserve">
+        <value>Two-factor</value>
+    </data>
+    <data name="SettingsTwoFactorOff" xml:space="preserve">
+        <value>Not set up</value>
+    </data>
+    <data name="SettingsTwoFactorOn" xml:space="preserve">
+        <value>On</value>
+    </data>
+    <data name="SettingsSwitchPasskey" xml:space="preserve">
+        <value>Passkey</value>
+    </data>
+    <data name="SettingsPasskeyOff" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="SettingsPasskeyOn" xml:space="preserve">
+        <value>On this device</value>
+    </data>
+    <data name="SettingsSwitchConfirm" xml:space="preserve">
+        <value>Confirming it's you</value>
+    </data>
+    <data name="SettingsConfirmRecent" xml:space="preserve">
+        <value>Confirmed a minute ago</value>
+    </data>
+    <data name="SettingsConfirmAsk" xml:space="preserve">
+        <value>Asks for a code first</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>Day</value>
     </data>
@@ -4098,6 +4146,21 @@
     <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
         <value>For customers, twelve seats</value>
     </data>
+    <data name="ThemeExtrasRightClickOrPressAnd" xml:space="preserve">
+        <value>Right-click or press and hold</value>
+    </data>
+    <data name="ThemeExtrasListsWhatTheSnackBars" xml:space="preserve">
+        <value>Lists what the snack bars showed</value>
+    </data>
+    <data name="ThemeExtrasUnreadCount" xml:space="preserve">
+        <value>{0} unread</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductTitle" xml:space="preserve">
+        <value>Delete this product?</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductBody" xml:space="preserve">
+        <value>{0} will be removed from the menu.</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>Week numbers, time</value>
     </data>
@@ -4437,6 +4500,9 @@
     <data name="ThemeNotificationsDismissible" xml:space="preserve">
         <value>Dismissible</value>
     </data>
+    <data name="ThemeNotificationsSetAGoal" xml:space="preserve">
+        <value>Set a goal</value>
+    </data>
     <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
         <value>Delivery times</value>
     </data>
@@ -4751,6 +4817,15 @@
     </data>
     <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
         <value>Clamped to two lines</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldTheBox" xml:space="preserve">
+        <value>Press and hold the box</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldHere" xml:space="preserve">
+        <value>Press and hold here</value>
+    </data>
+    <data name="ThemeUtilitiesPressedAndHeld" xml:space="preserve">
+        <value>Pressed and held</value>
     </data>
     <data name="ThemeSectionsOfThisPage" xml:space="preserve">
         <value>Sections of this page</value>

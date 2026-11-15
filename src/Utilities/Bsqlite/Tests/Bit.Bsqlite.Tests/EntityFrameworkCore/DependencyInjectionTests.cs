@@ -75,6 +75,23 @@ public sealed class DependencyInjectionTests
     }
 
     [TestMethod]
+    public void LazyLoadsXml_IsTheSwitchTheBuildSetsNextToTheMark()
+    {
+        // Unset outside a WebAssembly build that marks System.Private.Xml.wasm, so a BeforeFirstOpen step loads nothing.
+        Assert.IsFalse(BsqliteBuilder.LazyLoadsXml);
+
+        AppContext.SetSwitch("Bit.Bsqlite.LazyLoadsXml", true);
+        try
+        {
+            Assert.IsTrue(BsqliteBuilder.LazyLoadsXml);
+        }
+        finally
+        {
+            AppContext.SetSwitch("Bit.Bsqlite.LazyLoadsXml", false);
+        }
+    }
+
+    [TestMethod]
     public async Task ContextFactory_OpensTheDatabase_PreparesTheSchemaOnce_AndHandsOutContexts()
     {
         var firstUse = 0;
@@ -358,8 +375,8 @@ public sealed class DependencyInjectionTests
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
             database.WhileClosedAsync(async ct => await database.OpenAsync(ct), Ct));
 
-        // A failed work leaves the database closed, and the next open is an ordinary one.
-        Assert.IsFalse(database.IsOpen);
+        // A failed work still reopens the database it closed, and the open from inside it changed nothing.
+        Assert.IsTrue(database.IsOpen);
         await database.OpenAsync(Ct);
         Assert.IsTrue(database.IsOpen);
     }

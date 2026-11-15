@@ -1,0 +1,19 @@
+﻿::deep {
+    .example-stack {
+        gap: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .custom-group {
+        padding: 0.5rem;
+        border-radius: 2rem;
+        background-color: var(--bit-clr-bg-ter);
+        --bit-AvatarGroup-ring-color: var(--bit-clr-bg-ter);
+    }
+
+    .custom-overflow {
+        --bit-Persona-coin-radius: 0.5rem;
+    }
+}

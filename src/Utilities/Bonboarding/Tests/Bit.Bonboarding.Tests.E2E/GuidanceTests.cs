@@ -107,7 +107,7 @@ public sealed class GuidanceTests : BonboardingTest
     public async Task The_checklist_ticks_itself_off_and_remembers()
     {
         var page = await OpenAsync("/guidance");
-        var checklist = page.Locator(".bit-bonboarding-checklist");
+        var checklist = page.Locator("[data-bonboarding-checklist='demo-getting-started']");
         await Assertions.Expect(checklist.Locator(".bit-bonboarding-checklist-count")).ToHaveTextAsync("0 of 3 done");
 
         // A signal from the application.
@@ -130,6 +130,38 @@ public sealed class GuidanceTests : BonboardingTest
         await page.ReloadAsync();
         await WaitForInteractiveAsync(page);
         await Assertions.Expect(checklist.Locator(".bit-bonboarding-checklist-count")).ToHaveTextAsync("2 of 3 done");
+    }
+
+    [TestMethod]
+    public async Task A_task_waits_for_the_one_before_it_and_focus_follows_a_dismissal()
+    {
+        var page = await OpenAsync("/guidance");
+        var tasks = page.Locator("[data-bonboarding-checklist='demo-workspace-tasks']");
+        var invite = tasks.Locator("[data-bonboarding-item='invite']");
+
+        // Locked: no button, and the reason in words. The optional task is left out of the count.
+        await Assertions.Expect(tasks.Locator(".bit-bonboarding-checklist-count")).ToHaveTextAsync("0 of 2 done");
+        await Assertions.Expect(invite).ToHaveAttributeAsync("data-bonboarding-state", "locked");
+        await Assertions.Expect(invite.Locator("button")).ToHaveCountAsync(0);
+        await Assertions.Expect(invite.Locator(".bit-bonboarding-checklist-item-locked")).ToHaveTextAsync("Do first: Create a project");
+        await Assertions.Expect(tasks.Locator("[data-bonboarding-item='theme'] .bit-bonboarding-checklist-tag")).ToHaveTextAsync("Optional");
+
+        // The application raises the signal the first task waits for, and the second unlocks.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Create a project", Exact = true }).ClickAsync();
+        await Assertions.Expect(invite).ToHaveAttributeAsync("data-bonboarding-state", "todo");
+
+        await invite.Locator("button").ClickAsync();
+        await Assertions.Expect(tasks.Locator(".bit-bonboarding-checklist-count")).ToHaveTextAsync("2 of 2 done");
+        Assert.AreEqual("true", await tasks.GetAttributeAsync("data-bonboarding-complete"), "Complete with the optional task still to do.");
+
+        // Dismissing takes away the focused button; OnDismissed puts focus somewhere that stays.
+        await tasks.Locator("[data-bonboarding-action='dismiss-checklist']").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Assertions.Expect(tasks).ToHaveCountAsync(0);
+        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = "Reset the tasks", Exact = true })).ToBeFocusedAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Reset the tasks", Exact = true }).ClickAsync();
+        await Assertions.Expect(tasks.Locator(".bit-bonboarding-checklist-count")).ToHaveTextAsync("0 of 2 done");
     }
 
     [TestMethod]

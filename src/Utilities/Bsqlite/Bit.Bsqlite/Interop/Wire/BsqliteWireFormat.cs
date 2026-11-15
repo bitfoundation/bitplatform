@@ -433,6 +433,17 @@ public static class BsqliteWireFormat
     /// or a transport's own error - classifies result codes the same way.
     /// </summary>
     public static BsqliteException CreateException(string? message, int? sqliteErrorCode, string? errorName)
+        => CreateException(message, sqliteErrorCode, errorName, innerException: null);
+
+    /// <summary>
+    /// Builds the typed exception for a failure, keeping <paramref name="innerException"/> - the native
+    /// engine's own exception on a device - as the one it stands for.
+    /// </summary>
+    public static BsqliteException CreateException(
+        string? message,
+        int? sqliteErrorCode,
+        string? errorName,
+        Exception? innerException)
     {
         var text = string.IsNullOrWhiteSpace(message)
             ? "The SQLite worker reported a failure."
@@ -440,15 +451,15 @@ public static class BsqliteWireFormat
 
         if (sqliteErrorCode is 13 || string.Equals(errorName, "QuotaExceededError", StringComparison.Ordinal))
         {
-            return new BsqliteQuotaExceededException(text, sqliteErrorCode ?? 13);
+            return new BsqliteQuotaExceededException(text, sqliteErrorCode ?? 13, innerException);
         }
 
         return sqliteErrorCode switch
         {
-            11 or 26 => new BsqliteCorruptDatabaseException(text, sqliteErrorCode),
-            5 or 6 => new BsqliteConcurrencyException(text, sqliteErrorCode),
-            19 => new BsqliteConstraintException(text, sqliteErrorCode),
-            _ => new BsqliteException(text, sqliteErrorCode),
+            11 or 26 => new BsqliteCorruptDatabaseException(text, sqliteErrorCode, innerException),
+            5 or 6 => new BsqliteConcurrencyException(text, sqliteErrorCode, innerException),
+            19 => new BsqliteConstraintException(text, sqliteErrorCode, innerException),
+            _ => new BsqliteException(text, sqliteErrorCode, innerException),
         };
     }
 

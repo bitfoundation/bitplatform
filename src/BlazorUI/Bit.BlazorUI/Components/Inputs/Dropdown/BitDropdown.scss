@@ -1264,7 +1264,8 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
     font-size: var(--bit-drp-itm-fs);
 }
 
-.bit-drp-emp {
+.bit-drp-emp,
+.bit-drp-nor {
     display: flex;
     cursor: default;
     text-align: center;

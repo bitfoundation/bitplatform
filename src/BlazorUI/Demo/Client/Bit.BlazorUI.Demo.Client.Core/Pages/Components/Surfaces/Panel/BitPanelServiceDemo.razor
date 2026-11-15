@@ -1,0 +1,102 @@
+﻿@page "/components/panelservice"
+@page "/components/panel-service"
+
+<PageOutlet Url="components/panelservice"
+            Title="PanelService"
+            Description="BitPanelService shows a BitPanel - a side panel, a top panel or a bottom sheet - with any content from anywhere in the app, and hands back a reference that closes it and completes with its answer." />
+
+<DemoPage Name="PanelService"
+          SecondaryNames="@(["SheetService", "DrawerService"])"
+          Description="BitPanelService shows a BitPanel with any content - a component, a Type or markup - from anywhere in the app: a service, a view model, a handler. It is the BitModalService of panels: each Show hands back a BitPanelReference that closes the panel, completes with its answer and says whether the user dismissed it, and a BitPanelParameters customizes the panel around the content with the options of BitPanel - its placement, its size, its snap points - plus a close guard and a navigation policy."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubUrl="Surfaces/Panel/BitPanelService.cs"
+          GitHubDemoUrl="Surfaces/Panel/BitPanelServiceDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            Mount one <b>BitPanelContainer</b> in the layout, in the same interactive render mode as the components that
+            show panels - a panel shown with no container is not rendered, and the service logs it. Register the service
+            <b>Scoped</b> on Blazor Server; a singleton is only safe on WebAssembly and Hybrid. Every panel it shows is a
+            real <BitLink Href="/components/panel">BitPanel</BitLink>: it slides, swipes, traps the focus and gives it back
+            as a declared one does, and leaves the page only once it has slid out.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+            <div>
+                <b>Show&lt;T&gt;</b> renders the component as the content of a panel; the content closes its own panel through
+                the cascaded <b>BitPanelReference</b>. <b>BitPanelParameters</b> adds the header, which also names the dialog
+                for screen readers, and the close button.
+            </div>
+            <br />
+            <div>
+                <BitButton OnClick="ShowPanel">Show</BitButton>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Placement" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
+            <div><b>Placement</b> is the edge the panel slides in from, and <b>Size</b> its size in pixels along that axis.</div>
+            <br />
+            <div class="example-row">
+                <BitButton Variant="BitVariant.Outline" OnClick="() => ShowAt(BitPlacement.Start)">Start</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => ShowAt(BitPlacement.End)">End</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => ShowAt(BitPlacement.Top)">Top</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => ShowAt(BitPlacement.Bottom)">Bottom</BitButton>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Bottom sheet" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" CodeFiles="@example3CodeFiles" Id="example3">
+            <div>
+                A panel at the bottom with <b>SnapPoints</b> is a bottom sheet, dragged between them or moved with its grabber;
+                <b>SnapPoint</b> is the one it opens at, and the sheet keeps the one the user moves it to from there on.
+            </div>
+            <br />
+            <div>
+                <BitButton OnClick="ShowSheet">Show sheet</BitButton>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Awaiting a result" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" CodeFiles="@example4CodeFiles" Id="example4">
+            <div>
+                <b>Result</b> completes with what the panel was closed with (<b>CloseWith</b>), or null when the user walked
+                away from it - which <b>IsDismissed</b> tells apart from an answer of null.
+            </div>
+            <br />
+            <div>
+                <BitButton OnClick="PickSize">Pick a size</BitButton>
+                <span class="result">Picked: <b>@pickedSize</b></span>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Markup as content" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>Show</b> also takes a <b>RenderFragment</b>, for content not worth a component of its own - or one taking
+                the panel's reference, so the markup can close it.
+            </div>
+            <br />
+            <div>
+                <BitButton OnClick="ShowMarkup">Show markup</BitButton>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Guarding the close" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" CodeFiles="@example6CodeFiles" Id="example6">
+            <div>
+                <b>CanClose</b> is asked at every dismissal by the user - the overlay, Escape, the close button, a swipe - and every
+                <b>TryClose</b>: answering false keeps the panel open. Closing it from code with <b>Close</b> is never put to it.
+            </div>
+            <br />
+            <div class="example-row">
+                <BitToggle @bind-Value="hasUnsavedChanges" Label="Has unsaved changes" />
+                <BitButton OnClick="ShowGuarded">Show</BitButton>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Updating an open panel" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" CodeFiles="@example7CodeFiles" Id="example7">
+            <div><b>Update</b> changes the parameters of a panel while it is open, here its header every second.</div>
+            <br />
+            <div>
+                <BitButton OnClick="ShowCountdown">Show</BitButton>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

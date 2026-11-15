@@ -90,10 +90,18 @@
         // The scroller is named by the caller, as an element or as a selector; the page is what is held when
         // it names neither. An application shell that scrolls a region of its own names that region, since
         // the body of such a page never scrolls and holding it would hold nothing.
-        export function lockScroll(key: string, scroller: string | HTMLElement | null) {
+        // The room the scrollbar took is given back as padding unless the caller asks otherwise, for the
+        // callers that have always let the page shift by the width of the scrollbar.
+        // Reports the scroller's scroll offset, which an absolutely positioned surface laid out inside the
+        // scroller is pushed down by, so that it stays where the eye left it.
+        export function lockScroll(key: string, scroller: string | HTMLElement | null, compensate?: boolean): number {
             try {
-                Utils.holdScroll(key, Utils.resolveScroller(scroller), true);
-            } catch (e) { console.error("BitBlazorUI.Utils.lockScroll:", e); }
+                const element = Utils.resolveScroller(scroller);
+
+                Utils.holdScroll(key, element, compensate !== false);
+
+                return element?.scrollTop ?? 0;
+            } catch (e) { console.error("BitBlazorUI.Utils.lockScroll:", e); return 0; }
         }
 
         // Gives up the hold the given key took, if it still has one.
@@ -235,7 +243,9 @@
         }
 
         // The older shape of the hold above, for the components that take a scroller for as long as they
-        // are open and want its scroll offset back. It goes through the same counted registry, so one of
+        // are open and want its scroll offset back - which lockScroll and unlockScroll now do too: it is
+        // kept until the components still calling it have moved over to them, one at a time, and then
+        // removed. It goes through the same counted registry, so one of
         // these can no longer hand back a scroller that a lock - or another one of these - is still
         // holding. The scrollbar room is only compensated for where the caller asks for it, so the callers
         // that have always let the page shift by the width of the scrollbar carry on doing exactly that.

@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitMediaQuery"/> component.
 /// </summary>
-public class BitMediaQueryParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitMediaQueryParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitMediaQuery"/> cascading parameters within <see cref="BitParams"/>.

@@ -1347,6 +1347,54 @@
     <data name="SettingsCaption" xml:space="preserve">
         <value>आपका खाता, आपका तरीका</value>
     </data>
+    <data name="SettingsSwitchSection" xml:space="preserve">
+        <value>अनुभाग</value>
+    </data>
+    <data name="SettingsSectionProfile" xml:space="preserve">
+        <value>प्रोफ़ाइल</value>
+    </data>
+    <data name="SettingsSectionAccount" xml:space="preserve">
+        <value>खाता</value>
+    </data>
+    <data name="SettingsSectionTfa" xml:space="preserve">
+        <value>दो-चरणीय प्रमाणीकरण</value>
+    </data>
+    <data name="SettingsSectionSessions" xml:space="preserve">
+        <value>सत्र</value>
+    </data>
+    <data name="SettingsSectionPrivacy" xml:space="preserve">
+        <value>गोपनीयता</value>
+    </data>
+    <data name="SettingsSectionUpgrade" xml:space="preserve">
+        <value>अपग्रेड</value>
+    </data>
+    <data name="SettingsSwitchTwoFactor" xml:space="preserve">
+        <value>दो-चरणीय</value>
+    </data>
+    <data name="SettingsTwoFactorOff" xml:space="preserve">
+        <value>सेट अप नहीं</value>
+    </data>
+    <data name="SettingsTwoFactorOn" xml:space="preserve">
+        <value>चालू</value>
+    </data>
+    <data name="SettingsSwitchPasskey" xml:space="preserve">
+        <value>पासकी</value>
+    </data>
+    <data name="SettingsPasskeyOff" xml:space="preserve">
+        <value>कोई नहीं</value>
+    </data>
+    <data name="SettingsPasskeyOn" xml:space="preserve">
+        <value>इस डिवाइस पर</value>
+    </data>
+    <data name="SettingsSwitchConfirm" xml:space="preserve">
+        <value>पुष्टि कि यह आप हैं</value>
+    </data>
+    <data name="SettingsConfirmRecent" xml:space="preserve">
+        <value>एक मिनट पहले पुष्टि की गई</value>
+    </data>
+    <data name="SettingsConfirmAsk" xml:space="preserve">
+        <value>पहले कोड मांगता है</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>दिन</value>
     </data>
@@ -4098,6 +4146,21 @@
     <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
         <value>ग्राहकों के लिए, बारह सीटें</value>
     </data>
+    <data name="ThemeExtrasRightClickOrPressAnd" xml:space="preserve">
+        <value>राइट-क्लिक करें या दबाकर रखें</value>
+    </data>
+    <data name="ThemeExtrasListsWhatTheSnackBars" xml:space="preserve">
+        <value>स्नैकबार में दिखाई गई सूचनाओं की सूची</value>
+    </data>
+    <data name="ThemeExtrasUnreadCount" xml:space="preserve">
+        <value>{0} अपठित</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductTitle" xml:space="preserve">
+        <value>यह उत्पाद हटाएँ?</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductBody" xml:space="preserve">
+        <value>{0} मेन्यू से हटा दिया जाएगा।</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>हफ़्ते की संख्या, समय</value>
     </data>
@@ -4437,6 +4500,9 @@
     <data name="ThemeNotificationsDismissible" xml:space="preserve">
         <value>बंद करने योग्य</value>
     </data>
+    <data name="ThemeNotificationsSetAGoal" xml:space="preserve">
+        <value>लक्ष्य तय करें</value>
+    </data>
     <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
         <value>डिलीवरी का समय</value>
     </data>
@@ -4751,6 +4817,15 @@
     </data>
     <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
         <value>दो पंक्तियों तक सीमित</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldTheBox" xml:space="preserve">
+        <value>बॉक्स को दबाकर रखें</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldHere" xml:space="preserve">
+        <value>यहाँ दबाकर रखें</value>
+    </data>
+    <data name="ThemeUtilitiesPressedAndHeld" xml:space="preserve">
+        <value>दबाकर रखा गया</value>
     </data>
     <data name="ThemeSectionsOfThisPage" xml:space="preserve">
         <value>इस पेज के भाग</value>

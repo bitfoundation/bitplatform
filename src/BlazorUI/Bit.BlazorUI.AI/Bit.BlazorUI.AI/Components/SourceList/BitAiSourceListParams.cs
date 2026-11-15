@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the source lists of an application, or of one part of it, agree on: the heading and the
 /// look. The citations and the callback are left out on purpose: they are what makes one list the one it is.
 /// </remarks>
-public class BitAiSourceListParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiSourceListParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiSourceList"/> cascading parameters within <see cref="BitParams"/>.

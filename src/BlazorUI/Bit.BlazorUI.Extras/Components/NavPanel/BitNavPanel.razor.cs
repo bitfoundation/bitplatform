@@ -63,7 +63,7 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     private decimal _diffXPanel;
     private Task<bool>? _swipeRtl;
     private string? _searchText;
-    private bool _focusOriginCaptured;
+    private bool _focusOriginStored;
     private bool _focusSearchBoxPending;
     private BitNav<TItem>? _bitNavRef;
     private BitSearchBox? _searchBoxRef;
@@ -186,16 +186,6 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitNavPanelBreakpoint? DrawerBreakpoint { get; set; }
-
-    /// <summary>
-    /// The custom template for when the search result is empty.
-    /// </summary>
-    [Parameter] public RenderFragment? EmptyListTemplate { get; set; }
-
-    /// <summary>
-    /// The custom message for when the search result is empty.
-    /// </summary>
-    [Parameter] public string? EmptyListMessage { get; set; }
 
     /// <summary>
     /// The default aria-label of the expand/collapse button of a collapsed item of the nav.
@@ -417,6 +407,17 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// or one with <see cref="AutoFocus"/>.
     /// </summary>
     [Parameter] public bool NoRestoreFocus { get; set; }
+
+    /// <summary>
+    /// The custom template for when the search result is empty, which takes the place of <see cref="NoResultsText"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
+
+    /// <summary>
+    /// The custom message for when the search result is empty.
+    /// Defaults to <see cref="BitStrings.NoResultsFound"/> of <see cref="BitStrings.Current"/>.
+    /// </summary>
+    [Parameter] public string? NoResultsText { get; set; }
 
     /// <summary>
     /// Lets the page behind the open drawer of a small screen keep scrolling.
@@ -1517,7 +1518,7 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     {
         if (_IsModalDrawer)
         {
-            await CaptureFocusOrigin();
+            await StoreFocusOrigin();
             await LockScroll();
             await SetupFocusTrap();
         }
@@ -1559,32 +1560,32 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    private async Task CaptureFocusOrigin()
+    private async Task StoreFocusOrigin()
     {
         // Nothing is handed back by a panel that never takes the focus (neither trapping it nor told to take
         // it), or by one that was told not to hand anything back, so nothing is recorded for either of them.
-        if ((AutoFocus is false && _IsTrappingDrawer is false) || NoRestoreFocus || _focusOriginCaptured || IsDisposed || IsRendered is false) return;
+        if ((AutoFocus is false && _IsTrappingDrawer is false) || NoRestoreFocus || _focusOriginStored || IsDisposed || IsRendered is false) return;
 
-        _focusOriginCaptured = true;
+        _focusOriginStored = true;
 
         try
         {
-            await _js.BitUtilsCaptureFocusOrigin(_Id);
+            await _js.BitUtilsStoreFocus(_Id, scopeId: _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task RestoreFocusOrigin()
     {
-        if (_focusOriginCaptured is false) return;
+        if (_focusOriginStored is false) return;
 
-        _focusOriginCaptured = false;
+        _focusOriginStored = false;
 
         if (NoRestoreFocus || IsDisposed) return;
 
         try
         {
-            await _js.BitUtilsRestoreFocusOrigin(_Id);
+            await _js.BitUtilsRestoreFocus(_Id, onlyWhenLost: true, scopeId: _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1635,11 +1636,11 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         try
         {
-            if (_focusOriginCaptured)
+            if (_focusOriginStored)
             {
-                _focusOriginCaptured = false;
+                _focusOriginStored = false;
 
-                await _js.BitUtilsDisposeFocusOrigin(_Id);
+                await _js.BitUtilsForgetFocus(_Id);
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here

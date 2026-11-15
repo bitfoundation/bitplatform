@@ -29,10 +29,16 @@
     }
     else if (ShowsEmpty())
     {
-        @if (EmptyTemplate is not null)
-        {
-            <div style="@Styles?.Empty" class="bit-vir-emp @Classes?.Empty">@EmptyTemplate</div>
-        }
+        <div style="@Styles?.Empty" class="bit-vir-emp @Classes?.Empty">
+            @if (EmptyTemplate is not null)
+            {
+                @EmptyTemplate
+            }
+            else
+            {
+                @(EmptyText ?? BitStrings.Current.NoItemsFound)
+            }
+        </div>
     }
     else
     {

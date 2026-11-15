@@ -577,7 +577,7 @@ public class AssistantUITests : ShowcaseUITest
     [TestMethod, EverySurface]
     public async Task Slow_Should_ShowThePlaceholderFirstAndAnswerSlowly(WorkbenchSurface surface)
     {
-        await PlaceholderTimer.Watch(Page, ".placeholder", ".bit-aiems-ttl");
+        await PlaceholderTimer.Watch(Page, ".placeholder", ".bit-ems-ttl");
 
         await OpenWithoutWaiting(PageKey, "?data=slow");
 

@@ -20,7 +20,7 @@ after that it is incremental and the whole suite runs in seconds.
 | `BUTIL_MCP_BASE_URL` | Run against a server you started yourself  a local `dotnet run`, or a deployed instance  instead of launching one. This is also how you smoke-test a real deployment: `$env:BUTIL_MCP_BASE_URL = "https://butil.bitplatform.dev"`. |
 | `BUTIL_MCP_ARTIFACTS_PATH` | Where the child server's build output goes. Defaults to a stable folder under the temp directory. |
 
-On CI the suite runs as part of `.github/workflows/bit.ci.Butil.yml`, on every pull request that
+On CI the suite runs as part of `.github/workflows/ci.butil.yml`, on every pull request that
 touches `src/Butil/**`.
 
 ## Why a child process rather than a `WebApplicationFactory`

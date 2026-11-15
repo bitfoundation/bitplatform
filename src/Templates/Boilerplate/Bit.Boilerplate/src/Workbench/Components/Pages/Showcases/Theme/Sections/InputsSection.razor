@@ -124,6 +124,18 @@
         </StateSample>
     </ComponentStates>
 
+    <ComponentStates Name="BitListBox" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateSelected)">
+            <BitListBox TItem="BitListBoxItem<string>" TValue="string" Items="deliveryItems" Label="@DeliveryLabel" DefaultValue="@("van")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateMultiple)">
+            <BitListBox TItem="BitListBoxItem<string>" TValue="string" Items="tagItems" Label="@TagsLabel" MultiSelect DefaultValues="selectedTags" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitListBox TItem="BitListBoxItem<string>" TValue="string" Items="deliveryItems" Label="@DeliveryLabel" DefaultValue="@("van")" Disabled />
+        </StateSample>
+    </ComponentStates>
+
     <ComponentStates Name="BitNumberField" Wide>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
             <BitNumberField TValue="int" Label="@QuantityLabel" Value="3" />

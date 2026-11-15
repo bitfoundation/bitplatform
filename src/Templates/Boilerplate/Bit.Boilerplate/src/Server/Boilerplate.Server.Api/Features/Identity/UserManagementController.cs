@@ -51,14 +51,15 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         // The session predicate has to be tenant scoped too, otherwise a tenant admin's "online users" count includes
         // members of their tenant who are currently active only in a DIFFERENT tenant - a wrong number and a cross-tenant
         // presence signal. GetUserSessions applies the same rule.
-        return await usersQuery.CountAsync(u => u.Sessions.Any(us => (currentTenantId == null || us.TenantId == currentTenantId) &&
+        return await usersQuery.CountAsync(u => u.Sessions.Any(us => us.OAuthGrant == null &&
+                                                                     (currentTenantId == null || us.TenantId == currentTenantId) &&
                                                                      (now - (us.RenewedOn ?? us.StartedOn)) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds), cancellationToken);
         //#endif
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
         //#if (multitenant != true)
-        return await usersQuery.CountAsync(u => u.Sessions.Any(us => (now - (us.RenewedOn ?? us.StartedOn)) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds), cancellationToken);
+        return await usersQuery.CountAsync(u => u.Sessions.Any(us => us.OAuthGrant == null && (now - (us.RenewedOn ?? us.StartedOn)) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds), cancellationToken);
         //#endif
         //#if (IsInsideProjectTemplate == true)
         */
@@ -164,7 +165,9 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
 
         var userSessionId = User.GetSessionId();
 
-        var sessionsToRevokeQuery = DbContext.UserSessions.Where(us => us.Id != userSessionId && us.UserId == userId);
+        var grantedSessionIds = DbContext.OAuthGrants.Select(grant => grant.UserSessionId);
+
+        var sessionsToRevokeQuery = DbContext.UserSessions.Where(us => us.Id != userSessionId && us.UserId == userId && !grantedSessionIds.Contains(us.Id));
 
         //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)

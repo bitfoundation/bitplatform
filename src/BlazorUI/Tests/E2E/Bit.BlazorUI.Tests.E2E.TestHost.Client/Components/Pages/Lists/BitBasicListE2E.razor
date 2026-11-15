@@ -26,18 +26,18 @@
     <BitBasicList Id="default-template" Items="_fruits" Class="bsl-box" Style="height: 150px" />
 </E2ESection>
 
-<E2ESection Id="sec-empty" Title="EmptyContent">
+<E2ESection Id="sec-empty" Title="EmptyTemplate">
     <BitBasicList Id="empty" Items="_noPeople" AriaLabel="Nobody" Class="bsl-box" Style="height: 100px">
         <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
-        <EmptyContent><div id="empty-content">Nobody to show here yet.</div></EmptyContent>
+        <EmptyTemplate><div id="empty-content">Nobody to show here yet.</div></EmptyTemplate>
     </BitBasicList>
     <BitBasicList Id="empty-provider" TItem="Person" ItemsProvider="EmptyProvider" Class="bsl-box" Style="height: 100px">
         <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
-        <EmptyContent><div id="empty-provider-content">The provider came back empty.</div></EmptyContent>
+        <EmptyTemplate><div id="empty-provider-content">The provider came back empty.</div></EmptyTemplate>
     </BitBasicList>
     <BitBasicList Id="empty-virtualize" Virtualize ItemSize="40" Items="_noPeople" Class="bsl-box" Style="height: 100px">
         <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
-        <EmptyContent><div id="empty-virtualize-content">Nothing to virtualize.</div></EmptyContent>
+        <EmptyTemplate><div id="empty-virtualize-content">Nothing to virtualize.</div></EmptyTemplate>
     </BitBasicList>
 </E2ESection>
 

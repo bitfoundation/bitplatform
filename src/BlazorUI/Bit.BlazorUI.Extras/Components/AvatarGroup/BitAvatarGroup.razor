@@ -1,0 +1,54 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@{
+    var (shown, hidden) = SplitItems();
+}
+
+@* The group is a row of personas that show nothing but their coin: each one is named after its person (the persona's
+   role="img", or the name of its button or link), so the root only names the group itself (AriaLabel). The overflow
+   coin is a persona too, which gives it the size, the shape and the button of the others. A disabled group disables
+   every one of them, and drops the handlers of activation the page splatted on its root along with them. *@
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     role="group"
+     aria-label="@AriaLabel">
+    @foreach (var item in shown)
+    {
+        <BitPersona @key="GetItemKey(item)"
+                    HidePersonaDetails
+                    AutoCoinColor
+                    ImageOverlayText=""
+                    title="@(item.Title ?? item.Text)"
+                    Size="CoinSize"
+                    PrimaryText="@item.Text"
+                    ImageUrl="@item.ImageUrl"
+                    ImageInitials="@item.Initials"
+                    Presence="item.Presence"
+                    CoinColor="item.CoinColor"
+                    Href="@item.Href"
+                    Target="@item.Target"
+                    Disabled="@(Disabled || item.IsDisabled)"
+                    OnImageClick="GetItemClick(item)"
+                    Style="@JoinStyles(Styles?.Item, item.Style)"
+                    Class="@($"bit-avg-itm {Classes?.Item} {item.Class}")" />
+    }
+
+    @if (hidden.Count > 0)
+    {
+        <BitPersona @key="OverflowKey"
+                    HidePersonaDetails
+                    ImageOverlayText=""
+                    title="@GetOverflowTitle(hidden)"
+                    Size="CoinSize"
+                    ImageInitials="@($"+{hidden.Count}")"
+                    AriaLabel="@GetOverflowAriaLabel(hidden)"
+                    Disabled="Disabled"
+                    OnImageClick="GetOverflowClick(hidden)"
+                    Style="@Styles?.Overflow"
+                    Class="@($"bit-avg-ovf {Classes?.Overflow}")" />
+    }
+</div>

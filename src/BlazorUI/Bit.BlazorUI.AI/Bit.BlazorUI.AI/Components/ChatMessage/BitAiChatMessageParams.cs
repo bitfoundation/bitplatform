@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// conversation and session, whether it is the latest one and whether it animates are left out on purpose: they are
 /// what makes one message the one it is.
 /// </remarks>
-public class BitAiChatMessageParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiChatMessageParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiChatMessage"/> cascading parameters within <see cref="BitParams"/>.

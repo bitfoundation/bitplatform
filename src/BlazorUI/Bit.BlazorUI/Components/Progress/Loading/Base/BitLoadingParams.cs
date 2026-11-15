@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// loader under it, whichever animation it draws. <see cref="BitLoadingBase.LabelTemplate"/> is left out, since
 /// a render fragment belongs to the markup it is written in.
 /// </remarks>
-public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the loading components' cascading parameters within <see cref="BitParams"/>.

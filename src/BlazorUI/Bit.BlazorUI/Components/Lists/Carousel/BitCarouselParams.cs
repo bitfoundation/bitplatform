@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitCarousel"/> component.
 /// </summary>
-public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitCarousel"/> cascading parameters within <see cref="BitParams"/>.

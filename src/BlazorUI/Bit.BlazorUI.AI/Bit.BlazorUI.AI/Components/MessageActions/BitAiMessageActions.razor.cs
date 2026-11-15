@@ -28,7 +28,6 @@ public partial class BitAiMessageActions : BitAiComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
-    [Inject] private IServiceProvider _services { get; set; } = default!;
 
 
 
@@ -194,14 +193,15 @@ public partial class BitAiMessageActions : BitAiComponentBase
                                    BitAiIconClasses.With);
 
     // A reply names its model by the id the provider knows it by; a reader knows it by the name the model picker shows,
-    // the one the registered catalog gives it. A model the catalog does not list, or an app with none, shows its id.
+    // the one the catalog gives it - the cascaded one (BitAiServices.ModelCatalog), else the registered one. A model the
+    // catalog does not list, or an app with none, shows its id.
     private string? _ModelName
     {
         get
         {
             if (Message.Metadata?.ModelId is not { Length: > 0 } id) return null;
 
-            var catalog = _services.GetService(typeof(IBitAiModelCatalog)) as IBitAiModelCatalog;
+            var catalog = GetAiService<IBitAiModelCatalog>();
 
             return catalog?.FindModel(id)?.Name is { Length: > 0 } name ? name : id;
         }

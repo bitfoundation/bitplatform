@@ -339,9 +339,9 @@ private List<BitButtonGroupItem> bindingButtons =>
 <BitCheckbox @bind-Value=""showEmptyItems"" Label=""Show the items"" />
 
 <BitAccordionList Items=""@(showEmptyItems ? basicItems : noItems)"" TItem=""BitAccordionListItem"">
-    <EmptyContent>
+    <EmptyTemplate>
         <BitText Typography=""BitTypography.Body2"">There is nothing to show here yet.</BitText>
-    </EmptyContent>
+    </EmptyTemplate>
 </BitAccordionList>";
     private readonly string example16CsharpCode = @"
 private bool showEmptyItems;

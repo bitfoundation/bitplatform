@@ -98,6 +98,61 @@ public sealed class EngineBehaviourTests : BsqliteTest
         AssertJson.AreEqual("""[["line", "product"]]""", await NotifiedAsync(Page));
     }
 
+    /// <summary>
+    /// A scalar read of <c>INSERT ... RETURNING</c> stops at the first row, so in autocommit the insert commits
+    /// when the statement is reset - after it was stepped - and its commit is still the one reported.
+    /// </summary>
+    [TestMethod]
+    public async Task Engine_reported_changes_a_write_whose_statement_stopped_at_its_first_row_is_reported()
+    {
+        await OpenForChangesAsync();
+
+        var result = (await ExecuteAsync(Page, new WireRequest(
+            "INSERT INTO product (name) VALUES ('A'), ('B') RETURNING id",
+            ResultKind: "scalar")))[0];
+
+        AssertJson.AreEqual("[[1]]", result.Rows);
+        AssertJson.AreEqual("""[["product"]]""", await NotifiedAsync(Page));
+        AssertJson.AreEqual("[[2]]", (await QueryAsync(Page, "SELECT COUNT(*) FROM product")).Rows);
+    }
+
+    /// <summary>
+    /// The same scalar read, of an insert whose commit fails - a deferred foreign key it violates is checked when
+    /// the statement is reset, after its first row was read: the failure is the request's, not swallowed with the
+    /// reset, and the insert that was rolled back is neither counted nor reported.
+    /// </summary>
+    [TestMethod]
+    public async Task Engine_reported_changes_a_commit_that_failed_in_the_reset_of_a_statement_stopped_at_its_first_row_fails_the_request()
+    {
+        await OpenForChangesAsync();
+        await ExecAsync(Page, "CREATE TABLE note (id INTEGER PRIMARY KEY, product_id INTEGER REFERENCES product(id) DEFERRABLE INITIALLY DEFERRED)");
+        await NotificationsAsync(Page);
+
+        var error = await ExecuteExpectingFailureAsync(Page, new WireRequest(
+            "INSERT INTO note (product_id) VALUES (98), (99) RETURNING id",
+            ResultKind: "scalar"));
+
+        Assert.IsNotNull(error);
+        Assert.AreEqual(19, error.SqliteCode);
+        AssertJson.AreEqual("[[0]]", (await QueryAsync(Page, "SELECT COUNT(*) FROM note")).Rows);
+        AssertJson.AreEqual("[]", await NotifiedAsync(Page));
+    }
+
+    /// <summary>
+    /// A transaction whose COMMIT another tab's read held off with SQLITE_BUSY is rolled back instead: the commit
+    /// hook ran for it, but nothing it wrote became visible, so nothing is reported.
+    /// </summary>
+    [TestMethod]
+    public async Task Engine_reported_changes_a_transaction_rolled_back_after_its_commit_failed_reports_nothing()
+    {
+        await OpenForChangesAsync();
+        await ExecAsync(Page, "BEGIN");
+        await ExecAsync(Page, "INSERT INTO product (name) VALUES ('never')");
+        await ExecAsync(Page, "ROLLBACK");
+
+        AssertJson.AreEqual("[]", await NotifiedAsync(Page));
+    }
+
     [TestMethod]
     public async Task Engine_reported_changes_a_read_and_a_write_that_changed_nothing_report_no_tables()
     {
@@ -191,13 +246,15 @@ public sealed class EngineBehaviourTests : BsqliteTest
     }
 
     [TestMethod]
-    public async Task Counters_a_read_only_batch_reports_zero_affected_rows()
+    public async Task Counters_a_read_only_batch_reports_no_affected_rows_as_Microsoft_Data_Sqlite_does()
     {
         await OpenForCountersAsync();
 
         await ExecAsync(Page, "INSERT INTO product (name) VALUES ('x')");
 
-        Assert.AreEqual(0, (await QueryAsync(Page, "SELECT * FROM product")).RecordsAffected);
+        // -1, as ADO.NET reports a SELECT - and as the native transport of a Blazor Hybrid app does - not the
+        // insert's 1 that sqlite3_changes still holds.
+        Assert.AreEqual(-1, (await QueryAsync(Page, "SELECT * FROM product")).RecordsAffected);
     }
 
     [TestMethod]

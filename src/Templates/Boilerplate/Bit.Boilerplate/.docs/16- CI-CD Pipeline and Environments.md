@@ -24,7 +24,7 @@ runs in: `Development`, `Test`, `Staging` or `Production`.
 
 | Workflow | Runs on | Does |
 | --- | --- | --- |
-| `ci.yml` | every pull request that isn't a draft, and by hand | builds the whole solution and runs every test |
+| `ci.yml` | by hand: `bit ci` on your machine, or on GitHub; and before every deployment | checks the formatting, builds the whole solution with the code style enforced, checks the api's compatibility and runs every test |
 | `cd-test.yml` | by hand, on any branch | deploys that branch to the Test environment |
 | `cd-production.yml` | by hand, and once its `push` trigger is on, every push to `main` that changes the app | deploys the Production environment |
 | `cd-template.yml` | called by the two above | the jobs both deployments share, with `ENV_NAME` naming the environment |
@@ -43,9 +43,25 @@ already deploying keeps its `push` block when it takes this from a newer templat
 From then on, merging a pull request into `main` updates Production. Only a change under
 `src/Shared`, `src/Server` or `src/Client`, or to `src/Directory.Build.props`, `src/Directory.Packages.props` or that CD's own workflow file, deploys:
 one to the docs, the tests or the agent files doesn't spend the plan's Actions minutes on a deployment. The runs of one
-workflow queue up instead of overlapping, and one that has started is never cancelled halfway. Neither CD
-waits for the tests, so protect `main` with a required `ci.yml` check, which a private repository has with GitHub Pro
-or Team.
+workflow queue up instead of overlapping, and one that has started is never cancelled halfway. Each CD runs `ci.yml`
+first, alongside the server's build, and deploys or publishes nothing until it passes.
+
+## Running CI on your machine
+
+A pull request starts no workflow, so its pushes spend none of the plan's Actions minutes. Run `ci.yml` before asking for
+a review, or before merging:
+
+```bash
+bit ci
+```
+
+It runs the workflow's steps with [act](https://nektosact.com) on this machine itself, not in a container, with the .NET
+SDK, workloads, NuGet packages, Playwright's browsers and Android SDK that `bit setup` installed here, so a run downloads
+nothing again. act runs them on a copy of the project's files without what `.gitignore` leaves out, such as `bin` and
+`obj`: each run builds from scratch, and the app can keep running from the project's folder meanwhile. On Windows the
+steps run in PowerShell 7 rather than bash, so `ci.yml`'s commands are ones both run. The CI each CD runs on GitHub's Linux
+runners is still the clean check. `bit setup` installs act and PowerShell 7 along with the rest. Extra arguments go to act as they are,
+such as `bit ci -- --list`. To run it on GitHub instead: `gh workflow run ci.yml --ref <branch>`.
 
 In a public repository, every build also gets a signed attestation of the commit and the run that made it, which
 `gh attestation verify` checks, and the About page links to them.

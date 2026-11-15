@@ -8,7 +8,7 @@ public partial class AiApprovalScenarioPage
 <div style="height: 560px">
     <BitAiChat Session="session"
                EmptyTitle="Ask for something destructive"
-               EmptyBody="delete_records is declared destructive, so the session will not run it unattended."
+               EmptyDescription="delete_records is declared destructive, so the session will not run it unattended."
                Suggestions="suggestions" />
 </div>
 """;
@@ -125,7 +125,7 @@ public partial class AiDemoJsonContext : JsonSerializerContext
 <div style="height: 560px">
     <BitAiChat Session="session"
                EmptyTitle="Ask about the weather"
-               EmptyBody="The transport asks for consent before get_weather runs, whatever the app's policy says."
+               EmptyDescription="The transport asks for consent before get_weather runs, whatever the app's policy says."
                Suggestions="suggestions" />
 </div>
 """;

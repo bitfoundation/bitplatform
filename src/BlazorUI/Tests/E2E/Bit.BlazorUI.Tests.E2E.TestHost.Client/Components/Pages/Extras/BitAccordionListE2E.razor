@@ -162,9 +162,9 @@
 <E2ESection Id="empty" Title="Empty content">
     <button id="btn-toggle-empty" @onclick="() => _showEmptyItems = !_showEmptyItems">Toggle the items</button>
     <BitAccordionList Id="acl-empty" Items="@(_showEmptyItems ? L("acl-empty", BasicItems) : _none)" TItem="BitAccordionListItem">
-        <EmptyContent>
+        <EmptyTemplate>
             <span id="acl-empty-content">There is nothing to show here yet.</span>
-        </EmptyContent>
+        </EmptyTemplate>
     </BitAccordionList>
 </E2ESection>
 

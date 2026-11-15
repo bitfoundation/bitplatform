@@ -206,6 +206,9 @@
     "<PackageVersion Include=\"Bit.Blow\" Version=\"{V}\" />",
     "<PackageVersion Include=\"Bit.Bonboarding\" Version=\"{V}\" />",
     "<PackageVersion Include=\"Bit.Belemetry\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Belemetry.EntityFrameworkCore\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Belemetry.Hangfire\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BevTools.Belemetry\" Version=\"{V}\" />",
     "<PackageVersion Condition=\" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''\" Include=\"Bit.Bsqlite\" Version=\"{V}\" />"
   ],
   "src/Templates/Boilerplate/Bit.Boilerplate/src/LandingPage/Boilerplate.LandingPage.Client/wwwroot/service-worker.published.js": [

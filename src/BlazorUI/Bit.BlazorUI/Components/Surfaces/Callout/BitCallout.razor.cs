@@ -27,7 +27,7 @@ public partial class BitCallout : BitComponentBase
     private bool _contentRendered;
     private bool _selfDrivenIsOpen;
     private bool _focusTrapped;
-    private bool _focusOriginCaptured;
+    private bool _focusOriginStored;
     private bool _escapeRegistered;
     // What the JS side answered for the Escape Blazor is about to hand a key handler (see _OnEscapeVerdict).
     private readonly BitEscapeVerdict _escapeVerdict = new();
@@ -1345,7 +1345,7 @@ public partial class BitCallout : BitComponentBase
     // element it was on has left the page since - falls back to the anchor the callout renders, as a callout
     // that never remembered one does. A focus that was not in the callout is left alone; the remembered origin
     // was already dropped along with the rest of the keyboard handling then (see DisposeKeyboard), so a later
-    // opening captures anew.
+    // opening stores anew.
     private async Task ReturnFocus(bool restore)
     {
         if (restore is false) return;
@@ -1366,12 +1366,12 @@ public partial class BitCallout : BitComponentBase
     {
         if (IsDisposed || _dotnetObj is null) return;
 
-        var captureFocusOrigin = HasOwnAnchor is false && _focusOriginCaptured is false;
+        var storeFocusOrigin = HasOwnAnchor is false && _focusOriginStored is false;
         var escape = ListensForEscapeOnPage && _escapeRegistered is false;
         var focusTrap = KeepsFocus && _focusTrapped is false;
         var tabOutTriggerId = _tabOutRegistered ? null : GetTabOutTriggerId();
 
-        if ((captureFocusOrigin || escape || focusTrap || tabOutTriggerId is not null) is false) return;
+        if ((storeFocusOrigin || escape || focusTrap || tabOutTriggerId is not null) is false) return;
 
         _escapeRegistered |= escape;
         _focusTrapped |= focusTrap;
@@ -1379,13 +1379,13 @@ public partial class BitCallout : BitComponentBase
 
         try
         {
-            var captured = await _js.BitCalloutSetupKeyboard(_contentId, _dotnetObj, captureFocusOrigin, escape, _Id, focusTrap, tabOutTriggerId);
+            var stored = await _js.BitCalloutSetupKeyboard(_contentId, _dotnetObj, storeFocusOrigin, escape, _Id, focusTrap, tabOutTriggerId);
 
             // A focus that was on the body leaves nothing to hand back to, which ReturnFocus has to know to fall
             // back to the anchor instead.
-            if (captureFocusOrigin)
+            if (storeFocusOrigin)
             {
-                _focusOriginCaptured = captured;
+                _focusOriginStored = stored;
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1395,7 +1395,7 @@ public partial class BitCallout : BitComponentBase
     // focus is about to be handed back to it, which is what forgets it then.
     private async Task DisposeKeyboard(bool forgetFocusOrigin)
     {
-        var forget = forgetFocusOrigin && _focusOriginCaptured;
+        var forget = forgetFocusOrigin && _focusOriginStored;
 
         if ((_escapeRegistered || _focusTrapped || _tabOutRegistered || forget) is false) return;
 
@@ -1405,7 +1405,7 @@ public partial class BitCallout : BitComponentBase
 
         if (forget)
         {
-            _focusOriginCaptured = false;
+            _focusOriginStored = false;
         }
 
         try
@@ -1430,13 +1430,13 @@ public partial class BitCallout : BitComponentBase
     // longer on the page.
     private async Task<bool> RestoreFocusOrigin()
     {
-        if (_focusOriginCaptured is false || IsDisposed) return false;
+        if (_focusOriginStored is false || IsDisposed) return false;
 
-        _focusOriginCaptured = false;
+        _focusOriginStored = false;
 
         try
         {
-            return await _js.BitUtilsTryRestoreFocusOrigin(_contentId);
+            return await _js.BitUtilsTryRestoreFocus(_contentId, onlyWhenLost: true, scopeId: _contentId);
         }
         catch (JSDisconnectedException) { return true; } // we can ignore this exception here
     }
@@ -1654,7 +1654,9 @@ public partial class BitCallout : BitComponentBase
 
         try
         {
-            await _js.BitUtilsToggleOverflow(UniqueId, "body", true);
+            // The callout has always let the page shift by the width of the scrollbar it takes away, so the
+            // room is not given back as padding.
+            await _js.BitUtilsLockScroll(UniqueId, "body", compensate: false);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1667,7 +1669,7 @@ public partial class BitCallout : BitComponentBase
 
         try
         {
-            await _js.BitUtilsToggleOverflow(UniqueId, "body", false);
+            await _js.BitUtilsUnlockScroll(UniqueId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -2003,7 +2005,7 @@ public partial class BitCallout : BitComponentBase
                 // still unable to scroll again, with nothing left on the page to release it.
                 if (_scrollLocked)
                 {
-                    await _js.BitUtilsToggleOverflow(UniqueId, "body", false);
+                    await _js.BitUtilsUnlockScroll(UniqueId);
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here

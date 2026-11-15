@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitDatePicker"/> component.
 /// </summary>
-public class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, IBitComponentParams
+public partial class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitDatePicker"/> cascading parameters within <see cref="BitParams"/>.

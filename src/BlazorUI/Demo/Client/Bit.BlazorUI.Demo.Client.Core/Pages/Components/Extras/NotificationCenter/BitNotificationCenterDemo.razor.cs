@@ -22,10 +22,17 @@ public partial class BitNotificationCenterDemo
         },
         new()
         {
+            Name = "EmptyTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content the panel shows when there are no notifications, which takes the place of EmptyText.",
+        },
+        new()
+        {
             Name = "EmptyText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text the panel shows when there are no notifications. Defaults to \"No notifications\".",
+            Description = "The text the panel shows when there are no notifications. Defaults to BitStrings.NoItemsFound (\"No items found\").",
         },
         new()
         {

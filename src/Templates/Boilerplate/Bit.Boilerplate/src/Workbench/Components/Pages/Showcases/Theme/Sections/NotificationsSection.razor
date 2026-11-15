@@ -41,6 +41,16 @@
         </StateSample>
     </ComponentStates>
 
+    <ComponentStates Name="BitEmptyState" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitEmptyState IconName="@BitIconName.Bullseye"
+                           Title="@Localizer[nameof(WorkbenchStrings.PosNoGoalSet)]"
+                           Description="@Localizer[nameof(WorkbenchStrings.PosNoGoalSetDescription)]">
+                <BitButton IconName="@BitIconName.Add">@Localizer[nameof(WorkbenchStrings.ThemeNotificationsSetAGoal)]</BitButton>
+            </BitEmptyState>
+        </StateSample>
+    </ComponentStates>
+
     <ComponentStates Name="BitMessage" Full>
         @foreach (var color in ThemeSamples.StatusColors)
         {

@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// read-only, expanded, class, style, every icon, the hidden expander, the header's accessible name, the actions, the
 /// three templates and the click callback), the bound ExpandedKey and the methods over it; and BitAccordionListOption
 /// children (every parameter, its OnClick, an option added after the first render, the Options alias, generated keys,
-/// the bound ExpandedKeys, ExpandAll / CollapseAll and an empty option list's EmptyContent).
+/// the bound ExpandedKeys, ExpandAll / CollapseAll and an empty option list's EmptyTemplate).
 /// </summary>
 [TestClass]
 public class BitAccordionListApisE2ETests : E2ETestBase
@@ -244,7 +244,7 @@ public class BitAccordionListApisE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task Option_AnEmptyList_ShowsItsEmptyContentAfterTheOptionsHadTheirTurn()
+    public async Task Option_AnEmptyList_ShowsItsEmptyTemplateAfterTheOptionsHadTheirTurn()
     {
         await OpenAsync(Route);
 

@@ -18,7 +18,7 @@ public enum App
 }
 
 /// <summary>
-/// The always-on demo apps that .github/workflows/{admin-sample,todo-sample,sales-module-demo,landingpage-demo}.cd.yml
+/// The always-on demo apps that .github/workflows/cd.{adminpanel,todo,sales.module,landing.page}.demo.yml
 /// build from this very template and deploy, so these tests run against real deployments instead of a locally started
 /// server.
 /// </summary>
@@ -81,7 +81,7 @@ public static class DeployedApps
 
     /// <summary>
     /// Where an API is deployed on this machine - its IIS site folder and the application pool it runs in - taken from
-    /// the deploy inputs in .github/workflows/*.cd.yml. Sales has neither of its own: its API is part of the web app.
+    /// the deploy inputs in .github/workflows/cd.*.yml. Sales has neither of its own: its API is part of the web app.
     /// </summary>
     public static (string SitePath, string AppPool) DeploymentOfApi(string apiAddress) => apiAddress switch
     {
@@ -119,7 +119,7 @@ public static class DeployedApps
     /// <summary>
     /// The Velopack release feed an installed Windows app updates itself from - the R2 bucket
     /// <c>vpk upload s3</c> publishes to, and the <c>WindowsUpdate.FilesUrl</c> the CD workflow builds the app with
-    /// (See .github/workflows/*.cd.yml). Null for an app with no Windows build.
+    /// (See .github/workflows/cd.*.yml). Null for an app with no Windows build.
     /// </summary>
     public static string? WindowsUpdateFeedOf(App app) => app switch
     {

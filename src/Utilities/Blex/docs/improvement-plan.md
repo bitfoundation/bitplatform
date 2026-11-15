@@ -14,7 +14,7 @@ Status legend: **done** (implemented, tested, documented), **deferred** (worth d
 | --- | --- |
 | `Tests/Bit.Blex.Tests` (net11.0) | 788 passed |
 | `Tests/Bit.Blex.Tests.Generators` (net11.0) | 104 passed |
-| E2E (Playwright, hybrid, publish gate) | not run (on-demand suite, `bit.ci.Blex.e2e.yml`) |
+| E2E (Playwright, hybrid, publish gate) | not run (on-demand suite, `ci.blex.e2e.yml`) |
 
 Blex at the start of the round already covered most of the requested surface: source-generated stores with
 memoized computeds (dependency-tracked per state property), typed action descriptors and dispatch by name,

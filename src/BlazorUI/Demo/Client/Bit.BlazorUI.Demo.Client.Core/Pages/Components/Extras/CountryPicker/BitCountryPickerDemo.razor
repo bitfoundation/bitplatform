@@ -115,7 +115,7 @@
                 The search matches names (accents folded, word starts, so <code>united s</code> finds the United States)
                 and ISO codes (<code>de</code>, <code>deu</code>), and the result count is announced to screen readers.
                 Typing on the closed field opens it with the search already started. <b>SearchBoxPlaceholder</b>,
-                <b>SearchBoxAriaLabel</b> and <b>NoResultsMessage</b> set its texts. <b>NoSearchBox</b> removes it; the
+                <b>SearchBoxAriaLabel</b> and <b>NoResultsText</b> set its texts. <b>NoSearchBox</b> removes it; the
                 field then answers to type-ahead, open or closed.
             </div>
             <br />
@@ -123,7 +123,7 @@
                 <BitCountryPicker Label="Search box"
                                   Placeholder="Select a country"
                                   SearchBoxPlaceholder="Country or ISO code"
-                                  NoResultsMessage="No matching country" />
+                                  NoResultsText="No matching country" />
                 <BitCountryPicker Label="NoSearchBox" NoSearchBox Placeholder="Select a country" />
             </div>
         </DemoExample>
@@ -325,7 +325,7 @@
             <div>
                 Every text the picker shows or announces can be translated. Country names come from <b>Countries</b>;
                 the search box and the empty result take <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and
-                <b>NoResultsMessage</b>; and <b>SearchResultsAnnouncement</b> phrases the result count a screen reader
+                <b>NoResultsText</b>; and <b>SearchResultsAnnouncement</b> phrases the result count a screen reader
                 hears.
             </div>
             <br />
@@ -335,7 +335,7 @@
                                   Placeholder="Land auswählen"
                                   SearchBoxPlaceholder="Suchen"
                                   SearchBoxAriaLabel="Land suchen"
-                                  NoResultsMessage="Kein Land gefunden"
+                                  NoResultsText="Kein Land gefunden"
                                   SearchResultsAnnouncement="@(count => count == 1 ? "1 Land gefunden" : $"{count} Länder gefunden")" />
             </div>
         </DemoExample>
@@ -424,7 +424,7 @@
             <br />
             <div>
                 A visually hidden polite live region says how many countries a search term leaves ("1 country found",
-                "12 countries found"), or reads <b>NoResultsMessage</b> when none is left; <b>SearchResultsAnnouncement</b>
+                "12 countries found"), or reads <b>NoResultsText</b> when none is left; <b>SearchResultsAnnouncement</b>
                 rephrases the count. It also reads out an <b>ErrorMessage</b> when it appears, and the country picked from
                 a list without a search box, where the focus never leaves the field.
             </div>

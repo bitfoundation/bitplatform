@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// <see cref="BitTooltipGroup"/> around the tooltip still wins over the one cascaded from here, the way it wins over
 /// the default: the group is the nearer of the two.
 /// </remarks>
-public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitTooltip"/> cascading parameters within <see cref="BitParams"/>.

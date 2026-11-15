@@ -349,22 +349,18 @@
         }
         else if (_searchTriggered && _suggestFailed is false && _viewSuggestedItems.Count == 0)
         {
-            @if (NoResultsTemplate is not null)
-            {
-                <div aria-hidden="true"
-                     style="@Styles?.NoResults"
-                     class="bit-srb-nrs @Classes?.NoResults">
+            <div aria-hidden="true"
+                 style="@Styles?.NoResults"
+                 class="bit-srb-nor @Classes?.NoResults">
+                @if (NoResultsTemplate is not null)
+                {
                     @NoResultsTemplate
-                </div>
-            }
-            else if (NoResultsText.HasValue())
-            {
-                <div aria-hidden="true"
-                     style="@Styles?.NoResults"
-                     class="bit-srb-nrs @Classes?.NoResults">
-                    @NoResultsText
-                </div>
-            }
+                }
+                else
+                {
+                    @(NoResultsText ?? BitStrings.Current.NoResultsFound)
+                }
+            </div>
         }
 
         <div id="@_scrollContainerId"

@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// whatever each of them holds. What is left on the breadcrumb itself is what depends on the item type (Items,
 /// ItemTemplate, OverflowTemplate, NameSelectors and OnItemClick) and the options it renders (ChildContent/Options).
 /// </remarks>
-public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitBreadcrumb{TItem}"/> cascading parameters within <see cref="BitParams"/>.

@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 namespace Boilerplate.Server.Shared.Infrastructure.HealthChecks;
 
 /// <summary>What a health check is called, its icon (a <c>BitIconName</c>) and what a pass proves.</summary>

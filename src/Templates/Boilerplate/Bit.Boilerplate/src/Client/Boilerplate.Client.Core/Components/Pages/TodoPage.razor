@@ -73,12 +73,12 @@
             {
                 <BitPullToRefresh OnRefresh="WrapHandled(async () => await LoadTodoItems(false))" ScrollerSelector=".todo-list" FullWidth>
                     <BitBasicList Items="viewTodoItems" Virtualize ItemSize="90" FullWidth Class="todo-list">
-                        <EmptyContent>
+                        <EmptyTemplate>
                             <BitStack Alignment="BitAlignment.Center" Padding="1rem">
                                 <BitImage Src="/_content/Boilerplate.Client.Core/images/backgrounds/empty-todo-list-bg.svg" />
                                 <BitLabel Element="div">@Localizer[nameof(AppStrings.NoTodos)]</BitLabel>
                             </BitStack>
-                        </EmptyContent>
+                        </EmptyTemplate>
                         <RowTemplate Context="todo">
                             <BitStack role="listitem" Alignment="BitAlignment.Center" Padding="1rem 1rem 0" AutoHeight>
                                 <BitStack Horizontal @key=@todo.Id VerticalAlign="BitAlignment.Center">

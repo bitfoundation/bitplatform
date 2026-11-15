@@ -98,4 +98,9 @@ public class BitAccordionListClassStyles
     /// Custom CSS classes/styles for the content of each accordion item of the BitAccordionList.
     /// </summary>
     public string? ItemContent { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for what the BitAccordionList shows when it has no item.
+    /// </summary>
+    public string? Empty { get; set; }
 }

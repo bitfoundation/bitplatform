@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// The title, the header, the content and whether the panel is open are left out on purpose: they are what makes one
 /// panel the one it is.
 /// </remarks>
-public class BitAiCollapsibleParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiCollapsibleParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiCollapsible"/> cascading parameters within <see cref="BitParams"/>.

@@ -14,7 +14,7 @@
                            UiOptions="uiOptions"
                            Dir="CurrentDir"
                            EmptyTitle="@GreetingText"
-                           EmptyBody=""
+                           EmptyDescription=""
                            Suggestions="suggestions"
                            Commands="commands"
                            Placeholder="@Localizer[nameof(AppStrings.AiChatPanelPlaceholder)]"
@@ -28,8 +28,7 @@
                            Synthesizer="Synthesize"
                            OnSubmit="WrapHandled((BitAiPromptSubmission submission) => Submit(submission))"
                            OnFeedback="RecordFeedback"
-                           Class="chat"
-                           Classes="@(new() { MessageList = new() { Root = "transcript" } })">
+                           Class="chat">
                     <ComposerSuffixTemplate>
                         @if (isInVoiceCall)
                         {

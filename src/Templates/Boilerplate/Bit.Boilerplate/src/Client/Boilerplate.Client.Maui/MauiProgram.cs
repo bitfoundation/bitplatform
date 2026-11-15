@@ -50,7 +50,11 @@ public static partial class MauiProgram
             //#if (sentry == true)
             .UseSentry(options =>
             {
+                // Crashes only: Belemetry's Sentry exporter sends the other errors
                 builder.Configuration.DynamicBind("Logging:Sentry", options);
+                options.Environment = AppEnvironment.Current;
+                options.MinimumEventLevel = Microsoft.Extensions.Logging.LogLevel.None;
+                options.DisableUnobservedTaskExceptionCapture();
             })
             //#endif
             ;

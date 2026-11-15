@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitRating"/> component.
 /// </summary>
-public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
+public partial class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitRating"/> cascading parameters within <see cref="BitParams"/>.

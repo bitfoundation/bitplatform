@@ -301,6 +301,7 @@ public static class ComponentCatalog
 
         // Notifications
         ["Badge"] = BitIconName.Badge,
+        ["EmptyState"] = BitIconName.Inbox,
         ["Message"] = BitIconName.Message,
         ["Persona"] = BitIconName.Contact,
         ["SnackBar"] = BitIconName.Feedback,
@@ -319,6 +320,7 @@ public static class ComponentCatalog
         ["Dialog"] = BitIconName.Questionnaire,
         ["Modal"] = BitIconName.FullScreen,
         ["ModalService"] = BitIconName.Code,
+        ["PanelService"] = BitIconName.Code,
         ["Panel"] = BitIconName.SidePanel,
         ["ScrollablePane"] = BitIconName.ScrollUpDown,
         ["Splitter"] = BitIconName.Split,
@@ -332,6 +334,7 @@ public static class ComponentCatalog
         ["Image"] = BitIconName.FileImage,
         ["Label"] = BitIconName.Label,
         ["Link"] = BitIconName.Link,
+        ["LongPress"] = BitIconName.TouchPointer,
         ["MediaQuery"] = BitIconName.Devices3,
         ["Overlay"] = BitIconName.HalfAlpha,
         ["Params"] = BitIconName.Settings,
@@ -344,6 +347,7 @@ public static class ComponentCatalog
         // Extras
         ["AccordionList"] = BitIconName.CollapseAll,
         ["AppShell"] = BitIconName.Devices4,
+        ["AvatarGroup"] = BitIconName.People,
         ["Chart"] = BitIconName.BarChartVertical,
         ["ContextMenu"] = BitIconName.ContextMenu,
         ["CountryPicker"] = BitIconName.Globe,
@@ -351,6 +355,7 @@ public static class ComponentCatalog
         ["ErrorBoundary"] = BitIconName.ErrorBadge,
         ["Flag"] = BitIconName.Flag,
         ["FullCalendar"] = BitIconName.CalendarAgenda,
+        ["ImageViewer"] = BitIconName.ZoomIn,
         ["InfiniteScrolling"] = BitIconName.DoubleChevronDown,
         ["Map"] = BitIconName.MapPin,
         ["MarkdownEditor"] = BitIconName.MarkDownLanguage,
@@ -486,6 +491,7 @@ public static class ComponentCatalog
 
         // Notifications
         ["Badge"] = "A small marker on another element: a count, a dot, a status.",
+        ["EmptyState"] = "What a page, a panel or a list shows when it has nothing to show: an icon, a title, a line on what to do, and the actions to get going.",
         ["Message"] = "An inline bar for an error, a warning, or something worth knowing.",
         ["Persona"] = "A person: their avatar, name, secondary text and presence.",
         ["SnackBar"] = "A brief, dismissible notification that stacks in a corner of the screen.",
@@ -504,6 +510,7 @@ public static class ComponentCatalog
         ["Dialog"] = "A temporary pop-up that takes focus and asks for a decision.",
         ["Modal"] = "A full overlay for content that has to be dealt with before anything else.",
         ["ModalService"] = "Opens modals from anywhere in the app, with any content.",
+        ["PanelService"] = "Opens panels and bottom sheets from anywhere in the app, with any content.",
         ["Panel"] = "A sheet that slides in from an edge, with an optional header and footer.",
         ["ScrollablePane"] = "A scrolling box with themed scrollbars, faded edges and a scrolling API.",
         ["Splitter"] = "Divides a container into two sections the reader can resize.",
@@ -517,6 +524,7 @@ public static class ComponentCatalog
         ["Image"] = "An image with fit, shape and responsive sources, loading states and a fallback.",
         ["Label"] = "Gives a name to a control or a group of controls.",
         ["Link"] = "Navigates elsewhere, inside the app or out of it.",
+        ["LongPress"] = "Raises an event when its content is pressed and held - touch, pen, mouse or the context-menu keys - for the secondary action a touch screen has instead of a right-click.",
         ["MediaQuery"] = "Renders content, or reports a state, by what a media query matches.",
         ["Overlay"] = "Covers the page or a container, catching its clicks to put the emphasis on what it hosts.",
         ["Params"] = "Cascades shared parameter objects so components inherit common defaults.",
@@ -529,6 +537,7 @@ public static class ComponentCatalog
         // Extras
         ["AccordionList"] = "An accordion that builds its expandable items from a single collection.",
         ["AppShell"] = "The cross-platform application container: safe areas, scroll state, chrome.",
+        ["AvatarGroup"] = "The avatars of a group of people as overlapping coins, with a +N coin for the rest.",
         ["Chart"] = "A native Blazor charting component rendered entirely with SVG.",
         ["ContextMenu"] = "A menu opened where an area of the page is right-clicked, or with Shift+F10 or the Menu key.",
         ["CountryPicker"] = "A searchable country selector with flags, bound to a BitCountry.",
@@ -536,6 +545,7 @@ public static class ComponentCatalog
         ["ErrorBoundary"] = "Catches exceptions thrown by its children and renders a recoverable fallback UI.",
         ["Flag"] = "Renders the flag of a country from its ISO code, dialing code or name.",
         ["FullCalendar"] = "A scheduler with day, week, month, year, agenda and resource views.",
+        ["ImageViewer"] = "An image in a frame it is zoomed and panned in, by pointer, pinch, keyboard and buttons.",
         ["InfiniteScrolling"] = "Loads the next page of a list as the reader reaches the bottom.",
         ["Map"] = "An interactive map with pluggable providers, markers, vectors and GeoJSON.",
         ["MarkdownEditor"] = "A native markdown editor with a toolbar, shortcuts and smart lists.",

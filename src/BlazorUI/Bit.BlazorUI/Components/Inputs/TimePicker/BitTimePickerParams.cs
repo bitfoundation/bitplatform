@@ -13,7 +13,7 @@ namespace Bit.BlazorUI;
 /// and the rejection it is currently showing (<see cref="BitTimePicker.Invalid"/> and its message), which
 /// no two fields ever share.
 /// </remarks>
-public class BitTimePickerParams : BitInputBaseParams<TimeSpan?>, IBitComponentParams
+public partial class BitTimePickerParams : BitInputBaseParams<TimeSpan?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitTimePicker"/> cascading parameters within <see cref="BitParams"/>.

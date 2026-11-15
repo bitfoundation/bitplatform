@@ -783,10 +783,10 @@ Final runs, from `src/Utilities/Blow`:
 ### Round 13 - every demo page in Chromium, Firefox and WebKit
 
 All 107 demo pages driven with Playwright in Chromium, Firefox and WebKit, on the demo published the way
-`blow.demo.cd.yml` publishes it: each page loaded, every button clicked, the console and the requests watched,
+`cd.blow.demo.yml` publishes it: each page loaded, every button clicked, the console and the requests watched,
 screenshots compared across the engines in the light and dark site themes and at phone width (390 px), every node
 checked for an overlay covering it after the initial fit, and each page's promised behaviour exercised by hand-written
-scripts. The E2E suite gained `BLOW_E2E_BROWSER` and runs in all three engines; `bit.ci.Blow.e2e.yml` runs it once per
+scripts. The E2E suite gained `BLOW_E2E_BROWSER` and runs in all three engines; `ci.blow.e2e.yml` runs it once per
 engine.
 
 Library, found only outside Chromium:
@@ -978,3 +978,19 @@ Final runs, from `src/Utilities/Blow`:
   audit 112 / 112 pages. Firefox and WebKit not run this round.
 
 No commits were made.
+
+### #14914 - profile-guided AOT: no interface method over eight parameters
+
+An interface method with more than eight parameters needs a bridge built for its exact signature when an app compiled
+with profile-guided AOT reaches it on the interpreter, and none exists: the demo failed at runtime while every build
+and test passed. `IBlowContext.StartResize` took ten.
+
+Breaking change, for anyone implementing or mocking `IBlowContext`:
+
+| Change | Migration |
+| --- | --- |
+| `IBlowContext.StartResize(nodeId, direction, clientX, clientY, minWidth, minHeight, keepAspectRatio, maxWidth, maxHeight, pointerId)` became `StartResize(nodeId, direction, clientX, clientY, BlowResizeOptions options, pointerId)` | Implement the new overload. `BlowResizeOptions` is a `readonly record struct`; `default` bounds nothing past the 1-unit floor, and a null `MaxWidth` / `MaxHeight` is no upper bound. |
+| `BlowCanvas` keeps the ten-parameter overload as an `[Obsolete]` method of its own (not on the interface) | None needed for callers; move to the `BlowResizeOptions` overload. |
+
+`InterfaceParameterLimitTests` (in `Bit.Blow.Tests` and `Bit.Bmotion.Tests`) fails the build's tests if any interface
+in either library gains a method over eight parameters again.

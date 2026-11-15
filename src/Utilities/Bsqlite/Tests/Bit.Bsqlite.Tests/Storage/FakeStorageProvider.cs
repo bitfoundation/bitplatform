@@ -22,6 +22,9 @@ internal sealed class FakeStorageProvider(
     /// <summary>How many times the provider was probed, used to assert the resolver caches.</summary>
     public int ProbeCount { get; private set; }
 
+    /// <summary>Whether the next probe finds the backend available; it can change between probes.</summary>
+    public bool IsAvailable { get; set; } = isAvailable;
+
     public BsqliteStorageCapabilities Capabilities { get; } = new()
     {
         RequiredBuild = BsqliteEngineBuild.AsyncCapable,
@@ -44,7 +47,7 @@ internal sealed class FakeStorageProvider(
             throw probeThrows;
         }
 
-        return ValueTask.FromResult(isAvailable
+        return ValueTask.FromResult(IsAvailable
             ? BsqliteProbeResult.Available(quotaBytes: 1024 * 1024)
             : BsqliteProbeResult.Unavailable($"'{Name}' is switched off for this test."));
     }

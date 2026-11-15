@@ -176,7 +176,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     /*
     //#endif
     /// <summary>
-    /// Builds Server.Api the way its own Program.Main does, minus Sentry and the database initialization
+    /// Builds Server.Api the way its own Program.Main does, minus the database initialization
     /// (See <see cref="TestsAssemblyInitializer"/>).
     /// </summary>
     private WebApplication BuildApi(Action<IServiceCollection>? configureTestServices,

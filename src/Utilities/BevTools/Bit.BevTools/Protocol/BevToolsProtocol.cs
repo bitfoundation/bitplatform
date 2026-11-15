@@ -352,7 +352,7 @@ public static class BevToolsProtocol
             case "collect":
                 var retained = session.Leaks.CollectAndCheck();
                 session.Diagnostics.Evaluate(force: true);
-                done = retained.Length == 0 ? "No disposed component survived the collection" : retained.Sum(r => r.Count) + " disposed component(s) survived the collection";
+                done = retained.Length == 0 ? "No disposed component survived the collection" : retained.Sum(r => r.Count + r.DescendantCount) + " disposed component(s) survived the collection";
                 break;
             default:
                 return Error("Unknown command '" + name + "'.");

@@ -810,16 +810,24 @@ public class BitPanelTests : BunitTestContext
         {
             Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
             Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count);
         });
+
+        var containerId = com.Find(".bit-pnl-cnt").Id;
+
+        // Stored under the container's id with the container as its scope: a focus already inside the panel is no origin.
+        CollectionAssert.AreEqual(new object?[] { containerId, containerId }, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"][^1].Arguments.ToArray());
 
         com.Render(p => p.Add(x => x.IsOpen, false));
 
         com.WaitForAssertion(() =>
         {
             Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count);
         });
+
+        // Handed back only while the focus is lost - on the body, or still inside the sliding-out container.
+        CollectionAssert.AreEqual(new object?[] { containerId, true, containerId }, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"][^1].Arguments.ToArray());
     }
 
     [TestMethod]
@@ -853,7 +861,7 @@ public class BitPanelTests : BunitTestContext
 
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count);
     }
 
     // The trap is registered against the open panel, so turning it off while the panel is open has to reach
@@ -1812,7 +1820,7 @@ public class BitPanelTests : BunitTestContext
 
         com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count);
     }
 
     [TestMethod]
@@ -1828,7 +1836,7 @@ public class BitPanelTests : BunitTestContext
 
         com.Render(p => p.Add(x => x.IsOpen, false));
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count));
+        com.WaitForAssertion(() => Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count));
     }
 
     // The counterpart of OnOverlayClick for the keyboard: the place to react to a dismissal that was refused.
@@ -2241,7 +2249,7 @@ public class BitPanelTests : BunitTestContext
         com.Render(p => p.Add(x => x.AutoToggleScroll, true));
         com.Render(p => p.Add(x => x.IsOpen, false));
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count));
+        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count));
         Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
     }
 
@@ -2263,7 +2271,7 @@ public class BitPanelTests : BunitTestContext
         com.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
 
         Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"][^1].Arguments[0]);
-        Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"][^1].Arguments[0]);
+        Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.forgetFocus"][^1].Arguments[0]);
         Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Swipes.dispose"][^1].Arguments[0]);
         Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeTransitionEnd"][^1].Arguments[0]);
         Assert.AreEqual(rootId, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeEscapeGuard"][^1].Arguments[0]);

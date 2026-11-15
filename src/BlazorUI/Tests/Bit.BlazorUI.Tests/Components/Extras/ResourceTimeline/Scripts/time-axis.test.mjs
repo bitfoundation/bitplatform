@@ -428,3 +428,16 @@ test('continuous editing (EditSnapMinutes 0) snaps to whole milliseconds', () =>
     engine.config.editSnapMinutes = 0.1;
     assert.ok(Number.isInteger(engine._snapTime(1767340800123.457)));
 });
+
+test('month and year labels are Gregorian, as the periods they name are', () => {
+    // The date row walks months and years on Gregorian boundaries, so under a
+    // locale whose calendar is another the period from January 1 2026 is 2026
+    // (in its digits), not the Persian 1404 or the Hijri 1447 in progress then.
+    const jan1 = Date.UTC(2026, 0, 1, 12);
+    const persian = new ZonedTime('UTC', 'fa-IR');
+    assert.equal(persian.formatYear(jan1), '۲۰۲۶');
+    assert.match(persian.formatMonth(jan1), /۲۰۲۶/);
+    assert.equal(new ZonedTime('UTC', 'ar-SA').formatYear(jan1), '٢٠٢٦');
+    // A day is the same day in every calendar, so day labels keep the locale's.
+    assert.doesNotMatch(persian.formatShortDate(jan1), /۲۰۲۶|ژانویه/);
+});

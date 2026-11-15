@@ -28,7 +28,6 @@ public class ShowcaseStatesTests
     [DataRow("pos-dashboard", nameof(WorkbenchStrings.PosWidgetFailedTitle))]
     [DataRow("shifts", nameof(WorkbenchStrings.LoadFailed))]
     [DataRow("assistant", nameof(WorkbenchStrings.AssistantHistoryFailed))]
-    [DataRow("settings", nameof(WorkbenchStrings.LoadFailed))]
     public async Task Error_Should_ShowAMessageWithARetryThatWorks(string pageKey, string messageKey)
     {
         await using var ctx = WorkbenchBunit.Create();

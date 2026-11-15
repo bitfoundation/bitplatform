@@ -5,6 +5,8 @@
 //   --bit-AccordionList-gap            space between the items                        (default: spacing(1); Gap wins)
 //   --bit-AccordionList-divider-color  line between two items of a Joined list        (default: the items' border color, $clr-brd-pri with NoBorder;
 //                                                                                    an explicit Border wins)
+//   --bit-AccordionList-empty-padding  padding of what an empty list shows            (default: spacing(2))
+//   --bit-AccordionList-empty-color    text of what an empty list shows               (default: $clr-fg-sec)
 //
 // A parameter written on the list wins over the variable that restyles what it sets: the line between two items of a
 // Joined list is the top border of the lower one, so an explicit Border paints it as it paints the rest of the
@@ -82,4 +84,11 @@
             border-block-start: var(--bit-Accordion-border-width, #{$shp-border-width}) $shp-border-style var(--bit-AccordionList-divider-color, #{$clr-brd-pri});
         }
     }
+}
+
+// What a list with no item says, in the quieter color of a hint. An EmptyTemplate is drawn inside it as written.
+.bit-acl-emp {
+    box-sizing: border-box;
+    color: var(--bit-AccordionList-empty-color, #{$clr-fg-sec});
+    padding: var(--bit-AccordionList-empty-padding, #{spacing(2)});
 }

@@ -13,7 +13,7 @@ namespace Bit.BlazorUI;
 /// belongs to the picker it came from. The form-wide <c>ReadOnly</c> and <c>Required</c> come from
 /// <see cref="BitInputBaseParams{TValue}"/>.
 /// </remarks>
-public class BitColorPickerParams : BitInputBaseParams<string?>, IBitComponentParams
+public partial class BitColorPickerParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitColorPicker"/> cascading parameters within <see cref="BitParams"/>.

@@ -350,7 +350,7 @@ public class BitDropdownDisplayE2ETests : BitDropdownE2ETestBase
         await Expect(Page.Locator("#selall-text-values")).ToHaveTextAsync("f-ban");
 
         await callout.Locator("input.bit-drp-sin").FillAsync("zzz");
-        await Expect(callout.Locator(".bit-drp-emp")).ToHaveTextAsync("No results found");
+        await Expect(callout.Locator(".bit-drp-nor")).ToHaveTextAsync("No results found");
         await Expect(button).ToHaveCountAsync(0);
     }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Publishes the demo (Bit.Bdnd.Demo.Server) as bdnd.demo.cd.yml deploys it - its WebAssembly client trimmed, and with
+# Publishes the demo (Bit.Bdnd.Demo.Server) as cd.bdnd.demo.yml deploys it - its WebAssembly client trimmed, and with
 # the wasm-tools workload installed, as the deployment has it, its runtime relinked - and fails on any trim/AOT
 # analysis warning raised inside Bit.Bdnd. Pass -p:RunAOTCompilation=true for AOT: the deployed demo is not, but an
 # app using the library may be. The E2E suite then runs against the output (BDND_E2E_PUBLISHED_HOST), which is where

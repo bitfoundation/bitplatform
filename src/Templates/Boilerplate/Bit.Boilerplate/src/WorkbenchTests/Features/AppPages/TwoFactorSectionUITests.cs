@@ -1,4 +1,5 @@
-using Boilerplate.Workbench.Components.Pages.AppPages.Settings;
+using System.Text.Json;
+using Boilerplate.Workbench.Components.Pages.AppPages.Settings.Data;
 
 namespace Boilerplate.WorkbenchTests.Features.AppPages;
 
@@ -16,6 +17,27 @@ public class TwoFactorSectionUITests : SettingsPageTest
 
     private ILocator Tab(string name) => TwoFactor.GetByRole(AriaRole.Tab, new() { Name = name, Exact = true });
 
+    /// <summary>Opens a preview alone on the two-factor section of the sample account, with two-factor on and this many recovery codes left, which nothing on the page can set.</summary>
+    private async Task OpenWithTwoFactorOn(int recoveryCodesLeft)
+    {
+        var (user, sessions) = SettingsSampleAccount.Sample(0, WorkbenchStrings.DemoUserYas, DateTimeOffset.UtcNow);
+
+        // The account as the view keeps it (SettingsStore), made for the first user in English with two-factor on.
+        var account = JsonSerializer.Serialize(new
+        {
+            ShapedFor = "0/en-US/True/False",
+            User = user,
+            Sessions = sessions,
+            IsTwoFactorEnabled = true,
+            AuthenticatorKey = SettingsSampleAccount.FirstKey,
+            RecoveryCodesLeft = recoveryCodesLeft,
+            HasPasskey = false,
+            SeenUpload = WorkbenchProfilePictures.LastUpload(user.Id)
+        });
+
+        await OpenSettingsStore(account, $"&{WorkbenchScenario.SwitchQueryPrefix}section={PageUrls.SettingsSections.Tfa}&{WorkbenchScenario.SwitchQueryPrefix}{SettingsSampleAccount.TwoFactorSwitch}={SettingsSampleAccount.On}");
+    }
+
     private async Task TurnOn()
     {
         await OpenSection(AppStrings.TfaTitle);
@@ -32,7 +54,7 @@ public class TwoFactorSectionUITests : SettingsPageTest
 
         await Expect(TwoFactor.GetByText(AppStrings.TfaConfigureAutAppTitle, new() { Exact = true })).ToBeVisibleAsync();
         await Expect(TwoFactor.GetByRole(AriaRole.Img, new() { Name = AppStrings.TfaQrCodeAlt, Exact = true })).ToBeVisibleAsync();
-        await Expect(TwoFactor.GetByText(SettingsDemoData.SharedKey, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(TwoFactor.GetByText(SettingsSampleAccount.Format(SettingsSampleAccount.FirstKey), new() { Exact = true })).ToBeVisibleAsync();
         await Expect(Code.GetByRole(AriaRole.Textbox)).ToHaveCountAsync(6);
         await Expect(TwoFactor.GetByRole(AriaRole.Link, new() { Name = "Android", Exact = true })).ToBeVisibleAsync();
         await Expect(TwoFactor.GetByRole(AriaRole.Link, new() { Name = "iOS", Exact = true })).ToBeVisibleAsync();
@@ -50,31 +72,31 @@ public class TwoFactorSectionUITests : SettingsPageTest
     }
 
     [TestMethod, EverySurface]
-    public async Task TheVerifyButton_Should_TurnItOnWithACode(WorkbenchSurface surface)
+    public async Task TheVerifyButton_Should_RefuseAnIncompleteCode(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.TfaTitle);
 
         await TypeCode(Code, "123");
         await Press(Verify);
 
-        await Expect(Snack(AppStrings.TwoFactorAuthenticationEnabled)).ToBeVisibleAsync();
-        await Expect(Verify).ToHaveCountAsync(0);
+        // As the server's: only a code the authenticator app shows, six digits here, turns it on.
+        await Expect(View().GetByText(AppStrings.TfaInvalidCodeError, new() { Exact = true }).First).ToBeVisibleAsync();
+        await Expect(Verify).ToBeVisibleAsync();
     }
 
     [TestMethod, EverySurface]
-    public async Task AFullCode_Should_TurnItOnAndGiveTenRecoveryCodesThatStayAfterAReload(WorkbenchSurface surface)
+    public async Task AFullCode_Should_TurnItOnAndShowTenRecoveryCodesOnlyOnce(WorkbenchSurface surface)
     {
         await TurnOn();
 
         await Expect(RecoveryCodes).ToHaveCountAsync(10);
 
-        var codes = await RecoveryCodes.AllInnerTextsAsync();
-
         await ReloadTheViewOnceSaved("\"IsTwoFactorEnabled\":true");
 
-        await Expect(RecoveryCodes).ToHaveCountAsync(10);
-
-        Assert.AreSequenceEqual(codes, await RecoveryCodes.AllInnerTextsAsync());
+        // As the server keeps them: on, with the codes it can't show again, and a way to make new ones.
+        await Expect(Tab(AppStrings.TfaRecoveryCodesHeader)).ToBeVisibleAsync();
+        await Expect(RecoveryCodes).ToHaveCountAsync(0);
+        await Expect(TwoFactor.GetByText(AppStrings.TfaRecoveryCodesGenerateWraning)).ToBeVisibleAsync();
     }
 
     [TestMethod, EverySurface]
@@ -87,12 +109,12 @@ public class TwoFactorSectionUITests : SettingsPageTest
         await Press(TwoFactor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Copy, Exact = true }));
 
         await Expect(TwoFactor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Copied, Exact = true })).ToBeVisibleAsync();
-        await WorkbenchTestReviewer.WaitFor(() => Page.EvaluateAsync<string>("() => navigator.clipboard.readText()"), text => text == SettingsDemoData.SharedKey);
+        await WorkbenchTestReviewer.WaitFor(() => Page.EvaluateAsync<string>("() => navigator.clipboard.readText()"), text => text == SettingsSampleAccount.Format(SettingsSampleAccount.FirstKey));
         await Expect(TwoFactor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Copy, Exact = true })).ToBeVisibleAsync();
     }
 
     [TestMethod, EverySurface]
-    public async Task ARefusedCopy_Should_SayItFailed(WorkbenchSurface surface)
+    public async Task ARefusedCopy_Should_NotSayItCopied(WorkbenchSurface surface)
     {
         await Context.AddInitScriptAsync("navigator.clipboard.writeText = () => Promise.reject(new Error('Refused'))");
 
@@ -100,7 +122,7 @@ public class TwoFactorSectionUITests : SettingsPageTest
 
         await Press(TwoFactor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Copy, Exact = true }));
 
-        await Expect(Snack(WorkbenchStrings.CopyFailed)).ToBeVisibleAsync();
+        await Expect(TwoFactor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Copy, Exact = true })).ToBeVisibleAsync();
         await Expect(TwoFactor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Copied, Exact = true })).ToHaveCountAsync(0);
     }
 
@@ -153,7 +175,7 @@ public class TwoFactorSectionUITests : SettingsPageTest
     [TestMethod, EverySurface]
     public async Task NoRecoveryCodes_Should_OfferToGenerateThem(WorkbenchSurface surface)
     {
-        await OpenSettingsStore("""{"ExpandedSection":"tfa","IsTwoFactorEnabled":true,"RecoveryCodes":null,"RecoveryCodesLeft":10}""");
+        await OpenWithTwoFactorOn(recoveryCodesLeft: 10);
 
         var section = Page.GetByRole(AriaRole.Region, new() { Name = AppStrings.TfaTitle, Exact = true });
 
@@ -175,7 +197,7 @@ public class TwoFactorSectionUITests : SettingsPageTest
             (0, AppStrings.TfaRecoveryCodesZeroLeftTitle)
         })
         {
-            await OpenSettingsStore($$"""{"ExpandedSection":"tfa","IsTwoFactorEnabled":true,"RecoveryCodes":["11111-11111"],"RecoveryCodesLeft":{{left}}}""");
+            await OpenWithTwoFactorOn(left);
 
             await Expect(Page.GetByRole(AriaRole.Region, new() { Name = AppStrings.TfaTitle, Exact = true }).GetByText(title, new() { Exact = true })).ToBeVisibleAsync();
         }

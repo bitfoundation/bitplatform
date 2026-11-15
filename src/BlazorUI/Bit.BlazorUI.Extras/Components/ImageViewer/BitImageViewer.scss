@@ -1,0 +1,168 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every image
+// viewer and one set on the Style of an instance that one:
+//   --bit-ImageViewer-height              height of the frame, where no Height is given    (default: 20rem)
+//   --bit-ImageViewer-background          fill of the frame around the image               (default: $clr-bg-ter)
+//   --bit-ImageViewer-radius              corner radius of the frame                       (default: $shp-radius-surface)
+//   --bit-ImageViewer-button-size         width and height of a toolbar button             (default: spacing(4))
+//   --bit-ImageViewer-button-hover-background fill of a toolbar button under the pointer   (default: $clr-bg-sec-hover)
+//   --bit-ImageViewer-focus-color         focus ring of the frame and the buttons           (default: $clr-pri-focus)
+//   --bit-ImageViewer-fullscreen-background surface a full screen viewer covers the page with (default: $clr-bg-pri)
+//   --bit-ImageViewer-fullscreen-padding  room around the frame of a full screen viewer      (default: spacing(2))
+
+.bit-imv {
+    display: flex;
+    flex-direction: column;
+    gap: spacing(1);
+}
+
+// The image is laid out as large as fits in the frame and never larger than it is - which is zoom 1 - and centered;
+// the script zooms and pans it through a transform from there, so its layout box is always the fitted one. The browser's
+// own touch panning and zooming is turned off inside the frame, where the pointer is the viewer's.
+.bit-imv-vpt {
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    align-items: center;
+    touch-action: none;
+    justify-content: center;
+    box-sizing: border-box;
+    height: var(--bit-ImageViewer-height, 20rem);
+    background: var(--bit-ImageViewer-background, #{$clr-bg-ter});
+    border-radius: var(--bit-ImageViewer-radius, #{$shp-radius-surface});
+
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-ImageViewer-focus-color));
+    }
+
+    // A zoomed image that runs past the frame is moved by dragging it.
+    &.bit-imv-pan {
+        cursor: grab;
+    }
+
+    &.bit-imv-drg {
+        cursor: grabbing;
+    }
+
+    &[aria-disabled="true"] {
+        cursor: default;
+        opacity: $opa-dis;
+    }
+}
+
+.bit-imv-img {
+    max-width: 100%;
+    max-height: 100%;
+    user-select: none;
+    transform-origin: center;
+    -webkit-user-drag: none;
+}
+
+.bit-imv-ins {
+    @include visually-hidden;
+}
+
+// The zoom runs smaller on the left and larger on the right whichever way the page reads, as a scale does - the way
+// BitPdfViewer lays its zoom out too.
+.bit-imv-tbr {
+    direction: ltr;
+    display: flex;
+    gap: spacing(0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-imv-btn {
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    color: $clr-fg-pri;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    --bit-imv-btn-sbg: initial;
+    background: var(--bit-imv-btn-sbg, transparent);
+    width: var(--bit-ImageViewer-button-size, #{spacing(4)});
+    height: var(--bit-ImageViewer-button-size, #{spacing(4)});
+    border-radius: $shp-radius-button;
+    transition: background-color $mot-duration $mot-easing;
+
+    // The hover moves the variable the button is painted from rather than its color, so a button the app paints
+    // through a class keeps that paint under the pointer.
+    &:hover:not(:disabled) {
+        --bit-imv-btn-sbg: var(--bit-ImageViewer-button-hover-background, #{$clr-bg-sec-hover});
+    }
+
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-ImageViewer-focus-color));
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+
+    svg {
+        width: 60%;
+        height: 60%;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    @media (forced-colors: active) {
+        color: ButtonText;
+
+        &:disabled {
+            color: GrayText;
+        }
+    }
+}
+
+.bit-imv-zmt {
+    text-align: center;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-sm;
+    min-width: spacing(6);
+    font-variant-numeric: tabular-nums;
+}
+
+// Full screen, the viewer covers the page: its frame takes the room the toolbar leaves it, whatever height it was given
+// in the page, and the close button sits on the frame's top corner at the end of the line.
+.bit-imv-fsc {
+    inset: 0;
+    position: fixed;
+    box-sizing: border-box;
+    z-index: $zindex-modal;
+    padding: var(--bit-ImageViewer-fullscreen-padding, #{spacing(2)});
+    background: var(--bit-ImageViewer-fullscreen-background, #{$clr-bg-pri});
+
+    > .bit-imv-vpt {
+        min-height: 0;
+        height: auto;
+        flex: 1 1 auto;
+    }
+}
+
+// The close button is drawn over the image, so it carries a surface of its own to stay readable on any picture.
+.bit-imv-cls {
+    z-index: 1;
+    position: absolute;
+    border-radius: 50%;
+    box-shadow: $box-shadow-popup;
+    --bit-imv-btn-sbg: #{$clr-bg-pri};
+    inset-block-start: calc(var(--bit-ImageViewer-fullscreen-padding, #{spacing(2)}) + #{spacing(1)});
+    inset-inline-end: calc(var(--bit-ImageViewer-fullscreen-padding, #{spacing(2)}) + #{spacing(1)});
+
+    &:hover:not(:disabled) {
+        --bit-imv-btn-sbg: var(--bit-ImageViewer-button-hover-background, #{$clr-bg-pri-hover});
+    }
+}
+
+// A lightbox the page opens from a thumbnail of its own takes no room in the page until then.
+.bit-imv-fso:not(.bit-imv-fsc) {
+    display: none;
+}

@@ -214,7 +214,7 @@ public class BitInfiniteScrollingParamsTests : BunitTestContext
         var component = RenderWithParams(new BitInfiniteScrollingParams
         {
             Preload = true,
-            EmptyMessage = "Nichts da",
+            EmptyText = "Nichts da",
         }, provider: PagedProvider(0));
 
         component.WaitForAssertion(() => Assert.AreEqual("Nichts da", component.Find(".bit-isc-emp").TextContent.Trim()));

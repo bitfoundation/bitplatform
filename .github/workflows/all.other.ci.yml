@@ -1,0 +1,70 @@
+name: All Other CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease_packages:
+        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org (the Boilerplate build and website jobs)
+        type: boolean
+        default: false
+      blazorui:
+        description: BlazorUI solution
+        type: boolean
+        default: true
+      bswup:
+        description: Bswup solution
+        type: boolean
+        default: true
+      butil:
+        description: Butil solution
+        type: boolean
+        default: true
+      brouter:
+        description: Brouter solution
+        type: boolean
+        default: true
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: all-other-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  boilerplate:
+    name: boilerplate
+    uses: ./.github/workflows/ci.templates.yml
+    with:
+      prerelease_packages: ${{ inputs.prerelease_packages }}
+
+  blazorui:
+    name: blazorui
+    if: ${{ inputs.blazorui }}
+    uses: ./.github/workflows/ci.blazorui.yml
+
+  bswup:
+    name: bswup
+    if: ${{ inputs.bswup }}
+    uses: ./.github/workflows/ci.bswup.yml
+
+  butil:
+    name: butil
+    if: ${{ inputs.butil }}
+    uses: ./.github/workflows/ci.butil.yml
+
+  brouter:
+    name: brouter
+    if: ${{ inputs.brouter }}
+    uses: ./.github/workflows/ci.brouter.yml
+
+  websites:
+    name: websites
+    uses: ./.github/workflows/ci.websites.yml
+    with:
+      prerelease_packages: ${{ inputs.prerelease_packages }}

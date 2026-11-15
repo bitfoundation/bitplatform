@@ -487,6 +487,217 @@ test('adjacent day titles never overlap', () => {
     }
 });
 
+// Zoomed out, the date row thins from a label a day to runs of days, weeks,
+// months, quarters and years (issue #14949: it used to label every day, so the
+// labels piled up past about two weeks on screen). The labels are measured by
+// the fixture at 7px a character, and the engine looks a period's step up from
+// the same measure, so these use the real en-US formatters.
+const RANGE_START = Date.parse('2000-01-01T00:00:00Z');
+const RANGE_END = Date.parse('2100-01-01T00:00:00Z');
+
+function zoomedOutScene(pph, { timeZone = 'UTC', firstDayOfWeek = 1, at = START, measure = null } = {}) {
+    const engine = makeSceneEngine([], { config: { locale: 'en-US', firstDayOfWeek } });
+    if (measure) engine._measureCtx.measureText = measure;
+    engine.config.timeZone = timeZone;
+    engine._rebuildDateFormatters();
+    engine.timeRange = { start: RANGE_START, end: RANGE_END };
+    engine._pixelsPerHour = pph;
+    engine._pixelsPerMs = pph / HOUR;
+    engine.scrollX = (at - RANGE_START) * engine._pixelsPerMs;
+    engine.visibleTimeRange = engine.calculateVisibleTimeRange();
+    return { engine, scene: engine.buildScene() };
+}
+
+const labelWidth = (label) => label.length * 7;
+const separatorTimes = (scene) => scene.days.filter(d => d.sepTs != null).map(d => d.sepTs);
+
+// What must hold at any zoom: titles do not overlap each other, none crosses a
+// separator, and every period is wide enough for the widest title of its kind.
+function assertReadableDateRow(scene, message) {
+    const labeled = scene.days.filter(d => d.label != null);
+    assert.ok(labeled.length >= 1, `${message}: the date row should say something`);
+    for (let i = 1; i < labeled.length; i++) {
+        assert.ok(labeled[i - 1].labelX + labelWidth(labeled[i - 1].label) <= labeled[i].labelX,
+            `${message}: "${labeled[i - 1].label}" overlaps "${labeled[i].label}"`);
+    }
+    for (const sep of scene.days.filter(d => d.sepX != null)) {
+        for (const day of labeled) {
+            assert.ok(!(day.labelX < sep.sepX && day.labelX + labelWidth(day.label) > sep.sepX),
+                `${message}: "${day.label}" crosses the separator at ${sep.sepX}`);
+        }
+    }
+    const seps = scene.days.filter(d => d.sepX != null).map(d => d.sepX);
+    const widest = Math.max(...labeled.map(d => labelWidth(d.label)));
+    for (let i = 1; i < seps.length; i++) {
+        assert.ok(seps[i] - seps[i - 1] >= widest + 2 * DAY_LABEL_PAD - 1e-6,
+            `${message}: a period ${seps[i] - seps[i - 1]}px wide cannot hold a ${widest}px title`);
+    }
+}
+
+test('the issue\'s 90-day view labels weeks, not every day', () => {
+    // ZoomToDaysAsync(90) on a laptop-wide view: well under a pixel per hour.
+    const pph = 1050 / (90 * 24);
+    const { engine, scene } = zoomedOutScene(pph);
+    assertReadableDateRow(scene, '90 days');
+
+    const starts = separatorTimes(scene);
+    assert.ok(starts.length >= 10 && starts.length <= 16, `about 13 weeks on screen, got ${starts.length}`);
+    for (let i = 1; i < starts.length; i++) {
+        assert.equal(starts[i] - starts[i - 1], 7 * 24 * HOUR, 'one separator a week');
+    }
+    for (const ts of starts) {
+        assert.equal(new Date(ts).getUTCDay(), 1, 'weeks start on FirstDayOfWeek (Monday)');
+    }
+    const labels = scene.days.filter(d => d.label != null).map(d => d.label);
+    assert.ok(labels.every(label => /^[A-Z][a-z]{2} \d{1,2}$/.test(label)),
+        `week titles are short dates, got ${labels.join(', ')}`);
+    assert.equal(engine._hourStep(), 0, 'the hour row is blank here, so the date row is all there is');
+});
+
+test('the date row coarsens step by step as the zoom drops', () => {
+    // [pixels per hour, the step between two period starts, what it is, its titles]
+    const steps = [
+        [40, (a, b) => b - a === 24 * HOUR, 'days, with their weekday', /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/],
+        [3, (a, b) => b - a === 24 * HOUR, 'days, without it', /^[A-Z][a-z]{2} \d{1,2}$/],
+        [1.5, (a, b) => b - a === 48 * HOUR, 'every other day', /^[A-Z][a-z]{2} \d{1,2}$/],
+        [0.5, (a, b) => b - a === 7 * 24 * HOUR, 'weeks', /^[A-Z][a-z]{2} \d{1,2}$/],
+        [0.2, (a, b) => b - a === 14 * 24 * HOUR, 'two weeks', /^[A-Z][a-z]{2} \d{1,2}$/],
+        [0.12, (a, b) => monthIndex(b) - monthIndex(a) === 1, 'months', /^[A-Z][a-z]{2} \d{4}$/],
+        [0.05, (a, b) => monthIndex(b) - monthIndex(a) === 3, 'quarters', /^[A-Z][a-z]{2} \d{4}$/],
+        [0.02, (a, b) => monthIndex(b) - monthIndex(a) === 6, 'half years', /^[A-Z][a-z]{2} \d{4}$/],
+        [0.005, (a, b) => yearOf(b) - yearOf(a) === 1, 'years', /^\d{4}$/],
+        [0.001, (a, b) => yearOf(b) - yearOf(a) === 5, 'five years', /^\d{4}$/]
+    ];
+    for (const [pph, isStep, what, labelPattern] of steps) {
+        const { scene } = zoomedOutScene(pph);
+        assertReadableDateRow(scene, what);
+        const starts = separatorTimes(scene);
+        assert.ok(starts.length >= 2, `${what}: at least two periods on screen`);
+        for (let i = 1; i < starts.length; i++) {
+            assert.ok(isStep(starts[i - 1], starts[i]), `${what}: periods ${new Date(starts[i - 1]).toISOString()} .. ${new Date(starts[i]).toISOString()}`);
+        }
+        for (const day of scene.days.filter(d => d.label != null)) {
+            assert.match(day.label, labelPattern, `${what}: title`);
+        }
+    }
+});
+
+function monthIndex(ts) {
+    const d = new Date(ts);
+    return d.getUTCFullYear() * 12 + d.getUTCMonth();
+}
+
+function yearOf(ts) {
+    return new Date(ts).getUTCFullYear();
+}
+
+test('runs of periods are aligned to the calendar, so scrolling keeps them in place', () => {
+    const aligned = [
+        [1.5, ts => Math.floor(ts / (24 * HOUR)) % 2 === 0, 'two-day runs on even days since the epoch'],
+        [0.05, ts => [0, 3, 6, 9].includes(new Date(ts).getUTCMonth()) && new Date(ts).getUTCDate() === 1, 'quarters'],
+        [0.02, ts => [0, 6].includes(new Date(ts).getUTCMonth()) && new Date(ts).getUTCDate() === 1, 'half years'],
+        [0.001, ts => yearOf(ts) % 5 === 0 && new Date(ts).getUTCMonth() === 0 && new Date(ts).getUTCDate() === 1, 'five-year runs']
+    ];
+    for (const [pph, isAligned, what] of aligned) {
+        for (const at of [START, START + 3 * 24 * HOUR, START + 400 * 24 * HOUR]) {
+            const { scene } = zoomedOutScene(pph, { at });
+            for (const ts of separatorTimes(scene)) {
+                assert.ok(isAligned(ts), `${what}: ${new Date(ts).toISOString()} at scroll ${new Date(at).toISOString()}`);
+            }
+        }
+    }
+});
+
+test('a coarse date row starts its periods at local midnight in the axis zone', () => {
+    // New York changes its offset twice a year; every month and week still
+    // starts at 00:00 there, never at the UTC midnight or an hour off it.
+    for (const [pph, what] of [[0.5, 'weeks'], [0.12, 'months']]) {
+        const { engine, scene } = zoomedOutScene(pph, { timeZone: 'America/New_York', at: Date.parse('2026-01-15T00:00:00Z') });
+        assertReadableDateRow(scene, what);
+        const starts = separatorTimes(scene);
+        assert.ok(starts.length >= 2);
+        for (const ts of starts) {
+            const p = engine._time.parts(ts);
+            assert.deepEqual([p.hour, p.minute], [0, 0], `${what}: ${new Date(ts).toISOString()}`);
+            if (what === 'months') assert.equal(p.day, 1);
+            if (what === 'weeks') assert.equal(new Date(Date.UTC(p.year, p.month - 1, p.day)).getUTCDay(), 1);
+        }
+    }
+});
+
+test('weeks of the date row follow FirstDayOfWeek', () => {
+    const { scene } = zoomedOutScene(0.5, { firstDayOfWeek: 0 });
+    const starts = separatorTimes(scene);
+    assert.ok(starts.length >= 2);
+    assert.ok(starts.every(ts => new Date(ts).getUTCDay() === 0), 'Sunday-first weeks');
+});
+
+test('the date row picks its step from the widest title, not the one on screen', () => {
+    // September is drawn 35px wider than any other month here. At 3px an hour
+    // a day holds "May 20" (42px and its paddings) but not "Sep 20" (77px), so
+    // a step taken off the titles on screen would be a day in May and two in
+    // September. Taken off the widest title of the year, it is two days in both.
+    const pph = 3;
+    const measure = (t) => ({ width: t.length * 7 + (t.includes('Sep') ? 35 : 0) });
+    const step = (at) => {
+        const { scene } = zoomedOutScene(pph, { at, measure });
+        const starts = separatorTimes(scene);
+        assert.ok(starts.length >= 2);
+        return starts[1] - starts[0];
+    };
+    assert.equal(step(START), 48 * HOUR, 'May');
+    assert.equal(step(Date.parse('2026-09-20T00:00:00Z')), 48 * HOUR, 'September');
+});
+
+test('the date row measures every weekday with every month', () => {
+    // Only Wednesdays of May are wide. 2026's May 28 is a Thursday, so a sample
+    // of one day a month would never see one.
+    const { engine } = zoomedOutScene(40, {
+        measure: (t) => ({ width: t.length * 7 + (/Wed, May/.test(t) ? 100 : 0) })
+    });
+    assert.equal(engine._dateRowLabelWidth('date'), 'Wed, May 27'.length * 7 + 100);
+});
+
+test('the date row measures a format only once it needs it, and once per locale and font', () => {
+    let measured = 0;
+    const counting = (t) => { measured++; return { width: t.length * 7 }; };
+
+    // Zoomed in, only the day titles are measured; the coarser formatters are
+    // never even made.
+    const { engine } = zoomedOutScene(40, { measure: counting });
+    assert.ok(engine._dateRowWidths.widths.date > 0);
+    assert.deepEqual(Object.keys(engine._dateRowWidths.widths), ['date']);
+    assert.equal(engine._time._shortDateDtf, undefined);
+    assert.equal(engine._time._monthDtf, undefined);
+    assert.equal(engine._time._yearDtf, undefined);
+
+    // A frame afterwards measures the titles on screen and nothing more ...
+    measured = 0;
+    engine.buildScene();
+    const perFrame = measured;
+    assert.ok(perFrame < 30, `a frame measures its own titles only, measured ${perFrame}`);
+
+    // ... and so does one after a new zoned time of the same locale (every
+    // option or theme change makes one).
+    engine._rebuildDateFormatters();
+    measured = 0;
+    engine.buildScene();
+    assert.equal(measured, perFrame, 'a new zoned time keeps the widths');
+
+    // A new date font, a new locale or a web font that has finished loading
+    // measures the samples again.
+    for (const [what, change] of [
+        ['a new date font', () => { engine.config.dateLabelFont = '20px serif'; }],
+        ['a new locale', () => { engine.config.locale = 'de-DE'; engine._rebuildDateFormatters(); }],
+        ['a loaded web font', () => { engine.render = () => { }; engine._handleFontsLoaded(); }]
+    ]) {
+        change();
+        measured = 0;
+        engine.buildScene();
+        assert.ok(measured > perFrame + 300, `${what} measures the samples again, measured ${measured}`);
+    }
+});
+
 test('UTC ticks do not linger in the scene once the row is turned off', () => {
     const engine = makeSceneEngine([]);
     engine.config.showUtcTime = true;

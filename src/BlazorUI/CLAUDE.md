@@ -165,6 +165,25 @@ never
      aria-label="@TagName(tag)">
 ```
 
+## One name per concept
+
+A concept that more than one component has is spelled the same on all of them, and an outlier is renamed to it, the
+break recorded in `BreakingChanges.md` - never kept beside the new name as an `[Obsolete]` alias.
+
+- **What a component shows when it has nothing to show** has two names, one per meaning: `EmptyTemplate` /
+  `EmptyText` and the `Empty` class-style part for **no items at all**, and `NoResultsTemplate` / `NoResultsText` and
+  the `NoResults` part for a search or filter that **matched none** of the items there are. A component with both
+  (`BitDropdown`) has both. Never `EmptyContent`, `NoDataTemplate`, `EmptyMessage` or `EmptyListTemplate`: the
+  framework's own `Virtualize.EmptyContent` is the one `EmptyContent` left, and it is not ours.
+- **...and it works the same way everywhere.** The template wins, then the text, and with neither the component
+  still says something: `BitStrings.Current.NoItemsFound` for empty, `BitStrings.Current.NoResultsFound` for no
+  results - never a literal of its own, and never nothing. The text parameters are `string?` defaulting to `null`
+  (the default is read at render time, so a `BitStrings` set later still reaches it). The message sits in a wrapper
+  element of its own, `bit-<prefix>-emp` / `bit-<prefix>-nor`, carrying the `Empty` / `NoResults` class-style part,
+  with the template rendered inside it. A component with both meanings keeps them apart: a fruitless search never
+  falls back to the empty text, and an empty component searched stays empty. A component that keeps its words in a
+  texts object (`BitDataGridStrings`) keeps them there, with a getter that falls back to `BitStrings.Current`.
+
 ## Core components never render each other
 
 A component in the core `Bit.BlazorUI` project draws everything it shows with its own markup and its own
@@ -226,6 +245,16 @@ its own:
   (`BitAiOptionsProvider`, else the registered `BitAiUiOptions`), their `BitAiStrings`, and `RequestRender()` - a
   re-render coalesced to one per frame interval. A component reacting to streamed changes calls that, never
   `StateHasChanged` per token. Every user-facing word goes through `BitAiStrings`.
+- **Nothing of the package has to be registered for a component to render.** A WebAssembly app may lazy-load the AI
+  assemblies (`BlazorWebAssemblyLazyLoad`), and then cannot call `AddBitBlazorUIAIServices` at startup, which would load
+  them there. So a component reads every AI service through `BitAiComponentBase.GetAiService<T>()` - never an
+  `[Inject]` or a `GetService` of its own - which takes the one the cascaded `BitAiServices` sets (a `CascadingValue`
+  of it, or the chat's `Services`), else the registered one, else none and the built-in behaviour. A new optional
+  service is a property of `BitAiServices` (and a type in its `Find`), never a cascade or parameter of the one
+  component that reads it. A chat handed no `Session` creates its own over `BitAiServices.Transport`, so it follows
+  its `UiOptions`; a tool card reads the tools of its session first. `BitAiUnregisteredServicesTests`
+  renders them with the core's services alone, and `LazyAiTrimmingTests` (in the trimming suite) publishes and runs such
+  an app; the Trimming page's "Lazy-loading the AI package" section is where app authors read it.
 - **Its glyphs outside the core font subset come from its own subset** (`Styles/fabric.mdl2.bit.blazoui.ai.scss` and
   `wwwroot/fonts/FabMDL2.4.66.bit.BlazorUI.AI.woff2`), as Extras' `bit-icon-ex` ones do: a core component is handed
   the name as `IconName` plus `bit-icon-ai bit-icon-ai--Name` as its icon class (merged with the app's own classes

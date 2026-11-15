@@ -29,6 +29,7 @@ public class BitPanelStylesheetTests
         "--bit-Panel-padding",
         "--bit-Panel-header-font-size",
         "--bit-Panel-header-font-weight",
+        "--bit-Panel-grabber-color",
     ];
 
     [TestMethod]

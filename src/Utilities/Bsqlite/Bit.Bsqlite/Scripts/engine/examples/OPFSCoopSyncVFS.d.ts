@@ -5,4 +5,8 @@
 export declare class OPFSCoopSyncVFS {
     static create(name: string, module: unknown): Promise<OPFSCoopSyncVFS>;
     name: string;
+    /** The longest full path SQLite may ask the VFS for; read when the VFS is registered. */
+    mxPathname: number;
+    /** The exception behind the last error result a method returned, or null. */
+    lastError: unknown;
 }

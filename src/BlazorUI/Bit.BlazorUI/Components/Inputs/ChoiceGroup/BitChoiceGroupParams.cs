@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// instance, which is what keeps this object usable from a single non-generic <see cref="BitParams"/> list
 /// no matter which of the three item APIs each choice group under it uses.
 /// </remarks>
-public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitChoiceGroup{TItem, TValue}"/> cascading parameters within <see cref="BitParams"/>.

@@ -214,6 +214,11 @@ public static class IDistributedApplicationBuilderExtensions
             var rustFs = builder.AddRustFs("s3")
                 .WithDataVolume();
 
+            // RustFS answers /health, which AddRustFs checks, before its S3 api takes requests ("Service not ready: waiting
+            // for iam"), and AddBucket creates the bucket with a single request once the container is ready: /health/ready
+            // waits for the api.
+            rustFs.WithHttpHealthCheck(() => rustFs.Resource.PrimaryEndpoint, "/health/ready");
+
             rustFs.AddBucket("files");
 
             return rustFs;

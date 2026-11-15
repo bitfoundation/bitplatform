@@ -1347,6 +1347,54 @@
     <data name="SettingsCaption" xml:space="preserve">
         <value>Ditt konto, ditt sätt</value>
     </data>
+    <data name="SettingsSwitchSection" xml:space="preserve">
+        <value>Avsnitt</value>
+    </data>
+    <data name="SettingsSectionProfile" xml:space="preserve">
+        <value>Profil</value>
+    </data>
+    <data name="SettingsSectionAccount" xml:space="preserve">
+        <value>Konto</value>
+    </data>
+    <data name="SettingsSectionTfa" xml:space="preserve">
+        <value>Tvåfaktorsautentisering</value>
+    </data>
+    <data name="SettingsSectionSessions" xml:space="preserve">
+        <value>Sessioner</value>
+    </data>
+    <data name="SettingsSectionPrivacy" xml:space="preserve">
+        <value>Integritet</value>
+    </data>
+    <data name="SettingsSectionUpgrade" xml:space="preserve">
+        <value>Uppgradera</value>
+    </data>
+    <data name="SettingsSwitchTwoFactor" xml:space="preserve">
+        <value>Tvåfaktor</value>
+    </data>
+    <data name="SettingsTwoFactorOff" xml:space="preserve">
+        <value>Inte konfigurerad</value>
+    </data>
+    <data name="SettingsTwoFactorOn" xml:space="preserve">
+        <value>På</value>
+    </data>
+    <data name="SettingsSwitchPasskey" xml:space="preserve">
+        <value>Nyckel</value>
+    </data>
+    <data name="SettingsPasskeyOff" xml:space="preserve">
+        <value>Ingen</value>
+    </data>
+    <data name="SettingsPasskeyOn" xml:space="preserve">
+        <value>På den här enheten</value>
+    </data>
+    <data name="SettingsSwitchConfirm" xml:space="preserve">
+        <value>Bekräfta att det är du</value>
+    </data>
+    <data name="SettingsConfirmRecent" xml:space="preserve">
+        <value>Bekräftat för en minut sedan</value>
+    </data>
+    <data name="SettingsConfirmAsk" xml:space="preserve">
+        <value>Ber först om en kod</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>Dag</value>
     </data>
@@ -4098,6 +4146,21 @@
     <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
         <value>För kunder, tolv platser</value>
     </data>
+    <data name="ThemeExtrasRightClickOrPressAnd" xml:space="preserve">
+        <value>Högerklicka eller tryck och håll</value>
+    </data>
+    <data name="ThemeExtrasListsWhatTheSnackBars" xml:space="preserve">
+        <value>Listar vad snackbarerna visade</value>
+    </data>
+    <data name="ThemeExtrasUnreadCount" xml:space="preserve">
+        <value>{0} olästa</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductTitle" xml:space="preserve">
+        <value>Ta bort den här produkten?</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductBody" xml:space="preserve">
+        <value>{0} tas bort från menyn.</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>Veckonummer, tid</value>
     </data>
@@ -4437,6 +4500,9 @@
     <data name="ThemeNotificationsDismissible" xml:space="preserve">
         <value>Kan stängas</value>
     </data>
+    <data name="ThemeNotificationsSetAGoal" xml:space="preserve">
+        <value>Sätt ett mål</value>
+    </data>
     <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
         <value>Leveranstider</value>
     </data>
@@ -4751,6 +4817,15 @@
     </data>
     <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
         <value>Begränsad till två rader</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldTheBox" xml:space="preserve">
+        <value>Tryck och håll på rutan</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldHere" xml:space="preserve">
+        <value>Tryck och håll här</value>
+    </data>
+    <data name="ThemeUtilitiesPressedAndHeld" xml:space="preserve">
+        <value>Tryckte och höll</value>
     </data>
     <data name="ThemeSectionsOfThisPage" xml:space="preserve">
         <value>Avsnitt på den här sidan</value>

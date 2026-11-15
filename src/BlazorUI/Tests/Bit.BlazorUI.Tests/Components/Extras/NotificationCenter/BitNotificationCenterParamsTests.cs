@@ -92,6 +92,16 @@ public class BitNotificationCenterParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNotificationCenterShouldTakeTheCascadedEmptyTemplate()
+    {
+        var component = RenderWithParams(new BitNotificationCenterParams
+        {
+            EmptyTemplate = builder => builder.AddMarkupContent(0, "<i class=\"cascaded-empty\">Leer</i>"),
+        });
+
+        Assert.AreEqual("Leer", component.Find(".bit-ntc-emp > .cascaded-empty").TextContent);
+    }
+    [TestMethod]
     public void BitNotificationCenterShouldKeepItsOwnValuesOverTheCascadedOnes()
     {
         var component = RenderWithParams(new BitNotificationCenterParams { HeaderText = "Inbox", HistoryLimit = 5 }, builder =>

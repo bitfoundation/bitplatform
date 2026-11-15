@@ -169,10 +169,10 @@ public partial class BitCountryPickerDemo
         },
         new()
         {
-            Name = "NoResultsMessage",
+            Name = "NoResultsText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The message to show, and to announce, when the search result of the country list is empty.",
+            Description = "The message to show, and to announce, when the search result of the country list is empty. Defaults to BitStrings.NoResultsFound (\"No results found\").",
         },
         new()
         {

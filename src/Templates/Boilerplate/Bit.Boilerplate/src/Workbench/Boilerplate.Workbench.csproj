@@ -22,6 +22,8 @@
         <PackageReference Include="Bit.Bonboarding" />
         <PackageReference Include="Bit.Belemetry" />
         <PackageReference Include="Microsoft.Playwright" />
+        <!-- The settings page's two-factor QR code, made the way the server makes it (UserController.TwoFactorAuth). -->
+        <PackageReference Include="QRCoder" />
 
         <Using Include="System.Reflection" />
         <Using Include="System.Collections.Concurrent" />
@@ -45,7 +47,9 @@
         <Using Include="Boilerplate.Workbench.Components.Chrome" />
         <Using Include="Boilerplate.Workbench.Components.Preview" />
         <Using Include="Boilerplate.Workbench.Components.Progress" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.AppPages" />
         <Using Include="Boilerplate.Workbench.Components.Pages.AppPages.Settings" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.AppPages.Settings.Data" />
         <Using Include="Boilerplate.Workbench.Components.Pages.LandingPages.Minimal" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Assistant" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Assistant.Data" />
@@ -60,6 +64,7 @@
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Theme.Sections" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Models" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Services" />
+        <Using Include="Boilerplate.Workbench.Infrastructure.Services.StandIns" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Extensions" />
     </ItemGroup>
 

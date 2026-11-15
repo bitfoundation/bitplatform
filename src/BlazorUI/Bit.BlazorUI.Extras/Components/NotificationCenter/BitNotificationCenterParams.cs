@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// bell, the time zone and how much history to keep. Whether one is open (<see cref="BitNotificationCenter.IsOpen"/>
 /// and its callback) is deliberately not here: it is the state of a single center.
 /// </remarks>
-public class BitNotificationCenterParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitNotificationCenterParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitNotificationCenter"/> cascading parameters within <see cref="BitParams"/>.
@@ -44,6 +44,11 @@ public class BitNotificationCenterParams : BitComponentBaseParams, IBitComponent
     /// Custom CSS classes for the different parts of the notification center.
     /// </summary>
     public BitNotificationCenterClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The custom content the panel shows when there are no notifications.
+    /// </summary>
+    public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
     /// The text the panel shows when there are no notifications.
@@ -122,6 +127,11 @@ public class BitNotificationCenterParams : BitComponentBaseParams, IBitComponent
         if (Classes is not null)
         {
             bitNotificationCenter.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
+        }
+
+        if (EmptyTemplate is not null)
+        {
+            bitNotificationCenter.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static c => c.EmptyTemplate, static (c, v) => c.EmptyTemplate = v);
         }
 
         if (EmptyText is not null)

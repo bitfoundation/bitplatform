@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Buffers.Binary;
+using System.Text;
 using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Interop;
 using Bit.Bsqlite.Storage;
@@ -516,9 +517,17 @@ public static class BsqliteStorageLab
     /// <summary>A SQLite header followed by zeros: what the migrator checks and compares, and nothing an engine could open.</summary>
     private static byte[] StandInDatabase()
     {
+        // A header a migration accepts: the magic, 4096-byte pages, a rollback journal, and as many pages as
+        // the image holds - the migrator refuses an image cut short, or one whose page size SQLite cannot have.
+        const int pageSize = 4096;
         var image = new byte[StandInDatabaseBytes];
 
         SqliteMagic.CopyTo(image);
+        BinaryPrimitives.WriteUInt16BigEndian(image.AsSpan(16), pageSize);
+        image[18] = image[19] = 1;
+        BinaryPrimitives.WriteUInt32BigEndian(image.AsSpan(24), 1);
+        BinaryPrimitives.WriteUInt32BigEndian(image.AsSpan(28), StandInDatabaseBytes / pageSize);
+        BinaryPrimitives.WriteUInt32BigEndian(image.AsSpan(92), 1);
 
         return image;
     }

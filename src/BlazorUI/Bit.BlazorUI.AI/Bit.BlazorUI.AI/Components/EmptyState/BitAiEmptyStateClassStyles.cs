@@ -20,10 +20,10 @@ public class BitAiEmptyStateClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the supporting line of the BitAiEmptyState.
     /// </summary>
-    public string? Body { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the container of the suggestions of the BitAiEmptyState.
+    /// Custom CSS classes/styles for the container of the suggestions of the BitAiEmptyState (the content of its BitEmptyState).
     /// </summary>
     public string? Suggestions { get; set; }
 

@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// whether it is open, its content and the texts of its header and footer, the ids of the elements that name and
 /// describe it, and its callbacks.
 /// </remarks>
-public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitPanelParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitPanel"/> cascading parameters within <see cref="BitParams"/>.
@@ -75,6 +75,11 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
     /// Stretches the panel over the whole of the screen.
     /// </summary>
     public bool? FullSize { get; set; }
+
+    /// <summary>
+    /// The name of the grabber of a bottom sheet, as a composite format string: {0} is the snap point it is at, {1} how many.
+    /// </summary>
+    public string? GrabberAriaLabelFormat { get; set; }
 
     /// <summary>
     /// Reports the panel to assistive technologies as an alert dialog.
@@ -157,6 +162,12 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
     public double? Size { get; set; }
 
     /// <summary>
+    /// The heights a panel at the bottom of the screen settles at, from the smallest to the largest: a value of 1 or less
+    /// is a fraction of the height of the viewport, a larger one a height in pixels.
+    /// </summary>
+    public IReadOnlyList<double>? SnapPoints { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the panel.
     /// </summary>
     public BitPanelClassStyles? Styles { get; set; }
@@ -224,6 +235,11 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
         if (CloseIconName.HasValue())
         {
             bitPanel.TakeFromCascade(nameof(CloseIconName), CloseIconName, static p => p.CloseIconName, static (p, v) => p.CloseIconName = v);
+        }
+
+        if (GrabberAriaLabelFormat.HasValue())
+        {
+            bitPanel.TakeFromCascade(nameof(GrabberAriaLabelFormat), GrabberAriaLabelFormat, static p => p.GrabberAriaLabelFormat, static (p, v) => p.GrabberAriaLabelFormat = v);
         }
 
         if (FullSize.HasValue)
@@ -314,6 +330,11 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
         if (Styles is not null)
         {
             bitPanel.TakeFromCascade(nameof(Styles), Styles, static p => p.Styles, static (p, v) => p.Styles = v);
+        }
+
+        if (SnapPoints is not null)
+        {
+            bitPanel.TakeFromCascade(nameof(SnapPoints), SnapPoints, static p => p.SnapPoints, static (p, v) => p.SnapPoints = v);
         }
 
         if (SwipeTrigger.HasValue)

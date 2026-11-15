@@ -220,8 +220,9 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
     /// <summary>
     /// The message to show when the search result of the country list is empty. It is also what a screen reader
     /// announces for an empty result.
+    /// Defaults to <see cref="BitStrings.NoResultsFound"/> of <see cref="BitStrings.Current"/>.
     /// </summary>
-    [Parameter] public string? NoResultsMessage { get; set; }
+    [Parameter] public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The custom template to show when the search result of the country list is empty.
@@ -312,7 +313,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
     /// <summary>
     /// What a screen reader announces for the number of countries a search term leaves in the list, in place of
     /// the default "1 country found" / "{count} countries found" - the way to translate that announcement. An empty
-    /// result announces <see cref="NoResultsMessage"/> instead, and returning null or an empty string keeps a count
+    /// result announces <see cref="NoResultsText"/> instead, and returning null or an empty string keeps a count
     /// from being announced at all.
     /// </summary>
     [Parameter] public Func<int, string?>? SearchResultsAnnouncement { get; set; }
@@ -1258,7 +1259,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
 
         // The list the term filtered down to is inside a callout, so its length is only ever seen: it is announced
         // here for the users who cannot see it.
-        Announce(BitCountryList.GetSearchAnnouncement(count, NoResultsMessage, SearchResultsAnnouncement));
+        Announce(BitCountryList.GetSearchAnnouncement(count, NoResultsText, SearchResultsAnnouncement));
     }
 
     private Task HandleOnCountrySelect(BitCountry country) => SelectCountry(country, focusField: true);

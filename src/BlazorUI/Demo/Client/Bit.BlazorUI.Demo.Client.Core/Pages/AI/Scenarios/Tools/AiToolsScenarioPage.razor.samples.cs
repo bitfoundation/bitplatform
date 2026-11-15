@@ -8,7 +8,7 @@ public partial class AiToolsScenarioPage
 <div style="height: 560px">
     <BitAiChat Session="session"
                EmptyTitle="Ask about the weather"
-               EmptyBody="The model will call get_weather, wait for the result, and answer from it."
+               EmptyDescription="The model will call get_weather, wait for the result, and answer from it."
                Suggestions="suggestions" />
 </div>
 """;

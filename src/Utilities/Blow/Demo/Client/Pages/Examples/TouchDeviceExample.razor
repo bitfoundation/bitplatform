@@ -29,7 +29,7 @@
         <li><strong>Tap</strong> a node or an edge to select it, or the background to clear the selection.</li>
     </TryIt>
     <HowItWorks>
-        <li>The canvas listens for pointer events, which a mouse, a pen and a finger all raise, and sets <code>touch-action: none</code> on itself, so a finger on it is a gesture of the flow rather than a scroll of the page.</li>
+        <li>The canvas listens for pointer events, which a mouse, a pen and a finger all raise, and sets <code>touch-action: none</code> on itself while a one-finger drag pans or draws a selection box, so a finger on it is a gesture of the flow rather than a scroll of the page. With <code>PanOnDrag</code> and <code>SelectionOnDrag</code> both off, a swipe on the background scrolls the page instead, and the nodes and handles that can be dragged still drag.</li>
         <li><code>ZoomOnPinch</code> (on) zooms on a two-finger pinch about the fingers' midpoint - the only way to zoom on a touch screen besides the control bar.</li>
         <li><code>SelectionOnDrag</code> (off) turns a plain drag on the pane into a box selection; with a keyboard, Shift (<code>SelectionKey</code>) does that for a single drag.</li>
         <li><code>ConnectOnClick</code> (off) connects with two taps as well as a drag. A connection dropped within <code>ConnectionRadius</code> (20 screen pixels) of a handle snaps to it, and every handle's hit area stays at least <code>--bit-blow-handle-hit-size</code> (12px) across on screen at any zoom.</li>
