@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Boilerplate.WorkbenchTests.Features.Progress;
@@ -7,17 +8,26 @@ public abstract class ProgressPageTest : WorkbenchPageTest
 {
     protected WorkbenchProgressAgent Agent => Server.Services.GetRequiredService<WorkbenchProgressAgent>();
 
-    protected async Task OpenProgress(string path)
+    protected async Task OpenProgress(string path, string? culture = null)
     {
+        // In another language, the way the language menu sets it.
+        if (culture is not null)
+        {
+            await Context.AddCookiesAsync([new() { Name = CookieRequestCultureProvider.DefaultCookieName, Value = CookieRequestCultureProvider.MakeCookieValue(new(culture)), Url = Server.Address.ToString() }]);
+        }
+
         await Page.GotoAsync(new Uri(Server.Address, path).ToString());
         await WaitUntilInteractive();
 
-        var skip = Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true });
-
-        await Expect(skip).ToBeVisibleAsync();
-        await Press(skip);
-        await Expect(skip).ToBeHiddenAsync();
+        await Press(GuideSkip(culture));
+        await Expect(GuideSkip(culture)).ToBeHiddenAsync();
     }
+
+    protected ILocator GuideSkip(string? culture = null) => Page.GetByRole(AriaRole.Button, new()
+    {
+        Name = culture is null ? WorkbenchStrings.TourSkip : WorkbenchStrings.ResourceManager.GetString(nameof(WorkbenchStrings.TourSkip), CultureInfo.GetCultureInfo(culture)),
+        Exact = true
+    });
 
     protected ILocator Ask(string id) => Page.Locator($"[data-ask-id='{id}']");
 }
@@ -154,6 +164,76 @@ public class ProgressUITests : ProgressPageTest
         Assert.AreEqual((WorkbenchProgressEntryKind.Answer, "token", ""), (stored!.Value.Events[0].Kind, stored.Value.Events[0].RefId, stored.Value.Events[0].Text));
         Assert.AreEqual(secret, await File.ReadAllTextAsync(WorkbenchSecrets.FilePath(id!, "token")));
         Assert.DoesNotContain(secret, await Page.ContentAsync());
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task TheGuide_Should_ShowOnceAndStayAwayAfterAReload(WorkbenchSurface surface)
+    {
+        await OpenProgress("progress");
+
+        await Page.ReloadAsync();
+
+        // The page says what its guide came to once it has asked for it, a moment after it is interactive.
+        await Expect(Page.Locator(".progress-page")).ToHaveAttributeAsync("data-guide", "seen");
+        await Expect(GuideSkip()).ToBeHiddenAsync();
+    }
+
+    [TestMethod, WithAnAgent]
+    public async Task ANoteAndALineOfTheActivity_Should_GoWhenTheUserRemovesThemAndTheAgentLearnOfIt(WorkbenchSurface surface)
+    {
+        var (id, _) = await Agent.Create("Claude Code", new(null, "Deploy to Test", null, null, null, [new("keys", "warning", "Never paste keys here.")], null, null, "Started"), CancellationToken.None);
+        var cursor = (await Agent.GetTask(id!, CancellationToken.None))!.Cursor;
+
+        await OpenProgress($"progress/{id}");
+
+        var note = Page.Locator("[data-note-id='keys']");
+
+        await Press(note.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ProgressRemoveNote }));
+        await Expect(note).ToHaveCountAsync(0);
+
+        var noteRemoved = await Agent.Wait("Claude Code", id!, cursor, TimeSpan.FromSeconds(10), CancellationToken.None);
+
+        Assert.AreEqual((WorkbenchProgressEntryKind.NoteRemoved, "keys"), (noteRemoved!.Value.Events[0].Kind, noteRemoved.Value.Events[0].RefId));
+
+        var line = Page.Locator(".feed .entry").Filter(new() { HasText = "Started" });
+
+        await Press(line.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ProgressRemoveEntry }));
+        await Expect(line).ToHaveCountAsync(0);
+
+        var lineRemoved = await Agent.Wait("Claude Code", id!, noteRemoved.Value.Cursor, TimeSpan.FromSeconds(10), CancellationToken.None);
+
+        Assert.AreEqual((WorkbenchProgressEntryKind.EntryRemoved, "Started"), (lineRemoved!.Value.Events[0].Kind, lineRemoved.Value.Events[0].Text));
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public Task ATaskInPersian_Should_ReadRightToLeftWithItsEnglishTermsOnAnEnglishPage(WorkbenchSurface surface) => OpenAPersianTask("en-US");
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public Task ATaskInPersian_Should_ReadRightToLeftWithItsDigitsAsWrittenOnAPersianPage(WorkbenchSurface surface) => OpenAPersianTask("fa-IR");
+
+    private async Task OpenAPersianTask(string culture)
+    {
+        // Under half of its letters are Persian, and most of its texts start with an English word.
+        var (id, _) = await Agent.Create("Claude Code", new(null, "ارتقا به template 11.0.0-pre-20 و telemetry صفحه‌ها", "bit Fabric روی template 11.0.0-pre-20 است.", null,
+            [new("ci", "bit ci روی bit Fabric", null, "done", "همه **check**ها روی 11.0.0-pre-20 سبز است.", null)],
+            [new("prod", "warning", "rule تونل Production گذاشته شد.")], null, null, "bit ci passed (exit 0)"), CancellationToken.None);
+
+        await OpenProgress($"progress/{id}", culture);
+
+        await Expect(Page.Locator($"article[data-task-id='{id}']")).ToHaveAttributeAsync("dir", "rtl");
+        await Expect(Page.Locator("[data-step-id='ci'] .step-text")).ToHaveAttributeAsync("dir", "rtl");
+        // Its Markdown reads that way too, where bit BlazorUI's viewer would otherwise follow the page's language.
+        await Expect(Page.Locator("[data-step-id='ci'] .step-detail > *").First).ToHaveAttributeAsync("dir", "rtl");
+        await Expect(Page.Locator("[data-note-id='prod'] .note-text > *").First).ToHaveAttributeAsync("dir", "rtl");
+        // A line with no Persian in it reads left to right, its parentheses where they belong.
+        await Expect(Page.Locator(".feed .entry-text").Filter(new() { HasText = "bit ci passed" })).ToHaveAttributeAsync("dir", "ltr");
+
+        if (culture is "fa-IR")
+        {
+            // Persian's font draws 0-9 as Persian digits everywhere else, which would turn 11.0.0-pre-20 into ۱۱.۰.۰-pre-۲۰.
+            Assert.DoesNotContain("FD Digits", await Page.Locator("[data-step-id='ci'] .step-text").EvaluateAsync<string>("e => getComputedStyle(e).fontFamily"));
+            Assert.Contains("FD Digits", await Page.Locator(".overall-text").EvaluateAsync<string>("e => getComputedStyle(e).fontFamily"));
+        }
     }
 
     [TestMethod, WithAnAgent]

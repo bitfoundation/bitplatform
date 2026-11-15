@@ -4,7 +4,7 @@
 
 <PageTitle>@(SelectedTask is { } titled && TaskId is not null ? $"{titled.Title} · {Localizer[nameof(WorkbenchStrings.Progress)]}" : $"{Localizer[nameof(WorkbenchStrings.Progress)]} · {Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]}")</PageTitle>
 
-<div class="progress-page @(TaskId is null ? "showing-list" : "showing-task")">
+<div class="progress-page @(TaskId is null ? "showing-list" : "showing-task")" data-guide="@guideState">
     <header class="topbar">
         <a class="brand" href="@WorkbenchUrls.Home">
             <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="26" height="26" />
@@ -15,7 +15,7 @@
         @if (TaskId is not null && SelectedTask is { } named)
         {
             <span class="crumb-separator">/</span>
-            <BitText Typography="BitTypography.Body1" Class="crumb-title" NoWrap Dir="BitDir.Auto">@named.Title</BitText>
+            <BitText Typography="BitTypography.Body1" Class="crumb-title as-written" NoWrap Dir="@WorkbenchTextDirection.ToBitDir(Dir(named.Title, WorkbenchTextDirection.Of(named)))">@named.Title</BitText>
         }
 
         <BitSpacer />
@@ -88,17 +88,18 @@
                 @if (SelectedTask is { } task)
                 {
                     var canAnswer = reviewSession.CanAnswer(task);
-                    var textDir = TaskDirection(task);
+                    var canRemove = reviewSession.CanRemoveItems(task);
+                    var textDir = WorkbenchTextDirection.Of(task);
 
-                    <article class="task" @key="task.Id" data-task-id="@task.Id" dir="@textDir">
+                    <article class="task" @key="task.Id" data-task-id="@task.Id" dir="@textDir" lang="@task.Language">
                         <header class="task-head" data-bonboarding-anchor="progress-head">
                             <div class="title-row">
-                                <h2 class="task-title" dir="auto">@task.Title</h2>
+                                <h2 class="task-title as-written" dir="@Dir(task.Title, textDir)">@task.Title</h2>
                                 <ProgressStatusTag ProgressTask="task" Size="BitSize.Medium" />
                             </div>
                             @if (string.IsNullOrWhiteSpace(task.Summary) is false)
                             {
-                                <p class="task-summary" dir="@(textDir ?? "auto")">@task.Summary</p>
+                                <p class="task-summary as-written" dir="@Dir(task.Summary, textDir)">@task.Summary</p>
                             }
                             <div class="task-meta">
                                 <span class="agent @(task.IsAgentActive && task.IsFinished is false ? "active" : null)">
@@ -144,11 +145,11 @@
                                             <div class="todo" @key="@($"step:{step.Id}")" data-step-id="@step.Id">
                                                 <div class="todo-head">
                                                     <span class="todo-icon" aria-hidden="true"><BitIcon IconName="@BitIconName.Contact" Size="BitSize.Small" /></span>
-                                                    <strong class="todo-text" dir="@(textDir ?? "auto")">@step.Text</strong>
+                                                    <strong class="todo-text as-written" dir="@Dir(step.Text, textDir)">@step.Text</strong>
                                                 </div>
                                                 @if (string.IsNullOrWhiteSpace(step.Detail) is false)
                                                 {
-                                                    <div class="todo-detail" dir="@(textDir ?? "auto")"><BitMarkdownViewer Markdown="@step.Detail" Pipeline="BitMarkdownPipelines.GitHub" Inline /></div>
+                                                    <div class="todo-detail as-written" dir="@Dir(step.Detail, textDir)"><BitMarkdownViewer Markdown="@step.Detail" Pipeline="BitMarkdownPipelines.GitHub" Inline Dir="@BitDirOf(step.Detail, textDir)" /></div>
                                                 }
                                                 <div class="todo-actions">
                                                     @if (step.Link is { Length: > 0 } link)
@@ -162,7 +163,7 @@
 
                                         @foreach (var ask in task.OpenAsks)
                                         {
-                                            <ProgressAskCard @key="@($"ask:{ask.Id}")" Ask="ask" Agent="@task.Agent" CanAnswer="canAnswer" CanStoreSecret="reviewSession.CanStoreSecrets(task)"
+                                            <ProgressAskCard @key="@($"ask:{ask.Id}")" Ask="ask" Agent="@task.Agent" TaskDirection="@textDir" CanAnswer="canAnswer" CanStoreSecret="reviewSession.CanStoreSecrets(task)"
                                                              OnAnswer="(a, choices, text) => Answer(task, a, choices, text)" OnSecret="(a, secret) => StoreSecret(task, a, secret)" />
                                         }
                                     </section>
@@ -180,8 +181,8 @@
                                 {
                                     <section class="report" aria-labelledby="report-title">
                                         <h3 id="report-title" class="section-title">@Localizer[nameof(WorkbenchStrings.ProgressReport)]</h3>
-                                        <div class="report-body" dir="@(textDir ?? "auto")">
-                                            <BitMarkdownViewer Markdown="@task.Report" Pipeline="BitMarkdownPipelines.GitHub" HeadingLevelOffset="3" HeadingIdPrefix="report-" />
+                                        <div class="report-body as-written" dir="@Dir(task.Report, textDir)">
+                                            <BitMarkdownViewer Markdown="@task.Report" Pipeline="BitMarkdownPipelines.GitHub" HeadingLevelOffset="3" HeadingIdPrefix="report-" Dir="@BitDirOf(task.Report, textDir)" />
                                         </div>
                                     </section>
                                 }
@@ -210,7 +211,7 @@
                                                     </span>
                                                     <div class="step-body">
                                                         <div class="step-line">
-                                                            <span class="step-text" dir="@(textDir ?? "auto")">@step.Text</span>
+                                                            <span class="step-text as-written" dir="@Dir(step.Text, textDir)">@step.Text</span>
                                                             @if (step.Owner is WorkbenchProgressOwner.You)
                                                             {
                                                                 <span class="owner">@Localizer[nameof(WorkbenchStrings.ProgressYou)]</span>
@@ -219,7 +220,7 @@
                                                         </div>
                                                         @if (string.IsNullOrWhiteSpace(step.Detail) is false && (step.Owner is WorkbenchProgressOwner.Agent || step.Status is not WorkbenchProgressStepStatus.Doing))
                                                         {
-                                                            <div class="step-detail" dir="@(textDir ?? "auto")"><BitMarkdownViewer Markdown="@step.Detail" Pipeline="BitMarkdownPipelines.GitHub" Inline /></div>
+                                                            <div class="step-detail as-written" dir="@Dir(step.Detail, textDir)"><BitMarkdownViewer Markdown="@step.Detail" Pipeline="BitMarkdownPipelines.GitHub" Inline Dir="@BitDirOf(step.Detail, textDir)" /></div>
                                                         }
                                                         @if (step.Link is { Length: > 0 } stepLink)
                                                         {
@@ -240,9 +241,12 @@
                                         <h3 id="notes-title" class="section-title">@Localizer[nameof(WorkbenchStrings.ProgressKeepInMind)]</h3>
                                         @foreach (var note in task.Notes)
                                         {
-                                            <BitMessage @key="note.Id" Color="NoteColor(note.Kind)" IconName="@NoteIcon(note.Kind)" Variant="BitVariant.Outline" Tinted Multiline Class="note">
+                                            @* Its dismiss button takes it off the task, which tells the agent not to add it again. *@
+                                            <BitMessage @key="note.Id" Color="NoteColor(note.Kind)" IconName="@NoteIcon(note.Kind)" Variant="BitVariant.Outline" Tinted Multiline Class="note" data-note-id="@note.Id" Dir="@WorkbenchTextDirection.ToBitDir(textDir)"
+                                                        OnDismiss="@(canRemove ? EventCallback.Factory.Create(this, () => RemoveNote(task, note)) : default)"
+                                                        DismissAriaLabel="@Localizer[nameof(WorkbenchStrings.ProgressRemoveNote)]">
                                                 <strong class="note-kind">@Localizer[$"ProgressNote{note.Kind}"]</strong>
-                                                <span class="note-text" dir="@(textDir ?? "auto")"><BitMarkdownViewer Markdown="@note.Text" Pipeline="BitMarkdownPipelines.GitHub" Inline /></span>
+                                                <span class="note-text as-written" dir="@Dir(note.Text, textDir)"><BitMarkdownViewer Markdown="@note.Text" Pipeline="BitMarkdownPipelines.GitHub" Inline Dir="@BitDirOf(note.Text, textDir)" /></span>
                                             </BitMessage>
                                         }
                                     </section>
@@ -284,29 +288,37 @@
                                     <ol class="feed" aria-label="@Localizer[nameof(WorkbenchStrings.ProgressActivity)]">
                                         @foreach (var entry in Enumerable.Reverse(task.Feed))
                                         {
-                                            <li class="entry @(entry.FromYou ? "from-you" : "from-agent") kind-@entry.Kind.ToString().ToLowerInvariant() @(entry.Tone is { } tone ? $"tone-{tone.ToString().ToLowerInvariant()}" : null)">
+                                            <li class="entry @(entry.FromYou ? "from-you" : "from-agent") kind-@entry.Kind.ToString().ToLowerInvariant() @(entry.Tone is { } tone ? $"tone-{tone.ToString().ToLowerInvariant()}" : null)" data-entry-id="@entry.Id">
                                                 <span class="entry-meta">
-                                                    <span class="entry-author" dir="auto">
+                                                    <span class="entry-author as-written" dir="auto">
                                                         @if (entry.Tone is { } toned)
                                                         {
                                                             <span class="tone-dot" role="img" aria-label="@Localizer[$"ProgressNote{toned}"]" title="@Localizer[$"ProgressNote{toned}"]"></span>
                                                         }
                                                         @(entry.FromYou ? entry.Author : task.Agent)
                                                     </span>
-                                                    <time datetime="@entry.At.ToString("O", CultureInfo.InvariantCulture)">@WorkbenchTimes.Ago(entry.At, Localizer)</time>
+                                                    <span class="entry-end">
+                                                        <time datetime="@entry.At.ToString("O", CultureInfo.InvariantCulture)">@WorkbenchTimes.Ago(entry.At, Localizer)</time>
+                                                        @if (canRemove)
+                                                        {
+                                                            <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small" Color="BitColor.TertiaryForeground" IconName="@BitIconName.Cancel" Class="entry-remove"
+                                                                       Title="@Localizer[nameof(WorkbenchStrings.ProgressRemoveEntry)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ProgressRemoveEntry)]"
+                                                                       OnClick="() => RemoveEntry(task, entry)" />
+                                                        }
+                                                    </span>
                                                 </span>
                                                 @if (AnswerOf(task, entry) is { } answered)
                                                 {
-                                                    <span class="entry-question" dir="auto">@answered.Question</span>
-                                                    <span class="entry-text" dir="auto">@answered.Said</span>
+                                                    <span class="entry-question as-written" dir="@Dir(answered.Question, textDir)">@answered.Question</span>
+                                                    <span class="entry-text as-written" dir="@Dir(answered.Said, textDir)">@answered.Said</span>
                                                 }
                                                 else if (entry.FromYou)
                                                 {
-                                                    <span class="entry-text" dir="auto">@EntryText(entry)</span>
+                                                    <span class="entry-text as-written" dir="@Dir(EntryText(entry), textDir)">@EntryText(entry)</span>
                                                 }
                                                 else
                                                 {
-                                                    <div class="entry-text" dir="@(textDir ?? "auto")"><BitMarkdownViewer Markdown="@entry.Text" Pipeline="BitMarkdownPipelines.GitHub" Inline /></div>
+                                                    <div class="entry-text as-written" dir="@Dir(entry.Text, textDir)"><BitMarkdownViewer Markdown="@entry.Text" Pipeline="BitMarkdownPipelines.GitHub" Inline Dir="@BitDirOf(entry.Text, textDir)" /></div>
                                                 }
                                             </li>
                                         }

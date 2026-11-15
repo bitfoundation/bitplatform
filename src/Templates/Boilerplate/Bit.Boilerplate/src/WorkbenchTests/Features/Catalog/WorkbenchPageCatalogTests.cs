@@ -35,6 +35,22 @@ public class WorkbenchPageCatalogTests
     }
 
     [TestMethod]
+    public void AfterAHotReload_TheCatalog_Should_BeBuiltAgain()
+    {
+        // A page added while the Workbench runs shows up because hot reload clears the list and the next read builds it
+        // from the edited code; an initializer would need a restart.
+        var before = WorkbenchPageCatalog.Pages;
+
+        Assert.AreSame(before, WorkbenchPageCatalog.Pages);
+
+        WorkbenchPageCatalog.ClearCache(null);
+        var after = WorkbenchPageCatalog.Pages;
+
+        Assert.AreNotSame(before, after);
+        Assert.AreSequenceEqual(before.Select(p => p.Key), after.Select(p => p.Key));
+    }
+
+    [TestMethod]
     public void EveryText_Should_ExistInTheWorkbenchStrings()
     {
         foreach (var page in WorkbenchPageCatalog.Pages)

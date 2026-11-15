@@ -3,11 +3,11 @@
 <div class="ask kind-@Ask.Kind.ToString().ToLowerInvariant()" data-ask-id="@Ask.Id" role="group" aria-labelledby="@HeadingId">
     <div class="ask-head">
         <span class="ask-icon" aria-hidden="true"><BitIcon IconName="@KindIcon" Size="BitSize.Small" /></span>
-        <h3 id="@HeadingId" class="ask-question" dir="auto">@Ask.Question</h3>
+        <h3 id="@HeadingId" class="ask-question as-written" dir="@WorkbenchTextDirection.Of(Ask.Question, TaskDirection)">@Ask.Question</h3>
     </div>
     @if (string.IsNullOrWhiteSpace(Ask.Detail) is false)
     {
-        <div class="ask-detail" dir="auto"><BitMarkdownViewer Markdown="@Ask.Detail" Pipeline="BitMarkdownPipelines.GitHub" Inline /></div>
+        <div class="ask-detail as-written" dir="@WorkbenchTextDirection.Of(Ask.Detail, TaskDirection)"><BitMarkdownViewer Markdown="@Ask.Detail" Pipeline="BitMarkdownPipelines.GitHub" Inline Dir="@WorkbenchTextDirection.ToBitDir(WorkbenchTextDirection.Of(Ask.Detail, TaskDirection))" /></div>
     }
 
     @switch (Ask.Kind)

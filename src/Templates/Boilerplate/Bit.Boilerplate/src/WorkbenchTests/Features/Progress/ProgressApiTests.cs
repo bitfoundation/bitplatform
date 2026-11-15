@@ -143,6 +143,33 @@ public class ProgressApiTests
     }
 
     [TestMethod]
+    public async Task Wait_Should_BringTheNotesAndLinesTheUserRemoved()
+    {
+        var id = await Start(new { agent = "Claude Code", title = "استقرار روی Test", language = "fa", notes = new object[] { new { id = "keys", kind = "warning", text = "Never paste keys here." } }, log = "Started" });
+        var task = await Seen(id, t => t.Feed.Length > 0);
+
+        Assert.AreEqual("fa", (string?)(await Read(id))["language"]);
+
+        var wait = client.GetStringAsync($"api/progress/{id}/wait?cursor={(long)(await Read(id))["cursor"]!}&agent=Claude%20Code", TestContext.CancellationToken);
+
+        await user.Change(session => Assert.IsTrue(session.RemoveNote(task, "keys", "Sarah")));
+
+        var removed = JsonNode.Parse(await wait.WaitAsync(TimeSpan.FromSeconds(20), TestContext.CancellationToken))!;
+        var note = removed["events"]!.AsArray().Single()!;
+
+        Assert.AreEqual(("removed-note", "keys", "Never paste keys here.", "Sarah"), ((string?)note["kind"], (string?)note["note"], (string?)note["text"], (string?)note["by"]));
+
+        wait = client.GetStringAsync($"api/progress/{id}/wait?cursor={(long)removed["cursor"]!}&agent=Claude%20Code", TestContext.CancellationToken);
+
+        await user.Change(session => Assert.IsTrue(session.RemoveEntry(task, task.Feed.Single().Id, "Sarah")));
+
+        var line = JsonNode.Parse(await wait.WaitAsync(TimeSpan.FromSeconds(20), TestContext.CancellationToken))!["events"]!.AsArray().Single()!;
+
+        Assert.AreEqual(("removed-line", "Started"), ((string?)line["kind"], (string?)line["text"]));
+        Assert.IsEmpty((await Read(id))["notes"]!.AsArray());
+    }
+
+    [TestMethod]
     public async Task ASecret_Should_GoWhereTheQuestionSaysAndOnlyItsPlaceReachTheAgent()
     {
         const string secret = "cf_setup_token_4f9a";

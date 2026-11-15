@@ -85,8 +85,9 @@ public sealed partial class WorkbenchProgressAgent
     }
 
     /// <summary>
-    /// Returns what the user did on the task after the cursor (answers, finished steps and messages) as soon as there is
-    /// any, or nothing once the timeout passes; null when the task is gone. Waiting shows the agent as there.
+    /// Returns what the user did on the task after the cursor (answers, finished steps, messages and the notes and lines they
+    /// removed) as soon as there is any, or nothing once the timeout passes; null when the task is gone. Waiting shows the
+    /// agent as there.
     /// </summary>
     public async Task<(long Cursor, WorkbenchProgressTask Task, List<WorkbenchProgressEntry> Events)?> Wait(string agentName, string id, long since, TimeSpan timeout, CancellationToken cancellationToken)
     {
@@ -106,7 +107,7 @@ public sealed partial class WorkbenchProgressAgent
             if (await GetTask(id, cancellationToken) is not { } task)
                 return null;
 
-            var fresh = task.Feed.Where(e => e.FromYou && e.Sequence > since).ToList();
+            var fresh = task.Feed.Concat(task.Removed).Where(e => e.FromYou && e.Sequence > since).OrderBy(e => e.Sequence).ToList();
 
             if (fresh.Count > 0)
                 return (fresh.Max(e => e.Sequence), task, fresh);

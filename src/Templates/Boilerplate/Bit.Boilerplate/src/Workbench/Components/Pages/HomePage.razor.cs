@@ -54,7 +54,7 @@ public partial class HomePage
     private static WorkbenchPageInfo? HeroPage => WorkbenchPageCatalog.Find("pos-dashboard") ?? WorkbenchPageCatalog.Pages.FirstOrDefault();
 
     /// <summary>The page the hero shows on the phone: the buildings map, or another page of the catalog.</summary>
-    private static WorkbenchPageInfo? PhonePage => WorkbenchPageCatalog.Find("buildings") ?? WorkbenchPageCatalog.Pages.FirstOrDefault(p => p != HeroPage) ?? HeroPage;
+    private static WorkbenchPageInfo? PhonePage => WorkbenchPageCatalog.Find("buildings") ?? WorkbenchPageCatalog.Pages.FirstOrDefault(p => p.Key != HeroPage?.Key) ?? HeroPage;
 
     /// <summary>The catalog's pages by category, in the catalog's order, as the Pages pane groups them.</summary>
     private static IEnumerable<IGrouping<string, WorkbenchPageInfo>> PageGroups => WorkbenchPageCatalog.Pages.GroupBy(p => p.CategoryKey);
