@@ -163,6 +163,37 @@ test('edge icons narrow the gap the word has to fit in', () => {
     assert.equal(wide._edgeLabelState(wide.allocations[0]).anchorTime, (79 + 120) / 2 * MINUTE);
 });
 
+test('centered icons wider than the bar narrow the gap the word has to fit in', () => {
+    // A 100px centered icon on a 60px leg overhangs its end by 20px: 40 - 20 =
+    // 20px is too few.
+    const icon = { icons: [{ source: 'i.png', position: 'center', size: 100 }] };
+    assert.deepEqual(edges(collapsing(legs(40, 'AAA', 'AAA', icon))), [PLAIN, PLAIN]);
+    assert.deepEqual(edges(collapsing(legs(40, 'AAA', 'AAA', {}, icon))), [PLAIN, PLAIN]);
+
+    // 60 - 20 = 40px, centered between the icon and the next bar.
+    const wide = collapsing(legs(60, 'AAA', 'AAA', icon));
+    assert.deepEqual(edges(wide), [SHARED, HIDDEN]);
+    assert.equal(wide._edgeLabelState(wide.allocations[0]).anchorTime, (80 + 120) / 2 * MINUTE);
+
+    // One that fits inside the bar takes nothing from the gap.
+    const small = collapsing(legs(40, 'AAA', 'AAA', { icons: [{ source: 'i.png', position: 'center', size: 16 }] }));
+    assert.deepEqual(edges(small), [SHARED, HIDDEN]);
+    assert.equal(small._edgeLabelState(small.allocations[0]).anchorTime, 80 * MINUTE);
+});
+
+test('a web font that finishes loading measures the labels again and redoes the merge', () => {
+    const engine = collapsing(legs(40));
+    engine._relayout = () => {};
+    assert.deepEqual(edges(engine), [SHARED, HIDDEN]);
+
+    // The loaded font draws 'AAA' 45px wide: 40px no longer holds it.
+    engine._measureCtx = { font: '', measureText: (t) => ({ width: t.length * 15 }) };
+    engine._handleFontsLoaded();
+
+    assert.deepEqual(edges(engine), [PLAIN, PLAIN]);
+    assert.deepEqual(lanesOf(engine), [0, 1]);
+});
+
 test('a first leg too narrow to carry labels merges nothing', () => {
     const engine = collapsing([
         alloc('a', 'r0', 0, 20 * MINUTE, { textEnd: 'AAA' }),
@@ -413,6 +444,31 @@ test('the shared label stays when the first bar is scrolled out of view', () => 
     assert.equal(shared.align, 'center');
     assert.equal(shared.x, engine.getTimeToX(START + 3.5 * HOUR));
     assert.equal(bars[0].labels.filter(l => l.text === 'AAA').length, 1);
+});
+
+test('the shared label stays when both bars are out of view and only the gap is in it', () => {
+    const engine = makeSceneEngine([
+        bar('a', 1, 3, { textStart: 'XXX', textEnd: 'AAA' }),
+        bar('b', 4, 6, { textStart: 'AAA', textEnd: 'YYY' })
+    ]);
+    // A 30px view on the 40px gap: a ends 5px left of it, b starts 5px right.
+    engine._viewportW = engine.config.resourceAxisWidth + 30;
+    engine._visibleWidth = 30;
+    engine.scrollX = 125;
+    engine.visibleTimeRange = engine.calculateVisibleTimeRange();
+    const bars = engine.buildScene().bars;
+
+    assert.deepEqual(bars.map(n => n.id), ['b']);
+    const shared = bars[0].labels.filter(l => l.text === 'AAA');
+    assert.equal(shared.length, 1);
+    assert.equal(shared[0].x, engine.getTimeToX(START + 3.5 * HOUR));
+
+    // A 5px view on the gap past the label's right end keeps nothing for it.
+    engine._viewportW = engine.config.resourceAxisWidth + 5;
+    engine._visibleWidth = 5;
+    engine.scrollX = 152;
+    engine.visibleTimeRange = engine.calculateVisibleTimeRange();
+    assert.deepEqual(engine.buildScene().bars.map(n => n.id), []);
 });
 
 test('a gap of a few pixels draws both labels, stacked', () => {

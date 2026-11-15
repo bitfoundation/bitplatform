@@ -317,6 +317,9 @@
         // label itself, which collapseMatchingEdgeLabels may draw elsewhere.
         startIcons: number;
         endIcons: number;
+        // Width of the icon group drawn centered on the bar ('center' icons), which
+        // overhangs both its ends on the center line once wider than the bar.
+        centerIcons: number;
     }
 
     /**
@@ -2402,9 +2405,22 @@
         // A web font that finishes loading (document.fonts' loadingdone) changes
         // how wide the date-row labels are, and the widths a tier was chosen from
         // may have been measured in its fallback: measure them again next frame.
+        // The bar labels were measured the same way, and the lanes - which bars
+        // stack, which edge labels collapseMatchingEdgeLabels merges - may have
+        // been decided off those widths, so they are measured and decided again.
         private _handleFontsLoaded(): void {
             this._dateRowWidths = null;
-            if (!this._disposed) this.render();
+            if (this._disposed) return;
+            this._decorGen++;
+            const c = this.config;
+            if (this.allocationsByResource.size && (c.stackOnLabelCollision || c.collapseMatchingEdgeLabels)) {
+                this._barLayoutGen++;
+                this._reassignAllLanes();
+                this._recomputeRowMetrics();
+                this._reportResourceRows();
+            }
+            if (this._hasTimeRange()) this._relayout();
+            else this.render();
         }
 
         // The widest label a format writes, measured in the date font. A tier is
@@ -3213,14 +3229,30 @@
                     const alloc = resourceAllocations[i];
                     const laneInfo = this._laneInfo.get(alloc);
                     if (laneInfo && laneInfo.overflow) continue;
+                    // The label the bar before shares with this one, when that bar
+                    // drew nothing this frame - culled, scrolled out of view while
+                    // the gap between them is not. This bar draws it instead, and
+                    // is kept (off screen, where it is clipped) while the label
+                    // itself is in view, even when the whole gap fills the view.
+                    let carried: ResourceTimelineAllocation | null = null;
+                    let carriedState: ResourceTimelineEdgeLabels = NO_EDGE;
+                    if (i > 0 && decorated !== resourceAllocations[i - 1]) {
+                        const before = resourceAllocations[i - 1];
+                        const shared = this._edgeLabelState(before);
+                        if (shared.shareEnd) {
+                            carried = before;
+                            carriedState = shared;
+                        }
+                    }
+                    const carriesInView = carried !== null && this._sharedEndLabelInView(carried, carriedState, startX, visibleEndX);
                     // Time-range culling on the effective span (edge bars
                     // included), so delay bars don't pop in/out at the viewport
                     // edges. The list is sorted by startTime, so iteration can
                     // stop once even the longest possible start edge could no
                     // longer reach back into view.
-                    if (alloc.startTime - row.maxStartEdgeMs > visEnd) break;
+                    if (alloc.startTime - row.maxStartEdgeMs > visEnd && !carriesInView) break;
                     if (this._effectiveEndTime(alloc) < visStart) continue;
-                    if (this._effectiveStartTime(alloc) > visEnd) continue;
+                    if (this._effectiveStartTime(alloc) > visEnd && !carriesInView) continue;
 
                     // Per-bar height (falls back to the configured default),
                     // centered on the row's center line - offset when the bar is
@@ -3239,7 +3271,7 @@
                     const endEdgeMs = alloc.endBar && alloc.endBar.duration > 0 ? alloc.endBar.duration : 0;
                     const drawStartX = startEdgeMs ? this.getTimeToX(alloc.startTime - startEdgeMs) : barX;
                     const drawEndX = endEdgeMs ? this.getTimeToX(alloc.endTime + endEdgeMs) : barEndX;
-                    if (drawEndX < startX || drawStartX > visibleEndX) continue;
+                    if (drawEndX < startX || (drawStartX > visibleEndX && !carriesInView)) continue;
 
                     const barWidth = Math.max(c.minBarWidth, barEndX - barX);
                     const isSelected = this.selectedBars.has(alloc.id);
@@ -3301,17 +3333,12 @@
                         this._buildBarSections(alloc, node, barX, barWidth, barTop, stackCenterY, barHeight);
                     }
 
-                    // The label the bar before shares with this one is drawn by that
-                    // bar - unless it was culled, scrolled out of view while the gap
-                    // between them is not. The stacker keeps a merged pair on one
-                    // lane, so this bar's center line is that bar's too.
-                    if (i > 0 && decorated !== resourceAllocations[i - 1]) {
-                        const before = resourceAllocations[i - 1];
-                        const shared = this._edgeLabelState(before);
-                        if (shared.shareEnd) {
-                            node.labels = node._labels;
-                            node._labels.push(this._sharedEndLabel(before, shared, stackCenterY));
-                        }
+                    // The label the bar before shares with this one, when that bar
+                    // did not draw it (see `carried`). The stacker keeps a merged
+                    // pair on one lane, so this bar's center line is that bar's too.
+                    if (carried !== null) {
+                        node.labels = node._labels;
+                        node._labels.push(this._sharedEndLabel(carried, carriedState, stackCenterY));
                     }
 
                     // Per-bar labels and icons (only when present, to keep the
@@ -3481,6 +3508,14 @@
         // between them on the line both are drawn on.
         private _sharedEndLabel(alloc: ResourceTimelineAllocation, edge: ResourceTimelineEdgeLabels, centerY: number): any {
             return { text: alloc.textEnd, x: this.getTimeToX(edge.anchorTime), y: centerY, align: 'center', baseline: 'middle' };
+        }
+
+        // Whether a shared end label (see _sharedEndLabel) reaches into the bars
+        // area between `startX` and `endX`, by its own drawn width.
+        private _sharedEndLabelInView(alloc: ResourceTimelineAllocation, edge: ResourceTimelineEdgeLabels, startX: number, endX: number): boolean {
+            const x = this.getTimeToX(edge.anchorTime);
+            const half = this._labelWidth(alloc.textEnd!) / 2;
+            return x + half >= startX && x - half <= endX;
         }
 
         // Lays out the optional sections of a single bar: spans of the main bar,
@@ -6525,7 +6560,8 @@
                 right,
                 width: Math.max(centerWidth, centerGroup),
                 startIcons,
-                endIcons
+                endIcons,
+                centerIcons: centerGroup
             };
         }
 
@@ -6630,9 +6666,16 @@
 
                 // The clear space between the pair, as times: from past the first
                 // bar's end delay bar and end icons to before the next one's start
-                // icons and start delay bar.
-                const from = this._effectiveEndTime(left) + this._decorationBox(left).endIcons / scale;
-                const to = this._effectiveStartTime(right) - (rightShows ? this._decorationBox(right).startIcons / scale : 0);
+                // icons and start delay bar - and past the centered icons of
+                // either, where they overhang its end on the same center line.
+                const from = Math.max(
+                    this._effectiveEndTime(left) + this._decorationBox(left).endIcons / scale,
+                    left.endTime + this._centerIconOverhang(left, scale) / scale);
+                const to = rightShows
+                    ? Math.min(
+                        this._effectiveStartTime(right) - this._decorationBox(right).startIcons / scale,
+                        right.startTime - this._centerIconOverhang(right, scale) / scale)
+                    : this._effectiveStartTime(right);
                 const gapPx = (to - from) * scale;
                 const endWidth = this._labelWidth(left.textEnd!);
                 if (gapPx < endWidth + 2 * gap) continue;
@@ -6653,6 +6696,14 @@
                 if (state) map.set(list[i], state);
                 else map.delete(list[i]);
             }
+        }
+
+        // How far, in pixels at the given scale, a bar's centered icon group
+        // reaches past each end of the bar: 0 without one or while it fits.
+        private _centerIconOverhang(alloc: ResourceTimelineAllocation, scale: number): number {
+            const group = this._decorationBox(alloc).centerIcons;
+            if (!group) return 0;
+            return Math.max(0, (group - (alloc.endTime - alloc.startTime) * scale) / 2);
         }
 
         // Undoes the merge of one pair (see _resolveSharedEdgeLabels), drawing
