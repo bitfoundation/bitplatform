@@ -3775,6 +3775,131 @@ public class BitDataGridTests : BunitTestContext
         }
     }
 
+    // ------------------------------------------------- Virtualized grouped views
+
+    // The window a virtualized grid renders ahead of Virtualize, at the default 36px RowHeight (see
+    // BitDataGridPrerenderTests). bUnit's Virtualize renders every item it is given after it, so a test sees every row
+    // and checks the list the grid hands it; that the browser keeps only a window of it is the E2E tests' to check.
+    private const int EstimatedWindow = 24;
+
+    // 200 rows in four groups of 50, "Group 0" to "Group 3"; a group holds every fourth row, in order.
+    private static List<TestRow> CreateGroupedRows()
+        => Enumerable.Range(0, 200).Select(i => new TestRow { Id = i, Name = $"Group {i % 4}", Price = i }).ToList();
+
+    private async Task<IRenderedComponent<BitDataGrid<TestRow>>> RenderGroupedGridAsync(List<TestRow> items, bool virtualize = true,
+        Action<ComponentParameterCollectionBuilder<BitDataGrid<TestRow>>>? configure = null)
+    {
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.Groupable, true);
+            parameters.Add(p => p.Virtualize, virtualize);
+            parameters.Add(p => p.Height, "300px");
+            configure?.Invoke(parameters);
+        });
+        await component.InvokeAsync(() => component.Instance.GroupByAsync("Name"));
+        return component;
+    }
+
+    [TestMethod]
+    public async Task AGroupedViewIsVirtualizedWhileVirtualizeIsOn()
+    {
+        // Four group rows and 200 data rows: the body lists 204 rows, the first window of them ahead of Virtualize.
+        var component = await RenderGroupedGridAsync(CreateGroupedRows());
+
+        // The rows in the grouped view's order and numbering, on across the seam between the window and Virtualize's
+        // rows: each group's row (after the header row, aria-rowindex 1), then its 50 rows.
+        var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
+        Assert.IsTrue(rows.Count > EstimatedWindow + 51, $"{rows.Count} rows: Virtualize's rows, the second group's among them, follow the window");
+        for (var i = 0; i < rows.Count; i++)
+        {
+            Assert.AreEqual((i + 2).ToString(CultureInfo.InvariantCulture), rows[i].GetAttribute("aria-rowindex"), $"row {i}");
+            Assert.AreEqual(i % 51 == 0, rows[i].ClassList.Contains("bit-dtg-group-row"), $"row {i}");
+            if (i % 51 != 0) Assert.AreEqual($"Group {i / 51}", rows[i].QuerySelector(".bit-dtg-cell")!.TextContent.Trim(), $"row {i}");
+        }
+
+        // The rows past the window are reserved until Virtualize has measured, group rows and data rows alike, each
+        // RowHeight tall.
+        var spacer = component.Find(".bit-dtg-body > .bit-dtg-vsp");
+        StringAssert.Contains(spacer.GetAttribute("style"), $"height: {(204 - EstimatedWindow) * 36}px;");
+
+        // Virtualize's spacers sit among the rows, so the body drops the rowgroup role, as a flat virtualized body does.
+        Assert.IsNull(component.Find(".bit-dtg-body").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public async Task AGroupedViewIsRenderedWholeWithoutVirtualize()
+    {
+        var component = await RenderGroupedGridAsync(CreateGroupedRows(), virtualize: false);
+
+        Assert.AreEqual(4, component.FindAll(".bit-dtg-body > .bit-dtg-group-row").Count);
+        Assert.AreEqual(200, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count);
+        Assert.AreEqual("rowgroup", component.Find(".bit-dtg-body").GetAttribute("role"));
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-vsp").Count);
+
+        // Its group rows grow with their content as they always have.
+        var groupRow = component.Find(".bit-dtg-body > .bit-dtg-group-row");
+        Assert.IsFalse(groupRow.ClassList.Contains("bit-dtg-group-row-fix"));
+        Assert.IsFalse((groupRow.GetAttribute("style") ?? "").Contains("height"), groupRow.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task TheGroupRowsOfAVirtualizedGridAreExactlyRowHeightTall()
+    {
+        // Virtualize and the grid's spacers place every row RowHeight down from the last, a group row too, so its
+        // height is pinned and its content kept to one line (the bit-dtg-group-row-fix rules).
+        var component = await RenderGroupedGridAsync(CreateGroupedRows(), configure: parameters =>
+        {
+            parameters.Add(p => p.RowHeight, 40f);
+            parameters.Add(p => p.GroupsInitiallyCollapsed, true);
+        });
+
+        var groupRows = component.FindAll(".bit-dtg-body > .bit-dtg-group-row");
+        Assert.AreEqual(4, groupRows.Count);
+        foreach (var row in groupRows)
+        {
+            Assert.IsTrue(row.ClassList.Contains("bit-dtg-group-row-fix"), row.ClassName);
+            var style = row.GetAttribute("style") ?? "";
+            StringAssert.Contains(style, ";height:40px;");
+            Assert.IsFalse(style.Contains("min-height"), style);
+        }
+    }
+
+    [TestMethod]
+    public async Task OpeningAGroupOfAVirtualizedGridAddsItsRowsToTheList()
+    {
+        // Four closed groups fit the window, and nothing is left to reserve.
+        var component = await RenderGroupedGridAsync(CreateGroupedRows(), configure: parameters => parameters.Add(p => p.GroupsInitiallyCollapsed, true));
+        Assert.AreEqual(4, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-vsp").Count);
+
+        // Opening the second group puts its 50 rows right after its group row; the list is now 54 rows long.
+        component.FindAll(".bit-dtg-body > .bit-dtg-group-row")[1].QuerySelector("button")!.Click();
+
+        var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
+        Assert.AreEqual(54, rows.Count);
+        Assert.IsTrue(rows[0].ClassList.Contains("bit-dtg-group-row"));
+        Assert.IsTrue(rows[1].ClassList.Contains("bit-dtg-group-row"));
+        Assert.IsTrue(rows.Skip(2).Take(50).All(r => r.QuerySelector(".bit-dtg-cell")!.TextContent.Trim() == "Group 1"));
+        Assert.IsTrue(rows[52].ClassList.Contains("bit-dtg-group-row"));
+        Assert.IsTrue(rows[53].ClassList.Contains("bit-dtg-group-row"));
+        StringAssert.Contains(component.Find(".bit-dtg-body > .bit-dtg-vsp").GetAttribute("style"), $"height: {(54 - EstimatedWindow) * 36}px;");
+    }
+
+    [TestMethod]
+    public async Task RevealItemAsyncPassesTheRowsPlaceInAVirtualizedGroupedBody()
+    {
+        var items = CreateGroupedRows();
+        var component = await RenderGroupedGridAsync(items);
+
+        // The first row of "Group 1" (Id 1) comes after the first group's row, its 50 rows and its own group row.
+        await component.InvokeAsync(() => component.Instance.RevealItemAsync(items[1]));
+
+        var args = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.revealRow"].Single().Arguments;
+        Assert.AreEqual(1 + 1 + 50 + 1 + 1, args[1], "its aria-rowindex: the header row, then the rows above it, then itself");
+        Assert.AreEqual(52, args[2], "its place in the body, group rows included");
+        Assert.AreEqual(36f, args[3]);
+    }
+
     // -------------------------------------------------------------- Row events
 
     [TestMethod]

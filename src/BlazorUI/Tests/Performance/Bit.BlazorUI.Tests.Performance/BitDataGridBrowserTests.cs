@@ -5,7 +5,7 @@ namespace Bit.BlazorUI.Tests.Performance;
 
 /// <summary>
 /// Performance tests of BitDataGrid over client-side rows (/perf/data-grid): 100,000 rows virtualized - rendered,
-/// sorted, filtered and scrolled to the end - and 10,000 rows grouped, which the grid renders without virtualization.
+/// sorted, filtered and scrolled to the end - and 10,000 rows grouped, virtualized with their group rows.
 /// What each interaction cost goes to the run's results file; the thresholds only catch what is catastrophic.
 /// </summary>
 [TestClass]
@@ -21,11 +21,10 @@ public class BitDataGridBrowserTests : PerformanceTestBase
     private const int CategoryCount = 20;
 
     // Generous on purpose (the README's Performance Thresholds): ten times or more what a Debug run takes on the server
-    // (CI's mode), and three times or more what it takes in WebAssembly, where sorting and grouping are slowest.
+    // (CI's mode), and three times or more what it takes in WebAssembly, where sorting is slowest.
     private const double RenderThreshold = 15_000;
     private const double ChangeThreshold = 15_000;
     private const double ScrollThreshold = 10_000;
-    private const double GroupThreshold = 60_000;
 
     // The rows the grid has in the DOM: a virtualized grid keeps a window of them, whatever the count.
     private const string RenderedRows = "#perf-grid .bit-dtg-body .bit-dtg-row[aria-rowindex]:not(.bit-dtg-group-row)";
@@ -106,17 +105,18 @@ public class BitDataGridBrowserTests : PerformanceTestBase
     {
         await RenderAsync(GroupedCount);
 
-        // Longer than a measurement's 30 seconds: a Debug WebAssembly build on the interpreter takes more than that.
-        var browser = await MeasureInBrowserAsync(Page.Locator("#btn-group"), "Grouped", TimeSpan.FromMinutes(5));
+        var browser = await MeasureInBrowserAsync(Page.Locator("#btn-group"), "Grouped");
         var groupTime = await GetReRenderTime();
 
         Console.WriteLine($"Group - {GroupedCount} rows in {CategoryCount} groups: {groupTime:F2} ms (browser {browser.Duration:F2} ms, {browser.DomNodes} elements)");
         RecordInteraction("group", GroupedCount, groupTime, browser);
 
-        // The grid does not virtualize a grouped view: every row of the open groups is in the DOM.
-        Assert.AreEqual(CategoryCount, await Page.Locator("#perf-grid .bit-dtg-group-row").CountAsync(), "group rows");
-        Assert.AreEqual(GroupedCount, await Page.Locator(RenderedRows).CountAsync(), "rows of the grouped view");
-        AssertWithinThreshold(groupTime, GroupThreshold, $"Group time for {GroupedCount} rows");
+        // A grouped view is virtualized like a flat one, its group rows among its rows: a window of them is in the DOM.
+        var groupRows = await Page.Locator("#perf-grid .bit-dtg-group-row").CountAsync();
+        Assert.IsTrue(groupRows is > 0 and < CategoryCount, $"{groupRows} of the {CategoryCount} group rows are in the DOM.");
+        var rendered = await Page.Locator(RenderedRows).CountAsync();
+        Assert.IsTrue(rendered is > 0 and < 500, $"The virtualized grouped view has {rendered} of its {GroupedCount} rows in the DOM.");
+        AssertWithinThreshold(groupTime, ChangeThreshold, $"Group time for {GroupedCount} rows");
     }
 
     // Opens the page and renders its grid, untimed: the start of every test that times what comes after.

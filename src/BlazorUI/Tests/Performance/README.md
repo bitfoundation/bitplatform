@@ -100,7 +100,7 @@ Each performance page (`/perf/action-button`, `/perf/dropdown`) exposes:
 the page starts so they are not timed. After `#btn-render` it exposes:
 - `#btn-sort` - Sort by price, descending ("Sorted")
 - `#btn-filter` - Keep one category of the 20 ("Filtered")
-- `#btn-group` - Group by category ("Grouped"); the grid does not virtualize a grouped view, so every row is rendered
+- `#btn-group` - Group by category ("Grouped"), virtualized like the flat view: its group rows are rows among the others
 - `#btn-reveal-last` - Scroll to the last row, which carries the class `perf-last-row` once the grid has rendered it
 
 `/perf/full-calendar/{events}` renders a BitFullCalendar (en-US) on January 2026, with that many events spread over

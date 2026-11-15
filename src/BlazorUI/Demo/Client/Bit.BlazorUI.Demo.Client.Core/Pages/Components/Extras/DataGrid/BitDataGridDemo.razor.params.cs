@@ -82,7 +82,7 @@ public partial class BitDataGridDemo
         new() { Name = "PageSize", Type = "int", DefaultValue = "20", Description = "The number of rows per page." },
         new() { Name = "PageSizeOptions", Type = "int[]", DefaultValue = "{ 10, 20, 50, 100 }", Description = "The page sizes offered in the pager." },
         new() { Name = "PagerPlacement", Type = "BitPlacement", DefaultValue = "BitPlacement.Bottom", Description = "Where the pager renders: Top, Bottom or TopAndBottom.", LinkType = LinkType.Link, Href = "#placement-enum" },
-        new() { Name = "Virtualize", Type = "bool", DefaultValue = "false", Description = "Renders only the visible rows. Requires Height and RowHeight; server mode without paging fetches the rows as they scroll in. Ignores RowHeightSelector, WrapCellText and the height of expanded detail rows." },
+        new() { Name = "Virtualize", Type = "bool", DefaultValue = "false", Description = "Renders only the visible rows. Requires Height and RowHeight; server mode without paging fetches the rows as they scroll in. A grouped view is virtualized too, its group rows RowHeight tall on one line. Ignores RowHeightSelector, WrapCellText and the height of expanded detail rows." },
         new() { Name = "RowHeight", Type = "float", DefaultValue = "36", Description = "Uniform row height in px (required when virtualizing)." },
         new() { Name = "RowHeightSelector", Type = "Func<TItem, float>?", DefaultValue = "null", Description = "Per-row height selector (ignored while virtualizing)." },
         new() { Name = "VirtualizeColumns", Type = "bool", DefaultValue = "false", Description = "Renders only the columns near the horizontal viewport. Requires px column widths; not applied with header groups or ColSpans." },

@@ -480,7 +480,8 @@
         <DemoExample Title="Virtualization" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
             <div>
                 <b>Virtualize</b> renders only the rows in view (it needs a <b>Height</b>), and <b>VirtualizeColumns</b> does the same for
-                columns, which then need pixel widths. This grid has 42 columns; try 100,000 rows.
+                columns, which then need pixel widths. This grid has 42 columns; try 100,000 rows. A grouped view is virtualized
+                the same way, its group rows <b>RowHeight</b> tall like the rest.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">

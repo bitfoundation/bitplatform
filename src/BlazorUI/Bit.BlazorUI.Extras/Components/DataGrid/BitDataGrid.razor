@@ -375,7 +375,7 @@
                contain only row elements, so when virtualizing (client or server mode) we drop the
                rowgroup role here (the rows stay valid grid descendants) to keep the Virtualize host
                free of non-row ARIA children. *@
-            <div class="bit-dtg-body" role="@(UseVirtualization || UseServerVirtualization ? null : "rowgroup")">
+            <div class="bit-dtg-body" role="@(UseVirtualization || UseGroupedVirtualization || UseServerVirtualization ? null : "rowgroup")">
                 @if (PendingNewItem is not null)
                 {
                     <BitDataGridRow TItem="TItem" Grid="this" Item="PendingNewItem" />
@@ -402,7 +402,14 @@
                 }
                 else if (_viewGroups is not null)
                 {
-                    @RenderGroupList(_viewGroups)
+                    @if (UseGroupedVirtualization)
+                    {
+                        RenderVirtualGroupedRows(__builder, CurrentGroupedLayout()!.Entries);
+                    }
+                    else
+                    {
+                        @RenderGroupList(_viewGroups)
+                    }
                 }
                 else if (IsInfiniteMode)
                 {
@@ -567,6 +574,9 @@
 @code {
     private bool UseVirtualization => Virtualize && _viewGroups is null && !IsServerMode;
 
+    // A grouped view is client-side (see GroupByAsync), virtualized as one list of group rows and data rows.
+    private bool UseGroupedVirtualization => Virtualize && _viewGroups is not null && !IsServerMode;
+
     // The rows of a client-side virtualized view: the current page slice (so paging is honored when Pageable and
     // Virtualize are both on; with paging off it is the full view) or the accumulated infinite-scroll batches.
     // Virtualize renders no row until its JS has measured the viewport, which never happens before the grid is
@@ -599,6 +609,45 @@
                the meantime; the stylesheet shows it only while a spacer of Virtualize's has its height pending, so
                it never adds to one an older Virtualize wrote inline or one its JS has applied. *@
             <div class="bit-dtg-vsp" style="height: @(SpacerHeight(rows.Count - head))px;" aria-hidden="true"></div>
+        }
+    }
+
+    // The body of a virtualized grouped view: its group rows and the rows of its open groups, in the order they are
+    // shown and numbered (CurrentGroupedLayout), virtualized as one list the way RenderVirtualRows does the rows of a
+    // flat view - the first window ahead of Virtualize, with the same spacers around it. Every entry is RowHeight tall,
+    // a group row too, so Virtualize, the spacers and revealRow can place each one by its index.
+    private void RenderVirtualGroupedRows(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, IReadOnlyList<GroupedEntry> entries)
+    {
+        var head = Math.Min(entries.Count, EstimatedRowWindow);
+        <div style="height: 0px; flex-shrink: 0;" aria-hidden="true"></div>
+        for (var i = 0; i < head; i++)
+        {
+            RenderGroupedEntry(__builder, entries[i]);
+        }
+        <div style="height: 0px; flex-shrink: 0;" aria-hidden="true"></div>
+        @* ItemContent is invoked on Virtualize's own builder, so each entry's @key sits among its siblings' as a row's
+           does in RenderVirtualRows. *@
+        <Virtualize Items="GetEntriesAfter(entries, head)" ItemSize="RowHeight" TItem="GroupedEntry" ItemContent="GroupedEntryContent" />
+        if (entries.Count > head)
+        {
+            <div class="bit-dtg-vsp" style="height: @(SpacerHeight(entries.Count - head))px;" aria-hidden="true"></div>
+        }
+    }
+
+    private RenderFragment<GroupedEntry>? _groupedEntryContent;
+    private RenderFragment<GroupedEntry> GroupedEntryContent => _groupedEntryContent ??= entry => builder => RenderGroupedEntry(builder, entry);
+
+    private void RenderGroupedEntry(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, GroupedEntry entry)
+    {
+        if (entry.Group is { } group)
+        {
+            <div @key="entry.Key" class="bit-dtg-row bit-dtg-group-row bit-dtg-group-row-fix" role="row" aria-rowindex="@GroupAriaRowIndex(group)" style="grid-template-columns:var(--bit-dtg-template);--bit-dtg-group-level:@group.Level;@RowHeightStyle(RowHeight)">
+                @RenderGroupCell(group)
+            </div>
+        }
+        else
+        {
+            <BitDataGridRow TItem="TItem" Grid="this" Item="entry.Item!" @key="entry.Key" />
         }
     }
 
@@ -696,28 +745,35 @@
         }
     };
 
-    private RenderFragment RenderGroup(BitDataGridGroup<TItem> group) => __builder =>
+    // The one cell of a group's row: its toggle, its title, its count and its aggregates.
+    private RenderFragment RenderGroupCell(BitDataGridGroup<TItem> group) => __builder =>
     {
         var groupCol = _columnsById.GetValueOrDefault(group.ColumnId);
         var collapsed = IsGroupCollapsed(group);
         // Written on every render, like the cells, rather than read off the KeyText the view was built with: a new
         // ValueText or a new UI culture for a translated enum name reaches the header together with the cells.
         var keyText = groupCol is null ? group.KeyText : groupCol.FormatValue(group.Key);
+        <div class="bit-dtg-group-cell @Classes?.GroupRow" role="@CellRole" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.GroupRow">
+            <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-icon-btn"
+                    aria-label="@(string.Format(collapsed ? Strings.ExpandGroupFormat : Strings.CollapseGroupFormat, groupCol?.DisplayTitle, keyText))"
+                    aria-expanded="@(collapsed ? "false" : "true")"
+                    @onclick="() => ToggleGroup(group)">
+                <span class="@(collapsed ? "bit-dtg-dir-glyph" : null)" aria-hidden="true">@(collapsed ? "▸" : "▾")</span>
+            </button>
+            <strong class="bit-dtg-group-title">@(groupCol?.DisplayTitle): @keyText</strong>
+            <span class="bit-dtg-group-count">(@group.Count)</span>
+            @foreach (var agg in group.Aggregates)
+            {
+                <span class="bit-dtg-group-agg">@(_columnsById.GetValueOrDefault(agg.ColumnId)?.DisplayTitle): @AggregateLabel(agg)</span>
+            }
+        </div>
+    };
+
+    private RenderFragment RenderGroup(BitDataGridGroup<TItem> group) => __builder =>
+    {
+        var collapsed = IsGroupCollapsed(group);
         <div class="bit-dtg-row bit-dtg-group-row" role="row" aria-rowindex="@GroupAriaRowIndex(group)" style="grid-template-columns:var(--bit-dtg-template);--bit-dtg-group-level:@group.Level;">
-            <div class="bit-dtg-group-cell @Classes?.GroupRow" role="@CellRole" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.GroupRow">
-                <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-icon-btn"
-                        aria-label="@(string.Format(collapsed ? Strings.ExpandGroupFormat : Strings.CollapseGroupFormat, groupCol?.DisplayTitle, keyText))"
-                        aria-expanded="@(collapsed ? "false" : "true")"
-                        @onclick="() => ToggleGroup(group)">
-                    <span class="@(collapsed ? "bit-dtg-dir-glyph" : null)" aria-hidden="true">@(collapsed ? "▸" : "▾")</span>
-                </button>
-                <strong class="bit-dtg-group-title">@(groupCol?.DisplayTitle): @keyText</strong>
-                <span class="bit-dtg-group-count">(@group.Count)</span>
-                @foreach (var agg in group.Aggregates)
-                {
-                    <span class="bit-dtg-group-agg">@(_columnsById.GetValueOrDefault(agg.ColumnId)?.DisplayTitle): @AggregateLabel(agg)</span>
-                }
-            </div>
+            @RenderGroupCell(group)
         </div>
         @if (!collapsed)
         {

@@ -453,7 +453,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// uniform <see cref="RowHeight"/>. In client mode the current view is virtualized in memory; in
     /// server mode (<see cref="OnRead"/>) with paging disabled, row windows are fetched on demand
     /// through <see cref="OnRead"/> as the user scrolls, so arbitrarily large remote datasets can be
-    /// browsed without a pager.
+    /// browsed without a pager. A grouped view is virtualized as well: its group rows are rows like the others,
+    /// <see cref="RowHeight"/> tall, with their title, count and aggregates kept on one line.
     /// <para>
     /// Because the scroll math assumes every row is exactly <see cref="RowHeight"/> tall, anything that
     /// makes a row taller breaks it: <see cref="RowHeightSelector"/> and <see cref="WrapCellText"/> are
@@ -1698,22 +1699,30 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private string SpacerHeight(int rows) => (Math.Max(0, rows) * RowHeight).ToString(CultureInfo.InvariantCulture);
 
     // The view RenderVirtualRows hands Virtualize, kept across renders while it views the same rows from the same row.
-    private RowsAfter? _rowsAfter;
+    private RowsAfter<TItem>? _rowsAfter;
 
-    private RowsAfter GetRowsAfter(IReadOnlyList<TItem> rows, int start) =>
+    private RowsAfter<TItem> GetRowsAfter(IReadOnlyList<TItem> rows, int start) =>
         _rowsAfter is { } cached && ReferenceEquals(cached.Rows, rows) && cached.Start == start
             ? cached
-            : _rowsAfter = new RowsAfter(rows, start);
+            : _rowsAfter = new RowsAfter<TItem>(rows, start);
+
+    // The entries of a grouped view RenderVirtualGroupedRows hands Virtualize, kept the same way.
+    private RowsAfter<GroupedEntry>? _entriesAfter;
+
+    private RowsAfter<GroupedEntry> GetEntriesAfter(IReadOnlyList<GroupedEntry> entries, int start) =>
+        _entriesAfter is { } cached && ReferenceEquals(cached.Rows, entries) && cached.Start == start
+            ? cached
+            : _entriesAfter = new RowsAfter<GroupedEntry>(entries, start);
 
     // The rows of a list after its first ones, as the ICollection Virtualize takes, without copying them; an IList so
     // that the Skip/Take Virtualize reads its window with index straight into the list.
-    private sealed class RowsAfter(IReadOnlyList<TItem> rows, int start) : IList<TItem>
+    private sealed class RowsAfter<TRow>(IReadOnlyList<TRow> rows, int start) : IList<TRow>
     {
-        public IReadOnlyList<TItem> Rows => rows;
+        public IReadOnlyList<TRow> Rows => rows;
 
         public int Start => start;
 
-        public TItem this[int index]
+        public TRow this[int index]
         {
             get => (uint)index < (uint)Count ? rows[start + index] : throw new ArgumentOutOfRangeException(nameof(index));
             set => throw new NotSupportedException();
@@ -1723,9 +1732,9 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         public bool IsReadOnly => true;
 
-        public int IndexOf(TItem item)
+        public int IndexOf(TRow item)
         {
-            var comparer = EqualityComparer<TItem>.Default;
+            var comparer = EqualityComparer<TRow>.Default;
             for (var i = 0; i < Count; i++)
             {
                 if (comparer.Equals(rows[start + i], item)) return i;
@@ -1733,23 +1742,23 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             return -1;
         }
 
-        public bool Contains(TItem item) => IndexOf(item) >= 0;
+        public bool Contains(TRow item) => IndexOf(item) >= 0;
 
-        public void CopyTo(TItem[] array, int arrayIndex)
+        public void CopyTo(TRow[] array, int arrayIndex)
         {
             for (var i = 0; i < Count; i++) array[arrayIndex + i] = rows[start + i];
         }
 
-        public IEnumerator<TItem> GetEnumerator()
+        public IEnumerator<TRow> GetEnumerator()
         {
             for (var i = 0; i < Count; i++) yield return rows[start + i];
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void Add(TItem item) => throw new NotSupportedException();
-        public void Insert(int index, TItem item) => throw new NotSupportedException();
-        public bool Remove(TItem item) => throw new NotSupportedException();
+        public void Add(TRow item) => throw new NotSupportedException();
+        public void Insert(int index, TRow item) => throw new NotSupportedException();
+        public bool Remove(TRow item) => throw new NotSupportedException();
         public void RemoveAt(int index) => throw new NotSupportedException();
         public void Clear() => throw new NotSupportedException();
     }
@@ -2309,10 +2318,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             if (item is not null && AriaRowIndex(item) is { } rowIndex)
             {
                 // A virtualized row may not be rendered yet, so its place among the body's rows (each RowHeight tall
-                // there) goes along to scroll to when it is not.
-                var position = (UseVirtualization || UseServerVirtualization) && RowDataIndex(item) is { } index
-                    ? index - (PagingActive ? (_currentPage - 1) * _effectivePageSize : 0) + PendingRowCount
-                    : -1;
+                // there) goes along to scroll to when it is not. In a grouped view the group rows above it count too,
+                // which its aria-rowindex already does.
+                var position = UseGroupedVirtualization
+                    ? rowIndex - HeaderRowCount - 1
+                    : (UseVirtualization || UseServerVirtualization) && RowDataIndex(item) is { } index
+                        ? index - (PagingActive ? (_currentPage - 1) * _effectivePageSize : 0) + PendingRowCount
+                        : -1;
                 try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.revealRow", RootElement, rowIndex, position, RowHeight); }
                 catch (JSException) { }
                 catch (JSDisconnectedException) { }
@@ -5428,8 +5440,19 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     // walk numbers them in render order and lists the rows the keyboard can reach, in the order they are shown. It is
     // read on demand rather than refreshed by a render, so the keyboard handlers that run right after a refresh (a row
     // deleted, an edit committed into another group) see the new view, and it is only walked again when what it is
-    // built from changes: the view, which groups are open, or the rows above the body.
-    private sealed record GroupedLayout(Dictionary<object, int> RowIndex, Dictionary<string, int> GroupIndex, List<TItem> NavigableRows, int BodyRowCount);
+    // built from changes: the view, which groups are open, or the rows above the body. The same walk lists the body's
+    // rows as a virtualized grouped view renders them (Entries): a group's header row, then its open rows or subgroups.
+    private sealed record GroupedLayout(Dictionary<object, int> RowIndex, Dictionary<string, int> GroupIndex, List<TItem> NavigableRows, int BodyRowCount, List<GroupedEntry> Entries);
+
+    /// <summary>
+    /// One row of the body of a grouped view, as a virtualized one lists them: a group's header row, or a data row.
+    /// <see cref="Key"/> is the @key the row renders with - the row's own key, or the group's path in a type of its own,
+    /// so a group never shares a key with a row.
+    /// </summary>
+    internal readonly record struct GroupedEntry(BitDataGridGroup<TItem>? Group, TItem? Item, object Key);
+
+    // The key of a group's header row in a virtualized grouped view.
+    private sealed record GroupRowKey(string Path);
     private GroupedLayout? _groupedLayout;
     private (IReadOnlyList<BitDataGridGroup<TItem>>? View, int Expansion, int Start) _groupedLayoutSource;
 
@@ -5451,16 +5474,18 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         var rows = new Dictionary<object, int>();
         var groups = new Dictionary<string, int>();
         var navigable = new List<TItem>();
+        var entries = new List<GroupedEntry>();
         var next = start;
         Walk(_viewGroups);
         _groupedLayoutSource = source;
-        return _groupedLayout = new(rows, groups, navigable, next - start);
+        return _groupedLayout = new(rows, groups, navigable, next - start, entries);
 
         void Walk(IReadOnlyList<BitDataGridGroup<TItem>> list)
         {
             foreach (var group in list)
             {
                 groups[group.Path] = next++;
+                entries.Add(new(group, default, new GroupRowKey(group.Path)));
                 if (IsGroupCollapsed(group)) continue;
                 if (group.HasSubGroups)
                 {
@@ -5469,9 +5494,12 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 }
                 foreach (var item in group.Items)
                 {
-                    if (item is null || !rows.TryAdd(GetKey(item), next)) continue;
+                    if (item is null) continue;
+                    var key = GetKey(item);
+                    if (!rows.TryAdd(key, next)) continue;
                     next++;
                     navigable.Add(item);
+                    entries.Add(new(null, item, key));
                 }
             }
         }

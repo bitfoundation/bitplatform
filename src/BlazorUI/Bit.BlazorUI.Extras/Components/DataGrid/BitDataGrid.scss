@@ -570,6 +570,25 @@ button.bit-dtg-htext {
     font-size: $tg-fs-xs;
 }
 
+/* A group row of a virtualized grid is RowHeight tall like every other row there, so it keeps to one line: the toggle
+   and the count keep their size, and the title and the aggregates give way, ending in an ellipsis. */
+.bit-dtg-group-row-fix .bit-dtg-group-cell {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.bit-dtg-group-row-fix .bit-dtg-icon-btn,
+.bit-dtg-group-row-fix .bit-dtg-group-count {
+    flex-shrink: 0;
+}
+
+.bit-dtg-group-row-fix .bit-dtg-group-title,
+.bit-dtg-group-row-fix .bit-dtg-group-agg {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* ----------------------------------------------- Grouped column headers */
 .bit-dtg-group-header-row {
     background: var(--bit-DataGrid-header-background, #{$clr-bg-sec});
