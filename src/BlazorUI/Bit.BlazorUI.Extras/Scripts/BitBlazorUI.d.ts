@@ -11,6 +11,10 @@ declare namespace BitBlazorUI.Utils {
     function firstFocusable(container: ParentNode, skip?: (el: HTMLElement) => boolean): HTMLElement | null;
     function findFocusable(scope: ParentNode, from: Node, forward: boolean, skip?: (el: HTMLElement) => boolean): HTMLElement | null;
     function isInNestedSurface(node: Node | null, boundary: Element): boolean;
+    function setupFocusTrap(elementId: string, anchorId?: string | null): void;
+    function disposeFocusTrap(elementId: string): void;
+    function storeFocus(key: string, scopeId?: string | null): boolean;
+    function restoreFocus(key: string, onlyWhenLost: boolean, scopeId?: string | null): boolean;
     function isInteractive(el: Element): boolean;
     function isRtl(element: HTMLElement): boolean;
     function invokeDotNet<T = any>(dotnetObj: DotNetObject, method: string, ...args: any[]): Promise<T>;

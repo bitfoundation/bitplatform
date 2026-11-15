@@ -29,6 +29,8 @@ public partial class BitFcEventListDialog : IAsyncDisposable
     private bool _showDetails;
     private BitFullCalendarEvent? _selectedEvent;
     private ElementReference _dialogRef;
+    // The id of the dialog element: the focus trap and the focus it hands back as it closes are kept by it.
+    private readonly string _dialogId = $"bfc-dlg-{Guid.NewGuid():N}";
     private readonly string _dialogTitleId = $"bfc-list-title-{Guid.NewGuid():N}";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -36,7 +38,7 @@ public partial class BitFcEventListDialog : IAsyncDisposable
         // Move focus into the dialog and trap Tab navigation once it has rendered; teardown in
         // DisposeAsync restores focus to the element that was focused before it opened.
         if (firstRender)
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _dialogTitleId);
+            await BitFcDialogInterop.SetupAsync(JS, _dialogId);
     }
 
     // Whether Escape closes the dialog, the one rule OnDialogKeyDown and _EscapeClaim both go by: while the details
@@ -68,6 +70,6 @@ public partial class BitFcEventListDialog : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await BitFcDialogInterop.TeardownAsync(JS, _dialogTitleId);
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogId);
     }
 }

@@ -103,6 +103,8 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     }
 
     private ElementReference _dialogRef;
+    // The id of the dialog element: the focus trap and the focus it hands back as it closes are kept by it.
+    private readonly string _dialogId = $"bfc-dlg-{Guid.NewGuid():N}";
 
     private bool _isEditing;
     private bool _isOccurrenceEdit;
@@ -464,7 +466,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         // BitFcEventDetailsDialog so the add/edit dialog behaves like a true modal.
         if (firstRender)
         {
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _dialogTitleId);
+            await BitFcDialogInterop.SetupAsync(JS, _dialogId);
             await EscapeWatch.WatchAsync(_dialogRef);
         }
 
@@ -791,6 +793,6 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     {
         State.OnStateChanged -= HandleStateChanged;
         await EscapeWatch.DisposeAsync();
-        await BitFcDialogInterop.TeardownAsync(JS, _dialogTitleId);
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogId);
     }
 }

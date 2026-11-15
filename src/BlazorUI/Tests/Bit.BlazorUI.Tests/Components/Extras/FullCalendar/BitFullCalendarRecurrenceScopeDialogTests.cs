@@ -204,6 +204,30 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         Assert.AreEqual(teardowns + 1, Context.JSInterop.Invocations["BitBlazorUI.FullCalendar.teardownDialog"].Count);
     }
 
+    [TestMethod]
+    public void BitFullCalendarDialogsShouldKeepTheirFocusTrapAndRestoreByTheIdOfTheirElement()
+    {
+        var component = RenderSeries();
+        var before = Context.JSInterop.Invocations["BitBlazorUI.FullCalendar.setupDialog"].Count;
+
+        OpenDelete(component);
+
+        // The shared trap and the focus it hands back are kept by the id of the dialog element, which every dialog
+        // carries: the details dialog, and the prompt on top of it.
+        var ids = Context.JSInterop.Invocations["BitBlazorUI.FullCalendar.setupDialog"].Skip(before).Select(i => (string?)i.Arguments[0]).ToArray();
+        var dialogs = component.FindAll(".bit-bfc-dialog").Select(d => d.Id).ToArray();
+
+        Assert.AreEqual(2, ids.Length);
+        Assert.AreEqual(2, ids.Distinct().Count());
+        CollectionAssert.AreEquivalent(dialogs, ids);
+
+        var scopeId = component.Find(Scope).Id;
+        component.Find($"{Scope} .bit-bfc-dialog-footer .bit-bfc-btn:not(.bit-bfc-btn-primary)").Click();
+
+        // The prompt is torn down by the same id, although its element has left the page by then.
+        Assert.AreEqual(scopeId, Context.JSInterop.Invocations["BitBlazorUI.FullCalendar.teardownDialog"].Last().Arguments[0]);
+    }
+
     #endregion
 
     #region Choosing
