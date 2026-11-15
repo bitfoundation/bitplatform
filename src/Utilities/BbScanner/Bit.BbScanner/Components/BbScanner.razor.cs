@@ -438,8 +438,12 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             else
             {
                 // The rest is live-editable, so a running scanner picks up parameter changes
-                // without dropping the camera.
-                _decoder.Options.Region = _region;
+                // without dropping the camera. A frame in hand may be decoding on another thread, which reads the
+                // region as it goes: the decoder takes the new one once that frame is done (EndFrame).
+                if (_frameDecoder is null)
+                {
+                    _decoder.Options.Region = _region;
+                }
             }
         }
 
@@ -1712,9 +1716,14 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         {
             decoder.Dispose();
         }
-        else if (closed)
+        else
         {
-            decoder.ForgetImage();
+            // A region the application gave while the frame decoded, left to now (OnParametersSet).
+            decoder.Options.Region = _region;
+            if (closed)
+            {
+                decoder.ForgetImage();
+            }
         }
     }
 

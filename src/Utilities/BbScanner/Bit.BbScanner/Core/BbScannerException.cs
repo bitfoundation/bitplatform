@@ -32,8 +32,12 @@ public sealed class BbScannerException : Exception
                        m.Contains("SecurityError", StringComparison.Ordinal) => BbScannerErrorKind.PermissionDenied,
             var m when m.Contains("NotFoundError", StringComparison.Ordinal) ||
                        m.Contains("DevicesNotFoundError", StringComparison.Ordinal) => BbScannerErrorKind.NoCamera,
+            // Firefox rejects with AbortError ("Starting videoinput failed") where Chromium says NotReadableError: the
+            // camera is held by another application. The scanner's own AbortError, for a start superseded by another,
+            // never gets here: that start is stale, and its failure is not reported.
             var m when m.Contains("NotReadableError", StringComparison.Ordinal) ||
-                       m.Contains("TrackStartError", StringComparison.Ordinal) => BbScannerErrorKind.CameraUnavailable,
+                       m.Contains("TrackStartError", StringComparison.Ordinal) ||
+                       m.Contains("AbortError", StringComparison.Ordinal) => BbScannerErrorKind.CameraUnavailable,
             var m when m.Contains("OverconstrainedError", StringComparison.Ordinal) ||
                        m.Contains("ConstraintNotSatisfiedError", StringComparison.Ordinal) =>
                 BbScannerErrorKind.ConstraintsUnsatisfied,

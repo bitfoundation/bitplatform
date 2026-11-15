@@ -24,6 +24,12 @@ internal sealed class FakeCameraSource : IBbCameraSource
     /// <summary>The scene in front of the camera: luminance at the camera's size.</summary>
     public byte[]? Scene { get; set; }
 
+    /// <summary>When set, a frame being read waits for it, so a test can act while the scanner has a frame in hand.</summary>
+    public ManualResetEventSlim? ReadGate { get; set; }
+
+    /// <summary>Set whenever a frame read starts.</summary>
+    public ManualResetEventSlim Reading { get; } = new();
+
     public int Width { get; set; } = 640;
 
     public int Height { get; set; } = 480;
@@ -94,6 +100,9 @@ internal sealed class FakeCameraSession(FakeCameraSource source, string facing) 
         {
             return 0;
         }
+
+        source.Reading.Set();
+        source.ReadGate?.Wait(TimeSpan.FromSeconds(30));
 
         // Nearest neighbour is all a test frame needs.
         for (var y = 0; y < height; y++)

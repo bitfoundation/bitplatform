@@ -651,6 +651,8 @@ public class PublicApiTests
             ("SecurityError", BbScannerErrorKind.PermissionDenied),
             ("NotFoundError: no device", BbScannerErrorKind.NoCamera),
             ("NotReadableError: could not start", BbScannerErrorKind.CameraUnavailable),
+            // Firefox's word for a camera another application holds.
+            ("AbortError: Starting videoinput failed", BbScannerErrorKind.CameraUnavailable),
             ("OverconstrainedError: deviceId", BbScannerErrorKind.ConstraintsUnsatisfied),
             ("NotSupportedError", BbScannerErrorKind.NotSupported),
             ("InvalidStateError: the scanner video element is not in the document.", BbScannerErrorKind.Unknown),

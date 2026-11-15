@@ -284,6 +284,35 @@ public class BbScannerNativeCameraTests : BunitContext
         Assert.AreEqual(0, _page.Last("start")[6], "A page behind a WebView needs no watchdog.");
     }
 
+    [TestMethod]
+    public void A_region_given_while_a_frame_is_in_hand_waits_for_that_frame_to_be_done()
+    {
+        // The frame is decoded on a thread of its own, which reads the decoder's region as it goes: a region given
+        // meanwhile would be torn between the old and the new one.
+        _camera.Scene = SceneWithQrCode("REGION");
+        var first = BbScanRegion.CenteredSquare(0.7);
+        var second = BbScanRegion.CenteredSquare(0.5);
+        var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.Region, first));
+        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+
+        using var gate = new ManualResetEventSlim();
+        _camera.ReadGate = gate;
+        _camera.Reading.Reset();
+        Assert.IsTrue(_camera.Reading.Wait(Wait), "A frame is read.");
+
+        scanner.Render(parameters => parameters.Add(p => p.Region, second));
+        Assert.AreEqual(first, DecoderRegion(scanner.Instance), "The frame in hand keeps the region it started with.");
+
+        _camera.ReadGate = null;
+        gate.Set();
+        WaitUntil(() => Assert.AreEqual(second, DecoderRegion(scanner.Instance)));
+    }
+
+    // The decoder is the component's own; its region is what a frame on another thread reads.
+    private static BbScanRegion DecoderRegion(BbScanner scanner)
+        => ((BbBarcodeDecoder)typeof(BbScanner).GetField("_decoder", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetValue(scanner)!).Options.Region;
+
     private static void WaitUntil(Action assertion)
     {
         var deadline = DateTime.UtcNow + Wait;

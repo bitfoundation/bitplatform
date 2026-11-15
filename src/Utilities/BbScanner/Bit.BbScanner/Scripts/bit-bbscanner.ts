@@ -1006,6 +1006,7 @@ export function grabFrame(sessionId: string, buffer: MemoryViewLike): number {
     }
 
     buffer.set(data);
+    doneWithFrame(session, data);
     return data.length;
 }
 
@@ -1065,6 +1066,7 @@ function readyRegion(session: Session, x: number, y: number, width: number, heig
         }
     }
 
+    doneWithFrame(session, data);
     return region.length;
 }
 
@@ -1098,6 +1100,17 @@ function readFrame(session: Session): Uint8Array | null {
     }
 
     return data;
+}
+
+/**
+ * Wipes a frame readFrame returned once it has been copied where it goes, when it is a copy of its own: the 2D
+ * canvas hands back a new array every frame, which would otherwise hold the camera's pixels until it is collected.
+ * The GPU path's array is the session's, reused frame after frame and wiped when the session lets it go.
+ */
+function doneWithFrame(session: Session, data: Uint8Array): void {
+    if (data !== session.readback?.pixels) {
+        wipe(data);
+    }
 }
 
 /** The luminance of the RGBA pixel at offset, with the decoder's own fixed point BT.601 weights. */
@@ -1317,10 +1330,17 @@ function refuseBlob(blob: Blob, maxBytes: number): number {
 const IMAGE_HEADER_BYTES = 512 * 1024;
 
 /**
+ * The most JPEG segments and stray bytes walked past on the way to the start of frame: far more than any camera or
+ * editor writes, few enough that a file of empty segments cannot keep the walk going.
+ */
+const JPEG_MAX_SEGMENTS = 4096;
+
+/**
  * The number of pixels an image declares in its header, read without decoding it, or 0 for a format this does not
  * know - PNG, JPEG, GIF, BMP, WebP, and AVIF and HEIC through their ispe box, are known. The size has to be known
  * before the image is decoded: decoding allocates the whole bitmap, so a small file that declares an enormous image
- * would have exhausted the tab's memory before any check made afterwards could refuse it.
+ * would have exhausted the tab's memory before any check made afterwards could refuse it. A file of a known format
+ * whose size cannot be found is Infinity, and refused: a size that is never reached is no reason to let it through.
  */
 async function declaredPixels(blob: Blob): Promise<number> {
     const bytes = new Uint8Array(await blob.slice(0, IMAGE_HEADER_BYTES).arrayBuffer());
@@ -1377,23 +1397,29 @@ async function declaredPixels(blob: Blob): Promise<number> {
         return 0;
     }
 
-    // JPEG: the segments are walked to the start of frame, which follows the application segments.
+    // JPEG: the segments are walked to the start of frame, which follows the application segments. Those can run past
+    // the header read above - EXIF with a large thumbnail, a colour profile, a maker's notes, or padding put there to
+    // hide the frame from this walk - so the walk carries on through the rest of the file, a segment's marker at a time.
     if (length >= 4 && bytes[0] === 0xFF && bytes[1] === 0xD8) {
         let offset = 2;
-        while (offset + 9 <= length) {
-            if (bytes[offset] !== 0xFF) {
-                return 0;
+        for (let segments = 0; segments < JPEG_MAX_SEGMENTS; segments++) {
+            const header = offset + 9 <= length
+                ? new DataView(bytes.buffer, bytes.byteOffset + offset, 9)
+                : offset + 9 <= blob.size ? new DataView(await blob.slice(offset, offset + 9).arrayBuffer()) : null;
+            if (!header) {
+                return Infinity;
             }
 
-            const marker = bytes[offset + 1];
-            if (marker === 0xFF) {
+            // A stray byte between segments, which decoders step over to the next marker, as this does.
+            const marker = header.getUint8(1);
+            if (header.getUint8(0) !== 0xFF || marker === 0xFF) {
                 offset++;
                 continue;
             }
 
             // Every start of frame marker but the three that are not one: DHT, JPG and DAC.
             if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
-                return view.getUint16(offset + 5) * view.getUint16(offset + 7);
+                return header.getUint16(5) * header.getUint16(7);
             }
 
             // Markers without a length: the restart markers and the start and end of image.
@@ -1402,10 +1428,10 @@ async function declaredPixels(blob: Blob): Promise<number> {
                 continue;
             }
 
-            offset += 2 + view.getUint16(offset + 2);
+            offset += 2 + header.getUint16(2);
         }
 
-        return 0;
+        return Infinity;
     }
 
     // AVIF and HEIC: an ISO base media file whose image spatial extents box gives the size of each image it holds.
@@ -1417,7 +1443,8 @@ async function declaredPixels(blob: Blob): Promise<number> {
             }
         }
 
-        return largest;
+        // The extents come in the meta box, ahead of the image data; one not among the first bytes is not trusted.
+        return largest > 0 ? largest : Infinity;
     }
 
     return 0;

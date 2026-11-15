@@ -342,6 +342,27 @@ public class MicroPdf417Tests
         }
     }
 
+    [TestMethod]
+    public void AStillImageOfNoiseIsGivenUpOnQuickly()
+    {
+        // Noise makes a piece of a row at angle after angle, and every one of them was scanned in full, then again
+        // inverted: an 800 by 600 photograph of noise took ten seconds. The full scans now share a budget.
+        using var noise = BbLuminanceBuffer.Rent(800, 600);
+        var random = new Random(3);
+        var pixels = noise.Pixels;
+        for (var i = 0; i < pixels.Length; i++)
+        {
+            pixels[i] = random.Next(2) == 0 ? (byte)20 : (byte)235;
+        }
+
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var result = Decode(noise, still: true);
+        watch.Stop();
+
+        Assert.IsNull(result);
+        Assert.IsLessThan(TimeSpan.FromSeconds(5), watch.Elapsed, $"Took {watch.Elapsed}.");
+    }
+
     private static BbLuminanceBuffer Blank(int width, int height)
     {
         var image = BbLuminanceBuffer.Rent(width, height);

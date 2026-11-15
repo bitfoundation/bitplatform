@@ -267,6 +267,50 @@ public class ScannerInterfaceTests : BbScannerTest
     }
 
     [TestMethod]
+    public async Task AJpegWhoseFrameHeaderLiesPastTheFirstSegmentsIsStillCheckedForItsSize()
+    {
+        await using var session = await OpenAsync(BlankClip);
+        await session.GoToAsync("image");
+
+        // A frame of 65535 by 65535 behind more than half a megabyte of application segments: the size check read the
+        // first 512 KB only, found no frame header and let the file through to be decoded.
+        byte[] frame = [0xFF, 0xC0, 0x00, 0x11, 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0x03, 0x01, 0x22, 0x00, 0x02, 0x11, 0x01, 0x03, 0x11, 0x01, 0xFF, 0xD9];
+        await session.Page.SetInputFilesAsync("input[type=file]", new FilePayload
+        {
+            Name = "enormous.jpg",
+            MimeType = "image/jpeg",
+            Buffer = WithApplicationSegments([0xFF, 0xD8, .. frame], count: 9),
+        });
+
+        var message = session.Page.Locator(".bit-bbscanner__message");
+        await message.Filter(new() { HasText = "too large to scan" }).WaitForAsync(new() { Timeout = 20_000 });
+
+        Assert.IsEmpty(await session.ResultValuesAsync());
+        Assert.IsEmpty(session.PageErrors);
+    }
+
+    [TestMethod]
+    public async Task APhotographWithMoreMetadataThanTheFirstHalfMegabyteStillScans()
+    {
+        await using var session = await OpenAsync(BlankClip);
+        await session.GoToAsync("image");
+
+        // The size check walks on past the first 512 KB to the frame header, so a photograph whose EXIF, thumbnail and
+        // colour profile are that large is checked and read like any other.
+        var jpeg = await DrawQrAsync(session, "image/jpeg");
+        await session.Page.SetInputFilesAsync("input[type=file]", new FilePayload
+        {
+            Name = "photo.jpg",
+            MimeType = "image/jpeg",
+            Buffer = WithApplicationSegments(jpeg, count: 9),
+        });
+
+        await session.WaitForResultsAsync(1, timeoutMs: 30_000);
+        Assert.AreEqual(FakeCameraVideo.QrPayload, (await session.ResultValuesAsync()).Single());
+        Assert.IsEmpty(session.PageErrors);
+    }
+
+    [TestMethod]
     public async Task ScanningAGeneratedBufferUsesTheDecodeImageApi()
     {
         await using var session = await OpenAsync(BlankClip);
@@ -278,7 +322,27 @@ public class ScannerInterfaceTests : BbScannerTest
         Assert.IsEmpty(session.PageErrors);
     }
 
+    /// <summary>
+    /// A JPEG with <paramref name="count"/> application segments of the largest size, filled with zeros, inserted right
+    /// after its start of image marker: segments a decoder skips, as it does a camera's EXIF.
+    /// </summary>
+    private static byte[] WithApplicationSegments(byte[] jpeg, int count)
+    {
+        var padded = new List<byte>(jpeg.Length + (count * 65537)) { jpeg[0], jpeg[1] };
+        for (var i = 0; i < count; i++)
+        {
+            padded.AddRange([0xFF, 0xEB, 0xFF, 0xFF]);
+            padded.AddRange(new byte[65533]);
+        }
+
+        padded.AddRange(jpeg.AsSpan(2));
+        return [.. padded];
+    }
+
     private static async Task WriteQrPngAsync(ScannerSession session, string path)
+        => await File.WriteAllBytesAsync(path, await DrawQrAsync(session, "image/png"));
+
+    private static async Task<byte[]> DrawQrAsync(ScannerSession session, string type)
     {
         // Draw the symbol in the page and save the canvas, so the test needs no image library.
         var matrix = Bit.BbScanner.TestKit.QrEncoder.Encode(FakeCameraVideo.QrPayload);
@@ -297,7 +361,7 @@ public class ScannerInterfaceTests : BbScannerTest
         matrix.Dispose();
 
         var base64 = await session.Page.EvaluateAsync<string>(
-            @"rows => {
+            @"({ rows, type }) => {
                 const scale = 8, quiet = 4;
                 const size = (rows.length + quiet * 2) * scale;
                 const canvas = document.createElement('canvas');
@@ -312,11 +376,11 @@ public class ScannerInterfaceTests : BbScannerTest
                         }
                     }
                 }
-                return canvas.toDataURL('image/png').split(',')[1];
+                return canvas.toDataURL(type, 1).split(',')[1];
             }",
-            rows);
+            new { rows, type });
 
-        await File.WriteAllBytesAsync(path, Convert.FromBase64String(base64));
+        return Convert.FromBase64String(base64);
     }
 
     private static async Task<BoundingBox> ControlBoxAsync(ScannerSession session, string selector)
