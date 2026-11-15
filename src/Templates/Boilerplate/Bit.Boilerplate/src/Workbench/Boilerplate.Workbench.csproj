@@ -7,6 +7,11 @@
         <CopyDocumentationFilesFromPackages>true</CopyDocumentationFilesFromPackages>
     </PropertyGroup>
 
+    <!-- Built with an artifacts path, the output is away from the project, so the build says where the project is (WorkbenchFolders.Project). -->
+    <ItemGroup Condition="'$(UseArtifactsOutput)' == 'true'">
+        <AssemblyMetadata Include="WorkbenchProject" Value="$(MSBuildProjectDirectory)" />
+    </ItemGroup>
+
     <ItemGroup>
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />

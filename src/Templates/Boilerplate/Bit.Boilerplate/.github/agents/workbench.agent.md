@@ -19,19 +19,17 @@ component, so what the user reviews is what ships.
   window it works in. Its comments, page statuses, flows and the agents' tasks are kept in the user's own folder outside
   the repository, shared by every worktree of the project, so they outlive restarts and a move to another worktree.
   `GET /api/workbench` says which working tree and branch it runs from, and where that folder is.
-<!--#if (aspire == true)-->
 - If it answers in dev mode from one of this project's working trees (`git worktree list`), use it, and never start a
-  second one on its address. Otherwise, with the app host running, start its `workbench` resource, which starts only
-  when asked, or else run `dotnet watch` in `src/Workbench` in the background, and poll its URL with a capped retry
-  loop.
-<!--#else-->
-- If it answers in dev mode from one of this project's working trees (`git worktree list`), use it, and never start a
-  second one on its address. Otherwise run `dotnet watch` in `src/Workbench` in the background and poll its URL with a
-  capped retry loop.
-<!--#endif-->
+  second one on its address. Otherwise start it in `src/Workbench` in the background, always with `dotnet watch` and never
+  from an app host, and poll its URL with a capped retry loop:
+  `dotnet watch --non-interactive --artifacts-path ../../artifacts/workbench`. The artifacts path keeps its build output
+  apart from every other build of it and of the projects it uses, like the editor's whole-solution build or the
+  Workbench's tests, which it would otherwise hold locked (`MSB3027`), so they build while it runs; it costs one build of
+  its own on the first start.
 - Don't wait on one that stays down while another chat's page changes rebuild it, or on an address another project's
-  holds: run one of your own from your working tree on another port (`dotnet watch -- --urls http://localhost:<port>`) and
-  give the user its address. It keeps a review and tasks of its own.
+  holds: run one of your own from your working tree on another port, with an artifacts path of its own
+  (`dotnet watch --non-interactive --artifacts-path ../../artifacts/workbench-<port> -- --urls http://localhost:<port>`),
+  and give the user its address. It keeps a review and tasks of its own.
 - It shows the code of the working tree it runs from. A chat that changes pages in another worktree stops it and runs it
   from its own, and says so on its task (section 9); the other chats keep their tasks and comments and reconnect on their
   own. Leave it running when your work is done. If one you started stops, check its address before starting it again, as
@@ -41,7 +39,7 @@ component, so what the user reviews is what ships.
 - Running under `dotnet watch` is its dev mode, the only one where flows, page statuses, Inspect and Edit text can change
   anything and where `/api/review` answers. A home page that answers doesn't show it, so ask `/api/review`. Any
   other copy, like a published one or a plain `dotnet run`, which is how bit CLI starts it, answers it with a 404: stop
-  that copy, tell the user, and run `dotnet watch` in `src/Workbench`. Comments the user left on a copy run from its
+  that copy, tell the user, and start it as above. Comments the user left on a copy run from its
   project folder wait in the review for you, and are told so. A published copy keeps them only in memory, so before you stop
   one, tell the user that any left on it will be lost.
 - The home page lists the pages. `/workbench/<key>` opens one with its tools; `/preview/<key>` renders it alone, with
@@ -172,24 +170,6 @@ component, so what the user reviews is what ships.
 
 ## 6. Share a link
 
-<!--#if (aspire == true && cloudflare == true)-->
-- A link to the user's `localhost` works only on their machine. When they want to send the page to someone else (a
-  teammate, a client), start the app host's `workbench` resource, then its Cloudflare quick tunnel,
-  `cloudflare-tunnel-workbench`. The tunnel gets an `https://….trycloudflare.com` address: read it from the
-  Aspire dashboard or the Aspire MCP `list_resources` tool. A Workbench already running outside the app host holds the
-  same port, so stop that one first.
-- Tell the user plainly: the link works only while their laptop is on and the app host keeps running; the address
-  changes whenever the tunnel restarts; anyone who has the link can open it. Screenshots taken through the link are
-  rendered on the user's machine.
-- A visitor through the link sees the review, but their comments stay in their tab. When the user wants to comment from
-  there themselves, say from their phone, hand them an invite link instead: the tunnel's address with the query string
-  `GET /api/review/invite` returns (`?review-key=…`). Opening it once turns the key into a cookie in that browser, and
-  from then on its comments reach you like the ones left at this computer; nothing else they do is saved. Give it only
-  to the user, as anyone who has it can send you comments. Deleting `reviewer-key.txt` in the folder `GET /api/workbench`
-  names revokes every invite.
-- Open the link yourself before you hand it over, and stop the `workbench` resource and its tunnel when the user is
-  done.
-<!--#else-->
 - A link to the user's `localhost` works only on their machine. When they want to send the page to someone else (a
   teammate, a client), publish the Workbench in Release to a folder outside the repository and run it from there on a
   free port, so it keeps running while they go on working in the repository.
@@ -206,7 +186,6 @@ component, so what the user reviews is what ships.
   to the user, as anyone who has it can send you comments. Deleting `reviewer-key.txt` in the folder `GET /api/workbench`
   names revokes every invite.
 - Open the link yourself before you hand it over, and stop the tunnel and the published copy when the user is done.
-<!--#endif-->
 
 ## 7. Settle it with the user
 

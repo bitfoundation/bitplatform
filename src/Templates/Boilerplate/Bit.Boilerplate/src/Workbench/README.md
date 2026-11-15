@@ -12,8 +12,9 @@ are designed.
 
 ## Run it
 
-- `dotnet watch` in this folder, then open the address in `Properties/launchSettings.json`.
-- With Aspire, start the `workbench` resource from the dashboard. It starts only when asked.
+- `dotnet watch --artifacts-path ../../artifacts/workbench` in this folder, then open the address in
+  `Properties/launchSettings.json`. It runs this way only, not from an app host. The artifacts path keeps its build apart
+  from every other build, so your editor and the Workbench's tests build while it runs.
 - Edits to `.cs`, `.razor`, `.scss` and `.ts` files show up while it runs. A `.resx` edit needs a restart.
 
 Running under `dotnet watch` is the Workbench's dev mode, which is how its agent skill starts it. Only in dev mode do
