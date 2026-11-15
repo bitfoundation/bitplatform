@@ -785,7 +785,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        await Expect(Dropdown("phi-german")).ToHaveAttributeAsync("aria-label", "Land: Deutschland");
+        await Expect(Dropdown("phi-german")).ToHaveAttributeAsync("aria-label", "Land: Deutschland, +49");
         await Expect(Input("phi-german")).ToHaveAttributeAsync("placeholder", "Nummer eingeben");
         await Expect(Root("phi-german").Locator(".bit-phi-cbt")).ToHaveAttributeAsync("aria-label", "Nummer löschen");
 

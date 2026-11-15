@@ -105,7 +105,10 @@ public class BitCalendarE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        await Expect(Page.Locator("#cal-basic .bit-cal-grd").First).ToHaveAttributeAsync("aria-label", "March 2024");
+        // The days grid is named by the month title it heads.
+        var gridLabelledBy = await Page.Locator("#cal-basic .bit-cal-grd").First.GetAttributeAsync("aria-labelledby");
+        Assert.IsFalse(string.IsNullOrEmpty(gridLabelledBy), "The days grid is labelled by its title.");
+        await Expect(Page.Locator($"[id='{gridLabelledBy}']")).ToContainTextAsync("March 2024");
         var headers = Page.Locator("#cal-basic .bit-cal-dgh [role=columnheader]");
         await Expect(headers).ToHaveCountAsync(7);
         await Expect(headers.Nth(0)).ToHaveAttributeAsync("aria-label", "Sunday");

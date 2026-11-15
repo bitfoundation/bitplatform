@@ -6,6 +6,7 @@
         noDrag: boolean;
         wheel: boolean;
         enabled: boolean;
+        keyboard: boolean; // NoKeyboard is off
         snap: boolean;
         align: number;   // 0 = start, 0.5 = center, 1 = end
         duration: number;  // seconds
@@ -883,7 +884,10 @@
 
             let target: HTMLElement | null = null;
 
-            if (this.container.tabIndex >= 0) {
+            // Read off the options rather than the tab index: a negative TabIndex only keeps the box out of the tab
+            // order, and it still takes the focus handed to it and navigates with the keys - while NoKeyboard and
+            // Disabled render the same -1 for a box that does neither.
+            if (this.options.keyboard && this.options.enabled) {
                 target = this.container;
             } else {
                 const otherHides = state.scrollable === false || (next ? state.atStart : state.atEnd);

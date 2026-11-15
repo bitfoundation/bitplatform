@@ -502,7 +502,7 @@ public class BitSwiperE2ETests : E2ETestBase
         await Expect(Page.Locator("#loaded-count")).ToHaveTextAsync("8");
         await Expect(Page.Locator("#load-more .bit-swpi")).ToHaveCountAsync(8);
 
-        await Page.Locator("#load-more").FocusAsync();
+        await Page.Locator("#load-more .bit-swp-cnt").FocusAsync();
         await Page.Keyboard.PressAsync("End");
         await Expect(Page.Locator("#loaded-count")).ToHaveTextAsync("12");
         await Expect(Page.Locator("#load-more .bit-swpi")).ToHaveCountAsync(12);

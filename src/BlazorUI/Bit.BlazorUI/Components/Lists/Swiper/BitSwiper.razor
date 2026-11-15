@@ -4,8 +4,13 @@
 @{
     // The region role and its "carousel" description are the pattern's own and stay after the splatted attributes.
     var ariaLabel = ResolveAriaLabel();
+    // A tabindex splatted in through HtmlAttributes (however the app cased it) belongs to the box the items scroll
+    // in, the one tab stop of the swiper, exactly as the TabIndex parameter does; the null tabindex written after
+    // the splat takes it off the root, which would otherwise be a second stop.
+    var tabIndex = TabIndex ?? GetSplattedAttribute("tabindex");
 }
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     tabindex="@((string?)null)"
      id="@_Id"
      role="region"
      aria-roledescription="carousel"
@@ -116,7 +121,7 @@
            scrolling as well (the stylesheet), so it is not a scrolling box left out of the tab order. *@
         <div @ref="_swiperContainer"
              id="@_ContainerId"
-             tabindex="@((NoKeyboard || Disabled) ? "-1" : (TabIndex ?? "0"))"
+             tabindex="@((NoKeyboard || Disabled) ? "-1" : (tabIndex ?? "0"))"
              class="bit-swp-cnt @Classes?.Container"
              style="@JoinStyles(_directionStyle, Styles?.Container)">
             <CascadingValue Value="this" IsFixed="true">
