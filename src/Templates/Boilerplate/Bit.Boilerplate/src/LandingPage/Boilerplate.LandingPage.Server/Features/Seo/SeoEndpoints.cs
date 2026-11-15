@@ -74,7 +74,7 @@ public static class SeoEndpoints
             var llms = new StringBuilder()
                 .AppendLine("# Boilerplate")
                 .AppendLine()
-                .AppendLine("> Sample landing pages, one per kind of product, built with bit Boilerplate.")
+                .AppendLine("> Sample landing pages, one per kind of product, built with the bit-bp project template.")
                 .AppendLine();
 
             foreach (var site in LandingSites.All)

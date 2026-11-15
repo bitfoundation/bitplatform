@@ -1,4 +1,6 @@
 //+:cnd:noEmit
+using Bit.Belemetry;
+
 namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class ContentSecurityPolicy
@@ -47,8 +49,12 @@ public partial class ContentSecurityPolicy
         }
         //#endif
 
-        // --- Add the OTLP collector Belemetry's browser script posts to ---
-        if (configuration["OTEL_EXPORTER_OTLP_PROTOCOL"]?.Trim().ToLowerInvariant() is not "grpc"
+        // --- Add the OTLP collector Belemetry's browser script posts to: Belemetry:OtlpEndpoint, else the server's own ---
+        if (configuration.GetBelemetryOtlpEndpoint() is { } browserOtlpEndpoint)
+        {
+            connectSrc.Add($"{browserOtlpEndpoint.Scheme}://{browserOtlpEndpoint.Authority}");
+        }
+        else if (configuration["OTEL_EXPORTER_OTLP_PROTOCOL"]?.Trim().ToLowerInvariant() is not "grpc"
             && Uri.TryCreate(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"], UriKind.Absolute, out var otlpEndpoint)
             && otlpEndpoint.Scheme is "http" or "https")
         {

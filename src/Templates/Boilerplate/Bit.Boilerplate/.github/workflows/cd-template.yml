@@ -78,6 +78,9 @@ jobs:
           files: 'src/**/appsettings*json'
         env:
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+          # The pages and the apps post their telemetry to the web app's own address, whose /v1/ paths go to the dashboard
+          # (See .docs/15, In a Deployment). The landing page's servers override it with the landing page's own address.
+          Belemetry.OtlpEndpoint: ${{ vars.SERVER_ADDRESS }}
 #if (notification == true)
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
@@ -358,14 +361,18 @@ jobs:
           )
           #if (cloudflare != true)
 
-          # Anyone can post to the landing page's /v1/ paths, so each request's body is capped. A rate limit needs a Caddy
+          # The web app's and the landing page's /v1/ paths, where their pages and the apps post their telemetry, go to the
+          # dashboard's OTLP/HTTP port. Anyone can post there, so each request's body is capped. A rate limit needs a Caddy
           # build with a plugin, so without Cloudflare nothing limits how often.
+          site_with_telemetry() {
+            printf '%s {\n\t@otlp path_regexp ^/v1/(traces|logs|metrics)$\n\thandle @otlp {\n\t\trequest_body {\n\t\t\tmax_size 2MB\n\t\t}\n\t\treverse_proxy compose-dashboard:18890\n\t}\n\thandle {\n\t\treverse_proxy %s\n\t}\n}\n\n' "$1" "$2"
+          }
           {
-            printf '%s {\n\treverse_proxy serverweb:8080\n}\n\n' "$(origin "$SERVER_ADDRESS")"
+            site_with_telemetry "$(origin "$SERVER_ADDRESS")" serverweb:8080
           #if (api == "Standalone")
             printf '%s {\n\treverse_proxy serverapi:8080\n}\n\n' "$(origin "$SERVER_API_ADDRESS")"
           #endif
-            printf '%s {\n\t@otlp path_regexp ^/v1/(traces|logs|metrics)$\n\thandle @otlp {\n\t\trequest_body {\n\t\t\tmax_size 2MB\n\t\t}\n\t\treverse_proxy compose-dashboard:18890\n\t}\n\thandle {\n\t\treverse_proxy landingpage:8080\n\t}\n}\n' "$(origin "$LANDING_PAGE_ADDRESS")"
+            site_with_telemetry "$(origin "$LANDING_PAGE_ADDRESS")" landingpage:8080
           } > "$deploy_dir/Caddyfile"
           #endif
 
@@ -688,6 +695,7 @@ jobs:
           files: 'src\**\appsettings*json'
         env:
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+          Belemetry.OtlpEndpoint: ${{ vars.SERVER_ADDRESS }}
           WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
 
       # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
@@ -779,6 +787,7 @@ jobs:
           files: 'src/**/appsettings*json'
         env:
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+          Belemetry.OtlpEndpoint: ${{ vars.SERVER_ADDRESS }}
 
       - name: Publish aab
         env:
@@ -851,6 +860,7 @@ jobs:
           files: 'src/**/appsettings*json'
         env:
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+          Belemetry.OtlpEndpoint: ${{ vars.SERVER_ADDRESS }}
 
       - name: Import Code-Signing Certificates
         uses: apple-actions/import-codesign-certs@288b8ec97b82c66b6f2a6baaf7acc8dfbcbe331c # v7.2.0

@@ -50,7 +50,7 @@ public static class OAuthProtectedResource
             bearer_methods_supported = new[] { "header" },
             resource_documentation = $"{issuer}/scalar",
             // RFC 9728 §2 allows parameters of its own. Anonymous like the rest of the document, so a monitor seeing
-            // this app for the first time can tell it is a bit Boilerplate app, and how old, before asking for a token.
+            // this app for the first time can tell it is made from bit-bp, and how old, before asking for a token.
             bit_template_version = BitTemplateVersion
         };
     }

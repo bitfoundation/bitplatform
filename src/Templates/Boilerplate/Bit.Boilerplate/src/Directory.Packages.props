@@ -51,7 +51,7 @@
         <PackageVersion Include="Xamarin.GooglePlayServices.Auth.Api.Phone" Version="118.3.1" />
         <PackageVersion Include="Scalar.AspNetCore" Version="2.20.0" />
         <PackageVersion Include="Velopack" Version="1.3.39-g8d2844f" />
-        <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
         <PackageVersion Include="ModelContextProtocol" Version="2.4.0" />
         <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="2.4.0" />
         <PackageVersion Include="System.Linq.Dynamic.Core" Version="1.7.4" />
@@ -99,7 +99,7 @@
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Hangfire.Redis.StackExchange" Version="1.12.0" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="ZiggyCreatures.FusionCache.Locking.Distributed.Redis" Version="2.9.0" />
         <PackageVersion Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="Otp.NET" Version="1.4.1" />
-        <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
         <PackageVersion Include="Humanizer" Version="3.0.10" />
         <PackageVersion Include="QRCoder" Version="1.8.1" />
         <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="15.1.0" />
@@ -118,7 +118,7 @@
         <PackageVersion Include="ZiggyCreatures.FusionCache.AspNetCore.OutputCaching" Version="2.9.0" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.9.0" />
     </ItemGroup>
-    <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
     <ItemGroup Condition=" '$(framework)' == 'net11.0' OR '$(framework)' == '' ">
         <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="11.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="11.0.0" />
@@ -227,5 +227,5 @@
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server.EntityFrameworkCore" Version="10.1.2" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Client" Version="10.1.2" />
     </ItemGroup>
-    <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
 </Project>

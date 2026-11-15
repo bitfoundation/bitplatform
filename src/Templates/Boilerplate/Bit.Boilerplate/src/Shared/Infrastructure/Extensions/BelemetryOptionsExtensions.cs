@@ -14,16 +14,21 @@ public static class BelemetryOptionsExtensions
 
             options.Browser.TrackPageVisitTime = true;
 
-            if (options.OtlpExporters.Count is 0 && string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false)
+            // The clients have no endpoint but this one (See GetBelemetryOtlpEndpoint).
+            var browserEndpoint = configuration.GetBelemetryOtlpEndpoint();
+            var endpoint = configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+
+            if (options.OtlpExporters.Count is 0 && (string.IsNullOrWhiteSpace(endpoint) is false || browserEndpoint is not null))
             {
-                options.AddOtlpExporter(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]!, otlp =>
+                options.AddOtlpExporter(string.IsNullOrWhiteSpace(endpoint) ? browserEndpoint!.ToString() : endpoint, otlp =>
                 {
-                    otlp.Protocol = configuration["OTEL_EXPORTER_OTLP_PROTOCOL"]?.Trim().ToLowerInvariant() switch
+                    otlp.Protocol = string.IsNullOrWhiteSpace(endpoint) ? BelemetryOtlpProtocol.HttpProtobuf : configuration["OTEL_EXPORTER_OTLP_PROTOCOL"]?.Trim().ToLowerInvariant() switch
                     {
                         "grpc" => BelemetryOtlpProtocol.Grpc,
                         "http/json" => BelemetryOtlpProtocol.HttpJson,
                         _ => BelemetryOtlpProtocol.HttpProtobuf
                     };
+                    otlp.BrowserEndpoint = browserEndpoint;
 
                     foreach (var header in (configuration["OTEL_EXPORTER_OTLP_HEADERS"] ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                     {
@@ -64,5 +69,17 @@ public static class BelemetryOptionsExtensions
             options.Metrics.Meters.AddRange(meters.Except(options.Metrics.Meters));
             return options;
         }
+    }
+
+    extension(IConfiguration configuration)
+    {
+        /// <summary>
+        /// Belemetry:OtlpEndpoint, where the page and the Windows, Android and iOS apps post over OTLP/HTTP when the
+        /// endpoint the servers send to is out of their reach (See Shared/appsettings.json). Only an absolute HTTP(S)
+        /// address without user info, which the page would show to every visitor; anything else is ignored. The CSP
+        /// reads it here too, so it allows the address the page posts to.
+        /// </summary>
+        public Uri? GetBelemetryOtlpEndpoint()
+            => Uri.TryCreate(configuration["Belemetry:OtlpEndpoint"], UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https" && uri.UserInfo is "" ? uri : null;
     }
 }

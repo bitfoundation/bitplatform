@@ -1,5 +1,5 @@
 <Project>
-    <!--/-:msbuild-conditional:noEmit -->
+<!--/-:msbuild-conditional:noEmit -->
     <PropertyGroup>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -58,7 +58,7 @@
         <BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>
         <BitBlazorUITrimIcons>true</BitBlazorUITrimIcons>
     </PropertyGroup>
-    <!--/+:msbuild-conditional:noEmit -->
+<!--/+:msbuild-conditional:noEmit -->
 
     <PropertyGroup>
         <LangVersion>14.0</LangVersion>
