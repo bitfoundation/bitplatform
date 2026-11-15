@@ -40,14 +40,13 @@ every canvas, which is what says it is attached.
 From `src/Utilities/Bink` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's build output and the lazy loading sample's publish output: build and publish them
-# first, in the configuration the tests run in.
-dotnet build Demo/Server/Bit.Bink.Demo.Server.csproj
+# The suite publishes the demo server itself (in Release, the way cd.bink.demo.yml does) and runs the lazy loading
+# sample's publish output: publish that first, in the configuration the tests run in.
 dotnet publish Samples/Lazy/Bit.Bink.Samples.Lazy/Bit.Bink.Samples.Lazy.csproj -c Debug
 dotnet build Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
-pwsh Tests/Bit.Bink.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium
+pwsh Tests/Bit.Bink.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium
 
 cd Tests/Bit.Bink.Tests.E2E && dotnet test
 
@@ -68,7 +67,7 @@ constructor lost its parameter names, a getter nothing but System.Text.Json read
 dotnet publish src/Utilities/Bink/Demo/Server/Bit.Bink.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 dotnet publish src/Utilities/Bink/Samples/Lazy/Bit.Bink.Samples.Lazy/Bit.Bink.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj -c Release
-pwsh src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+pwsh src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.Bink.Demo.Server.dll --urls http://127.0.0.1:5000 &)
 cd src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E && BINK_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename bink-e2e.trx
 ```
@@ -97,11 +96,12 @@ from its name, and reports **Inconclusive** with the reason, so a run in another
 | `A_pasted_image_is_added_to_the_drawing` | A constructed paste event arrives with an empty copy of its data, so the file cannot be simulated. A real paste carries it. | Runs. |
 
 Without PowerShell 7, the browser can be installed with the Node.js runtime Playwright ships:
-`bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.
+`bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.
 
-The suite starts the demo server itself (`dotnet Bit.Bink.Demo.Server.dll --urls http://127.0.0.1:<free port>`,
-in the Development environment so the build output finds its static web assets), waits until it answers,
-shares it between all tests and stops it when the run ends. Each test gets a browser context of its own.
+The suite publishes the demo server itself the way `cd.bink.demo.yml` does (in Release, into `demo` next to the test
+binaries; `BINK_E2E_DEMO_DIR` points it at a publish folder instead), starts it from there
+(`dotnet Bit.Bink.Demo.Server.dll --urls http://127.0.0.1:<free port>`, in the Production environment), waits until it
+answers, shares it between all tests and stops it when the run ends. Each test gets a browser context of its own.
 The tests run one at a time: most of them measure pixels a moment after a gesture, and a second page booting
 WebAssembly next to them is exactly the load that turns those waits into flakes.
 
@@ -118,8 +118,9 @@ reason. On a build server (`CI=true`) the same tests **fail** instead, so a suit
 
 | Variable | Effect |
 |---|---|
-| `BINK_E2E_CONFIGURATION` | Build configuration of the demo server to boot; defaults to the test assembly's own. |
-| `BINK_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of booting one. |
+| `BINK_E2E_CONFIGURATION` | Configuration the lazy loading sample was published in; defaults to the test assembly's own. |
+| `BINK_E2E_DEMO_DIR` | A `dotnet publish` output of the demo server to start instead of publishing it. |
+| `BINK_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of publishing and starting one. |
 | `BINK_E2E_BROWSER` | The engine: `chromium` (the default), `firefox` or `webkit`, each the build Playwright installs. |
 | `BINK_E2E_CHANNEL` / `BINK_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`) or a specific browser binary of the engine chosen. Without either, the browser Playwright installed is used; for Chromium, falling back to an installed Chrome, then Edge. Channels apply to Chromium only. |
 | `BINK_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |

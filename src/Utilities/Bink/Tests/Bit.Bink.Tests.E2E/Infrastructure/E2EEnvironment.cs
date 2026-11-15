@@ -7,9 +7,9 @@
 public static class E2EEnvironment
 {
     /// <summary>
-    /// <c>BINK_E2E_CONFIGURATION</c>: the build configuration of the demo server the suite boots.
-    /// Defaults to the configuration this test assembly was built in, so a Release test run drives the
-    /// Release demo that CI builds rather than looking for a Debug build that was never produced.
+    /// <c>BINK_E2E_CONFIGURATION</c>: the configuration the lazy loading sample was published in. Defaults to the
+    /// configuration this test assembly was built in, so a Release test run drives the Release publish that CI makes
+    /// rather than looking for a Debug one that was never produced.
     /// </summary>
     public static string Configuration { get; } = Read("BINK_E2E_CONFIGURATION") ??
 #if DEBUG
@@ -17,6 +17,12 @@ public static class E2EEnvironment
 #else
         "Release";
 #endif
+
+    /// <summary>
+    /// <c>BINK_E2E_DEMO_DIR</c>: a folder holding a <c>dotnet publish</c> output of Bit.Bink.Demo.Server (CI publishes
+    /// it in a step of its own). The suite starts that instead of publishing the demo itself.
+    /// </summary>
+    public static string? DemoDirectory { get; } = Read("BINK_E2E_DEMO_DIR") is { } directory ? Path.GetFullPath(directory) : null;
 
     /// <summary>
     /// <c>BINK_E2E_BASE_URL</c>: an already running demo (for example one started from the IDE). When set

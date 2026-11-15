@@ -49,6 +49,25 @@ public sealed class ChildProcess : IAsyncDisposable
         return child;
     }
 
+    /// <summary>Runs a command to its end, and throws with its last output lines when it fails or outlives <paramref name="timeout"/>.</summary>
+    public static async Task RunToCompletionAsync(string fileName, IEnumerable<string> arguments, string workingDirectory, TimeSpan timeout)
+    {
+        await using var child = Start(fileName, arguments, workingDirectory);
+        using var cts = new CancellationTokenSource(timeout);
+
+        try
+        {
+            await child._process.WaitForExitAsync(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            throw new TimeoutException($"{fileName} {string.Join(' ', arguments)} did not finish within {timeout}.{Environment.NewLine}{child.RecentOutput}");
+        }
+
+        if (child._process.ExitCode != 0)
+            throw new InvalidOperationException($"{fileName} {string.Join(' ', arguments)} exited with {child._process.ExitCode}.{Environment.NewLine}{child.RecentOutput}");
+    }
+
     /// <summary>Polls <paramref name="url"/> until it answers with a success status.</summary>
     public async Task WaitForHttpAsync(string url, TimeSpan timeout)
     {

@@ -393,7 +393,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (ReadOnly || _selection.IsEmpty) return;
         int count = _selection.Count;
         _document.RemoveElements(_selection.Ids);
-        Announce($"Deleted {count} elements.");
+        Announce($"Deleted {Elements(count)}.");
         InvalidateAll();
     }
 
@@ -463,7 +463,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         string? payload = CopySelectionCore();
         if (payload is null) return false;
         await ProvideClipboardAsync(payload).ConfigureAwait(true);
-        Announce($"Copied {_selection.Count} elements.");
+        Announce($"Copied {Elements(_selection.Count)}.");
         return true;
     }
 
@@ -478,7 +478,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         await ProvideClipboardAsync(payload).ConfigureAwait(true);
         if (_disposed) return false;
         _document.RemoveElements(ids);
-        Announce($"Cut {ids.Count} elements.");
+        Announce($"Cut {Elements(ids.Count)}.");
         InvalidateAll();
         return true;
     }
@@ -595,7 +595,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             return 0;
         }
         _selection.Set(elements.Select(static e => e.Id));
-        Announce($"Pasted {elements.Count} elements.");
+        Announce($"Pasted {Elements(elements.Count)}.");
         InvalidateAll();
         return elements.Count;
     }
@@ -619,7 +619,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             return 0;
         }
         _selection.Set(copies.Select(static e => e.Id));
-        Announce($"Duplicated {copies.Count} elements.");
+        Announce($"Duplicated {Elements(copies.Count)}.");
         InvalidateAll();
         return copies.Count;
     }
@@ -661,7 +661,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             return null;
         }
         if (group is null) return null;
-        Announce($"Grouped {count} elements.");
+        Announce($"Grouped {Elements(count)}.");
         InvalidateAll();
         return group;
     }
@@ -690,7 +690,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (ReadOnly || _selection.IsEmpty) return 0;
         int count = _selection.Count;
         if (!_document.SetLocked(_selection.Ids, true)) return 0;
-        Announce($"Locked {count} elements.");
+        Announce($"Locked {Elements(count)}.");
         InvalidateAll();
         return count;
     }
@@ -748,7 +748,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         var locked = new List<Guid>();
         foreach (BinkElement element in _document.AllElements) if (element.IsLocked && element is not BinkUnknownElement) locked.Add(element.Id);
         if (locked.Count == 0 || !_document.SetLocked(locked, false)) return 0;
-        Announce($"Unlocked {locked.Count} elements.");
+        Announce($"Unlocked {Elements(locked.Count)}.");
         InvalidateAll();
         return locked.Count;
     }
@@ -974,11 +974,14 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     public void SelectAll()
     {
         _selection.SelectAll();
-        Announce($"{_selection.Count} elements selected.");
+        Announce($"{Elements(_selection.Count)} selected.");
     }
 
     /// <summary>Requests a redraw of the whole canvas.</summary>
     public void Refresh() => InvalidateAll();
+
+    /// <summary>"1 element", "3 elements": the count an announcement names.</summary>
+    private static string Elements(int count) => count == 1 ? "1 element" : $"{count} elements";
 
     /// <summary>Announces a message to screen readers through the canvas live region.</summary>
     public void Announce(string message)
@@ -1721,7 +1724,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     {
         if (!EnableClipboard) return Task.CompletedTask;
         string? payload = CopySelectionCore();
-        if (payload is not null) Announce($"Copied {_selection.Count} elements.");
+        if (payload is not null) Announce($"Copied {Elements(_selection.Count)}.");
         return ProvideClipboardAsync(payload);
     }
 
@@ -1733,7 +1736,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         await ProvideClipboardAsync(payload).ConfigureAwait(true);
         if (payload is null || _disposed) return;
         _document.RemoveElements(ids);
-        Announce($"Cut {ids.Count} elements.");
+        Announce($"Cut {Elements(ids.Count)}.");
         InvalidateAll();
     }
 
@@ -1904,8 +1907,8 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         }
         _selection.Set(ids);
         Announce(result.Warnings.Count == 0
-            ? $"Imported {ids.Length} elements."
-            : $"Imported {ids.Length} elements. Left out: {string.Join(" ", result.Warnings)}");
+            ? $"Imported {Elements(ids.Length)}."
+            : $"Imported {Elements(ids.Length)}. Left out: {string.Join(" ", result.Warnings)}");
         InvalidateAll();
         return result;
     }
@@ -2442,7 +2445,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             described.Add(element.GetAccessibleDescription());
         }
 
-        string summary = $"Drawing with {total} elements on {_document.Layers.Count} layers.";
+        string summary = $"Drawing with {Elements(total)} on {(_document.Layers.Count == 1 ? "1 layer" : $"{_document.Layers.Count} layers")}.";
         if (described.Count == 0) return summary;
         string listed = summary + " " + string.Join(". ", described) + ".";
         return total > described.Count ? listed + $" {total - described.Count} more elements not listed." : listed;

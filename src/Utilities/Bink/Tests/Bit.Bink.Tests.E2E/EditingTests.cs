@@ -1,4 +1,4 @@
-using Bit.Bink.Tests.E2E.Infrastructure;
+﻿using Bit.Bink.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 
 namespace Bit.Bink.Tests.E2E;
@@ -267,7 +267,7 @@ public sealed class EditingTests : BinkTest
         await page.Mouse.UpAsync();
         await page.Keyboard.UpAsync("Alt");
         await page.WaitForTimeoutAsync(250);
-        StringAssert.Contains(await page.Locator(".bit-bink-canvas [role=status]").TextContentAsync() ?? "", "1 elements selected");
+        StringAssert.Contains(await page.Locator(".bit-bink-canvas [role=status]").TextContentAsync() ?? "", "1 element selected");
 
         // Alt-dragging the selected stroke leaves it in place and moves a copy.
         await page.Keyboard.DownAsync("Alt");

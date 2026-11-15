@@ -10,8 +10,10 @@ public static class RepoLayout
 
     public static string DemoServerProject() => FindUpward(Path.Combine("Demo", "Server", $"{DemoServerName}.csproj"));
 
-    public static string DemoServerAssembly(string configuration) =>
-        Path.Combine(Path.GetDirectoryName(DemoServerProject())!, "bin", configuration, "net11.0", $"{DemoServerName}.dll");
+    /// <summary>Where the suite publishes the demo when it publishes it itself: next to the test binaries.</summary>
+    public static string PublishDirectory() => Path.Combine(AppContext.BaseDirectory, "demo");
+
+    public static string DemoServerAssembly(string directory) => Path.Combine(directory, $"{DemoServerName}.dll");
 
     private static string FindUpward(string relativePath)
     {
