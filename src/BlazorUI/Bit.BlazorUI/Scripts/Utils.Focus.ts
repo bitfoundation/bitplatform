@@ -277,7 +277,9 @@
         // so it stays out either way.
         // fromCurrent keeps the focused item itself in the 'char' search rather than starting after it, which is
         // what lets a typeahead string that already matches it be typed further into without jumping away.
-        export function focusItem(containerId: string, selector: string, mode: string, char: string | null, includeDisabled?: boolean, fromCurrent?: boolean) {
+        // culture is the culture a 'char' search is matched in (see typeaheadMatcher); a component that passes none
+        // gets the lower-cased match it always had.
+        export function focusItem(containerId: string, selector: string, mode: string, char: string | null, includeDisabled?: boolean, fromCurrent?: boolean, culture?: string | null) {
             const container = document.getElementById(containerId);
             if (!container) return;
 
@@ -299,11 +301,11 @@
                 } else if (mode === 'prev') {
                     index = current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length;
                 } else if (mode === 'char' && char) {
-                    const c = char.toLowerCase();
+                    const matches = typeaheadMatcher(char, culture);
                     const start = current < 0 ? 0 : (fromCurrent === true ? current : current + 1);
                     for (let i = 0; i < items.length; i++) {
                         const candidate = (start + i) % items.length;
-                        if ((items[candidate].textContent || '').trim().toLowerCase().indexOf(c) === 0) {
+                        if (matches(items[candidate].textContent || '')) {
                             index = candidate;
                             break;
                         }
@@ -316,6 +318,29 @@
             } catch (e) {
                 console.error("BitBlazorUI.Utils.focusItem:", e);
             }
+        }
+
+        // What a typeahead term matches: the text of an item that starts with it. With a culture, the rules of BitTypeahead
+        // on the .NET side, by the browser's collation for that culture: case is ignored, and so are the accents the culture
+        // treats as marks on a letter ("e" finds "Éclair" in English, "a" does not find "Åland" in Swedish). The invariant
+        // culture (an empty name), or a name the browser does not know, takes the browser's own collation. Without a
+        // culture, the lower-cased match of old.
+        function typeaheadMatcher(term: string, culture?: string | null): (text: string) => boolean {
+            if (culture == null) {
+                const lower = term.toLowerCase();
+                return text => text.trim().toLowerCase().indexOf(lower) === 0;
+            }
+
+            const options: Intl.CollatorOptions = { usage: 'search', sensitivity: 'base' };
+            let collator: Intl.Collator;
+            try {
+                collator = new Intl.Collator(culture || undefined, options);
+            } catch {
+                collator = new Intl.Collator(undefined, options);
+            }
+
+            const normalized = term.normalize('NFC');
+            return text => collator.compare(text.trim().normalize('NFC').slice(0, normalized.length), normalized) === 0;
         }
 
         // The focusable elements that are content rather than a control: a disclosure's summary and an embedded

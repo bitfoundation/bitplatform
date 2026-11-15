@@ -111,6 +111,10 @@
     <input id="kbd-after" aria-label="after" />
 </E2ESection>
 
+<E2ESection Id="typeahead" Title="Typeahead">
+    <BitMenuButton Id="mnb-typeahead" Text="Desserts" Items="_desserts" />
+</E2ESection>
+
 <E2ESection Id="submenu" Title="Submenu">
     <BitMenuButton Id="mnb-submenu" Text="Insert" Items="_submenu" OnClick="(BitMenuButtonItem? i) => SubmenuClick(i)" />
     <span id="submenu-clicked">@_submenuClicked</span>
@@ -434,6 +438,13 @@
         new() { Key = "banana", Text = "Banana" },
         new() { Key = "blueberry", Text = "Blueberry" },
         new() { Key = "cherry", Text = "Cherry" }
+    ];
+    private readonly List<BitMenuButtonItem> _desserts =
+    [
+        new() { Key = "apple-pie", Text = "Apple pie" },
+        new() { Key = "brownie", Text = "Brownie" },
+        new() { Key = "eclair", Text = "Éclair" },
+        new() { Key = "fudge", Text = "Fudge" }
     ];
     private readonly List<BitMenuButtonItem> _submenu;
     private readonly List<BitMenuButtonItem> _itemStyles =

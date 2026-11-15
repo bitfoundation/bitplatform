@@ -41,8 +41,9 @@
                 <BitTag Color="BitColor.SecondaryBackground">End</BitTag>
                 move between the items (wrapping around, and stepping over the separators and the group headers),
                 typing jumps to the item that starts with what was typed - the keystrokes that arrive within a
-                second of each other are one search string, and the same character pressed again cycles through
-                the items under it -
+                second of each other are one search string, the same character pressed again (in either case) cycles
+                through the items under it, and what is typed is matched by the rules of the current culture, which
+                ignore case and the accents that culture treats as marks on a letter ("e" finds "Éclair" in English) -
                 <BitTag Color="BitColor.SecondaryBackground">Enter</BitTag>
                 or
                 <BitTag Color="BitColor.SecondaryBackground">Space</BitTag>

@@ -58,8 +58,8 @@
             MenuButtons._handlers.delete(id);
         }
 
-        public static focusItem(calloutId: string, mode: string, char: string | null, includeDisabled?: boolean, fromCurrent?: boolean) {
-            Utils.focusItem(calloutId, MenuButtons.ITEM_SELECTOR, mode, char, includeDisabled === true, fromCurrent === true);
+        public static focusItem(calloutId: string, mode: string, char: string | null, includeDisabled?: boolean, fromCurrent?: boolean, culture?: string | null) {
+            Utils.focusItem(calloutId, MenuButtons.ITEM_SELECTOR, mode, char, includeDisabled === true, fromCurrent === true, culture);
         }
 
         private static attachMenu(id: string, calloutId: string) {

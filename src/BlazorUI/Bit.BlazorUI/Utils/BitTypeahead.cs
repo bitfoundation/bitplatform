@@ -78,6 +78,17 @@ internal sealed class BitTypeahead
     }
 
     /// <summary>
+    /// Ends the term being typed, so the next key starts a new one whatever the pause before it: for a list whose items
+    /// are gone or replaced (a menu closed, the focus moved into a submenu) before the user stopped typing.
+    /// </summary>
+    internal void Reset()
+    {
+        _term = string.Empty;
+        _first = string.Empty;
+        _repeated = false;
+    }
+
+    /// <summary>
     /// Adds a typed key to the term and returns the index of the item it takes the keyboard to, or -1 when no item
     /// matches. The items are walked from the one the keyboard is on (<paramref name="current"/>, -1 for none) and
     /// around the end of the list, leaving out the ones <paramref name="skip"/> names.

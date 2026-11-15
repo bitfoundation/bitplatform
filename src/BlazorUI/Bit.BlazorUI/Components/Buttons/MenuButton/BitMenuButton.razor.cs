@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
@@ -11,10 +12,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
-    // The typeahead of a menu resets after this long without a keystroke, which is what separates one
-    // search from the next (the APG menu pattern leaves the exact value to the implementation).
-    private const int TypeaheadTimeout = 1000;
-
     private int _clickId;
     private bool _internalIsOpenChange;
     private bool _repositionAfterRender;
@@ -40,11 +37,10 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     private bool _focusFirstItemOnOpen;
     private int _hoverToken;
     private bool _hasSubmenus;
-    private string _typeahead = string.Empty;
+    private readonly BitTypeahead _typeahead = new();
     private string _typeaheadCalloutId = string.Empty;
     private ElementReference _operatorButtonRef;
     private ElementReference _chevronButtonRef;
-    private DateTimeOffset _typeaheadAt = DateTimeOffset.MinValue;
     private CancellationTokenSource? _loadingDelayCts;
     private IEnumerable<TItem> _oldItems = default!;
     // The submenus that are open, outermost first. It is a path rather than a set: opening one closes
@@ -1768,26 +1764,24 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
     // The APG typeahead: the keystrokes that arrive in quick succession are one search string, so a menu with
     // several items under the same letter is reachable by typing further into the label instead of only by
-    // cycling through them. A single character repeated stays the cycle it has always been.
+    // cycling through them. A single character repeated, in either case, stays the cycle it has always been.
+    // The string is built here, with the rules every typeahead of the library shares (BitTypeahead), and matched
+    // against the rendered labels by the script, with the collation of the same culture.
     private async Task Typeahead(string calloutId, string character)
     {
-        var now = DateTimeOffset.UtcNow;
-
         // A search typed into one menu has nothing to do with the one beside it, so walking into or out of
         // a submenu starts the string over rather than carrying it across.
-        var sameMenu = calloutId == _typeaheadCalloutId;
-        _typeaheadCalloutId = calloutId;
+        if (calloutId != _typeaheadCalloutId)
+        {
+            _typeahead.Reset();
+            _typeaheadCalloutId = calloutId;
+        }
 
-        _typeahead = (sameMenu is false || (now - _typeaheadAt).TotalMilliseconds > TypeaheadTimeout)
-                        ? character
-                        : _typeahead + character;
-        _typeaheadAt = now;
-
-        var repeated = _typeahead.All(c => c == _typeahead[0]);
+        var search = _typeahead.Type(character);
 
         // A repeated character searches from the item AFTER the focused one, so each press lands on the next
         // match; a real search string searches from the focused one, so the item it already matches is kept.
-        await FocusItemOf(calloutId, "char", repeated ? _typeahead[..1] : _typeahead, fromCurrent: repeated is false);
+        await FocusItemOf(calloutId, "char", search.Text, fromCurrent: search.FromNext is false, culture: CultureInfo.CurrentCulture.Name);
     }
 
     private ValueTask FocusItem(string mode, string? character = null, bool fromCurrent = false)
@@ -1795,11 +1789,11 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         return FocusItemOf(_calloutId, mode, character, fromCurrent);
     }
 
-    internal ValueTask FocusItemOf(string calloutId, string mode, string? character = null, bool fromCurrent = false)
+    internal ValueTask FocusItemOf(string calloutId, string mode, string? character = null, bool fromCurrent = false, string? culture = null)
     {
         // A disabled item is normally stepped over, but DisabledInteractive is the page asking for it to be
         // reachable - which is the whole point of keeping it focusable rather than natively disabled.
-        return _js.BitMenuButtonsFocusItem(calloutId, mode, character, DisabledInteractive, fromCurrent);
+        return _js.BitMenuButtonsFocusItem(calloutId, mode, character, DisabledInteractive, fromCurrent, culture);
     }
 
     // Where the focus goes as the menu closes from inside: back to the element it was on when the menu was opened at
@@ -1942,9 +1936,8 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     // than continuing a string the user can no longer see the matches of.
     private void ResetTypeahead()
     {
-        _typeahead = string.Empty;
+        _typeahead.Reset();
         _typeaheadCalloutId = string.Empty;
-        _typeaheadAt = DateTimeOffset.MinValue;
     }
 
     // The loading state guards the click from the moment it starts, but the spinner is held back for
