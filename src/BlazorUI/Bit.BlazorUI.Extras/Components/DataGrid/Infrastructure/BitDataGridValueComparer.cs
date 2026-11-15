@@ -1,7 +1,10 @@
 ﻿namespace Bit.BlazorUI;
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 /// <summary>Null-safe comparer that orders nulls first and falls back to string comparison.</summary>
 internal sealed class BitDataGridValueComparer : IComparer<object?>
@@ -92,6 +95,51 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
             return string.Compare(x.ToString(), y.ToString(), StringComparison.OrdinalIgnoreCase);
 
         return GetCanonicalKey(x).CompareTo(GetCanonicalKey(y));
+    }
+
+    /// <summary>
+    /// The comparer to order these keys with, giving the order <see cref="Instance"/> gives. When every key that is not
+    /// null is of one trusted type other than string (a column of numbers, dates or an enum, the usual case), that is
+    /// a comparer that goes straight to their <see cref="IComparable.CompareTo"/>: <see cref="Compare"/> tells their
+    /// types apart on every call, which a sort makes about n·log₂n times - most of the time of a sort of 100,000 rows
+    /// on WebAssembly. Any other set of keys (strings, mixed types, custom types, none at all) gets
+    /// <see cref="Instance"/>, whose string path is already direct.
+    /// </summary>
+    internal static IComparer<object?> For(IEnumerable<object?> keys)
+    {
+        Type? type = null;
+        foreach (var key in keys)
+        {
+            if (key is null) continue;
+
+            var keyType = key.GetType();
+            if (type is null)
+            {
+                if (keyType == typeof(string) || IsTrustedComparable(keyType) is false) return Instance;
+                type = keyType;
+            }
+            else if (keyType != type)
+            {
+                return Instance;
+            }
+        }
+
+        return type is null ? Instance : UniformComparer.Instance;
+    }
+
+    // Orders keys of one trusted type as Compare does: nulls first, the rest by their own CompareTo.
+    private sealed class UniformComparer : IComparer<object?>
+    {
+        public static readonly UniformComparer Instance = new();
+
+        public int Compare(object? x, object? y)
+        {
+            if (ReferenceEquals(x, y)) return 0;
+            if (x is null) return -1;
+            if (y is null) return 1;
+
+            return ((IComparable)x).CompareTo(y);
+        }
     }
 }
 

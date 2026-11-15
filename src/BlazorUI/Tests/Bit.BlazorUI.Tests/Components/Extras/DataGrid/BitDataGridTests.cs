@@ -161,6 +161,25 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("Cherry", FirstCellTexts(component)[^1]);
     }
 
+    [TestMethod]
+    public async Task SortingNumbersPutsAMissingValueFirstAscendingAndLastDescending()
+    {
+        // Numbers of one type are sorted through a comparer picked for them (BitDataGridValueComparer.For); a key
+        // that is null still sorts below every number.
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, TemplateOnlyColumn("custom", sortBy: r => r.Name == "Cherry" ? null : r.Price));
+        });
+
+        // The column's template writes each row's name.
+        await component.InvokeAsync(() => component.Instance.SortByAsync("custom", BitDataGridSortDirection.Ascending));
+        CollectionAssert.AreEqual(new[] { "Cherry", "Apple", "Elderberry", "Banana", "Date" }, FirstCellTexts(component).ToArray());
+
+        await component.InvokeAsync(() => component.Instance.SortByAsync("custom", BitDataGridSortDirection.Descending));
+        CollectionAssert.AreEqual(new[] { "Date", "Banana", "Elderberry", "Apple", "Cherry" }, FirstCellTexts(component).ToArray());
+    }
+
     // A template-only column: no Field, so it has a sort key only through SortBy (in memory) or ServerSortable (server).
     private static RenderFragment TemplateOnlyColumn(string? columnId, Func<TestRow, object?>? sortBy = null, bool? sortable = null,
         bool serverSortable = false) => builder =>
