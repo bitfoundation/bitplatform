@@ -175,7 +175,7 @@ public sealed class TemplateDiff(CliServices cli)
             var (package, installed) = await source.EnsureInstalledAsync(packagePath is null ? version : null, packagePath, progress, ct);
 
             if (package is null)
-                return StepResult.FromProcess(installed.Succeeded ? installed with { ExitCode = 1 } : installed, "", $"Couldn't get bit Boilerplate {version}", packagePath is null ? $"dotnet new install Bit.Boilerplate::{version}" : null);
+                return StepResult.FromProcess(installed.Succeeded ? installed with { ExitCode = 1 } : installed, "", $"Couldn't get bit Boilerplate {version}", packagePath is null ? $"dotnet new install Bit.Boilerplate@{version}" : null);
 
             var manifest = TemplateSource.ReadManifest(package.PackagePath) ?? TemplateManifest.Embedded;
             var (arguments, unknown) = TemplateArguments(manifest, options);

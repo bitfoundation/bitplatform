@@ -139,16 +139,60 @@ public class AdministratorTests
         Assert.IsEmpty(await AdministratorNeeds.FindAsync(linux.Services, [git], needs, setup: false, CancellationToken.None));
     }
 
+    [TestMethod]
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public async Task TheHelper_Should_AnswerThePipeOfItsUser_ThoughItsTokenIsOwnedByAdministrators()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        host.Runner.On("dotnet", "--version", 0, "10.0.403");
+        var user = WindowsIdentity.GetCurrent().User!;
+        var security = new PipeSecurity();
+        security.SetOwner(user);
+        security.AddAccessRule(new PipeAccessRule(user, PipeAccessRights.ReadWrite, AccessControlType.Allow));
+
+        var (session, serving) = await ConnectAsync(host, name => NamedPipeServerStreamAcl.Create(name, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, security));
+
+        Assert.IsNotNull(session, "An elevated helper's token is owned by the Administrators group, while bit's pipe is owned by the user who runs bit.");
+        Assert.AreEqual(0, (await session.RunAsync(new ProcessSpec { FileName = "dotnet", Arguments = ["--version"] }, CancellationToken.None)).ExitCode);
+
+        await session.DisposeAsync();
+        Assert.AreEqual(CliApp.ExitOk, await serving.WaitAsync(TimeSpan.FromSeconds(10)));
+    }
+
+    [TestMethod]
+    public async Task AHelperThatStopsBeforeItIsReady_Should_NotBeUsed()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+
+        var (session, serving) = await ConnectAsync(host, parentId: Environment.ProcessId + 1);
+
+        Assert.AreEqual(CliApp.ExitFailed, await serving.WaitAsync(TimeSpan.FromSeconds(10)));
+        Assert.IsNull(session, "Its steps would fail with exit code -1 instead of asking Windows again.");
+    }
+
     private static async Task<(AdministratorSession Session, Task<int> Serving)> ConnectAsync(TestHost host)
     {
+        var (session, serving) = await ConnectAsync(host, parentId: null);
+        Assert.IsNotNull(session);
+        return (session, serving);
+    }
+
+    private static async Task<(AdministratorSession? Session, Task<int> Serving)> ConnectAsync(TestHost host, Func<string, NamedPipeServerStream>? create = null, int? parentId = null)
+    {
         var name = $"bit-cli-test-{Guid.NewGuid():N}";
-        var pipe = new NamedPipeServerStream(name, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
-        var serving = AdministratorSession.ServeAsync(host.Services, name, Environment.ProcessId, CancellationToken.None);
+        var pipe = create?.Invoke(name) ?? new NamedPipeServerStream(name, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+        var serving = AdministratorSession.ServeAsync(host.Services, name, parentId ?? Environment.ProcessId, CancellationToken.None);
         await pipe.WaitForConnectionAsync();
 
         var exited = Process.Start(new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"), "/c exit 0") { UseShellExecute = false, CreateNoWindow = true })!;
         await exited.WaitForExitAsync();
 
-        return (AdministratorSession.Attach(host.Services, pipe, exited), serving);
+        return (await AdministratorSession.AttachAsync(host.Services, pipe, exited, CancellationToken.None), serving);
     }
 }

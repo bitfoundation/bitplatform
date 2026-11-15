@@ -133,7 +133,7 @@ public sealed record ToolAction
     public IReadOnlyList<string> InstalledExecutables { get; init; } = [];
 }
 
-public sealed record PartialSuccess(int ExitCode, string Detail, string Hint);
+public sealed record PartialSuccess(int ExitCode, string Detail, string Hint, StepStatus Status = StepStatus.Succeeded);
 
 public sealed record AdministratorRun(bool Declined, IReadOnlyDictionary<string, int> ExitCodes, string Log);
 
@@ -178,6 +178,8 @@ public abstract class Tool
     public abstract ToolAction? PlanInstall(ToolContext context, ToolStatus status);
 
     public virtual string? ManualInstructions(ToolContext context) => null;
+
+    public virtual string? ManualInstructions(ToolContext context, ToolStatus status) => ManualInstructions(context);
 }
 
 public sealed record ToolCheck(Tool Tool, ToolStatus Status, bool Needed, string Why, ToolAction? Action, string? Manual)

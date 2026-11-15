@@ -28,6 +28,53 @@ public class NewWorkflowTests
     }
 
     [TestMethod]
+    public async Task AFolderBitCantWriteTo_Should_GiveWayToSourceReposInTheHomeFolder()
+    {
+        if (Environment.UserName is "root")
+            return;
+
+        using var host = new TestHost();
+        var package = FakeTemplatePackage(host);
+        GeneratesProjects(host);
+        var expected = Path.Combine(host.Home, "source", "repos", "Contoso");
+        int exitCode;
+
+        using (DenyWrites(host.WorkingDirectory))
+        {
+            exitCode = await host.RunAsync("new", "Contoso", "--template-package", package, "--yes", "--no-setup", "--no-git", "--no-trust");
+        }
+
+        Assert.AreEqual(0, exitCode, host.Output);
+        Assert.IsTrue(File.Exists(Path.Combine(expected, "Contoso.slnx")), host.Output);
+        StringAssert.Contains(host.FlatOutput, $"bit can't write to {host.WorkingDirectory}, so bit creates Contoso in {expected}.");
+        StringAssert.Contains(host.FlatOutput, $"cd {expected}", "A path relative to the folder bit couldn't use would walk out of it first.");
+    }
+
+    [TestMethod]
+    public async Task ASystemFolder_Should_GiveWayToSourceReposInTheHomeFolder()
+    {
+        var windows = OperatingSystem.IsWindows() ? Directory.CreateTempSubdirectory("bit-cli-windows-").FullName : null;
+
+        try
+        {
+            using var host = new TestHost(variables: windows is null ? null : new Dictionary<string, string> { ["SystemRoot"] = windows });
+            var output = windows is null ? "/usr/src/Contoso" : Path.Combine(windows, "System32", "Contoso");
+
+            var exitCode = await host.RunAsync("new", "Contoso", "-o", output, "--template-package", FakeTemplatePackage(host), "--dry-run", "--yes");
+
+            Assert.AreEqual(0, exitCode, host.Output);
+            StringAssert.Contains(host.FlatOutput, $"{Path.GetDirectoryName(output)} is a system folder, so bit creates Contoso in {Path.Combine(host.Home, "source", "repos", "Contoso")}.");
+        }
+        finally
+        {
+            if (windows is not null)
+            {
+                Directory.Delete(windows, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task Setup_Should_AddTheInitialMigrationThatNoSetupLeftOut()
     {
         using var host = new TestHost(HostOs.Linux);
@@ -151,7 +198,7 @@ public class NewWorkflowTests
     public async Task AMissingTemplate_Should_SkipTheProjectStepsInsteadOfFailingThem()
     {
         using var host = new TestHost(HostOs.Linux);
-        host.Runner.On("dotnet", "new install", 1, "error: Bit.Boilerplate::0.0.0 could not be installed, the package does not exist.");
+        host.Runner.On("dotnet", "new install", 1, "error: Bit.Boilerplate@0.0.0 could not be installed, the package does not exist.");
 
         var exitCode = await host.RunAsync("new", "Contoso", "--template-package", FakeTemplatePackage(host), "--yes", "--no-setup", "--no-git", "--no-trust");
 
@@ -286,6 +333,37 @@ public class NewWorkflowTests
         Assert.AreEqual(folder, install.Arguments[2]);
         Assert.IsNotNull(TemplateSource.ReadManifest(folder));
         StringAssert.Contains(TemplateSource.ReadEntry(folder, "Bit.Boilerplate/global.json"), "10.0.300");
+    }
+
+    private static IDisposable DenyWrites(string directory) => OperatingSystem.IsWindows() ? DenyWindowsWrites(directory) : DenyUnixWrites(directory);
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    private static IDisposable DenyWindowsWrites(string directory)
+    {
+        var folder = new DirectoryInfo(directory);
+        var security = folder.GetAccessControl();
+        var denied = new System.Security.AccessControl.FileSystemAccessRule(System.Security.Principal.WindowsIdentity.GetCurrent().User!, System.Security.AccessControl.FileSystemRights.CreateFiles | System.Security.AccessControl.FileSystemRights.CreateDirectories, System.Security.AccessControl.AccessControlType.Deny);
+        security.AddAccessRule(denied);
+        folder.SetAccessControl(security);
+
+        return new Restore(() =>
+        {
+            security.RemoveAccessRule(denied);
+            folder.SetAccessControl(security);
+        });
+    }
+
+    [System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
+    private static IDisposable DenyUnixWrites(string directory)
+    {
+        var mode = File.GetUnixFileMode(directory);
+        File.SetUnixFileMode(directory, UnixFileMode.UserRead | UnixFileMode.UserExecute);
+        return new Restore(() => File.SetUnixFileMode(directory, mode));
+    }
+
+    private sealed class Restore(Action undo) : IDisposable
+    {
+        public void Dispose() => undo();
     }
 
     private static string FakeTemplatePackage(TestHost host)

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Text.Json;
 using Bit.Cli.Infrastructure;
 
@@ -28,7 +29,28 @@ public sealed class AdministratorSession : IAsyncDisposable
         writer = new StreamWriter(pipe) { AutoFlush = true };
     }
 
-    internal static AdministratorSession Attach(CliServices cli, NamedPipeServerStream pipe, Process helper) => new(cli, pipe, helper);
+    internal static async Task<AdministratorSession?> AttachAsync(CliServices cli, NamedPipeServerStream pipe, Process helper, CancellationToken cancellationToken)
+    {
+        var session = new AdministratorSession(cli, pipe, helper);
+        using var waiting = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        waiting.CancelAfter(TimeSpan.FromSeconds(30));
+
+        try
+        {
+            if (await session.reader.ReadLineAsync(waiting.Token) is { } line && JsonSerializer.Deserialize<AdministratorResponse>(line) is { Ready: true })
+            {
+                cli.Log.Write($"admin-helper: process {helper.Id} is ready");
+                return session;
+            }
+        }
+        catch (Exception exp) when (exp is IOException or JsonException || exp is OperationCanceledException && cancellationToken.IsCancellationRequested is false)
+        {
+        }
+
+        cli.Log.Write($"admin-helper: process {helper.Id} stopped before it was ready; its own log is in {cli.Environment.LogsDirectory}");
+        await session.DisposeAsync();
+        return null;
+    }
 
     public static async Task<(AdministratorSession? Session, bool Declined)> StartAsync(CliServices cli, CancellationToken cancellationToken)
     {
@@ -56,8 +78,7 @@ public sealed class AdministratorSession : IAsyncDisposable
                 throw new IOException("Another process answered the administrator helper's pipe.");
             }
 
-            cli.Log.Write($"admin-helper: process {helper.Id} is ready");
-            return (new AdministratorSession(cli, pipe, helper), false);
+            return (await AttachAsync(cli, pipe, helper, cancellationToken), false);
         }
         catch (Win32Exception exp) when (exp.NativeErrorCode == 1223)
         {
@@ -131,12 +152,18 @@ public sealed class AdministratorSession : IAsyncDisposable
 
     public static async Task<int> ServeAsync(CliServices cli, string pipeName, int parentId, CancellationToken cancellationToken)
     {
-        await using var pipe = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+        await using var pipe = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
         await pipe.ConnectAsync(TimeSpan.FromSeconds(30), cancellationToken);
 
         if (GetNamedPipeServerProcessId(pipe.SafePipeHandle, out var serverId) is false || serverId != parentId)
         {
             cli.Log.Write($"admin-helper: the pipe belongs to process {serverId}, not {parentId}");
+            return CliApp.ExitFailed;
+        }
+
+        if (!OperatingSystem.IsWindows() || !OwnedByThisUser(pipe))
+        {
+            cli.Log.Write("admin-helper: the pipe belongs to another user");
             return CliApp.ExitFailed;
         }
 
@@ -172,6 +199,8 @@ public sealed class AdministratorSession : IAsyncDisposable
                 }
             }
         }
+
+        Send(new AdministratorResponse { Ready = true });
 
         try
         {
@@ -267,6 +296,13 @@ public sealed class AdministratorSession : IAsyncDisposable
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    private static bool OwnedByThisUser(PipeStream pipe)
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        return pipe.GetAccessControl().GetOwner(typeof(SecurityIdentifier)) is SecurityIdentifier owner && owner == identity.User;
+    }
+
     private static void Stop(Process? process)
     {
         try
@@ -301,6 +337,8 @@ public sealed record AdministratorRequest
 
 public sealed record AdministratorResponse
 {
+    public bool Ready { get; init; }
+
     public string? Line { get; init; }
 
     public int? Exit { get; init; }
