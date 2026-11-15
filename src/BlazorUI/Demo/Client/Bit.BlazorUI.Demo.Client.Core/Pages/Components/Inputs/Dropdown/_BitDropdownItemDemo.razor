@@ -1115,7 +1115,9 @@
             <li>
                 <b>Printable characters</b> - run a typeahead on a dropdown with no text field of its own: the
                 accumulated characters jump to the item starting with them, repeating one character cycles through
-                those items, and the buffer resets after a short pause. A <b>ShowSearchBox</b> or ComboBox dropdown
+                those items, and the buffer resets after a pause of a second. What is typed is matched by the rules of
+                the current culture: case is ignored, and so are the accents that culture treats as marks on a letter
+                ("e" finds "Éclair" in English). A <b>ShowSearchBox</b> or ComboBox dropdown
                 filters instead. The typeahead wraps even with <b>NoWrapNavigation</b>, since it looks for the item
                 that matches rather than for the one that comes next, and in virtualize mode it only sees the items
                 that are actually rendered.

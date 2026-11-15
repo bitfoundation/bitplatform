@@ -25,7 +25,10 @@ internal static class DropdownsJsRuntimeExtensions
         return jsRuntime.Invoke<bool>("BitBlazorUI.Dropdowns.reclaimFocus", calloutId, target);
     }
 
-    internal static ValueTask BitDropdownsFocusItem(this IJSRuntime jsRuntime, string calloutId, BitDropdownFocusMode mode, string? character, bool virtualize, int selectedIndex, int itemSize, bool noWrap)
+    // fromCurrent and culture are the ones of a "char" search: whether the focused option is searched too, and the culture
+    // the search is matched in (see Utils.typeaheadMatcher).
+    internal static ValueTask BitDropdownsFocusItem(this IJSRuntime jsRuntime, string calloutId, BitDropdownFocusMode mode, string? character, bool virtualize, int selectedIndex, int itemSize, bool noWrap,
+                                                    bool fromCurrent = false, string? culture = null)
     {
         // Mapped by hand rather than by name: these are the exact strings Dropdowns.ts branches on, so
         // renaming a member of the enum must not silently change what is sent over the wire.
@@ -42,6 +45,6 @@ internal static class DropdownsJsRuntimeExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
 
-        return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.focusItem", calloutId, modeValue, character, virtualize, selectedIndex, itemSize, noWrap);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.focusItem", calloutId, modeValue, character, virtualize, selectedIndex, itemSize, noWrap, fromCurrent, culture);
     }
 }
