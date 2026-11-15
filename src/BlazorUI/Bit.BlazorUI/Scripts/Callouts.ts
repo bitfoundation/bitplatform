@@ -931,11 +931,11 @@
         // with a reflow, and then dropped, which transitions the callout to its open state - sliding
         // down out of the component when it sits below it, and up when it sits above it. The placement it
         // reads is already on the callout as `data-bit-cal-pos`, written by the layout pass above.
-        // Components opt in by styling `.bit-cal-ent`; for the ones that don't this is a no-op.
+        // Components opt in by styling `.bit--entry`; for the ones that don't this is a no-op.
         export function playEntryAnimation(callout: HTMLElement) {
-            callout.classList.add('bit-cal-ent');
+            callout.classList.add('bit--entry');
             void callout.offsetHeight;
-            callout.classList.remove('bit-cal-ent');
+            callout.classList.remove('bit--entry');
         }
 
         // Measures the layout viewport's edges in getBoundingClientRect() space by stretching a

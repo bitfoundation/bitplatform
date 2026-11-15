@@ -12,9 +12,9 @@ public class BitStepperApisE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/stepper/apis";
 
-    private ILocator Texts(string id) => Page.Locator($"#{id} .bit-stp-txt");
+    private ILocator Texts(string id) => Page.Locator($"#{id} .bit-str-txt");
 
-    private ILocator Steps(string id) => Page.Locator($"#{id} > li.bit-stp-stp");
+    private ILocator Steps(string id) => Page.Locator($"#{id} > li.bit-str-stp");
 
     [TestMethod]
     public async Task CustomItems_AreReadThroughTheNameSelectors_AndGoneTo()
@@ -22,14 +22,14 @@ public class BitStepperApisE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         await Expect(Texts("stp-custom")).ToHaveTextAsync(["Plan", "Build", "Ship"]);
-        await Expect(Page.Locator("#stp-custom .bit-stp-dsc")).ToHaveTextAsync("What to build");
-        await Expect(Steps("stp-custom").Nth(1)).ToHaveClassAsync(new Regex(@"\bbit-stp-err\b"));
+        await Expect(Page.Locator("#stp-custom .bit-str-dsc")).ToHaveTextAsync("What to build");
+        await Expect(Steps("stp-custom").Nth(1)).ToHaveClassAsync(new Regex(@"\bbit-str-err\b"));
 
-        await Page.Locator("#stp-custom .bit-stp-btn").Nth(2).ClickAsync();
+        await Page.Locator("#stp-custom .bit-str-btn").Nth(2).ClickAsync();
 
         await Expect(Page.Locator("#custom-index")).ToHaveTextAsync("2");
         await Expect(Page.Locator("#custom-clicked")).ToHaveTextAsync("Ship");
-        await Expect(Steps("stp-custom").Nth(0)).ToHaveClassAsync(new Regex(@"\bbit-stp-cmp\b"));
+        await Expect(Steps("stp-custom").Nth(0)).ToHaveClassAsync(new Regex(@"\bbit-str-cmp\b"));
     }
 
     [TestMethod]
@@ -38,21 +38,21 @@ public class BitStepperApisE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         await Expect(Texts("stp-options")).ToHaveTextAsync(["First", "Last"]);
-        await Expect(Steps("stp-options").Nth(1)).ToHaveClassAsync(new Regex(@"\bbit-stp-cur\b"));
+        await Expect(Steps("stp-options").Nth(1)).ToHaveClassAsync(new Regex(@"\bbit-str-cur\b"));
 
         // The middle option registers last, but the stepper reads the order of the markers in the document and puts it
         // between the two: second, numbered 2, and now the current step of index 1.
         await Page.Locator("#btn-middle").ClickAsync();
 
         await Expect(Texts("stp-options")).ToHaveTextAsync(["First", "Middle", "Last"]);
-        await Expect(Steps("stp-options").Nth(1)).ToHaveClassAsync(new Regex(@"\bbit-stp-cur\b"));
-        await Expect(Page.Locator("#stp-options .bit-stp-num")).ToHaveTextAsync(["2", "3"]);
-        await Expect(Page.Locator("#stp-options .bit-stp-con")).ToHaveCountAsync(2);
+        await Expect(Steps("stp-options").Nth(1)).ToHaveClassAsync(new Regex(@"\bbit-str-cur\b"));
+        await Expect(Page.Locator("#stp-options .bit-str-num")).ToHaveTextAsync(["2", "3"]);
+        await Expect(Page.Locator("#stp-options .bit-str-con")).ToHaveCountAsync(2);
 
         // Its own click runs, and the stepper goes there.
-        await Page.Locator("#stp-options .bit-stp-btn").Nth(2).ClickAsync();
+        await Page.Locator("#stp-options .bit-str-btn").Nth(2).ClickAsync();
         await Expect(Page.Locator("#options-index")).ToHaveTextAsync("2");
-        await Page.Locator("#stp-options .bit-stp-btn").Nth(1).ClickAsync();
+        await Page.Locator("#stp-options .bit-str-btn").Nth(1).ClickAsync();
         await Expect(Page.Locator("#middle-clicks")).ToHaveTextAsync("1");
         await Expect(Page.Locator("#options-index")).ToHaveTextAsync("1");
 
@@ -69,7 +69,7 @@ public class BitStepperApisE2ETests : E2ETestBase
         await Page.Locator("#btn-last").ClickAsync();
 
         await Expect(Texts("stp-options")).ToHaveTextAsync(["First", "Done"]);
-        await Expect(Steps("stp-options").Nth(1)).ToHaveClassAsync(new Regex(@"\bbit-stp-err\b"));
+        await Expect(Steps("stp-options").Nth(1)).ToHaveClassAsync(new Regex(@"\bbit-str-err\b"));
 
         // The markers the options render are hidden from everyone; only the steps are read.
         await Expect(Page.Locator("#stp-options > li").First).ToBeHiddenAsync();

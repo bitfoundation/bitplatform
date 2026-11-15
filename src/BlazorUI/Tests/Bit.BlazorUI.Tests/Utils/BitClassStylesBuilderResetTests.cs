@@ -34,7 +34,7 @@ public class BitClassStylesBuilderResetTests : BunitTestContext
         var failures = new List<string>();
         var tested = 0;
 
-        foreach (var type in assemblies.SelectMany(LoadableTypes))
+        foreach (var type in assemblies.SelectMany(LoadableTypes.Of))
         {
             if (type.IsAbstract || typeof(BitComponentBase).IsAssignableFrom(type) is false) continue;
             if (_comparedByValue.Contains(type.Name)) continue;
@@ -56,20 +56,6 @@ public class BitClassStylesBuilderResetTests : BunitTestContext
         // Guards the discovery itself: a reflection change that found nothing would otherwise pass vacuously.
         Assert.IsTrue(tested > 100, $"Only {tested} Classes/Styles parameters were discovered.");
         Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
-    }
-
-    // A type whose base sits in an assembly the tests do not ship (Newtonsoft.Json, behind a chart type) cannot be
-    // loaded, and is not a component anyway.
-    private static IEnumerable<Type> LoadableTypes(Assembly assembly)
-    {
-        try
-        {
-            return assembly.GetTypes();
-        }
-        catch (ReflectionTypeLoadException ex)
-        {
-            return ex.Types.Where(t => t is not null)!;
-        }
     }
 
     [TestMethod]

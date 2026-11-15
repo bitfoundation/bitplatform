@@ -25,7 +25,7 @@ public class BitMarkdownEditorTests : BunitTestContext
             parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
-        var root = component.Find(".bit-mde");
+        var root = component.Find(".bit-mel");
 
         if (isEnabled)
         {
@@ -90,7 +90,7 @@ public class BitMarkdownEditorTests : BunitTestContext
             builder.CloseComponent();
         });
 
-        var root = component.Find(".bit-mde");
+        var root = component.Find(".bit-mel");
 
         Assert.AreEqual("editor", root.Id);
         Assert.AreEqual("root", root.GetAttribute("data-test"));

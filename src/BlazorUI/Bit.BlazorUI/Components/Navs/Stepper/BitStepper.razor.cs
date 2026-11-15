@@ -132,8 +132,8 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
     /// <remarks>
     /// It is the width of the stepper's own container that decides, not the screen's: a Responsive stepper in a narrow
     /// sidebar or dialog takes the vertical layout on a wide screen too. The stylesheet switches through a container
-    /// query, so nothing is measured; the list therefore stands in a wrapper of its own (<c>bit-stp-rsw</c>), which
-    /// takes the full width of its container, and the root carries <c>bit-stp-rsp</c> in place of <c>bit-stp-hrz</c>,
+    /// query, so nothing is measured; the list therefore stands in a wrapper of its own (<c>bit-str-rsw</c>), which
+    /// takes the full width of its container, and the root carries <c>bit-str-rsp</c> in place of <c>bit-str-hrz</c>,
     /// whichever layout it is in. It has nothing to do on a stepper that is <see cref="Vertical"/> already.
     /// </remarks>
     [Parameter, ResetClassBuilder]
@@ -153,7 +153,7 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
 
 
 
-    protected override string RootElementClass => "bit-stp";
+    protected override string RootElementClass => "bit-str";
 
     private bool IsResponsiveRow => Responsive && Vertical is false;
 
@@ -162,10 +162,10 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
         ClassBuilder.Register(() => Classes?.Root);
 
         // A Responsive horizontal stepper is a row or a column by the width of its container, so it carries a layout
-        // class of its own rather than the one of either: the rules an app keys on bit-stp-hrz never land on its column.
-        ClassBuilder.Register(() => Vertical ? "bit-stp-vrt" : IsResponsiveRow ? "bit-stp-rsp" : "bit-stp-hrz");
+        // class of its own rather than the one of either: the rules an app keys on bit-str-hrz never land on its column.
+        ClassBuilder.Register(() => Vertical ? "bit-str-vrt" : IsResponsiveRow ? "bit-str-rsp" : "bit-str-hrz");
 
-        ClassBuilder.Register(() => ReadOnly ? "bit-stp-rdo" : string.Empty);
+        ClassBuilder.Register(() => ReadOnly ? "bit-str-rdo" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -352,29 +352,29 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
 
     private string GetStepClass(TItem item, BitStepperStepState state, bool disabled)
     {
-        var classes = new List<string> { "bit-stp-stp" };
+        var classes = new List<string> { "bit-str-stp" };
 
         switch (state)
         {
             case BitStepperStepState.Completed:
-                classes.Add("bit-stp-cmp");
+                classes.Add("bit-str-cmp");
                 classes.AddIfHasValue(Classes?.CompletedStep);
                 break;
             case BitStepperStepState.Current:
-                classes.Add("bit-stp-cur");
+                classes.Add("bit-str-cur");
                 classes.AddIfHasValue(Classes?.CurrentStep);
                 break;
             case BitStepperStepState.Upcoming:
-                classes.Add("bit-stp-upc");
+                classes.Add("bit-str-upc");
                 classes.AddIfHasValue(Classes?.UpcomingStep);
                 break;
             case BitStepperStepState.Error:
-                classes.Add("bit-stp-err");
+                classes.Add("bit-str-err");
                 classes.AddIfHasValue(Classes?.ErrorStep);
                 break;
         }
 
-        if (disabled) classes.Add("bit-stp-sdi");
+        if (disabled) classes.Add("bit-str-sdi");
 
         classes.AddIfHasValue(Classes?.Step);
         classes.AddIfHasValue(GetClass(item));

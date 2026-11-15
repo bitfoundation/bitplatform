@@ -103,16 +103,16 @@ public class BitStepperParamsTests : BunitTestContext
         });
 
         var instance = component.FindComponent<BitStepper<BitStepperItem>>().Instance;
-        var root = component.Find(".bit-stp");
+        var root = component.Find(".bit-str");
 
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        Assert.IsTrue(root.ClassList.Contains("bit-stp-vrt"));
-        Assert.IsTrue(root.ClassList.Contains("bit-stp-rdo"));
+        Assert.IsTrue(root.ClassList.Contains("bit-str-vrt"));
+        Assert.IsTrue(root.ClassList.Contains("bit-str-rdo"));
         StringAssert.Contains(root.GetAttribute("style"), "color:red");
         Assert.IsTrue(component.FindAll("li").All(li => li.ClassList.Contains("cascaded-step")));
         Assert.IsTrue(instance.Linear);
 
-        var icons = component.FindAll(".bit-stp-ico");
+        var icons = component.FindAll(".bit-str-ico");
         Assert.IsTrue(icons[0].ClassList.Contains("bit-icon--Accept"));
         Assert.IsTrue(icons[1].ClassList.Contains("fa-xmark"));
     }
@@ -126,7 +126,7 @@ public class BitStepperParamsTests : BunitTestContext
             ErrorIconName = "Warning",
         });
 
-        var icons = component.FindAll(".bit-stp-ico");
+        var icons = component.FindAll(".bit-str-ico");
         Assert.IsTrue(icons[0].ClassList.Contains("fa-check"));
         Assert.IsTrue(icons[1].ClassList.Contains("bit-icon--Warning"));
     }
@@ -137,9 +137,9 @@ public class BitStepperParamsTests : BunitTestContext
         var component = RenderWithParams(new BitStepperParams { Responsive = true });
 
         Assert.IsTrue(component.FindComponent<BitStepper<BitStepperItem>>().Instance.Responsive);
-        Assert.IsTrue(component.Find(".bit-stp").ClassList.Contains("bit-stp-rsp"));
-        Assert.IsFalse(component.Find(".bit-stp").ClassList.Contains("bit-stp-hrz"));
-        Assert.AreEqual(1, component.FindAll(".bit-stp-rsw > ol.bit-stp").Count);
+        Assert.IsTrue(component.Find(".bit-str").ClassList.Contains("bit-str-rsp"));
+        Assert.IsFalse(component.Find(".bit-str").ClassList.Contains("bit-str-hrz"));
+        Assert.AreEqual(1, component.FindAll(".bit-str-rsw > ol.bit-str").Count);
     }
 
     [TestMethod]
@@ -151,10 +151,10 @@ public class BitStepperParamsTests : BunitTestContext
             builder.AddComponentParameter(4, nameof(BitStepper<BitStepperItem>.CompletedIconName), "Mine");
         });
 
-        var root = component.Find(".bit-stp");
+        var root = component.Find(".bit-str");
 
-        Assert.IsTrue(root.ClassList.Contains("bit-stp-hrz"));
-        Assert.IsTrue(component.Find(".bit-stp-ico").ClassList.Contains("bit-icon--Mine"));
-        Assert.IsTrue(root.ClassList.Contains("bit-stp-rdo"), "the cascaded value is taken where the stepper sets none");
+        Assert.IsTrue(root.ClassList.Contains("bit-str-hrz"));
+        Assert.IsTrue(component.Find(".bit-str-ico").ClassList.Contains("bit-icon--Mine"));
+        Assert.IsTrue(root.ClassList.Contains("bit-str-rdo"), "the cascaded value is taken where the stepper sets none");
     }
 }

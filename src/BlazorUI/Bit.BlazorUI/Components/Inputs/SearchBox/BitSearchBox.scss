@@ -908,7 +908,7 @@ $srb-cal-private-properties: siz-item-height, siz-item-fontsize, siz-spn-size, c
     // with transitions suppressed, forces it into effect and then drops it, which leaves the callout
     // transitioning from here to its open state above - and it reads the placement, which the layout pass
     // has already written onto the element by then.
-    &.bit-cal-ent {
+    &.bit--entry {
         transition: none;
         opacity: 0;
         transform: var(--bit-srb-cal-tra-ent);

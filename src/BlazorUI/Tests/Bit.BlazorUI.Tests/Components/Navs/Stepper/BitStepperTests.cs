@@ -39,25 +39,25 @@ public class BitStepperTests : BunitTestContext
     }
 
     private static string[] States(IRenderedComponent<BitStepper<BitStepperItem>> com) =>
-        com.FindAll("li.bit-stp-stp").Select(li => li.ClassList.First(c => c is "bit-stp-cmp" or "bit-stp-cur" or "bit-stp-upc" or "bit-stp-err")).ToArray();
+        com.FindAll("li.bit-str-stp").Select(li => li.ClassList.First(c => c is "bit-str-cmp" or "bit-str-cur" or "bit-str-upc" or "bit-str-err")).ToArray();
 
     [TestMethod]
     public void BitStepperShouldRenderTheStepsAsAnOrderedList()
     {
         var com = Render();
 
-        var root = com.Find("ol.bit-stp");
+        var root = com.Find("ol.bit-str");
 
         Assert.AreEqual("list", root.GetAttribute("role"));
-        Assert.IsTrue(root.ClassList.Contains("bit-stp-hrz"));
-        Assert.AreEqual(4, com.FindAll("li.bit-stp-stp").Count);
-        CollectionAssert.AreEqual(new[] { "Account", "Address", "Payment", "Review" }, com.FindAll(".bit-stp-txt").Select(t => t.TextContent).ToArray());
-        Assert.AreEqual("Your details", com.Find(".bit-stp-dsc").TextContent);
+        Assert.IsTrue(root.ClassList.Contains("bit-str-hrz"));
+        Assert.AreEqual(4, com.FindAll("li.bit-str-stp").Count);
+        CollectionAssert.AreEqual(new[] { "Account", "Address", "Payment", "Review" }, com.FindAll(".bit-str-txt").Select(t => t.TextContent).ToArray());
+        Assert.AreEqual("Your details", com.Find(".bit-str-dsc").TextContent);
 
         // A line between every two steps, none after the last.
-        Assert.AreEqual(3, com.FindAll(".bit-stp-con").Count);
-        Assert.AreEqual(0, com.FindAll("li.bit-stp-stp")[3].QuerySelectorAll(".bit-stp-con").Length);
-        Assert.IsTrue(com.FindAll(".bit-stp-con").All(c => c.GetAttribute("aria-hidden") == "true"));
+        Assert.AreEqual(3, com.FindAll(".bit-str-con").Count);
+        Assert.AreEqual(0, com.FindAll("li.bit-str-stp")[3].QuerySelectorAll(".bit-str-con").Length);
+        Assert.IsTrue(com.FindAll(".bit-str-con").All(c => c.GetAttribute("aria-hidden") == "true"));
     }
 
     [TestMethod]
@@ -65,31 +65,31 @@ public class BitStepperTests : BunitTestContext
     {
         var com = Render(vertical: true);
 
-        var root = com.Find(".bit-stp");
+        var root = com.Find(".bit-str");
 
-        Assert.IsTrue(root.ClassList.Contains("bit-stp-vrt"));
-        Assert.IsFalse(root.ClassList.Contains("bit-stp-hrz"));
+        Assert.IsTrue(root.ClassList.Contains("bit-str-vrt"));
+        Assert.IsFalse(root.ClassList.Contains("bit-str-hrz"));
     }
 
     [TestMethod,
-        DataRow(false, false, "bit-stp-hrz", false),
-        DataRow(true, false, "bit-stp-rsp", true),
-        DataRow(true, true, "bit-stp-vrt", false),
-        DataRow(false, true, "bit-stp-vrt", false)]
+        DataRow(false, false, "bit-str-hrz", false),
+        DataRow(true, false, "bit-str-rsp", true),
+        DataRow(true, true, "bit-str-vrt", false),
+        DataRow(false, true, "bit-str-vrt", false)]
     public void BitStepperShouldMarkAHorizontalStepperResponsive(bool responsive, bool vertical, string layout, bool wrapped)
     {
         var com = Render(vertical: vertical, responsive: responsive);
 
-        var root = com.Find("ol.bit-stp");
+        var root = com.Find("ol.bit-str");
 
         // A Responsive horizontal stepper is a row or a column by its width, so it carries one layout class of its own
         // instead of either; a vertical stepper is the layout a Responsive one switches to, so it has nothing to switch.
-        var layouts = new[] { "bit-stp-hrz", "bit-stp-vrt", "bit-stp-rsp" };
+        var layouts = new[] { "bit-str-hrz", "bit-str-vrt", "bit-str-rsp" };
         CollectionAssert.AreEqual(new[] { layout }, layouts.Where(root.ClassList.Contains).ToArray());
 
         // The list stands in the wrapper that is the query container of its layout only when it is Responsive.
-        Assert.AreEqual(wrapped, root.ParentElement?.ClassList.Contains("bit-stp-rsw") is true);
-        Assert.AreEqual(wrapped ? 1 : 0, com.FindAll(".bit-stp-rsw").Count);
+        Assert.AreEqual(wrapped, root.ParentElement?.ClassList.Contains("bit-str-rsw") is true);
+        Assert.AreEqual(wrapped ? 1 : 0, com.FindAll(".bit-str-rsw").Count);
         Assert.AreEqual(wrapped ? "DIV" : "OL", com.Nodes.OfType<AngleSharp.Dom.IElement>().First().TagName);
     }
 
@@ -99,8 +99,8 @@ public class BitStepperTests : BunitTestContext
         var plain = Render(currentIndex: 1);
         var responsive = Render(currentIndex: 1, responsive: true);
 
-        Assert.AreEqual(plain.FindAll("li.bit-stp-stp").Count, responsive.FindAll("li.bit-stp-stp").Count);
-        Assert.AreEqual(plain.FindAll(".bit-stp-con").Count, responsive.FindAll(".bit-stp-con").Count);
+        Assert.AreEqual(plain.FindAll("li.bit-str-stp").Count, responsive.FindAll("li.bit-str-stp").Count);
+        Assert.AreEqual(plain.FindAll(".bit-str-con").Count, responsive.FindAll(".bit-str-con").Count);
         CollectionAssert.AreEqual(States(plain), States(responsive));
     }
 
@@ -109,29 +109,29 @@ public class BitStepperTests : BunitTestContext
     {
         var com = Render(currentIndex: 2);
 
-        CollectionAssert.AreEqual(new[] { "bit-stp-cmp", "bit-stp-cmp", "bit-stp-cur", "bit-stp-upc" }, States(com));
+        CollectionAssert.AreEqual(new[] { "bit-str-cmp", "bit-str-cmp", "bit-str-cur", "bit-str-upc" }, States(com));
 
-        var buttons = com.FindAll(".bit-stp-btn");
+        var buttons = com.FindAll(".bit-str-btn");
 
         // The current step says so; the completed ones say so in words, after their text.
         Assert.AreEqual("step", buttons[2].GetAttribute("aria-current"));
         Assert.AreEqual(1, com.FindAll("[aria-current]").Count);
-        Assert.AreEqual("Completed", buttons[0].QuerySelector(".bit-stp-sts")!.TextContent);
-        Assert.IsNull(buttons[2].QuerySelector(".bit-stp-sts"));
-        Assert.IsNull(buttons[3].QuerySelector(".bit-stp-sts"));
+        Assert.AreEqual("Completed", buttons[0].QuerySelector(".bit-str-sts")!.TextContent);
+        Assert.IsNull(buttons[2].QuerySelector(".bit-str-sts"));
+        Assert.IsNull(buttons[3].QuerySelector(".bit-str-sts"));
 
         // A completed step shows the check mark, the others their number.
-        Assert.IsTrue(buttons[0].QuerySelector(".bit-stp-ico")!.ClassList.Contains("bit-icon--CheckMark"));
-        Assert.AreEqual("3", buttons[2].QuerySelector(".bit-stp-num")!.TextContent);
-        Assert.AreEqual("4", buttons[3].QuerySelector(".bit-stp-num")!.TextContent);
+        Assert.IsTrue(buttons[0].QuerySelector(".bit-str-ico")!.ClassList.Contains("bit-icon--CheckMark"));
+        Assert.AreEqual("3", buttons[2].QuerySelector(".bit-str-num")!.TextContent);
+        Assert.AreEqual("4", buttons[3].QuerySelector(".bit-str-num")!.TextContent);
 
         // The indicator is drawn, not read.
-        Assert.IsTrue(com.FindAll(".bit-stp-ind").All(i => i.GetAttribute("aria-hidden") == "true"));
+        Assert.IsTrue(com.FindAll(".bit-str-ind").All(i => i.GetAttribute("aria-hidden") == "true"));
     }
 
     [TestMethod]
-    [DataRow(4, new[] { "bit-stp-cmp", "bit-stp-cmp", "bit-stp-cmp", "bit-stp-cmp" })]
-    [DataRow(-1, new[] { "bit-stp-upc", "bit-stp-upc", "bit-stp-upc", "bit-stp-upc" })]
+    [DataRow(4, new[] { "bit-str-cmp", "bit-str-cmp", "bit-str-cmp", "bit-str-cmp" })]
+    [DataRow(-1, new[] { "bit-str-upc", "bit-str-upc", "bit-str-upc", "bit-str-upc" })]
     public void BitStepperShouldShowEveryStepDoneOrNoneStartedOutsideTheSteps(int currentIndex, string[] expected)
     {
         var com = Render(currentIndex: currentIndex);
@@ -149,12 +149,12 @@ public class BitStepperTests : BunitTestContext
 
         var com = Render(items, currentIndex: 1);
 
-        CollectionAssert.AreEqual(new[] { "bit-stp-err", "bit-stp-err", "bit-stp-upc", "bit-stp-upc" }, States(com));
+        CollectionAssert.AreEqual(new[] { "bit-str-err", "bit-str-err", "bit-str-upc", "bit-str-upc" }, States(com));
 
-        var buttons = com.FindAll(".bit-stp-btn");
+        var buttons = com.FindAll(".bit-str-btn");
 
-        Assert.IsTrue(buttons[0].QuerySelector(".bit-stp-ico")!.ClassList.Contains("bit-icon--ErrorBadge"));
-        Assert.AreEqual("Error", buttons[0].QuerySelector(".bit-stp-sts")!.TextContent);
+        Assert.IsTrue(buttons[0].QuerySelector(".bit-str-ico")!.ClassList.Contains("bit-icon--ErrorBadge"));
+        Assert.AreEqual("Error", buttons[0].QuerySelector(".bit-str-sts")!.TextContent);
 
         // A step in error is still the current one when it is where the process is.
         Assert.AreEqual("step", buttons[1].GetAttribute("aria-current"));
@@ -171,13 +171,13 @@ public class BitStepperTests : BunitTestContext
 
         var com = Render(items, currentIndex: 1);
 
-        var buttons = com.FindAll(".bit-stp-btn");
+        var buttons = com.FindAll(".bit-str-btn");
 
         // A completed step shows the completed icon over its own.
-        Assert.IsTrue(buttons[0].QuerySelector(".bit-stp-ico")!.ClassList.Contains("bit-icon--CheckMark"));
-        Assert.IsTrue(buttons[2].QuerySelector(".bit-stp-ico")!.ClassList.Contains("bit-icon--Money"));
-        Assert.IsTrue(buttons[3].QuerySelector(".bit-stp-ico")!.ClassList.Contains("fa-star"));
-        Assert.IsNull(buttons[2].QuerySelector(".bit-stp-num"));
+        Assert.IsTrue(buttons[0].QuerySelector(".bit-str-ico")!.ClassList.Contains("bit-icon--CheckMark"));
+        Assert.IsTrue(buttons[2].QuerySelector(".bit-str-ico")!.ClassList.Contains("bit-icon--Money"));
+        Assert.IsTrue(buttons[3].QuerySelector(".bit-str-ico")!.ClassList.Contains("fa-star"));
+        Assert.IsNull(buttons[2].QuerySelector(".bit-str-num"));
     }
 
     [TestMethod]
@@ -194,7 +194,7 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.ErrorIcon, BitIconInfo.Fa("solid xmark"));
         });
 
-        var icons = com.FindAll(".bit-stp-ico");
+        var icons = com.FindAll(".bit-str-ico");
 
         Assert.IsTrue(icons[0].ClassList.Contains("bit-icon--Accept"));
         Assert.IsTrue(icons[1].ClassList.Contains("fa-xmark"));
@@ -220,17 +220,17 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.OnItemClick, (BitStepperItem item) => itemClicks.Add(item.Text));
         });
 
-        com.FindAll(".bit-stp-btn")[2].Click();
+        com.FindAll(".bit-str-btn")[2].Click();
 
         Assert.AreEqual(2, com.Instance.CurrentIndex);
         CollectionAssert.AreEqual(new[] { 2 }, boundChanges);
         CollectionAssert.AreEqual(new[] { 2 }, changes);
         CollectionAssert.AreEqual(new[] { "Payment" }, itemClicks);
         CollectionAssert.AreEqual(new[] { "Payment" }, ownClicks);
-        CollectionAssert.AreEqual(new[] { "bit-stp-cmp", "bit-stp-cmp", "bit-stp-cur", "bit-stp-upc" }, States(com));
+        CollectionAssert.AreEqual(new[] { "bit-str-cmp", "bit-str-cmp", "bit-str-cur", "bit-str-upc" }, States(com));
 
         // The current step is still a click, but goes nowhere.
-        com.FindAll(".bit-stp-btn")[2].Click();
+        com.FindAll(".bit-str-btn")[2].Click();
 
         CollectionAssert.AreEqual(new[] { "Payment", "Payment" }, itemClicks);
         CollectionAssert.AreEqual(new[] { 2 }, changes);
@@ -248,12 +248,12 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.OnChange, (int index) => changes.Add(index));
         });
 
-        com.FindAll(".bit-stp-btn")[3].Click();
+        com.FindAll(".bit-str-btn")[3].Click();
 
         // The page holds the index, and decides; the stepper stays where it was put.
         CollectionAssert.AreEqual(new[] { 3 }, changes);
         Assert.AreEqual(0, com.Instance.CurrentIndex);
-        Assert.AreEqual("step", com.FindAll(".bit-stp-btn")[0].GetAttribute("aria-current"));
+        Assert.AreEqual("step", com.FindAll(".bit-str-btn")[0].GetAttribute("aria-current"));
     }
 
     [TestMethod]
@@ -269,18 +269,18 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.OnChange, (int index) => changes.Add(index));
         });
 
-        var steps = com.FindAll("li.bit-stp-stp");
+        var steps = com.FindAll("li.bit-str-stp");
 
         // The steps ahead are no controls at all: there is nothing to press there yet.
-        Assert.AreEqual("BUTTON", steps[0].QuerySelector(".bit-stp-btn")!.TagName);
-        Assert.AreEqual("BUTTON", steps[1].QuerySelector(".bit-stp-btn")!.TagName);
-        Assert.AreEqual("DIV", steps[2].QuerySelector(".bit-stp-btn")!.TagName);
-        Assert.AreEqual("DIV", steps[3].QuerySelector(".bit-stp-btn")!.TagName);
+        Assert.AreEqual("BUTTON", steps[0].QuerySelector(".bit-str-btn")!.TagName);
+        Assert.AreEqual("BUTTON", steps[1].QuerySelector(".bit-str-btn")!.TagName);
+        Assert.AreEqual("DIV", steps[2].QuerySelector(".bit-str-btn")!.TagName);
+        Assert.AreEqual("DIV", steps[3].QuerySelector(".bit-str-btn")!.TagName);
 
-        Assert.ThrowsExactly<MissingEventHandlerException>(() => steps[2].QuerySelector(".bit-stp-btn")!.Click());
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => steps[2].QuerySelector(".bit-str-btn")!.Click());
         Assert.AreEqual(0, changes.Count);
 
-        com.FindAll("button.bit-stp-btn")[0].Click();
+        com.FindAll("button.bit-str-btn")[0].Click();
         CollectionAssert.AreEqual(new[] { 0 }, changes);
     }
 
@@ -297,13 +297,13 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.OnChange, (int index) => changes.Add(index));
         });
 
-        Assert.IsTrue(com.Find(".bit-stp").ClassList.Contains("bit-stp-rdo"));
+        Assert.IsTrue(com.Find(".bit-str").ClassList.Contains("bit-str-rdo"));
         Assert.AreEqual(0, com.FindAll("button").Count);
 
         // The current step still says so.
-        Assert.AreEqual("step", com.FindAll(".bit-stp-btn")[1].GetAttribute("aria-current"));
+        Assert.AreEqual("step", com.FindAll(".bit-str-btn")[1].GetAttribute("aria-current"));
 
-        Assert.ThrowsExactly<MissingEventHandlerException>(() => com.FindAll(".bit-stp-btn")[3].Click());
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => com.FindAll(".bit-str-btn")[3].Click());
         Assert.AreEqual(0, changes.Count);
     }
 
@@ -322,10 +322,10 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.OnChange, (int index) => changes.Add(index));
         });
 
-        var step = com.FindAll("li.bit-stp-stp")[2];
-        var button = step.QuerySelector("button.bit-stp-btn")!;
+        var step = com.FindAll("li.bit-str-stp")[2];
+        var button = step.QuerySelector("button.bit-str-btn")!;
 
-        Assert.IsTrue(step.ClassList.Contains("bit-stp-sdi"));
+        Assert.IsTrue(step.ClassList.Contains("bit-str-sdi"));
         Assert.IsTrue(button.HasAttribute("disabled"));
         Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
 
@@ -349,11 +349,11 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.OnChange, (int index) => changes.Add(index));
         });
 
-        Assert.IsTrue(com.Find(".bit-stp").ClassList.Contains("bit-dis"));
+        Assert.IsTrue(com.Find(".bit-str").ClassList.Contains("bit-dis"));
 
         // Every step is a disabled button, the ones a linear stepper keeps out of reach included: the whole stepper is
         // what is unavailable.
-        var buttons = com.FindAll("button.bit-stp-btn");
+        var buttons = com.FindAll("button.bit-str-btn");
         Assert.AreEqual(4, buttons.Count);
         Assert.IsTrue(buttons.All(b => b.HasAttribute("disabled") && b.GetAttribute("aria-disabled") == "true"));
 
@@ -370,7 +370,7 @@ public class BitStepperTests : BunitTestContext
 
         var com = Render(items);
 
-        var button = com.FindAll(".bit-stp-btn")[1];
+        var button = com.FindAll(".bit-str-btn")[1];
 
         Assert.AreEqual("Step 2: where to ship", button.GetAttribute("aria-label"));
         Assert.AreEqual("Shipping address", button.GetAttribute("title"));
@@ -388,7 +388,7 @@ public class BitStepperTests : BunitTestContext
 
             var com = Render(items, currentIndex: 3);
 
-            var states = com.FindAll(".bit-stp-sts").Select(s => s.TextContent).ToArray();
+            var states = com.FindAll(".bit-str-sts").Select(s => s.TextContent).ToArray();
 
             CollectionAssert.AreEqual(new[] { "انجام شده", "انجام شده", "خطا" }, states);
         }
@@ -436,8 +436,8 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.Styles, styles);
         });
 
-        var root = com.Find(".bit-stp");
-        var steps = com.FindAll("li.bit-stp-stp");
+        var root = com.Find(".bit-str");
+        var steps = com.FindAll("li.bit-str-stp");
 
         Assert.IsTrue(root.ClassList.Contains("c-root"));
         StringAssert.Contains(root.GetAttribute("style"), "color:red");
@@ -460,14 +460,14 @@ public class BitStepperTests : BunitTestContext
             Assert.AreEqual(style, part.GetAttribute("style"), selector);
         }
 
-        AssertPart(".bit-stp-btn", "c-btn", "padding:6px");
-        AssertPart(".bit-stp-ind", "c-ind", "padding:7px");
-        AssertPart(".bit-stp-ico", "c-ico", "padding:8px");
-        AssertPart(".bit-stp-num", "c-num", "padding:9px");
-        AssertPart(".bit-stp-lbl", "c-lbl", "padding:10px");
-        AssertPart(".bit-stp-txt", "c-txt", "padding:11px");
-        AssertPart(".bit-stp-dsc", "c-dsc", "padding:12px");
-        AssertPart(".bit-stp-con", "c-con", "padding:13px");
+        AssertPart(".bit-str-btn", "c-btn", "padding:6px");
+        AssertPart(".bit-str-ind", "c-ind", "padding:7px");
+        AssertPart(".bit-str-ico", "c-ico", "padding:8px");
+        AssertPart(".bit-str-num", "c-num", "padding:9px");
+        AssertPart(".bit-str-lbl", "c-lbl", "padding:10px");
+        AssertPart(".bit-str-txt", "c-txt", "padding:11px");
+        AssertPart(".bit-str-dsc", "c-dsc", "padding:12px");
+        AssertPart(".bit-str-con", "c-con", "padding:13px");
     }
 
     [TestMethod]
@@ -480,8 +480,8 @@ public class BitStepperTests : BunitTestContext
 
         com.Render(parameters => parameters.Add(p => p.Items, items));
 
-        CollectionAssert.AreEqual(new[] { "Account", "Address", "Done" }, com.FindAll(".bit-stp-txt").Select(t => t.TextContent).ToArray());
-        Assert.AreEqual(2, com.FindAll(".bit-stp-con").Count);
+        CollectionAssert.AreEqual(new[] { "Account", "Address", "Done" }, com.FindAll(".bit-str-txt").Select(t => t.TextContent).ToArray());
+        Assert.AreEqual(2, com.FindAll(".bit-str-con").Count);
     }
 
     [TestMethod]
@@ -490,7 +490,7 @@ public class BitStepperTests : BunitTestContext
         var com = Render(items: []);
 
         Assert.AreEqual(0, com.FindAll("li").Count);
-        Assert.IsNotNull(com.Find("ol.bit-stp"));
+        Assert.IsNotNull(com.Find("ol.bit-str"));
     }
 
     [TestMethod]
@@ -502,7 +502,7 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, "Checkout progress");
         });
 
-        Assert.AreEqual("Checkout progress", com.Find("ol.bit-stp").GetAttribute("aria-label"));
+        Assert.AreEqual("Checkout progress", com.Find("ol.bit-str").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -514,6 +514,6 @@ public class BitStepperTests : BunitTestContext
             parameters.Add(p => p.Dir, BitDir.Rtl);
         });
 
-        Assert.AreEqual("rtl", com.Find(".bit-stp").GetAttribute("dir"));
+        Assert.AreEqual("rtl", com.Find(".bit-str").GetAttribute("dir"));
     }
 }
