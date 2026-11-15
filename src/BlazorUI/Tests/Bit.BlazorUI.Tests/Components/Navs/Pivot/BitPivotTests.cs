@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
@@ -1312,11 +1313,93 @@ public class BitPivotTests : BunitTestContext
         component.Find(".bit-pvt-mnc").KeyDown("d");
         Assert.AreEqual($"{menuId}-1", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
 
-        component.Find(".bit-pvt-mnc").KeyDown("C");
+        // The keys typed in quick succession are one search string, so the menu is opened afresh for a new one.
+        component.Find(".bit-pvt-mnc").KeyDown("Escape");
+        component.Find(".bit-pvt-mor").Click();
+
+        component.Find(".bit-pvt-mnc").KeyDown("D");
+        Assert.AreEqual($"{menuId}-1", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
+
+        // A string no item starts with ("dx") leaves the menu where it is.
+        component.Find(".bit-pvt-mnc").KeyDown("x");
+        Assert.AreEqual($"{menuId}-1", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
+    }
+
+    // A menu of longer labels, folded behind the first tab.
+    private IRenderedComponent<BitPivot> RenderDessertOverflowPivot()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Menu);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "Home"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "Apple"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "Banana"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "Blueberry"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "Éclair"));
+        });
+
+        component.InvokeAsync(() => component.Instance.OnSetOverflowItems([1, 2, 3, 4]));
+
+        return component;
+    }
+
+    [TestMethod]
+    public void BitPivotOverflowMenuShouldSearchTheKeysTypedTogetherAsOneString()
+    {
+        var component = RenderDessertOverflowPivot();
+
+        component.Find(".bit-pvt-mor").Click();
+
+        var menuId = component.Find(".bit-pvt-mnc").GetAttribute("id");
+
+        component.Find(".bit-pvt-mnc").KeyDown("b");
+        Assert.AreEqual($"{menuId}-1", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
+
+        // "bl", not a search for "l" of its own (which nothing starts with).
+        component.Find(".bit-pvt-mnc").KeyDown("l");
+        Assert.AreEqual($"{menuId}-2", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
+    }
+
+    [TestMethod]
+    public void BitPivotOverflowMenuShouldFindAnAccentedLabelByItsPlainLettersWhereTheCultureFoldsThem()
+    {
+        var culture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+        try
+        {
+            var component = RenderDessertOverflowPivot();
+
+            component.Find(".bit-pvt-mor").Click();
+
+            var menuId = component.Find(".bit-pvt-mnc").GetAttribute("id");
+
+            // The accent is a mark on the letter in English, so the plain letter finds the item.
+            component.Find(".bit-pvt-mnc").KeyDown("e");
+            Assert.AreEqual($"{menuId}-3", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
+    }
+
+    [TestMethod]
+    public void BitPivotOverflowMenuShouldStartTheSearchOverWhenTheMenuIsOpenedAgain()
+    {
+        var component = RenderDessertOverflowPivot();
+
+        component.Find(".bit-pvt-mor").Click();
+
+        var menuId = component.Find(".bit-pvt-mnc").GetAttribute("id");
+
+        component.Find(".bit-pvt-mnc").KeyDown("b");
+        component.Find(".bit-pvt-mnc").KeyDown("Escape");
+        component.Find(".bit-pvt-mor").Click();
         Assert.AreEqual($"{menuId}-0", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
 
-        // A character no item starts with leaves the menu where it is.
-        component.Find(".bit-pvt-mnc").KeyDown("x");
+        // "l" on its own, which nothing starts with, rather than "bl" carried over from before.
+        component.Find(".bit-pvt-mnc").KeyDown("l");
         Assert.AreEqual($"{menuId}-0", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
     }
 

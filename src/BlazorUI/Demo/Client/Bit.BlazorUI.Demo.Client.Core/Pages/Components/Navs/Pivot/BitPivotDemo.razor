@@ -184,8 +184,10 @@
             <b>OverflowBehavior</b> decides what happens to headers that do not fit: <b>Menu</b> folds them behind a More
             button, <b>Slide</b> adds previous/next buttons, <b>Scroll</b> shows a scroll bar, <b>Wrap</b> runs them onto
             more lines and <b>None</b> (default) lets them overflow. A tab selected from the keyboard or by key is scrolled
-            into view; the More menu takes the arrow, Home/End and first-letter keys. <b>AutoHideSlideButtons</b> hides the
-            slide buttons while everything fits.
+            into view; the More menu takes the arrow and Home/End keys, and typing jumps to the item that starts with what
+            was typed (the keys typed within a second of each other are one search string, matched by the rules of the
+            current culture, which ignore case and the accents that culture treats as marks on a letter).
+            <b>AutoHideSlideButtons</b> hides the slide buttons while everything fits.
         </div>
         <br />
         <div>Menu:</div>
