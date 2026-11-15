@@ -185,6 +185,11 @@ public class WorkbenchProgressDocumentTests
 
         Assert.AreEqual((WorkbenchProgressAskKind.Secret, new WorkbenchProgressSecret(WorkbenchProgressSecretTo.UserSecrets, "TestAccount:Password", null, "src/Server/MyApp.Server.Web")), (Task().Asks[0].Kind, Task().Asks[0].Secret));
         Assert.AreEqual("user-secrets", WorkbenchProgressDocument.SecretToName(WorkbenchProgressSecretTo.UserSecrets));
+
+        // Where a secret goes, sent while the question was of another kind, is checked once it becomes a secret question.
+        Create(Update("Sign in", asks: [new("account", "Which account?", null, "text", null, null, Secret: new("user-secrets", "TestAccount:Password", null, null))]), "t2");
+
+        Assert.Contains("the project whose user secrets take it", WorkbenchProgressDocument.Check(Update(asks: [new("account", null, null, "secret", null, null)]), Task("t2"))!);
     }
 
     [TestMethod]

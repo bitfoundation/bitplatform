@@ -220,23 +220,26 @@ public static partial class WorkbenchProgressDocument
         if (SecretAskId().IsMatch(ask.Id.Trim()) is false)
             return $"The secret question \"{ask.Id}\" needs an id of letters, digits, - and _.";
 
-        if (ask.Secret is null)
-            return asked?.Secret is null ? $"The secret question \"{ask.Id}\" needs a secret saying where it goes: to github or user-secrets, with its name, or to file." : null;
+        // What the question already says is checked too, as it may have come while the question was of another kind.
+        var secret = ask.Secret ?? (asked?.Secret is { } kept ? new WorkbenchProgressSecretUpdate(SecretToName(kept.To), kept.Name, kept.Environment, kept.Project) : null);
 
-        if (ParseSecretTo(ask.Secret.To) is not { } target)
+        if (secret is null)
+            return $"The secret question \"{ask.Id}\" needs a secret saying where it goes: to github or user-secrets, with its name, or to file.";
+
+        if (ParseSecretTo(secret.To) is not { } target)
             return $"The secret of the question \"{ask.Id}\" goes to none of github, user-secrets or file.";
 
-        if (target is WorkbenchProgressSecretTo.UserSecrets && (ask.Secret.Name is not { } key || UserSecretName().IsMatch(key) is false))
+        if (target is WorkbenchProgressSecretTo.UserSecrets && (secret.Name is not { } key || UserSecretName().IsMatch(key) is false))
             return $"The secret of the question \"{ask.Id}\" needs a configuration key as its name, like TestAccount:Password: letters, digits, _, ., : and -.";
 
-        if (target is WorkbenchProgressSecretTo.UserSecrets && (ask.Secret.Project is not { } project || ProjectPath().IsMatch(project.Trim()) is false))
+        if (target is WorkbenchProgressSecretTo.UserSecrets && (secret.Project is not { } project || ProjectPath().IsMatch(project.Trim()) is false))
             return $"The secret of the question \"{ask.Id}\" needs the project whose user secrets take it, as a path in the repository, like src/Server/MyApp.Server.Web.";
 
         if (target is WorkbenchProgressSecretTo.GitHub
-            && (ask.Secret.Name is not { } name || GitHubSecretName().IsMatch(name) is false || name.StartsWith("GITHUB_", StringComparison.OrdinalIgnoreCase)))
+            && (secret.Name is not { } name || GitHubSecretName().IsMatch(name) is false || name.StartsWith("GITHUB_", StringComparison.OrdinalIgnoreCase)))
             return $"The secret of the question \"{ask.Id}\" needs a GitHub secret's name: letters, digits and _, starting with neither a digit nor GITHUB_.";
 
-        if (target is WorkbenchProgressSecretTo.GitHub && ask.Secret.Environment is { } environment && GitHubEnvironment().IsMatch(environment) is false)
+        if (target is WorkbenchProgressSecretTo.GitHub && secret.Environment is { } environment && GitHubEnvironment().IsMatch(environment) is false)
             return $"The environment \"{environment}\" of the question \"{ask.Id}\" isn't a GitHub environment's name.";
 
         return null;
