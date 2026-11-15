@@ -117,3 +117,14 @@ test('order of the S4 values is numeric, not lexicographic', () => {
 
     expect(ids).toEqual([4, 8, 1, 6, 5, 10, 3, 2, 7, 9]);
 });
+
+test('an exponent, as SQLite writes a REAL read as text, is parsed as .NET parses it', () => {
+    expect(parse('1.0e-05').toSqlText()).toBe('0.00001');
+    expect(parse('1e-5').compareTo(parse('0.1'))).toBe(-1);
+    expect(parse('1.5E+2').add(parse('1')).toSqlText()).toBe('151.0');
+    expect(parse('-2.5e1').toSqlText()).toBe('-25.0');
+    expect(parse('0e3').toSqlText()).toBe('0.0');
+    expect(() => parse('1e')).toThrow();
+    expect(() => parse('e5')).toThrow();
+    expect(() => parse('1e5.5')).toThrow();
+});

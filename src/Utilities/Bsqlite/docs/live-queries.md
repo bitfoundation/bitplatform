@@ -15,7 +15,7 @@ live.RefreshFailed += (_, ex) => logger.LogWarning(ex, "Live query failed");
 var rows = await live.RefreshAsync();   // first run; later runs are automatic
 ```
 
-`AsLiveQuery()` resolves the connection from the query's context and the tables from `ToQueryString()`. Pass a `BsqliteConnection` explicitly when the query's provider does not expose its context.
+`AsLiveQuery()` resolves the connection from the query's context and the tables from `ToQueryString()`. A write is reported by the base tables it changed, so a query that reads something the model does not map as a table - a view (`ToView`), a query (`ToSqlQuery`), a table function - cannot be matched against it: such a query re-runs after every write instead. Pass a `BsqliteConnection` explicitly when the query's provider does not expose its context.
 
 Each run of the query happens in a context of its own - same type, same options - disposed once the rows are read. A refresh can arrive at any moment another tab writes, so on the application's context it would collide with whatever the application starts there next (EF allows one operation per context at a time); and a tracking query re-run on a context that already tracks its rows gets the tracked instances back with their old values, so updates would never show. The rows a live query returns are therefore current, and are not tracked by the application's context: to change one, load or attach it in the context that saves it.
 

@@ -217,6 +217,13 @@ export async function importDatabase(databaseName: string, contents: Uint8Array 
     const name = requireName(databaseName);
     const path = pathOf(name);
     const bytes = contents instanceof Uint8Array ? contents : new Uint8Array(contents ?? []);
+    // The blocks below are PAGE_SIZE bytes, and the VFS finds a page by the nearest block start at or below it:
+    // a database of smaller pages would be cut up wrong and turn up malformed after its first write. The .NET
+    // side refuses it first (BsqliteIndexedDbStorageAdmin.ThrowIfPageSizeUnsupported); this is for any other caller.
+    const pageSize = sqlitePageSize(bytes);
+    if (pageSize !== 0 && pageSize !== PAGE_SIZE) {
+        throw new Error(`The database has ${pageSize}-byte pages, and the indexeddb backend keeps only databases of ${PAGE_SIZE}-byte pages.`);
+    }
     const db = await openDatabase();
 
     try {
@@ -241,6 +248,21 @@ export async function importDatabase(databaseName: string, contents: Uint8Array 
 
 function unavailable(reason: string, environment: Record<string, string>): ProbeResult {
     return { available: false, reason, quotaBytes: null, usageBytes: null, environment };
+}
+
+// The page size a SQLite file image's header names, or 0 when the bytes are not a SQLite database.
+function sqlitePageSize(bytes: Uint8Array): number {
+    const magic = 'SQLite format 3\0';
+    if (bytes.byteLength < 100) {
+        return 0;
+    }
+    for (let i = 0; i < magic.length; i++) {
+        if (bytes[i] !== magic.charCodeAt(i)) {
+            return 0;
+        }
+    }
+    const size = (bytes[16] << 8) | bytes[17];
+    return size === 1 ? 65536 : size;
 }
 
 function requireName(databaseName: unknown): string {

@@ -48,8 +48,10 @@ export class Decimal {
     }
 
     /**
-     * Parses invariant-culture decimal text. Leading and trailing whitespace and a leading sign are
-     * accepted; thousands separators and exponents are not - EF never writes those.
+     * Parses invariant-culture decimal text. Leading and trailing whitespace, a leading sign and an
+     * exponent are accepted; thousands separators are not. EF never writes an exponent, but SQLite does:
+     * a REAL in a decimal column - stored by raw SQL, or arriving as an argument - reads as text such
+     * as `1.0e-05`, which Microsoft.Data.Sqlite's functions accept as well.
      */
     static parse(text: string): Decimal {
         if (typeof text !== 'string') {
@@ -68,7 +70,19 @@ export class Decimal {
             body = body.slice(1);
         }
 
-        if (!body || /[^0-9.]/.test(body)) {
+        let exponent = 0;
+        const e = body.search(/[eE]/);
+        if (e !== -1) {
+            const power = body.slice(e + 1);
+            if (!/^[+-]?\d{1,4}$/.test(power)) {
+                throw new DecimalFormatError(text);
+            }
+
+            exponent = Number(power);
+            body = body.slice(0, e);
+        }
+
+        if (!body || /[^0-9.]/.test(body) || body === '.') {
             throw new DecimalFormatError(text);
         }
 
@@ -77,8 +91,13 @@ export class Decimal {
             throw new DecimalFormatError(text);
         }
 
-        const digits = (dot === -1 ? body : body.slice(0, dot) + body.slice(dot + 1)).replace(/^0+(?=\d)/, '');
-        const scale = dot === -1 ? 0 : body.length - dot - 1;
+        let digits = (dot === -1 ? body : body.slice(0, dot) + body.slice(dot + 1)).replace(/^0+(?=\d)/, '');
+        let scale = (dot === -1 ? 0 : body.length - dot - 1) - exponent;
+        if (scale < 0) {
+            // 1.5e3: the exponent moves the point right, past the digits there are.
+            digits = digits === '0' ? digits : digits + '0'.repeat(-scale);
+            scale = 0;
+        }
 
         if (scale > MAX_SCALE) {
             throw new DecimalFormatError(text);

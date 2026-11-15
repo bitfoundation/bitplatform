@@ -311,6 +311,19 @@ public sealed class FunctionsTests : BsqliteTest
         AssertJson.AreEqual("[[null, null]]", result.Rows);
     }
 
+    /// <summary>
+    /// A REAL in a decimal column - written by raw SQL, or passed as an argument - reads as text in exponent form
+    /// (<c>1.0e-05</c>), which the functions used to refuse as "not a decimal".
+    /// </summary>
+    [TestMethod]
+    public async Task Decimal_functions_read_a_value_in_exponent_form()
+    {
+        await OpenSeededAsync();
+
+        var result = await QueryAsync(Page, "SELECT ef_compare(1e-5, '0.1'), ef_add('1.5E+2', '1'), ef_compare('1.0e-05', '0.00001')");
+        AssertJson.AreEqual("""[[-1, "151.0", 0]]""", result.Rows);
+    }
+
     // The file's beforeEach: every test starts from the seeded data set.
     private async Task OpenSeededAsync()
     {

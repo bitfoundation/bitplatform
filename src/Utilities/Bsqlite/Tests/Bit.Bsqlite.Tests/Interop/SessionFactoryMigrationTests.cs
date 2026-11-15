@@ -59,10 +59,40 @@ public sealed class SessionFactoryMigrationTests
         Assert.IsFalse(session.Resolution.WasDecidedByExistingData);
     }
 
+    /// <summary>
+    /// Two tabs opening a database that moves on open used to run side by side - both exporting the source and
+    /// importing it over each other on the target - with nothing between them. The open now runs under a lock on
+    /// the database's name, taken before the binding is read and let go once the database is open.
+    /// </summary>
+    [TestMethod]
+    public async Task AnOpenThatMayMigrate_RunsUnderTheOpenLock_FromResolvingToOpening()
+    {
+        var opfs = new PersistentProvider("opfs");
+        var cacheStorage = new PersistentProvider("cache-storage");
+        await cacheStorage.Admin.ImportAsync(Database, Image, Ct);
+        var store = new BsqliteInMemoryStorageBindingStore();
+        var transports = new LockingTransportFactory(() => store.GetProviderNameAsync(Database, Ct).AsTask());
+
+        await using (var session = await Factory(store, transports, opfs, cacheStorage).OpenAsync(Database, Ct))
+        {
+            Assert.AreEqual("opfs", session.Resolution.Provider.Name);
+        }
+
+        AssertSequence.Equal(
+            [$"lock {Database}", "binding when locked: ", "open", "release, binding: opfs"],
+            transports.Events);
+    }
+
     private static BsqliteSessionFactory Factory(IBsqliteStorageBindingStore store, params IBsqliteStorageProvider[] providers)
+        => Factory(store, new InProcessTransportFactory(), providers);
+
+    private static BsqliteSessionFactory Factory(
+        IBsqliteStorageBindingStore store,
+        IBsqliteTransportFactory transports,
+        params IBsqliteStorageProvider[] providers)
         => new(
             new BsqliteStorageProviderResolver(providers, store),
-            new InProcessTransportFactory(),
+            transports,
             BsqliteStorageSelectionBuilder.Create(s => s
                 .Prefer("opfs")
                 .Fallback("indexeddb")
@@ -94,5 +124,31 @@ public sealed class SessionFactoryMigrationTests
     private sealed class InProcessTransportFactory : IBsqliteTransportFactory
     {
         public IBsqliteTransport Create(IBsqliteStorageProvider provider) => new BsqliteInProcessTransport();
+    }
+
+    /// <summary>Records when the open lock is taken and let go, and what the binding said at each point.</summary>
+    private sealed class LockingTransportFactory(Func<Task<string?>> binding) : IBsqliteTransportFactory, IBsqliteOpenLock
+    {
+        private readonly Func<Task<string?>> _binding = binding;
+
+        public List<string> Events { get; } = [];
+
+        public IBsqliteTransport Create(IBsqliteStorageProvider provider)
+        {
+            Events.Add("open");
+            return new BsqliteInProcessTransport();
+        }
+
+        public async Task<IAsyncDisposable?> AcquireOpenLockAsync(string databaseName, CancellationToken cancellationToken)
+        {
+            Events.Add($"lock {databaseName}");
+            Events.Add($"binding when locked: {await _binding()}");
+            return new Release(this);
+        }
+
+        private sealed class Release(LockingTransportFactory owner) : IAsyncDisposable
+        {
+            public async ValueTask DisposeAsync() => owner.Events.Add($"release, binding: {await owner._binding()}");
+        }
     }
 }

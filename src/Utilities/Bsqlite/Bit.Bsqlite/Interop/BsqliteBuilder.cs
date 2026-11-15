@@ -131,6 +131,12 @@ public sealed class BsqliteBuilder
     public BsqliteBuilder AddDatabase(string databaseName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
+        if (BsqliteHost.Current is BsqliteHostKind.Browser)
+        {
+            // Refused here, at startup, rather than on the first open; a Blazor Hybrid app keeps files, which
+            // take such names, and a server that prerenders opens nothing.
+            BsqliteDatabaseNames.ThrowIfInvalidInBrowser(databaseName, nameof(databaseName));
+        }
 
         if (Services.Any(service => service.ServiceType == typeof(BsqliteDatabaseRegistration)
             && service.ImplementationInstance is BsqliteDatabaseRegistration { DatabaseName: var registered }

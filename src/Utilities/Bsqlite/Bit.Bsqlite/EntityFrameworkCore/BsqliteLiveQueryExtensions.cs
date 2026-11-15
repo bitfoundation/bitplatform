@@ -45,13 +45,12 @@ public static class BsqliteLiveQueryExtensions
         ArgumentNullException.ThrowIfNull(query);
         ArgumentNullException.ThrowIfNull(connection);
 
-        var tables = BsqliteTableNames.Extract(query.ToQueryString());
-
         // The write notification arrives while SaveChanges is still consuming its result, inside the
         // transaction it wrote in. The gate defers the re-read until the save has finished, so it
         // never reads rows that may yet roll back. Null only for a query whose provider hides its
         // context, in which case the query also runs as given - there is no context to copy.
         var context = DbContextOf(query);
+        var tables = TablesOf(query.ToQueryString(), context);
         var gate = context is null ? null : new BsqliteSaveChangesGate(context);
         var contexts = context is null ? null : new RefreshContexts(context);
 
@@ -79,6 +78,30 @@ public static class BsqliteLiveQueryExtensions
             },
             tables,
             onDispose: gate is null ? null : gate.Dispose);
+    }
+
+    /// <summary>
+    /// The tables a write to which re-runs the query, or none - every write re-runs it.
+    /// </summary>
+    /// <remarks>
+    /// A write is reported by the tables it changed, as SQLite's update hook names them: base tables. A name the
+    /// query reads that is no table of the context's model - a view (<c>ToView</c>), a query
+    /// (<c>ToSqlQuery</c>), a table function - is never among them, so a query reading one would never
+    /// re-run. What such a name reads is not known here, so the query re-runs on every write instead.
+    /// </remarks>
+    private static IReadOnlySet<string> TablesOf(string sql, DbContext? context)
+    {
+        var tables = BsqliteTableNames.Extract(sql);
+        if (context is null || tables.Count == 0)
+        {
+            return tables;
+        }
+
+        var mapped = context.Model.GetRelationalModel().Tables
+            .Select(table => table.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return tables.All(mapped.Contains) ? tables : new HashSet<string>();
     }
 
     /// <summary>

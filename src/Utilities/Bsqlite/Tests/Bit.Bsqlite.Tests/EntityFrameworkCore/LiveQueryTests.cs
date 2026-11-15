@@ -173,4 +173,60 @@ public sealed class LiveQueryTests
         await using var live = ctx.Products.OrderBy(p => p.Id).AsLiveQuery();
         Assert.IsEmpty(await live.RefreshAsync(Ct));
     }
+
+    /// <summary>
+    /// A write is reported by the base table it changed; a query over a view names only the view, so it never
+    /// matched a notification and the live query never re-ran.
+    /// </summary>
+    [TestMethod]
+    public async Task AsLiveQuery_OverAView_RerunsWhenATableBehindItIsWritten()
+    {
+        var transport = new BsqliteInProcessTransport();
+        await using var connection = new BsqliteConnection(transport, "live-view.db");
+        await connection.OpenAsync(Ct);
+        await using var ctx = new LineContext(new DbContextOptionsBuilder<LineContext>()
+            .UseBitBsqlite(connection)
+            .Options);
+
+        await ctx.Database.EnsureCreatedAsync(Ct);
+        await ctx.Database.ExecuteSqlRawAsync("CREATE VIEW \"OpenLines\" AS SELECT \"Id\", \"Name\" FROM \"Lines\"", Ct);
+
+        await using var live = ctx.OpenLines.AsLiveQuery(connection);
+        Assert.IsEmpty(await live.RefreshAsync(Ct));
+
+        ctx.Lines.Add(new Line { Name = "New" });
+        await ctx.SaveChangesAsync(Ct);
+
+        var deadline = DateTime.UtcNow.AddSeconds(2);
+        while ((live.Current?.Count ?? 0) == 0 && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(20, Ct);
+        }
+
+        Assert.AreEqual("New", Assert.ContainsSingle(live.Current!).Name);
+    }
+
+    public sealed class Line
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = "";
+    }
+
+    public sealed class OpenLine
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = "";
+    }
+
+    public sealed class LineContext(DbContextOptions<LineContext> options) : DbContext(options)
+    {
+        public DbSet<Line> Lines => Set<Line>();
+
+        public DbSet<OpenLine> OpenLines => Set<OpenLine>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+            modelBuilder.Entity<OpenLine>().HasNoKey().ToView("OpenLines");
+    }
 }

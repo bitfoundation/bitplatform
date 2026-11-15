@@ -91,6 +91,14 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
 
     private async Task<BsqliteSession> OpenCoreAsync(string databaseName, CancellationToken cancellationToken)
     {
+        // An open that may move the database runs one tab at a time, from resolving where it lives to opening
+        // it: two tabs migrating at once would both copy it, one import landing over the other's, and a tab
+        // that resolved before another flipped the binding would open the copy that is about to be deleted.
+        await using var openLock = _selection.MigrationMode is BsqliteStorageMigrationMode.AutomaticOnOpen
+            && _transports is IBsqliteOpenLock locks
+                ? await locks.AcquireOpenLockAsync(databaseName, cancellationToken).ConfigureAwait(false)
+                : null;
+
         var resolution = await _resolver
             .ResolveAsync(databaseName, _selection, cancellationToken)
             .ConfigureAwait(false);

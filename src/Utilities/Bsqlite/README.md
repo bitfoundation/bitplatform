@@ -68,7 +68,7 @@ apart: a Blazor Web App of its own whose browser half downloads Bit.Bsqlite and 
 - **Live queries.** A write re-runs any live query that reads the table, including writes from another tab. Change
   tracking comes from the engine's update hook, so triggers and cascades count too.
 - **Complete ADO.NET.** Commands, batches (`DbBatch`), transactions with savepoints and rollback-on-dispose,
-  multi-result readers, typed exceptions by SQLite result code, and values read the way Microsoft.Data.Sqlite reads them.
+  multi-result readers over a batch (a single command returns the rows of its first query - see *Limits*), typed exceptions by SQLite result code, and values read the way Microsoft.Data.Sqlite reads them.
 - **Backup, restore, delete.** `Database.ExportAsync()` snapshots the open database as an ordinary SQLite file;
   `RestoreAsync` checks a file - a backup, or a WAL-mode database from a server - before it replaces the database, and
   verifies the copy. A WAL-mode file has to be a whole snapshot on its own - taken with SQLite's backup API or
@@ -79,7 +79,7 @@ apart: a Blazor Web App of its own whose browser half downloads Bit.Bsqlite and 
 
 | Package | Role |
 | --- | --- |
-| `Bit.Bsqlite` | `AddBitBsqliteServices`, `AddBitBsqliteDbContext`, `UseBitBsqlite(connection)`, ADO.NET and live queries, the worker transport, storage selection and migration, the storage provider contract, the storage backends, the browser assets (engine, worker, host, VFSes) under `_content/Bit.Bsqlite`, and the native transport and SQLite engine Blazor Hybrid apps run on |
+| `Bit.Bsqlite` | `AddBitBsqliteServices`, `AddBitBsqliteDbContext`, `UseBitBsqlite(connection)`, ADO.NET and live queries, the worker transport, storage selection and migration, the storage provider contract, the storage backends, the browser assets (engine, worker, host, VFSes) under `_content/Bit.Bsqlite`, and the native transport Blazor Hybrid apps run on - the native SQLite engine itself comes from the SQLitePCLRaw bundle the app adds (`SQLitePCLRaw.bundle_e_sqlite3`) |
 | `Bit.Bsqlite.Testing` | An in-process transport for browser-free unit tests, plus the MSTest conformance kit every storage provider must pass |
 
 The storage backends, each in its own namespace and each registered with `AddStorageProvider<T>()`:

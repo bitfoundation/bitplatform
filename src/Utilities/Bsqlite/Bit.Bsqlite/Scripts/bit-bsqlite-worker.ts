@@ -88,6 +88,7 @@ interface Session {
     stmtReadonly: (stmt: number) => number;
     lastInsertRowId: (db: number) => bigint;
     bindZeroBlob: (stmt: number, index: number, length: number) => number;
+    bindText: (stmt: number, index: number, value: string) => number;
 }
 
 type ExtensionRegistration = (handles: { module: SQLiteModule; sqlite3: SQLiteAPI; db: number; databaseName: string }) => unknown;
@@ -258,6 +259,19 @@ async function open({ databaseName, requiredBuild, vfs, limits, foreignKeys, onO
 
     const stmtReadonly = module.cwrap('sqlite3_stmt_readonly', 'number', ['number']);
     const bindZeroBlob = module.cwrap('sqlite3_bind_zeroblob', 'number', ['number', 'number', 'number']);
+    const bindTextWithLength = module.cwrap('sqlite3_bind_text', 'number', ['number', 'number', 'number', 'number', 'number']);
+    const encoder = new TextEncoder();
+    const bindText = (stmt: number, index: number, value: string) => {
+        const bytes = encoder.encode(value);
+        const pointer = module._sqlite3_malloc(Math.max(bytes.byteLength, 1));
+        try {
+            module.HEAPU8.set(bytes, pointer);
+            // SQLITE_TRANSIENT (-1): SQLite copies the bytes before this returns, so they are freed right after.
+            return bindTextWithLength(stmt, index, pointer, bytes.byteLength, -1);
+        } finally {
+            module._sqlite3_free(pointer);
+        }
+    };
     const lastInsertRowId = (db: number) => {
         const lo32 = module.ccall('sqlite3_last_insert_rowid', 'number', ['number'], [db]);
         const hi32 = module.getTempRet0();
@@ -282,6 +296,7 @@ async function open({ databaseName, requiredBuild, vfs, limits, foreignKeys, onO
         stmtReadonly,
         lastInsertRowId,
         bindZeroBlob,
+        bindText,
     };
 
     // SQLite defaults foreign keys OFF, and Microsoft.Data.Sqlite turns them ON for every connection
@@ -982,6 +997,9 @@ function rejectUnsupportedSql(sql: unknown): void {
  * `sqlite3_malloc(0)`, which is a NULL pointer, and SQLite binds a blob at a NULL pointer as NULL - so
  * an empty `byte[]`, such as a row version not yet assigned, would fail a NOT NULL column it satisfies
  * everywhere else.
+ *
+ * A string holding a NUL is bound with its byte count: wa-sqlite's `bind_text` passes -1, which makes SQLite
+ * read it up to the first NUL, and 'a\0b' would be stored as 'a'.
  */
 function bind(session: Session, stmt: number, parameters: ReadonlyArray<{ name: string; type: number; value: unknown }>): void {
     const { sqlite3 } = session;
@@ -1010,6 +1028,15 @@ function bind(session: Session, stmt: number, parameters: ReadonlyArray<{ name: 
             const rc = session.bindZeroBlob(stmt, i, 0);
             if (rc !== SQLite.SQLITE_OK) {
                 throw new Error(`Binding an empty blob to parameter ${declared ?? `#${i}`} failed with SQLite result code ${rc}.`);
+            }
+
+            continue;
+        }
+
+        if (typeof value === 'string' && value.includes('\0')) {
+            const rc = session.bindText(stmt, i, value);
+            if (rc !== SQLite.SQLITE_OK) {
+                throw new Error(`Binding text to parameter ${declared ?? `#${i}`} failed with SQLite result code ${rc}.`);
             }
 
             continue;

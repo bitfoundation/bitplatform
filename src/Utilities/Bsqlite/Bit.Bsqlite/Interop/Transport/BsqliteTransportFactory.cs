@@ -28,7 +28,7 @@ internal sealed class BsqliteTransportFactory(
     BsqliteWorkerTransportDefaults defaults,
     BsqliteHostKind host,
     ILogger<BsqliteTransportFactory>? logger = null,
-    ILogger<BsqliteNativeTransport>? nativeTransportLogger = null) : IBsqliteTransportFactory
+    ILogger<BsqliteNativeTransport>? nativeTransportLogger = null) : IBsqliteTransportFactory, IBsqliteOpenLock
 {
     private readonly ILogger _logger = logger ?? NullLogger<BsqliteTransportFactory>.Instance;
     private IBsqliteTransportFactory? _workerTransports;
@@ -70,4 +70,13 @@ internal sealed class BsqliteTransportFactory(
 
         return (_workerTransports ??= workerTransports()).Create(provider);
     }
+
+    /// <summary>
+    /// The worker factory's lock in the browser, where the tabs that open one database have to take turns;
+    /// none elsewhere, where the database is a file of this process.
+    /// </summary>
+    public Task<IAsyncDisposable?> AcquireOpenLockAsync(string databaseName, CancellationToken cancellationToken) =>
+        host is BsqliteHostKind.Browser && (_workerTransports ??= workerTransports()) is IBsqliteOpenLock locks
+            ? locks.AcquireOpenLockAsync(databaseName, cancellationToken)
+            : Task.FromResult<IAsyncDisposable?>(null);
 }

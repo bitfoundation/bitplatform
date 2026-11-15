@@ -13,10 +13,73 @@ namespace Bit.Bsqlite.Interop;
 /// supplies the engine build, the VFS, and the capability limits.
 /// </remarks>
 public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTransportDefaults? defaults = null)
-    : IBsqliteTransportFactory
+    : IBsqliteTransportFactory, IBsqliteOpenLock
 {
     private readonly IJSRuntime _js = js ?? throw new ArgumentNullException(nameof(js));
     private readonly BsqliteWorkerTransportDefaults _defaults = defaults ?? new BsqliteWorkerTransportDefaults();
+    private int _nextLockId;
+
+    /// <summary>
+    /// A Web Lock on the database's name, taken through the host module without a worker: see
+    /// <see cref="IBsqliteOpenLock"/>.
+    /// </summary>
+    async Task<IAsyncDisposable?> IBsqliteOpenLock.AcquireOpenLockAsync(string databaseName, CancellationToken cancellationToken)
+    {
+        var module = await _js
+            .InvokeAsync<IJSObjectReference>("import", cancellationToken, _defaults.HostModuleUrl)
+            .ConfigureAwait(false);
+        var id = Interlocked.Increment(ref _nextLockId);
+        try
+        {
+            await module
+                .InvokeVoidAsync("acquireOpenLock", cancellationToken, $"bit-bsqlite:{databaseName}:open", id)
+                .ConfigureAwait(false);
+        }
+        catch
+        {
+            // Given up on here, but the request may still be queued - or granted by now - and a lock nobody
+            // releases keeps every other tab from opening the database until this one closes.
+            await ReleaseOpenLockAsync(module, id).ConfigureAwait(false);
+            await module.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
+
+        return new OpenLock(module, id);
+    }
+
+    private static async ValueTask ReleaseOpenLockAsync(IJSObjectReference module, int id)
+    {
+        try
+        {
+            await module.InvokeVoidAsync("releaseOpenLock", id).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is JSException or JSDisconnectedException or ObjectDisposedException)
+        {
+            // The page is going away, and the browser drops the lock with it.
+        }
+    }
+
+    private sealed class OpenLock(IJSObjectReference module, int id) : IAsyncDisposable
+    {
+        private int _released;
+
+        public async ValueTask DisposeAsync()
+        {
+            if (Interlocked.Exchange(ref _released, 1) != 0)
+            {
+                return;
+            }
+
+            await ReleaseOpenLockAsync(module, id).ConfigureAwait(false);
+            try
+            {
+                await module.DisposeAsync().ConfigureAwait(false);
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+    }
 
     /// <inheritdoc />
     public IBsqliteTransport Create(IBsqliteStorageProvider provider)

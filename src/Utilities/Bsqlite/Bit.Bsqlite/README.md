@@ -6,7 +6,9 @@ with the same registration. The same entities and the same migrations on the cli
 This package is everything you need: the EF Core integration, the ADO.NET surface with live queries,
 the worker transport, the storage provider contract, the storage backends - OPFS, IndexedDB, Cache
 Storage and in-memory - the browser assets (SQLite engine builds, worker host, VFSes) served
-under `_content/Bit.Bsqlite`, and the file system backend and native SQLite a Blazor Hybrid app runs on.
+under `_content/Bit.Bsqlite`, and the file system backend a Blazor Hybrid app runs on. The native SQLite engine a Blazor Hybrid
+app opens its files with is not in it: add `SQLitePCLRaw.bundle_e_sqlite3` (or the SQLitePCLRaw bundle the app
+already uses) to the Hybrid app's project.
 
 **Runtime:** .NET 10 and 11, each with its EF Core. **License:** MIT (bundles [wa-sqlite](https://github.com/rhashimoto/wa-sqlite), also MIT).
 
