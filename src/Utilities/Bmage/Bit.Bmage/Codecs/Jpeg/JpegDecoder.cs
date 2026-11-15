@@ -142,7 +142,7 @@ internal sealed class JpegDecoderCore
     private readonly HuffmanTable?[] _ac = new HuffmanTable?[4];
     private Component[] _components = [];
     private int _width, _height, _maxH, _maxV, _mcusPerLine, _mcusPerColumn, _restartInterval;
-    private bool _progressive, _frameSeen, _adobe, _jfif;
+    private bool _progressive, _frameSeen, _planesAllocated, _adobe, _jfif;
     private int _adobeTransform = -1;
     private int _eobRun;
 
@@ -276,15 +276,38 @@ internal sealed class JpegDecoderCore
             c.PlaneStride = c.PaddedBlocksPerLine * 8;
             var planeBytes = (long)c.PlaneStride * c.PaddedBlocksPerColumn * 8;
             if (planeBytes > int.MaxValue) throw new ImageLimitExceededException("JPEG component plane too large.");
-            c.Plane = new byte[planeBytes];
-            if (_progressive)
-            {
-                var coeffCount = (long)c.PaddedBlocksPerLine * c.PaddedBlocksPerColumn * 64;
-                if (coeffCount > int.MaxValue / 2) throw new ImageLimitExceededException("Progressive JPEG too large.");
-                c.Coeffs = new short[coeffCount];
-            }
+            if (_progressive && (long)c.PaddedBlocksPerLine * c.PaddedBlocksPerColumn * 64 > int.MaxValue / 2)
+                throw new ImageLimitExceededException("Progressive JPEG too large.");
         }
+        // The planes are allocated at the first scan (AllocatePlanes), once its data is known to be long enough for the
+        // frame: a header alone can declare a frame of hundreds of megabytes.
         _frameSeen = true;
+    }
+
+    /// <summary>
+    /// Allocates the component planes, and a progressive image's coefficients, for the first scan - unless that scan's
+    /// entropy-coded data is too short to code the blocks it covers. A sequential scan spends two bits a block at the
+    /// least (a DC code and an end of block), and a progressive image's first, DC, scan one. The decoder reads past the
+    /// end of the data as zeros, so without this a file of a kilobyte that declares 8192 x 8192 decoded to a gray image,
+    /// allocating half a gigabyte on the way.
+    /// </summary>
+    private void AllocatePlanes(Component[] scanComps, int ss)
+    {
+        if (_planesAllocated) return;
+
+        var blocks = scanComps.Length == 1
+            ? (long)scanComps[0].BlocksPerLine * scanComps[0].BlocksPerColumn
+            : (long)_mcusPerLine * _mcusPerColumn * scanComps.Sum(c => c.H * c.V);
+        var bitsPerBlock = !_progressive ? 2 : ss == 0 ? 1 : 0;
+        if ((long)(Data.Length - _pos) * 8 < blocks * bitsPerBlock)
+            throw new ImageDecodeException("Truncated JPEG: the image data is too short for the frame it declares.");
+
+        foreach (var c in _components)
+        {
+            c.Plane = new byte[(long)c.PlaneStride * c.PaddedBlocksPerColumn * 8];
+            if (_progressive) c.Coeffs = new short[(long)c.PaddedBlocksPerLine * c.PaddedBlocksPerColumn * 64];
+        }
+        _planesAllocated = true;
     }
 
     private void ReadQuantTables(ReadOnlySpan<byte> seg)
@@ -350,6 +373,7 @@ internal sealed class JpegDecoderCore
         int ss = seg[1 + n * 2], se = seg[2 + n * 2], ah = seg[3 + n * 2] >> 4, al = seg[3 + n * 2] & 15;
         if (!_progressive) { ss = 0; se = 63; ah = 0; al = 0; }
         else if (ss > se || se > 63 || (ss == 0 && se != 0) || al > 13) throw new ImageDecodeException("Invalid progressive scan parameters.");
+        AllocatePlanes(scanComps, ss);
 
         ResetBits();
         _eobRun = 0;

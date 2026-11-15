@@ -70,7 +70,10 @@
     <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.ZoomToFit">
         <button type="button" class="bmg-tool" title="@Context.Strings.ZoomOut" aria-label="@Context.Strings.ZoomOut"
                 disabled="@(!Context.HasImage)" @onclick="() => Context.SetZoom(Context.Zoom / 1.25)">−</button>
-        <button type="button" class="bmg-tool bmg-zoom-value" title="@Context.Strings.ZoomToFit" aria-label="@Context.Strings.ZoomToFit"
+        @* Named for the zoom it shows first and what pressing it does after, so the name a speech user hears and says
+           contains the readout on screen (WCAG 2.5.3, label in name). *@
+        <button type="button" class="bmg-tool bmg-zoom-value" title="@Context.Strings.ZoomToFit"
+                aria-label="@($"{Context.Strings.FormatPercent(Context.Zoom)}, {Context.Strings.ZoomToFit}")"
                 disabled="@(!Context.HasImage)" @onclick="Context.FitToWindow">
             @Context.Strings.FormatPercent(Context.Zoom)
         </button>

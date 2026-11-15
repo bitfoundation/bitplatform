@@ -5,6 +5,8 @@ using Bit.Bmage.Geometry;
 using Bit.Bmage.Interop;
 using Bit.Bmage.Memory;
 using Bit.Bmage.Metadata;
+using Bit.Bmage.Operations;
+using Bit.Bmage.Operations.Transforms;
 using Microsoft.JSInterop;
 
 namespace Bit.Bmage.Codecs.Browser;
@@ -125,7 +127,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
             try
             {
                 decoded.Metadata = ReadMetadata(data, format, options);
-                return decoded;
+                return AsStored(decoded, data, format, options, allocator, cancellationToken);
             }
             catch
             {
@@ -170,7 +172,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
             {
                 result.Bytes.Span.CopyTo(image.Bytes);
                 image.Metadata = ReadMetadata(data, format, options);
-                return image;
+                return AsStored(image, data, format, options, allocator, cancellationToken);
             }
             catch
             {
@@ -178,6 +180,27 @@ public sealed class BrowserImageDecoder : IImageDecoder
                 throw;
             }
         }
+    }
+
+    /// <summary>
+    /// Turns an image the browser decoded upright back to how it is stored, when <see cref="DecodeOptions.AutoOrient"/> is
+    /// off: the browser applies the orientation however it is asked, so the pixels would otherwise be upright while the
+    /// metadata kept the orientation, and anything that applied it again would turn them twice. The managed decoders
+    /// leave the pixels as stored, and this gives the same image.
+    /// </summary>
+    private static ImageBuffer AsStored(ImageBuffer decoded, ReadOnlyMemory<byte> data, ImageFormat format, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken)
+    {
+        if (options.AutoOrient) return decoded;
+
+        // The orientation the browser applied, from the file even when its metadata was not asked for.
+        var metadata = options.ReadMetadata ? decoded.Metadata : ReadMetadata(data, format, options with { ReadMetadata = true });
+        var orientation = metadata?.Orientation ?? Orientation.Normal;
+        if (orientation == Orientation.Normal) return decoded;
+
+        var context = new OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism);
+        var stored = new OrientationOperation(orientation.Inverse()).Apply(decoded, context);
+        if (!ReferenceEquals(stored, decoded)) decoded.Dispose();
+        return stored;
     }
 
     /// <summary>

@@ -165,12 +165,23 @@ public sealed class ImageLoader
 
         public int Id { get; set; }
 
+        /// <summary>
+        /// Called with the number of a paste whose image the page holds. The image is streamed out of the page rather
+        /// than passed to this call: over a Blazor Server circuit a call's arguments are one message, which the
+        /// circuit refuses past 32 KB by default, ending it.
+        /// </summary>
         [JSInvokable]
-        public async Task OnPaste(byte[] bytes, string? mimeType)
+        public async Task OnPaste(int id)
         {
             try
             {
-                var image = await _loader.LoadAsync(ImageSource.FromBytes(bytes, contentType: mimeType), _options).ConfigureAwait(true);
+                ImageBuffer image;
+                using (var pasted = await _loader._interop.InvokeForBytesAsync<ClipboardInfo>("takePasted", CancellationToken.None, id).ConfigureAwait(true))
+                {
+                    if (!pasted.HasValue || pasted.Bytes.Length == 0) return;
+                    image = await _loader.LoadAsync(ImageSource.FromBytes(pasted.Bytes.Memory, contentType: pasted.Info!.MimeType), _options).ConfigureAwait(true);
+                }
+
                 await _onImage(image).ConfigureAwait(true);
             }
             catch (Exception ex) when (_onError is not null)

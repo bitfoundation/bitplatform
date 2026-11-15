@@ -49,7 +49,8 @@
 
     async function decode(input: ArrayBuffer, options: DecodeOptions) {
         const blob = new Blob([input], options.mimeType ? { type: options.mimeType } : undefined);
-        const init: ImageBitmapOptions = { imageOrientation: options.autoOrient === false ? 'none' : 'from-image' };
+        // Always upright, as the page decodes (decodeToBitmap): .NET turns an image it wants as stored back itself.
+        const init: ImageBitmapOptions = { imageOrientation: 'from-image' };
         const hint = resizeHint(options);
         if (hint) {
             Object.assign(init, hint);
