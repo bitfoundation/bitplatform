@@ -5,6 +5,23 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### Three Extras surfaces stack on the layer scale rather than above it ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+Three surfaces of `Bit.BlazorUI.Extras` were stacked with a literal z-index far above the library's layer scale (the
+`--bit-zin-*` tokens, 1000 to 1400 by default), so moving the scale with `BitThemeZIndices` left them where they were.
+They now read the scale:
+
+| Surface | Before | After |
+|---|---|---|
+| The bars over the device's insets of `BitAppShell` | `999999` | one above the snackbar's layer, `calc(var(--bit-zin-snackbar) + 1)` (1401 by default) |
+| The pointer catcher of a `BitDataGrid` column resize | `9999` | one above the snackbar's layer, `calc(var(--bit-zin-snackbar) + 1)` (1401 by default) |
+| The tooltip of `BitResourceTimeline` | `2147483647` | the callout layer, `var(--bit-zin-callout)` (1300 by default), like `BitTooltip` |
+
+The inset bars and the resize catcher still sit above everything the library renders; the tooltip now shares its
+layer with every other tooltip and popup. An element of an app stacked between the old and the new value (a z-index
+of 2000, say) now paints over them: give it a value under the scale, or move the scale above it with
+`BitThemeZIndices`.
+
 ### Every component has a root class of its own ([#15137](https://github.com/bitfoundation/bitplatform/issues/15137))
 
 Two components that shared a root class shared every rule written for it, so each restyled the other wherever both

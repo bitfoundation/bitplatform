@@ -529,10 +529,13 @@ button.bit-dtg-htext {
     --bit-dtg-rsz-sbg: var(--bit-DataGrid-focus-color, #{$clr-pri-focus});
 }
 
+/* The catcher of a column resize takes every pointer move until the button is released, and the resize ends when the
+   pointer leaves it: nothing of the page may paint over it meanwhile, a snackbar or a callout included, so it sits
+   right above the top of the layer scale - and follows it where an app moves the scale (BitThemeZIndices). */
 .bit-dtg-resize-overlay {
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    z-index: calc(#{$zindex-snackbar} + 1);
     cursor: col-resize;
     touch-action: none;
 }
