@@ -312,7 +312,6 @@ public partial class MainLayout : IAsyncDisposable
         if (getCurrentUserCts is not null)
         {
             await getCurrentUserCts.TryCancel();
-            getCurrentUserCts.Dispose();
         }
 
         authManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
