@@ -12,7 +12,7 @@
            pressed state on top of a name that changes with it would say the same twice and read ambiguously ("Stop
            dictation, pressed"), so the toggle button leaves aria-pressed out, as it does by default for a name that
            changes. The live region beside it says that the microphone is on, and the listening look of the root
-           (bit-aivci-rec) shows it. While a recording is being transcribed the button waits for it, unavailable but
+           (bit-aivci-lsn) shows it. While a recording is being transcribed the button waits for it, unavailable but
            focusable, so the focus stays where the user left it. *@
         <BitToggleButton IconName="Microphone"
                          IsChecked="@_listening"
@@ -37,21 +37,25 @@
                   class="bit-aivci-cdn @Classes?.Countdown">@countdown</span>
         }
 
-        @* Why the dictation failed, for the eye, where the countdown sits, for a few seconds: the live region announces the
-           same text, so it is hidden from assistive technologies rather than read twice. The title carries the whole text
-           where it is cut short. *@
+        @* Why the dictation failed, for the eye, for a few seconds: the live region announces the same text, so it is
+           hidden from assistive technologies rather than read twice. It floats above the button rather than taking room
+           beside it, so a narrow toolbar (the composer's) neither overflows nor jumps as it comes and goes. Keyed by the
+           failure, so a second one with the same text is drawn anew, its entrance playing again. *@
         @if (_error is { } error)
         {
-            <span aria-hidden="true"
+            <span @key="_errorVersion"
+                  aria-hidden="true"
                   title="@error"
                   style="@Styles?.Error"
                   class="bit-aivci-err @Classes?.Error">@error</span>
         }
 
-        @* The name of the button does not say that the microphone is live; this does, politely. *@
+        @* The name of the button does not say that the microphone is live; this does, politely. Each announcement is an
+           element of its own, keyed by it, so one with the words of the last (the same failure twice) is still a change
+           to the region, and announced. *@
         <span role="status"
               aria-live="polite"
               style="@Styles?.LiveRegion"
-              class="bit-aivci-sts @Classes?.LiveRegion">@_status</span>
+              class="bit-aivci-sts @Classes?.LiveRegion">@if (_status is not null){<span @key="_statusVersion">@_status</span>}</span>
     </span>
 }

@@ -106,6 +106,7 @@ public class BitAiVoiceInputRecordingTests : BitAiTestBase
 
         Assert.IsTrue(voice.Instance.IsListening);
         Assert.IsTrue(voice.Find(".bit-aivci").ClassList.Contains("bit-aivci-rec"));
+        Assert.IsTrue(voice.Find(".bit-aivci").ClassList.Contains("bit-aivci-lsn"));
         Assert.AreEqual("Stop dictation", voice.Find("button").GetAttribute("aria-label"));
         Assert.AreEqual("Recording, 1 minute left", voice.Find("[role=status]").TextContent.Trim());
     }

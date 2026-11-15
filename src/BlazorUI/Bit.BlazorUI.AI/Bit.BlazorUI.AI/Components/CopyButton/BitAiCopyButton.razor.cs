@@ -8,7 +8,7 @@
 public partial class BitAiCopyButton : BitAiComponentBase
 {
     private bool _copied;
-    private CancellationTokenSource? _resetCts;
+    private BitAiTimer? _resetTimer;
     private BitAiIconClassesCache<BitButtonClassStyles> _copyClasses;
 
 
@@ -114,27 +114,20 @@ public partial class BitAiCopyButton : BitAiComponentBase
 
         _copied = true;
 
+        // Started before the callback of the app is awaited, so a button removed by it stops the reset as it goes; another
+        // copy starts it over.
+        _resetTimer ??= new BitAiTimer(InvokeAsync);
+        _resetTimer.After(ConfirmationDuration, () =>
+        {
+            if (IsDisposing) return;
+
+            _copied = false;
+            StateHasChanged();
+        });
+
         await OnCopied.InvokeAsync();
 
         StateHasChanged();
-
-        _resetCts?.Cancel();
-        _resetCts?.Dispose();
-        _resetCts = new CancellationTokenSource();
-        var token = _resetCts.Token;
-
-        try
-        {
-            await Task.Delay(ConfirmationDuration, token);
-
-            _copied = false;
-
-            await InvokeAsync(StateHasChanged);
-        }
-        catch (OperationCanceledException)
-        {
-            // Another copy started, or the button went away: whoever cancelled owns the reset.
-        }
     }
 
 
@@ -143,9 +136,7 @@ public partial class BitAiCopyButton : BitAiComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
-        _resetCts?.Cancel();
-        _resetCts?.Dispose();
-        _resetCts = null;
+        _resetTimer?.Dispose();
 
         await base.DisposeAsync(disposing);
     }

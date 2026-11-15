@@ -211,14 +211,14 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
         var button = Button("vi-basic");
         await button.ClickAsync();
         await Expect(button).ToHaveAttributeAsync("aria-label", "Stop dictation");
-        await Expect(Root("vi-basic")).ToHaveClassAsync(HasClass("bit-aivci-rec"));
+        await Expect(Root("vi-basic")).ToHaveClassAsync(HasClass("bit-aivci-lsn"));
 
         await Page.EvaluateAsync("() => window.__e2eSpeech.error('not-allowed')");
 
         await Expect(Text("vi-errors")).ToHaveTextAsync("not-allowed");
         await Expect(Status("vi-basic")).ToHaveTextAsync("Dictation failed: microphone access was denied");
         await Expect(Page.Locator("#vi-basic .bit-aivci-err")).ToHaveTextAsync("Dictation failed: microphone access was denied");
-        await Expect(Root("vi-basic")).Not.ToHaveClassAsync(HasClass("bit-aivci-rec"));
+        await Expect(Root("vi-basic")).Not.ToHaveClassAsync(HasClass("bit-aivci-lsn"));
         await Expect(button).ToHaveAttributeAsync("aria-label", "Dictate");
         await Expect(Text("vi-listening")).ToHaveTextAsync("True,False");
     }

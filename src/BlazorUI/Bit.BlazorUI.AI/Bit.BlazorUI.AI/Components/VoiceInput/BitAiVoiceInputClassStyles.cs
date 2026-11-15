@@ -25,7 +25,7 @@ public class BitAiVoiceInputClassStyles
     public string? Countdown { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the reason a dictation failed, shown beside the button of the BitAiVoiceInput for a
+    /// Custom CSS classes/styles for the reason a dictation failed, shown above the button of the BitAiVoiceInput for a
     /// few seconds after the failure.
     /// </summary>
     public string? Error { get; set; }

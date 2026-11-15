@@ -134,7 +134,7 @@ public partial class BitAiVoiceInputDemo
                     Name = "Listening",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the root element of the BitAiVoiceInput while it listens - through the speech recognition of the browser or by recording for the app's transcriber alike - beside the bit-aivci-rec class it carries then."
+                    Description = "Custom CSS classes/styles for the root element of the BitAiVoiceInput while it listens - through the speech recognition of the browser or by recording for the app's transcriber alike - beside the bit-aivci-lsn class it carries then (and bit-aivci-rec, only while it records for the transcriber)."
                 },
                 new()
                 {
@@ -157,7 +157,7 @@ public partial class BitAiVoiceInputDemo
                     Name = "Error",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the reason a dictation failed, shown beside the button for a few seconds after the failure."
+                    Description = "Custom CSS classes/styles for the reason a dictation failed, shown above the button for a few seconds after the failure."
                 },
                 new()
                 {
@@ -196,7 +196,7 @@ public partial class BitAiVoiceInputDemo
         new() { Name = "--bit-AiVoiceInput-listening-active-background", DefaultValue = "var(--bit-clr-err-active)", Description = "Background of the button while the voice input listens and it is pressed." },
         new() { Name = "--bit-AiVoiceInput-pulse-color", DefaultValue = "the listening background", Description = "Color of the ring pulsing around the button while the voice input listens (a steady ring under reduced motion)." },
         new() { Name = "--bit-AiVoiceInput-countdown-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Color of the time left of a recording for the app's transcriber, shown beside the button while it records." },
-        new() { Name = "--bit-AiVoiceInput-error-color", DefaultValue = "var(--bit-clr-err-fg)", Description = "Color of the reason a dictation failed, shown beside the button for a few seconds after the failure." },
+        new() { Name = "--bit-AiVoiceInput-error-color", DefaultValue = "var(--bit-clr-err-fg)", Description = "Color of the reason a dictation failed, shown above the button for a few seconds after the failure." },
     ];
 
 
