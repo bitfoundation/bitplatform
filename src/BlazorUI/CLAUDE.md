@@ -195,18 +195,27 @@ BitNavPanel, which widened and shifted the panel's content.
 - **A new root is unique across every package** - core, Extras, AI and Legacy alike. Check it before using it: grep
   the packages for `bit-xxx` followed by `-`, `"`, a space or the end of the class, and for a
   `RootElementClass => "bit-xxx"`. A component written in markup rather than through `RootElementClass`
-  (`BitLoading`'s shell, `BitErrorBoundary`) follows the same rule.
+  (`BitLoading`'s shell, `BitErrorBoundary`, the legacy data grid) follows the same rule, and is listed in the
+  contract test's `_markupRoots`.
 - **A Legacy twin is no exception.** It ships beside the component it predates, so it takes a prefix of its own
   (`bit-mel`, `bit-mvl`, `bit-rel`), never the other one's root behind a marker class that scopes its rules: the
   other component's unscoped rules still reach it.
 - **A root extends another one's only for a part of that component's family** (`BitGridItem`'s `bit-grd-itm`, the
   `BitLoading` family's `bit-ldn-*`), never by coincidence of letters, and never one of the shared state classes
-  (`bit-dis`, `bit-rtl`, `bit-inv`, `bit-fam`, ...).
-- **Fixing a collision renames the newer component**, its stylesheet, markup, C#, tests, E2E tests and demo samples
-  together, with an entry in `BreakingChanges.md`: an app's stylesheets and test locators are written against the
-  classes.
-- `BitRootClassContractTests` reads the root of every component of the four packages and fails on a root shared by
-  two of them, or one under another component's prefix that is not listed as part of its family.
+  (`bit-dis`, `bit-rtl`, `bit-inv`, `bit-fam`, ...). A class a script puts on elements of several components is
+  never one under a component's prefix, nor a new name of the `bit-xxx` form a future component could take as its
+  root: it is a full word after a double dash (`bit--entry`, the frame a callout's entry starts from).
+- **A stylesheet writes rules for its own prefix**, its family's, and those of the components it is built out of or
+  hosts (BitNavPanel restyling the BitNav it renders) - never a class under another component's prefix by
+  coincidence: the rule reaches that component wherever it is rendered.
+- **Fixing a collision renames the newer component, or the Legacy twin whatever its age**, its stylesheet, markup,
+  C#, tests, E2E tests and demo samples together, with an entry in `BreakingChanges.md`: an app's stylesheets and
+  test locators are written against the classes.
+- `BitRootClassContractTests` reads the root of every component of the four packages - off `RootElementClass`, and
+  off the markup for the ones listed in `_markupRoots` - and fails on a root shared by two of them, on one under
+  another component's prefix that is not listed as part of its family, on a component stylesheet whose component's
+  root it does not know, and on a stylesheet styling a class under another component's prefix that is neither of
+  its family nor listed in `_stylesheetReach`.
 
 ## Core components never render each other
 

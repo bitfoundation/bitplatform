@@ -101,23 +101,10 @@ public sealed class BitJsInvokableDisposalContractTests
 
     private static IEnumerable<Type> FindComponentsDisposingAfterTheirTeardown()
     {
-        return Packages.SelectMany(LoadableTypes)
+        return Packages.SelectMany(LoadableTypes.Of)
                        .Where(t => t.IsClass && t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
                                                 .Where(m => m.Name == "DisposeAsync")
                                                 .Any(m => Calls(m, DisposeAfterAsync)));
-    }
-
-    // The legacy chart's types reference Newtonsoft.Json, which nothing here ships; none of them is a component of this kind.
-    private static IEnumerable<Type> LoadableTypes(Assembly assembly)
-    {
-        try
-        {
-            return assembly.GetTypes();
-        }
-        catch (ReflectionTypeLoadException ex)
-        {
-            return ex.Types.OfType<Type>();
-        }
     }
 
     private static IEnumerable<MethodInfo> JsInvokables(Type type)

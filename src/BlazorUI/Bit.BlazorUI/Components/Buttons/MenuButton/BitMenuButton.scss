@@ -473,7 +473,7 @@ $mnb-cal-private-properties: cal-bg;
     // this class with transitions suppressed, forces it into effect, then drops it, which leaves the
     // callout transitioning from here to the open state above. Declared last so it wins over
     // .bit-mnb-ocl, which is already on the element by the time the callout is positioned.
-    &.bit-cal-ent {
+    &.bit--entry {
         transition: none;
         --bit-mnb-cal-opa: 0;
         --bit-mnb-cal-tra: var(--bit-mnb-cal-tra-ent);

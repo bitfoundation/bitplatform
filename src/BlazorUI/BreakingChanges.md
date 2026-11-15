@@ -5,12 +5,13 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
-### Every component has a root class of its own
+### Every component has a root class of its own ([#15137](https://github.com/bitfoundation/bitplatform/issues/15137))
 
 Two components that shared a root class shared every rule written for it, so each restyled the other wherever both
 were on a page: a `BitNavPanel` lost its width and the top of its list to the `BitStepper` rules that matched the
-`BitSwipeTrap` inside it. The newer component of each pair takes a class prefix of its own; no public API is renamed,
-but an app's stylesheets, scripts and tests written against the old classes move to the new ones:
+`BitSwipeTrap` inside it. The newer component of each pair - or the Legacy twin, which keeps its own prefix beside the
+component it predates - takes a class prefix of its own; no public API is renamed, but an app's stylesheets, scripts
+and tests written against the old classes move to the new ones:
 
 | Component | Before | After |
 |---|---|---|
@@ -18,7 +19,13 @@ but an app's stylesheets, scripts and tests written against the old classes move
 | `BitMarkdownEditorLegacy` | `bit-mde`, `bit-mde-txa` (shared with `BitMarkdownEditor`) | `bit-mel`, `bit-mel-txa` |
 | `BitMarkdownViewerLegacy` | `bit-mdv bit-mdv-lgc` (shared with `BitMarkdownViewer`) | `bit-mvl` |
 | `BitRichTextEditorLegacy` | `bit-rte bit-rte-lgc`, `bit-rte-tlb`, `bit-rte-edt`, `bit-rte-rvs` (shared with `BitRichTextEditor`) | `bit-rel`, `bit-rel-tlb`, `bit-rel-edt`, `bit-rel-rvs` |
+| The popups of `BitCallout`, `BitDropMenu`, `BitMenuButton` and `BitSearchBox` | `bit-cal-ent` for the frame their entry starts from (under `BitCalendar`'s prefix) | `bit--entry` |
 
+The Legacy rules also weigh less than they did: `.bit-mdv.bit-mdv-lgc` (two classes) is now `.bit-mvl` (one), and
+`.bit-rte.bit-rte-lgc ...` is now `.bit-rel ...`. A rule of an app with a single class, on a `BitMarkdownViewerLegacy`
+or `BitRichTextEditorLegacy` or inside one, that used to lose to the component's rule now ties with it, and wins
+when the app's stylesheet loads after the Legacy bundle (`.my-viewer { width: 50% }` on a `BitMarkdownViewerLegacy`
+now applies). Remove or narrow such a rule where the component's own look is the one wanted.
 ### What axe-core found inside the components is fixed, and the markup it changed ([#14891](https://github.com/bitfoundation/bitplatform/issues/14891))
 
 No public API is renamed or removed, but an app's stylesheets, scripts and tests written against the markup below

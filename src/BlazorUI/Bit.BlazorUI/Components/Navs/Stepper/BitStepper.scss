@@ -241,25 +241,27 @@ button.bit-str-btn {
 }
 
 // A disabled step, or every step of a disabled stepper, keeps its disabled palette whatever its state. These rules
-// come after the state ones, which they share their specificity with.
+// come after the state ones, which they share their specificity with. A disabled stepper is read off its own root
+// (.bit-dis:where(.bit-str), no weight added), never off any .bit-dis ancestor: an enabled stepper inside another
+// disabled component keeps its own palette.
 .bit-str-sdi .bit-str-btn,
-.bit-dis .bit-str-btn,
+.bit-dis:where(.bit-str) .bit-str-btn,
 .bit-str-sdi .bit-str-txt,
-.bit-dis .bit-str-txt,
+.bit-dis:where(.bit-str) .bit-str-txt,
 .bit-str-sdi .bit-str-dsc,
-.bit-dis .bit-str-dsc {
+.bit-dis:where(.bit-str) .bit-str-dsc {
     color: $clr-fg-dis;
 }
 
 .bit-str-sdi .bit-str-ind,
-.bit-dis .bit-str-ind {
+.bit-dis:where(.bit-str) .bit-str-ind {
     color: $clr-fg-dis;
     border-color: $clr-brd-dis;
     background-color: transparent;
 }
 
 // A disabled stepper draws no way already come either.
-.bit-dis .bit-str-con {
+.bit-dis:where(.bit-str) .bit-str-con {
     background-color: $clr-brd-dis;
 }
 
@@ -282,12 +284,12 @@ button.bit-str-btn {
     }
 
     .bit-str-sdi .bit-str-btn,
-    .bit-dis .bit-str-btn {
+    .bit-dis:where(.bit-str) .bit-str-btn {
         color: GrayText;
     }
 
     .bit-str-sdi .bit-str-ind,
-    .bit-dis .bit-str-ind {
+    .bit-dis:where(.bit-str) .bit-str-ind {
         color: GrayText;
         border-color: GrayText;
         forced-color-adjust: none;
