@@ -114,7 +114,7 @@ public partial class BitSliderParams : BitInputBaseParams<double>, IBitComponent
     /// <summary>
     /// Stands the slider upright and fills it from the bottom up.
     /// </summary>
-    public bool? IsVertical { get; set; }
+    public bool? Vertical { get; set; }
 
     /// <summary>
     /// The distance the larger keyboard jumps cover: <c>Page Up</c> and <c>Page Down</c>, and an arrow key
@@ -324,9 +324,9 @@ public partial class BitSliderParams : BitInputBaseParams<double>, IBitComponent
             bitSlider.TakeFromCascade(nameof(IsRanged), IsRanged.Value, static s => s.IsRanged, static (s, v) => s.IsRanged = v);
         }
 
-        if (IsVertical.HasValue)
+        if (Vertical.HasValue)
         {
-            bitSlider.TakeFromCascade(nameof(IsVertical), IsVertical.Value, static s => s.IsVertical, static (s, v) => s.IsVertical = v);
+            bitSlider.TakeFromCascade(nameof(Vertical), Vertical.Value, static s => s.Vertical, static (s, v) => s.Vertical = v);
         }
 
         if (LargeStep.HasValue)

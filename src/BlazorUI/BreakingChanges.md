@@ -5,6 +5,19 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitSlider`'s `IsVertical` is `Vertical` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Vertical`, `Loading`), and the eleven other
+components that stand upright already call it `Vertical`; `BitSlider` was the one `IsVertical`. The `[Parameter]` and
+its `BitSliderParams` counterpart are renamed:
+
+| Before | After |
+|---|---|
+| `<BitSlider IsVertical />` | `<BitSlider Vertical />` |
+| `new BitSliderParams { IsVertical = true }` | `new BitSliderParams { Vertical = true }` |
+
+What the slider renders is unchanged (`bit-sld-vrt`, `aria-orientation="vertical"`).
+
 ### A grouped `BitDataGrid` with `Virtualize` is virtualized ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 `Virtualize` used to be turned off while the rows were grouped, so every row of every open group was in the DOM: 10,000

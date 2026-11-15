@@ -54,10 +54,10 @@
 
 <E2ESection Id="vertical" Title="Vertical">
     <div style="display: flex; gap: 40px;">
-        <BitSlider Id="sld-vertical" Label="Basic" IsVertical @bind-Value="_vertical" />
-        <BitSlider Id="sld-vertical-range" Label="Ranged" IsVertical IsRanged @bind-RangeValue="_verticalRange" />
-        <BitSlider Id="sld-vertical-marks" Label="Marks" IsVertical ShowMarks ShowMarkLabels MarkStep="2" DefaultValue="6" />
-        <BitSlider Id="sld-vertical-tall" Label="Taller" IsVertical Style="--bit-Slider-length: 288px" DefaultValue="8" />
+        <BitSlider Id="sld-vertical" Label="Basic" Vertical @bind-Value="_vertical" />
+        <BitSlider Id="sld-vertical-range" Label="Ranged" Vertical IsRanged @bind-RangeValue="_verticalRange" />
+        <BitSlider Id="sld-vertical-marks" Label="Marks" Vertical ShowMarks ShowMarkLabels MarkStep="2" DefaultValue="6" />
+        <BitSlider Id="sld-vertical-tall" Label="Taller" Vertical Style="--bit-Slider-length: 288px" DefaultValue="8" />
     </div>
     <span id="vertical-value">@_vertical</span>
     <span id="vertical-range-value">@Text(_verticalRange)</span>
@@ -107,7 +107,7 @@
     <span id="band-end">@_bandEnd</span>
     <BitSlider Id="sld-band-fixed" IsRanged DraggableTrack MinRange="20" MaxRange="20" Max="100" Step="5" @bind-RangeValue="_bandFixed" />
     <span id="band-fixed-value">@Text(_bandFixed)</span>
-    <BitSlider Id="sld-band-vertical" Label="Band" IsVertical IsRanged DraggableTrack Max="100" Step="5" @bind-RangeValue="_bandVertical" />
+    <BitSlider Id="sld-band-vertical" Label="Band" Vertical IsRanged DraggableTrack Max="100" Step="5" @bind-RangeValue="_bandVertical" />
     <span id="band-vertical-value">@Text(_bandVertical)</span>
 </E2ESection>
 
@@ -232,8 +232,8 @@
     <BitSlider Id="sld-size-md" Size="BitSize.Medium" Label="Medium" DefaultValue="4" ShowMarkLabels ThumbLabel="BitSliderThumbLabel.On" />
     <BitSlider Id="sld-size-lg" Size="BitSize.Large" Label="Large" DefaultValue="4" ShowMarkLabels ThumbLabel="BitSliderThumbLabel.On" />
     <div style="display: flex; gap: 40px;">
-        <BitSlider Id="sld-size-vsm" Size="BitSize.Small" IsVertical DefaultValue="4" />
-        <BitSlider Id="sld-size-vlg" Size="BitSize.Large" IsVertical DefaultValue="4" />
+        <BitSlider Id="sld-size-vsm" Size="BitSize.Small" Vertical DefaultValue="4" />
+        <BitSlider Id="sld-size-vlg" Size="BitSize.Large" Vertical DefaultValue="4" />
     </div>
 </E2ESection>
 
@@ -257,7 +257,7 @@
         <BitSlider Id="sld-vars" Label="Vars" Required DefaultValue="4" Min="-5" Max="5" IsOriginFromZero ShowMarkLabels ThumbLabel="BitSliderThumbLabel.On" />
         <BitSlider Id="sld-vars-explicit" Color="BitColor.Error" Size="BitSize.Small" DefaultValue="4" />
         <div style="--bit-Slider-length: 150px;">
-            <BitSlider Id="sld-vars-vertical" IsVertical DefaultValue="4" />
+            <BitSlider Id="sld-vars-vertical" Vertical DefaultValue="4" />
         </div>
     </div>
     <button id="before-vars-state">before</button>

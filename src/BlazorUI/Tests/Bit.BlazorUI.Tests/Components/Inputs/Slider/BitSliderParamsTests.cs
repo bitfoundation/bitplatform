@@ -212,7 +212,7 @@ public class BitSliderParamsTests : BunitTestContext
             Inverted = true,
             IsOriginFromZero = true,
             IsRanged = true,
-            IsVertical = true,
+            Vertical = true,
             LargeStep = 25,
             LowerAriaLabel = "Cascaded lower",
             Marks = marks,
@@ -258,7 +258,7 @@ public class BitSliderParamsTests : BunitTestContext
         Assert.IsTrue(instance.Inverted);
         Assert.IsTrue(instance.IsOriginFromZero);
         Assert.IsTrue(instance.IsRanged);
-        Assert.IsTrue(instance.IsVertical);
+        Assert.IsTrue(instance.Vertical);
         Assert.AreEqual(25, instance.LargeStep);
         Assert.AreEqual("Cascaded lower", instance.LowerAriaLabel);
         Assert.AreSame(marks, instance.Marks);

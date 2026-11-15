@@ -28,11 +28,11 @@ public class BitSliderTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitSliderShouldRespectIsVertical(bool isVertical)
+    public void BitSliderShouldRespectVertical(bool isVertical)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsVertical, isVertical);
+            parameters.Add(p => p.Vertical, isVertical);
         });
 
         var slider = com.Find(".bit-sld");
@@ -70,7 +70,7 @@ public class BitSliderTests : BunitTestContext
         var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.IsRanged, ranged);
-            parameters.Add(p => p.IsVertical, vertical);
+            parameters.Add(p => p.Vertical, vertical);
         });
 
         var expected = $"bit-sld-{(ranged ? "rgd-" : null)}{(vertical ? "vrt" : "hrz")}";
@@ -753,7 +753,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsVertical, vertical);
+            parameters.Add(p => p.Vertical, vertical);
             parameters.Add(p => p.Value, 3D);
         });
 
@@ -772,7 +772,7 @@ public class BitSliderTests : BunitTestContext
         var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.IsRanged, true);
-            parameters.Add(p => p.IsVertical, true);
+            parameters.Add(p => p.Vertical, true);
             parameters.Add(p => p.LowerValue, 2D);
             parameters.Add(p => p.UpperValue, 7D);
         });
@@ -1913,7 +1913,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsVertical, true);
+            parameters.Add(p => p.Vertical, true);
             parameters.Add(p => p.Max, 10D);
             parameters.Add(p => p.Value, 3D);
         });
@@ -3744,7 +3744,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsVertical, vertical);
+            parameters.Add(p => p.Vertical, vertical);
         });
 
         Assert.AreEqual(expected, com.Find(".bit-sld-inp").GetAttribute("aria-orientation"));
@@ -4376,7 +4376,7 @@ public class BitSliderTests : BunitTestContext
         var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.IsRanged, true);
-            parameters.Add(p => p.IsVertical, true);
+            parameters.Add(p => p.Vertical, true);
         });
 
         foreach (var input in com.FindAll(".bit-sld-inp"))

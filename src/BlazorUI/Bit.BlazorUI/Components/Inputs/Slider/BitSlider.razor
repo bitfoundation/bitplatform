@@ -119,9 +119,9 @@
         @if (ShowValue && IsRanged)
         {
             <span aria-hidden="true"
-                  style="@GetValueLabelStyle(IsVertical ? Styles?.UpperValueLabel : Styles?.LowerValueLabel)"
-                  class="bit-sld-vlb @(IsVertical ? Classes?.UpperValueLabel : Classes?.LowerValueLabel)">
-                @(IsVertical ? upperText : lowerText)
+                  style="@GetValueLabelStyle(Vertical ? Styles?.UpperValueLabel : Styles?.LowerValueLabel)"
+                  class="bit-sld-vlb @(Vertical ? Classes?.UpperValueLabel : Classes?.LowerValueLabel)">
+                @(Vertical ? upperText : lowerText)
             </span>
         }
 
@@ -259,7 +259,7 @@
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@ariaInvalid"
                            aria-describedby="@describedBy"
-                           aria-orientation="@(IsVertical ? "vertical" : null)"
+                           aria-orientation="@(Vertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(lowerAriaMin)"
                            aria-valuemax="@ToInvariant(lowerAriaMax)"
                            aria-valuenow="@ToInvariant(_thumbA)"
@@ -292,7 +292,7 @@
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@ariaInvalid"
                            aria-describedby="@describedBy"
-                           aria-orientation="@(IsVertical ? "vertical" : null)"
+                           aria-orientation="@(Vertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(upperAriaMin)"
                            aria-valuemax="@ToInvariant(upperAriaMax)"
                            aria-valuenow="@ToInvariant(_thumbB)"
@@ -363,7 +363,7 @@
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@ariaInvalid"
                            aria-describedby="@describedBy"
-                           aria-orientation="@(IsVertical ? "vertical" : null)"
+                           aria-orientation="@(Vertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(min)"
                            aria-valuemax="@ToInvariant(max)"
                            aria-valuenow="@ToInvariant(value)"
@@ -407,9 +407,9 @@
             @if (IsRanged)
             {
                 <span aria-hidden="true"
-                      style="@GetValueLabelStyle(IsVertical ? Styles?.LowerValueLabel : Styles?.UpperValueLabel)"
-                      class="bit-sld-vlb @(IsVertical ? Classes?.LowerValueLabel : Classes?.UpperValueLabel)">
-                    @(IsVertical ? lowerText : upperText)
+                      style="@GetValueLabelStyle(Vertical ? Styles?.LowerValueLabel : Styles?.UpperValueLabel)"
+                      class="bit-sld-vlb @(Vertical ? Classes?.LowerValueLabel : Classes?.UpperValueLabel)">
+                    @(Vertical ? lowerText : upperText)
                 </span>
             }
             else

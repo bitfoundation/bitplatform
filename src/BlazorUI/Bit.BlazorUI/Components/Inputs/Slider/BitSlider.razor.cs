@@ -293,7 +293,7 @@ public partial class BitSlider : BitInputBase<double>
     /// (<c>Style="--bit-Slider-length: 20rem"</c>) or globally.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public bool IsVertical { get; set; }
+    public bool Vertical { get; set; }
 
     /// <summary>
     /// Description label of the Slider.
@@ -624,9 +624,9 @@ public partial class BitSlider : BitInputBase<double>
 
         // The composite class is kept beside the two simple ones so stylesheets written against the
         // previous markup keep matching the same elements.
-        ClassBuilder.Register(() => $"bit-sld-{(IsRanged ? "rgd-" : null)}{(IsVertical ? "vrt" : "hrz")}");
+        ClassBuilder.Register(() => $"bit-sld-{(IsRanged ? "rgd-" : null)}{(Vertical ? "vrt" : "hrz")}");
 
-        ClassBuilder.Register(() => IsRanged ? $"bit-sld-{(IsVertical ? "vrt" : "hrz")}" : string.Empty);
+        ClassBuilder.Register(() => IsRanged ? $"bit-sld-{(Vertical ? "vrt" : "hrz")}" : string.Empty);
 
         ClassBuilder.Register(() => ThumbLabel switch
         {
@@ -1265,7 +1265,7 @@ public partial class BitSlider : BitInputBase<double>
     /// </summary>
     private string GetPointStyle(double percent)
     {
-        return IsVertical
+        return Vertical
             ? FormattableString.Invariant($"bottom:{percent}%")
             : FormattableString.Invariant($"inset-inline-start:{percent}%");
     }
@@ -1329,7 +1329,7 @@ public partial class BitSlider : BitInputBase<double>
     {
         var size = Math.Max(0, end - start);
 
-        return IsVertical
+        return Vertical
             ? FormattableString.Invariant($"bottom:{start}%;height:{size}%")
             : FormattableString.Invariant($"inset-inline-start:{start}%;width:{size}%");
     }

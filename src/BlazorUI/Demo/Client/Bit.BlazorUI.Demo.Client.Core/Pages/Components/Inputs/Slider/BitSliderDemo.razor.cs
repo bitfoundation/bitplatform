@@ -131,13 +131,6 @@ public partial class BitSliderDemo
         },
         new()
         {
-            Name = "IsVertical",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether to render the slider vertically. Its length comes from the --bit-Slider-length CSS variable, which defaults to 12rem.",
-        },
-        new()
-        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -430,6 +423,13 @@ public partial class BitSliderDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Custom format for the displayed value of the Slider, applied to the value labels, the mark labels and the floating thumb labels alike.",
+        },
+        new()
+        {
+            Name = "Vertical",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to render the slider vertically. Its length comes from the --bit-Slider-length CSS variable, which defaults to 12rem.",
         }
     ];
 
