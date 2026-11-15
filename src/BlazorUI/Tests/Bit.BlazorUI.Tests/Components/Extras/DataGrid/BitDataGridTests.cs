@@ -180,6 +180,142 @@ public class BitDataGridTests : BunitTestContext
         CollectionAssert.AreEqual(new[] { "Date", "Banana", "Elderberry", "Apple", "Cherry" }, FirstCellTexts(component).ToArray());
     }
 
+    // ------------------------------------------- A re-render over a list changed in place
+
+    // A grid over a list refreshes on every render of its parent, and hands the last sort back when the rows and their
+    // keys are what they were (BitDataGridSortCache). These change the list in place - the same instance - and render the
+    // grid again, as a parent does: the order has to follow every change the sort would see.
+
+    private async Task<IRenderedComponent<BitDataGrid<TestRow>>> RenderSortedByPriceAsync(List<TestRow> items,
+        Action<ComponentParameterCollectionBuilder<BitDataGrid<TestRow>>>? configure = null)
+    {
+        var component = RenderGrid(items, configure);
+        await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Ascending));
+        return component;
+    }
+
+    private static void RenderAgain(IRenderedComponent<BitDataGrid<TestRow>> component, List<TestRow> items)
+        => component.Render(parameters => parameters.Add(p => p.Items, items));
+
+    [TestMethod]
+    public async Task ARowWhoseSortKeyIsEditedInPlaceMovesOnTheNextRender()
+    {
+        var items = CreateRows();
+        var component = await RenderSortedByPriceAsync(items);
+        CollectionAssert.AreEqual(new[] { "Apple", "Elderberry", "Banana", "Date", "Cherry" }, FirstCellTexts(component).ToArray());
+
+        items.Single(r => r.Name == "Apple").Price = 100;
+        RenderAgain(component, items);
+
+        CollectionAssert.AreEqual(new[] { "Elderberry", "Banana", "Date", "Cherry", "Apple" }, FirstCellTexts(component).ToArray());
+    }
+
+    [TestMethod]
+    public async Task RowsOfEqualKeysTakeTheOrderTheyAreMovedToInPlace()
+    {
+        // Every price equal: the stable sort keeps the list's order, whichever it is now.
+        var items = CreateRows();
+        foreach (var row in items) row.Price = 1;
+        var component = await RenderSortedByPriceAsync(items);
+        CollectionAssert.AreEqual(new[] { "Banana", "Apple", "Cherry", "Date", "Elderberry" }, FirstCellTexts(component).ToArray());
+
+        items.Reverse();
+        RenderAgain(component, items);
+
+        CollectionAssert.AreEqual(new[] { "Elderberry", "Date", "Cherry", "Apple", "Banana" }, FirstCellTexts(component).ToArray());
+    }
+
+    [TestMethod]
+    public async Task ARowAddedOrRemovedInPlaceIsSortedInOrOut()
+    {
+        var items = CreateRows();
+        var component = await RenderSortedByPriceAsync(items);
+
+        items.Add(new TestRow { Id = 6, Name = "Fig", Price = 3 });
+        items.RemoveAll(r => r.Name == "Date");
+        RenderAgain(component, items);
+
+        CollectionAssert.AreEqual(new[] { "Apple", "Elderberry", "Banana", "Fig", "Cherry" }, FirstCellTexts(component).ToArray());
+    }
+
+    [TestMethod]
+    public async Task ARowReplacedInPlaceByAnotherInstanceWithTheSameKeyIsTheOneShown()
+    {
+        // The view hands the row instances on: an instance put in the place of another one shows, even with the same key.
+        var items = CreateRows();
+        var component = await RenderSortedByPriceAsync(items);
+
+        var index = items.FindIndex(r => r.Name == "Cherry");
+        items[index] = new TestRow { Id = 3, Name = "Cherry (new)", Price = 10 };
+        RenderAgain(component, items);
+
+        Assert.AreEqual("Cherry (new)", FirstCellTexts(component)[^1]);
+    }
+
+    // A sort key of a type the grid does not trust to stay as it is: an instance, changed in place, that orders by its text.
+    private sealed class Rank(int value)
+    {
+        public int Value { get; set; } = value;
+
+        public override string ToString() => Value.ToString("D3", CultureInfo.InvariantCulture);
+    }
+
+    [TestMethod]
+    public async Task AKeyOfAnotherTypeChangedInPlaceIsSortedByAgain()
+    {
+        var items = CreateRows();
+        var ranks = items.ToDictionary(r => r.Id, r => new Rank(r.Id));
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ChildContent, TemplateOnlyColumn("rank", sortBy: r => ranks[r.Id]));
+        });
+        await component.InvokeAsync(() => component.Instance.SortByAsync("rank", BitDataGridSortDirection.Ascending));
+        CollectionAssert.AreEqual(new[] { "Banana", "Apple", "Cherry", "Date", "Elderberry" }, FirstCellTexts(component).ToArray());
+
+        // The same Rank instances, the first one now ranked last.
+        ranks[1].Value = 9;
+        RenderAgain(component, items);
+
+        CollectionAssert.AreEqual(new[] { "Apple", "Cherry", "Date", "Elderberry", "Banana" }, FirstCellTexts(component).ToArray());
+    }
+
+    // A column's own comparer, whose order the app turns around.
+    private sealed class TurnableComparer : IComparer<object?>
+    {
+        public bool Reversed { get; set; }
+
+        public int Compare(object? x, object? y) => (Reversed ? -1 : 1) * Comparer<double>.Default.Compare((double)x!, (double)y!);
+    }
+
+    [TestMethod]
+    public async Task AColumnsOwnComparerIsAskedAgainOnEveryRender()
+    {
+        var items = CreateRows();
+        var comparer = new TurnableComparer();
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+                builder.AddComponentParameter(1, "Field", "Name");
+                builder.CloseComponent();
+                builder.OpenComponent<BitDataGridColumn<TestRow>>(2);
+                builder.AddComponentParameter(3, "Field", "Price");
+                builder.AddComponentParameter(4, "Comparer", comparer);
+                builder.CloseComponent();
+            }));
+        });
+        await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Ascending));
+        Assert.AreEqual("Apple", FirstCellTexts(component)[0]);
+
+        comparer.Reversed = true;
+        RenderAgain(component, items);
+
+        Assert.AreEqual("Cherry", FirstCellTexts(component)[0]);
+    }
+
     // A template-only column: no Field, so it has a sort key only through SortBy (in memory) or ServerSortable (server).
     private static RenderFragment TemplateOnlyColumn(string? columnId, Func<TestRow, object?>? sortBy = null, bool? sortable = null,
         bool serverSortable = false) => builder =>
