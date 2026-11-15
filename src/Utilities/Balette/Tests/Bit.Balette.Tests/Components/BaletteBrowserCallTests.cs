@@ -117,6 +117,56 @@ public class BaletteBrowserCallTests : BunitContext
     }
 
     [TestMethod]
+    public async Task A_listener_that_times_out_after_a_command_run_from_a_key_reaches_the_renderer()
+    {
+        JSInterop.SetupModule(ModulePath).SetupModule("init", _ => true);
+        Service.Register(BaletteCmd.Action("Deploy", () => { }));
+        // How HttpClient reports a timeout: a cancellation around a TimeoutException, which is a failure, not a stop.
+        Service.CommandExecuted += (_, _) => throw new TaskCanceledException("timed out", new TimeoutException());
+        var cut = Render<Balette>();
+        await cut.InvokeAsync(() => Service.OpenAsync("deploy"));
+
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+
+        var exception = await Renderer.UnhandledException;
+        Assert.IsInstanceOfType<TaskCanceledException>(exception);
+        Assert.IsInstanceOfType<TimeoutException>(exception.InnerException);
+        Assert.IsFalse(Service.IsOpen);
+    }
+
+    [TestMethod]
+    public async Task A_listener_that_times_out_after_a_global_shortcut_reaches_the_renderer()
+    {
+        JSInterop.SetupModule(ModulePath).SetupModule("init", _ => true);
+        Service.Register(BaletteCmd.Action("Save", () => { }).Shortcut("Mod+S"));
+        Service.CommandExecuted += (_, _) => throw new TaskCanceledException("timed out", new TimeoutException());
+        var cut = Render<Balette>();
+
+        // The shortcut's work runs on the dispatcher, which would hand back a bare cancelled task: the timeout survives it.
+        await cut.InvokeAsync(() => cut.Instance.OnGlobalShortcut("mod+s"));
+
+        Assert.IsInstanceOfType<TimeoutException>((await Renderer.UnhandledException).InnerException);
+    }
+
+    [TestMethod]
+    public async Task A_listener_and_a_close_callback_that_both_throw_both_reach_the_renderer()
+    {
+        JSInterop.SetupModule(ModulePath).SetupModule("init", _ => true);
+        Service.Register(BaletteCmd.Action("Deploy", () => { }));
+        Service.CommandExecuted += (_, _) => throw new InvalidOperationException("listener");
+        var cut = Render<Balette>(p => p.Add(x => x.OnClosed, () => throw new InvalidOperationException("closed")));
+        await cut.InvokeAsync(() => Service.OpenAsync("deploy"));
+
+        // The command closes the palette, whose OnClosed throws as well: neither failure hides the other.
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+
+        var exception = await Renderer.UnhandledException;
+        Assert.IsInstanceOfType<AggregateException>(exception);
+        AssertSequence.AreEqual(["listener", "closed"], ((AggregateException)exception).InnerExceptions.Select(e => e.Message).ToList());
+        Assert.IsFalse(Service.IsOpen);
+    }
+
+    [TestMethod]
     public async Task A_listener_that_throws_after_a_global_shortcut_reaches_the_renderer()
     {
         JSInterop.SetupModule(ModulePath).SetupModule("init", _ => true);
@@ -165,14 +215,34 @@ public class BaletteBrowserCallTests : BunitContext
     }
 
     [TestMethod]
-    public void A_trigger_with_its_own_icon_is_named_by_the_string()
+    public void A_trigger_without_a_label_is_named_by_the_string_alone()
     {
-        var trigger = Render<BaletteTrigger>(p => p.AddChildContent("<span aria-hidden=\"true\">⌘</span>"));
+        var trigger = Render<BaletteTrigger>(p => p.Add(x => x.Label, " "));
 
-        // No aria-label: the browser names the button from its content, of which the icon is hidden and the string is not.
+        // Nothing shown to start the name with, so it does not start with the separator.
+        Assert.AreEqual("Open command palette", trigger.Find("button").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void An_open_palette_string_that_holds_the_label_is_the_whole_name()
+    {
+        // An app that wrote the string as a whole name before the label started it.
+        Render<Balette>(p => p.Add(x => x.Strings, new BaletteStrings { OpenPalette = "Search commands" }));
+        var trigger = Render<BaletteTrigger>();
+
+        Assert.AreEqual("Search commands", trigger.Find("button").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void A_trigger_with_its_own_icon_and_an_empty_label_is_named_by_the_string()
+    {
+        var trigger = Render<BaletteTrigger>(p => p
+            .Add(x => x.Label, "")
+            .AddChildContent("<span aria-hidden=\"true\">⌘</span>"));
+
         var button = trigger.Find("button");
-        Assert.IsFalse(button.HasAttribute("aria-label"));
-        Assert.AreEqual("Open command palette", button.QuerySelector(".bit-balette-sr-only")!.TextContent.Trim());
+        Assert.AreEqual("Open command palette", button.GetAttribute("aria-label"));
+        Assert.IsNull(button.QuerySelector(".bit-balette-sr-only"));
     }
 
     [TestMethod]
@@ -180,10 +250,23 @@ public class BaletteBrowserCallTests : BunitContext
     {
         var trigger = Render<BaletteTrigger>(p => p.AddChildContent("<kbd>&gt;</kbd> Commands mode"));
 
-        // The name the browser computes from the content starts with the text it shows, and goes on to say what it does.
+        // The name the browser computes from the content starts with the text it shows, and goes on to say what it does,
+        // joined as the default trigger's name is.
         var button = trigger.Find("button");
         Assert.IsFalse(button.HasAttribute("aria-label"));
-        Assert.AreEqual("> Commands mode Open command palette", NormalizeSpace(button.TextContent));
+        Assert.AreEqual("> Commands mode, Open command palette", NormalizeSpace(button.TextContent));
+    }
+
+    [TestMethod]
+    public void A_trigger_with_its_own_content_and_its_label_is_named_as_the_default_one()
+    {
+        var trigger = Render<BaletteTrigger>(p => p
+            .Add(x => x.Label, "Commands mode")
+            .AddChildContent("<kbd>&gt;</kbd> Commands mode"));
+
+        var button = trigger.Find("button");
+        Assert.AreEqual("Commands mode, Open command palette", button.GetAttribute("aria-label"));
+        Assert.IsNull(button.QuerySelector(".bit-balette-sr-only"));
     }
 
     [TestMethod]
