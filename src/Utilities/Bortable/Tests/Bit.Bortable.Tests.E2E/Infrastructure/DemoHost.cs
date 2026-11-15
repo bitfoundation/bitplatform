@@ -1,10 +1,12 @@
 ﻿namespace Bit.Bortable.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// The demo server every test drives: Bit.Bortable.Demo.Server started from its build output on a free port,
-/// once for the whole run. The demo keeps no state on the server (each page runs in the browser on
-/// WebAssembly, its lists included), and every test opens its own browser context, so sharing the process
-/// shares nothing.
+/// The demo server every test drives, once for the whole run: the one <c>BORTABLE_E2E_BASE_URL</c> points at - in CI the
+/// demo published the way <c>cd.bortable.demo.yml</c> publishes it, since only a publish trims the WebAssembly client
+/// and an interop payload the trimmer breaks fails nowhere else - or else, for a quick local run,
+/// Bit.Bortable.Demo.Server started from its build output on a free port. The demo keeps no state on the server (each
+/// page runs in the browser on WebAssembly, its lists included), and every test opens its own browser context, so
+/// sharing the process shares nothing.
 /// </summary>
 public sealed class DemoHost : IAsyncDisposable
 {

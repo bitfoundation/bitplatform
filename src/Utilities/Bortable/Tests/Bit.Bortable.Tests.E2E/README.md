@@ -80,7 +80,7 @@ dotnet publish Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.
 dotnet build Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
-pwsh Tests/Bit.Bortable.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium
+pwsh Tests/Bit.Bortable.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium
 
 cd Tests/Bit.Bortable.Tests.E2E && dotnet test
 
@@ -94,24 +94,29 @@ BORTABLE_E2E_BROWSER=firefox dotnet test
 ```
 
 The built test assembly is also an executable test host, which takes the same options:
-`dotnet bin/Debug/net10.0/Bit.Bortable.Tests.E2E.dll --filter "FullyQualifiedName~.PluginTests."`.
+`dotnet bin/Debug/net11.0/Bit.Bortable.Tests.E2E.dll --filter "FullyQualifiedName~.PluginTests."`.
 
-The workflow `.github/workflows/ci.bortable.e2e.yml` does the same in Release. It is started by hand
-(`workflow_dispatch`) only, since the suite takes far longer than the build-and-unit pipeline in
-`ci.bortable.yml`:
+The workflow `.github/workflows/ci.bortable.e2e.yml` does the same in Release, against the demo published the way
+`cd.bortable.demo.yml` publishes it rather than a build output: only a publish trims the WebAssembly client, so an
+interop payload the trimmer breaks (an anonymous type whose constructor lost its parameter names, a getter nothing but
+System.Text.Json reads) fails there and nowhere else. It is started by hand (`workflow_dispatch`) only, since the suite
+takes far longer than the build-and-unit pipeline in `ci.bortable.yml`:
 
 ```bash
-dotnet build src/Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 dotnet publish src/Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj -c Release
-pwsh src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
-cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bortable-e2e.trx
+pwsh src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+(cd demo && dotnet Bit.Bortable.Demo.Server.dll --urls http://127.0.0.1:5000 &)
+cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E && BORTABLE_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename bortable-e2e.trx
 ```
 
+Before a change that touches what crosses JS interop is merged, run the suite against such a publish locally too.
+
 Without PowerShell 7, the browser can be installed with Windows PowerShell
-(`powershell -ExecutionPolicy Bypass -File bin/Debug/net10.0/playwright.ps1 install chromium`) or with the Node.js
+(`powershell -ExecutionPolicy Bypass -File bin/Debug/net11.0/playwright.ps1 install chromium`) or with the Node.js
 runtime Playwright ships:
-`bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.
+`bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.
 
 The suite starts the demo server itself (`dotnet Bit.Bortable.Demo.Server.dll --urls http://127.0.0.1:<free port>`,
 in the Development environment so the build output finds its static web assets), waits until it answers, shares

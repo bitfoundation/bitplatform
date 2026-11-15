@@ -48,6 +48,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     private bool _defaultsApplied;
     private bool _playFlipOnRender;
     private bool _disposed;
+    // The module's import threw on the last render: the next render tries again (see OnAfterRenderAsync).
+    private bool _importFailed;
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
@@ -655,7 +657,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         // The abandoned drag is reported first, as it ended before this one started.
         if (abandoned is not null)
         {
-            await ConfirmAndReportAsync(abandoned);
+            await ConfirmAndReportAsync(abandoned, keepFailure: true);
             await PassOnAsync(abandoned.Context);
             if (_disposed || Items is null || Service.Confirming > 0 || !CanDrag(item)) return null;
         }
@@ -679,20 +681,32 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             Service.Gate.Release();
         }
 
-        // Picking up an unselected item drops the selection.
-        if (_selectionChanged) await PublishSelectionAsync();
-        if (info is not null)
+        try
         {
-            try
+            // Picking up an unselected item drops the selection.
+            if (_selectionChanged) await PublishSelectionAsync();
+            if (info is not null) await RaiseEventAsync(BortableEventType.Start, info);
+        }
+        catch (Exception exception)
+        {
+            // The browser is never told the drag started, so it would never end it: end it here, as cancelled - OnEnd
+            // still follows OnStart. What the app's code threw is passed on as the list's own (see PassOnAsync), as
+            // nothing would report it once it went back to the browser layer.
+            var failure = exception;
+            if (started is not null)
             {
-                await RaiseEventAsync(BortableEventType.Start, info);
+                try
+                {
+                    await AbortAsync(started);
+                }
+                catch (Exception reported)
+                {
+                    failure = new AggregateException(exception, reported);
+                }
             }
-            catch
-            {
-                // The browser is never told the drag started, so it would never end it: end it here, as cancelled.
-                if (started is not null) await AbortAsync(started);
-                throw;
-            }
+
+            await DispatchExceptionAsync(failure);
+            return null;
         }
         return lists is null ? null : new BortableStartResult { Lists = lists, Announce = announce, Clone = clone, Drag = started?.Id ?? 0 };
     }
@@ -786,7 +800,19 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         var about = new BortableAnnouncement { Item = LabelOf(item), Position = IndexOfItem(item) + 1, Count = Items.Count, List = AriaLabel };
         if (!CanDrag(item)) return new BortableKeyResult { Announce = EffectiveMessages.Locked(about) };
 
-        bool selected = await SelectAsync(item, range: false);
+        bool selected;
+        try
+        {
+            selected = await SelectAsync(item, range: false);
+        }
+        catch (Exception exception)
+        {
+            // A SelectedItemsChanged handler threw: the selection changed all the same, and is said; the exception is
+            // passed on as the list's own, as nothing would report it once it went back to the browser layer.
+            selected = _selected.Contains(item);
+            await DispatchExceptionAsync(exception);
+        }
+
         about = new BortableAnnouncement { Item = about.Item, Position = about.Position, Count = about.Count, List = about.List, Selected = _selected.Count };
         return new BortableKeyResult { Announce = selected ? EffectiveMessages.Selected(about) : EffectiveMessages.Deselected(about), List = Id, Key = key };
     }
@@ -850,7 +876,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             Service.Gate.Release();
         }
 
-        if (change is not null) await change.To.RaiseEventAsync(BortableEventType.Change, change);
+        if (change is not null) await KeepFailureAsync(ctx, () => change.To.RaiseEventAsync(BortableEventType.Change, change));
         await PassOnAsync(ctx);
         return result;
     }
@@ -937,7 +963,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             Service.Gate.Release();
         }
 
-        outcome = await ConfirmAndReportAsync(outcome);
+        outcome = await ConfirmAndReportAsync(outcome, keepFailure: true);
         var zone = outcome.Info.To;
         var key = zone.KeyOfItem(outcome.Info.Item);
         zone.Focus(key);
@@ -1050,7 +1076,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             Service.Gate.Release();
         }
 
-        if (change is not null) await RaiseEventAsync(BortableEventType.Change, change);
+        if (change is not null) await KeepFailureAsync(ctx, () => RaiseEventAsync(BortableEventType.Change, change));
         await PassOnAsync(ctx);
         return result;
     }
@@ -1397,7 +1423,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         }
 
         if (outcome is null) return null;
-        outcome = await ConfirmAndReportAsync(outcome);
+        outcome = await ConfirmAndReportAsync(outcome, keepFailure: true);
         var announce = how == "abandon" ? null : EndAnnouncement(outcome);
         await PassOnAsync(outcome.Context);
         return announce;
@@ -1626,9 +1652,11 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// when it says no, then reports the outcome, which it returns. No other drag starts while it is asked. One that
     /// throws refuses the drag - OnEnd still follows OnStart - and its exception is kept on the drag, for the caller to
     /// pass on once it is done. Without <paramref name="ask"/> it is not asked, and a destination that has one is taken
-    /// to refuse: a drag it could not confirm is not kept.
+    /// to refuse: a drag it could not confirm is not kept. With <paramref name="keepFailure"/> - a call the browser layer
+    /// made, which answers the browser and passes the app's exceptions on (<see cref="PassOnAsync"/>) - what a handler
+    /// throws while the drag is reported is kept on the drag too, rather than thrown before the call has its answer.
     /// </summary>
-    private async Task<BortableDragOutcome> ConfirmAndReportAsync(BortableDragOutcome outcome, bool ask = true)
+    private async Task<BortableDragOutcome> ConfirmAndReportAsync(BortableDragOutcome outcome, bool ask = true, bool keepFailure = false)
     {
         if (!outcome.Info.Canceled && outcome.ChangedZones.Count > 0)
         {
@@ -1660,11 +1688,38 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         {
             await ReportAsync(outcome);
         }
+        catch (Exception exception) when (keepFailure)
+        {
+            Keep(outcome.Context, exception);
+        }
         catch (Exception exception) when (outcome.Context.Failure is not null)
         {
             throw new AggregateException(exception, outcome.Context.TakeFailure()!);
         }
         return outcome;
+    }
+
+    /// <summary>
+    /// Keeps <paramref name="exception"/>, which the app's code threw during a call the browser layer made, on the drag
+    /// for <see cref="PassOnAsync"/>: first, with what the drag already kept after it, so neither is lost.
+    /// </summary>
+    private static void Keep(BortableDragContext ctx, Exception exception)
+    {
+        var kept = ctx.TakeFailure();
+        ctx.Fail(kept is null ? exception : new AggregateException(exception, kept));
+    }
+
+    /// <summary>Raises an event during a call the browser layer made, keeping what its handler throws (see <see cref="Keep"/>).</summary>
+    private static async Task KeepFailureAsync(BortableDragContext ctx, Func<Task> raise)
+    {
+        try
+        {
+            await raise();
+        }
+        catch (Exception exception)
+        {
+            Keep(ctx, exception);
+        }
     }
 
     /// <summary>
@@ -1744,17 +1799,32 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     /// <summary>
     /// Notifies <c>ItemsChanged</c> of every list a finished drag changed, then raises its lifecycle events.
-    /// Called outside the gate: the handlers see the final state, and a slow one cannot hold up the next drag.
+    /// Called outside the gate: the handlers see the final state, and a slow one cannot hold up the next drag. A handler
+    /// that throws does not keep the others from hearing of the drag - OnEnd still follows OnStart: what each threw is
+    /// thrown once all of them ran, the one exception as it was, several together.
     /// </summary>
     private static async Task ReportAsync(BortableDragOutcome outcome)
     {
+        List<Exception>? failures = null;
+        async Task RunAsync(Func<Task> step)
+        {
+            try
+            {
+                await step();
+            }
+            catch (Exception exception)
+            {
+                (failures ??= []).Add(exception);
+            }
+        }
+
         foreach (var zone in outcome.ChangedZones)
-            await zone.NotifyItemsChangedAsync();
+            await RunAsync(zone.NotifyItemsChangedAsync);
 
         // A multi-drag spends its selection; items that left a list leave its selection.
         var ctx = outcome.Context;
         foreach (var zone in new HashSet<IBortableZone>([ctx.Source, ctx.CurrentZone, .. ctx.TouchedZones], ReferenceEqualityComparer.Instance))
-            await zone.PublishSelectionIfChangedAsync();
+            await RunAsync(zone.PublishSelectionIfChangedAsync);
 
         var info = outcome.Info;
         var from = info.From;
@@ -1766,16 +1836,16 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         {
             if (outcome.ListChanged)
             {
-                await from.RaiseEventAsync(BortableEventType.Update, info);
-                await from.RaiseEventAsync(BortableEventType.Sort, info);
+                await RunAsync(() => from.RaiseEventAsync(BortableEventType.Update, info));
+                await RunAsync(() => from.RaiseEventAsync(BortableEventType.Sort, info));
             }
         }
         else
         {
-            if (outcome.SourceChanged) await from.RaiseEventAsync(BortableEventType.Remove, info);
-            await info.To.RaiseEventAsync(BortableEventType.Add, info);
-            if (outcome.SourceChanged) await from.RaiseEventAsync(BortableEventType.Sort, info);
-            await info.To.RaiseEventAsync(BortableEventType.Sort, info);
+            if (outcome.SourceChanged) await RunAsync(() => from.RaiseEventAsync(BortableEventType.Remove, info));
+            await RunAsync(() => info.To.RaiseEventAsync(BortableEventType.Add, info));
+            if (outcome.SourceChanged) await RunAsync(() => from.RaiseEventAsync(BortableEventType.Sort, info));
+            await RunAsync(() => info.To.RaiseEventAsync(BortableEventType.Sort, info));
         }
 
         // A list that is neither - one a keyboard drag carried the item into, which a swap then traded it away from - was
@@ -1784,9 +1854,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         {
             foreach (var zone in outcome.ChangedZones)
                 if (!ReferenceEquals(zone, from) && !ReferenceEquals(zone, info.To))
-                    await zone.RaiseEventAsync(BortableEventType.Sort, info);
+                    await RunAsync(() => zone.RaiseEventAsync(BortableEventType.Sort, info));
         }
-        await from.RaiseEventAsync(BortableEventType.End, info);
+        await RunAsync(() => from.RaiseEventAsync(BortableEventType.End, info));
+
+        if (failures is [var failure]) ExceptionDispatchInfo.Throw(failure);
+        if (failures is not null) throw new AggregateException(failures);
     }
 
     /// <summary>
@@ -2021,10 +2094,20 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         if (_disposed) return;
 
-        if (firstRender)
+        if (firstRender || _importFailed)
         {
-            // Every list of the scope shares the one import.
-            _module = await Service.GetModuleAsync();
+            // Every list of the scope shares the one import. One that failed - the module's download, say - is tried
+            // again on the next render instead of leaving the list without its browser layer for good.
+            _importFailed = false;
+            try
+            {
+                _module = await Service.GetModuleAsync();
+            }
+            catch
+            {
+                _importFailed = true;
+                throw;
+            }
             if (_disposed) _module = null;
         }
 

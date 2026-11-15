@@ -116,7 +116,8 @@ internal sealed class BortableService(IJSRuntime js, IEnumerable<BortableConfigu
 
     /// <summary>
     /// The <c>bit-bortable.js</c> module, imported by the first list that asks for it. <c>null</c> when the
-    /// browser is gone (a disconnected circuit), in which case a later list tries again.
+    /// browser is gone (a disconnected circuit). An import that failed is not kept: a later list, or a later render of
+    /// the same one, tries again rather than meeting the same failure until the page is reloaded.
     /// </summary>
     internal async Task<IJSObjectReference?> GetModuleAsync()
     {
@@ -125,10 +126,11 @@ internal sealed class BortableService(IJSRuntime js, IEnumerable<BortableConfigu
         {
             return await import;
         }
-        catch (Exception e) when (e is JSDisconnectedException or TaskCanceledException)
+        catch (Exception e)
         {
             if (ReferenceEquals(_import, import)) _import = null;
-            return null;
+            if (e is JSDisconnectedException or TaskCanceledException) return null;
+            throw;
         }
     }
 
