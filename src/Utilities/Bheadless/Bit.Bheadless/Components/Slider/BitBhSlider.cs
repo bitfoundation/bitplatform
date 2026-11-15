@@ -378,10 +378,27 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
     private double Snap(double value)
     {
         var step = EffectiveStep;
-        var snapped = Math.Round((value - Min) / step) * step + Min;
-        var decimals = Math.Max(0, (int)Math.Ceiling(-Math.Log10(step)) + 1);
-        return Math.Clamp(Math.Round(snapped, Math.Min(decimals, 10)), Min, Max);
+        double snapped;
+        try
+        {
+            // In decimal, so a step like 0.125 or 0.1 lands exactly on its multiples instead of on a binary
+            // approximation that has to be rounded to a guessed number of decimals.
+            var decimalStep = (decimal)step;
+            var decimalMin = (decimal)Min;
+            snapped = (double)(Math.Round(((decimal)value - decimalMin) / decimalStep) * decimalStep + decimalMin);
+        }
+        catch (OverflowException)
+        {
+            snapped = Math.Round((value - Min) / step) * step + Min;
+        }
+        return Clamp(snapped, Min, Max);
     }
+
+    /// <summary>
+    /// <see cref="Math.Clamp(double, double, double)"/> that does not throw while the bounds are crossed - a bound
+    /// <see cref="Min"/> and <see cref="Max"/> can be for a render, and a thumb gap can leave no room: the lower bound wins.
+    /// </summary>
+    private static double Clamp(double value, double min, double max) => Math.Clamp(value, min, Math.Max(min, max));
 
     /// <summary>
     /// Moves a thumb. Returns the resulting values - the ones to report: a controlled <see cref="Value"/> /
@@ -399,13 +416,13 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
         {
             case BitBhSliderThumbCollision.Push:
                 // The thumb may go as far as leaves room for the ones it pushes.
-                next = Math.Clamp(next, Min + gap * index, Max - gap * (values.Length - 1 - index));
+                next = Clamp(next, Min + gap * index, Max - gap * (values.Length - 1 - index));
                 values[index] = next;
                 for (var i = index + 1; i < values.Length; i++) values[i] = Math.Max(values[i], values[i - 1] + gap);
                 for (var i = index - 1; i >= 0; i--) values[i] = Math.Min(values[i], values[i + 1] - gap);
                 break;
             case BitBhSliderThumbCollision.Swap:
-                next = Math.Clamp(next, Min, Max);
+                next = Clamp(next, Min, Max);
                 values[index] = next;
                 // Passing a neighbour swaps them: the values stay in order and the moving value changes thumb.
                 var moved = index;
@@ -420,7 +437,7 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
             default:
                 if (index > 0) next = Math.Max(next, values[index - 1] + gap);
                 if (index < values.Length - 1) next = Math.Min(next, values[index + 1] - gap);
-                next = Math.Clamp(next, Min, Max);
+                next = Clamp(next, Min, Max);
                 values[index] = next;
                 break;
         }

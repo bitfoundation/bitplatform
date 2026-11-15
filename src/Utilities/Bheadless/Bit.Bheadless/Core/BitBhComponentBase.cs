@@ -223,7 +223,7 @@ public abstract class BitBhComponentBase : ComponentBase
     }
 
     /// <summary>Whether this render runs in the browser. A renderer that does not say (a test renderer) counts as one.</summary>
-    private bool IsInteractiveRenderer()
+    private protected bool IsInteractiveRenderer()
     {
         try
         {

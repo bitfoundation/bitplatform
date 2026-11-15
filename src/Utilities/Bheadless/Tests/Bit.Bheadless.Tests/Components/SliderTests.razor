@@ -324,4 +324,32 @@
         Assert.AreEqual("over-value", State("80"));
         Assert.IsTrue(cut.FindAll("[data-value]").First(m => m.TextContent == "40").HasAttribute("data-in-range"));
     }
+
+    [TestMethod]
+    public void Fractional_steps_land_on_their_multiples()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValue="0" Min="0" Max="1" Step="0.125">
+                <BitBhSliderThumb aria-label="Opacity" />
+            </BitBhSlider>);
+
+        string Now() => cut.Find("[role=slider]").GetAttribute("aria-valuenow")!;
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual("0.125", Now());
+        cut.Find("[role=slider]").Press("ArrowRight");
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual("0.375", Now());
+    }
+
+    [TestMethod]
+    public void Crossed_bounds_do_not_throw()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValue="5" Min="10" Max="0">
+                <BitBhSliderThumb aria-label="Level" />
+            </BitBhSlider>);
+
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual("10", cut.Find("[role=slider]").GetAttribute("aria-valuenow"));
+    }
 }

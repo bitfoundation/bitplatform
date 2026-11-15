@@ -72,7 +72,8 @@ public class BitBhNavigationMenuViewport : BitBhComponentBase, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         if (MenuContext?.ViewportId == ComponentId) MenuContext.Root.RegisterViewport(null);
-        await Interop.NavigationMenuReleaseAsync(ComponentId);
+        // A prerendered viewport never reached the browser, and its request's services are gone by now.
+        if (IsInteractiveRenderer()) await Interop.NavigationMenuReleaseAsync(ComponentId);
         GC.SuppressFinalize(this);
     }
 }
