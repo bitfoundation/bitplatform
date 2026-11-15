@@ -72,6 +72,8 @@ const HANDLE_CLASS = 'bit-blow-handle';
 const PAGE_SCROLL_CLASS = 'bit-blow-page-scroll';
 const PAGE_ZOOM_CLASS = 'bit-blow-page-zoom';
 const NODES_LOCKED_CLASS = 'bit-blow-nodes-locked';
+// How long the page has to stop scrolling before the pane's new rectangle is sent to .NET; see observeResize.
+const SCROLL_SETTLE_MS = 100;
 
 export function getRect(el: Element | null): BlowDomRect | null {
     if (!el) return null;
@@ -204,6 +206,8 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
     let frame = 0;
     let pendingMeasure = false;
     let disposed = false;
+    let scrollEnd = 0;
+    let scrollStale = false;
 
     // Coalesce bursts of observations into one callback per frame: a single layout pass can
     // resize the pane and every node at once, and each would otherwise round-trip to .NET.
@@ -231,11 +235,24 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
     // Scrolling an ancestor moves the pane on screen without resizing anything, which still
     // invalidates the cached rectangle used for screen <-> flow conversions. Scrolling inside the
     // flow (a scrollable node) or in some unrelated part of the page does not.
+    // A scroll fires on every frame, and over a Blazor Server circuit each report is a message:
+    // the first scroll of a burst only tells .NET its rectangle is stale (a gesture or a wheel
+    // re-reads it when it needs it), and the rectangle itself follows once the scrolling stops.
     const onScroll = (e: Event) => {
         const t = e.target;
+        if (disposed) return;
         if (t === document || t === document.documentElement || t === document.body
             || (t instanceof Node && t.contains(paneEl))) {
-            notify(false);
+            if (!scrollStale) {
+                scrollStale = true;
+                Promise.resolve(dotNetRef.invokeMethodAsync('OnPaneMoved')).catch(() => { });
+            }
+            if (scrollEnd) clearTimeout(scrollEnd);
+            scrollEnd = window.setTimeout(() => {
+                scrollEnd = 0;
+                scrollStale = false;
+                notify(false);
+            }, SCROLL_SETTLE_MS);
         }
     };
     const onWindowResize = () => notify(false);
@@ -282,6 +299,7 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
         dispose: () => {
             disposed = true;
             if (frame) cancelAnimationFrame(frame);
+            if (scrollEnd) clearTimeout(scrollEnd);
             resizeObserver.disconnect();
             mutationObserver.disconnect();
             window.removeEventListener('scroll', onScroll, true);
@@ -435,7 +453,7 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
 
         if (onElement && (e.key === ' ' || e.key === 'Enter')) e.preventDefault();
         else if (panKey && e.key === panKey) e.preventDefault();
-        else if (keyboardA11y && e.key && e.key.startsWith('Arrow')) e.preventDefault();
+        else if (keyboardA11y && e.key && e.key.startsWith('Arrow') && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault();
         else if (isFlowShortcut(e)) e.preventDefault();
         else if (!e.ctrlKey && !e.metaKey && !e.altKey && deleteKeys.includes(e.key)) e.preventDefault();
     };
