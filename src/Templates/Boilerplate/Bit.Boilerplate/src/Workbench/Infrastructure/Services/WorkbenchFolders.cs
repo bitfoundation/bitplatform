@@ -1,4 +1,5 @@
 using System.Text;
+using System.Reflection;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
@@ -66,9 +67,12 @@ public static class WorkbenchFolders
                 return folder.FullName;
         }
 
-        // Built with an artifacts path, its output is away from the project, and the build recorded where the project is.
-        return typeof(WorkbenchFolders).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), false)
-                                         .Cast<System.Reflection.AssemblyMetadataAttribute>()
+        // Built with an artifacts path, its output is away from the project, and the build recorded where the project is. Only
+        // the Workbench itself under dotnet watch reads it, so a published copy or a test host keeps no project, as before.
+        if (Environment.GetEnvironmentVariable("DOTNET_WATCH") is not "1" || Assembly.GetEntryAssembly() != typeof(WorkbenchFolders).Assembly)
+            return null;
+
+        return typeof(WorkbenchFolders).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                                          .FirstOrDefault(attribute => attribute.Key == "WorkbenchProject")?.Value is { } project
                                          && File.Exists(Path.Combine(project, "Boilerplate.Workbench.csproj")) ? project : null;
     }
