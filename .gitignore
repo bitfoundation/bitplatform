@@ -62,6 +62,8 @@ artifacts/
 *.pgc
 *.pgd
 *.rsp
+# The bit aot-profile options a demo's workflows share are a response file kept in the repository.
+!aot-profile.rsp
 *.sbr
 *.tlb
 *.tli

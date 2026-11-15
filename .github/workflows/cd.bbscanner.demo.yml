@@ -39,8 +39,10 @@ jobs:
     - name: Setup bit CLI
       uses: ./.github/actions/setup-bit-cli
 
+    # The pages and steps are in aot-profile.rsp, which says why it visits every page. The -p properties are those of the
+    # publish below.
     - name: Collect the AOT profile
-      run: bit aot-profile src/Utilities/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj -o bbscanner.aotprofile --include Bit.BbScanner -p:AspNetCoreHostingModel=OutOfProcess -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
+      run: bit aot-profile @src/Utilities/BbScanner/Demo/aot-profile.rsp -o bbscanner.aotprofile -p:AspNetCoreHostingModel=OutOfProcess -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
 
     - name: Publish
       run: dotnet publish src/Utilities/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o server -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true -p:WasmAotProfilePath="${{ github.workspace }}/bbscanner.aotprofile"

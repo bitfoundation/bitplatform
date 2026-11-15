@@ -49,11 +49,11 @@ jobs:
     - name: Setup bit CLI
       uses: ./.github/actions/setup-bit-cli
 
-    # Every demo page, not just the start page bit aot-profile visits by default: on a page the profile never ran, like
-    # the editor's, the app mixes compiled and interpreted framework code and Mono stops it with an assertion at interp.c.
-    # Collected as cd.bmage.demo.yml collects it.
+    # With the pages and steps cd.bmage.demo.yml collects the deployed demo's profile with, from the same aot-profile.rsp,
+    # so the tests run the code the deployed demo compiles ahead of time. The -p properties are those of the publish below:
+    # cd.bmage.demo.yml's also set the version and the IIS hosting model, which the tests don't need.
     - name: Collect the AOT profile
-      run: bit aot-profile src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -o bmage.aotprofile --max-pages 50 --include Bit.Bmage --include Bit.Bmage.Blazor -p:InvariantGlobalization=true
+      run: bit aot-profile @src/Utilities/Bmage/Demo/aot-profile.rsp -o bmage.aotprofile -p:InvariantGlobalization=true
 
     # The tests drive the demo published the way cd.bmage.demo.yml publishes it, not a build output: only a publish
     # trims the WebAssembly client, and an interop payload the trimmer breaks - an anonymous type whose constructor

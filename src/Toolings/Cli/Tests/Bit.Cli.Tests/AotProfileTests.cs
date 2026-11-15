@@ -310,9 +310,22 @@ public class AotProfileTests
     [DataRow("wait:soon", false)]
     [DataRow("click:", false)]
     [DataRow("settings", false)]
+    [DataRow("file:photo.png|.editor input[type=file]", true)]
+    [DataRow("file:photo.png|input[accept='a|b']", true)]
+    [DataRow("file:photo.png", false)]
+    [DataRow("file:|input", false)]
+    [DataRow("file:photo.png| ", false)]
     public void Steps_Should_BeChecked(string step, bool valid)
     {
         Assert.AreEqual(valid, ProfileCollector.IsValidStep(step));
+    }
+
+    [TestMethod]
+    public void AFileStep_Should_SplitAtTheFirstBar()
+    {
+        Assert.AreEqual(("photo.png", "input[accept='a|b']"), ProfileCollector.FileStep("file:photo.png|input[accept='a|b']"));
+        Assert.AreEqual($"file:{Path.GetFullPath("photo.png", Path.GetTempPath())}|input", ProfileCollector.WithFullPath("file:photo.png|input", Path.GetTempPath()));
+        Assert.AreEqual("click:input", ProfileCollector.WithFullPath("click:input", Path.GetTempPath()));
     }
 
     [TestMethod]
@@ -446,6 +459,18 @@ public class AotProfileTests
     }
 
     [TestMethod]
+    public async Task AFileStepWithoutItsFile_Should_BeRefusedBeforePublishing()
+    {
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("aot-profile", "--step", "file:missing.png|input"));
+
+        StringAssert.Contains(host.FlatOutput, "there's no file at missing.png");
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
     public async Task AnUnknownInclude_Should_BeRefusedBeforeTheAppIsUsed()
     {
         using var host = new TestHost();
@@ -569,6 +594,82 @@ public class AotProfileTests
         Assert.AreEqual(1, browser.Clicks);
         StringAssert.Contains(host.FlatOutput, "click:#sign-out reloads the app");
         StringAssert.Contains(host.FlatOutput, "Used the app 1 page, 1 step");
+    }
+
+    [TestMethod]
+    public async Task AFileStep_Should_GiveTheInputTheFileFromTheWorkingDirectory()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "photo.png"), "");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root) { FileInput = ".editor input[type=file]" };
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--step", "file:photo.png|.editor input[type=file]", "--step", "file:photo.png|.missing"), host.Output);
+
+        CollectionAssert.AreEqual(new[] { Path.Combine(host.WorkingDirectory, "photo.png") }, browser.FilesGiven);
+        StringAssert.Contains(host.FlatOutput, "--step file:photo.png|.missing: nothing on the page matches it.");
+    }
+
+    [TestMethod]
+    public async Task APageThatHasTheProfileWritten_Should_LeaveThePagesAfterItInTheProfile()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root) { WritesProfileOn = page => page == "/scan" };
+        browser.Links["/"] = ["/scan", "/editor", "/batch"];
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--max-pages", "10"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "Used the app 4 pages");
+        StringAssert.Contains(host.FlatOutput, "The profile was written during /scan");
+        // The start page's document wrote its profile on /scan; /editor was loaded as a new document, which went on to /batch.
+        Assert.AreEqual(2, browser.Loads);
+        var methods = AotProfile.Read(File.ReadAllBytes(Path.Combine(host.WorkingDirectory, "App.Client.aotprofile"))).Methods.Select(m => m.Name).ToList();
+        CollectionAssert.IsSubsetOf(new[] { "Load1", "Load2" }, methods);
+    }
+
+    [TestMethod]
+    public async Task ACrawlThatStopsShort_Should_SayWhichPagesItLeftOut()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root);
+        browser.Links["/"] = ["/counter", "/weather"];
+        browser.Links["/counter"] = ["/settings"];
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--max-pages", "2"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "--max-pages 2 left out 2 more pages the app links to: /weather /settings");
+    }
+
+    [TestMethod]
+    public async Task ACrawlThatReachesEveryPage_Should_NotWarn()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root);
+        browser.Links["/"] = ["/counter", "/weather"];
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--max-pages", "3"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "Used the app 3 pages");
+        Assert.DoesNotContain("left out", host.FlatOutput);
     }
 
     [TestMethod]
@@ -725,6 +826,7 @@ public class AotProfileTests
         private Uri? current;
         private bool hashStored;
         private bool downloadedHere;
+        private bool profileWritten;
 
         public FakeBrowser(string folder)
         {
@@ -764,6 +866,14 @@ public class AotProfileTests
         public int Loads { get; private set; }
 
         public int Downloads { get; private set; }
+
+        /// <summary>The pages that read a .NET exception's stack trace as they settle, which has the profiler write the profile.</summary>
+        public Func<string, bool>? WritesProfileOn { get; init; }
+
+        /// <summary>The selector of the page's one file input.</summary>
+        public string? FileInput { get; init; }
+
+        public List<string> FilesGiven { get; } = [];
 
         public async ValueTask DisposeAsync()
         {
@@ -842,10 +952,15 @@ public class AotProfileTests
                 case "Page.navigate":
                     Navigate(parameters!["url"]!.GetValue<string>());
                     return [];
+                case "DOM.setFileInputFiles":
+                    FilesGiven.AddRange(parameters!["files"]!.AsArray().Select(f => f!.GetValue<string>()));
+                    return [];
                 case "Runtime.evaluate":
                     var expression = parameters!["expression"]!.GetValue<string>();
                     var call = expression.LastIndexOf(")(", StringComparison.Ordinal);
                     var argument = expression[(call + 2)..^1];
+                    if (expression.Contains("input.type !== 'file'", StringComparison.Ordinal))
+                        return new JsonObject { ["result"] = JsonNode.Parse(argument)!.GetValue<string>() == FileInput ? new JsonObject { ["type"] = "object", ["subtype"] = "node", ["objectId"] = "input" } : new JsonObject { ["type"] = "object", ["subtype"] = "null" } };
                     return new JsonObject { ["result"] = Evaluate(expression[1..call], argument.Length == 0 ? null : JsonNode.Parse(argument)) is { } value ? new JsonObject { ["value"] = value } : [] };
                 default:
                     return [];
@@ -871,6 +986,7 @@ public class AotProfileTests
                 return;
 
             Loads++;
+            profileWritten = false;
             page = next.AbsolutePath;
             downloadedHere = RendersInteractiveAuto && hashStored is false;
             hashStored |= RendersInteractiveAuto;
@@ -912,6 +1028,7 @@ public class AotProfileTests
                     throw new DevToolsException("Execution context was destroyed.");
                 }
 
+                profileWritten |= WritesProfileOn?.Invoke(page) is true;
                 return page;
             }
 
@@ -929,10 +1046,14 @@ public class AotProfileTests
                 return started;
 
             if (function.Contains("invokeMethod", StringComparison.Ordinal))
-                return "written";
+                return profileWritten ? "early" : "written";
 
+            // Each document's runtime profiles a method of its own: Load1, Load2 and so on.
             if (function.Contains("btoa", StringComparison.Ordinal))
-                return Convert.ToBase64String(new MonoProfileWriter().Image(0, "App").Type(1, image: 0, instance: -1, "App.Program").Method(2, type: 1, instance: -1, "Main", 0, "void()").ToArray());
+                return Convert.ToBase64String(new MonoProfileWriter().Image(0, "App").Type(1, image: 0, instance: -1, "App.Program").Method(2, type: 1, instance: -1, $"Load{Loads}", 0, "void()").ToArray());
+
+            if (function.Contains("INTERNAL?.aotProfileData", StringComparison.Ordinal))
+                return profileWritten;
 
             return null;
         }
