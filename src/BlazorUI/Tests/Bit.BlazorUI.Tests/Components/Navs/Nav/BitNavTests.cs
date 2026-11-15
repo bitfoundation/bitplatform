@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -2390,6 +2391,72 @@ public class BitNavTests : BunitTestContext
 
         // Space is the activation key of the chevron, so it must not be swallowed as a search term.
         Assert.AreEqual("Apple", component.FindAll(".bit-nav-itx")[1].TextContent);
+    }
+
+    // Flat links, so every item is a stop of its own that takes the focus.
+    private static List<BitNavItem> TypeAheadItems(params string[] texts) =>
+        [.. texts.Select(t => new BitNavItem { Text = t, Url = $"/{t.ToLowerInvariant()}" })];
+
+    private void AssertLastFocused(IRenderedComponent<BitNav<BitNavItem>> component, int index)
+    {
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.IsTrue(focused.Count > 0);
+        focused[^1].Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-nav-ict")[index]);
+    }
+
+    [TestMethod]
+    public void BitNavShouldMoveOnToTheNextItemWhenTheSameLetterIsTypedAgainInTheOtherCase()
+    {
+        var component = RenderNav(TypeAheadItems("Banana", "Apple", "Apricot"));
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "a");
+        PressKey(component, "A");
+
+        // The same letter typed again, whatever its case, walks the items starting with it rather than
+        // looking for one starting with a doubled letter.
+        AssertLastFocused(component, 2);
+    }
+
+    [TestMethod]
+    public void BitNavShouldKeepTheFocusOnTheItemTheTermTypedFurtherStillMatches()
+    {
+        var component = RenderNav(TypeAheadItems("Banana", "Apple", "Apricot"));
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "a");
+        AssertLastFocused(component, 1);
+
+        // "ap" still matches "Apple", so the focus stays there instead of moving on to "Apricot".
+        PressKey(component, "p");
+        AssertLastFocused(component, 1);
+
+        PressKey(component, "r");
+        AssertLastFocused(component, 2);
+    }
+
+    [TestMethod]
+    public void BitNavShouldFindAnAccentedTextByItsPlainLettersWhereTheCultureFoldsThem()
+    {
+        var culture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+        try
+        {
+            var component = RenderNav(TypeAheadItems("Apple", "Éclair", "Fig"));
+
+            component.FindAll(".bit-nav-ict")[0].FocusIn();
+
+            // The accent is a mark on the letter in English, so the plain letter finds the item.
+            PressKey(component, "e");
+
+            AssertLastFocused(component, 1);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
     }
 
     [TestMethod]

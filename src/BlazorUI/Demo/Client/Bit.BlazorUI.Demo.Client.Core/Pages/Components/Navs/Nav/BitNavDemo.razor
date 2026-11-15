@@ -25,6 +25,12 @@
                 2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class <br />
                 3. The <BitLink Href="#nav-option"><BitTag Color="BitColor.SecondaryBackground">BitNavOption</BitTag></BitLink> component
             </BitText>
+            <br />
+            <BitText>
+                Typing the start of an item's text moves the focus to it, and typing the same letter again walks the
+                items starting with it. What is typed is matched by the rules of the current culture:
+                case is ignored, and so are the accents that culture treats as marks on a letter, so "e" finds "Éclair" in English.
+            </BitText>
         </NotesTemplate>
         <Examples>
             <BitPivot Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
