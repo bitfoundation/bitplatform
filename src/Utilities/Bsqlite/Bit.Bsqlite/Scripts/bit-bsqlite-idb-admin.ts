@@ -8,6 +8,7 @@
 export const IDB_NAME = 'idb-batch-atomic';
 export const IDB_VERSION = 6;
 const RELATED_SUFFIXES = ['-journal', '-wal'];
+const SQLITE_HEADER_LENGTH = 100;
 const PAGE_SIZE = 4096;
 
 /** What `probe` reports to the .NET provider, which turns it into a BsqliteProbeResult. */
@@ -51,8 +52,32 @@ export function pathOf(databaseName: string): string {
     return new URL(databaseName, 'file://').pathname;
 }
 
+/**
+ * The database name a path of the VFS's stands for, as `list` reports it and `open` takes it back: the path
+ * without its leading `/`, each segment decoded the way the OPFS admin reads a file name (`decodeName` in
+ * bit-bsqlite-opfs-admin.ts). The URL parser escapes a space or a non-ASCII character, so `My Files.db` is kept
+ * as `/My%20Files.db` - a name the open refuses, since it is that key's own spelling.
+ */
 export function displayName(path: string): string {
-    return path.startsWith('/') ? path.slice(1) : path;
+    const relative = path.startsWith('/') ? path.slice(1) : path;
+    return relative.split('/').map(decodeSegment).join('/');
+}
+
+/**
+ * A path segment decoded - but only when the decoded text maps back to this same segment through
+ * {@link pathOf}. The URL parser leaves `%` alone, so a segment `a%41.db` or `a%2Fb.db` came from a name spelled
+ * that way: decoded, it would read as `aA.db` or `a/b.db`, which are other files. One key so reads as one name,
+ * and two keys never as the same one.
+ */
+function decodeSegment(segment: string): string {
+    let decoded: string;
+    try {
+        decoded = decodeURIComponent(segment);
+    } catch {
+        return segment;
+    }
+
+    return pathOf(decoded) === `/${segment}` ? decoded : segment;
 }
 
 export async function probe(): Promise<ProbeResult> {
@@ -213,10 +238,37 @@ function readCommittedImage(blocks: IDBObjectStore, path: string, meta: Metadata
     });
 }
 
+/**
+ * The first bytes of the committed database, up to the 100 of the SQLite header, or null when it does not
+ * exist - what a migration checks before it exports the whole of it.
+ */
+export async function readHeader(databaseName: string): Promise<Uint8Array | null> {
+    const path = pathOf(requireName(databaseName));
+    const db = await openDatabase();
+
+    try {
+        return await withTransaction(db, 'readonly', async ({ metadata, blocks }) => {
+            const meta = await requestOf<MetadataRow | undefined>(metadata.get(path));
+            return meta
+                ? readCommittedImage(blocks, path, { ...meta, fileSize: Math.min(meta.fileSize ?? 0, SQLITE_HEADER_LENGTH) })
+                : null;
+        });
+    } finally {
+        db.close();
+    }
+}
+
 export async function importDatabase(databaseName: string, contents: Uint8Array | ArrayLike<number> | null): Promise<void> {
     const name = requireName(databaseName);
     const path = pathOf(name);
     const bytes = contents instanceof Uint8Array ? contents : new Uint8Array(contents ?? []);
+    // The blocks below are PAGE_SIZE bytes, and the VFS finds a page by the nearest block start at or below it:
+    // a database of smaller pages would be cut up wrong and turn up malformed after its first write. The .NET
+    // side refuses it first (BsqliteIndexedDbStorageAdmin.ThrowIfPageSizeUnsupported); this is for any other caller.
+    const pageSize = sqlitePageSize(bytes);
+    if (pageSize !== 0 && pageSize !== PAGE_SIZE) {
+        throw new Error(`The database has ${pageSize}-byte pages, and the indexeddb backend keeps only databases of ${PAGE_SIZE}-byte pages.`);
+    }
     const db = await openDatabase();
 
     try {
@@ -241,6 +293,21 @@ export async function importDatabase(databaseName: string, contents: Uint8Array 
 
 function unavailable(reason: string, environment: Record<string, string>): ProbeResult {
     return { available: false, reason, quotaBytes: null, usageBytes: null, environment };
+}
+
+// The page size a SQLite file image's header names, or 0 when the bytes are not a SQLite database.
+function sqlitePageSize(bytes: Uint8Array): number {
+    const magic = 'SQLite format 3\0';
+    if (bytes.byteLength < 100) {
+        return 0;
+    }
+    for (let i = 0; i < magic.length; i++) {
+        if (bytes[i] !== magic.charCodeAt(i)) {
+            return 0;
+        }
+    }
+    const size = (bytes[16] << 8) | bytes[17];
+    return size === 1 ? 65536 : size;
 }
 
 function requireName(databaseName: unknown): string {

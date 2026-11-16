@@ -97,6 +97,73 @@ public sealed class IndexedDbTests : BsqliteTest
         Assert.MatchesRegex(new Regex("fixed", RegexOptions.IgnoreCase), error.Message);
     }
 
+    /// <summary>
+    /// The import cuts an image into 4096-byte blocks, and the VFS finds a page by the nearest block start at or
+    /// below it. A database of 1024-byte pages imported that way read fine until its first write added a
+    /// 1024-byte block inside one of them, after which it was "malformed". It is refused instead.
+    /// </summary>
+    [TestMethod]
+    public async Task Admin_import_refuses_a_database_whose_pages_are_not_4096_bytes()
+    {
+        await OpenHostAsync(Page, new HostOptions { DatabaseName = UniqueName("p1024-source") });
+        await ExecAsync(Page, "PRAGMA page_size = 1024");
+        await ExecAsync(Page, "VACUUM");
+        await ExecAsync(Page, "CREATE TABLE t (id INTEGER PRIMARY KEY, v TEXT)");
+        await ExecAsync(Page, "INSERT INTO t (v) SELECT printf('%.300c', 'x') FROM (WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 50) SELECT i FROM n)");
+
+        var name = UniqueName("idb-p1024");
+        var outcome = await Page.EvaluateAsync<string>(
+            """
+            async name => {
+              const image = await globalThis.host.export();
+              const pageSize = (image[16] << 8) | image[17];
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-idb-admin.js');
+              try {
+                await admin.importDatabase(name, image);
+                return `imported ${pageSize}-byte pages`;
+              } catch (error) {
+                return `refused ${pageSize}-byte pages: ${error.message} exists=${await admin.exists(name)}`;
+              }
+            }
+            """, name);
+
+        StringAssert.StartsWith(outcome, "refused 1024-byte pages:");
+        StringAssert.Contains(outcome, "4096-byte pages");
+        StringAssert.EndsWith(outcome, "exists=false");
+    }
+
+    /// <summary>
+    /// A migration reads the header before it exports the database, so a database the target cannot keep is
+    /// refused without being read out whole.
+    /// </summary>
+    [TestMethod]
+    public async Task Admin_read_header_returns_the_first_100_bytes_or_null()
+    {
+        await OpenHostAsync(Page);
+        var name = UniqueName("idb-header");
+
+        var outcome = await Page.EvaluateAsync<JsonElement>(
+            """
+            async name => {
+              const image = await globalThis.host.export();
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-idb-admin.js');
+              await admin.importDatabase(name, image);
+              try {
+                const header = await admin.readHeader(name);
+                return {
+                  matches: header.length === 100 && header.every((b, i) => b === image[i]),
+                  missing: await admin.readHeader(name + '-missing'),
+                };
+              } finally {
+                await admin.deleteDatabase(name);
+              }
+            }
+            """, name);
+
+        Assert.IsTrue(outcome.GetProperty("matches").GetBoolean());
+        Assert.AreEqual(JsonValueKind.Null, outcome.GetProperty("missing").ValueKind);
+    }
+
     [TestMethod]
     public async Task Persistence_the_default_page_size_is_4096()
     {

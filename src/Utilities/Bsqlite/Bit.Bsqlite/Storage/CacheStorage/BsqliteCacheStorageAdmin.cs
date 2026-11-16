@@ -4,7 +4,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.Bsqlite.Storage.CacheStorage;
 
-internal sealed class BsqliteCacheStorageAdmin(IJSRuntime? js) : IBsqliteStorageAdmin
+internal sealed class BsqliteCacheStorageAdmin(IJSRuntime? js) : IBsqliteStorageAdmin, IBsqliteStorageHeaderReader
 {
     public async ValueTask<bool> ExistsAsync(
         string databaseName,
@@ -30,6 +30,14 @@ internal sealed class BsqliteCacheStorageAdmin(IJSRuntime? js) : IBsqliteStorage
         ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
         return await InvokeAsync<byte[]>("exportDatabase", cancellationToken, databaseName)
             .ConfigureAwait(false);
+    }
+
+    public async ValueTask<byte[]?> ReadHeaderAsync(
+        string databaseName,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
+        return await InvokeAsync<byte[]?>("readHeader", cancellationToken, databaseName).ConfigureAwait(false);
     }
 
     public async ValueTask ImportAsync(

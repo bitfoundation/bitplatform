@@ -95,6 +95,13 @@ internal static class BsqliteDatabaseImage
     public static bool IsWalMode(ReadOnlySpan<byte> image)
         => image.Length >= HeaderLength && (image[18] == 2 || image[19] == 2);
 
+    /// <summary>
+    /// The page size <paramref name="image"/>'s header names, or 0 when it is not a SQLite database or names
+    /// none SQLite can have.
+    /// </summary>
+    public static int PageSize(ReadOnlySpan<byte> image) =>
+        image.Length >= HeaderLength && image[..Magic.Length].SequenceEqual(Magic) ? PageSizeOf(image) : 0;
+
     /// <summary>The page size the header names, or 0 when it names none SQLite can have.</summary>
     private static int PageSizeOf(ReadOnlySpan<byte> image)
     {

@@ -11,7 +11,7 @@ namespace Bit.Bsqlite.Storage.Opfs;
 /// Talks to <c>bit-bsqlite-opfs-admin.js</c>. Related files (<c>-journal</c>, <c>-wal</c>) are not databases
 /// and are stripped on list, delete, and import.
 /// </remarks>
-internal sealed class BsqliteOpfsStorageAdmin(IJSRuntime? js) : IBsqliteStorageAdmin
+internal sealed class BsqliteOpfsStorageAdmin(IJSRuntime? js) : IBsqliteStorageAdmin, IBsqliteStorageHeaderReader
 {
     public async ValueTask<bool> ExistsAsync(
         string databaseName,
@@ -41,6 +41,14 @@ internal sealed class BsqliteOpfsStorageAdmin(IJSRuntime? js) : IBsqliteStorageA
         var bytes = await InvokeAsync<byte[]>("exportDatabase", cancellationToken, databaseName)
             .ConfigureAwait(false);
         return bytes;
+    }
+
+    public async ValueTask<byte[]?> ReadHeaderAsync(
+        string databaseName,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
+        return await InvokeAsync<byte[]?>("readHeader", cancellationToken, databaseName).ConfigureAwait(false);
     }
 
     public async ValueTask ImportAsync(
