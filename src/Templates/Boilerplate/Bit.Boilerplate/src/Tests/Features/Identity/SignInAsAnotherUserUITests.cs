@@ -120,7 +120,7 @@ public partial class SignInAsAnotherUserUITests : AppPageTest
         var pinModal = Page.Locator(".bit-mdl", new() { HasText = AppStrings.EnterPinTitle });
 
         await BitOtpInputUtils.FillOtpInputs(pinModal, "87654321");
-        await Expect(pinModal.GetByText(AppStrings.WrongPin)).ToBeVisibleAsync();
+        await Expect(pinModal.Locator(".bit-otp-dsc")).ToHaveTextAsync(AppStrings.WrongPin);
         await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(secondEmail);
 
         await BitOtpInputUtils.FillOtpInputs(pinModal, pin);
