@@ -68,7 +68,10 @@ public static class BlowSelection
         var index = new Dictionary<string, BlowNode>(StringComparer.Ordinal);
         foreach (var n in all) index.TryAdd(n.Id, n);
         var chosen = selected.Select(n => n.Id).ToHashSet(StringComparer.Ordinal);
-        return [.. all.Where(n => n.Selectable && !chosen.Contains(n.Id) && BlowEdgeLayout.IsShown(n, index.GetValueOrDefault))];
+        // Resolved for the whole graph at once: a walk up from each node would repeat every shared ancestor's.
+        var nesting = new Dictionary<string, BlowEdgeLayout.Nesting>(StringComparer.Ordinal);
+        BlowEdgeLayout.Nest(all, index, nesting);
+        return [.. all.Where(n => n.Selectable && !chosen.Contains(n.Id) && !nesting[n.Id].Hidden)];
     }
 
     private static List<BlowNode> Walk(BlowGraphIndex graph, IEnumerable<string> nodeIds, bool includeStart, BlowTraversalDirection direction)

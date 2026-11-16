@@ -94,9 +94,11 @@
     private async Task OnDrop(DragEventArgs e)
     {
         if (_flow is null) return;
+        // Taken before the await: another drag can start, and set _dragType, while it is converted.
+        var type = _dragType;
         // The async form: dragging to the canvas may have scrolled the page, and it reads the pane's position again then.
         var pointer = await _flow.ScreenToFlowPositionAsync(e.ClientX, e.ClientY);
-        var node = Add(_dragType, pointer);
+        var node = Add(type, pointer);
 
         // Back to the screen: the corner sits half a node up and to the left of the pointer, at the current zoom.
         var corner = _flow.FlowToScreenPosition(node.Position);

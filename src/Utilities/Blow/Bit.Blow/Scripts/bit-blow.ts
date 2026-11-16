@@ -212,6 +212,16 @@ function handleHit(el: Element): BlowHandleHit {
     };
 }
 
+// Where each pane was on screen as each pointer last went down on it, by pointer id: a gesture that starts while the
+// page scrolls converts its start on a rectangle read before then, and only the reading taken in the press's own event
+// says how far the pane had moved by that moment rather than by whenever .NET asks. See paneRectsAtPointerDown.
+const pointerDownRects = new WeakMap<HTMLElement, Map<number, BlowDomRect>>();
+
+// The pane's rectangle as the pointer went down on it (null when that press was not seen), and where it is now.
+export function paneRectsAtPointerDown(paneEl: HTMLElement | null, pointerId: number): { down: BlowDomRect | null; now: BlowDomRect | null } {
+    return { down: (paneEl && pointerDownRects.get(paneEl)?.get(pointerId)) || null, now: getRect(paneEl) };
+}
+
 // Watches the flow for size changes that C# cannot see: the pane being resized by its
 // layout, and node elements growing or shrinking as their content changes. Both invalidate
 // the cached rectangles the canvas uses for hit-testing and edge anchoring.
@@ -278,6 +288,16 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
     };
     const onWindowResize = () => notify(false);
 
+    // Read in the press's own event, before .NET hears of it; see pointerDownRects. Dropped as the pointer lifts, so
+    // touch pointers, whose ids keep counting up, do not pile up.
+    const downRects = new Map<number, BlowDomRect>();
+    pointerDownRects.set(paneEl, downRects);
+    const onPointerDown = (e: PointerEvent) => {
+        const rect = getRect(paneEl);
+        if (rect) downRects.set(e.pointerId, rect);
+    };
+    const onPointerGone = (e: PointerEvent) => { downRects.delete(e.pointerId); };
+
     const resizeObserver = new ResizeObserver(onSizeChanged);
     resizeObserver.observe(paneEl);
 
@@ -315,6 +335,10 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
     // Capture phase so scrolling in any ancestor container is seen, not just the window.
     window.addEventListener('scroll', onScroll, true);
     window.addEventListener('resize', onWindowResize);
+    // Capture phase: a handler inside the pane that stops the press from bubbling must not keep it from being read.
+    paneEl.addEventListener('pointerdown', onPointerDown, true);
+    paneEl.addEventListener('pointerup', onPointerGone, true);
+    paneEl.addEventListener('pointercancel', onPointerGone, true);
 
     return {
         dispose: () => {
@@ -325,6 +349,10 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
             mutationObserver.disconnect();
             window.removeEventListener('scroll', onScroll, true);
             window.removeEventListener('resize', onWindowResize);
+            paneEl.removeEventListener('pointerdown', onPointerDown, true);
+            paneEl.removeEventListener('pointerup', onPointerGone, true);
+            paneEl.removeEventListener('pointercancel', onPointerGone, true);
+            if (pointerDownRects.get(paneEl) === downRects) pointerDownRects.delete(paneEl);
         }
     };
 }

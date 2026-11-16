@@ -19,6 +19,17 @@ internal sealed class BlowInterop : IAsyncDisposable
     public async ValueTask<BlowDomRect?> GetRectAsync(BlowElementReferenceLike el)
         => await (await _moduleTask.Value).InvokeAsync<BlowDomRect?>("getRect", el.Reference);
 
+    /// <summary>
+    /// The pane's rectangle as pointer <paramref name="pointerId"/> last went down on it, read in that event, and its
+    /// rectangle now. Needs <see cref="ObserveResizeAsync"/> running to have seen the press.
+    /// </summary>
+    // BlowDomRect is only nested in the result, which InvokeAsync<T> does not preserve.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlowPaneRectsAtPointerDown))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlowDomRect))]
+    public async ValueTask<BlowPaneRectsAtPointerDown?> PaneRectsAtPointerDownAsync(BlowElementReferenceLike pane, long pointerId)
+        => await (await _moduleTask.Value).InvokeAsync<BlowPaneRectsAtPointerDown?>(
+            "paneRectsAtPointerDown", pane.Reference, pointerId);
+
     // InvokeAsync<T> preserves what System.Text.Json needs of T, but T is an array here and the element types are
     // only ever built by System.Text.Json: without this the trimmer drops their constructors and every measurement
     // fails to deserialize in trimmed (release) builds.
@@ -153,6 +164,11 @@ internal readonly record struct BlowElementReferenceLike(object Reference);
 /// <param name="Width">Rendered width.</param>
 /// <param name="Height">Rendered height.</param>
 public sealed record BlowDomRect(double Left, double Top, double Width, double Height);
+
+/// <summary>The pane's rectangle as a pointer went down on it, and now.</summary>
+/// <param name="Down">Read in the press's own event; null when that press was not seen.</param>
+/// <param name="Now">Read as asked for.</param>
+internal sealed record BlowPaneRectsAtPointerDown(BlowDomRect? Down, BlowDomRect? Now);
 
 /// <summary>One node as measured in the DOM, with sizes already divided back out of the zoom.</summary>
 /// <param name="Id">The node's id, read from its <c>data-id</c> attribute.</param>

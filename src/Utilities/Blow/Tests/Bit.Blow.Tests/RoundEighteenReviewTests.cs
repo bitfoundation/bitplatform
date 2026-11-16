@@ -36,7 +36,10 @@ public class RoundEighteenReviewTests : BunitContext
     {
         // The pane was at the top of the page; the page then scrolled it 200px up, and the node was grabbed before the
         // browser reported where the pane ended up.
-        Module().Setup<BlowDomRect?>("getRect", _ => true).SetResult(new BlowDomRect(0, -200, 800, 600));
+        var scrolled = new BlowDomRect(0, -200, 800, 600);
+        var module = Module();
+        module.Setup<BlowDomRect?>("getRect", _ => true).SetResult(scrolled);
+        module.Setup<BlowPaneRectsAtPointerDown?>("paneRectsAtPointerDown", _ => true).SetResult(new(scrolled, scrolled));
         var node = new BlowNode { Id = "n", Position = new(10, 10), Width = 20, Height = 20 };
         var cut = Render([node]);
         await cut.InvokeAsync(() => cut.Instance.OnResizeObserved(false, AtTop));
@@ -78,23 +81,27 @@ public class RoundEighteenReviewTests : BunitContext
     {
         // A reading that takes a while to come back, as over a Blazor Server circuit.
         var module = Module();
-        var read = module.Setup<BlowDomRect?>("getRect", _ => true);
+        var read = module.Setup<BlowPaneRectsAtPointerDown?>("paneRectsAtPointerDown", _ => true);
+        module.Setup<BlowDomRect?>("getRect", _ => true);
         var node = new BlowNode { Id = "n", Position = new(10, 10), Width = 20, Height = 20 };
         var cut = Render([node]);
         await cut.InvokeAsync(() => cut.Instance.OnResizeObserved(false, AtTop));
         cut.Instance.OnPaneMoved();
 
         cut.Find(".bit-blow-node").PointerDown(new PointerEventArgs { Button = 0, ClientX = 20, ClientY = -180 });
-        var before = module.Invocations["getRect"].Count;
+        var before = Reads();
         var pane = cut.Find(".bit-blow");
         var first = pane.TriggerEventAsync("onpointermove", new PointerEventArgs { Buttons = 1, ClientX = 40, ClientY = -180 });
         var second = pane.TriggerEventAsync("onpointermove", new PointerEventArgs { Buttons = 1, ClientX = 70, ClientY = -180 });
 
-        Assert.AreEqual(before, module.Invocations["getRect"].Count);
+        Assert.AreEqual(before, Reads());
 
-        read.SetResult(new BlowDomRect(0, -200, 800, 600));
+        var scrolled = new BlowDomRect(0, -200, 800, 600);
+        read.SetResult(new(scrolled, scrolled));
         await Task.WhenAll(first, second);
         Assert.AreEqual(new BlowXYPosition(60, 10), node.Position);
+
+        int Reads() => module.Invocations["getRect"].Count + module.Invocations["paneRectsAtPointerDown"].Count;
     }
 
     [TestMethod]
