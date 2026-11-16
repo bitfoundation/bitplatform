@@ -1,6 +1,6 @@
 ---
 name: landing-page
-description: Changes the product's landing page, the public marketing site in `src/LandingPage` that runs apart from the app - makes one of its sample landing pages the product's own home page, switches it from a waitlist before launch to the store links after it, and edits its pages, texts in English and Persian, look, chat answers, store links, legal pages, emails, waitlist storage and analytics - then checks every change prerendered, in both languages and color schemes, on phones and desktops. Use for any change under `src/LandingPage`, for launching or announcing the app, or for questions about its landing page samples.
+description: Changes the product's landing page in `src/LandingPage`, a site apart from the app - makes a sample its home page, launches it, or changes its pages, texts, look, chat, waitlist, emails and store links. Use for any change under `src/LandingPage`, for launching or announcing the app, or for questions about its landing page samples.
 ---
 
 # Landing page: the product's public site
@@ -10,6 +10,9 @@ prerenders it, and `src/LandingPage/Boilerplate.LandingPage.Client` is its Blazo
 of the app's projects, has its own settings and deploys as its own service. It ships several sample landing pages, one
 per kind of business, each under its own path (`/ecommerce`, `/ecommerce/about` and so on), with a gallery of them at
 `/`. A project keeps the one closest to its product, makes it its home page and deletes the rest (section 4).
+
+**Under ai-dlc.** A change here takes ai-dlc's short track (`.github/agents/ai-dlc.agent.md`) for a text, a link or a
+color, and its full track for a new page, a sample made the home page or a launch.
 
 Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` unless they start with `src/`.
 
@@ -44,8 +47,9 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
   unsubscribe, and where the list is kept), `Features/Email` (the Razor email templates), `Features/Seo` (sitemap,
   robots.txt, llms.txt, found from the pages' routes), `Features/Download` (the link that sends each phone to its own
   store, and its QR code), `Features/StoreListing` (the App Store rating) and `appsettings.json`.
-- **Languages**: English at `/...` and Persian at `/fa-IR/...`, set up in `Infrastructure/LandingCultures.cs`. The
-  project's `InvariantGlobalization` switch (`src/Directory.Build.props`) leaves it English only, like the app.
+- **Languages**: English at `/...` and Persian at `/fa-IR/...` to begin with, set up in
+  `Infrastructure/LandingCultures.cs`, where one is added or dropped. The project's `InvariantGlobalization` switch
+  (`src/Directory.Build.props`) leaves it English only, like the app.
 
 ## 2. Ground rules
 
@@ -53,8 +57,8 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
   the **workbench** skill's section 3 says (`.github/agents/workbench.agent.md`), with no app shell around it.
 - **Its own conventions** where `AGENTS.md` section 5 names the app's types: components inherit
   `LandingComponentBase` and pages `LandingPageBase`, and text goes into resx keys, read through `nameof`: a
-  sample's own text into its `<Sample>Strings`, shared text into `LandingStrings`, the English and the Persian in the
-  same change. Bit.BlazorUI components first, code-behind files and scoped SCSS still apply. Keep the `[mirror]`
+  sample's own text into its `<Sample>Strings`, shared text into `LandingStrings`, in every language the site has, in
+  the same change. Bit.BlazorUI components first, code-behind files and scoped SCSS still apply. Keep the `[mirror]`
   comments in step.
 - **Both languages, both directions, both color schemes, phone to desktop**, for every change.
 - **What a crawler or a link preview should see is in the prerendered page**: no text that appears only after the
@@ -78,7 +82,7 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 - Without an AI key the chat streams a sample answer, and without an SMTP server the emails are written to the log;
   under Aspire they land in Mailpit.
 - Check pages the way the **run-app** skill (`.github/agents/run-app.agent.md`) uses a browser: each changed page in
-  English and Persian, light and dark, at phone and desktop widths, and its prerendered HTML (the page's source
+  every language the site has, light and dark, at phone and desktop widths, and its prerendered HTML (the page's source
   before scripts run) for its text, title, description, canonical link and structured data.
 
 ## 4. Make the product's home page from the samples
@@ -125,25 +129,20 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
   `Site:BingSiteVerification`.
 - `AI:OpenAI` holds the chat's model and key, the same setting as the app's server. The chat answers only from the
   facts in `LandingChatPrompts.cs`, so keep those true and in step with the page.
-- Analytics and monitoring go through bit Belemetry to Azure Monitor, with the connection string in the client's
-  `appsettings.json`, and only after the visitor agrees in the consent banner. Errors are the exception: they are sent
-  from the first moment, whatever the visitor chooses, and the privacy page says so.
+- Analytics and monitoring go through bit Belemetry, and only after the visitor agrees in the consent banner. Errors
+  are the exception: they are sent from the first moment, whatever the visitor chooses, and the privacy page says so.
+  They go to the dashboard whose address the deployment gives the landing page as `Belemetry:OtlpEndpoint`, and to
+  Azure Monitor as well once the client's `appsettings.json` has an `ApplicationInsights:ConnectionString`.
 - The deployment reads each of the server's settings from a secret of its own, such as
   `LANDINGPAGE__AI__OPENAI__CHATAPIKEY`, or a variable for what isn't secret; the **deploy** skill
   (`.github/agents/deploy.agent.md`) covers its domain and its secrets. It can't reach the browser: the client's
-  `appsettings.json` is built into its assembly, so the Azure Monitor connection string the browser sends with goes
+  `appsettings.json` is built into its assembly, so an Azure Monitor connection string the browser sends with goes
   there.
 
 ## Done means
 
-- The change shows in both languages, both directions and both color schemes, at phone and desktop widths, with no
-  console errors, and its text is in the prerendered page.
-- Every new text has its English and Persian keys, and no literal text is left in markup.
+- The change shows in every language and direction the site has, in both color schemes, at phone and desktop widths,
+  with no console errors, and its text is in the prerendered page.
+- Every new text has its key in every language the site has, and no literal text is left in markup.
 - Every new page has its title, description and preview, and shows in `/sitemap.xml`.
 - What the change does with the server - a form, the chat, the waitlist - works with its waiting and failure states.
-<!--#if (advancedTests == true)-->
-- The build is clean, and `dotnet test` passes in `src/LandingPage/Boilerplate.LandingPage.Tests`: it checks every page
-  in the sitemap for its head tags, every sample's 404, the waitlist, the chat and the rating lookups.
-<!--#else-->
-- The build is clean.
-<!--#endif-->

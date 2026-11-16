@@ -1,4 +1,4 @@
-description = "Scaffold a complete CRUD entity across every layer (entity, EF config + migration, DTO, Mapperly mapper, controller, shared interface, Blazor pages, navigation, permission, tests)."
+description = "Scaffold a CRUD entity across every layer once its fields, rules and screens are settled."
 
 prompt = """
 Follow these instructions exactly:

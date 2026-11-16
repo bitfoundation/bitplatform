@@ -1,6 +1,6 @@
 ---
 name: template-diff
-description: Brings a change of the project template into this project - a newer template release, another .NET version, or one of the template's optional features switched on or off, once the user has named that option or agreed to it. A request for a feature goes to the ai-dlc skill first, even when an option would bring it. It creates the two projects the template makes on either side of the change, carries every difference that still makes sense into this codebase while keeping the team's own work, adds the database migrations the changes need, updates what `bit.json` records, and proves the result builds, passes its tests and runs.
+description: Brings a change of the project template into this project - a newer release, another .NET version, or an optional feature on or off once the user named or agreed to it - keeping the team's own work. A request for a feature starts with ai-dlc.
 ---
 
 # Template diff: bring a change of the project template into this project
@@ -17,13 +17,13 @@ The goal is to end up with everything the change brings that still applies here,
 
 The work is yours to judge. Ask the user only what the code can't answer and what changes how the app behaves, such as a new default the team may not want or an upstream change to a feature the team removed. Don't ask about mechanics.
 
+**Under ai-dlc** (`.github/agents/ai-dlc.agent.md`), with no plan to approve: the user's request, or their agreement to the option, is the go-ahead.
+
 ## 1. Know where the project stands
 
-- Before anything else, start a task of your own on the Workbench's Progress page, the way `AGENTS.md` section 6 and section 9 of the **workbench** skill (`.github/agents/workbench.agent.md`) describe: this file's sections are its steps, your questions go there, and it stays current until the report.
 - `bit.json` records the template version the project comes from, its name and the value of every option it was created with. The MCP server configurations (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`, `.junie/mcp/mcp.json`, `.gemini/settings.json`, `.codex/config.toml`) pin the bit platform MCP server to a version too. `bit.json` is the one to go by: a team may move those, or the bit platform packages, without upgrading the template.
 - Check the recorded options against the code. The team may have turned something off after creation, switched the database provider, or removed a module, and the diff should be made with the options the project has today.
 - For a newer version, the target is the version the user names. Without one, it's the newest stable release; take a prerelease only when the user asks. The release notes of every version in between say why things changed: the bit platform MCP server's `GetBitPlatformReleases` tool returns them, and its other tools answer questions about any of those versions.
-- Do the whole change on a branch of its own, cut from an up-to-date `main`, and never on `main` or a feature branch: it stays one change the team reviews and merges like any other, and no other work mixes with it. Start from a clean working tree; if there are uncommitted changes, ask the user whether to commit or stash them first.
 - The bit CLI must know the template version you create projects with: update it, or run it through `dnx` at that version.
 - Before changing anything, build the solution and run the tests on the starting commit, the way the **write-tests** skill (`.github/agents/write-tests.agent.md`) describes, and keep the list of what already fails. A failure afterwards is then one of those, a deliberate change in the template, or a bug in bringing it in - and one you brought in looks exactly like one you inherited.
 
@@ -59,6 +59,7 @@ Some changes need more than the text of the diff:
 - **Settings.** New `appsettings` keys and new user secrets come in with their defaults; list the ones that need a real value for production.
 - **Generated code.** Regenerate what the build or a tool generates instead of merging it. The npm lock files are such: `npm install` in the folder of a changed `package.json` rewrites its lock, which should come out the same from npm on Linux. npm on Windows can add a root name to it that Linux npm drops, and then every build in CI leaves the lock modified.
 - **Naming.** The template's text arrives with this project's name already in it; keep the team's own names, branding and copy wherever they replaced the template's.
+- **Projects that moved.** When the team renamed, split or merged the template's projects, as a port does, **This project's layout** below says which project here each of the template's became: bring each change into the project it names, and a change to a split project into each part that holds that code.
 
 ## 4. Update what the project records
 
@@ -75,13 +76,16 @@ Some changes need more than the text of the diff:
 
 ## 6. Report
 
-Commit the change on its branch, then tell the user, briefly:
+Tell the user, briefly:
 
-- what changed: from which version to which, to which .NET version, or which feature came in or went out, and the branch it is on;
+- what changed: from which version to which, to which .NET version, or which feature came in or went out;
 - what came in, grouped by area, with the user-visible changes first;
 - what was left out and why;
 - the workarounds that came out because the fix arrived, and the ones still needed;
-- the decisions that are theirs, and the migrations, settings and secrets that need their attention;
-- that nothing is merged or pushed until they say so.
+- the decisions that are theirs, and the migrations, settings and secrets that need their attention.
 
 Delete the diff's folders when you're done, with `bit remove` and the folders `bit diff` named or you created, so they don't take up space.
+
+## This project's layout
+
+The template's projects, under the names it gave them. Whoever renames, splits or merges one, such as the **port** skill, writes here which project of this one each became.
