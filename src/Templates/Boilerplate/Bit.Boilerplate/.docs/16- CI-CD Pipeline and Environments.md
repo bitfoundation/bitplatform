@@ -41,7 +41,7 @@ out, and the **deploy** skill uncomments it once the first deployment to Product
 already deploying keeps its `push` block when it takes this from a newer template, or its merges stop deploying.
 
 From then on, merging a pull request into `main` updates Production. Only a change under
-`src/Shared`, `src/Server` or `src/Client`, or to `src/Directory.Build.props`, `src/Directory.Packages.props` or that CD's own workflow file, deploys:
+`src/Shared`, `src/Server`, `src/Client` or `src/LandingPage`, or to `src/Directory.Build.props`, `src/Directory.Packages.props` or that CD's own workflow file, deploys:
 one to the docs, the tests or the agent files doesn't spend the plan's Actions minutes on a deployment. The runs of one
 workflow queue up instead of overlapping, and one that has started is never cancelled halfway. Each CD runs `ci.yml`
 first, alongside the server's build, and deploys or publishes nothing until it passes.
