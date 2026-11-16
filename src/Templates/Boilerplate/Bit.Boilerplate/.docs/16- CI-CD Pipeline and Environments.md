@@ -48,13 +48,14 @@ first, alongside the server's build, and deploys or publishes nothing until it p
 
 ## CI runs in CD
 
-A private repository's Actions minutes are limited, so CI runs only on GitHub, as part of each CD: a pull request or a
-push starts no workflow and spends none of the plan's minutes. Before opening a pull request, and after each round of
-changes, run the tests that cover the change and the formatting check CI runs:
+A private repository's Actions minutes are limited, so CI never runs on its own, only on GitHub as part of each CD: a
+pull request starts no workflow, and a push starts one only through the Production CD, once its `push` trigger is on.
+Before opening a pull request, and after each round of changes, run the formatting check CI runs, from the project's
+root, and the tests that cover the change:
 
 ```bash
-cd src/Tests && dotnet test --filter "FullyQualifiedName~<the change's test class>"
 dotnet format whitespace --folder . --verify-no-changes
+cd src/Tests && dotnet test --filter "FullyQualifiedName~<the change's test class>"
 ```
 
 The whole suite then runs in the CI of the next deployment, the Test CD of the branch included, which deploys nothing

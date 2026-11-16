@@ -655,7 +655,7 @@ slnf
 **Workflow Files**:
 
 1. **`ci.yml`**: Continuous Integration
-   - Each CD runs it before it deploys; a pull request or a push starts no workflow, and it runs by hand only when truly needed
+   - Each CD runs it before it deploys; it has no trigger of its own other than running by hand, which is only when truly needed
    - Builds all projects
    - Runs tests
    - Ensures code quality
