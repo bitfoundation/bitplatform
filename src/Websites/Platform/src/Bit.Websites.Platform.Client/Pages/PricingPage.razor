@@ -135,14 +135,14 @@
                 <br />
                 <BitTextField @bind-Value="@buyPackageModel.Email"
                               Label="Email"
-                              IsRequired="true"
+                              Required
                               Class="modal-text-field"
                               Placeholder="name@company.com" />
                 <ValidationMessage For="() => buyPackageModel.Email" />
 
                 <BitTextField @bind-Value="@buyPackageModel.Message"
                               Label="Message"
-                              IsMultiline="true"
+                              Multiline
                               Class="modal-text-field"
                               Placeholder="Describe your needs" />
                 <ValidationMessage For="() => buyPackageModel.Message" />

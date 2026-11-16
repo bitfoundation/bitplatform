@@ -2,7 +2,7 @@
 
 <ThemeSection Id="motion" Title="@Localizer[nameof(WorkbenchStrings.ThemeMotion)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeMotionHowLongTheThemeS)]">
     <div class="row">
-        <BitToggleButton IconName="@BitIconName.Play" OnIconName="@BitIconName.Previous" OnText="@Localizer[nameof(WorkbenchStrings.TourBack)]" OffText="@Localizer[nameof(WorkbenchStrings.ThemeMotionPlay)]" @bind-IsChecked="isPlayed" />
+        <BitToggleButton IconName="@BitIconName.Play" OnIconName="@BitIconName.Previous" OnText="@Localizer[nameof(WorkbenchStrings.TourBack)]" OffText="@Localizer[nameof(WorkbenchStrings.ThemeMotionPlay)]" @bind-Checked="isPlayed" />
     </div>
 
     <div class="motions @(isPlayed ? "played" : null)">

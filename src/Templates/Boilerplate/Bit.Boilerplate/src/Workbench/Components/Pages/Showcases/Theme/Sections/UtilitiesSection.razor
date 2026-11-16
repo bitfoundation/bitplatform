@@ -93,12 +93,12 @@
     <ComponentStates Name="BitMediaQuery" Wide>
         <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesWhatThisViewSWidth)]">
             <BitMediaQuery ScreenQuery="BitScreenQuery.LtMd">
-                <Matched>
+                <MatchedTemplate>
                     <BitTag Text="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesNarrowerThanMd)]" IconName="@BitIconName.CellPhone" Color="BitColor.Info" />
-                </Matched>
-                <NotMatched>
+                </MatchedTemplate>
+                <NotMatchedTemplate>
                     <BitTag Text="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesMdOrWider)]" IconName="@BitIconName.TVMonitor" Color="BitColor.Success" />
-                </NotMatched>
+                </NotMatchedTemplate>
             </BitMediaQuery>
         </StateSample>
     </ComponentStates>
