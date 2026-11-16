@@ -167,6 +167,33 @@ public class KeyboardTests
     }
 
     [TestMethod]
+    [DataRow(1, "1 element")]
+    [DataRow(3, "3 elements")]
+    public void Keyboard_announcements_count_the_selection_in_grammatical_english(int elements, string counted)
+    {
+        (TestToolContext context, BinkSelectTool tool) = WithSelection(elements);
+        using (context)
+        {
+            tool.OnKeyDown(context, Key("a", ctrl: true));
+            Assert.AreEqual($"{counted} selected.", context.Announcements[^1]);
+
+            tool.OnKeyDown(context, Key("ArrowRight"));
+            Assert.AreEqual($"Moved {counted}.", context.Announcements[^1]);
+
+            tool.OnKeyDown(context, Key("Delete"));
+            Assert.AreEqual($"Deleted {counted}.", context.Announcements[^1]);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(0, "element", "0 elements")]
+    [DataRow(1, "element", "1 element")]
+    [DataRow(2, "layer", "2 layers")]
+    [DataRow(1, "more element", "1 more element")]
+    public void Announced_counts_take_the_singular_only_for_one(int count, string noun, string expected)
+        => Assert.AreEqual(expected, BinkCount.Of(count, noun));
+
+    [TestMethod]
     public void Every_keyboard_edit_is_one_undo_step()
     {
         (TestToolContext context, BinkSelectTool tool) = WithSelection(1);

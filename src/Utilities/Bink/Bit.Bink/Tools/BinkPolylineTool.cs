@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink;
 
@@ -146,7 +146,7 @@ public sealed class BinkPolylineTool : BinkToolBase
                 return true;
             case "Backspace" or "Delete":
                 _points.RemoveAt(_points.Count - 1);
-                context.Announce(_points.Count == 0 ? "Polyline abandoned." : $"{_points.Count} points.");
+                context.Announce(_points.Count == 0 ? "Polyline abandoned." : $"{BinkCount.Of(_points.Count, "point")}.");
                 context.InvalidateOverlay();
                 return true;
             default:
@@ -190,7 +190,7 @@ public sealed class BinkPolylineTool : BinkToolBase
             return null;
         }
         context.InvalidateDocument(shape.Bounds);
-        context.Announce($"{shape.TypeName} of {points.Count} points added.");
+        context.Announce($"{shape.TypeName} of {BinkCount.Of(points.Count, "point")} added.");
         return shape;
     }
 
