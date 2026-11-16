@@ -99,24 +99,32 @@ internal sealed class BortableDragContext
     /// <summary>Guards against finalizing the same drag twice (drop + dragend).</summary>
     public bool Finished { get; set; }
 
+    // What the app's code threw while this drag was decided or reported, in the order it was thrown (see Fail).
+    private List<Exception>? _failures;
+
     /// <summary>
-    /// What the app's code threw while this drag was decided - <c>CanDrop</c> inside the gate, <c>ConfirmDrop</c> - or,
-    /// for a move made by code, while it was reported. It was taken as a refusal there, so the drag stays whole and is
-    /// still reported; the call that met it passes it on once it is done (see <see cref="TakeFailure"/>). The first
-    /// one is kept. Should reporting the drag throw as well, neither is lost: the reporting exception is wrapped with
-    /// this one in an <see cref="AggregateException"/> - the reporting exception first - which is thrown in place of
-    /// either.
+    /// Keeps <paramref name="exception"/>, which the app's code threw during this drag - <c>CanDrop</c> inside the gate
+    /// and <c>ConfirmDrop</c>, taken as a refusal there, or a handler of the events that report it - for the call that
+    /// met it to pass on once it is done (see <see cref="TakeFailure"/>). The drag stays whole and is still reported:
+    /// one handler that throws keeps no other from hearing of it. Every exception is kept, after those before it, so
+    /// the one that refused the drag comes first.
     /// </summary>
-    public Exception? Failure { get; private set; }
+    public void Fail(Exception exception) => (_failures ??= []).Add(exception);
 
-    /// <summary>Keeps <paramref name="exception"/> as the <see cref="Failure"/> to pass on, unless there is one already.</summary>
-    public void Fail(Exception exception) => Failure ??= exception;
-
-    /// <summary>The <see cref="Failure"/> to pass on, which the drag no longer holds: it is passed on once.</summary>
+    /// <summary>
+    /// What the drag kept to pass on (see <see cref="Fail"/>), which it no longer holds - each is passed on once: the
+    /// one exception as it was thrown, several together in an <see cref="AggregateException"/>, in the order they were
+    /// thrown; <c>null</c> when there is none.
+    /// </summary>
     public Exception? TakeFailure()
     {
-        var failure = Failure;
-        Failure = null;
-        return failure;
+        var failures = _failures;
+        _failures = null;
+        return failures switch
+        {
+            null => null,
+            [var failure] => failure,
+            _ => new AggregateException(failures)
+        };
     }
 }

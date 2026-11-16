@@ -243,8 +243,6 @@ public sealed partial class ProjectContext
         }
     }
 
-    public static string CiWorkflow(string directory) => Path.Combine(directory, ".github", "workflows", "ci.yml");
-
     public static bool UsesNativeWebAssembly(string directory)
     {
         try

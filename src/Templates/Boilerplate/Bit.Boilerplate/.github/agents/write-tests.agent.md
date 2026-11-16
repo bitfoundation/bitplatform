@@ -72,7 +72,8 @@ infrastructure is `.docs/17- Automated Testing (Unitigration Tests).md`; this is
 - A failure's message and stack trace are in the output and in the trx report under `src/Tests/TestResults`, and a UI
   test that failed on a retry leaves a video of it there.
 - A test that fails only now and then has a cause too: find what it races with rather than adding a delay.
-- CI runs the whole suite: `bit ci` on this machine, and each CD before it deploys.
+- CI runs the whole suite on GitHub, in each CD before it deploys. Before a pull request, run the tests that cover the
+  change here.
 
 ## 5. When the user wants to skip tests
 

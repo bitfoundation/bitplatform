@@ -331,64 +331,6 @@ public class ToolTests
     }
 
     [TestMethod]
-    [DataRow(HostOs.Windows, "winget", "Microsoft.PowerShell")]
-    [DataRow(HostOs.MacOS, "brew", "powershell")]
-    [DataRow(HostOs.Linux, "snap", "powershell")]
-    public async Task PowerShell_Should_BeOfferedForTheProjectsCi(HostOs os, string installer, string package)
-    {
-        using var host = new TestHost(os);
-        AllInstalled(host.Runner);
-        host.Runner.Executables["winget"] = "winget";
-        host.Runner.Executables["snap"] = "/usr/bin/snap";
-        host.Runner.NotFound("pwsh");
-
-        Assert.IsFalse((await CheckAsync(host, new ToolNeeds { Aspire = true })).Any(c => c.Tool.Id == "pwsh"), "A project without ci.yml has nothing for bit ci to run.");
-
-        var pwsh = (await CheckAsync(host, new ToolNeeds { Aspire = true, Ci = true })).Single(c => c.Tool.Id == "pwsh");
-
-        Assert.IsTrue(pwsh.Needed);
-        Assert.AreEqual(ToolState.Missing, pwsh.Status.State);
-        Assert.IsTrue(pwsh.Action!.Optional, "The app builds and runs without PowerShell 7.");
-        StringAssert.EndsWith(Path.GetFileNameWithoutExtension(pwsh.Action.Commands[0].FileName), installer);
-        CollectionAssert.Contains(pwsh.Action.Commands[0].Arguments.ToArray(), package);
-    }
-
-    [TestMethod]
-    [DataRow(HostOs.Windows, "winget")]
-    [DataRow(HostOs.MacOS, "brew")]
-    [DataRow(HostOs.Linux, "bash")]
-    public async Task Act_Should_BeOfferedForTheProjectsCi(HostOs os, string installer)
-    {
-        using var host = new TestHost(os);
-        AllInstalled(host.Runner);
-        host.Runner.Executables["winget"] = "winget";
-        host.Runner.Executables["brew"] = "/opt/homebrew/bin/brew";
-        host.Runner.NotFound("act");
-
-        Assert.IsFalse((await CheckAsync(host, new ToolNeeds { Aspire = true })).Any(c => c.Tool.Id == "act"), "A project without ci.yml has nothing for act to run.");
-
-        var act = (await CheckAsync(host, new ToolNeeds { Aspire = true, Ci = true })).Single(c => c.Tool.Id == "act");
-
-        Assert.IsTrue(act.Needed);
-        Assert.AreEqual(ToolState.Missing, act.Status.State);
-        Assert.IsTrue(act.Action!.Optional, "The app builds and runs without act.");
-        StringAssert.EndsWith(Path.GetFileNameWithoutExtension(act.Action.Commands[0].FileName), installer);
-    }
-
-    [TestMethod]
-    public async Task AMacWithoutHomebrew_Should_GetItForAct()
-    {
-        using var host = new TestHost(HostOs.MacOS);
-        AllInstalled(host.Runner);
-        host.Runner.NotFound("act");
-
-        var checks = await ToolCatalog.CheckAsync(new ToolContext(host.Environment, host.Runner, new ToolNeeds { Ci = true }, new PackageManagers { HasSudo = true }), CancellationToken.None);
-
-        Assert.IsNull(checks.Single(c => c.Tool.Id == "act").Action, "act comes from Homebrew, which isn't there yet.");
-        Assert.IsTrue(checks.Any(c => c.Tool.Id == "homebrew"), string.Join(", ", checks.Select(c => c.Tool.Id)));
-    }
-
-    [TestMethod]
     public async Task MacOS_Should_GetColimaAndTheDockerCli()
     {
         using var host = new TestHost(HostOs.MacOS);

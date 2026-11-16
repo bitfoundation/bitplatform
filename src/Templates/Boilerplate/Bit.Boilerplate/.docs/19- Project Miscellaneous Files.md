@@ -655,7 +655,7 @@ slnf
 **Workflow Files**:
 
 1. **`ci.yml`**: Continuous Integration
-   - Runs by hand: `bit ci` on your machine, with act, or on GitHub; each CD runs it before it deploys
+   - Each CD runs it before it deploys; it has no trigger of its own other than running by hand, which is only when truly needed
    - Builds all projects
    - Runs tests
    - Ensures code quality

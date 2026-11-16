@@ -86,8 +86,6 @@ public sealed record ToolNeeds
 
     public bool GitHubRepo { get; init; }
 
-    public bool Ci { get; init; }
-
     public IReadOnlySet<Platform> Platforms { get; init; } = new HashSet<Platform> { Platform.Web };
 
     public string? Ide { get; init; }
