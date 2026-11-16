@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 
 namespace Bit.Bonboarding;
 
@@ -18,6 +19,8 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
     private bool _disposed;
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    [Inject] private ILogger<BonboardingTour> Logger { get; set; } = default!;
 
     // Resolved rather than injected, so the tour also registers in an app that lazy loads Bit.Bonboarding.
     private readonly BonboardingRuntime.Handle _runtime = new(typeof(BonboardingTour),
@@ -158,6 +161,11 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
             // CanStart or CanAutoStart declined, the user snoozed the tour, or the definition is invalid (the
             // service has logged why). An automatic start has no caller to report that to, and an exception
             // escaping a lifecycle method would take the whole circuit down.
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // The same for anything else that failed on the way - a custom store that could not be read, say.
+            Logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingTour {TourId} could not start by itself.", Id);
         }
     }
 

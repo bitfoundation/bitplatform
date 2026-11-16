@@ -1175,7 +1175,9 @@ await _projects.CreateAsync(name);
 await BonboardingService.SignalAsync("project-created");
 ```
 
-Signals are compared ordinally, `CanAdvance` still decides, and `SignalAsync` returns whether a tour moved on.
+Signals are compared ordinally, `CanAdvance` still decides, and `SignalAsync` returns whether a tour moved on. A step
+that was on screen takes its signal even if it has lost its target or is held for its page since - an application
+that navigates and then signals has taken the page away first.
 They are not remembered: one raised while no step waits for it does nothing, so use `When` to skip a step
 whose task the user had already done before reaching it.
 
@@ -1778,6 +1780,9 @@ new BonboardingTourDefinition
 `StartOnceAsync` returns `null` when it declines. `StartAsync` throws an `BonboardingException`,
 because you asked for it explicitly. `BonboardingStartOptions.Force` bypasses the check.
 
+A `CanStart` that throws reaches the caller of `StartAsync`. A once-only start and an automatic one are never
+starts the user asked for, so there it is logged and holds the tour back: `StartOnceAsync` returns `null`.
+
 ### A worked example
 
 ```csharp
@@ -1876,6 +1881,14 @@ to a matching route, the step is re-activated exactly where it was, and its popo
 The same holds for every wait on a route: while the engine navigates to a step's page, and while a step
 waits for the user to get to a wildcard route or to a route the engine was told not to navigate to. The page
 stays fully usable, because using it is how the user gets there.
+
+A step without a `Route` belongs to the page it was activated on. It goes on showing when the user leaves that page -
+what took them away may be the very thing that moves it on, a link it advances on or an application that navigates
+and then signals - but should its target be missing there (lost, or still not found when its wait runs out), it holds
+the same way rather than applying its missing-target behaviour: skipping there would skip the steps after it one by
+one - or complete the tour - while the user is somewhere else. It is shown again when they come back. A step that
+should look for its target on whatever page the user is on (one pointing at the site's navigation, say) gets
+`Route = "*"`.
 
 The library deliberately does not drag the user back. Fighting someone for control of the address bar
 is never the right call, and a user who navigated away usually meant it.
@@ -2622,8 +2635,9 @@ The popover is a `role="dialog"` with `tabindex="-1"`, so it can receive focus.
 
 #### Focus management
 
-- The element focused before the tour started is remembered and restored when it ends.
-  `RestoreFocus = false` opts out.
+- The element focused before the tour started is remembered and restored when it ends - unless the
+  application has moved focus elsewhere meanwhile (into the form the last step had the user open, say), which
+  stays where it is. `RestoreFocus = false` opts out.
 - Focus moves into the popover when a step is shown, once per step, after the content has rendered
   and the popover has been placed (it is hidden until its first measurement, and a hidden element
   cannot take focus).
@@ -2640,8 +2654,8 @@ The popover is a `role="dialog"` with `tabindex="-1"`, so it can receive focus.
 | Key | Action |
 |---|---|
 | `Escape` | Ends the tour, unless `CloseOnEscape` is false |
-| `→` / `←` | Next / previous, reversed in RTL |
-| `Home` / `End` | First / last step |
+| `→` / `←` | Next / previous, reversed in RTL - not Next on a step that waits for the user (`AdvanceOn` or `AdvanceOnSignal` with `ShowNext = false`); a step that only hides the built-in Next, for a button of its own in custom markup, keeps the key |
+| `Home` / `End` | First / last step - `End` only where Next, pressed step by step, would get there: no step on the way has `CanAdvance`, `ResolveNext` or waits for the user |
 | `Tab` / `Shift+Tab` | Cycles inside the trap |
 | `Enter` / `Space` | Activates the focused button, as any button does |
 
@@ -2822,7 +2836,10 @@ new BonboardingTourDefinition { Id = "welcome", Version = 2, ... }
 
 A record written by an older version is discarded rather than resumed into, and
 `IsCompletedAsync` / `IsClosedAsync` report `false`, so `StartOnceAsync` offers the updated tour
-again.
+again. Those two take only an id, so they can tell an old record from a current one only for a tour whose definition
+the service holds: one that is registered (every tour declared in markup is, and `Register` adds one defined in code)
+or running. For a tour defined in code that is neither, they read the stored record as it is, whatever its `Version`.
+Register such a tour when anything asks after it by id - a checklist item with a `TourId` does too.
 
 When a bump should not mean "everyone sees it again", migrate the old record instead. Return it unchanged
 to keep everything (the right choice after rewording a tour), map renamed step ids, or return `null` to
