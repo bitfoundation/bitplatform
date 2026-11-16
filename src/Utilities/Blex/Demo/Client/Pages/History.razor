@@ -13,9 +13,11 @@
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Setup</h2>
         <p>
             Register it once. <code>&lt;BlexProvider&gt;</code> starts it for you, before storage is read: the
-            page takes clicks while it is, and an action dispatched then is an undo step like any other. Each
+            page takes clicks while it is, and an action dispatched then is recorded as an undo step. Each
             store's stored state becomes the baseline as it arrives, so undo ultimately returns to the state the
-            user actually loaded, not the pre-hydration defaults.
+            user actually loaded, not the pre-hydration defaults. That can replace what such an action changed:
+            a step whose every change the stored state overwrote comes off the stack, and only the fields
+            storage did not set stay undoable.
         </p>
 
         <CodeBlock Code="@Setup" FileName="Program.cs" />

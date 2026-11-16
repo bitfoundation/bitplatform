@@ -22,7 +22,13 @@ namespace Bit.Blex;
 /// </remarks>
 public class BlexHistory : IDisposable
 {
-    private readonly record struct BlexEntry(Snapshot State, string? Label);
+    /// <summary>
+    /// A step: <see cref="State"/> is what an undo to it restores, <see cref="Label"/> the action that produced that
+    /// state, and <see cref="After"/> the state right after the recorded action (or checkpoint) that moved on from it --
+    /// filtered actions that came later excluded. Pruning compares the two to tell whether that action still changes
+    /// anything. On the redo stack, <see cref="After"/> is carried for the undo entry a redo rebuilds beneath it.
+    /// </summary>
+    private readonly record struct BlexEntry(Snapshot State, string? Label, Snapshot After);
 
     /// <summary>
     /// The covered stores' state, one slice per store name. Slices are never mutated -- a restore applies
@@ -410,9 +416,9 @@ public class BlexHistory : IDisposable
         _present = ReferenceEquals(held, arrived) ? _present : _present.With(name, arrived);
         _boundary = boundaryIsPresent ? _present : _boundary is null ? null : Rewrite(_boundary);
         for (var i = 0; i < _undo.Count; i++)
-            _undo[i] = _undo[i] with { State = Rewrite(_undo[i].State) };
+            _undo[i] = _undo[i] with { State = Rewrite(_undo[i].State), After = Rewrite(_undo[i].After) };
         for (var i = 0; i < _redo.Count; i++)
-            _redo[i] = _redo[i] with { State = Rewrite(_redo[i].State) };
+            _redo[i] = _redo[i] with { State = Rewrite(_redo[i].State), After = Rewrite(_redo[i].After) };
 
         _lastGroupKey = null;
 
@@ -449,10 +455,10 @@ public class BlexHistory : IDisposable
     }
 
     /// <summary>
-    /// Takes off the undo stack each entry that holds the same state as the one after it -- the boundary for the newest,
-    /// which the present may have moved past with filtered actions: the action between them undoes nothing any more.
-    /// The label of the action that produced the entry's state moves up to name the step that is left. Returns whether
-    /// any came off.
+    /// Takes off the undo stack each entry that holds the same state as the recorded action after it left -- its
+    /// <see cref="BlexEntry.After"/>, not the next entry, which also holds the filtered actions that came later: that
+    /// action undoes nothing any more. The label of the action that produced the entry's state moves up to name the step
+    /// that is left. Returns whether any came off.
     /// </summary>
     private bool PruneUndo()
     {
@@ -460,8 +466,7 @@ public class BlexHistory : IDisposable
         for (var i = _undo.Count - 1; i >= 0; i--)
         {
             var newest = i == _undo.Count - 1;
-            var after = newest ? _boundary : _undo[i + 1].State;
-            if (after is null || !_undo[i].State.SameAs(after))
+            if (!_undo[i].State.SameAs(_undo[i].After))
                 continue;
 
             if (newest)
@@ -554,7 +559,7 @@ public class BlexHistory : IDisposable
         void Repair(List<BlexEntry> entries)
         {
             for (var i = 0; i < entries.Count; i++)
-                entries[i] = entries[i] with { State = repair(entries[i].State) };
+                entries[i] = entries[i] with { State = repair(entries[i].State), After = repair(entries[i].After) };
         }
     }
 
@@ -667,6 +672,10 @@ public class BlexHistory : IDisposable
             _presentLabel = null;
             _lastGroupKey = null;
 
+            // The restore is the step out of the newest entry now, unlabelled: what it left is the present.
+            if (_undo.Count > 0)
+                _undo[^1] = _undo[^1] with { After = _present };
+
             // The restore may have landed exactly on a state this history already holds: another history
             // over the same stores undid the step this one would undo next, or DevTools jumped one back.
             // That entry is the present now, so it comes off the stack -- left there, the next Undo would
@@ -715,9 +724,14 @@ public class BlexHistory : IDisposable
 
             if (record && !merge && _present is not null)
             {
-                _undo.Add(new BlexEntry(_present, _presentLabel));
+                _undo.Add(new BlexEntry(_present, _presentLabel, After: captured));
                 if (_undo.Count > MaxEntries)
                     _undo.RemoveAt(0);
+            }
+            else if (merge && _undo.Count > 0)
+            {
+                // The open step's action now ends where the group does.
+                _undo[^1] = _undo[^1] with { After = captured };
             }
 
             // The present always advances -- a filtered action changed the state just as much as a
@@ -821,7 +835,7 @@ public class BlexHistory : IDisposable
         {
             // The boundary, not the present: everything between them is the work this checkpoint
             // is turning into one undoable step.
-            _undo.Add(new BlexEntry(_boundary, _presentLabel));
+            _undo.Add(new BlexEntry(_boundary, _presentLabel, After: _present));
             if (_undo.Count > MaxEntries)
                 _undo.RemoveAt(0);
         }
@@ -932,10 +946,12 @@ public class BlexHistory : IDisposable
     /// <summary>Moves the present one step back through the undo stack, without restoring.</summary>
     private void StepBack()
     {
-        if (_present is not null)
-            _redo.Add(new BlexEntry(_present, _presentLabel));
-
         var entry = _undo[^1];
+
+        // Carries the stepped-to entry's After, for the entry a redo rebuilds from it.
+        if (_present is not null)
+            _redo.Add(new BlexEntry(_present, _presentLabel, entry.After));
+
         _undo.RemoveAt(_undo.Count - 1);
         _present = _boundary = entry.State;
         _presentLabel = entry.Label;
@@ -944,10 +960,10 @@ public class BlexHistory : IDisposable
     /// <summary>Moves the present one step forward through the redo stack, without restoring.</summary>
     private void StepForward()
     {
-        if (_present is not null)
-            _undo.Add(new BlexEntry(_present, _presentLabel));
-
         var entry = _redo[^1];
+        if (_present is not null)
+            _undo.Add(new BlexEntry(_present, _presentLabel, entry.After));
+
         _redo.RemoveAt(_redo.Count - 1);
         _present = _boundary = entry.State;
         _presentLabel = entry.Label;

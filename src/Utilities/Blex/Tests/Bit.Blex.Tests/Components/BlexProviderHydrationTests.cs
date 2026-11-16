@@ -15,10 +15,15 @@ namespace Bit.Blex.Tests.Components;
 public class BlexProviderHydrationTests : BunitContext
 {
     private readonly List<BlexError> _errors = [];
+    private readonly TaskCompletionSource _errorReported = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public BlexProviderHydrationTests()
     {
-        Services.AddBitBlexServices(o => o.OnError = _errors.Add);
+        Services.AddBitBlexServices(o => o.OnError = error =>
+        {
+            _errors.Add(error);
+            _errorReported.TrySetResult();
+        });
         Services.AddBitBlexStore<SettingsStore>();
         Services.AddBitBlexStore<CounterStore>();
         Services.AddBitBlexPersistence();
@@ -38,6 +43,15 @@ public class BlexProviderHydrationTests : BunitContext
         Render<BlexProvider>(p => p.Add(x => x.ChildContent, (RenderFragment)(b => b.AddContent(0, "app"))));
     }
 
+    /// <summary>Lets storage answer and waits until hydration has finished, then for the dispatcher to settle.</summary>
+    private async Task HydrateAsync(GatedStorage storage)
+    {
+        var hydrated = Services.GetRequiredService<BlexStatePersistor>().WhenHydratedAsync();
+        await storage.OpenAsync(Renderer.Dispatcher);
+        await hydrated.WaitAsync(TimeSpan.FromSeconds(10));
+        await Renderer.Dispatcher.InvokeAsync(() => { });
+    }
+
     private GatedStorage UseGatedStorage(string? stored = null)
         => UseGatedStorage(stored is null ? [] : new Dictionary<string, string> { ["settings"] = stored });
 
@@ -55,7 +69,7 @@ public class BlexProviderHydrationTests : BunitContext
         RenderProvider();
 
         await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
-        await storage.OpenAsync(Renderer.Dispatcher);
+        await HydrateAsync(storage);
 
         Assert.IsTrue(History.CanUndo, "The action the user dispatched before storage answered was not recorded.");
 
@@ -74,7 +88,7 @@ public class BlexProviderHydrationTests : BunitContext
         // One action on a store whose stored state then replaces it, one on a store nothing is stored for.
         await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
         await Renderer.Dispatcher.InvokeAsync(Counter.Increment);
-        await storage.OpenAsync(Renderer.Dispatcher);
+        await HydrateAsync(storage);
 
         Assert.AreEqual("stored", Settings.Theme);
         Assert.AreEqual(1, History.UndoCount, "The step the stored state replaced should have come off the stack.");
@@ -92,7 +106,7 @@ public class BlexProviderHydrationTests : BunitContext
     {
         var storage = UseGatedStorage();
         RenderProvider();
-        await storage.OpenAsync(Renderer.Dispatcher);
+        await HydrateAsync(storage);
 
         await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
         await Renderer.Dispatcher.InvokeAsync(() => Services.GetRequiredService<BlexManager>()
@@ -128,7 +142,7 @@ public class BlexProviderHydrationTests : BunitContext
 
         // Query is [BlexState(Persist = false)]: the stored state does not set it, so the edit survives the read.
         await Renderer.Dispatcher.InvokeAsync(() => search.Type("x"));
-        await storage.OpenAsync(Renderer.Dispatcher);
+        await HydrateAsync(storage);
 
         Assert.AreEqual("x", search.Query);
         Assert.AreEqual("search/Type", History.NextUndoLabel, "The edit the stored state left alone was baked into the baseline.");
@@ -151,7 +165,7 @@ public class BlexProviderHydrationTests : BunitContext
         RenderProvider();
 
         await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
-        await storage.OpenAsync(Renderer.Dispatcher);
+        await HydrateAsync(storage);
 
         Assert.AreEqual("dark", Settings.Theme);
         Assert.AreEqual(20, Settings.FontSize);
@@ -169,7 +183,11 @@ public class BlexProviderHydrationTests : BunitContext
         var storage = UseGatedStorage("""{"Theme":"stored","FontSize":20}""");
         storage.FailReads = 1;
         RenderProvider();
+
+        // Hydration never completes here: wait for the failed read to be reported instead.
         await storage.OpenAsync(Renderer.Dispatcher);
+        await _errorReported.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await Renderer.Dispatcher.InvokeAsync(() => { });
         Assert.AreEqual("persistence", Assert.ContainsSingle(_errors).Source);
 
         // Startup could not read storage: the app runs on the defaults, and an edit meanwhile is a step from them.
@@ -190,7 +208,7 @@ public class BlexProviderHydrationTests : BunitContext
         await Renderer.Dispatcher.InvokeAsync(Counter.Increment);
         await Renderer.Dispatcher.InvokeAsync(() => Services.GetRequiredService<BlexManager>()
             .RestoreGlobalState(new System.Text.Json.Nodes.JsonObject { ["counter"] = new System.Text.Json.Nodes.JsonObject { ["Count"] = 5 } }));
-        await storage.OpenAsync(Renderer.Dispatcher);
+        await HydrateAsync(storage);
 
         Assert.AreEqual(5, Counter.Count);
         Assert.IsTrue(History.CanUndo, "The restore rewrote the steps as if it were the counter's stored state.");
@@ -209,7 +227,7 @@ public class BlexProviderHydrationTests : BunitContext
 
         await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
         Assert.IsTrue(typed.CanUndo);
-        await storage.OpenAsync(Renderer.Dispatcher);
+        await HydrateAsync(storage);
 
         Assert.AreEqual("stored", Settings.Theme);
         Assert.IsFalse(typed.CanUndo, "Undo would put the declared defaults back over the state storage holds.");
@@ -224,10 +242,33 @@ public class BlexProviderHydrationTests : BunitContext
 
         await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
         await Renderer.Dispatcher.InvokeAsync(Counter.Increment);   // filtered: moves the present, not the boundary
-        await storage.OpenAsync(Renderer.Dispatcher);
+        await HydrateAsync(storage);
 
         Assert.AreEqual("stored", Settings.Theme);
         Assert.IsNull(History.NextUndoLabel, "An undo labelled with the replaced action would only revert the filtered one.");
+    }
+
+    [TestMethod]
+    public async Task A_step_the_stored_state_replaced_comes_off_with_a_filtered_action_between_it_and_the_next_step()
+    {
+        Services.AddBitBlexHistory(filter: ctx => ctx.ActionName != "Increment");
+        var storage = UseGatedStorage("""{"Theme":"stored","FontSize":20}""");
+        RenderProvider();
+
+        await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));   // recorded, then replaced
+        await Renderer.Dispatcher.InvokeAsync(Counter.Increment);                  // filtered
+        await Renderer.Dispatcher.InvokeAsync(() => Counter.Add(5));               // recorded
+        await HydrateAsync(storage);
+
+        Assert.AreEqual("stored", Settings.Theme);
+        Assert.AreEqual(1, History.UndoCount, "A step labelled with the replaced action would only revert the filtered one.");
+        Assert.AreEqual("counter/Add", History.NextUndoLabel);
+
+        await Renderer.Dispatcher.InvokeAsync(History.Undo);
+
+        Assert.AreEqual(1, Counter.Count);
+        Assert.AreEqual("stored", Settings.Theme);
+        Assert.IsFalse(History.CanUndo);
     }
 
     [TestMethod]
@@ -239,7 +280,7 @@ public class BlexProviderHydrationTests : BunitContext
         await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
         await Renderer.Dispatcher.InvokeAsync(History.Undo);
         Assert.IsTrue(History.CanRedo);
-        await storage.OpenAsync(Renderer.Dispatcher);
+        await HydrateAsync(storage);
 
         Assert.AreEqual("stored", Settings.Theme);
         Assert.IsFalse(History.CanRedo, "Redo would restore what is already showing.");
@@ -253,7 +294,7 @@ public class BlexProviderHydrationTests : BunitContext
         var raised = 0;
         History.Changed += () => raised++;
 
-        await storage.OpenAsync(Renderer.Dispatcher);
+        await HydrateAsync(storage);
 
         Assert.AreEqual("stored", Settings.Theme);
         Assert.AreEqual(0, raised);
@@ -269,13 +310,8 @@ public class BlexProviderHydrationTests : BunitContext
 
         public int FailReads { get; set; }
 
-        public async Task OpenAsync(Dispatcher dispatcher)
-        {
-            await dispatcher.InvokeAsync(_gate.SetResult);
-            // Let the hydration that was waiting run to its end on the renderer's dispatcher.
-            for (var i = 0; i < 10; i++)
-                await dispatcher.InvokeAsync(() => Task.Delay(10));
-        }
+        /// <summary>Lets the reads through. The caller waits for what it expects them to lead to.</summary>
+        public Task OpenAsync(Dispatcher dispatcher) => dispatcher.InvokeAsync(_gate.SetResult);
 
         public async ValueTask<string?> GetAsync(string key, CancellationToken cancellationToken = default)
         {
