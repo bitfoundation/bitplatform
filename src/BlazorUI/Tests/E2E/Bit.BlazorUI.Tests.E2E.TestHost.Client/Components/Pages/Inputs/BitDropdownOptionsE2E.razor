@@ -112,7 +112,7 @@
     <p>Value: <span id="opt-combo-value">@_comboValue</span> | Added: <span id="opt-combo-added">@_comboAdded</span></p>
 </E2ESection>
 
-<E2ESection Id="opt-virtualize" Title="Virtualize and IsLoading over options">
+<E2ESection Id="opt-virtualize" Title="Virtualize and Loading over options">
     <BitDropdown Id="dd-opt-virt"
                  TItem="BitDropdownOption<string>" TValue="string"
                  Label="Virtualized options"
@@ -128,7 +128,7 @@
     <BitDropdown Id="dd-opt-loading"
                  TItem="BitDropdownOption<string>" TValue="string"
                  Label="Loading options"
-                 IsLoading="_optLoading"
+                 Loading="_optLoading"
                  DefaultValue="@string.Empty">
         @foreach (var (text, value) in _fruits)
         {

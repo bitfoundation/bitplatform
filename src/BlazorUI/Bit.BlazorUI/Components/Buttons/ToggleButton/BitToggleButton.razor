@@ -20,13 +20,13 @@
     var splattedAriaHidden = GetSplattedAttribute("aria-hidden");
     var ariaHidden = AriaHidden || splattedAriaHidden is "" || string.Equals(splattedAriaHidden, "true", StringComparison.OrdinalIgnoreCase);
     var ariaHiddenValue = ariaHidden ? "true" : splattedAriaHidden;
-    var ariaBusy = IsLoading ? "true" : GetSplattedAttribute("aria-busy");
+    var ariaBusy = Loading ? "true" : GetSplattedAttribute("aria-busy");
     // The one condition the click guard is written from, so that what the button refuses, what it says it refuses
     // and what it looks like never come apart: it is announced as aria-disabled, the default is prevented below and
     // the class builder takes the pointer affordance away by the same rule. A loading toggle button is disabled for
     // exactly as long as that lasts and says so, since aria-busy announces that something is happening and not that
     // activating it now does nothing. Reclickable is the loading state that still takes clicks, and it is left alone.
-    var clickRefused = Disabled || (IsLoading && Reclickable is false);
+    var clickRefused = Disabled || (Loading && Reclickable is false);
     var ariaDisabled = clickRefused ? "true" : GetSplattedAttribute("aria-disabled");
     // Out of reach natively unless AllowDisabledFocus keeps it in the tab order, where aria-disabled carries the state alone.
     var nativeDisabled = Disabled && AllowDisabledFocus is false;

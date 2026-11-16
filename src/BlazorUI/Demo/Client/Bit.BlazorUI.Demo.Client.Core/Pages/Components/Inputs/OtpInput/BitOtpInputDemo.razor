@@ -393,7 +393,7 @@
 
     <DemoExample Title="Loading & invalid" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
-            The round trip after <b>OnFill</b>. <b>IsLoading</b> draws a bar, holds the code still and marks the
+            The round trip after <b>OnFill</b>. <b>Loading</b> draws a bar, holds the code still and marks the
             group <code>aria-busy</code> while the server checks it. <b>Invalid</b> paints the error state a
             validator cannot see - an expired or wrong code. While either is on, the <b>Description</b> is
             announced through a live region.
@@ -402,7 +402,7 @@
         <BitOtpInput @ref="loadingOtpInput" Label="Verification code" Length="6"
                      Type="BitInputType.Number"
                      Invalid="loadingInvalid"
-                     IsLoading="isLoading"
+                     Loading="isLoading"
                      Description="@loadingDescription"
                      OnFill="HandleLoadingDemoFill" />
         <br />
@@ -420,7 +420,7 @@
         </div>
         <br />
         <div>
-            Separators are hidden from screen readers, <b>IsLoading</b> and <b>Invalid</b> are announced as they
+            Separators are hidden from screen readers, <b>Loading</b> and <b>Invalid</b> are announced as they
             happen, the boxes clear the 24px target size, and an autofilled box keeps the contrast of the theme.
         </div>
         <br />
@@ -461,7 +461,7 @@
 
     <DemoExample Title="Accent" RazorCode="@example18RazorCode" Id="example18">
         <div>
-            <b>Accent</b> colors the focused box's border and ring and the <b>IsLoading</b> bar. The error state
+            <b>Accent</b> colors the focused box's border and ring and the <b>Loading</b> bar. The error state
             always wins over it.
         </div>
         <br />

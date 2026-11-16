@@ -250,7 +250,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             RenderComponent<BitActionButton>(parameters =>
             {
                 parameters.Add(p => p.IconName, "Add");
-                parameters.Add(p => p.IsLoading, true);
+                parameters.Add(p => p.Loading, true);
                 parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
                 {
                     builder.AddContent(0, $"Loading Button {i}");
@@ -378,7 +378,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             var component = RenderComponent<BitActionButton>(parameters =>
             {
                 parameters.Add(p => p.IconName, "Add");
-                parameters.Add(p => p.IsLoading, false);
+                parameters.Add(p => p.Loading, false);
                 parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
                 {
                     builder.AddContent(0, $"Button {i}");
@@ -394,7 +394,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         {
             component.Render(parameters =>
             {
-                parameters.Add(p => p.IsLoading, true);
+                parameters.Add(p => p.Loading, true);
             });
         }
 
@@ -716,7 +716,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             var component = RenderComponent<BitActionButton>(parameters =>
             {
                 parameters.Add(p => p.IconName, "Add");
-                parameters.Add(p => p.IsLoading, false);
+                parameters.Add(p => p.Loading, false);
                 parameters.Add(p => p.Disabled, false);
             });
             components.Add(component);
@@ -734,7 +734,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             {
                 component.Render(parameters =>
                 {
-                    parameters.Add(p => p.IsLoading, isLoading);
+                    parameters.Add(p => p.Loading, isLoading);
                     parameters.Add(p => p.Disabled, isEnabled is false);
                 });
             }

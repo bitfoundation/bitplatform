@@ -2572,14 +2572,14 @@ public class BitOtpInputTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitOtpInputShouldRespectIsLoading(bool isLoading)
+    public void BitOtpInputShouldRespectLoading(bool isLoading)
     {
         // The code has been submitted and is being checked, which is the step between the fill and the
         // answer that either lets the user through or paints the error state.
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
             parameters.Add(p => p.Length, 3);
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
         });
 
         var root = com.Find(".bit-otp");
@@ -2594,7 +2594,7 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitOtpInputShouldFollowTheIsLoadingAndMergedChanges()
+    public void BitOtpInputShouldFollowTheLoadingAndMergedChanges()
     {
         // Both of them repaint the component, so the class list has to be rebuilt when either is switched
         // at runtime, which is exactly what the busy state of a code being checked does.
@@ -2610,7 +2610,7 @@ public class BitOtpInputTests : BunitTestContext
 
         com.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Merged, true);
         });
 
@@ -2621,7 +2621,7 @@ public class BitOtpInputTests : BunitTestContext
 
         com.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Loading, false);
             parameters.Add(p => p.Merged, false);
         });
 
@@ -2637,7 +2637,7 @@ public class BitOtpInputTests : BunitTestContext
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
             parameters.Add(p => p.Length, 3);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.DefaultValue, "12");
         });
 
@@ -2660,7 +2660,7 @@ public class BitOtpInputTests : BunitTestContext
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
             parameters.Add(p => p.Length, 2);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"];
@@ -2677,7 +2677,7 @@ public class BitOtpInputTests : BunitTestContext
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
             parameters.Add(p => p.Length, 4);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.DefaultValue, "1234");
         });
 
@@ -2750,7 +2750,7 @@ public class BitOtpInputTests : BunitTestContext
         {
             parameters.Add(p => p.Length, 4);
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
             parameters.Add(p => p.DefaultValue, "1234");
         });
 
@@ -2928,7 +2928,7 @@ public class BitOtpInputTests : BunitTestContext
 
         com.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Description, "Checking the code…");
         });
 
@@ -2938,7 +2938,7 @@ public class BitOtpInputTests : BunitTestContext
         // keeps announcing and moves on to the sentence of the rejection.
         com.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Loading, false);
             parameters.Add(p => p.Invalid, true);
             parameters.Add(p => p.Description, "That code is not correct.");
         });
@@ -3353,7 +3353,7 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.Length, 3);
             parameters.Add(p => p.Label, "OTP");
             parameters.Add(p => p.Separator, "-");
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.DefaultValue, "1");
             parameters.Add(p => p.Description, "We sent a code to your phone.");
             parameters.Add(p => p.Classes, new BitOtpInputClassStyles

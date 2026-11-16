@@ -308,7 +308,7 @@ public class BitButtonTests : BunitTestContext
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.PrimaryTemplate, textContent);
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
         });
 
         var bitButton = com.Find(".bit-btn");
@@ -341,7 +341,7 @@ public class BitButtonTests : BunitTestContext
 
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingLabel, loadingLabel);
             if (labelPosition.HasValue)
             {
@@ -597,7 +597,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
         });
 
         var bitButton = com.Find(".bit-btn");
@@ -614,7 +614,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
             parameters.Add(p => p.Reclickable, reclickable);
         });
 
@@ -655,7 +655,7 @@ public class BitButtonTests : BunitTestContext
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Reclickable, reclickable);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
@@ -684,7 +684,7 @@ public class BitButtonTests : BunitTestContext
         var clicked = false;
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Reclickable, reclickable);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
@@ -712,7 +712,7 @@ public class BitButtonTests : BunitTestContext
 
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Classes, classes);
             parameters.Add(p => p.Styles, styles);
             parameters.AddChildContent("Content");
@@ -792,7 +792,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Reclickable, reclickable);
         });
 
@@ -845,7 +845,7 @@ public class BitButtonTests : BunitTestContext
 
         com.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingLabel, "Saving...");
             parameters.AddChildContent("Save");
         });
@@ -862,7 +862,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.AddChildContent("Save");
         });
 
@@ -911,7 +911,7 @@ public class BitButtonTests : BunitTestContext
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
             parameters.Add(p => p.Disabled, isEnabled is false);
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
         });
 
         Assert.AreEqual(expectedRole, com.Find(".bit-btn").GetAttribute("role"));
@@ -1097,7 +1097,7 @@ public class BitButtonTests : BunitTestContext
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.IconOnly, true);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.IconName, "Emoji");
             parameters.AddChildContent("Add an item");
         });
@@ -1138,7 +1138,7 @@ public class BitButtonTests : BunitTestContext
         // rather than slept for.
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingDelay, 500);
             parameters.AddChildContent("Save");
         });
@@ -1189,7 +1189,7 @@ public class BitButtonTests : BunitTestContext
 
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => com.Find(".bit-btn").ClickAsync(new()));
 
-        Assert.IsFalse(com.Instance.IsLoading);
+        Assert.IsFalse(com.Instance.Loading);
         Assert.AreEqual(0, com.FindAll(".bit-btn-spn").Count);
     }
 
@@ -1401,7 +1401,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingLabel, "Wait...");
             parameters.Add(p => p.LoadingTemplate, "<span class=\"custom-loading\">Wait...</span>");
             parameters.AddChildContent("Click me");
@@ -1453,7 +1453,7 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitButtonAutoLoadingShouldNotifyIsLoadingChanged()
+    public async Task BitButtonAutoLoadingShouldNotifyLoadingChanged()
     {
         var loadingStates = new List<bool>();
         var tcs = new TaskCompletionSource();
@@ -1461,7 +1461,7 @@ public class BitButtonTests : BunitTestContext
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.AutoLoading, true);
-            parameters.Add(p => p.IsLoadingChanged, (bool value) => loadingStates.Add(value));
+            parameters.Add(p => p.LoadingChanged, (bool value) => loadingStates.Add(value));
             parameters.Add(p => p.OnClick, (bool _) => tcs.Task);
         });
 
@@ -1485,7 +1485,7 @@ public class BitButtonTests : BunitTestContext
         {
             parameters.Add(p => p.AutoLoading, true);
             parameters.Add(p => p.Reclickable, true);
-            parameters.Add(p => p.IsLoadingChanged, (bool value) => loadingStates.Add(value));
+            parameters.Add(p => p.LoadingChanged, (bool value) => loadingStates.Add(value));
             // the second click abandons the run the first one started, the way a handler that replaces
             // its own in-flight work does
             parameters.Add(p => p.OnClick, (bool _) =>
@@ -1507,13 +1507,13 @@ public class BitButtonTests : BunitTestContext
 
         // the abandoned first run is gone, but the second one is still in flight and still loading
         Assert.AreEqual(2, clickCount);
-        Assert.IsTrue(com.Instance.IsLoading);
+        Assert.IsTrue(com.Instance.Loading);
         CollectionAssert.AreEqual(new List<bool> { true }, loadingStates);
 
         secondTcs.SetResult();
         await secondClick;
 
-        Assert.IsFalse(com.Instance.IsLoading);
+        Assert.IsFalse(com.Instance.Loading);
         CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
     }
 
@@ -1532,7 +1532,7 @@ public class BitButtonTests : BunitTestContext
 
         com.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         com.Find(".bit-btn").Click();
@@ -1827,7 +1827,7 @@ public class BitButtonTests : BunitTestContext
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.Disabled, disabled);
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
             parameters.Add(p => p.Reclickable, reclickable);
         });
 
@@ -1892,7 +1892,7 @@ public class BitButtonTests : BunitTestContext
         {
             parameters.Add(p => p.AriaHidden, true);
             parameters.Add(p => p.LoadingLabel, "Saving...");
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         Assert.IsEmpty(com.FindAll("span[role=status]"));
@@ -1903,7 +1903,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingDelay, 5000);
             parameters.AddChildContent("Save");
         });
@@ -1917,7 +1917,7 @@ public class BitButtonTests : BunitTestContext
 
         com.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Loading, false);
         });
 
         Assert.IsFalse(com.Find(".bit-btn").HasAttribute("aria-busy"));
@@ -1975,7 +1975,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingDelay, 5000);
         });
 

@@ -2227,7 +2227,7 @@ public class BitChartTests : BunitTestContext
         var component = RenderComponent<BitChart>(p =>
         {
             p.Add(c => c.Data, new BitChartData());
-            p.Add(c => c.IsLoading, true);
+            p.Add(c => c.Loading, true);
             p.Add(c => c.LoadingLabel, "Fetching");
         });
 
@@ -2239,7 +2239,7 @@ public class BitChartTests : BunitTestContext
         StringAssert.Contains(loading.TextContent, "Fetching");
         Assert.AreEqual(0, component.FindAll(".bit-cht-emp").Count, "a chart still loading claimed it has no data");
 
-        component.Render(p => p.Add(c => c.IsLoading, false));
+        component.Render(p => p.Add(c => c.Loading, false));
 
         Assert.IsNull(component.Find(".bit-cht").GetAttribute("aria-busy"));
         Assert.AreEqual(0, component.FindAll(".bit-cht-ldg").Count);
@@ -2257,7 +2257,7 @@ public class BitChartTests : BunitTestContext
         component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
         Assert.AreNotEqual(string.Empty, component.Find(".bit-cht-sr[role=status]").TextContent.Trim());
 
-        component.Render(p => p.Add(c => c.IsLoading, true));
+        component.Render(p => p.Add(c => c.Loading, true));
 
         // The keyboard position is let go of - the live region says the loading label instead - the plot leaves the
         // tab order, and the template replaces the spinner.
@@ -2334,7 +2334,7 @@ public class BitChartTests : BunitTestContext
         // A disabled legend button need not fire mouseleave, so the fade cannot wait for one.
         component.Render(p =>
         {
-            if (loading) p.Add(c => c.IsLoading, true);
+            if (loading) p.Add(c => c.Loading, true);
             else p.Add(c => c.Disabled, true);
         });
         Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);

@@ -191,7 +191,7 @@ public partial class BitActionButton : BitComponentBase
     /// Determines whether the action button is in loading mode or not.
     /// </summary>
     [Parameter, ResetClassBuilder, TwoWayBound]
-    public bool IsLoading { get; set; }
+    public bool Loading { get; set; }
 
     /// <summary>
     /// The delay in milliseconds before the loading indicator appears after entering the loading state.
@@ -333,12 +333,12 @@ public partial class BitActionButton : BitComponentBase
 
         ClassBuilder.Register(() => IconOnly ? "bit-acb-ion" : string.Empty);
 
-        ClassBuilder.Register(() => IsLoading ? "bit-acb-lod" : string.Empty);
+        ClassBuilder.Register(() => Loading ? "bit-acb-lod" : string.Empty);
 
         // The pointer is taken away from a loading button only while it refuses the click: a Reclickable one is
         // still there to be clicked, and a rule keyed on the loading state alone would block the very re-click
         // Reclickable exists for.
-        ClassBuilder.Register(() => IsLoading && Reclickable is false ? "bit-acb-lnc" : string.Empty);
+        ClassBuilder.Register(() => Loading && Reclickable is false ? "bit-acb-lnc" : string.Empty);
 
         ClassBuilder.Register(() => NoWrap ? "bit-acb-nwr" : string.Empty);
 
@@ -370,9 +370,9 @@ public partial class BitActionButton : BitComponentBase
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
         if (Disabled) return;
-        if (IsLoading && Reclickable is false) return;
+        if (Loading && Reclickable is false) return;
 
-        var isLoading = IsLoading;
+        var isLoading = Loading;
 
         // The loading state belongs to the latest click alone. A Reclickable button's re-click arrives while
         // that state is already on, so it only raises the event: entering it again would be a no-op, and
@@ -383,7 +383,7 @@ public partial class BitActionButton : BitComponentBase
 
         if (AutoLoading && isLoading is false)
         {
-            if (await AssignIsLoading(true) is false) return;
+            if (await AssignLoading(true) is false) return;
 
             UpdateLoadingVisuals();
         }
@@ -398,7 +398,7 @@ public partial class BitActionButton : BitComponentBase
             // stranding it in a loading state that nothing will ever clear.
             if (AutoLoading && clickId == _clickId)
             {
-                await AssignIsLoading(false);
+                await AssignLoading(false);
 
                 UpdateLoadingVisuals();
             }
@@ -447,14 +447,14 @@ public partial class BitActionButton : BitComponentBase
 
         // The href is dropped while loading, so the anchor needs an explicit tabindex to keep the focus a keyboard
         // user gave it - otherwise it jumps to the document the moment the click starts the loading state.
-        if (IsLoading && Href.HasValue()) return TabIndex ?? "0";
+        if (Loading && Href.HasValue()) return TabIndex ?? "0";
 
         return TabIndex;
     }
 
     private void UpdateLoadingVisuals()
     {
-        if (IsLoading)
+        if (Loading)
         {
             if (_showLoading || _loadingDelayCts is not null) return;
 
@@ -485,7 +485,7 @@ public partial class BitActionButton : BitComponentBase
             return;
         }
 
-        if (IsDisposed || IsLoading is false || token.IsCancellationRequested) return;
+        if (IsDisposed || Loading is false || token.IsCancellationRequested) return;
 
         _showLoading = true;
 

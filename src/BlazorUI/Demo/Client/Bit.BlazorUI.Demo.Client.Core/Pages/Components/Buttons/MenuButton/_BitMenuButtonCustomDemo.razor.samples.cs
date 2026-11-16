@@ -608,8 +608,8 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 <BitMenuButton Split Text=""Refresh"" Items=""basicIconCustoms"" IconName=""@BitIconName.Refresh"" NameSelectors=""nameSelectors""
                AutoLoading LoadingDelay=""500"" OnClick=""(Operation _) => HandleOnRefreshClick()"" />
 
-<BitMenuButton Text=""Loading"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" IsLoading=""customIsLoading"" />
-<BitCheckbox Label=""IsLoading"" @bind-Value=""customIsLoading"" />
+<BitMenuButton Text=""Loading"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" Loading=""customLoading"" />
+<BitCheckbox Label=""Loading"" @bind-Value=""customLoading"" />
 
 <BitMenuButton Split Text=""Upload"" Items=""basicIconCustoms"" IconName=""@BitIconName.Upload"" NameSelectors=""nameSelectors""
                AutoLoading OnClick=""(Operation _) => HandleOnSaveClick()"">
@@ -619,7 +619,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 </BitMenuButton>";
 
     private readonly string example15CsharpCode = @"
-private bool customIsLoading;
+private bool customLoading;
 
 public class Operation
 {

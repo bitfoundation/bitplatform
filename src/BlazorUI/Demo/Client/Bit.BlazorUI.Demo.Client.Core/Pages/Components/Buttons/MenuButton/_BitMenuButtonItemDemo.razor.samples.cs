@@ -386,8 +386,8 @@ private static List<BitMenuButtonItem> basicItemsIcon =
 <BitMenuButton Split Text=""Refresh"" Items=""basicItemsIcon"" IconName=""@BitIconName.Refresh""
                AutoLoading LoadingDelay=""500"" OnClick=""(BitMenuButtonItem _) => HandleOnRefreshClick()"" />
 
-<BitMenuButton Text=""Loading"" Items=""basicItemsIcon"" IsLoading=""itemIsLoading"" />
-<BitCheckbox Label=""IsLoading"" @bind-Value=""itemIsLoading"" />
+<BitMenuButton Text=""Loading"" Items=""basicItemsIcon"" Loading=""itemLoading"" />
+<BitCheckbox Label=""Loading"" @bind-Value=""itemLoading"" />
 
 <BitMenuButton Split Text=""Upload"" Items=""basicItemsIcon"" IconName=""@BitIconName.Upload""
                AutoLoading OnClick=""(BitMenuButtonItem _) => HandleOnSaveClick()"">
@@ -397,7 +397,7 @@ private static List<BitMenuButtonItem> basicItemsIcon =
 </BitMenuButton>";
 
     private readonly string example15CsharpCode = @"
-private bool itemIsLoading;
+private bool itemLoading;
 
 private static List<BitMenuButtonItem> basicItemsIcon =
 [

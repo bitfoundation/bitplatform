@@ -477,7 +477,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched.
     /// The dropdown stays interactive, so the user can still open the callout and see the loading state.
     /// </summary>
-    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool Loading { get; set; }
 
     /// <summary>
     /// Determines the opening state of the callout. (two-way bound)
@@ -542,12 +542,12 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// The custom template to render in the callout in place of the items while <see cref="IsLoading"/> is enabled.
+    /// The custom template to render in the callout in place of the items while <see cref="Loading"/> is enabled.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
-    /// The text to render in the callout in place of the items while <see cref="IsLoading"/> is enabled.
+    /// The text to render in the callout in place of the items while <see cref="Loading"/> is enabled.
     /// </summary>
     [Parameter] public string? LoadingText { get; set; }
 
@@ -3550,7 +3550,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     // Whether the select all item is on the screen, which the callout's own layout has to agree on: its
     // height is part of the space the scrollable item list cannot use (see GetCalloutScrollOffset).
-    private bool HasSelectAllItem => MultiSelect && ShowSelectAll && ItemsProvider is null && IsLoading is false && GetSelectAllState().HasCandidates;
+    private bool HasSelectAllItem => MultiSelect && ShowSelectAll && ItemsProvider is null && Loading is false && GetSelectAllState().HasCandidates;
 
     private bool IsSelectAllCandidate(TItem item)
     {

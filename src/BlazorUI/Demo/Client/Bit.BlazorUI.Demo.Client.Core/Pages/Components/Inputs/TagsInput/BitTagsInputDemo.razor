@@ -117,7 +117,7 @@
             values holding what is being typed are kept, matched without regard to case the way the browser
             filters the list it is handed, so what the user is shown does not change.
             Where the catalogue is fetched rather than held, <b>OnInput</b> is what triggers the fetch and
-            <b>IsLoading</b> draws the spinner that says the field is waiting - an indeterminate progressbar, so
+            <b>Loading</b> draws the spinner that says the field is waiting - an indeterminate progressbar, so
             a screen reader hears the wait instead of missing it. <b>DebounceTime</b> waits for the typing to
             stop before raising it, which turns a request per keystroke into a request per word
             (<b>ThrottleTime</b> spaces them out instead, for a list that should keep up while the word is
@@ -145,7 +145,7 @@
                           Description="Only the five best matches are ever written into the page." />
             <BitTagsInput Label="Fetched while you type"
                           Suggestions="asyncSuggestions"
-                          IsLoading="asyncLoading"
+                          Loading="asyncLoading"
                           DebounceTime="300"
                           OnInput="HandleAsyncInput"
                           Placeholder="Start typing a country..."

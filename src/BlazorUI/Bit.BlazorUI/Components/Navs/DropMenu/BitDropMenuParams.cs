@@ -130,7 +130,7 @@ public partial class BitDropMenuParams : BitComponentBaseParams, IBitComponentPa
     /// <summary>
     /// Determines whether the drop menu is in the loading state.
     /// </summary>
-    public bool? IsLoading { get; set; }
+    public bool? Loading { get; set; }
 
     /// <summary>
     /// Keeps the content of the callout out of the page until the callout is opened for the first time.
@@ -333,9 +333,9 @@ public partial class BitDropMenuParams : BitComponentBaseParams, IBitComponentPa
             bitDropMenu.TakeFromCascade(nameof(IconName), IconName, static d => d.IconName, static (d, v) => d.IconName = v);
         }
 
-        if (IsLoading.HasValue)
+        if (Loading.HasValue)
         {
-            bitDropMenu.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static d => d.IsLoading, static (d, v) => d.IsLoading = v);
+            bitDropMenu.TakeFromCascade(nameof(Loading), Loading.Value, static d => d.Loading, static (d, v) => d.Loading = v);
         }
 
         if (LazyRender.HasValue)

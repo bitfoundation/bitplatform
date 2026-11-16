@@ -70,7 +70,7 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "IsLoading",
+            Name = "Loading",
             Type = "bool",
             DefaultValue = "false",
             Description = "Shows a loading veil with a spinner over the plot, marks the chart aria-busy and holds back the empty state, so a chart still waiting for its data does not claim it has none."
@@ -80,14 +80,14 @@ public partial class BitChartDemo
             Name = "LoadingLabel",
             Type = "string?",
             DefaultValue = "\"Loading\"",
-            Description = "The text shown under the spinner, and announced, while IsLoading is set."
+            Description = "The text shown under the spinner, and announced, while Loading is set."
         },
         new()
         {
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Custom content shown in place of the default spinner while IsLoading is set."
+            Description = "Custom content shown in place of the default spinner while Loading is set."
         },
         new()
         {
@@ -341,7 +341,7 @@ public partial class BitChartDemo
         {
             Name = "--bit-Chart-loading-background",
             DefaultValue = "--bit-clr-bg-pri at 70%",
-            Description = "The veil laid over the plot while IsLoading is set; translucent, so the chart behind it shows through.",
+            Description = "The veil laid over the plot while Loading is set; translucent, so the chart behind it shows through.",
         },
         new()
         {

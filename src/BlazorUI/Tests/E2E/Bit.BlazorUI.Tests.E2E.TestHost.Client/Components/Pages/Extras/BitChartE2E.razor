@@ -119,10 +119,10 @@
 </E2ESection>
 
 <E2ESection Id="states" Title="Loading & no data">
-    <div class="box"><BitChart Id="cht-loading" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" IsLoading="_loading" LoadingLabel="Fetching sales" /></div>
+    <div class="box"><BitChart Id="cht-loading" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" Loading="_loading" LoadingLabel="Fetching sales" /></div>
     <button id="btn-toggle-loading" @onclick="() => _loading = !_loading">Toggle loading</button>
     <div class="box">
-        <BitChart Id="cht-loading-template" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" IsLoading>
+        <BitChart Id="cht-loading-template" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" Loading>
             <LoadingTemplate><span class="custom-loading">Please wait</span></LoadingTemplate>
         </BitChart>
     </div>

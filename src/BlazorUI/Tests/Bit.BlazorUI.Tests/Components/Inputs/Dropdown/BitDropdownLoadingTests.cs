@@ -11,9 +11,9 @@ public class BitDropdownLoadingTests : BunitTestContext
     [TestMethod]
     public void BitDropdownShouldKeepTheSelectionWhenLoadingEnds()
     {
-        var component = RenderComponent<BitDropdownLoadingTest>(parameters => parameters.Add(p => p.IsLoading, true));
+        var component = RenderComponent<BitDropdownLoadingTest>(parameters => parameters.Add(p => p.Loading, true));
 
-        component.Render(parameters => parameters.Add(p => p.IsLoading, false));
+        component.Render(parameters => parameters.Add(p => p.Loading, false));
 
         CollectionAssert.AreEqual(new[] { "First", "Last" }, GetSelectedTexts(component));
         Assert.AreEqual("First, Last", GetTriggerText(component));

@@ -166,7 +166,7 @@ public partial class BitButtonParams : BitComponentBaseParams, IBitComponentPara
     /// <summary>
     /// Determines whether the button is in loading mode or not.
     /// </summary>
-    public bool? IsLoading { get; set; }
+    public bool? Loading { get; set; }
 
     /// <summary>
     /// The delay in milliseconds before the spinner appears after the button enters the loading state.
@@ -375,9 +375,9 @@ public partial class BitButtonParams : BitComponentBaseParams, IBitComponentPara
             bitButton.TakeFromCascade(nameof(IconUrl), IconUrl, static b => b.IconUrl, static (b, v) => b.IconUrl = v);
         }
 
-        if (IsLoading.HasValue)
+        if (Loading.HasValue)
         {
-            bitButton.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static b => b.IsLoading, static (b, v) => b.IsLoading = v);
+            bitButton.TakeFromCascade(nameof(Loading), Loading.Value, static b => b.Loading, static (b, v) => b.Loading = v);
         }
 
         if (LoadingDelay.HasValue)

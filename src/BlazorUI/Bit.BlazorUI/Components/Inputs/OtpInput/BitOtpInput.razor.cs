@@ -108,7 +108,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// through its aria-describedby so that screen readers announce it along with the name of the group.
     /// It is where the sentence that turns a row of empty boxes into a question the user can answer
     /// belongs: where the code was sent, how long it is good for, or what a server that rejected it said.
-    /// While <see cref="Invalid"/> or <see cref="IsLoading"/> is on it also sits in the live region of the
+    /// While <see cref="Invalid"/> or <see cref="Loading"/> is on it also sits in the live region of the
     /// component, so the wait for the answer and a rejection are announced at the moment they happen rather
     /// than waiting for the focus to come back to the code.
     /// </summary>
@@ -172,7 +172,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// answer is already on its way.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public bool IsLoading { get; set; }
+    public bool Loading { get; set; }
 
     /// <summary>
     /// Sets the inputmode html attribute of the inputs, which is what decides the virtual keyboard that a
@@ -410,7 +410,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     /// <summary>
     /// Clears the value of all of the inputs of the BitOtpInput. It does nothing while the component is
-    /// disabled or read-only, and it is deliberately not refused by the <see cref="IsLoading"/>: that state
+    /// disabled or read-only, and it is deliberately not refused by the <see cref="Loading"/>: that state
     /// belongs to the consumer calling this, whose answer from the server is usually what clears the code.
     /// </summary>
     public async Task Clear()
@@ -549,7 +549,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         ClassBuilder.Register(() => IsReadOnly ? "bit-otp-rdl" : string.Empty);
 
-        ClassBuilder.Register(() => IsLoading ? "bit-otp-ldg" : string.Empty);
+        ClassBuilder.Register(() => Loading ? "bit-otp-ldg" : string.Empty);
 
         ClassBuilder.Register(() => Disabled is false && Required ? "bit-otp-req" : string.Empty);
 
@@ -600,7 +600,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         // and is therefore not announced, which is what keeps a state that merely re-renders quiet. A
         // DescriptionTemplate is markup rather than text, so there is nothing to copy into the region and
         // the consumer keeps the announcement of it.
-        _statusMessage = (Invalid || IsLoading) && DescriptionTemplate is null ? Description : null;
+        _statusMessage = (Invalid || Loading) && DescriptionTemplate is null ? Description : null;
 
         // Narrowing the set of characters that the code may hold has to reach the characters that are
         // already in the inputs too, otherwise the component would keep showing (and reporting) a code
@@ -705,7 +705,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     // code that has already been submitted alike, so everything the user could edit it with consults the
     // two together. The programmatic API is deliberately left out of it: the busy state belongs to the
     // consumer, so a Clear of its own must not be refused by the very state it has just switched on.
-    private bool IsReadOnly => ReadOnly || IsLoading;
+    private bool IsReadOnly => ReadOnly || Loading;
 
     protected override bool HasError => Invalid;
 
@@ -1398,7 +1398,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         await OnFill.InvokeAsync(value);
 
         // Submitted after the callback on purpose, so that whatever the consumer switches on in it (the
-        // IsLoading of the round trip above all) is already in place when the submit handler of the form runs.
+        // Loading of the round trip above all) is already in place when the submit handler of the form runs.
         if (AutoSubmit is false || IsDisposed || IsRendered is false) return;
 
         try

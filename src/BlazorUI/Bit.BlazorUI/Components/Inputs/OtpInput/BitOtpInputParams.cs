@@ -115,9 +115,9 @@ public partial class BitOtpInputParams : BitInputBaseParams<string?>, IBitCompon
     /// Puts the component into the busy state of a code that has been submitted and is being checked, which
     /// draws a progress bar under the inputs, holds the code still and announces the wait.
     /// <br />
-    /// <see cref="BitOtpInput.IsLoading"/>.
+    /// <see cref="BitOtpInput.Loading"/>.
     /// </summary>
-    public bool? IsLoading { get; set; }
+    public bool? Loading { get; set; }
 
     /// <summary>
     /// Label displayed above the inputs.
@@ -347,9 +347,9 @@ public partial class BitOtpInputParams : BitInputBaseParams<string?>, IBitCompon
             bitOtpInput.TakeFromCascade(nameof(Invalid), Invalid.Value, static o => o.Invalid, static (o, v) => o.Invalid = v);
         }
 
-        if (IsLoading.HasValue)
+        if (Loading.HasValue)
         {
-            bitOtpInput.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static o => o.IsLoading, static (o, v) => o.IsLoading = v);
+            bitOtpInput.TakeFromCascade(nameof(Loading), Loading.Value, static o => o.Loading, static (o, v) => o.Loading = v);
         }
 
         if (Label.HasValue())

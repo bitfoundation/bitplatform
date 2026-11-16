@@ -293,7 +293,7 @@ private void HandleAutoSubmit()
 <BitOtpInput @ref=""loadingOtpInput"" Label=""Verification code"" Length=""6""
              Type=""BitInputType.Number""
              Invalid=""loadingInvalid""
-             IsLoading=""isLoading""
+             Loading=""isLoading""
              Description=""@loadingDescription""
              OnFill=""HandleLoadingDemoFill"" />
 

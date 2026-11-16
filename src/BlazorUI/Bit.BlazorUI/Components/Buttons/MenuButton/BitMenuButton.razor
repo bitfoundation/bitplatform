@@ -63,7 +63,7 @@
             aria-label="@ariaLabel"
             aria-hidden="@(ariaHidden ? "true" : null)"
             aria-disabled="@(Disabled ? "true" : null)"
-            aria-busy="@(IsLoading ? "true" : null)"
+            aria-busy="@(Loading ? "true" : null)"
             aria-describedby="@describedByValue"
             aria-haspopup="@(Split ? null : "menu")"
             aria-controls="@(Split ? null : _menuId)"
@@ -179,7 +179,7 @@
    nothing to announce. *@
 @if (LoadingLabel.HasValue())
 {
-    <span role="status" aria-hidden="@(ariaHidden ? "true" : null)" class="bit-mnb-sts">@(IsLoading ? LoadingLabel : null)</span>
+    <span role="status" aria-hidden="@(ariaHidden ? "true" : null)" class="bit-mnb-sts">@(Loading ? LoadingLabel : null)</span>
 }
 
 @if (descriptionId is not null)

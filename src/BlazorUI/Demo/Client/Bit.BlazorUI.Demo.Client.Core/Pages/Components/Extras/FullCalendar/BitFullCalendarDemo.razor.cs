@@ -136,7 +136,7 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
-            Name = "IsLoading",
+            Name = "Loading",
             Type = "bool",
             DefaultValue = "false",
             Description = "Runs an indeterminate progress bar across the top of the body and marks it busy for assistive technology, e.g. while the events of a range reported by OnDateChange are fetched.",

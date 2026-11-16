@@ -157,7 +157,7 @@ public partial class BitToggleButtonParams : BitComponentBaseParams, IBitCompone
     /// Determines whether the toggle button is in the loading state, which covers its content
     /// with a spinner and prevents subsequent clicks unless <see cref="Reclickable"/> is enabled.
     /// </summary>
-    public bool? IsLoading { get; set; }
+    public bool? Loading { get; set; }
 
     /// <summary>
     /// The delay in milliseconds before the spinner appears after the toggle button enters the loading state.
@@ -412,9 +412,9 @@ public partial class BitToggleButtonParams : BitComponentBaseParams, IBitCompone
             bitToggleButton.TakeFromCascade(nameof(IconPlacement), IconPlacement.Value, static t => t.IconPlacement, static (t, v) => t.IconPlacement = v);
         }
 
-        if (IsLoading.HasValue)
+        if (Loading.HasValue)
         {
-            bitToggleButton.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static t => t.IsLoading, static (t, v) => t.IsLoading = v);
+            bitToggleButton.TakeFromCascade(nameof(Loading), Loading.Value, static t => t.Loading, static (t, v) => t.Loading = v);
         }
 
         if (LoadingDelay.HasValue)

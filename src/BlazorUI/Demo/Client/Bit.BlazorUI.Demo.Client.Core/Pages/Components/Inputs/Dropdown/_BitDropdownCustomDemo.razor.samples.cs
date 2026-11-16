@@ -2040,15 +2040,15 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     }
 </style>
 
-<BitDropdown Label=""IsLoading""
-             IsLoading
+<BitDropdown Label=""Loading""
+             Loading
              Items=""GetBasicCustoms()""
              DefaultValue=""@string.Empty""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item"" />
 
 <BitDropdown Label=""LoadingText""
-             IsLoading
+             Loading
              Items=""GetBasicCustoms()""
              DefaultValue=""@string.Empty""
              NameSelectors=""nameSelectors""
@@ -2056,7 +2056,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              LoadingText=""Fetching the products..."" />
 
 <BitDropdown Label=""LoadingTemplate""
-             IsLoading
+             Loading
              Items=""GetBasicCustoms()""
              DefaultValue=""@string.Empty""
              NameSelectors=""nameSelectors""
@@ -2069,9 +2069,9 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     </LoadingTemplate>
 </BitDropdown>
 
-<BitButton OnClick=""LoadDelayedCustoms"" IsLoading=""isLoadingItems"">Load the items</BitButton>
+<BitButton OnClick=""LoadDelayedCustoms"" Loading=""isLoadingItems"">Load the items</BitButton>
 <BitDropdown Label=""Products""
-             IsLoading=""isLoadingItems""
+             Loading=""isLoadingItems""
              Items=""delayedCustoms""
              DefaultValue=""@string.Empty""
              NameSelectors=""nameSelectors""
@@ -2354,7 +2354,7 @@ private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
              EmptyText=""Es gibt hier nichts""
              TItem=""Product"" TValue=""string"" />
 
-<BitDropdown IsLoading
+<BitDropdown Loading
              Label=""Wird geladen""
              Items=""emptyCustoms""
              NameSelectors=""nameSelectors""

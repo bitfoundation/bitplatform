@@ -1734,15 +1734,15 @@
 
 <DemoExample Title="Loading" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
     <div>
-        The <b>IsLoading</b> parameter reports that the items are still on their way: a spinner replaces the caret
+        The <b>Loading</b> parameter reports that the items are still on their way: a spinner replaces the caret
         down element and the callout shows a loading indicator in place of the item list, while the dropdown itself
         stays enabled so the user can still open it and see what is happening. The message is customized with the
         <b>LoadingText</b> parameter and the whole indicator with the <b>LoadingTemplate</b> parameter.
     </div>
     <br />
     <div class="example-content">
-        <BitDropdown Label="IsLoading"
-                     IsLoading
+        <BitDropdown Label="Loading"
+                     Loading
                      DefaultValue="@string.Empty"
                      Placeholder="Select an item"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -1753,7 +1753,7 @@
         </BitDropdown>
         <br /><br />
         <BitDropdown Label="LoadingText"
-                     IsLoading
+                     Loading
                      DefaultValue="@string.Empty"
                      Placeholder="Select an item"
                      LoadingText="Fetching the products..."
@@ -1765,7 +1765,7 @@
         </BitDropdown>
         <br /><br />
         <BitDropdown Label="LoadingTemplate"
-                     IsLoading
+                     Loading
                      DefaultValue="@string.Empty"
                      Placeholder="Select an item"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -1785,10 +1785,10 @@
         <br /><br /><br /><br />
         <div><b>A real fetch</b>: the items get loaded when the button is clicked.</div>
         <br />
-        <BitButton OnClick="LoadDelayedItems" IsLoading="isLoadingItems">Load the items</BitButton>
+        <BitButton OnClick="LoadDelayedItems" Loading="isLoadingItems">Load the items</BitButton>
         <br /><br />
         <BitDropdown Label="Products"
-                     IsLoading="isLoadingItems"
+                     Loading="isLoadingItems"
                      DefaultValue="@string.Empty"
                      Placeholder="Select an item"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -1902,7 +1902,7 @@
                      EmptyText="Es gibt hier nichts"
                      TItem="BitDropdownOption<string>" TValue="string" />
         <br /><br />
-        <BitDropdown IsLoading
+        <BitDropdown Loading
                      Label="Wird geladen"
                      LoadingText="Wird geladen..."
                      Placeholder="Zutat auswählen"

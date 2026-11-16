@@ -337,7 +337,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
             parameters.Add(p => p.Reclickable, reclickable);
             parameters.Bind(p => p.IsChecked, isChecked, v => isChecked = v);
         });
@@ -365,7 +365,7 @@ public class BitToggleButtonTests : BunitTestContext
         // invite them.
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingDelay, 5000);
         });
 
@@ -468,7 +468,7 @@ public class BitToggleButtonTests : BunitTestContext
         // clicked again stops it from being toggled from code as well - unless Reclickable lifted it.
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Text, "Microphone");
             parameters.Add(p => p.Reclickable, reclickable);
         });
@@ -802,7 +802,7 @@ public class BitToggleButtonTests : BunitTestContext
         // toggle button is busy leaves a screen reader with nothing to announce it as.
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Text, "Microphone");
         });
 
@@ -823,7 +823,7 @@ public class BitToggleButtonTests : BunitTestContext
         // thing saying the toggle button is busy, and the live region below announces the LoadingLabel alone.
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Text, "Microphone");
             parameters.Add(p => p.LoadingTemplate, "<span class=\"custom-loading\">Saving...</span>");
         });
@@ -857,7 +857,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingLabel, loadingLabel);
             parameters.Add(p => p.Text, "Microphone");
         });
@@ -866,7 +866,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Loading, false);
             parameters.Add(p => p.LoadingLabel, null);
             parameters.Add(p => p.Text, "Microphone");
         });
@@ -881,7 +881,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             // The delay runs on the wall clock from the render on, so it is long enough that a test thread held
             // up by a busy runner still reads the markup before the spinner arrives.
             parameters.Add(p => p.LoadingDelay, 500);
@@ -910,7 +910,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingDelay, 5000);
         });
 
@@ -918,7 +918,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Loading, false);
             parameters.Add(p => p.LoadingDelay, 5000);
         });
 
@@ -1224,7 +1224,7 @@ public class BitToggleButtonTests : BunitTestContext
         // loading state that still takes them, and it is left alone.
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
             parameters.Add(p => p.Reclickable, reclickable);
         });
 
@@ -1326,7 +1326,7 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IconOnly, true);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.IconName, "Save");
             parameters.Add(p => p.Text, "Save");
             parameters.Add(p => p.LoadingLabel, "Saving...");
@@ -1455,7 +1455,7 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.Disabled, disabled);
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
             parameters.Add(p => p.Reclickable, reclickable);
         });
 
@@ -1539,7 +1539,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingLabel, "Saving...");
             parameters.Add(p => p.Text, "Save");
             if (placement.HasValue)
@@ -1584,7 +1584,7 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IsChecked, true);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.ShowCheckMark, true);
             parameters.Add(p => p.IconName, "Bold");
             parameters.Add(p => p.Text, "Bold");
@@ -1700,7 +1700,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         var first = button.ClickAsync(new MouseEventArgs());
 
-        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.IsLoading));
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Loading));
 
         var second = button.ClickAsync(new MouseEventArgs());
 
@@ -1710,12 +1710,12 @@ public class BitToggleButtonTests : BunitTestContext
         firstTcs.SetResult();
         await first;
 
-        Assert.IsTrue(component.Instance.IsLoading);
+        Assert.IsTrue(component.Instance.Loading);
 
         secondTcs.SetResult();
         await second;
 
-        Assert.IsFalse(component.Instance.IsLoading);
+        Assert.IsFalse(component.Instance.Loading);
         // the two clicks each toggled the state, which is back where it started
         Assert.IsFalse(component.Instance.IsChecked);
     }
@@ -1725,7 +1725,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingDelay, 5000);
         });
 

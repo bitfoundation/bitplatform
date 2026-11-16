@@ -3823,7 +3823,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingText, "Fetching");
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });
@@ -4058,7 +4058,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });
 
@@ -4066,7 +4066,7 @@ public class BitDropdownTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Loading, false);
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });
 
@@ -5343,7 +5343,7 @@ public class BitDropdownTests : BunitTestContext
             Description = "Test description text",
             DropDirection = BitDropDirection.All,
             FitWidth = true,
-            IsLoading = true,
+            Loading = true,
             Items = items,
             ItemSize = 40,
             Label = "Test label",
@@ -5391,7 +5391,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual("Test description text", instance.Description);
         Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
         Assert.IsTrue(instance.FitWidth);
-        Assert.IsTrue(instance.IsLoading);
+        Assert.IsTrue(instance.Loading);
         Assert.AreSame(items, instance.Items);
         Assert.AreEqual(40, instance.ItemSize);
         Assert.AreEqual("Test label", instance.Label);
@@ -5629,7 +5629,7 @@ public class BitDropdownTests : BunitTestContext
     {
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingText, "Fetching");
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });

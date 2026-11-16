@@ -440,7 +440,7 @@ public class BitActionButtonTests : BunitTestContext
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.IconUrl, "/images/icon.svg");
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         Assert.AreEqual(1, component.FindAll(".bit-acb-spn").Count);
@@ -776,11 +776,11 @@ public class BitActionButtonTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitActionButtonIsLoadingClassAndSpinnerTest(bool isLoading)
+    public void BitActionButtonLoadingClassAndSpinnerTest(bool isLoading)
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
             parameters.Add(p => p.IconName, "Add");
             parameters.AddChildContent("Content");
         });
@@ -807,7 +807,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.IconName, "Add");
             parameters.Add(p => p.LoadingTemplate, builder =>
             {
@@ -1231,11 +1231,11 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitActionButtonIsLoadingShouldHideIconAndShowSpinner()
+    public void BitActionButtonLoadingShouldHideIconAndShowSpinner()
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.IconName, "Add");
             parameters.AddChildContent("Content");
         });
@@ -1248,13 +1248,13 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitActionButtonIsLoadingWithLoadingTemplateShouldNotShowSpinner()
+    public void BitActionButtonLoadingWithLoadingTemplateShouldNotShowSpinner()
     {
         const string loadingText = "Loading...";
 
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.IconName, "Add");
             parameters.Add(p => p.LoadingTemplate, builder => builder.AddContent(0, loadingText));
             parameters.AddChildContent("Content");
@@ -1268,11 +1268,11 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitActionButtonIsLoadingWithIconOnlyShouldShowSpinner()
+    public void BitActionButtonLoadingWithIconOnlyShouldShowSpinner()
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.IconOnly, true);
             parameters.Add(p => p.IconName, "Add");
         });
@@ -1285,11 +1285,11 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitActionButtonIsLoadingStateShouldUpdateDynamically()
+    public void BitActionButtonLoadingStateShouldUpdateDynamically()
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Loading, false);
             parameters.Add(p => p.IconName, "Add");
             parameters.AddChildContent("Content");
         });
@@ -1299,7 +1299,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.IsFalse(button.ClassList.Contains("bit-acb-lod"));
         Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
 
-        component.Render(parameters => parameters.Add(p => p.IsLoading, true));
+        component.Render(parameters => parameters.Add(p => p.Loading, true));
 
         Assert.IsTrue(button.ClassList.Contains("bit-acb-lod"));
         Assert.HasCount(1, component.FindAll(".bit-acb-spn"));
@@ -1359,7 +1359,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Classes, classes);
             parameters.Add(p => p.Styles, styles);
             parameters.AddChildContent("Content");
@@ -1411,7 +1411,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.IconName, "Save");
             parameters.Add(p => p.LoadingTemplate, builder => builder.AddContent(0, loadingText));
             parameters.AddChildContent("Save changes");
@@ -1431,7 +1431,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
@@ -1444,12 +1444,12 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitActionButtonAnchorWithIsLoadingShouldRenderLoadingState()
+    public void BitActionButtonAnchorWithLoadingShouldRenderLoadingState()
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.AddChildContent("Content");
         });
 
@@ -1598,7 +1598,7 @@ public class BitActionButtonTests : BunitTestContext
 
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => button.ClickAsync(new MouseEventArgs()));
 
-        Assert.IsFalse(component.Instance.IsLoading);
+        Assert.IsFalse(component.Instance.Loading);
         Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
     }
 
@@ -1614,7 +1614,7 @@ public class BitActionButtonTests : BunitTestContext
         {
             parameters.Add(p => p.AutoLoading, true);
             parameters.Add(p => p.Reclickable, true);
-            parameters.Add(p => p.IsLoadingChanged, (bool value) => loadingStates.Add(value));
+            parameters.Add(p => p.LoadingChanged, (bool value) => loadingStates.Add(value));
             parameters.Add(p => p.OnClick, (MouseEventArgs _) => ++clickCount == 1 ? firstTcs.Task : secondTcs.Task);
         });
 
@@ -1622,7 +1622,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var firstClick = button.ClickAsync(new MouseEventArgs());
 
-        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.IsLoading));
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Loading));
 
         var secondClick = button.ClickAsync(new MouseEventArgs());
 
@@ -1632,18 +1632,18 @@ public class BitActionButtonTests : BunitTestContext
         firstTcs.SetResult();
         await firstClick;
 
-        Assert.IsTrue(component.Instance.IsLoading);
+        Assert.IsTrue(component.Instance.Loading);
         CollectionAssert.AreEqual(new List<bool> { true }, loadingStates);
 
         secondTcs.SetResult();
         await secondClick;
 
-        Assert.IsFalse(component.Instance.IsLoading);
+        Assert.IsFalse(component.Instance.Loading);
         CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
     }
 
     [TestMethod]
-    public async Task BitActionButtonAutoLoadingShouldNotifyIsLoadingChanged()
+    public async Task BitActionButtonAutoLoadingShouldNotifyLoadingChanged()
     {
         var loadingStates = new List<bool>();
         var tcs = new TaskCompletionSource();
@@ -1651,7 +1651,7 @@ public class BitActionButtonTests : BunitTestContext
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.AutoLoading, true);
-            parameters.Add(p => p.IsLoadingChanged, (bool value) => loadingStates.Add(value));
+            parameters.Add(p => p.LoadingChanged, (bool value) => loadingStates.Add(value));
             parameters.Add(p => p.OnClick, (MouseEventArgs _) => tcs.Task);
         });
 
@@ -1670,7 +1670,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
@@ -1687,7 +1687,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingLabel, loadingLabel);
             parameters.AddChildContent(content);
         });
@@ -1730,7 +1730,7 @@ public class BitActionButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             // The delay runs on the wall clock from the render on, so it is long enough that a test thread held
             // up by a busy runner still reads the markup before the spinner arrives.
             parameters.Add(p => p.LoadingDelay, 500);
@@ -1820,7 +1820,7 @@ public class BitActionButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.AddChildContent("Content");
         });
 
@@ -1864,7 +1864,7 @@ public class BitActionButtonTests : BunitTestContext
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.TabIndex, tabIndex);
         });
 
@@ -1920,7 +1920,7 @@ public class BitActionButtonTests : BunitTestContext
         // control the two would concatenate into its accessible name ("Saving... Saving..."), so it is a sibling.
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingLabel, "Saving...");
             parameters.AddChildContent("Save");
         });
@@ -2112,7 +2112,7 @@ public class BitActionButtonTests : BunitTestContext
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.Disabled, disabled);
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
             parameters.Add(p => p.Reclickable, reclickable);
         });
 
@@ -2195,7 +2195,7 @@ public class BitActionButtonTests : BunitTestContext
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.IconOnly, true);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.IconName, "Save");
             parameters.Add(p => p.LoadingLabel, "Saving...");
             parameters.AddChildContent("Save");
@@ -2213,7 +2213,7 @@ public class BitActionButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingLabel, "Saving...");
             parameters.Add(p => p.Classes, new BitActionButtonClassStyles { LoadingLabel = "custom-label" });
             parameters.Add(p => p.Styles, new BitActionButtonClassStyles { LoadingLabel = "color: red;" });
@@ -2231,14 +2231,14 @@ public class BitActionButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingDelay, 5000);
             parameters.AddChildContent("Save");
         });
 
         Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
 
-        component.Render(parameters => parameters.Add(p => p.IsLoading, false));
+        component.Render(parameters => parameters.Add(p => p.Loading, false));
 
         Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
         Assert.IsFalse(component.Find(".bit-acb").HasAttribute("aria-busy"));
@@ -2250,7 +2250,7 @@ public class BitActionButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingDelay, 5000);
             parameters.AddChildContent("Save");
         });
@@ -2330,7 +2330,7 @@ public class BitActionButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Reclickable, reclickable);
             parameters.AddChildContent("Content");
         });
@@ -2346,13 +2346,13 @@ public class BitActionButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.AddChildContent("Content");
         });
 
         Assert.IsTrue(component.Find(".bit-acb").ClassList.Contains("bit-acb-lnc"));
 
-        component.Render(parameters => parameters.Add(p => p.IsLoading, false));
+        component.Render(parameters => parameters.Add(p => p.Loading, false));
 
         Assert.IsFalse(component.Find(".bit-acb").ClassList.Contains("bit-acb-lnc"));
     }

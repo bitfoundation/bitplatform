@@ -91,13 +91,13 @@
 </E2ESection>
 
 <E2ESection Id="loading" Title="Loading">
-    <BitToggleButton Id="ld-toggle" IsLoading="_isLoading" OnText="Muted" OffText="Unmuted" LoadingLabel="Saving..." OnClick="() => _loadingClicks++" />
+    <BitToggleButton Id="ld-toggle" Loading="_isLoading" OnText="Muted" OffText="Unmuted" LoadingLabel="Saving..." OnClick="() => _loadingClicks++" />
     <button id="btn-toggle-loading" type="button" @onclick="() => _isLoading = !_isLoading">Toggle loading</button>
     <span id="ld-clicks">@_loadingClicks</span>
-    <BitToggleButton Id="ld-reclickable" IsLoading Reclickable OnClick="() => _reclicks++" Text="Reclickable" />
+    <BitToggleButton Id="ld-reclickable" Loading Reclickable OnClick="() => _reclicks++" Text="Reclickable" />
     <span id="ld-reclicks">@_reclicks</span>
     <br />
-    <BitToggleButton Id="ld-auto" AutoLoading OnChange="AutoChange" @bind-IsLoading="_autoLoading" OnText="Muted" OffText="Unmuted" />
+    <BitToggleButton Id="ld-auto" AutoLoading OnChange="AutoChange" @bind-Loading="_autoLoading" OnText="Muted" OffText="Unmuted" />
     <button id="btn-release-auto" type="button" @onclick="() => _autoTcs.TrySetResult()">Release</button>
     <span id="ld-auto-loading">@_autoLoading</span>
     <BitToggleButton Id="ld-delay" AutoLoading LoadingDelay="500" OnChange="DelayChange" Text="Delayed" />
@@ -105,10 +105,10 @@
     <br />
     @foreach (var placement in new[] { BitPlacement.End, BitPlacement.Start, BitPlacement.Top, BitPlacement.Bottom })
     {
-        <BitToggleButton Id="@($"ld-placement-{placement}")" IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="placement" Text="@placement.ToString()" />
+        <BitToggleButton Id="@($"ld-placement-{placement}")" Loading LoadingLabel="Saving..." LoadingLabelPlacement="placement" Text="@placement.ToString()" />
     }
-    <BitToggleButton Id="ld-icon-only" IsLoading IconOnly Text="Save" IconName="@BitIconName.Save" LoadingLabel="Saving..." />
-    <BitToggleButton Id="ld-template" IsLoading Text="Muted">
+    <BitToggleButton Id="ld-icon-only" Loading IconOnly Text="Save" IconName="@BitIconName.Save" LoadingLabel="Saving..." />
+    <BitToggleButton Id="ld-template" Loading Text="Muted">
         <LoadingTemplate><div class="tpl-loading">Working on it...</div></LoadingTemplate>
     </BitToggleButton>
 </E2ESection>
@@ -189,7 +189,7 @@
     {
         <BitToggleButton Id="@($"size-{size}")" Size="size" Text="@size.ToString()" IconName="@BitIconName.Emoji2" />
         <BitToggleButton Id="@($"size-icon-{size}")" Size="size" IconOnly AriaLabel="Emoji" IconName="@BitIconName.Emoji2" />
-        <BitToggleButton Id="@($"size-loading-{size}")" Size="size" IsLoading LoadingLabel="Loading" Text="@size.ToString()" />
+        <BitToggleButton Id="@($"size-loading-{size}")" Size="size" Loading LoadingLabel="Loading" Text="@size.ToString()" />
     }
 </E2ESection>
 
@@ -198,11 +198,11 @@
     <BitToggleButton Id="sc-class" Class="e2e-custom-class" Text="Classed" />
     <BitToggleButton Id="sc-styles" ShowCheckMark DefaultIsChecked="true" IconName="@BitIconName.Emoji" Text="Styles"
                      Styles="@(new() { Root = "outline: 3px dotted rgb(9, 9, 9);", Checked = "border-color: rgb(0, 0, 255);", Icon = "color: rgb(255, 0, 0);", Text = "color: rgb(0, 128, 0);", CheckMark = "color: rgb(128, 0, 128);" })" />
-    <BitToggleButton Id="sc-styles-loading" IsLoading LoadingLabel="Wait..." Text="Loading"
+    <BitToggleButton Id="sc-styles-loading" Loading LoadingLabel="Wait..." Text="Loading"
                      Styles="@(new() { HiddenContent = "letter-spacing: 3px;", LoadingContainer = "padding-top: 5px;", Spinner = "border-top-color: rgb(218, 165, 32);", LoadingLabel = "color: rgb(255, 99, 71);" })" />
     <BitToggleButton Id="sc-classes" ShowCheckMark DefaultIsChecked="true" IconName="@BitIconName.Emoji" Text="Classes"
                      Classes="@(new() { Root = "c-root", Checked = "c-checked", Icon = "c-icon", Text = "c-text", CheckMark = "c-checkmark" })" />
-    <BitToggleButton Id="sc-classes-loading" IsLoading LoadingLabel="Wait..." Text="Loading"
+    <BitToggleButton Id="sc-classes-loading" Loading LoadingLabel="Wait..." Text="Loading"
                      Classes="@(new() { HiddenContent = "c-hidden", LoadingContainer = "c-ldg", Spinner = "c-spinner", LoadingLabel = "c-label" })" />
     <BitToggleButton Id="sc-attrs" data-e2e="custom-attribute" Text="Attributes" />
 </E2ESection>
@@ -215,7 +215,7 @@
         <BitToggleButton Id="vars-size" Size="BitSize.Small" Text="Explicit size" />
         <BitToggleButton Id="vars-disabled" Disabled Text="Disabled" />
         <BitToggleButton Id="vars-disabled-checked" Disabled DefaultIsChecked="true" Text="Disabled checked" />
-        <BitToggleButton Id="vars-spinner" IsLoading Text="Loading" />
+        <BitToggleButton Id="vars-spinner" Loading Text="Loading" />
     </div>
     <div style="--bit-ToggleButton-outline-border-color: rgb(200, 0, 0); --bit-ToggleButton-text-color: rgb(0, 0, 200);">
         <BitToggleButton Id="vars-twin-fill" Text="Fill" />
