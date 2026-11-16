@@ -1,7 +1,8 @@
 @inherits AppComponentBase
 
 <BitStack HorizontalAlign="BitAlignment.Center" Gap="0.5rem" AutoHeight>
-    <BitOtpInput @ref="otpInput"
+    <BitOtpInput @key="otpKey"
+                 @ref="otpInput"
                  Value="@Value"
                  ValueChanged="ValueChanged"
                  AutoFocus="AutoFocus"

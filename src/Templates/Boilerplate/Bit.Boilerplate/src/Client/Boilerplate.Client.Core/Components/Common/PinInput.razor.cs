@@ -19,9 +19,21 @@ public partial class PinInput
     [Parameter] public bool AutoFocus { get; set; }
 
 
+    private int otpKey;
     private bool useLetters;
     private BitOtpInput otpInput = default!;
 
+
+    public async Task Clear()
+    {
+        otpKey++;
+
+        await ValueChanged.InvokeAsync(null);
+
+        StateHasChanged();
+
+        await Focus();
+    }
 
     public async Task Focus()
     {

@@ -38,8 +38,7 @@ public partial class AccountPinModal
         }
 
         isWrongPin = true;
-        pin = null;
 
-        await pinInput.Focus();
+        await pinInput.Clear();
     }
 }

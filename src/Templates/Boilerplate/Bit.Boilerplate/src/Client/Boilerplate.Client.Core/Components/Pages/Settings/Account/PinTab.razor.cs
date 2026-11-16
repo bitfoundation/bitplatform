@@ -66,11 +66,10 @@ public partial class PinTab
         if (firstPin is null)
         {
             firstPin = value;
-            pin = null;
         }
         else if (firstPin != value)
         {
-            firstPin = pin = null;
+            firstPin = null;
             isMismatch = true;
         }
         else
@@ -97,7 +96,7 @@ public partial class PinTab
 
         if (pinInput is not null)
         {
-            await pinInput.Focus();
+            await pinInput.Clear();
         }
     }
 
