@@ -1,4 +1,4 @@
-description = "Re-skin the whole app to match a design reference (a live site, Figma, images, brand guidelines, tokens or a described mood), on ai-dlc's full track."
+description = "Re-skin the whole app to match a design reference (a live site, Figma, images, brand guidelines, tokens or a described mood)."
 
 prompt = """
 Follow these instructions exactly:

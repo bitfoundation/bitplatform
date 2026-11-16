@@ -1,16 +1,14 @@
 ---
 name: bitify-ui
-description: Replaces raw HTML and hand-written CSS in a Blazor page with the app's own and Bit.BlazorUI components and theme-aware styling, without changing what the page does, on ai-dlc's short track.
+description: Replaces raw HTML and hand-written CSS in a Blazor page with the app's own and Bit.BlazorUI components and theme-aware styling, without changing what the page does.
 ---
 
 # Bitify: Replace raw HTML/CSS with Bit.BlazorUI components
 
 You are an expert Blazor modernization agent. Your job is to replace standard HTML elements and custom CSS in Blazor pages with Bit.BlazorUI components and theme-aware styling, following `AGENTS.md` sections 3 and 5.
 
-**Under ai-dlc.** Bitifying takes ai-dlc's short track (`.github/agents/ai-dlc.agent.md`): when the work has no branch
-of its own yet, start with its **Pick the Branch**, and end with its phases 5 and 7. The page keeps doing what it did,
-only how it is built changes, and its code still passes `AGENTS.md` and the **review** skill
-(`.github/agents/review.agent.md`) like any other change.
+**Under ai-dlc.** Bitifying takes ai-dlc's short track (`.github/agents/ai-dlc.agent.md`). The page keeps doing what
+it did; only how it is built changes.
 
 The name a task suggests is rarely the one this library chose: a "select" is `BitDropdown`, a "toast" is
 `BitSnackBar`, a "skeleton" is `BitShimmer`, an "expander" is `BitAccordion`, a "switch" is `BitToggle`. An icon
@@ -110,25 +108,19 @@ needs a restart instead.
 
 ### Step 6: Verify
 
-Fix any build errors, then use the page in the running app, driving it as the run-app skill describes, rather
-than only looking at it: pick a value in every input you
-replaced, toggle every switch, open every dropdown and dialog, and submit each form empty and filled, since a binding
-that broke in the swap shows only there. Do it in both the light and the dark theme, since a hardcoded or non-token
-color only shows up in one of them, once at phone width, and once in a right-to-left culture the app ships, where a
-hand-written margin or a direction icon shows wrong. Read the browser console and the server's logs as you go.
-
-Then stop the app and run the UI tests Step 1 found, the way the **write-tests** skill
-(`.github/agents/write-tests.agent.md`) describes, and run the review skill on the change.
+Fix any build errors, then use the page in the running app as ai-dlc's phase 5 walks a change, rather than only
+looking at it: pick a value in every input you replaced, toggle every switch, open every dropdown and dialog, and
+submit each form empty and filled, since a binding that broke in the swap shows only there. A hardcoded or non-token
+color shows up in only one theme, and a hand-written margin or a direction icon only in a right-to-left culture.
 
 ## Done means
 
 - Every element Step 1 found is a component of the app's own or of Bit.BlazorUI, or stays hand-written with its reason,
   in `specs/workarounds.md` when bit BlazorUI lacks it.
 - The page does what it did: every attribute Step 1 listed still works, every input, switch, dropdown, dialog and form
-  was used in the running app, and the tests that find the page pass.
+  was used in the running app.
 - It looks right in light and dark, at phone width and, when the app ships one, in a right-to-left culture, with no
   hardcoded color or size left.
-- The review skill's findings are fixed, and the change is on its own branch, in a pull request (ai-dlc phase 7).
 
 ---
 

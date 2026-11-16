@@ -26,9 +26,13 @@ In the same step, look at the branch you are on and what it holds that `main` do
 - Any other work gets a branch of its own off an up-to-date `main`, in a git worktree of its own under `Boilerplate.Worktrees`, next to the project's folder (`git worktree add ../Boilerplate.Worktrees/<short name> -b <branch> origin/main`), unless this chat already runs in one made for it. Chats then work side by side - one designing pages, one deploying, one fixing a bug - without switching a branch under one another, a running app or the Workbench. Work, build, test and run the app from there, copy into it the git-ignored local files the work needs, tell the user its folder, and expect its first build to take longer. Before creating it, list the work not merged into `main` yet: the branches (`git branch -a --no-merged origin/main`) and, when there is a remote, the open pull requests (`gh pr list`). When one of them holds work this one needs - a page it extends, an entity or migration it builds on, a spec, a skill or a workflow it changes too - name it and what this work needs from it, and propose settling it first: finished and merged into `main`, or this branch started from it until it is.
 - Uncommitted work of another branch in the working tree is not yours to move: never stash it or switch it away. Only one copy of the app runs on its addresses at a time; ask before stopping one another worktree runs.
 
+## Skills for One Kind of Task
+
+port, rebrand, landing-page, bitify-ui, template-diff and scaffold-entity, and troubleshoot once it has found a cause, run inside this lifecycle. Each one says where it runs in it and adds what its kind of work needs; everything else is this file's: the branch and worktree, the Progress task, the specs and the plan, the tests, the review, the commits and the pull request. A skill that calls another for part of its work, as a port calls rebrand and landing-page, starts no second task: the other's steps become tasks of its plan, on its branches and its Progress task, in its pull requests. template-diff is the one exception: its change always gets a branch and a pull request of its own off `main`, so it is reviewed and merged as one change with nothing else mixed in, and the work that needs it starts its branch from that one until it is merged.
+
 ## Workflow Phases
 
-On the full track, start a task of your own on the Workbench's Progress page before phase 1, the way `AGENTS.md` section 6 and section 9 of the **workbench** skill (`.github/agents/workbench.agent.md`) describe: these phases are its steps, the plan's approval and every question go there, and it stays current until delivery.
+On the full track, and for any other work that takes many steps, start a task of your own on the Workbench's Progress page before you begin, the way `AGENTS.md` section 6 and section 9 of the **workbench** skill (`.github/agents/workbench.agent.md`) describe: these phases, or the sections of the skill the work follows, are its steps, the plan's approval and every question go there, and it stays current until delivery.
 
 ### 1. Requirements Elaboration
 - In the same step as your first reads, check whether the project is on the newest bit platform release - see **Staying on the Newest bit Platform** below. It runs alongside this phase and never holds it up
@@ -149,7 +153,7 @@ The project template, bit BlazorUI and every other bit library ship together und
 2.  Call the bit platform MCP server's `GetBitPlatformReleases` tool with the version `bit.json` records.
 3.  Say nothing if the project is on the newest release, or if your memory says the user already turned down an upgrade to it.
 4.  Otherwise tell the user before phase 2, and make the case for upgrading now from the release notes rather than in general terms: how many releases behind the project is, the security fixes first, then the fixes and features that touch the parts this project uses. Add that the **template-diff** skill (`.github/agents/template-diff.agent.md`) does the work on a branch of its own, keeps the team's changes, proves the result builds, passes its tests and runs, and merges nothing without their review. Keep it to a few lines and ask once.
-5.  If they agree, run the template-diff skill before phase 2, so the feature is planned and built on the newer code, then come back here. Until the upgrade is merged, start this feature's branch from the upgrade's.
+5.  If they agree, run the template-diff skill before phase 2, so the feature is planned and built on the newer code, then come back here.
 6.  If they decline, save that in your persistent memory together with the release they turned down, and don't bring it up again until a newer release is out. If they ask you to stop asking, save that instead.
 
 ## Rules

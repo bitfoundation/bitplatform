@@ -1,4 +1,4 @@
-description = "Scaffold a CRUD entity across every layer once its fields, rules and screens are settled, as a task of an ai-dlc plan."
+description = "Scaffold a CRUD entity across every layer once its fields, rules and screens are settled."
 
 prompt = """
 Follow these instructions exactly:

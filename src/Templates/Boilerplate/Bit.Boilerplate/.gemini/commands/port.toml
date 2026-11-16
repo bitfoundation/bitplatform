@@ -1,4 +1,4 @@
-description = "Rebuild an existing app's features on this project instead of copying it, and prove feature parity, on ai-dlc's full track."
+description = "Rebuild an existing app's features on this project instead of copying it, and prove feature parity."
 
 prompt = """
 Follow these instructions exactly:

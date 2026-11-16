@@ -112,8 +112,8 @@ domain and the services of section 5. Then go through the steps with them.
 - `bit pipeline` (section 6) also lets only collaborators open pull requests and makes the workflows' token read-only,
   so a repository made public by mistake doesn't hand the VM to strangers. A repository that has to be public keeps
   the deploy jobs in a separate private repository.
-- Every change this makes to the repository (the settings, the MCP files, a workflow) is a change like any other. It
-  gets a branch and a worktree of its own off `main`, goes through ai-dlc, and reaches `main` in its phase 7.
+- Every change this makes to the repository (the settings, the MCP files, a workflow) is ai-dlc work like any other
+  (`.github/agents/ai-dlc.agent.md`).
 
 ## 3. The VM
 

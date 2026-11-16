@@ -1,4 +1,4 @@
-description = "Change the product's landing page in src/LandingPage: make a sample its home page, launch it, or change its pages, texts, look, chat, waitlist and store links, through ai-dlc."
+description = "Change the product's landing page in src/LandingPage: make a sample its home page, launch it, or change its pages, texts, look, chat, waitlist and store links."
 
 prompt = """
 Follow these instructions exactly:

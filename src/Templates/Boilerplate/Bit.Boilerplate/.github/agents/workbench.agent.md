@@ -263,8 +263,8 @@ as its host here. The rest of this section is for a page of the Workbench's own.
 ## 9. Show a long task's progress
 
 - A task that takes many steps or needs the user along the way, like a first deployment, a feature through ai-dlc, a
-  port or a rebrand, gets a task of its own on the Progress page (`/progress`), whichever skill runs it, so the user
-  follows it there instead of digging through the chat. Each chat keeps its own, and several run side by side. Run the
+  port or a rebrand, gets one task on the Progress page (`/progress`), however many skills it goes through, so the
+  user follows it there instead of digging through the chat. Each chat keeps its own, and several run side by side. Run the
   Workbench in dev mode first (section 1), and open the task's page in the user's own browser once.
 - Start it with `POST /api/progress` (`title`, `summary`, `steps`, `agent`), which returns its `id` and its page. From
   then on send only what changed with `PATCH /api/progress/<id>`: a step, note or question with an id the task already

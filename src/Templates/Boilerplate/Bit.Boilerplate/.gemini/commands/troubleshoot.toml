@@ -1,4 +1,4 @@
-description = "Find the cause of a problem seen in Test or Production, reproduce it with a test, and hand the fix to ai-dlc."
+description = "Find and reproduce the cause of a problem seen in Test or Production."
 
 prompt = """
 Follow these instructions exactly:
