@@ -49,6 +49,12 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     private const int ImageNotAnImage = -4;
 
     /// <summary>
+    /// Returned by image preparation for a file of a known image format whose size is not there to be read: cut short,
+    /// or its segments or boxes broken.
+    /// </summary>
+    private const int ImageUnreadable = -6;
+
+    /// <summary>
     /// How long the highlight outlives the last frame its symbol was decoded in: long enough to
     /// ride out a frame or two that misses a symbol still in view, short enough that the box does
     /// not linger over whatever the camera is pointed at next.
@@ -427,25 +433,12 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             LabelCameras();
         }
 
-        if (_decoder is not null)
+        // The decoder builds its symbology list and scratch state up front, so a change to anything but the region and
+        // the suppression window needs a new one. The region is live-editable without it: each frame takes the region
+        // as it is when the frame is grabbed (TickAsync), so a running scanner picks it up without dropping the camera.
+        if (_decoder is not null && DecoderSignature() != _decoderSignature)
         {
-            if (DecoderSignature() != _decoderSignature)
-            {
-                // The decoder builds its symbology list and scratch state up front, so a change
-                // to anything but the region and the suppression window needs a new one.
-                ReplaceDecoder();
-            }
-            else
-            {
-                // The rest is live-editable, so a running scanner picks up parameter changes
-                // without dropping the camera. A frame in hand may be decoding on another thread, which reads the
-                // region as it goes: that decoder takes the new one once the frame is done (EndFrame). A decoder
-                // that replaced it meanwhile decodes nothing yet, and EndFrame only disposes the old one, so it takes it now.
-                if (!ReferenceEquals(_frameDecoder, _decoder))
-                {
-                    _decoder.Options.Region = _region;
-                }
-            }
+            ReplaceDecoder();
         }
 
         if (_timer is not null)
@@ -1389,6 +1382,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     {
         ImageTooLarge => TooLargeMessage(),
         ImageNotAnImage => T.NotAnImage,
+        ImageUnreadable => T.ImageUnreadable,
         _ => T.ImageTooManyPixels,
     };
 
@@ -1495,9 +1489,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         // Everything the page could have changed, in one call: across a network that is one round trip a tick. When a
         // frame is wanted, the region of it the decoder searches is asked for along with it, should one be waiting.
         (int X, int Y, int Width, int Height)? grab = null;
-        if (_status == BbScannerStatus.Scanning && !_configurePending && _frameDecoder is null && _decoder is { } wanted)
+        if (_status == BbScannerStatus.Scanning && !_configurePending && _frameDecoder is null && _decoder is not null)
         {
-            grab = wanted.Options.Region.ToPixels(_processingWidth, _processingHeight);
+            grab = _region.ToPixels(_processingWidth, _processingHeight);
         }
 
         var state = await bridge.PollAsync(_sessionId, grab).ConfigureAwait(true);
@@ -1568,8 +1562,10 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         }
 
         // Where the page is remote it sends the searched region only, as luminance; on WebAssembly it hands over the
-        // whole frame and the decoder cuts the region out itself.
-        var region = decoder.Options.Region.ToPixels(width, height);
+        // whole frame and the region is cut out of it in place. Either way the region is taken now, once, and handed to
+        // the decode with the frame: a region the application gives while the frame decodes on another thread is the
+        // next frame's, and cannot tear this one.
+        var region = _region.ToPixels(width, height);
         var buffer = _frameBuffer;
         var remote = bridge.IsRemote;
         var maxSymbols = MaxSymbolsPerFrame;
@@ -1680,22 +1676,26 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         return !IsStale(version);
     }
 
-    /// <summary>Decodes one live frame: the searched region a remote page sent, or a whole frame.</summary>
+    /// <summary>
+    /// Decodes <paramref name="region"/> of one live frame: the region alone, as a remote page sent it, or cut out of the
+    /// whole frame in place, its rows the frame's apart.
+    /// </summary>
     private static (BbBarcodeResult? Single, IReadOnlyList<BbBarcodeResult>? All) DecodeFrame(
         BbBarcodeDecoder decoder, byte[] buffer, int written, BbPixelFormat format, bool remote,
         (int X, int Y, int Width, int Height) region, int width, int height, int maxSymbols)
     {
         var frame = buffer.AsSpan(0, written);
-        if (remote)
+        var stride = 0;
+        if (!remote)
         {
-            return maxSymbols > 1
-                ? (null, decoder.DecodeAllRegion(frame, format, region, width, height, maxSymbols, suppressDuplicates: false))
-                : (decoder.DecodeRegion(frame, format, region, width, height, suppressDuplicates: false), null);
+            var bpp = BbPixelConverter.BytesPerPixel(format);
+            stride = width * bpp;
+            frame = frame[((region.Y * stride) + (region.X * bpp))..];
         }
 
         return maxSymbols > 1
-            ? (null, decoder.DecodeAll(frame, width, height, format, maxSymbols, suppressDuplicates: false))
-            : (decoder.Decode(frame, width, height, format, suppressDuplicates: false), null);
+            ? (null, decoder.DecodeAllRegion(frame, format, region, width, height, stride, maxSymbols, suppressDuplicates: false))
+            : (decoder.DecodeRegion(frame, format, region, width, height, stride, suppressDuplicates: false), null);
     }
 
     /// <summary>
@@ -1717,14 +1717,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         {
             decoder.Dispose();
         }
-        else
+        else if (closed)
         {
-            // A region the application gave while the frame decoded, left to now (OnParametersSet).
-            decoder.Options.Region = _region;
-            if (closed)
-            {
-                decoder.ForgetImage();
-            }
+            decoder.ForgetImage();
         }
     }
 
@@ -2217,7 +2212,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     private BbScannerOptions BuildOptions(BbScannerOptions baseOptions)
     {
         baseOptions.Formats = Formats;
-        baseOptions.Region = _region;
+
+        // The decoder searches the region each frame is handed with (TickAsync), never one of its own.
+        baseOptions.Region = BbScanRegion.Full;
         baseOptions.DuplicateSuppressionWindow = EffectiveDuplicateWindow();
         return baseOptions;
     }

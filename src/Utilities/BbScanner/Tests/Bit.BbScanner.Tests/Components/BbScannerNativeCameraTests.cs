@@ -285,33 +285,31 @@ public class BbScannerNativeCameraTests : BunitContext
     }
 
     [TestMethod]
-    public void A_region_given_while_a_frame_is_in_hand_waits_for_that_frame_to_be_done()
+    public void A_frame_in_hand_is_decoded_in_the_region_it_was_grabbed_with()
     {
-        // The frame is decoded on a thread of its own, which reads the decoder's region as it goes: a region given
-        // meanwhile would be torn between the old and the new one.
-        _camera.Scene = SceneWithQrCode("REGION");
-        var first = BbScanRegion.CenteredSquare(0.7);
-        var second = BbScanRegion.CenteredSquare(0.5);
-        var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.Region, first));
+        // The frame is decoded on a thread of its own: a region given meanwhile is the next frame's, and the one in hand
+        // keeps the region it started with rather than one torn between the old and the new.
+        var scans = new List<string>();
+        var scanner = Render<BbScanner>(parameters => parameters
+            .Add(p => p.Formats, BbBarcodeFormat.QrCode)
+            .Add(p => p.Region, BbScanRegion.CenteredSquare(0.7))
+            .Add(p => p.OnScan, r => { lock (scans) { scans.Add(r.Text); } }));
         WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
 
+        // Reset before the gate is in place, so the signal waited for is that of a read held at the gate.
         using var gate = new ManualResetEventSlim();
-        _camera.ReadGate = gate;
         _camera.Reading.Reset();
+        _camera.ReadGate = gate;
+        _camera.Scene = SceneWithQrCode("REGION");
         Assert.IsTrue(_camera.Reading.Wait(Wait), "A frame is read.");
 
-        scanner.Render(parameters => parameters.Add(p => p.Region, second));
-        Assert.AreEqual(first, DecoderRegion(scanner.Instance), "The frame in hand keeps the region it started with.");
+        // A corner the symbol, in the middle of the frame, is nowhere near.
+        scanner.Render(parameters => parameters.Add(p => p.Region, new BbScanRegion(0, 0, 0.2, 0.2)));
 
         _camera.ReadGate = null;
         gate.Set();
-        WaitUntil(() => Assert.AreEqual(second, DecoderRegion(scanner.Instance)));
+        WaitUntil(() => { lock (scans) { CollectionAssert.AreEqual(new[] { "REGION" }, scans); } });
     }
-
-    // The decoder is the component's own; its region is what a frame on another thread reads.
-    private static BbScanRegion DecoderRegion(BbScanner scanner)
-        => ((BbBarcodeDecoder)typeof(BbScanner).GetField("_decoder", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-            .GetValue(scanner)!).Options.Region;
 
     private static void WaitUntil(Action assertion)
     {

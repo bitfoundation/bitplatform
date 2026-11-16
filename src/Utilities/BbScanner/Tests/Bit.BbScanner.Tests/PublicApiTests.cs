@@ -651,8 +651,10 @@ public class PublicApiTests
             ("SecurityError", BbScannerErrorKind.PermissionDenied),
             ("NotFoundError: no device", BbScannerErrorKind.NoCamera),
             ("NotReadableError: could not start", BbScannerErrorKind.CameraUnavailable),
-            // Firefox's word for a camera another application holds.
-            ("AbortError: Starting videoinput failed", BbScannerErrorKind.CameraUnavailable),
+            // Firefox's word for a camera another application holds, which the page renames where getUserMedia raises it.
+            ("NotReadableError: Starting videoinput failed (getUserMedia's AbortError)", BbScannerErrorKind.CameraUnavailable),
+            // video.play() interrupted: a page or lifecycle fault, not a camera another application holds.
+            ("AbortError: The play() request was interrupted by a call to pause().", BbScannerErrorKind.Unknown),
             ("OverconstrainedError: deviceId", BbScannerErrorKind.ConstraintsUnsatisfied),
             ("NotSupportedError", BbScannerErrorKind.NotSupported),
             ("InvalidStateError: the scanner video element is not in the document.", BbScannerErrorKind.Unknown),

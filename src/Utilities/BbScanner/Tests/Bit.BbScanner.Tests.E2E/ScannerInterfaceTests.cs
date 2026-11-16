@@ -290,6 +290,75 @@ public class ScannerInterfaceTests : BbScannerTest
     }
 
     [TestMethod]
+    public async Task AJpegWithNoFrameHeaderIsRefusedAsUnreadableRatherThanTooLarge()
+    {
+        await using var session = await OpenAsync(BlankClip);
+        await session.GoToAsync("image");
+
+        // Cut short before its frame header: no size is declared, and the file is no image a browser can decode either.
+        await session.Page.SetInputFilesAsync("input[type=file]", new FilePayload
+        {
+            Name = "truncated.jpg",
+            MimeType = "image/jpeg",
+            Buffer = WithApplicationSegments([0xFF, 0xD8], count: 2),
+        });
+
+        var message = session.Page.Locator(".bit-bbscanner__message");
+        await message.Filter(new() { HasText = "could not be read as an image" }).WaitForAsync(new() { Timeout = 20_000 });
+
+        Assert.IsEmpty(await session.ResultValuesAsync());
+        Assert.IsEmpty(session.PageErrors);
+    }
+
+    [TestMethod]
+    public async Task AJpegWhoseFrameHeaderLeavesItsHeightToLaterIsRefused()
+    {
+        await using var session = await OpenAsync(BlankClip);
+        await session.GoToAsync("image");
+
+        // A height of 0 is left to a DNL marker after the first scan: the size check has no size to check, and a width
+        // of 65535 is no reason to let the file through.
+        byte[] jpeg = [0xFF, 0xD8, 0xFF, 0xC0, 0x00, 0x11, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0x03, 0x01, 0x22, 0x00, 0x02, 0x11, 0x01, 0x03, 0x11, 0x01, 0xFF, 0xD9];
+        await session.Page.SetInputFilesAsync("input[type=file]", new FilePayload
+        {
+            Name = "dnl.jpg",
+            MimeType = "image/jpeg",
+            Buffer = jpeg,
+        });
+
+        var message = session.Page.Locator(".bit-bbscanner__message");
+        await message.Filter(new() { HasText = "could not be read as an image" }).WaitForAsync(new() { Timeout = 20_000 });
+
+        Assert.IsEmpty(await session.ResultValuesAsync());
+        Assert.IsEmpty(session.PageErrors);
+    }
+
+    [TestMethod]
+    public async Task AnAvifWhoseMetaBoxFollowsItsImageDataIsStillCheckedForItsSize()
+    {
+        await using var session = await OpenAsync(BlankClip);
+        await session.GoToAsync("image");
+
+        // The meta box after more than half a megabyte of image data, as ISO base media files allow: its extents, 65536
+        // by 65536, are found by walking the boxes, not among the first bytes.
+        byte[] ftyp = [.. "avif"u8, 0, 0, 0, 0, .. "avifmif1"u8];
+        byte[] extents = [0, 0, 0, 0, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00];
+        byte[] avif = [.. Box("ftyp", ftyp), .. Box("mdat", new byte[600_000]), .. Box("meta", [0, 0, 0, 0, .. Box("ispe", extents)])];
+        await session.Page.SetInputFilesAsync("input[type=file]", new FilePayload
+        {
+            Name = "enormous.avif",
+            MimeType = "image/avif",
+            Buffer = avif,
+        });
+
+        var message = session.Page.Locator(".bit-bbscanner__message");
+        await message.Filter(new() { HasText = "too large to scan" }).WaitForAsync(new() { Timeout = 20_000 });
+
+        Assert.IsEmpty(await session.ResultValuesAsync());
+        Assert.IsEmpty(session.PageErrors);
+    }
+
+    [TestMethod]
     public async Task APhotographWithMoreMetadataThanTheFirstHalfMegabyteStillScans()
     {
         await using var session = await OpenAsync(BlankClip);
@@ -337,6 +406,16 @@ public class ScannerInterfaceTests : BbScannerTest
 
         padded.AddRange(jpeg.AsSpan(2));
         return [.. padded];
+    }
+
+    /// <summary>An ISO base media file box: its size, its type and <paramref name="payload"/>.</summary>
+    private static byte[] Box(string type, byte[] payload)
+    {
+        var box = new byte[8 + payload.Length];
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(box, (uint)box.Length);
+        System.Text.Encoding.ASCII.GetBytes(type, box.AsSpan(4, 4));
+        payload.CopyTo(box, 8);
+        return box;
     }
 
     private static async Task WriteQrPngAsync(ScannerSession session, string path)

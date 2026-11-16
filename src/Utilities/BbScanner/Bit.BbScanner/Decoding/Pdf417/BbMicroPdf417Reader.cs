@@ -43,11 +43,16 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     /// <summary>The step between angles a still image is swept with, in degrees.</summary>
     private const float ThoroughStep = 1.5f;
 
+    /// <summary>How many angles a still image is swept with, half a turn in <see cref="ThoroughStep"/>s.</summary>
+    private const int ThoroughAngles = 120;
+
     /// <summary>
-    /// How many angles a still image is scanned at in full, both polarities together. Every angle is probed, but noise,
-    /// foliage or the bars of other symbols make a piece of a row at angle after angle, and scanning each of those in
-    /// full took an 800 by 600 photograph of noise ten seconds; the angles whose probes read the most pieces are scanned
-    /// first, and a symbol is read at one of the first few.
+    /// How many angles a still image is scanned at in full, in each polarity. Every angle is probed, but noise, foliage
+    /// or the bars of other symbols make a piece of a row at angle after angle, and scanning each of those in full took
+    /// an 800 by 600 photograph of noise ten seconds. Upright and sideways are scanned first, then the angle that read
+    /// the most pieces among its neighbours from each group of angles that read any - so a small symbol beside a large
+    /// one, whose angle and the angles next to it read more, still has its own scanned early - then the rest, those
+    /// that read the most first.
     /// </summary>
     private const int ThoroughScans = 12;
 
@@ -55,11 +60,9 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     private static readonly Dictionary<int, int> CentreIndex = Index(BbMicroPdf417Tables.CentrePatterns);
 
     private readonly BbPdf417ErrorCorrection _errorCorrection = new();
-    private readonly List<(float Angle, int Pieces)> _candidates = [];
+    private readonly int[] _pieces = new int[ThoroughAngles];
+    private readonly List<(int Index, int Pieces, bool Peak)> _candidates = [];
     private int _liveFrame;
-
-    // How many full scans the still image being read has left, shared by both of its polarities.
-    private int _thoroughScansLeft;
     private readonly List<Segment> _forward = [];
     private readonly List<Segment> _backward = [];
     private List<Segment> _segments = [];
@@ -80,7 +83,6 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     {
         ArgumentNullException.ThrowIfNull(image);
 
-        _thoroughScansLeft = ThoroughScans;
         var result = DecodeAtAnyAngle(image, options.TryHarder);
         if (result is not null || !options.AllowInverted)
         {
@@ -102,48 +104,7 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     {
         if (thorough)
         {
-            // Every angle is probed, and the ones that read a piece of a row are scanned in full, those that read the
-            // most first, as many as the budget allows.
-            _candidates.Clear();
-            for (var angle = 0f; angle < 180f; angle += ThoroughStep)
-            {
-                if (ProbeAlong(image, angle, int.MaxValue) is var pieces and > 0)
-                {
-                    _candidates.Add((angle, pieces));
-                }
-            }
-
-            _candidates.Sort((a, b) => b.Pieces != a.Pieces ? b.Pieces.CompareTo(a.Pieces) : a.Angle.CompareTo(b.Angle));
-            foreach (var (angle, _) in _candidates)
-            {
-                if (_thoroughScansLeft-- <= 0)
-                {
-                    return null;
-                }
-
-                if (ScanAlong(image, angle, spacing: 1f) is not { } found)
-                {
-                    continue;
-                }
-
-                // A symbol reads from lines a degree or so off its rows, and its corners come out best from lines along
-                // them, which read the most of its rows' edges: the angles either side of the one that read are tried
-                // too, and the one that read the most edges kept.
-                var best = found;
-                var bestEdges = _edgesRead;
-                foreach (var nudge in (ReadOnlySpan<float>)[-1f, -0.5f, 0.5f, 1f])
-                {
-                    if (DecodeAlong(image, angle + nudge, spacing: 1f) is { } nudged && _edgesRead > bestEdges)
-                    {
-                        best = nudged;
-                        bestEdges = _edgesRead;
-                    }
-                }
-
-                return best;
-            }
-
-            return null;
+            return DecodeAtEveryAngle(image);
         }
 
         var frame = _liveFrame++ & 3;
@@ -162,6 +123,93 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Sweeps a still image: every angle is probed, and those that read a piece of a row are scanned in full, as many of
+    /// them as <see cref="ThoroughScans"/> allows, in the order it gives.
+    /// </summary>
+    private BbSymbolDecodeResult? DecodeAtEveryAngle(BbBitMatrix image)
+    {
+        var scansLeft = ThoroughScans;
+
+        // A symbol held upright or sideways, the most usual, is read before the rest of the angles are probed.
+        Array.Clear(_pieces);
+        Span<int> upright = [0, ThoroughAngles / 2];
+        foreach (var index in upright)
+        {
+            _pieces[index] = ProbeAlong(image, index * ThoroughStep, int.MaxValue);
+            if (_pieces[index] > 0)
+            {
+                scansLeft--;
+                if (ScanAlong(image, index * ThoroughStep, spacing: 1f) is { } found)
+                {
+                    return Refine(image, index * ThoroughStep, found);
+                }
+            }
+        }
+
+        for (var index = 0; index < ThoroughAngles; index++)
+        {
+            if (index != upright[0] && index != upright[1])
+            {
+                _pieces[index] = ProbeAlong(image, index * ThoroughStep, int.MaxValue);
+            }
+        }
+
+        // A symbol reads at its angle and at those either side of it: the one of them that read the most pieces is its
+        // group's peak (the first, where several read as many; none, where every angle round the turn reads as many),
+        // and the peaks of every group are scanned before the angles beside them.
+        _candidates.Clear();
+        for (var index = 0; index < ThoroughAngles; index++)
+        {
+            var pieces = _pieces[index];
+            if (pieces > 0 && index != upright[0] && index != upright[1])
+            {
+                var before = _pieces[(index + ThoroughAngles - 1) % ThoroughAngles];
+                var after = _pieces[(index + 1) % ThoroughAngles];
+                _candidates.Add((index, pieces, pieces > before && pieces >= after));
+            }
+        }
+
+        _candidates.Sort((a, b) => a.Peak != b.Peak ? b.Peak.CompareTo(a.Peak)
+            : b.Pieces != a.Pieces ? b.Pieces.CompareTo(a.Pieces)
+            : a.Index.CompareTo(b.Index));
+        foreach (var (index, _, _) in _candidates)
+        {
+            if (scansLeft-- <= 0)
+            {
+                return null;
+            }
+
+            if (ScanAlong(image, index * ThoroughStep, spacing: 1f) is { } found)
+            {
+                return Refine(image, index * ThoroughStep, found);
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// A symbol reads from lines a degree or so off its rows, and its corners come out best from lines along them, which
+    /// read the most of its rows' edges: the angles either side of <paramref name="angle"/>, which read
+    /// <paramref name="found"/>, are tried too, and the one that read the most edges kept.
+    /// </summary>
+    private BbSymbolDecodeResult Refine(BbBitMatrix image, float angle, BbSymbolDecodeResult found)
+    {
+        var best = found;
+        var bestEdges = _edgesRead;
+        foreach (var nudge in (ReadOnlySpan<float>)[-1f, -0.5f, 0.5f, 1f])
+        {
+            if (DecodeAlong(image, angle + nudge, spacing: 1f) is { } nudged && _edgesRead > bestEdges)
+            {
+                best = nudged;
+                bestEdges = _edgesRead;
+            }
+        }
+
+        return best;
     }
 
     /// <summary>
