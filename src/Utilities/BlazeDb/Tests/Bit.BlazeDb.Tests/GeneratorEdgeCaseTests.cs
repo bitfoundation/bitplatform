@@ -49,6 +49,17 @@ public class GeneratorEdgeCaseTests
     }
 
     [TestMethod]
+    public async Task A_Type_Named_With_A_Keyword_Is_Generated_Escaped()
+    {
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(@operator.Table));
+        var rows = db.GetTable(@operator.Table);
+        rows.Insert(new @operator { Id = 1, Name = "a" });
+
+        Assert.AreEqual("keyword_type", @operator.Table.Name);
+        Assert.AreEqual(1, rows.Lookup(@operator.Indexes.Name, "a").Single().Id);
+    }
+
+    [TestMethod]
     public void A_Null_In_A_Non_Nullable_String_Is_Refused_Rather_Than_Read_Back_Empty()
     {
         var ex = Assert.ThrowsExactly<BlazeDbException>(() =>

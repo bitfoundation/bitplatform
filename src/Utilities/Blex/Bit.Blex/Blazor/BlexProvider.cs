@@ -75,10 +75,16 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
             }
         }
 
-        // Durable persistence + history. During Blazor Server prerendering, browser storage is
-        // unreachable (JS interop is not available yet); in that case this is retried on first
-        // render so the app still starts and hydrates as soon as the circuit is interactive.
-        _durableStartTask = StartDurableStateAsync(rethrowInteropUnavailable: false);
+        // Recording starts before storage is read: the content renders - and takes clicks - at the first await below,
+        // and on Blazor Server the read is a round trip to the browser. An action dispatched meanwhile is an undo step
+        // like any other. The history takes each store's stored state into its baseline as persistence first applies
+        // it - now, or in a RehydrateAsync after a read that failed - so undo still returns to the state the user loaded.
+        Services.GetService<BlexHistory>()?.Start();
+
+        // Durable persistence. During Blazor Server prerendering, browser storage is unreachable (JS
+        // interop is not available yet); in that case this is retried on first render so the app
+        // still starts and hydrates as soon as the circuit is interactive.
+        _durableStartTask = StartDurableStateAsync(retryOnInteropUnavailable: true);
         await _durableStartTask;
     }
 
@@ -94,7 +100,7 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
             await _durableStartTask;
 
         if (!_durableStateReady)
-            await StartDurableStateAsync(rethrowInteropUnavailable: true);
+            await StartDurableStateAsync(retryOnInteropUnavailable: false);
 
         // Not once the provider is gone (disposed while the awaits above ran): nothing would ever disconnect it.
         if (EnableDevTools && !_disposed)
@@ -123,7 +129,7 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
         return RendererInfo.Name is "WebAssembly" or "WebView";
     }
 
-    private async Task StartDurableStateAsync(bool rethrowInteropUnavailable)
+    private async Task StartDurableStateAsync(bool retryOnInteropUnavailable)
     {
         try
         {
@@ -131,7 +137,7 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
             if (persistor is not null)
                 await persistor.StartAsync();
         }
-        catch (InvalidOperationException) when (!rethrowInteropUnavailable)
+        catch (InvalidOperationException) when (retryOnInteropUnavailable)
         {
             // JS interop is unavailable during prerendering; retry after the first render.
             return;
@@ -141,12 +147,16 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
             // Circuit torn down mid-start; JS interop surfaces any of these. Nothing to do.
             return;
         }
+        catch (Exception ex)
+        {
+            // Storage could not be read: the bridge failed to load, or a custom IBlexStorage threw. That must not take
+            // the app down with it - escaping here, it failed the provider's render and every page under it. The
+            // persistor keeps holding the saves of each store it did not read, so their declared defaults never
+            // overwrite what storage holds; a later RehydrateAsync reads them. The app runs on those defaults.
+            Manager.ReportError("persistence", ex, "hydrating at startup; a store it could not read is not saved until RehydrateAsync reads it");
+        }
 
         _durableStateReady = true;
-
-        // Start recording history only after rehydration so the baseline (the state Undo
-        // ultimately returns to) is the hydrated state, not the pre-hydration defaults.
-        Services.GetService<BlexHistory>()?.Start();
     }
 
     /// <summary>

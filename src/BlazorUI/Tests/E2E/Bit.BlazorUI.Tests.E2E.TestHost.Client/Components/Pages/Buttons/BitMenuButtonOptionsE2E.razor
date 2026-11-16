@@ -52,10 +52,10 @@
 </E2ESection>
 
 <E2ESection Id="toggle" Title="Toggle">
-    <BitMenuButton Id="mnb-toggle" Split Toggle Text="Bold" TItem="BitMenuButtonOption" @bind-IsToggled="_isToggled" OnToggleChange="v => _toggleChanges.Add(v.ToString())">@BasicOptions</BitMenuButton>
+    <BitMenuButton Id="mnb-toggle" Split Toggle Text="Bold" TItem="BitMenuButtonOption" @bind-Toggled="_isToggled" OnToggleChange="v => _toggleChanges.Add(v.ToString())">@BasicOptions</BitMenuButton>
     <span id="toggle-value">@_isToggled</span>
     <span id="toggle-changes">@string.Join(",", _toggleChanges)</span>
-    <BitMenuButton Id="mnb-toggle-default" Split Toggle DefaultIsToggled="true" Text="Italic" TItem="BitMenuButtonOption">@BasicOptions</BitMenuButton>
+    <BitMenuButton Id="mnb-toggle-default" Split Toggle DefaultToggled="true" Text="Italic" TItem="BitMenuButtonOption">@BasicOptions</BitMenuButton>
 </E2ESection>
 
 <E2ESection Id="checkable" Title="Checkable">

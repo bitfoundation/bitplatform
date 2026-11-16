@@ -1063,6 +1063,12 @@ public static partial class Program
             }
         }
 
+        // Remove it if a service other than bit Fabric watches the app from outside.
+        if (builder.Environment.IsDevelopment() is false)
+        {
+            healthChecksBuilder.AddCheck<BitFabricHealthCheck>("bitFabric", failureStatus: HealthStatus.Degraded, tags: [HealthCheckCategories.Integrations], timeout: TimeSpan.FromSeconds(5));
+        }
+
         // Outside development, a missing configuration is most likely a deployment mistake, so it reports Degraded.
         // A project that doesn't use a dependency should remove its code.
         var reportNotConfigured = builder.Environment.IsDevelopment() is false;

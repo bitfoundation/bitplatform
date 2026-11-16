@@ -105,6 +105,12 @@ public partial class BitToggleButton : BitComponentBase
     [Parameter] public bool AutoLoading { get; set; }
 
     /// <summary>
+    /// Determines if the toggle button is in the checked state.
+    /// </summary>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
+    public bool Checked { get; set; }
+
+    /// <summary>
     /// Gets or sets the check mark icon to display using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="CheckMarkIconName"/> when both are set.
     /// </summary>
@@ -138,9 +144,9 @@ public partial class BitToggleButton : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Default value of the IsChecked parameter.
+    /// Default value of the Checked parameter.
     /// </summary>
-    [Parameter] public bool? DefaultIsChecked { get; set; }
+    [Parameter] public bool? DefaultChecked { get; set; }
 
     /// <summary>
     /// Keeps the space of the check mark reserved in the unchecked state so the content does not shift while toggling.
@@ -212,12 +218,6 @@ public partial class BitToggleButton : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPlacement? IconPlacement { get; set; }
-
-    /// <summary>
-    /// Determines if the toggle button is in the checked state.
-    /// </summary>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
-    public bool IsChecked { get; set; }
 
     /// <summary>
     /// Determines whether the toggle button is in the loading state, which covers its content
@@ -349,7 +349,7 @@ public partial class BitToggleButton : BitComponentBase
     [Parameter] public string? OnAriaLabel { get; set; }
 
     /// <summary>
-    /// Callback for when the IsChecked value has changed.
+    /// Callback for when the Checked value has changed.
     /// </summary>
     [Parameter] public EventCallback<bool> OnChange { get; set; }
 
@@ -510,7 +510,7 @@ public partial class BitToggleButton : BitComponentBase
     {
         if (Loading && Reclickable is false) return;
 
-        await ChangeIsChecked(IsChecked is false, autoLoading: true);
+        await ChangeChecked(Checked is false, autoLoading: true);
 
         // Unlike a click, a programmatic call has no event handler behind it to request a render - and no
         // guarantee of arriving on the renderer's thread either, since the caller may be a timer or a
@@ -526,7 +526,7 @@ public partial class BitToggleButton : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsChecked ? $"bit-tgb-chk {Classes?.Checked}" : string.Empty);
+        ClassBuilder.Register(() => Checked ? $"bit-tgb-chk {Classes?.Checked}" : string.Empty);
 
         ClassBuilder.Register(() => (GetTemplate() is null && GetText().HasNoValue()) || IconOnly ? "bit-tgb-ntx" : string.Empty);
 
@@ -587,18 +587,18 @@ public partial class BitToggleButton : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => IsChecked ? Styles?.Checked : string.Empty);
+        StyleBuilder.Register(() => Checked ? Styles?.Checked : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
     {
-        // The cascaded values are applied here as well as in OnParametersSet, since DefaultIsChecked is only
+        // The cascaded values are applied here as well as in OnParametersSet, since DefaultChecked is only
         // read while the component initializes and would otherwise arrive one lifecycle step too late.
         CascadingParameters?.UpdateParameters(this);
 
-        if (IsCheckedHasBeenSet is false && DefaultIsChecked.HasValue)
+        if (CheckedHasBeenSet is false && DefaultChecked.HasValue)
         {
-            await AssignIsChecked(DefaultIsChecked.Value);
+            await AssignChecked(DefaultChecked.Value);
         }
 
         await base.OnInitializedAsync();
@@ -737,7 +737,7 @@ public partial class BitToggleButton : BitComponentBase
             await OnClick.InvokeAsync(e);
 
             // the loading state is already held open by this method, so the change does not open a second one
-            await ChangeIsChecked(IsChecked is false, autoLoading: false);
+            await ChangeChecked(Checked is false, autoLoading: false);
         }
         finally
         {
@@ -745,7 +745,7 @@ public partial class BitToggleButton : BitComponentBase
         }
     }
 
-    private async Task ChangeIsChecked(bool value, bool autoLoading)
+    private async Task ChangeChecked(bool value, bool autoLoading)
     {
         if (Disabled) return;
 
@@ -764,7 +764,7 @@ public partial class BitToggleButton : BitComponentBase
                 if (args.Cancel) return;
             }
 
-            if (await AssignIsChecked(value) is false) return;
+            if (await AssignChecked(value) is false) return;
 
             await OnChange.InvokeAsync(value);
         }
@@ -803,17 +803,17 @@ public partial class BitToggleButton : BitComponentBase
 
 
 
-    private BitColor? GetColor() => (IsChecked ? OnColor : OffColor) ?? Color;
+    private BitColor? GetColor() => (Checked ? OnColor : OffColor) ?? Color;
 
-    private BitVariant? GetVariant() => (IsChecked ? OnVariant : OffVariant) ?? Variant;
+    private BitVariant? GetVariant() => (Checked ? OnVariant : OffVariant) ?? Variant;
 
-    private RenderFragment? GetTemplate() => (IsChecked ? OnTemplate : OffTemplate) ?? ChildContent;
+    private RenderFragment? GetTemplate() => (Checked ? OnTemplate : OffTemplate) ?? ChildContent;
 
     private BitIconInfo? GetCheckMarkIcon() => BitIconInfo.From(CheckMarkIcon, CheckMarkIconName ?? "Accept");
 
     private BitIconInfo? GetIcon()
     {
-        if (IsChecked)
+        if (Checked)
         {
             var icon = BitIconInfo.From(OnIcon, OnIconName);
 
@@ -831,27 +831,27 @@ public partial class BitToggleButton : BitComponentBase
 
     private string? GetText()
     {
-        if (IsChecked && OnText.HasValue()) return OnText;
+        if (Checked && OnText.HasValue()) return OnText;
 
-        if (IsChecked is false && OffText.HasValue()) return OffText;
+        if (Checked is false && OffText.HasValue()) return OffText;
 
         return Text;
     }
 
     private string? GetTitle()
     {
-        if (IsChecked && OnTitle.HasValue()) return OnTitle;
+        if (Checked && OnTitle.HasValue()) return OnTitle;
 
-        if (IsChecked is false && OffTitle.HasValue()) return OffTitle;
+        if (Checked is false && OffTitle.HasValue()) return OffTitle;
 
         return Title;
     }
 
     private string? GetAriaLabel()
     {
-        if (IsChecked && OnAriaLabel.HasValue()) return OnAriaLabel;
+        if (Checked && OnAriaLabel.HasValue()) return OnAriaLabel;
 
-        if (IsChecked is false && OffAriaLabel.HasValue()) return OffAriaLabel;
+        if (Checked is false && OffAriaLabel.HasValue()) return OffAriaLabel;
 
         return AriaLabel;
     }
@@ -869,14 +869,14 @@ public partial class BitToggleButton : BitComponentBase
     private string? GetAriaPressed()
         => AriaMode switch
         {
-            BitToggleButtonAriaMode.Pressed => IsChecked.ToString().ToLower(),
+            BitToggleButtonAriaMode.Pressed => Checked.ToString().ToLower(),
             BitToggleButtonAriaMode.Switch or BitToggleButtonAriaMode.None or BitToggleButtonAriaMode.Expanded => null,
-            _ => AccessibleNameChanges() ? null : IsChecked.ToString().ToLower()
+            _ => AccessibleNameChanges() ? null : Checked.ToString().ToLower()
         };
 
     private string? GetAriaChecked()
     {
-        if (AriaMode is BitToggleButtonAriaMode.Switch) return IsChecked.ToString().ToLower();
+        if (AriaMode is BitToggleButtonAriaMode.Switch) return Checked.ToString().ToLower();
 
         // These two named the state attribute themselves - none at all, or aria-expanded - so nothing is added
         // beside what they asked for.
@@ -888,11 +888,11 @@ public partial class BitToggleButton : BitComponentBase
 
         // This one is read off the role rather than asked for, and an inference gives way to what the page wrote
         // itself - unlike an explicit AriaMode, which is the parameter for saying what the state attribute is.
-        return GetSplattedAttribute("aria-checked") is null ? IsChecked.ToString().ToLower() : null;
+        return GetSplattedAttribute("aria-checked") is null ? Checked.ToString().ToLower() : null;
     }
 
     private string? GetAriaExpanded()
-        => AriaMode is BitToggleButtonAriaMode.Expanded ? IsChecked.ToString().ToLower() : null;
+        => AriaMode is BitToggleButtonAriaMode.Expanded ? Checked.ToString().ToLower() : null;
 
     /// <summary>
     /// Reports whether the accessible name of the toggle button differs between the two states, in which case

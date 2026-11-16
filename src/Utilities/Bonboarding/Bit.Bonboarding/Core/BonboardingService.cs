@@ -237,7 +237,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
                 }
             }
 
-            if (tour.CanStart is not null && !await tour.CanStart(new BonboardingTourContext(tour, _services)))
+            if (tour.CanStart is not null && !await CanStartAsync(tour, startOptions.Automatic))
             {
                 throw new BonboardingException($"Tour '{tour.Id}' declined to start.") { TourId = tour.Id };
             }
@@ -258,6 +258,27 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     /// <summary>True when the user snoozed the tour, as its stored record (of this version, or one it migrates) says.</summary>
     private bool IsSnoozed(BonboardingTourDefinition tour, BonboardingRecord? stored)
         => BonboardingRecordMigration.Apply(tour, stored, _logger) is { } record && record.IsSnoozedAt(_time.GetUtcNow());
+
+    /// <summary>
+    /// What the tour's <see cref="BonboardingTourDefinition.CanStart"/> says. Its failure reaches the caller of a
+    /// start someone asked for; an <paramref name="automatic"/> start has no caller to hand it to - the component that
+    /// asked for it would take the circuit down with it - so one that throws holds the tour back there, as a
+    /// <see cref="BonboardingOptions.CanAutoStart"/> that throws does.
+    /// </summary>
+    private async ValueTask<bool> CanStartAsync(BonboardingTourDefinition tour, bool automatic)
+    {
+        if (!automatic) return await tour.CanStart!(new BonboardingTourContext(tour, _services));
+
+        try
+        {
+            return await tour.CanStart!(new BonboardingTourContext(tour, _services));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "CanStart threw for tour {TourId}; the automatic start is held back.", tour.Id);
+            return false;
+        }
+    }
 
     /// <summary>
     /// What <see cref="BonboardingOptions.CanAutoStart"/> says; true when it is not set. It is application code, and
@@ -687,9 +708,10 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
             stored = new(await ReadRecordAsync(tour.Id, cancellationToken));
             if (!IsDueOnce(tour, stored.Value)) return null;
 
-            if (tour.CanStart is not null && !await tour.CanStart(new BonboardingTourContext(tour, _services))) return null;
+            // A once-only start is never one the user asked for, so CanStart and CanAutoStart are asked as for an
+            // automatic start: one that throws holds the tour back. IsDueOnce has already passed over a snooze.
+            if (tour.CanStart is not null && !await CanStartAsync(tour, automatic: true)) return null;
 
-            // A once-only start is never one the user asked for. IsDueOnce has already passed over a snooze.
             if (!await AllowsAutoStartAsync(tour)) return null;
         }
 

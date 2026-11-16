@@ -61,10 +61,10 @@ public partial class BitAccordionDemo
         },
         new()
         {
-            Name = "DefaultIsExpanded",
+            Name = "DefaultExpanded",
             Type = "bool?",
             DefaultValue = "null",
-            Description = "Default value for the IsExpanded parameter."
+            Description = "Default value for the Expanded parameter."
         },
         new()
         {
@@ -72,6 +72,13 @@ public partial class BitAccordionDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "A short description in the header of the accordion."
+        },
+        new()
+        {
+            Name = "Expanded",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the accordion is expanded or collapsed. (two-way bound)"
         },
         new()
         {
@@ -175,13 +182,6 @@ public partial class BitAccordionDemo
         },
         new()
         {
-            Name = "IsExpanded",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines whether the accordion is expanded or collapsed. (two-way bound)"
-        },
-        new()
-        {
             Name = "LazyContent",
             Type = "bool",
             DefaultValue = "false",
@@ -219,7 +219,7 @@ public partial class BitAccordionDemo
         {
             Name = "OnChange",
             Type = "EventCallback<bool>",
-            Description = "Callback that is called when the IsExpanded value has changed."
+            Description = "Callback that is called when the Expanded value has changed."
         },
         new()
         {
@@ -243,7 +243,7 @@ public partial class BitAccordionDemo
         {
             Name = "OnToggling",
             Type = "EventCallback<BitAccordionToggleArgs>",
-            Description = "Called before the accordion expands or collapses; set Cancel to refuse the change. It is awaited, so it can load the panel's content or ask for a confirmation first, and the header reports busy meanwhile. A change made through the IsExpanded parameter itself is not offered here.",
+            Description = "Called before the accordion expands or collapses; set Cancel to refuse the change. It is awaited, so it can load the panel's content or ask for a confirmation first, and the header reports busy meanwhile. A change made through the Expanded parameter itself is not offered here.",
             LinkType = LinkType.Link,
             Href = "#accordion-toggle-args",
         },
@@ -308,19 +308,19 @@ public partial class BitAccordionDemo
         {
             Name = "Expand",
             Type = "Task",
-            Description = "Expands the accordion. Does nothing if it is already expanded, and reports the change through the IsExpanded binding, OnChange and OnExpand."
+            Description = "Expands the accordion. Does nothing if it is already expanded, and reports the change through the Expanded binding, OnChange and OnExpand."
         },
         new()
         {
             Name = "Collapse",
             Type = "Task",
-            Description = "Collapses the accordion. Does nothing if it is already collapsed, and reports the change through the IsExpanded binding, OnChange and OnCollapse."
+            Description = "Collapses the accordion. Does nothing if it is already collapsed, and reports the change through the Expanded binding, OnChange and OnCollapse."
         },
         new()
         {
             Name = "Toggle",
             Type = "Task",
-            Description = "Expands the accordion if it is collapsed and collapses it if it is expanded, reporting the change through the IsExpanded binding, OnChange and OnExpand/OnCollapse."
+            Description = "Expands the accordion if it is collapsed and collapses it if it is expanded, reporting the change through the Expanded binding, OnChange and OnExpand/OnCollapse."
         },
         new()
         {
@@ -685,7 +685,7 @@ public partial class BitAccordionDemo
     private int renameCount;
 
     private bool bindingIsDisabled;
-    private bool bindingIsExpanded;
+    private bool bindingExpanded;
     private int controlledExpandedItem = 1;
 
     private int clickCount;

@@ -64,6 +64,13 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
+            Name = "Checked",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines if the toggle button is in the checked state.",
+        },
+        new()
+        {
             Name = "CheckMarkIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -103,10 +110,10 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "DefaultIsChecked",
+            Name = "DefaultChecked",
             Type = "bool?",
             DefaultValue = "null",
-            Description = "Default value of the IsChecked parameter.",
+            Description = "Default value of the Checked parameter.",
         },
         new()
         {
@@ -158,13 +165,6 @@ public partial class BitToggleButtonDemo
             Description = "The position of the icon relative to the content of the toggle button. The default value is Start. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
-        },
-        new()
-        {
-            Name = "IsChecked",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines if the toggle button is in the checked state.",
         },
         new()
         {
@@ -281,7 +281,7 @@ public partial class BitToggleButtonDemo
         {
             Name = "OnChange",
             Type = "EventCallback<bool>",
-            Description = "Callback for when the IsChecked value has changed.",
+            Description = "Callback for when the Checked value has changed.",
         },
         new()
         {
@@ -1030,7 +1030,7 @@ public partial class BitToggleButtonDemo
     [
         new()
         {
-            DefaultIsChecked = true,
+            DefaultChecked = true,
             Variant = BitVariant.Outline
         }
     ];

@@ -1,4 +1,6 @@
-﻿namespace Bit.BbScanner.Tests;
+﻿using System.Runtime.CompilerServices;
+
+namespace Bit.BbScanner.Tests;
 
 /// <summary>
 /// MicroPDF417 beyond the reference round trips: no misreads from other symbols, damage repaired or refused, the
@@ -341,6 +343,40 @@ public class MicroPdf417Tests
             BbPdf417SymbolTable.Register(BbPdf417SymbolTable.Specification);
         }
     }
+
+    [TestMethod]
+    public void AStillImageOfNoiseIsGivenUpOnQuickly()
+    {
+        // Noise makes a piece of a row at angle after angle, and every one of them was scanned in full, then again
+        // inverted: an 800 by 600 photograph of noise took twenty-three seconds in a debug build. The full scans now share
+        // a budget of twelve in each polarity. What is counted is the scans, not the time they take: a shared build
+        // machine running both target frameworks at once took six times as long as a desk one, and no bound on the time
+        // both passes there and fails the unbudgeted sweep everywhere.
+        using var noise = new BbBitMatrix(800, 600);
+        var random = new Random(3);
+        for (var y = 0; y < noise.Height; y++)
+        {
+            for (var x = 0; x < noise.Width; x++)
+            {
+                noise[x, y] = random.Next(2) == 0;
+            }
+        }
+
+        var reader = new BbMicroPdf417Reader();
+        var result = reader.Decode(noise, new BbMatrixDecodeOptions(TryHarder: true, AllowInverted: true));
+
+        Assert.IsNull(result);
+
+        // The budget is what stopped the sweep: far more angles than it allows read a piece of a row.
+        Assert.IsGreaterThan(2 * 12, Pieces(reader).Count(pieces => pieces > 0));
+        Assert.IsLessThanOrEqualTo(2 * 12, FullScans(reader));
+    }
+
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_fullScans")]
+    private static extern ref int FullScans(BbMicroPdf417Reader reader);
+
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_pieces")]
+    private static extern ref int[] Pieces(BbMicroPdf417Reader reader);
 
     private static BbLuminanceBuffer Blank(int width, int height)
     {

@@ -76,6 +76,16 @@ public sealed class BsqliteStorageMigrator
             return;
         }
 
+        // A database the target cannot keep - the indexeddb backend takes only one page size - is refused on its
+        // header, before the whole of it is read out: on the AutomaticOnOpen path a refusal is logged and the
+        // migration tried again on the next open, and each try would export the database for nothing.
+        if (target.Admin is IBsqliteStorageImportCheck check
+            && source.Admin is IBsqliteStorageHeaderReader headers
+            && await headers.ReadHeaderAsync(databaseName, cancellationToken).ConfigureAwait(false) is { } header)
+        {
+            check.ThrowIfCannotImport(header);
+        }
+
         var image = await source.Admin.ExportAsync(databaseName, cancellationToken).ConfigureAwait(false);
 
         if (probe.QuotaBytes is long quota

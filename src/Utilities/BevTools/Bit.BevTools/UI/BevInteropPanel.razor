@@ -5,7 +5,7 @@
     <div class="bev-left" style="flex-basis:50%">
         <div class="bev-toolbar">
             <input type="text" aria-label="Filter JS interop calls" placeholder="Filter identifier, component, result or error" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
-            <span class="bev-muted bev-nowrap">@_calls.Count calls · → .NET→JS, ← JS→.NET</span>
+            <span class="bev-muted bev-nowrap">@_callCount calls · → .NET→JS, ← JS→.NET</span>
             <button type="button" @onclick="() => Session.Interop.Clear()">Clear</button>
         </div>
         <div class="bev-scroll">
@@ -44,9 +44,9 @@
                     <Virtualize Items="_calls" ItemSize="23" Context="c" SpacerElement="tr">
                         <tr class="bev-row @(c.Succeeded ? "" : "bev-sev-error")" @onclick="() => Host.SelectEvent(c.TimelineEventId)">
                             <td class="bev-mono">@BevFmt.Time(c.At)</td>
-                            <td class="bev-mono bev-truncate" style="max-width:240px" title="args: @(c.ArgumentTypes ?? "none")">@(c.Direction == BevJsInteropDirection.DotNetToJs ? "→" : "←") @c.Identifier (@c.ArgumentCount)</td>
+                            <td class="bev-mono bev-truncate" style="max-width:240px" title="@CallTitle(c)">@(c.Direction == BevJsInteropDirection.DotNetToJs ? "→" : "←") @c.Identifier (@c.ArgumentCount)@(c.CallCount > 1 ? " ×" + c.CallCount : "")</td>
                             <td>@if (c.ComponentInstanceId is { } id) { <button type="button" class="bev-link" @onclick:stopPropagation="true" @onclick="() => Host.SelectComponent(id)">@c.ComponentName</button> } else { <span class="bev-muted">–</span> }</td>
-                            <td class="bev-num">@(c.DurationMs is null ? "…" : BevFmt.Ms(c.DurationMs))</td>
+                            <td class="bev-num" title="@DurationTitle(c)">@(c.DurationMs is null ? "…" : c.CallCount > 1 ? "≤ " + BevFmt.Ms(c.DurationMs) : BevFmt.Ms(c.DurationMs))</td>
                             <td class="bev-truncate @(c.Succeeded ? "bev-muted" : "bev-err")" style="max-width:200px" title="@c.Error">@(c.Succeeded ? (c.ResultType ?? "") : c.Error)</td>
                         </tr>
                     </Virtualize>
@@ -62,6 +62,9 @@
     private BevJsInteropAggregate[] _aggregates = [];
     private List<BevJsInteropRecord> _calls = [];
 
+    /// <summary>The calls the listed records stand for: a record of the hub's folded calls stands for several.</summary>
+    private int _callCount;
+
     protected override void OnParametersSet()
     {
         var filter = BevQueryFilter.Parse(Query);
@@ -73,12 +76,18 @@
         _calls = Session.Interop.Snapshot().Reverse()
             .Where(c => filter.MatchesText(c.Identifier, c.ComponentName, c.ResultType, c.Error, c.Direction.ToString()))
             .ToList();
+        _callCount = _calls.Sum(c => c.CallCount);
         var matchingCalls = _calls.Select(c => (c.Identifier, c.Direction)).ToHashSet();
         _aggregates = Session.Interop.Aggregates()
             .Where(a => filter.MatchesText(a.Identifier, a.Direction.ToString()) || matchingCalls.Contains((a.Identifier, a.Direction)))
             .OrderByDescending(a => a.TotalMs)
             .ToArray();
     }
+
+    // A record of the hub's folded calls stands for several calls alike; their individual times are not known.
+    private static string CallTitle(BevJsInteropRecord c) => "args: " + (c.ArgumentTypes ?? "none") + (c.CallCount > 1 ? " · " + c.CallCount + " calls alike, their individual times not known" : "");
+
+    private static string? DurationTitle(BevJsInteropRecord c) => c.CallCount > 1 ? BevFmt.Ms(c.TotalDurationMs) + " in all, the longest " + BevFmt.Ms(c.DurationMs) : null;
 
     private void OnQuery(string? value)
     {

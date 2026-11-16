@@ -124,8 +124,20 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
             var entry = entries[i];
             var binding = bindings[i];
             var entity = entry.ToEntityEntry().Entity;
+            var tokens = BlazeDbConcurrencyTokens.Of(entry.EntityType);
             try
             {
+                // Checked against what was last committed before anything is written, as a relational
+                // provider's WHERE clause would; a row that is gone is reported by the write itself. The
+                // values this write commits are recorded by the table as it sets the row, under the write lock
+                // this check runs under too, so no other save can check against the values from before it.
+                if (tokens.Length > 0
+                    && entry.EntityState is EntityState.Modified or EntityState.Deleted
+                    && binding.HeldRow(entity, out var seq) is { } held)
+                {
+                    BlazeDbConcurrencyTokens.Check(entry, tokens, held, seq);
+                }
+
                 switch (entry.EntityState)
                 {
                     case EntityState.Added:

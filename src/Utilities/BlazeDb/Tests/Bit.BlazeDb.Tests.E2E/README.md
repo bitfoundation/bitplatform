@@ -51,7 +51,7 @@ dotnet publish Samples/Lazy/Bit.BlazeDb.Samples.Lazy/Bit.BlazeDb.Samples.Lazy.cs
 dotnet build Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browsers Playwright drives.
-pwsh Tests/Bit.BlazeDb.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium firefox webkit
+pwsh Tests/Bit.BlazeDb.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium firefox webkit
 
 cd Tests/Bit.BlazeDb.Tests.E2E && dotnet test
 
@@ -74,7 +74,7 @@ provider and MCP tests only. To do what CI does:
 dotnet publish src/Utilities/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 dotnet publish src/Utilities/BlazeDb/Samples/Lazy/Bit.BlazeDb.Samples.Lazy/Bit.BlazeDb.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj -c Release
-pwsh src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+pwsh src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.BlazeDb.Demo.Server.dll --urls http://localhost:5000 &)
 cd src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E && BLAZEDB_E2E_BASE_URL=http://localhost:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename blazedb-e2e.trx
 ```
@@ -91,7 +91,7 @@ cd src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E && BLAZEDB_E2E_LAZY_AOT=1 d
 ```
 
 Without PowerShell 7, the browser can be installed with the Node.js runtime Playwright ships:
-`bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.
+`bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.
 
 The suite starts the demo server itself (`dotnet Bit.BlazeDb.Demo.Server.dll --urls http://localhost:<free port>`,
 in the Development environment so the build output finds its static web assets), waits until it answers,

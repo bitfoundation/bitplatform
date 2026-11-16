@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// click and hidden again (ShowOnHover / ShowOnFocus / ShowOnClick / HideOnClick, Enter and Space, a press outside,
 /// Tab away, Escape and NoDismissOnEscape), ShowDelay / HideDelay and BitTooltipGroup (its delays, SkipDelay, one
 /// tooltip at a time, AllowMultiple), Interactive, Template / Anchor / LazyRender, the description or label it gives its
-/// anchor (Relationship, TooltipId), two-way and one-way IsShown, Show / Hide / Toggle and the events, the BitParams
+/// anchor (Relationship, TooltipId), two-way and one-way Shown, Show / Hide / Toggle and the events, the BitParams
 /// cascade, Escape inside a modal, every Placement and Alignment measured with bounding boxes (RTL explicit and
 /// inherited), the arrow, ArrowSize, Offset, MaxWidth and FullWidth, every Color and Size, Style / Class / Styles /
 /// Classes, NoAnimation, ZIndex and the public CSS variables, reduced motion, Disabled, Visibility, HtmlAttributes,
@@ -386,7 +386,7 @@ public class BitTooltipE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsShown_TwoWay_ThePageAndTheTriggersDriveTheSameState()
+    public async Task Shown_TwoWay_ThePageAndTheTriggersDriveTheSameState()
     {
         await OpenAsync(Url);
 
@@ -404,7 +404,7 @@ public class BitTooltipE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsShown_OneWay_LeavesTheStateToThePageAlone()
+    public async Task Shown_OneWay_LeavesTheStateToThePageAlone()
     {
         await OpenAsync(Url);
 

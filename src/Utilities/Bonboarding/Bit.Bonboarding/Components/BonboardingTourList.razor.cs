@@ -117,23 +117,35 @@ public sealed partial class BonboardingTourList : ComponentBase, IDisposable
         var tours = (Tours ?? BonboardingService.RegisteredTours.OrderBy(tour => tour.Title ?? tour.Id, StringComparer.CurrentCulture)).ToArray();
         var items = new List<BonboardingTourListItem>(tours.Length);
 
-        try
+        foreach (var tour in tours)
         {
-            foreach (var tour in tours)
+            BonboardingTourProgress progress;
+
+            try
             {
                 // This definition decides which of its records are current, whether or not it is registered.
-                var progress = ProgressOf(BonboardingRecordMigration.Apply(tour, await BonboardingService.GetRecordAsync(tour.Id), Logger));
-                if (HideCompleted && progress == BonboardingTourProgress.Completed) continue;
-
-                // A tour the user walked away from is not running as far as they can tell: it can be resumed from here.
-                var running = BonboardingService.FindSession(tour.Id) is { } session && BonboardingTourSession.IsUnderway(session);
-
-                items.Add(new BonboardingTourListItem(tour, progress, running) { StartAsync = () => StartAsync(tour, progress) });
+                progress = ProgressOf(BonboardingRecordMigration.Apply(tour, await BonboardingService.GetRecordAsync(tour.Id), Logger));
             }
-        }
-        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
-        {
-            Logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingTourList could not read the tours' progress.");
+            // The browser is out of reach (prerendering, a circuit gone): every other read would fail the same way.
+            catch (Exception ex) when (BonboardingInteropFailure.IsExpected(ex))
+            {
+                Logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingTourList could not read the tours' progress.");
+                break;
+            }
+            // Any other failure is this tour's own - a custom store that cannot read its record, a Migrate that throws:
+            // the tour is left out, the others are listed. This runs after a render, where an exception ends the circuit.
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "BonboardingTourList could not read the progress of tour {TourId}; it is left out.", tour.Id);
+                continue;
+            }
+
+            if (HideCompleted && progress == BonboardingTourProgress.Completed) continue;
+
+            // A tour the user walked away from is not running as far as they can tell: it can be resumed from here.
+            var running = BonboardingService.FindSession(tour.Id) is { } session && BonboardingTourSession.IsUnderway(session);
+
+            items.Add(new BonboardingTourListItem(tour, progress, running) { StartAsync = () => StartAsync(tour, progress) });
         }
 
         if (version != _refreshVersion || _disposed) return;

@@ -3,9 +3,12 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net10.0-android</TargetFrameworks>
+        <!-- .NET 11 and 10, as Bit.BbScanner: an app on either gets the build of both libraries for its own TFM. Built
+             for .NET 10 alone, a .NET 11 app took Bit.BbScanner twice - its .NET 10 build through this library and its .NET
+             11 build through the app - and packaging it on Windows failed on their two static web asset manifests. -->
+        <TargetFrameworks>net11.0-android;net11.0-ios;net11.0-maccatalyst;net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net11.0-windows10.0.19041.0;net10.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net11.0-android;net10.0-android</TargetFrameworks>
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
         <RootNamespace>Bit.BbScanner.Maui</RootNamespace>
@@ -24,10 +27,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.130" />
+        <PackageReference Condition="$(TargetFramework.StartsWith('net10.0'))" Include="Microsoft.Maui.Controls" Version="10.0.130" />
+        <PackageReference Condition="$(TargetFramework.StartsWith('net11.0'))" Include="Microsoft.Maui.Controls" Version="11.0.10" />
         <!-- For BlazorWebView's type only: the app references it in full, and its build assets - blazor.webview.js
              among them - would otherwise be the library's static web assets too, and clash with the app's. -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.130" ExcludeAssets="build;buildTransitive" />
+        <PackageReference Condition="$(TargetFramework.StartsWith('net10.0'))" Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.130" ExcludeAssets="build;buildTransitive" />
+        <PackageReference Condition="$(TargetFramework.StartsWith('net11.0'))" Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="11.0.10" ExcludeAssets="build;buildTransitive" />
     </ItemGroup>
 
     <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">

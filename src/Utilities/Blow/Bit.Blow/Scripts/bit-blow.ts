@@ -72,6 +72,8 @@ const HANDLE_CLASS = 'bit-blow-handle';
 const PAGE_SCROLL_CLASS = 'bit-blow-page-scroll';
 const PAGE_ZOOM_CLASS = 'bit-blow-page-zoom';
 const NODES_LOCKED_CLASS = 'bit-blow-nodes-locked';
+// How long the page has to stop scrolling before the pane's new rectangle is sent to .NET; see observeResize.
+const SCROLL_SETTLE_MS = 100;
 
 export function getRect(el: Element | null): BlowDomRect | null {
     if (!el) return null;
@@ -180,17 +182,44 @@ export function elementDataAtPoint(x: number, y: number, selector: string, paneE
         if (el.matches && el.matches(selector)) {
             // A handle of a flow nested inside this one belongs to that flow, not this one.
             if (paneEl && el.closest(`.${ROOT_CLASS}`) !== paneEl) return null;
-            return {
-                nodeId: el.getAttribute('data-id'),
-                handleId: el.getAttribute('data-handle-id') || '',
-                handleType: el.getAttribute('data-handle-type') || '',
-                position: el.getAttribute('data-handle-pos') || '',
-                connectableEnd: el.getAttribute('data-connectable-end') !== 'false'
-            };
+            return handleHit(el);
         }
         el = el.parentElement;
     }
     return null;
+}
+
+// The handle of this flow the pointer is over, read from the CSS hover state rather than from an
+// event: the handles listen for the pointer only while a connection is drawn, and a pointer that
+// was already over one when they started to listen never enters it.
+export function hoveredHandle(paneEl: HTMLElement | null): BlowHandleHit | null {
+    if (!paneEl) return null;
+    const hovered = paneEl.querySelectorAll(`.${HANDLE_CLASS}:hover`);
+    for (let i = 0; i < hovered.length; i++) {
+        const el = hovered[i];
+        if (el.closest(`.${ROOT_CLASS}`) === paneEl) return handleHit(el);
+    }
+    return null;
+}
+
+function handleHit(el: Element): BlowHandleHit {
+    return {
+        nodeId: el.getAttribute('data-id'),
+        handleId: el.getAttribute('data-handle-id') || '',
+        handleType: el.getAttribute('data-handle-type') || '',
+        position: el.getAttribute('data-handle-pos') || '',
+        connectableEnd: el.getAttribute('data-connectable-end') !== 'false'
+    };
+}
+
+// Where each pane was on screen as each pointer last went down on it, by pointer id: a gesture that starts while the
+// page scrolls converts its start on a rectangle read before then, and only the reading taken in the press's own event
+// says how far the pane had moved by that moment rather than by whenever .NET asks. See paneRectsAtPointerDown.
+const pointerDownRects = new WeakMap<HTMLElement, Map<number, BlowDomRect>>();
+
+// The pane's rectangle as the pointer went down on it (null when that press was not seen), and where it is now.
+export function paneRectsAtPointerDown(paneEl: HTMLElement | null, pointerId: number): { down: BlowDomRect | null; now: BlowDomRect | null } {
+    return { down: (paneEl && pointerDownRects.get(paneEl)?.get(pointerId)) || null, now: getRect(paneEl) };
 }
 
 // Watches the flow for size changes that C# cannot see: the pane being resized by its
@@ -204,6 +233,8 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
     let frame = 0;
     let pendingMeasure = false;
     let disposed = false;
+    let scrollEnd = 0;
+    let scrollStale = false;
 
     // Coalesce bursts of observations into one callback per frame: a single layout pass can
     // resize the pane and every node at once, and each would otherwise round-trip to .NET.
@@ -220,9 +251,12 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
             if (disposed) return;
             // The pane's rectangle travels with the call, read in this frame: .NET would otherwise
             // have to ask for it, a second round trip on every frame of a resize.
+            // Whether the page is still scrolling goes with it: a reading taken mid-scroll is out of
+            // date as soon as the page scrolls on, and .NET keeps re-reading the rectangle until one
+            // taken after the scrolling stopped arrives.
             // The component can be torn down (or its circuit dropped) between a frame being
             // scheduled and it running; that is an expected end, not an error worth reporting.
-            Promise.resolve(dotNetRef.invokeMethodAsync('OnResizeObserved', measure, getRect(paneEl))).catch(() => { });
+            Promise.resolve(dotNetRef.invokeMethodAsync('OnResizeObserved', measure, getRect(paneEl), scrollStale)).catch(() => { });
         });
     };
 
@@ -231,14 +265,38 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
     // Scrolling an ancestor moves the pane on screen without resizing anything, which still
     // invalidates the cached rectangle used for screen <-> flow conversions. Scrolling inside the
     // flow (a scrollable node) or in some unrelated part of the page does not.
+    // A scroll fires on every frame, and over a Blazor Server circuit each report is a message:
+    // the first scroll of a burst only tells .NET its rectangle is stale (a gesture or a wheel
+    // re-reads it when it needs it, until the scrolling stops), and the rectangle itself follows
+    // once the scrolling stops.
     const onScroll = (e: Event) => {
         const t = e.target;
+        if (disposed) return;
         if (t === document || t === document.documentElement || t === document.body
             || (t instanceof Node && t.contains(paneEl))) {
-            notify(false);
+            if (!scrollStale) {
+                scrollStale = true;
+                Promise.resolve(dotNetRef.invokeMethodAsync('OnPaneMoved')).catch(() => { });
+            }
+            if (scrollEnd) clearTimeout(scrollEnd);
+            scrollEnd = window.setTimeout(() => {
+                scrollEnd = 0;
+                scrollStale = false;
+                notify(false);
+            }, SCROLL_SETTLE_MS);
         }
     };
     const onWindowResize = () => notify(false);
+
+    // Read in the press's own event, before .NET hears of it; see pointerDownRects. Dropped as the pointer lifts, so
+    // touch pointers, whose ids keep counting up, do not pile up.
+    const downRects = new Map<number, BlowDomRect>();
+    pointerDownRects.set(paneEl, downRects);
+    const onPointerDown = (e: PointerEvent) => {
+        const rect = getRect(paneEl);
+        if (rect) downRects.set(e.pointerId, rect);
+    };
+    const onPointerGone = (e: PointerEvent) => { downRects.delete(e.pointerId); };
 
     const resizeObserver = new ResizeObserver(onSizeChanged);
     resizeObserver.observe(paneEl);
@@ -277,15 +335,24 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
     // Capture phase so scrolling in any ancestor container is seen, not just the window.
     window.addEventListener('scroll', onScroll, true);
     window.addEventListener('resize', onWindowResize);
+    // Capture phase: a handler inside the pane that stops the press from bubbling must not keep it from being read.
+    paneEl.addEventListener('pointerdown', onPointerDown, true);
+    paneEl.addEventListener('pointerup', onPointerGone, true);
+    paneEl.addEventListener('pointercancel', onPointerGone, true);
 
     return {
         dispose: () => {
             disposed = true;
             if (frame) cancelAnimationFrame(frame);
+            if (scrollEnd) clearTimeout(scrollEnd);
             resizeObserver.disconnect();
             mutationObserver.disconnect();
             window.removeEventListener('scroll', onScroll, true);
             window.removeEventListener('resize', onWindowResize);
+            paneEl.removeEventListener('pointerdown', onPointerDown, true);
+            paneEl.removeEventListener('pointerup', onPointerGone, true);
+            paneEl.removeEventListener('pointercancel', onPointerGone, true);
+            if (pointerDownRects.get(paneEl) === downRects) pointerDownRects.delete(paneEl);
         }
     };
 }
@@ -435,7 +502,7 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
 
         if (onElement && (e.key === ' ' || e.key === 'Enter')) e.preventDefault();
         else if (panKey && e.key === panKey) e.preventDefault();
-        else if (keyboardA11y && e.key && e.key.startsWith('Arrow')) e.preventDefault();
+        else if (keyboardA11y && e.key && e.key.startsWith('Arrow') && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault();
         else if (isFlowShortcut(e)) e.preventDefault();
         else if (!e.ctrlKey && !e.metaKey && !e.altKey && deleteKeys.includes(e.key)) e.preventDefault();
     };

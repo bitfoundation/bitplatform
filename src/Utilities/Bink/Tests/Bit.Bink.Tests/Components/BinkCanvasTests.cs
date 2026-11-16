@@ -99,7 +99,7 @@ public class BinkCanvasTests : BunitContext
         canvas.Instance.CurrentDocument.AddElement(new BinkStroke(TestPoints(), new BinkPenBrush()) { Description = "A test stroke" });
         canvas.Render(p => { });
 
-        Assert.Contains("Drawing with 1 elements", canvas.Markup, StringComparison.Ordinal);
+        Assert.Contains("Drawing with 1 element on 1 layer", canvas.Markup, StringComparison.Ordinal);
         Assert.Contains("A test stroke", canvas.Markup, StringComparison.Ordinal);
     }
 

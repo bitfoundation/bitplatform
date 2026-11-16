@@ -83,7 +83,18 @@ const STATUS_ERROR = 1;
 const MAX_EXACT_INTEGER = 9007199254740991n; // 2^53 - 1
 
 const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder('utf-8');
+// ignoreBOM: a leading U+FEFF is part of the text, not a byte order mark - left to the default, the decoder would
+// drop it from a column value or a parameter that starts with one.
+const textDecoder = new TextDecoder('utf-8', { ignoreBOM: true });
+
+/**
+ * A TEXT value, read as the bytes SQLite holds. wa-sqlite's `column_text` reads a NUL-terminated string, so a
+ * value with an embedded NUL ('a\0b') would come back cut short at it; Microsoft.Data.Sqlite, which reads the
+ * byte count, returns all of it.
+ */
+export function columnText(sqlite3: SQLiteAPI, stmt: number, column: number): string {
+    return textDecoder.decode(sqlite3.column_blob(stmt, column));
+}
 
 // -------------------------------------------------------------------------------------------------
 // Binary primitives
@@ -425,7 +436,7 @@ export class ResultWriter {
                     break;
 
                 case WireType.text:
-                    writer.string(sqlite3.column_text(stmt, i));
+                    writer.string(columnText(sqlite3, stmt, i));
                     break;
 
                 case WireType.blob:
@@ -640,7 +651,7 @@ export function encodeRow(sqlite3: SQLiteAPI, stmt: number, columnCount: number)
             }
 
             case WireType.text:
-                v[i] = sqlite3.column_text(stmt, i);
+                v[i] = columnText(sqlite3, stmt, i);
                 break;
 
             case WireType.blob:

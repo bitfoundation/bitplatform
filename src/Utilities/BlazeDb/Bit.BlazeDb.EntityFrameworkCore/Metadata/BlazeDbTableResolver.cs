@@ -67,7 +67,11 @@ internal static class BlazeDbTableResolver
         var table = GetTableMethod
             .MakeGenericMethod(arguments)
             .Invoke(database, [descriptor])!;
-        return (IBlazeDbTableBinding)Activator.CreateInstance(bindingType, table, FindKeyMember(entityType, descriptor, arguments[0]))!;
+        var binding = (IBlazeDbTableBinding)Activator.CreateInstance(bindingType, table, FindKeyMember(entityType, descriptor, arguments[0]))!;
+        // Before the binding is handed out, and so before any query of this provider's exposes a row of the
+        // table for a context to change in memory.
+        binding.ObserveConcurrencyTokens(Storage.BlazeDbConcurrencyTokens.Of(entityType));
+        return binding;
     }
 
     /// <summary>

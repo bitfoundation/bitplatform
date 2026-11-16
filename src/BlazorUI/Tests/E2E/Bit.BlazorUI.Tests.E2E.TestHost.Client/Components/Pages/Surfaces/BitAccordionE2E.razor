@@ -12,11 +12,11 @@
 
 <h1>BitAccordion</h1>
 
-<E2ESection Id="basic" Title="Basic: Title, Description, IconName, DefaultIsExpanded">
+<E2ESection Id="basic" Title="Basic: Title, Description, IconName, DefaultExpanded">
     <BitAccordion Id="acd-basic" Title="Basic title" Description="Basic description" IconName="Settings">
         <p id="basic-content">Basic content of the panel.</p>
     </BitAccordion>
-    <BitAccordion Id="acd-default" Title="Expanded by default" DefaultIsExpanded>
+    <BitAccordion Id="acd-default" Title="Expanded by default" DefaultExpanded>
         <p id="default-content">Open on the first render.</p>
     </BitAccordion>
     <BitAccordion Id="acd-keys" Title="Keyboard">
@@ -46,19 +46,19 @@
 </E2ESection>
 
 <E2ESection Id="binding" Title="Two-way and controlled binding">
-    <BitAccordion Id="acd-bound" Title="Bound" Disabled="_boundDisabled" @bind-IsExpanded="_bound">
+    <BitAccordion Id="acd-bound" Title="Bound" Disabled="_boundDisabled" @bind-Expanded="_bound">
         <p>Bound content.</p>
     </BitAccordion>
     <span id="bound-value">@_bound</span>
     <button id="btn-bound-toggle" type="button" @onclick="() => _bound = !_bound">Toggle from the page</button>
     <button id="btn-bound-disable" type="button" @onclick="() => _boundDisabled = !_boundDisabled">Disable</button>
 
-    <BitAccordion Id="acd-ctl-1" Title="Controlled one" IsExpanded="_ctl == 1" OnClick="() => _ctl = _ctl == 1 ? 0 : 1">One.</BitAccordion>
-    <BitAccordion Id="acd-ctl-2" Title="Controlled two" IsExpanded="_ctl == 2" OnClick="() => _ctl = _ctl == 2 ? 0 : 2">Two.</BitAccordion>
-    <BitAccordion Id="acd-ctl-3" Title="Controlled three" IsExpanded="_ctl == 3" OnClick="() => _ctl = _ctl == 3 ? 0 : 3">Three.</BitAccordion>
+    <BitAccordion Id="acd-ctl-1" Title="Controlled one" Expanded="_ctl == 1" OnClick="() => _ctl = _ctl == 1 ? 0 : 1">One.</BitAccordion>
+    <BitAccordion Id="acd-ctl-2" Title="Controlled two" Expanded="_ctl == 2" OnClick="() => _ctl = _ctl == 2 ? 0 : 2">Two.</BitAccordion>
+    <BitAccordion Id="acd-ctl-3" Title="Controlled three" Expanded="_ctl == 3" OnClick="() => _ctl = _ctl == 3 ? 0 : 3">Three.</BitAccordion>
     <span id="ctl-value">@_ctl</span>
 
-    <BitAccordion Id="acd-fixed" Title="One-way, never moved" IsExpanded="false" OnClick="() => _fixedClicks++" OnChange="(bool v) => _fixedChanges++">Fixed.</BitAccordion>
+    <BitAccordion Id="acd-fixed" Title="One-way, never moved" Expanded="false" OnClick="() => _fixedClicks++" OnChange="(bool v) => _fixedChanges++">Fixed.</BitAccordion>
     <span id="fixed-clicks">@_fixedClicks</span>
     <span id="fixed-changes">@_fixedChanges</span>
 </E2ESection>
@@ -66,7 +66,7 @@
 <E2ESection Id="events" Title="Events">
     <BitAccordion Id="acd-events"
                   Title="Unsaved changes"
-                  DefaultIsExpanded
+                  DefaultExpanded
                   OnClick="HandleEventsClick"
                   OnChange="(bool v) => { _changeCount++; _lastChange = v.ToString(); }"
                   OnExpand="() => _expandCount++"
@@ -212,12 +212,12 @@
 </E2ESection>
 
 <E2ESection Id="readonly" Title="ReadOnly and Disabled">
-    <BitAccordion Id="acd-ro" Title="Read-only" ReadOnly DefaultIsExpanded OnClick="() => _roClicks++" OnChange="(bool v) => _roChanges++">
+    <BitAccordion Id="acd-ro" Title="Read-only" ReadOnly DefaultExpanded OnClick="() => _roClicks++" OnChange="(bool v) => _roChanges++">
         <p>Read-only content.</p>
     </BitAccordion>
     <span id="ro-clicks">@_roClicks</span>
     <span id="ro-changes">@_roChanges</span>
-    <BitAccordion Id="acd-disabled" Title="Disabled" Disabled DefaultIsExpanded OnClick="() => _disabledClicks++">
+    <BitAccordion Id="acd-disabled" Title="Disabled" Disabled DefaultExpanded OnClick="() => _disabledClicks++">
         <button id="btn-disabled-inner" type="button" @onclick="() => _disabledInner++">Still live</button>
     </BitAccordion>
     <span id="disabled-clicks">@_disabledClicks</span>
@@ -238,7 +238,7 @@
         <Body>Icon-only header.</Body>
     </BitAccordion>
     <BitAccordion Id="acd-group" AriaLabel="Frequently asked" Title="Named group">Named group.</BitAccordion>
-    <BitAccordion Id="acd-outer" Title="Outer" NoContentRegion DefaultIsExpanded>
+    <BitAccordion Id="acd-outer" Title="Outer" NoContentRegion DefaultExpanded>
         <BitAccordion Id="acd-inner" Title="Inner">
             <BitAccordion Id="acd-inner-inner" Title="Inner inner">Deepest.</BitAccordion>
         </BitAccordion>
@@ -324,7 +324,7 @@
     <BitAccordion Id="acd-vis-collapsed" Title="Collapsed" Visibility="BitVisibility.Collapsed">Collapsed.</BitAccordion>
     <span id="attrs-label">Attrs label</span>
     <BitAccordion Id="acd-attrs" Title="Attributes" data-e2e="custom" HtmlAttributes="@_attrs">Attributes.</BitAccordion>
-    <BitAccordion Id="acd-rr" Title="@_rrTitle" Size="_rrSize" IsExpanded="_rrExpanded" Disabled="_rrDisabled">Re-rendered.</BitAccordion>
+    <BitAccordion Id="acd-rr" Title="@_rrTitle" Size="_rrSize" Expanded="_rrExpanded" Disabled="_rrDisabled">Re-rendered.</BitAccordion>
     <button id="btn-rr" type="button" @onclick="Rerender">Change parameters</button>
     @if (_showUnmount)
     {

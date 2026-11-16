@@ -22,6 +22,9 @@ public sealed class BsqliteIndexedDbStorageProvider : IBsqliteStorageProvider
     /// <summary>The name applications use to select this backend.</summary>
     public const string ProviderName = "indexeddb";
 
+    /// <summary>The page size of every database this backend keeps; the VFS's blocks are this size.</summary>
+    internal const int PageSize = 4096;
+
     /// <summary>The VFS name <c>open_v2</c> must ask for after registration.</summary>
     public const string VfsName = "idb-batch-atomic";
 

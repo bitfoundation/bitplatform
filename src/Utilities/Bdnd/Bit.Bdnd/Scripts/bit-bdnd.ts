@@ -216,6 +216,11 @@ interface PointerSession {
     ended: boolean;
     /** .NET began the drag (true), refused it (false), or has not answered yet (null). */
     begun: boolean | null;
+    /**
+     * The answer of a call of this drag was lost (see enqueueDrag): the drag is over here, its calls still waiting in
+     * the queue are not made, and .NET is told to end it instead.
+     */
+    abandoned: boolean;
     timer: number;
     frame: number;
     interval: number;
@@ -287,6 +292,10 @@ const dropEffectStates = new WeakMap<Event, DropEffectState>(); // dragenter/dra
 const targets = new Set<DropTarget>();
 const targetsById = new Map<string, DropTarget>();
 const targetsByElement = new WeakMap<Element, DropTarget>();
+// The registration of each element registered as a source, or as a target. .NET registers an element again when it
+// lost the answer of a registration (see BdndJsRegistration): the one it never got replaced, not kept beside it.
+const sourceRegistrations = new WeakMap<Element, { dispose: () => void }>();
+const targetRegistrations = new WeakMap<Element, { dispose: () => void }>();
 let pointerSession: PointerSession | null = null;
 let emptyImage: HTMLImageElement | null = null;
 let session: Session | null = null;
@@ -431,6 +440,7 @@ function findHandle(node: Node | null, root: Element): Element | null {
 
 export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNetObject, options: DragSourceOptions | null) {
     if (!element) return null;
+    sourceRegistrations.get(element)?.dispose();
     const source: DragSource = { element, dotNetRef, options: {}, rect: null, pressTarget: null, keyboard: null };
 
     const configure = (o: DragSourceOptions | null) => {
@@ -557,7 +567,7 @@ export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNe
     element.addEventListener('pointermove', onPointerMove);
     element.addEventListener('touchmove', onTouchMove, { passive: false });
 
-    return {
+    const registration = {
         update: configure,
         getDragStartRect: () => source.rect,
         cancelDrag: () => {
@@ -570,6 +580,8 @@ export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNe
             keyboardNavigate(source, candidates || [], sourceTargets || [], currentId, currentEdge, command, waiting === true),
         adoptFocus: () => adoptFocus(source),
         dispose: () => {
+            if (sourceRegistrations.get(element) !== registration) return; // released already, or replaced
+            sourceRegistrations.delete(element);
             element.removeEventListener('dragstart', onDragStart);
             element.removeEventListener('dragend', onDragEnd);
             element.removeEventListener('keydown', onKeyDown);
@@ -580,6 +592,8 @@ export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNe
             // a pointer drag goes on: it reports to .NET through the source's object, which outlives the registration
         },
     };
+    sourceRegistrations.set(element, registration);
+    return registration;
 }
 
 function beginSession(source: DragSource, startEvent: DragEvent): void {
@@ -732,6 +746,7 @@ document.addEventListener('dragover', leaveTargetsNotUnder, true);
 
 export function registerDropTarget(element: HTMLElement | null, dotNetRef: DotNetObject, options: DropTargetOptions | null) {
     if (!element) return null;
+    targetRegistrations.get(element)?.dispose();
     const target: DropTarget = {
         element,
         dotNetRef,
@@ -847,7 +862,7 @@ export function registerDropTarget(element: HTMLElement | null, dotNetRef: DotNe
     targetsByElement.set(element, target);
     if (target.options.id) targetsById.set(target.options.id, target);
 
-    return {
+    const registration = {
         update: (o: DropTargetOptions | null) => {
             if (target.options.id && targetsById.get(target.options.id) === target) targetsById.delete(target.options.id);
             // .NET drops an edge the target no longer lists: report the next one afresh
@@ -856,6 +871,8 @@ export function registerDropTarget(element: HTMLElement | null, dotNetRef: DotNe
             if (target.options.id) targetsById.set(target.options.id, target);
         },
         dispose: () => {
+            if (targetRegistrations.get(element) !== registration) return; // released already, or replaced
+            targetRegistrations.delete(element);
             element.removeEventListener('dragenter', onDragEnter);
             element.removeEventListener('dragover', onDragOver);
             element.removeEventListener('dragleave', onDragLeave);
@@ -866,6 +883,8 @@ export function registerDropTarget(element: HTMLElement | null, dotNetRef: DotNe
             if (target.options.id && targetsById.get(target.options.id) === target) targetsById.delete(target.options.id);
         },
     };
+    targetRegistrations.set(element, registration);
+    return registration;
 }
 
 // ---- native drops ------------------------------------------------------------------------
@@ -1186,6 +1205,7 @@ function startPointerPress(source: DragSource, e: PointerEvent, onHandle: boolea
         dragging: false,
         ended: false,
         begun: null,
+        abandoned: false,
         timer: 0,
         frame: 0,
         interval: 0,
@@ -1377,11 +1397,14 @@ function activatePointerDrag(p: PointerSession): void {
     p.interval = window.setInterval(() => schedulePointerFrame(p), REHIT_INTERVAL);
 
     const startX = p.startX, startY = p.startY;
-    enqueueDrag(() => invokeForResult(source.dotNetRef, 'HandlePointerDragStart', startX, startY, rect).then((begun) => {
+    enqueueDrag(source.dotNetRef, () => invokeForResult(source.dotNetRef, 'HandlePointerDragStart', startX, startY, rect).then((begun) => {
+        // The drag may have ended here meanwhile - released before .NET answered: its drop, queued after this call,
+        // runs once .NET began the drag. Only a drag given up on takes no answer.
+        if (p.abandoned) return;
         p.begun = begun === true;
         if (!p.begun) endPointerSession(p, false); // refused (an ItemFactory answering null, say): no drag at all
         else schedulePointerFrame(p);
-    }));
+    }), () => abandonPointerSession(p));
     schedulePointerFrame(p);
 }
 
@@ -1446,7 +1469,8 @@ function updatePointerHover(p: PointerSession, dropping = false): void {
         const edge = closestEdge(target.element, p.x, p.y, target.options.edges);
         if (edge === target.edge) continue;
         target.edge = edge;
-        enqueueDrag(() => (p.begun === true ? invokeForResult(target.dotNetRef, 'HandleEdgeChanged', edge) : undefined));
+        enqueueDrag(p.source.dotNetRef, () => (reportsToDotNet(p) ? invokeForResult(target.dotNetRef, 'HandleEdgeChanged', edge) : undefined),
+            () => abandonPointerSession(p));
         changed = true;
     }
     // a report already waiting was for the targets (and edges) before this change: it keeps them, and this one gets
@@ -1456,7 +1480,23 @@ function updatePointerHover(p: PointerSession, dropping = false): void {
 }
 
 function enqueueHoverChange(p: PointerSession, target: DropTarget, over: boolean, types: string[]): void {
-    enqueueDrag(() => (p.begun === true ? invokeForResult(target.dotNetRef, 'HandleHoverChanged', over, types) : undefined));
+    enqueueDrag(p.source.dotNetRef, () => (reportsToDotNet(p) ? invokeForResult(target.dotNetRef, 'HandleHoverChanged', over, types) : undefined),
+        () => abandonPointerSession(p));
+}
+
+// Whether the calls of a pointer drag go to .NET: once it began the drag there, and until an answer of one is lost.
+function reportsToDotNet(p: PointerSession): boolean {
+    return p.begun === true && !p.abandoned;
+}
+
+// The answer of a call of the drag was lost: the drag ends here, without a drop, and in .NET - which may hold it, begun
+// with its answer lost. Its HandleDragEnd is made right after the lost call (see enqueueDrag): before any call of a
+// drag after it, which it must not end. A source not dragging in .NET ignores it.
+function abandonPointerSession(p: PointerSession): Promise<unknown> | undefined {
+    if (p.abandoned) return undefined;
+    p.abandoned = true;
+    endPointerSession(p, false);
+    return invokeForResult(p.source.dotNetRef, 'HandleDragEnd');
 }
 
 // OnHover moves are coalesced: one report per set of hovered targets waits in the queue at a time, carrying the
@@ -1471,11 +1511,11 @@ function reportPointerHover(p: PointerSession, targets: DropTarget[]): void {
     }
     const slot = { targets, x: p.x, y: p.y };
     p.hoverSlot = slot;
-    enqueueDrag(() => {
+    enqueueDrag(p.source.dotNetRef, () => {
         if (p.hoverSlot === slot) p.hoverSlot = null;
-        if (p.begun !== true) return undefined;
+        if (!reportsToDotNet(p)) return undefined;
         return Promise.all(slot.targets.map((t) => invokeForResult(t.dotNetRef, 'HandlePointerHover', slot.x, slot.y)));
-    });
+    }, () => abandonPointerSession(p));
 }
 
 // releaseUnseen: the drag's pointer was released where the page did not see it - another press tells - so no click
@@ -1534,15 +1574,20 @@ function endPointerSession(p: PointerSession, drop: boolean, releaseUnseen = fal
     if (!releaseUnseen) suppressClick(p);
     const chain = drop ? targetsAt(p.x, p.y) : [];
     const x = p.x, y = p.y;
-    enqueueDrag(async () => {
-        if (p.begun !== true) return;
+    enqueueDrag(p.source.dotNetRef, async () => {
+        if (!reportsToDotNet(p)) return;
         // the innermost target under the pointer whose provider owns the drag runs the drop (on itself and on the
         // targets of that provider around it); the targets of other providers answer false
+        // An answer that came after the queue gave it up as lost (see enqueueDrag) finds the drag abandoned: .NET was
+        // told to end it then, and the queue went on - maybe to a newer drag of the source, which this must not drop
+        // or end.
         for (const target of chain) {
             if ((await invokeForResult(target.dotNetRef, 'HandlePointerDrop', x, y)) === true) break;
+            if (!reportsToDotNet(p)) return;
         }
+        if (!reportsToDotNet(p)) return;
         await invokeForResult(p.source.dotNetRef, 'HandleDragEnd');
-    });
+    }, () => abandonPointerSession(p));
 }
 
 // Swallows the click of the drag's release: right after it, or - when the drag ended before the pointer was
@@ -1550,6 +1595,9 @@ function endPointerSession(p: PointerSession, drop: boolean, releaseUnseen = fal
 // and the button came up elsewhere) leaves nothing to swallow: the next press is a new one, whose click is the page's.
 function suppressClick(p: PointerSession): void {
     const stop = (e: Event) => {
+        // a click no pointer made - Enter or Space on a button, a form's implicit submit, element.click() - is not the
+        // release's: it clicks, and the release's is still to come
+        if ((e as MouseEvent).detail === 0) return;
         e.preventDefault();
         e.stopPropagation();
         done();
@@ -1865,13 +1913,15 @@ function startKeyboardSession(source: DragSource, activator: HTMLElement): void 
         s.observer = new MutationObserver(() => keepKeyboardFocus(s));
         s.observer.observe(document.body, { childList: true, subtree: true });
     }
+    const modal = activeModal(activator);
+    if (modal) ensureModalLiveRegion(modal);
     const rect = toRect(source.element);
     const label = labelOf(activator, source.element);
-    enqueueDrag(() => invokeForResult(source.dotNetRef, 'HandleKeyboardDragStart', rect, label).then((started) => {
+    enqueueDrag(source.dotNetRef, () => invokeForResult(source.dotNetRef, 'HandleKeyboardDragStart', rect, label).then((started) => {
         if (started === true) return;
         s.dotNetDone = true;
         endKeyboardSession(s);
-    }));
+    }), () => abandonKeyboardSession(s));
 }
 
 // The calls into .NET of every keyboard and pointer drag, chained: they reach .NET in the order things happened -
@@ -1879,9 +1929,57 @@ function startKeyboardSession(source: DragSource, activator: HTMLElement): void 
 // handled.
 let dragQueue: Promise<unknown> = Promise.resolve();
 
-function enqueueDrag(call: () => Promise<unknown> | undefined): void {
+// A call of the queue whose answer is slow to come is checked on: .NET is asked - through the drag's source, which .NET
+// keeps until the drag is over - whether it is still handling a call of the queue. A slow call (an async OnDrop saving
+// something, an OnHover loading what it expands) is waited for as long as .NET handles it: the queue keeps its order,
+// and the drag goes on. A call .NET is no longer handling had its answer lost - Blazor Server drops the answers sent
+// while its connection is down, and the calls made meanwhile - and so has one .NET does not answer about (the
+// connection is still down): either would otherwise hold up every drag after it until the page is reloaded.
+const DRAG_CALL_CHECK_MS = 5000;
+const DRAG_CALL_CHECK_TIMEOUT_MS = 5000;
+
+// source: the .NET object of the drag's source. onLost ends the drag the call belonged to - here, and in .NET with the
+// call it may return, which the queue makes right away: before the calls queued after the lost one.
+function enqueueDrag(source: DotNetObject, call: () => Promise<unknown> | undefined,
+    onLost?: () => Promise<unknown> | undefined): void {
     // a link that fails must not stop the ones after it
-    dragQueue = dragQueue.then(call).catch(() => undefined);
+    dragQueue = dragQueue.then(async () => {
+        if ((await awaitAnswer(source, call())) || !onLost) return;
+        await awaitAnswer(source, onLost());
+    }).catch(() => undefined);
+}
+
+// Waits for the answer of a call: true once it came (or there was no call), false once it is lost.
+async function awaitAnswer(source: DotNetObject, call: Promise<unknown> | undefined): Promise<boolean> {
+    if (!call) return true;
+    let answered = false;
+    const answer = call.then(() => (answered = true), () => (answered = true));
+    for (;;) {
+        await within(answer, DRAG_CALL_CHECK_MS, false);
+        if (answered) return true;
+        const handling = await isHandlingDragCall(source);
+        // .NET answers in order: an answer of the call still to come would have come before this one
+        if (answered) return true;
+        if (!handling) return false;
+    }
+}
+
+// Whether .NET is still handling a call of the queue. Not when it does not answer in time, or cannot (the source's
+// object is released: its drag is over).
+function isHandlingDragCall(source: DotNetObject): Promise<boolean> {
+    return within(invokeForResult(source, 'IsHandlingDragCall').then((handling) => handling === true),
+        DRAG_CALL_CHECK_TIMEOUT_MS, false);
+}
+
+// What a promise that does not reject resolves with, or fallback once ms have passed without it.
+function within<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+    return new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(fallback), ms);
+        promise.then((value) => {
+            clearTimeout(timer);
+            resolve(value);
+        });
+    });
 }
 
 function onKeyboardSessionKey(s: KeyboardSession, e: KeyboardEvent): void {
@@ -1916,7 +2014,7 @@ function onKeyboardSessionKey(s: KeyboardSession, e: KeyboardEvent): void {
 }
 
 function sendKeyboardCommand(s: KeyboardSession, command: string): void {
-    enqueueDrag(() => {
+    enqueueDrag(s.source.dotNetRef, () => {
         if (s.dotNetDone) return undefined;
         return invokeForResult(s.source.dotNetRef, 'HandleKeyboardCommand', command).then((dragging) => {
             if (dragging === true) {
@@ -1926,7 +2024,7 @@ function sendKeyboardCommand(s: KeyboardSession, command: string): void {
             s.dotNetDone = true;
             endKeyboardSession(s);
         });
-    });
+    }, () => abandonKeyboardSession(s));
     // A drop or a cancel ends the drag here at once: the keys pressed from now on are the page's again - another
     // pickup, say - even before .NET has handled this one. Ended after the call is queued, so the focus is watched
     // until .NET has handled it (and re-rendered what the drop changed).
@@ -1942,6 +2040,16 @@ function cancelKeyboardSession(s: KeyboardSession): void {
 
 const FOCUS_SETTLE_MS = 300;
 
+// The answer of a call of this drag was lost (see enqueueDrag): the keys are the page's again, its calls still waiting
+// in the queue are not made, and the drag is cancelled in .NET - which may hold it, begun with its answer lost - right
+// after the lost call. A source not in a keyboard drag in .NET ignores the cancel.
+function abandonKeyboardSession(s: KeyboardSession): Promise<unknown> | undefined {
+    if (s.dotNetDone) return undefined;
+    s.dotNetDone = true;
+    endKeyboardSession(s);
+    return invokeForResult(s.source.dotNetRef, 'HandleKeyboardCommand', 'cancel');
+}
+
 function endKeyboardSession(s: KeyboardSession): void {
     if (s.ended) return;
     s.ended = true;
@@ -1953,6 +2061,8 @@ function endKeyboardSession(s: KeyboardSession): void {
     document.removeEventListener('pointermove', s.onPointerMove, true);
     // the focus stays on (or goes back to) the item - also through the re-render its drop is about to cause
     keepKeyboardFocus(s);
+    // until .NET has handled the drag's calls - a slow OnDrop's too, whose re-render comes once it is done. The queue
+    // waits only as long as .NET is handling them (see enqueueDrag), so this ends.
     dragQueue.then(() => setTimeout(() => {
         if (s.observer) s.observer.disconnect();
         s.observer = null;
@@ -2083,9 +2193,10 @@ function keyboardNavigate(source: DragSource, candidates: KeyboardCandidate[], s
     if (waiting && !going) return { id: '', edge: null, before: null, rect: null, label: null, position: 0, count: 0, moved: false, pending: false };
     const element = s ? s.element : source.element;
     const all: { id: string; element: HTMLElement; parentId: string | null; edges: number }[] = [];
+    const modal = activeModal(s ? s.activator : source.element);
     for (const candidate of candidates) {
         const target = targetsById.get(candidate.id);
-        if (!target || !isReachable(target.element)) continue;
+        if (!target || !isReachable(target.element, modal)) continue;
         all.push({ id: candidate.id, element: target.element, parentId: candidate.parentId || null, edges: candidate.edges || 0 });
     }
     // The item's own targets: those inside the dragged item (an item onto itself, a node into its subtree), and those
@@ -2336,10 +2447,12 @@ function sideX(element: HTMLElement, edge: string | null, down: boolean): number
     return down !== rtl ? r.right : r.left;
 }
 
-// A target the keyboard can go to: in the document, shown (not display:none or hidden), and not inert (behind a
-// modal dialog, say).
-function isReachable(element: HTMLElement): boolean {
+// A target the keyboard can go to: in the document, shown (not display:none or hidden), and not inert - marked so, or
+// behind a modal dialog, which makes the rest of the page inert without marking it.
+// modal: the modal dialog on top (see activeModal), if any.
+function isReachable(element: HTMLElement, modal: HTMLElement | null): boolean {
     if (!element.isConnected || element.closest('[inert]')) return false;
+    if (modal && !modal.contains(element)) return false;
     const box = boxElement(element);
     if (box.getClientRects().length === 0) return false;
     return getComputedStyle(box).visibility !== 'hidden';
@@ -2382,6 +2495,79 @@ function ensureLiveRegion(): HTMLElement | null {
     return region;
 }
 
+// When each dialog was last opened as a modal, in the order seen: showModal sets its open attribute and puts it on top
+// of the top layer. Watched from the module's load; the dialogs opened before it are below the ones seen.
+const modalOpenedAt = new WeakMap<Element, number>();
+let modalOpenings = 0;
+const modalObserver = typeof MutationObserver !== 'undefined' && typeof document !== 'undefined'
+    ? new MutationObserver(recordModalOpenings)
+    : null;
+modalObserver?.observe(document.documentElement, { attributes: true, attributeFilter: ['open'], subtree: true });
+
+function recordModalOpenings(records: MutationRecord[]): void {
+    for (const record of records) {
+        const dialog = record.target as Element;
+        try {
+            // a dialog opened and closed again before the records came is not on top
+            if (dialog.localName === 'dialog' && dialog.matches(':modal')) modalOpenedAt.set(dialog, ++modalOpenings);
+        } catch {
+            /* an engine that does not know :modal */
+        }
+    }
+}
+
+// The modal dialog on top, or null: everything outside it is inert - out of reach of the keyboard and of screen
+// readers. When one dialog opened another, the one on top is the one opened last, wherever it is in the document: the
+// last one seen opening. Without one seen, showModal moved the focus into the top one: it is the innermost open modal
+// holding the element given (the focused one of a keyboard drag), else the focus - and without either in one, the last
+// in document order.
+function activeModal(within: Element | null): HTMLElement | null {
+    let modals: HTMLElement[];
+    try {
+        modals = Array.from(document.querySelectorAll<HTMLElement>('dialog:modal'));
+    } catch {
+        return null; // an engine that does not know :modal
+    }
+    if (modals.length === 0) return null;
+    // the openings still waiting to be reported
+    if (modalObserver) recordModalOpenings(modalObserver.takeRecords());
+    let latest: HTMLElement | null = null;
+    let latestAt = 0;
+    for (const modal of modals) {
+        const at = modalOpenedAt.get(modal) || 0;
+        if (at > latestAt) {
+            latest = modal;
+            latestAt = at;
+        }
+    }
+    if (latest) return latest;
+    for (const element of [within, document.activeElement]) {
+        if (!element || !element.isConnected) continue;
+        let holder: HTMLElement | null = null;
+        // in document order an inner dialog comes after the one around it
+        for (const modal of modals) if (modal.contains(element)) holder = modal;
+        if (holder) return holder;
+    }
+    return modals[modals.length - 1];
+}
+
+// The live region inside a modal dialog: the one in the body is inert while the dialog is open, and a screen reader
+// reads nothing written to it. Added when a keyboard drag starts in the dialog, since a live region only reads out
+// what changes once it is in the document.
+function ensureModalLiveRegion(modal: HTMLElement): HTMLElement {
+    let region = modal.querySelector<HTMLElement>(':scope > [data-bit-bdnd-live-region]');
+    if (!region) {
+        region = document.createElement('div');
+        region.setAttribute('data-bit-bdnd-live-region', '');
+        region.setAttribute('role', 'status');
+        region.setAttribute('aria-live', 'assertive');
+        region.setAttribute('aria-atomic', 'true');
+        hideVisually(region);
+        modal.appendChild(region);
+    }
+    return region;
+}
+
 // The instructions keyboard-draggable sources reference through aria-describedby: one hidden element per text.
 function ensureInstructions(id: string, text: string): void {
     if (!document.body) return;
@@ -2398,6 +2584,12 @@ function ensureInstructions(id: string, text: string): void {
 export function announce(text: string): void {
     const region = ensureLiveRegion();
     if (!region) return;
+    writeLiveRegion(region, text);
+    const modal = activeModal(keyboardSession ? keyboardSession.activator : null);
+    if (modal) writeLiveRegion(ensureModalLiveRegion(modal), text);
+}
+
+function writeLiveRegion(region: HTMLElement, text: string): void {
     // the same text twice in a row has to be a change too, or it is not read again
     region.textContent = region.textContent === text ? text + '\u00a0' : text;
 }

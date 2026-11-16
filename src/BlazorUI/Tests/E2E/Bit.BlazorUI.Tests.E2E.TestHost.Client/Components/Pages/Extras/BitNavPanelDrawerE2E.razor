@@ -6,7 +6,7 @@
 @* The panel as an app lays it out: a column beside the content on a wide screen, an off-canvas drawer opened from a
    menu button on a phone. The tests of this page run at both viewports. *@
 <div style="display:flex">
-    <BitNavPanel @ref="_panelRef" Id="npd-panel" Items="_items" @bind-IsOpen="_isOpen" @bind-IsToggled="_isToggled" ShowCloseButton
+    <BitNavPanel @ref="_panelRef" Id="npd-panel" Items="_items" @bind-IsOpen="_isOpen" @bind-Toggled="_isToggled" ShowCloseButton
                  ExpandOnHover="_expandOnHover" SearchDebounceTime="0" AriaLabel="Main menu" OnItemClick="@((BitNavItem i) => _clicks.Add(i.Text))" />
     <main style="flex-grow:1; padding:8px">
         <button id="btn-menu" @onclick="() => _isOpen = true">Menu</button>

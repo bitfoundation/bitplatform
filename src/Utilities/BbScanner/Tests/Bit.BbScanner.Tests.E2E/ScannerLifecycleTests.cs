@@ -19,12 +19,13 @@ public class ScannerLifecycleTests : BbScannerTest
         var status = await session.WaitForStatusAsync(["scanning"]);
         Assert.AreEqual("scanning", status);
 
-        // The clip cycles through four symbologies, so a scanner that is genuinely decoding
-        // frame after frame reports several different values without any interaction.
+        // The clip cycles through six symbols, so a scanner that is genuinely decoding frame after frame reports
+        // several different values without any interaction. The QR code comes first in the clip, but a scanner that
+        // starts after its frames have played meets it again only a loop later: it is waited for by its value, not
+        // assumed to be among the first few results.
         await session.WaitForResultsAsync(3);
+        await session.WaitForValueAsync(FakeCameraVideo.QrPayload);
 
-        var values = await session.ResultValuesAsync();
-        Assert.Contains(FakeCameraVideo.QrPayload, values);
         Assert.IsEmpty(session.PageErrors);
     }
 

@@ -91,10 +91,39 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
 
     private async Task<BsqliteSession> OpenCoreAsync(string databaseName, CancellationToken cancellationToken)
     {
-        var resolution = await _resolver
-            .ResolveAsync(databaseName, _selection, cancellationToken)
-            .ConfigureAwait(false);
+        // Where the database may move on open, opens run one tab at a time, from resolving where it lives to
+        // opening it: two tabs migrating at once would both copy it, one import landing over the other's, and a
+        // tab that resolved before another flipped the binding would open the copy that is about to be deleted.
+        // Every such open waits, not only one that finds a better backend to move to: while another tab moves a
+        // database that has lost its binding, the copy it is still checking already sits on the preferred
+        // backend, so a resolve that ran then would find the database there - nothing to move - and open the
+        // copy the other tab deletes if the check fails. Resolved only once the lock is held, so what it finds
+        // is what the last tab to hold it left. Which backend the binding names is all the transport factory can
+        // learn before then, and it decides by that whether there is anything to take turns with.
+        IAsyncDisposable? openLock = null;
+        if (_selection.MigrationMode is BsqliteStorageMigrationMode.AutomaticOnOpen
+            && _transports is IBsqliteOpenLock locks)
+        {
+            openLock = await locks
+                .AcquireOpenLockAsync(databaseName, ct => _resolver.BoundProviderAsync(databaseName, ct), cancellationToken)
+                .ConfigureAwait(false);
+        }
 
+        await using (openLock)
+        {
+            var resolution = await _resolver
+                .ResolveAsync(databaseName, _selection, cancellationToken)
+                .ConfigureAwait(false);
+
+            return await OpenResolvedAsync(databaseName, resolution, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task<BsqliteSession> OpenResolvedAsync(
+        string databaseName,
+        BsqliteStorageResolution resolution,
+        CancellationToken cancellationToken)
+    {
         if (_selection.MigrationMode is BsqliteStorageMigrationMode.AutomaticOnOpen
             && resolution.BetterProviderAvailable is { } better)
         {

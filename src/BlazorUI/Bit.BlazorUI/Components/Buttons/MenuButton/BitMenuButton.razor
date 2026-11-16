@@ -46,7 +46,7 @@
 <div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
-     data-bit-popup-style="@(GetPopupStyle(Toggle && Split && IsToggled, Styles?.Toggled, JoinStyles(Styles?.Root, IsOpen ? Styles?.Opened : null)))"
+     data-bit-popup-style="@(GetPopupStyle(Toggle && Split && Toggled, Styles?.Toggled, JoinStyles(Styles?.Root, IsOpen ? Styles?.Opened : null)))"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
     <button @ref="_operatorButtonRef"
@@ -70,7 +70,7 @@
             aria-expanded="@(Split ? null : IsOpen.ToString().ToLower())"
             style="@GetStyle(_selectedItem);@Styles?.OperatorButton"
             class="bit-mnb-opb @GetClass(_selectedItem) @Classes?.OperatorButton"
-            aria-pressed="@(Toggle && Split ? IsToggled.ToString().ToLower() : null)">
+            aria-pressed="@(Toggle && Split ? Toggled.ToString().ToLower() : null)">
         @if (Sticky)
         {
             var template = GetTemplate(_selectedItem);

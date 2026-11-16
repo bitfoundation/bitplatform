@@ -37,7 +37,7 @@ public class BitTooltipPrerenderTests
         var html = await Prerenderer.RenderAsync<BitTooltip>(new Dictionary<string, object?>
         {
             [nameof(BitTooltip.Text)] = "Tip",
-            [nameof(BitTooltip.DefaultIsShown)] = true,
+            [nameof(BitTooltip.DefaultShown)] = true,
             [nameof(BitTooltip.LazyRender)] = true,
         });
 

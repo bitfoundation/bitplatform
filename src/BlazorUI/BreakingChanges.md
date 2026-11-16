@@ -5,6 +5,76 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitAccordion`'s `IsExpanded` is `Expanded` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Checked`, `Shown`), and the accordion's expanded
+state was still spelled with one. The `[Parameter]` is renamed with its two-way binding and its uncontrolled default:
+
+| Before | After |
+|---|---|
+| `<BitAccordion IsExpanded="open" />` | `<BitAccordion Expanded="open" />` |
+| `<BitAccordion @bind-IsExpanded="open" />` | `<BitAccordion @bind-Expanded="open" />` |
+| `<BitAccordion IsExpandedChanged="OnExpandedChanged" />` | `<BitAccordion ExpandedChanged="OnExpandedChanged" />` |
+| `<BitAccordion DefaultIsExpanded />` | `<BitAccordion DefaultExpanded />` |
+
+What the accordion renders is unchanged (`bit-acd-exp`, `aria-expanded`), and so are its `Expand`, `Collapse` and
+`Toggle` methods and its `OnChange`, `OnExpand`, `OnCollapse` and `OnToggling` callbacks. The models of one item keep
+their `Is` (`BitAccordionListItem.IsExpanded`, `BitNavItem.IsExpanded` and the like): the flag of one item of a parent
+is spelled with one.
+
+### `BitTooltip`'s `IsShown` is `Shown` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Checked`, `Toggled`), and the tooltip's shown state
+was still spelled with one. The `[Parameter]` is renamed with its two-way binding and its uncontrolled default:
+
+| Before | After |
+|---|---|
+| `<BitTooltip IsShown="visible" />` | `<BitTooltip Shown="visible" />` |
+| `<BitTooltip @bind-IsShown="visible" />` | `<BitTooltip @bind-Shown="visible" />` |
+| `<BitTooltip IsShownChanged="OnShownChanged" />` | `<BitTooltip ShownChanged="OnShownChanged" />` |
+| `<BitTooltip DefaultIsShown="true" />` | `<BitTooltip DefaultShown="true" />` |
+
+What the tooltip renders is unchanged (`bit-ttp-vis`), and so are its `Show`, `Hide` and `Toggle` methods and its
+`OnShow`, `OnHide` and `OnToggle` events.
+
+### `IsToggled` is `Toggled` on `BitMenuButton` and `BitNavPanel` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Loading`, `Checked`), and the toggled state of the
+split menu button's header and of the nav panel's rail were still spelled with one. Each `[Parameter]` is renamed
+with its two-way binding, and on the menu button with its uncontrolled default and its `BitMenuButtonParams`
+counterpart:
+
+| Before | After |
+|---|---|
+| `<BitMenuButton Split Toggle IsToggled="bold" />` | `<BitMenuButton Split Toggle Toggled="bold" />` |
+| `<BitMenuButton Split Toggle @bind-IsToggled="bold" />` | `<BitMenuButton Split Toggle @bind-Toggled="bold" />` |
+| `<BitMenuButton Split Toggle DefaultIsToggled="true" />` | `<BitMenuButton Split Toggle DefaultToggled="true" />` |
+| `new BitMenuButtonParams { DefaultIsToggled = true }` | `new BitMenuButtonParams { DefaultToggled = true }` |
+| `<BitNavPanel @bind-IsToggled="rail" />` | `<BitNavPanel @bind-Toggled="rail" />` |
+| `<BitNavPanel IsToggledChanged="OnRailChanged" />` | `<BitNavPanel ToggledChanged="OnRailChanged" />` |
+
+What the two render is unchanged (`bit-mnb-tgl`, `bit-npn-tgl`, the `Toggled` class-style part). `OnToggleChange` and
+`ToggledWidth` keep their names, and so do the button group's items (`BitButtonGroupItem.IsToggled`,
+`BitButtonGroupOption.IsToggled`): the flag of one item of a parent is spelled with an `Is`.
+
+### `BitToggleButton`'s `IsChecked` is `Checked` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Vertical`, `Loading`), and the toggle button's
+checked state was the one flag of the buttons still spelled with one. The `[Parameter]`, its two-way binding and its
+uncontrolled default are renamed together, and so is `BitToggleButtonParams.DefaultIsChecked`:
+
+| Before | After |
+|---|---|
+| `<BitToggleButton IsChecked="on" />` | `<BitToggleButton Checked="on" />` |
+| `<BitToggleButton @bind-IsChecked="on" />` | `<BitToggleButton @bind-Checked="on" />` |
+| `<BitToggleButton IsCheckedChanged="OnCheckedChanged" />` | `<BitToggleButton CheckedChanged="OnCheckedChanged" />` |
+| `<BitToggleButton DefaultIsChecked="true" />` | `<BitToggleButton DefaultChecked="true" />` |
+| `new BitToggleButtonParams { DefaultIsChecked = true }` | `new BitToggleButtonParams { DefaultChecked = true }` |
+
+What the toggle button renders is unchanged (`bit-tgb-chk`, `aria-pressed`, `aria-checked`). The menu button's items
+keep their `Is` (`BitMenuButtonItem.IsChecked`, `BitMenuButtonOption.IsChecked`): the flag of one item of a parent is
+spelled with one.
+
 ### `IsLoading` is `Loading` on every component ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 The loading state had two names: `Loading` on `BitCard`, `BitCheckbox`, `BitDataGrid`, `BitBasicList`,

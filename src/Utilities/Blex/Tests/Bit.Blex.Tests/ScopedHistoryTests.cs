@@ -179,7 +179,7 @@ public class ScopedHistoryTests
         var profile = scope.ServiceProvider.GetRequiredService<ProfileStore>();
         var app = scope.ServiceProvider.GetRequiredService<BlexHistory>();
         var typed = scope.ServiceProvider.GetRequiredService<BlexHistory<CounterStore>>();
-        app.Start();   // <BlexProvider> does this after hydration; the typed one starts itself
+        app.Start();   // <BlexProvider> does this before storage is read; the typed one starts itself
 
         counter.Increment();
         profile.SignIn("ada");

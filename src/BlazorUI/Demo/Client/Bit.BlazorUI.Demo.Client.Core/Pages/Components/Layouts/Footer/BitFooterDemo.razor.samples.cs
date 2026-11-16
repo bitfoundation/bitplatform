@@ -260,7 +260,7 @@ private bool isFooterOverlapping;";
 
 <div class=""fixed-demo"">
     <div class=""scroll-demo-row"">
-        <BitToggleButton @bind-IsChecked=""isSelectionMode""
+        <BitToggleButton @bind-Checked=""isSelectionMode""
                          OnText=""Leave selection mode""
                          OffText=""Enter selection mode"" />
     </div>

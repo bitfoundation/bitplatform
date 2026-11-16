@@ -23,10 +23,18 @@ public static class RepoLayout
 
     public static string MauiSampleProject() => FindUpward(Path.Combine("Samples", "Maui", $"{MauiSampleName}.csproj"));
 
+    /// <summary>
+    /// Where the suite builds the MAUI sample, relative to its project: apart from the IDE's packaged build, whose output
+    /// breaks an unpackaged one built over it (see <see cref="MauiSampleApp"/>). ci.belemetry.e2e.yml builds it there too.
+    /// </summary>
+    public const string MauiSampleOutputFolder = "bin/e2e";
+
+    public const string MauiSampleIntermediateFolder = "obj/e2e";
+
     /// <summary>The MAUI sample's Windows executable, under its runtime identifier's folder, or null when it is not built.</summary>
     public static string? MauiSampleExecutable(string configuration)
     {
-        var output = Path.Combine(Path.GetDirectoryName(MauiSampleProject())!, "bin", configuration, MauiSampleApp.TargetFramework);
+        var output = Path.Combine(Path.GetDirectoryName(MauiSampleProject())!, MauiSampleOutputFolder, configuration, MauiSampleApp.TargetFramework);
         return Directory.Exists(output)
             ? Directory.EnumerateFiles(output, $"{MauiSampleName}.exe", SearchOption.AllDirectories).FirstOrDefault()
             : null;

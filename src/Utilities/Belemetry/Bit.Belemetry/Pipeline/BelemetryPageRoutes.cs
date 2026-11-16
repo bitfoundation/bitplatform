@@ -10,9 +10,16 @@ namespace Bit.Belemetry;
 /// </summary>
 internal static class BelemetryPageRoutes
 {
-    private static readonly Lazy<string[]> _discovered = new(() => Discover(Roots()));
+    private static readonly Lazy<(string[] Routes, bool Incomplete)> _discovered = new(() => (Discover(Roots(), out var incomplete), incomplete));
 
     private static readonly string? _componentsName = typeof(IComponent).Assembly.GetName().Name;
+
+    // .NET 11 marks Assembly.GetReferencedAssemblies as trim-unsafe: a trimmed app may list a reference whose assembly the
+    // trimmer removed. Every reference read here is only a name to try: one that cannot be loaded is skipped. An assembly
+    // whose references cannot be read at all still gives its own routes, but the libraries it references are not searched:
+    // the discovery is then incomplete (DiscoveryIncomplete), and the app is told to list Browser.PageRouteAssemblies.
+    private const string GetReferencedAssembliesJustification = "A reference the trimmer removed fails to load and is skipped: it routes no page anyone can visit. " +
+                                                                "References that cannot be read keep the assembly's own routes and mark the discovery incomplete, which is reported.";
 
     // Belemetry's own assembly uses components but routes none.
     private static readonly string? _ownName = typeof(BelemetryPageRoutes).Assembly.GetName().Name;
@@ -29,7 +36,13 @@ internal static class BelemetryPageRoutes
     ];
 
     /// <summary>The routes found from the entry assembly (<see cref="Roots"/>), once per process.</summary>
-    public static IReadOnlyList<string> Discovered => _discovered.Value;
+    public static IReadOnlyList<string> Discovered => _discovered.Value.Routes;
+
+    /// <summary>
+    /// Whether <see cref="Discovered"/> may lack routes: the references of an assembly it searched could not be read
+    /// (NativeAOT keeps no metadata of them), so the component libraries that assembly references were not searched.
+    /// </summary>
+    public static bool DiscoveryIncomplete => _discovered.Value.Incomplete;
 
     /// <summary>
     /// The entry assembly; where there is none (.NET for Android runs no managed <c>Main</c>), the loaded assemblies that
@@ -55,10 +68,21 @@ internal static class BelemetryPageRoutes
     /// components is not followed: an app's pages are in its UI libraries, and loading every library it references would
     /// cost a server start-up what it may never use. Framework assemblies are skipped, and so is one that cannot be loaded
     /// (not deployed, or lazy-loaded in WebAssembly and not loaded yet) or read. An assembly whose references cannot be
-    /// read (NativeAOT keeps no metadata of them) still gives its own routes.
+    /// read (NativeAOT keeps no metadata of them) still gives its own routes, but the libraries it references are not
+    /// searched and their routes may be missing.
     /// </summary>
-    public static string[] Discover(params Assembly[] roots)
+    public static string[] Discover(params Assembly[] roots) => Discover(roots, out _);
+
+    /// <inheritdoc cref="Discover(Assembly[])"/>
+    /// <param name="roots">The assemblies to start from.</param>
+    /// <param name="incomplete">
+    /// Whether the references of a searched assembly could not be read: the routes of the libraries it references may be
+    /// missing, and only <see cref="BelemetryBrowserOptions.PageRouteAssemblies"/> can name them.
+    /// </param>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = GetReferencedAssembliesJustification)]
+    public static string[] Discover(Assembly[] roots, out bool incomplete)
     {
+        incomplete = false;
         var routes = new List<string>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -78,6 +102,8 @@ internal static class BelemetryPageRoutes
             }
             catch (Exception)
             {
+                // Its own routes still count; the libraries it references are unknown.
+                incomplete = true;
                 AddRoutes(assembly, routes, seen);
                 continue;
             }
@@ -115,6 +141,7 @@ internal static class BelemetryPageRoutes
         return [.. routes];
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = GetReferencedAssembliesJustification)]
     private static bool? UsesComponents(Assembly assembly)
     {
         try

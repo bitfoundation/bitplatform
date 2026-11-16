@@ -29,10 +29,10 @@ uses them, and an app that downloads Bmage only when its editor opens. Uses the 
 dotnet build .\Bit.Bmage.Tests.E2E.csproj
 
 # Install the Playwright-managed Chromium (skip if you will use a system browser, see below).
-pwsh .\bin\Debug\net10.0\playwright.ps1 install chromium
+pwsh .\bin\Debug\net11.0\playwright.ps1 install chromium
 ```
 
-Without `pwsh`, `node .\bin\Debug\net10.0\.playwright\package\cli.js install chromium` does the same.
+Without `pwsh`, `node .\bin\Debug\net11.0\.playwright\package\cli.js install chromium` does the same.
 
 ## Running
 
@@ -47,7 +47,7 @@ dotnet test --project Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.
 dotnet test --project Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.E2E.csproj --filter "FullyQualifiedName~DemoRegressionTests"
 
 # Or run the built test executable directly.
-.\Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\bin\Debug\net10.0\Bit.Bmage.Tests.E2E.exe --filter "FullyQualifiedName~EditorTests"
+.\Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\bin\Debug\net11.0\Bit.Bmage.Tests.E2E.exe --filter "FullyQualifiedName~EditorTests"
 ```
 
 To drive a demo that is already running - `dotnet run` in another terminal, a published (AOT) build, the live site -
@@ -71,6 +71,7 @@ ahead of time) is several times faster.
 | `BMAGE_E2E_CONFIGURATION` | Build configuration of the demo host the suite boots; defaults to the test assembly's. |
 | `BMAGE_E2E_SKIP_BUILD` | `1`: the demo host and the hosting samples were built, and the lazy loading sample published, beforehand (as CI does); do not do it again. |
 | `BMAGE_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of publishing and booting one. |
+| `BMAGE_E2E_SAMPLE_SERVER_URL`, `BMAGE_E2E_SAMPLE_WASM_URL`, `BMAGE_E2E_SAMPLE_AUTO_URL` | Drive an already running hosting sample instead of building and booting one on a free port. |
 | `BMAGE_E2E_LAZY_AOT` | `1`: the lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy marks out: `LazyLoadingTests` then checks that Bmage comes with the app and nothing is downloaded on demand. The suite does not publish the sample itself then. |
 | `BMAGE_E2E_CHANNEL` | Launch an installed browser channel instead - e.g. `chrome`, `msedge`. When unset the suite tries Playwright's bundled Chromium, then Chrome, then Edge. |
 | `BMAGE_E2E_EXECUTABLE` | Full path to a chromium-family executable. |
@@ -116,7 +117,7 @@ dotnet publish src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c R
 dotnet publish src/Utilities/Bmage/Samples/Lazy/Bit.Bmage.Samples.Lazy/Bit.Bmage.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
 dotnet build src/Utilities/Bmage/Samples/Server/Bit.Bmage.Samples.Server.csproj -c Release   # and Wasm, Auto
-pwsh src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+pwsh src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.Bmage.Demo.Server.dll --urls http://127.0.0.1:5000 &)
 cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && BMAGE_E2E_HOST_URL=http://127.0.0.1:5000 BMAGE_E2E_SKIP_BUILD=1 dotnet test -c Release --no-build --report-trx --report-trx-filename bmage-e2e.trx
 ```

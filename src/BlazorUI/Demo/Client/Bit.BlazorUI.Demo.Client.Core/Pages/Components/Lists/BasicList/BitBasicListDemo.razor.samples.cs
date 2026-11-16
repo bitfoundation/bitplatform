@@ -95,7 +95,7 @@ public class Person
 }";
 
     private readonly string example4RazorCode = @"
-<BitToggleButton @bind-IsChecked=""isLoading"" Text=""@(isLoading ? ""Stop loading"" : ""Start loading"")"" />
+<BitToggleButton @bind-Checked=""isLoading"" Text=""@(isLoading ? ""Stop loading"" : ""Start loading"")"" />
 <br /><br />
 <BitStack Horizontal Wrap>
     <BitBasicList Items=""fewPeople"" Loading=""isLoading"" LoadingLabel=""Fetching people...""

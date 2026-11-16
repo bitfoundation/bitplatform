@@ -1,6 +1,6 @@
 ﻿import { describe, expect, it } from 'vitest';
 import { resolveConfig } from '../../Bit.Belemetry/Scripts/config.ts';
-import { applyPrivacy, isVersionKey, luhn, redactQuery, redactUrl, scrub, scrubUrl } from '../../Bit.Belemetry/Scripts/privacy.ts';
+import { applyPrivacy, cleanBody, isVersionKey,luhn, redactQuery, redactUrl, scrub, scrubUrl } from '../../Bit.Belemetry/Scripts/privacy.ts';
 import { log, span } from './helpers.js';
 
 const privacy = (overrides = {}) => ({ ...resolveConfig().privacy, ...overrides });
@@ -61,6 +61,13 @@ describe('scrub', () => {
         expect(scrub('short 4242424242')).toBe('short 4242424242');
     });
 
+    it('keeps an all-zero id, a repeated digit and a leading 0, which pass the checksum but are no card (as the C# side does)', () => {
+        expect(luhn('0000000000000000') && luhn('8888888888888888') && luhn('0412345678901233')).toBe(true);
+        expect(scrub('ParentId 0000000000000000')).toBe('ParentId 0000000000000000');
+        expect(scrub('8888888888888888 0412345678901233')).toBe('8888888888888888 0412345678901233');
+        expect(scrub('4111111111111111')).toBe('[card]');
+    });
+
     it('replaces IPv4 addresses', () => {
         expect(scrub('from 192.168.0.12:443')).toBe('from [ip]:443');
         expect(scrub('not 999.1.1.1')).toBe('not 999.1.1.1');
@@ -94,6 +101,58 @@ describe('applyPrivacy', () => {
         applyPrivacy(record, privacy());
         expect(record.status.message).toBe('Bearer [token]');
         expect(record.events[0].attributes['url.full']).toBe('https://x.test/?secret=REDACTED');
+    });
+
+    it('redacts the URLs in a log body and the QueryString and Uri values, as the C# side does', () => {
+        const record = log({
+            body: 'Request starting HTTP/1.1 GET https://x.test/orders?token=abc&page=2 - - -',
+            attributes: { QueryString: '?token=abc&page=2', Uri: 'https://api.test/v1?api_key=k&q=1', Path: '/orders' },
+        });
+        applyPrivacy(record, privacy());
+        expect(record.body).toBe('Request starting HTTP/1.1 GET https://x.test/orders?token=REDACTED&page=2 - - -');
+        expect(record.attributes).toEqual({ QueryString: '?token=REDACTED&page=2', Uri: 'https://api.test/v1?api_key=REDACTED&q=1', Path: '/orders' });
+
+        const stripped = log({ body: 'GET https://x.test/a?token=abc', attributes: { QueryString: '?token=abc' } });
+        applyPrivacy(stripped, privacy({ stripQueryString: true }));
+        expect(stripped.body).toBe('GET https://x.test/a');
+        expect(stripped.attributes).toEqual({});
+    });
+
+    it('cleans a log body in one pass: a URL keeps its host, as a URL attribute does, and the text around it is scrubbed', () => {
+        const record = log({ body: 'GET http://10.0.0.5:5000/api/10.1.2.3?token=x&email=a@b.io from 10.0.0.9, then http://10.0.0.6/health' });
+        applyPrivacy(record, privacy());
+        expect(record.body).toBe('GET http://10.0.0.5:5000/api/[ip]?token=REDACTED&email=REDACTED from [ip], then http://10.0.0.6/health');
+    });
+
+    it('cleans each URL of a log body: comma separated, with apostrophes, or relative (the C# cases)', () => {
+        const body = (text, options) => cleanBody(text, privacy(options));
+
+        // A comma before another URL ends the first: the second's query is redacted on its own.
+        expect(body('GET https://a.test/x?page=1,https://b.test/y?token=2')).toBe('GET https://a.test/x?page=1,https://b.test/y?token=REDACTED');
+        expect(body('ids https://a.test/x?ids=1,2&token=3')).toBe('ids https://a.test/x?ids=1,2&token=REDACTED');
+
+        // An apostrophe inside a URL does not end it; one that opened it does.
+        expect(body("Fetched https://x.test/books/O'Reilly?token=abc&page=2")).toBe("Fetched https://x.test/books/O'Reilly?token=REDACTED&page=2");
+        expect(body("Fetched https://x.test/books/O'Reilly?token=abc", { stripQueryString: true })).toBe("Fetched https://x.test/books/O'Reilly");
+        expect(body("url 'https://x.test/a?token=1' and 'https://x.test/b?code=2'")).toBe("url 'https://x.test/a?token=REDACTED' and 'https://x.test/b?code=REDACTED'");
+
+        // A relative path with a query, kept relative.
+        expect(body('Redirecting to /callback?code=abc&state=1')).toBe('Redirecting to /callback?code=REDACTED&state=1');
+        expect(body('GET https://x.test/a?token=1 then /b?api_key=k&page=2 path=/c?secret=s'))
+            .toBe('GET https://x.test/a?token=REDACTED then /b?api_key=REDACTED&page=2 path=/c?secret=REDACTED');
+
+        // No path: a question mark alone, or a slash inside a word.
+        expect(body('Are you sure? and/or?x=1 1/2?')).toBe('Are you sure? and/or?x=1 1/2?');
+    });
+
+    it('redacts http.target as a URL, kept relative (as the C# side does)', () => {
+        const record = log({ attributes: { 'http.target': '/orders?token=abc&page=2#access_token=z' } });
+        applyPrivacy(record, privacy({ stripFragment: false }));
+        expect(record.attributes['http.target']).toBe('/orders?token=REDACTED&page=2#access_token=REDACTED');
+
+        const stripped = log({ attributes: { 'http.target': '/orders?token=abc#f' } });
+        applyPrivacy(stripped, privacy({ stripQueryString: true }));
+        expect(stripped.attributes['http.target']).toBe('/orders');
     });
 
     it('does not scrub patterns when disabled', () => {

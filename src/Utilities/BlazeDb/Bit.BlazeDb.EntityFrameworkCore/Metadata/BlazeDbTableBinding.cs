@@ -1,5 +1,7 @@
 ﻿using Bit.BlazeDb.EntityFrameworkCore.Query;
+using Bit.BlazeDb.EntityFrameworkCore.Storage;
 using Bit.BlazeDb.Querying;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Bit.BlazeDb.EntityFrameworkCore.Metadata;
 
@@ -42,6 +44,19 @@ internal sealed class BlazeDbTableBinding<TKey, TRow> : IBlazeDbTableBinding
     public IQueryable AsQueryable(IEnumerable<object> rows) => rows.Cast<TRow>().AsQueryable();
 
     public void Insert(object row) => _table.Insert((TRow)row);
+
+    public object? HeldRow(object row, out long seq) =>
+        _table.TryGetEntry(_table.Descriptor.KeySelector((TRow)row), out var held, out seq) ? held : null;
+
+    public void ObserveConcurrencyTokens(IProperty[] tokens)
+    {
+        if (tokens.Length > 0)
+        {
+            // False when another model's binding got there first; its record is then read through the names
+            // of the tokens both models share (see BlazeDbConcurrencyTokens.Check).
+            _table.ObserveRowsSet((row, seq) => BlazeDbConcurrencyTokens.Observe(row, tokens, seq));
+        }
+    }
 
     public void UpdateInPlace(object row, object previousValues) =>
         _table.UpdateInPlace((TRow)row, (TRow)previousValues);

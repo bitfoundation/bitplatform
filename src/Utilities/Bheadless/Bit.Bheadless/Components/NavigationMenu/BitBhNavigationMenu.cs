@@ -49,7 +49,7 @@ public class BitBhNavigationMenu : BitBhComponentBase, IDisposable
     private DateTime _hoverOpenedAt;
     private string? _focusOnOpen;
     private string? _listId;
-    private string? _viewportId;
+    private BitBhNavigationMenuViewport? _viewport;
     private BitBhDelayedAction? _openTimer;
     private BitBhDelayedAction? _closeTimer;
 
@@ -145,7 +145,7 @@ public class BitBhNavigationMenu : BitBhComponentBase, IDisposable
             Loop = Loop,
             IsNested = ParentMenu is not null,
             ListId = _listId,
-            ViewportId = _viewportId,
+            ViewportId = _viewport?.ViewportId,
         };
 
         builder.OpenComponent<CascadingValue<BitBhNavigationMenuContext>>(0);
@@ -204,12 +204,15 @@ public class BitBhNavigationMenu : BitBhComponentBase, IDisposable
         StateHasChanged();
     }
 
-    internal void RegisterViewport(string? id)
+    internal void RegisterViewport(BitBhNavigationMenuViewport? viewport)
     {
-        if (_viewportId == id) return;
-        _viewportId = id;
+        if (_viewport == viewport) return;
+        _viewport = viewport;
         StateHasChanged();
     }
+
+    /// <summary>The <see cref="BitBhNavigationMenuViewport"/> the contents are shown in, when there is one.</summary>
+    internal BitBhNavigationMenuViewport? Viewport => _viewport;
 
     /// <summary>The values of the items, in document order.</summary>
     internal IReadOnlyList<string> ItemValues => _items.Items.Select(i => i.EffectiveValue).ToList();

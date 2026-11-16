@@ -208,7 +208,7 @@
         </div><br />
         <div class="example-box">
             <BitToggle Label="Read-only toggle" ReadOnly @bind-Value="readOnlyValue" Text="Locked" />
-            <BitToggleButton @bind-IsChecked="readOnlyValue" Text="Change it from here" />
+            <BitToggleButton @bind-Checked="readOnlyValue" Text="Change it from here" />
         </div>
         <br /><br /><br />
         <div>
@@ -236,13 +236,13 @@
         <div class="example-box">
             <div>One-way:</div>
             <BitToggle Label="One-way" Value="oneWayValue" />
-            <BitToggleButton @bind-IsChecked="oneWayValue" OnText="On" OffText="Off" />
+            <BitToggleButton @bind-Checked="oneWayValue" OnText="On" OffText="Off" />
         </div>
         <br /><br />
         <div class="example-box">
             <div>Two-way:</div>
             <BitToggle Label="Two-way" @bind-Value="twoWayValue" />
-            <BitToggleButton @bind-IsChecked="twoWayValue" OnText="On" OffText="Off" />
+            <BitToggleButton @bind-Checked="twoWayValue" OnText="On" OffText="Off" />
         </div>
         <br /><br /><br />
         <div>

@@ -46,6 +46,9 @@ internal sealed class FakeInterop : IBonboardingInterop
 
     public List<BonboardingStepActivation> Activations { get; } = [];
 
+    /// <summary>The token each activation arrived with: the real interop refuses a cancelled one without calling the browser.</summary>
+    public List<CancellationToken> ActivationTokens { get; } = [];
+
     public int DeactivateCount { get; private set; }
 
     public int DetachCount { get; private set; }
@@ -94,6 +97,7 @@ internal sealed class FakeInterop : IBonboardingInterop
     {
         Throw();
         Activations.Add(activation);
+        ActivationTokens.Add(cancellationToken);
 
         var invalid = new[] { activation.Target }.Concat(activation.AdditionalTargets ?? [])
             .Select(descriptor => descriptor.Selector)
@@ -115,14 +119,24 @@ internal sealed class FakeInterop : IBonboardingInterop
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask<BonboardingStepGeometry> MeasureAsync(string sessionId, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Runs after a measurement has been taken but before it is returned, the window in which the browser can report
+    /// something else (an advance, a click) while the session waits for the reply.
+    /// </summary>
+    public Func<Task>? DuringMeasure { get; set; }
+
+    public async ValueTask<BonboardingStepGeometry> MeasureAsync(string sessionId, CancellationToken cancellationToken = default)
     {
         Throw();
         MeasureCount++;
         var activation = LastActivation;
-        return ValueTask.FromResult(activation is null
+        var reply = activation is null
             ? BonboardingStepGeometry.Missing
-            : Measure(activation.Target, activation.AdditionalTargets));
+            : Measure(activation.Target, activation.AdditionalTargets);
+
+        if (DuringMeasure is { } during) await during();
+
+        return reply;
     }
 
     public ValueTask SetPopoverAsync(string sessionId, ElementReference? popover, bool trapFocus, CancellationToken cancellationToken = default)

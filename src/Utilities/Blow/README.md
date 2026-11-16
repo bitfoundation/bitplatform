@@ -1504,7 +1504,9 @@ Demo: `/examples/overlay-layout`.
 | `OnError` | `BlowError` | Something is wrong with the graph. |
 
 A handled `OnNodeContextMenu`, `OnSelectionContextMenu` or `OnEdgeContextMenu` suppresses the browser's own menu;
-`OnPaneContextMenu` does not, so the browser's menu still opens over the empty pane.
+`OnPaneContextMenu` does not, so the browser's menu still opens over the empty pane - unless the right button pans
+(`PanButtons` lists 2), when neither the browser's menu nor `OnPaneContextMenu` comes up on the pane, as in React Flow:
+both would otherwise open at the end of every right-button pan.
 
 Demo: `/examples/event-reference` logs every one of them.
 
@@ -1526,15 +1528,20 @@ coordinates, and `FlowToScreenPosition` goes back. `BlowViewport.ScreenToFlow` a
 relative to the pane. `PaneSize` is the pane's measured size in screen pixels, and `GetViewport()` and `GetZoom()`
 read the current transform.
 
+The canvas learns where the pane is on screen from the browser, which reports it once the page stops scrolling rather
+than on every frame of a scroll. Right after a scroll - a drop at the end of a drag that scrolled the page, say - the
+two conversions can still see the pane where it was; `ScreenToFlowPositionAsync` and `FlowToScreenPositionAsync` read
+it again first when the page has scrolled since.
+
 ```razor
 <div @ondragover:preventDefault="true" @ondrop="OnDrop" style="height: 100%">
     <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" />
 </div>
 
 @code {
-    private void OnDrop(DragEventArgs e)
+    private async Task OnDrop(DragEventArgs e)
     {
-        var at = _flow!.ScreenToFlowPosition(e.ClientX, e.ClientY);
+        var at = await _flow!.ScreenToFlowPositionAsync(e.ClientX, e.ClientY);
         _nodes.Add(new BlowNode { Id = Guid.NewGuid().ToString("N"), Label = "New", Position = new(at.X - 75, at.Y - 20) });
     }
 }

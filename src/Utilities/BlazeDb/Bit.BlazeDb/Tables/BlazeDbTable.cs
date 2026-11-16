@@ -140,7 +140,53 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
 
     public TRow? Get(TKey key) => _rows.TryGetValue(key, out var entry) ? entry.Row : default;
 
+    /// <summary>
+    /// The row held under <paramref name="key"/> together with the sequence number of the write that
+    /// put it there. Every write - through any API - gives the row a new number, and a rollback puts
+    /// the old one back, so an unchanged number means the row has not been written since.
+    /// </summary>
+    internal bool TryGetEntry(TKey key, out TRow row, out long seq)
+    {
+        if (_rows.TryGetValue(key, out var entry))
+        {
+            row = entry.Row;
+            seq = entry.Seq;
+            return true;
+        }
+        row = default!;
+        seq = 0;
+        return false;
+    }
+
     public bool Contains(TKey key) => _rows.ContainsKey(key);
+
+    private Action<TRow, long>? _rowSet;
+
+    /// <summary>
+    /// Has <paramref name="observer"/> told of every row the table holds now, and from then on of every row it
+    /// comes to hold - written through any API, put back by a rollback, replayed or reloaded from storage - with
+    /// the sequence number it is held under, at the moment it is set and so with exactly the values written.
+    /// The EF Core provider keeps the concurrency tokens a row was committed with this way, before any context
+    /// can change the live row in memory. One observer per table: false when another was installed first. It
+    /// runs under the write lock, in the middle of a write, and must not throw.
+    /// </summary>
+    internal bool ObserveRowsSet(Action<TRow, long> observer)
+    {
+        ArgumentNullException.ThrowIfNull(observer);
+        lock (_db.SyncRoot)
+        {
+            if (_rowSet is not null)
+            {
+                return false;
+            }
+            foreach (var entry in _rows.Values)
+            {
+                observer(entry.Row, entry.Seq);
+            }
+            _rowSet = observer;
+            return true;
+        }
+    }
 
     /// <summary>
     /// Lazily enumerates all rows. Like any dictionary enumeration, mutating the table while
@@ -774,6 +820,7 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
             throw;
         }
         Interlocked.Increment(ref _version);
+        _rowSet?.Invoke(row, seq);
     }
 
     private void RemoveEntry(TKey key)

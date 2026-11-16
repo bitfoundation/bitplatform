@@ -15,56 +15,56 @@ public partial class BitTooltipDemo
     <BitButton Variant=""BitVariant.Outline"" Disabled>Disabled anchor</BitButton>
 </BitTooltip>
 
-<BitTooltip Text=""Shown to begin with"" DefaultIsShown=""true"">
-    <BitButton Variant=""BitVariant.Outline"">DefaultIsShown</BitButton>
+<BitTooltip Text=""Shown to begin with"" DefaultShown=""true"">
+    <BitButton Variant=""BitVariant.Outline"">DefaultShown</BitButton>
 </BitTooltip>";
 
     private readonly string example2RazorCode = @"
-<BitTooltip DefaultIsShown=""true"" Text=""Top / Start""
+<BitTooltip DefaultShown=""true"" Text=""Top / Start""
             Placement=""BitPlacement.Top"" Alignment=""BitPlacement.Start"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">Top / Start</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Text=""Top""
+<BitTooltip DefaultShown=""true"" Text=""Top""
             Placement=""BitPlacement.Top"" Alignment=""BitPlacement.Center"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">Top</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Text=""Top / End""
+<BitTooltip DefaultShown=""true"" Text=""Top / End""
             Placement=""BitPlacement.Top"" Alignment=""BitPlacement.End"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">Top / End</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Text=""End / Start""
+<BitTooltip DefaultShown=""true"" Text=""End / Start""
             Placement=""BitPlacement.End"" Alignment=""BitPlacement.Start"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">End / Start</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Text=""End""
+<BitTooltip DefaultShown=""true"" Text=""End""
             Placement=""BitPlacement.End"" Alignment=""BitPlacement.Center"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">End</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Text=""End / End""
+<BitTooltip DefaultShown=""true"" Text=""End / End""
             Placement=""BitPlacement.End"" Alignment=""BitPlacement.End"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">End / End</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Text=""Bottom / Start""
+<BitTooltip DefaultShown=""true"" Text=""Bottom / Start""
             Placement=""BitPlacement.Bottom"" Alignment=""BitPlacement.Start"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">Bottom / Start</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Text=""Bottom""
+<BitTooltip DefaultShown=""true"" Text=""Bottom""
             Placement=""BitPlacement.Bottom"" Alignment=""BitPlacement.Center"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">Bottom</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Text=""Bottom / End""
+<BitTooltip DefaultShown=""true"" Text=""Bottom / End""
             Placement=""BitPlacement.Bottom"" Alignment=""BitPlacement.End"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">Bottom / End</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Text=""Start / Start""
+<BitTooltip DefaultShown=""true"" Text=""Start / Start""
             Placement=""BitPlacement.Start"" Alignment=""BitPlacement.Start"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">Start / Start</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Text=""Start""
+<BitTooltip DefaultShown=""true"" Text=""Start""
             Placement=""BitPlacement.Start"" Alignment=""BitPlacement.Center"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">Start</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Text=""Start / End""
+<BitTooltip DefaultShown=""true"" Text=""Start / End""
             Placement=""BitPlacement.Start"" Alignment=""BitPlacement.End"">
     <BitButton Variant=""BitVariant.Outline"" Style=""width: 100%;"">Start / End</BitButton>
 </BitTooltip>";
@@ -123,29 +123,29 @@ public partial class BitTooltipDemo
 </BitTooltipGroup>";
 
     private readonly string example5RazorCode = @"
-<BitTooltip DefaultIsShown=""true"" Text=""Default"">
+<BitTooltip DefaultShown=""true"" Text=""Default"">
     <BitButton Variant=""BitVariant.Outline"">Default</BitButton>
 </BitTooltip>
 
-<BitTooltip DefaultIsShown=""true"" Text=""No arrow"" HideArrow>
+<BitTooltip DefaultShown=""true"" Text=""No arrow"" HideArrow>
     <BitButton Variant=""BitVariant.Outline"">HideArrow</BitButton>
 </BitTooltip>
 
-<BitTooltip DefaultIsShown=""true"" Text=""A bigger arrow"" ArrowSize=""18"">
+<BitTooltip DefaultShown=""true"" Text=""A bigger arrow"" ArrowSize=""18"">
     <BitButton Variant=""BitVariant.Outline"">ArrowSize</BitButton>
 </BitTooltip>
 
-<BitTooltip DefaultIsShown=""true"" Text=""Held further off"" Offset=""24"">
+<BitTooltip DefaultShown=""true"" Text=""Held further off"" Offset=""24"">
     <BitButton Variant=""BitVariant.Outline"">Offset</BitButton>
 </BitTooltip>
 
 
-<BitTooltip DefaultIsShown=""true"" Placement=""BitPlacement.Bottom"" MaxWidth=""10rem""
+<BitTooltip DefaultShown=""true"" Placement=""BitPlacement.Bottom"" MaxWidth=""10rem""
             Text=""A narrow tooltip wraps its text sooner."">
     <BitButton Variant=""BitVariant.Outline"">MaxWidth=""10rem""</BitButton>
 </BitTooltip>
 
-<BitTooltip DefaultIsShown=""true"" Placement=""BitPlacement.Bottom""
+<BitTooltip DefaultShown=""true"" Placement=""BitPlacement.Bottom""
             Text=""The default cap keeps a long line from running on across the whole screen."">
     <BitButton Variant=""BitVariant.Outline"">Default max width</BitButton>
 </BitTooltip>
@@ -243,14 +243,14 @@ public partial class BitTooltipDemo
 </BitTooltip>";
 
     private readonly string example9RazorCode = @"
-<BitToggle @bind-Value=""isShown"" Label=""IsShown"" />
+<BitToggle @bind-Value=""isShown"" Label=""Shown"" />
 
 <BitButton Variant=""BitVariant.Outline"" OnClick=""@(() => tooltipRef?.Show())"">Show</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""@(() => tooltipRef?.Hide())"">Hide</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""@(() => tooltipRef?.Toggle())"">Toggle</BitButton>
 
-<BitTooltip @bind-IsShown=""isShown"" Text=""Bound to the toggle"" Placement=""BitPlacement.Bottom"">
-    <BitButton Variant=""BitVariant.Outline"">@bind-IsShown</BitButton>
+<BitTooltip @bind-Shown=""isShown"" Text=""Bound to the toggle"" Placement=""BitPlacement.Bottom"">
+    <BitButton Variant=""BitVariant.Outline"">@bind-Shown</BitButton>
 </BitTooltip>
 
 <BitTooltip @ref=""tooltipRef"" Text=""Driven from the buttons above"" Placement=""BitPlacement.Bottom"">
@@ -302,68 +302,68 @@ private readonly BitTooltipParams[] tooltipParams =
 ];";
 
     private readonly string example12RazorCode = @"
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.Primary"" Text=""Primary"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.Primary"" Text=""Primary"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Primary</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.Secondary"" Text=""Secondary"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.Secondary"" Text=""Secondary"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Secondary</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.Tertiary"" Text=""Tertiary"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.Tertiary"" Text=""Tertiary"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Tertiary</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.Info"" Text=""Info"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.Info"" Text=""Info"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Info</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.Success"" Text=""Success"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.Success"" Text=""Success"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Success</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.Warning"" Text=""Warning"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.Warning"" Text=""Warning"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Warning</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.SevereWarning"" Text=""SevereWarning"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.SevereWarning"" Text=""SevereWarning"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">SevereWarning</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.Error"" Text=""Error"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.Error"" Text=""Error"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Error</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.PrimaryBackground"" Text=""PrimaryBackground"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.PrimaryBackground"" Text=""PrimaryBackground"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">PrimaryBackground</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.SecondaryBackground"" Text=""SecondaryBackground"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.SecondaryBackground"" Text=""SecondaryBackground"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">SecondaryBackground</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.TertiaryBackground"" Text=""TertiaryBackground"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.TertiaryBackground"" Text=""TertiaryBackground"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">TertiaryBackground</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.PrimaryForeground"" Text=""PrimaryForeground"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.PrimaryForeground"" Text=""PrimaryForeground"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">PrimaryForeground</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.SecondaryForeground"" Text=""SecondaryForeground"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.SecondaryForeground"" Text=""SecondaryForeground"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">SecondaryForeground</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.TertiaryForeground"" Text=""TertiaryForeground"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.TertiaryForeground"" Text=""TertiaryForeground"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">TertiaryForeground</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.PrimaryBorder"" Text=""PrimaryBorder"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.PrimaryBorder"" Text=""PrimaryBorder"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">PrimaryBorder</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.SecondaryBorder"" Text=""SecondaryBorder"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.SecondaryBorder"" Text=""SecondaryBorder"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">SecondaryBorder</BitButton>
 </BitTooltip>
-<BitTooltip DefaultIsShown=""true"" Color=""BitColor.TertiaryBorder"" Text=""TertiaryBorder"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Color=""BitColor.TertiaryBorder"" Text=""TertiaryBorder"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">TertiaryBorder</BitButton>
 </BitTooltip>";
 
     private readonly string example13RazorCode = @"
-<BitTooltip DefaultIsShown=""true"" Size=""BitSize.Small"" Text=""Small"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Size=""BitSize.Small"" Text=""Small"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Small</BitButton>
 </BitTooltip>
 
-<BitTooltip DefaultIsShown=""true"" Size=""BitSize.Medium"" Text=""Medium"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Size=""BitSize.Medium"" Text=""Medium"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Medium</BitButton>
 </BitTooltip>
 
-<BitTooltip DefaultIsShown=""true"" Size=""BitSize.Large"" Text=""Large"" Placement=""BitPlacement.Bottom"">
+<BitTooltip DefaultShown=""true"" Size=""BitSize.Large"" Text=""Large"" Placement=""BitPlacement.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Large</BitButton>
 </BitTooltip>";
 
@@ -382,11 +382,11 @@ private readonly BitTooltipParams[] tooltipParams =
 </style>
 
 
-<BitTooltip DefaultIsShown=""true"" Text=""Styles"" Styles=""@(new() { Tooltip = ""box-shadow: aqua 0 0 0.5rem;"" })"">
+<BitTooltip DefaultShown=""true"" Text=""Styles"" Styles=""@(new() { Tooltip = ""box-shadow: aqua 0 0 0.5rem;"" })"">
     <BitButton Variant=""BitVariant.Outline"">Styles</BitButton>
 </BitTooltip>
 
-<BitTooltip DefaultIsShown=""true"" Text=""Classes"" Classes=""@(new() { Tooltip = ""custom-tooltip"", Arrow = ""custom-arrow"" })"">
+<BitTooltip DefaultShown=""true"" Text=""Classes"" Classes=""@(new() { Tooltip = ""custom-tooltip"", Arrow = ""custom-arrow"" })"">
     <BitButton Variant=""BitVariant.Outline"">Classes</BitButton>
 </BitTooltip>
 
@@ -404,15 +404,15 @@ private readonly BitTooltipParams[] tooltipParams =
             --bit-Tooltip-radius: 999px;
             --bit-Tooltip-padding: 0.25rem 0.75rem;
             --bit-Tooltip-offset: 12px;"">
-    <BitTooltip DefaultIsShown=""true"" Text=""Inverted pill"">
+    <BitTooltip DefaultShown=""true"" Text=""Inverted pill"">
         <BitButton Variant=""BitVariant.Outline"">From the ancestor</BitButton>
     </BitTooltip>
 
-    <BitTooltip DefaultIsShown=""true"" Text=""My Color wins"" Color=""BitColor.Success"">
+    <BitTooltip DefaultShown=""true"" Text=""My Color wins"" Color=""BitColor.Success"">
         <BitButton Variant=""BitVariant.Outline"">Color parameter</BitButton>
     </BitTooltip>
 
-    <BitTooltip DefaultIsShown=""true"" Text=""A tooltip with a longer text, set on its own Style""
+    <BitTooltip DefaultShown=""true"" Text=""A tooltip with a longer text, set on its own Style""
                 Style=""--bit-Tooltip-max-width: 9rem; --bit-Tooltip-font-size: 0.8125rem; --bit-Tooltip-text-align: center;"">
         <BitButton Variant=""BitVariant.Outline"">Own Style</BitButton>
     </BitTooltip>
@@ -423,19 +423,19 @@ private readonly BitTooltipParams[] tooltipParams =
     <BitButton Variant=""BitVariant.Outline"">نشانگر ماوس را روی من بیاورید</BitButton>
 </BitTooltip>
 
-<BitTooltip Dir=""BitDir.Rtl"" DefaultIsShown=""true"" Placement=""BitPlacement.Left"" Text=""سمت چپ لنگر"">
+<BitTooltip Dir=""BitDir.Rtl"" DefaultShown=""true"" Placement=""BitPlacement.Left"" Text=""سمت چپ لنگر"">
     <BitButton Variant=""BitVariant.Outline"">Left</BitButton>
 </BitTooltip>
 
-<BitTooltip Dir=""BitDir.Rtl"" DefaultIsShown=""true"" Placement=""BitPlacement.Start"" Text=""سمت شروعِ لنگر"">
+<BitTooltip Dir=""BitDir.Rtl"" DefaultShown=""true"" Placement=""BitPlacement.Start"" Text=""سمت شروعِ لنگر"">
     <BitButton Variant=""BitVariant.Outline"">Start</BitButton>
 </BitTooltip>
 
-<BitTooltip Dir=""BitDir.Rtl"" DefaultIsShown=""true"" Alignment=""BitPlacement.Left"" Text=""ترازِ لبهٔ چپ"">
+<BitTooltip Dir=""BitDir.Rtl"" DefaultShown=""true"" Alignment=""BitPlacement.Left"" Text=""ترازِ لبهٔ چپ"">
     <BitButton Variant=""BitVariant.Outline"">Alignment Left</BitButton>
 </BitTooltip>
 
-<BitTooltip Dir=""BitDir.Rtl"" DefaultIsShown=""true"" Alignment=""BitPlacement.Start"" Text=""ترازِ لبهٔ شروع"">
+<BitTooltip Dir=""BitDir.Rtl"" DefaultShown=""true"" Alignment=""BitPlacement.Start"" Text=""ترازِ لبهٔ شروع"">
     <BitButton Variant=""BitVariant.Outline"">Alignment Start</BitButton>
 </BitTooltip>";
 }

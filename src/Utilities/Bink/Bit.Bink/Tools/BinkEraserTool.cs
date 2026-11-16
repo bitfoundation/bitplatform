@@ -142,7 +142,7 @@ public sealed class BinkEraserTool : BinkDrawTool
         _pointerId = -1;
         _historyGroup?.Dispose();
         _historyGroup = null;
-        if (_erasedThisGesture.Count > 0) context.Announce($"Erased {_erasedThisGesture.Count} strokes.");
+        if (_erasedThisGesture.Count > 0) context.Announce($"Erased {BinkCount.Of(_erasedThisGesture.Count, "stroke")}.");
         _erasedThisGesture.Clear();
         _inverses.Clear();
         _path.Clear();

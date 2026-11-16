@@ -392,6 +392,8 @@ provider outage does not take an otherwise healthy instance out of the load bala
   site that is down; set `HealthChecks:BypassWebsitesCache` to false to request the addresses as they are. List them in `appsettings.json`, or as one value separated by commas or spaces, which a single
   environment variable carries (`HealthChecks__Websites`), and so does one GitHub variable of the deployment. With none
   listed there's no entry, as the check is optional.
+- **`bitFabric`**: outside development, whether [bit Fabric](https://bitfabric.co) holds an OAuth grant on the app, since
+  checks nobody reads from outside go down with the server. Remove it if another service watches the app from outside.
 - **`smtp`**: connects, runs STARTTLS when `EnableSsl` is on, signs in when credentials are set, then quits without sending.
 - **`emailDelivery`**: reads the DNS of the domain of `Email:DefaultFromEmail`, the address every mail is sent from, so it
   needs no setting of its own. Without an SPF record, with one that ends in `+all` (any server may send as the domain),

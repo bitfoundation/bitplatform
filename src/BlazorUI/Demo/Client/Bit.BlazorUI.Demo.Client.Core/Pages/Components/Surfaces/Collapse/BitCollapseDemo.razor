@@ -29,7 +29,7 @@
             </div>
             <br /><br />
             <div>
-                <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="expanded" />
+                <BitToggleButton OnText="Collapse" OffText="Expand" @bind-Checked="expanded" />
                 <BitCollapse Expanded="expanded">
                     In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
                     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
@@ -48,7 +48,7 @@
                 ignores the three methods and takes the disabled colors.
             </div>
             <br /><br />
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="boundExpanded" />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-Checked="boundExpanded" />
             <BitCollapse @bind-Expanded="boundExpanded">
                 The button and the collapse share one value: <b>@boundExpanded</b>.
             </BitCollapse>
@@ -71,7 +71,7 @@
                 with insets of its own, and <b>Background</b> picks another color kind, <b>Transparent</b> included.
             </div>
             <br /><br />
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="surfaceExpanded" />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-Checked="surfaceExpanded" />
             <br /><br />
             <BitCollapse Expanded="surfaceExpanded">Default: padding and the primary background.</BitCollapse>
             <br />
@@ -89,7 +89,7 @@
             </div>
             <br /><br />
             <div style="display:flex;align-items:center;gap:1rem">
-                <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="horizontalExpanded" />
+                <BitToggleButton OnText="Collapse" OffText="Expand" @bind-Checked="horizontalExpanded" />
                 <BitCollapse Horizontal Expanded="horizontalExpanded" Background="BitColorKind.Secondary">
                     <div style="white-space:nowrap">This panel opens sideways.</div>
                 </BitCollapse>
@@ -125,7 +125,7 @@
                 work alone, and <b>NoAnimation</b> removes the transition.
             </div>
             <br /><br />
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="transitionExpanded" />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-Checked="transitionExpanded" />
             <br /><br />
             <div>Duration="1000" Delay="200" and an overshooting Easing</div>
             <BitCollapse Expanded="transitionExpanded" Duration="1000" Delay="200" Easing="cubic-bezier(0.68, -0.55, 0.27, 1.55)">
@@ -181,7 +181,7 @@
                 it has finished opening, so a focus ring, a shadow or a dropdown menu inside it is drawn in full.
             </div>
             <br /><br />
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="clipExpanded" />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-Checked="clipExpanded" />
             <br /><br />
             <div>
                 <BitCollapse Expanded="clipExpanded" NoPadding Duration="600">
@@ -202,7 +202,7 @@
                 its content in the DOM for it.
             </div>
             <br /><br />
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="renderingExpanded" />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-Checked="renderingExpanded" />
             <br /><br />
             <div>LazyRender</div>
             <BitCollapse LazyRender Expanded="renderingExpanded" OnExpanded="() => lazyOpenCount++">
@@ -227,7 +227,7 @@
                 open (disabled, or a one-way <b>Expanded</b>) is not offered to the search.
             </div>
             <br /><br />
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="findExpanded" />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-Checked="findExpanded" />
             <BitCollapse HiddenUntilFound @bind-Expanded="findExpanded">
                 The passphrase kept in this section is <b>marmalade skies</b>. Close the section, press Ctrl+F and search for it.
             </BitCollapse>
@@ -247,7 +247,7 @@
                              Text="Shipping details"
                              AriaMode="BitToggleButtonAriaMode.Expanded"
                              AriaControls="a11y-collapse-content"
-                             @bind-IsChecked="a11yExpanded" />
+                             @bind-Checked="a11yExpanded" />
             <BitCollapse Id="a11y-collapse" Expanded="a11yExpanded" LabelledBy="a11y-trigger">
                 Orders placed before 2 pm ship the same day. <BitLink Href="/components/collapse">Read the full policy</BitLink>.
             </BitCollapse>
@@ -269,7 +269,7 @@
                 wins (the last one keeps its padding). The state, the content, the callbacks and <b>LabelledBy</b> are not cascaded.
             </div>
             <br /><br />
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="cascadingExpanded" />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-Checked="cascadingExpanded" />
             <br /><br />
             <BitParams Parameters="collapseParams">
                 <BitCollapse Expanded="cascadingExpanded">Secondary background, no padding, a slower pace.</BitCollapse>
@@ -286,7 +286,7 @@
                 the <b>Expanded</b> / <b>Collapsed</b> states of the root, the <b>Content</b> region and the padded <b>Wrapper</b>.
             </div>
             <br /><br />
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="styleExpanded" />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-Checked="styleExpanded" />
             <br /><br />
             <div>
                 <BitCollapse Expanded="styleExpanded" Style="border-inline-start: 4px solid var(--bit-clr-pri);">
@@ -310,7 +310,7 @@
             </div>
             <br /><br />
             <div dir="rtl">
-                <BitToggleButton OnText="بستن" OffText="باز کردن" @bind-IsChecked="rtlExpanded" />
+                <BitToggleButton OnText="بستن" OffText="باز کردن" @bind-Checked="rtlExpanded" />
                 <BitCollapse Expanded="rtlExpanded" Dir="BitDir.Rtl">
                     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
                     چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
