@@ -168,7 +168,7 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "IsLoading",
+            Name = "Loading",
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines whether the toggle button is in the loading state, which covers its content with a spinner and prevents subsequent clicks unless Reclickable is enabled. While the clicks are refused the toggle button renders aria-disabled beside aria-busy, and the content stays in place behind the spinner, so the accessible name does not disappear while it is busy.",

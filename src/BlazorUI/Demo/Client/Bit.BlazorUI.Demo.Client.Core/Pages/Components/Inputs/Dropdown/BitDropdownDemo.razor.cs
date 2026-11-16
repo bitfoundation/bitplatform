@@ -372,13 +372,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "IsLoading",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched. The dropdown stays interactive, so the user can still open the callout and see the loading state.",
-        },
-        new()
-        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -453,17 +446,24 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched. The dropdown stays interactive, so the user can still open the callout and see the loading state.",
+        },
+        new()
+        {
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to render in the callout in place of the items while IsLoading is enabled.",
+            Description = "The custom template to render in the callout in place of the items while Loading is enabled.",
         },
         new()
         {
             Name = "LoadingText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text to render in the callout in place of the items while IsLoading is enabled. Defaults to \"Loading...\".",
+            Description = "The text to render in the callout in place of the items while Loading is enabled. Defaults to \"Loading...\".",
         },
         new()
         {

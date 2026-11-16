@@ -5,7 +5,7 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// <summary>
 /// The end-to-end tests of BitButton against /e2e/button, /e2e/button/float and /e2e/button/autofocus: the content
 /// (primary and secondary text, templates, icons), every Variant, Color and Size with the colors and lengths the real
-/// stylesheet resolves, Rounded, IconOnly and its accessible name, the loading states (IsLoading, AutoLoading,
+/// stylesheet resolves, Rounded, IconOnly and its accessible name, the loading states (Loading, AutoLoading,
 /// Reclickable, LoadingDelay, the live region and the label placements), links (Href, Target, Rel, Download), the form
 /// types inside an EditForm and through FormId, OnClick and StopPropagation, FullWidth and NoWrap, FixedColor, the
 /// floating and draggable button (every FloatPosition, FloatOffset, FloatAbsolute, pointer drag, arrow keys, clamping,
@@ -412,7 +412,7 @@ public class BitButtonE2ETests : E2ETestBase
     // ---------- loading ----------
 
     [TestMethod]
-    public async Task IsLoading_TurnedOn_StacksTheSpinnerOverTheContentAndRefusesTheClick()
+    public async Task Loading_TurnedOn_StacksTheSpinnerOverTheContentAndRefusesTheClick()
     {
         await OpenAsync("/e2e/button");
 
@@ -585,7 +585,7 @@ public class BitButtonE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsLoading_BoundTwoWay_FollowsTheAutoLoadingRun()
+    public async Task Loading_BoundTwoWay_FollowsTheAutoLoadingRun()
     {
         await OpenAsync("/e2e/button");
 

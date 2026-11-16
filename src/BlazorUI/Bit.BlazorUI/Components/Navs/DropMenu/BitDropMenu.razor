@@ -33,8 +33,8 @@
             aria-hidden="@(AriaHidden ? "true" : null)"
             style="@Styles?.Button"
             aria-describedby="@descriptionId"
-            aria-busy="@(IsLoading ? "true" : null)"
-            aria-disabled="@(IsLoading || Disabled ? "true" : null)"
+            aria-busy="@(Loading ? "true" : null)"
+            aria-disabled="@(Loading || Disabled ? "true" : null)"
             disabled="@(Disabled)"
             aria-expanded="@(IsOpen ? "true" : "false")"
             class="bit-drm-btn @Classes?.Button">
@@ -44,7 +44,7 @@
         }
         else
         {
-            @if (IsLoading)
+            @if (Loading)
             {
                 <span style="@Styles?.Spinner" class="bit-drm-spn @Classes?.Spinner"></span>
             }

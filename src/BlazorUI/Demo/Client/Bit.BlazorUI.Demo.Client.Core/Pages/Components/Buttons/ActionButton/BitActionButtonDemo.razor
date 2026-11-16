@@ -203,17 +203,17 @@
 
     <DemoExample Title="Loading" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            <b>IsLoading</b> swaps the icon for a spinner, marks the button busy for assistive technologies, and ignores further clicks. It is two-way bindable.
+            <b>Loading</b> swaps the icon for a spinner, marks the button busy for assistive technologies, and ignores further clicks. It is two-way bindable.
         </div>
         <br />
         <BitToggle @bind-Value="isLoading" Label="Toggle loading" />
         <br />
         <div class="example-content">
-            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Save">
+            <BitActionButton Loading="isLoading" IconName="@BitIconName.Save">
                 Save changes
             </BitActionButton>
 
-            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Send" Color="BitColor.Success" IconPlacement="BitPlacement.End">
+            <BitActionButton Loading="isLoading" IconName="@BitIconName.Send" Color="BitColor.Success" IconPlacement="BitPlacement.End">
                 Send message
             </BitActionButton>
         </div>
@@ -256,10 +256,10 @@
             <b>LoadingTemplate</b> takes over the whole loading visual. Declare the normal content through <b>Body</b> so both templates fit on one button.
         </div>
         <br />
-        <BitToggle @bind-Value="templateIsLoading" Label="Toggle loading" />
+        <BitToggle @bind-Value="templateLoading" Label="Toggle loading" />
         <br />
         <div class="example-content">
-            <BitActionButton IsLoading="templateIsLoading" IconName="@BitIconName.Download">
+            <BitActionButton Loading="templateLoading" IconName="@BitIconName.Download">
                 <Body>
                     Download
                 </Body>

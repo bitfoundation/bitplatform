@@ -66,7 +66,7 @@
          aria-label="@(hasLabel ? null : AriaLabel)"
          aria-labelledby="@(hasLabel ? _labelId : null)"
          aria-describedby="@(hasDescription ? _descriptionId : null)"
-         aria-busy="@(IsLoading ? "true" : null)">
+         aria-busy="@(Loading ? "true" : null)">
         @for (var i = 0; i < _length; i++)
         {
             int index = i;
@@ -119,7 +119,7 @@
         }
     </div>
 
-    @if (IsLoading)
+    @if (Loading)
     {
         @* The wait itself is carried by the live region below, so the bar is nothing but the drawing of it
            and is kept away from the screen readers that are already being told about it in words. *@
@@ -151,7 +151,7 @@
        status message of WCAG 2.2 SC 4.1.3 for exactly those two moments. It is rendered at all times and
        left empty, since a live region added to the page with its text already in it is not announced by
        most screen readers, and it only ever holds the plain Description of a component whose Invalid or
-       IsLoading state is on, so a countdown or a "resend the code" link, which belongs in a
+       Loading state is on, so a countdown or a "resend the code" link, which belongs in a
        DescriptionTemplate, is never announced on every tick. *@
     <div role="status"
          aria-live="polite"

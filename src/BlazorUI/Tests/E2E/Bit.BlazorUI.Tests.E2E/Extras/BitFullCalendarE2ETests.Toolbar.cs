@@ -4,7 +4,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 
 /// <summary>
 /// The frame around BitFullCalendar (/e2e/full-calendar/toolbar): the Views it offers and the bound View clamped into
-/// them, HideHeader / HideFilters / HideSettings, the root's HtmlAttributes and Visibility, IsLoading driven by
+/// them, HideHeader / HideFilters / HideSettings, the root's HtmlAttributes and Visibility, Loading driven by
 /// OnDateChange, mounting and unmounting without an error, and a calendar inside a BitModal whose Escape stays its own.
 /// </summary>
 public partial class BitFullCalendarE2ETests
@@ -113,7 +113,7 @@ public partial class BitFullCalendarE2ETests
     }
 
     [TestMethod]
-    public async Task Loading_IsLoading_RunsTheBarAndMarksTheBodyBusy_WhileTheRangeIsFetched()
+    public async Task Loading_RunsTheBarAndMarksTheBodyBusy_WhileTheRangeIsFetched()
     {
         await OpenAsync(ToolbarPage);
         var cal = Page.Locator("#loading-cal");

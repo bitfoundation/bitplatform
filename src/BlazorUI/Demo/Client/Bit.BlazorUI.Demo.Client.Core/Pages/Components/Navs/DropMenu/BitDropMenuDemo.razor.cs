@@ -173,13 +173,6 @@ public partial class BitDropMenuDemo
         },
         new()
         {
-            Name = "IsLoading",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines whether the drop menu is in the loading state: the icon becomes a spinner, an open callout closes and it cannot be opened again until the loading ends. The button keeps the focus and is marked aria-disabled and aria-busy."
-        },
-        new()
-        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -191,6 +184,13 @@ public partial class BitDropMenuDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Keeps the content of the callout out of the page until the first opening, then keeps it, so its state survives a close."
+        },
+        new()
+        {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the drop menu is in the loading state: the icon becomes a spinner, an open callout closes and it cannot be opened again until the loading ends. The button keeps the focus and is marked aria-disabled and aria-busy."
         },
         new()
         {

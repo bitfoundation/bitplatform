@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// item), the header and item icons, IconOnly, NoIcon, the split Toggle (IsToggled two-way, DefaultIsToggled,
 /// OnToggleChange), checkable and radio items, HeaderTemplate, ItemTemplate and an item's own Template, headers and
 /// separators, SecondaryText, Title, AriaLabel, disabled items and DisabledInteractive, links with Rel and the
-/// new-tab hint (NewTabHint, NoNewTabHint), the loading states (AutoLoading, IsLoading two-way, LoadingLabel and its
+/// new-tab hint (NewTabHint, NoNewTabHint), the loading states (AutoLoading, Loading two-way, LoadingLabel and its
 /// live region, LoadingTemplate, Reclickable), the menu keyboard (arrows, Home, End, typeahead, Enter, Escape, Tab)
 /// and the submenus by keyboard and by pointer, item Class and Style, items changed at runtime, and unmounting while
 /// open. The group-level parameters - every Variant, Color and Size, FullWidth, the chevron, the mark icons,
@@ -530,7 +530,7 @@ public class BitMenuButtonE2ETests : E2ETestBase
     [DataRow(ItemsApi)]
     [DataRow(CustomApi)]
     [DataRow(OptionsApi)]
-    public async Task IsLoading_OnAPlainButton_RefusesToOpenAndRendersTheTemplateOrRepeats(string route)
+    public async Task Loading_OnAPlainButton_RefusesToOpenAndRendersTheTemplateOrRepeats(string route)
     {
         await OpenAsync(route);
 

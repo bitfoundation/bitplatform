@@ -188,7 +188,7 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "IsLoading",
+            Name = "Loading",
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines whether the button is in loading mode or not. The spinner is stacked over the content rather than replacing it, so the box keeps its size and its accessible name, and the button reports aria-busy - plus aria-disabled unless Reclickable is set, since the click is refused."
@@ -882,14 +882,14 @@ public partial class BitButtonDemo
 
     private bool noWrap = true;
 
-    private bool fillIsLoading;
-    private bool outlineIsLoading;
-    private bool textIsLoading;
+    private bool fillLoading;
+    private bool outlineLoading;
+    private bool textLoading;
 
-    private bool stylesIsLoading;
-    private bool classesIsLoading;
+    private bool stylesLoading;
+    private bool classesLoading;
 
-    private bool templateIsLoading;
+    private bool templateLoading;
 
     private string? floatOffset = "63px";
     private BitPosition floatPosition = BitPosition.BottomRight;
@@ -904,23 +904,23 @@ public partial class BitButtonDemo
 
     private async Task LoadingFillClick()
     {
-        fillIsLoading = true;
+        fillLoading = true;
         await Task.Delay(3000);
-        fillIsLoading = false;
+        fillLoading = false;
     }
 
     private async Task LoadingOutlineClick()
     {
-        outlineIsLoading = true;
+        outlineLoading = true;
         await Task.Delay(3000);
-        outlineIsLoading = false;
+        outlineLoading = false;
     }
 
     private async Task LoadingTextClick()
     {
-        textIsLoading = true;
+        textLoading = true;
         await Task.Delay(3000);
-        textIsLoading = false;
+        textLoading = false;
     }
 
     // Finishes inside the 500ms delay of the second button, so that one never shows a spinner.
@@ -964,23 +964,23 @@ public partial class BitButtonDemo
 
     private async Task LoadingStylesClick()
     {
-        stylesIsLoading = true;
+        stylesLoading = true;
         await Task.Delay(3000);
-        stylesIsLoading = false;
+        stylesLoading = false;
     }
 
     private async Task LoadingClassesClick()
     {
-        classesIsLoading = true;
+        classesLoading = true;
         await Task.Delay(3000);
-        classesIsLoading = false;
+        classesLoading = false;
     }
 
     private async Task LoadingTemplateClick()
     {
-        templateIsLoading = true;
+        templateLoading = true;
         await Task.Delay(3000);
-        templateIsLoading = false;
+        templateLoading = false;
     }
 
     private int clickCounter;

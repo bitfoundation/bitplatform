@@ -57,7 +57,7 @@ public partial class BitOtpInputDemo
             Name = "Description",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Helper text under the inputs, referenced by the group's aria-describedby. While Invalid or IsLoading is on it is also announced through a live region.",
+            Description = "Helper text under the inputs, referenced by the group's aria-describedby. While Invalid or Loading is on it is also announced through a live region.",
         },
         new()
         {
@@ -98,13 +98,6 @@ public partial class BitOtpInputDemo
         },
         new()
         {
-            Name = "IsLoading",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "The busy state of a submitted code: draws a progress bar, marks the group aria-busy, announces the Description and holds the code still like ReadOnly. Clear is not blocked by it.",
-        },
-        new()
-        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -116,6 +109,13 @@ public partial class BitOtpInputDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Custom template for the label displayed above the inputs, taking precedence over Label.",
+        },
+        new()
+        {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "The busy state of a submitted code: draws a progress bar, marks the group aria-busy, announces the Description and holds the code still like ReadOnly. Clear is not blocked by it.",
         },
         new()
         {
@@ -732,7 +732,7 @@ public partial class BitOtpInputDemo
         {
             Name = "--bit-OtpInput-loader-color",
             DefaultValue = "--bit-clr-pri",
-            Description = "The sweep of the bar drawn while IsLoading is on. The error and disabled states paint it with their own color instead. The Accent parameter wins over it.",
+            Description = "The sweep of the bar drawn while Loading is on. The error and disabled states paint it with their own color instead. The Accent parameter wins over it.",
         },
         new()
         {

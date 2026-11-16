@@ -3,7 +3,7 @@
 <PageTitle>BitFullCalendar E2E - views, toolbar and lifecycle</PageTitle>
 
 @* The toolbar and the frame around a calendar: the Views it offers (and the bound View clamped into them),
-   HideHeader / HideFilters / HideSettings, the root's HtmlAttributes and Visibility, IsLoading driven by
+   HideHeader / HideFilters / HideSettings, the root's HtmlAttributes and Visibility, Loading driven by
    OnDateChange, mounting and unmounting, and a calendar inside a BitModal. "Today" is pinned to Wednesday
    2025-07-16 10:30. *@
 <E2ESection Id="views-week-day" Title="Views: Week and Day">
@@ -38,12 +38,12 @@
     <BitFullCalendar Id="unnamed-cal" CultureName="en-US" TimeProvider="Clock" HideFilters HideSettings Views="_monthOnly" />
 </E2ESection>
 
-<E2ESection Id="loading" Title="IsLoading driven by OnDateChange">
+<E2ESection Id="loading" Title="Loading driven by OnDateChange">
     <BitFullCalendar Id="loading-cal"
                      CultureName="en-US"
                      TimeProvider="Clock"
                      Events="_loadedEvents"
-                     IsLoading="_isLoading"
+                     Loading="_isLoading"
                      OnDateChange="LoadRange" />
     <button id="btn-finish-load" @onclick="() => _release?.TrySetResult()">Finish loading</button>
     <span id="loaded">@_loaded</span>
@@ -51,8 +51,8 @@
 </E2ESection>
 
 <E2ESection Id="motion" Title="Reduced motion and ForceAnimation">
-    <BitFullCalendar Id="motion-cal" CultureName="en-US" TimeProvider="Clock" Events="_events" IsLoading HideFilters HideSettings />
-    <BitFullCalendar Id="motion-fam-cal" CultureName="en-US" TimeProvider="Clock" Events="_events" IsLoading ForceAnimation HideFilters HideSettings />
+    <BitFullCalendar Id="motion-cal" CultureName="en-US" TimeProvider="Clock" Events="_events" Loading HideFilters HideSettings />
+    <BitFullCalendar Id="motion-fam-cal" CultureName="en-US" TimeProvider="Clock" Events="_events" Loading ForceAnimation HideFilters HideSettings />
 </E2ESection>
 
 <E2ESection Id="defaults" Title="DefaultDate, and Views with repeated and unknown entries">

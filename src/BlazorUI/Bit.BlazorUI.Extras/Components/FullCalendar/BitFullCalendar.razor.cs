@@ -150,7 +150,7 @@ public partial class BitFullCalendar : BitComponentBase
     /// marked busy for assistive technology. Set it while the events of a newly reported range (see
     /// <see cref="OnDateChange"/>) are being fetched; the calendar stays fully interactive meanwhile.
     /// </summary>
-    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool Loading { get; set; }
 
     /// <summary>
     /// The latest date the calendar can navigate to and display. Navigation past it is refused, the

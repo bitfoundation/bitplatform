@@ -52,12 +52,12 @@ public partial class BitChart : BitComponentBase
     /// <see cref="LoadingTemplate"/> - marks the chart <c>aria-busy</c>, and holds back the empty state, so a chart
     /// still waiting for its data does not claim it has none.
     /// </summary>
-    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool Loading { get; set; }
 
-    /// <summary>The text shown under the spinner, and announced, while <see cref="IsLoading"/> is set.</summary>
+    /// <summary>The text shown under the spinner, and announced, while <see cref="Loading"/> is set.</summary>
     [Parameter] public string? LoadingLabel { get; set; } = "Loading";
 
-    /// <summary>Custom content shown in place of the default spinner while <see cref="IsLoading"/> is set.</summary>
+    /// <summary>Custom content shown in place of the default spinner while <see cref="Loading"/> is set.</summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
@@ -214,7 +214,7 @@ public partial class BitChart : BitComponentBase
         _config = Config ?? new BitChartConfig(Type, Data ?? new BitChartData(), Options ?? new BitChartOptions());
 
         // A disabled or loading chart takes no input, so whatever was hovered or walked by the keyboard is let go of.
-        if ((Disabled || IsLoading) && (_hoverAnchor is not null || _focusKey is not null || _legendHighlight is not null))
+        if ((Disabled || Loading) && (_hoverAnchor is not null || _focusKey is not null || _legendHighlight is not null))
         {
             _focusIndex = -1;
             _focusKey = null;
@@ -258,7 +258,7 @@ public partial class BitChart : BitComponentBase
         // switching between panning and drag-to-zoom) at runtime tears the old listeners down instead
         // of leaving the chart reacting to gestures it no longer offers.
         var z = _config.Options.Zoom;
-        bool wantZoom = z.Enabled && Disabled is false && !IsLoading && !_scene.IsRadialOrCircular;
+        bool wantZoom = z.Enabled && Disabled is false && !Loading && !_scene.IsRadialOrCircular;
         bool pan = z.Pan && !z.DragZoom;
         string signature = wantZoom ? $"{z.Wheel}|{pan}|{z.DragZoom}" : "";
         if (_zoomSignature == signature) return;
@@ -698,7 +698,7 @@ public partial class BitChart : BitComponentBase
 
     private void OnEnter(BitChartDataElement e)
     {
-        if (Disabled || IsLoading) return;
+        if (Disabled || Loading) return;
         BuildHover(e);
         NotifyHover();
     }
@@ -709,7 +709,7 @@ public partial class BitChart : BitComponentBase
     /// </summary>
     private void OnEnterBand(BitChartHitBand band)
     {
-        if (Disabled || IsLoading || RepresentativeOf(band) is not { } rep) return;
+        if (Disabled || Loading || RepresentativeOf(band) is not { } rep) return;
         BuildHover(rep, forceIndexGroup: true);
         NotifyHover();
     }
@@ -1223,13 +1223,13 @@ public partial class BitChart : BitComponentBase
     private string SvgRole => IsNavigable ? "application" : "img";
 
     /// <summary>Whether the plot is a tab stop the arrow keys can walk: it has data and it takes input.</summary>
-    private bool IsNavigable => _scene.Elements.Count > 0 && Disabled is false && IsLoading is false;
+    private bool IsNavigable => _scene.Elements.Count > 0 && Disabled is false && Loading is false;
 
     /// <summary>The texts in use: the ones given, or the English defaults.</summary>
     private BitChartTexts ActiveTexts => Texts ?? BitChartTexts.Default;
 
     /// <summary>Whether the empty state is shown: there is nothing to draw and nothing is still on its way.</summary>
-    private bool ShowEmpty => _scene.IsEmpty && IsLoading is false;
+    private bool ShowEmpty => _scene.IsEmpty && Loading is false;
 
     private string? ClipId => _scene.PlotArea is null ? null : $"{_instanceId}-clip";
     private string? ClipRef => ClipId is null ? null : $"url(#{ClipId})";
@@ -1333,7 +1333,7 @@ public partial class BitChart : BitComponentBase
 
     private void HighlightLegendItem(BitChartLegendItemModel item)
     {
-        if (Disabled || IsLoading || _scene.Legend is not { HighlightOnHover: true } || item.Hidden) return;
+        if (Disabled || Loading || _scene.Legend is not { HighlightOnHover: true } || item.Hidden) return;
         _legendHighlight = (item.IsDataIndex, item.Index);
     }
 

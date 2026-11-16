@@ -32,7 +32,7 @@ public class BitFullCalendarParamsTests : BunitTestContext
         nameof(BitFullCalendar.Date),
         nameof(BitFullCalendar.DefaultDate),
         nameof(BitFullCalendar.Events),
-        nameof(BitFullCalendar.IsLoading),
+        nameof(BitFullCalendar.Loading),
         nameof(BitFullCalendar.Mode),
         nameof(BitFullCalendar.Resources),
         nameof(BitFullCalendar.View),

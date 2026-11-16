@@ -6,7 +6,7 @@
 /// thousands of rows down, picks survive scrolling away with a small OverscanCount, a virtualized search covers the whole
 /// list, and an ItemsProvider is asked for windows - with the search, positions in the whole set, a debounce collapsing
 /// fast scrolling, InitialSelectedItems, VirtualizePlaceholder for rows still on their way and RefreshItemsAsync - and
-/// IsLoading shows the spinner, LoadingText or LoadingTemplate until a real fetch hands the items over.
+/// Loading shows the spinner, LoadingText or LoadingTemplate until a real fetch hands the items over.
 /// </summary>
 [TestClass]
 public class BitDropdownVirtualizeE2ETests : BitDropdownE2ETestBase
@@ -293,7 +293,7 @@ public class BitDropdownVirtualizeE2ETests : BitDropdownE2ETestBase
     }
 
     [TestMethod]
-    public async Task IsLoading_ShowsASpinnerInTheFieldAndTheLoadingStateInTheList()
+    public async Task Loading_ShowsASpinnerInTheFieldAndTheLoadingStateInTheList()
     {
         await OpenAsync(Url);
 
@@ -318,7 +318,7 @@ public class BitDropdownVirtualizeE2ETests : BitDropdownE2ETestBase
     }
 
     [TestMethod]
-    public async Task IsLoading_LoadingTextAndLoadingTemplate_ReplaceTheDefaultMessage()
+    public async Task Loading_LoadingTextAndLoadingTemplate_ReplaceTheDefaultMessage()
     {
         await OpenAsync(Url);
 
@@ -337,7 +337,7 @@ public class BitDropdownVirtualizeE2ETests : BitDropdownE2ETestBase
     }
 
     [TestMethod]
-    public async Task IsLoading_ARealFetch_HandsTheItemsToTheOpenList()
+    public async Task Loading_ARealFetch_HandsTheItemsToTheOpenList()
     {
         await OpenAsync(Url);
 

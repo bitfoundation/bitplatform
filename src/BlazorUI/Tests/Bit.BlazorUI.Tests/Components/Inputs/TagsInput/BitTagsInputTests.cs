@@ -5772,11 +5772,11 @@ public class BitTagsInputTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitTagsInputIsLoadingTest(bool isLoading)
+    public void BitTagsInputLoadingTest(bool isLoading)
     {
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
         });
 
         var spinners = com.FindAll(".bit-tgi-spn");
@@ -5795,7 +5795,7 @@ public class BitTagsInputTests : BunitTestContext
     {
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingAriaLabel, "Fetching suggestions");
         });
 

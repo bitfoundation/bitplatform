@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// click, keyboard and hover (with its delays), the callout really relocated, positioned (Placement, Alignment, Gap,
 /// DropDirection), sized (Width, MinWidth, MaxWidth, MaxHeight, MatchWidth) and painted (Background, Border, NoShadow),
 /// the responsive panel and its swipe at a phone width, the two-way IsOpen, DefaultIsOpen and the Open/Close/Toggle
-/// methods, OnClick/OnOpen/OnDismiss, AutoClose, LazyRender, IsLoading, AutoFocus and TrapFocus, Tab out, Escape inside a
+/// methods, OnClick/OnOpen/OnDismiss, AutoClose, LazyRender, Loading, AutoFocus and TrapFocus, Tab out, Escape inside a
 /// dialog, the disabled contract, every Color, Variant and Size, the external icons, Style/Class/Styles/Classes,
 /// Visibility, HtmlAttributes, the BitParams cascade, the public css variables, RTL (explicit and inherited), reduced
 /// motion and ForceAnimation, a page scroll dismissing it and an unmount while open.
@@ -317,7 +317,7 @@ public class BitDropMenuE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsLoading_ShowsASpinner_KeepsTheFocus_AndKeepsTheCalloutClosed()
+    public async Task Loading_ShowsASpinner_KeepsTheFocus_AndKeepsTheCalloutClosed()
     {
         await OpenAsync(Url);
 
@@ -353,7 +353,7 @@ public class BitDropMenuE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsLoading_SetWhileOpen_ClosesTheCallout()
+    public async Task Loading_SetWhileOpen_ClosesTheCallout()
     {
         await OpenAsync(Url);
 

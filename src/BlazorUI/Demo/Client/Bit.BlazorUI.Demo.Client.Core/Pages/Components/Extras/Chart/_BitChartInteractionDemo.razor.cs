@@ -110,7 +110,7 @@ private BitChartOptions ModeOptions() => new()
 
 <BitChart Type=""BitChartType.Bar""
           Data=""EmptyDemoData()""
-          IsLoading=""_loading""
+          Loading=""_loading""
           LoadingLabel=""Fetching revenue...""
           EmptyText=""No results for this filter"" />";
     private readonly string emptyCsharpCode = @"

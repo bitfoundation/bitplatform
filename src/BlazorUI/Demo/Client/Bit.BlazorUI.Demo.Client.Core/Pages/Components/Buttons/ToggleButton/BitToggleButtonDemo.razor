@@ -323,23 +323,23 @@
     <DemoExample Title="Loading" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             A toggle that has to reach a server is not really toggled until the server says so, and clicking it three
-            more times in the meantime helps nobody. <b>IsLoading</b> covers the content with a spinner and blocks
+            more times in the meantime helps nobody. <b>Loading</b> covers the content with a spinner and blocks
             further clicks for exactly that window. A blocked BitToggleButton stops responding to the pointer with
             it - no hover shade, no pressed shade, no pointer cursor - and renders <b>aria-disabled</b> beside
             <b>aria-busy</b>, which says that something is happening rather than that pressing it now does nothing.
             <b>Reclickable</b> lifts the block, and all of that with it, where the extra clicks are harmless.
         </div><br />
         <div class="example-box">
-            <BitToggleButton IsLoading="isLoading" OnText="Muted" OffText="Unmuted" />
-            <BitCheckbox Label="IsLoading" @bind-Value="isLoading" />
+            <BitToggleButton Loading="isLoading" OnText="Muted" OffText="Unmuted" />
+            <BitCheckbox Label="Loading" @bind-Value="isLoading" />
         </div>
         <br /><br /><br />
         <div>
             Both of these are loading, but only the second one still reacts. Click each of them:
         </div><br />
         <div class="example-box">
-            <BitToggleButton IsLoading OnClick="() => blockedClickCounter++" Text="@($"Blocked ({blockedClickCounter})")" />
-            <BitToggleButton IsLoading Reclickable OnClick="() => reclickCounter++" Text="@($"Reclickable ({reclickCounter})")" />
+            <BitToggleButton Loading OnClick="() => blockedClickCounter++" Text="@($"Blocked ({blockedClickCounter})")" />
+            <BitToggleButton Loading Reclickable OnClick="() => reclickCounter++" Text="@($"Reclickable ({reclickCounter})")" />
         </div>
         <br /><br /><br />
         <div>
@@ -367,10 +367,10 @@
             nothing - while the content stays in place behind it, so the BitToggleButton keeps its name while it is busy.
         </div><br />
         <div class="example-box">
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.End" Text="End" />
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Start" Text="Start" />
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Top" Text="Top" />
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Bottom" Text="Bottom" />
+            <BitToggleButton Loading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.End" Text="End" />
+            <BitToggleButton Loading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Start" Text="Start" />
+            <BitToggleButton Loading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Top" Text="Top" />
+            <BitToggleButton Loading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Bottom" Text="Bottom" />
         </div>
         <br /><br /><br />
         <div>
@@ -378,12 +378,12 @@
             while it loads:
         </div><br />
         <div class="example-box">
-            <BitToggleButton IsLoading IconOnly Text="Save" IconName="@BitIconName.Save" LoadingLabel="Saving..." />
+            <BitToggleButton Loading IconOnly Text="Save" IconName="@BitIconName.Save" LoadingLabel="Saving..." />
         </div>
         <br /><br /><br />
         <div><b>LoadingTemplate</b> replaces the spinner and the label altogether:</div><br />
         <div class="example-box">
-            <BitToggleButton IsLoading Text="Muted">
+            <BitToggleButton Loading Text="Muted">
                 <LoadingTemplate>
                     <div class="custom-template">
                         <BitRollerLoading CustomSize="20" Color="BitColor.PrimaryForeground" />
@@ -936,7 +936,7 @@
             <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" Text="Check mark"
                              Styles="@(new() { CheckMark = "color: hotpink;" })" />
 
-            <BitToggleButton IsLoading LoadingLabel="Saving..." Text="Loading parts"
+            <BitToggleButton Loading LoadingLabel="Saving..." Text="Loading parts"
                              Styles="@(new() { Spinner = "border-top-color: gold;",
                                                LoadingLabel = "color: gold; font-style: italic;" })" />
         </div>

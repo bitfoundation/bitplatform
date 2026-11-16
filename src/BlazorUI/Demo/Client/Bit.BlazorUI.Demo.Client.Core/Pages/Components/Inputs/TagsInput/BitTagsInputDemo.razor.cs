@@ -267,13 +267,6 @@ public partial class BitTagsInputDemo
         },
         new()
         {
-            Name = "IsLoading",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Draws a spinner at the end of the field, for the wait the field itself is the cause of: the suggestions being fetched for what is being typed, the tag being checked against a server. It is an indeterminate progressbar rather than a decoration, and it changes nothing about what the field accepts.",
-        },
-        new()
-        {
             Name = "InvalidAnnouncementFormat",
             Type = "string?",
             DefaultValue = "null",
@@ -302,10 +295,17 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Draws a spinner at the end of the field, for the wait the field itself is the cause of: the suggestions being fetched for what is being typed, the tag being checked against a server. It is an indeterminate progressbar rather than a decoration, and it changes nothing about what the field accepts.",
+        },
+        new()
+        {
             Name = "LoadingAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible name of the spinner IsLoading draws, which is the whole of what a screen reader has to go on. The default is \"Loading\".",
+            Description = "The accessible name of the spinner Loading draws, which is the whole of what a screen reader has to go on. The default is \"Loading\".",
         },
         new()
         {
@@ -1164,7 +1164,7 @@ public partial class BitTagsInputDemo
         {
             Name = "--bit-TagsInput-spinner-color",
             DefaultValue = "--bit-clr-pri",
-            Description = "The turning arc of the spinner IsLoading draws. The Color parameter wins over it.",
+            Description = "The turning arc of the spinner Loading draws. The Color parameter wins over it.",
         },
         new()
         {
@@ -1533,7 +1533,7 @@ public partial class BitTagsInputDemo
                     Name = "Spinner",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the spinner IsLoading draws at the end of the field.",
+                    Description = "Custom CSS classes/styles for the spinner Loading draws at the end of the field.",
                 },
                 new()
                 {

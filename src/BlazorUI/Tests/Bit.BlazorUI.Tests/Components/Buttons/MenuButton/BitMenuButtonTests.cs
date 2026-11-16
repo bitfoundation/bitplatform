@@ -565,14 +565,14 @@ public class BitMenuButtonTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitMenuButtonIsLoadingTest(bool isLoading)
+    public void BitMenuButtonLoadingTest(bool isLoading)
     {
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Text, "loading test");
             parameters.Add(p => p.IconName, "Add");
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
         });
 
         var spinners = com.FindAll(".bit-mnb-spn");
@@ -867,7 +867,7 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Text, "Save");
             parameters.Add(p => p.LoadingLabel, "Saving...");
-            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Loading, isLoading);
         });
 
         var status = com.Find(".bit-mnb-sts");
@@ -990,7 +990,7 @@ public class BitMenuButtonTests : BunitTestContext
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Split, true);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         com.Find(".bit-mnb-chb").Click();
@@ -1057,7 +1057,7 @@ public class BitMenuButtonTests : BunitTestContext
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         com.Find(".bit-mnb-opb").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
@@ -1127,12 +1127,12 @@ public class BitMenuButtonTests : BunitTestContext
 
         com.Find(".bit-mnb-opb").Click();
 
-        Assert.IsTrue(com.Instance.IsLoading);
+        Assert.IsTrue(com.Instance.Loading);
         com.WaitForAssertion(() => Assert.IsNotNull(com.Find(".bit-mnb-spn")));
 
         tcs.SetResult();
 
-        com.WaitForAssertion(() => Assert.IsFalse(com.Instance.IsLoading));
+        com.WaitForAssertion(() => Assert.IsFalse(com.Instance.Loading));
         com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-mnb-spn").Count));
     }
 
@@ -1144,7 +1144,7 @@ public class BitMenuButtonTests : BunitTestContext
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Split, true);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.OnClick, (BitMenuButtonItem _) => { clicked++; });
         });
 
@@ -1171,7 +1171,7 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Split, true);
             parameters.Add(p => p.AutoLoading, true);
             parameters.Add(p => p.Reclickable, true);
-            parameters.Add(p => p.IsLoadingChanged, (bool value) => loadingStates.Add(value));
+            parameters.Add(p => p.LoadingChanged, (bool value) => loadingStates.Add(value));
             // the second click abandons the run the first one started, the way a handler that replaces its own
             // in-flight work does
             parameters.Add(p => p.OnClick, (BitMenuButtonItem _) =>
@@ -1193,13 +1193,13 @@ public class BitMenuButtonTests : BunitTestContext
 
         // the abandoned first run is gone, but the second one is still in flight and still loading
         Assert.AreEqual(2, clickCount);
-        Assert.IsTrue(com.Instance.IsLoading);
+        Assert.IsTrue(com.Instance.Loading);
         CollectionAssert.AreEqual(new List<bool> { true }, loadingStates);
 
         secondTcs.SetResult();
         await secondClick;
 
-        Assert.IsFalse(com.Instance.IsLoading);
+        Assert.IsFalse(com.Instance.Loading);
         CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
     }
 
@@ -1228,12 +1228,12 @@ public class BitMenuButtonTests : BunitTestContext
         firstTcs.SetResult();
         await firstClick;
 
-        Assert.IsTrue(com.Instance.IsLoading);
+        Assert.IsTrue(com.Instance.Loading);
 
         secondTcs.SetResult();
         await secondClick;
 
-        Assert.IsFalse(com.Instance.IsLoading);
+        Assert.IsFalse(com.Instance.Loading);
     }
 
     [TestMethod]
@@ -1243,7 +1243,7 @@ public class BitMenuButtonTests : BunitTestContext
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.LoadingDelay, 3000);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         // The class (and with it the click guard) applies at once; only the spinner waits for the delay.
@@ -1257,7 +1257,7 @@ public class BitMenuButtonTests : BunitTestContext
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Text, "Save");
             parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder =>
             {

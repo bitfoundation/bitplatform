@@ -184,11 +184,11 @@ private void HandleOnChanging(BitToggleButtonChangeArgs args)
 }";
 
     private readonly string example10RazorCode = @"
-<BitToggleButton IsLoading=""isLoading"" OnText=""Muted"" OffText=""Unmuted"" />
-<BitCheckbox Label=""IsLoading"" @bind-Value=""isLoading"" />
+<BitToggleButton Loading=""isLoading"" OnText=""Muted"" OffText=""Unmuted"" />
+<BitCheckbox Label=""Loading"" @bind-Value=""isLoading"" />
 
-<BitToggleButton IsLoading OnClick=""() => blockedClickCounter++"" Text=""@($""Blocked ({blockedClickCounter})"")"" />
-<BitToggleButton IsLoading Reclickable OnClick=""() => reclickCounter++"" Text=""@($""Reclickable ({reclickCounter})"")"" />
+<BitToggleButton Loading OnClick=""() => blockedClickCounter++"" Text=""@($""Blocked ({blockedClickCounter})"")"" />
+<BitToggleButton Loading Reclickable OnClick=""() => reclickCounter++"" Text=""@($""Reclickable ({reclickCounter})"")"" />
 
 <BitToggleButton AutoLoading OnChange=""HandleAutoLoadingChange""
                  OnText=""Muted"" OffText=""Unmuted"" />
@@ -196,14 +196,14 @@ private void HandleOnChanging(BitToggleButtonChangeArgs args)
 <BitToggleButton AutoLoading OnChange=""HandleAutoLoadingChange"" Text=""No delay"" />
 <BitToggleButton AutoLoading LoadingDelay=""700"" OnChange=""HandleAutoLoadingChange"" Text=""700ms delay"" />
 
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.End"" Text=""End"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Start"" Text=""Start"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Top"" Text=""Top"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Bottom"" Text=""Bottom"" />
+<BitToggleButton Loading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.End"" Text=""End"" />
+<BitToggleButton Loading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Start"" Text=""Start"" />
+<BitToggleButton Loading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Top"" Text=""Top"" />
+<BitToggleButton Loading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Bottom"" Text=""Bottom"" />
 
-<BitToggleButton IsLoading IconOnly Text=""Save"" IconName=""@BitIconName.Save"" LoadingLabel=""Saving..."" />
+<BitToggleButton Loading IconOnly Text=""Save"" IconName=""@BitIconName.Save"" LoadingLabel=""Saving..."" />
 
-<BitToggleButton IsLoading Text=""Muted"">
+<BitToggleButton Loading Text=""Muted"">
     <LoadingTemplate>
         <div class=""custom-template"">
             <BitRollerLoading CustomSize=""20"" Color=""BitColor.PrimaryForeground"" />
@@ -591,7 +591,7 @@ private readonly BitToggleButtonParams[] checkedToggleButtonParams =
 <BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" Text=""Check mark""
                  Styles=""@(new() { CheckMark = ""color: hotpink;"" })"" />
 
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" Text=""Loading parts""
+<BitToggleButton Loading LoadingLabel=""Saving..."" Text=""Loading parts""
                  Styles=""@(new() { Spinner = ""border-top-color: gold;"",
                                    LoadingLabel = ""color: gold; font-style: italic;"" })"" />
 

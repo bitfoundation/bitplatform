@@ -34,7 +34,7 @@
     <BitActionButton Id="acb-href-nav" Href="e2e/action-button#href" OnClick="() => _hrefClicks++">Navigate</BitActionButton>
     <BitActionButton Id="acb-href-download" Href="@IconDataUrl" Download="icon.svg" IconName="@BitIconName.Download">Download</BitActionButton>
     <BitActionButton Id="acb-href-disabled" Href="https://example.com" Disabled AllowDisabledFocus>Disabled link</BitActionButton>
-    <BitActionButton Id="acb-href-loading" Href="https://example.com" IsLoading>Loading link</BitActionButton>
+    <BitActionButton Id="acb-href-loading" Href="https://example.com" Loading>Loading link</BitActionButton>
     <span id="href-clicks">@_hrefClicks</span>
 </E2ESection>
 
@@ -47,7 +47,7 @@
         <BitActionButton Id="form-submit" ButtonType="BitButtonType.Submit" IconName="@BitIconName.SendMirrored">Submit</BitActionButton>
         <BitActionButton Id="form-reset" ButtonType="BitButtonType.Reset" IconName="@BitIconName.Reset" OnClick="() => _formModel = new()">Reset</BitActionButton>
         <BitActionButton Id="form-button" ButtonType="BitButtonType.Button" IconName="@BitIconName.ButtonControl" OnClick="() => _formButtonClicks++">Button</BitActionButton>
-        <BitActionButton Id="form-loading" ButtonType="BitButtonType.Submit" IsLoading>Loading submit</BitActionButton>
+        <BitActionButton Id="form-loading" ButtonType="BitButtonType.Submit" Loading>Loading submit</BitActionButton>
     </EditForm>
     <span id="form-valid">@_validSubmits</span>
     <span id="form-invalid">@_invalidSubmits</span>
@@ -79,9 +79,9 @@
 </E2ESection>
 
 <E2ESection Id="loading" Title="Loading">
-    <BitActionButton Id="acb-loading" IsLoading="_isLoading" IconName="@BitIconName.Save" OnClick="() => _loadingClicks++">Save changes</BitActionButton>
-    <BitActionButton Id="acb-loading-label" IsLoading="_isLoading" LoadingLabel="Saving..." IconName="@BitIconName.Save">Save</BitActionButton>
-    <BitActionButton Id="acb-loading-icon-only" IsLoading="_isLoading" LoadingLabel="Saving..." IconOnly AriaLabel="Save" IconName="@BitIconName.Save" />
+    <BitActionButton Id="acb-loading" Loading="_isLoading" IconName="@BitIconName.Save" OnClick="() => _loadingClicks++">Save changes</BitActionButton>
+    <BitActionButton Id="acb-loading-label" Loading="_isLoading" LoadingLabel="Saving..." IconName="@BitIconName.Save">Save</BitActionButton>
+    <BitActionButton Id="acb-loading-icon-only" Loading="_isLoading" LoadingLabel="Saving..." IconOnly AriaLabel="Save" IconName="@BitIconName.Save" />
     <BitActionButton Id="btn-toggle-loading" OnClick="() => _isLoading = !_isLoading">Toggle loading</BitActionButton>
     <span id="loading-clicks">@_loadingClicks</span>
     <br />
@@ -99,11 +99,11 @@
     <BitActionButton Id="acb-delay-fast" AutoLoading LoadingDelay="1500" OnClick="FastClick" IconName="@BitIconName.Save">Fast</BitActionButton>
     <span id="delay-fast-done">@_fastDone</span>
     <br />
-    <BitActionButton Id="acb-bound" AutoLoading @bind-IsLoading="_boundLoading" OnClick="BoundClick">Bound</BitActionButton>
+    <BitActionButton Id="acb-bound" AutoLoading @bind-Loading="_boundLoading" OnClick="BoundClick">Bound</BitActionButton>
     <BitActionButton Id="btn-release-bound" OnClick="() => _boundTcs.TrySetResult()">Release</BitActionButton>
     <span id="bound-loading">@_boundLoading</span>
     <br />
-    <BitActionButton Id="acb-template" IsLoading="_templateLoading" IconName="@BitIconName.Download">
+    <BitActionButton Id="acb-template" Loading="_templateLoading" IconName="@BitIconName.Download">
         <Body>Download</Body>
         <LoadingTemplate><span class="tpl-loading">Downloading...</span></LoadingTemplate>
     </BitActionButton>
@@ -113,7 +113,7 @@
 <E2ESection Id="underlined" Title="Underlined">
     <BitActionButton Id="acb-underlined" Underlined IconName="@BitIconName.Link">Underlined</BitActionButton>
     <BitActionButton Id="acb-not-underlined" IconName="@BitIconName.Link">Not underlined</BitActionButton>
-    <BitActionButton Id="acb-underlined-loading" Underlined IsLoading LoadingLabel="Loading...">Underlined</BitActionButton>
+    <BitActionButton Id="acb-underlined-loading" Underlined Loading LoadingLabel="Loading...">Underlined</BitActionButton>
 </E2ESection>
 
 <E2ESection Id="events" Title="Events">
@@ -188,7 +188,7 @@
                      Styles="@(new() { Root = "outline: 3px dotted rgb(9, 9, 9);", Icon = "color: rgb(255, 0, 0);", Content = "color: rgb(0, 128, 0);" })">
         Styles
     </BitActionButton>
-    <BitActionButton Id="sc-styles-loading" IsLoading LoadingLabel="Wait..."
+    <BitActionButton Id="sc-styles-loading" Loading LoadingLabel="Wait..."
                      Styles="@(new() { Spinner = "border-top-color: rgb(218, 165, 32);", LoadingLabel = "color: rgb(255, 99, 71);" })">
         Loading
     </BitActionButton>
@@ -196,7 +196,7 @@
                      Classes="@(new() { Root = "c-root", Icon = "c-icon", Content = "c-content" })">
         Classes
     </BitActionButton>
-    <BitActionButton Id="sc-classes-loading" IsLoading LoadingLabel="Wait..."
+    <BitActionButton Id="sc-classes-loading" Loading LoadingLabel="Wait..."
                      Classes="@(new() { Spinner = "c-spinner", LoadingLabel = "c-label" })">
         Loading
     </BitActionButton>

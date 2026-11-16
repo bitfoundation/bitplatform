@@ -158,7 +158,7 @@ public partial class BitActionButtonDemo
         },
         new()
         {
-            Name = "IsLoading",
+            Name = "Loading",
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines whether the action button is in loading mode or not (two-way bindable).",
@@ -454,7 +454,7 @@ public partial class BitActionButtonDemo
 
 
     private bool isLoading;
-    private bool templateIsLoading;
+    private bool templateLoading;
 
     private BitActionButton focusTargetRef = default!;
 

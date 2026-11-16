@@ -229,7 +229,7 @@ public partial class BitToggleButton : BitComponentBase
     /// a fast toggle without lifting the click guard.
     /// </remarks>
     [Parameter, ResetClassBuilder, TwoWayBound]
-    public bool IsLoading { get; set; }
+    public bool Loading { get; set; }
 
     /// <summary>
     /// The delay in milliseconds before the spinner appears after the toggle button enters the loading state,
@@ -508,7 +508,7 @@ public partial class BitToggleButton : BitComponentBase
     /// </summary>
     public async Task ToggleAsync()
     {
-        if (IsLoading && Reclickable is false) return;
+        if (Loading && Reclickable is false) return;
 
         await ChangeIsChecked(IsChecked is false, autoLoading: true);
 
@@ -541,7 +541,7 @@ public partial class BitToggleButton : BitComponentBase
         // The pointer affordance follows the click guard instead, which applies from the first click whether or
         // not the spinner has appeared yet: a toggle button that swallows clicks must not keep the hover shade
         // and the pointer cursor of one that takes them.
-        ClassBuilder.Register(() => IsLoading && Reclickable is false ? "bit-tgb-lod" : string.Empty);
+        ClassBuilder.Register(() => Loading && Reclickable is false ? "bit-tgb-lod" : string.Empty);
 
         ClassBuilder.Register(() => NoWrap ? "bit-tgb-nwr" : string.Empty);
 
@@ -659,7 +659,7 @@ public partial class BitToggleButton : BitComponentBase
 
     private void UpdateLoadingVisuals()
     {
-        if (IsLoading)
+        if (Loading)
         {
             if (_showLoading || _loadingDelayCts is not null) return;
 
@@ -690,7 +690,7 @@ public partial class BitToggleButton : BitComponentBase
             return;
         }
 
-        if (IsDisposed || IsLoading is false || token.IsCancellationRequested) return;
+        if (IsDisposed || Loading is false || token.IsCancellationRequested) return;
 
         SetShowLoading(true);
 
@@ -722,7 +722,7 @@ public partial class BitToggleButton : BitComponentBase
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (Disabled) return;
-        if (IsLoading && Reclickable is false) return;
+        if (Loading && Reclickable is false) return;
 
         // The auto-loading window opens before OnClick rather than after it. An async OnClick handler is part of
         // what the click is waiting for, so a guard that only starts once it has returned leaves open exactly the
@@ -778,7 +778,7 @@ public partial class BitToggleButton : BitComponentBase
     {
         if (autoLoading is false) return;
 
-        await AssignIsLoading(true);
+        await AssignLoading(true);
 
         // The loading visuals normally follow the parameter through OnParametersSet, which a state change the
         // component makes to itself never reaches - so the spinner has to be driven from here, or an auto-loading
@@ -796,7 +796,7 @@ public partial class BitToggleButton : BitComponentBase
 
         if (--_pendingChanges > 0) return;
 
-        await AssignIsLoading(false);
+        await AssignLoading(false);
 
         UpdateLoadingVisuals();
     }

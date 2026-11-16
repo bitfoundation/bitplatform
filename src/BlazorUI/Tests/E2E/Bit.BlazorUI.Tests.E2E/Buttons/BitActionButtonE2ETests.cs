@@ -6,8 +6,8 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// The end-to-end tests of BitActionButton against /e2e/action-button and /e2e/action-button/autofocus: the content
 /// (ChildContent, Body, icons by name, by url and from external libraries, IconOnly) and IconPlacement, links (Href,
 /// Target, Rel, Download, the disabled and loading anchor), the form types inside an EditForm and through FormId,
-/// FullWidth and NoWrap, the loading states (IsLoading, LoadingLabel and its live region, AutoLoading, Reclickable,
-/// LoadingDelay, the two-way bound IsLoading, LoadingTemplate), Underlined, OnClick with its MouseEventArgs and
+/// FullWidth and NoWrap, the loading states (Loading, LoadingLabel and its live region, AutoLoading, Reclickable,
+/// LoadingDelay, the two-way bound Loading, LoadingTemplate), Underlined, OnClick with its MouseEventArgs and
 /// StopPropagation, the accessibility attributes, FocusAsync and AutoFocus, the disabled contract with and without
 /// AllowDisabledFocus, the BitParams cascade, every Color and Size with the colors and lengths the stylesheet
 /// resolves, Style/Class/Styles/Classes/HtmlAttributes, the public CSS variables, RTL, Visibility, reduced motion,
@@ -298,7 +298,7 @@ public class BitActionButtonE2ETests : E2ETestBase
     // ---------- loading ----------
 
     [TestMethod]
-    public async Task IsLoading_TurnedOn_SwapsTheIconForASpinnerMarksItBusyAndIgnoresClicks()
+    public async Task Loading_TurnedOn_SwapsTheIconForASpinnerMarksItBusyAndIgnoresClicks()
     {
         await OpenAsync("/e2e/action-button");
 
@@ -460,7 +460,7 @@ public class BitActionButtonE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsLoading_BoundTwoWay_FollowsTheAutoLoadingRun()
+    public async Task Loading_BoundTwoWay_FollowsTheAutoLoadingRun()
     {
         await OpenAsync("/e2e/action-button");
 

@@ -349,7 +349,7 @@
            that says nothing is a spinner a screen reader never learns about, and a progressbar with no
            value is exactly the "busy, for how long nobody knows" this stands for. It never interrupts,
            which is why it is not a live region. *@
-        @if (IsLoading)
+        @if (Loading)
         {
             <div role="progressbar"
                  aria-label="@(LoadingAriaLabel ?? BitStrings.Current.Loading)"

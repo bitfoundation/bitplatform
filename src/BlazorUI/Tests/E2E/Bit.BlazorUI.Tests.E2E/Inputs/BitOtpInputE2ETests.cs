@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// description, every Type with its keyboard, NormalizeDigits, Placeholder and Mask, Pattern with Uppercase and
 /// Lowercase, the separators, the three variants, Reversed, Vertical, FullWidth and Merged, paste (cleaned up,
 /// transformed, landing where it belongs), copy and cut, the SMS auto fill opt-out, one-way and two-way binding,
-/// every event with its index, the public methods, EditForm validation and AutoSubmit, IsLoading and Invalid with
+/// every event with its index, the public methods, EditForm validation and AutoSubmit, Loading and Invalid with
 /// their announcements, the group's accessibility and SingleTabStop, the BitParams cascade, Accent and Size,
 /// Style/Class/Styles/Classes and the public CSS variables with their variant tiers, RTL (explicit and inherited),
 /// reduced motion, prerendering and unmounting.
@@ -1022,7 +1022,7 @@ public class BitOtpInputE2ETests : E2ETestBase
     // ---------- Loading and invalid ----------
 
     [TestMethod]
-    public async Task IsLoading_DrawsTheBarHoldsTheCodeAndAnnouncesTheDescription()
+    public async Task Loading_DrawsTheBarHoldsTheCodeAndAnnouncesTheDescription()
     {
         await OpenAsync(Url);
 

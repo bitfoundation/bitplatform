@@ -3183,7 +3183,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 /* ===== Loading =====
-   While IsLoading is set an indeterminate bar runs along the top of the body. It is drawn over the
+   While Loading is set an indeterminate bar runs along the top of the body. It is drawn over the
    grid rather than above it, so turning it on and off never shifts the layout. */
 .bit-bfc-loading {
     position: absolute;

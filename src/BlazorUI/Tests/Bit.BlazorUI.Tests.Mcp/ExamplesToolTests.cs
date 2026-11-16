@@ -37,7 +37,7 @@ public class ExamplesToolTests : McpTestBase
         using var scope = Assert.Scope();
 
         StringAssert.Contains(answer, "## Loading");
-        StringAssert.Contains(answer, "IsLoading");
+        StringAssert.Contains(answer, "<BitButton Loading=");
         Assert.DoesNotContain("## Basic", answer, "A named section brought its neighbours with it.");
     }
 

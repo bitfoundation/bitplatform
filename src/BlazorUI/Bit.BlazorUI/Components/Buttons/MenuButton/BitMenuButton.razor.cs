@@ -311,7 +311,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     /// In split mode the chevron still opens the menu, so the rest of the commands stay reachable.
     /// </summary>
     [Parameter, ResetClassBuilder, TwoWayBound]
-    public bool IsLoading { get; set; }
+    public bool Loading { get; set; }
 
     /// <summary>
     /// Determines the opening state of the callout.
@@ -650,9 +650,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         ClassBuilder.Register(() => IconOnly ? "bit-mnb-ion" : string.Empty);
 
-        ClassBuilder.Register(() => IsLoading ? "bit-mnb-lod" : string.Empty);
+        ClassBuilder.Register(() => Loading ? "bit-mnb-lod" : string.Empty);
 
-        ClassBuilder.Register(() => IsLoading && Reclickable ? "bit-mnb-rcl" : string.Empty);
+        ClassBuilder.Register(() => Loading && Reclickable ? "bit-mnb-rcl" : string.Empty);
 
         ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
 
@@ -1417,7 +1417,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     private async Task HandleOnHeaderClick(TItem? item)
     {
         if (Disabled) return;
-        if (IsLoading && Reclickable is false) return;
+        if (Loading && Reclickable is false) return;
 
         if (Split is false)
         {
@@ -1453,7 +1453,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         if (item is not null && GetIsDisabled(item)) return;
 
-        var isLoading = IsLoading;
+        var isLoading = Loading;
 
         // The loading state belongs to the latest click alone (as BitButton's does). A Reclickable menu button's
         // re-click arrives while that state is already on, so it only runs the command again: entering it again
@@ -1464,7 +1464,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         if (AutoLoading && isLoading is false)
         {
-            if (await AssignIsLoading(true) is false) return;
+            if (await AssignLoading(true) is false) return;
 
             UpdateLoadingVisuals();
         }
@@ -1485,7 +1485,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         {
             if (AutoLoading && clickId == _clickId)
             {
-                await AssignIsLoading(false);
+                await AssignLoading(false);
 
                 UpdateLoadingVisuals();
             }
@@ -1671,7 +1671,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         // The header of a plain menu button is the only way into the menu, and the loading state is what takes
         // its click away - so it takes the keys that stand in for that click with it, rather than leaving the
         // keyboard a way past a guard the pointer answers to.
-        if (Split is false && IsLoading) return;
+        if (Split is false && Loading) return;
 
         if (e.Key is "ArrowDown" or "ArrowUp")
         {
@@ -1944,7 +1944,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     // LoadingDelay - long enough that an operation which returns immediately never flashes one.
     private void UpdateLoadingVisuals()
     {
-        if (IsLoading)
+        if (Loading)
         {
             if (_showLoading || _loadingDelayCts is not null) return;
 
@@ -1975,7 +1975,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             return;
         }
 
-        if (IsDisposed || IsLoading is false || token.IsCancellationRequested) return;
+        if (IsDisposed || Loading is false || token.IsCancellationRequested) return;
 
         _showLoading = true;
 

@@ -412,7 +412,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// announces the wait instead of missing it, and it changes nothing about what the field accepts -
     /// a field that has to stop taking tags while it waits is one whose <see cref="BitInputBase{TValue}.ReadOnly"/> is on.
     /// </summary>
-    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool Loading { get; set; }
 
     /// <summary>
     /// The accessible name of that spinner, which is the whole of what a screen reader has to go on.

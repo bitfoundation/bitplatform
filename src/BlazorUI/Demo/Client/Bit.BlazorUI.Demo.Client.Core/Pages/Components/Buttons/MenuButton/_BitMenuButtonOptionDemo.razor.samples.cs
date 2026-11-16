@@ -514,12 +514,12 @@ protected override void OnAfterRender(bool firstRender)
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
-<BitMenuButton Text=""Loading"" IsLoading=""optionIsLoading"" TItem=""BitMenuButtonOption"">
+<BitMenuButton Text=""Loading"" Loading=""optionLoading"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
-<BitCheckbox Label=""IsLoading"" @bind-Value=""optionIsLoading"" />
+<BitCheckbox Label=""Loading"" @bind-Value=""optionLoading"" />
 
 <BitMenuButton Split Text=""Upload"" IconName=""@BitIconName.Upload"" AutoLoading
                OnClick=""(BitMenuButtonOption _) => HandleOnSaveClick()"" TItem=""BitMenuButtonOption"">
@@ -534,7 +534,7 @@ protected override void OnAfterRender(bool firstRender)
 </BitMenuButton>";
 
     private readonly string example15CsharpCode = @"
-private bool optionIsLoading;
+private bool optionLoading;
 
 private async Task HandleOnSaveClick() => await Task.Delay(2000);
 

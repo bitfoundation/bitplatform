@@ -204,7 +204,7 @@ public class BitDropMenuTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.IconName, "Home");
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         var button = component.Find(".bit-drm-btn");
@@ -2024,7 +2024,7 @@ public class BitDropMenuTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.OpenOnHover, true);
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         component.Find(".bit-drm").MouseEnter();
@@ -2169,7 +2169,7 @@ public class BitDropMenuTests : BunitTestContext
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         await component.InvokeAsync(() => component.Instance.Open());
@@ -2222,7 +2222,7 @@ public class BitDropMenuTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -2292,7 +2292,7 @@ public class BitDropMenuTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-busy"));
@@ -2439,7 +2439,7 @@ public class BitDropMenuTests : BunitTestContext
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Classes, new BitDropMenuClassStyles { Spinner = "cls-spinner", Overlay = "cls-overlay" });
             parameters.Add(p => p.Styles, new BitDropMenuClassStyles { Spinner = "color:olive", Overlay = "color:navy" });
         });
@@ -2644,7 +2644,7 @@ public class BitDropMenuTests : BunitTestContext
             HoverOpenDelay = 200,
             Icon = icon,
             IconName = "Home",
-            IsLoading = true,
+            Loading = true,
             LazyRender = true,
             MatchWidth = true,
             MaxHeight = "10rem",
@@ -2698,7 +2698,7 @@ public class BitDropMenuTests : BunitTestContext
         Assert.AreEqual(200, instance.HoverOpenDelay);
         Assert.AreSame(icon, instance.Icon);
         Assert.AreEqual("Home", instance.IconName);
-        Assert.IsTrue(instance.IsLoading);
+        Assert.IsTrue(instance.Loading);
         Assert.IsTrue(instance.LazyRender);
         Assert.IsTrue(instance.MatchWidth);
         Assert.AreEqual("10rem", instance.MaxHeight);

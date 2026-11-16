@@ -19,19 +19,19 @@
     var download = Download ?? GetSplattedAttribute("download");
     var ariaLabel = ResolveAriaLabel();
     var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
-    var ariaBusy = IsLoading ? "true" : GetSplattedAttribute("aria-busy");
+    var ariaBusy = Loading ? "true" : GetSplattedAttribute("aria-busy");
     // A loading button that refuses the second click is unavailable as well as busy, and aria-busy does not say
     // so - it says that something is in progress, not that the press will do nothing. So the state is conveyed
     // the way the disabled one is, with aria-disabled. A Reclickable button is left out of it: it is still there
     // to be clicked.
-    var ariaDisabled = Disabled || (IsLoading && Reclickable is false) ? "true" : GetSplattedAttribute("aria-disabled");
+    var ariaDisabled = Disabled || (Loading && Reclickable is false) ? "true" : GetSplattedAttribute("aria-disabled");
     // Out of reach natively unless AllowDisabledFocus keeps it in the tab order, where aria-disabled carries the state alone.
     var nativeDisabled = Disabled && AllowDisabledFocus is false;
     // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced by it.
     var describedBy = string.Join(' ', new[] { GetSplattedAttribute("aria-describedby"), descriptionId }.Where(id => id.HasValue()));
     // An anchor loses its href when it is disabled or loading, and with it the implicit link role, so the role is put
     // back - unless the page gave the button a role of its own (a menuitem, a tab), which is the one it should keep.
-    var anchorRole = GetSplattedAttribute("role") ?? (Disabled is false && IsLoading is false ? null : "link");
+    var anchorRole = GetSplattedAttribute("role") ?? (Disabled is false && Loading is false ? null : "link");
     // A floating button that can be dragged can also be moved with the arrow keys, which is the alternative
     // to the dragging that WCAG 2.2 SC 2.5.7 asks for. Naming the keys here is what tells a screen reader
     // user the alternative is there - nothing else on the button says so.
@@ -46,7 +46,7 @@
     // The two states whose click is ignored are also the two whose native default has to be suppressed: a disabled
     // button kept in the tab order (AllowDisabledFocus) carries no native disabled attribute, and a loading one
     // carries none either - both would still submit their form on Enter without this.
-    var suppressDefault = Disabled || (IsLoading && Reclickable is false);
+    var suppressDefault = Disabled || (Loading && Reclickable is false);
     // IconOnly takes the label out of the box, and with it the button's accessible name - which is the usual way
     // an icon button ends up nameless. The label is kept as screen-reader-only text instead, so the name survives
     // the parameter on its own; an aria-label or an aria-labelledby is the page naming the button itself and takes
@@ -180,7 +180,7 @@ else
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        dir="@dir"
-       href="@(Disabled is false && IsLoading is false ? Href : null)"
+       href="@(Disabled is false && Loading is false ? Href : null)"
        role="@anchorRole"
        autofocus="@autoFocus"
        title="@title"
@@ -206,7 +206,7 @@ else
    a sibling, so the region is left out rather than left to speak for a button that is not there. *@
 @if (ariaHidden is false && LoadingLabel.HasValue())
 {
-    <span class="bit-btn-sts" role="status">@(IsLoading ? LoadingLabel : null)</span>
+    <span class="bit-btn-sts" role="status">@(Loading ? LoadingLabel : null)</span>
 }
 
 @if (descriptionId is not null)

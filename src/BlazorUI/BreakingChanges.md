@@ -5,6 +5,27 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `IsLoading` is `Loading` on every component ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The loading state had two names: `Loading` on `BitCard`, `BitCheckbox`, `BitDataGrid`, `BitBasicList`,
+`BitNumberField`, `BitSearchBox`, `BitTextField` and `BitToggle`, and `IsLoading` on eleven others. A component's own
+state is spelled without an `Is`, so those eleven now say `Loading` too: `BitActionButton`, `BitButton`,
+`BitMenuButton`, `BitToggleButton`, `BitDropdown`, `BitOtpInput`, `BitTagsInput`, `BitDropMenu`, `BitChart`,
+`BitFullCalendar` and `BitFcBody`. Their `*Params` counterparts are renamed with them, and on the four buttons the
+two-way binding follows the value (`IsLoadingChanged` is `LoadingChanged`):
+
+| Before | After |
+|---|---|
+| `<BitButton IsLoading="saving" />` | `<BitButton Loading="saving" />` |
+| `<BitButton @bind-IsLoading="saving" AutoLoading />` | `<BitButton @bind-Loading="saving" AutoLoading />` |
+| `<BitButton IsLoadingChanged="OnLoadingChanged" />` | `<BitButton LoadingChanged="OnLoadingChanged" />` |
+| `new BitDropdownParams { IsLoading = true }` | `new BitDropdownParams { Loading = true }` |
+
+What the components render is unchanged. The models of one item keep their `Is` (`BitButtonGroupItem.IsLoading`,
+`BitButtonGroupOption.IsLoading`, `BitSnackBarItem.IsLoading`), and so do the read-only state that a reference exposes
+(`BitInfiniteScrolling.IsLoading`, `BitAiReadAloud.IsLoading`) and `BitSearchBoxAnnouncementArgs.IsLoading`: none
+of them is a parameter of a component.
+
 ### `BitSlider`'s `IsRanged` and `IsOriginFromZero` are `Ranged` and `OriginFromZero` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 The slider's last two flags spelled with an `Is` lose it, like its `Vertical` before them (a component's own state is

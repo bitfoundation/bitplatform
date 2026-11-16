@@ -206,13 +206,6 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "IsLoading",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines whether the menu button is in the loading state. It replaces the default icon of the header button with a spinner and ignores its click; in split mode the chevron still opens the menu.",
-        },
-        new()
-        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -240,6 +233,13 @@ public partial class BitMenuButtonDemo
             Type = "RenderFragment<TItem?>?",
             DefaultValue = "null",
             Description = "The custom template content to render each item.",
+        },
+        new()
+        {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the menu button is in the loading state. It replaces the default icon of the header button with a spinner and ignores its click; in split mode the chevron still opens the menu.",
         },
         new()
         {

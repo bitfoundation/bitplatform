@@ -17,7 +17,7 @@ public partial class _BitMenuButtonOptionDemo
     private BitMenuButtonOption optionB = default!;
     private BitMenuButtonOption optionC = default!;
 
-    private bool optionIsLoading;
+    private bool optionLoading;
 
     private string? submenuClickedOption;
 

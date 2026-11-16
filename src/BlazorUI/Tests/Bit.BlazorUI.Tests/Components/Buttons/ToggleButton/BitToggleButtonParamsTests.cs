@@ -19,7 +19,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
 {
     // What a toggle button is about rather than how it looks - its content, its templates, its callbacks and the
     // checked state the page binds to - is written per toggle button, so it has no place on the params object. The
-    // IsLoadingChanged callback is the other half of a binding the page owns.
+    // LoadingChanged callback is the other half of a binding the page owns.
     private static readonly string[] _notCascaded =
     [
         nameof(BitToggleButton.CascadingParameters),
@@ -32,7 +32,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
         nameof(BitToggleButton.OnClick),
         nameof(BitToggleButton.IsChecked),
         nameof(BitToggleButton.IsCheckedChanged),
-        nameof(BitToggleButton.IsLoadingChanged),
+        nameof(BitToggleButton.LoadingChanged),
     ];
 
     private IRenderedComponent<BitParams> RenderWithParams(BitToggleButtonParams toggleParams, Action<RenderTreeBuilder>? extraAttributes = null)
@@ -174,7 +174,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
             IconName = "Share",
             IconOnly = true,
             IconPlacement = BitPlacement.End,
-            IsLoading = true,
+            Loading = true,
             LoadingDelay = 300,
             LoadingLabel = "Saving...",
             LoadingLabelPlacement = BitPlacement.Top,
@@ -230,7 +230,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
         Assert.AreEqual("Share", instance.IconName);
         Assert.IsTrue(instance.IconOnly);
         Assert.AreEqual(BitPlacement.End, instance.IconPlacement);
-        Assert.IsTrue(instance.IsLoading);
+        Assert.IsTrue(instance.Loading);
         Assert.AreEqual(300, instance.LoadingDelay);
         Assert.AreEqual("Saving...", instance.LoadingLabel);
         Assert.AreEqual(BitPlacement.Top, instance.LoadingLabelPlacement);

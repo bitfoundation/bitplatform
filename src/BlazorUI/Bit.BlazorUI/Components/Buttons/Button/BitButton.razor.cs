@@ -240,7 +240,7 @@ public partial class BitButton : BitComponentBase
     /// <see cref="Reclickable"/> is set - <c>aria-disabled</c> too, since the click is refused.
     /// </remarks>
     [Parameter, ResetClassBuilder, TwoWayBound]
-    public bool IsLoading { get; set; }
+    public bool Loading { get; set; }
 
     /// <summary>
     /// The delay in milliseconds before the spinner appears after the button enters the loading state.
@@ -437,7 +437,7 @@ public partial class BitButton : BitComponentBase
 
         ClassBuilder.Register(() => _showLoading ? "bit-btn-lda" : string.Empty);
 
-        ClassBuilder.Register(() => IsLoading && Reclickable is false ? "bit-btn-lnc" : string.Empty);
+        ClassBuilder.Register(() => Loading && Reclickable is false ? "bit-btn-lnc" : string.Empty);
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -619,7 +619,7 @@ public partial class BitButton : BitComponentBase
         }
 
         // the href is removed while loading, so an explicit tabindex is required to keep the anchor focusable
-        if (IsLoading && Href.HasValue()) return tabIndex ?? "0";
+        if (Loading && Href.HasValue()) return tabIndex ?? "0";
 
         // falls back to the browser default so the disabled state's tabindex does not stick around after re-enabling
         return tabIndex;
@@ -638,7 +638,7 @@ public partial class BitButton : BitComponentBase
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (Disabled) return;
-        if (IsLoading && Reclickable is false) return;
+        if (Loading && Reclickable is false) return;
 
         // The click that ends a drag is the drag's own, not a press of the button, so it is swallowed
         // before anything else happens - including the loading state, which would otherwise flash on
@@ -649,7 +649,7 @@ public partial class BitButton : BitComponentBase
             return;
         }
 
-        var isLoading = IsLoading;
+        var isLoading = Loading;
 
         // The loading state belongs to the latest click alone. A Reclickable button's re-click arrives while
         // that state is already on, so it only raises the event: entering it again would be a no-op, and
@@ -660,7 +660,7 @@ public partial class BitButton : BitComponentBase
 
         if (AutoLoading && isLoading is false)
         {
-            if (await AssignIsLoading(true) is false) return;
+            if (await AssignLoading(true) is false) return;
 
             UpdateLoadingVisuals();
         }
@@ -675,7 +675,7 @@ public partial class BitButton : BitComponentBase
             // stranding it in a loading state that nothing will ever clear.
             if (AutoLoading && clickId == _clickId)
             {
-                await AssignIsLoading(false);
+                await AssignLoading(false);
 
                 UpdateLoadingVisuals();
             }
@@ -684,7 +684,7 @@ public partial class BitButton : BitComponentBase
 
     private void UpdateLoadingVisuals()
     {
-        if (IsLoading)
+        if (Loading)
         {
             if (_showLoading || _loadingDelayCts is not null) return;
 
@@ -715,7 +715,7 @@ public partial class BitButton : BitComponentBase
             return;
         }
 
-        if (IsDisposed || IsLoading is false || token.IsCancellationRequested) return;
+        if (IsDisposed || Loading is false || token.IsCancellationRequested) return;
 
         SetShowLoading(true);
 

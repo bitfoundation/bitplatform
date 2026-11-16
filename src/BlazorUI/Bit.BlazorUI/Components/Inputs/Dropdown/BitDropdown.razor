@@ -86,7 +86,7 @@
         </div>;
 }
 
-@if ((Virtualize || IsLoading) && (Options ?? ChildContent) is not null)
+@if ((Virtualize || Loading) && (Options ?? ChildContent) is not null)
 {
     @* In virtualize mode the items have to be rendered from the (registered) Items collection, and while
        loading the callout shows the loading content instead of them, so the options only register
@@ -329,7 +329,7 @@
         }
 
         <span class="bit-drp-icn">
-            @if (IsLoading)
+            @if (Loading)
             {
                 <div aria-hidden="true" style="@Styles?.Spinner" class="bit-drp-spn @Classes?.Spinner"></div>
             }
@@ -447,7 +447,7 @@
         {
             @ErrorLiveText
         }
-        else if (IsLoading)
+        else if (Loading)
         {
             @* Text only, never LoadingTemplate: the template is arbitrary markup meant to be seen -
                a spinner, an image, something interactive - and rendering it a second time here would
@@ -615,7 +615,7 @@
         </div>
     }
 
-    @if (MultiSelect && ShowSelectAll && ItemsProvider is null && IsLoading is false)
+    @if (MultiSelect && ShowSelectAll && ItemsProvider is null && Loading is false)
     {
         @* One pass over the items for the three pieces of state, the first of which decides whether the
            item is rendered at all: an empty list (or a search that matched nothing) leaves it with
@@ -664,12 +664,12 @@
         // The text the list offers to create an item out of, which only the Dynamic ComboBox mode ever
         // has. It stands in for the empty state while it is there: a list that says "no results" while
         // offering to create the very thing that was searched for contradicts itself.
-        var dynamicItemText = IsLoading ? null : GetDynamicItemText();
+        var dynamicItemText = Loading ? null : GetDynamicItemText();
 
         // The hint that the list below is still the full one because what was typed is too short to
         // filter by, which is the one state where the items on the screen have nothing to do with the
         // text in the search field.
-        var minSearchLengthText = IsLoading ? null : GetMinSearchLengthText();
+        var minSearchLengthText = Loading ? null : GetMinSearchLengthText();
     }
 
     @* The listbox is named after the label of the dropdown, so its options are read as part of the
@@ -678,7 +678,7 @@
          role="listbox"
          style="@Styles?.ScrollContainer"
          class="bit-drp-scn @Classes?.ScrollContainer"
-         aria-busy="@(IsLoading ? "true" : null)"
+         aria-busy="@(Loading ? "true" : null)"
          aria-label="@(HasLabel ? null : AriaLabel)"
          aria-labelledby="@(HasLabel ? _labelId : null)"
          aria-multiselectable="@(MultiSelect ? "true" : null)">
@@ -719,7 +719,7 @@
             </button>
         }
 
-        @if (IsLoading)
+        @if (Loading)
         {
             @loadingContent
         }

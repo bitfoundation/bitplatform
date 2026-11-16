@@ -86,7 +86,7 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
         });
 
         // Neither a re-render nor the after-render pass reports it a second time.
-        component.Render(parameters => parameters.Add(p => p.IsLoading, true));
+        component.Render(parameters => parameters.Add(p => p.Loading, true));
 
         Assert.AreEqual(1, ranges.Count);
         Assert.AreEqual(new DateTime(2031, 6, 1), ranges[0].Start);

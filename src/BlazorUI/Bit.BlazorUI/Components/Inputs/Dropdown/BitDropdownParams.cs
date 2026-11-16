@@ -301,7 +301,7 @@ public partial class BitDropdownParams<[DynamicallyAccessedMembers(DynamicallyAc
     /// Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched.
     /// The dropdown stays interactive, so the user can still open the callout and see the loading state.
     /// </summary>
-    public bool? IsLoading { get; set; }
+    public bool? Loading { get; set; }
 
     /// <summary>
     /// The icon of the check mark in the multi-select items.
@@ -349,7 +349,7 @@ public partial class BitDropdownParams<[DynamicallyAccessedMembers(DynamicallyAc
     public string? Label { get; set; }
 
     /// <summary>
-    /// The text to render in the callout in place of the items while <see cref="IsLoading"/> is enabled.
+    /// The text to render in the callout in place of the items while <see cref="Loading"/> is enabled.
     /// </summary>
     public string? LoadingText { get; set; }
 
@@ -882,9 +882,9 @@ public partial class BitDropdownParams<[DynamicallyAccessedMembers(DynamicallyAc
             bitDropdown.TakeFromCascade(nameof(Immediate), Immediate.Value, static d => d.Immediate, static (d, v) => d.Immediate = v);
         }
 
-        if (IsLoading.HasValue)
+        if (Loading.HasValue)
         {
-            bitDropdown.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static d => d.IsLoading, static (d, v) => d.IsLoading = v);
+            bitDropdown.TakeFromCascade(nameof(Loading), Loading.Value, static d => d.Loading, static (d, v) => d.Loading = v);
         }
 
 

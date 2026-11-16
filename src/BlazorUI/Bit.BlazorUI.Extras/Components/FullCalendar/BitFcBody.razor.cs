@@ -5,7 +5,7 @@ public partial class BitFcBody
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
-    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool Loading { get; set; }
 
     [Parameter] public RenderFragment<BitFullCalendarEvent>? MonthEventTemplate { get; set; }
     [Parameter] public RenderFragment<BitFullCalendarEvent>? WeekEventTemplate { get; set; }

@@ -219,7 +219,7 @@ public partial class BitTagsInputParams : BitComponentBaseParams, IBitComponentP
     /// <summary>
     /// Draws a spinner at the end of the field, for the wait the field itself is the cause of.
     /// </summary>
-    public bool? IsLoading { get; set; }
+    public bool? Loading { get; set; }
 
     /// <summary>
     /// The format of the message announced by screen readers when a tag is rejected, where {0} is the tag.
@@ -237,7 +237,7 @@ public partial class BitTagsInputParams : BitComponentBaseParams, IBitComponentP
     public string? LessTagsText { get; set; }
 
     /// <summary>
-    /// The accessible name of the spinner IsLoading draws.
+    /// The accessible name of the spinner Loading draws.
     /// </summary>
     public string? LoadingAriaLabel { get; set; }
 
@@ -670,9 +670,9 @@ public partial class BitTagsInputParams : BitComponentBaseParams, IBitComponentP
             bitTagsInput.TakeFromCascade(nameof(InvalidAnnouncementFormat), InvalidAnnouncementFormat, static t => t.InvalidAnnouncementFormat, static (t, v) => t.InvalidAnnouncementFormat = v);
         }
 
-        if (IsLoading.HasValue)
+        if (Loading.HasValue)
         {
-            bitTagsInput.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static t => t.IsLoading, static (t, v) => t.IsLoading = v);
+            bitTagsInput.TakeFromCascade(nameof(Loading), Loading.Value, static t => t.Loading, static (t, v) => t.Loading = v);
         }
 
         if (Label.HasValue())

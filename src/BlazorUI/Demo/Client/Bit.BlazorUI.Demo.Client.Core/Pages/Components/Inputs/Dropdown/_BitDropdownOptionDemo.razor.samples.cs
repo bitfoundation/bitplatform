@@ -1786,8 +1786,8 @@ private readonly List<BitDropdownItem<string>> basicItems =
     }
 </style>
 
-<BitDropdown Label=""IsLoading""
-             IsLoading
+<BitDropdown Label=""Loading""
+             Loading
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -1798,7 +1798,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 </BitDropdown>
 
 <BitDropdown Label=""LoadingText""
-             IsLoading
+             Loading
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
              LoadingText=""Fetching the products...""
@@ -1810,7 +1810,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 </BitDropdown>
 
 <BitDropdown Label=""LoadingTemplate""
-             IsLoading
+             Loading
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -1828,9 +1828,9 @@ private readonly List<BitDropdownItem<string>> basicItems =
     </Options>
 </BitDropdown>
 
-<BitButton OnClick=""LoadDelayedItems"" IsLoading=""isLoadingItems"">Load the items</BitButton>
+<BitButton OnClick=""LoadDelayedItems"" Loading=""isLoadingItems"">Load the items</BitButton>
 <BitDropdown Label=""Products""
-             IsLoading=""isLoadingItems""
+             Loading=""isLoadingItems""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -1938,7 +1938,7 @@ private async Task LoadDelayedItems()
              EmptyText=""Es gibt hier nichts""
              TItem=""BitDropdownOption<string>"" TValue=""string"" />
 
-<BitDropdown IsLoading
+<BitDropdown Loading
              Label=""Wird geladen""
              LoadingText=""Wird geladen...""
              Placeholder=""Zutat auswählen""

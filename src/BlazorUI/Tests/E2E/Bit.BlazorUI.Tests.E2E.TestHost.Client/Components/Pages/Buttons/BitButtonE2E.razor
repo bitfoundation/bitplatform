@@ -46,7 +46,7 @@
     {
         <BitButton Id="@($"size-{size}")" Size="size" IconName="@BitIconName.Emoji2">@size</BitButton>
         <BitButton Id="@($"size-icon-{size}")" Size="size" IconOnly AriaLabel="Emoji" IconName="@BitIconName.Emoji2" />
-        <BitButton Id="@($"size-loading-{size}")" Size="size" IsLoading LoadingLabel="Loading...">@size</BitButton>
+        <BitButton Id="@($"size-loading-{size}")" Size="size" Loading LoadingLabel="Loading...">@size</BitButton>
     }
 </E2ESection>
 
@@ -71,18 +71,18 @@
 </E2ESection>
 
 <E2ESection Id="loading" Title="Loading">
-    <BitButton Id="loading-toggle" IsLoading="_isLoading" LoadingLabel="Loading..." OnClick="() => _loadingClicks++">
+    <BitButton Id="loading-toggle" Loading="_isLoading" LoadingLabel="Loading..." OnClick="() => _loadingClicks++">
         Click me
     </BitButton>
     <BitButton Id="btn-toggle-loading" Variant="BitVariant.Text" OnClick="() => _isLoading = !_isLoading">Toggle loading</BitButton>
     <span id="loading-clicks">@_loadingClicks</span>
     <br />
-    <BitButton Id="loading-reclickable" IsLoading Reclickable OnClick="() => _reclickableLoadingClicks++">Reclickable</BitButton>
+    <BitButton Id="loading-reclickable" Loading Reclickable OnClick="() => _reclickableLoadingClicks++">Reclickable</BitButton>
     <span id="reclickable-loading-clicks">@_reclickableLoadingClicks</span>
     <br />
     @foreach (var placement in new[] { BitPlacement.End, BitPlacement.Start, BitPlacement.Top, BitPlacement.Bottom })
     {
-        <BitButton Id="@($"loading-placement-{placement}")" IsLoading LoadingLabel="@($"{placement}...")"
+        <BitButton Id="@($"loading-placement-{placement}")" Loading LoadingLabel="@($"{placement}...")"
                    LoadingLabelPlacement="placement" Variant="BitVariant.Outline">@placement</BitButton>
     }
 </E2ESection>
@@ -97,7 +97,7 @@
     <span id="reclick-args">@string.Join(",", _reclickArgs)</span>
     <BitButton Id="btn-release-reclick" Variant="BitVariant.Text" OnClick="ReleaseReclick">Release</BitButton>
     <br />
-    <BitButton Id="bind-loading-btn" AutoLoading @bind-IsLoading="_boundLoading" OnClick="BoundClick">Bound</BitButton>
+    <BitButton Id="bind-loading-btn" AutoLoading @bind-Loading="_boundLoading" OnClick="BoundClick">Bound</BitButton>
     <span id="bound-loading">@_boundLoading</span>
     <BitButton Id="btn-release-bound" Variant="BitVariant.Text" OnClick="() => _boundTcs.TrySetResult()">Release</BitButton>
 </E2ESection>
@@ -120,7 +120,7 @@
     <BitButton Id="href-hash-nav" Href="e2e/button#href-target" OnClick="() => _hrefClicks++">Hash navigation</BitButton>
     <BitButton Id="href-download" Href="@IconDataUrl" Download="icon.svg">Download</BitButton>
     <BitButton Id="href-disabled" Href="https://example.com" Disabled>Disabled link</BitButton>
-    <BitButton Id="href-loading" Href="https://example.com" IsLoading>Loading link</BitButton>
+    <BitButton Id="href-loading" Href="https://example.com" Loading>Loading link</BitButton>
     <span id="href-clicks">@_hrefClicks</span>
     <div id="href-target">The in-page target</div>
 </E2ESection>
@@ -134,7 +134,7 @@
         <BitButton Id="form-submit" ButtonType="BitButtonType.Submit">Submit</BitButton>
         <BitButton Id="form-reset" ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline" OnClick="ResetForm">Reset</BitButton>
         <BitButton Id="form-button" ButtonType="BitButtonType.Button" Variant="BitVariant.Text" OnClick="() => _formButtonClicks++">Button</BitButton>
-        <BitButton Id="form-loading" ButtonType="BitButtonType.Submit" IsLoading>Loading submit</BitButton>
+        <BitButton Id="form-loading" ButtonType="BitButtonType.Submit" Loading>Loading submit</BitButton>
         <BitButton Id="form-disabled-focusable" ButtonType="BitButtonType.Submit" Disabled>Disabled submit</BitButton>
     </EditForm>
     <span id="form-valid">@_validSubmits</span>
@@ -162,7 +162,7 @@
         <PrimaryTemplate><b class="tpl-primary">Primary text</b></PrimaryTemplate>
         <SecondaryTemplate><em class="tpl-secondary">A secondary template</em></SecondaryTemplate>
     </BitButton>
-    <BitButton Id="tpl-loading" IsLoading="_tplLoading" LoadingLabel="Announced">
+    <BitButton Id="tpl-loading" Loading="_tplLoading" LoadingLabel="Announced">
         <PrimaryTemplate>Click me</PrimaryTemplate>
         <LoadingTemplate>
             <div class="tpl-custom-loading">Wait...</div>
@@ -252,7 +252,7 @@
                Styles="@(new() { Root = "outline: 3px dotted rgb(9, 9, 9);", Icon = "color: rgb(255, 0, 0);", Container = "padding-left: 7px;", Primary = "color: rgb(0, 128, 0);", Secondary = "color: rgb(0, 0, 255);" })">
         Primary
     </BitButton>
-    <BitButton Id="sc-styles-loading" IsLoading LoadingLabel="Wait..."
+    <BitButton Id="sc-styles-loading" Loading LoadingLabel="Wait..."
                Styles="@(new() { HiddenContent = "letter-spacing: 3px;", LoadingContainer = "padding-top: 5px;", Spinner = "border-top-color: rgb(218, 165, 32);", LoadingLabel = "color: rgb(255, 99, 71);" })">
         Click me
     </BitButton>
@@ -260,7 +260,7 @@
                Classes="@(new() { Root = "c-root", Icon = "c-icon", Container = "c-container", Primary = "c-primary", Secondary = "c-secondary" })">
         Primary
     </BitButton>
-    <BitButton Id="sc-classes-loading" IsLoading LoadingLabel="Sending..."
+    <BitButton Id="sc-classes-loading" Loading LoadingLabel="Sending..."
                Classes="@(new() { HiddenContent = "c-hidden", LoadingContainer = "c-ldg", Spinner = "c-spinner", LoadingLabel = "c-label" })">
         Click me
     </BitButton>
@@ -282,7 +282,7 @@
     <div id="vars-states" style="--bit-Button-hover-background: rgb(0, 128, 0); --bit-Button-hover-color: rgb(255, 255, 0); --bit-Button-disabled-background: rgb(77, 77, 77); --bit-Button-spinner-color: rgb(255, 0, 255); --bit-Button-spinner-size: 30px;">
         <BitButton Id="vars-hover">Hover me</BitButton>
         <BitButton Id="vars-disabled" Disabled>Disabled</BitButton>
-        <BitButton Id="vars-spinner" IsLoading>Loading</BitButton>
+        <BitButton Id="vars-spinner" Loading>Loading</BitButton>
     </div>
 </E2ESection>
 
@@ -290,7 +290,7 @@
     <BitButton Id="rtl-ltr" IconName="@BitIconName.Emoji">Left to right</BitButton>
     <BitButton Id="rtl-explicit" Dir="BitDir.Rtl" IconName="@BitIconName.Emoji">دکمه با آیکن</BitButton>
     <BitButton Id="rtl-explicit-end" Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" IconPlacement="BitPlacement.End">دکمه با آیکن</BitButton>
-    <BitButton Id="rtl-loading" Dir="BitDir.Rtl" IsLoading LoadingLabel="در حال بارگذاری" />
+    <BitButton Id="rtl-loading" Dir="BitDir.Rtl" Loading LoadingLabel="در حال بارگذاری" />
     <div dir="rtl">
         <BitButton Id="rtl-inherited" IconName="@BitIconName.Emoji">دکمه با آیکن</BitButton>
     </div>
@@ -320,8 +320,8 @@
 </E2ESection>
 
 <E2ESection Id="motion" Title="Reduced motion">
-    <BitButton Id="motion-default" IsLoading>Default</BitButton>
-    <BitButton Id="motion-forced" IsLoading ForceAnimation>ForceAnimation</BitButton>
+    <BitButton Id="motion-default" Loading>Default</BitButton>
+    <BitButton Id="motion-forced" Loading ForceAnimation>ForceAnimation</BitButton>
 </E2ESection>
 
 <E2EStatus />

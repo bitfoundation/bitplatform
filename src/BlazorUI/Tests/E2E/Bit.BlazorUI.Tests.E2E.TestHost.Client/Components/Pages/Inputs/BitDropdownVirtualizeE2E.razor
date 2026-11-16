@@ -3,7 +3,7 @@
 @* Virtualization and loading in BitDropdown: a long local Items list rendered a window at a time (ItemSize,
    OverscanCount), opening on a selection thousands of rows down, a virtualized search, an ItemsProvider with its
    requests, search, positions in the whole set, debounce, InitialSelectedItems, VirtualizePlaceholder and
-   RefreshItemsAsync, and IsLoading with LoadingText / LoadingTemplate and a real fetch. *@
+   RefreshItemsAsync, and Loading with LoadingText / LoadingTemplate and a real fetch. *@
 
 <PageTitle>BitDropdown virtualize E2E</PageTitle>
 
@@ -116,11 +116,11 @@
     </BitDropdown>
 </E2ESection>
 
-<E2ESection Id="loading" Title="IsLoading">
+<E2ESection Id="loading" Title="Loading">
     <BitDropdown Id="dd-loading"
                  TItem="BitDropdownItem<string>" TValue="string"
                  Label="Loading"
-                 IsLoading
+                 Loading
                  MultiSelect
                  ShowSelectAll
                  Items="_loadingItems"
@@ -128,14 +128,14 @@
     <BitDropdown Id="dd-loading-text"
                  TItem="BitDropdownItem<string>" TValue="string"
                  Label="LoadingText"
-                 IsLoading
+                 Loading
                  LoadingText="Fetching the products..."
                  Items="_loadingItems2"
                  DefaultValue="@string.Empty" />
     <BitDropdown Id="dd-loading-tpl"
                  TItem="BitDropdownItem<string>" TValue="string"
                  Label="LoadingTemplate"
-                 IsLoading
+                 Loading
                  Items="_loadingItems3"
                  DefaultValue="@string.Empty">
         <LoadingTemplate><span id="loading-tpl-content">Just a moment</span></LoadingTemplate>
@@ -144,7 +144,7 @@
     <BitDropdown Id="dd-loading-real"
                  TItem="BitDropdownItem<string>" TValue="string"
                  Label="A real fetch"
-                 IsLoading="_isLoading"
+                 Loading="_isLoading"
                  Items="_delayedItems"
                  DefaultValue="@string.Empty" />
     <p>Fetch: <span id="fetch-state">@_fetchState</span></p>

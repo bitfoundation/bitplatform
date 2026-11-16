@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// and IconPlacement, IconOnly and its name, DefaultIsChecked, the two-way bound IsChecked, OnChange, ToggleAsync and
 /// FocusAsync, OnColor/OffColor and OnVariant/OffVariant, the check mark (ShowCheckMark, FixedCheckMark, a custom
 /// icon), ChildContent and OnTemplate/OffTemplate, the order of OnClick, OnChanging and OnChange and the veto of
-/// OnChanging, StopPropagation, the loading states (IsLoading, Reclickable, AutoLoading, LoadingDelay, the label
+/// OnChanging, StopPropagation, the loading states (Loading, Reclickable, AutoLoading, LoadingDelay, the label
 /// placements, the live region, LoadingTemplate), FullWidth and NoWrap, FixedColor, every AriaMode and the automatic
 /// aria-pressed rule, OnAriaLabel/OffAriaLabel, AriaLabelledBy, AriaControls, a page role, AriaDescription, the
 /// disabled contract, the BitParams cascade, every Color and Size, Style/Class/Styles/Classes, the public CSS
@@ -368,7 +368,7 @@ public class BitToggleButtonE2ETests : E2ETestBase
     // ---------- loading ----------
 
     [TestMethod]
-    public async Task IsLoading_TurnedOn_CoversTheContentAnnouncesItAndRefusesTheClick()
+    public async Task Loading_TurnedOn_CoversTheContentAnnouncesItAndRefusesTheClick()
     {
         await OpenAsync("/e2e/toggle-button");
 
