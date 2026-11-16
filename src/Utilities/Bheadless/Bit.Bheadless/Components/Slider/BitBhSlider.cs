@@ -378,18 +378,24 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
     private double Snap(double value) => BitBhMath.Clamp(BitBhMath.Snap(value, Min, EffectiveStep), Min, Max);
 
     /// <summary>
-    /// The space kept between neighbouring thumbs: <see cref="MinStepsBetweenThumbs"/> steps, or as many whole steps
-    /// as <paramref name="count"/> thumbs leave room for between <see cref="Min"/> and <see cref="Max"/> - a gap the
+    /// The steps kept between neighbouring thumbs: <see cref="MinStepsBetweenThumbs"/>, or as many whole steps as
+    /// <paramref name="count"/> thumbs leave room for between <see cref="Min"/> and <see cref="Max"/> - a gap the
     /// range cannot hold would push the outer thumbs past its ends.
     /// </summary>
-    private double ThumbGap(int count)
+    private double ThumbGapSteps(int count)
     {
-        var step = EffectiveStep;
-        var gap = MinStepsBetweenThumbs * step;
+        double gap = MinStepsBetweenThumbs;
         if (count < 2 || gap <= 0) return gap;
-        var room = Math.Floor(Math.Max(0, Max - Min) / (count - 1) / step) * step;
+        // Counted like Snap counts: 0.3 holds three steps of 0.1, not the 2.9999999999999996 double divides out.
+        var room = Math.Floor(Math.Max(0, LastStep()) / (count - 1));
         return Math.Min(gap, room);
     }
+
+    /// <summary>The space kept between neighbouring thumbs (<see cref="ThumbGapSteps"/>).</summary>
+    private double ThumbGap(int count) => BitBhMath.AtStep(0, EffectiveStep, ThumbGapSteps(count));
+
+    /// <summary>The steps from <see cref="Min"/> to the last value of the step grid that is not past <see cref="Max"/>.</summary>
+    private double LastStep() => BitBhMath.WholeSteps(Max, Min, EffectiveStep, MidpointRounding.ToNegativeInfinity);
 
     /// <summary>
     /// Moves a thumb. Returns the resulting values - the ones to report: a controlled <see cref="Value"/> /
@@ -407,8 +413,13 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
         {
             case BitBhSliderThumbCollision.Push:
                 // The thumb may go as far as leaves room for the ones it pushes; the gap fits the range, so the
-                // bounds do not cross and the pushed values stay in it (the clamps only absorb rounding).
-                next = BitBhMath.Clamp(next, Min + gap * index, Max - gap * (values.Length - 1 - index));
+                // bounds do not cross and the pushed values stay in it (the clamps only absorb rounding). The
+                // bounds are counted in steps from Min to the last step not past Max, so they stay on the grid:
+                // Max - gap would not when Max is no multiple of the step.
+                var gapSteps = ThumbGapSteps(values.Length);
+                var at = BitBhMath.Clamp(BitBhMath.WholeSteps(next, Min, EffectiveStep, MidpointRounding.AwayFromZero),
+                    gapSteps * index, LastStep() - gapSteps * (values.Length - 1 - index));
+                next = BitBhMath.AtStep(Min, EffectiveStep, at);
                 values[index] = next;
                 for (var i = index + 1; i < values.Length; i++) values[i] = BitBhMath.Clamp(Math.Max(values[i], values[i - 1] + gap), Min, Max);
                 for (var i = index - 1; i >= 0; i--) values[i] = BitBhMath.Clamp(Math.Min(values[i], values[i + 1] - gap), Min, Max);

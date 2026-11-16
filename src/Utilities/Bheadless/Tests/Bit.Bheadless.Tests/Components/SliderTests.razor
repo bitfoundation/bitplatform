@@ -401,6 +401,50 @@
     }
 
     [TestMethod]
+    public void The_room_for_the_gap_counts_decimal_steps_exactly()
+    {
+        IReadOnlyList<double>? values = null;
+        var cut = Render(
+            @<BitBhSlider DefaultValues="@(new double[] { 0, 0.3 })" Min="0" Max="0.3" Step="0.1" MinStepsBetweenThumbs="3"
+                          ThumbCollision="BitBhSliderThumbCollision.Push" ValuesChanged="v => values = v">
+                <BitBhSliderThumb aria-label="Low" />
+                <BitBhSliderThumb aria-label="High" />
+            </BitBhSlider>);
+
+        // 0.3 holds the three steps: the lower thumb has no room to move.
+        cut.FindAll("[role=slider]")[0].Press("ArrowRight");
+        Assert.IsNull(values);
+    }
+
+    [TestMethod]
+    public void Pushed_thumbs_stay_on_the_step_grid()
+    {
+        IReadOnlyList<double>? values = null;
+        var cut = Render(
+            @<BitBhSlider DefaultValues="@(new double[] { 0, 6 })" Min="0" Max="10" Step="3" MinStepsBetweenThumbs="1"
+                          ThumbCollision="BitBhSliderThumbCollision.Push" ValuesChanged="v => values = v">
+                <BitBhSliderThumb aria-label="Low" />
+                <BitBhSliderThumb aria-label="High" />
+            </BitBhSlider>);
+
+        cut.FindAll("[role=slider]")[0].Press("End");
+        Assert.IsNotNull(values);
+        CollectionAssert.AreEqual(new double[] { 6, 9 }, values.ToArray());
+    }
+
+    [TestMethod]
+    public void End_on_a_range_past_decimal_does_not_throw()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValue="0" Min="0" Max="1e30" Step="1e20">
+                <BitBhSliderThumb aria-label="Level" />
+            </BitBhSlider>);
+
+        cut.Find("[role=slider]").Press("End");
+        Assert.AreEqual(1e30, double.Parse(cut.Find("[role=slider]").GetAttribute("aria-valuenow")!, System.Globalization.CultureInfo.InvariantCulture), 1e16);
+    }
+
+    [TestMethod]
     [DataRow(0.15, 0.2)]
     [DataRow(0.25, 0.3)]
     [DataRow(0.35, 0.4)]
@@ -420,4 +464,8 @@
     [DataRow(double.PositiveInfinity)]
     public void Snap_falls_back_to_double_out_of_decimal_range(double value)
         => BitBhMath.Snap(value, 0, 1);
+
+    [TestMethod]
+    public void Snap_falls_back_to_double_when_the_product_is_out_of_decimal_range()
+        => Assert.AreEqual(1e30, BitBhMath.Snap(1e30, 0, 1e20), 1e16);
 }

@@ -22,26 +22,46 @@ internal static class BitBhMath
     /// <param name="origin">Where the steps start (a slider's Min).</param>
     /// <param name="step">A positive, finite step.</param>
     internal static double Snap(double value, double origin, double step)
+        => AtStep(origin, step, WholeSteps(value, origin, step, MidpointRounding.AwayFromZero));
+
+    /// <summary>
+    /// The whole number of steps from <paramref name="origin"/> to <paramref name="value"/>, rounded by
+    /// <paramref name="mode"/> (<see cref="MidpointRounding.ToNegativeInfinity"/> counts the steps that fit). Short
+    /// decimals are divided in <see cref="decimal"/>: 0.3 / 0.1 is 3 there, 2.9999999999999996 in double.
+    /// </summary>
+    internal static double WholeSteps(double value, double origin, double step, MidpointRounding mode)
     {
         var steps = (value - origin) / step;
-        var n = Math.Round(steps, MidpointRounding.AwayFromZero);
 
+        // A value written with at most 15 significant digits can tell an exact midpoint from one a binary
+        // approximation leaves just under it (0.15 / 0.1 is 1.4999999999999998 in double).
         if (Math.Abs(steps) < MaxExactSteps
-            && TryToDecimalExactly(step, out var decimalStep)
-            && TryToDecimalExactly(origin, out var decimalOrigin))
-        {
-            // A value written with at most 15 significant digits can tell an exact midpoint from one a binary
-            // approximation leaves just under it (0.15 / 0.1 is 1.4999999999999998 in double).
-            if (TryToDecimalExactly(value, out var decimalValue))
-                n = (double)Math.Round((decimalValue - decimalOrigin) / decimalStep, MidpointRounding.AwayFromZero);
-            return (double)((decimal)n * decimalStep + decimalOrigin);
-        }
+            && TryToDecimalExactly(value, out var decimalValue)
+            && TryToDecimalExactly(origin, out var decimalOrigin)
+            && TryToDecimalExactly(step, out var decimalStep))
+            return (double)Math.Round((decimalValue - decimalOrigin) / decimalStep, mode);
 
-        return n * step + origin;
+        return Math.Round(steps, mode);
     }
 
-    // Under 1e15 a whole number of steps converts to decimal exactly, and with the operands under 1e27 neither the
-    // product nor the sum can leave decimal's range (about 7.9e28).
+    /// <summary>
+    /// <paramref name="origin"/> + <paramref name="steps"/> × <paramref name="step"/> for a whole number of steps, in
+    /// <see cref="decimal"/> when the step and the origin are short decimals and the result fits in it (3 × 0.1 is 0.3,
+    /// not 0.30000000000000004), in <see cref="double"/> otherwise.
+    /// </summary>
+    internal static double AtStep(double origin, double step, double steps)
+    {
+        if (Math.Abs(steps) < MaxExactSteps
+            && Math.Abs(steps * step) < MaxDecimalOperand
+            && TryToDecimalExactly(step, out var decimalStep)
+            && TryToDecimalExactly(origin, out var decimalOrigin))
+            return (double)((decimal)steps * decimalStep + decimalOrigin);
+
+        return steps * step + origin;
+    }
+
+    // Under 1e15 a whole number of steps converts to decimal exactly, and with the product and the origin each under
+    // 1e27 their sum cannot leave decimal's range (about 7.9e28) - a product is checked, as 1e10 steps of 1e20 is not.
     private const double MaxExactSteps = 1e15;
     private const double MaxDecimalOperand = 1e27;
 
