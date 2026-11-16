@@ -119,11 +119,11 @@ public class BitSliderParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSliderShouldTakeIsRangedFromTheCascadeBeforeItsDefaultsArePicked()
+    public void BitSliderShouldTakeRangedFromTheCascadeBeforeItsDefaultsArePicked()
     {
         // The defaults of an unbound slider are picked once, in OnInitialized, and which ones those are depends on
-        // IsRanged - so the cascade has to have been applied by then.
-        var com = RenderWithParams(new BitSliderParams { IsRanged = true, Max = 10 }, builder =>
+        // Ranged - so the cascade has to have been applied by then.
+        var com = RenderWithParams(new BitSliderParams { Ranged = true, Max = 10 }, builder =>
         {
             builder.AddAttribute(2, nameof(BitSlider.DefaultLowerValue), (double?)3D);
             builder.AddAttribute(3, nameof(BitSlider.DefaultUpperValue), (double?)7D);
@@ -210,8 +210,8 @@ public class BitSliderParamsTests : BunitTestContext
             GetValueText = getValueText,
             Invalid = true,
             Inverted = true,
-            IsOriginFromZero = true,
-            IsRanged = true,
+            OriginFromZero = true,
+            Ranged = true,
             Vertical = true,
             LargeStep = 25,
             LowerAriaLabel = "Cascaded lower",
@@ -256,8 +256,8 @@ public class BitSliderParamsTests : BunitTestContext
         Assert.AreSame(getValueText, instance.GetValueText);
         Assert.IsTrue(instance.Invalid);
         Assert.IsTrue(instance.Inverted);
-        Assert.IsTrue(instance.IsOriginFromZero);
-        Assert.IsTrue(instance.IsRanged);
+        Assert.IsTrue(instance.OriginFromZero);
+        Assert.IsTrue(instance.Ranged);
         Assert.IsTrue(instance.Vertical);
         Assert.AreEqual(25, instance.LargeStep);
         Assert.AreEqual("Cascaded lower", instance.LowerAriaLabel);

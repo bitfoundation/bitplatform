@@ -116,7 +116,7 @@
 
            Every value label is kept out of the accessibility tree: the thumb beside it already announces the
            same value, and the pair read one after the other is the number said twice. *@
-        @if (ShowValue && IsRanged)
+        @if (ShowValue && Ranged)
         {
             <span aria-hidden="true"
                   style="@GetValueLabelStyle(Vertical ? Styles?.UpperValueLabel : Styles?.LowerValueLabel)"
@@ -140,7 +140,7 @@
                     {
                         @* A slider that only points at a value draws no fill at all, leaving the bare rail. *@
                     }
-                    else if (Inverted && IsRanged)
+                    else if (Inverted && Ranged)
                     {
                         @* An inverted range highlights what lies outside the two thumbs rather than between
                            them, which takes two segments instead of one. *@
@@ -160,7 +160,7 @@
                         </span>
                     }
 
-                    @if (IsRanged is false && NoFill is false && (IsOriginFromZero || Origin.HasValue))
+                    @if (Ranged is false && NoFill is false && (OriginFromZero || Origin.HasValue))
                     {
                         @* The origin tick marks where the fill grows out of, which is only the middle of the
                            track when the scale happens to be symmetric around it. *@
@@ -170,7 +170,7 @@
                         </span>
                     }
 
-                    @if (IsRanged)
+                    @if (Ranged)
                     {
                         <span style="@GetPointStyle(fillStart);@Styles?.Thumb;@Styles?.LowerThumb"
                               class="bit-sld-thb bit-sld-thb-lwr @Classes?.Thumb @Classes?.LowerThumb">
@@ -230,7 +230,7 @@
                    good at - the drag, the whole keyboard, the touch target, the role and the announced value -
                    while the thumb that is actually seen is drawn above from the value the component holds.
                    That is what stops the two from ever disagreeing when a constraint refuses a move. *@
-                @if (IsRanged)
+                @if (Ranged)
                 {
                     <input @ref="_lowerInputRef"
                            @attributes="InputHtmlAttributes"
@@ -404,7 +404,7 @@
            label sits next to either way. *@
         @if (ShowValue)
         {
-            @if (IsRanged)
+            @if (Ranged)
             {
                 <span aria-hidden="true"
                       style="@GetValueLabelStyle(Vertical ? Styles?.LowerValueLabel : Styles?.UpperValueLabel)"

@@ -326,7 +326,7 @@ public class BitSliderValidationMessageTests : BunitTestContext
         var component = RenderComponent<BitSlider>(parameters =>
         {
             parameters.AddCascadingValue(editContext);
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 10);
             parameters.Add(p => p.ShowValidationMessage, true);
             parameters.Add(p => p.LowerValue, model.Band!.Lower);

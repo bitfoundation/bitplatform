@@ -34,7 +34,6 @@ public partial class BitParameterNamingContractTests
         ["BitDropdown"] = ["IsLoading", "IsOpen", "IsOpenChanged"],
         ["BitNumberField"] = ["IsInputReadOnly"],
         ["BitOtpInput"] = ["IsLoading"],
-        ["BitSlider"] = ["IsOriginFromZero", "IsRanged"],
         ["BitTagsInput"] = ["IsLoading"],
         ["BitTimePicker"] = ["IsOpen", "IsOpenChanged"],
         ["BitDropMenu"] = ["IsLoading", "IsOpen", "IsOpenChanged", "DefaultIsOpen"],

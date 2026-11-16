@@ -3,7 +3,7 @@
 <EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <BitSlider IsRanged Max="10" ShowValidationMessage="@ShowValidationMessage" @bind-RangeValue="@TestModel.Band" />
+    <BitSlider Ranged Max="10" ShowValidationMessage="@ShowValidationMessage" @bind-RangeValue="@TestModel.Band" />
 
 </EditForm>
 

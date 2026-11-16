@@ -104,12 +104,12 @@ public partial class BitSliderParams : BitInputBaseParams<double>, IBitComponent
     /// <summary>
     /// Attaches the origin of the filled part of the track to zero.
     /// </summary>
-    public bool? IsOriginFromZero { get; set; }
+    public bool? OriginFromZero { get; set; }
 
     /// <summary>
     /// Gives the slider a second thumb, so what it selects is a range rather than a single value.
     /// </summary>
-    public bool? IsRanged { get; set; }
+    public bool? Ranged { get; set; }
 
     /// <summary>
     /// Stands the slider upright and fills it from the bottom up.
@@ -314,14 +314,14 @@ public partial class BitSliderParams : BitInputBaseParams<double>, IBitComponent
             bitSlider.TakeFromCascade(nameof(Inverted), Inverted.Value, static s => s.Inverted, static (s, v) => s.Inverted = v);
         }
 
-        if (IsOriginFromZero.HasValue)
+        if (OriginFromZero.HasValue)
         {
-            bitSlider.TakeFromCascade(nameof(IsOriginFromZero), IsOriginFromZero.Value, static s => s.IsOriginFromZero, static (s, v) => s.IsOriginFromZero = v);
+            bitSlider.TakeFromCascade(nameof(OriginFromZero), OriginFromZero.Value, static s => s.OriginFromZero, static (s, v) => s.OriginFromZero = v);
         }
 
-        if (IsRanged.HasValue)
+        if (Ranged.HasValue)
         {
-            bitSlider.TakeFromCascade(nameof(IsRanged), IsRanged.Value, static s => s.IsRanged, static (s, v) => s.IsRanged = v);
+            bitSlider.TakeFromCascade(nameof(Ranged), Ranged.Value, static s => s.Ranged, static (s, v) => s.Ranged = v);
         }
 
         if (Vertical.HasValue)

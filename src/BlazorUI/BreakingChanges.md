@@ -5,6 +5,19 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitSlider`'s `IsRanged` and `IsOriginFromZero` are `Ranged` and `OriginFromZero` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The slider's last two flags spelled with an `Is` lose it, like its `Vertical` before them (a component's own state is
+spelled without one). The `[Parameter]`s and their `BitSliderParams` counterparts are renamed:
+
+| Before | After |
+|---|---|
+| `<BitSlider IsRanged />` | `<BitSlider Ranged />` |
+| `<BitSlider IsOriginFromZero />` | `<BitSlider OriginFromZero />` |
+| `new BitSliderParams { IsRanged = true, IsOriginFromZero = true }` | `new BitSliderParams { Ranged = true, OriginFromZero = true }` |
+
+What the slider renders is unchanged (`bit-sld-rgd`, the `OriginFromZero` class-style part of the zero tick).
+
 ### `BitSlider`'s `IsVertical` is `Vertical` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own state is spelled without an `Is` (`Disabled`, `Vertical`, `Loading`), and the eleven other

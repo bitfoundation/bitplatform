@@ -265,7 +265,7 @@ public partial class BitSlider : BitInputBase<double>
     /// </summary>
     /// <remarks>
     /// Inverting is moving the origin of the fill to the far end of the scale, so an <see cref="Origin"/> named
-    /// outright - or attached to zero by <see cref="IsOriginFromZero"/> - is the one that stands, and inverting
+    /// outright - or attached to zero by <see cref="OriginFromZero"/> - is the one that stands, and inverting
     /// a single-value slider on top of it has nothing left to move.
     /// </remarks>
     [Parameter, ResetClassBuilder]
@@ -276,13 +276,13 @@ public partial class BitSlider : BitInputBase<double>
     /// whichever direction the value lies. It is shorthand for setting <see cref="Origin"/> to 0, and like
     /// it, the origin is held inside the Min..Max range.
     /// </summary>
-    [Parameter] public bool IsOriginFromZero { get; set; }
+    [Parameter] public bool OriginFromZero { get; set; }
 
     /// <summary>
     /// If ranged is true, display two thumbs that allow the lower and upper bounds of a range to be selected.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public bool IsRanged { get; set; }
+    public bool Ranged { get; set; }
 
     /// <summary>
     /// Whether to render the slider vertically.
@@ -434,7 +434,7 @@ public partial class BitSlider : BitInputBase<double>
 
     /// <summary>
     /// The value the filled part of the track grows out of, instead of the near end of the track. A value
-    /// outside the Min..Max range is held to it, and <see cref="IsOriginFromZero"/> is the shorthand for
+    /// outside the Min..Max range is held to it, and <see cref="OriginFromZero"/> is the shorthand for
     /// putting it at zero. It has no effect on a ranged slider, whose fill already has two ends of its own.
     /// </summary>
     [Parameter] public double? Origin { get; set; }
@@ -596,7 +596,7 @@ public partial class BitSlider : BitInputBase<double>
     /// The reference to the upper input of a ranged slider. It is the reference to the single input of a
     /// slider that is not ranged, since that slider has no upper end of its own.
     /// </summary>
-    public ElementReference UpperSliderInputElement => IsRanged ? _upperInputRef : _lowerInputRef;
+    public ElementReference UpperSliderInputElement => Ranged ? _upperInputRef : _lowerInputRef;
 
     /// <summary>
     /// Gives focus to the upper thumb of a ranged slider, which <see cref="BitInputBase{TValue}.FocusAsync()"/>
@@ -620,13 +620,13 @@ public partial class BitSlider : BitInputBase<double>
 
         ClassBuilder.Register(() => Inverted ? "bit-sld-ivt" : string.Empty);
 
-        ClassBuilder.Register(() => IsRanged ? "bit-sld-rgd" : string.Empty);
+        ClassBuilder.Register(() => Ranged ? "bit-sld-rgd" : string.Empty);
 
         // The composite class is kept beside the two simple ones so stylesheets written against the
         // previous markup keep matching the same elements.
-        ClassBuilder.Register(() => $"bit-sld-{(IsRanged ? "rgd-" : null)}{(Vertical ? "vrt" : "hrz")}");
+        ClassBuilder.Register(() => $"bit-sld-{(Ranged ? "rgd-" : null)}{(Vertical ? "vrt" : "hrz")}");
 
-        ClassBuilder.Register(() => IsRanged ? $"bit-sld-{(Vertical ? "vrt" : "hrz")}" : string.Empty);
+        ClassBuilder.Register(() => Ranged ? $"bit-sld-{(Vertical ? "vrt" : "hrz")}" : string.Empty);
 
         ClassBuilder.Register(() => ThumbLabel switch
         {
@@ -650,7 +650,7 @@ public partial class BitSlider : BitInputBase<double>
     protected override void OnInitialized()
     {
         // The cascade is applied here as well as in OnParametersSet, because the defaults of an unbound slider
-        // are picked exactly once - right below - and which ones those are depends on IsRanged, which a cascade
+        // are picked exactly once - right below - and which ones those are depends on Ranged, which a cascade
         // is as free to set as the markup is.
         CascadingParameters?.UpdateParameters(this);
 
@@ -662,7 +662,7 @@ public partial class BitSlider : BitInputBase<double>
 
         // The default of an unbound ranged slider is applied here rather than in OnParametersSet, so that a
         // later re-render with the same parameters cannot undo what the user has done since.
-        if (IsRanged)
+        if (Ranged)
         {
             // RangeValue carries both ends at once, so a slider given one is not an unbound slider looking
             // for a default - the defaults would silently overwrite half of what it was handed.
@@ -710,7 +710,7 @@ public partial class BitSlider : BitInputBase<double>
         _markValues = null;
         _valueChars = null;
 
-        if (IsRanged)
+        if (Ranged)
         {
             // Held inside the range the parameters describe, and ordered, before anything is drawn from them.
             var lower = ClampValue(LowerValue);
@@ -794,7 +794,7 @@ public partial class BitSlider : BitInputBase<double>
 
     protected override async Task OnParametersSetAsync()
     {
-        if (IsRanged)
+        if (Ranged)
         {
             if (_rangeCorrected)
             {
@@ -865,12 +865,12 @@ public partial class BitSlider : BitInputBase<double>
     /// </summary>
     /// <remarks>
     /// The parameters of the component itself are already assigned by the time this runs - the generated
-    /// SetParametersAsync fills them in before handing over to the base one - so both IsRanged and the
+    /// SetParametersAsync fills them in before handing over to the base one - so both Ranged and the
     /// expression are available to decide with.
     /// </remarks>
     protected override void CreateFieldIdentifier()
     {
-        if (IsRanged && RangeValueExpression is not null)
+        if (Ranged && RangeValueExpression is not null)
         {
             CreateFieldIdentifier(RangeValueExpression, typeof(BitSliderRangeValue));
             return;
@@ -933,7 +933,7 @@ public partial class BitSlider : BitInputBase<double>
         {
             if (Origin.HasValue) return ClampValue(Origin.Value);
 
-            if (IsOriginFromZero) return ClampValue(0);
+            if (OriginFromZero) return ClampValue(0);
 
             return Inverted ? _Max : _Min;
         }
@@ -967,7 +967,7 @@ public partial class BitSlider : BitInputBase<double>
     /// Whether the filled band between the two thumbs is draggable as a whole. A band of no width has no
     /// room to be pressed on, and one that already covers the whole scale has nowhere to travel.
     /// </summary>
-    private bool _CanDragTrack => DraggableTrack && IsRanged && _IsInteractive && UpperValue > LowerValue;
+    private bool _CanDragTrack => DraggableTrack && Ranged && _IsInteractive && UpperValue > LowerValue;
 
     /// <summary>
     /// Whether a thumb carries the other one along when it runs into it. Pushing needs something to push
@@ -1012,12 +1012,12 @@ public partial class BitSlider : BitInputBase<double>
     /// <summary>
     /// The lower end of the filled part of the track, as a percentage of the whole scale.
     /// </summary>
-    private double _FillStart => IsRanged ? GetPercent(LowerValue) : GetPercent(Math.Min(_Origin, CurrentValue));
+    private double _FillStart => Ranged ? GetPercent(LowerValue) : GetPercent(Math.Min(_Origin, CurrentValue));
 
     /// <summary>
     /// The upper end of the filled part of the track, as a percentage of the whole scale.
     /// </summary>
-    private double _FillEnd => IsRanged ? GetPercent(UpperValue) : GetPercent(Math.Max(_Origin, CurrentValue));
+    private double _FillEnd => Ranged ? GetPercent(UpperValue) : GetPercent(Math.Max(_Origin, CurrentValue));
 
     /// <summary>
     /// The marks actually drawn: the explicit ones when they are given, and otherwise the ones generated at
@@ -1346,7 +1346,7 @@ public partial class BitSlider : BitInputBase<double>
 
         var percent = GetPercent(mark.Value);
         var isInside = percent >= fillStart && percent <= fillEnd;
-        var isActive = (Inverted && IsRanged) ? isInside is false : isInside;
+        var isActive = (Inverted && Ranged) ? isInside is false : isInside;
 
         return isActive ? "bit-sld-mrk bit-sld-mrk-act" : "bit-sld-mrk";
     }
