@@ -12,7 +12,8 @@ namespace Bit.Bsqlite.Interop;
 /// segments (spelled <c>%2e</c> too), takes a leading <c>name:</c> for a URL scheme, and escapes a space or a
 /// non-ASCII character while leaving an escape already in the name alone - so <c>a#1.db</c> and its journal
 /// <c>a#1.db-journal</c> would both be the file <c>/a</c>, and <c>a b.db</c> and <c>a%20b.db</c> would both be
-/// <c>/a%20b.db</c>.
+/// <c>/a%20b.db</c>. The admin modules also trim the name first, as JavaScript's <c>trim()</c> does, so a name
+/// that starts or ends with white space - a no-break space, a BOM - is exported, imported or deleted as another.
 /// </para>
 /// <para>
 /// A name is kept only when it can be read back from its key the way the OPFS admin lists a file
@@ -54,9 +55,12 @@ internal static partial class BsqliteDatabaseNames
             }
         }
 
-        if (databaseName[0] == ' ' || databaseName[^1] == ' ')
+        // The admin modules trim the name (JavaScript's trim()) and the VFS does not, so 'a.db' with a no-break
+        // space or a BOM in front would open one file and be exported, imported or deleted as another.
+        if (TrimmedByJavaScript(databaseName[0]) || TrimmedByJavaScript(databaseName[^1]))
         {
-            return "a URL drops the spaces it starts or ends with.";
+            return "it starts or ends with white space, which a URL or the browser admin surface drops - "
+                + "making it another database's name.";
         }
 
         if (Scheme().IsMatch(databaseName))
@@ -102,6 +106,12 @@ internal static partial class BsqliteDatabaseNames
         var key = Encode(segment, escapeCaret);
         return Decode(key) is not { } decoded || Encode(decoded, escapeCaret) != key ? key == segment : decoded == segment;
     }
+
+    /// <summary>
+    /// Whether JavaScript's <c>String.prototype.trim</c> removes <paramref name="c"/>: its white space and line
+    /// terminators - .NET's white space, less U+0085, which it does not count, and U+FEFF, which it does.
+    /// </summary>
+    private static bool TrimmedByJavaScript(char c) => c == '\uFEFF' || (c != '\u0085' && char.IsWhiteSpace(c));
 
     private static bool IsDotSegment(string segment) =>
         segment.ToLowerInvariant() is "." or "%2e" or ".." or ".%2e" or "%2e." or "%2e%2e";

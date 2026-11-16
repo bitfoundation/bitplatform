@@ -294,7 +294,9 @@ function takeAggregateState<TState>(module: SQLiteModule, ctx: Pointer): TState 
     return state;
 }
 
-const textDecoder = new TextDecoder('utf-8');
+// ignoreBOM: a leading U+FEFF is part of the value, not a byte order mark - left to the default, the decoder
+// would drop it, and char(65279) REGEXP '^$' would match.
+const textDecoder = new TextDecoder('utf-8', { ignoreBOM: true });
 
 function readDecimal(sqlite3: SQLiteAPI, pValue: Pointer): DecimalValue | null {
     const text = readText(sqlite3, pValue);

@@ -241,6 +241,57 @@ public sealed class LiveQueryTests
         Assert.IsEmpty(BsqliteLiveQueryExtensions.TablesOf("SELECT * FROM \"Lines\" JOIN \"Unmapped\" ON 1", ctx));
     }
 
+    /// <summary>
+    /// A common table expression named like a table hides the table by that name only: the query below reads the
+    /// table <c>Products</c> through <c>main."Products"</c>. Setting the name aside as no table left only
+    /// <c>Categories</c>, so writing a product never re-ran it.
+    /// </summary>
+    [TestMethod]
+    public async Task AsLiveQuery_WithACommonTableExpressionNamedLikeATable_RerunsWhenTheTableIsWritten()
+    {
+        var transport = new BsqliteInProcessTransport();
+        await using var connection = new BsqliteConnection(transport, "live-cte-collision.db");
+        await connection.OpenAsync(Ct);
+        await using var ctx = new ProductContext(new DbContextOptionsBuilder<ProductContext>()
+            .UseBitBsqlite(connection)
+            .Options);
+
+        await ctx.Database.EnsureCreatedAsync(Ct);
+        ctx.Categories.Add(new Category { Name = "Tools" });
+        await ctx.SaveChangesAsync(Ct);
+
+        const string sql =
+            "WITH \"Products\" AS (SELECT \"Id\" FROM \"Categories\") "
+            + "SELECT p.* FROM main.\"Products\" AS p WHERE p.\"CategoryId\" IN (SELECT \"Id\" FROM \"Products\")";
+
+        Assert.IsEmpty(BsqliteLiveQueryExtensions.TablesOf(sql, ctx));
+
+        await using var live = ctx.Products.FromSqlRaw(sql).AsNoTracking().AsLiveQuery(connection);
+        Assert.IsEmpty(await live.RefreshAsync(Ct));
+
+        ctx.Products.Add(new Product { Name = "Live", Price = 1m, CategoryId = 1 });
+        await ctx.SaveChangesAsync(Ct);
+
+        var deadline = DateTime.UtcNow.AddSeconds(2);
+        while ((live.Current?.Count ?? 0) == 0 && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(20, Ct);
+        }
+
+        Assert.AreEqual("Live", Assert.ContainsSingle(live.Current!).Name);
+    }
+
+    /// <summary>
+    /// With no context to check the names against, what the extractor found may be a view or anything else no
+    /// write is reported by, so the query re-runs on every write - as it does for a name the model does not map.
+    /// </summary>
+    [TestMethod]
+    public void TablesOf_WithoutAContext_ReRunsOnEveryWrite()
+    {
+        Assert.IsEmpty(BsqliteLiveQueryExtensions.TablesOf("SELECT * FROM \"OpenLines\"", context: null));
+        Assert.IsEmpty(BsqliteLiveQueryExtensions.TablesOf("SELECT 1", context: null));
+    }
+
     public sealed class Line
     {
         public int Id { get; set; }

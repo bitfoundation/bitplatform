@@ -352,6 +352,19 @@ public sealed class FunctionsTests : BsqliteTest
         AssertJson.AreEqual("[[1, 1, 1]]", result.Rows);
     }
 
+    /// <summary>
+    /// A function argument was decoded with a TextDecoder that drops a leading byte order mark, so REGEXP saw ''
+    /// for a lone U+FEFF.
+    /// </summary>
+    [TestMethod]
+    public async Task Regexp_keeps_a_leading_byte_order_mark()
+    {
+        await OpenSeededAsync();
+
+        var result = await QueryAsync(Page, "SELECT char(65279) REGEXP '^$', (char(65279) || 'a') REGEXP '^\\uFEFFa$'");
+        AssertJson.AreEqual("[[0, 1]]", result.Rows);
+    }
+
     // The file's beforeEach: every test starts from the seeded data set.
     private async Task OpenSeededAsync()
     {

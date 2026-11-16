@@ -87,6 +87,32 @@ public sealed class BinaryWireTests : BsqliteTest
         Assert.AreEqual("610062", row[2].GetString());
     }
 
+    /// <summary>
+    /// Text was decoded with a TextDecoder that drops a leading byte order mark, so a value SQL built to start with
+    /// U+FEFF came back without it - from the binary reply (<c>ResultWriter.row</c>) and the tagged one
+    /// (<c>encodeRow</c>) alike.
+    /// </summary>
+    [TestMethod]
+    public async Task Text_with_a_leading_byte_order_mark_keeps_it()
+    {
+        await OpenAsync();
+
+        var values = await Page.EvaluateAsync<string[]>(
+            """
+            async () => {
+              const { encodeBatchBinary, decodeReplyBinary } = globalThis.BitBsqlite.host;
+              const sql = "SELECT char(65279) || 'a'";
+              const [binary] = decodeReplyBinary(await globalThis.host.executeBinary(encodeBatchBinary([
+                { commandText: sql, resultKind: 'reader', parameters: [] },
+              ])));
+              const [tagged] = await globalThis.host.execute([{ commandText: sql, resultKind: 'reader' }]);
+              return [binary.rows[0].v[0], tagged.rows[0].v[0]];
+            }
+            """);
+
+        CollectionAssert.AreEqual(new[] { "\uFEFFa", "\uFEFFa" }, values);
+    }
+
     [TestMethod]
     public async Task A_failure_is_a_reply_not_a_rejection()
     {

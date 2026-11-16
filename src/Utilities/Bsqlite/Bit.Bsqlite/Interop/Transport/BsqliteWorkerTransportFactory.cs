@@ -25,13 +25,29 @@ public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTr
     private readonly Lock _hostModuleGate = new();
     private Task<IJSObjectReference>? _hostModule;
 
+    // Under _hostModuleGate. A lock is released through the module it was taken through, so the module outlives
+    // the factory's disposal for as long as a lock is held - or being acquired - and goes with the last of them.
+    private int _leases;
+    private bool _disposed;
+
     /// <summary>
     /// A Web Lock on the database's name, taken through the host module without a worker: see
     /// <see cref="IBsqliteOpenLock"/>.
     /// </summary>
     async Task<IAsyncDisposable?> IBsqliteOpenLock.AcquireOpenLockAsync(string databaseName, CancellationToken cancellationToken)
     {
-        var module = await HostModuleAsync(cancellationToken).ConfigureAwait(false);
+        var import = Lease();
+        IJSObjectReference module;
+        try
+        {
+            module = await HostModuleAsync(import, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            await EndLeaseAsync().ConfigureAwait(false);
+            throw;
+        }
+
         var id = Interlocked.Increment(ref _nextLockId);
         try
         {
@@ -44,27 +60,34 @@ public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTr
             // Given up on here, but the request may still be queued - or granted by now - and a lock nobody
             // releases keeps every other tab from opening the database until this one closes.
             await ReleaseOpenLockAsync(module, id).ConfigureAwait(false);
+            await EndLeaseAsync().ConfigureAwait(false);
             throw;
         }
 
-        return new OpenLock(module, id);
+        return new OpenLock(this, module, id);
     }
 
     /// <summary>
-    /// The host module, imported once for the factory's locks rather than once per open. A failed or cancelled
-    /// import is not kept, so the next open tries again.
+    /// Counts a lock in and hands back the host module's import, started here the first time: imported once for
+    /// the factory's locks rather than once per open.
     /// </summary>
-    private async Task<IJSObjectReference> HostModuleAsync(CancellationToken cancellationToken)
+    private Task<IJSObjectReference> Lease()
     {
-        Task<IJSObjectReference> import;
         lock (_hostModuleGate)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            _leases++;
+
             // Not cancellable itself: it is shared, and one open giving up must not fail another's.
-            import = _hostModule ??= _js
+            return _hostModule ??= _js
                 .InvokeAsync<IJSObjectReference>("import", CancellationToken.None, _defaults.HostModuleUrl)
                 .AsTask();
         }
+    }
 
+    /// <summary>The host module, once imported. A failed or cancelled import is not kept, so the next open tries again.</summary>
+    private async Task<IJSObjectReference> HostModuleAsync(Task<IJSObjectReference> import, CancellationToken cancellationToken)
+    {
         try
         {
             return await import.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -83,6 +106,22 @@ public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTr
         }
     }
 
+    /// <summary>Counts a lock out, disposing the host module when it was the last one of a disposed factory.</summary>
+    private async ValueTask EndLeaseAsync()
+    {
+        Task<IJSObjectReference>? import = null;
+        lock (_hostModuleGate)
+        {
+            if (--_leases == 0 && _disposed)
+            {
+                import = _hostModule;
+                _hostModule = null;
+            }
+        }
+
+        await DisposeModuleAsync(import).ConfigureAwait(false);
+    }
+
     private static async ValueTask ReleaseOpenLockAsync(IJSObjectReference module, int id)
     {
         try
@@ -95,16 +134,33 @@ public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTr
         }
     }
 
-    /// <summary>Releases the host module the locks were taken through.</summary>
+    /// <summary>
+    /// Releases the host module the locks were taken through - once the last lock still held, or still being
+    /// acquired, has been released through it.
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
-        Task<IJSObjectReference>? import;
+        Task<IJSObjectReference>? import = null;
         lock (_hostModuleGate)
         {
-            import = _hostModule;
-            _hostModule = null;
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            if (_leases == 0)
+            {
+                import = _hostModule;
+                _hostModule = null;
+            }
         }
 
+        await DisposeModuleAsync(import).ConfigureAwait(false);
+    }
+
+    private static async ValueTask DisposeModuleAsync(Task<IJSObjectReference>? import)
+    {
         if (import is null)
         {
             return;
@@ -120,7 +176,7 @@ public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTr
         }
     }
 
-    private sealed class OpenLock(IJSObjectReference module, int id) : IAsyncDisposable
+    private sealed class OpenLock(BsqliteWorkerTransportFactory owner, IJSObjectReference module, int id) : IAsyncDisposable
     {
         private int _released;
 
@@ -131,7 +187,14 @@ public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTr
                 return;
             }
 
-            await ReleaseOpenLockAsync(module, id).ConfigureAwait(false);
+            try
+            {
+                await ReleaseOpenLockAsync(module, id).ConfigureAwait(false);
+            }
+            finally
+            {
+                await owner.EndLeaseAsync().ConfigureAwait(false);
+            }
         }
     }
 

@@ -95,7 +95,8 @@ public static partial class BsqliteLiveQueryExtensions
     /// The names come from a coarse extractor, so what is plainly no table is set aside first: the text of
     /// string literals and comments (<c>'picked up from store'</c>), a table-valued function
     /// (<c>json_each(@ids)</c>, which EF reads a primitive collection with), and a common table expression,
-    /// whose own body names the tables it reads.
+    /// whose own body names the tables it reads. A common table expression named like a table of the model leaves
+    /// it unknown whether the query also reads that table (<c>main."Products"</c>), so it re-runs on every write.
     /// </para>
     /// </remarks>
     internal static IReadOnlySet<string> TablesOf(string sql, DbContext? context)
@@ -107,26 +108,40 @@ public static partial class BsqliteLiveQueryExtensions
             return tables;
         }
 
-        var notTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var commonTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (Match match in CommonTableExpression().Matches(code))
+        {
+            commonTables.Add(match.Groups[1].Value);
+        }
+
+        var notTables = new HashSet<string>(commonTables, StringComparer.OrdinalIgnoreCase);
         foreach (Match match in TableFunction().Matches(code))
         {
             notTables.Add(match.Groups[1].Value);
         }
 
-        foreach (Match match in CommonTableExpression().Matches(code))
-        {
-            notTables.Add(match.Groups[1].Value);
-        }
-
         var read = tables.Where(name => !notTables.Contains(name)).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        if (context is null || read.Count == 0)
+        if (read.Count == 0)
         {
             return read;
+        }
+
+        // Without the model there is no telling a table from anything else the extractor picked up.
+        if (context is null)
+        {
+            return new HashSet<string>();
         }
 
         var mapped = context.Model.GetRelationalModel().Tables
             .Select(table => table.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // A common table expression named like a table hides it by that name, yet the query may still read the
+        // table itself (main."Products") - the extractor sees one name either way, so which it reads is unknown.
+        if (commonTables.Any(mapped.Contains))
+        {
+            return new HashSet<string>();
+        }
 
         return read.All(mapped.Contains) ? read : new HashSet<string>();
     }

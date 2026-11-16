@@ -53,6 +53,25 @@ public sealed class DatabaseNamesTests
     }
 
     /// <summary>
+    /// The browser admin modules trim the name with JavaScript's <c>trim()</c> and the VFS keys it untrimmed, so
+    /// '\u00A0app.db' opened the file '%C2%A0app.db' while an export, import or delete of it reached 'app.db' - another
+    /// database. The untrimmed name is refused; its trimmed counterpart, the one the admin surface addresses, is kept.
+    /// </summary>
+    [TestMethod]
+    [DataRow("\u00A0app.db")]
+    [DataRow("app.db\u00A0")]
+    [DataRow("\uFEFFapp.db")]
+    [DataRow("\u3000app.db")]
+    [DataRow("\u2003app.db")]
+    [DataRow("app.db\u2028")]
+    public void ANameJavaScriptTrims_IsRefused_AndItsTrimmedCounterpartKept(string databaseName)
+    {
+        Assert.IsNotNull(BsqliteDatabaseNames.WhyInvalidInBrowser(databaseName));
+        Assert.ThrowsExactly<ArgumentException>(() => BsqliteDatabaseNames.ThrowIfInvalidInBrowser(databaseName));
+        Assert.IsNull(BsqliteDatabaseNames.WhyInvalidInBrowser("app.db"));
+    }
+
+    /// <summary>
     /// A lone surrogate is written as U+FFFD's escape, the key of a name spelled with U+FFFD. Built here rather than
     /// in a DataRow, whose metadata cannot hold a lone surrogate and stores U+FFFD in its place.
     /// </summary>

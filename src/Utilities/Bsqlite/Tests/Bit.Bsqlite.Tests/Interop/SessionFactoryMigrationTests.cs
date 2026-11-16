@@ -84,11 +84,11 @@ public sealed class SessionFactoryMigrationTests
     }
 
     /// <summary>
-    /// An open that finds the database where it belongs has nothing to move, and waits for no other tab: the lock
-    /// is taken only when a better backend is there to move to.
+    /// An open that finds the database where it belongs is resolved under the lock too: what it finds there may be
+    /// the copy another tab is still moving.
     /// </summary>
     [TestMethod]
-    public async Task AnOpenWithNothingToMigrate_TakesNoOpenLock()
+    public async Task AnOpenWithNothingToMigrate_IsResolvedUnderTheOpenLock()
     {
         var opfs = new PersistentProvider("opfs");
         var cacheStorage = new PersistentProvider("cache-storage");
@@ -102,7 +102,40 @@ public sealed class SessionFactoryMigrationTests
             Assert.AreEqual("opfs", session.Resolution.Provider.Name);
         }
 
-        AssertSequence.Equal(["open"], transports.Events);
+        AssertSequence.Equal(
+            [$"lock {Database}", "binding when locked: opfs", "open", "release, binding: opfs"],
+            transports.Events);
+    }
+
+    /// <summary>
+    /// Another tab moving a database that lost its binding has its copy on the preferred backend before the binding
+    /// names it. An open resolved then found the database there - nothing to move, so no lock - and opened the copy
+    /// the other tab deleted once its check failed. Resolved under the lock, it waits for that tab and finds the
+    /// database where the move left it.
+    /// </summary>
+    [TestMethod]
+    public async Task AnOpenDuringAnotherTabsMove_FindsTheDatabaseWhereTheMoveLeftIt()
+    {
+        var opfs = new PersistentProvider("opfs");
+        var cacheStorage = new PersistentProvider("cache-storage");
+        await cacheStorage.Admin.ImportAsync(Database, Image, Ct);
+        await opfs.Admin.ImportAsync(Database, Image, Ct);
+        var store = new BsqliteInMemoryStorageBindingStore();
+
+        // The other tab holds the lock until its check of the copy fails, and drops the copy.
+        var transports = new LockingTransportFactory(
+            () => store.GetProviderNameAsync(Database, Ct).AsTask(),
+            onLocking: () => opfs.Admin.DeleteAsync(Database, Ct).AsTask());
+
+        await using (var session = await Factory(store, transports, opfs, cacheStorage).OpenAsync(Database, Ct))
+        {
+            Assert.AreEqual("opfs", session.Resolution.Provider.Name);
+        }
+
+        // Moved by this open, from the backend that held it all along.
+        Assert.IsFalse(await cacheStorage.Admin.ExistsAsync(Database, Ct));
+        CollectionAssert.AreEqual(Image, await opfs.Admin.ExportAsync(Database, Ct));
+        Assert.AreEqual("opfs", await store.GetProviderNameAsync(Database, Ct));
     }
 
     private static BsqliteSessionFactory Factory(IBsqliteStorageBindingStore store, params IBsqliteStorageProvider[] providers)
@@ -148,21 +181,27 @@ public sealed class SessionFactoryMigrationTests
         public IBsqliteTransport Create(IBsqliteStorageProvider provider) => new BsqliteInProcessTransport();
     }
 
-    /// <summary>Records when the open lock is taken and let go, and what the binding said at each point.</summary>
-    private sealed class LockingTransportFactory(Func<Task<string?>> binding) : IBsqliteTransportFactory, IBsqliteOpenLock
+    /// <summary>
+    /// Records when the open lock is taken and let go, what the binding said at each point, and when a transport
+    /// has finished opening - so a lock let go before the database is open shows. <paramref name="onLocking"/> runs
+    /// before the lock is granted: another tab's work, which the lock waits for.
+    /// </summary>
+    private sealed class LockingTransportFactory(Func<Task<string?>> binding, Func<Task>? onLocking = null)
+        : IBsqliteTransportFactory, IBsqliteOpenLock
     {
         private readonly Func<Task<string?>> _binding = binding;
 
         public List<string> Events { get; } = [];
 
-        public IBsqliteTransport Create(IBsqliteStorageProvider provider)
-        {
-            Events.Add("open");
-            return new BsqliteInProcessTransport();
-        }
+        public IBsqliteTransport Create(IBsqliteStorageProvider provider) => new RecordingTransport(Events);
 
         public async Task<IAsyncDisposable?> AcquireOpenLockAsync(string databaseName, CancellationToken cancellationToken)
         {
+            if (onLocking is not null)
+            {
+                await onLocking();
+            }
+
             Events.Add($"lock {databaseName}");
             Events.Add($"binding when locked: {await _binding()}");
             return new Release(this);
@@ -172,5 +211,42 @@ public sealed class SessionFactoryMigrationTests
         {
             public async ValueTask DisposeAsync() => owner.Events.Add($"release, binding: {await owner._binding()}");
         }
+    }
+
+    /// <summary>
+    /// An in-process transport that records "open" once its first open has completed - the session factory's; the
+    /// connection opening it again finds it open.
+    /// </summary>
+    private sealed class RecordingTransport(List<string> events) : IBsqliteTransport
+    {
+        private readonly BsqliteInProcessTransport _inner = new();
+        private bool _opened;
+
+        public async Task OpenAsync(string databaseName, CancellationToken cancellationToken = default)
+        {
+            await _inner.OpenAsync(databaseName, cancellationToken);
+            if (!_opened)
+            {
+                _opened = true;
+                events.Add("open");
+            }
+        }
+
+        public Task CloseAsync(CancellationToken cancellationToken = default) => _inner.CloseAsync(cancellationToken);
+
+        public Task<IReadOnlyList<BsqliteCommandResult>> ExecuteAsync(
+            IReadOnlyList<BsqliteCommandRequest> batch,
+            CancellationToken cancellationToken = default)
+            => _inner.ExecuteAsync(batch, cancellationToken);
+
+        public event EventHandler<BsqliteTablesChangedEventArgs>? TablesChanged
+        {
+            add => ((IBsqliteTransport)_inner).TablesChanged += value;
+            remove => ((IBsqliteTransport)_inner).TablesChanged -= value;
+        }
+
+        public bool ReportsLocalWrites => ((IBsqliteTransport)_inner).ReportsLocalWrites;
+
+        public ValueTask DisposeAsync() => _inner.DisposeAsync();
     }
 }

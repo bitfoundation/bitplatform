@@ -83,7 +83,9 @@ const STATUS_ERROR = 1;
 const MAX_EXACT_INTEGER = 9007199254740991n; // 2^53 - 1
 
 const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder('utf-8');
+// ignoreBOM: a leading U+FEFF is part of the text, not a byte order mark - left to the default, the decoder would
+// drop it from a column value or a parameter that starts with one.
+const textDecoder = new TextDecoder('utf-8', { ignoreBOM: true });
 
 /**
  * A TEXT value, read as the bytes SQLite holds. wa-sqlite's `column_text` reads a NUL-terminated string, so a

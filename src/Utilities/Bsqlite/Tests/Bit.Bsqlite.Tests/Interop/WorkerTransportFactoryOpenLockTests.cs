@@ -45,4 +45,28 @@ public sealed class WorkerTransportFactoryOpenLockTests
 
         Assert.IsTrue(js.Module.Disposed);
     }
+
+    /// <summary>
+    /// A lock is released through the module it was taken through. Disposing the factory while one was held used to
+    /// dispose that module first, so the release failed quietly and the lock stayed held - keeping every other tab
+    /// from opening the database. The module now goes with the last lock.
+    /// </summary>
+    [TestMethod]
+    public async Task DisposingTheFactory_WhileALockIsHeld_KeepsTheModuleUntilTheLockIsReleased()
+    {
+        var js = new ScriptedJsRuntime();
+        var factory = new BsqliteWorkerTransportFactory(js);
+        IBsqliteOpenLock locks = factory;
+
+        var held = await locks.AcquireOpenLockAsync("app.db", Ct);
+        await factory.DisposeAsync();
+
+        Assert.IsFalse(js.Module.Disposed);
+
+        await held!.DisposeAsync();
+
+        Assert.AreEqual(1, js.Calls.Count(call => call.Identifier == "module.releaseOpenLock"));
+        Assert.IsTrue(js.Module.Disposed);
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => locks.AcquireOpenLockAsync("app.db", Ct));
+    }
 }
