@@ -57,6 +57,19 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     private bool _stepShown;
 
     /// <summary>
+    /// The current visit to a step: bumped each time a step is entered afresh (Next, Back, a jump, a skip), kept when
+    /// the same step is shown again (<see cref="BonboardingStepChangeReason.Retarget"/>, a hold for its page). A click or
+    /// a signal belongs to the visit it was raised in, never to a later one, even of the same step.
+    /// </summary>
+    private long _visit;
+
+    /// <summary>
+    /// True once the current visit's step has been on screen. Unlike <see cref="_stepShown"/>, it survives the step
+    /// being shown again within the visit, so a step held and re-entered still takes what was meant for it.
+    /// </summary>
+    private bool _visitShown;
+
+    /// <summary>
     /// True once the current step got as far as <see cref="BonboardingStepDefinition.OnBeforeShow"/>,
     /// so <see cref="BonboardingStepDefinition.OnBeforeLeave"/> runs exactly for the steps whose show
     /// hook ran, including one that was then skipped because its target was missing.
@@ -718,6 +731,8 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
             _enteredBy = reason;
             _stepPrepared = false;
+            _visit++;
+            _visitShown = false;
         }
         else if (_stepShown)
         {
@@ -842,6 +857,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         BonboardingStepChangeReason reason, CancellationToken stepToken)
     {
         _stepShown = true;
+        _visitShown = true;
 
         await PersistAsync(stepToken);
         await PublishAsync(BonboardingEventKind.StepShown, step, changeReason: reason);
@@ -1403,7 +1419,9 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         for (var position = from; position < plan.Count - 1; position++)
         {
-            var step = Tour.Steps[plan[position]];
+            // Here, the step on screen: Next asks its definition, which a step rendered again in its place has not
+            // replaced yet.
+            var step = position == from && CurrentStep is { } current ? current : Tour.Steps[plan[position]];
             if (step.CanAdvance is not null || step.ResolveNext is not null || WaitsForUser(step)) return false;
         }
 
@@ -1420,18 +1438,18 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
     public async ValueTask OnAdvanceTriggeredAsync()
     {
-        if (_disposed || Status != BonboardingTourStatus.Running || CurrentStep is not { } step) return;
+        if (_disposed || !CanTakeAdvance || CurrentStep is null) return;
 
-        var generation = _generation;
+        var visit = _visit;
 
         // The browser keeps the trigger armed until the step changes, because CanAdvance may hold the user
         // and they must be able to try again. Several events can therefore be in flight for one step (a
         // second click while the first advance is still being decided): only one that still finds its
-        // step on screen moves the tour on, so a click is never charged to the step after it.
+        // visit live moves the tour on, so a click is never charged to the step after it, nor to a later
+        // visit to the same one. A visit that has been held since - a link the step advances on took the
+        // user to a page where its target is missing - still takes it: the click is what took them there.
         await RunGuardedAsync(
-            ct => generation == _generation && ReferenceEquals(CurrentStep, step) && Status == BonboardingTourStatus.Running
-                ? NextCoreAsync(ct)
-                : Task.CompletedTask,
+            ct => visit == _visit && CanTakeAdvance ? NextCoreAsync(ct) : Task.CompletedTask,
             CancellationToken.None);
     }
 
@@ -1441,27 +1459,34 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     /// </summary>
     internal async Task<bool> SignalAsync(string signal)
     {
-        if (_disposed || !CanTakeSignal || CurrentStep is not { AdvanceOnSignal: { } expected } step) return false;
-        if (!string.Equals(expected, signal, StringComparison.Ordinal)) return false;
+        if (_disposed || !CanTakeAdvance || !WaitsForSignal(signal)) return false;
 
+        var visit = _visit;
         var advanced = false;
 
-        // Like an advance trigger: the signal belongs to the step that was showing when it was raised. That step may
+        // Like an advance trigger: the signal belongs to the visit that was showing when it was raised. That step may
         // have lost its target or been held since - an application that navigates and then signals takes its page
-        // away first - and the signal still moves it on: it reports what the user did on it.
+        // away first - and the signal still moves it on: it reports what the user did on it. A later visit to the
+        // same step is not it.
         await RunGuardedAsync(async ct =>
         {
-            if (!ReferenceEquals(CurrentStep, step) || !CanTakeSignal) return;
+            if (visit != _visit || !CanTakeAdvance || !WaitsForSignal(signal)) return;
 
             await NextCoreAsync(ct);
-            advanced = IsFinished || !ReferenceEquals(CurrentStep, step);
+            advanced = IsFinished || visit != _visit;
         }, CancellationToken.None);
 
         return advanced;
     }
 
-    /// <summary>True while the current step has been on screen and is still live: shown, or waiting after it was.</summary>
-    private bool CanTakeSignal => Status == BonboardingTourStatus.Running || (Status == BonboardingTourStatus.Waiting && _stepShown);
+    private bool WaitsForSignal(string signal)
+        => CurrentStep is { AdvanceOnSignal: { } expected } && string.Equals(expected, signal, StringComparison.Ordinal);
+
+    /// <summary>
+    /// True while the current visit is live for an advance, a click or a signal: on screen, or waiting after it was
+    /// shown in this visit (its target lost, held for its page, or shown again on coming back to it).
+    /// </summary>
+    private bool CanTakeAdvance => Status == BonboardingTourStatus.Running || (Status == BonboardingTourStatus.Waiting && _visitShown);
 
     public ValueTask OnWaitTimedOutAsync() => OnWaitTimedOutAsync(BonboardingTargetIssue.None);
 

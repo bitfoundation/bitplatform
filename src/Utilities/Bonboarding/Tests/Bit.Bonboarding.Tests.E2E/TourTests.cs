@@ -77,11 +77,12 @@ public sealed class TourTests : BonboardingTest
         var page = await StartWelcomeTourAsync();
 
         // The application takes the focus - into a field it opened, say - and the tour ends.
-        await page.GetByRole(AriaRole.Button, new() { Name = "Restart from the top" }).EvaluateAsync("el => el.focus()");
+        var restart = page.GetByRole(AriaRole.Button, new() { Name = "Restart from the top" });
+        await restart.EvaluateAsync("el => el.focus()");
         await page.Keyboard.PressAsync("Escape");
         await Assertions.Expect(page.Locator(".bit-bonboarding-root")).ToHaveCountAsync(0);
 
-        StringAssert.Contains(await FocusedAsync(page), "Restart from the top");
+        await Assertions.Expect(restart).ToBeFocusedAsync();
     }
 
     [TestMethod]

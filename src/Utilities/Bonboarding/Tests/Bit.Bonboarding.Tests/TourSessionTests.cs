@@ -765,6 +765,53 @@ public class TourSessionTests
     }
 
     [TestMethod]
+    public async Task End_Asks_The_Step_On_Screen_Not_One_Rendered_Again_In_Its_Place()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        var held = Step("a", "#a");
+        held.CanAdvance = _ => ValueTask.FromResult(false);
+        var tour = Tour(held, Step("b", "#b"), Step("c", "#c"));
+        var session = await harness.Service.StartAsync(tour);
+
+        // a declarative tour renders the step again: the new definition is not what Next asks until the step is entered anew
+        tour.Steps[0] = Step("a", "#a");
+
+        await harness.Interop.PressKeyAsync(session.Id, "End");
+        Assert.AreEqual("a", session.CurrentStep!.Id, "the step on screen still holds the user, so End does not jump past it");
+    }
+
+    [TestMethod]
+    public async Task A_Signal_Raised_For_One_Visit_Does_Not_Move_On_A_Later_Visit_To_The_Same_Step()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b");
+
+        var waiting = Step("a", "#a");
+        waiting.AdvanceOnSignal = "go";
+        var session = await harness.Service.StartAsync(Tour(waiting, Step("b", "#b")));
+
+        // the session is busy (a refresh waiting on the browser) while the user moves on and back, and the signal,
+        // raised while the first visit was on screen, waits its turn behind them
+        var measured = new TaskCompletionSource();
+        harness.Interop.DuringMeasure = () => measured.Task;
+        var refresh = session.RefreshAsync();
+        harness.Interop.DuringMeasure = null;
+
+        var next = session.NextAsync();
+        var back = session.PreviousAsync();
+        var signal = harness.Service.SignalAsync("go");
+
+        measured.SetResult();
+        await Task.WhenAll(refresh, next, back);
+
+        Assert.IsFalse(await signal, "the signal belonged to the visit that has ended");
+        Assert.AreEqual("a", session.CurrentStep!.Id);
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+    }
+
+    [TestMethod]
     public async Task A_Step_Outlives_The_Cancelled_Token_Of_The_Command_That_Showed_It()
     {
         await using var harness = new BonboardingHarness();

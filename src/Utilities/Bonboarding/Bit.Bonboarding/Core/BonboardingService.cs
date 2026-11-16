@@ -708,9 +708,10 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
             stored = new(await ReadRecordAsync(tour.Id, cancellationToken));
             if (!IsDueOnce(tour, stored.Value)) return null;
 
-            if (tour.CanStart is not null && !await CanStartAsync(tour, startOptions.Automatic)) return null;
+            // A once-only start is never one the user asked for, so CanStart and CanAutoStart are asked as for an
+            // automatic start: one that throws holds the tour back. IsDueOnce has already passed over a snooze.
+            if (tour.CanStart is not null && !await CanStartAsync(tour, automatic: true)) return null;
 
-            // A once-only start is never one the user asked for. IsDueOnce has already passed over a snooze.
             if (!await AllowsAutoStartAsync(tour)) return null;
         }
 

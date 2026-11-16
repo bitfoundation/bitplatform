@@ -165,6 +165,110 @@ public class RoutingTests
     }
 
     [TestMethod]
+    [DataRow(BonboardingMissingTargetBehavior.Wait)]
+    [DataRow(BonboardingMissingTargetBehavior.Center)]
+    public async Task A_Link_Step_Advance_Raised_While_Its_Missing_Target_Is_Measured_Still_Moves_It_On(BonboardingMissingTargetBehavior missingTarget)
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#orders-link", "#orders");
+
+        var session = await harness.Service.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "to-orders",
+            Steps =
+            [
+                new BonboardingStepDefinition
+                {
+                    Id = "link",
+                    Target = BonboardingStepTarget.Css("#orders-link"),
+                    AdvanceOn = BonboardingAdvanceTrigger.TargetClick,
+                    MissingTarget = missingTarget,
+                },
+                new BonboardingStepDefinition { Id = "orders", Target = BonboardingStepTarget.Css("#orders"), Route = "orders" },
+            ],
+        });
+
+        // the link navigates to a page without it, and the session measures the step there; the advance the click
+        // triggered arrives while that measurement is still on its way
+        var measured = new TaskCompletionSource();
+        harness.Interop.DuringMeasure = () => measured.Task;
+        harness.Interop.ExistingSelectors.Remove("#orders-link");
+        harness.Navigation!.SimulateUserNavigation("orders");
+
+        var advance = harness.Interop.TriggerAdvanceAsync(session.Id);
+        harness.Interop.DuringMeasure = null;
+        measured.SetResult();
+        await advance;
+
+        // the missing target held the step for its page, and the click that took the user away still moved it on
+        Assert.AreEqual("orders", session.CurrentStep!.Id);
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+    }
+
+    [TestMethod]
+    public async Task A_Step_Shown_Again_On_Coming_Back_Takes_Its_Signal_While_It_Waits_For_Its_Target()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#create", "#done");
+        harness.Navigation!.SimulateUserNavigation("dashboard");
+
+        var session = await harness.Service.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "come-back",
+            Steps =
+            [
+                new BonboardingStepDefinition
+                {
+                    Id = "create",
+                    Target = BonboardingStepTarget.Css("#create"),
+                    Route = "dashboard",
+                    ShowNext = false,
+                    AdvanceOnSignal = "created",
+                    MissingTarget = BonboardingMissingTargetBehavior.Wait,
+                },
+                new BonboardingStepDefinition { Id = "done", Target = BonboardingStepTarget.Css("#done") },
+            ],
+        });
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+
+        // the user leaves and comes back to a page whose target has not rendered yet: the same visit, shown again
+        harness.Navigation.SimulateUserNavigation("settings");
+        harness.Interop.ExistingSelectors.Remove("#create");
+        harness.Navigation.SimulateUserNavigation("dashboard");
+        Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
+
+        Assert.IsTrue(await harness.Service.SignalAsync("created"));
+        Assert.AreEqual("done", session.CurrentStep!.Id);
+    }
+
+    [TestMethod]
+    public async Task A_Step_Never_Shown_Does_Not_Take_Its_Signal()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#done");
+
+        var session = await harness.Service.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "never-shown",
+            Steps =
+            [
+                new BonboardingStepDefinition
+                {
+                    Id = "create",
+                    Target = BonboardingStepTarget.Css("#create"),
+                    AdvanceOnSignal = "created",
+                    MissingTarget = BonboardingMissingTargetBehavior.Wait,
+                },
+                new BonboardingStepDefinition { Id = "done", Target = BonboardingStepTarget.Css("#done") },
+            ],
+        });
+        Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status, "the target has not rendered yet");
+
+        Assert.IsFalse(await harness.Service.SignalAsync("created"));
+        Assert.AreEqual("create", session.CurrentStep!.Id);
+    }
+
+    [TestMethod]
     public async Task A_Step_Without_A_Route_Takes_Its_Signal_After_The_Application_Navigated_Away()
     {
         await using var harness = new BonboardingHarness();

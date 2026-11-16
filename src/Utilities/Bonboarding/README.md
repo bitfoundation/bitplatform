@@ -1780,6 +1780,9 @@ new BonboardingTourDefinition
 `StartOnceAsync` returns `null` when it declines. `StartAsync` throws an `BonboardingException`,
 because you asked for it explicitly. `BonboardingStartOptions.Force` bypasses the check.
 
+A `CanStart` that throws reaches the caller of `StartAsync`. A once-only start and an automatic one are never
+starts the user asked for, so there it is logged and holds the tour back: `StartOnceAsync` returns `null`.
+
 ### A worked example
 
 ```csharp
