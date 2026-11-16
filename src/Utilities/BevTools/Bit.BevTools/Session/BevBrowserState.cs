@@ -38,6 +38,12 @@ public sealed class BevBrowserState
 
     public int JsToDotNetCalls { get; internal set; }
 
+    /// <summary>
+    /// The calls in <see cref="JsToDotNetCalls"/> the page hub counted without naming them: more kinds of call in one
+    /// report window than it sends an entry each for (calls on hundreds of objects, whose identifiers name the object).
+    /// </summary>
+    public int JsToDotNetUnlisted { get; internal set; }
+
     public IReadOnlyList<BevStorageEntry>? LocalStorage { get; internal set; }
 
     public IReadOnlyList<BevStorageEntry>? SessionStorage { get; internal set; }

@@ -1,4 +1,4 @@
-// Tests for the BevTools browser bridge (bit-bevtools.js): browser-side redaction, downloads, JS -> .NET call
+﻿// Tests for the BevTools browser bridge (bit-bevtools.js): browser-side redaction, downloads, JS -> .NET call
 // tracking and its isolation from BevTools' own traffic, and the keyboard shortcuts.
 //
 // They run against wwwroot/bit-bevtools.js, i.e. the built output rather than the TypeScript, so build Bit.BevTools
@@ -212,7 +212,7 @@ describe('JS -> .NET call tracking', () => {
         expect(DotNetObject.prototype.invokeMethodAsync).toBe(originalAsync);
     });
 
-    it('keeps every call report well under a circuit message, folding a burst per identifier', async () => {
+    it('keeps every call report well under a circuit message, folding a burst per kind of call', async () => {
         // A Blazor Server circuit closes its connection on a message over 32 KB: 400 calls in one window used to make one.
         installBrowser();
         const reports = [];
@@ -229,9 +229,40 @@ describe('JS -> .NET call tracking', () => {
         for (const batch of batches) expect(Buffer.byteLength(JSON.stringify(batch))).toBeLessThanOrEqual(16 * 1024);
         const entries = batches.flat();
         expect(entries.reduce((total, entry) => total + (entry.count ?? 1), 0), 'every call is counted').toBe(601);
-        expect(entries.length, 'past 200 calls, one entry per identifier').toBeLessThanOrEqual(251);
+        expect(entries.length, 'past 200 calls, one entry per kind of call').toBeLessThanOrEqual(300);
         expect(entries.find(entry => entry.identifier === 'App.OnScroll' && entry.count > 1)).toBeTruthy();
         expect(entries.every(entry => entry.identifier.length <= 200), 'identifiers are clipped').toBe(true);
+        expect(entries.some(entry => entry.identifier === '(other calls)'), 'never a name the calls do not have').toBe(false);
+        bridge.detach();
+    });
+
+    it('folds only calls alike in all but their duration, with their total, and counts the kinds past its limit', async () => {
+        installBrowser();
+        const reports = [];
+        const bridge = await loadBridge();
+        window.DotNet.invokeMethodAsync = (assembly, method) => (method === 'Fails' ? Promise.reject(new Error('boom')) : Promise.resolve(null));
+        bridge.attach({ invokeMethodAsync: (...args) => { reports.push(args); return Promise.resolve(); } }, { trackJsToDotNet: true });
+
+        const calls = [];
+        for (let i = 0; i < 200; i++) calls.push(window.DotNet.invokeMethodAsync('App', 'First'));
+        for (let i = 0; i < 30; i++) calls.push(window.DotNet.invokeMethodAsync('App', 'Hot'));
+        for (let i = 0; i < 10; i++) calls.push(window.DotNet.invokeMethodAsync('App', 'Hot', 1));
+        for (let i = 0; i < 20; i++) calls.push(window.DotNet.invokeMethodAsync('App', 'Fails').catch(() => null));
+        for (let i = 0; i < 150; i++) calls.push(window.DotNet.invokeMethodAsync('App', 'Object' + i));
+        await Promise.all(calls);
+        await delay(550);
+
+        const folded = reports.filter(args => args[0] === 'ReportJsToDotNet').flatMap(args => args[1]).filter(entry => entry.count);
+        const hot = folded.filter(entry => entry.identifier === 'App.Hot');
+        expect(hot.map(entry => [entry.args, entry.count]).sort(), 'a different argument count is a different kind of call').toEqual([[0, 30], [1, 10]]);
+        expect(hot.every(entry => entry.totalMs >= entry.durationMs), 'the sum of their durations, and the longest').toBe(true);
+        const failed = folded.filter(entry => entry.identifier === 'App.Fails');
+        expect(failed.reduce((total, entry) => total + entry.count, 0), 'failed calls fold apart, all of them failed').toBe(20);
+        expect(failed.every(entry => entry.error === 'boom')).toBe(true);
+        const unlisted = reports.filter(args => args[0] === 'ReportUnlistedJsToDotNet').reduce((total, args) => total + args[1], 0);
+        expect(folded.length, 'kinds of call past the limit are not listed').toBeLessThanOrEqual(100);
+        expect(folded.reduce((total, entry) => total + entry.count, 0) + unlisted, 'every call past the first 200 is counted').toBe(210);
+        expect(unlisted).toBeGreaterThan(0);
         bridge.detach();
     });
 

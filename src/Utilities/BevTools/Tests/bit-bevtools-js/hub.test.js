@@ -271,9 +271,10 @@ describe('responsiveness', () => {
 
             const reports = server.reported('ReportResponsiveness');
             expect(reports.length, 'more than one report').toBeGreaterThan(1);
-            for (const [, reportedFrames, interactions] of reports) {
+            reports.forEach(([, reportedFrames, interactions, part, parts], index) => {
                 expect(Buffer.byteLength(JSON.stringify([reportedFrames, interactions]))).toBeLessThanOrEqual(16 * 1024);
-            }
+                expect([part, parts], 'numbered parts of one report, which .NET reads together').toEqual([index, reports.length]);
+            });
             expect(reports.flatMap(r => r[1]), 'every frame is reported once').toHaveLength(100);
             hub.detach();
         } finally {
@@ -486,6 +487,39 @@ describe('browser failures', () => {
         hub.detach();
     });
 
+    it('shortens an error in another script until it fits a circuit message', async () => {
+        // Clipped in UTF-16 units, 4,000 CJK characters are 12 KB of UTF-8: a message, a stack and a source make 36 KB.
+        const { win } = installPage();
+        const hub = await loadHub();
+        const ref = runtime(1);
+        hub.attach(ref, { platform: 'Server' });
+
+        const error = new Error('\u4e2d'.repeat(4000));
+        error.stack = '\u6587'.repeat(4000);
+        win.dispatch('error', { error, message: error.message, filename: 'https://app.example/' + '\u5b57'.repeat(4000), lineno: 1, colno: 1 });
+
+        const [report] = ref.reported('OnJsError').map(c => c[1]);
+        expect(Buffer.byteLength(JSON.stringify(report))).toBeLessThanOrEqual(16 * 1024);
+        expect(report.message.length).toBeGreaterThan(1000);
+        expect(report.stack.length).toBeGreaterThan(1000);
+        hub.detach();
+    });
+
+    it('refuses a protocol request too large for a circuit message, and sends it to a WebAssembly runtime', async () => {
+        installPage();
+        const hub = await loadHub();
+        const server = runtime(1, { set: { ok: true } });
+        const wasm = runtime(2, { set: { ok: true } });
+        const { targetId: serverId } = hub.attach(server, { platform: 'Server' });
+        const { targetId: wasmId } = hub.attach(wasm, { platform: 'WebAssembly' });
+        const value = 'v'.repeat(20 * 1024);
+
+        await expect(window.__BIT_BEVTOOLS__.request(serverId, 'set', { value })).rejects.toThrow('larger than 16 KB');
+        expect(server.reported('Protocol'), 'never sent: the circuit would close').toHaveLength(0);
+        expect(await window.__BIT_BEVTOOLS__.request(wasmId, 'set', { value })).toEqual({ ok: true });
+        hub.detach();
+    });
+
     it('never cuts a surrogate pair in half nor sends a lone surrogate, which .NET cannot read', async () => {
         const { win } = installPage();
         const hub = await loadHub();
@@ -610,7 +644,7 @@ describe('WebSocket traffic', () => {
         hub.detach();
     });
 
-    it('keeps the traffic report within one circuit message, the circuit socket last to go, and bounds message kinds', async () => {
+    it('sends a traffic snapshot larger than a circuit message in numbered parts, every socket in it, and bounds message kinds', async () => {
         vi.useFakeTimers();
         try {
             installPage();
@@ -618,16 +652,27 @@ describe('WebSocket traffic', () => {
             const ref = runtime(5);
             hub.attach(ref, { platform: 'Server' });
             new window.WebSocket('wss://app.example/_blazor?id=circuit');
+            const hubs = [];
             for (let i = 0; i < 40; i++) {
                 const socket = new window.WebSocket(`wss://app.example/hub${i}?id=${i}&q=${'p'.repeat(600)}`);
-                for (let k = 0; k < 40; k++) socket.receive(`{"type":1,"target":"Method${k}","arguments":[]}\x1e`);
+                for (let k = 0; k < 40; k++) socket.receive(`{"type":1,"target":"${'\u4e2d'.repeat(200)}${k}","arguments":[]}\x1e`);
+                hubs.push(socket);
             }
+            hubs[0].close(1006, 'gone');
 
-            expect(Object.keys(hub.traffic()[1].messages).length, 'the kinds of one socket are bounded').toBeLessThanOrEqual(31);
+            const kinds = Object.keys(hub.traffic()[1].messages);
+            expect(kinds.length, 'the kinds of one socket are bounded').toBeLessThanOrEqual(31);
+            expect(kinds.every(kind => kind.length <= 82), 'and their names clipped').toBe(true);
             vi.advanceTimersByTime(2100);
-            const [report] = ref.reported('ReportTraffic');
-            expect(Buffer.byteLength(JSON.stringify(report[1]))).toBeLessThanOrEqual(16 * 1024);
-            expect(report[1].some(s => s.kind === 'blazor-circuit'), "the circuit's own socket is kept").toBe(true);
+            const reports = ref.reported('ReportTraffic');
+            expect(reports.length, 'more than one part').toBeGreaterThan(1);
+            reports.forEach(([, sockets, part, parts], index) => {
+                expect(Buffer.byteLength(JSON.stringify(sockets))).toBeLessThanOrEqual(16 * 1024);
+                expect([part, parts]).toEqual([index, reports.length]);
+            });
+            const reported = reports.flatMap(r => r[1]);
+            expect(reported.map(s => s.id), 'no socket left out, none twice').toEqual(hub.traffic().map(s => s.id));
+            expect(reported.find(s => s.closeCode === 1006), 'a socket that closed is reported closed').toBeTruthy();
             hub.detach();
         } finally {
             vi.useRealTimers();

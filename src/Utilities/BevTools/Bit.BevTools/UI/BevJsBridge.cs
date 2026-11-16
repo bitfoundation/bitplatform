@@ -39,10 +39,19 @@ public sealed class BevJsCallEntry
 
     /// <summary>
     /// How many calls the entry stands for: the hub folds the calls of a report window past the ones it reports one by
-    /// one into an entry per identifier, so a page calling .NET thousands of times never sends a report the circuit
-    /// refuses. Null (one call) from a hub that does not fold.
+    /// one into an entry per kind of call (identifier, second, frame, sync, argument count, failed or not), so a page
+    /// calling .NET thousands of times never sends a report the circuit refuses. <see cref="DurationMs"/> is then the
+    /// longest of them, <see cref="TotalMs"/> their sum, <see cref="At"/> the time of the first. Null (one call) from a
+    /// hub that does not fold.
     /// </summary>
     public int? Count { get; set; }
+
+    /// <summary>The sum of the durations of the calls a folded entry stands for; null for one call.</summary>
+    public double? TotalMs { get; set; }
+
+    internal int Calls => Math.Max(1, Count ?? 1);
+
+    internal double TotalDurationMs => Calls == 1 ? DurationMs : TotalMs ?? DurationMs;
 }
 
 public sealed class BevBrowserSnapshot
@@ -136,8 +145,70 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
     }
 
     /// <summary>The hub's latest view of the page's WebSockets; notable changes become timeline events.</summary>
+    public void ReportTraffic(BevSocketStats[] sockets) => ReportTraffic(sockets, 0, 1);
+
+    /// <summary>
+    /// One part of the hub's latest view of the page's WebSockets. The view replaces the one held, so it is read only
+    /// whole: the hub sends one larger than a circuit message in parts, in order, and a run missing a part is dropped.
+    /// </summary>
     [JSInvokable]
-    public void ReportTraffic(BevSocketStats[] sockets)
+    public void ReportTraffic(BevSocketStats[] sockets, int part, int parts)
+    {
+        if (Assemble(_trafficParts, sockets, part, parts, ref _nextTrafficPart) is not { } whole)
+        {
+            return;
+        }
+
+        ReadTraffic(whole);
+    }
+
+    private readonly List<BevSocketStats> _trafficParts = [];
+    private int _nextTrafficPart;
+
+    private readonly List<(BevLongFramePayload[] Frames, BevInteractionPayload[] Interactions)> _responsivenessParts = [];
+    private int _nextResponsivenessPart;
+
+    /// <summary>
+    /// The items of a report the hub sent in parts, once its last part arrives; null until then. Parts arrive in order on
+    /// one connection, so one out of order means a run was cut off (the connection dropped): it is dropped, and a new
+    /// run starts at part 0.
+    /// </summary>
+    private static T[]? Assemble<T>(List<T> pending, T[]? items, int part, int parts, ref int next)
+    {
+        if (parts <= 1)
+        {
+            pending.Clear();
+            next = 0;
+            return items ?? [];
+        }
+
+        if (part == 0)
+        {
+            pending.Clear();
+            next = 0;
+        }
+
+        if (part != next || part >= parts)
+        {
+            pending.Clear();
+            next = 0;
+            return null;
+        }
+
+        pending.AddRange(items ?? []);
+        if (part < parts - 1)
+        {
+            next = part + 1;
+            return null;
+        }
+
+        var whole = pending.ToArray();
+        pending.Clear();
+        next = 0;
+        return whole;
+    }
+
+    private void ReadTraffic(BevSocketStats[] sockets)
     {
         var browser = session.Browser;
         var previous = browser.Sockets;
@@ -188,15 +259,24 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
     });
 
     /// <summary>The page's long frames and interactions since the last report, each dated by its age.</summary>
+    public void ReportResponsiveness(BevLongFramePayload[]? frames, BevInteractionPayload[]? interactions) => ReportResponsiveness(frames, interactions, 0, 1);
+
+    /// <summary>
+    /// One part of the page's long frames and interactions since the last report. A report too large for one circuit
+    /// message comes in parts, read together once the last arrives: its ages were all taken at one moment, so they are
+    /// dated from one moment here too, and its frames are matched against one view of the timeline.
+    /// </summary>
     [JSInvokable]
-    public void ReportResponsiveness(BevLongFramePayload[]? frames, BevInteractionPayload[]? interactions)
+    public void ReportResponsiveness(BevLongFramePayload[]? frames, BevInteractionPayload[]? interactions, int part, int parts)
     {
-        if (!session.IsEnabled || !session.Options.TrackResponsiveness)
+        (BevLongFramePayload[] Frames, BevInteractionPayload[] Interactions) report = (frames ?? [], interactions ?? []);
+        if (Assemble(_responsivenessParts, [report], part, parts, ref _nextResponsivenessPart) is not { } whole
+            || !session.IsEnabled || !session.Options.TrackResponsiveness)
         {
             return;
         }
 
-        BevResponsiveness.Record(session, frames, interactions);
+        BevResponsiveness.Record(session, whole.SelectMany(p => p.Frames).ToArray(), whole.SelectMany(p => p.Interactions).ToArray());
     }
 
     [JSInvokable]
@@ -282,7 +362,34 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
     }
 
     /// <summary>
-    /// The calls page script made to .NET since the last report. Each is a record in the JS interop store; the timeline
+    /// Calls page script made to .NET that the hub counted without an entry: in one report window, more kinds of call
+    /// than it sends an entry each for. They are in the call count and on the timeline as what they are, never under a
+    /// name, so no rule takes them for one function's calls.
+    /// </summary>
+    [JSInvokable]
+    public void ReportUnlistedJsToDotNet(int count)
+    {
+        if (!session.IsCapturing || count <= 0)
+        {
+            return;
+        }
+
+        session.Browser.JsToDotNetCalls += count;
+        session.Browser.JsToDotNetUnlisted += count;
+        session.Timeline.Record(new BevToolsEvent
+        {
+            Kind = BevToolsEventKind.Browser,
+            Category = "js-interop",
+            Title = count + " calls to .NET counted, not listed",
+            Detail = "Page script called .NET in more different ways within half a second than BevTools reports one by one (calls on hundreds of objects, say): these were counted only.",
+            Severity = BevToolsSeverity.Info,
+            Data = new Dictionary<string, object?> { ["unlistedCalls"] = count },
+        });
+    }
+
+    /// <summary>
+    /// The calls page script made to .NET since the last report. Each entry is a record in the JS interop store, an
+    /// entry the hub folded a record that stands for all its calls (<see cref="BevJsInteropRecord.CallCount"/>); the timeline
     /// gets one event per name per second (a requestAnimationFrame loop calls .NET sixty times a second, which would fill
     /// the timeline in about a minute), except for a call that failed or was slow, which keeps an event of its own. The
     /// hub reports every 500 ms, so a second's calls can arrive in two reports: the event of the first is replaced by
@@ -303,7 +410,7 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
         var calls = new List<JsCall>(batch.Length);
         foreach (var entry in batch)
         {
-            session.Browser.JsToDotNetCalls += Math.Max(1, entry.Count ?? 1);
+            session.Browser.JsToDotNetCalls += entry.Calls;
             var error = entry.Error is null ? null : BevRedactor.RedactText(entry.Error);
             var age = TimeSpan.FromMilliseconds(Math.Max(0, entry.AgeMs ?? (now - DateTimeOffset.FromUnixTimeMilliseconds(entry.At)).TotalMilliseconds));
             var (identifier, objectId, target) = Resolve(entry.Identifier ?? "?", ref references, ref referencesRead);
@@ -316,11 +423,12 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
                 Identifier = identifier,
                 ArgumentCount = entry.Args,
                 IsSync = entry.Sync,
+                CallCount = entry.Calls,
                 ComponentInstanceId = target?.ComponentInstanceId,
                 ComponentName = target?.ComponentName,
             };
             session.Interop.Add(record);
-            session.Interop.Complete(record, entry.DurationMs, error is null, error);
+            session.Interop.Complete(record, entry.DurationMs, error is null, error, entry.TotalDurationMs);
             calls.Add(new JsCall(entry, record, error, objectId, target?.TypeName));
         }
 
@@ -424,7 +532,8 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
         {
             data["calls"] = group.Count;
             data["totalMs"] = group.TotalMs;
-            detail = group.Count + " calls in this second" + on + ", " + BevFmt.Ms(group.TotalMs) + " in all, the longest " + BevFmt.Ms(group.MaxMs);
+            detail = group.Count + " calls in this second" + on + ", " + BevFmt.Ms(group.TotalMs) + " in all, the longest " + BevFmt.Ms(group.MaxMs)
+                + (first.Error is null ? "" : ", " + (group.Failures == group.Count ? "all" : group.Failures.ToString(CultureInfo.InvariantCulture)) + " failed, the first: " + first.Error);
         }
 
         return new BevToolsEvent
@@ -447,16 +556,22 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
 
     private readonly record struct JsCall(BevJsCallEntry Entry, BevJsInteropRecord Record, string? Error, string? ObjectId, string? TargetType);
 
-    /// <summary>What one timeline event says about its calls, kept as totals: a second of a busy loop holds hundreds.</summary>
+    /// <summary>
+    /// What one timeline event says about its calls, kept as totals: a second of a busy loop holds hundreds. An entry the
+    /// hub folded counts as every call it stands for.
+    /// </summary>
     private sealed class JsCallGroup(JsCall first)
     {
         public JsCall First { get; } = first;
 
-        public int Count { get; private set; } = 1;
+        public int Count { get; private set; } = first.Entry.Calls;
 
-        public double TotalMs { get; private set; } = first.Entry.DurationMs;
+        public double TotalMs { get; private set; } = first.Entry.TotalDurationMs;
 
         public double MaxMs { get; private set; } = first.Entry.DurationMs;
+
+        /// <summary>Only an event of failed calls has any: failed calls never join a routine event.</summary>
+        public int Failures { get; private set; } = first.Error is null ? 0 : first.Entry.Calls;
 
         /// <summary>The first four objects called: three are named, and a fourth says there were more.</summary>
         public List<string> Objects { get; } = first.ObjectId is null ? [] : [first.ObjectId];
@@ -468,9 +583,13 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
 
         public void Add(JsCall call)
         {
-            Count++;
-            TotalMs += call.Entry.DurationMs;
+            Count += call.Entry.Calls;
+            TotalMs += call.Entry.TotalDurationMs;
             MaxMs = Math.Max(MaxMs, call.Entry.DurationMs);
+            if (call.Error is not null)
+            {
+                Failures += call.Entry.Calls;
+            }
             if (call.ObjectId is not null && Objects.Count < 4 && !Objects.Contains(call.ObjectId))
             {
                 Objects.Add(call.ObjectId);
