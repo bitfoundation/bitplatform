@@ -272,4 +272,82 @@ public class GestureRevertTests
             Assert.IsLessThanOrEqualTo(scales[i - 1] + 1e-9, scales[i], $"the scale turned back: {string.Join(", ", scales)}");
         Assert.IsLessThan(1.0, scales[^1]);
     }
+
+    // A card in a presence: Animate, WhileHover and Exit as given, every transition a linear 1s tween.
+    private static RenderFragment PresenceCard(BmTarget animate, BmTarget whileHover, BmTarget exit) => b =>
+    {
+        b.OpenComponent<Bmotion>(0);
+        b.AddComponentParameter(1, nameof(Bmotion.Id), "card");
+        b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmTarget?)animate);
+        b.AddComponentParameter(3, nameof(Bmotion.WhileHover), (BmTarget?)whileHover);
+        b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmTarget?)exit);
+        b.AddComponentParameter(5, nameof(Bmotion.Transition), (BmTransition?)Bm.Tween(1, ease: BmEase.Linear));
+        b.AddComponentParameter(6, nameof(Bmotion.ChildContent), Div);
+        b.CloseComponent();
+    };
+
+    [TestMethod]
+    public async Task AHoverEndingDuringTheExit_StillReleasesWhatTheExitDoesNotAnimate()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
+        var card = PresenceCard(Bm.To(opacity: 1), Bm.To(scale: 1.5), Bm.To(opacity: 0));
+        var cut = ctx.Render<BmotionAnimatePresence>(ps => ps.Add(p => p.IsPresent, true).Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(0, 1100);
+        await cut.InvokeAsync(Events(ctx, "card").OnPointerEnter);
+        await ctx.RunFramesAsync(1116, 2200);
+
+        cut.Render(ps => ps.Add(p => p.IsPresent, false).Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(2216, 2400);
+        await cut.InvokeAsync(Events(ctx, "card").OnPointerLeave);
+        var scales = await SampleFramesAsync(ctx, "card", s => s.Transforms["scale"], 2416, 2900);
+        var opacities = await SampleFramesAsync(ctx, "card", s => s.NumericValues["opacity"], 2916, 3000);
+
+        // The exit doesn't animate the scale: the hover's scale goes back as at any other time, and the fade goes on.
+        Assert.IsLessThan(1.5, scales[^1], $"the hover's scale stayed: {string.Join(", ", scales)}");
+        Assert.IsLessThan(1.0, opacities[^1]);
+    }
+
+    [TestMethod]
+    public async Task AHoverStartingDuringTheExit_PlaysWhatTheExitDoesNotAnimate()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
+        ctx.Options.InertWhileExiting = false;
+        var card = PresenceCard(Bm.To(opacity: 1), Bm.To(scale: 1.5), Bm.To(opacity: 0));
+        var cut = ctx.Render<BmotionAnimatePresence>(ps => ps.Add(p => p.IsPresent, true).Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(0, 1100);
+
+        cut.Render(ps => ps.Add(p => p.IsPresent, false).Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(1116, 1200);
+        await cut.InvokeAsync(Events(ctx, "card").OnPointerEnter);
+        var scales = await SampleFramesAsync(ctx, "card", s => s.Transforms.GetValueOrDefault("scale", 1), 1216, 1900);
+
+        Assert.IsGreaterThan(1.0, scales[^1], "the hover plays the scale the exit leaves alone");
+    }
+
+    [TestMethod]
+    public async Task AHoverEndingDuringTheExit_IsWhatTheReEntryReturnsTheExitsPropertiesTo()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
+        var card = PresenceCard(Bm.To(opacity: 1), Bm.To(x: 50), Bm.To(opacity: 0, x: -100));
+        var cut = ctx.Render<BmotionAnimatePresence>(ps => ps.Add(p => p.IsPresent, true).Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(0, 1100);
+        await cut.InvokeAsync(Events(ctx, "card").OnPointerEnter);
+        await ctx.RunFramesAsync(1116, 2200);
+        Assert.AreEqual(50.0, State(ctx, "card").Transforms["x"], 1e-6);
+
+        // The exit takes x as the hover ends; the presence comes back before the exit is over.
+        cut.Render(ps => ps.Add(p => p.IsPresent, false).Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(2216, 2400);
+        await cut.InvokeAsync(Events(ctx, "card").OnPointerLeave);
+        await ctx.RunFramesAsync(2416, 2600);
+        cut.Render(ps => ps.Add(p => p.IsPresent, true).Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(2616, 4000);
+
+        // Not the hover's 50 the element showed as the exit started: the hover is over.
+        Assert.AreEqual(0.0, State(ctx, "card").Transforms["x"], 1e-6);
+        Assert.AreEqual(1.0, State(ctx, "card").NumericValues["opacity"], 1e-6);
+    }
 }

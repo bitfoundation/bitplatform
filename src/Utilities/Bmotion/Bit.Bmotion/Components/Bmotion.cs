@@ -960,7 +960,13 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // exiting flag (otherwise the component stays frozen forever) and force the enter
             // animation to replay by invalidating the cached previous target.
             _isExiting = false;
-            Engine.SetExiting(_id, false);
+            // What the gestures that changed during the exit set the properties it kept from them is where those go
+            // back to, over what they showed as it started (RestorePreExit plays it, after the enter target).
+            if (Engine.EndExit(_id) is { } heldBack)
+            {
+                _preExitValues ??= new Dictionary<string, object?>(StringComparer.Ordinal);
+                foreach (var (key, value) in heldBack) _preExitValues[key] = value;
+            }
             _exitGeneration++;
             _prevAnimate = null;
             _prevInheritedVariant = null;
@@ -1025,15 +1031,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // Probe the OS preference only when it can actually change IsMotionReduced()'s result: an
         // element that keeps its full animation (ReducedMotion="Full") ignores reduced motion, a local
         // <BmotionConfig ReduceMotion> wins outright, and Always/Never ignore the OS - so detection
-        // there is a wasted interop round-trip. This mirrors IsMotionReduced()/ShouldReduceMotion().
-        bool osPreferenceMatters = ReducedMotionBehavior != BmReducedMotionBehavior.Full
-            && ConfigCtx?.ReduceMotion is null && Options.ReducedMotion switch
-        {
-            BmReducedMotionMode.User => true,
-            BmReducedMotionMode.Always or BmReducedMotionMode.Never => false,
-            _ => ConfigCtx is not null, // IgnoreUnlessConfigured: OS matters only inside a config
-        };
-        if (osPreferenceMatters)
+        // there is a wasted interop round-trip (see OsPreferenceMatters).
+        if (ReducedMotionBehavior != BmReducedMotionBehavior.Full
+            && OsPreferenceMatters(Options.ReducedMotion, ConfigCtx?.ReduceMotion, ConfigCtx is not null))
             await Engine.EnsureReducedMotionDetectedAsync();
         // Every await below can resume after the component was disposed - an element unmounted
         // while it was still initialising (a presence list, a filter, a page left at once). Carrying
@@ -1259,14 +1259,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     internal async Task PlayExitAsync()
     {
         int generation = _exitGeneration;
-        // From here the exit has priority over the gestures: one that ends while it plays - the pointer leaving an
-        // element made inert, focus moving out of it - leaves the properties the exit animates alone.
-        Engine.SetExiting(_id, true);
         var exitProps = ResolveProps(EffectiveExit);
-        if (exitProps != null)
+        // Serialized once, as checked: the exit awaits the layout pop before it plays.
+        var exitValues = exitProps?.ToJsDictionary();
+        // From here the exit has priority over the gestures for the properties it animates: one that changes while it
+        // plays - the pointer leaving an element made inert, focus moving out of it - leaves those alone (a re-entry
+        // plays what it set them to) and moves the rest as it would at any other time.
+        Engine.BeginExit(_id, exitValues?.Keys ?? Enumerable.Empty<string>());
+        if (exitProps != null && exitValues != null)
         {
-            // Serialized once, as checked: the exit awaits the layout pop before it plays.
-            var exitValues = exitProps.ToJsDictionary();
             // On its way out: nothing in it can be focused, pressed again or read out any more, and pointer events
             // reach what is behind it. Set by the bridge rather than rendered, so static child content (one markup
             // frame) isn't re-created mid-exit; not awaited, so on Blazor Server the exit doesn't start a round
@@ -1282,7 +1283,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // reflow immediately, then play the exit on the popped element.
             if (PresenceCtx is { PopLayout: true })
             {
-                var (x, y) = Engine.GetCurrentXY(_id);
+                // Read, not taken over: the exit below interrupts what it overlaps, and nothing else may stop.
+                var (x, y) = Engine.PeekCurrentXY(_id);
                 try { await Interop.PopLayoutAsync(_id, x, y); }
                 catch { /* popping is cosmetic; the exit animation must still play */ }
             }
@@ -1513,14 +1515,14 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // cancelled from another thread (CancelAfter's timer) stops it on the renderer's context, where it was started.
         var registration = cancellationToken.CanBeCanceled
             ? cancellationToken.RegisterOnCallerContext(() => Engine.Stop(_id, values.Keys.ToArray()))
-            : default;
+            : null;
         try
         {
-            await Engine.AnimateToAsync(_id, values, config, onSettled: registration.Dispose);
+            await Engine.AnimateToAsync(_id, values, config, onSettled: registration is null ? null : registration.Dispose);
         }
         catch
         {
-            registration.Dispose();
+            registration?.Dispose();
             throw;
         }
     }
@@ -1667,6 +1669,16 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         return new BmotionXY(x, y);
     }
 
+    /// <summary>
+    /// The element's current x/y, read without taking any animation over (see
+    /// <see cref="BmotionAnimationEngine.PeekCurrentXY(string)"/>) - for a reorder group measuring its items.
+    /// </summary>
+    internal BmotionXY PeekCurrentXY()
+    {
+        var (x, y) = Engine.PeekCurrentXY(_id);
+        return new BmotionXY(x, y);
+    }
+
     [JSInvokable] public async Task OnDragMove() => await OnDrag.InvokeAsync();
 
     /// <summary>Invoked by JS the moment direction lock resolves the drag's axis. Not for direct use.</summary>
@@ -1694,7 +1706,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 { Type = BmotionTransitionType.Spring, Stiffness = 400, Damping = 35 };
             // A movement like any other: under reduced motion it lands (or does what ReducedMotion says).
             await Engine.AnimateToAsync(_id,
-                new Dictionary<string, object?> { ["x"] = 0.0, ["y"] = 0.0 }, IsMotionReduced() ? ReducedVariant(snapT) : snapT);
+                new Dictionary<string, object?> { ["x"] = 0.0, ["y"] = 0.0 }, AsPlayedHere(snapT));
         }
         else
         {
@@ -1841,16 +1853,25 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         BmReducedMotionMode mode, bool osPrefersReducedMotion, bool? configReduce = null, bool insideConfig = false)
     {
         if (configReduce is bool reduce) return reduce;
-
-        return mode switch
-        {
-            BmReducedMotionMode.Always => true,
-            BmReducedMotionMode.Never => false,
-            BmReducedMotionMode.User => osPrefersReducedMotion,
-            // IgnoreUnlessConfigured (back-compat): OS preference matters only inside a config.
-            _ => insideConfig && osPrefersReducedMotion,
-        };
+        if (mode == BmReducedMotionMode.Always) return true;
+        return OsPreferenceMatters(mode, configReduce, insideConfig) && osPrefersReducedMotion;
     }
+
+    /// <summary>
+    /// Whether the OS preference can change <see cref="IsMotionReduced(BmReducedMotionMode, bool, bool?, bool)"/>'s
+    /// answer - the only case it is worth an interop round trip to read it from the browser. Not under a local
+    /// <see cref="BmotionConfig"/>'s <paramref name="configReduce"/> (an explicit override), nor under
+    /// <see cref="BmReducedMotionMode.Always"/>/<see cref="BmReducedMotionMode.Never"/>; under the default
+    /// <see cref="BmReducedMotionMode.IgnoreUnlessConfigured"/> only <paramref name="insideConfig"/>.
+    /// </summary>
+    internal static bool OsPreferenceMatters(BmReducedMotionMode mode, bool? configReduce = null, bool insideConfig = false)
+        => configReduce is null && mode switch
+        {
+            BmReducedMotionMode.User => true,
+            BmReducedMotionMode.Always or BmReducedMotionMode.Never => false,
+            // IgnoreUnlessConfigured (back-compat): OS preference matters only inside a config.
+            _ => insideConfig,
+        };
 
     // Under reduced motion we keep opacity, colour, filters and shadows animating (Motion's "user" semantics: they
     // change how something looks, not where it is or how big) while transform/layout/dimension changes snap
@@ -1979,6 +2000,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var d = new Dictionary<string, object?>();
         if (EffectiveWhileHover != null || OnHoverStart.HasDelegate || OnHoverEnd.HasDelegate) d["hover"] = true;
         if (EffectiveWhileTap != null || OnTapStart.HasDelegate || OnTap.HasDelegate || OnTapCancel.HasDelegate) d["tap"] = true;
+        // A tap that does something is reached from the keyboard too: the bridge makes an element that can't take focus
+        // (and wraps no control that can) focusable. One that only animates (WhileTap) adds no tab stop.
+        if (OnTapStart.HasDelegate || OnTap.HasDelegate) d["tapFocusable"] = true;
         if (EffectiveWhileFocus != null || OnFocusStart.HasDelegate || OnFocusEnd.HasDelegate) d["focus"] = true;
         if (OnPanStart.HasDelegate || OnPan.HasDelegate || OnPanEnd.HasDelegate) d["pan"] = true;
         // Only emitted when opting out, so the default flags dictionary (and its signature) is

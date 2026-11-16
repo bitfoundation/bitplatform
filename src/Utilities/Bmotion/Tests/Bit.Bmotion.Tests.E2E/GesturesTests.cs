@@ -85,6 +85,16 @@ public sealed class GesturesTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task Tap_ThatOnlyAnimatesOrWrapsAControl_AddsNoTabStop()
+    {
+        // WhileTap alone has nothing for the keyboard to do; a wrapper's button is what the keyboard reaches.
+        await ExpectEventAsync("armed:visual-tap");
+        await ExpectEventAsync("armed:button-tap");
+        Assert.IsNull(await Page.Locator("#visual-tap").GetAttributeAsync("tabindex"));
+        Assert.IsNull(await Page.Locator("#button-tap").GetAttributeAsync("tabindex"));
+    }
+
+    [TestMethod]
     public async Task Tap_HeldOnTheKeyboardThenBlurred_IsCancelled()
     {
         await ExpectEventAsync("armed:tap");

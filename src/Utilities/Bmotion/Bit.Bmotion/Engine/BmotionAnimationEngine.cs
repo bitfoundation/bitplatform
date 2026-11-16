@@ -508,10 +508,10 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         // The layer is registered before anything is awaited: a pointerleave arriving while this
         // activation is still reading or interrupting must find the layer to remove, or the overlay
         // would apply after the gesture already ended and stay on.
-        if (state.ActivateGestureLayer(gesture, values, transition) is not { } request) return;
-        // While the element plays its exit, the exit has priority over every gesture layer: the layer is recorded (a
-        // re-entry finds the gestures as they are) but does not animate the properties the exit owns.
-        if (state.Exiting) return;
+        if (state.ActivateGestureLayer(gesture, values, transition) is not { } activation) return;
+        // While the element plays its exit, the exit has priority over the gestures for the properties it animates:
+        // the layer is recorded and plays the rest, and what it sets those is kept for a re-entry (see EndExit).
+        if (state.WithoutExitKeys(activation) is not { } request) return;
         var generation = ++_gestureGeneration;
         _gestureGenerations[(elementId, gesture)] = generation;
         // A gesture's target is not the element's own: what it borrows from the stylesheet stays borrowed.
@@ -523,21 +523,29 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
         _gestureGenerations.Remove((elementId, gesture));
-        // Not while it exits either (see ActivateGestureLayerAsync): going back to the Animate target would cancel the
-        // exit for those properties.
-        if (state.DeactivateGestureLayer(gesture) is not { } request || state.Exiting) return;
+        // Nor while it exits for the properties the exit animates (see ActivateGestureLayerAsync): going back to the
+        // Animate target would cancel the exit for them. The rest go back now.
+        if (state.DeactivateGestureLayer(gesture) is not { } deactivation
+            || state.WithoutExitKeys(deactivation) is not { } request) return;
         await PlayAsync(elementId, state, request.Values, request.Transition, tcs: null, claim: false,
             stylesheetKeys: request.StylesheetKeys);
     }
 
     /// <summary>
-    /// Marks an element as playing its exit, or as back from one (a presence that re-entered): while it exits, its
-    /// exit takes priority over every gesture layer - see <see cref="ActivateGestureLayerAsync"/>.
+    /// Marks an element as playing its exit, which animates <paramref name="exitKeys"/>: while it plays, the exit has
+    /// priority over the gesture layers for those properties - see <see cref="ActivateGestureLayerAsync"/>.
     /// </summary>
-    internal void SetExiting(string elementId, bool exiting)
+    internal void BeginExit(string elementId, IEnumerable<string> exitKeys)
     {
-        if (_elements.TryGetValue(elementId, out var state)) state.Exiting = exiting;
+        if (_elements.TryGetValue(elementId, out var state)) state.BeginExit(exitKeys);
     }
+
+    /// <summary>
+    /// Marks an element as back from its exit (a presence that re-entered). Returns what the gestures that changed
+    /// while it exited set the properties the exit kept from them, for the re-entry to play; null when none did.
+    /// </summary>
+    internal Dictionary<string, object?>? EndExit(string elementId)
+        => _elements.TryGetValue(elementId, out var state) ? state.EndExit() : null;
 
     // Which activation of a gesture on an element is the live one: an activation that resumes after its gesture
     // was deactivated (or activated again) must not play.
@@ -588,7 +596,19 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         return captured;
     }
 
-    /// <summary>Returns the current transform x/y for an element (used at drag start).</summary>
+    /// <summary>
+    /// The element's current transform x/y, compositor animations still moving it included, for a reader that takes
+    /// nothing over (a popLayout exit pinning the element, a reorder group measuring its items): unlike
+    /// <see cref="GetCurrentXY(string)"/> it leaves every animation playing, browser and frame loop alike.
+    /// </summary>
+    internal (double x, double y) PeekCurrentXY(string elementId)
+        => _elements.TryGetValue(elementId, out var state) ? state.PeekCurrentXY() : (0, 0);
+
+    /// <summary>
+    /// Returns the current transform x/y for an element at drag start - only then: it takes the compositor
+    /// animations on the transform over, which the JS bridge has cancelled just before. Elsewhere use
+    /// <see cref="PeekCurrentXY(string)"/>.
+    /// </summary>
     public (double x, double y) GetCurrentXY(string elementId)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return (0, 0);
@@ -1859,11 +1879,10 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         // Dropped without the browser saying it ended - the call failed, or the circuit gave up waiting for it: the
         // browser may still be playing it (forever, for one that repeats forever), where nothing would ever stop it
         // again now that no plan names it. It is ended here, at the values it had got to, which the state now holds.
-        if (wasStillRegistered)
-        {
-            try { await _interop.CancelWaapiAnimationAsync(elementId, offload.Plan.Token, commit: true); }
-            catch { /* best-effort: the element or the circuit is gone */ }
-        }
+        // Sent, not awaited: nothing may yield between realizing the plan and the replay below - an animation started
+        // on these keys in the meantime would be cancelled by a replay of the old target. Interop calls reach the
+        // browser in order, so this cancel lands before anything the replay plays.
+        if (wasStillRegistered) CancelWaapiTokens(elementId, [offload.Plan.Token], commit: true);
 
         if (wasStillRegistered && elapsedMs < neverStartedWithinMs)
         {

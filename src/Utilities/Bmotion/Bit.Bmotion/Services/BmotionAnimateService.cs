@@ -108,7 +108,7 @@ public sealed class BmotionAnimateService
     // layout and sizes land at once while fades and colours still animate.
     private async ValueTask<(BmotionTransitionConfig? Config, bool Reduced)> AsPlayedAsync(BmotionTransitionConfig? normal)
     {
-        if (_options.ReducedMotion == BmReducedMotionMode.User) await _engine.EnsureReducedMotionDetectedAsync();
+        if (Bmotion.OsPreferenceMatters(_options.ReducedMotion)) await _engine.EnsureReducedMotionDetectedAsync();
         return Bmotion.IsMotionReduced(_options.ReducedMotion, _engine.OsPrefersReducedMotion)
             ? (Bmotion.BuildReducedTransition(normal), true)
             : (normal, false);

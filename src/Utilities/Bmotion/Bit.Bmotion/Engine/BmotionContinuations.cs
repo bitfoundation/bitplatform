@@ -36,15 +36,40 @@ internal static class BmotionContinuations
     /// Runs <paramref name="work"/> when <paramref name="token"/> is cancelled, posted to the caller's context - so a
     /// token cancelled from another thread (<c>CancelAfter</c>'s timer) still stops the engine from the thread that
     /// started the animation. Run at once when cancelled on that context, or when there is none.
+    /// <para>
+    /// Disposing the registration (on the caller's context) also drops a callback already posted and not yet run:
+    /// the animation it would stop has settled, and a later one on the same properties must not be stopped by it.
+    /// </para>
     /// </summary>
-    internal static CancellationTokenRegistration RegisterOnCallerContext(this CancellationToken token, Action work)
+    internal static IDisposable RegisterOnCallerContext(this CancellationToken token, Action work)
+        => new CallerContextRegistration(token, work);
+
+    private sealed class CallerContextRegistration : IDisposable
     {
-        var context = SynchronizationContext.Current;
-        return token.Register(() =>
+        private readonly CancellationTokenRegistration _registration;
+        // Read and written on the caller's context only: by Dispose, and by the posted callback.
+        private bool _disposed;
+
+        public CallerContextRegistration(CancellationToken token, Action work)
         {
-            if (context is null || context == SynchronizationContext.Current) work();
-            else context.Post(_ => work(), null);
-        });
+            var context = SynchronizationContext.Current;
+            _registration = token.Register(() =>
+            {
+                if (context is null || context == SynchronizationContext.Current) Run();
+                else context.Post(_ => Run(), null);
+            });
+
+            void Run()
+            {
+                if (!_disposed) work();
+            }
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            _registration.Dispose();
+        }
     }
 
     private static TaskScheduler CallerScheduler()

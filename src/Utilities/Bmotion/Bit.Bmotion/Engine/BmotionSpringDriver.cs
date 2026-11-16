@@ -7,10 +7,6 @@ namespace Bit.Bmotion;
 /// </summary>
 internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 {
-    // Bm.Spring's defaults: what a stiffness or damping that could never settle falls back to.
-    private const double DefaultStiffness = 100;
-    private const double DefaultDamping = 10;
-
     private double _target;
     private double _from;
     private readonly double _origFrom;
@@ -93,21 +89,13 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
         // Mass divides the acceleration each sub-step; a value <= 0 would yield NaN/Infinity and
         // trap the spring (the rest test would never pass). Fall back to the default mass of 1 - before
         // deriving stiffness/damping from it, so the derived spring is the one that actually runs.
-        _m = config.Mass > 0 ? config.Mass : 1.0;
-        double k = config.Stiffness;
-        double d = config.Damping;
-        if (config.Bounce.HasValue)
-        {
-            double vd = config.VisualDuration ?? config.Duration;
-            (k, d) = BmotionTransitionConfig.SpringFromBounce(vd, config.Bounce.Value, _m);
-        }
-
         // Likewise a stiffness <= 0 (nothing pulls towards the target) or a negative damping (the oscillation grows
         // without bound, to Infinity and NaN): the rest test would never pass, the driver would tick forever, and an
-        // exit using it would never complete. Fall back to the defaults, the values BmSpring.Analyze rejects them for.
-        Settles = k > 0 && d >= 0;
-        _k = k > 0 ? k : DefaultStiffness;
-        _d = d >= 0 ? d : DefaultDamping;
+        // exit using it would never complete. Fall back to the defaults, the values BmSpring.Analyze rejects them for -
+        // as the duration estimates do (BmotionTransitionConfig.ResolveSpring is the one rule for all of them).
+        bool settles;
+        (_k, _d, _m, settles) = config.ResolveSpring();
+        Settles = settles;
         _vel = _initialVel = config.Velocity;
         _baseRestSpeed = config.RestSpeed;
         _baseRestDelta = config.RestDelta;

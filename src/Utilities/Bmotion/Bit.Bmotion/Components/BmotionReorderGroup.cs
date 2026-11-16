@@ -279,7 +279,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             var rect = await Interop.GetBoundingRectAsync(e.Id);
             if (session != _dragSession) return;
             if (rect is null || e.Ref is null) { _dragged = null; return; }
-            var xy = e.Ref.GetCurrentXY();
+            var xy = e.Ref.PeekCurrentXY();
             _origStart[e.Key] = (Horizontal ? rect.Left - xy.X : rect.Top - xy.Y);
             _extent[e.Key] = Horizontal ? rect.Width : rect.Height;
             _box[e.Key] = (rect.Left - xy.X, rect.Top - xy.Y, rect.Width, rect.Height);
@@ -308,7 +308,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     {
         if (_dragged != entry || !_measured || entry.Ref is null) return;
 
-        var xy = entry.Ref.GetCurrentXY();
+        var xy = entry.Ref.PeekCurrentXY();
         if (Grid)
         {
             // The cell nearest the dragged item's centre is its place; the others close up around it.

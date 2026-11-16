@@ -139,13 +139,8 @@ public sealed class BmotionSplitText : ComponentBase
     {
         // The OS preference is read from the browser once; the units re-render without their stagger if it asks for
         // less motion - before they play, which waits for the same reading.
-        bool osPreferenceMatters = ConfigCtx?.ReduceMotion is null && Options.ReducedMotion switch
-        {
-            BmReducedMotionMode.User => true,
-            BmReducedMotionMode.Always or BmReducedMotionMode.Never => false,
-            _ => ConfigCtx is not null,
-        };
-        if (!firstRender || !osPreferenceMatters || Engine.OsPrefersReducedMotion) return;
+        if (!firstRender || Engine.OsPrefersReducedMotion
+            || !Bmotion.OsPreferenceMatters(Options.ReducedMotion, ConfigCtx?.ReduceMotion, ConfigCtx is not null)) return;
         await Engine.EnsureReducedMotionDetectedAsync();
         if (Engine.OsPrefersReducedMotion) StateHasChanged();
     }

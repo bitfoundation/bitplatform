@@ -477,6 +477,33 @@ export function unwatchReducedMotion(key: string): void {
 
 const _eventCleanup = new Map<string, Array<(unregistering: boolean) => void>>(); // elementId  Array<cleanup>
 
+// The tabindex the bridge gives an element so Enter and Space can reach it, shared by what needs it (a tap, a
+// reorder item's keys): added by the first that claims it - only where neither the element nor the app made the
+// element focusable - and removed when the last lets it go. A part claiming it again (listeners re-attached on new
+// settings) changes nothing, so a focused element is not blurred by its tabindex going and coming back.
+const _focusOwners = new WeakMap<Element, Set<string>>();
+
+function _claimFocusable(el: HTMLElement, owner: string): void {
+    const owners = _focusOwners.get(el);
+    if (owners) { owners.add(owner); return; }
+    if (el.hasAttribute('tabindex') || el.tabIndex >= 0) return; // focusable already, or the app's choice
+    el.setAttribute('tabindex', '0');
+    _focusOwners.set(el, new Set([owner]));
+}
+
+function _releaseFocusable(el: HTMLElement, owner: string): void {
+    const owners = _focusOwners.get(el);
+    if (!owners?.delete(owner) || owners.size > 0) return;
+    _focusOwners.delete(el);
+    if (el.getAttribute('tabindex') === '0') el.removeAttribute('tabindex');
+}
+
+// Whether the element holds a control of its own that takes focus (a native button or link it wraps): the keyboard
+// reaches that control, so the wrapper needs no tab stop - nor a second one beside it.
+function _hasFocusableDescendant(el: HTMLElement): boolean {
+    return !!el.querySelector('a[href], button, input, select, textarea, summary, iframe, [contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"])');
+}
+
 export function registerElement(elementId: string): boolean {
     const el = document.getElementById(elementId);
     if (el) el.setAttribute('data-bmid', elementId);
@@ -587,6 +614,8 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
     _runCleanup(elementId);
     const cleanups: Array<(unregistering: boolean) => void> = [];
     _eventCleanup.set(elementId, cleanups);
+    // A tap no longer listened for gives back the tabindex it was given (see the tap block below).
+    if (!events.tap) _releaseFocusable(el, 'tap');
 
     // gesturePropagation:false stops this element's bubbling pointer gestures from also reaching
     // gesture-enabled ancestors - the tap/pan counterpart of dragPropagation. Only pointerdown
@@ -659,10 +688,12 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
             dotnetRef.invokeMethodAsync('OnPointerCancel');
         };
 
-        // Enter and Space reach only an element that can take focus: one that takes none of its own (a div) and has no
-        // tabindex from the app is given one, as motion.dev's press() does, and loses it again with the listeners.
-        const madeFocusable = !el.hasAttribute('tabindex') && el.tabIndex < 0;
-        if (madeFocusable) el.setAttribute('tabindex', '0');
+        // Enter and Space reach only an element that can take focus. An element with something to do on a tap (an
+        // OnTap/OnTapStart handler: tapFocusable) that takes no focus of its own (a div), has no tabindex from the
+        // app (tabindex="-1" opts out) and wraps no control the keyboard reaches instead is given one, as motion.dev's
+        // press() does; a tap that only animates (WhileTap) or only reports a cancel adds no tab stop.
+        if (events.tapFocusable && !_hasFocusableDescendant(el)) _claimFocusable(el, 'tap');
+        else _releaseFocusable(el, 'tap');
 
         el.addEventListener('pointerdown', onDown);
         window.addEventListener('pointerup',     onUp);
@@ -670,8 +701,9 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
         el.addEventListener('keydown', onKeyDown);
         el.addEventListener('keyup',   onKeyUp);
         el.addEventListener('blur',    onBlur);
-        cleanups.push(() => {
-            if (madeFocusable && el.getAttribute('tabindex') === '0') el.removeAttribute('tabindex');
+        cleanups.push((unregistering: boolean) => {
+            // Kept across a re-attach (the next attach claims or releases it); gone with the element's registration.
+            if (unregistering) _releaseFocusable(el, 'tap');
             el.removeEventListener('pointerdown', onDown);
             window.removeEventListener('pointerup',     onUp);
             window.removeEventListener('pointercancel', onCancel);
@@ -1217,10 +1249,9 @@ export function popLayout(elementId: string, curX: number, curY: number): void {
 
 // ── Keyboard reordering (BmotionReorderGroup) ───────────────────────────────
 
-/** An item's keyboard reordering: whether it is held, whether it was made focusable for it, and its listeners. */
+/** An item's keyboard reordering: whether it is held, and its listeners. */
 interface BmReorderKeys {
     held: boolean;
-    madeFocusable: boolean;
     unlisten(): void;
 }
 
@@ -1238,8 +1269,8 @@ export function attachReorderKeys(elementId: string, dotnetRef: DotNet.DotNetObj
     if (!el) return;
     const previous = _reorderKeys.get(el);
     previous?.unlisten();
-    const madeFocusable = previous ? previous.madeFocusable : !el.hasAttribute('tabindex') && el.tabIndex < 0;
-    if (madeFocusable && !previous) el.setAttribute('tabindex', '0');
+    // Shared with a tap on the same item (see _claimFocusable): whichever let go last takes the tabindex away.
+    _claimFocusable(el, 'reorder');
 
     // Along the list; in a grid left and right move a cell, and up and down a row.
     const back = axis === 'y' ? 'ArrowUp' : 'ArrowLeft';
@@ -1281,7 +1312,6 @@ export function attachReorderKeys(elementId: string, dotnetRef: DotNet.DotNetObj
     };
     const keys: BmReorderKeys = {
         held: previous?.held ?? false,
-        madeFocusable,
         unlisten: () => {
             el.removeEventListener('keydown', onKeyDown);
             el.removeEventListener('focusout', onFocusOut);
@@ -1299,7 +1329,7 @@ export function detachReorderKeys(elementId: string): void {
     if (!el || !keys) return;
     keys.unlisten();
     _reorderKeys.delete(el);
-    if (keys.madeFocusable) el.removeAttribute('tabindex');
+    _releaseFocusable(el, 'reorder');
 }
 
 /** Moves focus to the element without scrolling it into view. */

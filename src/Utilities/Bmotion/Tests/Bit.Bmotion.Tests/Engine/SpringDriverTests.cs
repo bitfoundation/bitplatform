@@ -376,4 +376,20 @@ public class SpringDriverTests
         }
         return -1;
     }
+
+    [TestMethod]
+    [DataRow(0.0, 10.0)]
+    [DataRow(-50.0, 10.0)]
+    [DataRow(100.0, -5.0)]
+    public void ASpringThatCouldNeverSettle_IsScheduledForTheSpringThatRuns(double stiffness, double damping)
+    {
+        // The driver runs it with the defaults: what waits on it (BeforeChildren, a timeline's duration) waits that
+        // long, not for the 10s cap an estimate of the configured physics would hit.
+        var config = new BmotionTransitionConfig { Type = BmotionTransitionType.Spring, Stiffness = stiffness, Damping = damping };
+        var defaults = new BmotionTransitionConfig { Type = BmotionTransitionType.Spring };
+
+        Assert.AreEqual(defaults.EstimatedDurationSeconds(), config.EstimatedDurationSeconds(), 1e-9);
+        Assert.AreEqual(defaults.TotalSeconds(), config.TotalSeconds(), 1e-9);
+        Assert.IsLessThan(10.0, config.EstimatedDurationSeconds());
+    }
 }

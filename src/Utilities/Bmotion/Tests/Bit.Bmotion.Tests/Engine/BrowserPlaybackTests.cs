@@ -444,6 +444,29 @@ public partial class BrowserPlaybackTests
         CollectionAssert.AreEqual(new[] { "opacity" }, State(engine).BrowserProperties.ToArray());
     }
 
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task PeekingAtXY_LeavesTheBrowserAnimationsPlaying(bool inProcess)
+    {
+        // A popLayout exit pinning the element, a reorder group measuring its items: they read where the element is,
+        // and take nothing over - the browser goes on playing, and the plan goes on naming what it plays.
+        var (engine, interop) = NewEngine(inProcess);
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("x", 0.0), ("opacity", 0.0)));
+
+        await engine.AnimateToAsync("el", Values(("opacity", 1.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        await Task.Delay(100);
+
+        var (x, _) = engine.PeekCurrentXY("el");
+
+        Assert.IsGreaterThan(0.0, x, "the x the browser has the element at");
+        Assert.IsLessThan(100.0, x);
+        CollectionAssert.AreEquivalent(new[] { "opacity", "x" }, State(engine).BrowserProperties.ToArray());
+        Assert.IsFalse(interop.WasCalled("cancelWaapiAnimation"));
+    }
+
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
         var clock = System.Diagnostics.Stopwatch.StartNew();

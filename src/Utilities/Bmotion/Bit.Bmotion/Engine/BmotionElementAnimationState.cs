@@ -128,8 +128,49 @@ internal sealed class BmotionElementAnimationState
     internal IReadOnlyCollection<string> ActiveDriverKeys => _activeAnims.Keys;
     internal bool IsDragging => _isDragging;
 
-    /// <summary>True while the element plays its exit, which then has priority over every gesture layer.</summary>
-    internal bool Exiting { get; set; }
+    // The properties the exit playing now animates (null when the element isn't exiting), and what the gestures that
+    // changed while it played would have set them to - which a re-entry plays once the exit is cancelled.
+    private HashSet<string>? _exitKeys;
+    private Dictionary<string, object?>? _heldBackByExit;
+
+    /// <summary>True while the element plays its exit, which then has priority over the gestures for its properties.</summary>
+    internal bool Exiting => _exitKeys is not null;
+
+    /// <summary>The element starts its exit, which animates <paramref name="keys"/>: from now on the gestures leave those alone.</summary>
+    internal void BeginExit(IEnumerable<string> keys) => _exitKeys = new HashSet<string>(keys, StringComparer.Ordinal);
+
+    /// <summary>
+    /// The element is back from its exit (a presence that re-entered): the gestures own every property again. Returns
+    /// what the gestures that changed while it exited set the properties the exit held back, for the re-entry to play.
+    /// </summary>
+    internal Dictionary<string, object?>? EndExit()
+    {
+        var held = _heldBackByExit;
+        _exitKeys = null;
+        _heldBackByExit = null;
+        return held;
+    }
+
+    /// <summary>
+    /// <paramref name="request"/> without the properties the exit animates, which it has priority over: what the
+    /// gesture would have set them to is kept for a re-entry (see <see cref="EndExit"/>). Null when nothing is left.
+    /// </summary>
+    internal AnimationRequest? WithoutExitKeys(AnimationRequest request)
+    {
+        if (_exitKeys is not { } exitKeys) return request;
+        var rest = new Dictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var (key, value) in request.Values)
+        {
+            if (!exitKeys.Contains(key)) { rest[key] = value; continue; }
+            // A key going back to the stylesheet has no value to hold; the stale one a gesture set earlier goes.
+            if (value is null) _heldBackByExit?.Remove(key);
+            else (_heldBackByExit ??= new(StringComparer.Ordinal))[key] = value;
+        }
+        var stylesheet = request.StylesheetKeys?.Where(k => !exitKeys.Contains(k)).ToArray();
+        if (stylesheet is { Length: 0 }) stylesheet = null;
+        if (rest.Count == 0 && stylesheet is null) return null;
+        return request with { Values = rest, StylesheetKeys = stylesheet };
+    }
 
     /// <summary>
     /// Optional per-frame callback invoked with the CSS declarations flushed this frame
@@ -938,6 +979,26 @@ internal sealed class BmotionElementAnimationState
 
     public (double x, double y) GetCurrentXY()
         => (Transforms.GetValueOrDefault("x"), Transforms.GetValueOrDefault("y"));
+
+    /// <summary>
+    /// The x/y the element shows now, a compositor animation still moving it included - read from the mirrored plans
+    /// without realizing them, so the browser animations play on and their plans keep naming them.
+    /// </summary>
+    public (double x, double y) PeekCurrentXY()
+    {
+        var (x, y) = GetCurrentXY();
+        if (_waapiPlans.Count == 0) return (x, y);
+        long now = Environment.TickCount64;
+        // In the order they started: a later plan on a key is the one the element shows.
+        foreach (var plan in _waapiPlans)
+        {
+            if (!plan.Values.ContainsKey("x") && !plan.Values.ContainsKey("y")) continue;
+            double played = plan.PlayedMs(now);
+            if (plan.Values.ContainsKey("x")) x = plan.ValueAt("x", played);
+            if (plan.Values.ContainsKey("y")) y = plan.ValueAt("y", played);
+        }
+        return (x, y);
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Driver factory helpers
