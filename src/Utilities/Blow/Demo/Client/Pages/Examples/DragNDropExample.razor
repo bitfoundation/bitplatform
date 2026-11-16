@@ -40,7 +40,7 @@
     <HowItWorks>
         <li>The palette items are plain HTML with <code>draggable="true"</code>; <code>@@ondragstart</code> remembers which type is on its way.</li>
         <li>The element round the canvas has <code>@@ondragover:preventDefault</code> - without it the browser refuses the drop - and <code>@@ondrop</code> receives a <code>DragEventArgs</code> with the pointer's <code>ClientX</code> and <code>ClientY</code>.</li>
-        <li><code>ScreenToFlowPosition(clientX, clientY)</code> turns that client point into flow coordinates through the current pan and zoom. Half the node's size is taken off, so its centre rather than its corner lands on the pointer.</li>
+        <li><code>ScreenToFlowPositionAsync(clientX, clientY)</code> turns that client point into flow coordinates through the current pan and zoom, reading where the pane is on the page again first if dragging scrolled it (<code>ScreenToFlowPosition</code> is the synchronous form). Half the node's size is taken off, so its centre rather than its corner lands on the pointer.</li>
         <li><code>FlowToScreenPosition(point)</code> is the reverse, from flow back to client coordinates - what you would use to place page-level HTML, a popup or a tooltip, beside a node.</li>
         <li>A click adds at the middle of the view: <code>PaneSize</code> is the pane's size in pixels and <code>GetViewport().ScreenToFlow(x, y)</code> converts a point measured from the pane's top-left corner.</li>
         <li><code>AddNodes(node)</code> appends to the <code>Nodes</code> list, measures the new node, raises <code>NodesChanged</code> and records an undo step when history is on.</li>
@@ -91,10 +91,11 @@
         _id = 0;
     }
 
-    private void OnDrop(DragEventArgs e)
+    private async Task OnDrop(DragEventArgs e)
     {
         if (_flow is null) return;
-        var pointer = _flow.ScreenToFlowPosition(e.ClientX, e.ClientY);
+        // The async form: dragging to the canvas may have scrolled the page, and it reads the pane's position again then.
+        var pointer = await _flow.ScreenToFlowPositionAsync(e.ClientX, e.ClientY);
         var node = Add(_dragType, pointer);
 
         // Back to the screen: the corner sits half a node up and to the left of the pointer, at the current zoom.

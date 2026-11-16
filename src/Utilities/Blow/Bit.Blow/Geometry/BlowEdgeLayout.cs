@@ -78,6 +78,25 @@ internal static class BlowEdgeLayout
     }
 
     /// <summary>
+    /// Whether a node is drawn, by the rule <see cref="Nest"/> resolves for a whole graph at once: neither it nor any
+    /// node it is nested in, as far as <paramref name="lookup"/> can follow its parents, is hidden. For a check of a
+    /// few nodes where resolving every node would be wasted. A chain of parents that leads back round is followed
+    /// until it repeats.
+    /// </summary>
+    public static bool IsShown(BlowNode node, Func<string, BlowNode?> lookup)
+    {
+        HashSet<string>? visited = null;
+        for (var current = node; ;)
+        {
+            if (current.Hidden) return false;
+            if (current.ParentId is not { } pid || lookup(pid) is not { } parent) return true;
+            visited ??= new HashSet<string>(StringComparer.Ordinal) { node.Id };
+            if (!visited.Add(parent.Id)) return true;
+            current = parent;
+        }
+    }
+
+    /// <summary>
     /// The node an edge's end is drawn to: the node itself when it is shown, else - when it is folded into a collapsed
     /// node - the nearest collapsed ancestor that is shown, at any depth, with <paramref name="moved"/> set. The node
     /// itself, not shown, when neither; null when the id names no node. A chain of parents that leads back round is

@@ -45,6 +45,13 @@ internal sealed class BlowInterop : IAsyncDisposable
         => await (await _moduleTask.Value).InvokeAsync<BlowHandleHit?>("elementDataAtPoint", x, y, selector, pane);
 
     /// <summary>
+    /// The handle of <paramref name="pane"/> the pointer is over, from the browser's hover state rather than an event -
+    /// another flow nested inside it keeps its own.
+    /// </summary>
+    public async ValueTask<BlowHandleHit?> HoveredHandleAsync(object pane)
+        => await (await _moduleTask.Value).InvokeAsync<BlowHandleHit?>("hoveredHandle", pane);
+
+    /// <summary>
     /// Starts watching the pane and its nodes for size changes. The returned reference must be
     /// disposed to stop observing.
     /// </summary>

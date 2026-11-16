@@ -57,12 +57,18 @@ public static class BlowSelection
         return result;
     }
 
-    /// <summary>The nodes that are not among the given ones, and can be selected.</summary>
+    /// <summary>
+    /// The nodes that are not among the given ones, and can be selected: on show, so neither hidden nor inside a hidden
+    /// or collapsed node.
+    /// </summary>
     public static IReadOnlyList<BlowNode> Invert(IEnumerable<BlowNode> nodes, IEnumerable<BlowNode> selected)
     {
         ArgumentNullException.ThrowIfNull(nodes);
+        var all = nodes as IReadOnlyList<BlowNode> ?? [.. nodes];
+        var index = new Dictionary<string, BlowNode>(StringComparer.Ordinal);
+        foreach (var n in all) index.TryAdd(n.Id, n);
         var chosen = selected.Select(n => n.Id).ToHashSet(StringComparer.Ordinal);
-        return [.. nodes.Where(n => n.Selectable && !n.Hidden && !chosen.Contains(n.Id))];
+        return [.. all.Where(n => n.Selectable && !chosen.Contains(n.Id) && BlowEdgeLayout.IsShown(n, index.GetValueOrDefault))];
     }
 
     private static List<BlowNode> Walk(BlowGraphIndex graph, IEnumerable<string> nodeIds, bool includeStart, BlowTraversalDirection direction)

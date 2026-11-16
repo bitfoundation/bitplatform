@@ -182,17 +182,34 @@ export function elementDataAtPoint(x: number, y: number, selector: string, paneE
         if (el.matches && el.matches(selector)) {
             // A handle of a flow nested inside this one belongs to that flow, not this one.
             if (paneEl && el.closest(`.${ROOT_CLASS}`) !== paneEl) return null;
-            return {
-                nodeId: el.getAttribute('data-id'),
-                handleId: el.getAttribute('data-handle-id') || '',
-                handleType: el.getAttribute('data-handle-type') || '',
-                position: el.getAttribute('data-handle-pos') || '',
-                connectableEnd: el.getAttribute('data-connectable-end') !== 'false'
-            };
+            return handleHit(el);
         }
         el = el.parentElement;
     }
     return null;
+}
+
+// The handle of this flow the pointer is over, read from the CSS hover state rather than from an
+// event: the handles listen for the pointer only while a connection is drawn, and a pointer that
+// was already over one when they started to listen never enters it.
+export function hoveredHandle(paneEl: HTMLElement | null): BlowHandleHit | null {
+    if (!paneEl) return null;
+    const hovered = paneEl.querySelectorAll(`.${HANDLE_CLASS}:hover`);
+    for (let i = 0; i < hovered.length; i++) {
+        const el = hovered[i];
+        if (el.closest(`.${ROOT_CLASS}`) === paneEl) return handleHit(el);
+    }
+    return null;
+}
+
+function handleHit(el: Element): BlowHandleHit {
+    return {
+        nodeId: el.getAttribute('data-id'),
+        handleId: el.getAttribute('data-handle-id') || '',
+        handleType: el.getAttribute('data-handle-type') || '',
+        position: el.getAttribute('data-handle-pos') || '',
+        connectableEnd: el.getAttribute('data-connectable-end') !== 'false'
+    };
 }
 
 // Watches the flow for size changes that C# cannot see: the pane being resized by its
@@ -224,9 +241,12 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
             if (disposed) return;
             // The pane's rectangle travels with the call, read in this frame: .NET would otherwise
             // have to ask for it, a second round trip on every frame of a resize.
+            // Whether the page is still scrolling goes with it: a reading taken mid-scroll is out of
+            // date as soon as the page scrolls on, and .NET keeps re-reading the rectangle until one
+            // taken after the scrolling stopped arrives.
             // The component can be torn down (or its circuit dropped) between a frame being
             // scheduled and it running; that is an expected end, not an error worth reporting.
-            Promise.resolve(dotNetRef.invokeMethodAsync('OnResizeObserved', measure, getRect(paneEl))).catch(() => { });
+            Promise.resolve(dotNetRef.invokeMethodAsync('OnResizeObserved', measure, getRect(paneEl), scrollStale)).catch(() => { });
         });
     };
 
@@ -237,7 +257,8 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
     // flow (a scrollable node) or in some unrelated part of the page does not.
     // A scroll fires on every frame, and over a Blazor Server circuit each report is a message:
     // the first scroll of a burst only tells .NET its rectangle is stale (a gesture or a wheel
-    // re-reads it when it needs it), and the rectangle itself follows once the scrolling stops.
+    // re-reads it when it needs it, until the scrolling stops), and the rectangle itself follows
+    // once the scrolling stops.
     const onScroll = (e: Event) => {
         const t = e.target;
         if (disposed) return;
