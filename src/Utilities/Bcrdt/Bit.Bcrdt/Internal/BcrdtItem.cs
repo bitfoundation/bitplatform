@@ -350,6 +350,31 @@ public sealed class BcrdtItem : BcrdtAbstractStruct
         return left;
     }
 
+    /// <summary>How many identifiers an item can depend on: see <see cref="GetUnmetDependency"/>.</summary>
+    public const int DependencyCount = 3;
+
+    /// <summary>
+    /// One of the identifiers this item depends on - <c>0</c> its left neighbour, <c>1</c> its right neighbour,
+    /// <c>2</c> its container - when it names content of another author the store does not hold yet; otherwise
+    /// <see langword="null"/>.
+    /// </summary>
+    /// <remarks>
+    /// The one definition of what an item waits for, shared by <see cref="GetMissing"/> and by the decoder noting
+    /// what each held item needs, so the two cannot disagree.
+    /// </remarks>
+    public BcrdtItemId? GetUnmetDependency(int dependency, BcrdtStructStore store)
+    {
+        BcrdtItemId? reference = dependency switch
+        {
+            0 => Origin,
+            1 => RightOrigin,
+            2 => Parent as BcrdtItemId?,
+            _ => throw new ArgumentOutOfRangeException(nameof(dependency)),
+        };
+
+        return reference is { } id && id.Client != Id.Client && id.Clock >= store.GetState(id.Client) ? id : null;
+    }
+
     /// <summary>
     /// Checks whether everything this item depends on is present, and resolves its links if so.
     /// </summary>
@@ -372,21 +397,9 @@ public sealed class BcrdtItem : BcrdtAbstractStruct
     /// </remarks>
     public ulong? GetMissing(BcrdtTransaction transaction, BcrdtStructStore store)
     {
-        if (Origin is { } origin && origin.Client != Id.Client && origin.Clock >= store.GetState(origin.Client))
+        for (int dependency = 0; dependency < DependencyCount; dependency++)
         {
-            return origin.Client;
-        }
-        if (RightOrigin is { } rightOrigin &&
-            rightOrigin.Client != Id.Client &&
-            rightOrigin.Clock >= store.GetState(rightOrigin.Client))
-        {
-            return rightOrigin.Client;
-        }
-        if (Parent is BcrdtItemId parentId &&
-            parentId.Client != Id.Client &&
-            parentId.Clock >= store.GetState(parentId.Client))
-        {
-            return parentId.Client;
+            if (GetUnmetDependency(dependency, store) is { } unmet) return unmet.Client;
         }
 
         bool neighbourCollected = false;

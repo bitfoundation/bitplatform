@@ -142,4 +142,27 @@ public class SnapshotTests
         Assert.IsTrue(beforeDeletion.IsVisible(firstCharacter));
         Assert.IsFalse(afterDeletion.IsVisible(firstCharacter));
     }
+
+    [TestMethod]
+    public void Restoring_a_snapshot_of_content_the_document_lacks_says_so()
+    {
+        // A version saved on another replica names content that has not reached this one.
+        using BcrdtDocument author = History(1);
+        author.GetText("body").Insert(0, "hello");
+
+        using BcrdtDocument behind = History(2);
+        behind.ApplyUpdate(author.EncodeStateAsUpdate());
+
+        author.GetText("body").Insert(5, " world");
+        BcrdtSnapshot saved = BcrdtSnapshot.Capture(author);
+
+        var failure = Assert.ThrowsExactly<InvalidOperationException>(() => BcrdtSnapshot.RestoreDocument(behind, saved));
+        Assert.Contains("does not hold everything the snapshot names", failure.Message);
+        Assert.ThrowsExactly<InvalidOperationException>(() => BcrdtSnapshot.EncodeStateAsUpdate(behind, saved));
+
+        // Once it has synced, the same snapshot restores.
+        behind.ApplyUpdate(author.EncodeStateAsUpdate(behind.GetStateVector()));
+        using BcrdtDocument restored = BcrdtSnapshot.RestoreDocument(behind, saved);
+        Assert.AreEqual("hello world", restored.GetText("body").ToString());
+    }
 }

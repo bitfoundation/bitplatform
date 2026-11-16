@@ -271,4 +271,96 @@ public class AwarenessTests
 
         Assert.IsTrue(colours >= 5, $"Only {colours} distinct colours across 50 users; the palette is not spreading.");
     }
+
+    [TestMethod]
+    public void Departures_of_clients_never_seen_are_not_recorded()
+    {
+        // One message naming a hundred thousand made-up identifiers as gone - a peer flooding the room.
+        using var forger = new BcrdtAwarenessStore(1);
+        byte[] flood = forger.EncodeUpdate([.. Enumerable.Range(0, 100_000).Select(i => (ulong)(1_000_000 + i))]);
+
+        using var victim = new BcrdtAwarenessStore(2);
+        victim.SetLocalState(State(("name", "Ada")));
+        int changes = 0;
+        victim.Changed += _ => changes++;
+        victim.ApplyUpdate(flood);
+
+        Assert.AreEqual(1, victim.Entries.Count, "only the local entry");
+        Assert.AreEqual(0, changes);
+
+        // The departure of a client that was here still lands.
+        using var peer = new BcrdtAwarenessStore(3);
+        peer.SetLocalState(State(("name", "Grace")));
+        victim.ApplyUpdate(peer.EncodeAll());
+        Assert.AreEqual(1, victim.OnlineClients.Count(id => id == 3));
+        peer.SetLocalState(null);
+        victim.ApplyUpdate(peer.EncodeAll());
+        Assert.IsFalse(victim.OnlineClients.Contains(3UL));
+    }
+
+    [TestMethod]
+    public void A_departure_of_a_client_never_seen_outranks_an_older_entry_arriving_after_it()
+    {
+        // A newcomer hears a client's goodbye before a peer's answer to its presence query, which still lists the
+        // client at its previous clock.
+        using var leaving = new BcrdtAwarenessStore(5);
+        leaving.SetLocalState(State(("name", "Ada")));
+        byte[] stale = leaving.EncodeAll();
+        leaving.SetLocalState(null);
+        byte[] goodbye = leaving.EncodeAll();
+
+        using var newcomer = new BcrdtAwarenessStore(2);
+        newcomer.ApplyUpdate(goodbye);
+        newcomer.ApplyUpdate(stale);
+        Assert.IsFalse(newcomer.OnlineClients.Contains(5UL), "the stale entry must not bring the client back");
+        Assert.IsFalse(newcomer.Entries.ContainsKey(5), "nor is the departure itself an entry");
+
+        // Its own next update does.
+        leaving.SetLocalState(State(("name", "Ada")));
+        newcomer.ApplyUpdate(leaving.EncodeAll());
+        Assert.IsTrue(newcomer.OnlineClients.Contains(5UL));
+    }
+
+    [TestMethod]
+    public void A_flood_of_departures_of_clients_never_seen_does_not_crowd_out_the_latest()
+    {
+        using var forger = new BcrdtAwarenessStore(1);
+        byte[] flood = forger.EncodeUpdate([.. Enumerable.Range(0, 100_000).Select(i => (ulong)(1_000_000 + i))]);
+
+        using var leaving = new BcrdtAwarenessStore(5);
+        leaving.SetLocalState(State(("name", "Ada")));
+        byte[] stale = leaving.EncodeAll();
+        leaving.SetLocalState(null);
+        byte[] goodbye = leaving.EncodeAll();
+
+        // The memory of such departures is bounded and forgets the oldest first, so a genuine one heard after a flood
+        // is still remembered.
+        using var newcomer = new BcrdtAwarenessStore(2);
+        newcomer.ApplyUpdate(flood);
+        newcomer.ApplyUpdate(goodbye);
+        newcomer.ApplyUpdate(stale);
+
+        Assert.IsFalse(newcomer.OnlineClients.Contains(5UL));
+        Assert.AreEqual(0, newcomer.Entries.Count, "no departure is an entry");
+    }
+
+    [TestMethod]
+    public void Departures_of_clients_never_seen_are_forgotten_after_the_timeout()
+    {
+        var time = new FakeTimeProvider();
+        using var leaving = new BcrdtAwarenessStore(5);
+        leaving.SetLocalState(State(("name", "Ada")));
+        byte[] stale = leaving.EncodeAll();
+        leaving.SetLocalState(null);
+        byte[] goodbye = leaving.EncodeAll();
+
+        using var newcomer = new BcrdtAwarenessStore(2, TimeSpan.FromSeconds(30), time);
+        newcomer.ApplyUpdate(goodbye);
+        time.Advance(TimeSpan.FromSeconds(31));
+        newcomer.Heartbeat();
+
+        // Long gone, the departure no longer holds the stale entry back.
+        newcomer.ApplyUpdate(stale);
+        Assert.IsTrue(newcomer.OnlineClients.Contains(5UL));
+    }
 }

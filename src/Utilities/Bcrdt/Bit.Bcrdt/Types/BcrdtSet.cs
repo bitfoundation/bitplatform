@@ -3,20 +3,33 @@
 namespace Bit.Bcrdt;
 
 /// <summary>
-/// A collaborative add-wins observed-remove set.
+/// A collaborative set of values, where an add usually wins over a concurrent remove.
 /// </summary>
 /// <remarks>
 /// <para>
 /// Membership is keyed by the canonical encoding of each element, so two replicas that add equal
-/// values converge on one member rather than two. The semantics are <i>add-wins</i>: if one client
-/// removes an element while another concurrently adds it, the element remains. That falls out of
-/// the underlying model rather than being bolted on - a removal deletes the specific block it
-/// observed, and a concurrent addition creates a different block that the removal never saw. An
-/// addition only creates a block when the element is absent, though: adding an element this replica
-/// already holds writes nothing, so a concurrent removal of that element stands.
+/// values converge on one member rather than two. Equal means an equal
+/// <see cref="BcrdtAnyCodec.CanonicalKey"/>, which tells numbers apart by type and representation:
+/// <c>1</c> and <c>1.0</c>, or <c>1.0m</c> and <c>1.00m</c>, are two members. If one client removes an element while another
+/// concurrently adds it, the element mostly remains: a removal deletes the specific block it
+/// observed, and a concurrent addition creates a different block that the removal never saw.
 /// </para>
 /// <para>
-/// Add-wins is the right default because removal is usually the destructive operation, and
+/// That holds only as far as the blocks do, though, which makes it narrower than a true add-wins
+/// observed-remove set:
+/// </para>
+/// <list type="bullet">
+/// <item>An addition only creates a block when the element is absent: adding an element this replica
+/// already holds writes nothing, so a concurrent removal of that element stands.</item>
+/// <item>Elements are entries of a map, and concurrent additions of one element converge on one block,
+/// the way concurrent writes of one map key keep one value - which one follows the order the engine
+/// integrates them in, the same on every replica. A removal of the block that is kept removes the
+/// element, even though the other addition was never observed: A and B add <c>x</c> while apart, A
+/// then removes it, and <c>x</c> is gone everywhere when A's addition is the one kept, and stays when
+/// B's is.</item>
+/// </list>
+/// <para>
+/// Mostly-add-wins is the right default because removal is usually the destructive operation, and
 /// resurrecting an element a user re-added is less surprising than silently discarding it. A
 /// remove-wins set would need a different type; the underlying engine supports building one.
 /// </para>

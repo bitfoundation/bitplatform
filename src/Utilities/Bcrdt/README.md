@@ -271,7 +271,7 @@ This is the decision that matters most, and it is worth two minutes.
 | `BcrdtText` | Both edits survive, each author's run stays contiguous | Anything a person types into at length |
 | `BcrdtArray` | Both insertions survive, in a stable order | Lists, ordered collections |
 | `BcrdtMap` | **One value wins**, deterministically but arbitrarily | Fields where a later value legitimately replaces an earlier one |
-| `BcrdtSet` | An add wins over a concurrent remove - if it added something (re-adding a present element is a no-op) | Tags, membership, flags |
+| `BcrdtSet` | An add wins over a concurrent remove - if it added something (re-adding a present element is a no-op) and its entry is the one kept (concurrent adds of one element keep one entry) | Tags, membership, flags |
 | `BcrdtCounter` | **Every change adds up** - concurrent increments and decrements are all counted | Votes, likes, quantities, scores |
 | `BcrdtXmlFragment` | Children merge like array elements, attributes like map keys, text like `BcrdtText` | Structured documents - what a ProseMirror- or TipTap-style editor edits |
 
@@ -594,11 +594,13 @@ the page is shown again - see [its README](Bit.Bcrdt.Butil/README.md).
 `document.ConnectAsync()` and `DisconnectAsync()` take a document online and offline on purpose;
 `document.ConnectionStatus` (`Disconnected → Connecting → Handshaking → Synced → Reconnecting`, or `Faulted`) and
 `IsSynced` report where it stands, and `Sync.LastSyncedAt` when it last caught up. A transport that is refused - an
-HTTP 401 or 403, from the WebSocket upgrade or the SignalR negotiation - throws `BcrdtTransportAuthorizationException`,
-and the provider stops rather than backing off forever; a fresh `ConnectAsync`, once the user has signed in again,
-tries afresh. Over SignalR a 403 is final at once, but a 401 is first retried with the backoff, each attempt asking the
-token provider for a fresh token, because an access token that expired while the device slept is renewed on the next
-negotiation. Only the third 401 in a row counts as a refusal.
+HTTP 401 or 403, from a WebSocket upgrade or the SignalR negotiation - throws `BcrdtTransportAuthorizationException`,
+and the provider stops rather than backing off forever; so does a relay's own refusal, an `Auth` message granting
+nothing, which is how both Bit.Bcrdt.Server relays refuse (a browser's WebSocket never shows the page an upgrade's
+status, so a WebSocket refused with a 403 would read there as a network failure to retry); a fresh `ConnectAsync`,
+once the user has signed in again, tries afresh. Over SignalR a 403 is final at once, but a 401 is first retried with
+the backoff, each attempt asking the token provider for a fresh token, because an access token that expired while the
+device slept is renewed on the next negotiation. Only the third 401 in a row counts as a refusal.
 
 The backoff only resets once a connection has completed its handshake, so a server that accepts a connection and drops
 it straight away is retried with growing delays rather than hammered. A message the transport failed to send on a
@@ -893,7 +895,8 @@ A transport moves opaque messages between peers. bit Bcrdt ships three:
 On their own, both relays only relay: neither decodes a message, holds a replica or knows what a state vector is. Both
 take an authorization hook - override `BcrdtHub.AuthorizeAccessAsync` (or `AuthorizeAsync` for a plain yes or no), or
 set `BcrdtWebSocketEndpointOptions.AuthorizeAccess` (or pass `authorize` to `MapBitBcrdtWebSocket`) - consulted before
-a client joins a document; a refusal reaches the client as a final `BcrdtTransportAuthorizationException`. Both list
+a client joins a document; a refusal reaches the client as an `Auth` message granting nothing, which its provider
+reports as a final refusal (`AuthorizationDenied`, then `Faulted`). Both list
 the connections they carry in `BcrdtRelayConnections`, which ends or narrows a grant while the connection is open (see
 [Access control and security](#access-control-and-security)). Every client of the WebSocket relay gets its own bounded
 outbound queue, so one client on a bad connection cannot hold up the others. Neither relays an `Auth` verdict, a `Ping` or a `Pong` from a client: the first would be a forgery, the others
@@ -970,14 +973,22 @@ perfectly well-formed updates that break every rule your application has. The tr
 - **Presence.** Awareness is not authenticated on a bare relay: any member can publish an entry under another's client
   identifier, briefly. Clocks are capped so a forged entry cannot take an identity over for good, and with a document
   host each identity belongs to the connection that first published it - until that connection has been silent for
-  `PresenceTakeoverAfter` (15 s), or at once for a new connection of the same signed-in user, which is how a client
-  that reconnected after a network blip gets its presence back.
+  `PresenceTakeoverAfter` (15 s) with its entry still published, or at once for a new connection of the same signed-in
+  user, which is how a client that reconnected after a network blip gets its presence back. A connection that withdrew
+  its entry - a hidden tab - keeps its identity until it leaves. The host relays no departure of a client nobody holds,
+  so a message of made-up identifiers cannot fill the peers' presence, and a client records no departure of a client
+  it never saw.
 - **Isolation.** Documents are isolated by identifier: one SignalR group, one WebSocket room per identifier and per
   mapping, one hosted replica per identifier and host. Two endpoints given the same host share its documents, and the
   host passes what a client of one sends on to the clients of the other, so they edit one document together.
 - **Resource limits.** Both relays cap message size (16 MB) and the WebSocket relay caps each client's outbound queue by
-  count and bytes, disconnecting a client that falls too far behind. Providers and hosts split their own messages below
-  1 MB. Changes that wait for something they build on are bounded per document
+  count and bytes, disconnecting a client that falls too far behind. A WebSocket carries one document; a hub connection
+  may join at most 16 documents, with identifiers of at most 256 characters - each one it joins costs a group, a listed
+  connection and, with a host, a loaded replica for as long as it lasts - and a join past either limit is refused.
+  Register a `BcrdtHubOptions` of your own to change them
+  (`services.AddSingleton(new BcrdtHubOptions { MaxDocumentsPerConnection = 64, MaxDocumentIdLength = 1024 })`), or
+  override `MaxDocumentsPerConnection` and `MaxDocumentIdLength` in a hub of your own. Providers and hosts split their
+  own messages below 1 MB. Changes that wait for something they build on are bounded per document
   (`BcrdtDocumentOptions.MaxPendingSize`, `BcrdtDocumentHostOptions.MaxPendingSize`, 32 MiB): beyond it they are
   discarded - nothing in them was applied, so nothing is lost - and the next handshake brings them back.
 - **Revocation.** Grants are checked when a client joins. To end one early - a user removed from a document, an account
@@ -1401,11 +1412,13 @@ The public types are *views* over the same item list:
 - **`BcrdtMap`** - items with `ParentKey == "k"`. The type keeps a `key -> newest item` index; older items under the
   same key are deleted on write, so reading a key is `O(1)`. Writes to a key chain left to right in integration order,
   and the LWW winner is the item that integration placed right-most - the one with no right neighbour under that key.
-- **`BcrdtSet`** - an add-wins observed-remove set projected onto a map keyed by the canonical encoding of each
-  element. Concurrent add/remove resolves to *add wins*, because the remove deletes a specific item id while the
-  concurrent add creates a new one - provided it does create one: adding an element the replica already holds writes
-  nothing, so a concurrent remove of that element stands. A set holds values only; a nested type has no value-based identity and is
-  refused.
+- **`BcrdtSet`** - a set projected onto a map keyed by the canonical encoding of each element. Concurrent add/remove
+  mostly resolves to *add wins*, because the remove deletes a specific item id while the concurrent add creates a new
+  one - provided it does create one: adding an element the replica already holds writes nothing, so a concurrent
+  remove of that element stands. And because the elements are map keys, concurrent adds of one element keep one item,
+  as concurrent writes of one key do: a remove of the item that is kept removes the element, though the other add was
+  never observed. It is not a full observed-remove set, which would need an item per add rather than per element. A
+  set holds values only; a nested type has no value-based identity and is refused.
 - **`BcrdtCounter`** - a positive-negative counter projected onto a map keyed by client identifier. Each replica writes
   only its own key - its running share - so no two writes ever compete for one key, and the value is the sum of every
   share. Shares that are not integers are ignored identically everywhere; the sum wraps on overflow, identically too.
@@ -1835,6 +1848,27 @@ Changes since the previous release that an application may notice:
   `IBcrdtHostConnection.Access` of a relay's connection can now drop from read-write to read-only while it is open:
   read it each time rather than once. The WebSocket relay now closes a refused socket itself once the refusal is sent,
   rather than waiting for the client to.
+- **A hub connection may join at most 16 documents, with identifiers of at most 256 characters** (`BcrdtHubOptions`). A
+  join past either limit is refused like an unauthorized one. An application with longer identifiers, or clients of its
+  own that share one connection between more documents, registers a `BcrdtHubOptions` with higher limits. The WebSocket
+  relay refuses identifiers longer than `BcrdtWebSocketEndpointOptions.MaxDocumentIdLength`, 256 by default, too.
+- **The WebSocket relay pings its clients** every `KeepAliveInterval` (15 seconds) and drops one that has not answered
+  within `KeepAliveTimeout` (30 seconds), so a connection that died without a word leaves its room - and a document
+  host's presence - instead of staying until TCP gives up. Every browser and `ClientWebSocket` answers on its own.
+- **A document host no longer lets another connection take over a withdrawn presence identity.** A connection that
+  withdrew its entry and stayed connected - a hidden tab - keeps its identity until it leaves; an anonymous takeover
+  needs the holder to have gone quiet with its entry published; a holder that died meanwhile releases it once its
+  relay notices. The host also leaves out of a presence message the departure of a client no connection holds, and
+  sends the rest on itself.
+- **A `/` in a document identifier reaches the WebSocket relay as itself.** The client escapes it in the address as
+  `%2F`, which the server does not decode in a path, so the relay, its authorization callbacks and a document host used
+  to see `team%2Fnotes` where the hub and the application's own code saw `team/notes`. Documents a host stored under
+  the escaped identifier stay under it.
+- **The WebSocket relay refuses after the upgrade.** A request its `authorize` callback or `AuthorizeAccess` refuses is
+  accepted, sent an `Auth` message granting nothing, and closed, the way the hub refuses - no longer answered with a 403,
+  which a browser's WebSocket cannot read. A `BcrdtSyncProvider` reports either as a final refusal; code that called
+  `BcrdtWebSocketTransport.ConnectAsync` itself and caught `BcrdtTransportAuthorizationException` for a refusal from
+  this relay now sees the connection open and the refusal arrive as its first message.
 - **A document host lets a client that withdrew its own presence take it back on a new connection at once.** Before,
   a deliberate disconnect followed by a reconnect hid the participant until the old connection had been silent for
   `PresenceTakeoverAfter`.
