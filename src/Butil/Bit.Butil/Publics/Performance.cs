@@ -144,6 +144,14 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// The resource buffer holds 250 entries by default and then silently stops recording, so a
     /// long-lived app should either subscribe instead or call <see cref="ClearResourceTimings"/>
     /// after each read.
+    /// <br/>
+    /// Each entry is close to 1 KB of JSON, so the whole buffer is a large result: on Blazor Server
+    /// a read of more than a few dozen entries exceeds the 32 KB the hub accepts in one message by
+    /// default (<c>HubOptions.MaximumReceiveMessageSize</c>), and SignalR closes the connection
+    /// rather than completing the call. Under InteractiveAuto a first visit runs on such a circuit
+    /// while the WebAssembly runtime downloads in the background, and that download alone fills the
+    /// buffer with a couple of hundred entries. Narrow the read with <paramref name="name"/>, keep the buffer short with
+    /// <see cref="ClearResourceTimings"/>, or raise that limit.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceResourceTiming))]
     public ValueTask<PerformanceResourceTiming[]> GetResourceEntries(string? name = null)

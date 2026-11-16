@@ -52,6 +52,7 @@
 @inject Bit.Butil.PaymentHandler paymentHandler
 @inject Bit.Butil.DigitalGoods digitalGoods
 @inject IJSRuntime js
+@inject NavigationManager navigationManager
 
 @*
     Second deterministic harness, focused on async/observer-based APIs. Same contract as /e2e:
@@ -285,10 +286,15 @@
 
     private async Task PerfResources()
     {
-        var resources = await performance.GetResourceEntries();
-        // The harness page itself loads scripts, so the buffer is never empty here; every entry has
-        // to be a resource with a name and a start time.
-        var ok = resources.Length > 0 && resources.All(r => r.EntryType == "resource" && r.Name.Length > 0);
+        // Narrowed to the stylesheet every harness host links, rather than the whole buffer: under
+        // InteractiveAuto the page is on a Server circuit while the WebAssembly runtime downloads in
+        // the background, and once that lands the buffer holds a couple of hundred entries - some
+        // 200 KB of JSON, far past the 32 KB a circuit accepts in one message, so SignalR closed the
+        // connection and the status never arrived. The narrowed read is also the one an app should
+        // make, and it proves the name filter reaches the browser.
+        var stylesheet = navigationManager.ToAbsoluteUri("_content/Bit.Butil.Samples.Core/app.css").AbsoluteUri;
+        var resources = await performance.GetResourceEntries(stylesheet);
+        var ok = resources.Length > 0 && resources.All(r => r.EntryType == "resource" && r.Name == stylesheet);
         Set($"perf:resources:{ok}");
     }
 
