@@ -69,9 +69,9 @@ public partial class ProfileSection
 
         try
         {
-            await attachmentController.DeleteUserProfilePicture(CurrentCancellationToken);
+            await attachmentController.DeleteUserProfileImage(CurrentCancellationToken);
 
-            CurrentUser.HasProfilePicture = false;
+            CurrentUser.HasProfileImage = false;
 
             PublishUserDataUpdated();
         }
@@ -108,7 +108,7 @@ public partial class ProfileSection
 
         try
         {
-            await imageEditorService.Upload(result, "api/v1/Attachment/UploadUserProfilePicture", CurrentCancellationToken);
+            await imageEditorService.Upload(result, "api/v1/Attachment/UploadUserProfileImage", CurrentCancellationToken);
         }
         catch
         {
@@ -163,7 +163,7 @@ public partial class ProfileSection
 
     private async Task<string> GetUploadUrl()
     {
-        var uploadUrl = new Uri(AbsoluteServerAddress, $"/api/v1/Attachment/UploadUserProfilePicture").ToString();
+        var uploadUrl = new Uri(AbsoluteServerAddress, $"/api/v1/Attachment/UploadUserProfileImage").ToString();
 
         if (CultureInfoManager.InvariantGlobalization is false)
         {

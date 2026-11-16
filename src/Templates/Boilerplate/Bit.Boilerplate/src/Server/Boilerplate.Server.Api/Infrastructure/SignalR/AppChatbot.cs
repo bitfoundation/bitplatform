@@ -415,7 +415,7 @@ public partial class AppChatbot
 
     /// <summary>
     /// A chat image the user attached. The kind is fixed here rather than taken from the client, so an id is only ever
-    /// looked for among this app's chat images - a payload cannot point this at a profile picture.
+    /// looked for among this app's chat images - a payload cannot point this at a profile image.
     /// <para>
     /// The picture is handed over as a url for the provider to fetch, which costs nothing to produce and does not
     /// re-upload the same bytes on every turn of the conversation. That only works where the provider can reach this

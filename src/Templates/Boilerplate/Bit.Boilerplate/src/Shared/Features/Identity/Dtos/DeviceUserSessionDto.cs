@@ -19,7 +19,7 @@ public partial class DeviceUserSessionDto
 
     public string? FullName { get; set; }
 
-    public bool HasProfilePicture { get; set; }
+    public bool HasProfileImage { get; set; }
 
     public string? Version { get; set; }
 
@@ -45,7 +45,7 @@ public partial class DeviceUserSessionDto
 
     public string? GetProfileImageUrl(Uri absoluteServerAddress)
     {
-        return HasProfilePicture is false
+        return HasProfileImage is false
             ? null
             : new Uri(absoluteServerAddress, $"/api/v1/Attachment/GetAttachment/{UserId}/{AttachmentKind.UserProfileImageSmall}?v={Version}").ToString();
     }

@@ -6,7 +6,7 @@ using Boilerplate.Tests.E2E.Infrastructure.Services;
 namespace Boilerplate.Tests.E2E.Features.Realtime;
 
 /// <summary>
-/// A profile picture changed in one session of a user shows in the user's other sessions at once: AttachmentController
+/// A profile image changed in one session of a user shows in the user's other sessions at once: AttachmentController
 /// pushes PROFILE_UPDATED over AppHub to every other session of that user holding a SignalR connection, and MainLayout
 /// replaces the current user with what it carries. Both sessions must be of the same app - Sales, Todo and AdminPanel
 /// each have their own SignalR, with no backplane between them - but they need not be on the same platform: a hybrid
@@ -21,7 +21,7 @@ public abstract partial class RealtimeProfileTestsBase : AppTestBase
     /// intercepts the WebView's own file chooser, so a hybrid app uploads as well as it watches - and uploading from
     /// one is the only thing that exercises a cross-origin post from the WebView's https://0.0.0.1 origin.
     /// </summary>
-    protected async Task AProfilePictureChange_Should_ReachTheUsersOtherSession(App app, bool theAppUploads)
+    protected async Task AProfileImageChange_Should_ReachTheUsersOtherSession(App app, bool theAppUploads)
     {
         await SkipWithoutGlobalAdminCredentials();
 
@@ -53,7 +53,7 @@ public abstract partial class RealtimeProfileTestsBase : AppTestBase
 
         await WaitUntilSessionsHoldASignalRConnection(email, sessions: 2);
 
-        await UploadProfilePicture(uploader);
+        await UploadProfileImage(uploader);
 
         // Its own header first: the upload went through.
         await Expect(uploader.Locator("header .persona img").First).ToHaveAttributeAsync("src", ProfileImageUrl(userId));
@@ -66,7 +66,7 @@ public abstract partial class RealtimeProfileTestsBase : AppTestBase
     /// Opened by its key (SettingsPage expands the section its route names), and through the section's own "Upload new
     /// image" link: the layout's AI chat panel has a file input of its own, earlier in the page.
     /// </summary>
-    private async Task UploadProfilePicture(IPage page)
+    private async Task UploadProfileImage(IPage page)
     {
         await page.GoToInApp($"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}");
 
@@ -77,7 +77,7 @@ public abstract partial class RealtimeProfileTestsBase : AppTestBase
         {
             Name = "e2e-profile.png",
             MimeType = "image/png",
-            Buffer = TestImages.ProfilePicturePng()
+            Buffer = TestImages.ProfileImagePng()
         });
 
         var imageEditor = page.Locator(".image-editor");
@@ -127,7 +127,7 @@ public abstract partial class RealtimeProfileTestsBase : AppTestBase
         {
             await using var apiClient = DeployedApiClientProvider.CreateApiClientFor(DeployedApps.ApiOf(app));
             await apiClient.Services.GetRequiredService<AuthManager>().SignIn(new() { Email = email, Password = password }, CancellationToken.None);
-            await apiClient.Services.GetRequiredService<IAttachmentController>().DeleteUserProfilePicture(CancellationToken.None);
+            await apiClient.Services.GetRequiredService<IAttachmentController>().DeleteUserProfileImage(CancellationToken.None);
         }
         catch (ResourceNotFoundException)
         {

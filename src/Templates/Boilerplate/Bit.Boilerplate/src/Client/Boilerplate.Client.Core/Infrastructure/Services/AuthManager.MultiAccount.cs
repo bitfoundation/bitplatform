@@ -115,7 +115,7 @@ public partial class AuthManager
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
             FullName = user.FullName,
-            HasProfilePicture = user.HasProfilePicture,
+            HasProfileImage = user.HasProfileImage,
             Version = user.Version
         };
     }
@@ -188,7 +188,7 @@ public partial class AuthManager
             Email = profile is null ? user.GetEmail() : profile.Email,
             PhoneNumber = profile?.PhoneNumber,
             FullName = profile?.FullName,
-            HasProfilePicture = profile?.HasProfilePicture ?? false,
+            HasProfileImage = profile?.HasProfileImage ?? false,
             Version = profile?.Version
         };
 

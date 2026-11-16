@@ -155,7 +155,7 @@ public class ProfileSectionUITests : SettingsPageTest
 
         await Expect(RemovePicture).ToHaveCountAsync(0);
 
-        await ReloadTheViewOnceSaved("\"hasProfilePicture\":false");
+        await ReloadTheViewOnceSaved("\"hasProfileImage\":false");
 
         await Expect(RemovePicture).ToHaveCountAsync(0);
 
@@ -175,7 +175,7 @@ public class ProfileSectionUITests : SettingsPageTest
     {
         // This view had removed its picture, and saved the upload it showed last, one the Workbench forgot when it restarted.
         var (user, sessions) = SettingsSampleAccount.Sample(2, WorkbenchStrings.DemoUserZahra, DateTimeOffset.UtcNow);
-        user.HasProfilePicture = false;
+        user.HasProfileImage = false;
 
         var saved = JsonSerializer.Serialize(new
         {
@@ -199,7 +199,7 @@ public class ProfileSectionUITests : SettingsPageTest
         using (var client = Server.CreateClient())
         {
             using var form = new MultipartFormDataContent { { new ByteArrayContent(Convert.FromBase64String(OnePixelPng)), "file", "picture.png" } };
-            using var upload = new HttpRequestMessage(HttpMethod.Post, "api/v1/Attachment/UploadUserProfilePicture") { Content = form };
+            using var upload = new HttpRequestMessage(HttpMethod.Post, "api/v1/Attachment/UploadUserProfileImage") { Content = form };
             upload.Headers.Authorization = new AuthenticationHeaderValue("Bearer", WorkbenchClaims.AccessToken(WorkbenchClaims.Of(new() { User = 2 }), DateTimeOffset.UtcNow, elevatedUntil: null));
 
             using var response = await client.SendAsync(upload);

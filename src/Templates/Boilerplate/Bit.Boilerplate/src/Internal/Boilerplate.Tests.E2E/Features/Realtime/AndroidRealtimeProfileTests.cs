@@ -15,16 +15,16 @@ public partial class AndroidRealtimeProfileTests : RealtimeProfileTestsBase
     [TestMethod]
     [DataRow(App.Todo, DisplayName = "Todo")]
     [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
-    public async Task AProfilePictureChangedInTheBrowser_Should_ShowInTheAndroidAppAtOnce(App app)
+    public async Task AProfileImageChangedInTheBrowser_Should_ShowInTheAndroidAppAtOnce(App app)
     {
-        await AProfilePictureChange_Should_ReachTheUsersOtherSession(app, theAppUploads: false);
+        await AProfileImageChange_Should_ReachTheUsersOtherSession(app, theAppUploads: false);
     }
 
     [TestMethod]
     [DataRow(App.Todo, DisplayName = "Todo")]
     [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
-    public async Task AProfilePictureChangedInTheAndroidApp_Should_ShowInTheBrowserAtOnce(App app)
+    public async Task AProfileImageChangedInTheAndroidApp_Should_ShowInTheBrowserAtOnce(App app)
     {
-        await AProfilePictureChange_Should_ReachTheUsersOtherSession(app, theAppUploads: true);
+        await AProfileImageChange_Should_ReachTheUsersOtherSession(app, theAppUploads: true);
     }
 }

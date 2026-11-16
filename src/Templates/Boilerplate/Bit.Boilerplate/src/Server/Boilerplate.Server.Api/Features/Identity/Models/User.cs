@@ -59,5 +59,5 @@ public partial class User : IdentityUser<Guid>
     public List<UserLogin> Logins { get; set; } = [];
     public List<UserToken> Tokens { get; set; } = [];
 
-    public bool HasProfilePicture { get; set; }
+    public bool HasProfileImage { get; set; }
 }

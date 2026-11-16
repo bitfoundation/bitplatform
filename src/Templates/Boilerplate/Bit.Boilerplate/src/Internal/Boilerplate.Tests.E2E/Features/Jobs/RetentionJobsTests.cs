@@ -408,7 +408,7 @@ public partial class RetentionJobsTests
     private static async Task<Guid> UploadAiChatImage(DeployedApiClient apiClient, CancellationToken cancellationToken)
     {
         using var form = new MultipartFormDataContent();
-        var file = new ByteArrayContent(TestImages.ProfilePicturePng());
+        var file = new ByteArrayContent(TestImages.ProfileImagePng());
         file.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         form.Add(file, "file", "e2e-ai-chat.png");
 

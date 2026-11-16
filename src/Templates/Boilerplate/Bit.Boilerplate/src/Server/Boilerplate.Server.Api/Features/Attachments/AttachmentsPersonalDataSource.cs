@@ -30,9 +30,9 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
     /// <summary>Before the sessions, only so the blob paths are read and the rows gone in one predictable pass.</summary>
     public int ErasureOrder => 20;
 
-    public string Purpose => "Showing your profile picture in the application.";
+    public string Purpose => "Showing your profile image in the application.";
 
-    public string Retention => "For as long as the account exists. Deleting your profile picture, or your account, removes both the row and the stored image.";
+    public string Retention => "For as long as the account exists. Deleting your profile image, or your account, removes both the row and the stored image.";
 
     //#if (signalR == true)
     public string? Notes => "Images you attached to a message in the AI chat panel are not listed here: they are stored under a random identifier with no column recording who uploaded them, so they cannot be looked up by account. They are deleted 3 hours after upload by an hourly job.";
@@ -117,7 +117,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
 
     /// <summary>
     /// Blobs then the edge, both after the commit like <c>ProductController.Delete</c>: the other way round, a failed
-    /// transaction leaves a live account whose picture is gone and whose <c>HasProfilePicture</c> is still true.
+    /// transaction leaves a live account whose picture is gone and whose <c>HasProfileImage</c> is still true.
     /// Caught here rather than by the caller, because the line that names the paths is the only record of what is now
     /// referenced by no row.
     /// </summary>

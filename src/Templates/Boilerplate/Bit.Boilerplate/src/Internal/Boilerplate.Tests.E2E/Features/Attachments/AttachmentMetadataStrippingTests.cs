@@ -99,7 +99,7 @@ public class AttachmentMetadataStrippingTests
         file.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
         form.Add(file, "file", "e2e-photo.jpg"); // The endpoint binds an IFormFile parameter named "file".
 
-        using var response = await apiClient.HttpClient.PostAsync("api/v1/Attachment/UploadUserProfilePicture", form, TestContext.CancellationToken);
+        using var response = await apiClient.HttpClient.PostAsync("api/v1/Attachment/UploadUserProfileImage", form, TestContext.CancellationToken);
 
         Assert.IsTrue(response.IsSuccessStatusCode,
             $"The upload answered {(int)response.StatusCode}: {await response.Content.ReadAsStringAsync(TestContext.CancellationToken)}");
@@ -140,7 +140,7 @@ public class AttachmentMetadataStrippingTests
         {
             await using var apiClient = DeployedApiClientProvider.CreateApiClientFor(api);
             await apiClient.Services.GetRequiredService<AuthManager>().SignIn(new() { Email = email, Password = password }, CancellationToken.None);
-            await apiClient.Services.GetRequiredService<IAttachmentController>().DeleteUserProfilePicture(CancellationToken.None);
+            await apiClient.Services.GetRequiredService<IAttachmentController>().DeleteUserProfileImage(CancellationToken.None);
         }
         catch (ResourceNotFoundException)
         {

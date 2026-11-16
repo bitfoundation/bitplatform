@@ -1916,7 +1916,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Download your data</value>
   </data>
     <data name="ExportPersonalDataMessage" xml:space="preserve">
-    <value>Get a copy of everything this app holds about you: your account, the devices you are signed in on, your profile picture and the content you created. It arrives as a zip file containing data.json and your files.</value>
+    <value>Get a copy of everything this app holds about you: your account, the devices you are signed in on, your profile image and the content you created. It arrives as a zip file containing data.json and your files.</value>
   </data>
     <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
     <value>Each part of the file also says why it is kept, for how long, who else receives it, and whether deleting your account removes it.</value>

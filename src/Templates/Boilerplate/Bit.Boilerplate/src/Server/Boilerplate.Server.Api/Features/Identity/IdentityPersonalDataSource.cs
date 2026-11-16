@@ -49,7 +49,7 @@ public partial class IdentityPersonalDataSource : IPersonalDataSource
                 user.BirthDate,
                 user.CreatedOn,
                 user.TwoFactorEnabled,
-                user.HasProfilePicture,
+                user.HasProfileImage,
                 user.LockoutEnd,
                 user.AccessFailedCount,
                 Roles = user.Roles.Select(userRole => userRole.Role!.Name).ToArray(),

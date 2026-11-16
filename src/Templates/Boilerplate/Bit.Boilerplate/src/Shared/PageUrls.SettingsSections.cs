@@ -7,7 +7,7 @@ public static partial class PageUrls
 {
     public static class SettingsSections
     {
-        [Description("Manage personal information: name, profile picture, birthdate and gender. Requires sign-in.")]
+        [Description("Manage personal information: name, profile image, birthdate and gender. Requires sign-in.")]
         public static readonly string Profile = nameof(Profile).ToLower();
 
         [Description("Manage email, phone number, passwordless sign-in and account deletion. Requires sign-in.")]
