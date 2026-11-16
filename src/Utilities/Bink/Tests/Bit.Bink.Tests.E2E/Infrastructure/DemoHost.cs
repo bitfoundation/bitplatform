@@ -64,10 +64,15 @@ public sealed class DemoHost : IAsyncDisposable
     /// </summary>
     /// <remarks>
     /// <para>
-    /// A publish whose stamp is newer than every file it is made from is used as it is, so re-running a test does not
-    /// pay for a trimmed WebAssembly publish each time; <c>BINK_E2E_REPUBLISH=1</c> publishes all the same. Otherwise
-    /// the folder is emptied first: a publish leaves what an earlier one wrote with other settings (fingerprinted
-    /// assets, compressed copies, assemblies since removed) next to its own, and the server would serve those.
+    /// A publish whose stamp lists the same files it is made from and is newer than every one of them is used as it
+    /// is, so re-running a test does not pay for a trimmed WebAssembly publish each time; <c>BINK_E2E_REPUBLISH=1</c>
+    /// publishes all the same. Otherwise the folder is emptied first: a publish leaves what an earlier one wrote with
+    /// other settings (fingerprinted assets, compressed copies, assemblies since removed) next to its own, and the
+    /// server would serve those.
+    /// </para>
+    /// <para>
+    /// The stamp is written only when no input was added, removed or changed while the publish ran: the publish may
+    /// have read the file before the edit, and the edit, older than a stamp written after it, would go unnoticed.
     /// </para>
     /// <para>
     /// Nothing outlives the publish: no MSBuild node, no compiler or Razor server. One left running holds the output
@@ -83,26 +88,39 @@ public sealed class DemoHost : IAsyncDisposable
                               "-nodeReuse:false", "-p:UseSharedCompilation=false", "-p:UseRazorBuildServer=false"];
 
         var stamp = Path.Combine(output, PublishStampName);
-        var stampText = string.Join(' ', arguments);
-        if (E2EEnvironment.Republish is false && IsUpToDate(stamp, stampText)) return output;
+        var inputs = SnapshotInputs();
+        if (E2EEnvironment.Republish is false && IsUpToDate(stamp, StampText(arguments, inputs), inputs)) return output;
 
         if (Directory.Exists(output)) Directory.Delete(output, recursive: true);
 
         await ChildProcess.RunToCompletionAsync(DotNet, arguments, Path.GetDirectoryName(project)!, TimeSpan.FromMinutes(20),
             new Dictionary<string, string> { ["MSBUILDDISABLENODEREUSE"] = "1", ["DOTNET_CLI_USE_MSBUILD_SERVER"] = "0" });
 
-        await File.WriteAllTextAsync(stamp, stampText);
+        // Left unmarked, the publish is redone by the next run.
+        if (SnapshotInputs().SequenceEqual(inputs))
+            await File.WriteAllTextAsync(stamp, StampText(arguments, inputs));
+
         return output;
     }
 
     private const string PublishStampName = ".bink-e2e-publish";
 
-    /// <summary>True when <paramref name="stamp"/> records the same publish and is newer than everything it was made from.</summary>
-    private static bool IsUpToDate(string stamp, string stampText)
+    /// <summary>Every input of the publish with its last write time, in a stable order.</summary>
+    private static KeyValuePair<string, DateTime>[] SnapshotInputs() =>
+        [.. RepoLayout.DemoInputs().Order(StringComparer.Ordinal).Select(input => KeyValuePair.Create(input, File.GetLastWriteTimeUtc(input)))];
+
+    /// <summary>The publish's arguments, then the path of every file it is made from, one per line.</summary>
+    private static string StampText(string[] arguments, KeyValuePair<string, DateTime>[] inputs) =>
+        string.Join('\n', inputs.Select(input => input.Key).Prepend(string.Join(' ', arguments)));
+
+    /// <summary>
+    /// True when <paramref name="stamp"/> records the same publish of the same files and is newer than every one of them.
+    /// </summary>
+    private static bool IsUpToDate(string stamp, string stampText, KeyValuePair<string, DateTime>[] inputs)
     {
         if (File.Exists(stamp) is false || File.ReadAllText(stamp) != stampText) return false;
 
         var published = File.GetLastWriteTimeUtc(stamp);
-        return RepoLayout.DemoInputs().All(input => File.GetLastWriteTimeUtc(input) < published);
+        return inputs.All(input => input.Value < published);
     }
 }

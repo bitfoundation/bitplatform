@@ -17,13 +17,16 @@ public static class RepoLayout
 
     /// <summary>
     /// Every file a publish of the demo is made from: the library and both demo projects (less what their builds
-    /// write), Bink's README the server embeds, and the build settings and SDK pin above them.
+    /// write, the library's wwwroot among it: tsc and esbuild generate all of it from Scripts), Bink's README the
+    /// server embeds, and the build settings and SDK pin above them.
     /// </summary>
     public static IEnumerable<string> DemoInputs()
     {
         var bink = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(DemoServerProject())!, "..", ".."));
+        var generated = Path.Combine(bink, "Bit.Bink", "wwwroot") + Path.DirectorySeparatorChar;
         foreach (var folder in new[] { "Bit.Bink", "Demo" })
-            foreach (var file in SourceFiles(new DirectoryInfo(Path.Combine(bink, folder)))) yield return file;
+            foreach (var file in SourceFiles(new DirectoryInfo(Path.Combine(bink, folder))))
+                if (file.StartsWith(generated, StringComparison.OrdinalIgnoreCase) is false) yield return file;
 
         yield return Path.Combine(bink, "README.md");
 
