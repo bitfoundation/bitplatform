@@ -406,6 +406,28 @@ describe('responsiveness', () => {
             fake.restore();
         }
     });
+
+    it('reports an interaction whose element has an id too long for a report, its target clipped', async () => {
+        installPage();
+        const fake = fakeObservers(['event']);
+        try {
+            const hub = await loadHub();
+            const server = runtime(1);
+            hub.attach(server, { platform: 'Server' });
+            const events = fake.observers.find(o => o.options.type === 'event');
+            const now = performance.now();
+            events.emit([{ interactionId: 3, name: 'click', startTime: now - 100, duration: 80, processingStart: now - 99, processingEnd: now - 30, target: element('BUTTON', 'x'.repeat(20 * 1024)) }]);
+            hub.flushResponsiveness();
+
+            const interactions = server.reported('ReportResponsiveness').flatMap(r => r[2]);
+            expect(interactions.map(i => i.interactionId)).toEqual([3]);
+            expect(interactions[0].target.length).toBeLessThanOrEqual(200);
+            expect(interactions[0].target.startsWith('<button#xxx')).toBe(true);
+            hub.detach();
+        } finally {
+            fake.restore();
+        }
+    });
 });
 
 describe('several runtimes on one page', () => {
@@ -655,14 +677,17 @@ describe('WebSocket traffic', () => {
             const hubs = [];
             for (let i = 0; i < 40; i++) {
                 const socket = new window.WebSocket(`wss://app.example/hub${i}?id=${i}&q=${'p'.repeat(600)}`);
-                for (let k = 0; k < 40; k++) socket.receive(`{"type":1,"target":"${'\u4e2d'.repeat(200)}${k}","arguments":[]}\x1e`);
+                // Distinct within the 80 characters a kind's name keeps, so each is a kind of its own.
+                for (let k = 0; k < 40; k++) socket.receive(`{"type":1,"target":"${k}-${'\u4e2d'.repeat(200)}","arguments":[]}\x1e`);
                 hubs.push(socket);
             }
             hubs[0].close(1006, 'gone');
 
-            const kinds = Object.keys(hub.traffic()[1].messages);
-            expect(kinds.length, 'the kinds of one socket are bounded').toBeLessThanOrEqual(31);
+            const messages = hub.traffic()[1].messages;
+            const kinds = Object.keys(messages);
+            expect(kinds.length, 'the kinds of one socket are bounded').toBe(31);
             expect(kinds.every(kind => kind.length <= 82), 'and their names clipped').toBe(true);
+            expect(messages['\u2190 (other)']?.count, 'the kinds past the bound counted together').toBe(10);
             vi.advanceTimersByTime(2100);
             const reports = ref.reported('ReportTraffic');
             expect(reports.length, 'more than one part').toBeGreaterThan(1);
@@ -673,6 +698,30 @@ describe('WebSocket traffic', () => {
             const reported = reports.flatMap(r => r[1]);
             expect(reported.map(s => s.id), 'no socket left out, none twice').toEqual(hub.traffic().map(s => s.id));
             expect(reported.find(s => s.closeCode === 1006), 'a socket that closed is reported closed').toBeTruthy();
+            hub.detach();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('keeps a socket whose handshake names an oversized protocol in the report, the name clipped', async () => {
+        vi.useFakeTimers();
+        try {
+            installPage();
+            const hub = await loadHub();
+            const ref = runtime(5);
+            hub.attach(ref, { platform: 'Server' });
+            const socket = new window.WebSocket('wss://app.example/chathub?id=abc');
+
+            socket.send(`{"protocol":"${'p'.repeat(20 * 1024)}","version":1}\x1e`);
+            socket.receive('{"type":1,"target":"ReceiveMessage","arguments":[]}\x1e');
+
+            const [stats] = hub.traffic();
+            expect(stats.protocol.length).toBeLessThanOrEqual(80);
+            expect(stats.messages['← ReceiveMessage'].count, 'the records after it still read').toBe(1);
+            vi.advanceTimersByTime(2100);
+            const reported = ref.reported('ReportTraffic').flatMap(r => r[1]);
+            expect(reported.map(s => s.id), 'the socket is reported').toEqual([stats.id]);
             hub.detach();
         } finally {
             vi.useRealTimers();

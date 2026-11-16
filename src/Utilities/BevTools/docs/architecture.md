@@ -289,9 +289,10 @@ the bridge is a page-level hub with one *target* per attached runtime rather tha
   triggers a report (it would otherwise schedule the next one forever). Reports go to .NET at most every 2 s, and only
   when application traffic changed. Found in a real browser: before this, exporting a session over a circuit
   produced "large message" warnings about BevTools' own downloads.
-* **Every report fits a circuit message.** A Blazor Server circuit closes its connection on a message over
-  `HubOptions.MaximumReceiveMessageSize` (32 KB by default), so the hub sends each report in runs of at most 16 KB of
-  UTF-8 JSON, and bounds every item where it is made (texts clipped, message kinds per socket and largest messages
+* **Every report fits a circuit message** - one the default limit takes. A Blazor Server circuit closes its connection
+  on a message over `HubOptions.MaximumReceiveMessageSize` (32 KB by default), so the hub sends each report in runs of
+  at most 16 KB of UTF-8 JSON (a fixed bound: the hub cannot read the server's limit, so an app that lowers it below
+  32 KB can still have a report close its circuit), and bounds every item where it is made (texts clipped, message kinds per socket and largest messages
   counted) so that each fits a run. A report that replaces what .NET holds, or that .NET reads as one moment (the
   traffic snapshot, a responsiveness report), is sent in numbered parts that .NET puts back together before reading;
   no socket is left out of a snapshot, since .NET reads a socket it has not seen as one that opened. JS → .NET calls

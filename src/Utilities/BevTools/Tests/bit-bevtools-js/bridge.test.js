@@ -254,7 +254,10 @@ describe('JS -> .NET call tracking', () => {
 
         const folded = reports.filter(args => args[0] === 'ReportJsToDotNet').flatMap(args => args[1]).filter(entry => entry.count);
         const hot = folded.filter(entry => entry.identifier === 'App.Hot');
-        expect(hot.map(entry => [entry.args, entry.count]).sort(), 'a different argument count is a different kind of call').toEqual([[0, 30], [1, 10]]);
+        // Summed per argument count: a burst that crosses a second boundary folds into one entry per second.
+        const hotByArgs = {};
+        for (const entry of hot) hotByArgs[entry.args] = (hotByArgs[entry.args] ?? 0) + entry.count;
+        expect(hotByArgs, 'a different argument count is a different kind of call').toEqual({ 0: 30, 1: 10 });
         expect(hot.every(entry => entry.totalMs >= entry.durationMs), 'the sum of their durations, and the longest').toBe(true);
         const failed = folded.filter(entry => entry.identifier === 'App.Fails');
         expect(failed.reduce((total, entry) => total + entry.count, 0), 'failed calls fold apart, all of them failed').toBe(20);
@@ -263,6 +266,26 @@ describe('JS -> .NET call tracking', () => {
         expect(folded.length, 'kinds of call past the limit are not listed').toBeLessThanOrEqual(100);
         expect(folded.reduce((total, entry) => total + entry.count, 0) + unlisted, 'every call past the first 200 is counted').toBe(210);
         expect(unlisted).toBeGreaterThan(0);
+        bridge.detach();
+    });
+
+    it('never folds a call rejected with an empty reason into the calls that succeeded', async () => {
+        installBrowser();
+        const reports = [];
+        const bridge = await loadBridge();
+        window.DotNet.invokeMethodAsync = (assembly, method, fail) => (fail ? Promise.reject('') : Promise.resolve(null));
+        bridge.attach({ invokeMethodAsync: (...args) => { reports.push(args); return Promise.resolve(); } }, { trackJsToDotNet: true });
+
+        const calls = [];
+        for (let i = 0; i < 200; i++) calls.push(window.DotNet.invokeMethodAsync('App', 'First', false));
+        for (let i = 0; i < 20; i++) calls.push(window.DotNet.invokeMethodAsync('App', 'Mixed', i % 2 === 1).catch(() => null));
+        await Promise.all(calls);
+        await delay(550);
+
+        const mixed = reports.filter(args => args[0] === 'ReportJsToDotNet').flatMap(args => args[1]).filter(entry => entry.identifier === 'App.Mixed');
+        const count = entries => entries.reduce((total, entry) => total + (entry.count ?? 1), 0);
+        expect(count(mixed.filter(entry => entry.error === undefined)), 'the calls that succeeded').toBe(10);
+        expect(count(mixed.filter(entry => entry.error === '')), 'the calls rejected with an empty reason').toBe(10);
         bridge.detach();
     });
 

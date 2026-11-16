@@ -374,7 +374,7 @@ export function splitBySize<T>(items: T[], maxBytes = MAX_REPORT_BYTES): T[][] {
  * per-frame loop), how they were made, and whether they failed: a folded entry is never part failure, part success.
  */
 function foldKey(entry: BevJsCallEntry) {
-    return entry.identifier + "\n" + Math.floor(entry.at / 1000) + "\n" + (entry.frame ? 1 : 0) + (entry.sync ? 1 : 0) + (entry.error ? 1 : 0) + "\n" + entry.args;
+    return entry.identifier + "\n" + Math.floor(entry.at / 1000) + "\n" + (entry.frame ? 1 : 0) + (entry.sync ? 1 : 0) + (entry.error !== undefined ? 1 : 0) + "\n" + entry.args;
 }
 
 function foldJsToDotNet(target: BevTarget, entry: BevJsCallEntry) {
@@ -809,7 +809,8 @@ function decodeText(s: BevSocketStats, direction: string, text: string) {
         if (!record) continue;
         if (s.protocol === null && record.indexOf('"protocol"') >= 0) {
             const m = /"protocol"\s*:\s*"([^"]+)"/.exec(record);
-            s.protocol = m ? m[1] : null;
+            // Bounded like a message kind: the page chooses it, and one socket's stats must fit a report.
+            s.protocol = m ? clip(m[1], MAX_MESSAGE_KIND_LENGTH) : null;
             noteMessage(s, direction, "handshake", record.length);
             continue;
         }
@@ -1259,7 +1260,8 @@ function onEventTimings(entries: PerformanceEntryList) {
         }
         const processing = e.processingEnd - e.processingStart;
         const name = clip(String(e.name || ""), 40);
-        const target = element && element.tagName ? describeElement(element) : null;
+        // An element id is the page's to choose; unbounded, it could make the interaction too large to report.
+        const target = element && element.tagName ? clip(describeElement(element), MAX_IDENTIFIER_LENGTH) : null;
         const known = pendingInteractions.get(id);
         if (!known) {
             if (pendingInteractions.size >= MAX_PENDING) continue;
