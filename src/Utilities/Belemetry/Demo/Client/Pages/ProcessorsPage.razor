@@ -131,7 +131,8 @@
     <p>
         This site runs the processor below on both of its pipelines, the WebAssembly one and the server's. The live
         feeds poll <code>/api/telemetry</code> every two seconds with <code>HttpClient</code>, and the .NET side
-        exports to <code>/otlp</code>; without it every reader would see a span for each of those, and the server would
+        exports to <code>/otlp</code>; without it every reader would see a span and the framework's request logs for each
+        of those (it keeps a warning or an error, though), and the server would
         record a request span for every static file and every piece of the WebAssembly payload. The browser script
         does not need it: the same URLs are in its <code>IgnoreUrls</code>.
     </p>
@@ -295,11 +296,30 @@
                        ?? span.Attributes.GetString(BelemetrySemanticConventions.UrlPath)
                        ?? span.Attributes.GetString(BelemetrySemanticConventions.HttpRoute);
 
-                if (url is null) return true;
+                return url is null || IsNoise(url) is false;
+            }
 
+            public bool OnLog(BelemetryLogRecord log)
+            {
+                // Warnings and errors are kept: a failure of the receiver or the feed is worth seeing.
+                if (log.Severity >= BelemetrySeverity.Warn) return true;
+
+                // The framework's own logs of those requests: ASP.NET Core's carry the path (RequestPath in the
+                // scope, Path in the hosting logs), HttpClient's the URL (Uri). Read by category, so an app log's
+                // own Path is never mistaken for one.
+                var category = log.Scope.Name;
+                var url = log.Attributes.GetString("RequestPath")
+                          ?? (category.StartsWith("Microsoft.AspNetCore.", StringComparison.Ordinal) ? log.Attributes.GetString("Path") : null)
+                          ?? (category.StartsWith("System.Net.Http.HttpClient", StringComparison.Ordinal) ? log.Attributes.GetString("Uri") : null);
+
+                return url is null || IsNoise(url) is false;
+            }
+
+            private static bool IsNoise(string url)
+            {
                 foreach (var noise in _noise)
                 {
-                    if (url.Contains(noise, StringComparison.OrdinalIgnoreCase)) return false;
+                    if (url.Contains(noise, StringComparison.OrdinalIgnoreCase)) return true;
                 }
 
                 var path = url.AsSpan();
@@ -308,14 +328,16 @@
 
                 foreach (var extension in _staticFiles)
                 {
-                    if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase)) return false;
+                    if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase)) return true;
                 }
 
-                return true;
+                return false;
             }
         }
 
-        // Shared by the client and the server (Services/DemoTelemetry.cs):
+        // Shared by the client and the server (Services/DemoTelemetry.cs). Dropping is noise reduction, not privacy:
+        // the session id each poll of /api/telemetry carries is redacted on every record that still names it.
+        options.Privacy.RedactQueryParameters.Add("sessionId");
         options.AddProcessor(new DemoNoiseFilter());
         """;
 

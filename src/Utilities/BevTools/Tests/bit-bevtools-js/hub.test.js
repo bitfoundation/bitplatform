@@ -581,6 +581,8 @@ describe('reconnects', () => {
     // "show" and "retrying" happen while the connection is down, when a circuit cannot be called: they once never
     // arrived, so the panel showed only "hide" and counted no reconnect.
     it('tells a circuit the states of its dropped connection once it is back, in order and with their age', async () => {
+        // Fake timers fake Date too: a real 20 ms timeout can end 19 ms later by Date.now(), which made the age flaky.
+        vi.useFakeTimers();
         installPage();
         const hub = await loadHub();
         const ref = runtime(1);
@@ -594,7 +596,7 @@ describe('reconnects', () => {
         expect(ref.reported('OnReconnectState')).toEqual([]);
 
         new globalThis.window.WebSocket('wss://app.example/_blazor?id=abc');
-        await new Promise(r => setTimeout(r, 20));
+        await vi.advanceTimersByTimeAsync(20);
         globalThis.document.dispatch('components-reconnect-state-changed', { detail: { state: 'hide' } });
 
         const states = ref.reported('OnReconnectState');

@@ -40,9 +40,13 @@ public class BelemetryPageRoutesTests
     public void Discover_KeepsTheRoutesOfAnAssembly_WhoseReferencesCannotBeRead()
     {
         // NativeAOT keeps no metadata of an assembly's references: its own pages still count.
-        var routes = BelemetryPageRoutes.Discover(new NoReferencesAssembly(typeof(BelemetryPageRoutesTests).Assembly));
+        var routes = BelemetryPageRoutes.Discover([new NoReferencesAssembly(typeof(BelemetryPageRoutesTests).Assembly)], out var incomplete);
 
         CollectionAssert.IsSubsetOf(new[] { "/route-test/orders/{id:int}", "/route-test/orders", "/route-test/users/{name}" }, routes);
+        Assert.IsTrue(incomplete, "The libraries it references were not searched: the discovery says so, for the warning to name PageRouteAssemblies.");
+
+        BelemetryPageRoutes.Discover([typeof(BelemetryPageRoutesTests).Assembly], out incomplete);
+        Assert.IsFalse(incomplete, "Every reference was read.");
     }
 
     [TestMethod]

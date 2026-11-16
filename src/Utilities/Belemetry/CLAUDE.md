@@ -238,10 +238,15 @@ Notes on the fields:
   blocked keys are removed, an id included (the operator's explicit choice); the ids (`session.id`,
   `enduser.pseudo.id`, `user.id`) are left alone by every other rule (consent governs them); a key in
   `redactedAttributes` (whole key or last dot segment, case-insensitive; `prefix*`) gets
-  `REDACTED`; `server.address` and `user_agent.original` are not pattern-scrubbed; the URL attributes and `url.query`
-  get parameter redaction; every other string (and string array) is pattern-scrubbed in the order bearer, JWT,
+  `REDACTED`; `server.address` and `user_agent.original` are not pattern-scrubbed; the URL attributes (`Uri` of
+  HttpClient's logs included), `url.query` and `QueryString` (ASP.NET Core's request logs) get parameter redaction, and
+  so do the URLs in a log body - absolute ones and relative paths with a query (`/callback?code=...`), a comma before
+  another absolute URL ending one and an apostrophe only when one opened it (`cleanBody`, `CleanBody`: one pass, the same
+  regex, a relative path kept as given, a URL scrubbed after its host as a URL
+  attribute is, the text around it scrubbed); every other string (and string array) is pattern-scrubbed in the order bearer, JWT,
   e-mail, card, IPv4 - except IPv4 for a key named like a version (last segment `version`, or ending `_version` or
-  PascalCase `Version`). The card and IPv4 regexes only run with 13+ digits / 3+ dots (exact pre-checks), and a URL
+  PascalCase `Version`). A card is Luhn-valid and neither starts with 0 nor repeats one digit (`IsCardNumber`,
+  `isCardNumber`: an all-zero W3C parent id is no card). The card and IPv4 regexes only run with 13+ digits / 3+ dots (exact pre-checks), and a URL
   without `?`, `#`, `@` or any pattern candidate is returned as is.
 - Retries differ per backend, on both sides (`IBelemetryHttpExporter.IsRetryable`, `transport.ts isRetryableFor`):
   OTLP 429/502/503/504 only (the specification forbids the rest); Azure Monitor 408/429/439/500/502/503/504. A request
@@ -268,7 +273,8 @@ Notes on the fields:
   only when page views are configured: those of `Browser.PageRouteAssemblies` exactly, or without any, from the entry
   assembly (or, with none - .NET for Android - the loaded assemblies that use components) through the referenced
   assemblies that use `Microsoft.AspNetCore.Components`, transitively; an assembly whose references cannot be read
-  (NativeAOT) still gives its own. Finding none logs one warning (`BelemetryPipeline.WarnIfNoPageRoutes`). Framework
+  (NativeAOT) still gives its own, but marks the discovery incomplete. Finding none, or an incomplete discovery, logs one
+  warning naming `Browser.PageRouteAssemblies` (`BelemetryPipeline.WarnIfNoPageRoutes`). Framework
   assemblies are told by their Microsoft public key token (`BelemetryPageRoutes.IsFramework`), not their name. The bridge
   asks `isStarted()` first and, for a started script, lists only the configured routes
   (`BelemetrySettings.ConfiguredPageRoutes`: `Browser.PageRoutes` and the `PageRouteAssemblies`' routes, no scan): its
@@ -328,7 +334,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `flush()` | Returns a promise that resolves when the queued records have been handed to the transport |
 | `getContext()` | `{ consent, decided, sessionId, pseudoId, userId }` |
 | `getStats()` | `{ dropped: { <reason>: n }, requests: { delivered, rejected, kept, dropped, withdrawn }, queued, pending }` since load (`stats.ts`); reasons shared with the C# `belemetry.records.dropped` counter where both drop for the same cause |
-| `attachDotNet(dotNetRef, { relay: bool, unloadDrain: bool })` | Registers the .NET bridge (`BelemetryJsCallbacks`) |
+| `attachDotNet(dotNetRef, { relay: bool, unloadDrain: bool, maxRelayBytes?: number })` | Registers the .NET bridge (`BelemetryJsCallbacks`). `maxRelayBytes` (`Browser.MaxRelayMessageBytes`, a server with the Relay transport only) splits each relayed batch into calls of at most that many bytes of JSON, as a circuit's connection closes on a message over its size limit; a record larger alone is dropped (`size_limit`), and every record when the resource alone fills the limit (no part is sent). A batch that fits is measured once and sent whole |
 | `sendRequests(requests)` | Sends pre-serialized requests built by .NET in WASM (`[{exporter,url,contentType,contentEncoding,headers,body(base64),features}]`) using keepalive fetch, retry and persistence; one whose `features` the page no longer grants is given up |
 | `getDiagnostics()` | The browser diagnostic timeline as the grant allows now (`{v:1,capacity,dropped,resource,events}`), after running the app's processors on the queued records; null when diagnostics are off |
 | `getDiagnosticsStream()` | The same as a `Blob`, for a server circuit (.NET asks for an `IJSStreamReference`; Blazor wraps the Blob itself - returning a stream reference made in JS is refused). Trimmed under .NET's 4 MiB read limit (`BelemetryJsBridge.MaxDiagnosticsBytes`): oldest activity first, then oldest failures, counted as `size_limit`; a larger stream is missing evidence, never a failed capture |

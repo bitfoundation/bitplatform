@@ -137,6 +137,15 @@ public sealed class BelemetryBrowserOptions
     /// </summary>
     public int MaxRelayedPerMinute { get; set; } = 3000;
 
+    /// <summary>
+    /// On Blazor Server with the <see cref="BelemetryBrowserTransport.Relay"/> transport, the most bytes of JSON one relay
+    /// call from the page may carry: the script sends a larger batch in parts, and drops a record that alone is larger
+    /// (<c>size_limit</c>). Each call is one message of the circuit's connection, which closes on a message over the hub's
+    /// <c>MaximumReceiveMessageSize</c> (32 KB by default), so keep it well below that - raise both together. Zero or less
+    /// sends every batch whole. Defaults to 16384.
+    /// </summary>
+    public int MaxRelayMessageBytes { get; set; } = 16 * 1024;
+
     /// <summary>Whether the script writes its own diagnostics to <c>console.debug</c>. Defaults to <see langword="false"/>.</summary>
     public bool Debug { get; set; }
 }

@@ -97,6 +97,71 @@ describe('public API', () => {
         expect(record.attributes['enduser.pseudo.id']).toBeUndefined();
     });
 
+    it('relays in parts of at most maxRelayBytes, as a Blazor Server circuit needs, and drops a record too large alone', async () => {
+        // A circuit's connection closes on a message over 32 KB: 25 JS errors with their stacks used to make one.
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 } }));
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true, maxRelayBytes: 4096 });
+        for (let i = 0; i < 25; i++) api.trackEvent('checkout.failed', { detail: 'x'.repeat(600), i });
+        api.trackEvent('huge', { detail: 'y'.repeat(8000) });
+        await api.flush();
+
+        const relays = dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').map(c => c[1]);
+        expect(relays.length).toBeGreaterThan(1);
+        for (const part of relays) {
+            expect(new TextEncoder().encode(JSON.stringify(part)).length).toBeLessThanOrEqual(4096);
+            expect(part.resource['service.name']).toBe('shop');
+        }
+        const events = relays.flatMap(part => part.logs).filter(log => log.eventName === 'checkout.failed');
+        expect(events.map(log => log.attributes.i)).toEqual(Array.from({ length: 25 }, (_, i) => i));
+        expect(relays.flatMap(part => part.logs).some(log => log.eventName === 'huge')).toBe(false);
+        expect(api.getStats().dropped.size_limit).toBe(1);
+    });
+
+    it('relays a batch whole without maxRelayBytes', async () => {
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 } }));
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        for (let i = 0; i < 25; i++) api.trackEvent('checkout.failed', { detail: 'x'.repeat(600), i });
+        await api.flush();
+
+        const relays = dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').map(c => c[1]);
+        expect(relays.filter(part => part.logs.some(log => log.eventName === 'checkout.failed')), 'the events go in one call').toHaveLength(1);
+    });
+
+    it('sends a batch that fits whole, and nothing when the resource alone fills maxRelayBytes', async () => {
+        vi.resetModules();
+        const { splitRelayBatch, utf8Length } = await import('../../Bit.Belemetry/Scripts/exporters/relay.ts');
+        const { statsSnapshot } = await import('../../Bit.Belemetry/Scripts/stats.ts');
+        const record = i => ({ name: 'e', body: 'x'.repeat(100), i });
+
+        const small = { resource: { 'service.name': 'shop' }, spans: [], logs: [record(0), record(1)] };
+        const whole = splitRelayBatch(small, 1, 4096);
+        expect(whole).toEqual([{ ...small, sessionRatio: 1 }]);
+
+        // A resource over the limit: every record is dropped, and no part goes - one would close the circuit.
+        const large = { resource: { 'service.name': 'shop', big: 'r'.repeat(5000) }, spans: [], logs: [record(0), record(1), record(2)] };
+        expect(splitRelayBatch(large, 1, 4096)).toEqual([]);
+        expect(statsSnapshot().dropped.size_limit).toBe(3);
+
+        // Two records that each fit exactly, alone: one part each, both kept - no comma counted before the first of an array.
+        const exact = { resource: { 'service.name': 'shop' }, spans: [], logs: [record(0), record(1)] };
+        const exactLimit = utf8Length(JSON.stringify({ ...exact, logs: [record(0)], sessionRatio: 1 }));
+        const exactParts = splitRelayBatch(exact, 1, exactLimit);
+        expect(exactParts).toEqual([{ ...exact, logs: [record(0)], sessionRatio: 1 }, { ...exact, logs: [record(1)], sessionRatio: 1 }]);
+        for (const part of exactParts) expect(utf8Length(JSON.stringify(part))).toBeLessThanOrEqual(exactLimit);
+        expect(statsSnapshot().dropped.size_limit).toBe(3);
+
+        // Two records in one part count the comma between them.
+        const pairLimit = utf8Length(JSON.stringify({ ...exact, sessionRatio: 1 }));
+        expect(splitRelayBatch({ ...exact, spans: [{ s: 1 }] }, 1, pairLimit + 1).every(part => utf8Length(JSON.stringify(part)) <= pairLimit + 1)).toBe(true);
+
+        // The UTF-8 length, without encoding: 1, 2, 3 and 4 (a surrogate pair) bytes a character.
+        for (const text of ['a', 'é', '€', '😀', 'aé€😀', '']) expect(utf8Length(text)).toBe(new TextEncoder().encode(text).length);
+    });
+
     it('syncs the context with .NET and keeps user ids only with UserTracking', async () => {
         await load();
         api.start(relayConfig());

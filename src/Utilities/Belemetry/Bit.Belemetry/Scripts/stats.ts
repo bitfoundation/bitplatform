@@ -5,7 +5,7 @@
 const dropped: Record<string, number> = {};
 const requests: Record<string, number> = {};
 
-/** Counts records dropped before export: queue_full, pending_full, not_consented, consent_revoked, error_limit, sampled_out, filtered. */
+/** Counts records dropped before export: queue_full, pending_full, not_consented, consent_revoked, error_limit, sampled_out, filtered, size_limit. */
 export function countDropped(reason: string, count = 1): void {
     if (count > 0) dropped[reason] = (dropped[reason] || 0) + count;
 }
