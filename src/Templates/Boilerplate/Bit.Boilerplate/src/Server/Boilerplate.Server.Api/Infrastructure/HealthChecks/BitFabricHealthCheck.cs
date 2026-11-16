@@ -11,7 +11,6 @@ public partial class BitFabricHealthCheck : IHealthCheck
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        // bit Fabric's client ids are metadata documents on these hosts (See OAuthClient.OriginOf).
         var connected = await dbContext.OAuthGrants.AnyAsync(grant => grant.ClientId.StartsWith("https://api.bitfabric.co/")
             || grant.ClientId.StartsWith("https://api-test.bitfabric.co/"), cancellationToken);
 
