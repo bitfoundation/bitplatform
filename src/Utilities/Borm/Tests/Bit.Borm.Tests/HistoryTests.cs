@@ -285,6 +285,47 @@ public class HistoryTests : ComponentTestBase
     }
 
     [TestMethod]
+    public async Task A_row_a_change_handler_removed_along_with_the_one_removed_keeps_its_state_through_undo_redo_undo()
+    {
+        // The handler's removal was recorded as an entry of its own beside the removal that set it off, the two
+        // overlapping: redoing the first took both rows, so redoing the second found nothing leaving, kept
+        // nothing, and the next undo brought the handler's row back without its server error.
+        var a = new LineItem { Product = "A", Quantity = 5 };
+        var b = new LineItem { Product = "B", Quantity = 6 };
+        var c = new LineItem { Product = "C", Quantity = 7 };
+        var model = new RegistrationModel { Items = [a, b, c] };
+        var state = new BormState(BormSchemaGenerator.Generate<RegistrationModel>(), new BormModelDataAccessor(model)) { HistoryLimit = 50 };
+        state.SetServerError("Items[1].Product", "B is discontinued.");
+
+        var fired = false;
+        state.FieldChanged += path =>
+        {
+            if (fired || path != "Items") return;
+            fired = true;
+            state.RemoveArrayItem("Items", model.Items.IndexOf(b));
+        };
+
+        state.RemoveArrayItem("Items", 0);
+        CollectionAssert.AreEqual(new[] { c }, model.Items);
+        Assert.IsEmpty(state.MessagesFor("Items[0].Product"), "the row left standing never had the error");
+
+        for (var round = 0; round < 2; round++)
+        {
+            Assert.IsTrue(await state.UndoAsync());
+            CollectionAssert.AreEqual(new[] { a, b, c }, model.Items);
+            Assert.AreEqual("B is discontinued.", Assert.ContainsSingle(state.MessagesFor("Items[1].Product")).Message);
+            Assert.IsTrue(state.IsTouched("Items[1].Product"));
+            Assert.IsEmpty(state.MessagesFor("Items[0].Product"));
+            Assert.IsEmpty(state.MessagesFor("Items[2].Product"));
+            Assert.IsFalse(state.CanUndo, "both removals are one change");
+
+            Assert.IsTrue(await state.RedoAsync());
+            CollectionAssert.AreEqual(new[] { c }, model.Items);
+            Assert.IsEmpty(state.MessagesFor("Items[0].Product"));
+        }
+    }
+
+    [TestMethod]
     public async Task Moving_one_copy_of_a_row_object_listed_twice_takes_its_own_state_back_on_undo()
     {
         var shared = new LineItem { Product = "A", Quantity = 5 };

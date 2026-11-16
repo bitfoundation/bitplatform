@@ -3447,9 +3447,8 @@ public sealed class BormState : IDisposable
         }
     }
 
-    // While a structural edit is being recorded: the list it edits, and where the first re-keying of that
-    // list leaves what the rows it drops carried, by the index each stood at - which is its index in Before,
-    // since nothing has moved the rows before that re-keying.
+    // While a structural edit is being recorded: the list it edits, and where each re-keying of that list
+    // leaves what the rows it drops carried, by the index each stood at in Before.
     private (string Path, Dictionary<int, RowState> States)? _leavingRows;
 
     // While a structural edit is being recorded: the list it edits, and where every re-keying of that list
@@ -3771,6 +3770,13 @@ public sealed class BormState : IDisposable
     /// </summary>
     private T WithRows<T>(string arrayPath, Func<T> edit)
     {
+        // An edit of the same list made while one is being recorded - a change handler removing a second row
+        // as the first goes - is part of that one. Recorded apart, the two entries overlapped: redoing the
+        // outer took the inner's rows too, so redoing the inner found nothing leaving and kept nothing, and
+        // the next undo brought those rows back bare.
+        if (_movingRows is { } recording && string.Equals(recording.Path, arrayPath, StringComparison.OrdinalIgnoreCase))
+            return edit();
+
         using var step = Step();
         var rows = Recording && Data.GetValue(arrayPath) is IList list ? list.Cast<object?>().ToArray() : null;
         var at = _openStep?.Entries.Count ?? 0;
@@ -4024,20 +4030,25 @@ public sealed class BormState : IDisposable
     /// collide mid-flight. Baselines are deliberately left where they are: <see cref="Reset()"/>
     /// restores them position by position into the original rows.
     /// <para>
-    /// What a dropped row carried is kept, row by row, in <paramref name="leaving"/> — or, for the first
+    /// What a dropped row carried is kept, row by row, in <paramref name="leaving"/> — or, for a
     /// re-keying of the list a recorded structural edit makes, in the history entry (see
     /// <see cref="WithRows{T}"/>) — so undo can give the row all of it back.
     /// </para>
     /// </remarks>
     private void RemapArrayIndices(string arrayPath, Func<int, int?> map, Dictionary<int, RowState>? leaving = null)
     {
-        if (leaving is null && _leavingRows is { } recording && string.Equals(recording.Path, arrayPath, StringComparison.OrdinalIgnoreCase))
-        {
-            leaving = recording.States;
-            // Only the first: a later re-keying counts from rows already moved, not from the edit's Before.
-            _leavingRows = null;
-        }
         Func<int, RowState>? lift = leaving is null ? null : i => leaving.TryGetValue(i, out var state) ? state : leaving[i] = new RowState();
+        if (leaving is null && _leavingRows is { } recording && string.Equals(recording.Path, arrayPath, StringComparison.OrdinalIgnoreCase)
+            && _movingRows is { } recorded && string.Equals(recorded.Path, arrayPath, StringComparison.OrdinalIgnoreCase))
+        {
+            // Every re-keying of the edit's list keeps what the rows it drops carried, by the index each stood
+            // at in the edit's Before: a later one counts from rows already moved, so the moves so far say
+            // which row of Before stands at each index. A row the edit itself added was not in Before, and
+            // undo does not put it back.
+            var states = recording.States;
+            var from = Invert(recorded.Moves, recorded.Moves.Max(m => m + 1) ?? 0)!;
+            lift = i => i < from.Length && from[i] is { } k ? states.TryGetValue(k, out var state) ? state : states[k] = new RowState() : new RowState();
+        }
 
         // Every re-keying of a recorded edit's list, not only the first, carries its rows on from where the
         // last left them, so the entry knows which occurrence of a row listed twice ended where.
