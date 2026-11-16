@@ -181,7 +181,7 @@
         new("AddBitBlexLocalStoragePersistence(…)", "Blazor: registers <code>BlexBrowserStorage</code> over <code>window.localStorage</code> and calls <code>AddBitBlexPersistence</code>."),
         new("AddBitBlexSessionStoragePersistence(…)", "Blazor: the same, over <code>window.sessionStorage</code> - cleared when the tab closes."),
         new("AddBitBlexQueries(Action&lt;BlexQueryClientOptions&gt;?, ServiceLifetime = Scoped)", "Registers <code>BlexQueryClient</code>, the server-state cache behind <code>UseQuery</code> and <code>&lt;BlexQueryView&gt;</code>. See <a href=\"queries\">Server state &amp; queries</a>."),
-        new("AddBitBlexHistory(int maxEntries = 100, lifetime, filter?, groupBy?)", "Registers <code>BlexHistory</code> for in-app undo/redo. <code>&lt;BlexProvider&gt;</code> starts recording once rehydration completes. An overload takes a <code>scope</code> over the stores it covers. See <a href=\"history\">Undo &amp; redo</a>."),
+        new("AddBitBlexHistory(int maxEntries = 100, lifetime, filter?, groupBy?)", "Registers <code>BlexHistory</code> for in-app undo/redo. <code>&lt;BlexProvider&gt;</code> starts recording before storage is read; each store's stored state becomes the baseline as it arrives. An overload takes a <code>scope</code> over the stores it covers. See <a href=\"history\">Undo &amp; redo</a>."),
         new("AddBitBlexHistory&lt;TStore&gt;(int maxEntries = 100, lifetime, filter?, groupBy?)", "Registers <code>BlexHistory&lt;TStore&gt;</code>: an undo stack over one store type, beside or instead of the app-wide one."),
     ];
 

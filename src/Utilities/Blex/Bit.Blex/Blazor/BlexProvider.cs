@@ -77,8 +77,9 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
 
         // Recording starts before storage is read: the content renders - and takes clicks - at the first await below,
         // and on Blazor Server the read is a round trip to the browser. An action dispatched meanwhile is an undo step
-        // like any other; the stored state each store is given as the read reaches it becomes its baseline instead.
-        Services.GetService<BlexHistory>()?.StartBeforeHydration();
+        // like any other. The history takes each store's stored state into its baseline as persistence first applies
+        // it - now, or in a RehydrateAsync after a read that failed - so undo still returns to the state the user loaded.
+        Services.GetService<BlexHistory>()?.Start();
 
         // Durable persistence. During Blazor Server prerendering, browser storage is unreachable (JS
         // interop is not available yet); in that case this is retried on first render so the app
@@ -156,10 +157,6 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
         }
 
         _durableStateReady = true;
-
-        // Every store persistence was going to read has been read (or could not be): a restore from here on is
-        // time-travel, another tab or another history, not a store's stored state arriving.
-        Services.GetService<BlexHistory>()?.EndHydration();
     }
 
     /// <summary>

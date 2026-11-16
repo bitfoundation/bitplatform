@@ -39,6 +39,9 @@ public class BlexProviderHydrationTests : BunitContext
     }
 
     private GatedStorage UseGatedStorage(string? stored = null)
+        => UseGatedStorage(stored is null ? [] : new Dictionary<string, string> { ["settings"] = stored });
+
+    private GatedStorage UseGatedStorage(Dictionary<string, string> stored)
     {
         var storage = new GatedStorage(stored);
         Services.AddSingleton<IBlexStorage>(storage);
@@ -115,10 +118,156 @@ public class BlexProviderHydrationTests : BunitContext
         Assert.IsTrue(History.CanUndo, "Undo/redo still starts when storage could not be read.");
     }
 
-    /// <summary>Storage whose reads wait until the test lets them through, as a Blazor Server round trip does.</summary>
-    private sealed class GatedStorage(string? stored) : IBlexStorage
+    [TestMethod]
+    public async Task A_change_to_a_field_kept_out_of_storage_stays_undoable()
+    {
+        Services.AddBitBlexStore<SearchHistoryStore>();
+        var storage = UseGatedStorage(new Dictionary<string, string> { ["search"] = """{"Recent":["stored"]}""" });
+        RenderProvider();
+        var search = Services.GetRequiredService<SearchHistoryStore>();
+
+        // Query is [BlexState(Persist = false)]: the stored state does not set it, so the edit survives the read.
+        await Renderer.Dispatcher.InvokeAsync(() => search.Type("x"));
+        await storage.OpenAsync(Renderer.Dispatcher);
+
+        Assert.AreEqual("x", search.Query);
+        Assert.AreEqual("search/Type", History.NextUndoLabel, "The edit the stored state left alone was baked into the baseline.");
+
+        await Renderer.Dispatcher.InvokeAsync(History.Undo);
+
+        Assert.AreEqual("", search.Query);
+        CollectionAssert.AreEqual(new[] { "stored" }, search.Recent);
+    }
+
+    [TestMethod]
+    public async Task A_change_to_a_field_the_merge_hook_keeps_live_stays_undoable()
+    {
+        Services.AddBitBlexPersistence(o => o.Merge = (_, persisted, current) =>
+        {
+            persisted["Theme"] = current["Theme"]?.DeepClone();
+            return persisted;
+        });
+        var storage = UseGatedStorage("""{"Theme":"stored","FontSize":20}""");
+        RenderProvider();
+
+        await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
+        await storage.OpenAsync(Renderer.Dispatcher);
+
+        Assert.AreEqual("dark", Settings.Theme);
+        Assert.AreEqual(20, Settings.FontSize);
+        Assert.IsTrue(History.CanUndo);
+
+        await Renderer.Dispatcher.InvokeAsync(History.Undo);
+
+        Assert.AreEqual("light", Settings.Theme);
+        Assert.AreEqual(20, Settings.FontSize, "Undo put the declared default back over the stored field.");
+    }
+
+    [TestMethod]
+    public async Task Stored_state_a_later_RehydrateAsync_reads_for_the_first_time_becomes_the_baseline()
+    {
+        var storage = UseGatedStorage("""{"Theme":"stored","FontSize":20}""");
+        storage.FailReads = 1;
+        RenderProvider();
+        await storage.OpenAsync(Renderer.Dispatcher);
+        Assert.AreEqual("persistence", Assert.ContainsSingle(_errors).Source);
+
+        // Startup could not read storage: the app runs on the defaults, and an edit meanwhile is a step from them.
+        await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
+        await Renderer.Dispatcher.InvokeAsync(() => Services.GetRequiredService<BlexStatePersistor>().RehydrateAsync());
+
+        Assert.AreEqual("stored", Settings.Theme);
+        Assert.IsFalse(History.CanUndo, "Undo would put the declared defaults back over the state storage holds.");
+    }
+
+    [TestMethod]
+    public async Task Another_restore_while_storage_is_read_still_moves_away_from_the_steps()
+    {
+        var storage = UseGatedStorage();
+        RenderProvider();
+
+        // The counter is not persisted: a restore of it is time-travel, not its stored state arriving.
+        await Renderer.Dispatcher.InvokeAsync(Counter.Increment);
+        await Renderer.Dispatcher.InvokeAsync(() => Services.GetRequiredService<BlexManager>()
+            .RestoreGlobalState(new System.Text.Json.Nodes.JsonObject { ["counter"] = new System.Text.Json.Nodes.JsonObject { ["Count"] = 5 } }));
+        await storage.OpenAsync(Renderer.Dispatcher);
+
+        Assert.AreEqual(5, Counter.Count);
+        Assert.IsTrue(History.CanUndo, "The restore rewrote the steps as if it were the counter's stored state.");
+
+        await Renderer.Dispatcher.InvokeAsync(History.Undo);
+        Assert.AreEqual(0, Counter.Count);
+    }
+
+    [TestMethod]
+    public async Task A_typed_history_resolved_while_storage_is_read_takes_the_stored_state_too()
+    {
+        Services.AddBitBlexHistory<SettingsStore>();
+        var storage = UseGatedStorage("""{"Theme":"stored","FontSize":20}""");
+        RenderProvider();
+        var typed = Services.GetRequiredService<BlexHistory<SettingsStore>>();
+
+        await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
+        Assert.IsTrue(typed.CanUndo);
+        await storage.OpenAsync(Renderer.Dispatcher);
+
+        Assert.AreEqual("stored", Settings.Theme);
+        Assert.IsFalse(typed.CanUndo, "Undo would put the declared defaults back over the state storage holds.");
+    }
+
+    [TestMethod]
+    public async Task A_step_the_stored_state_replaced_comes_off_even_with_a_filtered_action_after_it()
+    {
+        Services.AddBitBlexHistory(filter: ctx => ctx.Store is not CounterStore);
+        var storage = UseGatedStorage("""{"Theme":"stored","FontSize":20}""");
+        RenderProvider();
+
+        await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
+        await Renderer.Dispatcher.InvokeAsync(Counter.Increment);   // filtered: moves the present, not the boundary
+        await storage.OpenAsync(Renderer.Dispatcher);
+
+        Assert.AreEqual("stored", Settings.Theme);
+        Assert.IsNull(History.NextUndoLabel, "An undo labelled with the replaced action would only revert the filtered one.");
+    }
+
+    [TestMethod]
+    public async Task A_redo_the_stored_state_replaced_comes_off()
+    {
+        var storage = UseGatedStorage("""{"Theme":"stored","FontSize":20}""");
+        RenderProvider();
+
+        await Renderer.Dispatcher.InvokeAsync(() => Settings.SetTheme("dark"));
+        await Renderer.Dispatcher.InvokeAsync(History.Undo);
+        Assert.IsTrue(History.CanRedo);
+        await storage.OpenAsync(Renderer.Dispatcher);
+
+        Assert.AreEqual("stored", Settings.Theme);
+        Assert.IsFalse(History.CanRedo, "Redo would restore what is already showing.");
+    }
+
+    [TestMethod]
+    public async Task Stored_state_arriving_with_nothing_dispatched_raises_no_Changed()
+    {
+        var storage = UseGatedStorage("""{"Theme":"stored","FontSize":20}""");
+        RenderProvider();
+        var raised = 0;
+        History.Changed += () => raised++;
+
+        await storage.OpenAsync(Renderer.Dispatcher);
+
+        Assert.AreEqual("stored", Settings.Theme);
+        Assert.AreEqual(0, raised);
+    }
+
+    /// <summary>
+    /// Storage whose reads wait until the test lets them through, as a Blazor Server round trip does. Holds a payload
+    /// per store name; <see cref="FailReads"/> makes that many reads throw, as storage the browser refuses does.
+    /// </summary>
+    private sealed class GatedStorage(Dictionary<string, string> stored) : IBlexStorage
     {
         private readonly TaskCompletionSource _gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int FailReads { get; set; }
 
         public async Task OpenAsync(Dispatcher dispatcher)
         {
@@ -131,7 +280,19 @@ public class BlexProviderHydrationTests : BunitContext
         public async ValueTask<string?> GetAsync(string key, CancellationToken cancellationToken = default)
         {
             await _gate.Task;
-            return key.EndsWith("settings", StringComparison.Ordinal) ? stored : null;
+            if (FailReads > 0)
+            {
+                FailReads--;
+                throw new JSException("SecurityError: The operation is insecure.");
+            }
+
+            foreach (var (name, payload) in stored)
+            {
+                if (key.EndsWith(name, StringComparison.Ordinal))
+                    return payload;
+            }
+
+            return null;
         }
 
         public ValueTask SetAsync(string key, string value, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;

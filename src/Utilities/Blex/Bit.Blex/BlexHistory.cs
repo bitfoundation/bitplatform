@@ -98,8 +98,10 @@ public class BlexHistory : IDisposable
     private bool _started;
     private bool _restoring;
 
-    // The covered stores whose stored state persistence may still apply (see StartBeforeHydration); null outside that window.
-    private HashSet<string>? _awaitingHydration;
+    // The stores whose slices in this history are their own instance's since recording began (or since they joined), and
+    // whose stored state has not arrived yet (see TakeStoredState). Not one that came back under a name the history
+    // held already: its slices are an earlier instance's steps, which its stored state does not rewrite.
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<IBlexStore, object> _awaitingStoredState = [];
 
     // Set when a restore moved a covered store away from what the present holds, and settled by the
     // StateRestored that follows every restore.
@@ -344,6 +346,12 @@ public class BlexHistory : IDisposable
     }
 
     /// <summary>Captures the current state as the baseline and begins recording. Idempotent.</summary>
+    /// <remarks>
+    /// It may start before persistence has read storage -- <c>&lt;BlexProvider&gt;</c> starts it then, because the page
+    /// takes clicks while the read is a Blazor Server round trip away. A store's stored state arriving is not a move
+    /// away from the steps taken meanwhile: the fields it sets become what the baseline and every step hold, so undo
+    /// ultimately returns to the state the user loaded, and an action whose change it replaced comes off the stack.
+    /// </remarks>
     public void Start()
     {
         if (_started)
@@ -351,6 +359,13 @@ public class BlexHistory : IDisposable
         _started = true;
         _present = _boundary = Capture();
         _presentLabel = null;
+
+        foreach (var store in _manager.Stores)
+        {
+            if (_present.Slices.ContainsKey(store.Name))
+                _awaitingStoredState.AddOrUpdate(store, store);
+        }
+
         _manager.ActionRecorded += OnAction;
         _manager.StoreRegistered += OnStoreRegistered;
         _manager.StoreRestored += OnStoreRestored;
@@ -359,54 +374,94 @@ public class BlexHistory : IDisposable
     }
 
     /// <summary>
-    /// Begins recording before persistence has hydrated the stores -- what <c>&lt;BlexProvider&gt;</c> does, because
-    /// the page is interactive while storage is still being read (a Blazor Server round trip), and an action the user
-    /// dispatches then is a change like any other. Until <see cref="EndHydration"/>, a covered store's first restore
-    /// is taken as its stored state arriving: it becomes that store's slice in the baseline and in every step taken
-    /// since, instead of a move away from them, and a step left changing nothing comes off the stack. Idempotent;
-    /// a history already recording is left as it is.
+    /// Takes in a store's stored state as persistence applies it the first time it reads the store (see
+    /// <see cref="BlexManager.ApplyStoredState"/>) -- at startup, a later <c>RehydrateAsync</c> after a read that
+    /// failed, or a store that joined late -- while this history holds the store's own slices. The fields it set are
+    /// what the store held all along as far as undo is concerned, a change made while storage was read included: they
+    /// take the arrived values in the boundary and both stacks, and the present becomes the store as it is now. A field
+    /// kept out of storage, or one a merge hook kept the live value of, is left as each snapshot holds it, so a change
+    /// to it stays undoable. A step that now changes nothing comes off its stack.
     /// </summary>
     /// <remarks>
-    /// Started after hydration instead, the history took the hydrated state as its baseline, but an action dispatched
-    /// while storage was read was in nothing it held: Undo never offered it, and stopped at the state after it.
+    /// Taken for any history over the manager, whenever it started: <see cref="BlexHistory{TStore}"/> and one built by
+    /// hand as much as the one <c>&lt;BlexProvider&gt;</c> starts. A restore of any other kind (DevTools, another tab,
+    /// another history, a store's later reads) still moves the state away from the steps held.
     /// </remarks>
-    internal void StartBeforeHydration()
+    private bool TakeStoredState(IBlexStore store)
     {
-        if (_started)
-            return;
-
-        Start();
-        _awaitingHydration = new HashSet<string>(_present!.Slices.Keys, StringComparer.Ordinal);
-    }
-
-    /// <summary>
-    /// Ends the window <see cref="StartBeforeHydration"/> opened: persistence has read every store it was going to,
-    /// and a restore from here on (DevTools, another tab, another history) moves the state as usual.
-    /// </summary>
-    internal void EndHydration() => _awaitingHydration = null;
-
-    /// <summary>
-    /// Takes in a store's stored state as persistence applies it during <see cref="StartBeforeHydration"/>'s window.
-    /// The applied state replaced whatever the store held, a change made while storage was read included, so it is
-    /// what the store held all along as far as undo is concerned: its slice becomes the arrived one in the present,
-    /// the boundary and both stacks, and a step that now changes nothing comes off the undo stack.
-    /// </summary>
-    private bool TakeHydratedState(IBlexStore store)
-    {
-        if (_awaitingHydration is null || _present is null || !_awaitingHydration.Remove(store.Name))
+        if (_present is null
+            || !_manager.IsStoredStateArriving(store, out var keys)
+            || !_awaitingStoredState.TryGetValue(store, out _)
+            || !_present.Slices.TryGetValue(store.Name, out var held))
+        {
             return false;
+        }
+
+        _awaitingStoredState.Remove(store);
+        _joined.Remove(store);
 
         var name = store.Name;
         var arrived = SliceOf(store);
-        RepairAll(snapshot => snapshot.Slices.ContainsKey(name) ? snapshot.With(name, arrived) : snapshot);
 
-        // Newest first: entry i holds the state before the action entry i+1 (or the present) is labelled with. When the
-        // two are now the same, that action undoes nothing any more, and the label of the one that produced entry i's
-        // state moves up to name the step that is left.
+        // Snapshots share slices, so each distinct one is rewritten once.
+        var rewritten = new Dictionary<JsonObject, JsonObject>(ReferenceEqualityComparer.Instance);
+        var boundaryIsPresent = ReferenceEquals(_boundary, _present);
+
+        _present = ReferenceEquals(held, arrived) ? _present : _present.With(name, arrived);
+        _boundary = boundaryIsPresent ? _present : _boundary is null ? null : Rewrite(_boundary);
+        for (var i = 0; i < _undo.Count; i++)
+            _undo[i] = _undo[i] with { State = Rewrite(_undo[i].State) };
+        for (var i = 0; i < _redo.Count; i++)
+            _redo[i] = _redo[i] with { State = Rewrite(_redo[i].State) };
+
+        _lastGroupKey = null;
+
+        // Only when a step came off: the stacks are otherwise as they were -- as they are at every startup, with nothing
+        // dispatched before storage answered -- and nothing bound to them has anything new to render.
+        if (PruneUndo() | PruneRedo())
+            RaiseChanged();
+
+        return true;
+
+        Snapshot Rewrite(Snapshot snapshot)
+        {
+            if (!snapshot.Slices.TryGetValue(name, out var slice) || ReferenceEquals(slice, arrived))
+                return snapshot;
+
+            if (!rewritten.TryGetValue(slice, out var replacement))
+            {
+                var copy = (JsonObject)slice.DeepClone();
+                foreach (var key in keys)
+                {
+                    // Only a field the snapshot holds: SerializeState writes every one, so this keeps their order, which
+                    // comparing snapshots as text relies on.
+                    if (copy.ContainsKey(key) && arrived.TryGetPropertyValue(key, out var value))
+                        copy[key] = value?.DeepClone();
+                }
+
+                // The same state as the arrived one is that one: comparing and restoring a shared slice is free.
+                replacement = copy.ToJsonString() == arrived.ToJsonString() ? arrived : copy;
+                rewritten[slice] = replacement;
+            }
+
+            return snapshot.With(name, replacement);
+        }
+    }
+
+    /// <summary>
+    /// Takes off the undo stack each entry that holds the same state as the one after it -- the boundary for the newest,
+    /// which the present may have moved past with filtered actions: the action between them undoes nothing any more.
+    /// The label of the action that produced the entry's state moves up to name the step that is left. Returns whether
+    /// any came off.
+    /// </summary>
+    private bool PruneUndo()
+    {
+        var pruned = false;
         for (var i = _undo.Count - 1; i >= 0; i--)
         {
             var newest = i == _undo.Count - 1;
-            if (!_undo[i].State.SameAs(newest ? _present : _undo[i + 1].State))
+            var after = newest ? _boundary : _undo[i + 1].State;
+            if (after is null || !_undo[i].State.SameAs(after))
                 continue;
 
             if (newest)
@@ -415,11 +470,31 @@ public class BlexHistory : IDisposable
                 _undo[i + 1] = _undo[i + 1] with { Label = _undo[i].Label };
 
             _undo.RemoveAt(i);
+            pruned = true;
         }
 
-        _lastGroupKey = null;
-        RaiseChanged();
-        return true;
+        return pruned;
+    }
+
+    /// <summary>
+    /// Takes off the redo stack each entry that holds the same state as the one a redo would reach it from -- the present
+    /// for the next redo: re-applying it would change nothing, and spend a click on restoring what is showing. Returns
+    /// whether any came off.
+    /// </summary>
+    private bool PruneRedo()
+    {
+        var pruned = false;
+        for (var i = _redo.Count - 1; i >= 0; i--)
+        {
+            var before = i == _redo.Count - 1 ? _present : _redo[i + 1].State;
+            if (before is null || !_redo[i].State.SameAs(before))
+                continue;
+
+            _redo.RemoveAt(i);
+            pruned = true;
+        }
+
+        return pruned;
     }
 
     /// <summary>
@@ -435,6 +510,7 @@ public class BlexHistory : IDisposable
         try
         {
             _joined.AddOrUpdate(store, Join(store));
+            _awaitingStoredState.AddOrUpdate(store, store);
 
             // The step a group has open was taken before the store arrived, and could not take back a change to it.
             _lastGroupKey = null;
@@ -517,7 +593,7 @@ public class BlexHistory : IDisposable
         {
             // Ahead of the restore-away check: the present a restore-away refreshes holds the arrived state as it is,
             // but the steps pushed since the store joined would still hold its declared defaults.
-            if (TakeHydratedState(store) || TakeArrivedState(store) || _restoredAway)
+            if (TakeStoredState(store) || TakeArrivedState(store) || _restoredAway)
                 return;
 
             // A store the present has never seen -- one that registered without joining it, while this history was
@@ -963,7 +1039,6 @@ public class BlexHistory : IDisposable
             _manager.StateRestored -= OnExternalRestore;
             _manager.StoreRolledBack -= OnRolledBack;
             _started = false;
-            _awaitingHydration = null;
         }
 
         GC.SuppressFinalize(this);
