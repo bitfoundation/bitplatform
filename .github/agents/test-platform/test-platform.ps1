@@ -634,11 +634,20 @@ function Update-WindowsApps {
         $name = [IO.Path]::GetFileNameWithoutExtension($app.Exe)
         $deadline = (Get-Date).AddMinutes(10)
         $tapped = $false
+        $reopened = $false
 
         while (-not (Test-Version (Get-ProductVersion $app.Exe)) -and (Get-Date) -lt $deadline) {
             $owner = Get-CdpOwner 9222
+            $downloaded = Get-Item (Join-Path $app.Root "packages\$($app.Id)-$script:expectedVersion-full.nupkg") -ErrorAction SilentlyContinue
 
-            if (-not $tapped -and $owner -like '*.Client.Windows' -and $owner -ne $name) {
+            if (-not $reopened -and $downloaded -and $downloaded.LastWriteTime -lt (Get-Date).AddMinutes(-1)) {
+                Write-Host "  its release has waited downloaded for a minute without being applied, which the app's next start does. Opening it again."
+                Stop-WindowsApps
+                Start-Process $app.Exe -WindowStyle Minimized
+                $tapped = $true
+                $reopened = $true
+            }
+            elseif (-not $tapped -and $owner -like '*.Client.Windows' -and $owner -ne $name) {
                 Write-Host "  $owner restarted into its update and holds the debugging port. Closing it and opening $($app.Id) again."
                 Stop-WindowsApps
                 Start-Process $app.Exe -WindowStyle Minimized
