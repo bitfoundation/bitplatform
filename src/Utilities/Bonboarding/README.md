@@ -1175,7 +1175,9 @@ await _projects.CreateAsync(name);
 await BonboardingService.SignalAsync("project-created");
 ```
 
-Signals are compared ordinally, `CanAdvance` still decides, and `SignalAsync` returns whether a tour moved on.
+Signals are compared ordinally, `CanAdvance` still decides, and `SignalAsync` returns whether a tour moved on. A step
+that was on screen takes its signal even if it has lost its target or is held for its page since - an application
+that navigates and then signals has taken the page away first.
 They are not remembered: one raised while no step waits for it does nothing, so use `When` to skip a step
 whose task the user had already done before reaching it.
 
@@ -1877,10 +1879,13 @@ The same holds for every wait on a route: while the engine navigates to a step's
 waits for the user to get to a wildcard route or to a route the engine was told not to navigate to. The page
 stays fully usable, because using it is how the user gets there.
 
-A step without a `Route` belongs to the page it was shown on, and holds the same way when the user leaves that page:
-its target is not there to be waited for, and waiting it out would skip the steps after it one by one - or complete
-the tour - while the user is somewhere else. It is shown again when they come back. A step that should follow the
-user to any page (one pointing at the site's navigation, say) gets `Route = "*"`.
+A step without a `Route` belongs to the page it was activated on. It goes on showing when the user leaves that page -
+what took them away may be the very thing that moves it on, a link it advances on or an application that navigates
+and then signals - but should its target be missing there (lost, or still not found when its wait runs out), it holds
+the same way rather than applying its missing-target behaviour: skipping there would skip the steps after it one by
+one - or complete the tour - while the user is somewhere else. It is shown again when they come back. A step that
+should look for its target on whatever page the user is on (one pointing at the site's navigation, say) gets
+`Route = "*"`.
 
 The library deliberately does not drag the user back. Fighting someone for control of the address bar
 is never the right call, and a user who navigated away usually meant it.
@@ -2646,8 +2651,8 @@ The popover is a `role="dialog"` with `tabindex="-1"`, so it can receive focus.
 | Key | Action |
 |---|---|
 | `Escape` | Ends the tour, unless `CloseOnEscape` is false |
-| `→` / `←` | Next / previous, reversed in RTL - as the card's buttons do, so not on a step that shows no Next (or Previous) |
-| `Home` / `End` | First / last step - `Home` only where Previous shows, `End` only where Next, pressed step by step, would get there: no step on the way has `CanAdvance`, `ResolveNext` or a hidden Next |
+| `→` / `←` | Next / previous, reversed in RTL - not Next on a step that waits for the user (`AdvanceOn` or `AdvanceOnSignal` with `ShowNext = false`); a step that only hides the built-in Next, for a button of its own in custom markup, keeps the key |
+| `Home` / `End` | First / last step - `End` only where Next, pressed step by step, would get there: no step on the way has `CanAdvance`, `ResolveNext` or waits for the user |
 | `Tab` / `Shift+Tab` | Cycles inside the trap |
 | `Enter` / `Space` | Activates the focused button, as any button does |
 

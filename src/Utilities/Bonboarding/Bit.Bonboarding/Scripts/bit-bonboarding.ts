@@ -291,6 +291,12 @@ export function measure(sessionId: string): StepGeometry {
     }
 
     const geometry = measureSession(session);
+
+    // The user just acted on the target and the step is about to move on - the action is often what took the target
+    // away, a link to another page above all. As the frames do (see scheduleFrame), that is not reported as a loss:
+    // the last frame stands until the advance has been heard, after which the target is measured again.
+    if (!geometry.found && session.advanceTimer && session.lastFrame?.found) return session.lastFrame;
+
     if (!geometry.found && session.spec && wantsTarget(session.spec)) geometry.targetIssue = targetIssueOf(session.spec);
 
     // This reply reports the loss, so the targets go as they do when a frame finds them gone: otherwise the next

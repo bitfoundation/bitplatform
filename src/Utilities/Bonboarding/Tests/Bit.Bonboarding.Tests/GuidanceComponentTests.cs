@@ -519,6 +519,34 @@ public class GuidanceComponentTests : BunitContext
     }
 
     [TestMethod]
+    public void A_Tour_Whose_Progress_Cannot_Be_Read_Is_Left_Out_Of_The_List_And_The_Others_Stay()
+    {
+        Services.AddSingleton<IBonboardingStore>(new FailingForOneStore("broken"));
+
+        var cut = Render<BonboardingTourList>(parameters => parameters
+            .Add(list => list.Tours, new[] { Tour("first", "First"), Tour("broken", "Broken"), Tour("last", "Last") }));
+
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll(".bit-bonboarding-tour-list-item")));
+        Assert.IsNotNull(cut.Find("[data-bonboarding-tour='first']"));
+        Assert.IsNotNull(cut.Find("[data-bonboarding-tour='last']"), "a tour after the one that failed is still listed");
+    }
+
+    /// <summary>A custom store that cannot read one tour's record.</summary>
+    private sealed class FailingForOneStore(string brokenTourId) : IBonboardingStore
+    {
+        private readonly BonboardingInMemoryStore _inner = new();
+
+        public ValueTask<BonboardingRecord?> GetAsync(string tourId, CancellationToken cancellationToken = default)
+            => tourId == brokenTourId ? throw new FormatException("a corrupt record") : _inner.GetAsync(tourId, cancellationToken);
+
+        public ValueTask SetAsync(BonboardingRecord record, CancellationToken cancellationToken = default) => _inner.SetAsync(record, cancellationToken);
+
+        public ValueTask RemoveAsync(string tourId, CancellationToken cancellationToken = default) => _inner.RemoveAsync(tourId, cancellationToken);
+
+        public ValueTask ClearAsync(CancellationToken cancellationToken = default) => _inner.ClearAsync(cancellationToken);
+    }
+
+    [TestMethod]
     public async Task The_Tour_List_Follows_What_It_Is_Asked_To_List()
     {
         var done = Tour("done", "Done");

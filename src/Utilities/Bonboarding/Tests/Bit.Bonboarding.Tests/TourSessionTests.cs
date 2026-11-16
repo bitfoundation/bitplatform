@@ -824,6 +824,83 @@ public class TourSessionTests
     }
 
     [TestMethod]
+    public async Task The_Progress_Follows_Steps_Rendered_Or_Removed_Ahead_Of_The_Current_One()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c", "#d", "#x");
+
+        var tour = Tour(Step("a", "#a"), Step("b", "#b"), Step("c", "#c"), Step("d", "#d"));
+        var session = await harness.Service.StartAsync(tour);
+        await session.NextAsync();
+        await session.NextAsync();
+        Assert.AreEqual("c", session.CurrentStep!.Id);
+
+        // a step renders ahead of the current one: the plan follows it, so there is still a step to come
+        tour.Steps.Insert(1, Step("x", "#x"));
+        Assert.AreEqual(3, session.CurrentIndex);
+        Assert.IsFalse(session.IsLastStep, "d is still to come");
+        Assert.AreEqual(4, session.DisplayPosition);
+        Assert.AreEqual(5, session.DisplayCount);
+
+        // and two go away again: nothing points past the steps there are
+        tour.Steps.RemoveAt(0);
+        tour.Steps.RemoveAt(0);
+        Assert.AreEqual(1, session.CurrentIndex);
+        Assert.AreEqual(2, session.DisplayPosition);
+        Assert.AreEqual(3, session.DisplayCount);
+
+        await harness.Interop.PressKeyAsync(session.Id, "End");
+        Assert.AreEqual("d", session.CurrentStep!.Id);
+        await harness.Interop.PressKeyAsync(session.Id, "Home");
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+    }
+
+    [TestMethod]
+    public async Task A_Step_Reached_Going_Back_That_Loses_Its_Target_Later_Goes_On_Forwards()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b"), Step("c", "#c")));
+        await session.NextAsync();
+        await session.NextAsync();
+        await session.PreviousAsync();
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+
+        // shown, and its target goes some time later: the wait that runs out is not the way back the user came
+        await harness.Interop.LoseTargetAsync(session.Id);
+        Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
+        harness.Interop.ExistingSelectors.Add("#c");
+        await harness.Interop.TimeOutWaitAsync(session.Id);
+
+        Assert.AreEqual("c", session.CurrentStep!.Id, "skipped forwards, as a lost target's own skip is");
+    }
+
+    [TestMethod]
+    public async Task Keys_Move_On_A_Step_That_Only_Hides_The_Built_In_Next_For_A_Button_Of_Its_Own()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        // custom markup carries its own Next, so the built-in one is hidden not to show it twice
+        var custom = Step("a", "#a");
+        custom.ShowNext = false;
+        custom.Template = _ => _ => { };
+
+        var session = await harness.Service.StartAsync(Tour(custom, Step("b", "#b"), Step("c", "#c")));
+
+        await harness.Interop.PressKeyAsync(session.Id, "ArrowRight");
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+
+        await harness.Interop.PressKeyAsync(session.Id, "Home");
+        Assert.AreEqual("a", session.CurrentStep!.Id);
+
+        await harness.Interop.PressKeyAsync(session.Id, "End");
+        Assert.AreEqual("c", session.CurrentStep!.Id, "End goes past it as Next, step by step, does");
+    }
+
+    [TestMethod]
     public async Task Overlay_Clicks_Only_Close_When_Enabled()
     {
         await using var harness = new BonboardingHarness();

@@ -83,11 +83,12 @@ public class RoutingTests
         });
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
 
-        // the user leaves the page; there, the step's target is nowhere, and its wait runs out
+        // the user leaves the page: the step goes on showing until its target goes, and then waits for its page
         harness.Navigation.SimulateUserNavigation("placement");
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status, "an advance may be on its way");
+        await harness.Interop.LoseTargetAsync(session.Id);
         Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
         Assert.AreEqual(BonboardingWaitReason.Route, session.WaitReason);
-        await harness.Interop.LoseTargetAsync(session.Id);
         await harness.Interop.TimeOutWaitAsync(session.Id);
 
         Assert.AreEqual("a", session.CurrentStep!.Id, "nothing is skipped while the user is away");
@@ -99,6 +100,100 @@ public class RoutingTests
         harness.Navigation.SimulateUserNavigation(page + "?tab=2");
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
         Assert.AreEqual("a", session.CurrentStep!.Id);
+    }
+
+    [TestMethod]
+    public async Task A_Step_Without_A_Route_Still_Waiting_For_Its_Target_Holds_When_Its_Wait_Runs_Out_On_Another_Page()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#b", "#c");
+        harness.Navigation!.SimulateUserNavigation("dashboard");
+
+        var session = await harness.Service.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "late-target",
+            Steps =
+            [
+                new BonboardingStepDefinition { Id = "a", Target = BonboardingStepTarget.Css("#a") },
+                new BonboardingStepDefinition { Id = "b", Target = BonboardingStepTarget.Css("#b") },
+                new BonboardingStepDefinition { Id = "c", Target = BonboardingStepTarget.Css("#c") },
+            ],
+        });
+        Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status, "the target has not rendered yet");
+
+        // the user leaves before it does, and the wait runs out there
+        harness.Navigation.SimulateUserNavigation("settings");
+        await harness.Interop.TimeOutWaitAsync(session.Id);
+
+        Assert.AreEqual("a", session.CurrentStep!.Id, "nothing is skipped while the user is away");
+        Assert.AreEqual(BonboardingWaitReason.Route, session.WaitReason);
+        Assert.IsNull((await harness.Service.GetRecordAsync("late-target"))?.CompletedAt);
+
+        harness.Interop.ExistingSelectors.Add("#a");
+        harness.Navigation.SimulateUserNavigation("dashboard");
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        Assert.AreEqual("a", session.CurrentStep!.Id);
+    }
+
+    [TestMethod]
+    public async Task A_Step_Without_A_Route_Advances_On_A_Link_To_Another_Page()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#orders-link", "#orders");
+
+        var session = await harness.Service.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "to-orders",
+            Steps =
+            [
+                new BonboardingStepDefinition
+                {
+                    Id = "link",
+                    Target = BonboardingStepTarget.Css("#orders-link"),
+                    AdvanceOn = BonboardingAdvanceTrigger.TargetClick,
+                },
+                new BonboardingStepDefinition { Id = "orders", Target = BonboardingStepTarget.Css("#orders"), Route = "orders" },
+            ],
+        });
+
+        // the link navigates at once; the advance it triggers arrives a moment later
+        harness.Navigation!.SimulateUserNavigation("orders");
+        await harness.Interop.TriggerAdvanceAsync(session.Id);
+
+        Assert.AreEqual("orders", session.CurrentStep!.Id);
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+    }
+
+    [TestMethod]
+    public async Task A_Step_Without_A_Route_Takes_Its_Signal_After_The_Application_Navigated_Away()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#create", "#project");
+
+        var session = await harness.Service.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "create-project",
+            Steps =
+            [
+                new BonboardingStepDefinition
+                {
+                    Id = "create",
+                    Target = BonboardingStepTarget.Css("#create"),
+                    ShowNext = false,
+                    AdvanceOnSignal = "created",
+                },
+                new BonboardingStepDefinition { Id = "project", Target = BonboardingStepTarget.Css("#project"), Route = "projects/*" },
+            ],
+        });
+
+        // the application navigates to the new project, which takes the step's target away, and then signals
+        harness.Interop.ExistingSelectors.Remove("#create");
+        harness.Navigation!.SimulateUserNavigation("projects/1");
+        Assert.AreEqual(BonboardingWaitReason.Route, session.WaitReason);
+
+        Assert.IsTrue(await harness.Service.SignalAsync("created"));
+        Assert.AreEqual("project", session.CurrentStep!.Id);
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
     }
 
     [TestMethod]

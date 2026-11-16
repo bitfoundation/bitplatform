@@ -836,6 +836,10 @@ public class ComponentTests : BunitContext
         tour.CanStart = _ => throw new InvalidOperationException("the application's own bug");
 
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => BonboardingService.StartAsync(tour));
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => BonboardingService.StartOnceAsync(tour), "a once-only start someone asked for too");
+
+        // an automatic one has no caller to report it to: the tour is held back
+        Assert.IsNull(await BonboardingService.StartOnceAsync(tour, new BonboardingStartOptions { Automatic = true }));
     }
 
     [TestMethod]

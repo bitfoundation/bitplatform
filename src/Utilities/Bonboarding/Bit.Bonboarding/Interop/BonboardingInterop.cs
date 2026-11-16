@@ -36,7 +36,8 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
 
     private IJSObjectReference? _module;
     private DotNetObjectReference<BonboardingInterop>? _self;
-    private bool _disposed;
+    // Volatile: disposal can run on one thread while an import finishes on another (see EnsureModuleAsync).
+    private volatile bool _disposed;
 
     public BonboardingInterop(IJSRuntime js, IOptions<BonboardingOptions> options, ILogger<BonboardingInterop> logger)
     {
@@ -79,16 +80,21 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
             var module = await _js.InvokeAsync<IJSObjectReference>("import", cancellationToken, ModulePath)
                 .ConfigureAwait(false);
 
-            // Disposed while the module was on its way: nothing releases it, nor a reference made to this, but here.
+            var self = DotNetObjectReference.Create(this);
+            Interlocked.Exchange(ref _self, self);
+            Interlocked.Exchange(ref _module, module);
+
+            // Disposed while the module was on its way. Each side publishes before it looks at the other's - the
+            // exchanges above, and the ones in ReleaseLocalResources, are full fences - so a disposal too early to find
+            // the module is seen here; and whichever side takes a reference out of its field releases it, once.
             if (_disposed)
             {
-                await DisposeModuleAsync(module).ConfigureAwait(false);
+                if (Interlocked.CompareExchange(ref _self, null, self) == self) self.Dispose();
+                if (Interlocked.CompareExchange(ref _module, null, module) == module) await DisposeModuleAsync(module).ConfigureAwait(false);
                 return null;
             }
 
-            _module = module;
-            _self = DotNetObjectReference.Create(this);
-            return _module;
+            return module;
         }
         finally
         {
@@ -353,10 +359,7 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
     {
         if (_disposed) return;
 
-        var module = _module;
-        ReleaseLocalResources();
-
-        if (module is not null) await DisposeModuleAsync(module).ConfigureAwait(false);
+        if (ReleaseLocalResources() is { } module) await DisposeModuleAsync(module).ConfigureAwait(false);
     }
 
     private async ValueTask DisposeModuleAsync(IJSObjectReference module)
@@ -379,18 +382,18 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
     /// </summary>
     public void Dispose() => ReleaseLocalResources();
 
-    private void ReleaseLocalResources()
+    /// <summary>Releases everything held here and hands back the module, for the caller to release in the browser.</summary>
+    private IJSObjectReference? ReleaseLocalResources()
     {
-        if (_disposed) return;
+        if (_disposed) return null;
         _disposed = true;
 
         _callbacks.Clear();
         _activations.Clear();
         _storageWatchers.Clear();
-        _module = null;
-        _self?.Dispose();
-        _self = null;
+        Interlocked.Exchange(ref _self, null)?.Dispose();
         // _importGate is left undisposed: an import still in flight releases it as it finishes, and a semaphore with no
         // wait handle holds nothing to free.
+        return Interlocked.Exchange(ref _module, null);
     }
 }

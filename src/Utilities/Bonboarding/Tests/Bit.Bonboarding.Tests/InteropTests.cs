@@ -113,6 +113,26 @@ public class InteropTests : BunitContext
         Assert.IsTrue(js.Imported.Disposed, "the module imported for a disposed interop is released");
     }
 
+    [TestMethod]
+    public async Task A_Module_That_Arrives_Alongside_A_Disposal_On_Another_Thread_Is_Not_Kept_Nor_Released_Twice()
+    {
+        for (var attempt = 0; attempt < 200; attempt++)
+        {
+            var js = new GatedImportRuntime();
+            var interop = new BonboardingInterop(js, Options.Create(new BonboardingOptions()), NullLogger<BonboardingInterop>.Instance);
+
+            // the import finishes on the thread pool while the scope is disposed on another thread
+            var initializing = interop.InitializeAsync().AsTask();
+            var disposing = Task.Run(interop.Dispose);
+            js.Module.SetResult(js.Imported);
+            await disposing;
+            await initializing;
+
+            Assert.IsFalse(interop.IsAvailable);
+            Assert.IsLessThanOrEqualTo(1, js.Imported.DisposeCount, "released at most once");
+        }
+    }
+
     /// <summary>A runtime whose module import waits until the test lets it through.</summary>
     private sealed class GatedImportRuntime : IJSRuntime
     {
@@ -129,7 +149,11 @@ public class InteropTests : BunitContext
 
     private sealed class ReleasedModule : IJSObjectReference
     {
-        public bool Disposed { get; private set; }
+        private int _disposeCount;
+
+        public bool Disposed => DisposeCount > 0;
+
+        public int DisposeCount => Volatile.Read(ref _disposeCount);
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => ValueTask.FromResult(default(TValue)!);
 
@@ -138,7 +162,7 @@ public class InteropTests : BunitContext
 
         public ValueTask DisposeAsync()
         {
-            Disposed = true;
+            Interlocked.Increment(ref _disposeCount);
             return ValueTask.CompletedTask;
         }
     }
