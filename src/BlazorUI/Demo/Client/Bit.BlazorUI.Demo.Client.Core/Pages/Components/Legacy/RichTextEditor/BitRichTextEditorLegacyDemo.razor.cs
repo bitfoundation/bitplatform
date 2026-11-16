@@ -45,17 +45,17 @@ public partial class BitRichTextEditorLegacyDemo
         },
         new()
         {
-            Name = "OnQuillReady",
-            Type = "EventCallback",
-            DefaultValue = "",
-            Description = "Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment."
-        },
-        new()
-        {
             Name = "OnQuillModulesReady",
             Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when the scripts of the provided Quill Modules are loaded and their api are ready to use."
+        },
+        new()
+        {
+            Name = "OnQuillReady",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment."
         },
         new()
         {

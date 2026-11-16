@@ -27,9 +27,7 @@
 </div>
 
 @code {
-    [Parameter, EditorRequired] public BitDataGrid<TItem> Grid { get; set; } = default!;
-    [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
-    [Parameter, EditorRequired] public BitDataGridColumn<TItem> Column { get; set; } = default!;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public int ColIndex { get; set; }
 
     /// <summary>How many columns this cell covers (its column's resolved <c>ColSpan</c> for the row).
@@ -37,13 +35,14 @@
     /// remaining cells of the row to the right columns - the visual <c>grid-column: span</c> alone is
     /// invisible to it.</summary>
     [Parameter] public int ColSpan { get; set; } = 1;
+    [Parameter, EditorRequired] public BitDataGridColumn<TItem> Column { get; set; } = default!;
     [Parameter] public string? CssClass { get; set; }
+    [Parameter, EditorRequired] public BitDataGrid<TItem> Grid { get; set; } = default!;
+    [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
     [Parameter] public string? Style { get; set; }
 
     /// <summary>Native tooltip text for the cell (its full value when the column opts into tooltips).</summary>
     [Parameter] public string? Title { get; set; }
-
-    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     private ElementReference _el;
 

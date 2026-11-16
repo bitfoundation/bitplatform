@@ -34,21 +34,21 @@ public partial class BitMessageBoxDemo
         },
         new()
         {
-            Name = "Buttons",
-            Type = "BitMessageBoxButtons",
-            DefaultValue = "BitMessageBoxButtons.Ok",
-            Description = "The set of buttons the message box renders in its footer.",
-            LinkType = LinkType.Link,
-            Href = "#buttons-enum",
-        },
-        new()
-        {
             Name = "ButtonColor",
             Type = "BitColor?",
             DefaultValue = "null",
             Description = "The color of the action buttons of the message box. Tertiary by default.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "Buttons",
+            Type = "BitMessageBoxButtons",
+            DefaultValue = "BitMessageBoxButtons.Ok",
+            Description = "The set of buttons the message box renders in its footer.",
+            LinkType = LinkType.Link,
+            Href = "#buttons-enum",
         },
         new()
         {

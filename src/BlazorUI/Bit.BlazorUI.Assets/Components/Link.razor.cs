@@ -5,8 +5,6 @@ public partial class Link
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; } = default!;
 
-    [Parameter] public string? Href { get; set; }
-
     /// <summary>
     /// Appends the content hash of the file to the Href, so that a changed file is never served from the browser cache.
     /// The hash is read from the web root of the ASP.NET Core host, so it is only computed where that host is part of the
@@ -15,6 +13,8 @@ public partial class Link
     /// and a render with nothing to reuse and no web root renders the Href unchanged.
     /// </summary>
     [Parameter] public bool AppendVersion { get; set; } = true;
+
+    [Parameter] public string? Href { get; set; }
 
 
 

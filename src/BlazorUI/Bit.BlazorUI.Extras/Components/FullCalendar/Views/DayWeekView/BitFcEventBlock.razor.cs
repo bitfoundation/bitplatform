@@ -8,14 +8,14 @@ public partial class BitFcEventBlock
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
     [Parameter] public BitFullCalendarEvent Event { get; set; } = default!;
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
+    [Parameter] public EventCallback<BitFullCalendarEvent> OnSelected { get; set; }
     /// <summary>
     /// The block's height in hours as the grid measured it - the event's span clipped to the visible
     /// hour window. Left null by a caller that has no window to clip against, in which case the
     /// block sizes itself from the event's own start and end.
     /// </summary>
     [Parameter] public double? VisibleDurationHours { get; set; }
-    [Parameter] public EventCallback<BitFullCalendarEvent> OnSelected { get; set; }
-    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
 
     private readonly string _instanceId = Guid.NewGuid().ToString("N");
     private DotNetObjectReference<BitFcEventBlock>? _dotNetRef;

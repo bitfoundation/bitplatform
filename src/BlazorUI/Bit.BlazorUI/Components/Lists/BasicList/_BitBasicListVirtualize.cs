@@ -10,9 +10,9 @@ public class _BitBasicListVirtualize<TItem> : ComponentBase
 
     [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
-    [Parameter] public ICollection<TItem>? Items { get; set; }
-
     [Parameter] public RenderFragment<TItem>? ItemContent { get; set; }
+
+    [Parameter] public ICollection<TItem>? Items { get; set; }
 
     [Parameter] public float ItemSize { get; set; } = 50;
 

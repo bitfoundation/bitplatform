@@ -133,21 +133,20 @@ public partial class BitOtpInput : BitInputBase<string?>
     public bool FullWidth { get; set; }
 
     /// <summary>
-    /// Label displayed above the inputs.
-    /// </summary>
-    [Parameter] public string? Label { get; set; }
-
-    /// <summary>
-    /// Custom template for the label displayed above the inputs.
-    /// </summary>
-    [Parameter] public RenderFragment? LabelTemplate { get; set; }
-
-    /// <summary>
     /// The composite format of the aria-label rendered on each input, where {0} is the one based index
     /// of the input and {1} is the <see cref="Length"/>. Set it to localize the position that screen
     /// readers announce for each input. The default is "{0} of {1}".
     /// </summary>
     [Parameter] public string? InputAriaLabelFormat { get; set; }
+
+    /// <summary>
+    /// Sets the inputmode html attribute of the inputs, which is what decides the virtual keyboard that a
+    /// phone brings up without changing the element that is rendered. It defaults to the keyboard that
+    /// matches the <see cref="Type"/>, so it is only needed to ask for a keyboard the type does not imply,
+    /// like the telephone keypad (whose keys are larger than the numeric ones on most Android keyboards)
+    /// for a code of digits.
+    /// </summary>
+    [Parameter] public BitInputMode? InputMode { get; set; }
 
     /// <summary>
     /// Paints the inputs with the error state without an EditContext taking part in it, which is what
@@ -162,6 +161,21 @@ public partial class BitOtpInput : BitInputBase<string?>
     public bool Invalid { get; set; }
 
     /// <summary>
+    /// Label displayed above the inputs.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom template for the label displayed above the inputs.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Length of the OTP or number of the inputs.
+    /// </summary>
+    [Parameter] public int Length { get; set; } = 5;
+
+    /// <summary>
     /// Puts the component into the busy state of a code that has been submitted and is being checked, which
     /// is the step between the <see cref="OnFill"/> and the answer that either lets the user through or sets
     /// the <see cref="Invalid"/>. It paints an indeterminate progress bar under the inputs, marks the group
@@ -173,20 +187,6 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Loading { get; set; }
-
-    /// <summary>
-    /// Sets the inputmode html attribute of the inputs, which is what decides the virtual keyboard that a
-    /// phone brings up without changing the element that is rendered. It defaults to the keyboard that
-    /// matches the <see cref="Type"/>, so it is only needed to ask for a keyboard the type does not imply,
-    /// like the telephone keypad (whose keys are larger than the numeric ones on most Android keyboards)
-    /// for a code of digits.
-    /// </summary>
-    [Parameter] public BitInputMode? InputMode { get; set; }
-
-    /// <summary>
-    /// Length of the OTP or number of the inputs.
-    /// </summary>
-    [Parameter] public int Length { get; set; } = 5;
 
     /// <summary>
     /// Turns every character of the code into its lower case form as it is typed or pasted, the mirror of
@@ -352,14 +352,6 @@ public partial class BitOtpInput : BitInputBase<string?>
     public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Turns every character of the code into its upper case form as it is typed or pasted, which is what
-    /// lets a code that is printed in upper case be typed in either case. The conversion happens before
-    /// the <see cref="Pattern"/> is applied, so an expression restricted to upper case letters accepts a
-    /// lower case keystroke instead of rejecting it.
-    /// </summary>
-    [Parameter] public bool Uppercase { get; set; }
-
-    /// <summary>
     /// Custom CSS styles for different parts of the BitOtpInput.
     /// </summary>
     [Parameter, ResetStyleBuilder] public BitOtpInputClassStyles? Styles { get; set; }
@@ -368,6 +360,14 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// Type of the inputs.
     /// </summary>
     [Parameter] public BitInputType? Type { get; set; }
+
+    /// <summary>
+    /// Turns every character of the code into its upper case form as it is typed or pasted, which is what
+    /// lets a code that is printed in upper case be typed in either case. The conversion happens before
+    /// the <see cref="Pattern"/> is applied, so an expression restricted to upper case letters accepts a
+    /// lower case keystroke instead of rejecting it.
+    /// </summary>
+    [Parameter] public bool Uppercase { get; set; }
 
     /// <summary>
     /// The visual variant of the inputs, which decides how much of the frame around each input is

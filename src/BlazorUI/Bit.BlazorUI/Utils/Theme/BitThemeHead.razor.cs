@@ -48,6 +48,47 @@
 public partial class BitThemeHead : ComponentBase
 {
     /// <summary>
+    /// The themes the page ships stylesheets for, the same names handed to
+    /// <see cref="BitThemeSsrOptions.AvailableThemes"/> (read from <see cref="Options"/> when not set): a
+    /// stored pair or preference outside them falls back to the declared pair, as it does there, so the
+    /// tag is painted for the theme the document is.
+    /// </summary>
+    [Parameter] public IEnumerable<string>? AvailableThemes { get; set; }
+
+    /// <inheritdoc cref="LightTheme"/>
+    [Parameter] public string? DarkTheme { get; set; }
+
+    /// <summary>
+    /// The theme to fall back on when nothing is stored, mirroring the <c>defaultTheme</c> of
+    /// <see cref="BitThemeSsr.BuildRootThemeAttributeMap(string?, BitThemeSsrOptions)"/> - pass the
+    /// same value to both, or the tag is painted for a theme the document does not render.
+    /// </summary>
+    [Parameter] public string? DefaultTheme { get; set; }
+
+    /// <summary>
+    /// Whether to emit the <c>&lt;meta name="theme-color"&gt;</c> tag (and the script that corrects it
+    /// before first paint, once the client has re-resolved the theme). Default <see langword="true"/>. Turn
+    /// it off to keep a tag the host page writes itself - a media-qualified light / dark pair, say -
+    /// which <see cref="BitThemeAttributeNames.ThemeColorMeta"/> still keeps current afterwards.
+    /// </summary>
+    [Parameter] public bool EmitThemeColor { get; set; } = true;
+
+    /// <summary>
+    /// The two presets the OS-following resolution picks between, mirroring
+    /// <see cref="BitThemeAttributeNames.ThemeLight"/> / <see cref="BitThemeAttributeNames.ThemeDark"/>
+    /// on <c>&lt;html&gt;</c>. They are what the tag is painted from while the visitor follows the OS,
+    /// so an app that renames the pair (a Fluent 2 site: <c>fluent2-light</c> / <c>fluent2-dark</c>)
+    /// passes the same names here. Default to the core <c>light</c> / <c>dark</c> presets.
+    /// </summary>
+    [Parameter] public string? LightTheme { get; set; }
+
+    /// <summary>
+    /// Optional CSP nonce, stamped on every script this component emits so a
+    /// <c>script-src 'nonce-…'</c> policy does not block the first-paint setup.
+    /// </summary>
+    [Parameter] public string? Nonce { get; set; }
+
+    /// <summary>
     /// The options handed to <see cref="BitThemeSsr.BuildRootThemeAttributeMap(string?, BitThemeSsrOptions)"/>
     /// for the <c>&lt;html&gt;</c> element of the same response. Handing the one instance to both is what keeps
     /// the two halves of the setup from disagreeing: <see cref="DefaultTheme"/>, <see cref="LightTheme"/>,
@@ -67,25 +108,6 @@ public partial class BitThemeHead : ComponentBase
     [Parameter] public string? PersistedPreference { get; set; }
 
     /// <summary>
-    /// The theme to fall back on when nothing is stored, mirroring the <c>defaultTheme</c> of
-    /// <see cref="BitThemeSsr.BuildRootThemeAttributeMap(string?, BitThemeSsrOptions)"/> - pass the
-    /// same value to both, or the tag is painted for a theme the document does not render.
-    /// </summary>
-    [Parameter] public string? DefaultTheme { get; set; }
-
-    /// <summary>
-    /// The two presets the OS-following resolution picks between, mirroring
-    /// <see cref="BitThemeAttributeNames.ThemeLight"/> / <see cref="BitThemeAttributeNames.ThemeDark"/>
-    /// on <c>&lt;html&gt;</c>. They are what the tag is painted from while the visitor follows the OS,
-    /// so an app that renames the pair (a Fluent 2 site: <c>fluent2-light</c> / <c>fluent2-dark</c>)
-    /// passes the same names here. Default to the core <c>light</c> / <c>dark</c> presets.
-    /// </summary>
-    [Parameter] public string? LightTheme { get; set; }
-
-    /// <inheritdoc cref="LightTheme"/>
-    [Parameter] public string? DarkTheme { get; set; }
-
-    /// <summary>
     /// The <see cref="BitThemeCookie.PairCookieName"/> cookie of this request, the same value handed to
     /// <see cref="BitThemeSsrOptions.PersistedThemePair"/>. A pair the visitor switched to at runtime
     /// stands in for <see cref="LightTheme"/> / <see cref="DarkTheme"/>, so the tag is painted for the
@@ -93,14 +115,6 @@ public partial class BitThemeHead : ComponentBase
     /// declared pair, as it does there; anything else is ignored.
     /// </summary>
     [Parameter] public string? PersistedThemePair { get; set; }
-
-    /// <summary>
-    /// The themes the page ships stylesheets for, the same names handed to
-    /// <see cref="BitThemeSsrOptions.AvailableThemes"/> (read from <see cref="Options"/> when not set): a
-    /// stored pair or preference outside them falls back to the declared pair, as it does there, so the
-    /// tag is painted for the theme the document is.
-    /// </summary>
-    [Parameter] public IEnumerable<string>? AvailableThemes { get; set; }
 
     /// <summary>
     /// Theme name to browser-chrome color, as CSS colors. Defaults to
@@ -115,20 +129,6 @@ public partial class BitThemeHead : ComponentBase
     /// packaged stylesheets classify names with.
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, string>? ThemeColors { get; set; }
-
-    /// <summary>
-    /// Whether to emit the <c>&lt;meta name="theme-color"&gt;</c> tag (and the script that corrects it
-    /// before first paint, once the client has re-resolved the theme). Default <see langword="true"/>. Turn
-    /// it off to keep a tag the host page writes itself - a media-qualified light / dark pair, say -
-    /// which <see cref="BitThemeAttributeNames.ThemeColorMeta"/> still keeps current afterwards.
-    /// </summary>
-    [Parameter] public bool EmitThemeColor { get; set; } = true;
-
-    /// <summary>
-    /// Optional CSP nonce, stamped on every script this component emits so a
-    /// <c>script-src 'nonce-…'</c> policy does not block the first-paint setup.
-    /// </summary>
-    [Parameter] public string? Nonce { get; set; }
 
 
 

@@ -52,16 +52,16 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The cascading values to be provided for the children.
-    /// The values of this parameter are provided after (so they take precedence over) the ones of the ValueList parameter.
-    /// </summary>
-    [Parameter] public IEnumerable<BitCascadingValue>? Values { get; set; }
-
-    /// <summary>
     /// The cascading value list to be provided for the children.
     /// The values of this parameter are provided before (so they can be overridden by) the ones of the Values parameter.
     /// </summary>
     [Parameter] public BitCascadingValueList? ValueList { get; set; }
+
+    /// <summary>
+    /// The cascading values to be provided for the children.
+    /// The values of this parameter are provided after (so they take precedence over) the ones of the ValueList parameter.
+    /// </summary>
+    [Parameter] public IEnumerable<BitCascadingValue>? Values { get; set; }
 
 
 

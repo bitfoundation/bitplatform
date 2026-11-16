@@ -3,14 +3,14 @@
 // Keyboard shortcuts and paste behavior.
 public partial class BitRichTextEditor
 {
-    /// <summary>When true, pasted content is inserted as plain text.</summary>
-    [Parameter] public bool PasteAsPlainText { get; set; }
-
     /// <summary>
     /// Custom key-combo → command map, merged over the built-in defaults. Keys use the form
     /// "ctrl+b", "ctrl+shift+k" (use "ctrl" for the primary modifier on all platforms).
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, string>? KeyboardShortcuts { get; set; }
+
+    /// <summary>When true, pasted content is inserted as plain text.</summary>
+    [Parameter] public bool PasteAsPlainText { get; set; }
 
     private static readonly Dictionary<string, string> DefaultShortcuts = new(StringComparer.OrdinalIgnoreCase)
     {

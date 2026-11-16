@@ -3,9 +3,38 @@
 public class BitThemeProvider : ComponentBase
 {
     /// <summary>
+    /// Catch-all for HTML attributes splatted onto the wrapping element (e.g. <c>class</c>, <c>id</c>,
+    /// <c>data-*</c>, ARIA roles). Only emitted when this provider renders a wrapping element - that
+    /// is, when a local <see cref="Theme"/> is applied (its CSS variables need a host element), or
+    /// when a cascading <see cref="ParentTheme"/> is re-exposed under a custom <see cref="ThemeName"/>.
+    /// When there is nothing to apply at this layer (no local <see cref="Theme"/> and no
+    /// <see cref="ThemeName"/>) the provider renders just <see cref="ChildContent"/> and these
+    /// attributes are ignored.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>
     /// The content of the ThemeProvider.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Opts this provider into treating <see cref="Theme"/> and <see cref="ParentTheme"/> as
+    /// immutable ("frozen"). When <see langword="true"/>, the provider skips the relatively
+    /// expensive per-render rebuild (the <see cref="BitThemeMapper"/> merge that allocates a fresh
+    /// all-token <see cref="BitTheme"/> plus the ~300-entry CSS-variable string build) whenever both
+    /// references are unchanged since the last render - it just keeps the previously cached result.
+    /// </summary>
+    /// <remarks>
+    /// This is a performance opt-in for the common case where callers hand the provider a stable
+    /// <see cref="BitTheme"/> instance and never mutate it in place. The trade-off is that in-place
+    /// mutation of a frozen theme is NOT detected (the references don't change, so nothing is
+    /// rebuilt or re-cascaded); assign a new <see cref="BitTheme"/> instance to apply changes.
+    /// Leave this <see langword="false"/> (the default) to keep the mutation-in-place behavior where
+    /// every parameters update rebuilds from the current token values.
+    /// </remarks>
+    [Parameter] public bool Frozen { get; set; }
 
     /// <summary>
     /// The element used for the root node. Ignored whenever no wrapping element is rendered - that is,
@@ -28,39 +57,10 @@ public class BitThemeProvider : ComponentBase
     [Parameter] public BitTheme? Theme { get; set; }
 
     /// <summary>
-    /// Opts this provider into treating <see cref="Theme"/> and <see cref="ParentTheme"/> as
-    /// immutable ("frozen"). When <see langword="true"/>, the provider skips the relatively
-    /// expensive per-render rebuild (the <see cref="BitThemeMapper"/> merge that allocates a fresh
-    /// all-token <see cref="BitTheme"/> plus the ~300-entry CSS-variable string build) whenever both
-    /// references are unchanged since the last render - it just keeps the previously cached result.
-    /// </summary>
-    /// <remarks>
-    /// This is a performance opt-in for the common case where callers hand the provider a stable
-    /// <see cref="BitTheme"/> instance and never mutate it in place. The trade-off is that in-place
-    /// mutation of a frozen theme is NOT detected (the references don't change, so nothing is
-    /// rebuilt or re-cascaded); assign a new <see cref="BitTheme"/> instance to apply changes.
-    /// Leave this <see langword="false"/> (the default) to keep the mutation-in-place behavior where
-    /// every parameters update rebuilds from the current token values.
-    /// </remarks>
-    [Parameter] public bool Frozen { get; set; }
-
-    /// <summary>
     /// Optional name for <see cref="CascadingValue{T}"/>; when set, consumers use <c>[CascadingParameter(Name = …)]</c>.
     /// The cascaded <see cref="BitTheme"/> is the merge of <see cref="Theme"/> with <see cref="ParentTheme"/> (same as inline CSS variables on this provider's root).
     /// </summary>
     [Parameter] public string? ThemeName { get; set; }
-
-    /// <summary>
-    /// Catch-all for HTML attributes splatted onto the wrapping element (e.g. <c>class</c>, <c>id</c>,
-    /// <c>data-*</c>, ARIA roles). Only emitted when this provider renders a wrapping element - that
-    /// is, when a local <see cref="Theme"/> is applied (its CSS variables need a host element), or
-    /// when a cascading <see cref="ParentTheme"/> is re-exposed under a custom <see cref="ThemeName"/>.
-    /// When there is nothing to apply at this layer (no local <see cref="Theme"/> and no
-    /// <see cref="ThemeName"/>) the provider renders just <see cref="ChildContent"/> and these
-    /// attributes are ignored.
-    /// </summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
 
     [CascadingParameter] public BitTheme? ParentTheme { get; set; }

@@ -6,13 +6,6 @@ public partial class BitTimePickerDemo
     [
         new()
         {
-            Name = "AllowTextInput",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the TimePicker allows input a time string directly or not.",
-        },
-        new()
-        {
             Name = "AllowedHours",
             Type = "Func<int, bool>?",
             DefaultValue = "null",
@@ -31,6 +24,13 @@ public partial class BitTimePickerDemo
             Type = "Func<int, bool>?",
             DefaultValue = "null",
             Description = "The seconds that can be selected, on top of what MinTime and MaxTime already allow. The predicate receives a second of the minute (0-59); the spin buttons skip over the seconds it rejects, a typed one snaps to the nearest it accepts, and a time entered as text that lands on one fails validation.",
+        },
+        new()
+        {
+            Name = "AllowTextInput",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the TimePicker allows input a time string directly or not.",
         },
         new()
         {
@@ -271,13 +271,6 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "DisallowedTimeErrorMessage",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The custom validation error message for a time entered as text that AllowedHours, AllowedMinutes or AllowedSeconds rejects.",
-        },
-        new()
-        {
             Name = "DisableFuture",
             Type = "bool",
             DefaultValue = "false",
@@ -289,6 +282,13 @@ public partial class BitTimePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Disables every time of day before the current time, exactly as a MinTime of now would. When both are set, the later of the two bounds wins.",
+        },
+        new()
+        {
+            Name = "DisallowedTimeErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for a time entered as text that AllowedHours, AllowedMinutes or AllowedSeconds rejects.",
         },
         new()
         {
@@ -691,15 +691,6 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "Styles",
-            Type = "BitTimePickerClassStyles",
-            DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the TimePicker.",
-            Href = "#timepicker-class-styles",
-            LinkType = LinkType.Link
-        },
-        new()
-        {
             Name = "Standalone",
             Type = "bool",
             DefaultValue = "false",
@@ -711,6 +702,15 @@ public partial class BitTimePickerDemo
             Type = "TimeSpan?",
             DefaultValue = "null",
             Description = "The time an empty TimePicker starts from, instead of midnight. It is not a value: the picker stays empty until something is picked, but the first change made to it lands around the given time.",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitTimePickerClassStyles",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the TimePicker.",
+            Href = "#timepicker-class-styles",
+            LinkType = LinkType.Link
         },
         new()
         {

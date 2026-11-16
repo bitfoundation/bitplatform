@@ -29,6 +29,11 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
+    /// The custom data for the dropdown item to provide extra state for the template.
+    /// </summary>
+    [Parameter] public object? Data { get; set; }
+
+    /// <summary>
     /// The icon to display using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="IconName"/> when both are set.
     /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
@@ -46,11 +51,6 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     /// The id for the dropdown option.
     /// </summary>
     [Parameter] public string? Id { get; set; }
-
-    /// <summary>
-    /// The custom data for the dropdown item to provide extra state for the template.
-    /// </summary>
-    [Parameter] public object? Data { get; set; }
 
     /// <summary>
     /// Determines if the dropdown option is disabled.

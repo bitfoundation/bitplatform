@@ -1,8 +1,8 @@
 ﻿@namespace Bit.BlazorUI
 
 @code {
-    [Parameter] public BitLoadingBase This { get; set; } = default!;
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public BitLoadingBase This { get; set; } = default!;
 }
 
 @* The root is the live region: a spinning shape says nothing on its own, so the label - or, when

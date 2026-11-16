@@ -345,17 +345,17 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
-            Name = "NoResultsText",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The message to show, and to announce to a screen reader, when the search result of the country dropdown is empty. Defaults to BitStrings.NoResultsFound (\"No results found\").",
-        },
-        new()
-        {
             Name = "NoResultsTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template to show when the search result of the country dropdown is empty.",
+        },
+        new()
+        {
+            Name = "NoResultsText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The message to show, and to announce to a screen reader, when the search result of the country dropdown is empty. Defaults to BitStrings.NoResultsFound (\"No results found\").",
         },
         new()
         {

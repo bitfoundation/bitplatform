@@ -21,13 +21,13 @@ public partial class _BitNavChild<[DynamicallyAccessedMembers(DynamicallyAccesse
 
 
 
-    [Parameter] public TItem Item { get; set; } = default!;
-
-    [Parameter] public string? Key { get; set; }
+    [Parameter] public RenderFragment? ChildrenFragment { get; set; }
 
     [Parameter] public int Depth { get; set; }
 
-    [Parameter] public RenderFragment? ChildrenFragment { get; set; }
+    [Parameter] public TItem Item { get; set; } = default!;
+
+    [Parameter] public string? Key { get; set; }
 
 
 

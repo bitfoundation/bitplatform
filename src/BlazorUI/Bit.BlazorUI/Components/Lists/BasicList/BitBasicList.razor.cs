@@ -391,12 +391,6 @@ public partial class BitBasicList<TItem> : BitComponentBase
     [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the list.
-    /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public BitBasicListClassStyles? Styles { get; set; }
-
-    /// <summary>
     /// Keeps the footer in view at the end of the list while its rows scroll past it.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -425,6 +419,12 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool StickyHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the list.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitBasicListClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Enables virtualization in rendering the list.

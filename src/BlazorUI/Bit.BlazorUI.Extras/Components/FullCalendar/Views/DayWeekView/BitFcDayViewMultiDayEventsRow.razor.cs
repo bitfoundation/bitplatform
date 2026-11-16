@@ -4,9 +4,9 @@ public partial class BitFcDayViewMultiDayEventsRow
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
-    [Parameter] public List<BitFullCalendarEvent> MultiDayEvents { get; set; } = [];
     [Parameter] public DateTime Date { get; set; }
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
+    [Parameter] public List<BitFullCalendarEvent> MultiDayEvents { get; set; } = [];
 
     private List<BitFullCalendarEvent> _multiDayForDay = [];
     private BitFullCalendarEvent? _selectedEvent;

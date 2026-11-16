@@ -145,13 +145,6 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
-            Name = "DisallowedTimeErrorMessage",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The custom validation error message for a time entered as text that AllowedHours, AllowedMinutes or AllowedSeconds rejects. The steps are the one constraint typed text is not held to.",
-        },
-        new()
-        {
             Name = "DisableFuture",
             Type = "bool",
             DefaultValue = "false",
@@ -163,6 +156,13 @@ public partial class BitCircularTimePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Disables every time of day before the current time, exactly as a MinTime of now would. Where both are set the later of the two wins. The current time is taken to the precision the dial shows."
+        },
+        new()
+        {
+            Name = "DisallowedTimeErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for a time entered as text that AllowedHours, AllowedMinutes or AllowedSeconds rejects. The steps are the one constraint typed text is not held to.",
         },
         new()
         {
@@ -212,19 +212,19 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "IconName",
+            Type = "string?",
+            DefaultValue = "Clock",
+            Description = "The name of the icon from the built-in Fluent UI icons. For external icon libraries, use Icon instead."
+        },
+        new()
+        {
             Name = "IconPlacement",
             Type = "BitPlacement",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
             DefaultValue = "BitPlacement.End",
             Description = "Determines the side of the input the TimePicker's icon is rendered on. Only Start and End are honoured; any other value leaves the icon on the end side. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one."
-        },
-        new()
-        {
-            Name = "IconName",
-            Type = "string?",
-            DefaultValue = "Clock",
-            Description = "The name of the icon from the built-in Fluent UI icons. For external icon libraries, use Icon instead."
         },
         new()
         {

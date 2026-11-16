@@ -203,6 +203,13 @@ public partial class BitAiPromptInput : BitAiComponentBase
     [Parameter] public RenderFragment? HintTemplate { get; set; }
 
     /// <summary>
+    /// The most files that can be staged at once.
+    /// <br />
+    /// The default value is <strong>20</strong> (<see cref="DefaultMaxAttachments"/>).
+    /// </summary>
+    [Parameter] public int MaxAttachments { get; set; } = DefaultMaxAttachments;
+
+    /// <summary>
     /// The largest file the composer stages, in bytes.
     /// <br />
     /// The default value is <strong>10 MB</strong> (<see cref="DefaultMaxAttachmentSize"/>).
@@ -213,13 +220,6 @@ public partial class BitAiPromptInput : BitAiComponentBase
     /// message size of Blazor Server.
     /// </remarks>
     [Parameter] public long MaxAttachmentSize { get; set; } = DefaultMaxAttachmentSize;
-
-    /// <summary>
-    /// The most files that can be staged at once.
-    /// <br />
-    /// The default value is <strong>20</strong> (<see cref="DefaultMaxAttachments"/>).
-    /// </summary>
-    [Parameter] public int MaxAttachments { get; set; } = DefaultMaxAttachments;
 
     /// <summary>
     /// The largest file whose bytes are held in memory, in bytes.

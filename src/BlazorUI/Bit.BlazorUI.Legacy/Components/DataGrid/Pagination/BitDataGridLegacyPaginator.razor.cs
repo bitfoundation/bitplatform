@@ -13,9 +13,9 @@ public partial class BitDataGridLegacyPaginator : IDisposable
     [Parameter] public string GoToFirstButtonTitle { get; set; } = "Go to first page";
 
     /// <summary>
-    /// The title of the go to previous page button.
+    /// The title of the go to last page button.
     /// </summary>
-    [Parameter] public string GoToPrevButtonTitle { get; set; } = "Go to previous page";
+    [Parameter] public string GoToLastButtonTitle { get; set; } = "Go to last page";
 
     /// <summary>
     /// The title of the go to next page button.
@@ -23,9 +23,9 @@ public partial class BitDataGridLegacyPaginator : IDisposable
     [Parameter] public string GoToNextButtonTitle { get; set; } = "Go to next page";
 
     /// <summary>
-    /// The title of the go to last page button.
+    /// The title of the go to previous page button.
     /// </summary>
-    [Parameter] public string GoToLastButtonTitle { get; set; } = "Go to last page";
+    [Parameter] public string GoToPrevButtonTitle { get; set; } = "Go to previous page";
 
     /// <summary>
     /// Optionally supplies a format for rendering the page count summary.

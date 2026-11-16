@@ -100,8 +100,8 @@
 }
 
 @code {
-    [Parameter, EditorRequired] public BitDataGrid<TItem> Grid { get; set; } = default!;
     [Parameter, EditorRequired] public BitDataGridColumn<TItem> Column { get; set; } = default!;
+    [Parameter, EditorRequired] public BitDataGrid<TItem> Grid { get; set; } = default!;
     [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
 
     // The pending buffered edit when one exists, else the row's current value. Editors must render

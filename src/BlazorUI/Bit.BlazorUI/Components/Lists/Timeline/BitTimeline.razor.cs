@@ -54,11 +54,6 @@ public partial class BitTimeline<[DynamicallyAccessedMembers(DynamicallyAccessed
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The default custom template for the dot of the items, used by the items that provide no dot template of their own.
-    /// </summary>
-    [Parameter] public RenderFragment<TItem>? DotTemplate { get; set; }
-
-    /// <summary>
     /// Where the dot of each item sits along its item, with the contents of the item aligned to it: at its middle
     /// (Center, the default), at its Start (the top in a vertical timeline) or at its End (the bottom in a vertical timeline).
     /// Start pins the dot to the first line of an item whose contents run over several lines.
@@ -68,6 +63,11 @@ public partial class BitTimeline<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPlacement? DotAlignment { get; set; }
+
+    /// <summary>
+    /// The default custom template for the dot of the items, used by the items that provide no dot template of their own.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? DotTemplate { get; set; }
 
     /// <summary>
     /// Renders the timeline horizontally.
@@ -87,17 +87,6 @@ public partial class BitTimeline<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
-    /// The way the connecting line of the timeline is painted, which the items can override one by one.
-    /// </summary>
-    /// <remarks>
-    /// Only <see cref="BitLineStyle.Solid"/>, <see cref="BitLineStyle.Dashed"/> and
-    /// <see cref="BitLineStyle.Dotted"/> mean anything here; the connector is a hairline, which leaves
-    /// <see cref="BitLineStyle.Double"/> no room for the gap between its two strokes, so it is drawn solid.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public BitLineStyle? LineStyle { get; set; }
-
-    /// <summary>
     /// Where the connecting line runs: through the middle of the timeline (Center, the default), with the primary
     /// contents of the items on one side of it and the secondary contents on the other, or along its Start edge
     /// (the top in a horizontal timeline) or its End edge (the bottom in a horizontal timeline), with the contents
@@ -109,6 +98,17 @@ public partial class BitTimeline<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPlacement? LinePlacement { get; set; }
+
+    /// <summary>
+    /// The way the connecting line of the timeline is painted, which the items can override one by one.
+    /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitLineStyle.Solid"/>, <see cref="BitLineStyle.Dashed"/> and
+    /// <see cref="BitLineStyle.Dotted"/> mean anything here; the connector is a hairline, which leaves
+    /// <see cref="BitLineStyle.Double"/> no room for the gap between its two strokes, so it is drawn solid.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -127,17 +127,17 @@ public partial class BitTimeline<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
+    /// Reverses all of the timeline items direction, so their contents swap sides of the line.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
+
+    /// <summary>
     /// Renders the items in the reverse order, so the last item of the list is painted first.
     /// The reading and the focus order keep the order of the list.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool ReverseOrder { get; set; }
-
-    /// <summary>
-    /// Reverses all of the timeline items direction, so their contents swap sides of the line.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Reversed { get; set; }
 
     /// <summary>
     /// The size of the timeline, which sets the size of the dots and of the text.

@@ -6,12 +6,12 @@ public partial class _BitChoiceGroupItem<[DynamicallyAccessedMembers(Dynamically
 {
     private ElementReference _inputElement;
 
-    [Parameter] public TItem Item { get; set; } = default!;
+    [Parameter] public BitChoiceGroup<TItem, TValue> ChoiceGroup { get; set; } = default!;
 
     // The position of the item among its siblings; feeds the generated input id (see GetInputId).
     [Parameter] public int Index { get; set; }
 
-    [Parameter] public BitChoiceGroup<TItem, TValue> ChoiceGroup { get; set; } = default!;
+    [Parameter] public TItem Item { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

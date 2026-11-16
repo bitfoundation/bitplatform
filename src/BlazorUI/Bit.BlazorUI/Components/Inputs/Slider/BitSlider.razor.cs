@@ -154,6 +154,28 @@ public partial class BitSlider : BitInputBase<double>
     [Parameter, ResetClassBuilder] public BitSliderClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The general color of the slider, applied to the filled part of the track and to the thumbs.
+    /// The unfilled part of the track stays neutral whichever color is picked.
+    /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Slider-*</c> accent variables (the color and its hover, active and
+    /// focus colors, the active mark color and the thumb label colors); left unset, the slider is primary unless
+    /// those variables say otherwise.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The default lower value of the ranged Slider, used when <see cref="LowerValue"/> is not bound.
+    /// </summary>
+    [Parameter] public double? DefaultLowerValue { get; set; }
+
+    /// <summary>
+    /// The default upper value of the ranged Slider, used when <see cref="UpperValue"/> is not bound.
+    /// </summary>
+    [Parameter] public double? DefaultUpperValue { get; set; }
+
+    /// <summary>
     /// Lets the filled band between the two thumbs of a ranged Slider be dragged bodily, so the whole range
     /// travels at once and keeps the width it had.
     /// </summary>
@@ -223,28 +245,6 @@ public partial class BitSlider : BitInputBase<double>
     [Parameter] public Func<double, string>? GetValueText { get; set; }
 
     /// <summary>
-    /// The general color of the slider, applied to the filled part of the track and to the thumbs.
-    /// The unfilled part of the track stays neutral whichever color is picked.
-    /// </summary>
-    /// <remarks>
-    /// An explicit value wins over the <c>--bit-Slider-*</c> accent variables (the color and its hover, active and
-    /// focus colors, the active mark color and the thumb label colors); left unset, the slider is primary unless
-    /// those variables say otherwise.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public BitColor? Color { get; set; }
-
-    /// <summary>
-    /// The default lower value of the ranged Slider, used when <see cref="LowerValue"/> is not bound.
-    /// </summary>
-    [Parameter] public double? DefaultLowerValue { get; set; }
-
-    /// <summary>
-    /// The default upper value of the ranged Slider, used when <see cref="UpperValue"/> is not bound.
-    /// </summary>
-    [Parameter] public double? DefaultUpperValue { get; set; }
-
-    /// <summary>
     /// Marks the value of the Slider as invalid, giving a value rejected by something other than the cascading
     /// EditContext - a server, a rule of the app, a validator of its own - the same look and the same
     /// <c>aria-invalid</c> attribute, on every thumb, that a failing data annotation gives it.
@@ -270,30 +270,6 @@ public partial class BitSlider : BitInputBase<double>
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Inverted { get; set; }
-
-    /// <summary>
-    /// Attaches the origin of the filled part of the track to zero, so that the fill grows out of zero in
-    /// whichever direction the value lies. It is shorthand for setting <see cref="Origin"/> to 0, and like
-    /// it, the origin is held inside the Min..Max range.
-    /// </summary>
-    [Parameter] public bool OriginFromZero { get; set; }
-
-    /// <summary>
-    /// If ranged is true, display two thumbs that allow the lower and upper bounds of a range to be selected.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Ranged { get; set; }
-
-    /// <summary>
-    /// Whether to render the slider vertically.
-    /// </summary>
-    /// <remarks>
-    /// A vertical slider has no length of its own to inherit, so it is given one through the
-    /// <c>--bit-Slider-length</c> CSS variable, which defaults to 12rem and can be changed per instance
-    /// (<c>Style="--bit-Slider-length: 20rem"</c>) or globally.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool Vertical { get; set; }
 
     /// <summary>
     /// Description label of the Slider.
@@ -333,12 +309,6 @@ public partial class BitSlider : BitInputBase<double>
     public double LowerValue { get; set; }
 
     /// <summary>
-    /// The marks drawn along the track of the Slider, each optionally carrying a label under it.
-    /// Marks outside the Min..Max range are skipped. Setting this takes precedence over <see cref="ShowMarks"/>.
-    /// </summary>
-    [Parameter] public IEnumerable<BitSliderMark>? Marks { get; set; }
-
-    /// <summary>
     /// Replaces the text under every mark with content of your own, built from the mark it belongs to.
     /// </summary>
     /// <remarks>
@@ -349,6 +319,12 @@ public partial class BitSlider : BitInputBase<double>
     /// those labels and the numbers <see cref="ShowMarkLabels"/> writes.
     /// </remarks>
     [Parameter] public RenderFragment<BitSliderMark>? MarkLabelTemplate { get; set; }
+
+    /// <summary>
+    /// The marks drawn along the track of the Slider, each optionally carrying a label under it.
+    /// Marks outside the Min..Max range are skipped. Setting this takes precedence over <see cref="ShowMarks"/>.
+    /// </summary>
+    [Parameter] public IEnumerable<BitSliderMark>? Marks { get; set; }
 
     /// <summary>
     /// The interval between the generated marks. It defaults to the <see cref="Step"/>, which is the right
@@ -364,6 +340,11 @@ public partial class BitSlider : BitInputBase<double>
     [Parameter] public double? MarkStep { get; set; }
 
     /// <summary>
+    /// The max value of the Slider.
+    /// </summary>
+    [Parameter] public double Max { get; set; } = 10;
+
+    /// <summary>
     /// The largest distance the two thumbs of a ranged slider are allowed to be apart. A thumb dragged far
     /// enough to stretch the range past it stops there instead, and a pair that starts wider than this is
     /// narrowed to fit. Setting it also stops the thumbs from crossing, since a largest distance between them
@@ -374,22 +355,17 @@ public partial class BitSlider : BitInputBase<double>
     [Parameter] public double? MaxRange { get; set; }
 
     /// <summary>
+    /// The min value of the Slider.
+    /// </summary>
+    [Parameter] public double Min { get; set; }
+
+    /// <summary>
     /// The smallest distance the two thumbs of a ranged slider are allowed to be apart, which is what keeps
     /// a range from collapsing onto a single value. Any value above zero also stops the thumbs from crossing,
     /// and a pair that starts closer together than this is widened to fit. A negative value is no distance
     /// at all rather than a licence to overlap.
     /// </summary>
     [Parameter] public double MinRange { get; set; }
-
-    /// <summary>
-    /// The min value of the Slider.
-    /// </summary>
-    [Parameter] public double Min { get; set; }
-
-    /// <summary>
-    /// The max value of the Slider.
-    /// </summary>
-    [Parameter] public double Max { get; set; } = 10;
 
     /// <summary>
     /// Leaves the track unfilled, so the slider is a bare rail with a thumb on it rather than a bar that
@@ -440,6 +416,13 @@ public partial class BitSlider : BitInputBase<double>
     [Parameter] public double? Origin { get; set; }
 
     /// <summary>
+    /// Attaches the origin of the filled part of the track to zero, so that the fill grows out of zero in
+    /// whichever direction the value lies. It is shorthand for setting <see cref="Origin"/> to 0, and like
+    /// it, the origin is held inside the Min..Max range.
+    /// </summary>
+    [Parameter] public bool OriginFromZero { get; set; }
+
+    /// <summary>
     /// Lets a thumb of a ranged slider push the other one along instead of stopping against it, so a range
     /// held apart by <see cref="MinRange"/> (or merely ordered by <see cref="NoSwap"/>) can be slid across
     /// the whole scale from either of its ends rather than having to be dragged one thumb at a time.
@@ -452,18 +435,39 @@ public partial class BitSlider : BitInputBase<double>
     [Parameter] public bool Pushable { get; set; }
 
     /// <summary>
-    /// Draws a mark at every <see cref="MarkStep"/> (or every <see cref="Step"/> when that is not set) along
-    /// the track. Setting <see cref="Marks"/> explicitly takes precedence over this, and either of
-    /// <see cref="ShowMarkLabels"/> and <see cref="MarkLabelTemplate"/> asks for the same series without it.
+    /// If ranged is true, display two thumbs that allow the lower and upper bounds of a range to be selected.
     /// </summary>
-    [Parameter] public bool ShowMarks { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Ranged { get; set; }
 
     /// <summary>
-    /// Writes each mark's own value underneath it, formatted the same way the value of the slider is.
-    /// Setting it is enough to ask for the marks as well, and a mark handed to <see cref="Marks"/> with a
-    /// label of its own keeps that label rather than its number.
+    /// The range value of the Slider. Use this parameter to get or set both the LowerValue and the UpperValue at once.
     /// </summary>
-    [Parameter] public bool ShowMarkLabels { get; set; }
+    [Parameter, TwoWayBound]
+    public BitSliderRangeValue? RangeValue
+    {
+        get => new(LowerValue, UpperValue);
+        set
+        {
+            if (value is null) return;
+
+            LowerValue = value.Lower;
+            UpperValue = value.Upper;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets an expression that identifies the bound <see cref="RangeValue"/>, which is what lets a
+    /// ranged Slider take part in the validation of an EditForm the way a single-value one already does.
+    /// </summary>
+    /// <remarks>
+    /// It is filled in by <c>@bind-RangeValue</c> itself, so a ranged slider bound that way is validated
+    /// against the annotations of the property it is bound to, reports every move of a thumb to the
+    /// EditContext, and repaints itself while the pair is invalid. The two ends bound separately through
+    /// LowerValue and UpperValue are two properties rather than one field, and are validated on submit
+    /// through the model rather than as a field of their own.
+    /// </remarks>
+    [Parameter] public Expression<Func<BitSliderRangeValue?>>? RangeValueExpression { get; set; }
 
     /// <summary>
     /// Restricts the values the user can pick to the marks alone, so the thumb jumps from one mark to the
@@ -476,6 +480,20 @@ public partial class BitSlider : BitInputBase<double>
     /// It has no effect while there are no marks to snap to.
     /// </remarks>
     [Parameter] public bool RestrictToMarks { get; set; }
+
+    /// <summary>
+    /// Writes each mark's own value underneath it, formatted the same way the value of the slider is.
+    /// Setting it is enough to ask for the marks as well, and a mark handed to <see cref="Marks"/> with a
+    /// label of its own keeps that label rather than its number.
+    /// </summary>
+    [Parameter] public bool ShowMarkLabels { get; set; }
+
+    /// <summary>
+    /// Draws a mark at every <see cref="MarkStep"/> (or every <see cref="Step"/> when that is not set) along
+    /// the track. Setting <see cref="Marks"/> explicitly takes precedence over this, and either of
+    /// <see cref="ShowMarkLabels"/> and <see cref="MarkLabelTemplate"/> asks for the same series without it.
+    /// </summary>
+    [Parameter] public bool ShowMarks { get; set; }
 
     /// <summary>
     /// Shows the messages the cascading EditContext holds for the bound field - the <see cref="BitInputBase{TValue}.Value"/>,
@@ -551,39 +569,21 @@ public partial class BitSlider : BitInputBase<double>
     public double UpperValue { get; set; }
 
     /// <summary>
-    /// The range value of the Slider. Use this parameter to get or set both the LowerValue and the UpperValue at once.
-    /// </summary>
-    [Parameter, TwoWayBound]
-    public BitSliderRangeValue? RangeValue
-    {
-        get => new(LowerValue, UpperValue);
-        set
-        {
-            if (value is null) return;
-
-            LowerValue = value.Lower;
-            UpperValue = value.Upper;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets an expression that identifies the bound <see cref="RangeValue"/>, which is what lets a
-    /// ranged Slider take part in the validation of an EditForm the way a single-value one already does.
-    /// </summary>
-    /// <remarks>
-    /// It is filled in by <c>@bind-RangeValue</c> itself, so a ranged slider bound that way is validated
-    /// against the annotations of the property it is bound to, reports every move of a thumb to the
-    /// EditContext, and repaints itself while the pair is invalid. The two ends bound separately through
-    /// LowerValue and UpperValue are two properties rather than one field, and are validated on submit
-    /// through the model rather than as a field of their own.
-    /// </remarks>
-    [Parameter] public Expression<Func<BitSliderRangeValue?>>? RangeValueExpression { get; set; }
-
-    /// <summary>
     /// Custom format for the displayed value of the Slider, applied to the value labels, the mark labels
     /// and the floating thumb labels alike. It is a standard or custom .NET numeric format string.
     /// </summary>
     [Parameter] public string? ValueFormat { get; set; }
+
+    /// <summary>
+    /// Whether to render the slider vertically.
+    /// </summary>
+    /// <remarks>
+    /// A vertical slider has no length of its own to inherit, so it is given one through the
+    /// <c>--bit-Slider-length</c> CSS variable, which defaults to 12rem and can be changed per instance
+    /// (<c>Style="--bit-Slider-length: 20rem"</c>) or globally.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Vertical { get; set; }
 
 
 

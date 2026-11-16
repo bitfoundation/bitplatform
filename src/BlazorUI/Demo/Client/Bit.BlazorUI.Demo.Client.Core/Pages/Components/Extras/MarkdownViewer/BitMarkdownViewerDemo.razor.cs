@@ -13,17 +13,17 @@ public partial class BitMarkdownViewerDemo
         },
         new()
         {
-           Name = "HeadingLevelOffset",
-           Type = "int",
-           DefaultValue = "0",
-           Description = "Shifts every heading down by this many levels (with 1, # renders as h2), clamped to h1-h6, so the document's outline nests under the page it is placed in.",
-        },
-        new()
-        {
            Name = "HeadingIdPrefix",
            Type = "string?",
            DefaultValue = "null",
            Description = "Prepended to every heading id and to the in-page links that point at one, so documents sharing a page (chat messages, comments) never repeat an id, and untrusted {#id} headings cannot take one the page uses.",
+        },
+        new()
+        {
+           Name = "HeadingLevelOffset",
+           Type = "int",
+           DefaultValue = "0",
+           Description = "Shifts every heading down by this many levels (with 1, # renders as h2), clamped to h1-h6, so the document's outline nests under the page it is placed in.",
         },
         new()
         {

@@ -130,11 +130,6 @@ public partial class BitCheckbox : BitInputBase<bool>
     [Parameter] public BitIconInfo? CheckIcon { get; set; }
 
     /// <summary>
-    /// The name of the built-in icon to render as the check mark inside the checkbox.
-    /// </summary>
-    [Parameter] public string? CheckIconName { get; set; }
-
-    /// <summary>
     /// The aria label of the icon for the benefit of screen readers.
     /// </summary>
     /// <remarks>
@@ -146,6 +141,11 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// previewed on hover, and naming it there would have it read out while it is not on the screen.
     /// </remarks>
     [Parameter] public string? CheckIconAriaLabel { get; set; }
+
+    /// <summary>
+    /// The name of the built-in icon to render as the check mark inside the checkbox.
+    /// </summary>
+    [Parameter] public string? CheckIconName { get; set; }
 
     /// <summary>
     /// Used to customize the content of checkbox(Label and Box).

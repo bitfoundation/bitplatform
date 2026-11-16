@@ -103,6 +103,50 @@ public partial class BitScrollablePane : BitComponentBase
 
 
     /// <summary>
+    /// Makes the height of the pane auto.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool AutoHeight { get; set; }
+
+    /// <summary>
+    /// How long (in milliseconds) the <see cref="AutoHideScrollbar"/> scrollbar stays on the screen after the
+    /// pane was last pointed at, focused or scrolled.
+    /// <br />
+    /// The default value is <strong>800</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The linger is what keeps the bar from blinking out the instant the pointer brushes past the edge of
+    /// the pane, and what leaves it up long enough after a flick to be grabbed. 0 hides it the moment the
+    /// pointer leaves or the focus goes; a scroll still shows it for a short moment whatever this says, so
+    /// the bar never flickers between two frames of one scroll.
+    /// </remarks>
+    [Parameter] public int AutoHideDelay { get; set; } = 800;
+
+    /// <summary>
+    /// Keeps the <see cref="Modern"/> scrollbar of the pane out of sight until the pane is pointed at,
+    /// focused or scrolled.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// This is the overlay behavior of a modern operating system, brought to a pane whose scrollbar the
+    /// theme draws: the bar is there the moment it is wanted and takes no attention while it is not. It
+    /// only applies to the scrollbar <see cref="Modern"/> draws. The bar is shown while the pointer is over
+    /// the pane, while the focus is anywhere inside it - so it is never hidden from a keyboard reader,
+    /// whatever the mouse does - and for a moment after every scroll, which is what brings it up for a
+    /// touch, a flick or a move made from code.
+    /// <br />
+    /// A scrollbar that is not on the screen is not saying that there is more content, so it is worth
+    /// pairing with <see cref="Fade"/>.
+    /// <br />
+    /// Which of the two the bar is showing for is decided in the browser rather than in the stylesheet,
+    /// because Chromium does not repaint a custom scrollbar when the state of its element changes - so
+    /// this needs the JavaScript of the library, and a pane rendered without it keeps its bar on screen.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool AutoHideScrollbar { get; set; }
+
+    /// <summary>
     /// Keeps the pane pinned to the end of its content as the content grows.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -136,12 +180,6 @@ public partial class BitScrollablePane : BitComponentBase
     [Parameter] public int AutoScrollThreshold { get; set; }
 
     /// <summary>
-    /// Makes the height of the pane auto.
-    /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public bool AutoHeight { get; set; }
-
-    /// <summary>
     /// Makes both height and width of the pane auto.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -154,44 +192,6 @@ public partial class BitScrollablePane : BitComponentBase
     public bool AutoWidth { get; set; }
 
     /// <summary>
-    /// Keeps the <see cref="Modern"/> scrollbar of the pane out of sight until the pane is pointed at,
-    /// focused or scrolled.
-    /// <br />
-    /// The default value is <strong>false</strong>.
-    /// </summary>
-    /// <remarks>
-    /// This is the overlay behavior of a modern operating system, brought to a pane whose scrollbar the
-    /// theme draws: the bar is there the moment it is wanted and takes no attention while it is not. It
-    /// only applies to the scrollbar <see cref="Modern"/> draws. The bar is shown while the pointer is over
-    /// the pane, while the focus is anywhere inside it - so it is never hidden from a keyboard reader,
-    /// whatever the mouse does - and for a moment after every scroll, which is what brings it up for a
-    /// touch, a flick or a move made from code.
-    /// <br />
-    /// A scrollbar that is not on the screen is not saying that there is more content, so it is worth
-    /// pairing with <see cref="Fade"/>.
-    /// <br />
-    /// Which of the two the bar is showing for is decided in the browser rather than in the stylesheet,
-    /// because Chromium does not repaint a custom scrollbar when the state of its element changes - so
-    /// this needs the JavaScript of the library, and a pane rendered without it keeps its bar on screen.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool AutoHideScrollbar { get; set; }
-
-    /// <summary>
-    /// How long (in milliseconds) the <see cref="AutoHideScrollbar"/> scrollbar stays on the screen after the
-    /// pane was last pointed at, focused or scrolled.
-    /// <br />
-    /// The default value is <strong>800</strong>.
-    /// </summary>
-    /// <remarks>
-    /// The linger is what keeps the bar from blinking out the instant the pointer brushes past the edge of
-    /// the pane, and what leaves it up long enough after a flick to be grabbed. 0 hides it the moment the
-    /// pointer leaves or the focus goes; a scroll still shows it for a short moment whatever this says, so
-    /// the bar never flickers between two frames of one scroll.
-    /// </remarks>
-    [Parameter] public int AutoHideDelay { get; set; } = 800;
-
-    /// <summary>
     /// Alias for the ChildContent parameter.
     /// </summary>
     [Parameter] public RenderFragment? Body { get; set; }
@@ -200,6 +200,24 @@ public partial class BitScrollablePane : BitComponentBase
     /// The content of the pane, it can be any custom tag or text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Lets a released drag carry on at the speed it was let go at and slow to a stop.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// It is what every scrolling surface of every platform does with a flick, and what a strip of cards
+    /// dragged with a mouse is otherwise missing: without it a drag stops dead the moment the button comes
+    /// up, so crossing a long strip is a row of separate drags rather than one throw of it.
+    /// <br />
+    /// It only applies to <see cref="DragScroll"/>, and only to a release that was actually moving: a
+    /// pointer held still before it was lifted was not a flick, however fast the drag that led up to it
+    /// was. Anything the reader does next - a new drag, a wheel that reaches an end - takes the pane back,
+    /// and a pane whose <see cref="Snap"/> is <see cref="BitScrollSnap.Mandatory"/> is left to come to
+    /// rest on an item its own way rather than being glided onto one.
+    /// </remarks>
+    [Parameter] public bool DragMomentum { get; set; }
 
     /// <summary>
     /// Lets the pane be scrolled by dragging its content with a pointer.
@@ -222,24 +240,6 @@ public partial class BitScrollablePane : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool DragScroll { get; set; }
-
-    /// <summary>
-    /// Lets a released drag carry on at the speed it was let go at and slow to a stop.
-    /// <br />
-    /// The default value is <strong>false</strong>.
-    /// </summary>
-    /// <remarks>
-    /// It is what every scrolling surface of every platform does with a flick, and what a strip of cards
-    /// dragged with a mouse is otherwise missing: without it a drag stops dead the moment the button comes
-    /// up, so crossing a long strip is a row of separate drags rather than one throw of it.
-    /// <br />
-    /// It only applies to <see cref="DragScroll"/>, and only to a release that was actually moving: a
-    /// pointer held still before it was lifted was not a flick, however fast the drag that led up to it
-    /// was. Anything the reader does next - a new drag, a wheel that reaches an end - takes the pane back,
-    /// and a pane whose <see cref="Snap"/> is <see cref="BitScrollSnap.Mandatory"/> is left to come to
-    /// rest on an item its own way rather than being glided onto one.
-    /// </remarks>
-    [Parameter] public bool DragMomentum { get; set; }
 
     /// <summary>
     /// Prints the whole of the content instead of the part the pane happens to be showing.

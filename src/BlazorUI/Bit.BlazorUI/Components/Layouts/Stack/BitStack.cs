@@ -232,6 +232,42 @@ public partial class BitStack : BitComponentBase
     public string? Gap { get; set; }
 
     /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the large breakpoint (from 1280px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? GapLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the medium breakpoint (from 960px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? GapMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the small breakpoint (from 600px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? GapSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the extra large breakpoint (from 1920px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? GapXl { get; set; }
+
+    /// <summary>
     /// Gets or sets the spacing between the children of the stack from the extra small breakpoint (from 0px) upwards, using any CSS length value.
     /// </summary>
     /// <remarks>
@@ -250,42 +286,6 @@ public partial class BitStack : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? GapXs { get; set; }
-
-    /// <summary>
-    /// Gets or sets the spacing between the children of the stack from the small breakpoint (from 600px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? GapSm { get; set; }
-
-    /// <summary>
-    /// Gets or sets the spacing between the children of the stack from the medium breakpoint (from 960px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? GapMd { get; set; }
-
-    /// <summary>
-    /// Gets or sets the spacing between the children of the stack from the large breakpoint (from 1280px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? GapLg { get; set; }
-
-    /// <summary>
-    /// Gets or sets the spacing between the children of the stack from the extra large breakpoint (from 1920px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? GapXl { get; set; }
 
     /// <summary>
     /// Gets or sets the spacing between the children of the stack from the extra extra large breakpoint (from 2560px) upwards, using any CSS length value.
@@ -382,6 +382,42 @@ public partial class BitStack : BitComponentBase
     public string? HorizontalGap { get; set; }
 
     /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the large breakpoint (from 1280px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? HorizontalGapLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the medium breakpoint (from 960px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? HorizontalGapMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the small breakpoint (from 600px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? HorizontalGapSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the extra large breakpoint (from 1920px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? HorizontalGapXl { get; set; }
+
+    /// <summary>
     /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the extra small breakpoint (from 0px) upwards, using any CSS length value.
     /// </summary>
     /// <remarks>
@@ -397,42 +433,6 @@ public partial class BitStack : BitComponentBase
     public string? HorizontalGapXs { get; set; }
 
     /// <summary>
-    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the small breakpoint (from 600px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? HorizontalGapSm { get; set; }
-
-    /// <summary>
-    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the medium breakpoint (from 960px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? HorizontalGapMd { get; set; }
-
-    /// <summary>
-    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the large breakpoint (from 1280px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? HorizontalGapLg { get; set; }
-
-    /// <summary>
-    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the extra large breakpoint (from 1920px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? HorizontalGapXl { get; set; }
-
-    /// <summary>
     /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the extra extra large breakpoint (from 2560px) upwards, using any CSS length value.
     /// </summary>
     /// <remarks>
@@ -440,6 +440,42 @@ public partial class BitStack : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? HorizontalGapXxl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the direction of the stack from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the children out in a row and false in a column, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool? HorizontalLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the direction of the stack from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the children out in a row and false in a column, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool? HorizontalMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the direction of the stack from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the children out in a row and false in a column, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool? HorizontalSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the direction of the stack from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the children out in a row and false in a column, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool? HorizontalXl { get; set; }
 
     /// <summary>
     /// Gets or sets the direction of the stack from the extra small breakpoint (from 0px) upwards.
@@ -458,42 +494,6 @@ public partial class BitStack : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool? HorizontalXs { get; set; }
-
-    /// <summary>
-    /// Gets or sets the direction of the stack from the small breakpoint (from 600px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// True lays the children out in a row and false in a column, and the value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public bool? HorizontalSm { get; set; }
-
-    /// <summary>
-    /// Gets or sets the direction of the stack from the medium breakpoint (from 960px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// True lays the children out in a row and false in a column, and the value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public bool? HorizontalMd { get; set; }
-
-    /// <summary>
-    /// Gets or sets the direction of the stack from the large breakpoint (from 1280px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// True lays the children out in a row and false in a column, and the value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public bool? HorizontalLg { get; set; }
-
-    /// <summary>
-    /// Gets or sets the direction of the stack from the extra large breakpoint (from 1920px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// True lays the children out in a row and false in a column, and the value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public bool? HorizontalXl { get; set; }
 
     /// <summary>
     /// Gets or sets the direction of the stack from the extra extra large breakpoint (from 2560px) upwards.
@@ -682,6 +682,42 @@ public partial class BitStack : BitComponentBase
     public string? VerticalGap { get; set; }
 
     /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the large breakpoint (from 1280px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? VerticalGapLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the medium breakpoint (from 960px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? VerticalGapMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the small breakpoint (from 600px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? VerticalGapSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the extra large breakpoint (from 1920px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? VerticalGapXl { get; set; }
+
+    /// <summary>
     /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the extra small breakpoint (from 0px) upwards, using any CSS length value.
     /// </summary>
     /// <remarks>
@@ -695,42 +731,6 @@ public partial class BitStack : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? VerticalGapXs { get; set; }
-
-    /// <summary>
-    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the small breakpoint (from 600px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? VerticalGapSm { get; set; }
-
-    /// <summary>
-    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the medium breakpoint (from 960px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? VerticalGapMd { get; set; }
-
-    /// <summary>
-    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the large breakpoint (from 1280px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? VerticalGapLg { get; set; }
-
-    /// <summary>
-    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the extra large breakpoint (from 1920px) upwards, using any CSS length value.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? VerticalGapXl { get; set; }
 
     /// <summary>
     /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the extra extra large breakpoint (from 2560px) upwards, using any CSS length value.
@@ -758,6 +758,53 @@ public partial class BitStack : BitComponentBase
     public bool Wrap { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the children of the stack may move onto more rows, from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool? WrapLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the children of the stack may move onto more rows, from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool? WrapMd { get; set; }
+
+    /// <summary>
+    /// Lets the children of the stack move onto more rows when they no longer fit on one, with the rows stacked in the opposite direction.
+    /// </summary>
+    /// <remarks>
+    /// The rows are laid out from the far edge of the stack back towards the near one, so the first row ends up last across the
+    /// stack. This takes precedence over <see cref="Wrap"/> when both are set, and it is the way every breakpoint of the
+    /// <see cref="WrapXs"/> chain that wraps at all wraps.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool WrapReverse { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the children of the stack may move onto more rows, from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool? WrapSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the children of the stack may move onto more rows, from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool? WrapXl { get; set; }
+
+    /// <summary>
     /// Gets or sets whether the children of the stack may move onto more rows, from the extra small breakpoint (from 0px) upwards.
     /// </summary>
     /// <remarks>
@@ -773,42 +820,6 @@ public partial class BitStack : BitComponentBase
     public bool? WrapXs { get; set; }
 
     /// <summary>
-    /// Gets or sets whether the children of the stack may move onto more rows, from the small breakpoint (from 600px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public bool? WrapSm { get; set; }
-
-    /// <summary>
-    /// Gets or sets whether the children of the stack may move onto more rows, from the medium breakpoint (from 960px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public bool? WrapMd { get; set; }
-
-    /// <summary>
-    /// Gets or sets whether the children of the stack may move onto more rows, from the large breakpoint (from 1280px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public bool? WrapLg { get; set; }
-
-    /// <summary>
-    /// Gets or sets whether the children of the stack may move onto more rows, from the extra large breakpoint (from 1920px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public bool? WrapXl { get; set; }
-
-    /// <summary>
     /// Gets or sets whether the children of the stack may move onto more rows, from the extra extra large breakpoint (from 2560px) upwards.
     /// </summary>
     /// <remarks>
@@ -816,17 +827,6 @@ public partial class BitStack : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool? WrapXxl { get; set; }
-
-    /// <summary>
-    /// Lets the children of the stack move onto more rows when they no longer fit on one, with the rows stacked in the opposite direction.
-    /// </summary>
-    /// <remarks>
-    /// The rows are laid out from the far edge of the stack back towards the near one, so the first row ends up last across the
-    /// stack. This takes precedence over <see cref="Wrap"/> when both are set, and it is the way every breakpoint of the
-    /// <see cref="WrapXs"/> chain that wraps at all wraps.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public bool WrapReverse { get; set; }
 
 
 

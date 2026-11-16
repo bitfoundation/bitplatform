@@ -510,17 +510,6 @@ public partial class BitTag : BitComponentBase
     public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Custom markup rendered at the end of the tag, after the trailing <see cref="SecondaryIcon"/> and
-    /// before the dismiss button.
-    /// </summary>
-    /// <remarks>
-    /// The mirror of <see cref="PrefixTemplate"/>, and subject to the same rules: it is added rather than
-    /// substituted, it lives inside whatever the tag became, and it names nothing on its own. Use it for a
-    /// count, a second avatar, a status dot - and <see cref="SecondaryIcon"/> where a glyph is all it is.
-    /// </remarks>
-    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
-
-    /// <summary>
     /// Stops the click of the tag from bubbling any further up the DOM.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -536,6 +525,17 @@ public partial class BitTag : BitComponentBase
     /// Custom CSS styles for different parts of the tag.
     /// </summary>
     [Parameter, ResetStyleBuilder] public BitTagClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Custom markup rendered at the end of the tag, after the trailing <see cref="SecondaryIcon"/> and
+    /// before the dismiss button.
+    /// </summary>
+    /// <remarks>
+    /// The mirror of <see cref="PrefixTemplate"/>, and subject to the same rules: it is added rather than
+    /// substituted, it lives inside whatever the tag became, and it names nothing on its own. Use it for a
+    /// count, a second avatar, a status dot - and <see cref="SecondaryIcon"/> where a glyph is all it is.
+    /// </remarks>
+    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
     /// The browsing context the <see cref="Href"/> of the tag is opened in, for example <c>_blank</c>.

@@ -23,6 +23,7 @@ message that names the rule.
 | Scripts and stylesheets | [The scripts and stylesheets are trimmed at publish](CLAUDE.md#the-scripts-and-stylesheets-are-trimmed-at-publish) | `Tests/Bit.BlazorUI.Tests.Trimming` |
 | Razor comments | [Razor comments](CLAUDE.md#razor-comments) | review |
 | Parameter names: one spelling per concept, no `Is` on a component's own state, the empty and no-results slots | [One name per concept](CLAUDE.md#one-name-per-concept) | `BitParameterNamingContractTests` (the `Is` rule) |
+| Parameter order: sorted by name in a component and in its demo page's parameter table | [A component's parameters are in alphabetical order](CLAUDE.md#a-components-parameters-are-in-alphabetical-order) | `BitParameterOrderContractTests` |
 | CSS class names | [Every component has a root class of its own](CLAUDE.md#every-component-has-a-root-class-of-its-own) | `BitRootClassContractTests` |
 | Composition | [Core components never render each other](CLAUDE.md#core-components-never-render-each-other) | review |
 | The AI packages | [The AI packages](CLAUDE.md#the-ai-packages) | review |
@@ -31,7 +32,7 @@ message that names the rule.
 | Right to left | [Right-to-left rules work without `:dir()`](CLAUDE.md#right-to-left-rules-work-without-dir), [A direction Dir does not name is read, never assumed](CLAUDE.md#a-direction-dir-does-not-name-is-read-never-assumed) | `BitComponentDirFallbackTests` |
 | Numbers in markup | [A number in markup reads the same in every culture](CLAUDE.md#a-number-in-markup-reads-the-same-in-every-culture) | `BitCultureInvariantMarkupContractTests` |
 | Keys in bUnit tests | [A key pressed in a bUnit test is a bUnit `Key`](CLAUDE.md#a-key-pressed-in-a-bunit-test-is-a-bunit-key) | review |
-| Demo pages | [Demo pages](CLAUDE.md#demo-pages), [The two page shells](CLAUDE.md#the-two-page-shells) | `DemoPageContractTests` |
+| Demo pages | [Demo pages](CLAUDE.md#demo-pages), [The two page shells](CLAUDE.md#the-two-page-shells) | `DemoPageContractTests`, `BitParameterOrderContractTests` (the parameter table) |
 | The MCP server | [The MCP server](CLAUDE.md#the-mcp-server) | `Tests/Bit.BlazorUI.Tests.Mcp` |
 | Styling | [Theme tokens in component SCSS](CLAUDE.md#theme-tokens-in-component-scss) | the tests in `Tests/Bit.BlazorUI.Tests/Utils/Theme` |
 

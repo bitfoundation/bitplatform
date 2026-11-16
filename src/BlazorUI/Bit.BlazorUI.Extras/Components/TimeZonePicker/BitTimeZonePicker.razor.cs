@@ -219,16 +219,16 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
     [Parameter] public bool NoOffset { get; set; }
 
     /// <summary>
+    /// The custom template to show when the search result of the time zone list is empty.
+    /// </summary>
+    [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
+
+    /// <summary>
     /// The message to show when the search result of the time zone list is empty. It is also what a screen reader
     /// announces for an empty result.
     /// Defaults to <see cref="BitStrings.NoResultsFound"/> of <see cref="BitStrings.Current"/>.
     /// </summary>
     [Parameter] public string? NoResultsText { get; set; }
-
-    /// <summary>
-    /// The custom template to show when the search result of the time zone list is empty.
-    /// </summary>
-    [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
 
     /// <summary>
     /// Hides the search box of the time zone list. The field then answers to type-ahead instead, open or closed: the

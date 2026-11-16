@@ -53,16 +53,16 @@ public partial class BitNotificationCenter : BitComponentBase
 
 
     /// <summary>
-    /// The text of the button that forgets every notification of the history (<see cref="BitSnackBarService.ClearHistory"/>).
-    /// Defaults to "Clear all".
-    /// </summary>
-    [Parameter] public string? ClearAllText { get; set; }
-
-    /// <summary>
     /// Custom CSS classes for the different parts of the notification center.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitNotificationCenterClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The text of the button that forgets every notification of the history (<see cref="BitSnackBarService.ClearHistory"/>).
+    /// Defaults to "Clear all".
+    /// </summary>
+    [Parameter] public string? ClearAllText { get; set; }
 
     /// <summary>
     /// The custom content the panel shows when there are no notifications, which takes the place of

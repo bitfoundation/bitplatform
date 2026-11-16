@@ -16,6 +16,104 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 {
     [CascadingParameter] internal BitDataGrid<TItem>? Grid { get; set; }
 
+    /// <summary>The built-in aggregate shown for the column in the footer and in each group header.</summary>
+    [Parameter] public BitDataGridAggregateType Aggregate { get; set; } = BitDataGridAggregateType.None;
+
+    /// <summary>
+    /// Optional custom aggregate function, for computations beyond the built-in
+    /// Sum/Average/Count/Min/Max - e.g. a distinct count or a weighted average. Receives the rows of
+    /// the footer's view (or of each group) and returns the aggregate value; <see cref="AggregateFormat"/>
+    /// (or <see cref="Format"/>) is applied to it for display. Takes precedence over <see cref="Aggregate"/>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<TItem>, object?>? AggregateBy { get; set; }
+
+    /// <summary>Format string for the aggregate value. Falls back to <see cref="Format"/>.</summary>
+    [Parameter] public string? AggregateFormat { get; set; }
+
+    /// <summary>
+    /// How the content of the column's header and cells is aligned across their width (default is the leading edge).
+    /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitTextAlign.Start"/>, <see cref="BitTextAlign.Center"/>,
+    /// <see cref="BitTextAlign.End"/>, <see cref="BitTextAlign.Left"/> and <see cref="BitTextAlign.Right"/>
+    /// mean anything here; a cell is a flex box rather than a run of prose, so the justification and cascade
+    /// keywords have nothing to do and leave the column aligned to its leading edge.
+    /// <br />
+    /// Start and End follow the reading direction, so a numeric column set to End sits against the trailing
+    /// edge of an LTR and of an RTL grid alike. Left and Right name a side of the screen and stay there in
+    /// both.
+    /// <br />
+    /// Migrating from <c>BitDataGridColumnAlign</c>: its Left and Right were the leading and the trailing edge,
+    /// so they become <see cref="BitTextAlign.Start"/> and <see cref="BitTextAlign.End"/>. Renamed to Left and
+    /// Right instead, a column keeps rendering the same in an LTR grid but moves to the other side in an RTL one.
+    /// </remarks>
+    [Parameter] public BitTextAlign Align { get; set; } = BitTextAlign.Start;
+
+    /// <summary>
+    /// Overrides the grid-level <c>AllowUnsorted</c>: whether a third header click returns this column
+    /// to its unsorted state, or the cycle stays between ascending and descending.
+    /// </summary>
+    [Parameter] public bool? AllowUnsorted { get; set; }
+
+    /// <summary>A CSS class added to each of the column's data cells.</summary>
+    [Parameter] public string? CellClass { get; set; }
+
+    /// <summary>
+    /// Per-row CSS class for this column's cells, from the row's data - e.g. a negative amount in red.
+    /// Added after <see cref="CellClass"/>. The cell counterpart of the grid's <c>RowClass</c>.
+    /// </summary>
+    [Parameter] public Func<TItem, string?>? CellClassSelector { get; set; }
+
+    /// <summary>
+    /// Per-row inline style for this column's cells, from the row's data. Applied last, so it wins over
+    /// the grid's own cell styles; prefer <c>color</c>/<c>font-*</c> over <c>background</c>, which would
+    /// hide the selection and hover states the cell paints.
+    /// </summary>
+    [Parameter] public Func<TItem, string?>? CellStyleSelector { get; set; }
+
+    /// <summary>
+    /// Optional per-row column span. Returns how many columns the cell should occupy
+    /// (>= 1), or null/1 for no spanning. Mirrors react-data-grid's <c>colSpan</c>.
+    /// </summary>
+    [Parameter] public Func<TItem, int?>? ColSpan { get; set; }
+
+    /// <summary>Stable identifier for the column. Defaults to <see cref="Field"/>.</summary>
+    [Parameter] public string? ColumnId { get; set; }
+
+    /// <summary>
+    /// Optional custom comparer applied to this column's sort keys, for orderings the default
+    /// null-safe value comparer cannot express (e.g. a domain-specific ranking, or a culture-aware
+    /// string collation). Client-side only: server mode forwards descriptors rather than delegates,
+    /// and a queryable source has no expression tree to translate a comparer into.
+    /// </summary>
+    [Parameter] public IComparer<object?>? Comparer { get; set; }
+
+    /// <summary>The kind of value the column holds, which picks its filter editor, operators and inline editor. Auto
+    /// reads it off the bound property's type.</summary>
+    [Parameter] public BitDataGridColumnDataType DataType { get; set; } = BitDataGridColumnDataType.Auto;
+
+    /// <summary>Overrides the grid-level <c>Editable</c> for this column.</summary>
+    [Parameter] public bool? Editable { get; set; }
+
+    /// <summary>Custom editor rendered when the row/cell is in edit mode.</summary>
+    [Parameter] public RenderFragment<TItem>? EditTemplate { get; set; }
+
+    /// <summary>
+    /// Whether the column is included in CSV/Excel exports. Defaults to every column that has a value
+    /// to write (a bound field, or an <see cref="ExportValue"/> selector), so setting <c>false</c>
+    /// keeps a purely presentational column out of the file.
+    /// </summary>
+    [Parameter] public bool? Exportable { get; set; }
+
+    /// <summary>
+    /// Optional value selector used by exports (and the clipboard) instead of the bound field - the
+    /// export counterpart of <see cref="Template"/>. It gives a template-only column a real exported
+    /// value (e.g. a computed total that has no backing property), and lets a bound column export
+    /// something other than what it stores. The value is formatted with <see cref="Format"/> like any
+    /// other, and numeric/boolean values still land in Excel as native cell types.
+    /// </summary>
+    [Parameter] public Func<TItem, object?>? ExportValue { get; set; }
+
     /// <summary>Name of the property this column is bound to. Supports nested paths ("Address.City").
     /// Prefer <see cref="Property"/> for a strongly typed, refactor-safe alternative.</summary>
     /// <remarks>
@@ -25,6 +123,55 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     /// </remarks>
     [Parameter] public string? Field { get; set; }
 
+    /// <summary>Overrides the grid-level <c>Filterable</c> for this column.</summary>
+    [Parameter] public bool? Filterable { get; set; }
+
+    /// <summary>Overrides the grid-level <c>FilterOperators</c> toggle (the operator dropdown next to
+    /// this column's filter editor).</summary>
+    [Parameter] public bool? FilterOperators { get; set; }
+
+    /// <summary>
+    /// Replaces this column's built-in filter editor in the filter row with custom markup - a
+    /// multi-select applying <see cref="BitDataGridFilterOperator.In"/>, a range slider, a preset list.
+    /// The context carries the column's current filter and the calls that apply or clear it.
+    /// Rendered only while the column is filterable.
+    /// </summary>
+    [Parameter] public RenderFragment<BitDataGridFilterContext>? FilterTemplate { get; set; }
+
+    /// <summary>Custom rendering for the footer/aggregate cell.</summary>
+    [Parameter] public RenderFragment<BitDataGridAggregateResult>? FooterTemplate { get; set; }
+
+    /// <summary>A .NET format string applied to the value (e.g. "C2", "yyyy-MM-dd").</summary>
+    [Parameter] public string? Format { get; set; }
+
+    /// <summary>Pin the column to the start edge so it stays visible while scrolling horizontally.</summary>
+    [Parameter] public bool Frozen { get; set; }
+
+    /// <summary>Pin the column to the end edge (right in LTR, left in RTL) so it stays visible while
+    /// scrolling horizontally. Typical for action/status columns. Ignored when <see cref="Frozen"/> is set.</summary>
+    [Parameter] public bool FrozenEnd { get; set; }
+
+    /// <summary>
+    /// Optional header group name. Consecutive columns sharing the same value are rendered
+    /// under a single spanning header cell. Mirrors react-data-grid's column groups.
+    /// </summary>
+    [Parameter] public string? Group { get; set; }
+
+    /// <summary>Overrides the grid-level <c>Groupable</c> for this column.</summary>
+    [Parameter] public bool? Groupable { get; set; }
+
+    /// <summary>A CSS class added to the column's header cell.</summary>
+    [Parameter] public string? HeaderClass { get; set; }
+
+    /// <summary>Custom rendering for the header cell content.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>Maximum width in pixels the column can be resized to. When null the column is unbounded.</summary>
+    [Parameter] public int? MaxWidth { get; set; }
+
+    /// <summary>The narrowest the column can be resized to, in pixels. Default: 60.</summary>
+    [Parameter] public int MinWidth { get; set; } = 60;
+
     /// <summary>
     /// Typed selector of the property this column is bound to, e.g. <c>Property="p => p.Name"</c>.
     /// A strongly typed, refactor-safe alternative to <see cref="Field"/> that supports nested member
@@ -32,20 +179,42 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     /// </summary>
     [Parameter] public Expression<Func<TItem, object?>>? Property { get; set; }
 
-    /// <summary>Stable identifier for the column. Defaults to <see cref="Field"/>.</summary>
-    [Parameter] public string? ColumnId { get; set; }
+    /// <summary>Overrides the grid-level <c>Reorderable</c> for this column.</summary>
+    [Parameter] public bool? Reorderable { get; set; }
 
-    /// <summary>Header text. Defaults to a humanized <see cref="Field"/>.</summary>
-    [Parameter] public string? Title { get; set; }
+    /// <summary>Overrides the grid-level <c>Resizable</c> for this column.</summary>
+    [Parameter] public bool? Resizable { get; set; }
 
-    /// <summary>CSS width, e.g. "120px" or "20%". When null the column shares remaining space.</summary>
-    [Parameter] public string? Width { get; set; }
+    /// <summary>
+    /// Makes this column's cells the headers of their rows (role <c>rowheader</c>) - the column that names a row, such
+    /// as a name or an id. A screen reader then announces it as the focus moves from row to row in another column, and
+    /// the row's selection checkbox is named after it.
+    /// </summary>
+    [Parameter] public bool RowHeader { get; set; }
 
-    /// <summary>The narrowest the column can be resized to, in pixels. Default: 60.</summary>
-    [Parameter] public int MinWidth { get; set; } = 60;
+    /// <summary>
+    /// Whether the grid's quick-search box searches this column. Defaults to every field-bound column,
+    /// so opting a column out (<c>false</c>) narrows the search, and opting a template-only column in
+    /// (<c>true</c>) is only meaningful together with an <see cref="ExportValue"/>-style bound value -
+    /// a column with no value to read matches nothing.
+    /// </summary>
+    [Parameter] public bool? Searchable { get; set; }
 
-    /// <summary>Maximum width in pixels the column can be resized to. When null the column is unbounded.</summary>
-    [Parameter] public int? MaxWidth { get; set; }
+    /// <summary>
+    /// Lets a template-only column (no <see cref="Property"/> / <see cref="Field"/>) sort in server (<c>OnRead</c>)
+    /// and infinite (<c>OnLoadMore</c>) mode, where the source does the sorting: the read request carries the
+    /// column's <see cref="ColumnId"/> for the server to order by. Requires a <see cref="ColumnId"/>, since a
+    /// generated id means nothing to a server, and still follows <see cref="Sortable"/>. Has no effect on a
+    /// field-backed column, which sorts there anyway, or with any other source.
+    /// </summary>
+    [Parameter] public bool ServerSortable { get; set; }
+
+    /// <summary>
+    /// Renders each of this column's cells with a native tooltip carrying its full text, so a value
+    /// clipped by the column width stays readable on hover. Overrides the grid-level
+    /// <c>ShowCellTooltips</c>.
+    /// </summary>
+    [Parameter] public bool? ShowTooltip { get; set; }
 
     /// <summary>Overrides the grid-level <c>Sortable</c> for this column.</summary>
     /// <remarks>
@@ -73,33 +242,16 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     [Parameter] public Func<TItem, object?>? SortBy { get; set; }
 
     /// <summary>
-    /// Lets a template-only column (no <see cref="Property"/> / <see cref="Field"/>) sort in server (<c>OnRead</c>)
-    /// and infinite (<c>OnLoadMore</c>) mode, where the source does the sorting: the read request carries the
-    /// column's <see cref="ColumnId"/> for the server to order by. Requires a <see cref="ColumnId"/>, since a
-    /// generated id means nothing to a server, and still follows <see cref="Sortable"/>. Has no effect on a
-    /// field-backed column, which sorts there anyway, or with any other source.
-    /// </summary>
-    [Parameter] public bool ServerSortable { get; set; }
-
-    /// <summary>
     /// When true, the first click on the header sorts descending instead of ascending.
     /// Mirrors react-data-grid's <c>sortDescendingFirst</c>.
     /// </summary>
     [Parameter] public bool SortDescendingFirst { get; set; }
 
-    /// <summary>
-    /// Overrides the grid-level <c>AllowUnsorted</c>: whether a third header click returns this column
-    /// to its unsorted state, or the cycle stays between ascending and descending.
-    /// </summary>
-    [Parameter] public bool? AllowUnsorted { get; set; }
+    /// <summary>Custom rendering for a data cell.</summary>
+    [Parameter] public RenderFragment<TItem>? Template { get; set; }
 
-    /// <summary>
-    /// Optional custom comparer applied to this column's sort keys, for orderings the default
-    /// null-safe value comparer cannot express (e.g. a domain-specific ranking, or a culture-aware
-    /// string collation). Client-side only: server mode forwards descriptors rather than delegates,
-    /// and a queryable source has no expression tree to translate a comparer into.
-    /// </summary>
-    [Parameter] public IComparer<object?>? Comparer { get; set; }
+    /// <summary>Header text. Defaults to a humanized <see cref="Field"/>.</summary>
+    [Parameter] public string? Title { get; set; }
 
     /// <summary>
     /// Optional validator for inline edits. Receives the row being edited and the proposed (already
@@ -108,122 +260,6 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     /// shown under the editor.
     /// </summary>
     [Parameter] public Func<TItem, object?, string?>? Validate { get; set; }
-
-    /// <summary>Overrides the grid-level <c>Filterable</c> for this column.</summary>
-    [Parameter] public bool? Filterable { get; set; }
-
-    /// <summary>Overrides the grid-level <c>FilterOperators</c> toggle (the operator dropdown next to
-    /// this column's filter editor).</summary>
-    [Parameter] public bool? FilterOperators { get; set; }
-
-    /// <summary>
-    /// Replaces this column's built-in filter editor in the filter row with custom markup - a
-    /// multi-select applying <see cref="BitDataGridFilterOperator.In"/>, a range slider, a preset list.
-    /// The context carries the column's current filter and the calls that apply or clear it.
-    /// Rendered only while the column is filterable.
-    /// </summary>
-    [Parameter] public RenderFragment<BitDataGridFilterContext>? FilterTemplate { get; set; }
-
-    /// <summary>Overrides the grid-level <c>Resizable</c> for this column.</summary>
-    [Parameter] public bool? Resizable { get; set; }
-
-    /// <summary>Overrides the grid-level <c>Reorderable</c> for this column.</summary>
-    [Parameter] public bool? Reorderable { get; set; }
-
-    /// <summary>Overrides the grid-level <c>Editable</c> for this column.</summary>
-    [Parameter] public bool? Editable { get; set; }
-
-    /// <summary>Overrides the grid-level <c>Groupable</c> for this column.</summary>
-    [Parameter] public bool? Groupable { get; set; }
-
-    /// <summary>
-    /// Whether the grid's quick-search box searches this column. Defaults to every field-bound column,
-    /// so opting a column out (<c>false</c>) narrows the search, and opting a template-only column in
-    /// (<c>true</c>) is only meaningful together with an <see cref="ExportValue"/>-style bound value -
-    /// a column with no value to read matches nothing.
-    /// </summary>
-    [Parameter] public bool? Searchable { get; set; }
-
-    /// <summary>
-    /// Whether the column is included in CSV/Excel exports. Defaults to every column that has a value
-    /// to write (a bound field, or an <see cref="ExportValue"/> selector), so setting <c>false</c>
-    /// keeps a purely presentational column out of the file.
-    /// </summary>
-    [Parameter] public bool? Exportable { get; set; }
-
-    /// <summary>
-    /// Optional value selector used by exports (and the clipboard) instead of the bound field - the
-    /// export counterpart of <see cref="Template"/>. It gives a template-only column a real exported
-    /// value (e.g. a computed total that has no backing property), and lets a bound column export
-    /// something other than what it stores. The value is formatted with <see cref="Format"/> like any
-    /// other, and numeric/boolean values still land in Excel as native cell types.
-    /// </summary>
-    [Parameter] public Func<TItem, object?>? ExportValue { get; set; }
-
-    /// <summary>
-    /// Renders each of this column's cells with a native tooltip carrying its full text, so a value
-    /// clipped by the column width stays readable on hover. Overrides the grid-level
-    /// <c>ShowCellTooltips</c>.
-    /// </summary>
-    [Parameter] public bool? ShowTooltip { get; set; }
-
-    /// <summary>
-    /// Lets this column's header and cells wrap onto several lines instead of clipping to one, with
-    /// each row growing to fit. Overrides the grid-level <c>WrapCellText</c>. Ignored while the grid
-    /// virtualizes rows, which requires a uniform row height.
-    /// </summary>
-    [Parameter] public bool? WrapText { get; set; }
-
-    /// <summary>Pin the column to the start edge so it stays visible while scrolling horizontally.</summary>
-    [Parameter] public bool Frozen { get; set; }
-
-    /// <summary>Pin the column to the end edge (right in LTR, left in RTL) so it stays visible while
-    /// scrolling horizontally. Typical for action/status columns. Ignored when <see cref="Frozen"/> is set.</summary>
-    [Parameter] public bool FrozenEnd { get; set; }
-
-    /// <summary>
-    /// Optional header group name. Consecutive columns sharing the same value are rendered
-    /// under a single spanning header cell. Mirrors react-data-grid's column groups.
-    /// </summary>
-    [Parameter] public string? Group { get; set; }
-
-    /// <summary>
-    /// Optional per-row column span. Returns how many columns the cell should occupy
-    /// (>= 1), or null/1 for no spanning. Mirrors react-data-grid's <c>colSpan</c>.
-    /// </summary>
-    [Parameter] public Func<TItem, int?>? ColSpan { get; set; }
-
-    /// <summary>Whether the column is shown. The column chooser flips it at runtime. Default: true.</summary>
-    [Parameter] public bool Visible { get; set; } = true;
-
-    /// <summary>
-    /// Makes this column's cells the headers of their rows (role <c>rowheader</c>) - the column that names a row, such
-    /// as a name or an id. A screen reader then announces it as the focus moves from row to row in another column, and
-    /// the row's selection checkbox is named after it.
-    /// </summary>
-    [Parameter] public bool RowHeader { get; set; }
-
-    /// <summary>
-    /// How the content of the column's header and cells is aligned across their width (default is the leading edge).
-    /// </summary>
-    /// <remarks>
-    /// Only <see cref="BitTextAlign.Start"/>, <see cref="BitTextAlign.Center"/>,
-    /// <see cref="BitTextAlign.End"/>, <see cref="BitTextAlign.Left"/> and <see cref="BitTextAlign.Right"/>
-    /// mean anything here; a cell is a flex box rather than a run of prose, so the justification and cascade
-    /// keywords have nothing to do and leave the column aligned to its leading edge.
-    /// <br />
-    /// Start and End follow the reading direction, so a numeric column set to End sits against the trailing
-    /// edge of an LTR and of an RTL grid alike. Left and Right name a side of the screen and stay there in
-    /// both.
-    /// <br />
-    /// Migrating from <c>BitDataGridColumnAlign</c>: its Left and Right were the leading and the trailing edge,
-    /// so they become <see cref="BitTextAlign.Start"/> and <see cref="BitTextAlign.End"/>. Renamed to Left and
-    /// Right instead, a column keeps rendering the same in an LTR grid but moves to the other side in an RTL one.
-    /// </remarks>
-    [Parameter] public BitTextAlign Align { get; set; } = BitTextAlign.Start;
-
-    /// <summary>A .NET format string applied to the value (e.g. "C2", "yyyy-MM-dd").</summary>
-    [Parameter] public string? Format { get; set; }
 
     /// <summary>
     /// The text a value of the column is shown as, in place of what <see cref="Format"/> or the value itself would
@@ -252,54 +288,18 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     /// </remarks>
     [Parameter] public Func<object, string?>? ValueText { get; set; }
 
-    /// <summary>The kind of value the column holds, which picks its filter editor, operators and inline editor. Auto
-    /// reads it off the bound property's type.</summary>
-    [Parameter] public BitDataGridColumnDataType DataType { get; set; } = BitDataGridColumnDataType.Auto;
+    /// <summary>Whether the column is shown. The column chooser flips it at runtime. Default: true.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
 
-    /// <summary>The built-in aggregate shown for the column in the footer and in each group header.</summary>
-    [Parameter] public BitDataGridAggregateType Aggregate { get; set; } = BitDataGridAggregateType.None;
-
-    /// <summary>
-    /// Optional custom aggregate function, for computations beyond the built-in
-    /// Sum/Average/Count/Min/Max - e.g. a distinct count or a weighted average. Receives the rows of
-    /// the footer's view (or of each group) and returns the aggregate value; <see cref="AggregateFormat"/>
-    /// (or <see cref="Format"/>) is applied to it for display. Takes precedence over <see cref="Aggregate"/>.
-    /// </summary>
-    [Parameter] public Func<IReadOnlyList<TItem>, object?>? AggregateBy { get; set; }
-
-    /// <summary>Format string for the aggregate value. Falls back to <see cref="Format"/>.</summary>
-    [Parameter] public string? AggregateFormat { get; set; }
-
-    /// <summary>A CSS class added to the column's header cell.</summary>
-    [Parameter] public string? HeaderClass { get; set; }
-
-    /// <summary>A CSS class added to each of the column's data cells.</summary>
-    [Parameter] public string? CellClass { get; set; }
+    /// <summary>CSS width, e.g. "120px" or "20%". When null the column shares remaining space.</summary>
+    [Parameter] public string? Width { get; set; }
 
     /// <summary>
-    /// Per-row CSS class for this column's cells, from the row's data - e.g. a negative amount in red.
-    /// Added after <see cref="CellClass"/>. The cell counterpart of the grid's <c>RowClass</c>.
+    /// Lets this column's header and cells wrap onto several lines instead of clipping to one, with
+    /// each row growing to fit. Overrides the grid-level <c>WrapCellText</c>. Ignored while the grid
+    /// virtualizes rows, which requires a uniform row height.
     /// </summary>
-    [Parameter] public Func<TItem, string?>? CellClassSelector { get; set; }
-
-    /// <summary>
-    /// Per-row inline style for this column's cells, from the row's data. Applied last, so it wins over
-    /// the grid's own cell styles; prefer <c>color</c>/<c>font-*</c> over <c>background</c>, which would
-    /// hide the selection and hover states the cell paints.
-    /// </summary>
-    [Parameter] public Func<TItem, string?>? CellStyleSelector { get; set; }
-
-    /// <summary>Custom rendering for a data cell.</summary>
-    [Parameter] public RenderFragment<TItem>? Template { get; set; }
-
-    /// <summary>Custom rendering for the header cell content.</summary>
-    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
-
-    /// <summary>Custom editor rendered when the row/cell is in edit mode.</summary>
-    [Parameter] public RenderFragment<TItem>? EditTemplate { get; set; }
-
-    /// <summary>Custom rendering for the footer/aggregate cell.</summary>
-    [Parameter] public RenderFragment<BitDataGridAggregateResult>? FooterTemplate { get; set; }
+    [Parameter] public bool? WrapText { get; set; }
 
     // ---- Runtime state (managed by the grid) ----
 

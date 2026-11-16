@@ -109,22 +109,13 @@ public partial class BitGrid : BitComponentBase
     public int? Columns { get; set; }
 
     /// <summary>
-    /// Number of columns in the extra small breakpoint (from 0px).
+    /// Number of columns in the large breakpoint (from 1280px).
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public int? ColumnsXs { get; set; }
-
-    /// <summary>
-    /// Number of columns in the small breakpoint (from 600px).
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetStyleBuilder]
-    public int? ColumnsSm { get; set; }
+    public int? ColumnsLg { get; set; }
 
     /// <summary>
     /// Number of columns in the medium breakpoint (from 960px).
@@ -136,13 +127,13 @@ public partial class BitGrid : BitComponentBase
     public int? ColumnsMd { get; set; }
 
     /// <summary>
-    /// Number of columns in the large breakpoint (from 1280px).
+    /// Number of columns in the small breakpoint (from 600px).
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public int? ColumnsLg { get; set; }
+    public int? ColumnsSm { get; set; }
 
     /// <summary>
     /// Number of columns in the extra large breakpoint (from 1920px).
@@ -152,6 +143,15 @@ public partial class BitGrid : BitComponentBase
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? ColumnsXl { get; set; }
+
+    /// <summary>
+    /// Number of columns in the extra small breakpoint (from 0px).
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public int? ColumnsXs { get; set; }
 
     /// <summary>
     /// Number of columns in the extra extra large breakpoint (from 2560px).
@@ -244,24 +244,14 @@ public partial class BitGrid : BitComponentBase
     public string? HorizontalSpacing { get; set; }
 
     /// <summary>
-    /// Defines the horizontal spacing between the children of the BitGrid from the extra small breakpoint (from 0px) upwards.
+    /// Defines the horizontal spacing between the children of the BitGrid from the large breakpoint (from 1280px) upwards.
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
-    /// over the <see cref="SpacingXs"/> of the same breakpoint.
+    /// over the <see cref="SpacingLg"/> of the same breakpoint.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public string? HorizontalSpacingXs { get; set; }
-
-    /// <summary>
-    /// Defines the horizontal spacing between the children of the BitGrid from the small breakpoint (from 600px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
-    /// over the <see cref="SpacingSm"/> of the same breakpoint.
-    /// </remarks>
-    [Parameter, ResetStyleBuilder]
-    public string? HorizontalSpacingSm { get; set; }
+    public string? HorizontalSpacingLg { get; set; }
 
     /// <summary>
     /// Defines the horizontal spacing between the children of the BitGrid from the medium breakpoint (from 960px) upwards.
@@ -274,14 +264,14 @@ public partial class BitGrid : BitComponentBase
     public string? HorizontalSpacingMd { get; set; }
 
     /// <summary>
-    /// Defines the horizontal spacing between the children of the BitGrid from the large breakpoint (from 1280px) upwards.
+    /// Defines the horizontal spacing between the children of the BitGrid from the small breakpoint (from 600px) upwards.
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
-    /// over the <see cref="SpacingLg"/> of the same breakpoint.
+    /// over the <see cref="SpacingSm"/> of the same breakpoint.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public string? HorizontalSpacingLg { get; set; }
+    public string? HorizontalSpacingSm { get; set; }
 
     /// <summary>
     /// Defines the horizontal spacing between the children of the BitGrid from the extra large breakpoint (from 1920px) upwards.
@@ -292,6 +282,16 @@ public partial class BitGrid : BitComponentBase
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? HorizontalSpacingXl { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the BitGrid from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingXs"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? HorizontalSpacingXs { get; set; }
 
     /// <summary>
     /// Defines the horizontal spacing between the children of the BitGrid from the extra extra large breakpoint (from 2560px) upwards.
@@ -380,26 +380,14 @@ public partial class BitGrid : BitComponentBase
     public string? Spacing { get; set; }
 
     /// <summary>
-    /// Defines the spacing between the children of the BitGrid on both axes from the extra small breakpoint (from 0px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it, which is how a layout
-    /// that is tight on a phone is given room to breathe on a desktop without a fluid length of its own.
-    /// <br />
-    /// <see cref="HorizontalSpacingXs"/> and <see cref="VerticalSpacingXs"/> each replace it on their own axis.
-    /// </remarks>
-    [Parameter, ResetStyleBuilder]
-    public string? SpacingXs { get; set; }
-
-    /// <summary>
-    /// Defines the spacing between the children of the BitGrid on both axes from the small breakpoint (from 600px) upwards.
+    /// Defines the spacing between the children of the BitGrid on both axes from the large breakpoint (from 1280px) upwards.
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it, and
-    /// <see cref="HorizontalSpacingSm"/> and <see cref="VerticalSpacingSm"/> each replace it on their own axis.
+    /// <see cref="HorizontalSpacingLg"/> and <see cref="VerticalSpacingLg"/> each replace it on their own axis.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public string? SpacingSm { get; set; }
+    public string? SpacingLg { get; set; }
 
     /// <summary>
     /// Defines the spacing between the children of the BitGrid on both axes from the medium breakpoint (from 960px) upwards.
@@ -412,14 +400,14 @@ public partial class BitGrid : BitComponentBase
     public string? SpacingMd { get; set; }
 
     /// <summary>
-    /// Defines the spacing between the children of the BitGrid on both axes from the large breakpoint (from 1280px) upwards.
+    /// Defines the spacing between the children of the BitGrid on both axes from the small breakpoint (from 600px) upwards.
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it, and
-    /// <see cref="HorizontalSpacingLg"/> and <see cref="VerticalSpacingLg"/> each replace it on their own axis.
+    /// <see cref="HorizontalSpacingSm"/> and <see cref="VerticalSpacingSm"/> each replace it on their own axis.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public string? SpacingLg { get; set; }
+    public string? SpacingSm { get; set; }
 
     /// <summary>
     /// Defines the spacing between the children of the BitGrid on both axes from the extra large breakpoint (from 1920px) upwards.
@@ -430,6 +418,18 @@ public partial class BitGrid : BitComponentBase
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? SpacingXl { get; set; }
+
+    /// <summary>
+    /// Defines the spacing between the children of the BitGrid on both axes from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, which is how a layout
+    /// that is tight on a phone is given room to breathe on a desktop without a fluid length of its own.
+    /// <br />
+    /// <see cref="HorizontalSpacingXs"/> and <see cref="VerticalSpacingXs"/> each replace it on their own axis.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? SpacingXs { get; set; }
 
     /// <summary>
     /// Defines the spacing between the children of the BitGrid on both axes from the extra extra large breakpoint (from 2560px) upwards.
@@ -490,24 +490,14 @@ public partial class BitGrid : BitComponentBase
     public string? VerticalSpacing { get; set; }
 
     /// <summary>
-    /// Defines the vertical spacing between the rows of the BitGrid from the extra small breakpoint (from 0px) upwards.
+    /// Defines the vertical spacing between the rows of the BitGrid from the large breakpoint (from 1280px) upwards.
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
-    /// over the <see cref="SpacingXs"/> of the same breakpoint.
+    /// over the <see cref="SpacingLg"/> of the same breakpoint.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public string? VerticalSpacingXs { get; set; }
-
-    /// <summary>
-    /// Defines the vertical spacing between the rows of the BitGrid from the small breakpoint (from 600px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
-    /// over the <see cref="SpacingSm"/> of the same breakpoint.
-    /// </remarks>
-    [Parameter, ResetStyleBuilder]
-    public string? VerticalSpacingSm { get; set; }
+    public string? VerticalSpacingLg { get; set; }
 
     /// <summary>
     /// Defines the vertical spacing between the rows of the BitGrid from the medium breakpoint (from 960px) upwards.
@@ -520,14 +510,14 @@ public partial class BitGrid : BitComponentBase
     public string? VerticalSpacingMd { get; set; }
 
     /// <summary>
-    /// Defines the vertical spacing between the rows of the BitGrid from the large breakpoint (from 1280px) upwards.
+    /// Defines the vertical spacing between the rows of the BitGrid from the small breakpoint (from 600px) upwards.
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
-    /// over the <see cref="SpacingLg"/> of the same breakpoint.
+    /// over the <see cref="SpacingSm"/> of the same breakpoint.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public string? VerticalSpacingLg { get; set; }
+    public string? VerticalSpacingSm { get; set; }
 
     /// <summary>
     /// Defines the vertical spacing between the rows of the BitGrid from the extra large breakpoint (from 1920px) upwards.
@@ -538,6 +528,16 @@ public partial class BitGrid : BitComponentBase
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? VerticalSpacingXl { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the BitGrid from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingXs"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? VerticalSpacingXs { get; set; }
 
     /// <summary>
     /// Defines the vertical spacing between the rows of the BitGrid from the extra extra large breakpoint (from 2560px) upwards.

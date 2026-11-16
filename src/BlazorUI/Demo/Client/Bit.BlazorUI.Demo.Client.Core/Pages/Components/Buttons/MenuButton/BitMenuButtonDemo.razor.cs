@@ -132,17 +132,17 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "DefaultSelectedItem",
-            Type = "TItem?",
-            DefaultValue = "null",
-            Description = "Default value of the SelectedItem."
-        },
-        new()
-        {
             Name = "DefaultIsToggled",
             Type = "bool?",
             DefaultValue = "null",
             Description = "Default value of the IsToggled parameter in toggle mode.",
+        },
+        new()
+        {
+            Name = "DefaultSelectedItem",
+            Type = "TItem?",
+            DefaultValue = "null",
+            Description = "Default value of the SelectedItem."
         },
         new()
         {
@@ -308,15 +308,15 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "OnClick",
-            Type = "EventCallback<TItem?>",
-            Description = "The callback that is called when the header button is clicked, with the selected item in Sticky mode and null otherwise, and when an item of the menu is activated outside of Sticky mode, with that item."
-        },
-        new()
-        {
             Name = "OnChange",
             Type = "EventCallback<TItem>",
             Description = "The callback that is called when the selected item has changed."
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<TItem?>",
+            Description = "The callback that is called when the header button is clicked, with the selected item in Sticky mode and null otherwise, and when an item of the menu is activated outside of Sticky mode, with that item."
         },
         new()
         {

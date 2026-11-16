@@ -21,9 +21,9 @@ internal sealed class _BitPanelServiceHost : ComponentBase
 
 
 
-    [Parameter] public BitPanelReference Reference { get; set; } = default!;
-
     [Parameter] public RenderFragment? Content { get; set; }
+
+    [Parameter] public BitPanelReference Reference { get; set; } = default!;
 
     [CascadingParameter] private BitPanelParameters? Parameters { get; set; }
 

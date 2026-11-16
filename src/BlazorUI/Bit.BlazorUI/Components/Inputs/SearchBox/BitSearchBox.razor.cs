@@ -482,17 +482,17 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public EventCallback<string?> OnSearch { get; set; }
 
     /// <summary>
-    /// Callback executed when the user selects one of the suggest items either by clicking on it
-    /// or by pressing enter while it is highlighted.
-    /// </summary>
-    [Parameter] public EventCallback<string> OnSuggestItemSelect { get; set; }
-
-    /// <summary>
     /// Callback executed with the exception a <see cref="SuggestItemsProvider"/> threw, which is otherwise
     /// the one failure of the component an app never gets to see - the callout reports it to the user, and
     /// this reports it to the log. A cancelled call is not a failure and never raises it.
     /// </summary>
     [Parameter] public EventCallback<Exception> OnSuggestFailed { get; set; }
+
+    /// <summary>
+    /// Callback executed when the user selects one of the suggest items either by clicking on it
+    /// or by pressing enter while it is highlighted.
+    /// </summary>
+    [Parameter] public EventCallback<string> OnSuggestItemSelect { get; set; }
 
     /// <summary>
     /// Callback executed with true when the suggest items callout opens and with false when it closes.

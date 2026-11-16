@@ -13,21 +13,21 @@ public partial class BitCascadingValueProviderDemo
         },
         new()
         {
-            Name = "Values",
-            Type = "IEnumerable<BitCascadingValue>?",
-            DefaultValue = "null",
-            Description = "The cascading values to be provided for the children. These values are provided after (so they take precedence over) the ones of the ValueList parameter.",
-            LinkType = LinkType.Link,
-            Href = "#cascading-value"
-        },
-        new()
-        {
             Name = "ValueList",
             Type = "BitCascadingValueList?",
             DefaultValue = "null",
             Description = "The cascading value list to be provided for the children. These values are provided before (so they can be overridden by) the ones of the Values parameter.",
             LinkType = LinkType.Link,
             Href = "#cascading-value-list"
+        },
+        new()
+        {
+            Name = "Values",
+            Type = "IEnumerable<BitCascadingValue>?",
+            DefaultValue = "null",
+            Description = "The cascading values to be provided for the children. These values are provided after (so they take precedence over) the ones of the ValueList parameter.",
+            LinkType = LinkType.Link,
+            Href = "#cascading-value"
         },
     ];
 

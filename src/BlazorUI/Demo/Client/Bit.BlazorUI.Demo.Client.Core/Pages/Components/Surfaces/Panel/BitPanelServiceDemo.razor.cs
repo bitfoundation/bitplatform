@@ -6,18 +6,18 @@ public partial class BitPanelServiceDemo : IDisposable
 {
     private readonly List<ComponentParameter> componentParameters =
     [
+        new() { Name = "Close", Type = "Task (BitPanelReference panel, object? result = null)", DefaultValue = "", Description = "Closes an open panel with the result its Result task completes with. This is the application closing the panel, so the CanClose guard is not asked." },
+        new() { Name = "CloseAll", Type = "Task", DefaultValue = "", Description = "Closes every panel this service currently has open, each with a null result, the last one opened first. The CanClose guards are not asked." },
+        new() { Name = "GetModal", Type = "BitPanelReference? (string? id)", DefaultValue = "", Description = "The open panel with the given id, or null when there is none." },
+        new() { Name = "IsContainerAvailable", Type = "bool", DefaultValue = "", Description = "Whether a BitPanelContainer is currently mounted for this service, i.e. whether a Show call right now would render its panel." },
         new() { Name = "OnAddModal", Type = "event Func<BitPanelReference, Task>?", DefaultValue = "", Description = "Raised for every panel shown through this service, whoever showed it." },
         new() { Name = "OnCloseModal", Type = "event Func<BitPanelReference, Task>?", DefaultValue = "", Description = "Raised once for every panel of this service that closes, however it closed." },
-        new() { Name = "IsContainerAvailable", Type = "bool", DefaultValue = "", Description = "Whether a BitPanelContainer is currently mounted for this service, i.e. whether a Show call right now would render its panel." },
         new() { Name = "OpenModals", Type = "IReadOnlyList<BitPanelReference>", DefaultValue = "", Description = "A snapshot of the panels this service currently has open, in the order they were opened." },
-        new() { Name = "GetModal", Type = "BitPanelReference? (string? id)", DefaultValue = "", Description = "The open panel with the given id, or null when there is none." },
-        new() { Name = "Close", Type = "Task (BitPanelReference panel, object? result = null)", DefaultValue = "", Description = "Closes an open panel with the result its Result task completes with. This is the application closing the panel, so the CanClose guard is not asked." },
-        new() { Name = "TryClose", Type = "Task<bool> (BitPanelReference panel, object? result)", DefaultValue = "", Description = "Asks a panel to close and reports whether it did: a panel whose CanClose guard turns the close down stays open and this answers false." },
-        new() { Name = "CloseAll", Type = "Task", DefaultValue = "", Description = "Closes every panel this service currently has open, each with a null result, the last one opened first. The CanClose guards are not asked." },
         new() { Name = "Refresh", Type = "Task (BitPanelReference? panel)", DefaultValue = "", Description = "Re-renders the open panels, after their parameters were changed in place. Without an argument it refreshes every open panel." },
-        new() { Name = "Show<T>", Type = "Task<BitPanelReference> (Dictionary<string, object>? parameters, BitPanelParameters? panelParameters, bool persistent)", DefaultValue = "", Description = "Shows a panel with the component T as its content, given the parameters. A persistent panel outlives the page it was opened from and a remount of its container. Overloads take the parameters as a BitModalContentParameters<T>, a factory handed the panel's reference, or no parameters at all." },
         new() { Name = "Show", Type = "Task<BitPanelReference> (Type componentType, ...)", DefaultValue = "", Description = "The same, with the type of the content known at run time." },
         new() { Name = "Show", Type = "Task<BitPanelReference> (RenderFragment content, BitPanelParameters? panelParameters, bool persistent)", DefaultValue = "", Description = "Shows a panel with markup as its content. An overload takes a RenderFragment<BitPanelReference>, handed the panel's own reference." },
+        new() { Name = "Show<T>", Type = "Task<BitPanelReference> (Dictionary<string, object>? parameters, BitPanelParameters? panelParameters, bool persistent)", DefaultValue = "", Description = "Shows a panel with the component T as its content, given the parameters. A persistent panel outlives the page it was opened from and a remount of its container. Overloads take the parameters as a BitModalContentParameters<T>, a factory handed the panel's reference, or no parameters at all." },
+        new() { Name = "TryClose", Type = "Task<bool> (BitPanelReference panel, object? result)", DefaultValue = "", Description = "Asks a panel to close and reports whether it did: a panel whose CanClose guard turns the close down stays open and this answers false." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =

@@ -5,12 +5,6 @@ namespace Bit.BlazorUI;
 // Image insertion (URL, drag-drop, paste, upload callback), color, and font.
 public partial class BitRichTextEditor
 {
-    /// <summary>
-    /// Invoked to persist an image binary, returning the URL to embed. When null, dropped or
-    /// pasted images are embedded as inline data URLs.
-    /// </summary>
-    [Parameter] public Func<BitRichTextEditorImageUpload, Task<string?>>? OnImageUpload { get; set; }
-
     // The OnImageUpload calls still running. A drop uploads its files one after another, so it holds this at one;
     // only drops and pastes made while an earlier one is still uploading run side by side and count higher. While
     // any is running, the editor shows and reports that it is busy, since an upload to a server can take long
@@ -18,6 +12,13 @@ public partial class BitRichTextEditor
     private int _uploadsInFlight;
 
     private long _maxImageSize = DefaultMaxImageSize;
+
+    /// <summary>Font families offered in the font-family selector. Null/empty uses defaults.</summary>
+    [Parameter] public IReadOnlyList<string>? FontFamilies { get; set; }
+
+    /// <summary>Font sizes offered in the font-size selector. Null/empty uses defaults.</summary>
+    [Parameter] public IReadOnlyList<string>? FontSizes { get; set; }
+
     /// <summary>
     /// The largest image, in bytes, that a drop or a paste may insert (10 MB by default). It is checked in the browser
     /// before the file is read and again here before it is decoded or handed to <see cref="OnImageUpload"/>. Zero or a
@@ -30,11 +31,11 @@ public partial class BitRichTextEditor
         set => _maxImageSize = value > 0 ? value : DefaultMaxImageSize;
     }
 
-    /// <summary>Font families offered in the font-family selector. Null/empty uses defaults.</summary>
-    [Parameter] public IReadOnlyList<string>? FontFamilies { get; set; }
-
-    /// <summary>Font sizes offered in the font-size selector. Null/empty uses defaults.</summary>
-    [Parameter] public IReadOnlyList<string>? FontSizes { get; set; }
+    /// <summary>
+    /// Invoked to persist an image binary, returning the URL to embed. When null, dropped or
+    /// pasted images are embedded as inline data URLs.
+    /// </summary>
+    [Parameter] public Func<BitRichTextEditorImageUpload, Task<string?>>? OnImageUpload { get; set; }
 
     private static readonly string[] DefaultFontFamilies =
         ["Arial", "Georgia", "Tahoma", "Times New Roman", "Verdana", "Courier New"];

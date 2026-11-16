@@ -7,9 +7,9 @@ public partial class _BitButtonGroupItem<[DynamicallyAccessedMembers(Dynamically
     private ElementReference _element;
 
 
-    [Parameter] public TItem Item { get; set; } = default!;
-
     [Parameter] public BitButtonGroup<TItem> ButtonGroup { get; set; } = default!;
+
+    [Parameter] public TItem Item { get; set; } = default!;
 
 
     // The group needs the element references of its items to move the focus while the arrow keys

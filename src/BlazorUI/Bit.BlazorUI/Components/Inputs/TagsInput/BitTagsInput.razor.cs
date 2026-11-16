@@ -125,17 +125,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
 
     /// <summary>
-    /// Lets a tag be moved within the list, in the three ways the three kinds of user have: dragging the
-    /// chip onto the position it should take; two taps, one on the handle the chip grows at its start and
-    /// one on the tag whose place it should take, for every pointer that cannot drag at all - a touch
-    /// screen, a switch, a head pointer (WCAG 2.2, SC 2.5.7); and from the keyboard, Alt with the arrow
-    /// keys walking the focused tag one position at a time and Alt with Home or End sending it to either
-    /// end. None of the three is a fallback of the others, and the focus stays on the tag that moved so
-    /// that several steps can be taken in a row.
-    /// </summary>
-    [Parameter] public bool AllowReorder { get; set; }
-
-    /// <summary>
     /// The format of the message announced by screen readers when a tag is added, where {0} is the tag.
     /// The default is "{0} added.". Set it to an empty string to keep the addition from being announced.
     /// </summary>
@@ -149,6 +138,17 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// A single tag is always announced with <see cref="AddedAnnouncementFormat"/> instead.
     /// </summary>
     [Parameter] public string? AddedManyAnnouncementFormat { get; set; }
+
+    /// <summary>
+    /// Lets a tag be moved within the list, in the three ways the three kinds of user have: dragging the
+    /// chip onto the position it should take; two taps, one on the handle the chip grows at its start and
+    /// one on the tag whose place it should take, for every pointer that cannot drag at all - a touch
+    /// screen, a switch, a head pointer (WCAG 2.2, SC 2.5.7); and from the keyboard, Alt with the arrow
+    /// keys walking the focused tag one position at a time and Alt with Home or End sending it to either
+    /// end. None of the three is a fallback of the others, and the focus stays on the tag that moved so
+    /// that several steps can be taken in a row.
+    /// </summary>
+    [Parameter] public bool AllowReorder { get; set; }
 
     /// <summary>
     /// Sets the autocomplete html attribute of the input element. It defaults to <c>off</c>, since the
@@ -201,14 +201,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter, ResetClassBuilder] public BitTagsInputClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The format of the message announced by screen readers when every tag is removed at once, where
-    /// {0} is how many of them there were. The default is "{0} tags removed." - a count rather than the
-    /// tags themselves, since reading fifty names out is not a confirmation but a wall. Set it to an
-    /// empty string to keep the clearing from being announced.
-    /// </summary>
-    [Parameter] public string? ClearedAnnouncementFormat { get; set; }
-
-    /// <summary>
     /// Accessible label of the clear button, for the benefit of screen readers and of localization.
     /// The default is "Clear all tags".
     /// </summary>
@@ -231,6 +223,14 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// It falls back to the <see cref="ClearButtonAriaLabel"/> and then to "Clear all tags".
     /// </summary>
     [Parameter] public string? ClearButtonTitle { get; set; }
+
+    /// <summary>
+    /// The format of the message announced by screen readers when every tag is removed at once, where
+    /// {0} is how many of them there were. The default is "{0} tags removed." - a count rather than the
+    /// tags themselves, since reading fifty names out is not a confirmation but a wall. Set it to an
+    /// empty string to keep the clearing from being announced.
+    /// </summary>
+    [Parameter] public string? ClearedAnnouncementFormat { get; set; }
 
     /// <summary>
     /// Throws away whatever text is still sitting in the input when the field loses the focus, so that a
@@ -366,6 +366,16 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public Func<BitTagsInputInvalidArgs, string?>? GetInvalidMessage { get; set; }
 
     /// <summary>
+    /// A function returning extra CSS classes for a single tag, which is what tells one chip apart from the
+    /// next: the recipient that is not in the address book drawn in red, the tag that came from a saved
+    /// filter drawn in grey. It receives the tag and is called for each of them on every render, so it
+    /// should be a lookup rather than a computation. The classes are added to those of the component and to
+    /// the <see cref="BitTagsInputClassStyles.Tag"/> of the <see cref="Classes"/>, which apply to every chip
+    /// alike; use <see cref="TagTemplate"/> to change what is drawn inside a chip rather than the chip itself.
+    /// </summary>
+    [Parameter] public Func<string, string?>? GetTagClass { get; set; }
+
+    /// <summary>
     /// How a tag is called wherever the component names it: the accessible name of its chip, of the dismiss
     /// button, of the reorder handle and of the inline edit, and the announcements it takes part in. It
     /// defaults to the tag itself, which is right as long as the chip reads as its value - and is exactly
@@ -375,16 +385,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// every drawn tag on every render, so it should be a lookup rather than a computation.
     /// </summary>
     [Parameter] public Func<string, string?>? GetTagName { get; set; }
-
-    /// <summary>
-    /// A function returning extra CSS classes for a single tag, which is what tells one chip apart from the
-    /// next: the recipient that is not in the address book drawn in red, the tag that came from a saved
-    /// filter drawn in grey. It receives the tag and is called for each of them on every render, so it
-    /// should be a lookup rather than a computation. The classes are added to those of the component and to
-    /// the <see cref="BitTagsInputClassStyles.Tag"/> of the <see cref="Classes"/>, which apply to every chip
-    /// alike; use <see cref="TagTemplate"/> to change what is drawn inside a chip rather than the chip itself.
-    /// </summary>
-    [Parameter] public Func<string, string?>? GetTagClass { get; set; }
 
     /// <summary>
     /// A function returning extra inline CSS styles for a single tag, the exact counterpart of
@@ -404,21 +404,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter]
     [CallOnSet(nameof(OnSetInputMode))]
     public BitInputMode? InputMode { get; set; }
-
-    /// <summary>
-    /// Draws a spinner at the end of the field, for the wait the field itself is the cause of: the
-    /// suggestions being fetched for what is being typed, the tag being checked against a server before it
-    /// is accepted. It is an indeterminate progressbar rather than a decoration, so a screen reader
-    /// announces the wait instead of missing it, and it changes nothing about what the field accepts -
-    /// a field that has to stop taking tags while it waits is one whose <see cref="BitInputBase{TValue}.ReadOnly"/> is on.
-    /// </summary>
-    [Parameter] public bool Loading { get; set; }
-
-    /// <summary>
-    /// The accessible name of that spinner, which is the whole of what a screen reader has to go on.
-    /// The default is "Loading".
-    /// </summary>
-    [Parameter] public string? LoadingAriaLabel { get; set; }
 
     /// <summary>
     /// The format of the sentence a rejection is reported with, where {0} is the tag and {1} is why it was
@@ -441,6 +426,27 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// The label of the chip that folds the tags back once <see cref="MaxDisplayedTags"/> unfolded them.
+    /// The default is "Show less".
+    /// </summary>
+    [Parameter] public string? LessTagsText { get; set; }
+
+    /// <summary>
+    /// Draws a spinner at the end of the field, for the wait the field itself is the cause of: the
+    /// suggestions being fetched for what is being typed, the tag being checked against a server before it
+    /// is accepted. It is an indeterminate progressbar rather than a decoration, so a screen reader
+    /// announces the wait instead of missing it, and it changes nothing about what the field accepts -
+    /// a field that has to stop taking tags while it waits is one whose <see cref="BitInputBase{TValue}.ReadOnly"/> is on.
+    /// </summary>
+    [Parameter] public bool Loading { get; set; }
+
+    /// <summary>
+    /// The accessible name of that spinner, which is the whole of what a screen reader has to go on.
+    /// The default is "Loading".
+    /// </summary>
+    [Parameter] public string? LoadingAriaLabel { get; set; }
 
     /// <summary>
     /// The number of tags drawn before the rest of them are folded away behind a chip that says how
@@ -479,10 +485,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public int MinLength { get; set; }
 
     /// <summary>
-    /// The label of the chip that folds the tags back once <see cref="MaxDisplayedTags"/> unfolded them.
-    /// The default is "Show less".
+    /// The format of the accessible label of that same chip, where {0} is how many tags are folded away.
+    /// The default is "Show {0} more tags", since "+3" read out on its own says nothing about what
+    /// pressing it would do.
     /// </summary>
-    [Parameter] public string? LessTagsText { get; set; }
+    [Parameter] public string? MoreTagsAriaLabelFormat { get; set; }
 
     /// <summary>
     /// The format of the label of the chip that stands for the tags <see cref="MaxDisplayedTags"/> folded
@@ -491,11 +498,12 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public string? MoreTagsFormat { get; set; }
 
     /// <summary>
-    /// The format of the accessible label of that same chip, where {0} is how many tags are folded away.
-    /// The default is "Show {0} more tags", since "+3" read out on its own says nothing about what
-    /// pressing it would do.
+    /// The format of the message announced by screen readers when a tag is moved with
+    /// <see cref="AllowReorder"/>, where {0} is the tag, {1} its new one based position and {2} the
+    /// number of tags. The default is "{0} moved to position {1} of {2}.". An empty string keeps the
+    /// move from being announced.
     /// </summary>
-    [Parameter] public string? MoreTagsAriaLabelFormat { get; set; }
+    [Parameter] public string? MovedAnnouncementFormat { get; set; }
 
     /// <summary>
     /// Stops the text left in the input from being committed as a tag when the field loses the focus,
@@ -543,6 +551,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public bool NoTrim { get; set; }
 
     /// <summary>
+    /// Callback for when one or more tags are added. Receives the list of all newly added tags.
+    /// </summary>
+    [Parameter] public EventCallback<IReadOnlyList<string>> OnAdd { get; set; }
+
+    /// <summary>
     /// Callback invoked before a tag is added, carrying the tag every rule has already accepted. Set
     /// <c>args.Cancel = true</c> to call the add off - a confirmation, a check that lives on the server -
     /// or write to <c>args.Tag</c> to correct the text on its way in, which is what canonicalizes a value
@@ -552,11 +565,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public EventCallback<BitTagsInputBeforeArgs> OnBeforeAdd { get; set; }
 
     /// <summary>
-    /// Callback invoked before a tag is removed. Set <c>args.Cancel = true</c> to cancel the remove.
-    /// </summary>
-    [Parameter] public EventCallback<BitTagsInputBeforeArgs> OnBeforeRemove { get; set; }
-
-    /// <summary>
     /// Callback invoked before every tag is removed at once, by the clear button, the Escape key or the
     /// <see cref="Clear"/> method, carrying the whole list that is about to go. Set
     /// <c>args.Cancel = true</c> to leave it as it is, which is what a confirmation is asked from.
@@ -564,9 +572,9 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public EventCallback<BitTagsInputClearArgs> OnBeforeClear { get; set; }
 
     /// <summary>
-    /// Callback for when one or more tags are added. Receives the list of all newly added tags.
+    /// Callback invoked before a tag is removed. Set <c>args.Cancel = true</c> to cancel the remove.
     /// </summary>
-    [Parameter] public EventCallback<IReadOnlyList<string>> OnAdd { get; set; }
+    [Parameter] public EventCallback<BitTagsInputBeforeArgs> OnBeforeRemove { get; set; }
 
     /// <summary>
     /// Callback for when every tag is removed at once, by the clear button or by the
@@ -575,41 +583,10 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public EventCallback<IReadOnlyList<string>> OnClear { get; set; }
 
     /// <summary>
-    /// Callback for when a tag is clicked, carrying the tag that was clicked. It is what turns a chip into
-    /// a way in to whatever it stands for - the card of the recipient, the filter the tag is built on -
-    /// and it changes nothing about what the click already does, the tag still taking the focus so that
-    /// the arrow keys carry on from it. The dismiss button is not a click on the tag, and neither is the
-    /// second click of the double click that opens the inline edit.
-    /// <br />
-    /// The Enter key pressed on the focused chip does the very same thing, so what the pointer can reach
-    /// the keyboard can too (WCAG 2.2, SC 2.1.1) - unless <see cref="EditableTags"/> has already claimed
-    /// that key for the inline edit, the two being the same gesture and the correction the one a chip is
-    /// expected to answer with. The sentence announced after each chip says which of the two it is.
-    /// </summary>
-    [Parameter] public EventCallback<string> OnTagClick { get; set; }
-
-    /// <summary>
-    /// Callback fired when a duplicate tag entry is attempted (and <see cref="Duplicates"/> is false).
-    /// </summary>
-    [Parameter] public EventCallback<string> OnTagExists { get; set; }
-
-    /// <summary>
     /// Callback invoked when an inline edit of a tag is about to be committed, carrying both the old and
     /// the new text. Set <c>args.Cancel = true</c> to leave the tag as it was.
     /// </summary>
     [Parameter] public EventCallback<BitTagsInputEditArgs> OnEdit { get; set; }
-
-    /// <summary>
-    /// Callback for when a tag is removed.
-    /// </summary>
-    [Parameter] public EventCallback<string> OnRemove { get; set; }
-
-    /// <summary>
-    /// Callback for when a tag is moved within the list with <see cref="AllowReorder"/>, carrying the
-    /// tag along with the positions it left and took. The whole list is reported through the value as
-    /// well; this is what tells which of the tags moved and where to, without diffing two lists.
-    /// </summary>
-    [Parameter] public EventCallback<BitTagsInputReorderArgs> OnReorder { get; set; }
 
     /// <summary>
     /// Callback for when the input receives focus.
@@ -642,12 +619,35 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
 
     /// <summary>
-    /// The format of the message announced by screen readers when a tag is moved with
-    /// <see cref="AllowReorder"/>, where {0} is the tag, {1} its new one based position and {2} the
-    /// number of tags. The default is "{0} moved to position {1} of {2}.". An empty string keeps the
-    /// move from being announced.
+    /// Callback for when a tag is removed.
     /// </summary>
-    [Parameter] public string? MovedAnnouncementFormat { get; set; }
+    [Parameter] public EventCallback<string> OnRemove { get; set; }
+
+    /// <summary>
+    /// Callback for when a tag is moved within the list with <see cref="AllowReorder"/>, carrying the
+    /// tag along with the positions it left and took. The whole list is reported through the value as
+    /// well; this is what tells which of the tags moved and where to, without diffing two lists.
+    /// </summary>
+    [Parameter] public EventCallback<BitTagsInputReorderArgs> OnReorder { get; set; }
+
+    /// <summary>
+    /// Callback for when a tag is clicked, carrying the tag that was clicked. It is what turns a chip into
+    /// a way in to whatever it stands for - the card of the recipient, the filter the tag is built on -
+    /// and it changes nothing about what the click already does, the tag still taking the focus so that
+    /// the arrow keys carry on from it. The dismiss button is not a click on the tag, and neither is the
+    /// second click of the double click that opens the inline edit.
+    /// <br />
+    /// The Enter key pressed on the focused chip does the very same thing, so what the pointer can reach
+    /// the keyboard can too (WCAG 2.2, SC 2.1.1) - unless <see cref="EditableTags"/> has already claimed
+    /// that key for the inline edit, the two being the same gesture and the correction the one a chip is
+    /// expected to answer with. The sentence announced after each chip says which of the two it is.
+    /// </summary>
+    [Parameter] public EventCallback<string> OnTagClick { get; set; }
+
+    /// <summary>
+    /// Callback fired when a duplicate tag entry is attempted (and <see cref="Duplicates"/> is false).
+    /// </summary>
+    [Parameter] public EventCallback<string> OnTagExists { get; set; }
 
     /// <summary>
     /// A regular expression that every tag has to match to be accepted. Tags that do not match are
@@ -674,13 +674,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
-    /// The format of the message announced by screen readers when a tag that was picked up is put back
-    /// where it came from, where {0} is the tag. The default is "{0} put back.". An empty string keeps it
-    /// from being announced.
-    /// </summary>
-    [Parameter] public string? PutBackAnnouncementFormat { get; set; }
-
-    /// <summary>
     /// A short text drawn at the start of the field, in front of the tags, which is not part of the
     /// value: the "to:" of a recipients field, the "#" of a hashtag one. It never reaches the value, but
     /// it is announced with the field - the input references it, along with the <see cref="Suffix"/> and
@@ -694,6 +687,13 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// means has to be in the <see cref="Label"/> where it means anything at all.
     /// </summary>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
+    /// The format of the message announced by screen readers when a tag that was picked up is put back
+    /// where it came from, where {0} is the tag. The default is "{0} put back.". An empty string keeps it
+    /// from being announced.
+    /// </summary>
+    [Parameter] public string? PutBackAnnouncementFormat { get; set; }
 
     /// <summary>
     /// The format of the message announced by screen readers when a tag is removed, where {0} is the tag.
@@ -794,17 +794,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public bool? SpellCheck { get; set; }
 
     /// <summary>
-    /// The values offered to the user while typing, through the suggestion list the browser itself
-    /// renders for a datalist. Picking one fills the input with it, from where the usual Enter (or a
-    /// separator) turns it into a tag, so every validation rule still applies to it. The values already
-    /// in the list are left out of the suggestions unless <see cref="Duplicates"/> allows them back in,
-    /// and so are all of them once the <see cref="MaxTags"/> ceiling leaves nothing to add. A datalist
-    /// suggests rather than restricts; <see cref="RestrictToSuggestions"/> is what makes these values
-    /// the only ones the field accepts.
-    /// </summary>
-    [Parameter] public IEnumerable<string>? Suggestions { get; set; }
-
-    /// <summary>
     /// Custom CSS styles for different parts of the component.
     /// </summary>
     [Parameter, ResetStyleBuilder] public BitTagsInputClassStyles? Styles { get; set; }
@@ -823,10 +812,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
-    /// The accessible name of the list the tags form, which is what a screen reader announces before
-    /// walking through them ("Tags, list, 3 items"). The default is "Tags".
+    /// The values offered to the user while typing, through the suggestion list the browser itself
+    /// renders for a datalist. Picking one fills the input with it, from where the usual Enter (or a
+    /// separator) turns it into a tag, so every validation rule still applies to it. The values already
+    /// in the list are left out of the suggestions unless <see cref="Duplicates"/> allows them back in,
+    /// and so are all of them once the <see cref="MaxTags"/> ceiling leaves nothing to add. A datalist
+    /// suggests rather than restricts; <see cref="RestrictToSuggestions"/> is what makes these values
+    /// the only ones the field accepts.
     /// </summary>
-    [Parameter] public string? TagsAriaLabel { get; set; }
+    [Parameter] public IEnumerable<string>? Suggestions { get; set; }
 
     /// <summary>
     /// The sentence announced after each tag, telling what the keyboard can do with the one that has
@@ -850,9 +844,10 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public string? TagCountAriaDescriptionFormat { get; set; }
 
     /// <summary>
-    /// A custom template for rendering each tag.
+    /// The accessible name of the list the tags form, which is what a screen reader announces before
+    /// walking through them ("Tags, list, 3 items"). The default is "Tags".
     /// </summary>
-    [Parameter] public RenderFragment<string>? TagTemplate { get; set; }
+    [Parameter] public string? TagsAriaLabel { get; set; }
 
     /// <summary>
     /// The placeholder text of the input shown once there is at least one tag in the list, where the
@@ -860,6 +855,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// invitation to add another tag visible ("add another...").
     /// </summary>
     [Parameter] public string? TagsPlaceholder { get; set; }
+
+    /// <summary>
+    /// A custom template for rendering each tag.
+    /// </summary>
+    [Parameter] public RenderFragment<string>? TagTemplate { get; set; }
 
     /// <summary>
     /// How much of the <see cref="Color"/> the tags are painted with: <see cref="BitVariant.Fill"/> (the

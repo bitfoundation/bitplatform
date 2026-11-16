@@ -8,13 +8,6 @@ public partial class BitChartLegacyDemo
     [
          new()
         {
-            Name = "SetupCompletedCallback",
-            Type = "EventCallback",
-            Description = "This event is fired when the chart has been setup through interop and the JavaScript chart object is available. Use this callback if you need to setup custom JavaScript options or register plugins.",
-        },
-
-         new()
-        {
             Name = "Config",
             Type = "BitChartLegacyConfigBase",
             Description = "Gets or sets the configuration of the chart.",
@@ -24,17 +17,24 @@ public partial class BitChartLegacyDemo
 
          new()
         {
-            Name = "Width",
-            Type = "int?",
-            DefaultValue = "null",
-            Description = "Gets or sets the width of the canvas HTML element.",
-        },
-         new()
-        {
             Name = "Height",
             Type = "int?",
             DefaultValue = "null",
             Description = "Gets or sets the height of the canvas HTML element.",
+        },
+
+         new()
+        {
+            Name = "SetupCompletedCallback",
+            Type = "EventCallback",
+            Description = "This event is fired when the chart has been setup through interop and the JavaScript chart object is available. Use this callback if you need to setup custom JavaScript options or register plugins.",
+        },
+         new()
+        {
+            Name = "Width",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Gets or sets the width of the canvas HTML element.",
         }
     ];
 

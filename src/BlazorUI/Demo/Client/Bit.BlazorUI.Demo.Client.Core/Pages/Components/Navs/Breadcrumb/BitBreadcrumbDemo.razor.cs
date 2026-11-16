@@ -166,13 +166,6 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "OverflowIndex",
-            Type = "uint",
-            DefaultValue = "0",
-            Description = "Where the overflow button sits among the displayed items; the collapsed items start there. 0 collapses from the root, 1 keeps the root and collapses the middle."
-        },
-        new()
-        {
             Name = "OverflowIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -193,6 +186,13 @@ public partial class BitBreadcrumbDemo
             Type = "RenderFragment?",
             DefaultValue= "null",
             Description = "The custom template content to render the overflow icon."
+        },
+        new()
+        {
+            Name = "OverflowIndex",
+            Type = "uint",
+            DefaultValue = "0",
+            Description = "Where the overflow button sits among the displayed items; the collapsed items start there. 0 collapses from the root, 1 keeps the root and collapses the middle."
         },
         new()
         {

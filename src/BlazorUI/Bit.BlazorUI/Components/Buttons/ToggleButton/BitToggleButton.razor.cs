@@ -270,25 +270,6 @@ public partial class BitToggleButton : BitComponentBase
     public bool NoWrap { get; set; }
 
     /// <summary>
-    /// Callback for when the IsChecked value has changed.
-    /// </summary>
-    [Parameter] public EventCallback<bool> OnChange { get; set; }
-
-    /// <summary>
-    /// Callback invoked before the checked state changes, letting the change be cancelled.
-    /// </summary>
-    /// <remarks>
-    /// Set <c>Cancel</c> on the provided <see cref="BitToggleButtonChangeArgs"/> to keep the current state.
-    /// Since the callback is awaited, it can also run asynchronous work like a confirmation prompt.
-    /// </remarks>
-    [Parameter] public EventCallback<BitToggleButtonChangeArgs> OnChanging { get; set; }
-
-    /// <summary>
-    /// Callback for when the toggle button is clicked.
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-
-    /// <summary>
     /// The aria-label of the toggle button when it is not checked.
     /// </summary>
     [Parameter] public string? OffAriaLabel { get; set; }
@@ -366,6 +347,25 @@ public partial class BitToggleButton : BitComponentBase
     /// The aria-label of the toggle button when it is checked.
     /// </summary>
     [Parameter] public string? OnAriaLabel { get; set; }
+
+    /// <summary>
+    /// Callback for when the IsChecked value has changed.
+    /// </summary>
+    [Parameter] public EventCallback<bool> OnChange { get; set; }
+
+    /// <summary>
+    /// Callback invoked before the checked state changes, letting the change be cancelled.
+    /// </summary>
+    /// <remarks>
+    /// Set <c>Cancel</c> on the provided <see cref="BitToggleButtonChangeArgs"/> to keep the current state.
+    /// Since the callback is awaited, it can also run asynchronous work like a confirmation prompt.
+    /// </remarks>
+    [Parameter] public EventCallback<BitToggleButtonChangeArgs> OnChanging { get; set; }
+
+    /// <summary>
+    /// Callback for when the toggle button is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
     /// The color of the toggle button when it is checked.

@@ -4,8 +4,8 @@ public partial class BitFcYearView
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
-    [Parameter] public List<BitFullCalendarEvent> SingleDayEvents { get; set; } = [];
     [Parameter] public List<BitFullCalendarEvent> MultiDayEvents { get; set; } = [];
+    [Parameter] public List<BitFullCalendarEvent> SingleDayEvents { get; set; } = [];
 
     private bool _showEventList;
     private DateTime _eventListDate;
