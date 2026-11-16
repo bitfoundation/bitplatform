@@ -424,6 +424,16 @@ function Install-AndroidApps {
                     Invoke-Adb uninstall $apk.Package | Out-Null
                     $output = Invoke-Adb install $apk.Path
                 }
+
+                if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE|not enough space') {
+                    Write-Host "  $($Matches[0]) even then: uninstalling the Play updates of the Google apps the suite never opens."
+
+                    foreach ($unused in 'com.google.android.youtube', 'com.google.android.apps.youtube.music', 'com.google.android.apps.maps', 'com.google.android.apps.photos', 'com.google.android.apps.docs', 'com.google.android.gm', 'com.google.android.calendar', 'com.google.android.googlequicksearchbox', 'com.google.android.tts') {
+                        Invoke-Adb shell cmd package uninstall-system-updates $unused | Out-Null
+                    }
+
+                    $output = Invoke-Adb install $apk.Path
+                }
             }
             finally {
                 Invoke-Adb shell settings delete global sys_storage_threshold_max_bytes | Out-Null
