@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
@@ -28,6 +29,15 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     // per-instance, so they stay isolated per circuit / WASM app and are released on disposal.
     private PerformanceObserverInterop? _observers;
     private PerformanceObserverInterop Observers => DotNetObjectReferenceHelper.GetOrCreate(ref _observers, static () => new PerformanceObserverInterop());
+
+    // The most JSON one reply or one observer callback may carry before performance.ts splits it. Off
+    // WebAssembly each of those is a message over SignalR (or the BlazorWebView bridge), and Blazor
+    // Server's hub closes the connection on one over its receive limit - 32 KB unless the app raised
+    // HubOptions.MaximumReceiveMessageSize - instead of failing the call. Half of that leaves room for
+    // the envelope and for the escaping the hub protocol adds to a JSON string. In-process there is no
+    // message, so no limit and no extra round trips.
+    private const int MaxMessageBytes = 16 * 1024;
+    private int MessageBudget => js is IJSInProcessRuntime ? 0 : MaxMessageBytes;
 
     /// <summary>
     /// High-resolution timestamp (<c>DOMHighResTimeStamp</c>) since the time origin, in milliseconds.
@@ -85,10 +95,16 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/getEntries">Performance.getEntries()</see>
     /// </summary>
+    /// <remarks>
+    /// The timeline can hold several hundred KB of entries. Where the result would not fit in one
+    /// interop message - Blazor Server's hub accepts 32 KB by default - it is read over several
+    /// round trips and returned as one array, so an unfiltered read is safe on every host. Filtering
+    /// by <paramref name="name"/> or <paramref name="type"/> still saves those round trips.
+    /// </remarks>
     public ValueTask<JsonElement[]> GetEntries(string? name = null, string? type = null)
     {
         _startedModuleObservers = true;
-        return js.Invoke<JsonElement[]>("BitButil.performance.getEntries", name, type);
+        return ReadEntries(name, type);
     }
 
     /// <summary>
@@ -110,6 +126,8 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// later call returns what the page produced in between. Call it once early and read it again
     /// later - or use <see cref="SubscribeObserver{T}(string[], Action{T[]}, bool)"/> to be told as
     /// they happen. An entry type the engine does not support stays empty rather than failing.
+    /// <br/>
+    /// A result too large for one interop message is read in pages, as <see cref="GetEntries"/> describes.
     /// </remarks>
     // T's own members are preserved by its annotation, but the DTOs hanging off it are not reached
     // transitively, and this is a public entry point of its own - an app calling it with one of the
@@ -119,10 +137,33 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceScriptTiming))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LayoutShiftAttribution))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LayoutShiftRect))]
-    public ValueTask<T[]> GetTypedEntries<[DynamicallyAccessedMembers(JsonSerialized)] T>(string entryType, string? name = null)
+    public async ValueTask<T[]> GetTypedEntries<[DynamicallyAccessedMembers(JsonSerialized)] T>(string entryType, string? name = null)
     {
         _startedModuleObservers = true;
-        return js.Invoke<T[]>("BitButil.performance.getEntries", name, entryType);
+        return Deserialize<T>(await ReadEntries(name, entryType));
+    }
+
+    /// <summary>
+    /// One timeline read, collected page by page when it does not fit in one interop message - see
+    /// <see cref="PerformanceEntriesPage"/>. In-process the budget is 0 and the first reply is all of it.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceEntriesPage))]
+    private async ValueTask<JsonElement[]> ReadEntries(string? name, string? type)
+    {
+        var budget = MessageBudget;
+        var page = await js.Invoke<PerformanceEntriesPage?>("BitButil.performance.getEntries", name, type, budget);
+        // Prerender/SSR: there is no runtime to read from.
+        if (page is null) return [];
+        if (page.Next is null) return page.Entries;
+
+        var entries = new List<JsonElement>(page.Entries);
+        while (page?.Next is { } next)
+        {
+            page = await js.Invoke<PerformanceEntriesPage?>("BitButil.performance.nextEntries", next, budget);
+            if (page is not null) entries.AddRange(page.Entries);
+        }
+
+        return [.. entries];
     }
 
     /// <summary>
@@ -145,13 +186,9 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// long-lived app should either subscribe instead or call <see cref="ClearResourceTimings"/>
     /// after each read.
     /// <br/>
-    /// Each entry is close to 1 KB of JSON, so the whole buffer is a large result: on Blazor Server
-    /// a read of more than a few dozen entries exceeds the 32 KB the hub accepts in one message by
-    /// default (<c>HubOptions.MaximumReceiveMessageSize</c>), and SignalR closes the connection
-    /// rather than completing the call. Under InteractiveAuto a first visit runs on such a circuit
-    /// while the WebAssembly runtime downloads in the background, and that download alone fills the
-    /// buffer with a couple of hundred entries. Narrow the read with <paramref name="name"/>, keep the buffer short with
-    /// <see cref="ClearResourceTimings"/>, or raise that limit.
+    /// Each entry is close to 1 KB of JSON, so a full buffer is far more than Blazor Server accepts in
+    /// one message; the read is paged as <see cref="GetEntries"/> describes, which costs a round trip
+    /// per ~16 KB. Narrowing it with <paramref name="name"/> avoids those.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceResourceTiming))]
     public ValueTask<PerformanceResourceTiming[]> GetResourceEntries(string? name = null)
@@ -278,6 +315,12 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <param name="handler">Called with each batch of entries the observer receives.</param>
     /// <param name="buffered">When true, the observer is also notified about entries that
     /// were already in the buffer when the observer registered.</param>
+    /// <remarks>
+    /// Off WebAssembly each batch is one interop message, so a report too large for one - the
+    /// backfill of a full resource buffer, for instance - reaches <paramref name="handler"/> as
+    /// several consecutive batches rather than closing a Blazor Server circuit. Treat a batch as
+    /// some of the entries reported, not all of them.
+    /// </remarks>
     [DynamicDependency(PerformanceObserverInterop.InvokeMethodName, typeof(PerformanceObserverInterop))]
     public async Task<ButilSubscription> SubscribeObserver(string[] entryTypes,
                                                           Action<JsonElement[]> handler,
@@ -289,7 +332,7 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         var observers = Observers;
         observers.Add(id, handler);
-        await js.InvokeVoid("BitButil.performance.observe", observers.DotNetRef, id, entryTypes, buffered);
+        await js.InvokeVoid("BitButil.performance.observe", observers.DotNetRef, id, entryTypes, buffered, MessageBudget);
 
         return new ButilSubscription(id, async () =>
         {
@@ -315,6 +358,8 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// An entry type the engine does not support is skipped rather than failing the subscription,
     /// so a handler that is never called is the normal way an unsupported metric presents.
+    /// <br/>
+    /// A large report arrives as several batches, as the untyped overload describes.
     /// </remarks>
     // T's own members are preserved by its annotation, but the DTOs hanging off it are not reached
     // transitively - and unlike the Get* reads, subscribing is a path that can be the only one an

@@ -52,7 +52,6 @@
 @inject Bit.Butil.PaymentHandler paymentHandler
 @inject Bit.Butil.DigitalGoods digitalGoods
 @inject IJSRuntime js
-@inject NavigationManager navigationManager
 
 @*
     Second deterministic harness, focused on async/observer-based APIs. Same contract as /e2e:
@@ -72,6 +71,7 @@
     <button id="perf-typed-observer" @onclick="PerfTypedObserver">typed observer(measure)</button>
     <button id="perf-navigation" @onclick="PerfNavigation">navigation timing</button>
     <button id="perf-resources" @onclick="PerfResources">resource timing</button>
+    <button id="perf-paged" @onclick="PerfPaged">read + observe more than one message holds</button>
     <button id="perf-vitals" @onclick="PerfWebVitals">web vitals</button>
     <button id="perf-buffered-read" @onclick="PerfBufferedRead">first read of a buffered observer-only type</button>
 </section>
@@ -286,16 +286,57 @@
 
     private async Task PerfResources()
     {
-        // Narrowed to the stylesheet every harness host links, rather than the whole buffer: under
-        // InteractiveAuto the page is on a Server circuit while the WebAssembly runtime downloads in
-        // the background, and once that lands the buffer holds a couple of hundred entries - some
-        // 200 KB of JSON, far past the 32 KB a circuit accepts in one message, so SignalR closed the
-        // connection and the status never arrived. The narrowed read is also the one an app should
-        // make, and it proves the name filter reaches the browser.
-        var stylesheet = navigationManager.ToAbsoluteUri("_content/Bit.Butil.Samples.Core/app.css").AbsoluteUri;
-        var resources = await performance.GetResourceEntries(stylesheet);
-        var ok = resources.Length > 0 && resources.All(r => r.EntryType == "resource" && r.Name == stylesheet);
-        Set($"perf:resources:{ok}");
+        // The whole buffer first - the getEntriesByType branch. Under InteractiveAuto the page is on a
+        // Server circuit while the WebAssembly runtime downloads in the background, so by now that
+        // buffer is a couple of hundred entries, far past what one SignalR message carries: this is
+        // also the read that proves the paging holds up on the host it was written for.
+        var resources = await performance.GetResourceEntries();
+        var all = resources.Length > 0 && resources.All(r => r.EntryType == "resource" && r.Name.Length > 0);
+
+        // Then the getEntriesByName branch, for a URL the buffer is known to hold. Taken from the read
+        // above rather than spelled out, since which resources a host records - and under which
+        // scheme - differs between the browsers and the webviews this page runs in.
+        var name = resources.FirstOrDefault()?.Name;
+        PerformanceResourceTiming[] named = name is null ? [] : await performance.GetResourceEntries(name);
+        var narrowed = named.Length > 0 && named.All(r => r.EntryType == "resource" && r.Name == name);
+
+        Set($"perf:resources:{all && narrowed}");
+    }
+
+    private async Task PerfPaged()
+    {
+        // More entries than one interop message carries off WebAssembly (some 60 KB of marks against
+        // the 16 KB the service pages by), produced in one call so a Server host does not spend a
+        // round trip per mark. Under WebAssembly nothing is paged and this checks the same results.
+        const string prefix = "butil-e2e-paged-";
+        const int count = 120;
+        await performance.ClearMarks();
+        await js.InvokeVoidAsync("eval",
+            $"(() => {{ for (let i = 0; i < {count}; i++) performance.mark('{prefix}' + String(i).padStart(3, '0') + '-' + 'x'.repeat(400)); }})()");
+        var expected = Enumerable.Range(0, count).Select(i => $"{prefix}{i:000}-{new string('x', 400)}").ToArray();
+
+        // A read: every page arrives, in order, and none of them twice.
+        var entries = await performance.GetEntries(type: "mark");
+        var names = entries.Select(e => e.GetProperty("name").GetString()).Where(n => n?.StartsWith(prefix) is true).ToArray();
+        var read = names.SequenceEqual(expected);
+
+        // A buffered subscription: the backfill is one observer report, split into batches the same
+        // way - so the handler has to see all of them across however many calls it takes.
+        var seen = new List<string>();
+        var tcs = new TaskCompletionSource<bool>();
+        await using (await performance.SubscribeObserver(["mark"], batch =>
+        {
+            lock (seen)
+            {
+                seen.AddRange(batch.Select(e => e.GetProperty("name").GetString()!).Where(n => n.StartsWith(prefix)));
+                if (seen.Count >= count) tcs.TrySetResult(seen.SequenceEqual(expected));
+            }
+        }, buffered: true))
+        {
+            var observed = await WaitFor(tcs, 5000);
+            await performance.ClearMarks();
+            Set($"perf:paged:{read}/{observed}");
+        }
     }
 
     private async Task PerfWebVitals()

@@ -22,16 +22,12 @@ public abstract class ButilHarnessTestBase
 {
     // What the Blazor runtimes write to the console when the page stops being interactive: WebAssembly's
     // renderer logs "Unhandled exception rendering component", blazor.server.js/blazor.web.js report a circuit
-    // an exception terminated, and the SignalR client reports the server closing the connection - which is what a
-    // message over the hub's receive limit (32 KB by default, a large interop result among them) gets: the call in
-    // flight never completes, so the click looks lost. Anything a test provokes on purpose - a failed fetch, a
-    // 404 - is not on this list.
+    // an exception terminated. Anything a test provokes on purpose - a failed fetch, a 404 - is not on this list.
     private static readonly string[] FatalConsoleFragments =
     [
         "Unhandled exception rendering component",
         "unhandled exception on the current circuit",
         "Circuit has closed due to an error",
-        "Connection disconnected with error",
     ];
 
     private readonly object _errorsLock = new();
