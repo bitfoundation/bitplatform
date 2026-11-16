@@ -99,10 +99,10 @@ private DateTimeOffset[] highlightedDates =
 
     private readonly string example7RazorCode = @"
 <BitCalendar ShowMonthPicker=""@showMonthPicker"" />
-<BitToggleButton OnText=""MonthPicker visible"" OffText=""MonthPicker invisible"" @bind-IsChecked=""@showMonthPicker"" />
+<BitToggleButton OnText=""MonthPicker visible"" OffText=""MonthPicker invisible"" @bind-Checked=""@showMonthPicker"" />
 
 <BitCalendar ShowMonthPickerAsOverlay=""@showMonthPickerAsOverlay"" />
-<BitToggleButton OnText=""Position Overlay"" OffText=""Position Besides"" @bind-IsChecked=""@showMonthPickerAsOverlay"" />
+<BitToggleButton OnText=""Position Overlay"" OffText=""Position Besides"" @bind-Checked=""@showMonthPickerAsOverlay"" />
 
 <BitCalendar HighlightCurrentMonth HighlightSelectedMonth />";
     private readonly string example7CsharpCode = @"

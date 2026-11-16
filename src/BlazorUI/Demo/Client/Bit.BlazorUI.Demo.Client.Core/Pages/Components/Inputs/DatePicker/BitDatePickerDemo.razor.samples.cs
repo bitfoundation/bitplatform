@@ -88,10 +88,10 @@ private readonly DateTimeOffset[] highlightedDates =
 
     private readonly string example6RazorCode = @"
 <BitDatePicker Label=""IsMonthPickerVisible"" IsMonthPickerVisible=""@isMonthPickerVisible"" />
-<BitToggleButton OnText=""MonthPicker visible"" OffText=""MonthPicker hidden"" @bind-IsChecked=""@isMonthPickerVisible"" />
+<BitToggleButton OnText=""MonthPicker visible"" OffText=""MonthPicker hidden"" @bind-Checked=""@isMonthPickerVisible"" />
 
 <BitDatePicker Label=""ShowMonthPickerAsOverlay"" ShowMonthPickerAsOverlay=""@showMonthPickerAsOverlay"" />
-<BitToggleButton OnText=""Position overlay"" OffText=""Position besides"" @bind-IsChecked=""@showMonthPickerAsOverlay"" />";
+<BitToggleButton OnText=""Position overlay"" OffText=""Position besides"" @bind-Checked=""@showMonthPickerAsOverlay"" />";
     private readonly string example6CsharpCode = @"
 private bool isMonthPickerVisible = true;
 private bool showMonthPickerAsOverlay;";

@@ -25,7 +25,6 @@ public partial class BitParameterNamingContractTests
     private static readonly Dictionary<string, string[]> _outliersByComponent = new()
     {
         ["BitMenuButton"] = ["IsOpen", "IsOpenChanged", "IsToggled", "IsToggledChanged", "DefaultIsToggled"],
-        ["BitToggleButton"] = ["IsChecked", "IsCheckedChanged", "DefaultIsChecked"],
         ["BitCircularTimePicker"] = ["IsOpen", "IsOpenChanged"],
         ["BitDatePicker"] = ["IsMonthPickerVisible", "IsOpen", "IsOpenChanged"],
         ["BitDateRangePicker"] = ["IsMonthPickerVisible", "IsOpen", "IsOpenChanged"],

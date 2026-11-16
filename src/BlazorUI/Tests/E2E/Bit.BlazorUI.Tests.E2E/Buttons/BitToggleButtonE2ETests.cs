@@ -5,7 +5,7 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// <summary>
 /// The end-to-end tests of BitToggleButton against /e2e/toggle-button and /e2e/toggle-button/autofocus: toggling by
 /// pointer and keyboard, every Variant checked and unchecked, Text/OnText/OffText and the titles, the icons per state
-/// and IconPlacement, IconOnly and its name, DefaultIsChecked, the two-way bound IsChecked, OnChange, ToggleAsync and
+/// and IconPlacement, IconOnly and its name, DefaultChecked, the two-way bound Checked, OnChange, ToggleAsync and
 /// FocusAsync, OnColor/OffColor and OnVariant/OffVariant, the check mark (ShowCheckMark, FixedCheckMark, a custom
 /// icon), ChildContent and OnTemplate/OffTemplate, the order of OnClick, OnChanging and OnChange and the veto of
 /// OnChanging, StopPropagation, the loading states (Loading, Reclickable, AutoLoading, LoadingDelay, the label
@@ -180,7 +180,7 @@ public class BitToggleButtonE2ETests : E2ETestBase
     // ---------- binding ----------
 
     [TestMethod]
-    public async Task DefaultIsChecked_SeedsTheStateOnceAndLeavesItToTheButton()
+    public async Task DefaultChecked_SeedsTheStateOnceAndLeavesItToTheButton()
     {
         await OpenAsync("/e2e/toggle-button");
 
@@ -194,7 +194,7 @@ public class BitToggleButtonE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsChecked_BoundTwoWay_FollowsTheButtonAndThePage()
+    public async Task Checked_BoundTwoWay_FollowsTheButtonAndThePage()
     {
         await OpenAsync("/e2e/toggle-button");
 

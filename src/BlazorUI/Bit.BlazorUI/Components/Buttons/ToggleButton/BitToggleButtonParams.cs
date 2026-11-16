@@ -95,7 +95,7 @@ public partial class BitToggleButtonParams : BitComponentBaseParams, IBitCompone
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Default value of the IsChecked parameter.
+    /// Default value of the Checked parameter.
     /// </summary>
     /// <remarks>
     /// The checked state itself is deliberately not cascaded: it is the one parameter a toggle button assigns to
@@ -103,7 +103,7 @@ public partial class BitToggleButtonParams : BitComponentBaseParams, IBitCompone
     /// is only read while the toggle button initializes, which is what makes it the safe way to start a whole group
     /// of them in the checked state.
     /// </remarks>
-    public bool? DefaultIsChecked { get; set; }
+    public bool? DefaultChecked { get; set; }
 
     /// <summary>
     /// Keeps the space of the check mark reserved in the unchecked state so the content does not shift while toggling.
@@ -371,9 +371,9 @@ public partial class BitToggleButtonParams : BitComponentBaseParams, IBitCompone
             bitToggleButton.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
-        if (DefaultIsChecked.HasValue)
+        if (DefaultChecked.HasValue)
         {
-            bitToggleButton.TakeFromCascade(nameof(DefaultIsChecked), DefaultIsChecked.Value, static t => t.DefaultIsChecked, static (t, v) => t.DefaultIsChecked = v);
+            bitToggleButton.TakeFromCascade(nameof(DefaultChecked), DefaultChecked.Value, static t => t.DefaultChecked, static (t, v) => t.DefaultChecked = v);
         }
 
         if (FixedCheckMark.HasValue)
