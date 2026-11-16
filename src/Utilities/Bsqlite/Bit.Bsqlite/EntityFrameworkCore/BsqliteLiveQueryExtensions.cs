@@ -108,16 +108,20 @@ public static partial class BsqliteLiveQueryExtensions
             return tables;
         }
 
+        // Matched where the text of quoted identifiers is masked, so a keyword inside one - a column named
+        // "From Lines (old)" - is not taken for a FROM calling a function; the name is read back from the code.
+        var masked = WithQuotedIdentifiersMasked(code);
+
         var commonTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (Match match in CommonTableExpression().Matches(code))
+        foreach (Match match in CommonTableExpression().Matches(masked))
         {
-            commonTables.Add(match.Groups[1].Value);
+            commonTables.Add(code.Substring(match.Groups[1].Index, match.Groups[1].Length));
         }
 
         var notTables = new HashSet<string>(commonTables, StringComparer.OrdinalIgnoreCase);
-        foreach (Match match in TableFunction().Matches(code))
+        foreach (Match match in TableFunction().Matches(masked))
         {
-            notTables.Add(match.Groups[1].Value);
+            notTables.Add(code.Substring(match.Groups[1].Index, match.Groups[1].Length));
         }
 
         var read = tables.Where(name => !notTables.Contains(name)).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -214,6 +218,33 @@ public static partial class BsqliteLiveQueryExtensions
                     i++;
                     break;
             }
+        }
+
+        return new string(chars);
+    }
+
+    /// <summary>
+    /// <paramref name="code"/> - already without literals and comments - with the text inside every quoted
+    /// identifier replaced by <c>_</c>, so it holds no keyword, parenthesis or comma. The length and the quotes
+    /// stay, so a match's position names the same text in <paramref name="code"/>.
+    /// </summary>
+    internal static string WithQuotedIdentifiersMasked(string code)
+    {
+        var chars = code.ToCharArray();
+        var i = 0;
+        while (i < chars.Length)
+        {
+            if (chars[i] is '"' or '`' or '[')
+            {
+                var close = chars[i] == '[' ? ']' : chars[i];
+                i++;
+                while (i < chars.Length && chars[i] != close)
+                {
+                    chars[i++] = '_';
+                }
+            }
+
+            i++;
         }
 
         return new string(chars);

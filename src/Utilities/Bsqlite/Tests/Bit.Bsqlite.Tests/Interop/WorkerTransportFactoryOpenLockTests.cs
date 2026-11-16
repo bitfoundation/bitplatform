@@ -7,6 +7,8 @@ public sealed class WorkerTransportFactoryOpenLockTests
 
     private CancellationToken Ct => TestContext.CancellationToken;
 
+    private static ValueTask<Storage.IBsqliteStorageProvider?> Unbound(CancellationToken cancellationToken) => default;
+
     /// <summary>
     /// The page keeps every held open lock in one map, by id, and a factory is made per DI scope. Ids each factory
     /// counted on its own collided between scopes, so releasing one scope's lock released the other's.
@@ -18,8 +20,8 @@ public sealed class WorkerTransportFactoryOpenLockTests
         IBsqliteOpenLock first = new BsqliteWorkerTransportFactory(js);
         IBsqliteOpenLock second = new BsqliteWorkerTransportFactory(js);
 
-        await using var a = await first.AcquireOpenLockAsync("app.db", Ct);
-        await using var b = await second.AcquireOpenLockAsync("app.db", Ct);
+        await using var a = await first.AcquireOpenLockAsync("app.db", Unbound, Ct);
+        await using var b = await second.AcquireOpenLockAsync("app.db", Unbound, Ct);
 
         var ids = js.Calls.Where(call => call.Identifier == "module.acquireOpenLock").Select(call => call.Args[1]).ToArray();
         Assert.HasCount(2, ids);
@@ -34,8 +36,8 @@ public sealed class WorkerTransportFactoryOpenLockTests
         var factory = new BsqliteWorkerTransportFactory(js);
         IBsqliteOpenLock locks = factory;
 
-        await (await locks.AcquireOpenLockAsync("app.db", Ct))!.DisposeAsync();
-        await (await locks.AcquireOpenLockAsync("app.db", Ct))!.DisposeAsync();
+        await (await locks.AcquireOpenLockAsync("app.db", Unbound, Ct))!.DisposeAsync();
+        await (await locks.AcquireOpenLockAsync("app.db", Unbound, Ct))!.DisposeAsync();
 
         Assert.AreEqual(1, js.Calls.Count(call => call.Identifier == "import"));
         Assert.AreEqual(2, js.Calls.Count(call => call.Identifier == "module.releaseOpenLock"));
@@ -58,7 +60,7 @@ public sealed class WorkerTransportFactoryOpenLockTests
         var factory = new BsqliteWorkerTransportFactory(js);
         IBsqliteOpenLock locks = factory;
 
-        var held = await locks.AcquireOpenLockAsync("app.db", Ct);
+        var held = await locks.AcquireOpenLockAsync("app.db", Unbound, Ct);
         await factory.DisposeAsync();
 
         Assert.IsFalse(js.Module.Disposed);
@@ -67,6 +69,6 @@ public sealed class WorkerTransportFactoryOpenLockTests
 
         Assert.AreEqual(1, js.Calls.Count(call => call.Identifier == "module.releaseOpenLock"));
         Assert.IsTrue(js.Module.Disposed);
-        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => locks.AcquireOpenLockAsync("app.db", Ct));
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => locks.AcquireOpenLockAsync("app.db", Unbound, Ct));
     }
 }

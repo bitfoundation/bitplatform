@@ -52,8 +52,32 @@ export function pathOf(databaseName: string): string {
     return new URL(databaseName, 'file://').pathname;
 }
 
+/**
+ * The database name a path of the VFS's stands for, as `list` reports it and `open` takes it back: the path
+ * without its leading `/`, each segment decoded the way the OPFS admin reads a file name (`decodeName` in
+ * bit-bsqlite-opfs-admin.ts). The URL parser escapes a space or a non-ASCII character, so `My Files.db` is kept
+ * as `/My%20Files.db` - a name the open refuses, since it is that key's own spelling.
+ */
 export function displayName(path: string): string {
-    return path.startsWith('/') ? path.slice(1) : path;
+    const relative = path.startsWith('/') ? path.slice(1) : path;
+    return relative.split('/').map(decodeSegment).join('/');
+}
+
+/**
+ * A path segment decoded - but only when the decoded text maps back to this same segment through
+ * {@link pathOf}. The URL parser leaves `%` alone, so a segment `a%41.db` or `a%2Fb.db` came from a name spelled
+ * that way: decoded, it would read as `aA.db` or `a/b.db`, which are other files. One key so reads as one name,
+ * and two keys never as the same one.
+ */
+function decodeSegment(segment: string): string {
+    let decoded: string;
+    try {
+        decoded = decodeURIComponent(segment);
+    } catch {
+        return segment;
+    }
+
+    return pathOf(decoded) === `/${segment}` ? decoded : segment;
 }
 
 export async function probe(): Promise<ProbeResult> {

@@ -98,12 +98,15 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
         // database that has lost its binding, the copy it is still checking already sits on the preferred
         // backend, so a resolve that ran then would find the database there - nothing to move - and open the
         // copy the other tab deletes if the check fails. Resolved only once the lock is held, so what it finds
-        // is what the last tab to hold it left.
+        // is what the last tab to hold it left. Which backend the binding names is all the transport factory can
+        // learn before then, and it decides by that whether there is anything to take turns with.
         IAsyncDisposable? openLock = null;
         if (_selection.MigrationMode is BsqliteStorageMigrationMode.AutomaticOnOpen
             && _transports is IBsqliteOpenLock locks)
         {
-            openLock = await locks.AcquireOpenLockAsync(databaseName, cancellationToken).ConfigureAwait(false);
+            openLock = await locks
+                .AcquireOpenLockAsync(databaseName, ct => _resolver.BoundProviderAsync(databaseName, ct), cancellationToken)
+                .ConfigureAwait(false);
         }
 
         await using (openLock)

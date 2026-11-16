@@ -195,7 +195,10 @@ public sealed class SessionFactoryMigrationTests
 
         public IBsqliteTransport Create(IBsqliteStorageProvider provider) => new RecordingTransport(Events);
 
-        public async Task<IAsyncDisposable?> AcquireOpenLockAsync(string databaseName, CancellationToken cancellationToken)
+        public async Task<IAsyncDisposable?> AcquireOpenLockAsync(
+            string databaseName,
+            Func<CancellationToken, ValueTask<IBsqliteStorageProvider?>> boundProvider,
+            CancellationToken cancellationToken)
         {
             if (onLocking is not null)
             {

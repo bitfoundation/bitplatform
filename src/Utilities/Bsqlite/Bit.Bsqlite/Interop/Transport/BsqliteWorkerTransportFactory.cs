@@ -32,9 +32,13 @@ public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTr
 
     /// <summary>
     /// A Web Lock on the database's name, taken through the host module without a worker: see
-    /// <see cref="IBsqliteOpenLock"/>.
+    /// <see cref="IBsqliteOpenLock"/>. Taken whatever the database is bound to: every backend this factory serves
+    /// runs in the browser, where another tab may be opening it.
     /// </summary>
-    async Task<IAsyncDisposable?> IBsqliteOpenLock.AcquireOpenLockAsync(string databaseName, CancellationToken cancellationToken)
+    async Task<IAsyncDisposable?> IBsqliteOpenLock.AcquireOpenLockAsync(
+        string databaseName,
+        Func<CancellationToken, ValueTask<IBsqliteStorageProvider?>> boundProvider,
+        CancellationToken cancellationToken)
     {
         var import = Lease();
         IJSObjectReference module;

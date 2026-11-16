@@ -148,6 +148,18 @@ public sealed class BsqliteStorageProviderResolver
     }
 
     /// <summary>
+    /// The registered backend the binding names for <paramref name="databaseName"/>, or null when it names none -
+    /// no binding, a deleted one, or a backend not registered here. Reads the binding without resolving anything.
+    /// </summary>
+    internal async ValueTask<IBsqliteStorageProvider?> BoundProviderAsync(
+        string databaseName,
+        CancellationToken cancellationToken)
+    {
+        var name = await _bindingStore.GetProviderNameAsync(databaseName, cancellationToken).ConfigureAwait(false);
+        return name is not null && _providers.TryGetValue(name, out var provider) ? provider : null;
+    }
+
+    /// <summary>
     /// Records the resolved backend as the home of the database. Call this once the database has
     /// actually opened, so a failed open does not leave a binding pointing at nothing.
     /// </summary>

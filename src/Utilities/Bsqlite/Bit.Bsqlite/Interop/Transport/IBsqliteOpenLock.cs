@@ -1,4 +1,6 @@
-﻿namespace Bit.Bsqlite.Interop;
+﻿using Bit.Bsqlite.Storage;
+
+namespace Bit.Bsqlite.Interop;
 
 /// <summary>
 /// A transport factory that can hold a lock on a database's name before any transport is open, shared with
@@ -15,5 +17,15 @@ internal interface IBsqliteOpenLock
     /// Waits until no other tab is opening <paramref name="databaseName"/>, then holds that until the result is
     /// disposed. Null where there is nothing to coordinate with.
     /// </summary>
-    Task<IAsyncDisposable?> AcquireOpenLockAsync(string databaseName, CancellationToken cancellationToken);
+    /// <param name="databaseName">The database about to be opened.</param>
+    /// <param name="boundProvider">
+    /// Reads the backend the database is bound to now, or null when none is. The lock is taken before the open
+    /// resolves where the database lives, so this is the only word on the backend there is yet: a factory that
+    /// locks only for some backends asks it, one that always locks need not.
+    /// </param>
+    /// <param name="cancellationToken">Gives up waiting.</param>
+    Task<IAsyncDisposable?> AcquireOpenLockAsync(
+        string databaseName,
+        Func<CancellationToken, ValueTask<IBsqliteStorageProvider?>> boundProvider,
+        CancellationToken cancellationToken);
 }

@@ -282,6 +282,54 @@ public sealed class LiveQueryTests
     }
 
     /// <summary>
+    /// A quoted identifier keeps its text for the extractor, and the column <c>"From Lines (old)"</c> read there as a
+    /// FROM calling a function <c>Lines</c> - so the table <c>Lines</c> was set aside as no table, and only writing
+    /// <c>Categories</c> re-ran the query. A keyword inside a quoted identifier is no keyword.
+    /// </summary>
+    [TestMethod]
+    public async Task AsLiveQuery_WithAKeywordInAQuotedColumnName_RerunsWhenEitherTableIsWritten()
+    {
+        var transport = new BsqliteInProcessTransport();
+        await using var connection = new BsqliteConnection(transport, "live-quoted-keyword.db");
+        await connection.OpenAsync(Ct);
+        await using var ctx = new LedgerContext(new DbContextOptionsBuilder<LedgerContext>()
+            .UseBitBsqlite(connection)
+            .Options);
+
+        await ctx.Database.EnsureCreatedAsync(Ct);
+        ctx.Categories.Add(new LedgerCategory { Name = "Tools" });
+        await ctx.SaveChangesAsync(Ct);
+
+        var query = ctx.Lines
+            .Join(ctx.Categories, line => line.CategoryId, category => category.Id, (line, category) => new LedgerRow
+            {
+                Old = line.Old,
+                Category = category.Name,
+            });
+        var sql = query.ToQueryString();
+        StringAssert.Contains(sql, "\"From Lines (old)\"", StringComparison.Ordinal);
+        CollectionAssert.AreEquivalent(new[] { "Lines", "Categories" }, BsqliteLiveQueryExtensions.TablesOf(sql, ctx).ToArray());
+
+        await using var live = query.AsLiveQuery(connection);
+        Assert.IsEmpty(await live.RefreshAsync(Ct));
+
+        // Only Lines is written, so only Lines is notified.
+        await ctx.Database.ExecuteSqlRawAsync(
+            "INSERT INTO \"Lines\" (\"CategoryId\", \"From Lines (old)\") VALUES (1, 'kept')",
+            Ct);
+
+        var deadline = DateTime.UtcNow.AddSeconds(2);
+        while ((live.Current?.Count ?? 0) == 0 && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(20, Ct);
+        }
+
+        var row = Assert.ContainsSingle(live.Current!);
+        Assert.AreEqual("kept", row.Old);
+        Assert.AreEqual("Tools", row.Category);
+    }
+
+    /// <summary>
     /// With no context to check the names against, what the extractor found may be a view or anything else no
     /// write is reported by, so the query re-runs on every write - as it does for a name the model does not map.
     /// </summary>
@@ -314,5 +362,41 @@ public sealed class LiveQueryTests
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) =>
             modelBuilder.Entity<OpenLine>().HasNoKey().ToView("OpenLines");
+    }
+
+    public sealed class LedgerLine
+    {
+        public int Id { get; set; }
+
+        public int CategoryId { get; set; }
+
+        public string Old { get; set; } = "";
+    }
+
+    public sealed class LedgerCategory
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = "";
+    }
+
+    public sealed class LedgerRow
+    {
+        public string Old { get; set; } = "";
+
+        public string Category { get; set; } = "";
+    }
+
+    public sealed class LedgerContext(DbContextOptions<LedgerContext> options) : DbContext(options)
+    {
+        public DbSet<LedgerLine> Lines => Set<LedgerLine>();
+
+        public DbSet<LedgerCategory> Categories => Set<LedgerCategory>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<LedgerLine>().ToTable("Lines").Property(line => line.Old).HasColumnName("From Lines (old)");
+            modelBuilder.Entity<LedgerCategory>().ToTable("Categories");
+        }
     }
 }
