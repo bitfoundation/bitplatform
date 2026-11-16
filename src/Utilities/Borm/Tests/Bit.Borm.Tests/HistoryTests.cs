@@ -259,6 +259,78 @@ public class HistoryTests : ComponentTestBase
     }
 
     [TestMethod]
+    public async Task Removing_one_copy_of_a_row_object_listed_twice_gives_each_occurrence_its_own_state_back()
+    {
+        // Undo matched the copy left behind with the first occurrence by reference, so the removed copy's touched
+        // flag came back on the other one.
+        var shared = new LineItem { Product = "A", Quantity = 5 };
+        var model = new RegistrationModel { Items = [shared, shared] };
+        var state = new BormState(BormSchemaGenerator.Generate<RegistrationModel>(), new BormModelDataAccessor(model)) { HistoryLimit = 50 };
+        state.MarkTouched("Items[0].Product");
+
+        state.RemoveArrayItem("Items", 0);
+        Assert.IsFalse(state.IsTouched("Items[0].Product"), "the copy that moved up was never touched");
+
+        await state.UndoAsync();
+        Assert.IsTrue(state.IsTouched("Items[0].Product"));
+        Assert.IsFalse(state.IsTouched("Items[1].Product"));
+
+        await state.RedoAsync();
+        Assert.HasCount(1, model.Items);
+        Assert.IsFalse(state.IsTouched("Items[0].Product"));
+
+        await state.UndoAsync();
+        Assert.IsTrue(state.IsTouched("Items[0].Product"));
+        Assert.IsFalse(state.IsTouched("Items[1].Product"));
+    }
+
+    [TestMethod]
+    public async Task Moving_one_copy_of_a_row_object_listed_twice_takes_its_own_state_back_on_undo()
+    {
+        var shared = new LineItem { Product = "A", Quantity = 5 };
+        var model = new RegistrationModel { Items = [shared, new LineItem { Product = "B", Quantity = 6 }, shared] };
+        var state = new BormState(BormSchemaGenerator.Generate<RegistrationModel>(), new BormModelDataAccessor(model)) { HistoryLimit = 50 };
+        state.MarkTouched("Items[0].Product");
+
+        state.MoveArrayItem("Items", 0, 2);
+        Assert.IsTrue(state.IsTouched("Items[2].Product"));
+
+        await state.UndoAsync();
+        Assert.IsTrue(state.IsTouched("Items[0].Product"));
+        Assert.IsFalse(state.IsTouched("Items[2].Product"));
+
+        await state.RedoAsync();
+        Assert.IsTrue(state.IsTouched("Items[2].Product"));
+        Assert.IsFalse(state.IsTouched("Items[1].Product"));
+    }
+
+    [TestMethod]
+    public async Task A_row_put_back_by_undo_does_not_bring_back_state_for_a_field_the_schema_has_since_lost()
+    {
+        // NotifyDefinitionChanged dropped what a removed field carried, but undo gave a removed row all it carried
+        // when it left - an error for a field no longer on the page kept the form from being valid.
+        var model = new RegistrationModel { Items = [new LineItem { Product = "", Quantity = 5 }, new LineItem { Product = "B", Quantity = 6 }] };
+        var state = new BormState(BormSchemaGenerator.Generate<RegistrationModel>(), new BormModelDataAccessor(model)) { HistoryLimit = 50 };
+        await state.ValidateAsync();
+        state.MarkTouched("Items[0].Product");
+        state.MarkTouched("Items[0].Quantity");
+        Assert.IsNotEmpty(state.MessagesFor("Items[0].Product"));
+
+        state.RemoveArrayItem("Items", 0);
+        var template = state.Definition.FindField("Items")!.ItemTemplate!;
+        template.Children.Remove(template.Children.Single(f => f.Name == "Product"));
+        state.NotifyDefinitionChanged();
+
+        await state.UndoAsync();
+
+        Assert.HasCount(2, model.Items);
+        Assert.IsEmpty(state.MessagesFor("Items[0].Product"));
+        Assert.IsFalse(state.IsTouched("Items[0].Product"));
+        Assert.IsTrue(state.IsTouched("Items[0].Quantity"), "what the schema still has comes back");
+        Assert.IsFalse(state.AllMessages.Any(m => m.FieldPath.StartsWith("Items[", StringComparison.Ordinal)), "nothing in the rows can block a submit");
+    }
+
+    [TestMethod]
     public async Task A_field_put_back_is_judged_again_as_a_change_would_be()
     {
         var (state, _) = Form();
