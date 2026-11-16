@@ -106,7 +106,7 @@ private static List<BitNavItem> CreateBasicNavItems() =>" + basicNavItemsBodyCsh
 ];";
 
     private readonly string example1RazorCode = @"
-<BitToggleButton @bind-IsChecked=""basicIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""basicIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
     <BitNavPanel @bind-IsOpen=""basicIsOpen"" Items=""basicNavItems"" />
@@ -118,19 +118,19 @@ private bool basicIsOpen;
     private readonly string example2RazorCode = @"
 <div>
     <div>FitWidth</div>
-    <BitToggleButton @bind-IsChecked=""fitWidthIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""fitWidthIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""fitWidthIsOpen"" Items=""fitWidthNavItems"" FitWidth />
 </div>
 
 <div style=""width:260px"">
     <div>FullWidth</div>
-    <BitToggleButton @bind-IsChecked=""fullWidthIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""fullWidthIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""fullWidthIsOpen"" Items=""fullWidthNavItems"" FullWidth />
 </div>
 
 <div>
     <div>Width / ToggledWidth</div>
-    <BitToggleButton @bind-IsChecked=""widthIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""widthIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""widthIsOpen"" Items=""widthNavItems"" Width=""200"" ToggledWidth=""72"" />
 </div>";
     private readonly string example2CsharpCode = @"
@@ -147,13 +147,13 @@ private List<BitNavItem> widthNavItems = CreateBasicNavItems();
     private readonly string example3RazorCode = @"
 <div style=""width:222px"">
     <div>ExpandOnHover</div>
-    <BitToggleButton @bind-IsChecked=""expandOnHoverIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""expandOnHoverIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""expandOnHoverIsOpen"" Items=""expandOnHoverNavItems"" ExpandOnHover />
 </div>
 
 <div style=""width:222px"">
     <div>NoToggle</div>
-    <BitToggleButton @bind-IsChecked=""noToggleIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""noToggleIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""noToggleIsOpen"" Items=""noToggleNavItems"" NoToggle />
 </div>";
     private readonly string example3CsharpCode = @"
@@ -168,7 +168,7 @@ private List<BitNavItem> noToggleNavItems = CreateBasicNavItems();
     private readonly string example4RazorCode = @"
 <div style=""width:222px"">
     <div>Logo</div>
-    <BitToggleButton @bind-IsChecked=""iconUrlIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""iconUrlIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""iconUrlIsOpen""
                  Items=""iconUrlNavItems""
                  IconUrl=""/images/icon.png""
@@ -178,7 +178,7 @@ private List<BitNavItem> noToggleNavItems = CreateBasicNavItems();
 
 <div style=""width:222px"">
     <div>Logo and title</div>
-    <BitToggleButton @bind-IsChecked=""headerTextIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""headerTextIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""headerTextIsOpen""
                  Items=""headerTextNavItems""
                  IconUrl=""/images/icon.png""
@@ -195,7 +195,7 @@ private List<BitNavItem> headerTextNavItems = CreateBasicNavItems();
 " + createBasicNavItemsCsharpCode;
 
     private readonly string example5RazorCode = @"
-<BitToggleButton @bind-IsChecked=""searchIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""searchIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <BitTextField Label=""Search text"" @bind-Value=""searchText"" Immediate />
 <div>Last searched term: <b>@lastSearchedTerm</b></div>
@@ -217,7 +217,7 @@ private string? lastSearchedTerm;
 " + basicNavItemsCsharpCode.Replace("basicNavItems", "searchNavItems");
 
     private readonly string example6RazorCode = @"
-<BitToggleButton @bind-IsChecked=""selectionIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""selectionIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div>Selected item: <b>@selectedItem?.Text</b></div>
 <BitButton OnClick=""() => selectedItem = selectionNavItems[3]"">Select Settings</BitButton>
@@ -271,7 +271,7 @@ private List<BitNavItem> selectionNavItems =
 ];";
 
     private readonly string example7RazorCode = @"
-<BitToggleButton @bind-IsChecked=""singleExpandIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""singleExpandIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
     <BitNavPanel @bind-IsOpen=""singleExpandIsOpen"" Items=""singleExpandNavItems"" SingleExpand />
@@ -282,7 +282,7 @@ private bool singleExpandIsOpen;
 private List<BitNavItem> singleExpandNavItems =" + expansionNavItemsBodyCsharpCode;
 
     private readonly string example8RazorCode = @"
-<BitToggleButton @bind-IsChecked=""customIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""customIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
     <BitNavPanel @bind-IsOpen=""customIsOpen"" Items=""customNavItems"" NameSelectors=""customSelectors"" />
@@ -335,7 +335,7 @@ private readonly List<CustomNavItem> customNavItems =
     private readonly string example9RazorCode = @"
 <div style=""width:222px"">
     <div>Modal, at the end edge</div>
-    <BitToggleButton @bind-IsChecked=""drawerIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""drawerIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""drawerIsOpen""
                  Items=""drawerNavItems""
                  AutoFocus
@@ -345,13 +345,13 @@ private readonly List<CustomNavItem> customNavItems =
 
 <div style=""width:222px"">
     <div>Non-modal</div>
-    <BitToggleButton @bind-IsChecked=""behaviorIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""behaviorIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""behaviorIsOpen"" Items=""behaviorNavItems"" NoOverlay NoAutoClose NoSwipe />
 </div>
 
 <div style=""width:222px"">
     <div>A drawer on every screen</div>
-    <BitToggleButton @bind-IsChecked=""alwaysDrawerIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""alwaysDrawerIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""alwaysDrawerIsOpen""
                  Items=""alwaysDrawerNavItems""
                  ShowCloseButton
@@ -369,7 +369,7 @@ private List<BitNavItem> alwaysDrawerNavItems = CreateBasicNavItems();
 " + createBasicNavItemsCsharpCode;
 
     private readonly string example10RazorCode = @"
-<BitToggleButton @bind-IsChecked=""templateIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""templateIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <BitNavPanel @bind-IsOpen=""templateIsOpen"" Items=""templateNavItems"" FitWidth NoToggle>
     <Header>
@@ -392,7 +392,7 @@ private bool templateIsOpen;
 " + basicNavItemsCsharpCode.Replace("basicNavItems", "templateNavItems");
 
     private readonly string example11RazorCode = @"
-<BitToggleButton @bind-IsChecked=""eventIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""eventIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div>
     Clicked item: @onItemClick?.Text
@@ -457,7 +457,7 @@ private List<BitNavItem> eventNavItems =
 ];";
 
     private readonly string example12RazorCode = @"
-<BitToggleButton @bind-IsChecked=""publicApiIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""publicApiIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <BitButton OnClick=""() => navPanelRef.Toggle()"">Toggle</BitButton>
 <BitButton OnClick=""() => navPanelRef.ExpandAll()"">Expand all</BitButton>
@@ -474,7 +474,7 @@ private BitNavPanel<BitNavItem> navPanelRef = default!;
 " + basicNavItemsCsharpCode.Replace("basicNavItems", "publicApiNavItems");
 
     private readonly string example13RazorCode = @"
-<BitToggleButton @bind-IsChecked=""groupedIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""groupedIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:240px"">
     <BitNavPanel @bind-IsOpen=""groupedIsOpen""
@@ -489,7 +489,7 @@ private bool groupedIsOpen;
 private List<BitNavItem> groupedNavItems =" + expansionNavItemsBodyCsharpCode;
 
     private readonly string example14RazorCode = @"
-<BitToggleButton @bind-IsChecked=""stickyIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""stickyIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:240px"">
     <BitNavPanel @bind-IsOpen=""stickyIsOpen""
@@ -511,13 +511,13 @@ private List<BitNavItem> stickyNavItems =" + expansionNavItemsBodyCsharpCode;
 <BitParams Parameters=""navPanelParams"">
     <div style=""width:222px"">
         <div>Cascaded</div>
-        <BitToggleButton @bind-IsChecked=""cascadeIsOpen"" OnText=""Close"" OffText=""Open"" />
+        <BitToggleButton @bind-Checked=""cascadeIsOpen"" OnText=""Close"" OffText=""Open"" />
         <BitNavPanel @bind-IsOpen=""cascadeIsOpen"" Items=""cascadeNavItems"" />
     </div>
 
     <div style=""width:222px"">
         <div>Own placeholder, cascaded rest</div>
-        <BitToggleButton @bind-IsChecked=""cascadeOwnIsOpen"" OnText=""Close"" OffText=""Open"" />
+        <BitToggleButton @bind-Checked=""cascadeOwnIsOpen"" OnText=""Close"" OffText=""Open"" />
         <BitNavPanel @bind-IsOpen=""cascadeOwnIsOpen"" Items=""cascadeOwnNavItems"" SearchBoxPlaceholder=""Its own placeholder"" />
     </div>
 </BitParams>";
@@ -543,7 +543,7 @@ private List<BitNavItem> cascadeOwnNavItems = CreateBasicNavItems();
 " + createBasicNavItemsCsharpCode;
 
     private readonly string example16RazorCode = @"
-<BitToggleButton @bind-IsChecked=""a11yIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""a11yIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
     <BitNavPanel @bind-IsOpen=""a11yIsOpen""
@@ -564,7 +564,7 @@ private readonly Func<int, string?> a11ySearchAnnouncement = count => count swit
 " + basicNavItemsCsharpCode.Replace("basicNavItems", "a11yNavItems");
 
     private readonly string example17RazorCode = @"
-<BitToggleButton @bind-IsChecked=""colorIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""colorIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
     <BitNavPanel @bind-IsOpen=""colorIsOpen"" Items=""colorNavItems"" Color=""BitColor.Secondary"" Accent=""BitColor.SecondaryBackground"" />
@@ -576,7 +576,7 @@ private bool colorIsOpen;
     private readonly string example18RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
-<BitToggleButton @bind-IsChecked=""externalIconIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""externalIconIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
     <BitNavPanel @bind-IsOpen=""externalIconIsOpen""
@@ -614,7 +614,7 @@ private readonly List<BitNavItem> externalIconNavItems =
 ];";
 
     private readonly string example19RazorCode = @"
-<BitToggleButton @bind-IsChecked=""sizeIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""sizeIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:180px"">
     <div>Small</div>
@@ -687,7 +687,7 @@ private List<BitNavItem> sizeLargeNavItems = CreateBasicNavItems();
 
 <div style=""width:222px"">
     <div>Styles &amp; Classes</div>
-    <BitToggleButton @bind-IsChecked=""classStyleIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""classStyleIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""classStyleIsOpen""
                  Items=""classStyleNavItems""
                  Styles=""@(new() { Container = ""background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);"" })""
@@ -701,7 +701,7 @@ private List<BitNavItem> sizeLargeNavItems = CreateBasicNavItems();
 
 <div style=""width:222px"">
     <div>CSS variables</div>
-    <BitToggleButton @bind-IsChecked=""cssVariablesIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitToggleButton @bind-Checked=""cssVariablesIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""cssVariablesIsOpen""
                  Items=""cssVariablesNavItems""
                  Style=""--bit-NavPanel-background: var(--bit-clr-bg-sec);
@@ -722,7 +722,7 @@ private List<BitNavItem> cssVariablesNavItems = CreateBasicNavItems();
 " + createBasicNavItemsCsharpCode;
 
     private readonly string example21RazorCode = @"
-<BitToggleButton @bind-IsChecked=""rtlIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-Checked=""rtlIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div dir=""rtl"">
     <div style=""width:222px"">

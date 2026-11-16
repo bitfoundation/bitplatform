@@ -84,7 +84,7 @@
             The list raises the same state itself while it fetches from an ItemsProvider, and reports every change through <b>OnLoadingChange</b>.
         </div>
         <br />
-        <BitToggleButton @bind-IsChecked="isLoading" Text="@(isLoading ? "Stop loading" : "Start loading")" />
+        <BitToggleButton @bind-Checked="isLoading" Text="@(isLoading ? "Stop loading" : "Start loading")" />
         <br /><br />
         <BitStack Horizontal Wrap>
             <BitBasicList Items="fewPeople" Loading="isLoading" LoadingLabel="Fetching people..."

@@ -308,7 +308,7 @@ private bool isHeaderScrolled;";
         <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"">Contents</BitButton>
     </BitHeader>
     <div class=""scroll-demo-row scroll-demo-row--offset"">
-        <BitToggleButton @bind-IsChecked=""isImmersiveMode"" OnText=""Leave immersive mode"" OffText=""Enter immersive mode"" />
+        <BitToggleButton @bind-Checked=""isImmersiveMode"" OnText=""Leave immersive mode"" OffText=""Enter immersive mode"" />
     </div>
 </div>";
 

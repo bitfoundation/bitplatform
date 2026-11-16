@@ -59,7 +59,7 @@ public partial class BitLoadingDemo
 </BitRollerLoading>";
 
     private readonly string example3RazorCode = @"
-<BitToggleButton @bind-IsChecked=""isPaused"" OnText=""Resume"" OffText=""Pause"" />
+<BitToggleButton @bind-Checked=""isPaused"" OnText=""Resume"" OffText=""Pause"" />
 
 <BitRingLoading Label=""0.5x"" Speed=""0.5"" Paused=""isPaused"" />
 

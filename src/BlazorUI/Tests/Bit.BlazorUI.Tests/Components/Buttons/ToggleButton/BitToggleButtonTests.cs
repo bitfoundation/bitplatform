@@ -20,7 +20,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Checked, isChecked);
             parameters.Add(p => p.Text, text);
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.Disabled, isEnabled is false);
@@ -73,20 +73,20 @@ public class BitToggleButtonTests : BunitTestContext
         DataRow(false, true),
         DataRow(false, false)
     ]
-    public void BitToggleButtonShouldChangeIsCheckedParameterAfterClickWhenIsEnable(bool isEnabled, bool isChecked)
+    public void BitToggleButtonShouldChangeCheckedParameterAfterClickWhenIsEnable(bool isEnabled, bool isChecked)
     {
         bool isCheckedBindingValue = isChecked;
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.Disabled, isEnabled is false);
-            parameters.Bind(p => p.IsChecked, isCheckedBindingValue, newValue => isCheckedBindingValue = newValue);
+            parameters.Bind(p => p.Checked, isCheckedBindingValue, newValue => isCheckedBindingValue = newValue);
         });
 
         var bitToggleButton = component.Find(".bit-tgb");
 
         bitToggleButton.Click();
 
-        Assert.AreEqual(isEnabled ? !isChecked : isChecked, component.Instance.IsChecked);
+        Assert.AreEqual(isEnabled ? !isChecked : isChecked, component.Instance.Checked);
         Assert.AreEqual(isEnabled ? !isChecked : isChecked, isCheckedBindingValue);
     }
 
@@ -102,7 +102,7 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.Disabled, isEnabled is false);
-            parameters.Bind(p => p.IsChecked, isCheckedBindingValue, newValue => isCheckedBindingValue = newValue);
+            parameters.Bind(p => p.Checked, isCheckedBindingValue, newValue => isCheckedBindingValue = newValue);
         });
 
         var bitToggleButton = component.Find(".bit-tgb");
@@ -195,13 +195,13 @@ public class BitToggleButtonTests : BunitTestContext
         DataRow(false),
         DataRow(null)
     ]
-    public void BitToggleButtonDefaultIsCheckedTest(bool? defaultIsChecked)
+    public void BitToggleButtonDefaultCheckedTest(bool? defaultChecked)
     {
         bool isCheckedAfterOnChange = false;
 
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsChecked, defaultIsChecked);
+            parameters.Add(p => p.DefaultChecked, defaultChecked);
             parameters.Add(p => p.OnChange, (e) => isCheckedAfterOnChange = e);
         });
 
@@ -209,13 +209,13 @@ public class BitToggleButtonTests : BunitTestContext
 
         bitToggleButton.Click();
 
-        if (defaultIsChecked is null)
+        if (defaultChecked is null)
         {
             Assert.IsTrue(isCheckedAfterOnChange);
         }
         else
         {
-            Assert.AreNotEqual(defaultIsChecked, isCheckedAfterOnChange);
+            Assert.AreNotEqual(defaultChecked, isCheckedAfterOnChange);
         }
     }
 
@@ -227,7 +227,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Checked, isChecked);
             parameters.Add(p => p.Text, "Microphone");
         });
 
@@ -276,7 +276,7 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.AriaMode, ariaMode);
-            parameters.Add(p => p.IsChecked, true);
+            parameters.Add(p => p.Checked, true);
             parameters.Add(p => p.OnText, "Muted");
             parameters.Add(p => p.OffText, "Unmuted");
         });
@@ -339,7 +339,7 @@ public class BitToggleButtonTests : BunitTestContext
         {
             parameters.Add(p => p.Loading, isLoading);
             parameters.Add(p => p.Reclickable, reclickable);
-            parameters.Bind(p => p.IsChecked, isChecked, v => isChecked = v);
+            parameters.Bind(p => p.Checked, isChecked, v => isChecked = v);
         });
 
         var bitToggleButton = component.Find(".bit-tgb");
@@ -419,7 +419,7 @@ public class BitToggleButtonTests : BunitTestContext
             Assert.IsEmpty(component.FindAll(".bit-tgb-spn"));
         });
 
-        Assert.IsTrue(component.Instance.IsChecked);
+        Assert.IsTrue(component.Instance.Checked);
     }
 
     [TestMethod]
@@ -454,7 +454,7 @@ public class BitToggleButtonTests : BunitTestContext
             Assert.IsFalse(component.Find(".bit-tgb").HasAttribute("aria-busy"));
         });
 
-        Assert.IsFalse(component.Instance.IsChecked);
+        Assert.IsFalse(component.Instance.Checked);
         Assert.IsFalse(component.Find(".bit-tgb").ClassList.Contains("bit-tgb-chk"));
     }
 
@@ -475,7 +475,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         await component.Instance.ToggleAsync();
 
-        Assert.AreEqual(reclickable, component.Instance.IsChecked);
+        Assert.AreEqual(reclickable, component.Instance.Checked);
     }
 
     [TestMethod,
@@ -491,7 +491,7 @@ public class BitToggleButtonTests : BunitTestContext
         {
             parameters.Add(p => p.AriaMode, BitToggleButtonAriaMode.Expanded);
             parameters.Add(p => p.AriaControls, "details-panel");
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Checked, isChecked);
             parameters.Add(p => p.Text, "Details");
         });
 
@@ -557,7 +557,7 @@ public class BitToggleButtonTests : BunitTestContext
         {
             parameters.Add(p => p.OnChanging, (BitToggleButtonChangeArgs args) => { args.Cancel = true; });
             parameters.Add(p => p.OnChange, _ => { changeCount++; });
-            parameters.Bind(p => p.IsChecked, isChecked, v => isChecked = v);
+            parameters.Bind(p => p.Checked, isChecked, v => isChecked = v);
         });
 
         component.Find(".bit-tgb").Click();
@@ -577,7 +577,7 @@ public class BitToggleButtonTests : BunitTestContext
         {
             parameters.Add(p => p.OnChanging, (BitToggleButtonChangeArgs args) => { });
             parameters.Add(p => p.OnChange, _ => { changeCount++; });
-            parameters.Bind(p => p.IsChecked, isChecked, v => isChecked = v);
+            parameters.Bind(p => p.Checked, isChecked, v => isChecked = v);
         });
 
         component.Find(".bit-tgb").Click();
@@ -623,7 +623,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Checked, isChecked);
             parameters.Add(p => p.OnColor, BitColor.Success);
             parameters.Add(p => p.OffColor, BitColor.Error);
             parameters.Add(p => p.OnVariant, BitVariant.Fill);
@@ -735,7 +735,7 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.OnChange, _ => { changeCount++; });
-            parameters.Bind(p => p.IsChecked, isChecked, v => isChecked = v);
+            parameters.Bind(p => p.Checked, isChecked, v => isChecked = v);
         });
 
         await component.InvokeAsync(() => component.Instance.ToggleAsync());
@@ -785,7 +785,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Checked, isChecked);
             parameters.Add(p => p.OnAriaLabel, "Unmute");
             parameters.Add(p => p.OffAriaLabel, "Mute");
         });
@@ -885,7 +885,7 @@ public class BitToggleButtonTests : BunitTestContext
             // The delay runs on the wall clock from the render on, so it is long enough that a test thread held
             // up by a busy runner still reads the markup before the spinner arrives.
             parameters.Add(p => p.LoadingDelay, 500);
-            parameters.Bind(p => p.IsChecked, isChecked, v => isChecked = v);
+            parameters.Bind(p => p.Checked, isChecked, v => isChecked = v);
         });
 
         var bitToggleButton = component.Find(".bit-tgb");
@@ -1019,7 +1019,7 @@ public class BitToggleButtonTests : BunitTestContext
         {
             ["AriaLabel"] = "Mute",
             ["OnAriaLabel"] = "Unmute",
-            ["IsChecked"] = true,
+            ["Checked"] = true,
             ["aria-label"] = "Something else",
             ["aria-pressed"] = "false",
             ["role"] = "button"
@@ -1097,11 +1097,11 @@ public class BitToggleButtonTests : BunitTestContext
     {
         // Naming one of these roles describes the pattern, and the state it reads is aria-checked rather than the
         // aria-pressed of the button role - so the toggle button keeps it in step by itself, instead of leaving the
-        // page with a second copy of IsChecked to maintain. A menuitem, which has no checked state, is given none.
+        // page with a second copy of Checked to maintain. A menuitem, which has no checked state, is given none.
         var bitToggleButton = RenderSplatted(new()
         {
             ["Text"] = "Status bar",
-            ["IsChecked"] = isChecked,
+            ["Checked"] = isChecked,
             ["role"] = role
         }).Find(".bit-tgb");
 
@@ -1122,7 +1122,7 @@ public class BitToggleButtonTests : BunitTestContext
         var bitToggleButton = RenderSplatted(new()
         {
             ["Text"] = "Status bar",
-            ["IsChecked"] = true,
+            ["Checked"] = true,
             ["AriaMode"] = ariaMode,
             ["role"] = "menuitemcheckbox"
         }).Find(".bit-tgb");
@@ -1247,7 +1247,7 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IconOnly, true);
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Checked, isChecked);
             parameters.Add(p => p.Text, "Bold");
             parameters.Add(p => p.IconName, "Bold");
         });
@@ -1470,7 +1470,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Checked, isChecked);
             parameters.Add(p => p.IconName, "Volume3");
             parameters.Add(p => p.OnIconName, "MicOff");
             parameters.Add(p => p.OffIconName, "Microphone");
@@ -1481,7 +1481,7 @@ public class BitToggleButtonTests : BunitTestContext
         // with no icon of its own for the state, the general one is what is shown
         var general = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Checked, isChecked);
             parameters.Add(p => p.IconName, "Volume3");
         });
 
@@ -1490,7 +1490,7 @@ public class BitToggleButtonTests : BunitTestContext
         // and an icon of an external library wins over the built-in name of the same state
         var external = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Checked, isChecked);
             parameters.Add(p => p.OnIcon, BitIconInfo.Fa("solid microphone-slash"));
             parameters.Add(p => p.OnIconName, "MicOff");
             parameters.Add(p => p.OffIcon, BitIconInfo.Fa("solid microphone"));
@@ -1507,7 +1507,7 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.ShowCheckMark, true);
-            parameters.Add(p => p.IsChecked, true);
+            parameters.Add(p => p.Checked, true);
             parameters.Add(p => p.CheckMarkIconName, "CheckMark");
             parameters.Add(p => p.Text, "Bold");
         });
@@ -1517,7 +1517,7 @@ public class BitToggleButtonTests : BunitTestContext
         var external = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.ShowCheckMark, true);
-            parameters.Add(p => p.IsChecked, true);
+            parameters.Add(p => p.Checked, true);
             parameters.Add(p => p.CheckMarkIcon, BitIconInfo.Fa("solid check"));
             parameters.Add(p => p.CheckMarkIconName, "CheckMark");
             parameters.Add(p => p.Text, "Bold");
@@ -1583,7 +1583,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsChecked, true);
+            parameters.Add(p => p.Checked, true);
             parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.ShowCheckMark, true);
             parameters.Add(p => p.IconName, "Bold");
@@ -1649,7 +1649,7 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.OnChanging, (BitToggleButtonChangeArgs args) => sequence.Add($"changing:{args.Value}"));
-            parameters.Add(p => p.IsCheckedChanged, (bool value) => sequence.Add($"bound:{value}"));
+            parameters.Add(p => p.CheckedChanged, (bool value) => sequence.Add($"bound:{value}"));
             parameters.Add(p => p.OnChange, (bool value) => sequence.Add($"change:{value}"));
         });
 
@@ -1663,20 +1663,20 @@ public class BitToggleButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitToggleButtonOneWayBoundIsCheckedShouldNotChangeWithoutACallback()
+    public void BitToggleButtonOneWayBoundCheckedShouldNotChangeWithoutACallback()
     {
         // A value bound one way is the page's to write, so the click reports nothing and changes nothing.
         var changes = 0;
 
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsChecked, false);
+            parameters.Add(p => p.Checked, false);
             parameters.Add(p => p.OnChange, (bool _) => changes++);
         });
 
         component.Find(".bit-tgb").Click();
 
-        Assert.IsFalse(component.Instance.IsChecked);
+        Assert.IsFalse(component.Instance.Checked);
         Assert.AreEqual(0, changes);
         Assert.IsFalse(component.Find(".bit-tgb").ClassList.Contains("bit-tgb-chk"));
     }
@@ -1717,7 +1717,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         Assert.IsFalse(component.Instance.Loading);
         // the two clicks each toggled the state, which is back where it started
-        Assert.IsFalse(component.Instance.IsChecked);
+        Assert.IsFalse(component.Instance.Checked);
     }
 
     [TestMethod]
@@ -1779,7 +1779,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Checked, isChecked);
             parameters.Add(p => p.Text, "Microphone");
             parameters.Add(p => p.Title, "Microphone");
             parameters.Add(p => p.OnTitle, "Click to unmute");
@@ -1790,7 +1790,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         var general = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Checked, isChecked);
             parameters.Add(p => p.Text, "Microphone");
             parameters.Add(p => p.Title, "Microphone");
         });

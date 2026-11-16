@@ -66,12 +66,12 @@
             var icon = GetIcon();
             var text = GetText();
 
-            if (ShowCheckMark && (IsChecked || FixedCheckMark))
+            if (ShowCheckMark && (Checked || FixedCheckMark))
             {
                 var checkMark = GetCheckMarkIcon();
                 <i aria-hidden="true"
                    style="@Styles?.CheckMark"
-                   class="bit-tgb-chm @(IsChecked ? null : "bit-tgb-chmh") @checkMark?.GetCssClasses() @Classes?.CheckMark" />
+                   class="bit-tgb-chm @(Checked ? null : "bit-tgb-chmh") @checkMark?.GetCssClasses() @Classes?.CheckMark" />
             }
 
             if (icon is not null)

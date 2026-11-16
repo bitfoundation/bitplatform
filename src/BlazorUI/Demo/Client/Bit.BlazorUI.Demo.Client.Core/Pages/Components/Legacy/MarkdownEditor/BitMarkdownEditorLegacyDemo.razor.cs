@@ -210,7 +210,7 @@ private string? bindingValue;";
 
     private readonly string example6RazorCode = @"
 <div style=""display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem"">
-    <BitToggleButton Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" OnText=""Write"" OffText=""Preview"" @bind-IsChecked=""showPreview"" />
+    <BitToggleButton Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" OnText=""Write"" OffText=""Preview"" @bind-Checked=""showPreview"" />
             
     <div style=""flex-grow:1""></div>
 
