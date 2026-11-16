@@ -89,12 +89,24 @@ public static class BdndSearchIndex
 
     private static readonly HashSet<string> _metaSections = new(StringComparer.OrdinalIgnoreCase) { "Documentation", "MCP server" };
 
+    /// <summary>
+    /// The words a guide section is named by although its heading does not say them: what a person
+    /// calls the thing it explains. "Reorder a list" is what a sortable list is for, yet without this
+    /// the only title word such a question carries is "items" - and that is the heading of the section
+    /// on dragging several items, which then answers a plain reorder.
+    /// </summary>
+    private static readonly Dictionary<string, string> _sectionAliases = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Sortable lists"] = "reorder reordering rearrange"
+    };
+
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
     {
         "how", "the", "and", "for", "with", "from", "that", "this", "what", "when", "where", "which",
         "does", "did", "are", "was", "you", "your", "than", "then", "its", "but", "any", "some",
         "please", "help", "about", "into", "way", "make", "want", "need", "would", "should", "could",
-        "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto"
+        "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto",
+        "them", "they", "their", "these", "those"
     };
 
     public static BdndSearchResultDto Search(string? query, int limit)
@@ -273,18 +285,28 @@ public static class BdndSearchIndex
 
     /// <summary>
     /// A word without its plural, its -ing or -ed, and a final silent e: "handles", "handling" and
-    /// "handled" are all "handl", "nesting" and "nested" both "nest". Only ever cut where at least three
-    /// letters remain, so "css" or "used" keep the letters that make them a word. Prose is counted by
-    /// the stem too, which as a substring also finds every longer form of it.
+    /// "handled" are all "handl", "nesting" and "nested" both "nest". A consonant the ending doubled is
+    /// single again, so "dragging" and "dropped" are "drag" and "drop" - the ambient words they are -
+    /// rather than "dragg" and "dropp", which match nothing. Only ever cut where at least three letters
+    /// remain, so "css" or "used" keep the letters that make them a word. Prose is counted by the stem
+    /// too, which as a substring also finds every longer form of it.
     /// </summary>
     private static string Stem(string word)
     {
         var stem = word.ToLowerInvariant();
 
         if (stem.Length > 4 && stem.EndsWith('s') && stem.EndsWith("ss", StringComparison.Ordinal) is false) stem = stem[..^1];
-        if (stem.Length > 5 && stem.EndsWith("ing", StringComparison.Ordinal)) stem = stem[..^3];
-        else if (stem.Length > 4 && stem.EndsWith("ed", StringComparison.Ordinal)) stem = stem[..^2];
-        if (stem.Length > 3 && stem.EndsWith('e')) stem = stem[..^1];
+
+        var suffixCut = false;
+        if (stem.Length > 5 && stem.EndsWith("ing", StringComparison.Ordinal)) { stem = stem[..^3]; suffixCut = true; }
+        else if (stem.Length > 4 && stem.EndsWith("ed", StringComparison.Ordinal)) { stem = stem[..^2]; suffixCut = true; }
+
+        // Only a doubling the suffix made: "ss", "ll" and "zz" are how those words are spelled ("pressed", "scrolling").
+        if (suffixCut && stem.Length > 3 && stem[^1] == stem[^2] && stem[^1] is not ('s' or 'l' or 'z') && "aeiou".Contains(stem[^1]) is false)
+        {
+            stem = stem[..^1];
+        }
+        else if (stem.Length > 3 && stem.EndsWith('e')) stem = stem[..^1];
 
         return stem;
     }
@@ -369,7 +391,7 @@ public static class BdndSearchIndex
         var identifiers = title.Split(title.Where(c => char.IsLetterOrDigit(c) is false).Distinct().ToArray(), StringSplitOptions.RemoveEmptyEntries)
                                .Where(identifier => SplitWords(identifier).Length > 2);
 
-        return [.. words.Where(word => _ambientWords.Contains(word) is false).Concat(pairs).Concat(identifiers).Distinct(StringComparer.OrdinalIgnoreCase)];
+        return [.. words.Where(word => IsAmbient(word) is false).Concat(pairs).Concat(identifiers).Distinct(StringComparer.OrdinalIgnoreCase)];
     }
 
     /// <summary>Splits a name or heading into words, breaking camel-case humps as well as punctuation.</summary>
@@ -446,9 +468,12 @@ public static class BdndSearchIndex
             // A sub-section is named by its parent as well as its own heading: "Files" is the section on
             // dropped files because it sits under "Native drags", and "drop files" has to find it there
             // rather than lose it to every member that happens to carry both words in its name.
+            var name = section.Parent is null ? section.Heading : $"{section.Parent} {section.Heading}";
+            if (section.Parent is null && _sectionAliases.TryGetValue(section.Heading, out var aliases)) name = $"{name} {aliases}";
+
             entries.Add(new Entry("Guide section", section.Heading, section.Parent,
                 $"GetBdndGuideSection(heading: \"{section.Key}\")", body, string.Empty, GuideWeight,
-                Name: section.Parent is null ? null : $"{section.Parent} {section.Heading}"));
+                Name: name == section.Heading ? null : name));
         }
 
         foreach (var type in BdndApiCatalog.Types)
@@ -519,9 +544,14 @@ public static class BdndSearchIndex
     /// </summary>
     private static string[] DropAmbientWords(string[] terms)
     {
-        // By the stem as well, so "drops" is as ambient as "drop".
-        var meaningful = terms.Where(term => _ambientWords.Contains(term) is false && _ambientWords.Contains(Stem(term)) is false).ToArray();
+        var meaningful = terms.Where(term => IsAmbient(term) is false).ToArray();
 
         return meaningful.Length > 0 ? meaningful : terms;
     }
+
+    /// <summary>
+    /// Whether a word is one of <see cref="_ambientWords"/> in any form - by the stem as well, so "drops"
+    /// and "dragging" are as ambient as "drop" and "drag", in a query and in a title alike.
+    /// </summary>
+    private static bool IsAmbient(string word) => _ambientWords.Contains(word) || _ambientWords.Contains(Stem(word));
 }
