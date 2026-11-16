@@ -11,7 +11,7 @@ namespace Boilerplate.Tests.Features.Caching;
 [TestClass, TestCategory("IntegrationTest"), TestCategory("Caching"), TestCategory("PreRendering")]
 public partial class ProductResponseCacheTests
 {
-    // Seeded members of the default (fallback) store tenant. See UserConfiguration and TenantUserConfiguration.
+    // Seeded members of the default (fallback) store tenant. See UserConfiguration and TenantMembershipConfiguration.
     private const string TenantAdminEmail = "store-admin@bitplatform.dev";
     private const string TenantUserEmail = "store-user@bitplatform.dev";
     private const string Password = "12345678";

@@ -346,7 +346,7 @@ public partial class RetentionJobsTests
 
         await dbContext.Users.AddAsync(user, TestContext.CancellationToken);
         // Accepted, so signing in selects this tenant - which a push subscription then records as its own.
-        await dbContext.TenantUsers.AddAsync(new TenantUser { Id = Guid.NewGuid(), TenantId = tenant.Id, UserId = user.Id, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
+        await dbContext.TenantMemberships.AddAsync(new TenantMembership { Id = Guid.NewGuid(), TenantId = tenant.Id, UserId = user.Id, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
 
         await dbContext.SaveChangesAsync(TestContext.CancellationToken);
 
@@ -408,7 +408,7 @@ public partial class RetentionJobsTests
     private static async Task<Guid> UploadAiChatImage(DeployedApiClient apiClient, CancellationToken cancellationToken)
     {
         using var form = new MultipartFormDataContent();
-        var file = new ByteArrayContent(TestImages.ProfilePicturePng());
+        var file = new ByteArrayContent(TestImages.ProfileImagePng());
         file.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         form.Add(file, "file", "e2e-ai-chat.png");
 
@@ -447,13 +447,13 @@ public partial class RetentionJobsTests
         var globalApiClient = await DeployedApiClientProvider.GetGlobalApiClient(CancellationToken.None);
         await using var dbContext = await globalApiClient.DbContextFactory!.CreateDbContextAsync(CancellationToken.None);
 
-        var userIds = await dbContext.TenantUsers.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId)
+        var userIds = await dbContext.TenantMemberships.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId)
             .Select(membership => membership.UserId).ToArrayAsync(CancellationToken.None);
 
         await dbContext.PushNotificationSubscriptions.IgnoreQueryFilters().Where(sub => sub.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.OAuthAuthorizationCodes.IgnoreQueryFilters().Where(code => userIds.Contains(code.UserId)).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.UserSessions.IgnoreQueryFilters().Where(session => userIds.Contains(session.UserId)).ExecuteDeleteAsync(CancellationToken.None);
-        await dbContext.TenantUsers.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
+        await dbContext.TenantMemberships.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.Users.IgnoreQueryFilters().Where(user => userIds.Contains(user.Id)).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.Tenants.IgnoreQueryFilters().Where(tenant => tenant.Id == tenantId).ExecuteDeleteAsync(CancellationToken.None);
     }

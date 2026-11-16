@@ -1609,8 +1609,8 @@
     <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید کاربر خود را حذف کنید</value>
   </data>
-    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>شما نمیتوانید گروه کاربری SuperAdmin از این کاربر بگیرید</value>
+    <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید گروه کاربری مدیر کل را از این کاربر بگیرید</value>
   </data>
     <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>دسترسی‌های گروه کاربری SuperAdmin قابل ویرایش نیست</value>
@@ -1618,11 +1618,11 @@
     <data name="CanNotChangeBuiltInRole" xml:space="preserve">
     <value>شما نمیتوانید تغییری در گروه کاربری {0} ایجاد کنید</value>
   </data>
-    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>شما نمیتوانید این کاربر SuperAdmin را حذف کنید</value>
+    <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید این کاربر مدیر کل را حذف کنید</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>شما نمی‌توانید نشست‌های این کاربر مدیر ارشد را باطل کنید</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>شما نمی‌توانید نشست‌های این کاربر مدیر کل را باطل کنید</value>
   </data>
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید نشست جاری خود را حذف کنید</value>
@@ -2191,6 +2191,42 @@
   </data>
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>آنچه این دستگاه و سرور درباره‌ی برنامه گزارش می‌دهند، برای عیب‌یابی.</value>
+  </data>
+    <data name="Lock" xml:space="preserve">
+    <value>قفل کردن</value>
+  </data>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>قفل کردن این حساب</value>
+  </data>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>برای اولین بار قفل کردن این حساب به یک PIN نیاز دارد. برای برگشتن به این حساب روی این دستگاه آن را وارد می‌کنید، و هیچ‌وقت از این دستگاه بیرون نمی‌رود.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>PIN جدید</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>PIN را دوباره وارد کنید</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>PINها یکی نیستند. دوباره امتحان کنید.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>PIN را وارد کنید</value>
+  </data>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>PIN اشتباه است. تلاش‌های باقی‌مانده: {0}.</value>
+  </data>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>PIN بیش از حد اشتباه وارد شد، پس این حساب دیگر روی این دستگاه نگه داشته نمی‌شود. برای استفاده از آن دوباره وارد شوید.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>برای برداشتن PIN دوباره وارد شوید</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>استفاده از حروف</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>استفاده از اعداد</value>
   </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">

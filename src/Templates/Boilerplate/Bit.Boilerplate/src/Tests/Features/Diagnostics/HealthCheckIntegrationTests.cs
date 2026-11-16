@@ -360,7 +360,7 @@ public partial class HealthCheckIntegrationTests
         ["AppDbContext"] = HealthCheckCategories.Platform,
         ["hangfire"] = HealthCheckCategories.Platform,
         ["appCertificate"] = HealthCheckCategories.Platform,
-        ["userProfileImages"] = HealthCheckCategories.Platform,
+        ["fileStorage"] = HealthCheckCategories.Platform,
         ["bitFabric"] = HealthCheckCategories.Integrations,
         ["website:https://site.invalid/"] = HealthCheckCategories.Websites,
         //#if (redis == true)
@@ -506,7 +506,7 @@ public partial class HealthCheckIntegrationTests
 
         string[] expectedExternalChecks =
         [
-            "userProfileImages", "website:https://site.invalid/", "smtp", "emailDelivery", "sms", "keycloakIdentity", "entraId", "appleSignIn",
+            "fileStorage", "website:https://site.invalid/", "smtp", "emailDelivery", "sms", "keycloakIdentity", "entraId", "appleSignIn",
             //#if (captcha == "reCaptcha")
             "reCaptcha",
             //#endif

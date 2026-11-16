@@ -258,7 +258,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
         }
 
         await db.UserSessions.IgnoreQueryFilters().Where(session => session.UserId == userId).ExecuteDeleteAsync(CancellationToken.None);
-        await db.TenantUsers.IgnoreQueryFilters().Where(membership => membership.UserId == userId).ExecuteDeleteAsync(CancellationToken.None);
+        await db.TenantMemberships.IgnoreQueryFilters().Where(membership => membership.UserId == userId).ExecuteDeleteAsync(CancellationToken.None);
         await db.UserRoles.IgnoreQueryFilters().Where(role => role.UserId == userId).ExecuteDeleteAsync(CancellationToken.None);
         await db.WebAuthnCredential.IgnoreQueryFilters().Where(credential => credential.UserId == userId).ExecuteDeleteAsync(CancellationToken.None);
         await db.Users.IgnoreQueryFilters().Where(user => user.Id == userId).ExecuteDeleteAsync(CancellationToken.None);

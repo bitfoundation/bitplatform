@@ -432,7 +432,7 @@ public partial class RolesPage
 
         if (selectedRoleItem.Text == AppRoles.GlobalAdmin)
         {
-            SnackBarService.Error(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
+            SnackBarService.Error(Localizer[nameof(AppStrings.UserCantUnassignAllGlobalAdminsErrorMessage)]);
             return;
         }
 

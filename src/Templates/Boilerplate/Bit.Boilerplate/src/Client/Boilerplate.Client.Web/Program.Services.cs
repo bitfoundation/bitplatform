@@ -60,6 +60,7 @@ public static partial class Program
             services.AddScoped<IPushNotificationService, WebPushNotificationService>();
             //#endif
             services.AddScoped<IWebAuthnService, WebAuthnService>();
+            services.AddScoped<AccountPinCipher, WebAccountPinCipher>();
             services.AddScoped<IAppUpdateService, WebAppUpdateService>();
             services.AddScoped<IPermissionService, WebPermissionService>();
 

@@ -87,7 +87,7 @@ public interface IUserController : IAppController
     Task<List<TenantDto>> GetTenants(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Leaves the tenant the user is currently signed into by clearing TenantUser's AcceptedOn.
+    /// Leaves the tenant the user is currently signed into by clearing TenantMembership's AcceptedOn.
     /// </summary>
     [HttpPost("{tenantId}")]
     Task LeaveTenant(Guid tenantId, CancellationToken cancellationToken);

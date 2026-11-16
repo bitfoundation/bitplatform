@@ -34,7 +34,7 @@ public class AccountErasureTests
     /// which is also precisely why erasing the row without erasing the blob leaves something nothing can find again.
     /// </summary>
     [TestMethod]
-    public async Task DeletingOwnAccount_Should_EraseTheProfilePicture_ItsBlob_AndEverySession()
+    public async Task DeletingOwnAccount_Should_EraseTheProfileImage_ItsBlob_AndEverySession()
     {
         await using var server = await StartServer();
         await using var client = server.CreateAppClient();
@@ -42,7 +42,7 @@ public class AccountErasureTests
         var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
         var httpClient = client.HttpClient;
 
-        await UploadProfilePicture(httpClient);
+        await UploadProfileImage(httpClient);
 
         var blobPaths = await ReadAttachmentPaths(server, userId);
 
@@ -110,7 +110,7 @@ public class AccountErasureTests
         return server;
     }
 
-    private async Task UploadProfilePicture(HttpClient httpClient)
+    private async Task UploadProfileImage(HttpClient httpClient)
     {
         var image = TestImageFactory.Solid(TestImageFactory.Red, 512, 512);
 
@@ -119,7 +119,7 @@ public class AccountErasureTests
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         form.Add(fileContent, "file", "picture.png"); // The endpoint binds an IFormFile parameter named "file".
 
-        using var response = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfilePicture", form, TestContext.CancellationToken);
+        using var response = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfileImage", form, TestContext.CancellationToken);
         response.EnsureSuccessStatusCode();
     }
 

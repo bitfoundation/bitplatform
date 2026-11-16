@@ -22,7 +22,7 @@ public class HealthCheckDescriptions : Dictionary<string, HealthCheckDescription
         this["appCertificate"] = new("App certificate", "Certificate", "The certificate that signs tokens and protects data is within its validity period.");
         this["StackExchange.Redis_redis-persistent"] = new("Redis (persistent)", "Server", "Hangfire storage and distributed locks.");
         this["StackExchange.Redis_redis-cache"] = new("Redis (cache)", "ServerProcesses", "The distributed cache and backplane. Memory keeps serving without it.");
-        this["userProfileImages"] = new("File storage", "Photo2", "The storage container of the uploaded files.");
+        this["fileStorage"] = new("File storage", "Photo2", "The storage container of the uploaded files.");
         //#if (cloudflare == true)
         this["cloudflare"] = new("Cloudflare", "Globe", "The zones whose edge cache the app purges.");
         //#endif

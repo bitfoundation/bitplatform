@@ -48,6 +48,7 @@ public static partial class IClientCoreServiceCollectionExtensions
                 services.AddBevToolsBelemetry();
             }
             services.AddScoped<SignInModalService>();
+            services.AddScoped<AccountSwitchService>();
             services.AddScoped<ImageEditorService>();
             //#if (module == "Admin")
             services.AddBitBortableServices();
@@ -80,6 +81,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddSessioned<PubSubService>();
             services.AddSessioned<SnackBarService>();
             services.AddSessioned<ElevatedAccessService>();
+            services.AddSessioned<AccountPinCipher>();
             //#if (signalR == true || notification == true)
             services.AddSessioned<NotificationPreferenceService>();
             //#endif

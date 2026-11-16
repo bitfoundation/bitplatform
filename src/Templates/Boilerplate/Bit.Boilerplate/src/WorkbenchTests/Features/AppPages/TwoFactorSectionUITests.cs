@@ -32,7 +32,7 @@ public class TwoFactorSectionUITests : SettingsPageTest
             AuthenticatorKey = SettingsSampleAccount.FirstKey,
             RecoveryCodesLeft = recoveryCodesLeft,
             HasPasskey = false,
-            SeenUpload = WorkbenchProfilePictures.LastUpload(user.Id)
+            SeenUpload = WorkbenchProfileImages.LastUpload(user.Id)
         });
 
         await OpenSettingsStore(account, $"&{WorkbenchScenario.SwitchQueryPrefix}section={PageUrls.SettingsSections.Tfa}&{WorkbenchScenario.SwitchQueryPrefix}{SettingsSampleAccount.TwoFactorSwitch}={SettingsSampleAccount.On}");

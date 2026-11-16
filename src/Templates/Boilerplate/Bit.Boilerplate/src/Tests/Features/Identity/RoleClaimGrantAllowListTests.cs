@@ -211,7 +211,7 @@ public class RoleClaimGrantAllowListTests
         await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        await dbContext.TenantUsers.AddAsync(new() { TenantId = TenantConfiguration.FallbackTenantId, UserId = userId, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
+        await dbContext.TenantMemberships.AddAsync(new() { TenantId = TenantConfiguration.FallbackTenantId, UserId = userId, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
 
         await dbContext.SaveChangesAsync(TestContext.CancellationToken);
     }

@@ -28,7 +28,7 @@ public partial class PrerenderStateServiceTests
             FullName = "Prerender Test",
             Gender = Gender.Other,
             BirthDate = new DateTimeOffset(1990, 5, 17, 0, 0, 0, TimeSpan.FromHours(3.5)),
-            HasProfilePicture = true,
+            HasProfileImage = true,
             Version = "42"
         };
 

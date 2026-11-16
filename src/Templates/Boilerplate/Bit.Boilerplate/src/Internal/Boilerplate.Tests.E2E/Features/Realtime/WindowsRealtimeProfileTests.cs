@@ -16,17 +16,17 @@ public partial class WindowsRealtimeProfileTests : RealtimeProfileTestsBase
     [DataRow(App.Todo, DisplayName = "Todo")]
     [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     [DataRow(App.Sales, DisplayName = "Sales")]
-    public async Task AProfilePictureChangedInTheBrowser_Should_ShowInTheWindowsAppAtOnce(App app)
+    public async Task AProfileImageChangedInTheBrowser_Should_ShowInTheWindowsAppAtOnce(App app)
     {
-        await AProfilePictureChange_Should_ReachTheUsersOtherSession(app, theAppUploads: false);
+        await AProfileImageChange_Should_ReachTheUsersOtherSession(app, theAppUploads: false);
     }
 
     [TestMethod]
     [DataRow(App.Todo, DisplayName = "Todo")]
     [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     [DataRow(App.Sales, DisplayName = "Sales")]
-    public async Task AProfilePictureChangedInTheWindowsApp_Should_ShowInTheBrowserAtOnce(App app)
+    public async Task AProfileImageChangedInTheWindowsApp_Should_ShowInTheBrowserAtOnce(App app)
     {
-        await AProfilePictureChange_Should_ReachTheUsersOtherSession(app, theAppUploads: true);
+        await AProfileImageChange_Should_ReachTheUsersOtherSession(app, theAppUploads: true);
     }
 }

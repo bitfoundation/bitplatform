@@ -36,7 +36,7 @@ public class UploadFormatAllowListTests
         }
         finally
         {
-            await DeleteProfilePicture(httpClient);
+            await DeleteProfileImage(httpClient);
         }
     }
 
@@ -66,7 +66,7 @@ public class UploadFormatAllowListTests
         }
         finally
         {
-            await DeleteProfilePicture(httpClient);
+            await DeleteProfileImage(httpClient);
         }
     }
 
@@ -114,7 +114,7 @@ public class UploadFormatAllowListTests
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         form.Add(fileContent, "file", "picture.png");
 
-        using var response = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfilePicture", form, TestContext.CancellationToken);
+        using var response = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfileImage", form, TestContext.CancellationToken);
         response.EnsureSuccessStatusCode();
     }
 
@@ -123,11 +123,11 @@ public class UploadFormatAllowListTests
         return await httpClient.GetByteArrayAsync($"api/v1/Attachment/GetAttachment/{userId}/{kind}", TestContext.CancellationToken);
     }
 
-    private async Task DeleteProfilePicture(HttpClient httpClient)
+    private async Task DeleteProfileImage(HttpClient httpClient)
     {
         try
         {
-            using var _ = await httpClient.DeleteAsync("api/v1/Attachment/DeleteUserProfilePicture", CancellationToken.None);
+            using var _ = await httpClient.DeleteAsync("api/v1/Attachment/DeleteUserProfileImage", CancellationToken.None);
         }
         catch (Exception) { }
     }

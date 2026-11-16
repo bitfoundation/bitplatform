@@ -381,7 +381,7 @@ under **Web server** with a `web:` prefix (`web:binStorage`, `web:serverApi`). I
 
 It also adds checks for remote dependencies. Each one has a timeout and reports **Degraded** rather than Unhealthy, so a
 provider outage does not take an otherwise healthy instance out of the load balancer:
-- **`userProfileImages`**: the blob storage.
+- **`fileStorage`**: the blob storage.
 - **`website:<address>`**: one check for each of your other sites, listed in `HealthChecks:Websites`, such as the landing
   page, a blog on WordPress or the docs, so a monitor reading `/healthz` watches them along with the app and the Operations
   page shows a card for each. Each one gets a GET that has to end, after its redirects, in a success status: behind a CDN

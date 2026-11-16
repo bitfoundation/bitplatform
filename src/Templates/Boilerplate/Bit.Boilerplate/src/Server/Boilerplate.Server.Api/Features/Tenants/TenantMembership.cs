@@ -3,7 +3,7 @@ namespace Boilerplate.Server.Api.Features.Tenants;
 /// <summary>
 /// A user can have many tenants and a tenant can have many users.
 /// </summary>
-public partial class TenantUser
+public partial class TenantMembership
 {
     public Guid Id { get; set; }
 

@@ -40,6 +40,7 @@ public static class TestServiceCollectionExtensions
         {
             services.AddScoped<IStorageService, TestStorageService>();
             services.AddTransient<IAuthTokenProvider, TestAuthTokenProvider>();
+            services.AddScoped<AccountPinCipher>();
 
             return services;
         }
