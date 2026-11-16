@@ -325,11 +325,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// The maximum height of the country dropdown callout in pixels.
-    /// </summary>
-    [Parameter] public int? MaxHeight { get; set; }
-
-    /// <summary>
     /// The pattern the local number is formatted with as the user types, where every '#' is a digit
     /// slot and every other character is a literal that is inserted for them - "(###) ###-####"
     /// turns 4155550123 into "(415) 555-0123". Digits beyond the last slot are appended unformatted,
@@ -347,6 +342,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// national conventions of one country say nothing about those of the next.
     /// </summary>
     [Parameter] public Func<BitCountry?, string?>? MaskSelector { get; set; }
+
+    /// <summary>
+    /// The maximum height of the country dropdown callout in pixels.
+    /// </summary>
+    [Parameter] public int? MaxHeight { get; set; }
 
     /// <summary>
     /// Determines the maximum number of characters allowed in the number input.
@@ -384,16 +384,16 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     [Parameter] public bool NoFocusOnSelect { get; set; }
 
     /// <summary>
+    /// The custom template to show when the search result of the country dropdown is empty.
+    /// </summary>
+    [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
+
+    /// <summary>
     /// The message to show when the search result of the country dropdown is empty. It is also what a screen
     /// reader announces for an empty result.
     /// Defaults to <see cref="BitStrings.NoResultsFound"/> of <see cref="BitStrings.Current"/>.
     /// </summary>
     [Parameter] public string? NoResultsText { get; set; }
-
-    /// <summary>
-    /// The custom template to show when the search result of the country dropdown is empty.
-    /// </summary>
-    [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
 
     /// <summary>
     /// Hides the search box of the country dropdown.

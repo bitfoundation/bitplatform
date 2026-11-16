@@ -420,6 +420,20 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public BitPlacement? PanelPlacement { get; set; }
 
     /// <summary>
+    /// The side of the anchor the callout is placed on when there is room for it there. It is a preference
+    /// rather than a demand: a callout that does not fit on the side asked for is placed on the opposite
+    /// one, and when neither has room the placement falls back to <see cref="Direction"/>, which weighs
+    /// every side it allows. Leaving it unset leaves the choice to Direction alone, and
+    /// <see cref="NoFlip"/> turns the preference into a demand.
+    /// </summary>
+    /// <remarks>
+    /// Start and End follow the reading direction, while Left and Right stay on the side of the screen they
+    /// name in both directions. Center and the two combined values name no side of the anchor and leave the
+    /// choice to Direction, exactly as leaving this unset does.
+    /// </remarks>
+    [Parameter] public BitPlacement? Placement { get; set; }
+
+    /// <summary>
     /// Configures the responsive mode of the callout for the small screens.
     /// </summary>
     [Parameter] public BitResponsiveMode? ResponsiveMode { get; set; }
@@ -453,20 +467,6 @@ public partial class BitCallout : BitComponentBase
     /// a panel, which is sized against the screen rather than placed against the anchor.
     /// </summary>
     [Parameter] public bool ShowArrow { get; set; }
-
-    /// <summary>
-    /// The side of the anchor the callout is placed on when there is room for it there. It is a preference
-    /// rather than a demand: a callout that does not fit on the side asked for is placed on the opposite
-    /// one, and when neither has room the placement falls back to <see cref="Direction"/>, which weighs
-    /// every side it allows. Leaving it unset leaves the choice to Direction alone, and
-    /// <see cref="NoFlip"/> turns the preference into a demand.
-    /// </summary>
-    /// <remarks>
-    /// Start and End follow the reading direction, while Left and Right stay on the side of the screen they
-    /// name in both directions. Center and the two combined values name no side of the anchor and leave the
-    /// choice to Direction, exactly as leaving this unset does.
-    /// </remarks>
-    [Parameter] public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the callout.

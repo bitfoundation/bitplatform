@@ -20,10 +20,10 @@ public partial class BitSwipeTrapDemo
         },
         new()
         {
-            Name = "OnStart",
+            Name = "OnEnd",
             Type = "EventCallback<BitSwipeTrapEventArgs>",
             DefaultValue = "",
-            Description = "Raised when a swipe starts on the trap.",
+            Description = "Raised when a swipe is released, or canceled (IsCanceled) by the browser, by leaving the trap before it was trapped, or by Escape.",
             LinkType = LinkType.Link,
             Href = "#swipetrap-event-args",
         },
@@ -38,10 +38,10 @@ public partial class BitSwipeTrapDemo
         },
         new()
         {
-            Name = "OnEnd",
+            Name = "OnStart",
             Type = "EventCallback<BitSwipeTrapEventArgs>",
             DefaultValue = "",
-            Description = "Raised when a swipe is released, or canceled (IsCanceled) by the browser, by leaving the trap before it was trapped, or by Escape.",
+            Description = "Raised when a swipe starts on the trap.",
             LinkType = LinkType.Link,
             Href = "#swipetrap-event-args",
         },

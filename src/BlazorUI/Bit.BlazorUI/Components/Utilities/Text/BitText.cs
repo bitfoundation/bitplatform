@@ -443,6 +443,17 @@ public partial class BitText : BitComponentBase
     public bool VisuallyHidden { get; set; }
 
     /// <summary>
+    /// The font weight of the text.
+    /// </summary>
+    /// <remarks>
+    /// The steps come from the theme's weight scale rather than being numbers of their own, so a preset that draws
+    /// its semibold somewhere else moves this with it. Left unset, the weight is the one the
+    /// <see cref="Typography"/> variant carries.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitFontWeight? Weight { get; set; }
+
+    /// <summary>
     /// How the lines of the text are broken.
     /// </summary>
     /// <remarks>
@@ -455,17 +466,6 @@ public partial class BitText : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitTextWrap? Wrap { get; set; }
-
-    /// <summary>
-    /// The font weight of the text.
-    /// </summary>
-    /// <remarks>
-    /// The steps come from the theme's weight scale rather than being numbers of their own, so a preset that draws
-    /// its semibold somewhere else moves this with it. Left unset, the weight is the one the
-    /// <see cref="Typography"/> variant carries.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public BitFontWeight? Weight { get; set; }
 
 
 

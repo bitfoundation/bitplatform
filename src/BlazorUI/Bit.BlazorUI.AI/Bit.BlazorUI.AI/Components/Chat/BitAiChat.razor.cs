@@ -164,6 +164,14 @@ public partial class BitAiChat : BitAiComponentBase
     [Parameter] public bool HideSystemMessages { get; set; } = true;
 
     /// <summary>
+    /// Goes on reading each reply that finishes after the one a reading was started on, until the reading is stopped -
+    /// for a user who listens instead of reading. Only used when <see cref="AllowReadAloud"/> is on.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    [Parameter] public bool KeepReadingAloud { get; set; }
+
+    /// <summary>
     /// The content at the bottom of the scroll area, below the last message.
     /// </summary>
     [Parameter] public RenderFragment? ListFooterTemplate { get; set; }
@@ -172,14 +180,6 @@ public partial class BitAiChat : BitAiComponentBase
     /// The content at the top of the scroll area, above the first message.
     /// </summary>
     [Parameter] public RenderFragment? ListHeaderTemplate { get; set; }
-
-    /// <summary>
-    /// Goes on reading each reply that finishes after the one a reading was started on, until the reading is stopped -
-    /// for a user who listens instead of reading. Only used when <see cref="AllowReadAloud"/> is on.
-    /// <br />
-    /// The default value is <strong>false</strong>.
-    /// </summary>
-    [Parameter] public bool KeepReadingAloud { get; set; }
 
     /// <summary>
     /// The largest file the composer will stage, in bytes.
@@ -285,6 +285,15 @@ public partial class BitAiChat : BitAiComponentBase
     [Parameter, ResetStyleBuilder] public BitAiChatClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// The example prompts offered in the empty state.
+    /// </summary>
+    /// <remarks>
+    /// The prompts offered under a reply, to go on with, are the reply's own (<see cref="BitAiMessage.FollowUps"/>, which a
+    /// transport sends with a <see cref="BitAiFollowUpsEvent"/>), and are sent the way these are.
+    /// </remarks>
+    [Parameter] public IReadOnlyList<string>? Suggestions { get; set; }
+
+    /// <summary>
     /// The app's text-to-speech the replies are read aloud through, given the reply - its text
     /// (<see cref="BitAiMessage.GetText"/>, Markdown), and whatever else the service needs of it, such as a signature it
     /// carries - and a token cancelled when the reading is stopped; it returns the audio to play, or null when there is
@@ -293,15 +302,6 @@ public partial class BitAiChat : BitAiComponentBase
     /// if there is one. Only used when <see cref="AllowReadAloud"/> is on.
     /// </summary>
     [Parameter] public Func<BitAiMessage, CancellationToken, Task<BitAiSpeechAudio?>>? Synthesizer { get; set; }
-
-    /// <summary>
-    /// The example prompts offered in the empty state.
-    /// </summary>
-    /// <remarks>
-    /// The prompts offered under a reply, to go on with, are the reply's own (<see cref="BitAiMessage.FollowUps"/>, which a
-    /// transport sends with a <see cref="BitAiFollowUpsEvent"/>), and are sent the way these are.
-    /// </remarks>
-    [Parameter] public IReadOnlyList<string>? Suggestions { get; set; }
 
     /// <summary>
     /// The app's speech-to-text the composer's dictation transcribes a recording of the microphone with, in place of the

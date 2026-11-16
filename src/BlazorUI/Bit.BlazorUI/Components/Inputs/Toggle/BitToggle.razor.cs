@@ -64,15 +64,6 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public string? AriaControls { get; set; }
 
     /// <summary>
-    /// Detailed description of the toggle for the benefit of screen readers, rendered as a visually
-    /// hidden element that the switch points to via <c>aria-describedby</c>.
-    /// </summary>
-    /// <remarks>
-    /// Use <see cref="Description"/> instead when the explanation should be visible to everyone.
-    /// </remarks>
-    [Parameter] public string? AriaDescription { get; set; }
-
-    /// <summary>
     /// The id of an existing element that describes the toggle, rendered as part of <c>aria-describedby</c> on the switch.
     /// </summary>
     /// <remarks>
@@ -81,6 +72,15 @@ public partial class BitToggle : BitInputBase<bool>
     /// page can be announced after the name without being repeated inside the toggle.
     /// </remarks>
     [Parameter] public string? AriaDescribedby { get; set; }
+
+    /// <summary>
+    /// Detailed description of the toggle for the benefit of screen readers, rendered as a visually
+    /// hidden element that the switch points to via <c>aria-describedby</c>.
+    /// </summary>
+    /// <remarks>
+    /// Use <see cref="Description"/> instead when the explanation should be visible to everyone.
+    /// </remarks>
+    [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
     /// The id of an existing element that labels the toggle, rendered as <c>aria-labelledby</c> on the switch.
@@ -291,6 +291,25 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public string? OffText { get; set; }
 
     /// <summary>
+    /// Callback for when the toggle loses focus.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
+
+    /// <summary>
+    /// Callback invoked before the state of the toggle changes, letting the change be cancelled.
+    /// </summary>
+    /// <remarks>
+    /// Set <c>Cancel</c> on the provided <see cref="BitToggleChangeArgs"/> to keep the current state.
+    /// Since the callback is awaited, it can also run asynchronous work like a confirmation prompt.
+    /// </remarks>
+    [Parameter] public EventCallback<BitToggleChangeArgs> OnChanging { get; set; }
+
+    /// <summary>
+    /// Callback for when the toggle is clicked, invoked before the state changes.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
     /// Content rendered inside the track of the toggle while it is ON, next to the knob.
     /// </summary>
     /// <remarks>
@@ -344,25 +363,6 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public string? OnText { get; set; }
 
     /// <summary>
-    /// Callback for when the toggle loses focus.
-    /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
-
-    /// <summary>
-    /// Callback invoked before the state of the toggle changes, letting the change be cancelled.
-    /// </summary>
-    /// <remarks>
-    /// Set <c>Cancel</c> on the provided <see cref="BitToggleChangeArgs"/> to keep the current state.
-    /// Since the callback is awaited, it can also run asynchronous work like a confirmation prompt.
-    /// </remarks>
-    [Parameter] public EventCallback<BitToggleChangeArgs> OnChanging { get; set; }
-
-    /// <summary>
-    /// Callback for when the toggle is clicked, invoked before the state changes.
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-
-    /// <summary>
     /// Reverses the positions of the label and input of the toggle.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -410,6 +410,11 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter, ResetStyleBuilder] public BitToggleClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// The default text used when the On or Off texts are null.
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>
     /// Arbitrary content rendered inside the knob, receiving the current state of the toggle, in place of
     /// the glyph <see cref="OnIconName"/> and <see cref="OffIconName"/> would have drawn there.
     /// </summary>
@@ -421,11 +426,6 @@ public partial class BitToggle : BitInputBase<bool>
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public RenderFragment<bool>? ThumbTemplate { get; set; }
-
-    /// <summary>
-    /// The default text used when the On or Off texts are null.
-    /// </summary>
-    [Parameter] public string? Text { get; set; }
 
     /// <summary>
     /// The native tooltip of the toggle, shown when the pointer rests on its label, its track or its state text.

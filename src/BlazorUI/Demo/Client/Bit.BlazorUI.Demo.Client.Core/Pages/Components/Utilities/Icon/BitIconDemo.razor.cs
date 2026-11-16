@@ -41,17 +41,17 @@ public partial class BitIconDemo
         },
         new()
         {
-            Name = "AnimationDuration",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "How long one cycle of the animation takes, as any CSS time. Still slowed down under reduced motion.",
-        },
-        new()
-        {
             Name = "AnimationDelay",
             Type = "string?",
             DefaultValue = "null",
             Description = "How long to wait before the animation starts, as any CSS time.",
+        },
+        new()
+        {
+            Name = "AnimationDuration",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "How long one cycle of the animation takes, as any CSS time. Still slowed down under reduced motion.",
         },
         new()
         {

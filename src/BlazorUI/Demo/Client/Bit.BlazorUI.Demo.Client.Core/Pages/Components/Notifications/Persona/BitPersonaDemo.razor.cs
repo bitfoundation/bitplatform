@@ -306,19 +306,19 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "PresenceIconNames",
+            Type = "Dictionary<BitPersonaPresence, string>?",
+            DefaultValue = "null",
+            Description = "The icon names to be used for the presence status.",
+        },
+        new()
+        {
             Name = "PresenceIcons",
             Type = "Dictionary<BitPersonaPresence, BitIconInfo>?",
             DefaultValue = "null",
             Description = "The icons to be used for the presence status with BitIconInfo. Takes precedence over PresenceIconNames when both are set.",
             LinkType = LinkType.Link,
             Href = "#bit-icon-info",
-        },
-        new()
-        {
-            Name = "PresenceIconNames",
-            Type = "Dictionary<BitPersonaPresence, string>?",
-            DefaultValue = "null",
-            Description = "The icon names to be used for the presence status.",
         },
         new()
         {
@@ -417,29 +417,6 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "Unknown",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If true, show the special coin for unknown persona. It shows an icon in place of the initials, and takes precedence over the image and the initials.",
-        },
-        new()
-        {
-            Name = "UnknownIcon",
-            Type = "BitIconInfo?",
-            DefaultValue = "null",
-            Description = "Icon for the unknown persona coin using BitIconInfo. Takes precedence over UnknownIconName when both are set.",
-            LinkType = LinkType.Link,
-            Href = "#bit-icon-info",
-        },
-        new()
-        {
-            Name = "UnknownIconName",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Icon name for the unknown persona coin.",
-        },
-        new()
-        {
             Name = "Size",
             Type = "BitPersonaSize",
             DefaultValue = "BitPersonaSize.Size48",
@@ -483,6 +460,29 @@ public partial class BitPersonaDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Custom tertiary text template.",
+        },
+        new()
+        {
+            Name = "Unknown",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, show the special coin for unknown persona. It shows an icon in place of the initials, and takes precedence over the image and the initials.",
+        },
+        new()
+        {
+            Name = "UnknownIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Icon for the unknown persona coin using BitIconInfo. Takes precedence over UnknownIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "UnknownIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Icon name for the unknown persona coin.",
         },
         new()
         {

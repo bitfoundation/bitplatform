@@ -109,6 +109,12 @@ public partial class BitHeader : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Renders the BitHeader with a shadow cast downwards, to lift it above the content it overlaps.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Elevated { get; set; }
+
+    /// <summary>
     /// Gets or sets how far (in pixels) the scroll has to travel from the top before an
     /// <see cref="ElevateOnScroll"/> header lifts itself off the content.
     /// </summary>
@@ -133,12 +139,6 @@ public partial class BitHeader : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool ElevateOnScroll { get; set; }
-
-    /// <summary>
-    /// Renders the BitHeader with a shadow cast downwards, to lift it above the content it overlaps.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Elevated { get; set; }
 
     /// <summary>
     /// Gets or sets the content of a second row rendered under the main row of the BitHeader, such as a row of

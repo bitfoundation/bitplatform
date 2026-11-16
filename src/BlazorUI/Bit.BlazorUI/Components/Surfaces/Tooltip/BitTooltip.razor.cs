@@ -302,6 +302,18 @@ public partial class BitTooltip : BitComponentBase
     [Parameter] public EventCallback<bool> OnToggle { get; set; }
 
     /// <summary>
+    /// The side of the anchor the tooltip is placed on (default is above it).
+    /// </summary>
+    /// <remarks>
+    /// Start and End follow the reading direction - Start is the left of the anchor in an LTR tooltip and the
+    /// right of it in an RTL one - which is what a tooltip that reads as part of its anchor wants. Left and
+    /// Right stay on the same side of the screen in either direction, for a tooltip aimed at the edge of a
+    /// fixed layout. Center and the two combined values name no side of the anchor and leave the tooltip above it.
+    /// </remarks>
+    [Parameter]
+    public BitPlacement Placement { get; set; } = BitPlacement.Top;
+
+    /// <summary>
     /// What the tooltip is to the anchor it belongs to: the description of a control that has a name of
     /// its own, the name of one that has none, or nothing at all.
     /// </summary>
@@ -348,18 +360,6 @@ public partial class BitTooltip : BitComponentBase
     /// Determines shows tooltip on hover.
     /// </summary>
     [Parameter] public bool ShowOnHover { get; set; } = true;
-
-    /// <summary>
-    /// The side of the anchor the tooltip is placed on (default is above it).
-    /// </summary>
-    /// <remarks>
-    /// Start and End follow the reading direction - Start is the left of the anchor in an LTR tooltip and the
-    /// right of it in an RTL one - which is what a tooltip that reads as part of its anchor wants. Left and
-    /// Right stay on the same side of the screen in either direction, for a tooltip aimed at the edge of a
-    /// fixed layout. Center and the two combined values name no side of the anchor and leave the tooltip above it.
-    /// </remarks>
-    [Parameter]
-    public BitPlacement Placement { get; set; } = BitPlacement.Top;
 
     /// <summary>
     /// The size of the tooltip, which sets the size of its text and the padding around it.

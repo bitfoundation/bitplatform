@@ -279,17 +279,17 @@ public partial class BitSnackBarDemo : IDisposable
         },
         new()
         {
-            Name = "SwipeToDismiss",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Lets a snack bar item be dragged out of the way with the pointer, in either inline direction, which is how a notification is thrown away on a touch screen. A persistent item is not swipeable. Needs the bit BlazorUI script to be on the page.",
-        },
-        new()
-        {
             Name = "SwipeThreshold",
             Type = "int",
             DefaultValue = "50",
             Description = "How far a snack bar item has to be dragged before it is dismissed, in pixels. Only in effect while SwipeToDismiss is enabled; a drag that stops short of this springs the item back where it was.",
+        },
+        new()
+        {
+            Name = "SwipeToDismiss",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets a snack bar item be dragged out of the way with the pointer, in either inline direction, which is how a notification is thrown away on a touch screen. A persistent item is not swipeable. Needs the bit BlazorUI script to be on the page.",
         },
         new()
         {

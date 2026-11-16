@@ -222,9 +222,9 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "OnSwipeStart",
+            Name = "OnSwipeEnd",
             Type = "EventCallback<decimal>",
-            Description = "Fires when a swipe starts on the panel, with the start coordinate along its axis.",
+            Description = "Fires when a swipe ends, with the distance along the panel's axis.",
         },
         new()
         {
@@ -234,9 +234,9 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "OnSwipeEnd",
+            Name = "OnSwipeStart",
             Type = "EventCallback<decimal>",
-            Description = "Fires when a swipe ends, with the distance along the panel's axis.",
+            Description = "Fires when a swipe starts on the panel, with the start coordinate along its axis.",
         },
         new()
         {

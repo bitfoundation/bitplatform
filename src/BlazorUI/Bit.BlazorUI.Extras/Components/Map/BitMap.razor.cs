@@ -126,6 +126,34 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
 
     /// <summary>
+    /// Announce the new centre and zoom through a polite live region after the user pans or
+    /// zooms. Announcements are throttled (see <see cref="ViewAnnouncementThrottle"/>) so a drag
+    /// cannot flood the screen reader.
+    /// </summary>
+    [Parameter] public bool AnnounceViewChanges { get; set; }
+
+    /// <summary>
+    /// Keep the map sized to its container automatically (via a <c>ResizeObserver</c>) instead of
+    /// requiring a manual <see cref="InvalidateSize"/> call.
+    /// <para>
+    /// This also covers the classic "map inside a hidden tab renders grey" case: a container that
+    /// starts at zero size and later becomes visible is re-measured as soon as it has a size.
+    /// </para>
+    /// </summary>
+    [Parameter] public bool AutoResize { get; set; } = true;
+
+    /// <summary>
+    /// Two-way bindable centre of the map.
+    /// <para>
+    /// Bound with <c>@bind-Center</c> it works in both directions: assigning it moves the map, and
+    /// panning the map writes the new centre back. Leave it unset to let the provider's
+    /// <see cref="BitMapProviderBase.Center"/> own the camera.
+    /// </para>
+    /// </summary>
+    [Parameter, TwoWayBound, CallOnSetAsync(nameof(OnCameraParameterSet))]
+    public BitMapLatLng? Center { get; set; }
+
+    /// <summary>
     /// Optional content rendered above the map canvas (overlays, custom controls, etc.).
     /// Each direct child is sized to its content from the top-start corner, unless positioned
     /// absolutely, and only the children take the pointer, so the map stays draggable around them.
@@ -147,59 +175,6 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [Parameter, ResetClassBuilder] public BitMapClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the map.
-    /// </summary>
-    [Parameter, ResetStyleBuilder] public BitMapClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// The provider configuration (basemap, tokens, options). When null on first render, a
-    /// default <typeparamref name="TMapProvider"/> instance is created. Setting <c>Provider</c>
-    /// to <c>null</c> on a live component is a no-op (use a different non-null instance to
-    /// reconfigure).
-    /// <para>
-    /// The parameter is compared by reference, so mutating the instance you already passed in
-    /// does not trigger a sync - assign a new instance to push changed options to the map.
-    /// </para>
-    /// </summary>
-    [Parameter, CallOnSetAsync(nameof(OnProviderSet))]
-    public TMapProvider? Provider { get; set; }
-
-    /// <summary>
-    /// Two-way bindable centre of the map.
-    /// <para>
-    /// Bound with <c>@bind-Center</c> it works in both directions: assigning it moves the map, and
-    /// panning the map writes the new centre back. Leave it unset to let the provider's
-    /// <see cref="BitMapProviderBase.Center"/> own the camera.
-    /// </para>
-    /// </summary>
-    [Parameter, TwoWayBound, CallOnSetAsync(nameof(OnCameraParameterSet))]
-    public BitMapLatLng? Center { get; set; }
-
-    /// <summary>
-    /// Two-way bindable zoom level. Behaves like <see cref="Center"/>: assigning it zooms the map,
-    /// and zooming the map writes the new level back.
-    /// </summary>
-    [Parameter, TwoWayBound, CallOnSetAsync(nameof(OnCameraParameterSet))]
-    public double? Zoom { get; set; }
-
-    /// <summary>
-    /// The markers the map should show, as a collection rather than a sequence of imperative
-    /// calls. Assign a new collection to change them.
-    /// <para>
-    /// Only what actually changed is sent: the incoming markers are compared by value against the
-    /// ones already rendered, so a render that moved one pin does not tear down and rebuild the
-    /// rest. When most of the set changed, it is replaced in a single batched call instead.
-    /// </para>
-    /// <para>
-    /// This parameter owns the marker set. Mixing it with <see cref="AddMarker"/> /
-    /// <see cref="RemoveMarker"/> means the next change to the collection reconciles those
-    /// imperative additions away.
-    /// </para>
-    /// </summary>
-    [Parameter, CallOnSetAsync(nameof(OnMarkersSet))]
-    public IEnumerable<BitMapMarker>? Markers { get; set; }
-
-    /// <summary>
     /// Groups nearby markers into a single bubble showing how many they stand for, and expands it
     /// on click. Leave null to draw every marker individually.
     /// <para>
@@ -213,50 +188,6 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     public BitMapClustering? Clustering { get; set; }
 
     /// <summary>
-    /// Fired when the user clicks a cluster bubble. Fires instead of
-    /// <see cref="OnMarkerClick"/> - a cluster is not one of your markers.
-    /// <para>
-    /// A double-click on a bubble is one click of it on every provider: it fires this once and expands the bubble once,
-    /// and the map neither raises <see cref="OnDoubleClick"/> for it nor zooms in on it.
-    /// </para>
-    /// </summary>
-    [Parameter] public EventCallback<BitMapClusterClickArgs> OnClusterClick { get; set; }
-
-    /// <summary>
-    /// When true, markers, vector layers, and tile overlays added imperatively are replayed
-    /// after a destructive provider swap (i.e. when the new provider has a different
-    /// <see cref="IBitMapProvider.JsObjectName"/>). Default is false to preserve the existing
-    /// "consumer reapplies on OnReady" behavior.
-    /// </summary>
-    [Parameter] public bool ReplayStateOnProviderSwap { get; set; }
-
-    /// <summary>
-    /// Keep the map sized to its container automatically (via a <c>ResizeObserver</c>) instead of
-    /// requiring a manual <see cref="InvalidateSize"/> call.
-    /// <para>
-    /// This also covers the classic "map inside a hidden tab renders grey" case: a container that
-    /// starts at zero size and later becomes visible is re-measured as soon as it has a size.
-    /// </para>
-    /// </summary>
-    [Parameter] public bool AutoResize { get; set; } = true;
-
-    /// <summary>
-    /// Defer creating the map until its container is at (or near) the viewport.
-    /// <para>
-    /// A map costs a few hundred KB of library plus a burst of tile requests, all competing with
-    /// the page's own first paint - worth avoiding for a map that is below the fold. While the
-    /// component is waiting, <see cref="LoadState"/> stays <see cref="BitMapLoadState.Idle"/>.
-    /// </para>
-    /// </summary>
-    [Parameter] public bool LazyLoad { get; set; }
-
-    /// <summary>
-    /// How far outside the viewport the container may be and still count as visible for
-    /// <see cref="LazyLoad"/>. Any CSS margin syntax accepted by <c>IntersectionObserver</c>.
-    /// </summary>
-    [Parameter] public string LazyLoadRootMargin { get; set; } = "200px";
-
-    /// <summary>
     /// Require a modifier before the map takes over the gesture: ctrl/⌘ + wheel to zoom on
     /// desktop, two fingers to pan on touch. A bare wheel or one-finger drag scrolls the page
     /// instead and shows a short hint.
@@ -267,11 +198,17 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     [Parameter] public bool CooperativeGestures { get; set; }
 
+    /// <summary>Hint shown when a one-finger drag is blocked by <see cref="CooperativeGestures"/>.</summary>
+    [Parameter] public string CooperativeGesturesTouchHint { get; set; } = "Use two fingers to move the map";
+
     /// <summary>Hint shown when a bare wheel gesture is blocked by <see cref="CooperativeGestures"/>.</summary>
     [Parameter] public string CooperativeGesturesWheelHint { get; set; } = "Use ctrl + scroll to zoom the map";
 
-    /// <summary>Hint shown when a one-finger drag is blocked by <see cref="CooperativeGestures"/>.</summary>
-    [Parameter] public string CooperativeGesturesTouchHint { get; set; } = "Use two fingers to move the map";
+    /// <summary>Text of the built-in failure message.</summary>
+    [Parameter] public string ErrorLabel { get; set; } = "The map could not be loaded.";
+
+    /// <summary>Replaces the built-in failure message. Receives the exception that caused the failure, when there is one.</summary>
+    [Parameter] public RenderFragment<Exception?>? ErrorTemplate { get; set; }
 
     /// <summary>
     /// Move focus out of the map canvas when Escape is pressed. A focused map consumes the arrow
@@ -292,39 +229,60 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         "Use the arrow keys to pan the map, plus and minus to zoom, and Escape to leave the map.";
 
     /// <summary>
-    /// What a screen reader calls the map canvas in place of "region", through <c>aria-roledescription</c>.
-    /// Translate it with the rest of the texts; the canvas is named by <see cref="BitComponentBase.AriaLabel"/>.
-    /// </summary>
-    [Parameter] public string RoleDescription { get; set; } = "interactive map";
-
-    /// <summary>
-    /// Announce the new centre and zoom through a polite live region after the user pans or
-    /// zooms. Announcements are throttled (see <see cref="ViewAnnouncementThrottle"/>) so a drag
-    /// cannot flood the screen reader.
-    /// </summary>
-    [Parameter] public bool AnnounceViewChanges { get; set; }
-
-    /// <summary>
-    /// Builds the text announced when <see cref="AnnounceViewChanges"/> is on. Supply one to
-    /// announce a place name instead of coordinates - a reverse-geocoded "Central London,
-    /// zoom 13" is far more useful than a pair of decimals.
-    /// </summary>
-    [Parameter] public Func<BitMapViewState, string>? ViewAnnouncementFormatter { get; set; }
-
-    /// <summary>Minimum interval between two view announcements. Defaults to 2 seconds.</summary>
-    [Parameter] public TimeSpan ViewAnnouncementThrottle { get; set; } = TimeSpan.FromSeconds(2);
-
-    /// <summary>
-    /// Honour the operating system's reduced-motion preference: <see cref="FlyTo"/>, an animated
-    /// <see cref="SetView"/>, <see cref="FitBounds"/>, the zoom into a cluster bubble and the keyboard's
-    /// pan and zoom jump straight to the destination instead of animating.
+    /// Defer creating the map until its container is at (or near) the viewport.
     /// <para>
-    /// The camera methods take an <c>essential</c> argument to opt a specific move back into animating
-    /// (a "locate me" recentre, say, where the motion carries the meaning), and
-    /// <see cref="BitComponentBase.ForceAnimation"/> opts every move of the map back in.
+    /// A map costs a few hundred KB of library plus a burst of tile requests, all competing with
+    /// the page's own first paint - worth avoiding for a map that is below the fold. While the
+    /// component is waiting, <see cref="LoadState"/> stays <see cref="BitMapLoadState.Idle"/>.
     /// </para>
     /// </summary>
-    [Parameter] public bool RespectReducedMotion { get; set; } = true;
+    [Parameter] public bool LazyLoad { get; set; }
+
+    /// <summary>
+    /// How far outside the viewport the container may be and still count as visible for
+    /// <see cref="LazyLoad"/>. Any CSS margin syntax accepted by <c>IntersectionObserver</c>.
+    /// </summary>
+    [Parameter] public string LazyLoadRootMargin { get; set; } = "200px";
+
+    /// <summary>Text of the built-in loading indicator.</summary>
+    [Parameter] public string LoadingLabel { get; set; } = "Loading map…";
+
+    /// <summary>Replaces the built-in loading indicator.</summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>Label of the button that brings a marker into view. Also the hidden column heading.</summary>
+    [Parameter] public string MarkerListActionHeader { get; set; } = "Show on map";
+
+    /// <summary>Caption of the built-in marker table. Say what the markers are, not that they are markers.</summary>
+    [Parameter] public string MarkerListCaption { get; set; } = "Map markers";
+
+    /// <summary>Column heading for the marker's latitude.</summary>
+    [Parameter] public string MarkerListLatitudeHeader { get; set; } = "Latitude";
+
+    /// <summary>Column heading for the marker's longitude.</summary>
+    [Parameter] public string MarkerListLongitudeHeader { get; set; } = "Longitude";
+
+    /// <summary>
+    /// Renders a text alternative to the markers - a table of names and coordinates, each row able
+    /// to bring its marker into view.
+    /// <para>
+    /// A map is a picture, so its markers are unreachable to a screen reader no matter how well the
+    /// canvas is labelled. <see cref="BitMapMarkerListMode.ScreenReaderOnly"/> is the usual choice:
+    /// the map looks unchanged, and the same data becomes reachable.
+    /// </para>
+    /// </summary>
+    [Parameter] public BitMapMarkerListMode MarkerListMode { get; set; }
+
+    /// <summary>Column heading for the marker's name.</summary>
+    [Parameter] public string MarkerListNameHeader { get; set; } = "Name";
+
+    /// <summary>
+    /// Replaces the built-in marker table. Receives the markers in no guaranteed order.
+    /// </summary>
+    [Parameter] public RenderFragment<IReadOnlyList<BitMapMarker>>? MarkerListTemplate { get; set; }
+
+    /// <summary>Zoom applied when a marker-list row brings its marker into view. Null keeps the current zoom.</summary>
+    [Parameter] public double? MarkerListZoom { get; set; } = 15;
 
     /// <summary>
     /// Content of the popup that opens when a marker is clicked, as live Blazor markup rather than
@@ -345,94 +303,21 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [Parameter] public RenderFragment<BitMapMarker>? MarkerPopupTemplate { get; set; }
 
     /// <summary>
-    /// Pans the map as a <see cref="MarkerPopupTemplate"/> popup opens, just enough to bring the whole popup inside the
-    /// map - a marker near an edge would otherwise open a popup the map's own bounds cut off.
-    /// </summary>
-    [Parameter] public bool PopupAutoPan { get; set; } = true;
-
-    /// <summary>Accessible name of the popup when its marker has neither an <c>Alt</c> nor a <c>Title</c>.</summary>
-    [Parameter] public string PopupLabel { get; set; } = "Marker details";
-
-    /// <summary>Accessible name of the popup's close button.</summary>
-    [Parameter] public string PopupCloseLabel { get; set; } = "Close";
-
-    /// <summary>Fired when a <see cref="MarkerPopupTemplate"/> popup opens, with the marker it belongs to.</summary>
-    [Parameter] public EventCallback<BitMapMarker> OnPopupOpened { get; set; }
-
-    /// <summary>Fired when a <see cref="MarkerPopupTemplate"/> popup closes.</summary>
-    [Parameter] public EventCallback OnPopupClosed { get; set; }
-
-    /// <summary>
-    /// Renders a text alternative to the markers - a table of names and coordinates, each row able
-    /// to bring its marker into view.
+    /// The markers the map should show, as a collection rather than a sequence of imperative
+    /// calls. Assign a new collection to change them.
     /// <para>
-    /// A map is a picture, so its markers are unreachable to a screen reader no matter how well the
-    /// canvas is labelled. <see cref="BitMapMarkerListMode.ScreenReaderOnly"/> is the usual choice:
-    /// the map looks unchanged, and the same data becomes reachable.
+    /// Only what actually changed is sent: the incoming markers are compared by value against the
+    /// ones already rendered, so a render that moved one pin does not tear down and rebuild the
+    /// rest. When most of the set changed, it is replaced in a single batched call instead.
+    /// </para>
+    /// <para>
+    /// This parameter owns the marker set. Mixing it with <see cref="AddMarker"/> /
+    /// <see cref="RemoveMarker"/> means the next change to the collection reconciles those
+    /// imperative additions away.
     /// </para>
     /// </summary>
-    [Parameter] public BitMapMarkerListMode MarkerListMode { get; set; }
-
-    /// <summary>
-    /// Replaces the built-in marker table. Receives the markers in no guaranteed order.
-    /// </summary>
-    [Parameter] public RenderFragment<IReadOnlyList<BitMapMarker>>? MarkerListTemplate { get; set; }
-
-    /// <summary>Caption of the built-in marker table. Say what the markers are, not that they are markers.</summary>
-    [Parameter] public string MarkerListCaption { get; set; } = "Map markers";
-
-    /// <summary>Column heading for the marker's name.</summary>
-    [Parameter] public string MarkerListNameHeader { get; set; } = "Name";
-
-    /// <summary>Column heading for the marker's latitude.</summary>
-    [Parameter] public string MarkerListLatitudeHeader { get; set; } = "Latitude";
-
-    /// <summary>Column heading for the marker's longitude.</summary>
-    [Parameter] public string MarkerListLongitudeHeader { get; set; } = "Longitude";
-
-    /// <summary>Label of the button that brings a marker into view. Also the hidden column heading.</summary>
-    [Parameter] public string MarkerListActionHeader { get; set; } = "Show on map";
-
-    /// <summary>Zoom applied when a marker-list row brings its marker into view. Null keeps the current zoom.</summary>
-    [Parameter] public double? MarkerListZoom { get; set; } = 15;
-
-    /// <summary>Show the built-in loading indicator while the provider's assets and map instance are being created.</summary>
-    [Parameter] public bool ShowLoading { get; set; } = true;
-
-    /// <summary>Replaces the built-in loading indicator.</summary>
-    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
-
-    /// <summary>Replaces the built-in failure message. Receives the exception that caused the failure, when there is one.</summary>
-    [Parameter] public RenderFragment<Exception?>? ErrorTemplate { get; set; }
-
-    /// <summary>Replaces the built-in "this browser cannot render the map" message.</summary>
-    [Parameter] public RenderFragment? UnsupportedTemplate { get; set; }
-
-    /// <summary>Text of the built-in loading indicator.</summary>
-    [Parameter] public string LoadingLabel { get; set; } = "Loading map…";
-
-    /// <summary>Text of the built-in failure message.</summary>
-    [Parameter] public string ErrorLabel { get; set; } = "The map could not be loaded.";
-
-    /// <summary>Text of the built-in unsupported-browser message.</summary>
-    [Parameter] public string UnsupportedLabel { get; set; } = "This browser cannot display the map (WebGL is unavailable).";
-
-
-
-    /// <summary>
-    /// Fired once after the map is ready and imperative methods can be called safely.
-    /// A method called before then does nothing (and returns null or false where it returns a value) rather than
-    /// throwing, since the map loads on its own schedule and a click or a lifecycle method of the page can always
-    /// run ahead of it; only <see cref="GetView"/>, which has no viewport to read, throws. Build the imperative state
-    /// of the map here.
-    /// Also fires again if the active provider is swapped to one with a different JS backend
-    /// (which destructively re-initializes the map); consumers can use this to rebuild any
-    /// imperatively-added markers/layers/overlays on the new provider.
-    /// </summary>
-    [Parameter] public EventCallback OnReady { get; set; }
-
-    /// <summary>Fired whenever <see cref="LoadState"/> changes.</summary>
-    [Parameter] public EventCallback<BitMapLoadState> OnLoadStateChanged { get; set; }
+    [Parameter, CallOnSetAsync(nameof(OnMarkersSet))]
+    public IEnumerable<BitMapMarker>? Markers { get; set; }
 
     /// <summary>
     /// Fired when the user clicks the map canvas (not on a marker or vector layer).
@@ -440,11 +325,14 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [Parameter] public EventCallback<BitMapLatLng> OnClick { get; set; }
 
     /// <summary>
-    /// Fired when the user double-clicks the map - over a marker too, unless <see cref="OnMarkerDoubleClick"/> has a
-    /// handler, which makes that double-click the marker's. A double-click on a cluster bubble is always the bubble's
-    /// (see <see cref="OnClusterClick"/>).
+    /// Fired when the user clicks a cluster bubble. Fires instead of
+    /// <see cref="OnMarkerClick"/> - a cluster is not one of your markers.
+    /// <para>
+    /// A double-click on a bubble is one click of it on every provider: it fires this once and expands the bubble once,
+    /// and the map neither raises <see cref="OnDoubleClick"/> for it nor zooms in on it.
+    /// </para>
     /// </summary>
-    [Parameter] public EventCallback<BitMapLatLng> OnDoubleClick { get; set; }
+    [Parameter] public EventCallback<BitMapClusterClickArgs> OnClusterClick { get; set; }
 
     /// <summary>
     /// Fired when the user right-clicks (or long-presses on touch) the map, with the coordinate
@@ -459,13 +347,32 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [Parameter] public EventCallback<BitMapLatLng> OnContextMenu { get; set; }
 
     /// <summary>
-    /// Fired whenever the map view (center/zoom/bounds) changes.
-    /// <para>
-    /// The providers coalesce the burst of move/zoom events a single drag produces into one
-    /// notification per idle window, so this is safe to subscribe to over a Blazor Server circuit.
-    /// </para>
+    /// Fired when the user double-clicks the map - over a marker too, unless <see cref="OnMarkerDoubleClick"/> has a
+    /// handler, which makes that double-click the marker's. A double-click on a cluster bubble is always the bubble's
+    /// (see <see cref="OnClusterClick"/>).
     /// </summary>
-    [Parameter] public EventCallback<BitMapViewState> OnViewChanged { get; set; }
+    [Parameter] public EventCallback<BitMapLatLng> OnDoubleClick { get; set; }
+
+    /// <summary>
+    /// Fired when the map enters or leaves fullscreen, including when the user leaves it with
+    /// Escape or the browser's own control rather than through <see cref="ExitFullscreen"/>.
+    /// </summary>
+    [Parameter] public EventCallback<bool> OnFullscreenChanged { get; set; }
+
+    /// <summary>
+    /// Fired when the user clicks a feature inside a GeoJSON layer.
+    /// </summary>
+    [Parameter] public EventCallback<BitMapGeoJsonFeatureClickArgs> OnGeoJsonFeatureClick { get; set; }
+
+    /// <summary>
+    /// Fired when an interop call into the underlying provider fails. Consumers can subscribe to
+    /// surface errors to telemetry/log channels - by default the component swallows interop
+    /// failures so a misbehaving provider can't tear down the host page.
+    /// </summary>
+    [Parameter] public EventCallback<BitMapInteropErrorArgs> OnInteropError { get; set; }
+
+    /// <summary>Fired whenever <see cref="LoadState"/> changes.</summary>
+    [Parameter] public EventCallback<BitMapLoadState> OnLoadStateChanged { get; set; }
 
     /// <summary>
     /// Fired when the user clicks a marker. The argument is the marker id.
@@ -497,15 +404,23 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     [Parameter] public EventCallback<BitMapMarkerDragEndArgs> OnMarkerDragEnd { get; set; }
 
-    /// <summary>
-    /// Fired when the user clicks a vector layer (polyline, polygon, circle, rectangle).
-    /// </summary>
-    [Parameter] public EventCallback<BitMapVectorClickArgs> OnVectorClick { get; set; }
+    /// <summary>Fired when a <see cref="MarkerPopupTemplate"/> popup closes.</summary>
+    [Parameter] public EventCallback OnPopupClosed { get; set; }
+
+    /// <summary>Fired when a <see cref="MarkerPopupTemplate"/> popup opens, with the marker it belongs to.</summary>
+    [Parameter] public EventCallback<BitMapMarker> OnPopupOpened { get; set; }
 
     /// <summary>
-    /// Fired when the user clicks a feature inside a GeoJSON layer.
+    /// Fired once after the map is ready and imperative methods can be called safely.
+    /// A method called before then does nothing (and returns null or false where it returns a value) rather than
+    /// throwing, since the map loads on its own schedule and a click or a lifecycle method of the page can always
+    /// run ahead of it; only <see cref="GetView"/>, which has no viewport to read, throws. Build the imperative state
+    /// of the map here.
+    /// Also fires again if the active provider is swapped to one with a different JS backend
+    /// (which destructively re-initializes the map); consumers can use this to rebuild any
+    /// imperatively-added markers/layers/overlays on the new provider.
     /// </summary>
-    [Parameter] public EventCallback<BitMapGeoJsonFeatureClickArgs> OnGeoJsonFeatureClick { get; set; }
+    [Parameter] public EventCallback OnReady { get; set; }
 
     /// <summary>
     /// Fired when the browser drops the WebGL context the map renders into. Browsers cap how many
@@ -518,17 +433,102 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [Parameter] public EventCallback OnRenderContextRestored { get; set; }
 
     /// <summary>
-    /// Fired when the map enters or leaves fullscreen, including when the user leaves it with
-    /// Escape or the browser's own control rather than through <see cref="ExitFullscreen"/>.
+    /// Fired when the user clicks a vector layer (polyline, polygon, circle, rectangle).
     /// </summary>
-    [Parameter] public EventCallback<bool> OnFullscreenChanged { get; set; }
+    [Parameter] public EventCallback<BitMapVectorClickArgs> OnVectorClick { get; set; }
+
+
 
     /// <summary>
-    /// Fired when an interop call into the underlying provider fails. Consumers can subscribe to
-    /// surface errors to telemetry/log channels - by default the component swallows interop
-    /// failures so a misbehaving provider can't tear down the host page.
+    /// Fired whenever the map view (center/zoom/bounds) changes.
+    /// <para>
+    /// The providers coalesce the burst of move/zoom events a single drag produces into one
+    /// notification per idle window, so this is safe to subscribe to over a Blazor Server circuit.
+    /// </para>
     /// </summary>
-    [Parameter] public EventCallback<BitMapInteropErrorArgs> OnInteropError { get; set; }
+    [Parameter] public EventCallback<BitMapViewState> OnViewChanged { get; set; }
+
+    /// <summary>
+    /// Pans the map as a <see cref="MarkerPopupTemplate"/> popup opens, just enough to bring the whole popup inside the
+    /// map - a marker near an edge would otherwise open a popup the map's own bounds cut off.
+    /// </summary>
+    [Parameter] public bool PopupAutoPan { get; set; } = true;
+
+    /// <summary>Accessible name of the popup's close button.</summary>
+    [Parameter] public string PopupCloseLabel { get; set; } = "Close";
+
+    /// <summary>Accessible name of the popup when its marker has neither an <c>Alt</c> nor a <c>Title</c>.</summary>
+    [Parameter] public string PopupLabel { get; set; } = "Marker details";
+
+    /// <summary>
+    /// The provider configuration (basemap, tokens, options). When null on first render, a
+    /// default <typeparamref name="TMapProvider"/> instance is created. Setting <c>Provider</c>
+    /// to <c>null</c> on a live component is a no-op (use a different non-null instance to
+    /// reconfigure).
+    /// <para>
+    /// The parameter is compared by reference, so mutating the instance you already passed in
+    /// does not trigger a sync - assign a new instance to push changed options to the map.
+    /// </para>
+    /// </summary>
+    [Parameter, CallOnSetAsync(nameof(OnProviderSet))]
+    public TMapProvider? Provider { get; set; }
+
+    /// <summary>
+    /// When true, markers, vector layers, and tile overlays added imperatively are replayed
+    /// after a destructive provider swap (i.e. when the new provider has a different
+    /// <see cref="IBitMapProvider.JsObjectName"/>). Default is false to preserve the existing
+    /// "consumer reapplies on OnReady" behavior.
+    /// </summary>
+    [Parameter] public bool ReplayStateOnProviderSwap { get; set; }
+
+    /// <summary>
+    /// Honour the operating system's reduced-motion preference: <see cref="FlyTo"/>, an animated
+    /// <see cref="SetView"/>, <see cref="FitBounds"/>, the zoom into a cluster bubble and the keyboard's
+    /// pan and zoom jump straight to the destination instead of animating.
+    /// <para>
+    /// The camera methods take an <c>essential</c> argument to opt a specific move back into animating
+    /// (a "locate me" recentre, say, where the motion carries the meaning), and
+    /// <see cref="BitComponentBase.ForceAnimation"/> opts every move of the map back in.
+    /// </para>
+    /// </summary>
+    [Parameter] public bool RespectReducedMotion { get; set; } = true;
+
+    /// <summary>
+    /// What a screen reader calls the map canvas in place of "region", through <c>aria-roledescription</c>.
+    /// Translate it with the rest of the texts; the canvas is named by <see cref="BitComponentBase.AriaLabel"/>.
+    /// </summary>
+    [Parameter] public string RoleDescription { get; set; } = "interactive map";
+
+    /// <summary>Show the built-in loading indicator while the provider's assets and map instance are being created.</summary>
+    [Parameter] public bool ShowLoading { get; set; } = true;
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the map.
+    /// </summary>
+    [Parameter, ResetStyleBuilder] public BitMapClassStyles? Styles { get; set; }
+
+    /// <summary>Text of the built-in unsupported-browser message.</summary>
+    [Parameter] public string UnsupportedLabel { get; set; } = "This browser cannot display the map (WebGL is unavailable).";
+
+    /// <summary>Replaces the built-in "this browser cannot render the map" message.</summary>
+    [Parameter] public RenderFragment? UnsupportedTemplate { get; set; }
+
+    /// <summary>
+    /// Builds the text announced when <see cref="AnnounceViewChanges"/> is on. Supply one to
+    /// announce a place name instead of coordinates - a reverse-geocoded "Central London,
+    /// zoom 13" is far more useful than a pair of decimals.
+    /// </summary>
+    [Parameter] public Func<BitMapViewState, string>? ViewAnnouncementFormatter { get; set; }
+
+    /// <summary>Minimum interval between two view announcements. Defaults to 2 seconds.</summary>
+    [Parameter] public TimeSpan ViewAnnouncementThrottle { get; set; } = TimeSpan.FromSeconds(2);
+
+    /// <summary>
+    /// Two-way bindable zoom level. Behaves like <see cref="Center"/>: assigning it zooms the map,
+    /// and zooming the map writes the new level back.
+    /// </summary>
+    [Parameter, TwoWayBound, CallOnSetAsync(nameof(OnCameraParameterSet))]
+    public double? Zoom { get; set; }
 
 
 

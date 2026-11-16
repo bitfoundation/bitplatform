@@ -156,18 +156,18 @@ public partial class BitPivot : BitComponentBase
     [Parameter] public string? DefaultSelectedKey { get; set; }
 
     /// <summary>
+    /// The format of the aria-label of the dismiss button of the pivot items (default: "Remove {0}"),
+    /// where the placeholder is filled with the header text of the item.
+    /// </summary>
+    [Parameter] public string? DismissAriaLabelFormat { get; set; }
+
+    /// <summary>
     /// Renders a dismiss button on every pivot item, which reports the item to dismiss through the
     /// <see cref="OnItemDismiss"/> callback. A single item opts in or out of it on its own using the
     /// Dismissible parameter of the BitPivotItem.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Dismissible { get; set; }
-
-    /// <summary>
-    /// The format of the aria-label of the dismiss button of the pivot items (default: "Remove {0}"),
-    /// where the placeholder is filled with the header text of the item.
-    /// </summary>
-    [Parameter] public string? DismissAriaLabelFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the icon of the dismiss button of the pivot items using custom CSS classes for external icon libraries.

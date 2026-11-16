@@ -105,6 +105,13 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "Dismissible",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders a dismiss button on every pivot item, which reports the item to dismiss through the OnItemDismiss callback. A single item opts in or out of it on its own using the Dismissible parameter of the BitPivotItem.",
+        },
+        new()
+        {
             Name = "DismissIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -118,13 +125,6 @@ public partial class BitPivotDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets the name of the icon of the dismiss button of the pivot items from the built-in Fluent UI icons (default: Cancel).",
-        },
-        new()
-        {
-            Name = "Dismissible",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Renders a dismiss button on every pivot item, which reports the item to dismiss through the OnItemDismiss callback. A single item opts in or out of it on its own using the Dismissible parameter of the BitPivotItem.",
         },
         new()
         {

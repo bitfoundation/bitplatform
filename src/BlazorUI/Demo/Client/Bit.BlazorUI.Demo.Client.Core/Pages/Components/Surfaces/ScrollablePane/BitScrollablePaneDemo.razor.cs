@@ -6,6 +6,27 @@ public partial class BitScrollablePaneDemo
     [
         new()
         {
+            Name = "AutoHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the height of the pane auto.",
+        },
+        new()
+        {
+            Name = "AutoHideDelay",
+            Type = "int",
+            DefaultValue = "800",
+            Description = "How long (in milliseconds) the AutoHideScrollbar scrollbar lingers after the pane was last pointed at, focused or scrolled. 0 hides it as soon as the pointer or the focus leaves.",
+        },
+        new()
+        {
+            Name = "AutoHideScrollbar",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the Modern scrollbar of the pane out of sight until the pane is pointed at, holds a focus the keyboard gave it, or has just been scrolled.",
+        },
+        new()
+        {
             Name = "AutoScroll",
             Type = "bool",
             DefaultValue = "false",
@@ -20,13 +41,6 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
-            Name = "AutoHeight",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Makes the height of the pane auto.",
-        },
-        new()
-        {
             Name = "AutoSize",
             Type = "bool",
             DefaultValue = "false",
@@ -38,20 +52,6 @@ public partial class BitScrollablePaneDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Makes the width of the pane auto.",
-        },
-        new()
-        {
-            Name = "AutoHideScrollbar",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Keeps the Modern scrollbar of the pane out of sight until the pane is pointed at, holds a focus the keyboard gave it, or has just been scrolled.",
-        },
-        new()
-        {
-            Name = "AutoHideDelay",
-            Type = "int",
-            DefaultValue = "800",
-            Description = "How long (in milliseconds) the AutoHideScrollbar scrollbar lingers after the pane was last pointed at, focused or scrolled. 0 hides it as soon as the pointer or the focus leaves.",
         },
         new()
         {
@@ -76,17 +76,17 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
-            Name = "ExpandOnPrint",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Prints the whole of the content instead of the part the pane is showing: the height, the height caps and the clipping are lifted for the print stylesheet only.",
-        },
-        new()
-        {
             Name = "DragScroll",
             Type = "bool",
             DefaultValue = "false",
             Description = "Lets the pane be scrolled by dragging its content with a mouse or a pen, which is how a strip that only scrolls sideways is reached without a horizontal wheel.",
+        },
+        new()
+        {
+            Name = "ExpandOnPrint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prints the whole of the content instead of the part the pane is showing: the height, the height caps and the clipping are lifted for the print stylesheet only.",
         },
         new()
         {

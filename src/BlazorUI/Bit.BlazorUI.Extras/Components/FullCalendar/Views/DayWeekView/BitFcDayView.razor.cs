@@ -7,9 +7,9 @@ public partial class BitFcDayView : IDisposable
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
     [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
-    [Parameter] public List<BitFullCalendarEvent> SingleDayEvents { get; set; } = [];
-    [Parameter] public List<BitFullCalendarEvent> MultiDayEvents { get; set; } = [];
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
+    [Parameter] public List<BitFullCalendarEvent> MultiDayEvents { get; set; } = [];
+    [Parameter] public List<BitFullCalendarEvent> SingleDayEvents { get; set; } = [];
 
     private string? _timeGridScrollSignature;
     private readonly string _scrollContainerId = "bit-bfc-day-timegrid-scroll-" + Guid.NewGuid().ToString("N");

@@ -40,6 +40,20 @@ public partial class BitFooter : BitComponentBase
 
 
     /// <summary>
+    /// Renders the footer with an absolute position at the bottom of its nearest positioned ancestor.
+    /// </summary>
+    /// <remarks>
+    /// This is <see cref="Fixed"/> scoped to a box instead of to the page: the footer of a card, a panel or a dialog
+    /// pins itself to the bottom of that container and scrolls away with it, rather than staying on the screen.
+    /// It needs an ancestor with a position other than static to pin itself to, and it overlaps the content of that
+    /// ancestor just like a fixed footer overlaps the page.
+    /// <br />
+    /// <see cref="Fixed"/> takes precedence over it, and it takes precedence over <see cref="Sticky"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Absolute { get; set; }
+
+    /// <summary>
     /// Gets or sets the horizontal distribution of the content of the BitFooter (the CSS justify-content of the container).
     /// </summary>
     /// <remarks>
@@ -54,20 +68,6 @@ public partial class BitFooter : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitAlignment? Alignment { get; set; }
-
-    /// <summary>
-    /// Renders the footer with an absolute position at the bottom of its nearest positioned ancestor.
-    /// </summary>
-    /// <remarks>
-    /// This is <see cref="Fixed"/> scoped to a box instead of to the page: the footer of a card, a panel or a dialog
-    /// pins itself to the bottom of that container and scrolls away with it, rather than staying on the screen.
-    /// It needs an ancestor with a position other than static to pin itself to, and it overlaps the content of that
-    /// ancestor just like a fixed footer overlaps the page.
-    /// <br />
-    /// <see cref="Fixed"/> takes precedence over it, and it takes precedence over <see cref="Sticky"/>.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool Absolute { get; set; }
 
     /// <summary>
     /// Renders a divider line on the top edge of the BitFooter to separate it from the content above.
@@ -102,6 +102,12 @@ public partial class BitFooter : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Renders the BitFooter with a shadow cast upwards, to lift it above the content it overlaps.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Elevated { get; set; }
+
+    /// <summary>
     /// Keeps the BitFooter flat while the scrolling area sits at its end and lets it cast its shadow only while
     /// there is content left underneath it.
     /// </summary>
@@ -116,12 +122,6 @@ public partial class BitFooter : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool ElevateOnScroll { get; set; }
-
-    /// <summary>
-    /// Renders the BitFooter with a shadow cast upwards, to lift it above the content it overlaps.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Elevated { get; set; }
 
     /// <summary>
     /// Renders the footer with a fixed position at the bottom of the page.

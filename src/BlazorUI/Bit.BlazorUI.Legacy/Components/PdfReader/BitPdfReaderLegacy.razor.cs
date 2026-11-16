@@ -48,14 +48,14 @@ public partial class BitPdfReaderLegacy : BitComponentBase
     [Parameter] public int InitialPageNumber { get; set; } = 1;
 
     /// <summary>
-    /// The callback for when the pdf page is done rendering.
-    /// </summary>
-    [Parameter] public EventCallback OnPdfPageRendered { get; set; }
-
-    /// <summary>
     /// The callback for when the pdf document is done loading and processing.
     /// </summary>
     [Parameter] public EventCallback OnPdfLoaded { get; set; }
+
+    /// <summary>
+    /// The callback for when the pdf page is done rendering.
+    /// </summary>
+    [Parameter] public EventCallback OnPdfPageRendered { get; set; }
 
     /// <summary>
     /// Whether render all pages at start.

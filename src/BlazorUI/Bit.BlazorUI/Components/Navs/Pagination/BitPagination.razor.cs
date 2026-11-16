@@ -279,6 +279,24 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public string? FirstButtonText { get; set; }
 
     /// <summary>
+    /// Provides the text of the summary while <see cref="TotalItems"/> is set, from the one-based numbers of the
+    /// first and the last items of the selected page and the total number of items, replacing the default
+    /// "{first} - {last} of {total}" text.
+    /// </summary>
+    /// <remarks>
+    /// This is the hook to localize or reword the item range (for example "Showing 21 to 30 of 240 results").
+    /// It is handed the numbers the pagination worked out itself, the last page stopping at the last item, so a
+    /// single one set through a <see cref="BitPaginationParams"/> serves every pagination of an app whatever
+    /// each of them pages through.
+    /// <br />
+    /// It wins over <see cref="GetSummary"/> while <see cref="TotalItems"/> is set, and is not called otherwise -
+    /// unless it only comes from a <see cref="BitPaginationParams"/> and the pagination was given a
+    /// <see cref="GetSummary"/> of its own, since a parameter set on the instance outranks a cascaded one.
+    /// It is only called while <see cref="ShowSummary"/> is on.
+    /// </remarks>
+    [Parameter] public Func<int, int, int, string>? GetItemsSummary { get; set; }
+
+    /// <summary>
     /// Provides the accessible label of a page button, from its one-based number and whether it is the
     /// selected one, replacing the default "Page {number}" label.
     /// </summary>
@@ -310,24 +328,6 @@ public partial class BitPagination : BitComponentBase
     /// reports the page that was asked for exactly like a pagination of buttons.
     /// </remarks>
     [Parameter] public Func<int, string?>? GetPageHref { get; set; }
-
-    /// <summary>
-    /// Provides the text of the summary while <see cref="TotalItems"/> is set, from the one-based numbers of the
-    /// first and the last items of the selected page and the total number of items, replacing the default
-    /// "{first} - {last} of {total}" text.
-    /// </summary>
-    /// <remarks>
-    /// This is the hook to localize or reword the item range (for example "Showing 21 to 30 of 240 results").
-    /// It is handed the numbers the pagination worked out itself, the last page stopping at the last item, so a
-    /// single one set through a <see cref="BitPaginationParams"/> serves every pagination of an app whatever
-    /// each of them pages through.
-    /// <br />
-    /// It wins over <see cref="GetSummary"/> while <see cref="TotalItems"/> is set, and is not called otherwise -
-    /// unless it only comes from a <see cref="BitPaginationParams"/> and the pagination was given a
-    /// <see cref="GetSummary"/> of its own, since a parameter set on the instance outranks a cascaded one.
-    /// It is only called while <see cref="ShowSummary"/> is on.
-    /// </remarks>
-    [Parameter] public Func<int, int, int, string>? GetItemsSummary { get; set; }
 
     /// <summary>
     /// Provides the text of the summary, from the selected page and the total number of pages, replacing the

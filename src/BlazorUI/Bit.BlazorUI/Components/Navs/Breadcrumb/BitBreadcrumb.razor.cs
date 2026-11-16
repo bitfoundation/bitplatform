@@ -186,6 +186,12 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
+    /// The maximum number of items to display before coalescing.
+    /// If not specified, all of the items will be rendered.
+    /// </summary>
+    [Parameter] public uint MaxDisplayedItems { get; set; }
+
+    /// <summary>
     /// The maximum width of the text of each item as a CSS length (for example "8rem").
     /// <br />
     /// The text of a longer item is truncated with an ellipsis, and the text of an item that carries no Title
@@ -193,12 +199,6 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public string? MaxItemWidth { get; set; }
-
-    /// <summary>
-    /// The maximum number of items to display before coalescing.
-    /// If not specified, all of the items will be rendered.
-    /// </summary>
-    [Parameter] public uint MaxDisplayedItems { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -247,15 +247,6 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
     [Parameter] public string? OverflowAriaLabel { get; set; }
 
     /// <summary>
-    /// Optional index where overflow items will be collapsed.
-    /// <br />
-    /// It is the position the overflow button takes among the displayed items, and the items that collapse are the
-    /// ones that start there. The default of 0 therefore collapses the trail from its root; setting it to 1 keeps the
-    /// root visible and collapses the middle of the trail instead, which is what a hierarchy is usually read by.
-    /// </summary>
-    [Parameter] public uint OverflowIndex { get; set; }
-
-    /// <summary>
     /// Render a custom overflow icon in place of the default icon.
     /// </summary>
     [Parameter] public BitIconInfo? OverflowIcon { get; set; }
@@ -269,6 +260,15 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
     /// The custom template content to render the overflow icon.
     /// </summary>
     [Parameter] public RenderFragment? OverflowIconTemplate { get; set; }
+
+    /// <summary>
+    /// Optional index where overflow items will be collapsed.
+    /// <br />
+    /// It is the position the overflow button takes among the displayed items, and the items that collapse are the
+    /// ones that start there. The default of 0 therefore collapses the trail from its root; setting it to 1 keeps the
+    /// root visible and collapses the middle of the trail instead, which is what a hierarchy is usually read by.
+    /// </summary>
+    [Parameter] public uint OverflowIndex { get; set; }
 
     /// <summary>
     /// The custom template content to render each item in overflow list.

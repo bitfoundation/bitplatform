@@ -104,11 +104,6 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     [Parameter] public string? SecondaryText { get; set; }
 
     /// <summary>
-    /// The custom value for the style attribute of the timeline option.
-    /// </summary>
-    [Parameter] public string? Style { get; set; }
-
-    /// <summary>
     /// The size of the timeline option, overriding the size of the timeline.
     /// </summary>
     /// <remarks>
@@ -117,6 +112,11 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     /// when that is unset too - is medium unless those variables say otherwise.
     /// </remarks>
     [Parameter] public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// The custom value for the style attribute of the timeline option.
+    /// </summary>
+    [Parameter] public string? Style { get; set; }
 
     /// <summary>
     /// The custom template that replaces the whole content of the timeline option.

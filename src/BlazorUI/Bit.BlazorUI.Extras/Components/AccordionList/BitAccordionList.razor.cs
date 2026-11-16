@@ -90,6 +90,11 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter] public BitColorKind? Background { get; set; }
 
     /// <summary>
+    /// The custom template to render the body (content) of each item. Used when an item does not provide its own body.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? BodyTemplate { get; set; }
+
+    /// <summary>
     /// The color kind of the border of all the accordion items.
     /// </summary>
     /// <remarks>
@@ -127,11 +132,6 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter] public bool Collapsible { get; set; } = true;
 
     /// <summary>
-    /// The custom template to render the body (content) of each item. Used when an item does not provide its own body.
-    /// </summary>
-    [Parameter] public RenderFragment<TItem>? BodyTemplate { get; set; }
-
-    /// <summary>
     /// The default expanded key in single-expand mode (used when <see cref="ExpandedKey"/> is not set).
     /// </summary>
     [Parameter] public string? DefaultExpandedKey { get; set; }
@@ -142,14 +142,20 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter] public IEnumerable<string>? DefaultExpandedKeys { get; set; }
 
     /// <summary>
-    /// The expanded key in single-expand mode. (two-way bound)
+    /// The custom content to render in place of the items when the list has none, which takes the place of
+    /// <see cref="EmptyText"/>.
     /// </summary>
-    [Parameter, TwoWayBound] public string? ExpandedKey { get; set; }
+    /// <remarks>
+    /// A list built from <see cref="Options"/> or <see cref="ChildContent"/> only knows it is empty once its
+    /// options have had their turn to register, so the empty content of one takes the render after the first
+    /// rather than the first itself; a list built from <see cref="Items"/> shows it right away.
+    /// </remarks>
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
-    /// The expanded keys in multiple-expand mode. (two-way bound)
+    /// The text to render in place of the items when the list has none. Default: <see cref="BitStrings.NoItemsFound"/>.
     /// </summary>
-    [Parameter, TwoWayBound] public IEnumerable<string>? ExpandedKeys { get; set; }
+    [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to show in place of the expander icon of all items while they are expanded, using
@@ -166,6 +172,16 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     /// Setting it also turns the rotation of the expander icon off. Can be overridden per item.
     /// </summary>
     [Parameter] public string? ExpandedExpanderIconName { get; set; }
+
+    /// <summary>
+    /// The expanded key in single-expand mode. (two-way bound)
+    /// </summary>
+    [Parameter, TwoWayBound] public string? ExpandedKey { get; set; }
+
+    /// <summary>
+    /// The expanded keys in multiple-expand mode. (two-way bound)
+    /// </summary>
+    [Parameter, TwoWayBound] public IEnumerable<string>? ExpandedKeys { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display as the expander of all items using custom CSS classes for external icon libraries.
@@ -203,22 +219,6 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     /// <see cref="UnmountOnCollapse"/>, are still printed as a bare header.
     /// </remarks>
     [Parameter] public bool ExpandOnPrint { get; set; }
-
-    /// <summary>
-    /// The custom content to render in place of the items when the list has none, which takes the place of
-    /// <see cref="EmptyText"/>.
-    /// </summary>
-    /// <remarks>
-    /// A list built from <see cref="Options"/> or <see cref="ChildContent"/> only knows it is empty once its
-    /// options have had their turn to register, so the empty content of one takes the render after the first
-    /// rather than the first itself; a list built from <see cref="Items"/> shows it right away.
-    /// </remarks>
-    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
-
-    /// <summary>
-    /// The text to render in place of the items when the list has none. Default: <see cref="BitStrings.NoItemsFound"/>.
-    /// </summary>
-    [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>
     /// The space (gap) in pixels between the accordion items, overriding the --bit-AccordionList-gap CSS variable.
@@ -275,12 +275,6 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter] public bool LazyContent { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum height of the content of every item (any CSS length), beyond which the content
-    /// scrolls inside the item instead of growing it.
-    /// </summary>
-    [Parameter] public string? MaxHeight { get; set; }
-
-    /// <summary>
     /// Gets or sets the greatest number of items that can be expanded at the same time in multiple-expand
     /// mode. Expanding one more closes the panel that has been open the longest.
     /// </summary>
@@ -294,10 +288,21 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter] public int? MaxExpanded { get; set; }
 
     /// <summary>
+    /// Gets or sets the maximum height of the content of every item (any CSS length), beyond which the content
+    /// scrolls inside the item instead of growing it.
+    /// </summary>
+    [Parameter] public string? MaxHeight { get; set; }
+
+    /// <summary>
     /// Enables the multiple-expand mode in which more than one item can be expanded at the same time.
     /// <see cref="MaxExpanded"/> caps how many of them may be.
     /// </summary>
     [Parameter, ResetClassBuilder] public bool Multiple { get; set; }
+
+    /// <summary>
+    /// Names and selectors of the custom input type properties.
+    /// </summary>
+    [Parameter] public BitAccordionListNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
     /// Moves the focus between the headers of the items with the ArrowUp, ArrowDown, Home and End keys, which
@@ -386,11 +391,6 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     /// Alias of the ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
-
-    /// <summary>
-    /// Names and selectors of the custom input type properties.
-    /// </summary>
-    [Parameter] public BitAccordionListNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
     /// Leaves every item where it is: the headers keep their colors and their place in the tab order, but they

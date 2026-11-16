@@ -289,19 +289,19 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "SingleExpand",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the single-expand mode in the BitNav."
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
             Description = "The size of the nav items. An explicit value wins over the --bit-Nav-* size variables; left unset, the nav is medium unless they say otherwise.",
             Href = "#size-enum",
             LinkType = LinkType.Link,
-        },
-        new()
-        {
-            Name = "SingleExpand",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the single-expand mode in the BitNav."
         },
         new()
         {

@@ -146,12 +146,6 @@ public partial class BitButtonGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     public bool IconOnly { get; set; }
 
     /// <summary>
-    /// Gives every button an equal width so that the buttons evenly fill the width of the ButtonGroup.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Justified { get; set; }
-
-    /// <summary>
     ///  List of Item, each of which can be a button with different action in the ButtonGroup.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
@@ -168,6 +162,12 @@ public partial class BitButtonGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     /// glyphs needs an AriaLabel on the item.
     /// </remarks>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// Gives every button an equal width so that the buttons evenly fill the width of the ButtonGroup.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Justified { get; set; }
 
     /// <summary>
     /// The maximum number of items that can be toggled at the same time in the Multiple selection mode.
@@ -248,6 +248,12 @@ public partial class BitButtonGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     public bool Rounded { get; set; }
 
     /// <summary>
+    /// Determines how many items can be toggled at the same time.
+    /// When not set, it falls back to Single if the Toggle parameter is enabled, otherwise None.
+    /// </summary>
+    [Parameter] public BitSelectionMode? SelectionMode { get; set; }
+
+    /// <summary>
     /// Toggles the focused item while navigating the ButtonGroup using the keyboard, so that the selection
     /// follows the focus.
     /// </summary>
@@ -265,12 +271,6 @@ public partial class BitButtonGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     /// which is not something the arrow keys of a radiogroup may do. Un-toggling stays with Space, Enter and a click.
     /// </remarks>
     [Parameter] public bool? SelectOnFocus { get; set; }
-
-    /// <summary>
-    /// Determines how many items can be toggled at the same time.
-    /// When not set, it falls back to Single if the Toggle parameter is enabled, otherwise None.
-    /// </summary>
-    [Parameter] public BitSelectionMode? SelectionMode { get; set; }
 
     /// <summary>
     /// Renders a check mark at the start of the toggled buttons.

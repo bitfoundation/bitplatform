@@ -163,6 +163,15 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
+            Name = "OnImageUpload",
+            Type = "Func<BitRichTextEditorImageUpload, Task<string?>>?",
+            DefaultValue = "null",
+            Description = "Invoked to persist an image binary, returning the URL to embed. While it runs the editor shows and announces the upload (aria-busy on the surface). When null, dropped or pasted images are embedded as inline data URLs.",
+            LinkType = LinkType.Link,
+            Href = "#image-upload"
+        },
+        new()
+        {
             Name = "OnMentionSearch",
             Type = "Func<string, Task<IReadOnlyList<BitRichTextEditorMention>>>?",
             DefaultValue = "null",
@@ -178,15 +187,6 @@ public partial class BitRichTextEditorDemo
             Description = "Callback for when a mention is picked from the menu.",
             LinkType = LinkType.Link,
             Href = "#mention"
-        },
-        new()
-        {
-            Name = "OnImageUpload",
-            Type = "Func<BitRichTextEditorImageUpload, Task<string?>>?",
-            DefaultValue = "null",
-            Description = "Invoked to persist an image binary, returning the URL to embed. While it runs the editor shows and announces the upload (aria-busy on the surface). When null, dropped or pasted images are embedded as inline data URLs.",
-            LinkType = LinkType.Link,
-            Href = "#image-upload"
         },
         new()
         {

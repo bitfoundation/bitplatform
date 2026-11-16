@@ -20,17 +20,17 @@ public partial class BitToggleDemo
         },
         new()
         {
-            Name = "AriaDescription",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Detailed description of the toggle for the benefit of screen readers, rendered as a visually hidden element that the switch points to via aria-describedby.",
-        },
-        new()
-        {
             Name = "AriaDescribedby",
             Type = "string?",
             DefaultValue = "null",
             Description = "The id of an existing element that describes the toggle, added to the aria-describedby of the switch alongside its state text and its AriaDescription rather than replacing them.",
+        },
+        new()
+        {
+            Name = "AriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Detailed description of the toggle for the benefit of screen readers, rendered as a visually hidden element that the switch points to via aria-describedby.",
         },
         new()
         {

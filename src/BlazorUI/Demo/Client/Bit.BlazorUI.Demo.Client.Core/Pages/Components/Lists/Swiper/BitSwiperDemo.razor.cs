@@ -370,17 +370,10 @@ public partial class BitSwiperDemo
         },
         new()
         {
-            Name = "VisibleItemsCountXs",
+            Name = "VisibleItemsCountLg",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Number of visible items in the extra small breakpoint (from 0 up)."
-        },
-        new()
-        {
-            Name = "VisibleItemsCountSm",
-            Type = "int?",
-            DefaultValue = "null",
-            Description = "Number of visible items in the small breakpoint (from 600px up)."
+            Description = "Number of visible items in the large breakpoint (from 1280px up)."
         },
         new()
         {
@@ -391,10 +384,10 @@ public partial class BitSwiperDemo
         },
         new()
         {
-            Name = "VisibleItemsCountLg",
+            Name = "VisibleItemsCountSm",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Number of visible items in the large breakpoint (from 1280px up)."
+            Description = "Number of visible items in the small breakpoint (from 600px up)."
         },
         new()
         {
@@ -402,6 +395,13 @@ public partial class BitSwiperDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "Number of visible items in the extra large breakpoint (from 1920px up)."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountXs",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the extra small breakpoint (from 0 up)."
         },
         new()
         {

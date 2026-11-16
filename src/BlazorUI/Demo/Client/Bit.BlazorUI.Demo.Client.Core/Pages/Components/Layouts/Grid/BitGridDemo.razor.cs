@@ -38,17 +38,10 @@ public partial class BitGridDemo
         },
         new()
         {
-            Name = "ColumnsXs",
+            Name = "ColumnsLg",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Number of columns in the extra small breakpoint (from 0px). The value keeps applying to every wider breakpoint until another one replaces it.",
-        },
-        new()
-        {
-            Name = "ColumnsSm",
-            Type = "int?",
-            DefaultValue = "null",
-            Description = "Number of columns in the small breakpoint (from 600px). The value keeps applying to every wider breakpoint until another one replaces it.",
+            Description = "Number of columns in the large breakpoint (from 1280px). The value keeps applying to every wider breakpoint until another one replaces it.",
         },
         new()
         {
@@ -59,10 +52,10 @@ public partial class BitGridDemo
         },
         new()
         {
-            Name = "ColumnsLg",
+            Name = "ColumnsSm",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Number of columns in the large breakpoint (from 1280px). The value keeps applying to every wider breakpoint until another one replaces it.",
+            Description = "Number of columns in the small breakpoint (from 600px). The value keeps applying to every wider breakpoint until another one replaces it.",
         },
         new()
         {
@@ -70,6 +63,13 @@ public partial class BitGridDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "Number of columns in the extra large breakpoint (from 1920px). The value keeps applying to every wider breakpoint until another one replaces it.",
+        },
+        new()
+        {
+            Name = "ColumnsXs",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of columns in the extra small breakpoint (from 0px). The value keeps applying to every wider breakpoint until another one replaces it.",
         },
         new()
         {
@@ -117,17 +117,10 @@ public partial class BitGridDemo
         },
         new()
         {
-            Name = "HorizontalSpacingXs",
+            Name = "HorizontalSpacingLg",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Defines the horizontal spacing between the children of the grid from the extra small breakpoint (from 0px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingXs.",
-        },
-        new()
-        {
-            Name = "HorizontalSpacingSm",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Defines the horizontal spacing between the children of the grid from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingSm.",
+            Description = "Defines the horizontal spacing between the children of the grid from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingLg.",
         },
         new()
         {
@@ -138,10 +131,10 @@ public partial class BitGridDemo
         },
         new()
         {
-            Name = "HorizontalSpacingLg",
+            Name = "HorizontalSpacingSm",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Defines the horizontal spacing between the children of the grid from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingLg.",
+            Description = "Defines the horizontal spacing between the children of the grid from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingSm.",
         },
         new()
         {
@@ -149,6 +142,13 @@ public partial class BitGridDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Defines the horizontal spacing between the children of the grid from the extra large breakpoint (from 1920px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingXl.",
+        },
+        new()
+        {
+            Name = "HorizontalSpacingXs",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Defines the horizontal spacing between the children of the grid from the extra small breakpoint (from 0px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingXs.",
         },
         new()
         {
@@ -187,17 +187,10 @@ public partial class BitGridDemo
         },
         new()
         {
-            Name = "SpacingXs",
+            Name = "SpacingLg",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Defines the spacing between the children of the grid on both axes from the extra small breakpoint (from 0px) upwards. The value keeps applying to every wider breakpoint until another one replaces it.",
-        },
-        new()
-        {
-            Name = "SpacingSm",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Defines the spacing between the children of the grid on both axes from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it.",
+            Description = "Defines the spacing between the children of the grid on both axes from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it.",
         },
         new()
         {
@@ -208,10 +201,10 @@ public partial class BitGridDemo
         },
         new()
         {
-            Name = "SpacingLg",
+            Name = "SpacingSm",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Defines the spacing between the children of the grid on both axes from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it.",
+            Description = "Defines the spacing between the children of the grid on both axes from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it.",
         },
         new()
         {
@@ -219,6 +212,13 @@ public partial class BitGridDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Defines the spacing between the children of the grid on both axes from the extra large breakpoint (from 1920px) upwards. The value keeps applying to every wider breakpoint until another one replaces it.",
+        },
+        new()
+        {
+            Name = "SpacingXs",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Defines the spacing between the children of the grid on both axes from the extra small breakpoint (from 0px) upwards. The value keeps applying to every wider breakpoint until another one replaces it.",
         },
         new()
         {
@@ -252,17 +252,10 @@ public partial class BitGridDemo
         },
         new()
         {
-            Name = "VerticalSpacingXs",
+            Name = "VerticalSpacingLg",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Defines the vertical spacing between the rows of the grid from the extra small breakpoint (from 0px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingXs.",
-        },
-        new()
-        {
-            Name = "VerticalSpacingSm",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Defines the vertical spacing between the rows of the grid from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingSm.",
+            Description = "Defines the vertical spacing between the rows of the grid from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingLg.",
         },
         new()
         {
@@ -273,10 +266,10 @@ public partial class BitGridDemo
         },
         new()
         {
-            Name = "VerticalSpacingLg",
+            Name = "VerticalSpacingSm",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Defines the vertical spacing between the rows of the grid from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingLg.",
+            Description = "Defines the vertical spacing between the rows of the grid from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingSm.",
         },
         new()
         {
@@ -284,6 +277,13 @@ public partial class BitGridDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Defines the vertical spacing between the rows of the grid from the extra large breakpoint (from 1920px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingXl.",
+        },
+        new()
+        {
+            Name = "VerticalSpacingXs",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Defines the vertical spacing between the rows of the grid from the extra small breakpoint (from 0px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence over SpacingXs.",
         },
         new()
         {

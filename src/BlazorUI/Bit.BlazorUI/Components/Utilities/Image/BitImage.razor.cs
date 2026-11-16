@@ -339,6 +339,11 @@ public partial class BitImage : BitComponentBase
     public string? FallbackSrc { get; set; }
 
     /// <summary>
+    /// Hints the browser at the priority this image is fetched with, relative to the other resources of the page.
+    /// </summary>
+    [Parameter] public BitImageFetchPriority? FetchPriority { get; set; }
+
+    /// <summary>
     /// Keeps the frame from growing wider than its container, scaling the image down with it rather than
     /// cropping it.
     /// <br />
@@ -354,11 +359,6 @@ public partial class BitImage : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Fluid { get; set; }
-
-    /// <summary>
-    /// Hints the browser at the priority this image is fetched with, relative to the other resources of the page.
-    /// </summary>
-    [Parameter] public BitImageFetchPriority? FetchPriority { get; set; }
 
     /// <summary>
     /// The image height value.
@@ -501,17 +501,6 @@ public partial class BitImage : BitComponentBase
     public bool Rounded { get; set; }
 
     /// <summary>
-    /// The value of the sizes attribute of the image, which tells the browser how wide the image will
-    /// be laid out at before it knows the layout (e.g. "(max-width: 600px) 100vw, 50vw").
-    /// </summary>
-    /// <remarks>
-    /// It is only read together with a width-descriptor <see cref="Srcset"/>, and it is what turns that
-    /// list of widths into a choice: without it the browser assumes the image takes the full width of
-    /// the viewport and fetches accordingly.
-    /// </remarks>
-    [Parameter] public string? Sizes { get; set; }
-
-    /// <summary>
     /// Renders a shadow under the frame of the image, lifting it off the surface it sits on.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -524,6 +513,17 @@ public partial class BitImage : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Shadow { get; set; }
+
+    /// <summary>
+    /// The value of the sizes attribute of the image, which tells the browser how wide the image will
+    /// be laid out at before it knows the layout (e.g. "(max-width: 600px) 100vw, 50vw").
+    /// </summary>
+    /// <remarks>
+    /// It is only read together with a width-descriptor <see cref="Srcset"/>, and it is what turns that
+    /// list of widths into a choice: without it the browser assumes the image takes the full width of
+    /// the viewport and fetches accordingly.
+    /// </remarks>
+    [Parameter] public string? Sizes { get; set; }
 
     /// <summary>
     /// The alternative sources of the image, offered to the browser ahead of <see cref="Src"/>.

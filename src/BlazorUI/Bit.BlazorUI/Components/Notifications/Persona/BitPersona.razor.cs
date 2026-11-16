@@ -361,6 +361,26 @@ public partial class BitPersona : BitComponentBase
     [Parameter] public string? PresenceIconName { get; set; }
 
     /// <summary>
+    /// The icon names to be used for the presence status.
+    /// </summary>
+    /// <remarks>
+    /// This dictionary is intended for simple scenarios where built-in icon names are sufficient.
+    /// For any <see cref="BitPersonaPresence"/> value that also exists in <see cref="PresenceIcons"/>,
+    /// the corresponding entry in <see cref="PresenceIconNames"/> is ignored.
+    /// <para>
+    /// Example:
+    /// <code>
+    /// PresenceIconNames = new()
+    /// {
+    ///     [BitPersonaPresence.Online] = "SkypeCircleCheck",
+    ///     [BitPersonaPresence.Away] = "SkypeCircleClock"
+    /// };
+    /// </code>
+    /// </para>
+    /// </remarks>
+    [Parameter] public Dictionary<BitPersonaPresence, string>? PresenceIconNames { get; set; }
+
+    /// <summary>
     /// The icons to be used for the presence status with <see cref="BitIconInfo"/>.
     /// </summary>
     /// <remarks>
@@ -380,26 +400,6 @@ public partial class BitPersona : BitComponentBase
     /// </para>
     /// </remarks>
     [Parameter] public Dictionary<BitPersonaPresence, BitIconInfo>? PresenceIcons { get; set; }
-
-    /// <summary>
-    /// The icon names to be used for the presence status.
-    /// </summary>
-    /// <remarks>
-    /// This dictionary is intended for simple scenarios where built-in icon names are sufficient.
-    /// For any <see cref="BitPersonaPresence"/> value that also exists in <see cref="PresenceIcons"/>,
-    /// the corresponding entry in <see cref="PresenceIconNames"/> is ignored.
-    /// <para>
-    /// Example:
-    /// <code>
-    /// PresenceIconNames = new()
-    /// {
-    ///     [BitPersonaPresence.Online] = "SkypeCircleCheck",
-    ///     [BitPersonaPresence.Away] = "SkypeCircleClock"
-    /// };
-    /// </code>
-    /// </para>
-    /// </remarks>
-    [Parameter] public Dictionary<BitPersonaPresence, string>? PresenceIconNames { get; set; }
 
     /// <summary>
     /// Presence title to be shown as a tooltip on hover over the presence icon.
@@ -490,6 +490,20 @@ public partial class BitPersona : BitComponentBase
     public BitShape? Shape { get; set; }
 
     /// <summary>
+    /// Puts the built-in glyph of each status in the presence dot - a check for Online, a clock for Away, a cross for
+    /// Offline - so the statuses are told apart by shape as well as by color.
+    /// </summary>
+    /// <remarks>
+    /// Online, Away and Busy are otherwise three discs that differ only in color, which is no difference at all to
+    /// a reader who cannot tell red from green. A glyph given by <see cref="PresenceIcons"/>,
+    /// <see cref="PresenceIconNames"/>, <see cref="PresenceIcon"/> or <see cref="PresenceIconName"/> takes
+    /// precedence, and like those the glyphs are only drawn on coins of 40px and up. The glyphs of Online, Away
+    /// and Offline ship with the core package; those of Blocked, OutOfOffice and Unknown are named from the
+    /// Bit.BlazorUI.Icons set, which an app has to reference for them to be drawn.
+    /// </remarks>
+    [Parameter] public bool ShowDefaultPresenceIcons { get; set; }
+
+    /// <summary>
     /// If true renders the initials while the image is loading. This only applies when an imageUrl is provided.
     /// </summary>
     /// <remarks>
@@ -509,20 +523,6 @@ public partial class BitPersona : BitComponentBase
     /// to be wide enough for what goes in them.
     /// </remarks>
     [Parameter] public bool ShowOverflowTooltip { get; set; } = true;
-
-    /// <summary>
-    /// Puts the built-in glyph of each status in the presence dot - a check for Online, a clock for Away, a cross for
-    /// Offline - so the statuses are told apart by shape as well as by color.
-    /// </summary>
-    /// <remarks>
-    /// Online, Away and Busy are otherwise three discs that differ only in color, which is no difference at all to
-    /// a reader who cannot tell red from green. A glyph given by <see cref="PresenceIcons"/>,
-    /// <see cref="PresenceIconNames"/>, <see cref="PresenceIcon"/> or <see cref="PresenceIconName"/> takes
-    /// precedence, and like those the glyphs are only drawn on coins of 40px and up. The glyphs of Online, Away
-    /// and Offline ship with the core package; those of Blocked, OutOfOffice and Unknown are named from the
-    /// Bit.BlazorUI.Icons set, which an app has to reference for them to be drawn.
-    /// </remarks>
-    [Parameter] public bool ShowDefaultPresenceIcons { get; set; }
 
     /// <summary>
     /// Shows the secondary text at every size, including the small ones that normally leave no room for it.

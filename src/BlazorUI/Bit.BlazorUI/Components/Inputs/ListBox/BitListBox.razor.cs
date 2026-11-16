@@ -113,15 +113,15 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
     [Parameter] public string? MaxHeight { get; set; }
 
     /// <summary>
-    /// The names (or selectors) of the members the items are read from, for items of a custom class.
-    /// </summary>
-    [Parameter] public BitListBoxNameSelectors<TItem, TValue>? NameSelectors { get; set; }
-
-    /// <summary>
     /// Lets the user select several items, which are <see cref="Values"/> instead of <see cref="BitInputBase{TValue}.Value"/>.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool MultiSelect { get; set; }
+
+    /// <summary>
+    /// The names (or selectors) of the members the items are read from, for items of a custom class.
+    /// </summary>
+    [Parameter] public BitListBoxNameSelectors<TItem, TValue>? NameSelectors { get; set; }
 
     /// <summary>
     /// The callback for when an item is taken out of the selection in multi select mode.

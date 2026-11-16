@@ -220,16 +220,6 @@ public partial class BitCard : BitComponentBase
     public int? Elevation { get; set; }
 
     /// <summary>
-    /// The content rendered under the body of the card, outside its padding block.
-    /// </summary>
-    /// <remarks>
-    /// This is the slot for the actions of the card - the buttons and links a reader is meant to act on. It is
-    /// raised above the stretched link of a card that has an <see cref="Href"/>, so those controls stay
-    /// clickable rather than being covered by it.
-    /// </remarks>
-    [Parameter] public RenderFragment? Footer { get; set; }
-
-    /// <summary>
     /// The content floated over the leading corner of the card, above everything else on its surface.
     /// </summary>
     /// <remarks>
@@ -240,6 +230,16 @@ public partial class BitCard : BitComponentBase
     /// out as a stack of parts or is still a plain padded box.
     /// </remarks>
     [Parameter] public RenderFragment? FloatingActions { get; set; }
+
+    /// <summary>
+    /// The content rendered under the body of the card, outside its padding block.
+    /// </summary>
+    /// <remarks>
+    /// This is the slot for the actions of the card - the buttons and links a reader is meant to act on. It is
+    /// raised above the stretched link of a card that has an <see cref="Href"/>, so those controls stay
+    /// clickable rather than being covered by it.
+    /// </remarks>
+    [Parameter] public RenderFragment? Footer { get; set; }
 
     /// <summary>
     /// Makes the card height 100% of its parent container.
@@ -293,22 +293,6 @@ public partial class BitCard : BitComponentBase
     public string? Height { get; set; }
 
     /// <summary>
-    /// The URL the whole card leads to, rendered as an anchor stretched over the surface of the card.
-    /// </summary>
-    /// <remarks>
-    /// Everything in <see cref="Actions"/> and <see cref="Footer"/> stays above that anchor and keeps working;
-    /// an interactive element anywhere else in the card is covered by it, so put the controls of a linked card
-    /// in one of those two slots, and so is the text of the body, which a reader can no longer select with the
-    /// pointer, nor scroll with the wheel on a card with <see cref="ScrollableBody"/> - the price the block-link
-    /// pattern pays everywhere it is used. The anchor is named by <see cref="BitComponentBase.AriaLabel"/>, by an
-    /// <c>aria-labelledby</c> splatted onto the card, by its <see cref="Title"/>, by its <see cref="Subtitle"/> or by
-    /// its body, in that order, and failing all of those by everything the card says; the name is moved onto the
-    /// anchor rather than left on the card as a second copy of itself.
-    /// </remarks>
-    [Parameter, CallOnSet(nameof(OnSetHrefAndRel)), ResetClassBuilder]
-    public string? Href { get; set; }
-
-    /// <summary>
     /// Lays the cover of the card beside its content instead of above it.
     /// </summary>
     /// <remarks>
@@ -327,6 +311,22 @@ public partial class BitCard : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Hoverable { get; set; }
+
+    /// <summary>
+    /// The URL the whole card leads to, rendered as an anchor stretched over the surface of the card.
+    /// </summary>
+    /// <remarks>
+    /// Everything in <see cref="Actions"/> and <see cref="Footer"/> stays above that anchor and keeps working;
+    /// an interactive element anywhere else in the card is covered by it, so put the controls of a linked card
+    /// in one of those two slots, and so is the text of the body, which a reader can no longer select with the
+    /// pointer, nor scroll with the wheel on a card with <see cref="ScrollableBody"/> - the price the block-link
+    /// pattern pays everywhere it is used. The anchor is named by <see cref="BitComponentBase.AriaLabel"/>, by an
+    /// <c>aria-labelledby</c> splatted onto the card, by its <see cref="Title"/>, by its <see cref="Subtitle"/> or by
+    /// its body, in that order, and failing all of those by everything the card says; the name is moved onto the
+    /// anchor rather than left on the card as a second copy of itself.
+    /// </remarks>
+    [Parameter, CallOnSet(nameof(OnSetHrefAndRel)), ResetClassBuilder]
+    public string? Href { get; set; }
 
     /// <summary>
     /// The leading icon of the header of the card.
@@ -503,6 +503,18 @@ public partial class BitCard : BitComponentBase
     public bool Reversed { get; set; }
 
     /// <summary>
+    /// Lets the content of the card scroll inside it instead of growing past the height it was given.
+    /// </summary>
+    /// <remarks>
+    /// It only means anything on a card whose height is bounded - by <see cref="Height"/>, by
+    /// <see cref="MaxHeight"/> or by <see cref="FullHeight"/> in a container of a known height - and it is what
+    /// keeps the header and the footer of such a card in place while only the body between them moves. On a card
+    /// that is still a plain padded box it is the box itself that scrolls, since there is no body to scroll instead.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ScrollableBody { get; set; }
+
+    /// <summary>
     /// Whether the card is currently selected.
     /// </summary>
     /// <remarks>
@@ -518,18 +530,6 @@ public partial class BitCard : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool Selected { get; set; }
-
-    /// <summary>
-    /// Lets the content of the card scroll inside it instead of growing past the height it was given.
-    /// </summary>
-    /// <remarks>
-    /// It only means anything on a card whose height is bounded - by <see cref="Height"/>, by
-    /// <see cref="MaxHeight"/> or by <see cref="FullHeight"/> in a container of a known height - and it is what
-    /// keeps the header and the footer of such a card in place while only the body between them moves. On a card
-    /// that is still a plain padded box it is the box itself that scrolls, since there is no body to scroll instead.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool ScrollableBody { get; set; }
 
     /// <summary>
     /// The size of the card, which sets its padding, the gap between its parts and the type of its header.
@@ -553,16 +553,16 @@ public partial class BitCard : BitComponentBase
     [Parameter] public bool StopPropagation { get; set; }
 
     /// <summary>
-    /// The second line of the header of the card, under the title.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public string? Subtitle { get; set; }
-
-    /// <summary>
     /// Custom CSS styles for different parts of the card.
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public BitCardClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The second line of the header of the card, under the title.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public string? Subtitle { get; set; }
 
     /// <summary>
     /// The target attribute of the stretched link of the card.

@@ -14,8 +14,8 @@
 /// </remarks>
 public partial class BitFcEventTemplateHost
 {
-    /// <summary>The template that draws the event.</summary>
-    [Parameter, EditorRequired] public RenderFragment<BitFullCalendarEvent> Template { get; set; } = default!;
+    /// <summary>The details the name holds after the shown text; none for a surface that is not named at all.</summary>
+    [Parameter] public string? Details { get; set; }
 
     /// <summary>The event drawn.</summary>
     [Parameter, EditorRequired] public BitFullCalendarEvent Event { get; set; } = default!;
@@ -23,8 +23,8 @@ public partial class BitFcEventTemplateHost
     /// <summary>The id of the surface instance the ids of its name are built from.</summary>
     [Parameter, EditorRequired] public string InstanceId { get; set; } = default!;
 
-    /// <summary>The details the name holds after the shown text; none for a surface that is not named at all.</summary>
-    [Parameter] public string? Details { get; set; }
+    /// <summary>The template that draws the event.</summary>
+    [Parameter, EditorRequired] public RenderFragment<BitFullCalendarEvent> Template { get; set; } = default!;
 
 
 

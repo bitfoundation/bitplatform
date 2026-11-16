@@ -12,20 +12,20 @@ public partial class BitFcTimelineNowIndicator : IDisposable
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
 
-    /// <summary>The date the column belongs to. The marker only renders while that date is today.</summary>
-    [Parameter] public DateTime Day { get; set; }
-
     /// <summary>Pixel offset of the column's leading edge inside the row.</summary>
     [Parameter] public double ColumnOffsetPx { get; set; }
+
+    /// <summary>The date the column belongs to. The marker only renders while that date is today.</summary>
+    [Parameter] public DateTime Day { get; set; }
 
     /// <summary>Pixels one minute of the time axis occupies.</summary>
     [Parameter] public double PixelsPerMinute { get; set; }
 
-    /// <summary>First hour the column renders (inclusive).</summary>
-    [Parameter] public int VisibleStartHour { get; set; }
-
     /// <summary>Last hour the column renders (exclusive).</summary>
     [Parameter] public int VisibleEndHour { get; set; } = 24;
+
+    /// <summary>First hour the column renders (inclusive).</summary>
+    [Parameter] public int VisibleStartHour { get; set; }
 
     private double? _offsetPx;
     private Timer? _timer;

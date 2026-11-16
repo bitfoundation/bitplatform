@@ -43,6 +43,13 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "Blocking",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents the Dialog from being dismissed by a click on the overlay or by the Escape key, leaving its buttons as the only way out."
+        },
+        new()
+        {
             Name = "Body",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -184,13 +191,6 @@ public partial class BitDialogDemo
         },
         new()
         {
-            Name = "Blocking",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Prevents the Dialog from being dismissed by a click on the overlay or by the Escape key, leaving its buttons as the only way out."
-        },
-        new()
-        {
             Name = "IsCancelButtonEnabled",
             Type = "bool",
             DefaultValue = "true",
@@ -202,13 +202,6 @@ public partial class BitDialogDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the Dialog can be dragged around."
-        },
-        new()
-        {
-            Name = "Modeless",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). If true, Blocking is ignored, there will be no overlay, and the focus is not trapped - though the Dialog still takes it when it opens unless AutoFocus is turned off."
         },
         new()
         {
@@ -275,6 +268,13 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "Modeless",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). If true, Blocking is ignored, there will be no overlay, and the focus is not trapped - though the Dialog still takes it when it opens unless AutoFocus is turned off."
+        },
+        new()
+        {
             Name = "NoDismissPreventedAnimation",
             Type = "bool",
             DefaultValue = "false",
@@ -328,13 +328,6 @@ public partial class BitDialogDemo
         },
         new()
         {
-            Name = "OnOverlayClick",
-            Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "null",
-            Description = "A callback function for when the overlay of the Dialog is clicked, whether or not the click goes on to dismiss the Dialog."
-        },
-        new()
-        {
             Name = "OnOk",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "null",
@@ -346,6 +339,13 @@ public partial class BitDialogDemo
             Type = "EventCallback",
             DefaultValue = "null",
             Description = "A callback function for when the Dialog is opened."
+        },
+        new()
+        {
+            Name = "OnOverlayClick",
+            Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "null",
+            Description = "A callback function for when the overlay of the Dialog is clicked, whether or not the click goes on to dismiss the Dialog."
         },
         new()
         {

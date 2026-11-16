@@ -63,15 +63,15 @@ public partial class BitPivotItem : BitComponentBase
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Defines an optional item count displayed in parentheses just after the link text.
-    /// </summary>
-    [Parameter] public int? ItemCount { get; set; }
-
-    /// <summary>
     /// Whether or not the item is selected.
     /// </summary>
     [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsSelected { get; set; }
+
+    /// <summary>
+    /// Defines an optional item count displayed in parentheses just after the link text.
+    /// </summary>
+    [Parameter] public int? ItemCount { get; set; }
 
     /// <summary>
     /// A required key to uniquely identify a pivot item.

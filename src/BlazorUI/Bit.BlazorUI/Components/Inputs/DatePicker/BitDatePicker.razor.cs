@@ -572,11 +572,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public bool HighlightCurrentMonth { get; set; }
 
     /// <summary>
-    /// The list of dates that are highlighted (marked) in the day picker.
-    /// </summary>
-    [Parameter] public IEnumerable<DateTimeOffset>? HighlightedDates { get; set; }
-
-    /// <summary>
     /// The accessible name of a day of <see cref="HighlightedDates"/>, which its full date is formatted into.
     /// Setting it to an empty string leaves a highlighted day named like any other.
     /// </summary>
@@ -586,6 +581,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// the day as well.
     /// </remarks>
     [Parameter] public string HighlightedDateAriaLabel { get; set; } = "{0}, highlighted";
+
+    /// <summary>
+    /// The list of dates that are highlighted (marked) in the day picker.
+    /// </summary>
+    [Parameter] public IEnumerable<DateTimeOffset>? HighlightedDates { get; set; }
 
     /// <summary>
     /// Whether the month picker should highlight the selected month.
@@ -625,6 +625,15 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public BitIconInfo? Icon { get; set; }
 
     /// <summary>
+    /// The name of the DatePicker's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.CalendarMirrored</c>).
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </remarks>
+    [Parameter] public string? IconName { get; set; }
+
+    /// <summary>
     /// Determines the side of the input the DatePicker's icon is rendered on (default is the end side).
     /// </summary>
     /// <remarks>
@@ -634,15 +643,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPlacement IconPlacement { get; set; } = BitPlacement.End;
-
-    /// <summary>
-    /// The name of the DatePicker's icon from the built-in Fluent UI icon set.
-    /// </summary>
-    /// <remarks>
-    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.CalendarMirrored</c>).
-    /// For external icon libraries, use <see cref="Icon"/> instead.
-    /// </remarks>
-    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Custom template for the DatePicker's icon.
@@ -732,21 +732,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public TimeSpan? MinTime { get; set; }
 
     /// <summary>
-    /// The number of consecutive months rendered side by side in the day picker (1 to 3), which opens the
-    /// picker on a whole season at once - the arrow keys and the selection carry on across the months of it.
-    /// </summary>
-    /// <remarks>
-    /// A strip of months always draws six week rows and never draws the days of the adjacent months (each
-    /// of them is a day of the pane beside it). A picker that opens a callout falls back to fewer months on
-    /// a viewport too narrow to hold them - the same width that decides whether the month and time pickers
-    /// collapse into overlays - while a <see cref="Standalone"/> one renders what it is asked for, since
-    /// the room it has is the page's business rather than the viewport's.
-    /// </remarks>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public int MonthCount { get; set; } = 1;
-
-    /// <summary>
     /// The step, in minutes, the spin buttons of the time picker move the minute by.
     /// </summary>
     /// <remarks>
@@ -773,6 +758,21 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// Custom template to render the month cells of the DatePicker.
     /// </summary>
     [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
+
+    /// <summary>
+    /// The number of consecutive months rendered side by side in the day picker (1 to 3), which opens the
+    /// picker on a whole season at once - the arrow keys and the selection carry on across the months of it.
+    /// </summary>
+    /// <remarks>
+    /// A strip of months always draws six week rows and never draws the days of the adjacent months (each
+    /// of them is a day of the pane beside it). A picker that opens a callout falls back to fewer months on
+    /// a viewport too narrow to hold them - the same width that decides whether the month and time pickers
+    /// collapse into overlays - while a <see cref="Standalone"/> one renders what it is asked for, since
+    /// the room it has is the page's business rather than the viewport's.
+    /// </remarks>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public int MonthCount { get; set; } = 1;
 
     /// <summary>
     /// The title of the month picker's toggle (tooltip).

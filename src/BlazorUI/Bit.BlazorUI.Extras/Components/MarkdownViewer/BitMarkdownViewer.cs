@@ -75,18 +75,15 @@ public partial class BitMarkdownViewer : BitComponentBase
 
 
     /// <summary>
-    /// The Markdown string value to render as html elements.
+    /// Renders every fenced or indented code block, instead of the <c>&lt;pre&gt;&lt;code&gt;</c>
+    /// the viewer would otherwise draw. This is where a syntax highlighter, a copy button or a
+    /// diagram renderer goes: the template is given the block, so it can read the language off
+    /// <c>Info</c> and the source off <c>Content</c>. The template's output is outside the viewer's
+    /// stylesheet (it is drawn into a <c>display: contents</c> wrapper the rules stop at), so it is
+    /// styled by whatever it is - a component keeps its own look, a bare <c>&lt;pre&gt;</c> needs
+    /// a rule of yours.
     /// </summary>
-    [Parameter] public string? Markdown { get; set; }
-
-    /// <summary>
-    /// Shifts every heading down by this many levels, so the document's outline nests under the page it is placed in:
-    /// with an offset of 1, a <c>#</c> heading renders as an <c>h2</c>. The result is clamped to <c>h1</c>-<c>h6</c>,
-    /// so headings that would go deeper all render as <c>h6</c>. Use it wherever the page already has its own
-    /// <c>h1</c> - a comment, a chat message, a card - so the document does not compete with it for the top of the
-    /// outline assistive technology navigates by. Defaults to 0.
-    /// </summary>
-    [Parameter] public int HeadingLevelOffset { get; set; }
+    [Parameter] public RenderFragment<BitMarkdownCodeBlockNode>? CodeBlockTemplate { get; set; }
 
     /// <summary>
     /// Prepended to the id of every heading, and to every in-page link in the document that points at one, so the
@@ -99,10 +96,13 @@ public partial class BitMarkdownViewer : BitComponentBase
     [Parameter] public string? HeadingIdPrefix { get; set; }
 
     /// <summary>
-    /// The processing pipeline (flavor set). Defaults to <see cref="BitMarkdownPipelines.Basic"/>,
-    /// i.e. the basic CommonMark core with no extensions.
+    /// Shifts every heading down by this many levels, so the document's outline nests under the page it is placed in:
+    /// with an offset of 1, a <c>#</c> heading renders as an <c>h2</c>. The result is clamped to <c>h1</c>-<c>h6</c>,
+    /// so headings that would go deeper all render as <c>h6</c>. Use it wherever the page already has its own
+    /// <c>h1</c> - a comment, a chat message, a card - so the document does not compete with it for the top of the
+    /// outline assistive technology navigates by. Defaults to 0.
     /// </summary>
-    [Parameter] public BitMarkdownPipeline? Pipeline { get; set; }
+    [Parameter] public int HeadingLevelOffset { get; set; }
 
     /// <summary>
     /// Controls whether remote images are allowed to load, guarding against silent
@@ -117,31 +117,12 @@ public partial class BitMarkdownViewer : BitComponentBase
     [Parameter] public BitMarkdownViewerImageRendering ImageRendering { get; set; } = BitMarkdownViewerImageRendering.SameOrigin;
 
     /// <summary>
-    /// The maximum block/inline nesting depth allowed while parsing. Content nested
-    /// deeper than this is rendered as plain text instead of being parsed further.
-    /// This is an always-on safeguard against denial-of-service via pathologically
-    /// nested input (e.g. thousands of nested blockquotes or lists) that would
-    /// otherwise overflow the stack. Defaults to 100; values &lt;= 0 fall back to the
-    /// default. Legitimate documents never approach this limit.
+    /// Renders every image, instead of the <c>&lt;img&gt;</c> the viewer would otherwise draw -
+    /// for a lightbox, a placeholder while it loads, or a component that serves a modern format.
+    /// The <see cref="ImageRendering"/> policy has already been applied when the template runs, so
+    /// a blocked image reaches it with an empty <c>Url</c>.
     /// </summary>
-    [Parameter] public int MaxNestingDepth { get; set; } = BitMarkdownParseOptions.DefaultMaxDepth;
-
-    /// <summary>
-    /// When greater than zero, the Markdown source is truncated to this many characters
-    /// before parsing. Use it to bound the work done on untrusted input. Defaults to 0
-    /// (no limit).
-    /// </summary>
-    [Parameter] public int MaxLength { get; set; }
-
-    /// <summary>
-    /// When <c>true</c>, Unicode bidirectional control characters are stripped from the
-    /// source before parsing, neutralizing "Trojan Source" (CVE-2021-42574) spoofing
-    /// where text is made to display in a different order than it is encoded. Recommended
-    /// for untrusted or AI-generated Markdown. Defaults to <c>false</c> to preserve
-    /// explicit right-to-left embedding in trusted content. Zero-width joiners used by
-    /// emoji and complex scripts are never removed.
-    /// </summary>
-    [Parameter] public bool StripBidiControlCharacters { get; set; }
+    [Parameter] public RenderFragment<BitMarkdownImageNode>? ImageTemplate { get; set; }
 
     /// <summary>
     /// Renders the document as inline content: the root element becomes a <c>span</c> and each
@@ -151,6 +132,41 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// tables, headings) still render as themselves. Defaults to <c>false</c>.
     /// </summary>
     [Parameter, ResetClassBuilder] public bool Inline { get; set; }
+
+    /// <summary>
+    /// Renders every link, instead of the <c>&lt;a&gt;</c> the viewer would otherwise draw - to
+    /// route an in-app destination through the router, or to decorate an external one. The
+    /// destination has already been sanitized when the template runs, and an in-page one
+    /// (<c>#id</c>) has been written against the page, as every link the viewer draws is.
+    /// </summary>
+    /// <remarks>
+    /// A link's own content is not rendered for you: write
+    /// <c>@context.Children</c> through a renderer of your own, or - far more usually - read
+    /// <c>BitMarkdownInlineHelpers.PlainText(context.Children)</c> for its text.
+    /// </remarks>
+    [Parameter] public RenderFragment<BitMarkdownLinkNode>? LinkTemplate { get; set; }
+
+    /// <summary>
+    /// The Markdown string value to render as html elements.
+    /// </summary>
+    [Parameter] public string? Markdown { get; set; }
+
+    /// <summary>
+    /// When greater than zero, the Markdown source is truncated to this many characters
+    /// before parsing. Use it to bound the work done on untrusted input. Defaults to 0
+    /// (no limit).
+    /// </summary>
+    [Parameter] public int MaxLength { get; set; }
+
+    /// <summary>
+    /// The maximum block/inline nesting depth allowed while parsing. Content nested
+    /// deeper than this is rendered as plain text instead of being parsed further.
+    /// This is an always-on safeguard against denial-of-service via pathologically
+    /// nested input (e.g. thousands of nested blockquotes or lists) that would
+    /// otherwise overflow the stack. Defaults to 100; values &lt;= 0 fall back to the
+    /// default. Legitimate documents never approach this limit.
+    /// </summary>
+    [Parameter] public int MaxNestingDepth { get; set; } = BitMarkdownParseOptions.DefaultMaxDepth;
 
     /// <summary>
     /// Called after the Markdown source has been parsed, with the document that is about to
@@ -171,36 +187,20 @@ public partial class BitMarkdownViewer : BitComponentBase
     [Parameter] public EventCallback<BitMarkdownViewerTaskChangedEventArgs> OnTaskChanged { get; set; }
 
     /// <summary>
-    /// Renders every fenced or indented code block, instead of the <c>&lt;pre&gt;&lt;code&gt;</c>
-    /// the viewer would otherwise draw. This is where a syntax highlighter, a copy button or a
-    /// diagram renderer goes: the template is given the block, so it can read the language off
-    /// <c>Info</c> and the source off <c>Content</c>. The template's output is outside the viewer's
-    /// stylesheet (it is drawn into a <c>display: contents</c> wrapper the rules stop at), so it is
-    /// styled by whatever it is - a component keeps its own look, a bare <c>&lt;pre&gt;</c> needs
-    /// a rule of yours.
+    /// The processing pipeline (flavor set). Defaults to <see cref="BitMarkdownPipelines.Basic"/>,
+    /// i.e. the basic CommonMark core with no extensions.
     /// </summary>
-    [Parameter] public RenderFragment<BitMarkdownCodeBlockNode>? CodeBlockTemplate { get; set; }
+    [Parameter] public BitMarkdownPipeline? Pipeline { get; set; }
 
     /// <summary>
-    /// Renders every image, instead of the <c>&lt;img&gt;</c> the viewer would otherwise draw -
-    /// for a lightbox, a placeholder while it loads, or a component that serves a modern format.
-    /// The <see cref="ImageRendering"/> policy has already been applied when the template runs, so
-    /// a blocked image reaches it with an empty <c>Url</c>.
+    /// When <c>true</c>, Unicode bidirectional control characters are stripped from the
+    /// source before parsing, neutralizing "Trojan Source" (CVE-2021-42574) spoofing
+    /// where text is made to display in a different order than it is encoded. Recommended
+    /// for untrusted or AI-generated Markdown. Defaults to <c>false</c> to preserve
+    /// explicit right-to-left embedding in trusted content. Zero-width joiners used by
+    /// emoji and complex scripts are never removed.
     /// </summary>
-    [Parameter] public RenderFragment<BitMarkdownImageNode>? ImageTemplate { get; set; }
-
-    /// <summary>
-    /// Renders every link, instead of the <c>&lt;a&gt;</c> the viewer would otherwise draw - to
-    /// route an in-app destination through the router, or to decorate an external one. The
-    /// destination has already been sanitized when the template runs, and an in-page one
-    /// (<c>#id</c>) has been written against the page, as every link the viewer draws is.
-    /// </summary>
-    /// <remarks>
-    /// A link's own content is not rendered for you: write
-    /// <c>@context.Children</c> through a renderer of your own, or - far more usually - read
-    /// <c>BitMarkdownInlineHelpers.PlainText(context.Children)</c> for its text.
-    /// </remarks>
-    [Parameter] public RenderFragment<BitMarkdownLinkNode>? LinkTemplate { get; set; }
+    [Parameter] public bool StripBidiControlCharacters { get; set; }
 
 
 

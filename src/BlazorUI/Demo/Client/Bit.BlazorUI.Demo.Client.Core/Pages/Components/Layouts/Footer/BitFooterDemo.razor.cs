@@ -54,17 +54,17 @@ public partial class BitFooterDemo
         },
         new()
         {
-            Name = "ElevateOnScroll",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Shadows a Fixed or Sticky footer only while there is content left underneath it, and fades the shadow out at the end of the scrolling area. Elevated takes precedence.",
-        },
-        new()
-        {
             Name = "Elevated",
             Type = "bool",
             DefaultValue = "false",
             Description = "Renders the BitFooter with a shadow cast upwards, to lift it above the content it overlaps.",
+        },
+        new()
+        {
+            Name = "ElevateOnScroll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shadows a Fixed or Sticky footer only while there is content left underneath it, and fades the shadow out at the end of the scrolling area. Elevated takes precedence.",
         },
         new()
         {

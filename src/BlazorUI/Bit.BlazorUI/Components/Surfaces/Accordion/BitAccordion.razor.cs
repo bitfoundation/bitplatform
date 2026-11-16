@@ -102,6 +102,11 @@ public partial class BitAccordion : BitComponentBase
     public BitColorKind? Background { get; set; }
 
     /// <summary>
+    /// Alias for the ChildContent parameter.
+    /// </summary>
+    [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
     /// The color kind of the border of the accordion.
     /// </summary>
     /// <remarks>
@@ -110,11 +115,6 @@ public partial class BitAccordion : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Border { get; set; }
-
-    /// <summary>
-    /// Alias for the ChildContent parameter.
-    /// </summary>
-    [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>
     /// Reports the header as busy while something the page is doing on the accordion's behalf is still
@@ -129,15 +129,15 @@ public partial class BitAccordion : BitComponentBase
     [Parameter] public bool Busy { get; set; }
 
     /// <summary>
+    /// The content of the accordion.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the accordion.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitAccordionClassStyles? Classes { get; set; }
-
-    /// <summary>
-    /// The content of the accordion.
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Default value for the IsExpanded parameter.
@@ -325,14 +325,14 @@ public partial class BitAccordion : BitComponentBase
     [Parameter] public bool NoExpanderRotation { get; set; }
 
     /// <summary>
-    /// Callback that is called when the header is clicked.
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-
-    /// <summary>
     /// Callback that is called when the IsExpanded value has changed.
     /// </summary>
     [Parameter] public EventCallback<bool> OnChange { get; set; }
+
+    /// <summary>
+    /// Callback that is called when the header is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
     /// Callback that is called when the accordion is collapsed.

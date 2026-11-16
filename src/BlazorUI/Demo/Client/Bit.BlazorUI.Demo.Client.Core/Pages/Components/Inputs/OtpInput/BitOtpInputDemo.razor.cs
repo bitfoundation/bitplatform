@@ -112,17 +112,17 @@ public partial class BitOtpInputDemo
         },
         new()
         {
-            Name = "Loading",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "The busy state of a submitted code: draws a progress bar, marks the group aria-busy, announces the Description and holds the code still like ReadOnly. Clear is not blocked by it.",
-        },
-        new()
-        {
             Name = "Length",
             Type = "int",
             DefaultValue = "5",
             Description = "The number of inputs, which is the length of the code. Values below 1 are treated as 1.",
+        },
+        new()
+        {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "The busy state of a submitted code: draws a progress bar, marks the group aria-busy, announces the Description and holds the code still like ReadOnly. Clear is not blocked by it.",
         },
         new()
         {
