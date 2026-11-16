@@ -27,6 +27,7 @@ public class HealthCheckDescriptions : Dictionary<string, HealthCheckDescription
         this["cloudflare"] = new("Cloudflare", "Globe", "The zones whose edge cache the app purges.");
         //#endif
         this["serverApi"] = new("Server API", "PlugConnected", "Server.Web reaches the API it prerenders with and forwards to.");
+        this["bitFabric"] = new("bit Fabric", "View", "bit Fabric is connected, so these checks are read from outside the server.");
 
         this["smtp"] = new("Email", "Mail", "Signs in to the SMTP server without sending anything.");
         this["emailDelivery"] = new("Email sender domain", "MailCheck", "The sender's domain has SPF and DMARC records, so mail can reach inboxes rather than spam.");
