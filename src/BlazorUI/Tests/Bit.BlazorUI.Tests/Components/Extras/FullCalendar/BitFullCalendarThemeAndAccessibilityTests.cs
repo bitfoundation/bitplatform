@@ -395,6 +395,7 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
         Assert.IsFalse(plain.HasAttribute("aria-labelledby"));
         Assert.IsFalse(plain.HasAttribute("id"));
         Assert.IsEmpty(plain.QuerySelectorAll("[hidden]"));
+        Assert.IsEmpty(component.FindAll("[id^='bit-bfc-evt-dtl-']"));
     }
 
     [TestMethod]
@@ -426,11 +427,14 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
         StringAssert.StartsWith(eventElement.TextContent, "Pin: Standup");
         Assert.IsEmpty(eventElement.QuerySelectorAll(".bit-bfc-event-tpl"));
 
-        // Then the details the template may leave out, kept off the screen.
+        // Then the details the template may leave out, kept off the screen - beside the event, not inside it: walking the
+        // event's own content for the first reference passes them hidden, and a name computation that visits an
+        // element once (Playwright's) would then give the second reference nothing.
         var details = component.Find($"#{ids[1]}");
         Assert.IsTrue(details.HasAttribute("hidden"));
         StringAssert.StartsWith(details.TextContent, "Standup, ");
-        Assert.IsTrue(eventElement.Contains(details));
+        Assert.IsFalse(eventElement.Contains(details));
+        Assert.AreSame(eventElement.Parent, details.Parent);
     }
 
     [TestMethod]

@@ -408,7 +408,10 @@ public class BitCalendarE2ETests : E2ETestBase
         await Expect(PickerToggle("cal-pickers")).ToHaveTextAsync("2024");
         await Expect(PickerToggle("cal-pickers")).ToHaveAttributeAsync("aria-label", "2024, change year");
         await Expect(Month("cal-pickers", 6)).ToHaveTextAsync("Jun");
-        await Expect(Month("cal-pickers", 6)).ToHaveAttributeAsync("aria-label", "June");
+        // a month is named by the abbreviation it shows (Label in Name) and described by its full name
+        await Expect(Month("cal-pickers", 6)).ToHaveAccessibleNameAsync("Jun");
+        await Expect(Month("cal-pickers", 6)).ToHaveAttributeAsync("title", "June");
+        await Expect(Month("cal-pickers", 6)).ToHaveAccessibleDescriptionAsync("June");
         await Expect(Month("cal-pickers", 3)).ToHaveAttributeAsync("aria-current", "date");
 
         await Month("cal-pickers", 6).ClickAsync();
@@ -835,7 +838,7 @@ public class BitCalendarE2ETests : E2ETestBase
         await Expect(Day(id, "2024-03-15")).ToHaveTextAsync("25");
         await Expect(Day(id, "2024-03-15")).ToHaveAttributeAsync("aria-current", "date");
         await Expect(PickerToggle(id)).ToHaveTextAsync("1402");
-        await Expect(Month(id, 1)).ToHaveAttributeAsync("aria-label", IsWasm ? "Farvardin" : "فروردین");
+        await Expect(Month(id, 1)).ToHaveAttributeAsync("title", IsWasm ? "Farvardin" : "فروردین");
         await Expect(GoToToday(id)).ToHaveAttributeAsync("title", "برو به امروز");
 
         // Saturday, the first day of the Persian week, is laid out on the right.

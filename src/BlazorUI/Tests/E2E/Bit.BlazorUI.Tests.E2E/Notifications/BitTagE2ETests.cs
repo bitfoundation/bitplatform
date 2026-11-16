@@ -328,10 +328,12 @@ public class BitTagE2ETests : E2ETestBase
 
         var fill = Content("click-tag");
         await Expect(fill).ToHaveCSSAsync("background-color", Transparent);
+        // A filled tag's overlay is the inverse of its text color, which deepens the fill away from the text rather than
+        // towards it, so the label keeps its contrast while it is pointed at and pressed.
         await fill.HoverAsync();
-        await Expect(fill).ToHaveCSSAsync("background-color", await Page.ResolveCssColorAsync("color-mix(in srgb, var(--bit-clr-pri-text) 12%, transparent)"));
+        await Expect(fill).ToHaveCSSAsync("background-color", await Page.ResolveCssColorAsync("rgb(from var(--bit-clr-pri-text) calc(255 - r) calc(255 - g) calc(255 - b) / 12%)"));
         await Page.Mouse.DownAsync();
-        await Expect(fill).ToHaveCSSAsync("background-color", await Page.ResolveCssColorAsync("color-mix(in srgb, var(--bit-clr-pri-text) 20%, transparent)"));
+        await Expect(fill).ToHaveCSSAsync("background-color", await Page.ResolveCssColorAsync("rgb(from var(--bit-clr-pri-text) calc(255 - r) calc(255 - g) calc(255 - b) / 20%)"));
         await Page.Mouse.UpAsync();
 
         // An outlined tag answers with a wash of its role - the tint its text color is solved to be read on - rather than

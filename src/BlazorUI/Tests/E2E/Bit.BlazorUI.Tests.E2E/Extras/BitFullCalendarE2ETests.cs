@@ -117,8 +117,9 @@ public partial class BitFullCalendarE2ETests : E2ETestBase
         await Expect(body).ToHaveAttributeAsync("role", "tabpanel");
         await Expect(body).ToHaveAttributeAsync("aria-labelledby", "cal-mode-0 cal-view-2");
 
-        // the events of the month are drawn on their days, each a named button
-        await Expect(Badge(Cal, "e1")).ToHaveAttributeAsync("aria-label", "Team Standup, 7/16/2025 09:00 - 7/16/2025 09:45");
+        // the events of the month are drawn on their days, each a named button: the title and the clock range it shows,
+        // then the day, which a badge does not show by where it sits the way a block in a day column does
+        await Expect(Badge(Cal, "e1")).ToHaveAttributeAsync("aria-label", "Team Standup, 09:00 - 09:45, 7/16/2025");
         await Expect(MonthCell(Cal, "Wednesday, July 16, 2025").Locator(".bit-bfc-event-badge-title")).ToHaveTextAsync(["Team Standup", "Focus Time", "Design Review"]);
 
         // the first range is reported once, on the first render

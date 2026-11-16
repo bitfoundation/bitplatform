@@ -282,9 +282,9 @@ public partial class BitFullCalendarE2ETests
         await Expect(Page.Locator("#changes li").Last).ToHaveTextAsync("Add|Dialog|Gym|2025-07-16 08:00|2025-07-16 08:30|Weekly/1/Wednesday,Friday//3//skip:/add:");
         var occurrences = RecCal.Locator("[role='button'][aria-label^='Gym, ']");
         await Expect(occurrences).ToHaveCountAsync(3);
-        await Expect(occurrences.Nth(0)).ToHaveAttributeAsync("aria-label", "Gym, 7/16/2025 08:00 - 7/16/2025 08:30");
-        await Expect(occurrences.Nth(1)).ToHaveAttributeAsync("aria-label", "Gym, 7/18/2025 08:00 - 7/18/2025 08:30");
-        await Expect(occurrences.Nth(2)).ToHaveAttributeAsync("aria-label", "Gym, 7/23/2025 08:00 - 7/23/2025 08:30");
+        await Expect(occurrences.Nth(0)).ToHaveAttributeAsync("aria-label", "Gym, 08:00 - 08:30, 7/16/2025");
+        await Expect(occurrences.Nth(1)).ToHaveAttributeAsync("aria-label", "Gym, 08:00 - 08:30, 7/18/2025");
+        await Expect(occurrences.Nth(2)).ToHaveAttributeAsync("aria-label", "Gym, 08:00 - 08:30, 7/23/2025");
     }
 
     [TestMethod]
