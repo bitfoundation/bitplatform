@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Diagnostics;
 using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Infrastructure.HealthChecks;
+using Boilerplate.Server.Api.Features.Identity.OAuth.Models;
 using Boilerplate.Server.Shared.Infrastructure.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
@@ -360,6 +361,7 @@ public partial class HealthCheckIntegrationTests
         ["hangfire"] = HealthCheckCategories.Platform,
         ["appCertificate"] = HealthCheckCategories.Platform,
         ["userProfileImages"] = HealthCheckCategories.Platform,
+        ["bitFabric"] = HealthCheckCategories.Integrations,
         ["website:https://site.invalid/"] = HealthCheckCategories.Websites,
         //#if (redis == true)
         ["StackExchange.Redis_redis-persistent"] = HealthCheckCategories.Platform,
@@ -672,10 +674,82 @@ public partial class HealthCheckIntegrationTests
             // A stand-in is grouped where the real check would be.
             AssertCategory(registration);
         }
+
+        var bitFabric = registrations.SingleOrDefault(r => r.Name is "bitFabric");
+        Assert.IsNotNull(bitFabric, "Outside development, bitFabric says whether anything reads these checks from outside the server.");
+        Assert.AreEqual(HealthStatus.Degraded, bitFabric.FailureStatus, "bit Fabric not being connected must not take the instance out of rotation.");
+        Assert.AreNotEqual(Timeout.InfiniteTimeSpan, bitFabric.Timeout);
+        AssertCategory(bitFabric);
         //#if (signalR == true)
 
         Assert.DoesNotContain(r => r.Name is "azureSignalR", registrations, "Without Azure SignalR the app serves SignalR itself, so a missing connection string is no setup gap.");
         //#endif
+    }
+
+    /// <summary>
+    /// <c>bitFabric</c> is Healthy only while bit Fabric's own client holds a grant, so a host that merely starts with its
+    /// name doesn't count. It runs directly, as the test server runs in development, where it isn't registered.
+    /// </summary>
+    [TestMethod]
+    public async Task BitFabricHealthCheck_Should_NeedAGrantOfBitFabricItself()
+    {
+        await using var server = new AppTestServer();
+        await server.Build().Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+
+        var sessionId = Guid.CreateSequentialGuid();
+
+        await using (var scope = server.ApiApp.Services.CreateAsyncScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await dbContext.UserSessions.AddAsync(new UserSession
+            {
+                Id = sessionId,
+                UserId = userId,
+                StartedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                OAuthGrant = new OAuthGrant
+                {
+                    ClientId = "https://api.bitfabric.co.example.test/client.json",
+                    Scope = "dev-mcp",
+                    Resource = "https://example.test/dev-mcp",
+                    RefreshTokenId = Guid.CreateVersion7()
+                }
+            }, TestContext.CancellationToken);
+            await dbContext.SaveChangesAsync(TestContext.CancellationToken);
+        }
+
+        try
+        {
+            var lookAlike = await CheckBitFabric(server);
+            Assert.AreEqual(HealthStatus.Degraded, lookAlike.Status, lookAlike.Description);
+
+            await using (var scope = server.ApiApp.Services.CreateAsyncScope())
+            {
+                await scope.ServiceProvider.GetRequiredService<AppDbContext>().OAuthGrants
+                    .Where(grant => grant.UserSessionId == sessionId)
+                    .ExecuteUpdateAsync(setters => setters.SetProperty(grant => grant.ClientId, "https://api.bitfabric.co/oauth/client.json"), TestContext.CancellationToken);
+            }
+
+            var connected = await CheckBitFabric(server);
+            Assert.AreEqual(HealthStatus.Healthy, connected.Status, connected.Description);
+        }
+        finally
+        {
+            await using var scope = server.ApiApp.Services.CreateAsyncScope();
+            await scope.ServiceProvider.GetRequiredService<AppDbContext>().UserSessions
+                .Where(session => session.Id == sessionId)
+                .ExecuteDeleteAsync(TestContext.CancellationToken);
+        }
+    }
+
+    private async Task<HealthCheckResult> CheckBitFabric(AppTestServer server)
+    {
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
+        var check = ActivatorUtilities.CreateInstance<BitFabricHealthCheck>(scope.ServiceProvider);
+
+        return await check.CheckHealthAsync(new HealthCheckContext { Registration = new("bitFabric", check, HealthStatus.Degraded, null) }, TestContext.CancellationToken);
     }
 
     /// <summary>
