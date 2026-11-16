@@ -2192,14 +2192,14 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Vad den här enheten och servern rapporterar om appen, för felsökning.</value>
   </data>
-    <data name="Pin" xml:space="preserve">
-    <value>PIN-kod</value>
+    <data name="Lock" xml:space="preserve">
+    <value>Lås</value>
   </data>
-    <data name="PinDescription" xml:space="preserve">
-    <value>En PIN-kod håller det här kontot låst på den här enheten medan du använder ett annat konto. Den sparas bara på den här enheten, och ditt lösenord fungerar alltid.</value>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>Lås det här kontot</value>
   </data>
-    <data name="PinIsSet" xml:space="preserve">
-    <value>Det här kontot har en PIN-kod på den här enheten.</value>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>För att låsa det här kontot första gången behövs en PIN-kod. Du anger den för att komma tillbaka till kontot på den här enheten, och den lämnar aldrig enheten.</value>
   </data>
     <data name="NewPin" xml:space="preserve">
     <value>Ny PIN-kod</value>
@@ -2210,26 +2210,17 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="PinsDoNotMatch" xml:space="preserve">
     <value>PIN-koderna stämmer inte överens. Försök igen.</value>
   </data>
-    <data name="ChangePin" xml:space="preserve">
-    <value>Ändra PIN-kod</value>
-  </data>
-    <data name="RemovePin" xml:space="preserve">
-    <value>Ta bort PIN-kod</value>
-  </data>
-    <data name="PinSavedMessage" xml:space="preserve">
-    <value>PIN-koden har sparats.</value>
-  </data>
-    <data name="PinRemovedMessage" xml:space="preserve">
-    <value>PIN-koden har tagits bort.</value>
-  </data>
     <data name="EnterPinTitle" xml:space="preserve">
     <value>Ange PIN-koden</value>
   </data>
-    <data name="WrongPin" xml:space="preserve">
-    <value>Fel PIN-kod.</value>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>Fel PIN-kod. Försök kvar: {0}.</value>
   </data>
-    <data name="SignInAgainToResetPin" xml:space="preserve">
-    <value>Logga in igen för att återställa PIN-koden</value>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>För många felaktiga PIN-koder, så kontot sparas inte längre på den här enheten. Logga in igen för att använda det.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>Logga in igen för att ta bort PIN-koden</value>
   </data>
     <data name="PinUseLetters" xml:space="preserve">
     <value>Använd bokstäver</value>

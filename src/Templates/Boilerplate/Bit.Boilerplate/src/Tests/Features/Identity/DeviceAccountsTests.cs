@@ -241,7 +241,7 @@ public partial class DeviceAccountsTests
         var (_, secondUserId) = await TestAccountUtils.CreateAndAddAccount(client, TestContext.CancellationToken);
 
         Assert.IsFalse(await client.AuthManager.HasPin(), "The PIN belongs to the account that set it, not to the one signed in after it.");
-        Assert.DoesNotContain(firstRefreshToken!, await storage.GetItem("accounts") ?? await storage.GetItem("temp_accounts") ?? "",
+        Assert.DoesNotContain(firstRefreshToken!, await StoredUserSessions(storage),
             "An account with a PIN must not keep its tokens readable on the device.");
         //#if (notification == true)
         Assert.Contains(firstSessionId, await client.AuthManager.GetDeviceSessionIds(), "Pushes about an account with a PIN must still reach this device.");
@@ -312,6 +312,73 @@ public partial class DeviceAccountsTests
         Assert.AreSequenceEqual(new[] { secondUserId }, await OtherAccountIds(client));
     }
 
+    [TestMethod]
+    public async Task Locking_Should_LeaveNoAccountActive_AndKeepTheLockedOneBehindItsPin()
+    {
+        await using var server = new AppTestServer();
+        await server.Build().Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+
+        var storage = client.Services.GetRequiredService<IStorageService>();
+
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var sessionId = (await CurrentUser(client)).GetSessionId();
+        var refreshToken = await storage.GetItem("refresh_token");
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => client.AuthManager.Lock(), "An account without a PIN would have no way back.");
+
+        await client.AuthManager.SetPin(Pin);
+        await client.AuthManager.Lock();
+
+        Assert.IsFalse((await CurrentUser(client)).IsAuthenticated(), "Locking must leave no account active.");
+        Assert.IsTrue(string.IsNullOrEmpty(await storage.GetItem("pin_lock")));
+        Assert.DoesNotContain(refreshToken!, await StoredUserSessions(storage), "A locked account must not keep its tokens readable on the device.");
+        Assert.AreSequenceEqual(new[] { userId }, await OtherAccountIds(client));
+        Assert.AreEqual(1, await CountUserSessions(server, userId), "Locking is not signing out, so the session must stay alive.");
+
+        Assert.IsFalse(await client.AuthManager.SwitchAccount(userId, "87654321"));
+        Assert.IsTrue(await client.AuthManager.SwitchAccount(userId, Pin));
+
+        var user = await CurrentUser(client);
+
+        Assert.AreEqual(userId, user.GetUserId());
+        Assert.AreEqual(sessionId, user.GetSessionId(), "The PIN opens the account's own session, not a new sign-in.");
+        Assert.IsTrue(await client.AuthManager.HasPin(), "Locking it again must not ask for a new PIN.");
+
+        await client.AuthManager.Lock();
+
+        Assert.AreEqual(0, (await client.AuthManager.GetOtherUserSessions()).Single().FailedPinAttempts,
+            "The right PIN starts the count of wrong ones over.");
+    }
+
+    [TestMethod]
+    public async Task TooManyWrongPins_Should_RemoveTheAccountFromTheDevice()
+    {
+        await using var server = new AppTestServer();
+        await server.Build().Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+
+        await client.AuthManager.SetPin(Pin);
+        await client.AuthManager.Lock();
+
+        for (var attempt = 1; attempt < AccountPinCipher.MaxFailedAttempts; attempt++)
+        {
+            Assert.IsFalse(await client.AuthManager.SwitchAccount(userId, "87654321"));
+        }
+
+        Assert.AreSequenceEqual(new[] { userId }, await OtherAccountIds(client), "The account stays until the last allowed attempt.");
+
+        Assert.IsFalse(await client.AuthManager.SwitchAccount(userId, "87654321"));
+
+        Assert.IsEmpty(await OtherAccountIds(client), "Guessing must end once the allowed attempts run out.");
+        Assert.IsFalse(await client.AuthManager.SwitchAccount(userId, Pin));
+        Assert.IsFalse((await CurrentUser(client)).IsAuthenticated());
+    }
+
     private static async Task<ClaimsPrincipal> CurrentUser(AppClient client)
     {
         return (await client.AuthManager.GetAuthenticationStateAsync()).User;
@@ -319,7 +386,12 @@ public partial class DeviceAccountsTests
 
     private static async Task<Guid[]> OtherAccountIds(AppClient client)
     {
-        return [.. (await client.AuthManager.GetOtherAccounts()).Select(account => account.UserId)];
+        return [.. (await client.AuthManager.GetOtherUserSessions()).Select(userSession => userSession.UserId)];
+    }
+
+    private static async Task<string> StoredUserSessions(IStorageService storage)
+    {
+        return $"{await storage.GetItem("user_sessions")}{await storage.GetItem("temp_user_sessions")}";
     }
 
     private async Task<int> CountUserSessions(AppTestServer server, Guid userId)

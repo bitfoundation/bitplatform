@@ -7,6 +7,8 @@ public partial class AccountPinCipher
 {
     public const int PinLength = 8;
 
+    public const int MaxFailedAttempts = 10;
+
     private const int PinIterations = 600_000;
 
     public virtual ValueTask<bool> IsSupported() => ValueTask.FromResult(AesGcm.IsSupported);

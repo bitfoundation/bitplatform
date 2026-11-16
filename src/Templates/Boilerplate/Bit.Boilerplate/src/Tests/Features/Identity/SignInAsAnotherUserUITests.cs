@@ -91,42 +91,46 @@ public partial class SignInAsAnotherUserUITests : AppPageTest
     }
 
     [TestMethod]
-    public async Task SwitchingToAnAccountWithAPin_Should_AskForThatPin()
+    public async Task LockingAnAccount_Should_SetItsPinOnce_AndSwitchingBack_Should_AskForThatPin()
     {
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        var firstEmail = MagicLinkSignInUtils.NewTestEmail();
-        var secondEmail = MagicLinkSignInUtils.NewTestEmail();
+        var email = MagicLinkSignInUtils.NewTestEmail();
         const string pin = "12ab34cd";
 
-        await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, firstEmail, TestContext.CancellationToken);
-        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(firstEmail);
+        await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, email, TestContext.CancellationToken);
+        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(email);
 
-        await Page.GotoAsync(new Uri(server.WebAppAddress, $"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}").ToString(),
-            new() { WaitUntil = WaitUntilState.NetworkIdle });
-        await Page.WaitForBlazorInteractive();
-        await Page.GetByText(AppStrings.Pin, new() { Exact = true }).ClickAsync();
+        await AppMenuUtils.ClickItem(Page, AppStrings.Lock);
 
-        await BitOtpInputUtils.FillOtpInputs(Page.Locator(".bit-otp", new() { HasText = AppStrings.NewPin }), pin);
-        await BitOtpInputUtils.FillOtpInputs(Page.Locator(".bit-otp", new() { HasText = AppStrings.RepeatPin }), pin);
-        await Expect(Page.GetByText(AppStrings.PinIsSet)).ToBeVisibleAsync();
+        var lockModal = Page.Locator(".bit-mdl", new() { HasText = AppStrings.LockAccountTitle });
 
-        await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, secondEmail, TestContext.CancellationToken);
-        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(secondEmail);
+        await BitOtpInputUtils.FillOtpInputs(lockModal.Locator(".bit-otp", new() { HasText = AppStrings.NewPin }), pin);
+        await BitOtpInputUtils.FillOtpInputs(lockModal.Locator(".bit-otp", new() { HasText = AppStrings.RepeatPin }), pin);
 
-        await AppMenuUtils.ClickItem(Page, callout => callout.Locator(".account-button", new() { HasText = firstEmail }));
+        var elevatedAccess = await server.WaitForCapturedEmail(email, e => e.Kind is CapturedEmailKind.ElevatedAccess, TestContext.CancellationToken);
+        await BitOtpInputUtils.FillOtpInputs(Page.Locator(".bit-mdl", new() { HasText = AppStrings.ElevatedAccessTitle }), elevatedAccess.Token!);
 
-        var pinModal = Page.Locator(".bit-mdl", new() { HasText = AppStrings.EnterPinTitle });
+        await Expect(Page.Locator("header .bit-drm-btn").First).Not.ToContainTextAsync(email);
+        Assert.AreEqual(1, await CountUserSessions(server, email), "Locking is not signing out, so the session must stay alive.");
 
-        await BitOtpInputUtils.FillOtpInputs(pinModal, "87654321");
-        await Expect(pinModal.Locator(".bit-otp-dsc")).ToHaveTextAsync(AppStrings.WrongPin);
-        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(secondEmail);
+        await AppMenuUtils.ClickItem(Page, callout => callout.Locator(".account-button", new() { HasText = email }));
 
-        await BitOtpInputUtils.FillOtpInputs(pinModal, pin);
+        var unlockModal = Page.Locator(".bit-mdl", new() { HasText = AppStrings.EnterPinTitle });
 
-        await Expect(pinModal).ToBeHiddenAsync();
-        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(firstEmail);
+        await BitOtpInputUtils.FillOtpInputs(unlockModal, "87654321");
+        await Expect(unlockModal.Locator(".bit-otp-dsc")).ToHaveTextAsync(string.Format(AppStrings.WrongPinAttemptsLeft, AccountPinCipher.MaxFailedAttempts - 1));
+
+        await BitOtpInputUtils.FillOtpInputs(unlockModal, pin);
+
+        await Expect(unlockModal).ToBeHiddenAsync();
+        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(email);
+
+        await AppMenuUtils.ClickItem(Page, AppStrings.Lock);
+
+        await Expect(Page.Locator("header .bit-drm-btn").First).Not.ToContainTextAsync(email);
+        await Expect(lockModal).ToBeHiddenAsync();
     }
 
     private async Task<int> CountUserSessions(AppTestServer server, string email)

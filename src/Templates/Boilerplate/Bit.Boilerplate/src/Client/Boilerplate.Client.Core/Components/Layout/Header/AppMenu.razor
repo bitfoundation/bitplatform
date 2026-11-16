@@ -71,14 +71,14 @@
                             </NotAuthorized>
                         </AuthorizeView>
 
-                        @foreach (var account in otherAccounts)
+                        @foreach (var userSession in otherUserSessions)
                         {
-                            <BitActionButton FullWidth Class="account-button" OnClick="WrapHandled(() => SwitchAccount(account))">
+                            <BitActionButton FullWidth Class="account-button" OnClick="WrapHandled(() => SwitchAccount(userSession))">
                                 <BitPersona Size="BitPersonaSize.Size32"
-                                            ImageUrl="@account.GetProfileImageUrl(AbsoluteServerAddress)"
-                                            PrimaryText="@account.DisplayName"
-                                            SecondaryText="@(account.Email ?? account.PhoneNumber)" />
-                                @if (account.HasPin)
+                                            ImageUrl="@userSession.GetProfileImageUrl(AbsoluteServerAddress)"
+                                            PrimaryText="@userSession.DisplayName"
+                                            SecondaryText="@(userSession.Email ?? userSession.PhoneNumber)" />
+                                @if (userSession.HasPin)
                                 {
                                     <BitIcon IconName="@BitIconName.Lock" Size="BitSize.Small" Color="BitColor.SecondaryForeground" />
                                 }
@@ -183,6 +183,13 @@
                         <BitAccentColorSwitcher Class="accent-color-switcher" Classes="@(new() { Swatch = "accent-color-swatch" })" />
 
                         <AuthorizeView>
+                            @if (isPinSupported)
+                            {
+                                <BitActionButton FullWidth IconName="@BitIconName.Lock" OnClick="WrapHandled(Lock)">
+                                    @Localizer[nameof(AppStrings.Lock)]
+                                </BitActionButton>
+                            }
+
                             <BitActionButton FullWidth
                                              Color="BitColor.Error"
                                              IconName="@BitIconName.SignOut"
@@ -269,4 +276,4 @@
     </BitDropMenu>
 </section>
 
-<SignOutConfirmDialog @bind-IsOpen="isSignOutConfirmOpen" CanSignOutOfAllAccounts="otherAccounts.Length > 0" />
+<SignOutConfirmDialog @bind-IsOpen="isSignOutConfirmOpen" CanSignOutOfAllAccounts="otherUserSessions.Length > 0" />

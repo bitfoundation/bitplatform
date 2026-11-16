@@ -2192,14 +2192,14 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>What this device and the server report about the app, for troubleshooting.</value>
   </data>
-    <data name="Pin" xml:space="preserve">
-    <value>PIN</value>
+    <data name="Lock" xml:space="preserve">
+    <value>Lock</value>
   </data>
-    <data name="PinDescription" xml:space="preserve">
-    <value>A PIN keeps this account locked on this device while you use another account. It is stored on this device only, and your password always works.</value>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>Lock this account</value>
   </data>
-    <data name="PinIsSet" xml:space="preserve">
-    <value>This account has a PIN on this device.</value>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>Locking this account for the first time needs a PIN. You will enter it to come back to this account on this device, and it never leaves this device.</value>
   </data>
     <data name="NewPin" xml:space="preserve">
     <value>New PIN</value>
@@ -2210,26 +2210,17 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="PinsDoNotMatch" xml:space="preserve">
     <value>The PINs do not match. Try again.</value>
   </data>
-    <data name="ChangePin" xml:space="preserve">
-    <value>Change PIN</value>
-  </data>
-    <data name="RemovePin" xml:space="preserve">
-    <value>Remove PIN</value>
-  </data>
-    <data name="PinSavedMessage" xml:space="preserve">
-    <value>The PIN is saved.</value>
-  </data>
-    <data name="PinRemovedMessage" xml:space="preserve">
-    <value>The PIN is removed.</value>
-  </data>
     <data name="EnterPinTitle" xml:space="preserve">
     <value>Enter the PIN</value>
   </data>
-    <data name="WrongPin" xml:space="preserve">
-    <value>Wrong PIN.</value>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>Wrong PIN. Attempts left: {0}.</value>
   </data>
-    <data name="SignInAgainToResetPin" xml:space="preserve">
-    <value>Sign in again to reset the PIN</value>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>Too many wrong PINs, so this account is no longer kept on this device. Sign in again to use it.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>Sign in again to remove the PIN</value>
   </data>
     <data name="PinUseLetters" xml:space="preserve">
     <value>Use letters</value>

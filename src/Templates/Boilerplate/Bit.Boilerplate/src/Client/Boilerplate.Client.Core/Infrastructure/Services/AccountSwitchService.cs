@@ -9,39 +9,21 @@ public partial class AccountSwitchService
     [AutoInject] private BitModalService modalService = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
 
-    public async Task<bool> Switch(DeviceAccountDto account)
+    public async Task<bool> Switch(DeviceUserSessionDto userSession)
     {
-        if (account.HasPin is false)
-            return await authManager.SwitchAccount(account.UserId);
+        if (userSession.HasPin is false)
+            return await authManager.SwitchAccount(userSession.UserId);
 
-        TaskCompletionSource<bool> tcs = new();
-        BitModalReference? modalReference = null;
         var signInAgain = false;
 
-        void Complete(bool switched)
+        var switched = await ShowModal<UnlockAccountModal, bool>("unlock-account-title", complete => new()
         {
-            tcs.TrySetResult(switched);
-            modalReference?.Close();
-        }
+            { nameof(UnlockAccountModal.UserSession), userSession },
+            { nameof(UnlockAccountModal.OnResult), complete },
+            { nameof(UnlockAccountModal.OnSignInAgain), (Action)(() => { signInAgain = true; complete(false); }) }
+        });
 
-        Dictionary<string, object> modalComponentParameters = new()
-        {
-            { nameof(AccountPinModal.Account), account },
-            { nameof(AccountPinModal.OnResult), (Action<bool>)Complete },
-            { nameof(AccountPinModal.OnSignInAgain), (Action)(() => { signInAgain = true; Complete(false); }) }
-        };
-
-        var modalParameters = new BitModalParameters
-        {
-            Draggable = true,
-            TitleAriaId = "account-pin-title",
-            DragElementSelector = ".header-stack",
-            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => Complete(false))
-        };
-
-        modalReference = await modalService.Show<AccountPinModal>(modalComponentParameters, modalParameters);
-
-        if (await tcs.Task)
+        if (switched)
             return true;
 
         if (signInAgain is false || await signInModalService.SignIn() is false)
@@ -50,5 +32,50 @@ public partial class AccountSwitchService
         pubSubService.Publish(ClientAppMessages.SOFT_RESTART);
 
         return true;
+    }
+
+    public async Task<bool> Lock(CancellationToken cancellationToken)
+    {
+        if (await authManager.HasPin() is false)
+        {
+            var pin = await ShowModal<LockAccountModal, string?>("lock-account-title", complete => new()
+            {
+                { nameof(LockAccountModal.OnResult), complete }
+            });
+
+            if (pin is null || await authManager.TryEnterElevatedAccessMode(cancellationToken) is false)
+                return false;
+
+            await authManager.SetPin(pin);
+        }
+
+        await authManager.Lock();
+
+        return true;
+    }
+
+    private async Task<TResult?> ShowModal<TModal, TResult>(string titleAriaId, Func<Action<TResult?>, Dictionary<string, object>> getParameters)
+        where TModal : IComponent
+    {
+        TaskCompletionSource<TResult?> tcs = new();
+        BitModalReference? modalReference = null;
+
+        void Complete(TResult? result)
+        {
+            tcs.TrySetResult(result);
+            modalReference?.Close();
+        }
+
+        var modalParameters = new BitModalParameters
+        {
+            Draggable = true,
+            TitleAriaId = titleAriaId,
+            DragElementSelector = ".header-stack",
+            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => Complete(default))
+        };
+
+        modalReference = await modalService.Show<TModal>(getParameters(Complete), modalParameters);
+
+        return await tcs.Task;
     }
 }

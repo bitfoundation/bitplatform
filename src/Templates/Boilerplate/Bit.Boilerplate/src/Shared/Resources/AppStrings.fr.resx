@@ -2192,14 +2192,14 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Ce que cet appareil et le serveur indiquent sur l'application, pour le dépannage.</value>
   </data>
-    <data name="Pin" xml:space="preserve">
-    <value>PIN</value>
+    <data name="Lock" xml:space="preserve">
+    <value>Verrouiller</value>
   </data>
-    <data name="PinDescription" xml:space="preserve">
-    <value>Un code PIN garde ce compte verrouillé sur cet appareil pendant que vous utilisez un autre compte. Il est stocké uniquement sur cet appareil et votre mot de passe fonctionne toujours.</value>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>Verrouiller ce compte</value>
   </data>
-    <data name="PinIsSet" xml:space="preserve">
-    <value>Ce compte a un code PIN sur cet appareil.</value>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>Le premier verrouillage de ce compte nécessite un code PIN. Vous le saisirez pour revenir à ce compte sur cet appareil, et il ne quitte jamais cet appareil.</value>
   </data>
     <data name="NewPin" xml:space="preserve">
     <value>Nouveau code PIN</value>
@@ -2210,26 +2210,17 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="PinsDoNotMatch" xml:space="preserve">
     <value>Les codes PIN ne correspondent pas. Réessayez.</value>
   </data>
-    <data name="ChangePin" xml:space="preserve">
-    <value>Modifier le code PIN</value>
-  </data>
-    <data name="RemovePin" xml:space="preserve">
-    <value>Supprimer le code PIN</value>
-  </data>
-    <data name="PinSavedMessage" xml:space="preserve">
-    <value>Le code PIN est enregistré.</value>
-  </data>
-    <data name="PinRemovedMessage" xml:space="preserve">
-    <value>Le code PIN est supprimé.</value>
-  </data>
     <data name="EnterPinTitle" xml:space="preserve">
     <value>Saisissez le code PIN</value>
   </data>
-    <data name="WrongPin" xml:space="preserve">
-    <value>Code PIN incorrect.</value>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>Code PIN incorrect. Tentatives restantes : {0}.</value>
   </data>
-    <data name="SignInAgainToResetPin" xml:space="preserve">
-    <value>Reconnectez-vous pour réinitialiser le code PIN</value>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>Trop de codes PIN incorrects : ce compte n'est plus conservé sur cet appareil. Reconnectez-vous pour l'utiliser.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>Reconnectez-vous pour supprimer le code PIN</value>
   </data>
     <data name="PinUseLetters" xml:space="preserve">
     <value>Utiliser des lettres</value>

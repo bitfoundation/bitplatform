@@ -2192,14 +2192,14 @@
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>ما يُبلغ عنه هذا الجهاز والخادم بشأن التطبيق، لاستكشاف الأخطاء وإصلاحها.</value>
   </data>
-    <data name="Pin" xml:space="preserve">
-    <value>رمز PIN</value>
+    <data name="Lock" xml:space="preserve">
+    <value>قفل</value>
   </data>
-    <data name="PinDescription" xml:space="preserve">
-    <value>يُبقي رمز PIN هذا الحساب مقفلاً على هذا الجهاز أثناء استخدامك حساباً آخر. يُحفظ على هذا الجهاز فقط، وتعمل كلمة مرورك دائماً.</value>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>قفل هذا الحساب</value>
   </data>
-    <data name="PinIsSet" xml:space="preserve">
-    <value>لهذا الحساب رمز PIN على هذا الجهاز.</value>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>قفل هذا الحساب لأول مرة يحتاج إلى رمز PIN. ستدخله للعودة إلى هذا الحساب على هذا الجهاز، ولا يغادر هذا الجهاز أبدًا.</value>
   </data>
     <data name="NewPin" xml:space="preserve">
     <value>رمز PIN جديد</value>
@@ -2210,26 +2210,17 @@
     <data name="PinsDoNotMatch" xml:space="preserve">
     <value>رمزا PIN غير متطابقين. حاول مرة أخرى.</value>
   </data>
-    <data name="ChangePin" xml:space="preserve">
-    <value>تغيير رمز PIN</value>
-  </data>
-    <data name="RemovePin" xml:space="preserve">
-    <value>إزالة رمز PIN</value>
-  </data>
-    <data name="PinSavedMessage" xml:space="preserve">
-    <value>تم حفظ رمز PIN.</value>
-  </data>
-    <data name="PinRemovedMessage" xml:space="preserve">
-    <value>تمت إزالة رمز PIN.</value>
-  </data>
     <data name="EnterPinTitle" xml:space="preserve">
     <value>أدخل رمز PIN</value>
   </data>
-    <data name="WrongPin" xml:space="preserve">
-    <value>رمز PIN غير صحيح.</value>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>رمز PIN غير صحيح. المحاولات المتبقية: {0}.</value>
   </data>
-    <data name="SignInAgainToResetPin" xml:space="preserve">
-    <value>سجّل الدخول مرة أخرى لإعادة تعيين رمز PIN</value>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>أُدخل رمز PIN غير صحيح مرات كثيرة، لذا لم يعد هذا الحساب محفوظًا على هذا الجهاز. سجّل الدخول مرة أخرى لاستخدامه.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>سجّل الدخول مرة أخرى لإزالة رمز PIN</value>
   </data>
     <data name="PinUseLetters" xml:space="preserve">
     <value>استخدام الأحرف</value>

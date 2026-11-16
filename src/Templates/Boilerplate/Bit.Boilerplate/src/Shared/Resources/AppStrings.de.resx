@@ -2192,14 +2192,14 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Was dieses Gerät und der Server über die App melden, zur Fehlerbehebung.</value>
   </data>
-    <data name="Pin" xml:space="preserve">
-    <value>PIN</value>
+    <data name="Lock" xml:space="preserve">
+    <value>Sperren</value>
   </data>
-    <data name="PinDescription" xml:space="preserve">
-    <value>Eine PIN hält dieses Konto auf diesem Gerät gesperrt, während Sie ein anderes Konto verwenden. Sie wird nur auf diesem Gerät gespeichert, und Ihr Passwort funktioniert immer.</value>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>Dieses Konto sperren</value>
   </data>
-    <data name="PinIsSet" xml:space="preserve">
-    <value>Dieses Konto hat auf diesem Gerät eine PIN.</value>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>Zum ersten Sperren dieses Kontos ist eine PIN nötig. Sie geben sie ein, um auf diesem Gerät zu diesem Konto zurückzukehren, und sie verlässt dieses Gerät nie.</value>
   </data>
     <data name="NewPin" xml:space="preserve">
     <value>Neue PIN</value>
@@ -2210,26 +2210,17 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="PinsDoNotMatch" xml:space="preserve">
     <value>Die PINs stimmen nicht überein. Versuchen Sie es erneut.</value>
   </data>
-    <data name="ChangePin" xml:space="preserve">
-    <value>PIN ändern</value>
-  </data>
-    <data name="RemovePin" xml:space="preserve">
-    <value>PIN entfernen</value>
-  </data>
-    <data name="PinSavedMessage" xml:space="preserve">
-    <value>Die PIN wurde gespeichert.</value>
-  </data>
-    <data name="PinRemovedMessage" xml:space="preserve">
-    <value>Die PIN wurde entfernt.</value>
-  </data>
     <data name="EnterPinTitle" xml:space="preserve">
     <value>PIN eingeben</value>
   </data>
-    <data name="WrongPin" xml:space="preserve">
-    <value>Falsche PIN.</value>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>Falsche PIN. Verbleibende Versuche: {0}.</value>
   </data>
-    <data name="SignInAgainToResetPin" xml:space="preserve">
-    <value>Erneut anmelden, um die PIN zurückzusetzen</value>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>Zu viele falsche PINs, daher wird dieses Konto nicht mehr auf diesem Gerät gespeichert. Melden Sie sich erneut an, um es zu verwenden.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>Erneut anmelden, um die PIN zu entfernen</value>
   </data>
     <data name="PinUseLetters" xml:space="preserve">
     <value>Buchstaben verwenden</value>

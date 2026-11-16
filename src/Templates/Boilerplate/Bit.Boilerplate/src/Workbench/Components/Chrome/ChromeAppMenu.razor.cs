@@ -86,6 +86,13 @@ public partial class ChromeAppMenu
         return Shell.SignOut();
     }
 
+    private Task Lock()
+    {
+        chromeStore.OpenMenu(false);
+
+        return Shell.SignOut();
+    }
+
     /// <summary>Brings the menu back to its main list when it closes.</summary>
     private void ResetMenu()
     {

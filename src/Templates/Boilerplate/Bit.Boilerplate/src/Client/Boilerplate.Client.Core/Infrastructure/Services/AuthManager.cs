@@ -74,7 +74,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         var newUserId = GetUserId(response.AccessToken);
 
-        if (newUserId is not null && await TakeAccount(newUserId.Value) is { } earlierSignIn)
+        if (newUserId is not null && await TakeUserSession(newUserId.Value) is { } earlierSignIn)
         {
             await RevokeQuietly(earlierSignIn.RefreshToken);
         }
@@ -95,7 +95,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         if (GetUserId(await storageService.GetItem("access_token")) is Guid activeUserId && activeUserId != newUserId)
         {
-            await KeepActiveAccount();
+            await KeepActiveUserSession();
         }
 
         await storageService.RemoveItem("pin_lock");
@@ -260,7 +260,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                     }
                     else if (exp is UnauthorizedException)
                     {
-                        await ForgetAccount(refreshToken);
+                        await ForgetUserSession(refreshToken);
                     }
 
                     currentTsc.TrySetResult(null);
@@ -360,27 +360,27 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     private async Task ClearTokens(bool activateNextAccount = true)
     {
-        var nextAccount = activateNextAccount ? (await GetOtherAccounts()).FirstOrDefault(account => account.HasPin is false) : null;
+        var nextUserSession = activateNextAccount ? (await GetOtherUserSessions()).FirstOrDefault(userSession => userSession.HasPin is false) : null;
 
         await storageService.RemoveItem("pin_lock");
 
-        if (nextAccount is null)
+        if (nextUserSession is null)
         {
             await storageService.RemoveItem("refresh_token");
             await storageService.RemoveItem("access_token");
         }
         else
         {
-            var (_, persistent) = await FindAccount(nextAccount.UserId);
+            var (_, persistent) = await FindUserSession(nextUserSession.UserId);
 
-            await RemoveAccount(nextAccount.UserId);
+            await RemoveUserSession(nextUserSession.UserId);
 
-            await WriteActiveTokens(nextAccount.AccessToken, nextAccount.RefreshToken, persistent);
+            await WriteActiveTokens(nextUserSession.AccessToken, nextUserSession.RefreshToken, persistent);
 
-            activeAccountProfile = nextAccount;
+            activeAccountProfile = nextUserSession;
         }
 
-        await NotifyActiveAccountChanged(softRestartOnSwitch: nextAccount is not null);
+        await NotifyActiveAccountChanged(softRestartOnSwitch: nextUserSession is not null);
     }
 
     private async Task<bool> IsCurrentSession(string? accessToken)

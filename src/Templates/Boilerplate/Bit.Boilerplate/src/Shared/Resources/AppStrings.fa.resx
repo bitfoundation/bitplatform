@@ -2192,14 +2192,14 @@
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>آنچه این دستگاه و سرور درباره‌ی برنامه گزارش می‌دهند، برای عیب‌یابی.</value>
   </data>
-    <data name="Pin" xml:space="preserve">
-    <value>PIN</value>
+    <data name="Lock" xml:space="preserve">
+    <value>قفل کردن</value>
   </data>
-    <data name="PinDescription" xml:space="preserve">
-    <value>وقتی با حساب دیگری کار می‌کنید، PIN این حساب را روی این دستگاه قفل نگه می‌دارد. فقط روی همین دستگاه ذخیره می‌شود و رمز عبورتان همیشه کار می‌کند.</value>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>قفل کردن این حساب</value>
   </data>
-    <data name="PinIsSet" xml:space="preserve">
-    <value>این حساب روی این دستگاه PIN دارد.</value>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>برای اولین بار قفل کردن این حساب به یک PIN نیاز دارد. برای برگشتن به این حساب روی این دستگاه آن را وارد می‌کنید، و هیچ‌وقت از این دستگاه بیرون نمی‌رود.</value>
   </data>
     <data name="NewPin" xml:space="preserve">
     <value>PIN جدید</value>
@@ -2210,26 +2210,17 @@
     <data name="PinsDoNotMatch" xml:space="preserve">
     <value>PINها یکی نیستند. دوباره امتحان کنید.</value>
   </data>
-    <data name="ChangePin" xml:space="preserve">
-    <value>تغییر PIN</value>
-  </data>
-    <data name="RemovePin" xml:space="preserve">
-    <value>حذف PIN</value>
-  </data>
-    <data name="PinSavedMessage" xml:space="preserve">
-    <value>PIN ذخیره شد.</value>
-  </data>
-    <data name="PinRemovedMessage" xml:space="preserve">
-    <value>PIN حذف شد.</value>
-  </data>
     <data name="EnterPinTitle" xml:space="preserve">
     <value>PIN را وارد کنید</value>
   </data>
-    <data name="WrongPin" xml:space="preserve">
-    <value>PIN اشتباه است.</value>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>PIN اشتباه است. تلاش‌های باقی‌مانده: {0}.</value>
   </data>
-    <data name="SignInAgainToResetPin" xml:space="preserve">
-    <value>برای بازنشانی PIN دوباره وارد شوید</value>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>PIN بیش از حد اشتباه وارد شد، پس این حساب دیگر روی این دستگاه نگه داشته نمی‌شود. برای استفاده از آن دوباره وارد شوید.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>برای برداشتن PIN دوباره وارد شوید</value>
   </data>
     <data name="PinUseLetters" xml:space="preserve">
     <value>استفاده از حروف</value>

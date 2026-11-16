@@ -2192,14 +2192,14 @@
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>此设备和服务器报告的应用信息，用于故障排除。</value>
   </data>
-    <data name="Pin" xml:space="preserve">
-    <value>PIN 码</value>
+    <data name="Lock" xml:space="preserve">
+    <value>锁定</value>
   </data>
-    <data name="PinDescription" xml:space="preserve">
-    <value>当你使用其他账户时，PIN 码会让此账户在此设备上保持锁定。它只保存在此设备上，你的密码始终可用。</value>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>锁定此账户</value>
   </data>
-    <data name="PinIsSet" xml:space="preserve">
-    <value>此账户在此设备上设有 PIN 码。</value>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>首次锁定此账户需要设置 PIN 码。在此设备上返回此账户时需要输入它，且它永远不会离开此设备。</value>
   </data>
     <data name="NewPin" xml:space="preserve">
     <value>新 PIN 码</value>
@@ -2210,26 +2210,17 @@
     <data name="PinsDoNotMatch" xml:space="preserve">
     <value>两次输入的 PIN 码不一致，请重试。</value>
   </data>
-    <data name="ChangePin" xml:space="preserve">
-    <value>更改 PIN 码</value>
-  </data>
-    <data name="RemovePin" xml:space="preserve">
-    <value>移除 PIN 码</value>
-  </data>
-    <data name="PinSavedMessage" xml:space="preserve">
-    <value>PIN 码已保存。</value>
-  </data>
-    <data name="PinRemovedMessage" xml:space="preserve">
-    <value>PIN 码已移除。</value>
-  </data>
     <data name="EnterPinTitle" xml:space="preserve">
     <value>输入 PIN 码</value>
   </data>
-    <data name="WrongPin" xml:space="preserve">
-    <value>PIN 码错误。</value>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>PIN 码错误。剩余尝试次数：{0}。</value>
   </data>
-    <data name="SignInAgainToResetPin" xml:space="preserve">
-    <value>重新登录以重置 PIN 码</value>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>PIN 码错误次数过多，此账户已不再保存在此设备上。请重新登录以使用它。</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>重新登录以移除 PIN 码</value>
   </data>
     <data name="PinUseLetters" xml:space="preserve">
     <value>使用字母</value>

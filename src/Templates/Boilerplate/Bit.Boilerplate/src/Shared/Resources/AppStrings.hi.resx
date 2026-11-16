@@ -2192,14 +2192,14 @@
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>समस्या निवारण के लिए, यह डिवाइस और सर्वर ऐप के बारे में क्या बताते हैं।</value>
   </data>
-    <data name="Pin" xml:space="preserve">
-    <value>PIN</value>
+    <data name="Lock" xml:space="preserve">
+    <value>लॉक करें</value>
   </data>
-    <data name="PinDescription" xml:space="preserve">
-    <value>जब आप किसी दूसरे खाते का उपयोग करते हैं, तब PIN इस खाते को इस डिवाइस पर लॉक रखता है। यह केवल इसी डिवाइस पर सहेजा जाता है, और आपका पासवर्ड हमेशा काम करता है।</value>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>इस खाते को लॉक करें</value>
   </data>
-    <data name="PinIsSet" xml:space="preserve">
-    <value>इस खाते का इस डिवाइस पर एक PIN है।</value>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>इस खाते को पहली बार लॉक करने के लिए एक PIN चाहिए। इस डिवाइस पर इस खाते में लौटने के लिए आप इसे दर्ज करेंगे, और यह कभी इस डिवाइस से बाहर नहीं जाता।</value>
   </data>
     <data name="NewPin" xml:space="preserve">
     <value>नया PIN</value>
@@ -2210,26 +2210,17 @@
     <data name="PinsDoNotMatch" xml:space="preserve">
     <value>PIN मेल नहीं खाते। फिर से कोशिश करें।</value>
   </data>
-    <data name="ChangePin" xml:space="preserve">
-    <value>PIN बदलें</value>
-  </data>
-    <data name="RemovePin" xml:space="preserve">
-    <value>PIN हटाएँ</value>
-  </data>
-    <data name="PinSavedMessage" xml:space="preserve">
-    <value>PIN सहेज लिया गया।</value>
-  </data>
-    <data name="PinRemovedMessage" xml:space="preserve">
-    <value>PIN हटा दिया गया।</value>
-  </data>
     <data name="EnterPinTitle" xml:space="preserve">
     <value>PIN दर्ज करें</value>
   </data>
-    <data name="WrongPin" xml:space="preserve">
-    <value>गलत PIN।</value>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>गलत PIN। शेष प्रयास: {0}।</value>
   </data>
-    <data name="SignInAgainToResetPin" xml:space="preserve">
-    <value>PIN रीसेट करने के लिए फिर से साइन इन करें</value>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>बहुत बार गलत PIN डाला गया, इसलिए यह खाता अब इस डिवाइस पर नहीं रखा गया है। इसे इस्तेमाल करने के लिए फिर से साइन इन करें।</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>PIN हटाने के लिए फिर से साइन इन करें</value>
   </data>
     <data name="PinUseLetters" xml:space="preserve">
     <value>अक्षरों का उपयोग करें</value>

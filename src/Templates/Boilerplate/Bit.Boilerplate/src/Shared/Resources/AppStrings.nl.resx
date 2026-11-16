@@ -2192,14 +2192,14 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Wat dit apparaat en de server over de app melden, voor het oplossen van problemen.</value>
   </data>
-    <data name="Pin" xml:space="preserve">
-    <value>Pincode</value>
+    <data name="Lock" xml:space="preserve">
+    <value>Vergrendelen</value>
   </data>
-    <data name="PinDescription" xml:space="preserve">
-    <value>Een pincode houdt dit account op dit apparaat vergrendeld terwijl je een ander account gebruikt. Hij wordt alleen op dit apparaat bewaard en je wachtwoord werkt altijd.</value>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>Dit account vergrendelen</value>
   </data>
-    <data name="PinIsSet" xml:space="preserve">
-    <value>Dit account heeft een pincode op dit apparaat.</value>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>Om dit account voor het eerst te vergrendelen is een pincode nodig. Je voert die in om op dit apparaat naar dit account terug te gaan, en hij verlaat dit apparaat nooit.</value>
   </data>
     <data name="NewPin" xml:space="preserve">
     <value>Nieuwe pincode</value>
@@ -2210,26 +2210,17 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="PinsDoNotMatch" xml:space="preserve">
     <value>De pincodes komen niet overeen. Probeer het opnieuw.</value>
   </data>
-    <data name="ChangePin" xml:space="preserve">
-    <value>Pincode wijzigen</value>
-  </data>
-    <data name="RemovePin" xml:space="preserve">
-    <value>Pincode verwijderen</value>
-  </data>
-    <data name="PinSavedMessage" xml:space="preserve">
-    <value>De pincode is opgeslagen.</value>
-  </data>
-    <data name="PinRemovedMessage" xml:space="preserve">
-    <value>De pincode is verwijderd.</value>
-  </data>
     <data name="EnterPinTitle" xml:space="preserve">
     <value>Voer de pincode in</value>
   </data>
-    <data name="WrongPin" xml:space="preserve">
-    <value>Onjuiste pincode.</value>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>Onjuiste pincode. Resterende pogingen: {0}.</value>
   </data>
-    <data name="SignInAgainToResetPin" xml:space="preserve">
-    <value>Meld je opnieuw aan om de pincode te herstellen</value>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>Te vaak een onjuiste pincode, daarom wordt dit account niet meer op dit apparaat bewaard. Meld je opnieuw aan om het te gebruiken.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>Meld je opnieuw aan om de pincode te verwijderen</value>
   </data>
     <data name="PinUseLetters" xml:space="preserve">
     <value>Letters gebruiken</value>

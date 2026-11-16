@@ -1,8 +1,8 @@
 namespace Boilerplate.Client.Core.Components.Common;
 
-public partial class AccountPinModal
+public partial class UnlockAccountModal
 {
-    [Parameter] public DeviceAccountDto Account { get; set; } = default!;
+    [Parameter] public DeviceUserSessionDto UserSession { get; set; } = default!;
 
     [Parameter] public Action<bool>? OnResult { get; set; }
 
@@ -10,7 +10,8 @@ public partial class AccountPinModal
 
 
     private string? pin;
-    private bool isWrongPin;
+    private int? attemptsLeft;
+    private bool isForgotten;
     private bool isUnlocking;
     private PinInput pinInput = default!;
 
@@ -22,11 +23,10 @@ public partial class AccountPinModal
         if (CanUnlock is false) return;
 
         isUnlocking = true;
-        isWrongPin = false;
 
         try
         {
-            if (await AuthManager.SwitchAccount(Account.UserId, pin))
+            if (await AuthManager.SwitchAccount(UserSession.UserId, pin))
             {
                 OnResult?.Invoke(true);
                 return;
@@ -37,7 +37,15 @@ public partial class AccountPinModal
             isUnlocking = false;
         }
 
-        isWrongPin = true;
+        var userSession = (await AuthManager.GetOtherUserSessions()).FirstOrDefault(us => us.UserId == UserSession.UserId);
+
+        if (userSession is null)
+        {
+            isForgotten = true;
+            return;
+        }
+
+        attemptsLeft = AccountPinCipher.MaxFailedAttempts - userSession.FailedPinAttempts;
 
         await pinInput.Clear();
     }

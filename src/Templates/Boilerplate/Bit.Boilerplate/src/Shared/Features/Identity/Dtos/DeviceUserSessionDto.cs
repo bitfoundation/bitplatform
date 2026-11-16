@@ -3,9 +3,9 @@ using Boilerplate.Shared.Features.Attachments;
 namespace Boilerplate.Shared.Features.Identity.Dtos;
 
 /// <summary>
-/// An account signed in on this device besides the active one (See AuthManager.MultiAccount.cs).
+/// A user session kept on this device besides the active one (See AuthManager.MultiAccount.cs).
 /// </summary>
-public partial class DeviceAccountDto
+public partial class DeviceUserSessionDto
 {
     public const string QueryParameter = "account";
 
@@ -34,6 +34,8 @@ public partial class DeviceAccountDto
     public DevicePinLockDto? PinLock { get; set; }
 
     public DeviceSealedDataDto? SealedTokens { get; set; }
+
+    public int FailedPinAttempts { get; set; }
 
     [JsonIgnore] public string? DisplayName => FullName ?? DisplayUserName;
 

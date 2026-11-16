@@ -6,37 +6,37 @@ public partial class AuthManager
 {
     public async Task SignOutAll(CancellationToken cancellationToken)
     {
-        var otherAccounts = await GetOtherAccounts();
+        var otherUserSessions = await GetOtherUserSessions();
 
-        foreach (var account in otherAccounts)
+        foreach (var userSession in otherUserSessions)
         {
-            await RemoveAccount(account.UserId);
+            await RemoveUserSession(userSession.UserId);
         }
 
-        await Task.WhenAll(otherAccounts.Select(account => RevokeQuietly(account.RefreshToken)));
+        await Task.WhenAll(otherUserSessions.Select(userSession => RevokeQuietly(userSession.RefreshToken)));
 
         await SignOut(activateNextAccount: false, cancellationToken);
     }
 
-    public async Task<DeviceAccountDto[]> GetOtherAccounts()
+    public async Task<DeviceUserSessionDto[]> GetOtherUserSessions()
     {
         var activeUserId = GetUserId(await storageService.GetItem("access_token"));
 
-        List<DeviceAccountDto> accounts = [];
+        List<DeviceUserSessionDto> userSessions = [];
 
         foreach (var persistent in (bool[])[true, false])
         {
-            accounts.AddRange(await ReadAccounts(persistent));
+            userSessions.AddRange(await ReadUserSessions(persistent));
         }
 
-        return [.. accounts.Where(account => account.UserId != activeUserId)
-                           .OrderBy(account => account.DisplayName, StringComparer.CurrentCultureIgnoreCase)];
+        return [.. userSessions.Where(userSession => userSession.UserId != activeUserId)
+                               .OrderBy(userSession => userSession.DisplayName, StringComparer.CurrentCultureIgnoreCase)];
     }
 
     //#if (notification == true)
     public async Task<Guid[]> GetDeviceSessionIds()
     {
-        var sessionIds = (await GetOtherAccounts()).Select(account => account.SessionId).Append(GetSessionId(await tokenProvider.GetAccessToken()));
+        var sessionIds = (await GetOtherUserSessions()).Select(userSession => userSession.SessionId).Append(GetSessionId(await tokenProvider.GetAccessToken()));
 
         return [.. sessionIds.OfType<Guid>()];
     }
@@ -47,25 +47,32 @@ public partial class AuthManager
         if (GetUserId(await storageService.GetItem("access_token")) == userId)
             return true;
 
-        var (account, persistent) = await FindAccount(userId);
+        var (userSession, persistent) = await FindUserSession(userId);
 
-        if (account is null)
+        if (userSession is null)
             return false;
 
-        var tokens = await OpenTokens(account, pin);
+        var tokens = await OpenTokens(userSession, pin);
 
         if (tokens is null)
+        {
+            if (userSession.HasPin && string.IsNullOrEmpty(pin) is false)
+            {
+                await CountFailedPinAttempt(userSession, persistent);
+            }
+
             return false;
+        }
 
-        await KeepActiveAccount();
+        await KeepActiveUserSession();
 
-        await RemoveAccount(userId);
+        await RemoveUserSession(userId);
 
         await WriteActiveTokens(tokens.AccessToken, tokens.RefreshToken, persistent);
 
-        await WritePinLock(account.PinLock, persistent);
+        await WritePinLock(userSession.PinLock, persistent);
 
-        activeAccountProfile = account;
+        activeAccountProfile = userSession;
 
         await NotifyActiveAccountChanged(softRestartOnSwitch: true);
 
@@ -87,12 +94,17 @@ public partial class AuthManager
         await WritePinLock(await pinCipher.CreateLock(pin), await storageService.IsPersistent("refresh_token"));
     }
 
-    public async Task RemovePin()
+    public async Task Lock()
     {
-        await storageService.RemoveItem("pin_lock");
+        if (await ReadPinLock() is null)
+            throw new InvalidOperationException("The active account has no PIN to lock it with.");
+
+        await KeepActiveUserSession();
+
+        await ClearTokens(activateNextAccount: false);
     }
 
-    private DeviceAccountDto? activeAccountProfile;
+    private DeviceUserSessionDto? activeAccountProfile;
 
     public void SetActiveAccountProfile(UserDto user)
     {
@@ -158,7 +170,7 @@ public partial class AuthManager
         NotifyAuthenticationStateChanged(Task.FromResult(state));
     }
 
-    private async Task KeepActiveAccount()
+    private async Task KeepActiveUserSession()
     {
         var accessToken = await storageService.GetItem("access_token");
         var refreshToken = await storageService.GetItem("refresh_token");
@@ -169,7 +181,7 @@ public partial class AuthManager
 
         var profile = activeAccountProfile?.UserId == userId ? activeAccountProfile : null;
 
-        DeviceAccountDto account = new()
+        DeviceUserSessionDto userSession = new()
         {
             UserId = userId,
             UserName = profile is null ? user.Identity?.Name : profile.UserName,
@@ -180,9 +192,9 @@ public partial class AuthManager
             Version = profile?.Version
         };
 
-        await SetAccountTokens(account, accessToken, refreshToken, await ReadPinLock());
+        await SetUserSessionTokens(userSession, accessToken, refreshToken, await ReadPinLock());
 
-        await AddAccount(account, await storageService.IsPersistent("refresh_token"));
+        await AddUserSession(userSession, await storageService.IsPersistent("refresh_token"));
     }
 
     private async Task<bool> StoreRefreshedTokens(string? sentRefreshToken, TokenResponseDto refreshTokenResponse)
@@ -196,49 +208,62 @@ public partial class AuthManager
         if (GetUserId(refreshTokenResponse.AccessToken) is not Guid userId)
             return false;
 
-        var (account, persistent) = await FindAccount(userId);
+        var (userSession, persistent) = await FindUserSession(userId);
 
-        if (account?.SessionId is not Guid sessionId || sessionId != GetSessionId(refreshTokenResponse.AccessToken))
+        if (userSession?.SessionId is not Guid sessionId || sessionId != GetSessionId(refreshTokenResponse.AccessToken))
             return false;
 
-        await SetAccountTokens(account, refreshTokenResponse.AccessToken, refreshTokenResponse.RefreshToken, account.PinLock);
+        await SetUserSessionTokens(userSession, refreshTokenResponse.AccessToken, refreshTokenResponse.RefreshToken, userSession.PinLock);
 
-        await AddAccount(account, persistent);
+        await AddUserSession(userSession, persistent);
 
         return false;
     }
 
-    private async Task SetAccountTokens(DeviceAccountDto account, string? accessToken, string? refreshToken, DevicePinLockDto? pinLock)
+    private async Task SetUserSessionTokens(DeviceUserSessionDto userSession, string? accessToken, string? refreshToken, DevicePinLockDto? pinLock)
     {
-        account.SessionId = GetSessionId(accessToken);
-        account.RefreshTokenExpiresOn = GetExpiry(refreshToken);
-        account.PinLock = pinLock;
+        userSession.SessionId = GetSessionId(accessToken);
+        userSession.RefreshTokenExpiresOn = GetExpiry(refreshToken);
+        userSession.PinLock = pinLock;
 
         if (pinLock is null)
         {
-            account.AccessToken = accessToken;
-            account.RefreshToken = refreshToken;
-            account.SealedTokens = null;
+            userSession.AccessToken = accessToken;
+            userSession.RefreshToken = refreshToken;
+            userSession.SealedTokens = null;
             return;
         }
 
         var tokens = new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
 
-        account.AccessToken = account.RefreshToken = null;
-        account.SealedTokens = await pinCipher.Seal(pinLock, JsonSerializer.SerializeToUtf8Bytes(tokens, IdentityJsonContext.Default.TokenResponseDto));
+        userSession.AccessToken = userSession.RefreshToken = null;
+        userSession.SealedTokens = await pinCipher.Seal(pinLock, JsonSerializer.SerializeToUtf8Bytes(tokens, IdentityJsonContext.Default.TokenResponseDto));
     }
 
-    private async Task<TokenResponseDto?> OpenTokens(DeviceAccountDto account, string? pin)
+    private async Task<TokenResponseDto?> OpenTokens(DeviceUserSessionDto userSession, string? pin)
     {
-        if (account.PinLock is null)
-            return new() { AccessToken = account.AccessToken, RefreshToken = account.RefreshToken };
+        if (userSession.PinLock is null)
+            return new() { AccessToken = userSession.AccessToken, RefreshToken = userSession.RefreshToken };
 
-        if (string.IsNullOrEmpty(pin) || account.SealedTokens is null)
+        if (string.IsNullOrEmpty(pin) || userSession.SealedTokens is null)
             return null;
 
-        var tokens = await pinCipher.Open(account.PinLock, pin, account.SealedTokens);
+        var tokens = await pinCipher.Open(userSession.PinLock, pin, userSession.SealedTokens);
 
         return tokens is null ? null : JsonSerializer.Deserialize(tokens, IdentityJsonContext.Default.TokenResponseDto);
+    }
+
+    private async Task CountFailedPinAttempt(DeviceUserSessionDto userSession, bool persistent)
+    {
+        userSession.FailedPinAttempts++;
+
+        if (userSession.FailedPinAttempts >= AccountPinCipher.MaxFailedAttempts)
+        {
+            await RemoveUserSession(userSession.UserId);
+            return;
+        }
+
+        await AddUserSession(userSession, persistent);
     }
 
     private async Task<DevicePinLockDto?> ReadPinLock()
@@ -270,95 +295,95 @@ public partial class AuthManager
         await storageService.SetItem("pin_lock", JsonSerializer.Serialize(pinLock, IdentityJsonContext.Default.DevicePinLockDto), persistent);
     }
 
-    private async Task ForgetAccount(string? refreshToken)
+    private async Task ForgetUserSession(string? refreshToken)
     {
         if (GetSessionId(refreshToken) is Guid sessionId
-            && (await GetOtherAccounts()).FirstOrDefault(account => account.SessionId == sessionId) is { } account)
+            && (await GetOtherUserSessions()).FirstOrDefault(userSession => userSession.SessionId == sessionId) is { } userSession)
         {
-            await RemoveAccount(account.UserId);
+            await RemoveUserSession(userSession.UserId);
         }
     }
 
-    private async Task<DeviceAccountDto?> TakeAccount(Guid userId)
+    private async Task<DeviceUserSessionDto?> TakeUserSession(Guid userId)
     {
-        var (account, _) = await FindAccount(userId);
+        var (userSession, _) = await FindUserSession(userId);
 
-        await RemoveAccount(userId);
+        await RemoveUserSession(userId);
 
-        return account;
+        return userSession;
     }
 
-    private async Task<(DeviceAccountDto? Account, bool Persistent)> FindAccount(Guid userId)
+    private async Task<(DeviceUserSessionDto? UserSession, bool Persistent)> FindUserSession(Guid userId)
     {
         foreach (var persistent in (bool[])[true, false])
         {
-            if ((await ReadAccounts(persistent)).FirstOrDefault(account => account.UserId == userId) is { } account)
-                return (account, persistent);
+            if ((await ReadUserSessions(persistent)).FirstOrDefault(userSession => userSession.UserId == userId) is { } userSession)
+                return (userSession, persistent);
         }
 
         return (null, false);
     }
 
-    private async Task AddAccount(DeviceAccountDto account, bool persistent)
+    private async Task AddUserSession(DeviceUserSessionDto userSession, bool persistent)
     {
-        await RemoveAccount(account.UserId);
+        await RemoveUserSession(userSession.UserId);
 
-        await WriteAccounts(persistent, [.. await ReadAccounts(persistent), account]);
+        await WriteUserSessions(persistent, [.. await ReadUserSessions(persistent), userSession]);
     }
 
-    private async Task RemoveAccount(Guid userId)
+    private async Task RemoveUserSession(Guid userId)
     {
         foreach (var persistent in (bool[])[true, false])
         {
-            var accounts = await ReadAccounts(persistent);
+            var userSessions = await ReadUserSessions(persistent);
 
-            if (accounts.RemoveAll(account => account.UserId == userId) > 0)
+            if (userSessions.RemoveAll(userSession => userSession.UserId == userId) > 0)
             {
-                await WriteAccounts(persistent, accounts);
+                await WriteUserSessions(persistent, userSessions);
             }
         }
     }
 
-    private async Task<List<DeviceAccountDto>> ReadAccounts(bool persistent)
+    private async Task<List<DeviceUserSessionDto>> ReadUserSessions(bool persistent)
     {
-        var json = await storageService.GetItem(persistent ? "accounts" : "temp_accounts");
+        var json = await storageService.GetItem(persistent ? "user_sessions" : "temp_user_sessions");
 
         if (string.IsNullOrWhiteSpace(json))
             return [];
 
-        List<DeviceAccountDto> accounts;
+        List<DeviceUserSessionDto> userSessions;
 
         try
         {
-            accounts = JsonSerializer.Deserialize(json, IdentityJsonContext.Default.ListDeviceAccountDto) ?? [];
+            userSessions = JsonSerializer.Deserialize(json, IdentityJsonContext.Default.ListDeviceUserSessionDto) ?? [];
         }
         catch (JsonException exp)
         {
-            authLogger.LogWarning(exp, "Failed to read the accounts stored on this device.");
-            accounts = [];
+            authLogger.LogWarning(exp, "Failed to read the user sessions stored on this device.");
+            userSessions = [];
         }
 
         var now = TimeProvider.GetUtcNow();
 
-        if (accounts.RemoveAll(account => account.RefreshTokenExpiresOn is not DateTimeOffset expiresOn || expiresOn <= now) > 0)
+        if (userSessions.RemoveAll(userSession => userSession.RefreshTokenExpiresOn is not DateTimeOffset expiresOn || expiresOn <= now) > 0)
         {
-            await WriteAccounts(persistent, accounts);
+            await WriteUserSessions(persistent, userSessions);
         }
 
-        return accounts;
+        return userSessions;
     }
 
-    private async Task WriteAccounts(bool persistent, List<DeviceAccountDto> accounts)
+    private async Task WriteUserSessions(bool persistent, List<DeviceUserSessionDto> userSessions)
     {
-        var key = persistent ? "accounts" : "temp_accounts";
+        var key = persistent ? "user_sessions" : "temp_user_sessions";
 
-        if (accounts.Count is 0)
+        if (userSessions.Count is 0)
         {
             await storageService.RemoveItem(key);
             return;
         }
 
-        await storageService.SetItem(key, JsonSerializer.Serialize(accounts, IdentityJsonContext.Default.ListDeviceAccountDto), persistent);
+        await storageService.SetItem(key, JsonSerializer.Serialize(userSessions, IdentityJsonContext.Default.ListDeviceUserSessionDto), persistent);
     }
 
     private static DateTimeOffset? GetExpiry(string? token)
