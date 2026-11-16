@@ -9,7 +9,7 @@ public partial class BitAccordionDemo
 <BitAccordion Title=""General settings"" Description=""The general settings of the application"" IconName=""@BitIconName.Settings"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
-<BitAccordion Title=""Expanded by default"" IconName=""@BitIconName.People"" DefaultIsExpanded>
+<BitAccordion Title=""Expanded by default"" IconName=""@BitIconName.People"" DefaultExpanded>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
 
@@ -45,37 +45,37 @@ private int renameCount;";
 
     private readonly string example4RazorCode = @"
 <BitToggle @bind-Value=""bindingIsDisabled"" OnText=""Disabled"" OffText=""Enabled"" />
-<BitToggle @bind-Value=""bindingIsExpanded"" OnText=""Expanded"" OffText=""Collapsed"" />
-<BitAccordion Title=""Bound"" Disabled=""bindingIsDisabled"" @bind-IsExpanded=""bindingIsExpanded"">
+<BitToggle @bind-Value=""bindingExpanded"" OnText=""Expanded"" OffText=""Collapsed"" />
+<BitAccordion Title=""Bound"" Disabled=""bindingIsDisabled"" @bind-Expanded=""bindingExpanded"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 
 
 <BitAccordion Title=""General settings""
-              IsExpanded=""controlledExpandedItem == 1""
+              Expanded=""controlledExpandedItem == 1""
               OnClick=""() => controlledExpandedItem = controlledExpandedItem == 1 ? 0 : 1"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 <BitAccordion Title=""Users""
-              IsExpanded=""controlledExpandedItem == 2""
+              Expanded=""controlledExpandedItem == 2""
               OnClick=""() => controlledExpandedItem = controlledExpandedItem == 2 ? 0 : 2"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 <BitAccordion Title=""Advanced settings""
-              IsExpanded=""controlledExpandedItem == 3""
+              Expanded=""controlledExpandedItem == 3""
               OnClick=""() => controlledExpandedItem = controlledExpandedItem == 3 ? 0 : 3"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
     private readonly string example4CsharpCode = @"
 private bool bindingIsDisabled;
-private bool bindingIsExpanded;
+private bool bindingExpanded;
 private int controlledExpandedItem = 1;";
 
     private readonly string example5RazorCode = @"
 <BitToggle @bind-Value=""lockAccordion"" OnText=""Locked open"" OffText=""Unlocked"" />
 <BitAccordion Title=""Unsaved changes""
               Description=""@(lockAccordion ? ""Unlock to close this panel"" : ""Free to close"")""
-              DefaultIsExpanded
+              DefaultExpanded
               OnClick=""() => clickCount++""
               OnChange=""(bool v) => lastChange = v""
               OnExpand=""() => expandCount++""
@@ -221,10 +221,10 @@ private async Task LoadOrders(BitAccordionToggleArgs args)
               Description=""@($""Clicked {readOnlyClickCount} times, still open"")""
               OnClick=""() => readOnlyClickCount++""
               ReadOnly
-              DefaultIsExpanded>
+              DefaultExpanded>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
-<BitAccordion Title=""Disabled"" Disabled DefaultIsExpanded>
+<BitAccordion Title=""Disabled"" Disabled DefaultExpanded>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
     private readonly string example11CsharpCode = @"
@@ -242,7 +242,7 @@ private int readOnlyClickCount;";
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     </Body>
 </BitAccordion>
-<BitAccordion Title=""Nested (aria-level 3)"" NoContentRegion DefaultIsExpanded>
+<BitAccordion Title=""Nested (aria-level 3)"" NoContentRegion DefaultExpanded>
     <BitAccordion Title=""Nested (aria-level 4)"" NoContentRegion>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     </BitAccordion>

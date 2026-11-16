@@ -33,7 +33,6 @@ public partial class BitParameterNamingContractTests
         ["BitTimePicker"] = ["IsOpen", "IsOpenChanged"],
         ["BitDropMenu"] = ["IsOpen", "IsOpenChanged", "DefaultIsOpen"],
         ["_BitNavBarChild"] = ["IsLink"],
-        ["BitAccordion"] = ["IsExpanded", "IsExpandedChanged", "DefaultIsExpanded"],
         ["BitCallout"] = ["IsOpen", "IsOpenChanged", "DefaultIsOpen"],
         ["BitDialog"] = ["IsAlert", "IsCancelButtonEnabled", "IsDraggable", "IsOkButtonEnabled", "IsOpen", "IsOpenChanged", "DefaultIsOpen"],
         ["BitModal"] = ["IsAlert", "IsOpen", "IsOpenChanged", "DefaultIsOpen"],
