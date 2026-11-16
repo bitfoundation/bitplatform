@@ -117,20 +117,6 @@ public partial class BitSliderDemo
         },
         new()
         {
-            Name = "IsOriginFromZero",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Attaches the origin of the filled part of the track to zero. Shorthand for setting Origin to 0.",
-        },
-        new()
-        {
-            Name = "IsRanged",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If ranged is true, display two thumbs that allow the lower and upper bounds of a range to be selected.",
-        },
-        new()
-        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -285,10 +271,24 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "OriginFromZero",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Attaches the origin of the filled part of the track to zero. Shorthand for setting Origin to 0.",
+        },
+        new()
+        {
             Name = "Pushable",
             Type = "bool",
             DefaultValue = "false",
             Description = "Lets a thumb of a ranged slider push the other one along instead of stopping against it. It has nothing to do without a MinRange to keep or a NoSwap ordering to hold, and it keeps the thumbs on their own sides since pushing and crossing are opposites.",
+        },
+        new()
+        {
+            Name = "Ranged",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If ranged is true, display two thumbs that allow the lower and upper bounds of a range to be selected.",
         },
         new()
         {
@@ -643,7 +643,7 @@ public partial class BitSliderDemo
         {
             Name = "--bit-Slider-origin-color",
             DefaultValue = "--bit-clr-fg-sec",
-            Description = "The tick marking where the fill grows out of, drawn by Origin and IsOriginFromZero.",
+            Description = "The tick marking where the fill grows out of, drawn by Origin and OriginFromZero.",
         },
         new()
         {
