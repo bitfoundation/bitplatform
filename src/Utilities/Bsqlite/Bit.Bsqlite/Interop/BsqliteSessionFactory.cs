@@ -91,18 +91,50 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
 
     private async Task<BsqliteSession> OpenCoreAsync(string databaseName, CancellationToken cancellationToken)
     {
-        // An open that may move the database runs one tab at a time, from resolving where it lives to opening
-        // it: two tabs migrating at once would both copy it, one import landing over the other's, and a tab
-        // that resolved before another flipped the binding would open the copy that is about to be deleted.
-        await using var openLock = _selection.MigrationMode is BsqliteStorageMigrationMode.AutomaticOnOpen
-            && _transports is IBsqliteOpenLock locks
-                ? await locks.AcquireOpenLockAsync(databaseName, cancellationToken).ConfigureAwait(false)
-                : null;
-
         var resolution = await _resolver
             .ResolveAsync(databaseName, _selection, cancellationToken)
             .ConfigureAwait(false);
 
+        // An open that may move the database runs one tab at a time, from resolving where it lives to opening
+        // it: two tabs migrating at once would both copy it, one import landing over the other's, and a tab
+        // that resolved before another flipped the binding would open the copy that is about to be deleted.
+        // Only such an open waits: one that found the database where it belongs has nothing to move, and no
+        // other tab moves it from there - a tab that is moving it has not flipped the binding yet, so it is
+        // found where it was, with the better backend still to go to, and waits here too.
+        IAsyncDisposable? openLock = null;
+        if (_selection.MigrationMode is BsqliteStorageMigrationMode.AutomaticOnOpen
+            && resolution.BetterProviderAvailable is not null
+            && _transports is IBsqliteOpenLock locks)
+        {
+            openLock = await locks.AcquireOpenLockAsync(databaseName, cancellationToken).ConfigureAwait(false);
+            if (openLock is not null)
+            {
+                try
+                {
+                    // Again, now that no other tab is moving it: the tab that held the lock may have moved it.
+                    resolution = await _resolver
+                        .ResolveAsync(databaseName, _selection, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                catch
+                {
+                    await openLock.DisposeAsync().ConfigureAwait(false);
+                    throw;
+                }
+            }
+        }
+
+        await using (openLock)
+        {
+            return await OpenResolvedAsync(databaseName, resolution, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task<BsqliteSession> OpenResolvedAsync(
+        string databaseName,
+        BsqliteStorageResolution resolution,
+        CancellationToken cancellationToken)
+    {
         if (_selection.MigrationMode is BsqliteStorageMigrationMode.AutomaticOnOpen
             && resolution.BetterProviderAvailable is { } better)
         {

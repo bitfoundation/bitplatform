@@ -28,7 +28,7 @@ internal sealed class BsqliteTransportFactory(
     BsqliteWorkerTransportDefaults defaults,
     BsqliteHostKind host,
     ILogger<BsqliteTransportFactory>? logger = null,
-    ILogger<BsqliteNativeTransport>? nativeTransportLogger = null) : IBsqliteTransportFactory, IBsqliteOpenLock
+    ILogger<BsqliteNativeTransport>? nativeTransportLogger = null) : IBsqliteTransportFactory, IBsqliteOpenLock, IAsyncDisposable
 {
     private readonly ILogger _logger = logger ?? NullLogger<BsqliteTransportFactory>.Instance;
     private IBsqliteTransportFactory? _workerTransports;
@@ -79,4 +79,8 @@ internal sealed class BsqliteTransportFactory(
         host is BsqliteHostKind.Browser && (_workerTransports ??= workerTransports()) is IBsqliteOpenLock locks
             ? locks.AcquireOpenLockAsync(databaseName, cancellationToken)
             : Task.FromResult<IAsyncDisposable?>(null);
+
+    /// <summary>Releases what the worker factory holds - the host module its locks are taken through - if it was built.</summary>
+    public ValueTask DisposeAsync() =>
+        _workerTransports is IAsyncDisposable disposable ? disposable.DisposeAsync() : ValueTask.CompletedTask;
 }

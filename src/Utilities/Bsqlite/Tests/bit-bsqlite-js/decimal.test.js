@@ -128,3 +128,24 @@ test('an exponent, as SQLite writes a REAL read as text, is parsed as .NET parse
     expect(() => parse('e5')).toThrow();
     expect(() => parse('1e5.5')).toThrow();
 });
+
+// More digits than fit are rounded off the end, half to even, from all of them at once. Oracle: .NET 10's
+// decimal.Parse with NumberStyles.Number | AllowExponent, which Microsoft.Data.Sqlite reads decimals with.
+test('digits past scale 28 or 96 bits are rounded as .NET parses them', () => {
+    const cases = [
+        ['1.23456789012345e-15', '0.0000000000000012345678901234'],
+        ['1.0e-30', '0.0'],
+        ['-1.0e-30', '0.0'],
+        ['5e-29', '0.0'],
+        ['1.5e-28', '0.0000000000000000000000000002'],
+        ['0.33333333333333333333333333335', '0.3333333333333333333333333334'],
+        ['0.33333333333333333333333333345', '0.3333333333333333333333333334'],
+        ['0.000000000000000000000000000050', '0.0'],
+        ['0.000000000000000000000000000051', '0.0000000000000000000000000001'],
+        ['9.99999999999999999999999999995', '10.0'],
+        ['79228162514264337593543950335.4', '79228162514264337593543950335.0'],
+    ];
+    expect(cases.map(([text]) => parse(text).toSqlText())).toEqual(cases.map(([, expected]) => expected));
+    expect(parse('9.99999999999999999999999999995').toString()).toBe('10.000000000000000000000000000');
+    expect(() => parse('79228162514264337593543950335.5')).toThrow('overflow');
+});

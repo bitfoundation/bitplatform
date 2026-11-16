@@ -11,7 +11,7 @@ namespace Bit.Bsqlite.Storage.IndexedDb;
 /// Talks to <c>bit-bsqlite-idb-admin.js</c>. Related files (<c>-journal</c>, <c>-wal</c>) are not databases
 /// and are stripped on list, delete, and import.
 /// </remarks>
-internal sealed class BsqliteIndexedDbStorageAdmin(IJSRuntime? js) : IBsqliteStorageAdmin
+internal sealed class BsqliteIndexedDbStorageAdmin(IJSRuntime? js) : IBsqliteStorageAdmin, IBsqliteStorageHeaderReader, IBsqliteStorageImportCheck
 {
     public async ValueTask<bool> ExistsAsync(
         string databaseName,
@@ -43,6 +43,14 @@ internal sealed class BsqliteIndexedDbStorageAdmin(IJSRuntime? js) : IBsqliteSto
         return bytes;
     }
 
+    public async ValueTask<byte[]?> ReadHeaderAsync(
+        string databaseName,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
+        return await InvokeAsync<byte[]?>("readHeader", cancellationToken, databaseName).ConfigureAwait(false);
+    }
+
     public async ValueTask ImportAsync(
         string databaseName,
         ReadOnlyMemory<byte> contents,
@@ -53,6 +61,8 @@ internal sealed class BsqliteIndexedDbStorageAdmin(IJSRuntime? js) : IBsqliteSto
         await InvokeAsync("importDatabase", cancellationToken, databaseName, contents.ToArray())
             .ConfigureAwait(false);
     }
+
+    void IBsqliteStorageImportCheck.ThrowIfCannotImport(ReadOnlySpan<byte> header) => ThrowIfPageSizeUnsupported(header);
 
     /// <summary>
     /// The VFS keeps a database in blocks of 4096 bytes and finds the one holding an offset by the nearest

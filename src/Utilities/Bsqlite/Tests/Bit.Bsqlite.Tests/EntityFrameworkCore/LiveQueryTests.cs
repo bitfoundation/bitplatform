@@ -206,6 +206,41 @@ public sealed class LiveQueryTests
         Assert.AreEqual("New", Assert.ContainsSingle(live.Current!).Name);
     }
 
+    /// <summary>
+    /// What the extractor picks up that is no table - a table-valued function, a word in a string literal or a
+    /// comment, a common table expression - must not turn a query over mapped tables into one that re-runs on
+    /// every write; a view still must.
+    /// </summary>
+    [TestMethod]
+    public async Task TablesOf_SetsAsideWhatIsNoTable_ButNotAView()
+    {
+        var transport = new BsqliteInProcessTransport();
+        await using var connection = new BsqliteConnection(transport, "live-tables-of.db");
+        await connection.OpenAsync(Ct);
+        await using var ctx = new LineContext(new DbContextOptionsBuilder<LineContext>()
+            .UseBitBsqlite(connection)
+            .Options);
+
+        int[] ids = [1, 2];
+        // One JSON parameter, which EF reads with json_each - EF 10 expands a collection into a parameter per element
+        // by default, and EF.Parameter asks for the single one.
+        var primitiveCollection = ctx.Lines.Where(line => EF.Parameter(ids).Contains(line.Id)).ToQueryString();
+        StringAssert.Contains(primitiveCollection, "json_each", StringComparison.OrdinalIgnoreCase);
+        CollectionAssert.AreEquivalent(new[] { "Lines" }, BsqliteLiveQueryExtensions.TablesOf(primitiveCollection, ctx).ToArray());
+
+        var literal = ctx.Lines.Where(line => line.Name == "picked up from store").ToQueryString();
+        CollectionAssert.AreEquivalent(new[] { "Lines" }, BsqliteLiveQueryExtensions.TablesOf(literal, ctx).ToArray());
+
+        CollectionAssert.AreEquivalent(
+            new[] { "Lines" },
+            BsqliteLiveQueryExtensions.TablesOf(
+                "-- read from audit\nWITH recent (Id) AS (SELECT \"Id\" FROM \"Lines\") SELECT * FROM recent /* join history */ WHERE 'it''s from store' <> ''",
+                ctx).ToArray());
+
+        Assert.IsEmpty(BsqliteLiveQueryExtensions.TablesOf(ctx.OpenLines.ToQueryString(), ctx));
+        Assert.IsEmpty(BsqliteLiveQueryExtensions.TablesOf("SELECT * FROM \"Lines\" JOIN \"Unmapped\" ON 1", ctx));
+    }
+
     public sealed class Line
     {
         public int Id { get; set; }

@@ -294,20 +294,24 @@ function takeAggregateState<TState>(module: SQLiteModule, ctx: Pointer): TState 
     return state;
 }
 
-function readDecimal(sqlite3: SQLiteAPI, pValue: Pointer): DecimalValue | null {
-    if (sqlite3.value_type(pValue) === SQLite.SQLITE_NULL) {
-        return null;
-    }
+const textDecoder = new TextDecoder('utf-8');
 
-    return Decimal.parse(sqlite3.value_text(pValue));
+function readDecimal(sqlite3: SQLiteAPI, pValue: Pointer): DecimalValue | null {
+    const text = readText(sqlite3, pValue);
+    return text === null ? null : Decimal.parse(text);
 }
 
+/**
+ * An argument as text, read as the bytes SQLite holds. wa-sqlite's `value_text` reads a NUL-terminated string,
+ * so 'a\0b' would arrive as 'a' - and `'a\0b' REGEXP 'b'` be false, where Microsoft.Data.Sqlite, which reads
+ * the byte count, sees all of it. `value_blob` on a number is its text, as `value_text` gives it.
+ */
 function readText(sqlite3: SQLiteAPI, pValue: Pointer): string | null {
     if (sqlite3.value_type(pValue) === SQLite.SQLITE_NULL) {
         return null;
     }
 
-    return sqlite3.value_text(pValue);
+    return textDecoder.decode(sqlite3.value_blob(pValue));
 }
 
 function guarded<TArgs extends [Pointer, ...unknown[]]>(module: SQLiteModule, fn: (...args: TArgs) => void): (...args: TArgs) => void {

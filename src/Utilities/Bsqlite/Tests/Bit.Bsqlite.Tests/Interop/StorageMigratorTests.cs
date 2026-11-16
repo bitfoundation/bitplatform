@@ -1,5 +1,6 @@
 ﻿using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Interop;
+using Bit.Bsqlite.Storage;
 using Bit.Bsqlite.Storage.InMemory;
 
 namespace Bit.Bsqlite.Interop.Tests;
@@ -12,6 +13,28 @@ public sealed class StorageMigratorTests
     private CancellationToken Ct => TestContext.CancellationToken;
 
     private static readonly byte[] Image = SqliteImages.Valid();
+
+    /// <summary>
+    /// A database the target cannot keep was refused only at import, after the whole of it had been exported -
+    /// and on the automatic path that export was repeated on every open. It is now refused on its header.
+    /// </summary>
+    [TestMethod]
+    public async Task ADatabaseTheTargetCannotKeep_IsRefusedOnItsHeader_BeforeItIsExported()
+    {
+        var source = new HeaderProvider("source-memory", refuses: false);
+        var target = new HeaderProvider("target-memory", refuses: true);
+        var store = new BsqliteInMemoryStorageBindingStore();
+        await source.Admin.ImportAsync("app.db", Image, Ct);
+
+        await Assert.ThrowsExactlyAsync<NotSupportedException>(
+            () => new BsqliteStorageMigrator().MigrateAsync("app.db", source, target, store, Ct));
+
+        Assert.AreEqual(1, source.HeaderAdmin.HeaderReads);
+        Assert.AreEqual(0, source.HeaderAdmin.Exports);
+        Assert.IsTrue(await source.Admin.ExistsAsync("app.db", Ct));
+        Assert.IsFalse(await target.Admin.ExistsAsync("app.db", Ct));
+        Assert.IsNull(await store.GetProviderNameAsync("app.db", Ct));
+    }
 
     [TestMethod]
     public async Task CopiesTheImage_FlipsTheBinding_AndDeletesTheSource()
@@ -174,5 +197,67 @@ public sealed class StorageMigratorTests
 
         public ValueTask RemoveAsync(string databaseName, CancellationToken cancellationToken = default)
             => _inner.RemoveAsync(databaseName, cancellationToken);
+    }
+
+    /// <summary>An in-memory backend whose admin reads headers, counts what it reads, and may refuse every import.</summary>
+    private sealed class HeaderProvider(string name, bool refuses) : IBsqliteStorageProvider
+    {
+        private readonly BsqliteInMemoryStorageProvider _inner = new(name);
+        private HeaderAdmin? _admin;
+
+        public HeaderAdmin HeaderAdmin => _admin ??= new HeaderAdmin(_inner.Admin, refuses);
+
+        public string Name => name;
+
+        public BsqliteStorageCapabilities Capabilities => _inner.Capabilities;
+
+        public BsqliteJsModule? VfsModule => null;
+
+        public IBsqliteStorageAdmin Admin => HeaderAdmin;
+
+        public ValueTask<BsqliteProbeResult> ProbeAsync(CancellationToken cancellationToken = default)
+            => ValueTask.FromResult(BsqliteProbeResult.Available());
+    }
+
+    private sealed class HeaderAdmin(IBsqliteStorageAdmin inner, bool refuses)
+        : IBsqliteStorageAdmin, IBsqliteStorageHeaderReader, IBsqliteStorageImportCheck
+    {
+        public int HeaderReads { get; private set; }
+
+        public int Exports { get; private set; }
+
+        public ValueTask<bool> ExistsAsync(string databaseName, CancellationToken cancellationToken = default)
+            => inner.ExistsAsync(databaseName, cancellationToken);
+
+        public ValueTask<IReadOnlyList<string>> ListAsync(CancellationToken cancellationToken = default)
+            => inner.ListAsync(cancellationToken);
+
+        public ValueTask DeleteAsync(string databaseName, CancellationToken cancellationToken = default)
+            => inner.DeleteAsync(databaseName, cancellationToken);
+
+        public ValueTask<byte[]> ExportAsync(string databaseName, CancellationToken cancellationToken = default)
+        {
+            Exports++;
+            return inner.ExportAsync(databaseName, cancellationToken);
+        }
+
+        public ValueTask ImportAsync(string databaseName, ReadOnlyMemory<byte> contents, CancellationToken cancellationToken = default)
+            => inner.ImportAsync(databaseName, contents, cancellationToken);
+
+        public async ValueTask<byte[]?> ReadHeaderAsync(string databaseName, CancellationToken cancellationToken = default)
+        {
+            HeaderReads++;
+            return await inner.ExistsAsync(databaseName, cancellationToken)
+                ? (await inner.ExportAsync(databaseName, cancellationToken))[..100]
+                : null;
+        }
+
+        public void ThrowIfCannotImport(ReadOnlySpan<byte> header)
+        {
+            if (refuses)
+            {
+                throw new NotSupportedException("Refused on its header.");
+            }
+        }
     }
 }

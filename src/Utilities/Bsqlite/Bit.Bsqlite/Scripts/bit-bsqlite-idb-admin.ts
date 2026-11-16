@@ -8,6 +8,7 @@
 export const IDB_NAME = 'idb-batch-atomic';
 export const IDB_VERSION = 6;
 const RELATED_SUFFIXES = ['-journal', '-wal'];
+const SQLITE_HEADER_LENGTH = 100;
 const PAGE_SIZE = 4096;
 
 /** What `probe` reports to the .NET provider, which turns it into a BsqliteProbeResult. */
@@ -211,6 +212,26 @@ function readCommittedImage(blocks: IDBObjectStore, path: string, meta: Metadata
 
         seek();
     });
+}
+
+/**
+ * The first bytes of the committed database, up to the 100 of the SQLite header, or null when it does not
+ * exist - what a migration checks before it exports the whole of it.
+ */
+export async function readHeader(databaseName: string): Promise<Uint8Array | null> {
+    const path = pathOf(requireName(databaseName));
+    const db = await openDatabase();
+
+    try {
+        return await withTransaction(db, 'readonly', async ({ metadata, blocks }) => {
+            const meta = await requestOf<MetadataRow | undefined>(metadata.get(path));
+            return meta
+                ? readCommittedImage(blocks, path, { ...meta, fileSize: Math.min(meta.fileSize ?? 0, SQLITE_HEADER_LENGTH) })
+                : null;
+        });
+    } finally {
+        db.close();
+    }
 }
 
 export async function importDatabase(databaseName: string, contents: Uint8Array | ArrayLike<number> | null): Promise<void> {

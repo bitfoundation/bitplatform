@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Bit.Bsqlite.Data;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
@@ -24,7 +25,7 @@ namespace Microsoft.EntityFrameworkCore;
 /// context. To change one, load it - or attach it - in the context that saves it.
 /// </para>
 /// </remarks>
-public static class BsqliteLiveQueryExtensions
+public static partial class BsqliteLiveQueryExtensions
 {
     /// <summary>
     /// Re-executes <paramref name="query"/> whenever a table it reads is written.
@@ -84,25 +85,136 @@ public static class BsqliteLiveQueryExtensions
     /// The tables a write to which re-runs the query, or none - every write re-runs it.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// A write is reported by the tables it changed, as SQLite's update hook names them: base tables. A name the
-    /// query reads that is no table of the context's model - a view (<c>ToView</c>), a query
-    /// (<c>ToSqlQuery</c>), a table function - is never among them, so a query reading one would never
-    /// re-run. What such a name reads is not known here, so the query re-runs on every write instead.
+    /// query reads that is no table of the context's model - a view (<c>ToView</c>), a view or table a raw
+    /// <c>FromSql</c> query reads - is never among them, so a query reading one would never re-run. What such a
+    /// name reads is not known here, so the query re-runs on every write instead.
+    /// </para>
+    /// <para>
+    /// The names come from a coarse extractor, so what is plainly no table is set aside first: the text of
+    /// string literals and comments (<c>'picked up from store'</c>), a table-valued function
+    /// (<c>json_each(@ids)</c>, which EF reads a primitive collection with), and a common table expression,
+    /// whose own body names the tables it reads.
+    /// </para>
     /// </remarks>
-    private static IReadOnlySet<string> TablesOf(string sql, DbContext? context)
+    internal static IReadOnlySet<string> TablesOf(string sql, DbContext? context)
     {
-        var tables = BsqliteTableNames.Extract(sql);
-        if (context is null || tables.Count == 0)
+        var code = WithoutLiteralsAndComments(sql);
+        var tables = BsqliteTableNames.Extract(code);
+        if (tables.Count == 0)
         {
             return tables;
+        }
+
+        var notTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (Match match in TableFunction().Matches(code))
+        {
+            notTables.Add(match.Groups[1].Value);
+        }
+
+        foreach (Match match in CommonTableExpression().Matches(code))
+        {
+            notTables.Add(match.Groups[1].Value);
+        }
+
+        var read = tables.Where(name => !notTables.Contains(name)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (context is null || read.Count == 0)
+        {
+            return read;
         }
 
         var mapped = context.Model.GetRelationalModel().Tables
             .Select(table => table.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        return tables.All(mapped.Contains) ? tables : new HashSet<string>();
+        return read.All(mapped.Contains) ? read : new HashSet<string>();
     }
+
+    /// <summary>
+    /// <paramref name="sql"/> with the text of every string literal and comment blanked out, so a word in one is
+    /// not taken for a table. Quoted identifiers are kept: they are the names.
+    /// </summary>
+    internal static string WithoutLiteralsAndComments(string sql)
+    {
+        var chars = sql.ToCharArray();
+        var i = 0;
+        while (i < chars.Length)
+        {
+            switch (chars[i])
+            {
+                case '\'':
+                    // Up to the quote that ends it: '' inside a literal is a quote, blanked like the rest.
+                    i++;
+                    while (i < chars.Length)
+                    {
+                        if (chars[i] == '\'')
+                        {
+                            if (i + 1 < chars.Length && chars[i + 1] == '\'')
+                            {
+                                chars[i++] = ' ';
+                                chars[i++] = ' ';
+                                continue;
+                            }
+
+                            break;
+                        }
+
+                        chars[i++] = ' ';
+                    }
+
+                    i++;
+                    break;
+
+                case '"' or '`' or '[':
+                    var close = chars[i] == '[' ? ']' : chars[i];
+                    i++;
+                    while (i < chars.Length && chars[i] != close)
+                    {
+                        i++;
+                    }
+
+                    i++;
+                    break;
+
+                case '-' when i + 1 < chars.Length && chars[i + 1] == '-':
+                    while (i < chars.Length && chars[i] != '\n')
+                    {
+                        chars[i++] = ' ';
+                    }
+
+                    break;
+
+                case '/' when i + 1 < chars.Length && chars[i + 1] == '*':
+                    var end = sql.IndexOf("*/", i + 2, StringComparison.Ordinal);
+                    end = end < 0 ? chars.Length : end + 2;
+                    while (i < end)
+                    {
+                        chars[i++] = ' ';
+                    }
+
+                    break;
+
+                default:
+                    i++;
+                    break;
+            }
+        }
+
+        return new string(chars);
+    }
+
+    // A name a FROM or JOIN calls rather than reads: a table-valued function such as json_each or pragma_table_info.
+    [GeneratedRegex(
+        @"\b(?:from|join)\s+(?:[""`\[]?[A-Za-z_]\w*[""`\]]?\s*\.\s*)?[""`\[]?([A-Za-z_]\w*)[""`\]]?\s*\(",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex TableFunction();
+
+    // The name a WITH clause gives a common table expression: WITH [RECURSIVE] x [(columns)] AS [[NOT] MATERIALIZED] (.
+    [GeneratedRegex(
+        @"(?:\bwith\s+(?:recursive\s+)?|,\s*)[""`\[]?([A-Za-z_]\w*)[""`\]]?\s*(?:\([^()]*\)\s*)?as\s+(?:(?:not\s+)?materialized\s+)?\(",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex CommonTableExpression();
 
     /// <summary>
     /// Builds contexts of the same type and options as the one a live query came from, for its

@@ -13,11 +13,17 @@ namespace Bit.Bsqlite.Interop;
 /// supplies the engine build, the VFS, and the capability limits.
 /// </remarks>
 public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTransportDefaults? defaults = null)
-    : IBsqliteTransportFactory, IBsqliteOpenLock
+    : IBsqliteTransportFactory, IBsqliteOpenLock, IAsyncDisposable
 {
+    // Static: the JavaScript side keeps every held lock of the page in one map, and a factory is made per DI
+    // scope, so ids a factory counted on its own would be handed out again by the next scope's - and releasing
+    // one would release the other scope's lock.
+    private static int _nextLockId;
+
     private readonly IJSRuntime _js = js ?? throw new ArgumentNullException(nameof(js));
     private readonly BsqliteWorkerTransportDefaults _defaults = defaults ?? new BsqliteWorkerTransportDefaults();
-    private int _nextLockId;
+    private readonly Lock _hostModuleGate = new();
+    private Task<IJSObjectReference>? _hostModule;
 
     /// <summary>
     /// A Web Lock on the database's name, taken through the host module without a worker: see
@@ -25,9 +31,7 @@ public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTr
     /// </summary>
     async Task<IAsyncDisposable?> IBsqliteOpenLock.AcquireOpenLockAsync(string databaseName, CancellationToken cancellationToken)
     {
-        var module = await _js
-            .InvokeAsync<IJSObjectReference>("import", cancellationToken, _defaults.HostModuleUrl)
-            .ConfigureAwait(false);
+        var module = await HostModuleAsync(cancellationToken).ConfigureAwait(false);
         var id = Interlocked.Increment(ref _nextLockId);
         try
         {
@@ -40,11 +44,43 @@ public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTr
             // Given up on here, but the request may still be queued - or granted by now - and a lock nobody
             // releases keeps every other tab from opening the database until this one closes.
             await ReleaseOpenLockAsync(module, id).ConfigureAwait(false);
-            await module.DisposeAsync().ConfigureAwait(false);
             throw;
         }
 
         return new OpenLock(module, id);
+    }
+
+    /// <summary>
+    /// The host module, imported once for the factory's locks rather than once per open. A failed or cancelled
+    /// import is not kept, so the next open tries again.
+    /// </summary>
+    private async Task<IJSObjectReference> HostModuleAsync(CancellationToken cancellationToken)
+    {
+        Task<IJSObjectReference> import;
+        lock (_hostModuleGate)
+        {
+            // Not cancellable itself: it is shared, and one open giving up must not fail another's.
+            import = _hostModule ??= _js
+                .InvokeAsync<IJSObjectReference>("import", CancellationToken.None, _defaults.HostModuleUrl)
+                .AsTask();
+        }
+
+        try
+        {
+            return await import.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch when (import.IsFaulted || import.IsCanceled)
+        {
+            lock (_hostModuleGate)
+            {
+                if (_hostModule == import)
+                {
+                    _hostModule = null;
+                }
+            }
+
+            throw;
+        }
     }
 
     private static async ValueTask ReleaseOpenLockAsync(IJSObjectReference module, int id)
@@ -56,6 +92,31 @@ public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTr
         catch (Exception exception) when (exception is JSException or JSDisconnectedException or ObjectDisposedException)
         {
             // The page is going away, and the browser drops the lock with it.
+        }
+    }
+
+    /// <summary>Releases the host module the locks were taken through.</summary>
+    public async ValueTask DisposeAsync()
+    {
+        Task<IJSObjectReference>? import;
+        lock (_hostModuleGate)
+        {
+            import = _hostModule;
+            _hostModule = null;
+        }
+
+        if (import is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await (await import.ConfigureAwait(false)).DisposeAsync().ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is JSException or JSDisconnectedException or ObjectDisposedException or OperationCanceledException)
+        {
+            // Never imported, or the page is going away and takes the module with it.
         }
     }
 
@@ -71,13 +132,6 @@ public sealed class BsqliteWorkerTransportFactory(IJSRuntime js, BsqliteWorkerTr
             }
 
             await ReleaseOpenLockAsync(module, id).ConfigureAwait(false);
-            try
-            {
-                await module.DisposeAsync().ConfigureAwait(false);
-            }
-            catch (JSDisconnectedException)
-            {
-            }
         }
     }
 

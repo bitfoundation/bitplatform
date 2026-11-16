@@ -12,6 +12,18 @@
 const MAX_COEFF = (1n << 96n) - 1n;
 const MAX_SCALE = 28;
 
+/** `coeff` with its last `count` digits dropped, rounded half to even on all of them. */
+function roundHalfEven(coeff: bigint, count: number): bigint {
+    if (count === 0) {
+        return coeff;
+    }
+
+    const divisor = 10n ** BigInt(count);
+    const quotient = coeff / divisor;
+    const twice = (coeff % divisor) * 2n;
+    return twice > divisor || (twice === divisor && (quotient & 1n) === 1n) ? quotient + 1n : quotient;
+}
+
 export class DecimalOverflowError extends Error {
     constructor() {
         super('Decimal overflow.');
@@ -99,17 +111,32 @@ export class Decimal {
             scale = 0;
         }
 
-        if (scale > MAX_SCALE) {
-            throw new DecimalFormatError(text);
-        }
-
         if (!digits) {
             return Decimal.zero();
         }
 
-        const coeff = BigInt(digits);
-        if (coeff > MAX_COEFF) {
-            throw new DecimalOverflowError();
+        let coeff = BigInt(digits);
+
+        // More digits after the point than 28, or more than 96 bits hold: rounded off the end, half to even, as
+        // .NET's decimal.Parse - which Microsoft.Data.Sqlite reads decimals with - rounds them, so a REAL that
+        // SQLite prints as 1.23456789012345e-15 or 1.0e-30 reads as a value here too. Rounded once, from all the
+        // digits there are, to the fewest dropped that fit; a value too small for scale 28 rounds to zero.
+        if (scale > MAX_SCALE || coeff > MAX_COEFF) {
+            let rounded = coeff;
+            let dropped = Math.max(0, scale - MAX_SCALE);
+            for (; dropped <= scale; dropped++) {
+                rounded = roundHalfEven(coeff, dropped);
+                if (rounded <= MAX_COEFF) {
+                    break;
+                }
+            }
+
+            if (rounded > MAX_COEFF) {
+                throw new DecimalOverflowError();
+            }
+
+            coeff = rounded;
+            scale -= dropped;
         }
 
         return new Decimal(sign, coeff, scale);

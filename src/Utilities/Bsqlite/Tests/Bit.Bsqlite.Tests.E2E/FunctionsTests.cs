@@ -324,6 +324,34 @@ public sealed class FunctionsTests : BsqliteTest
         AssertJson.AreEqual("""[[-1, "151.0", 0]]""", result.Rows);
     }
 
+    /// <summary>
+    /// More digits than a decimal holds are rounded off the end, half to even, as .NET's decimal.Parse rounds them -
+    /// a small REAL that SQLite prints in exponent form used to be refused as "not a decimal".
+    /// </summary>
+    [TestMethod]
+    public async Task Decimal_functions_round_digits_past_scale_28_as_dotnet_parses_them()
+    {
+        await OpenSeededAsync();
+
+        var result = await QueryAsync(
+            Page,
+            "SELECT ef_add('1.23456789012345e-15', '0'), ef_compare(1.0e-30, '0'), ef_add('0.33333333333333333333333333335', '0')");
+        AssertJson.AreEqual("""[["0.0000000000000012345678901234", 0, "0.3333333333333333333333333334"]]""", result.Rows);
+    }
+
+    /// <summary>
+    /// A function argument used to be read up to its first NUL, so REGEXP saw 'a' for 'a\0b' where
+    /// Microsoft.Data.Sqlite sees all of it.
+    /// </summary>
+    [TestMethod]
+    public async Task Regexp_sees_text_past_an_embedded_nul()
+    {
+        await OpenSeededAsync();
+
+        var result = await QueryAsync(Page, "SELECT ('a' || char(0) || 'b') REGEXP 'b', ('a' || char(0) || 'b') REGEXP '^a\\x00b$', 12 REGEXP '^12$'");
+        AssertJson.AreEqual("[[1, 1, 1]]", result.Rows);
+    }
+
     // The file's beforeEach: every test starts from the seeded data set.
     private async Task OpenSeededAsync()
     {

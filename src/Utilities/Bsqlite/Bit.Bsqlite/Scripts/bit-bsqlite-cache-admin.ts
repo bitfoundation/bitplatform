@@ -12,6 +12,7 @@ import {
 } from './bit-bsqlite-cache-vfs.js';
 
 const RELATED_SUFFIXES = ['-journal', '-wal'];
+const SQLITE_HEADER_LENGTH = 100;
 
 /** What `probe` reports to the .NET provider, which turns it into a BsqliteProbeResult. */
 interface ProbeResult {
@@ -130,6 +131,24 @@ export async function exportDatabase(databaseName: string): Promise<Uint8Array> 
 
     await Promise.all(reads);
     return image;
+}
+
+/**
+ * The first bytes of the database, up to the 100 of the SQLite header, or null when it does not exist - what a
+ * migration checks before it exports the whole of it.
+ */
+export async function readHeader(databaseName: string): Promise<Uint8Array | null> {
+    const path = pathOf(requireName(databaseName));
+    const cache = await caches.open(CACHE_NAME);
+    const meta = await cache.match(metaUrl(path));
+    if (!meta) {
+        return null;
+    }
+
+    const { size } = await meta.json();
+    const page = await cache.match(pageUrl(path, 0));
+    const bytes = page ? new Uint8Array(await page.arrayBuffer()) : new Uint8Array(0);
+    return bytes.slice(0, Math.min(SQLITE_HEADER_LENGTH, size ?? 0, bytes.byteLength));
 }
 
 export async function importDatabase(databaseName: string, contents: Uint8Array | ArrayLike<number> | null): Promise<void> {

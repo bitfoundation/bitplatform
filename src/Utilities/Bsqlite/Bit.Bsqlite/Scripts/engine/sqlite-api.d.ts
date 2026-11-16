@@ -71,6 +71,7 @@ export interface SQLiteAPI {
         xStep?: ((context: Pointer, values: Uint32Array) => void) | null,
         xFinal?: ((context: Pointer) => void) | null): number;
     result(context: Pointer, value: SQLiteCompatibleType): void;
+    value_blob(value: Pointer): Uint8Array;
     value_text(value: Pointer): string;
     value_type(value: Pointer): number;
 

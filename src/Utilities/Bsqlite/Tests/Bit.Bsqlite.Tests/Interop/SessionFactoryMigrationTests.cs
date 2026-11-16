@@ -83,6 +83,28 @@ public sealed class SessionFactoryMigrationTests
             transports.Events);
     }
 
+    /// <summary>
+    /// An open that finds the database where it belongs has nothing to move, and waits for no other tab: the lock
+    /// is taken only when a better backend is there to move to.
+    /// </summary>
+    [TestMethod]
+    public async Task AnOpenWithNothingToMigrate_TakesNoOpenLock()
+    {
+        var opfs = new PersistentProvider("opfs");
+        var cacheStorage = new PersistentProvider("cache-storage");
+        await opfs.Admin.ImportAsync(Database, Image, Ct);
+        var store = new BsqliteInMemoryStorageBindingStore();
+        await store.SetProviderNameAsync(Database, "opfs", Ct);
+        var transports = new LockingTransportFactory(() => store.GetProviderNameAsync(Database, Ct).AsTask());
+
+        await using (var session = await Factory(store, transports, opfs, cacheStorage).OpenAsync(Database, Ct))
+        {
+            Assert.AreEqual("opfs", session.Resolution.Provider.Name);
+        }
+
+        AssertSequence.Equal(["open"], transports.Events);
+    }
+
     private static BsqliteSessionFactory Factory(IBsqliteStorageBindingStore store, params IBsqliteStorageProvider[] providers)
         => Factory(store, new InProcessTransportFactory(), providers);
 

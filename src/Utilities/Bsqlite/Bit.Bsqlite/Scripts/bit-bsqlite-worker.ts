@@ -264,6 +264,10 @@ async function open({ databaseName, requiredBuild, vfs, limits, foreignKeys, onO
     const bindText = (stmt: number, index: number, value: string) => {
         const bytes = encoder.encode(value);
         const pointer = module._sqlite3_malloc(Math.max(bytes.byteLength, 1));
+        if (!pointer) {
+            return SQLite.SQLITE_NOMEM;
+        }
+
         try {
             module.HEAPU8.set(bytes, pointer);
             // SQLITE_TRANSIENT (-1): SQLite copies the bytes before this returns, so they are freed right after.
