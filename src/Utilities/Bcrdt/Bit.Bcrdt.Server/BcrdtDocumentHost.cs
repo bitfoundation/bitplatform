@@ -627,8 +627,8 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
     /// update supersedes. A message breaking either rule is dropped whole.
     /// </para>
     /// <para>
-    /// A departure of a client no connection holds is left out - the host announced it already, if it was
-    /// ever here - and the rest of the message goes on: the host sends what is left to every other
+    /// A departure of a client no connection holds - and the message itself does not publish - is left out - the
+    /// host announced it already, if it was ever here - and the rest of the message goes on: the host sends what is left to every other
     /// connection itself, rather than letting the sender's relay pass on the message as it came. Behind a
     /// backplane (<see cref="BcrdtDocumentHostOptions.ScaleOut"/>) what is left reaches only this instance's
     /// connections; the clients elsewhere time those departures out themselves. A message of nothing but
@@ -673,7 +673,8 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                 (ulong clientId, long clock, bool online) = entries[index];
                 if (document.AwarenessClaims.TryGetValue(clientId, out AwarenessClaim? claim))
                 {
-                    if (ReferenceEquals(claim.Owner, connection)) continue;
+                    // Its own, or taken over earlier in this same message.
+                    if (ReferenceEquals(claim.Owner, connection) || claiming?.Contains(clientId) == true) continue;
 
                     // A client that lost its connection, or said goodbye on purpose, comes back on a new one
                     // before the server has noticed the old one is gone, publishing the same identity at a
@@ -700,12 +701,19 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                     // itself, or one that never was. Relayed, a message of made-up identifiers - a million fit
                     // in a few megabytes - would fill every peer's presence until they timed out. Left out
                     // rather than refusing the message, so a peer timing out several clients at once still
-                    // reaches everyone about those somebody here does hold.
+                    // reaches everyone about those somebody here does hold. Unless this very message publishes
+                    // the client too: that is the sender's own, and its peers must hear where it ends up.
                     (unknown ??= []).Add(index);
                 }
             }
 
             if (claiming is not null && owned + claiming.Count > MaxAwarenessClientsPerConnection) return Drop("presence_limit");
+
+            if (unknown is not null && claiming is not null)
+            {
+                unknown.RemoveWhere(index => claiming.Contains(entries[index].ClientId));
+                if (unknown.Count == 0) unknown = null;
+            }
 
             if (unknown is not null)
             {
@@ -725,9 +733,11 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                     if (clock > claim.Clock || (clock == claim.Clock && !online)) claim.Online = online;
                     if (clock > claim.Clock) claim.Clock = clock;
                 }
-                else if (online)
+                else if (online || claiming?.Contains(clientId) == true)
                 {
-                    document.AwarenessClaims[clientId] = new AwarenessClaim(connection, clock) { LastActive = now, Online = true };
+                    // A departure first only when the message publishes the client later at a lower clock, which
+                    // the departure outranks: the claim is made withdrawn, as every peer applying the message sees it.
+                    document.AwarenessClaims[clientId] = new AwarenessClaim(connection, clock) { LastActive = now, Online = online };
                 }
             }
         }

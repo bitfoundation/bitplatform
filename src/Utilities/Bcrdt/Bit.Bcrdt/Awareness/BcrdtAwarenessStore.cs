@@ -60,6 +60,14 @@ public sealed class BcrdtAwarenessStore : IDisposable
     /// </remarks>
     private const int MaxUnseenDepartures = 1024;
 
+    /// <summary>The most entries <see cref="ReadEntries"/> reads from one update.</summary>
+    /// <remarks>
+    /// A client publishes its own entry and announces the departures of the peers it times out: a handful, or as
+    /// many as a room has participants. The bound by the bytes left alone lets a few megabytes declare millions
+    /// of entries, each one materialized before the server can look at any.
+    /// </remarks>
+    internal const int MaxPolicedEntries = 10_000;
+
     private readonly Dictionary<ulong, BcrdtAwarenessEntry> _entries = [];
 
     // Departures of clients this store has no entry for, by client, and the order they were first heard in.
@@ -617,12 +625,19 @@ public sealed class BcrdtAwarenessStore : IDisposable
     /// Reads who an awareness update speaks for, without applying it: each entry's client, clock, and
     /// whether it publishes state or announces a departure.
     /// </summary>
-    /// <remarks>For a server that polices which connection may speak for which client.</remarks>
-    /// <exception cref="BcrdtFormatException">The update is malformed.</exception>
+    /// <remarks>
+    /// For a server that polices which connection may speak for which client. An update of more than
+    /// <see cref="MaxPolicedEntries"/> entries is refused before any is read.
+    /// </remarks>
+    /// <exception cref="BcrdtFormatException">The update is malformed, or holds too many entries.</exception>
     internal static List<(ulong ClientId, long Clock, bool Online)> ReadEntries(ReadOnlyMemory<byte> update)
     {
         var reader = new BcrdtBufferReader(update);
         int count = reader.ValidateCount(reader.ReadVarUInt32(), "awareness entry");
+        if (count > MaxPolicedEntries)
+        {
+            throw new BcrdtFormatException($"An awareness update of {count} entries exceeds the limit of {MaxPolicedEntries}.");
+        }
 
         var entries = new List<(ulong, long, bool)>(count);
         for (int i = 0; i < count; i++)

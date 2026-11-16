@@ -170,6 +170,27 @@ public class McpMergeLabTests
     }
 
     [TestMethod]
+    public async Task An_element_of_a_nested_set_replaced_through_its_map_key_is_lost_with_the_key_not_to_a_remove()
+    {
+        // A removes the element and B adds it again (a no-op) inside the set, while C writes over the key holding the
+        // set: the element is gone because the whole set is, whatever the remove and the add did.
+        var report = await InspectAsync("""
+            base: set board/tags add "urgent"
+            A: set board/tags remove "urgent"
+            B: set board/tags add "urgent"
+            C: map board set tags "none"
+            """);
+
+        Assert.IsTrue(report.Converged);
+        Assert.AreEqual("\"none\"", report.Merged!["board"]!["tags"]!.ToJsonString());
+
+        var decision = report.Decisions!.Single(decision => decision.Target == "set 'board/tags'");
+        Assert.AreEqual("an element is lost with its map key", decision.Outcome);
+        Assert.Contains("replaced through its map key", decision.Detail);
+        Assert.DoesNotContain("no-op", decision.Detail);
+    }
+
+    [TestMethod]
     public async Task Two_concurrent_moves_of_one_element_leave_two_copies()
     {
         var report = await InspectAsync("""
