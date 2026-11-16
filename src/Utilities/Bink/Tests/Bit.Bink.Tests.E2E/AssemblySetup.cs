@@ -19,8 +19,10 @@ public static class AssemblySetup
         // default on a CI runner, without anything being wrong.
         Assertions.SetDefaultExpectTimeout(20_000);
 
-        // Started here rather than by the first test, so the boot is not charged to that test's time. Nothing
-        // throws: a browser or a demo that is missing is reported by every test (see BinkTest).
+        // Started here rather than by the first test, so the browser's launch is not charged to that test's time. The
+        // demo is not: the first test that drives it publishes and starts it, so a run that drives none (the lazy
+        // loading tests alone) never pays for it. Nothing throws: a browser or a demo that is missing is reported by
+        // every test that needs it (see BinkTest).
         await PlaywrightSession.GetAsync();
     }
 

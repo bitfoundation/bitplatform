@@ -393,7 +393,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (ReadOnly || _selection.IsEmpty) return;
         int count = _selection.Count;
         _document.RemoveElements(_selection.Ids);
-        Announce($"Deleted {Elements(count)}.");
+        Announce($"Deleted {BinkCount.Of(count, "element")}.");
         InvalidateAll();
     }
 
@@ -463,7 +463,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         string? payload = CopySelectionCore();
         if (payload is null) return false;
         await ProvideClipboardAsync(payload).ConfigureAwait(true);
-        Announce($"Copied {Elements(_selection.Count)}.");
+        Announce($"Copied {BinkCount.Of(_selection.Count, "element")}.");
         return true;
     }
 
@@ -478,7 +478,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         await ProvideClipboardAsync(payload).ConfigureAwait(true);
         if (_disposed) return false;
         _document.RemoveElements(ids);
-        Announce($"Cut {Elements(ids.Count)}.");
+        Announce($"Cut {BinkCount.Of(ids.Count, "element")}.");
         InvalidateAll();
         return true;
     }
@@ -595,7 +595,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             return 0;
         }
         _selection.Set(elements.Select(static e => e.Id));
-        Announce($"Pasted {Elements(elements.Count)}.");
+        Announce($"Pasted {BinkCount.Of(elements.Count, "element")}.");
         InvalidateAll();
         return elements.Count;
     }
@@ -619,7 +619,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             return 0;
         }
         _selection.Set(copies.Select(static e => e.Id));
-        Announce($"Duplicated {Elements(copies.Count)}.");
+        Announce($"Duplicated {BinkCount.Of(copies.Count, "element")}.");
         InvalidateAll();
         return copies.Count;
     }
@@ -661,7 +661,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             return null;
         }
         if (group is null) return null;
-        Announce($"Grouped {Elements(count)}.");
+        Announce($"Grouped {BinkCount.Of(count, "element")}.");
         InvalidateAll();
         return group;
     }
@@ -690,7 +690,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (ReadOnly || _selection.IsEmpty) return 0;
         int count = _selection.Count;
         if (!_document.SetLocked(_selection.Ids, true)) return 0;
-        Announce($"Locked {Elements(count)}.");
+        Announce($"Locked {BinkCount.Of(count, "element")}.");
         InvalidateAll();
         return count;
     }
@@ -748,7 +748,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         var locked = new List<Guid>();
         foreach (BinkElement element in _document.AllElements) if (element.IsLocked && element is not BinkUnknownElement) locked.Add(element.Id);
         if (locked.Count == 0 || !_document.SetLocked(locked, false)) return 0;
-        Announce($"Unlocked {Elements(locked.Count)}.");
+        Announce($"Unlocked {BinkCount.Of(locked.Count, "element")}.");
         InvalidateAll();
         return locked.Count;
     }
@@ -974,14 +974,11 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     public void SelectAll()
     {
         _selection.SelectAll();
-        Announce($"{Elements(_selection.Count)} selected.");
+        Announce($"{BinkCount.Of(_selection.Count, "element")} selected.");
     }
 
     /// <summary>Requests a redraw of the whole canvas.</summary>
     public void Refresh() => InvalidateAll();
-
-    /// <summary>"1 element", "3 elements": the count an announcement names.</summary>
-    private static string Elements(int count) => count == 1 ? "1 element" : $"{count} elements";
 
     /// <summary>Announces a message to screen readers through the canvas live region.</summary>
     public void Announce(string message)
@@ -1724,7 +1721,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     {
         if (!EnableClipboard) return Task.CompletedTask;
         string? payload = CopySelectionCore();
-        if (payload is not null) Announce($"Copied {Elements(_selection.Count)}.");
+        if (payload is not null) Announce($"Copied {BinkCount.Of(_selection.Count, "element")}.");
         return ProvideClipboardAsync(payload);
     }
 
@@ -1736,7 +1733,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         await ProvideClipboardAsync(payload).ConfigureAwait(true);
         if (payload is null || _disposed) return;
         _document.RemoveElements(ids);
-        Announce($"Cut {Elements(ids.Count)}.");
+        Announce($"Cut {BinkCount.Of(ids.Count, "element")}.");
         InvalidateAll();
     }
 
@@ -1907,8 +1904,8 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         }
         _selection.Set(ids);
         Announce(result.Warnings.Count == 0
-            ? $"Imported {Elements(ids.Length)}."
-            : $"Imported {Elements(ids.Length)}. Left out: {string.Join(" ", result.Warnings)}");
+            ? $"Imported {BinkCount.Of(ids.Length, "element")}."
+            : $"Imported {BinkCount.Of(ids.Length, "element")}. Left out: {string.Join(" ", result.Warnings)}");
         InvalidateAll();
         return result;
     }
@@ -2445,10 +2442,10 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             described.Add(element.GetAccessibleDescription());
         }
 
-        string summary = $"Drawing with {Elements(total)} on {(_document.Layers.Count == 1 ? "1 layer" : $"{_document.Layers.Count} layers")}.";
+        string summary = $"Drawing with {BinkCount.Of(total, "element")} on {BinkCount.Of(_document.Layers.Count, "layer")}.";
         if (described.Count == 0) return summary;
         string listed = summary + " " + string.Join(". ", described) + ".";
-        return total > described.Count ? listed + $" {total - described.Count} more elements not listed." : listed;
+        return total > described.Count ? listed + $" {BinkCount.Of(total - described.Count, "more element")} not listed." : listed;
     }
 
     /// <inheritdoc />

@@ -223,11 +223,11 @@ public sealed class BinkSelectTool : BinkToolBase
         // reader user who taps an element is told nothing about what they now have.
         if (!wasSelected || _addToSelection)
         {
-            string picked = unit.Count == 1 ? hit.GetAccessibleDescription() : $"group of {unit.Count} elements";
+            string picked = unit.Count == 1 ? hit.GetAccessibleDescription() : $"group of {BinkCount.Of(unit.Count, "element")}";
             context.Announce(entered ? "Entered group. Selected: " + picked
-                : _addToSelection && wasSelected ? $"Deselected {picked}. {selection.Count} elements selected."
+                : _addToSelection && wasSelected ? $"Deselected {picked}. {BinkCount.Of(selection.Count, "element")} selected."
                 : selection.Count == unit.Count ? "Selected: " + picked
-                : $"{selection.Count} elements selected.");
+                : $"{BinkCount.Of(selection.Count, "element")} selected.");
         }
         // Alt-dragging moves a copy. The copies are made in the same history group as the drag, so the copy and
         // where it was put are one undo step, and cancelling the drag removes them again.
@@ -362,7 +362,7 @@ public sealed class BinkSelectTool : BinkToolBase
             IReadOnlyList<Guid> ids = BinkDocumentQuery.ExpandToGroups(context.Document, found.Select(static e => e.Id), FocusedGroup);
             if (_addToSelection) foreach (Guid id in ids) context.Selection.Add(id);
             else context.Selection.Set(ids);
-            context.Announce(ids.Count == 0 ? "Nothing selected." : $"{ids.Count} elements selected.");
+            context.Announce(ids.Count == 0 ? "Nothing selected." : $"{BinkCount.Of(ids.Count, "element")} selected.");
         }
 
         Finish(context);
@@ -650,7 +650,7 @@ public sealed class BinkSelectTool : BinkToolBase
                 {
                     context.Document.RemoveElements(selection.Ids);
                 }
-                context.Announce($"Deleted {n} elements.");
+                context.Announce($"Deleted {BinkCount.Of(n, "element")}.");
                 return true;
             }
             case "Enter":
@@ -677,7 +677,7 @@ public sealed class BinkSelectTool : BinkToolBase
                 };
                 var moved = selection.Elements.Select(e => e.Translate(delta)).ToList();
                 if (!TryReplace(context, moved, "Move")) return true;
-                context.Announce($"Moved {moved.Count} elements.");
+                context.Announce($"Moved {BinkCount.Of(moved.Count, "element")}.");
                 return true;
             }
             case "r":
@@ -706,7 +706,7 @@ public sealed class BinkSelectTool : BinkToolBase
             }
             case "a" when key.Ctrl:
                 selection.SelectAll();
-                context.Announce($"{selection.Count} elements selected.");
+                context.Announce($"{BinkCount.Of(selection.Count, "element")} selected.");
                 return true;
             default:
                 return false;
@@ -734,7 +734,7 @@ public sealed class BinkSelectTool : BinkToolBase
         }
         FocusedGroup = parent;
         context.Selection.Set(BinkDocumentQuery.ExpandToGroups(context.Document, members.Select(static e => e.Id), parent));
-        context.Announce(context.Selection.IsEmpty ? "Left the group." : $"Left the group. Selected: group of {context.Selection.Count} elements.");
+        context.Announce(context.Selection.IsEmpty ? "Left the group." : $"Left the group. Selected: group of {BinkCount.Of(context.Selection.Count, "element")}.");
         context.InvalidateOverlay();
     }
 
@@ -774,7 +774,7 @@ public sealed class BinkSelectTool : BinkToolBase
 
         (BinkElement first, List<Guid> members) = stops[index];
         context.Selection.Set(members);
-        string description = members.Count == 1 ? first.GetAccessibleDescription() : $"group of {members.Count} elements";
+        string description = members.Count == 1 ? first.GetAccessibleDescription() : $"group of {BinkCount.Of(members.Count, "element")}";
         context.Announce($"{index + 1} of {stops.Count}: {description}");
         context.InvalidateOverlay();
         return true;

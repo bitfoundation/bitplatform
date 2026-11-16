@@ -62,14 +62,47 @@ public sealed class DemoHost : IAsyncDisposable
     /// cd.bink.demo.yml's publish (less its version stamp), into a folder next to the test binaries. Run from the
     /// demo's folder so src/global.json picks the SDK, as it does for CI's step.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A publish whose stamp is newer than every file it is made from is used as it is, so re-running a test does not
+    /// pay for a trimmed WebAssembly publish each time; <c>BINK_E2E_REPUBLISH=1</c> publishes all the same. Otherwise
+    /// the folder is emptied first: a publish leaves what an earlier one wrote with other settings (fingerprinted
+    /// assets, compressed copies, assemblies since removed) next to its own, and the server would serve those.
+    /// </para>
+    /// <para>
+    /// Nothing outlives the publish: no MSBuild node, no compiler or Razor server. One left running holds the output
+    /// pipes and the demo's obj and bin files open long after the publish is done.
+    /// </para>
+    /// </remarks>
     private static async Task<string> PublishAsync()
     {
         var project = RepoLayout.DemoServerProject();
         var output = RepoLayout.PublishDirectory();
+        string[] arguments = ["publish", project, "-c", "Release", "-p:AspNetCoreHostingModel=OutOfProcess", "-o", output,
+                              "-p:InvariantGlobalization=true", "-nologo", "-v:m",
+                              "-nodeReuse:false", "-p:UseSharedCompilation=false", "-p:UseRazorBuildServer=false"];
 
-        await ChildProcess.RunToCompletionAsync(DotNet,
-            ["publish", project, "-c", "Release", "-p:AspNetCoreHostingModel=OutOfProcess", "-o", output, "-p:InvariantGlobalization=true", "-nologo", "-v:m"],
-            Path.GetDirectoryName(project)!, TimeSpan.FromMinutes(20));
+        var stamp = Path.Combine(output, PublishStampName);
+        var stampText = string.Join(' ', arguments);
+        if (E2EEnvironment.Republish is false && IsUpToDate(stamp, stampText)) return output;
+
+        if (Directory.Exists(output)) Directory.Delete(output, recursive: true);
+
+        await ChildProcess.RunToCompletionAsync(DotNet, arguments, Path.GetDirectoryName(project)!, TimeSpan.FromMinutes(20),
+            new Dictionary<string, string> { ["MSBUILDDISABLENODEREUSE"] = "1", ["DOTNET_CLI_USE_MSBUILD_SERVER"] = "0" });
+
+        await File.WriteAllTextAsync(stamp, stampText);
         return output;
+    }
+
+    private const string PublishStampName = ".bink-e2e-publish";
+
+    /// <summary>True when <paramref name="stamp"/> records the same publish and is newer than everything it was made from.</summary>
+    private static bool IsUpToDate(string stamp, string stampText)
+    {
+        if (File.Exists(stamp) is false || File.ReadAllText(stamp) != stampText) return false;
+
+        var published = File.GetLastWriteTimeUtc(stamp);
+        return RepoLayout.DemoInputs().All(input => File.GetLastWriteTimeUtc(input) < published);
     }
 }

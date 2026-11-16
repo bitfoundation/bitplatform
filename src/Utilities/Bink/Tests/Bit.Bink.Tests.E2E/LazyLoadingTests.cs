@@ -22,6 +22,9 @@ public sealed class LazyLoadingTests : BinkTest
 
     protected override string BaseUrl => _sample!.BaseUrl;
 
+    /// <summary>The sample is the app under test here: the demo is neither published nor started for these tests.</summary>
+    protected override bool DrivesDemo => false;
+
     [TestInitialize]
     public async Task StartSampleAsync()
     {
@@ -29,7 +32,7 @@ public sealed class LazyLoadingTests : BinkTest
         {
             _sample = await LazyLoadingSample.GetAsync("Bit.Bink", "BINK", E2EEnvironment.Configuration);
         }
-        catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or TimeoutException)
+        catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or TimeoutException or System.ComponentModel.Win32Exception)
         {
             var reason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
             // A build server must not report a suite that never ran as anything but a failure.

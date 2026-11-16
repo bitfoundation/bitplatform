@@ -15,7 +15,7 @@ public sealed class EditingTests : BinkTest
     {
         string text = await page.EvaluateAsync<string>("() => document.querySelector('.bit-bink-canvas [id$=\"-desc\"]').textContent");
         if (text.StartsWith("Empty", StringComparison.Ordinal)) return 0;
-        var match = System.Text.RegularExpressions.Regex.Match(text, @"Drawing with (\d+) elements");
+        var match = System.Text.RegularExpressions.Regex.Match(text, @"Drawing with (\d+) elements?\b");
         Assert.IsTrue(match.Success, "Unexpected description: " + text);
         return int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
     }

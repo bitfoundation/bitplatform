@@ -25,6 +25,12 @@ public static class E2EEnvironment
     public static string? DemoDirectory { get; } = Read("BINK_E2E_DEMO_DIR") is { } directory ? Path.GetFullPath(directory) : null;
 
     /// <summary>
+    /// <c>BINK_E2E_REPUBLISH=1</c>: publish the demo even though the suite's last publish of it is newer than every
+    /// file it was made from.
+    /// </summary>
+    public static bool Republish { get; } = Read("BINK_E2E_REPUBLISH") == "1";
+
+    /// <summary>
     /// <c>BINK_E2E_BASE_URL</c>: an already running demo (for example one started from the IDE). When set
     /// the suite drives that instead of booting the demo server itself.
     /// </summary>
