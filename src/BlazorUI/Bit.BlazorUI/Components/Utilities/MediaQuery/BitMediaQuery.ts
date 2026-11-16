@@ -176,7 +176,7 @@
 
             // matchMedia never throws; a query it cannot parse silently becomes "not all", which
             // simply never matches. Surface that as a warning so a typo in a custom query is
-            // diagnosable instead of just rendering the NotMatched content forever.
+            // diagnosable instead of just rendering the NotMatchedTemplate content forever.
             if (queryList.media === 'not all' && resolvedQuery.trim() !== 'not all') {
                 console.warn(`BitMediaQuery: the provided query '${resolvedQuery}' is not a valid media query.`);
             }

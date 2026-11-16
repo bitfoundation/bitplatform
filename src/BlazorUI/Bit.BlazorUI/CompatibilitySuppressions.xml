@@ -1207,6 +1207,62 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.AssignIsMatched(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.get_IsMatched</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.get_IsMatchedChanged</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.get_Matched</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.get_NotMatched</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.set_IsMatched(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.set_IsMatchedChanged(Microsoft.AspNetCore.Components.EventCallback{System.Boolean})</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.set_NotMatched(Microsoft.AspNetCore.Components.RenderFragment)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitMenuButton`1.AssignIsLoading(System.Boolean)</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>

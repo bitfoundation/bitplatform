@@ -5,8 +5,8 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// <summary>
 /// BitMediaQuery in a real browser (/e2e/media-query), the viewport resized across every breakpoint: every
 /// BitScreenQuery at both sides of each edge, a custom Query (OnChange once initially and once per flip,
-/// @bind-IsMatched, a leading @media, a change at runtime, the ScreenQuery it falls back to, an invalid one,
-/// orientation, prefers-color-scheme and prefers-reduced-motion), a one-way IsMatched, DefaultMatched before the
+/// @bind-Matched, a leading @media, a change at runtime, the ScreenQuery it falls back to, an invalid one,
+/// orientation, prefers-color-scheme and prefers-reduced-motion), a one-way Matched, DefaultMatched before the
 /// browser answers (the prerendered HTML), ChildContent, Template keeping its content across a flip, the focus kept
 /// across a flip, Element and NoWrapper, the breakpoints of a scoped --bit-bp-*, of a BitThemeProvider and of the
 /// document re-valued at runtime, the BitParams cascade, Id / Class / Style / AriaLabel / role / Dir / HtmlAttributes /
@@ -163,7 +163,7 @@ public class BitMediaQueryE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsMatched_SetOneWay_FreezesTheContent_WhileOnChangeStillReports()
+    public async Task Matched_SetOneWay_FreezesTheContent_WhileOnChangeStillReports()
     {
         await OpenAsync(Route);
 

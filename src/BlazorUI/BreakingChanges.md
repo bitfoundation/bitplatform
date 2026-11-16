@@ -5,6 +5,24 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitMediaQuery`'s `IsMatched` is `Matched`, and its `Matched` and `NotMatched` are `MatchedTemplate` and `NotMatchedTemplate` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Checked`, `Expanded`), but the media query's
+`Matched` was already taken by the content it renders while the query matches. The two pieces of content take the
+`...Template` name, which frees `Matched` for the state; the state's uncontrolled default was already `DefaultMatched`:
+
+| Before | After |
+|---|---|
+| `<BitMediaQuery @bind-IsMatched="isMd" />` | `<BitMediaQuery @bind-Matched="isMd" />` |
+| `<BitMediaQuery IsMatchedChanged="OnMatchedChanged" />` | `<BitMediaQuery MatchedChanged="OnMatchedChanged" />` |
+| `<Matched>wide</Matched>` | `<MatchedTemplate>wide</MatchedTemplate>` |
+| `<NotMatched>narrow</NotMatched>` | `<NotMatchedTemplate>narrow</NotMatchedTemplate>` |
+
+Code that still uses the old names builds: a `<Matched>` or `<NotMatched>` tag left inside a `BitMediaQuery` only
+draws the warning RZ10012 ("Found markup element with unexpected name") and renders as an unknown HTML element, so
+the content of both states shows at once. Search for the warning after upgrading. What the media query renders with
+the new names is unchanged, and so are `ChildContent`, `Template`, `DefaultMatched` and `OnChange`.
+
 ### `BitAccordion`'s `IsExpanded` is `Expanded` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own state is spelled without an `Is` (`Disabled`, `Checked`, `Shown`), and the accordion's expanded
