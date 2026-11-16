@@ -63,6 +63,10 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     private readonly int[] _pieces = new int[ThoroughAngles];
     private readonly List<(int Index, int Pieces, bool Peak)> _candidates = [];
     private int _liveFrame;
+
+    // How many times the last image was scanned in full, in both polarities: what the sweep of a still image costs, and
+    // what bounds it on any machine, however busy, where a time would not.
+    private int _fullScans;
     private readonly List<Segment> _forward = [];
     private readonly List<Segment> _backward = [];
     private List<Segment> _segments = [];
@@ -83,6 +87,7 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     {
         ArgumentNullException.ThrowIfNull(image);
 
+        _fullScans = 0;
         var result = DecodeAtAnyAngle(image, options.TryHarder);
         if (result is not null || !options.AllowInverted)
         {
@@ -238,6 +243,7 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     /// <summary>Scans lines <paramref name="spacing"/> apart at <paramref name="degrees"/> and reads the symbol they cross.</summary>
     private BbSymbolDecodeResult? ScanAlong(BbBitMatrix image, float degrees, float spacing)
     {
+        _fullScans++;
         var (centre, direction, normal, reach) = Lines(image, degrees);
         Scan(image, centre, direction, normal, reach, spacing);
         return (_forward.Count > 0 ? Assemble(_forward, direction) : null)

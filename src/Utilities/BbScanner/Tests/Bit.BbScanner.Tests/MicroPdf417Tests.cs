@@ -1,4 +1,6 @@
-﻿namespace Bit.BbScanner.Tests;
+﻿using System.Runtime.CompilerServices;
+
+namespace Bit.BbScanner.Tests;
 
 /// <summary>
 /// MicroPDF417 beyond the reference round trips: no misreads from other symbols, damage repaired or refused, the
@@ -346,24 +348,35 @@ public class MicroPdf417Tests
     public void AStillImageOfNoiseIsGivenUpOnQuickly()
     {
         // Noise makes a piece of a row at angle after angle, and every one of them was scanned in full, then again
-        // inverted: an 800 by 600 photograph of noise took twenty-three seconds in a debug build. The full scans now share a
-        // budget, and it takes four - eleven on a shared build machine running both target frameworks at once, so the
-        // bound leaves room for that and still fails the unbudgeted sweep.
-        using var noise = BbLuminanceBuffer.Rent(800, 600);
+        // inverted: an 800 by 600 photograph of noise took twenty-three seconds in a debug build. The full scans now share
+        // a budget of twelve in each polarity. What is counted is the scans, not the time they take: a shared build
+        // machine running both target frameworks at once took six times as long as a desk one, and no bound on the time
+        // both passes there and fails the unbudgeted sweep everywhere.
+        using var noise = new BbBitMatrix(800, 600);
         var random = new Random(3);
-        var pixels = noise.Pixels;
-        for (var i = 0; i < pixels.Length; i++)
+        for (var y = 0; y < noise.Height; y++)
         {
-            pixels[i] = random.Next(2) == 0 ? (byte)20 : (byte)235;
+            for (var x = 0; x < noise.Width; x++)
+            {
+                noise[x, y] = random.Next(2) == 0;
+            }
         }
 
-        var watch = System.Diagnostics.Stopwatch.StartNew();
-        var result = Decode(noise, still: true);
-        watch.Stop();
+        var reader = new BbMicroPdf417Reader();
+        var result = reader.Decode(noise, new BbMatrixDecodeOptions(TryHarder: true, AllowInverted: true));
 
         Assert.IsNull(result);
-        Assert.IsLessThan(TimeSpan.FromSeconds(20), watch.Elapsed, $"Took {watch.Elapsed}.");
+
+        // The budget is what stopped the sweep: far more angles than it allows read a piece of a row.
+        Assert.IsGreaterThan(2 * 12, Pieces(reader).Count(pieces => pieces > 0));
+        Assert.IsLessThanOrEqualTo(2 * 12, FullScans(reader));
     }
+
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_fullScans")]
+    private static extern ref int FullScans(BbMicroPdf417Reader reader);
+
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_pieces")]
+    private static extern ref int[] Pieces(BbMicroPdf417Reader reader);
 
     private static BbLuminanceBuffer Blank(int width, int height)
     {
