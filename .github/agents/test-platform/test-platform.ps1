@@ -613,7 +613,10 @@ function Get-CdpOwner([int] $port) {
 
     if ($listener) {
         $webView = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
-        (Get-Process -Id $webView.ParentProcessId -ErrorAction SilentlyContinue).ProcessName
+
+        if ($webView) {
+            (Get-Process -Id $webView.ParentProcessId -ErrorAction SilentlyContinue).ProcessName
+        }
     }
 }
 
