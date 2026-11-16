@@ -16,7 +16,7 @@ public partial class HealthCheckTests
     private static readonly string[] publicStatuses = ["Healthy", "Degraded"];
 
     /// <summary>What AdminPanelApi registers: the shared disk check, then Server.Api's own (See AddServerApiHealthChecks).</summary>
-    private static readonly string[] requiredChecks = ["binStorage", "AppDbContext", "hangfire", "userProfileImages", "sms"];
+    private static readonly string[] requiredChecks = ["binStorage", "AppDbContext", "hangfire", "fileStorage", "sms"];
 
     /// <summary>The checks that fail /health rather than degrade it - an instance without them should leave rotation.</summary>
     private static readonly string[] criticalChecks = ["binStorage", "AppDbContext", "hangfire"];

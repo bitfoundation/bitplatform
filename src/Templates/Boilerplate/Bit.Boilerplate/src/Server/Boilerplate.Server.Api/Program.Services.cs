@@ -1019,7 +1019,7 @@ public static partial class Program
             .AddCheck<AppCertificateHealthCheck>("appCertificate", tags: [HealthCheckCategories.Platform])
             // Remote dependencies from here on are bounded and report Degraded, which keeps `/health` at 200 (See
             // MapAppHealthChecks): a provider outage must not drain an otherwise healthy instance.
-            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", failureStatus: HealthStatus.Degraded, tags: [HealthCheckCategories.Platform], timeout: TimeSpan.FromSeconds(5))
+            .AddCheck<FileStorageHealthCheck>("fileStorage", failureStatus: HealthStatus.Degraded, tags: [HealthCheckCategories.Platform], timeout: TimeSpan.FromSeconds(5))
             // Cached, as signing in on every probe can trip the mail provider's brute force protection.
             .AddCachedCheck("smtp", HealthCheckCategories.Messaging, _ => new SmtpHealthCheck(GetSmtpSettings(configuration)), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
