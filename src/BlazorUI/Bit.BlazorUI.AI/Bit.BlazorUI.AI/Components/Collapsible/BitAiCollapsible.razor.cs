@@ -89,7 +89,7 @@ public partial class BitAiCollapsible : BitAiComponentBase
 
     // The panel moves itself whether or not the page binds Open, as a disclosure panel the user toggles always does;
     // a page that binds it hears about the move and keeps it.
-    private async Task HandleOnIsExpandedChanged(bool isExpanded)
+    private async Task HandleOnExpandedChanged(bool isExpanded)
     {
         Open = isExpanded;
 

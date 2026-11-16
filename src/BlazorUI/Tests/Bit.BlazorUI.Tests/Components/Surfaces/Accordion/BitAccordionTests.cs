@@ -181,27 +181,27 @@ public class BitAccordionTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitAccordionShouldBeSetDefaultIsExpanded(bool defaultIsExpanded)
+    public void BitAccordionShouldBeSetDefaultExpanded(bool defaultExpanded)
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, defaultIsExpanded);
+            parameters.Add(p => p.DefaultExpanded, defaultExpanded);
         });
 
         var expanderIconWrapper = com.Find(".bit-acd-eiw");
         var content = com.Find(".bit-acd-con");
 
-        Assert.AreEqual(defaultIsExpanded, expanderIconWrapper?.ClassName?.Contains("bit-ico--r180"));
-        Assert.AreEqual(defaultIsExpanded, content?.ClassName?.Contains("bit-acd-cex"));
+        Assert.AreEqual(defaultExpanded, expanderIconWrapper?.ClassName?.Contains("bit-ico--r180"));
+        Assert.AreEqual(defaultExpanded, content?.ClassName?.Contains("bit-acd-cex"));
     }
 
     [TestMethod]
-    public void BitAccordionIsExpandedShouldWinOverDefaultIsExpanded()
+    public void BitAccordionExpandedShouldWinOverDefaultExpanded()
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
-            parameters.Add(p => p.IsExpanded, false);
+            parameters.Add(p => p.DefaultExpanded, true);
+            parameters.Add(p => p.Expanded, false);
         });
 
         Assert.IsFalse(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
@@ -274,21 +274,21 @@ public class BitAccordionTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitAccordionShouldBeSetHeaderTemplate(bool defaultIsExpanded)
+    public void BitAccordionShouldBeSetHeaderTemplate(bool defaultExpanded)
     {
         var expandedHeaderHtml = "<h1>Expanded</h1>";
         var collapsedHeaderHtml = "<h1>Collapsed</h1>";
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, defaultIsExpanded);
+            parameters.Add(p => p.DefaultExpanded, defaultExpanded);
             parameters.Add(p => p.HeaderTemplate, (isExpanded) => isExpanded ? expandedHeaderHtml : collapsedHeaderHtml);
         });
 
         var header = com.Find(".bit-acd-hdr");
 
-        Assert.AreEqual(defaultIsExpanded, header.InnerHtml.Equals(expandedHeaderHtml));
-        Assert.AreEqual(!defaultIsExpanded, header.InnerHtml.Equals(collapsedHeaderHtml));
+        Assert.AreEqual(defaultExpanded, header.InnerHtml.Equals(expandedHeaderHtml));
+        Assert.AreEqual(!defaultExpanded, header.InnerHtml.Equals(collapsedHeaderHtml));
     }
 
     [TestMethod]
@@ -347,7 +347,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, isExpanded);
+            parameters.Add(p => p.DefaultExpanded, isExpanded);
         });
 
         Assert.AreEqual(isExpanded ? "true" : "false", com.Find(".bit-acd-hdr").GetAttribute("aria-expanded"));
@@ -622,7 +622,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.NoExpanderRotation, noExpanderRotation);
         });
 
@@ -651,7 +651,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.ExpandedExpanderIconName, "Remove");
             parameters.Add(p => p.ExpandedExpanderIcon, BitIconInfo.Css("fa-solid fa-minus"));
         });
@@ -756,7 +756,7 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.LazyContent, true);
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.ChildContent, "content");
         });
 
@@ -858,7 +858,7 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Bind(p => p.IsExpanded, isExpanded, v => isExpanded = v);
+            parameters.Bind(p => p.Expanded, isExpanded, v => isExpanded = v);
         });
 
         com.Find(".bit-acd-hdr").Click();
@@ -872,7 +872,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsExpanded, false);
+            parameters.Add(p => p.Expanded, false);
         });
 
         com.Find(".bit-acd-hdr").Click();
@@ -885,10 +885,10 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsExpanded, false);
+            parameters.Add(p => p.Expanded, false);
         });
 
-        com.Render(parameters => parameters.Add(p => p.IsExpanded, true));
+        com.Render(parameters => parameters.Add(p => p.Expanded, true));
 
         Assert.IsTrue(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
         Assert.AreEqual("true", com.Find(".bit-acd-hdr").GetAttribute("aria-expanded"));
@@ -928,7 +928,7 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.OnCollapse, () => collapsed++);
         });
 
@@ -974,7 +974,7 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Bind(p => p.IsExpanded, isExpanded, v => isExpanded = v);
+            parameters.Bind(p => p.Expanded, isExpanded, v => isExpanded = v);
         });
 
         await com.InvokeAsync(() => com.Instance.Toggle());
@@ -1079,7 +1079,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.Classes, new BitAccordionClassStyles
             {
                 Expanded = "custom-expanded",
@@ -1156,7 +1156,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.Styles, new BitAccordionClassStyles
             {
                 ExpanderIcon = "color: teal",
@@ -1265,17 +1265,17 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.LazyContent, true);
-            parameters.Add(p => p.IsExpanded, false);
+            parameters.Add(p => p.Expanded, false);
             parameters.Add(p => p.ChildContent, "content");
         });
 
         Assert.AreEqual(string.Empty, com.Find(".bit-acd-con").TextContent);
 
-        com.Render(parameters => parameters.Add(p => p.IsExpanded, true));
+        com.Render(parameters => parameters.Add(p => p.Expanded, true));
 
         Assert.AreEqual("content", com.Find(".bit-acd-con").TextContent);
 
-        com.Render(parameters => parameters.Add(p => p.IsExpanded, false));
+        com.Render(parameters => parameters.Add(p => p.Expanded, false));
 
         Assert.AreEqual("content", com.Find(".bit-acd-con").TextContent);
     }
@@ -1287,7 +1287,7 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsExpanded, false);
+            parameters.Add(p => p.Expanded, false);
             parameters.Add(p => p.OnExpand, () => expanded++);
         });
 
@@ -1549,7 +1549,7 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Bind(p => p.IsExpanded, isExpanded, v => isExpanded = v);
+            parameters.Bind(p => p.Expanded, isExpanded, v => isExpanded = v);
             parameters.Add(p => p.OnToggling, (BitAccordionToggleArgs a) => a.Cancel = true);
         });
 
@@ -1579,7 +1579,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.OnToggling, (BitAccordionToggleArgs a) => a.Cancel = true);
         });
 
@@ -1595,7 +1595,7 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.OnToggling, (BitAccordionToggleArgs _) => calls++);
         });
 
@@ -1657,7 +1657,7 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsExpanded, false);
+            parameters.Add(p => p.Expanded, false);
             parameters.Add(p => p.OnToggling, (BitAccordionToggleArgs _) => calls++);
         });
 
@@ -1675,7 +1675,7 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Bind(p => p.IsExpanded, isExpanded, v => isExpanded = v);
+            parameters.Bind(p => p.Expanded, isExpanded, v => isExpanded = v);
             parameters.Add(p => p.OnToggling, (BitAccordionToggleArgs _) => calls++);
         });
 
@@ -1692,7 +1692,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
         });
 
@@ -1708,7 +1708,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
         });
 
@@ -1740,13 +1740,13 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsExpanded, true);
+            parameters.Add(p => p.Expanded, true);
             parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
         });
 
         com.Find(".bit-acd-con").TriggerEvent("onfocusin", new FocusEventArgs());
 
-        com.Render(parameters => parameters.Add(p => p.IsExpanded, false));
+        com.Render(parameters => parameters.Add(p => p.Expanded, false));
 
         Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus");
     }
@@ -1758,13 +1758,13 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Bind(p => p.IsExpanded, isExpanded, v => isExpanded = v);
+            parameters.Bind(p => p.Expanded, isExpanded, v => isExpanded = v);
             parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
         });
 
         com.Find(".bit-acd-con").TriggerEvent("onfocusin", new FocusEventArgs());
 
-        com.Render(parameters => parameters.Bind(p => p.IsExpanded, false, v => isExpanded = v));
+        com.Render(parameters => parameters.Bind(p => p.Expanded, false, v => isExpanded = v));
 
         Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus");
     }
@@ -1774,13 +1774,13 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsExpanded, false);
+            parameters.Add(p => p.Expanded, false);
             parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
         });
 
         com.Find(".bit-acd-con").TriggerEvent("onfocusin", new FocusEventArgs());
 
-        com.Render(parameters => parameters.Add(p => p.IsExpanded, true));
+        com.Render(parameters => parameters.Add(p => p.Expanded, true));
 
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus")));
     }
@@ -1811,18 +1811,18 @@ public class BitAccordionTests : BunitTestContext
         DataRow(true),
         DataRow(false),
     ]
-    public void BitAccordionShouldRenderTheExpanderTemplateInPlaceOfTheIcon(bool defaultIsExpanded)
+    public void BitAccordionShouldRenderTheExpanderTemplateInPlaceOfTheIcon(bool defaultExpanded)
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.Title, "title-value");
-            parameters.Add(p => p.DefaultIsExpanded, defaultIsExpanded);
+            parameters.Add(p => p.DefaultExpanded, defaultExpanded);
             parameters.Add(p => p.ExpanderTemplate, (isExpanded) => isExpanded ? "expanded-expander" : "collapsed-expander");
         });
 
         var wrapper = com.Find(".bit-acd-eiw");
 
-        Assert.AreEqual(defaultIsExpanded ? "expanded-expander" : "collapsed-expander", wrapper.TextContent);
+        Assert.AreEqual(defaultExpanded ? "expanded-expander" : "collapsed-expander", wrapper.TextContent);
         Assert.AreEqual(0, com.FindAll(".bit-acd-eic").Count);
 
         // The rest of the header is exactly where it was.
@@ -1834,7 +1834,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.ExpanderTemplate, _ => "expander-template");
         });
 
@@ -1846,7 +1846,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.NoExpanderRotation, true);
             parameters.Add(p => p.ExpanderTemplate, _ => "expander-template");
         });
@@ -1896,7 +1896,7 @@ public class BitAccordionTests : BunitTestContext
 
         // The page drives the bound state itself while the callback is still open, so by the time it comes
         // back the accordion is already where it was being asked to go.
-        com.Render(parameters => parameters.Add(p => p.IsExpanded, true));
+        com.Render(parameters => parameters.Add(p => p.Expanded, true));
 
         gate.SetResult();
 
@@ -1928,7 +1928,7 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.ReadOnly, true);
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
         });
 
         com.Find(".bit-acd-hdr").Click();
@@ -2165,7 +2165,7 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.Busy, true);
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.OnChange, (bool _) => changes++);
         });
 
@@ -2218,7 +2218,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
         });
 
@@ -2236,7 +2236,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
             parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
         });
 
@@ -2496,7 +2496,7 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
         });
 
         Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
@@ -2531,7 +2531,7 @@ public class BitAccordionTests : BunitTestContext
 
         com.Find(".bit-acd-con").TriggerEvent("onbeforematch", System.EventArgs.Empty);
 
-        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsTrue(com.Instance.Expanded);
         Assert.IsTrue(changed);
         Assert.IsNotNull(toggling);
         Assert.IsTrue(toggling.IsExpanding);
@@ -2552,18 +2552,18 @@ public class BitAccordionTests : BunitTestContext
         // renders inside the beforematch event), so it opens the panel at once by itself.
         com.Find(".bit-acd-con").TriggerEvent("onbeforematch", System.EventArgs.Empty);
 
-        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsTrue(com.Instance.Expanded);
         Assert.IsTrue(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
 
         // The close plays as usual, and a click that opens it again is the ordinary open.
         com.Find(".bit-acd-hdr").Click();
 
-        Assert.IsFalse(com.Instance.IsExpanded);
+        Assert.IsFalse(com.Instance.Expanded);
         Assert.IsFalse(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
 
         com.Find(".bit-acd-hdr").Click();
 
-        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsTrue(com.Instance.Expanded);
         Assert.IsFalse(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
     }
 
@@ -2578,7 +2578,7 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
-            parameters.Bind(p => p.IsExpanded, isExpanded, v => isExpanded = v);
+            parameters.Bind(p => p.Expanded, isExpanded, v => isExpanded = v);
             parameters.Add(p => p.OnToggling, async (BitAccordionToggleArgs args) =>
             {
                 await gate.Task;
@@ -2589,20 +2589,20 @@ public class BitAccordionTests : BunitTestContext
         var revealing = com.InvokeAsync(() => com.Find(".bit-acd-con").TriggerEventAsync("onbeforematch", System.EventArgs.Empty));
 
         // The page opens the panel itself while the reveal waits on OnToggling: that open is its own, not the reveal's.
-        com.Render(parameters => parameters.Add(p => p.IsExpanded, true));
+        com.Render(parameters => parameters.Add(p => p.Expanded, true));
 
-        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsTrue(com.Instance.Expanded);
         Assert.IsFalse(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
 
         // Whatever then becomes of the reveal, the open stays the ordinary one, and so does the next open after a close.
         gate.SetResult();
         await revealing;
 
-        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsTrue(com.Instance.Expanded);
         Assert.IsFalse(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
 
-        com.Render(parameters => parameters.Add(p => p.IsExpanded, false));
-        com.Render(parameters => parameters.Add(p => p.IsExpanded, true));
+        com.Render(parameters => parameters.Add(p => p.Expanded, false));
+        com.Render(parameters => parameters.Add(p => p.Expanded, true));
 
         Assert.IsFalse(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
     }
@@ -2625,7 +2625,7 @@ public class BitAccordionTests : BunitTestContext
         gate.SetResult();
         await revealing;
 
-        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsTrue(com.Instance.Expanded);
         Assert.IsTrue(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
     }
 
@@ -2637,7 +2637,7 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
-            parameters.Bind(p => p.IsExpanded, isExpanded, v => isExpanded = v);
+            parameters.Bind(p => p.Expanded, isExpanded, v => isExpanded = v);
         });
 
         com.Find(".bit-acd-con").TriggerEvent("onbeforematch", System.EventArgs.Empty);
@@ -2645,8 +2645,8 @@ public class BitAccordionTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
 
         // A collapse the page hands in lets go of the reveal as it arrives, so an open after it is the ordinary one.
-        com.Render(parameters => parameters.Add(p => p.IsExpanded, false));
-        com.Render(parameters => parameters.Add(p => p.IsExpanded, true));
+        com.Render(parameters => parameters.Add(p => p.Expanded, false));
+        com.Render(parameters => parameters.Add(p => p.Expanded, true));
 
         Assert.IsFalse(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
     }
@@ -2659,7 +2659,7 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
-            parameters.Bind(p => p.IsExpanded, isExpanded, v => isExpanded = v);
+            parameters.Bind(p => p.Expanded, isExpanded, v => isExpanded = v);
         });
 
         com.Find(".bit-acd-con").TriggerEvent("onbeforematch", System.EventArgs.Empty);
@@ -2680,7 +2680,7 @@ public class BitAccordionTests : BunitTestContext
 
         var content = com.Find(".bit-acd-con");
 
-        Assert.IsFalse(com.Instance.IsExpanded);
+        Assert.IsFalse(com.Instance.Expanded);
         Assert.IsFalse(content.HasAttribute("hidden"));
         Assert.IsFalse(content.ClassList.Contains("bit-acd-huf"));
         Assert.IsTrue(content.ClassList.Contains("bit-acd-cco"));
@@ -2719,7 +2719,7 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
         });
 
         com.Find(".bit-acd-hdr").Click();
@@ -2748,7 +2748,7 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
         });
 
         com.Find(".bit-acd-hdr").Click();
@@ -2777,13 +2777,13 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
         });
 
         com.Find(".bit-acd-hdr").Click();
         com.Find(".bit-acd-hdr").Click();
 
-        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsTrue(com.Instance.Expanded);
         Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
         Assert.IsFalse(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-huf"));
     }
@@ -2823,7 +2823,7 @@ public class BitAccordionTests : BunitTestContext
         await toggling;
         await revealing;
 
-        com.WaitForAssertion(() => Assert.IsTrue(com.Instance.IsExpanded));
+        com.WaitForAssertion(() => Assert.IsTrue(com.Instance.Expanded));
         CollectionAssert.AreEqual(new[] { BitAccordionToggleReason.Method, BitAccordionToggleReason.Reveal }, reasons);
     }
 
@@ -2853,7 +2853,7 @@ public class BitAccordionTests : BunitTestContext
         await first;
         await second;
 
-        com.WaitForAssertion(() => Assert.IsTrue(com.Instance.IsExpanded));
+        com.WaitForAssertion(() => Assert.IsTrue(com.Instance.Expanded));
         Assert.AreEqual(1, calls);
         Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
     }
@@ -2870,7 +2870,7 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.HiddenUntilFound, true);
             if (kind == "disabled") parameters.Add(p => p.Disabled, true);
             if (kind == "readonly") parameters.Add(p => p.ReadOnly, true);
-            if (kind == "controlled") parameters.Add(p => p.IsExpanded, false);
+            if (kind == "controlled") parameters.Add(p => p.Expanded, false);
         });
 
         var content = com.Find(".bit-acd-con");
@@ -2956,7 +2956,7 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
-            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.DefaultExpanded, true);
         });
 
         com.Find(".bit-acd-hdr").Click();

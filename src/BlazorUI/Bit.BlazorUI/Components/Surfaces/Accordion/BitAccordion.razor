@@ -34,25 +34,25 @@
                     class="bit-acd-hdr @(_IsBusy ? "bit-acd-bsy" : "") @Classes?.Header"
                     aria-label="@HeaderAriaLabel"
                     aria-labelledby="@_HeaderLabelledBy"
-                    aria-expanded="@(IsExpanded ? "true" : "false")"
+                    aria-expanded="@(Expanded ? "true" : "false")"
                     aria-controls="@_ContentId"
                     aria-disabled="@((Disabled || ReadOnly) ? "true" : null)"
                     aria-busy="@(_IsBusy ? "true" : null)"
                     tabindex="@(Disabled ? "-1" : (TabIndex ?? "0"))">
                 @if (HeaderTemplate is not null)
                 {
-                    @HeaderTemplate(IsExpanded)
+                    @HeaderTemplate(Expanded)
                 }
                 else
                 {
                     var icon = BitIconInfo.From(Icon, IconName);
                     var expandedIcon = BitIconInfo.From(ExpandedExpanderIcon, ExpandedExpanderIconName);
-                    var expanderIcon = (IsExpanded && expandedIcon is not null)
+                    var expanderIcon = (Expanded && expandedIcon is not null)
                                      ? expandedIcon
                                      : BitIconInfo.From(ExpanderIcon, ExpanderIconName ?? "ChevronRight bit-ico-r90");
                     // A chevron that turns is the whole story of the state, but an icon that is swapped for
                     // another one when expanded already tells it, and turning that one as well only garbles it.
-                    var rotated = IsExpanded && expandedIcon is null && NoExpanderRotation is false;
+                    var rotated = Expanded && expandedIcon is null && NoExpanderRotation is false;
 
                     @if (icon is not null)
                     {
@@ -108,13 +108,13 @@
                               class="bit-acd-eiw @Classes?.ExpanderIconWrapper @(rotated ? "bit-ico--r180" : "")">
                             @if (ExpanderTemplate is not null)
                             {
-                                @ExpanderTemplate(IsExpanded)
+                                @ExpanderTemplate(Expanded)
                             }
                             else
                             {
                                 <i aria-hidden="true"
-                                   style="@JoinStyles(Styles?.ExpanderIcon, IsExpanded ? Styles?.ExpandedIcon : null)"
-                                   class="bit-acd-eic @expanderIcon?.GetCssClasses() @Classes?.ExpanderIcon @(IsExpanded ? Classes?.ExpandedIcon : "")" />
+                                   style="@JoinStyles(Styles?.ExpanderIcon, Expanded ? Styles?.ExpandedIcon : null)"
+                                   class="bit-acd-eic @expanderIcon?.GetCssClasses() @Classes?.ExpanderIcon @(Expanded ? Classes?.ExpandedIcon : "")" />
                             }
                         </span>
                     }
@@ -132,7 +132,7 @@
     @* The collapse is a grid track animating between 0fr and 1fr, which is the only cross-browser way to
        transition to the intrinsic height of the content: the padding therefore has to sit on the innermost
        element, since a border box can never be shorter than its own padding. *@
-    <div style="@Styles?.ContentContainer" class="bit-acd-cnt @(IsExpanded && _revealing ? "bit-acd-rvl" : null) @Classes?.ContentContainer">
+    <div style="@Styles?.ContentContainer" class="bit-acd-cnt @(Expanded && _revealing ? "bit-acd-rvl" : null) @Classes?.ContentContainer">
         <div style="@Styles?.ContentWrapper" class="bit-acd-cwr @Classes?.ContentWrapper">
             @* aria-labelledby names a landmark, and on an element without the role it names nothing at all,
                so the two are dropped together rather than leaving one behind.
@@ -145,7 +145,7 @@
                  aria-labelledby="@(NoContentRegion ? null : _PanelLabelledBy)"
                  hidden="@(_IsHiddenUntilFound ? "until-found" : null)"
                  style="@Styles?.Content"
-                 class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco") @(_IsHiddenUntilFound ? "bit-acd-huf" : null) @Classes?.Content"
+                 class="bit-acd-con @(Expanded ? "bit-acd-cex" : "bit-acd-cco") @(_IsHiddenUntilFound ? "bit-acd-huf" : null) @Classes?.Content"
                  tabindex="@(_IsContentFocusable ? "0" : null)"
                  @onfocusin="HandleOnContentFocusIn"
                  @onfocusout="HandleOnContentFocusOut"

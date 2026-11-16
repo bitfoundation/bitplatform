@@ -5,6 +5,23 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitAccordion`'s `IsExpanded` is `Expanded` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Checked`, `Shown`), and the accordion's expanded
+state was still spelled with one. The `[Parameter]` is renamed with its two-way binding and its uncontrolled default:
+
+| Before | After |
+|---|---|
+| `<BitAccordion IsExpanded="open" />` | `<BitAccordion Expanded="open" />` |
+| `<BitAccordion @bind-IsExpanded="open" />` | `<BitAccordion @bind-Expanded="open" />` |
+| `<BitAccordion IsExpandedChanged="OnExpandedChanged" />` | `<BitAccordion ExpandedChanged="OnExpandedChanged" />` |
+| `<BitAccordion DefaultIsExpanded />` | `<BitAccordion DefaultExpanded />` |
+
+What the accordion renders is unchanged (`bit-acd-exp`, `aria-expanded`), and so are its `Expand`, `Collapse` and
+`Toggle` methods and its `OnChange`, `OnExpand`, `OnCollapse` and `OnToggling` callbacks. The models of one item keep
+their `Is` (`BitAccordionListItem.IsExpanded`, `BitNavItem.IsExpanded` and the like): the flag of one item of a parent
+is spelled with one.
+
 ### `BitTooltip`'s `IsShown` is `Shown` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own state is spelled without an `Is` (`Disabled`, `Checked`, `Toggled`), and the tooltip's shown state
