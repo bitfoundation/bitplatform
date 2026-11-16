@@ -91,7 +91,10 @@ public class ReviewRegressionTests : BortableTestContext
             p.Add(c => c.OnEnd, e => log.Add(new("L1", "End", e)));
         });
 
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => DragStartAsync(list, "A"));
+        // The browser layer is told no drag started, and the exception is passed on as the list's own, not thrown back
+        // to the browser, where nothing would report it.
+        Assert.IsNull(await DragStartAsync(list, "A"));
+        Assert.AreEqual("boom", (await PassedOnAsync()).Message);
 
         Assert.IsNull(Coordinator.Context);
         Assert.IsTrue(Single(log, "End", "L1").Canceled);

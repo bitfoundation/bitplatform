@@ -1,7 +1,8 @@
 name: CI Bortable E2E
 
-# The browser suite: the demo (prerendered, then running on WebAssembly) and the published lazy loading sample -
-# trimmed, and AOT-compiled in a job of its own - driven in Chromium with Playwright. It takes far longer than the
+# The browser suite: the demo (prerendered, then running on WebAssembly), published the way cd.bortable.demo.yml
+# publishes it, and the published lazy loading sample - trimmed, and AOT-compiled in a job of its own - driven in
+# Chromium with Playwright. It takes far longer than the
 # build-and-unit pipeline (ci.bortable.yml), so it runs only when started by hand. See
 # src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/README.md for what it proves and how to run it locally.
 
@@ -42,20 +43,30 @@ jobs:
       with:
         node-version: 24
 
-    - name: dotnet workload restore
-      run: cd src/Utilities/Bortable && dotnet workload restore
+    # From inside src, so src/global.json picks the SDK: the workload has to be installed for the SDK that publishes.
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
 
-    - name: Build the demo, publish the lazy loading sample and build the E2E suite
-      # The sample is published rather than built: LazyLoadingTests drives what an app that lazy loads ships, trimmed.
+    # The tests drive the demo published the way cd.bortable.demo.yml publishes it, not a build output: only a publish
+    # trims the WebAssembly client, and an interop payload the trimmer breaks - an anonymous type whose constructor
+    # lost its parameter names, a getter nothing but System.Text.Json reads - works in every build and fails only there.
+    - name: Publish the demo
+      run: dotnet publish src/Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+
+    # Published rather than built for the same reason: LazyLoadingTests drives what an app that lazy loads Bit.Bortable
+    # ships, trimmed, and only a publish trims it and writes the lazy mark into its boot configuration.
+    - name: Publish the lazy loading sample and build the E2E suite
       run: |
-        dotnet build src/Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj -c Release
         dotnet publish src/Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj -c Release
         dotnet build src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
       run: pwsh src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
+    # The suite boots the published demo itself, on a free port, and stops it once the run ends.
     - name: Run E2E tests
+      env:
+        BORTABLE_E2E_PUBLISHED_HOST: ${{ github.workspace }}/demo
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
         cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E &&
