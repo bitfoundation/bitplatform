@@ -184,6 +184,29 @@ public sealed class StoreLifetimeTests
     }
 
     [TestMethod]
+    public async Task A_Close_That_Leaves_The_Store_Open_Keeps_The_Contexts_Unsaved_Changes_Visible_To_Indexed_Queries()
+    {
+        var options = new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb("close-" + Guid.NewGuid().ToString("N")).Options;
+        using (var seed = new PeopleContext(options))
+        {
+            seed.People.Add(new Person { Id = 1, Name = "Ada", City = "London" });
+            seed.SaveChanges();
+        }
+
+        using var changing = new PeopleContext(options);
+        var ada = changing.People.Single();
+        ada.City = "Paris"; // Not saved: the City index still says London.
+        Assert.IsFalse(await changing.Database.CloseBlazeDbAsync(), "An in-memory store is left open.");
+
+        // The close used to take the context out of the engine's registry although the engine stayed open, so
+        // another context trusted the City index and answered from London.
+        using var reading = new PeopleContext(options);
+        Assert.AreSame(ada, reading.People.Single(p => p.City == "Paris"));
+        Assert.IsEmpty(reading.People.Where(p => p.City == "London").ToList());
+        await reading.Database.EnsureDeletedAsync();
+    }
+
+    [TestMethod]
     public async Task A_Synchronous_Query_That_Cannot_Wait_For_A_Close_Says_The_Store_Is_Being_Closed()
     {
         var storage = new GatedStorage();
@@ -366,6 +389,91 @@ public sealed class StoreLifetimeTests
         Assert.AreEqual("Current", check.Tickets.Single().Notes);
     }
 
+    [TestMethod]
+    public void A_Token_The_Engine_Wrote_On_The_Tracked_Instance_Fails_That_Contexts_Save()
+    {
+        var options = TokenStore();
+        using var context = new TicketContext(options);
+        var ticket = context.Tickets.Single();
+
+        // The engine's own API moves the token on, on the very instance the context tracks with version 1.
+        var table = context.Database.GetBlazeDb().GetTable(Ticket.Table);
+        var previous = new Ticket { Id = ticket.Id, Title = ticket.Title, Notes = ticket.Notes, Version = ticket.Version };
+        ticket.Version = 3;
+        table.UpdateInPlace(ticket, previous);
+
+        // The row being the entity itself used to skip the check, so the save went through over version 3.
+        ticket.Notes = "Over the engine's write";
+        Assert.ThrowsExactly<DbUpdateConcurrencyException>(() => context.SaveChanges());
+    }
+
+    [TestMethod]
+    public async Task A_Row_Read_From_Storage_Is_Checked_Against_What_Was_Stored_Not_What_A_Context_Changed_In_Memory()
+    {
+        var storage = new BlazeDbInMemoryStorage();
+        var options = new DbContextOptionsBuilder<TicketContext>().UseBlazeDb(storage).Options;
+        using (var seed = new TicketContext(options))
+        {
+            seed.Tickets.Add(new Ticket { Id = 1, Title = "Ticket", Version = 1 });
+            seed.SaveChanges();
+            Assert.IsTrue(await seed.Database.CloseBlazeDbAsync());
+        }
+
+        // Read back from storage, so no save of this engine has written the row.
+        using var changing = new TicketContext(options);
+        changing.Tickets.Single().Version = 5; // Not saved.
+
+        // The live row's version 5 used to be taken for the committed one, and this save went through.
+        using var stale = new TicketContext(options);
+        stale.Update(new Ticket { Id = 1, Title = "Ticket", Notes = "Stale", Version = 5 });
+        Assert.ThrowsExactly<DbUpdateConcurrencyException>(() => stale.SaveChanges());
+
+        await stale.Database.EnsureDeletedAsync();
+    }
+
+    [TestMethod]
+    public void A_Model_With_Other_Tokens_On_The_Same_Store_Reads_The_Record_By_Name()
+    {
+        var name = "tokens-" + Guid.NewGuid().ToString("N");
+        var titleOnly = new DbContextOptionsBuilder<TitleTokenContext>().UseBlazeDb(name).Options;
+        var both = new DbContextOptionsBuilder<TicketContext>().UseBlazeDb(name).Options;
+
+        // The title-only model binds the table first, so the records it keeps carry Title alone.
+        using (var seed = new TitleTokenContext(titleOnly))
+        {
+            seed.Tickets.Add(new Ticket { Id = 1, Title = "Ticket", Version = 1 });
+            seed.SaveChanges();
+        }
+
+        // A model checking Title and Version used to read the second value of a one-value record.
+        using (var context = new TicketContext(both))
+        {
+            context.Tickets.Single().Notes = "Saved";
+            Assert.AreEqual(1, context.SaveChanges());
+        }
+
+        // Title, which both models check, is still checked through the other model's record.
+        using var first = new TitleTokenContext(titleOnly);
+        using var second = new TicketContext(both);
+        var theirs = second.Tickets.Single();
+        first.Tickets.Single().Title = "First";
+        first.SaveChanges();
+        theirs.Notes = "Second";
+        var error = Assert.ThrowsExactly<DbUpdateConcurrencyException>(() => second.SaveChanges());
+        StringAssert.Contains(error.Message, "'Title'");
+    }
+
+    [TestMethod]
+    public void A_Shadow_Concurrency_Token_Is_Refused_With_The_Model()
+    {
+        var options = new DbContextOptionsBuilder<ShadowTokenContext>().UseBlazeDb("shadow-" + Guid.NewGuid().ToString("N")).Options;
+        using var context = new ShadowTokenContext(options);
+
+        var error = Assert.ThrowsExactly<NotSupportedException>(() => context.Model);
+
+        StringAssert.Contains(error.Message, "'Stamp'");
+    }
+
     private static DbContextOptions<TicketContext> TokenStore()
     {
         var options = new DbContextOptionsBuilder<TicketContext>().UseBlazeDb("tokens-" + Guid.NewGuid().ToString("N")).Options;
@@ -445,4 +553,18 @@ public sealed class TicketContext(DbContextOptions<TicketContext> options) : DbC
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.Entity<Ticket>().Property(t => t.Version).IsConcurrencyToken();
+}
+
+/// <summary>The same table with only the <c>[ConcurrencyCheck]</c> token, for a model sharing the store with <see cref="TicketContext"/>.</summary>
+public sealed class TitleTokenContext(DbContextOptions<TitleTokenContext> options) : DbContext(options)
+{
+    public DbSet<Ticket> Tickets => Set<Ticket>();
+}
+
+public sealed class ShadowTokenContext(DbContextOptions<ShadowTokenContext> options) : DbContext(options)
+{
+    public DbSet<Ticket> Tickets => Set<Ticket>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<Ticket>().Property<long>("Stamp").IsConcurrencyToken();
 }

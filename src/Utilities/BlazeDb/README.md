@@ -1078,7 +1078,8 @@ from anything EF does:
   `IsConcurrencyToken()` or `IsRowVersion()`: an update or delete whose original token values are
   not the ones the row was last saved with fails with `DbUpdateConcurrencyException`, detached
   entities included, as a relational provider's `WHERE Token = @original` would. BlazeDb generates
-  no row versions: change the token yourself in each save (`ticket.Version++`). Reload and retry,
+  no row versions: change the token yourself in each save (`ticket.Version++`). A token has to be a
+  property or field of the class; a shadow-property token is refused with the model. Reload and retry,
   as with any provider. A save cannot join a transaction another context has open. And after a
   rollback, the entities whose saves were undone are detached - the objects still hold the undone
   values, and the next query loads the rows as the database actually has them.

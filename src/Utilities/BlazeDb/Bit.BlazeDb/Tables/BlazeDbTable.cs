@@ -160,6 +160,34 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
 
     public bool Contains(TKey key) => _rows.ContainsKey(key);
 
+    private Action<TRow, long>? _rowSet;
+
+    /// <summary>
+    /// Has <paramref name="observer"/> told of every row the table holds now, and from then on of every row it
+    /// comes to hold - written through any API, put back by a rollback, replayed or reloaded from storage - with
+    /// the sequence number it is held under, at the moment it is set and so with exactly the values written.
+    /// The EF Core provider keeps the concurrency tokens a row was committed with this way, before any context
+    /// can change the live row in memory. One observer per table: false when another was installed first. It
+    /// runs under the write lock, in the middle of a write, and must not throw.
+    /// </summary>
+    internal bool ObserveRowsSet(Action<TRow, long> observer)
+    {
+        ArgumentNullException.ThrowIfNull(observer);
+        lock (_db.SyncRoot)
+        {
+            if (_rowSet is not null)
+            {
+                return false;
+            }
+            foreach (var entry in _rows.Values)
+            {
+                observer(entry.Row, entry.Seq);
+            }
+            _rowSet = observer;
+            return true;
+        }
+    }
+
     /// <summary>
     /// Lazily enumerates all rows. Like any dictionary enumeration, mutating the table while
     /// enumerating invalidates the enumerator; materialize with ToList() if needed.
@@ -792,6 +820,7 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
             throw;
         }
         Interlocked.Increment(ref _version);
+        _rowSet?.Invoke(row, seq);
     }
 
     private void RemoveEntry(TKey key)

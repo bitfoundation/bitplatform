@@ -48,7 +48,13 @@ public static class BlazeDbDatabaseFacadeExtensions
             return false;
         }
         var closed = await database.GetService<BlazeDbEngineCache>().ReleaseAsync(extension.StoreKey, keepInMemory: true).ConfigureAwait(false);
-        database.GetService<IBlazeDbTableCache>().Reset();
+        if (closed)
+        {
+            // Only once the engine is gone: an engine left open - an in-memory one - is still shared, and dropping
+            // this context from its registry would hide the context's unsaved changes from the indexed queries of
+            // every other context on it.
+            database.GetService<IBlazeDbTableCache>().Reset();
+        }
         return closed;
     }
 }

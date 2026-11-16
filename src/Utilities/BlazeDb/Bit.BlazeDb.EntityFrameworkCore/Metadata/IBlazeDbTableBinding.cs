@@ -44,6 +44,13 @@ internal interface IBlazeDbTableBinding
     object? HeldRow(object row, out long seq);
 
     /// <summary>
+    /// Has the table record <paramref name="tokens"/>' values for every row it holds and every row it is
+    /// given from now on, as written; see <see cref="Storage.BlazeDbConcurrencyTokens"/>. Does nothing
+    /// when there are no tokens.
+    /// </summary>
+    void ObserveConcurrencyTokens(Microsoft.EntityFrameworkCore.Metadata.IProperty[] tokens);
+
+    /// <summary>
     /// Applies an update where <paramref name="row"/> is normally the instance the table already
     /// holds, mutated in place. <paramref name="previousValues"/> carries the values the indexes
     /// were built from, without which stale index entries would be left behind. A detached

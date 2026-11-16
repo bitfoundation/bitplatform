@@ -109,8 +109,17 @@ export function releaseLock(lockName: string): void {
     if (entry) {
         heldLocks.delete(lockName);
         entry.release();
-        if (entry.settled) {
-            releasing.set(lockName, entry.settled);
+        const settled = entry.settled;
+        if (settled) {
+            releasing.set(lockName, settled);
+            // Dropped once the browser has let the lock go, however the request settled - unless a later release
+            // under the same name has replaced it by then.
+            const forget = () => {
+                if (releasing.get(lockName) === settled) {
+                    releasing.delete(lockName);
+                }
+            };
+            settled.then(forget, forget);
         }
     }
 }

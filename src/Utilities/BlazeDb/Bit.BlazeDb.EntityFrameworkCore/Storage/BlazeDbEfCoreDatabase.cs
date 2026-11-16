@@ -125,17 +125,17 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
             var binding = bindings[i];
             var entity = entry.ToEntityEntry().Entity;
             var tokens = BlazeDbConcurrencyTokens.Of(entry.EntityType);
-            long? heldSeq = null;
             try
             {
                 // Checked against what was last committed before anything is written, as a relational
-                // provider's WHERE clause would; a row that is gone is reported by the write itself.
+                // provider's WHERE clause would; a row that is gone is reported by the write itself. The
+                // values this write commits are recorded by the table as it sets the row, under the write lock
+                // this check runs under too, so no other save can check against the values from before it.
                 if (tokens.Length > 0
                     && entry.EntityState is EntityState.Modified or EntityState.Deleted
                     && binding.HeldRow(entity, out var seq) is { } held)
                 {
                     BlazeDbConcurrencyTokens.Check(entry, tokens, held, seq);
-                    heldSeq = seq;
                 }
 
                 switch (entry.EntityState)
@@ -151,19 +151,6 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
                         break;
                     default:
                         continue;
-                }
-
-                // The token values this write left are the ones a later save has to start from. Recorded
-                // here, under the write lock the check above runs under too, so that no other save can
-                // check against the values from before this write once it has landed; and against the
-                // write's sequence number, so that a rollback - of this save, or of a transaction it
-                // joined - or a later write through the engine's API leaves no stale record behind.
-                if (tokens.Length > 0
-                    && entry.EntityState is EntityState.Added or EntityState.Modified
-                    && binding.HeldRow(entity, out var writtenSeq) is { } written
-                    && ReferenceEquals(written, entity))
-                {
-                    BlazeDbConcurrencyTokens.Record(entity, tokens, writtenSeq, heldSeq);
                 }
             }
             catch (BlazeDbStaleRowException ex)
