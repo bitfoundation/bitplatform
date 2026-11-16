@@ -1175,6 +1175,13 @@
                     ]
                 },
                 {
+                    "condition": "(sentry != true)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/SentryHealthCheck.cs",
+                        "src/Tests/Features/Diagnostics/SentryHealthCheckTests.cs"
+                    ]
+                },
+                {
                     "condition": "(signalR != true)",
                     "exclude": [
                         "src/Shared/Features/Chatbot/**",

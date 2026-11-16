@@ -362,6 +362,9 @@ public partial class HealthCheckIntegrationTests
         ["appCertificate"] = HealthCheckCategories.Platform,
         ["fileStorage"] = HealthCheckCategories.Platform,
         ["bitFabric"] = HealthCheckCategories.Integrations,
+        //#if (sentry == true)
+        ["sentry"] = HealthCheckCategories.Integrations,
+        //#endif
         ["website:https://site.invalid/"] = HealthCheckCategories.Websites,
         //#if (redis == true)
         ["StackExchange.Redis_redis-persistent"] = HealthCheckCategories.Platform,
@@ -485,6 +488,9 @@ public partial class HealthCheckIntegrationTests
             configuration["Cloudflare:ApiToken"] = "not-a-real-token";
             configuration["Cloudflare:ZoneIds:0"] = "not-a-real-zone";
             //#endif
+            //#if (sentry == true)
+            configuration["Sentry:Dsn"] = "https://not-a-real-key@sentry.invalid/1";
+            //#endif
             //#if (notification == true)
             configuration["AdsPushFirebase:PrivateKey"] = "not-a-real-key";
             configuration["AdsPushAPNS:P8PrivateKey"] = "not-a-real-key";
@@ -512,6 +518,9 @@ public partial class HealthCheckIntegrationTests
             //#endif
             //#if (cloudflare == true)
             "cloudflare",
+            //#endif
+            //#if (sentry == true)
+            "sentry",
             //#endif
             //#if (redis == true)
             "StackExchange.Redis_redis-cache",
@@ -620,6 +629,9 @@ public partial class HealthCheckIntegrationTests
             //#if (cloudflare == true)
             "cloudflare",
             //#endif
+            //#if (sentry == true)
+            "sentry",
+            //#endif
             //#if (notification == true)
             "firebase", "apns",
             //#endif
@@ -638,7 +650,7 @@ public partial class HealthCheckIntegrationTests
             "Authentication:Google:ClientId", "Authentication:GitHub:ClientId", "Authentication:Twitter:ConsumerKey", "Authentication:Facebook:AppId",
             "Authentication:Apple:ClientId", "Cloudflare:ApiToken", "Azure:SignalR:ConnectionString", "AdsPushFirebase:PrivateKey",
             "AdsPushAPNS:P8PrivateKey", "AI:OpenAI:ChatApiKey", "AI:OpenAI:EmbeddingApiKey", "AI:HuggingFace:EmbeddingEndpoint",
-            "AI:OpenAI:SpeechToTextApiKey", "AI:OpenAI:TextToSpeechApiKey", "AI:OpenAI:RealtimeApiKey"
+            "AI:OpenAI:SpeechToTextApiKey", "AI:OpenAI:TextToSpeechApiKey", "AI:OpenAI:RealtimeApiKey", "Sentry:Dsn"
         })
         {
             builder.Configuration[key] = "";

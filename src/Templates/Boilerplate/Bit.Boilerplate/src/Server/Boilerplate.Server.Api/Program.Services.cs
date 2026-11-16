@@ -1100,6 +1100,11 @@ public static partial class Program
             sp => ActivatorUtilities.CreateInstance<CloudflareHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
+        //#if (sentry == true)
+        AddCachedCheckIfConfigured("sentry", HealthCheckCategories.Integrations, string.IsNullOrWhiteSpace(configuration["Sentry:Dsn"]) is false, "Sentry:Dsn",
+            sp => ActivatorUtilities.CreateInstance<SentryHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+        //#endif
+
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];
         AddCheckIfConfigured("keycloakIdentity", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(keycloakBaseUrl) is false, "Authentication:Keycloak", tags =>
         {
