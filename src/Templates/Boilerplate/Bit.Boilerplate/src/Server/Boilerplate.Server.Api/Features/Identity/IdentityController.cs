@@ -227,14 +227,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// <summary>
     /// When the user signs in, her tenants' FirstOrDefault id gets used as the tenant id claim; if none, the claim doesn't get added at all.
     /// Only accepted memberships of active tenants are considered here; invited users can switch into the tenant
-    /// afterwards, which accepts the invitation by setting TenantUser's AcceptedOn.
+    /// afterwards, which accepts the invitation by setting TenantMembership's AcceptedOn.
     /// </summary>
     private async Task<Guid?> GetTenantId(Guid userId, CancellationToken cancellationToken)
     {
-        return await DbContext.TenantUsers
-            .Where(tu => tu.UserId == userId && tu.AcceptedOn != null && tu.Tenant!.IsActive)
-            .OrderBy(tu => tu.AcceptedOn)
-            .Select(tu => (Guid?)tu.TenantId)
+        return await DbContext.TenantMemberships
+            .Where(tm => tm.UserId == userId && tm.AcceptedOn != null && tm.Tenant!.IsActive)
+            .OrderBy(tm => tm.AcceptedOn)
+            .Select(tm => (Guid?)tm.TenantId)
             .FirstOrDefaultAsync(cancellationToken);
     }
     //#endif
@@ -405,8 +405,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             if (request.RequestedTenantId is Guid requestedTenantId)
             {
                 // The user is trying to switch into another tenant.
-                var membership = await DbContext.TenantUsers
-                    .FirstOrDefaultAsync(tu => tu.UserId == user.Id && tu.TenantId == requestedTenantId, cancellationToken);
+                var membership = await DbContext.TenantMemberships
+                    .FirstOrDefaultAsync(tm => tm.UserId == user.Id && tm.TenantId == requestedTenantId, cancellationToken);
 
                 if (membership is null && refreshTicket.Principal.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
                     throw new UnauthorizedException().WithData("Reason", "User doesn't have access to the requested tenant");

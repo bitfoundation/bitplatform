@@ -23,7 +23,7 @@ public partial class TenantsPersonalDataSource : IPersonalDataSource
 
     public async Task<JsonNode?> Export(Guid userId, CancellationToken cancellationToken)
     {
-        var memberships = await dbContext.TenantUsers
+        var memberships = await dbContext.TenantMemberships
             .AsNoTracking()
             .Where(tenantUser => tenantUser.UserId == userId)
             .OrderBy(tenantUser => tenantUser.AcceptedOn)

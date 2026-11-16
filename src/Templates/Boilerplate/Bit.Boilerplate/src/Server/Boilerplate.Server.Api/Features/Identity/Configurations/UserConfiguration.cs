@@ -70,7 +70,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
         const string storeAdminUserName = "store-admin";
         const string storeAdminEmail = "store-admin@bitplatform.dev";
 
-        // The default store tenant's admin (See TenantUserConfiguration and UserRoleConfiguration).
+        // The default store tenant's admin (See TenantMembershipConfiguration and UserRoleConfiguration).
         builder.HasData([new User
         {
             Id = Guid.Parse("6ff71671-a1d6-4f97-abb9-d87d7b47d6e5"),
@@ -93,7 +93,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
         const string storeUserEmail = "store-user@bitplatform.dev";
 
         // A regular (non-admin) member of the default store tenant, assigned to the demo user-group.
-        // (See UserRoleConfiguration and TenantUserConfiguration).
+        // (See UserRoleConfiguration and TenantMembershipConfiguration).
         builder.HasData([new User
         {
             Id = Guid.Parse("4ff71671-a1d6-4f97-abb9-d87d7b47d6e4"),

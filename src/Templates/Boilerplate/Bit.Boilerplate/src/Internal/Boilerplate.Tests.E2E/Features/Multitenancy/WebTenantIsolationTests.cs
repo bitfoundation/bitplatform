@@ -155,7 +155,7 @@ public partial class WebTenantIsolationTests : AppTestBase
         await dbContext.Tenants.AddAsync(tenant, TestContext.CancellationToken);
         await dbContext.Users.AddAsync(user, TestContext.CancellationToken);
         // Accepted, so signing in selects this tenant (See IdentityController.GetTenantId).
-        await dbContext.TenantUsers.AddAsync(new TenantUser { Id = Guid.NewGuid(), TenantId = tenant.Id, UserId = user.Id, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
+        await dbContext.TenantMemberships.AddAsync(new TenantMembership { Id = Guid.NewGuid(), TenantId = tenant.Id, UserId = user.Id, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
         await dbContext.Roles.AddAsync(tenantAdminRole, TestContext.CancellationToken);
         await dbContext.UserRoles.AddAsync(new UserRole { UserId = user.Id, RoleId = tenantAdminRole.Id, TenantId = tenant.Id }, TestContext.CancellationToken);
         await dbContext.Categories.AddAsync(new Category { Id = Guid.NewGuid(), Name = "BYD", Color = "#D32F2F", TenantId = tenant.Id }, TestContext.CancellationToken);
@@ -173,7 +173,7 @@ public partial class WebTenantIsolationTests : AppTestBase
         var globalApiClient = await DeployedApiClientProvider.GetGlobalApiClient(CancellationToken.None);
         await using var db = await globalApiClient.DbContextFactory!.CreateDbContextAsync(CancellationToken.None);
 
-        var userIds = await db.TenantUsers.IgnoreQueryFilters().Where(tu => tu.TenantId == tenantId).Select(tu => tu.UserId).ToListAsync(CancellationToken.None);
+        var userIds = await db.TenantMemberships.IgnoreQueryFilters().Where(tm => tm.TenantId == tenantId).Select(tm => tm.UserId).ToListAsync(CancellationToken.None);
         var roleIds = await db.Roles.IgnoreQueryFilters().Where(role => role.TenantId == tenantId).Select(role => role.Id).ToListAsync(CancellationToken.None);
 
         await db.Products.IgnoreQueryFilters().Where(p => p.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
@@ -183,7 +183,7 @@ public partial class WebTenantIsolationTests : AppTestBase
         await db.RoleClaims.IgnoreQueryFilters().Where(rc => roleIds.Contains(rc.RoleId)).ExecuteDeleteAsync(CancellationToken.None);
         await db.Roles.IgnoreQueryFilters().Where(role => role.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
         await db.UserSessions.IgnoreQueryFilters().Where(session => userIds.Contains(session.UserId)).ExecuteDeleteAsync(CancellationToken.None);
-        await db.TenantUsers.IgnoreQueryFilters().Where(tu => tu.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
+        await db.TenantMemberships.IgnoreQueryFilters().Where(tm => tm.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
         await db.Users.IgnoreQueryFilters().Where(u => userIds.Contains(u.Id)).ExecuteDeleteAsync(CancellationToken.None);
         await db.Tenants.IgnoreQueryFilters().Where(t => t.Id == tenantId).ExecuteDeleteAsync(CancellationToken.None);
     }

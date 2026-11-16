@@ -599,33 +599,35 @@ public partial class UserController : AppControllerBase, IUserController
         // belong to, including not accepted (invited) ones, so they can accept the invitation by switching into them.
         var query = User.HasFeature(AppFeatures.Management.Tenants_Manage_Global)
             ? DbContext.Tenants.Where(t => t.IsActive)
-            : DbContext.Tenants.Where(t => t.IsActive && t.Users.Any(tu => tu.UserId == userId));
+            : DbContext.Tenants.Where(t => t.IsActive && t.Memberships.Any(tm => tm.UserId == userId));
 
-        // The membership is carried over so the client can tell the three states apart: null = the caller has no
-        // membership at all (only reachable for a global admin, who is listed every active tenant), false = invited but
-        // not accepted yet (Accept), true = accepted (Switch). Collapsing "no membership" into false would put a Leave
+        // The membership is carried over so the client can tell the three states apart: None = the caller has no
+        // membership at all (only reachable for a global admin, who is listed every active tenant), Invited = invited but
+        // not accepted yet (Accept), Member = accepted (Switch). Collapsing "no membership" into Invited would put a Leave
         // action on tenants the caller was never a member of, which the server can only answer with a 404.
         var tenants = await query
             .OrderBy(t => t.Name)
             .Select(t => new
             {
                 Tenant = t,
-                IsMember = t.Users.Any(tu => tu.UserId == userId),
-                AcceptedOn = t.Users.Where(tu => tu.UserId == userId).Select(tu => tu.AcceptedOn).FirstOrDefault()
+                IsMember = t.Memberships.Any(tm => tm.UserId == userId),
+                AcceptedOn = t.Memberships.Where(tm => tm.UserId == userId).Select(tm => tm.AcceptedOn).FirstOrDefault()
             })
             .ToListAsync(cancellationToken);
 
         return [.. tenants.Select(t =>
         {
             var dto = t.Tenant.Map();
-            dto.CurrentUserHasAcceptedThisTenantInvitation = t.IsMember ? t.AcceptedOn is not null : null;
+            dto.CurrentUserMembershipStatus = t.IsMember is false ? TenantMembershipStatus.None
+                : t.AcceptedOn is null ? TenantMembershipStatus.Invited
+                : TenantMembershipStatus.Member;
             return dto;
         })];
     }
 
     /// <summary>
     /// Setting AcceptedOn to null hides the user from the tenant's users list and prevents auto signing into that tenant,
-    /// but the user can re-join later by switching into it again, as long as the TenantUser record exists.
+    /// but the user can re-join later by switching into it again, as long as the TenantMembership record exists.
     /// <para>
     /// Leaving a membership that is ALREADY pending deletes it instead, which is how an invitation gets declined. There
     /// is no other way to get rid of one: setting AcceptedOn to null again changes nothing while still reporting success,
@@ -639,26 +641,26 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var userId = User.GetUserId();
 
-        var membership = await DbContext.TenantUsers
+        var membership = await DbContext.TenantMemberships
             .AsNoTracking()
-            .FirstOrDefaultAsync(tu => tu.UserId == userId && tu.TenantId == tenantId, cancellationToken)
+            .FirstOrDefaultAsync(tm => tm.UserId == userId && tm.TenantId == tenantId, cancellationToken)
             ?? throw new ResourceNotFoundException().WithData("Reason", "Tenant user not found.");
 
         var isDecliningAPendingInvitation = membership.AcceptedOn is null;
 
         // The tenant claim gets read from the user session during token refresh (See IdentityController.Refresh),
         // so all of the user's sessions that are signed into this tenant get moved to her next tenant (or none).
-        var nextTenantId = await DbContext.TenantUsers
-            .Where(tu => tu.UserId == userId && tu.TenantId != tenantId && tu.AcceptedOn != null && tu.Tenant!.IsActive)
-            .OrderBy(tu => tu.AcceptedOn)
-            .Select(tu => (Guid?)tu.TenantId)
+        var nextTenantId = await DbContext.TenantMemberships
+            .Where(tm => tm.UserId == userId && tm.TenantId != tenantId && tm.AcceptedOn != null && tm.Tenant!.IsActive)
+            .OrderBy(tm => tm.AcceptedOn)
+            .Select(tm => (Guid?)tm.TenantId)
             .FirstOrDefaultAsync(cancellationToken);
 
         await DbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
         {
             await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            var membershipToLeave = DbContext.TenantUsers.Where(tu => tu.UserId == userId && tu.TenantId == tenantId);
+            var membershipToLeave = DbContext.TenantMemberships.Where(tm => tm.UserId == userId && tm.TenantId == tenantId);
 
             if (isDecliningAPendingInvitation)
             {
@@ -666,7 +668,7 @@ public partial class UserController : AppControllerBase, IUserController
             }
             else
             {
-                await membershipToLeave.ExecuteUpdateAsync(tu => tu.SetProperty(t => t.AcceptedOn, (DateTimeOffset?)null), cancellationToken);
+                await membershipToLeave.ExecuteUpdateAsync(tm => tm.SetProperty(t => t.AcceptedOn, (DateTimeOffset?)null), cancellationToken);
             }
 
             var grantedSessionIds = DbContext.OAuthGrants.Select(grant => grant.UserSessionId);

@@ -242,7 +242,7 @@ with a different tenant claim.
 
 - [`Tenant`](/src/Server/Boilerplate.Server.Api/Features/Tenants/Tenant.cs) - its `Name` must be a valid sub-domain
   label, because that is how anonymous requests resolve it. `IsActive` controls whether it can be used at all.
-- [`TenantUser`](/src/Server/Boilerplate.Server.Api/Features/Tenants/TenantUser.cs) - membership. `AcceptedOn` is
+- [`TenantMembership`](/src/Server/Boilerplate.Server.Api/Features/Tenants/TenantMembership.cs) - membership. `AcceptedOn` is
   null while the user has only been invited.
 - A seeded default tenant (`store`) owns all sample data and acts as the fallback.
 

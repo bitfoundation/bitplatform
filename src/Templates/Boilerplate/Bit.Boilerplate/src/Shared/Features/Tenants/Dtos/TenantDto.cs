@@ -43,12 +43,13 @@ public partial class TenantDto
     public bool IsActive { get; set; } = true;
 
     /// <summary>
-    /// The current user's membership state for this tenant: <c>true</c> when she has accepted it, <c>false</c> when she
-    /// has been invited but hasn't accepted yet (See <c>TenantUser.AcceptedOn</c>), and <c>null</c> when she has no
-    /// membership row at all - which only happens for a global admin, who is listed every active tenant whether or not
-    /// she belongs to it. Only populated by <c>UserController.GetTenants</c>.
+    /// The current user's membership state for this tenant: <see cref="TenantMembershipStatus.Member"/> when she has
+    /// accepted it, <see cref="TenantMembershipStatus.Invited"/> when she has been invited but hasn't accepted yet (See
+    /// <c>TenantMembership.AcceptedOn</c>), and <see cref="TenantMembershipStatus.None"/> when she has no membership row
+    /// at all - which only happens for a global admin, who is listed every active tenant whether or not she belongs to it.
+    /// Only populated by <c>UserController.GetTenants</c>.
     /// </summary>
-    public bool? CurrentUserHasAcceptedThisTenantInvitation { get; set; }
+    public TenantMembershipStatus CurrentUserMembershipStatus { get; set; }
 
     public long Version { get; set; }
 }

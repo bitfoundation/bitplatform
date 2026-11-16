@@ -89,7 +89,7 @@ public partial class TenantInvitationIsolationTests
         await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        Assert.IsFalse(await dbContext.TenantUsers.AnyAsync(tu => tu.TenantId == tenant.Id && tu.UserId == inviteeUserId, TestContext.CancellationToken),
+        Assert.IsFalse(await dbContext.TenantMemberships.AnyAsync(tm => tm.TenantId == tenant.Id && tm.UserId == inviteeUserId, TestContext.CancellationToken),
             "Leaving a membership that was still pending has to delete it. Setting AcceptedOn to null on a row where it is already null changes nothing while still reporting success, and the tenant admin cannot remove it either (UserManagementController.EnsureUserIsInCurrentTenant only reaches accepted memberships) - so the invitation would be permanent.");
     }
 
@@ -120,9 +120,9 @@ public partial class TenantInvitationIsolationTests
 
         // Written directly rather than through Refresh's tenant switch: acceptance itself is already covered end to end
         // by TenantInvitationUITests, and what is under test here is what each endpoint does with the resulting state.
-        var affectedRows = await dbContext.TenantUsers
-            .Where(tu => tu.TenantId == tenantId && tu.UserId == userId)
-            .ExecuteUpdateAsync(tu => tu.SetProperty(t => t.AcceptedOn, acceptedOn), cancellationToken);
+        var affectedRows = await dbContext.TenantMemberships
+            .Where(tm => tm.TenantId == tenantId && tm.UserId == userId)
+            .ExecuteUpdateAsync(tm => tm.SetProperty(t => t.AcceptedOn, acceptedOn), cancellationToken);
 
         Assert.AreEqual(1, affectedRows, "The invitation row this test arranges should exist.");
     }

@@ -169,7 +169,7 @@ public partial class PrivilegedSessionTenantSwitchTests
         await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        await dbContext.TenantUsers.AddAsync(new()
+        await dbContext.TenantMemberships.AddAsync(new()
         {
             TenantId = TenantConfiguration.FallbackTenantId,
             UserId = userId,

@@ -2,6 +2,9 @@
 //#if (notification == true)
 using Boilerplate.Shared.Features.PushNotification;
 //#endif
+//#if (multitenant == true)
+using Boilerplate.Shared.Features.Tenants.Dtos;
+//#endif
 
 namespace Boilerplate.Client.Core.Components.Layout.Header;
 
@@ -236,7 +239,7 @@ public partial class AppMenu
 
         pendingInvitationTenantIds = isGlobalAdmin
             ? []
-            : [.. userTenants.Where(t => t.CurrentUserHasAcceptedThisTenantInvitation is false).Select(t => t.Id.ToString())];
+            : [.. userTenants.Where(t => t.CurrentUserMembershipStatus is TenantMembershipStatus.Invited).Select(t => t.Id.ToString())];
 
         tenants = [.. userTenants.Select(t => new BitChoiceGroupItem<string> { Value = t.Id.ToString(), Text = t.Title ?? t.Name })];
     }

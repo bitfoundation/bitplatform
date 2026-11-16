@@ -96,7 +96,7 @@ public partial class UserManagementTenantScopingTests
         await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        await dbContext.TenantUsers.AddAsync(new() { TenantId = tenantId, UserId = userId, AcceptedOn = DateTimeOffset.UtcNow }, cancellationToken);
+        await dbContext.TenantMemberships.AddAsync(new() { TenantId = tenantId, UserId = userId, AcceptedOn = DateTimeOffset.UtcNow }, cancellationToken);
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }

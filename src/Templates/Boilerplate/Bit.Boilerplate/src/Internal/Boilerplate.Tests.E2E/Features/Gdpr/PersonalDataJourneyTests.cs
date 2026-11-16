@@ -149,7 +149,7 @@ public partial class PersonalDataJourneyTests
         Assert.AreEqual(0, await afterDelete.Attachments.IgnoreQueryFilters().CountAsync(attachment => attachment.Id == userId, cancellationToken), "The profile image's rows are still there.");
         Assert.AreEqual(0, await afterDelete.UserTokens.IgnoreQueryFilters().CountAsync(token => token.UserId == userId, cancellationToken), "The authenticator's shared key outlived the account it belonged to.");
         // The section claims CascadeFromUser rather than a delete of its own, which is a claim about the schema.
-        Assert.AreEqual(0, await afterDelete.TenantUsers.IgnoreQueryFilters().CountAsync(membership => membership.UserId == userId, cancellationToken), "The organisation membership did not cascade from the deleted user.");
+        Assert.AreEqual(0, await afterDelete.TenantMemberships.IgnoreQueryFilters().CountAsync(membership => membership.UserId == userId, cancellationToken), "The organisation membership did not cascade from the deleted user.");
 
         // Left behind on purpose: only the hourly retention job reaches it (See AttachmentsPersonalDataSource.Notes,
         // and RetentionJobsTests, which is where that job is proven to run).
@@ -313,7 +313,7 @@ public partial class PersonalDataJourneyTests
         await dbContext.Tenants.AddAsync(tenant, TestContext.CancellationToken);
         await dbContext.Users.AddAsync(user, TestContext.CancellationToken);
         // Accepted, so signing in selects this tenant (See IdentityController.GetTenantId).
-        await dbContext.TenantUsers.AddAsync(new TenantUser { Id = Guid.NewGuid(), TenantId = tenant.Id, UserId = user.Id, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
+        await dbContext.TenantMemberships.AddAsync(new TenantMembership { Id = Guid.NewGuid(), TenantId = tenant.Id, UserId = user.Id, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
         // Where UserManager.SetAuthenticatorKeyAsync puts it; both names are internal constants of Identity's own store.
         await dbContext.UserTokens.AddAsync(new UserToken { UserId = user.Id, LoginProvider = "[AspNetUserStore]", Name = "AuthenticatorKey", Value = authenticatorKey }, TestContext.CancellationToken);
 
@@ -414,7 +414,7 @@ public partial class PersonalDataJourneyTests
         var globalApiClient = await DeployedApiClientProvider.GetGlobalApiClient(CancellationToken.None);
         await using var dbContext = await globalApiClient.DbContextFactory!.CreateDbContextAsync(CancellationToken.None);
 
-        var userIds = await dbContext.TenantUsers.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId)
+        var userIds = await dbContext.TenantMemberships.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId)
             .Select(membership => membership.UserId).ToArrayAsync(CancellationToken.None);
 
         // The subscription's tenant is a foreign key of its own, so it goes before the tenant whatever its user did.
@@ -422,7 +422,7 @@ public partial class PersonalDataJourneyTests
         await dbContext.UserSessions.IgnoreQueryFilters().Where(session => userIds.Contains(session.UserId)).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.Attachments.IgnoreQueryFilters().Where(attachment => userIds.Contains(attachment.Id)).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.UserTokens.IgnoreQueryFilters().Where(token => userIds.Contains(token.UserId)).ExecuteDeleteAsync(CancellationToken.None);
-        await dbContext.TenantUsers.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
+        await dbContext.TenantMemberships.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.Users.IgnoreQueryFilters().Where(user => userIds.Contains(user.Id)).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.Tenants.IgnoreQueryFilters().Where(tenant => tenant.Id == tenantId).ExecuteDeleteAsync(CancellationToken.None);
     }

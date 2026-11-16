@@ -51,7 +51,7 @@ public partial class User : IdentityUser<Guid>
     public List<WebAuthnCredential> WebAuthnCredentials { get; set; } = [];
 
     //#if (multitenant == true)
-    public List<TenantUser> Tenants { get; set; } = [];
+    public List<TenantMembership> TenantMemberships { get; set; } = [];
     //#endif
 
     public List<UserRole> Roles { get; set; } = [];
