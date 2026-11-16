@@ -46,7 +46,6 @@ public static class DoctorCommand
                 Aspire = aspire,
                 ContainersRequired = aspire && projectName is not null && ProjectContext.AppHostNeedsContainers(Path.Combine(cli.Environment.CurrentDirectory, "src", "Server", $"{projectName}.Server.AppHost")),
                 NativeWebAssembly = projectName is not null && ProjectContext.UsesNativeWebAssembly(cli.Environment.CurrentDirectory),
-                Ci = projectName is null || File.Exists(ProjectContext.CiWorkflow(cli.Environment.CurrentDirectory)),
                 Platforms = platforms,
                 Ide = IdeLocator.FindAll(cli.Environment, cli.Runner).FirstOrDefault()?.Id,
                 Sdk = requirements.Sdk,

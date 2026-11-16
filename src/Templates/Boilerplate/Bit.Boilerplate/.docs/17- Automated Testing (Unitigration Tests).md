@@ -401,7 +401,7 @@ pwsh src/Tests/bin/Debug/net11.0/playwright.ps1 install --force
 
 The project includes GitHub Actions workflows that run tests automatically:
 
-### On every CI run (`bit ci` on your machine, and each CD before it deploys):
+### On every CI run (each CD, before it deploys):
 - Tests run in parallel
 - Test results (trx report plus failed-test videos) are uploaded as an artifact
 
