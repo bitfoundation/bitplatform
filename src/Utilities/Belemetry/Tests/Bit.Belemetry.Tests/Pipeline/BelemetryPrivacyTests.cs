@@ -111,6 +111,21 @@ public class BelemetryPrivacyTests
     }
 
     [TestMethod]
+    public void CleansALogBodyInOnePass_KeepingTheHostOfItsUrls()
+    {
+        // A URL in a body keeps its host, as a URL attribute does; the text around it is scrubbed. Matches the script.
+        var privacy = Create();
+        var log = Records.Log("GET http://10.0.0.5:5000/api/10.1.2.3?token=x&email=a@b.io from 10.0.0.9, then http://10.0.0.6/health");
+
+        privacy.Apply(log);
+
+        Assert.AreEqual("GET http://10.0.0.5:5000/api/[ip]?token=REDACTED&email=REDACTED from [ip], then http://10.0.0.6/health", log.Body);
+
+        const string clean = "Request finished in 3 ms - https://x.test/a";
+        Assert.AreSame(clean, privacy.CleanBody(clean), "Nothing changed: the same instance.");
+    }
+
+    [TestMethod]
     public void AppliesToSpansAndLogs()
     {
         var privacy = Create(o => o.BlockedAttributes.Add("secret.attr"));

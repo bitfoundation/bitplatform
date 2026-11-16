@@ -240,7 +240,8 @@ Notes on the fields:
   `redactedAttributes` (whole key or last dot segment, case-insensitive; `prefix*`) gets
   `REDACTED`; `server.address` and `user_agent.original` are not pattern-scrubbed; the URL attributes (`Uri` of
   HttpClient's logs included), `url.query` and `QueryString` (ASP.NET Core's request logs) get parameter redaction, and
-  so do the absolute URLs in a log body (`redactUrls`, `RedactUrls`); every other string (and string array) is pattern-scrubbed in the order bearer, JWT,
+  so do the absolute URLs in a log body (`cleanBody`, `CleanBody`: one pass, a URL scrubbed after its host as a URL
+  attribute is, the text around it scrubbed); every other string (and string array) is pattern-scrubbed in the order bearer, JWT,
   e-mail, card, IPv4 - except IPv4 for a key named like a version (last segment `version`, or ending `_version` or
   PascalCase `Version`). A card is Luhn-valid and neither starts with 0 nor repeats one digit (`IsCardNumber`,
   `isCardNumber`: an all-zero W3C parent id is no card). The card and IPv4 regexes only run with 13+ digits / 3+ dots (exact pre-checks), and a URL
@@ -330,7 +331,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `flush()` | Returns a promise that resolves when the queued records have been handed to the transport |
 | `getContext()` | `{ consent, decided, sessionId, pseudoId, userId }` |
 | `getStats()` | `{ dropped: { <reason>: n }, requests: { delivered, rejected, kept, dropped, withdrawn }, queued, pending }` since load (`stats.ts`); reasons shared with the C# `belemetry.records.dropped` counter where both drop for the same cause |
-| `attachDotNet(dotNetRef, { relay: bool, unloadDrain: bool, maxRelayBytes?: number })` | Registers the .NET bridge (`BelemetryJsCallbacks`). `maxRelayBytes` (`Browser.MaxRelayMessageBytes`, a server with the Relay transport only) splits each relayed batch into calls of at most that many bytes of JSON, as a circuit's connection closes on a message over its size limit; a record larger alone is dropped (`size_limit`) |
+| `attachDotNet(dotNetRef, { relay: bool, unloadDrain: bool, maxRelayBytes?: number })` | Registers the .NET bridge (`BelemetryJsCallbacks`). `maxRelayBytes` (`Browser.MaxRelayMessageBytes`, a server with the Relay transport only) splits each relayed batch into calls of at most that many bytes of JSON, as a circuit's connection closes on a message over its size limit; a record larger alone is dropped (`size_limit`), and every record when the resource alone fills the limit (no part is sent). A batch that fits is measured once and sent whole |
 | `sendRequests(requests)` | Sends pre-serialized requests built by .NET in WASM (`[{exporter,url,contentType,contentEncoding,headers,body(base64),features}]`) using keepalive fetch, retry and persistence; one whose `features` the page no longer grants is given up |
 | `getDiagnostics()` | The browser diagnostic timeline as the grant allows now (`{v:1,capacity,dropped,resource,events}`), after running the app's processors on the queued records; null when diagnostics are off |
 | `getDiagnosticsStream()` | The same as a `Blob`, for a server circuit (.NET asks for an `IJSStreamReference`; Blazor wraps the Blob itself - returning a stream reference made in JS is refused). Trimmed under .NET's 4 MiB read limit (`BelemetryJsBridge.MaxDiagnosticsBytes`): oldest activity first, then oldest failures, counted as `size_limit`; a larger stream is missing evidence, never a failed capture |

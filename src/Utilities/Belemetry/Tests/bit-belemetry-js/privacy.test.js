@@ -118,6 +118,22 @@ describe('applyPrivacy', () => {
         expect(stripped.attributes).toEqual({});
     });
 
+    it('cleans a log body in one pass: a URL keeps its host, as a URL attribute does, and the text around it is scrubbed', () => {
+        const record = log({ body: 'GET http://10.0.0.5:5000/api/10.1.2.3?token=x&email=a@b.io from 10.0.0.9, then http://10.0.0.6/health' });
+        applyPrivacy(record, privacy());
+        expect(record.body).toBe('GET http://10.0.0.5:5000/api/[ip]?token=REDACTED&email=REDACTED from [ip], then http://10.0.0.6/health');
+    });
+
+    it('redacts http.target as a URL, kept relative (as the C# side does)', () => {
+        const record = log({ attributes: { 'http.target': '/orders?token=abc&page=2#access_token=z' } });
+        applyPrivacy(record, privacy({ stripFragment: false }));
+        expect(record.attributes['http.target']).toBe('/orders?token=REDACTED&page=2#access_token=REDACTED');
+
+        const stripped = log({ attributes: { 'http.target': '/orders?token=abc#f' } });
+        applyPrivacy(stripped, privacy({ stripQueryString: true }));
+        expect(stripped.attributes['http.target']).toBe('/orders');
+    });
+
     it('does not scrub patterns when disabled', () => {
         const record = log({ body: 'a@b.io' });
         applyPrivacy(record, privacy({ scrubPatterns: false }));

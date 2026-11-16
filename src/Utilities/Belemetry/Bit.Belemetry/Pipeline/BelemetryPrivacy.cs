@@ -53,18 +53,33 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
     public void Apply(BelemetryLogRecord log)
     {
         ApplyToAttributes(log.Attributes);
-        if (log.Body is not null) log.Body = Scrub(RedactUrls(log.Body));
+        if (log.Body is not null) log.Body = CleanBody(log.Body);
     }
 
     /// <summary>
-    /// Redacts the URLs a text carries as a URL attribute's: ASP.NET Core's "Request starting HTTP/1.1 GET
-    /// https://host/path?token=..." and HttpClient's "Sending HTTP request GET https://..." put the query string the
-    /// span's <c>url.query</c> redacts into the message. Matches the script.
+    /// Applies the privacy rules to a log body in one pass: the absolute URLs in it get a URL attribute's rules
+    /// (<see cref="RedactUrl"/>: parameter redaction, then scrubbing after the host, which names the server called), and
+    /// the text around them is scrubbed. ASP.NET Core's "Request starting HTTP/1.1 GET https://host/path?token=..." and
+    /// HttpClient's "Sending HTTP request GET https://..." put the query string the span's <c>url.query</c> redacts into
+    /// the message. Returns the same instance when nothing changed. Matches the script.
     /// </summary>
-    public string RedactUrls(string text)
+    public string CleanBody(string body)
     {
-        if (text.Contains("://", StringComparison.Ordinal) is false || text.AsSpan().IndexOfAny('?', '#', '@') < 0) return text;
-        return UrlInTextRegex().Replace(text, m => RedactUrl(m.Value));
+        if (body.Contains("://", StringComparison.Ordinal) is false) return Scrub(body);
+
+        StringBuilder? builder = null;
+        var last = 0;
+        foreach (var match in UrlInTextRegex().EnumerateMatches(body))
+        {
+            builder ??= new StringBuilder(body.Length);
+            builder.Append(Scrub(body[last..match.Index])).Append(RedactUrl(body.Substring(match.Index, match.Length)));
+            last = match.Index + match.Length;
+        }
+
+        if (builder is null) return Scrub(body);
+
+        var cleaned = builder.Append(Scrub(body[last..])).ToString();
+        return string.Equals(cleaned, body, StringComparison.Ordinal) ? body : cleaned;
     }
 
     /// <summary>Whether <paramref name="key"/> is one of <see cref="BelemetryPrivacyOptions.BlockedAttributes"/>: the enrichment step does not add a blocked id.</summary>

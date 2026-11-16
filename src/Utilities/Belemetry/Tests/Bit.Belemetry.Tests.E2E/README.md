@@ -122,7 +122,7 @@ stderr, and the failing test quotes it. On other operating systems the hybrid te
 
 The MAUI suite (`MauiSampleTests`) builds `Samples/Maui` for Windows - unpackaged, with the Windows App SDK inside it
 (`-p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true`), so it runs without installing an MSIX, into `bin/e2e`
-and `obj/e2e` (an unpackaged build over the IDE's packaged one crashes in Microsoft.UI.Xaml at start) - starts it,
+and `obj/e2e/<configuration>/<framework>` (an unpackaged build over the IDE's packaged one crashes in Microsoft.UI.Xaml at start) - starts it,
 and attaches to its WebView2 with `ConnectOverCDPAsync`. The sample runs unchanged: its OTLP exporter's endpoint is set
 in code, so the suite points it at the receiver of the static SSR host with `OTEL_EXPORTER_OTLP_{TRACES,LOGS,METRICS}_ENDPOINT`
 (signal endpoints fill in what the code left unset) and `OTEL_EXPORTER_OTLP_PROTOCOL=http/json`. The tests tell its

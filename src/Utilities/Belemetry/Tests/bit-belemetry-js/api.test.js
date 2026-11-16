@@ -131,6 +131,25 @@ describe('public API', () => {
         expect(relays.filter(part => part.logs.some(log => log.eventName === 'checkout.failed')), 'the events go in one call').toHaveLength(1);
     });
 
+    it('sends a batch that fits whole, and nothing when the resource alone fills maxRelayBytes', async () => {
+        vi.resetModules();
+        const { splitRelayBatch, utf8Length } = await import('../../Bit.Belemetry/Scripts/exporters/relay.ts');
+        const { statsSnapshot } = await import('../../Bit.Belemetry/Scripts/stats.ts');
+        const record = i => ({ name: 'e', body: 'x'.repeat(100), i });
+
+        const small = { resource: { 'service.name': 'shop' }, spans: [], logs: [record(0), record(1)] };
+        const whole = splitRelayBatch(small, 1, 4096);
+        expect(whole).toEqual([{ ...small, sessionRatio: 1 }]);
+
+        // A resource over the limit: every record is dropped, and no part goes - one would close the circuit.
+        const large = { resource: { 'service.name': 'shop', big: 'r'.repeat(5000) }, spans: [], logs: [record(0), record(1), record(2)] };
+        expect(splitRelayBatch(large, 1, 4096)).toEqual([]);
+        expect(statsSnapshot().dropped.size_limit).toBe(3);
+
+        // The UTF-8 length, without encoding: 1, 2, 3 and 4 (a surrogate pair) bytes a character.
+        for (const text of ['a', 'é', '€', '😀', 'aé€😀', '']) expect(utf8Length(text)).toBe(new TextEncoder().encode(text).length);
+    });
+
     it('syncs the context with .NET and keeps user ids only with UserTracking', async () => {
         await load();
         api.start(relayConfig());

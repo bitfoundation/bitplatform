@@ -943,9 +943,9 @@ Applied on both sides before anything is queued, and by .NET to every metric poi
 - Azure Monitor's `MaskIp` (on) stops IP-based geolocation; Belemetry never adds the client IP itself.
 
 IP scrubbing leaves the **host** of a URL and `server.address` alone, even when they are IP literals: they name the
-server that was called (`http://10.0.0.5:5000/api` stays readable in a dependency), not the user. The rest of the URL
-is still scrubbed, credentials in a URL are always dropped, and IPs in any other text (messages, stack traces,
-`client.address` in the browser) are replaced with `[ip]`.
+server that was called (`http://10.0.0.5:5000/api` stays readable in a dependency), not the user - an absolute URL in a
+log body included. The rest of the URL is still scrubbed, credentials in a URL are always dropped, and IPs in any other
+text (messages, stack traces, `client.address` in the browser) are replaced with `[ip]`.
 
 ---
 
@@ -1393,7 +1393,8 @@ transport).
 Each relay call is a message of the circuit's connection, which SignalR closes on a message over the hub's
 `MaximumReceiveMessageSize` (32 KB by default) - the circuit and the records with it. So on Blazor Server the script
 relays a batch in parts of at most `Browser.MaxRelayMessageBytes` (16384) bytes of JSON, and drops a record that alone is
-larger (counted as `size_limit` in `getStats()`). Raise both together if your records are larger.
+larger (counted as `size_limit` in `getStats()`) - every record, when the resource alone leaves no room for one. Raise
+both together if your records are larger.
 
 ---
 
