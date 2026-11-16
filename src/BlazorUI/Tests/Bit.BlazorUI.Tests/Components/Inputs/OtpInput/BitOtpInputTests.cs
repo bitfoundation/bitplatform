@@ -1483,6 +1483,68 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitOtpInputShouldCallOnFillAgainForTheSameCodeAfterTheValueIsCleared()
+    {
+        // The consumer clearing the bound value (a PIN entered twice to confirm it, a code retried after a
+        // rejection) asks for the code anew, so typing the very same code again is a new fill.
+        string? value = null;
+        var filledValues = new List<string?>();
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnFill, v => filledValues.Add(v));
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
+        CollectionAssert.AreEqual(new[] { "12" }, filledValues);
+
+        com.Render(parameters => parameters.Add(p => p.Value, null));
+
+        // Typed a character at a time, the code goes through an incomplete value on its way, which reopens
+        // the guard on its own. A code that arrives whole (an SMS or a browser auto fill, a paste) does not,
+        // so it is the clearing that has to.
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "12" });
+
+        Assert.AreEqual("12", value);
+        CollectionAssert.AreEqual(new[] { "12", "12" }, filledValues);
+
+        com.Render(parameters => parameters.Add(p => p.Value, null));
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+
+        CollectionAssert.AreEqual(new[] { "12", "12", "12" }, filledValues);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotCallOnFillAgainWhenTheBoundValueKeepsTheCompletedCode()
+    {
+        // A re-render that hands the component the code it already holds is no clearing, so it must not
+        // reopen the guard that keeps a keystroke over the complete code from submitting it twice.
+        string? value = null;
+        var onFillCallCount = 0;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnFill, _ => onFillCallCount++);
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
+        Assert.AreEqual(1, onFillCallCount);
+
+        com.Render(parameters => parameters.Add(p => p.Value, "12"));
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+
+        Assert.AreEqual(1, onFillCallCount);
+    }
+
+    [TestMethod]
     public async Task BitOtpInputClearShouldDoNothingWhenReadOnly()
     {
         var com = RenderComponent<BitOtpInput>(parameters =>

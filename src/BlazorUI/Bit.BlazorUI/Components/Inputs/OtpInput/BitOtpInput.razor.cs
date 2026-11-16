@@ -627,6 +627,16 @@ public partial class BitOtpInput : BitInputBase<string?>
             {
                 CurrentValueAsString = appliedValue;
             }
+
+            // A code that the consumer took out of the inputs (cleared, or cut short) is no longer the
+            // completed one that OnFill was raised for last, so entering that very code again - a new PIN
+            // entered twice to confirm it, a code retried after a rejection - has to raise it again. Typed a
+            // character at a time it would pass through an incomplete value that reopens the guard anyway,
+            // but one that arrives whole (an SMS or a browser auto fill, a paste) never does.
+            if (appliedValue.Length != _length)
+            {
+                _lastFilledValue = null;
+            }
         }
 
         base.OnParametersSet();
