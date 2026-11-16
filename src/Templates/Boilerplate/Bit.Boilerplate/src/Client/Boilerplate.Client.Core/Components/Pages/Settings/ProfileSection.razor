@@ -55,7 +55,7 @@
 
             @if (CurrentUser?.HasProfileImage is true)
             {
-                <BitButton IsLoading=@isSaving OnClick="WrapHandled(RemoveProfileImage)" Color="BitColor.Error">
+                <BitButton Loading=@isSaving OnClick="WrapHandled(RemoveProfileImage)" Color="BitColor.Error">
                     @Localizer[nameof(AppStrings.Remove)]
                 </BitButton>
             }
@@ -87,7 +87,7 @@
                         <BitChoiceGroupOption TValue="Gender?" Value="@Gender.Other" Text="@Localizer[nameof(AppStrings.GenderOther)]" />
                     </BitChoiceGroup>
 
-                    <BitButton IsLoading="isSaving"
+                    <BitButton Loading="isSaving"
                                ButtonType="BitButtonType.Submit"
                                Title="@Localizer[nameof(AppStrings.Save)]">
                         @Localizer[nameof(AppStrings.Save)]

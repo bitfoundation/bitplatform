@@ -82,7 +82,7 @@
                                 <BitButton Variant="BitVariant.Outline"
                                            Color="BitColor.Warning"
                                            Disabled="@(client.ActiveGrants is 0)"
-                                           IsLoading="@(busyClientId == client.ClientId && busyAction is Busy.Revoking)"
+                                           Loading="@(busyClientId == client.ClientId && busyAction is Busy.Revoking)"
                                            OnClick="WrapHandled(() => AskToRevokeGrants(client))">
                                     @Localizer[nameof(AppStrings.OAuthClientRevokeAccess)]
                                 </BitButton>

@@ -121,7 +121,7 @@
                     <BitButton Variant="BitVariant.Text" ButtonType="BitButtonType.Button" OnClick="Cancel">
                         @Localizer[nameof(AppStrings.Cancel)]
                     </BitButton>
-                    <BitButton IsLoading="isSaving"
+                    <BitButton Loading="isSaving"
                                ButtonType="BitButtonType.Button"
                                Disabled="@(editor?.Session is null)"
                                OnClick="WrapHandled(Save)">

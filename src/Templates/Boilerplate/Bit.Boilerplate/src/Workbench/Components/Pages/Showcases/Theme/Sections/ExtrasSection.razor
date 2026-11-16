@@ -43,7 +43,7 @@
             <BitChart Type="BitChartType.Doughnut" Data="paymentsData" Options="doughnutOptions" Height="14rem" Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasSalesByPaymentMethod)]" />
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateLoading)">
-            <BitChart Type="BitChartType.Bar" Data="revenueData" Options="barOptions" Height="14rem" IsLoading Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRevenuePerMonth)]" />
+            <BitChart Type="BitChartType.Bar" Data="revenueData" Options="barOptions" Height="14rem" Loading Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRevenuePerMonth)]" />
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
             <BitChart Type="BitChartType.Bar" Data="emptyData" Options="barOptions" Height="14rem" EmptyText="@Localizer[nameof(WorkbenchStrings.ThemeExtrasNoSalesYetThisMonth)]" Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRevenuePerMonth)]" />
