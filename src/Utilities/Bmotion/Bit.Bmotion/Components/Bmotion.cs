@@ -961,11 +961,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // animation to replay by invalidating the cached previous target.
             _isExiting = false;
             // What the gestures that changed during the exit set the properties it kept from them is where those go
-            // back to, over what they showed as it started (RestorePreExit plays it, after the enter target).
+            // now: over the enter target, which may name them too (PlayHeldByGestures plays it, after the enter).
             if (Engine.EndExit(_id) is { } heldBack)
             {
-                _preExitValues ??= new Dictionary<string, object?>(StringComparer.Ordinal);
-                foreach (var (key, value) in heldBack) _preExitValues[key] = value;
+                _heldByGestures ??= new Dictionary<string, object?>(StringComparer.Ordinal);
+                foreach (var (key, value) in heldBack) _heldByGestures[key] = value;
             }
             _exitGeneration++;
             _prevAnimate = null;
@@ -1246,6 +1246,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 }
             }
         }
+
+        await PlayHeldByGesturesAsync();
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -1318,8 +1320,27 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         _preExitValues = null;
         if (ResolveEnterProps()?.ToJsDictionary() is { } enter)
             foreach (var key in enter.Keys) restore.Remove(key);
+        // What a gesture holds goes where the gesture puts it, after the enter target (PlayHeldByGesturesAsync).
+        if (_heldByGestures is { } held)
+            foreach (var key in held.Keys) restore.Remove(key);
         if (restore.Count > 0)
             await Engine.AnimateToAsync(_id, restore, BuildEffectiveTransition());
+    }
+
+    // What the gestures that changed during a cancelled exit set the properties it kept from them (EndExit), kept apart
+    // from the values captured as the exit started until the re-entry plays it.
+    private Dictionary<string, object?>? _heldByGestures;
+
+    /// <summary>
+    /// After a re-entry: the properties the exit kept from the gestures go where those put them, over the enter target
+    /// just played - even one the enter target names too, which would otherwise undo a hover still on.
+    /// </summary>
+    private async Task PlayHeldByGesturesAsync()
+    {
+        if (_heldByGestures is not { } held || _isExiting) return;
+        _heldByGestures = null;
+        if (held.Count > 0)
+            await Engine.AnimateToAsync(_id, held, BuildEffectiveTransition());
     }
 
     // Whether a FLIP played.
@@ -1513,12 +1534,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // token cancelled mid-flight do nothing - and is released when the animation settles, so
         // repeated calls with a long-lived token don't accumulate callbacks. The engine is single-threaded: a token
         // cancelled from another thread (CancelAfter's timer) stops it on the renderer's context, where it was started.
-        var registration = cancellationToken.CanBeCanceled
-            ? cancellationToken.RegisterOnCallerContext(() => Engine.Stop(_id, values.Keys.ToArray()))
+        // That stop is queued, and may run after this animation lost some of its properties to a newer one (or all of
+        // them, before the release runs): it stops only the properties this animation still plays.
+        var owner = cancellationToken.CanBeCanceled ? new object() : null;
+        var registration = owner is not null
+            ? cancellationToken.RegisterOnCallerContext(() => Engine.StopOwned(_id, values.Keys, owner))
             : null;
         try
         {
-            await Engine.AnimateToAsync(_id, values, config, onSettled: registration is null ? null : registration.Dispose);
+            await Engine.AnimateToAsync(_id, values, config, onSettled: registration is null ? null : registration.Dispose, owner: owner);
         }
         catch
         {
@@ -1896,8 +1920,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var retained = normal ?? new BmotionTransitionConfig();
         var reduced = InstantTransition();
         reduced.Properties = new Dictionary<string, BmotionTransitionConfig>(StringComparer.Ordinal);
+        // Each keeps the transition it plays with normally: its own override when the normal transition has one (what
+        // plays it reads one level of overrides only, so a nested one would be lost), else the normal transition.
         foreach (var key in _reducedRetainedProps)
-            reduced.Properties[key] = retained;
+            reduced.Properties[key] = normal?.Properties?.GetValueOrDefault(key) ?? retained;
         return reduced;
     }
 

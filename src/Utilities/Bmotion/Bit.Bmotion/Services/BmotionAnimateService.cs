@@ -381,8 +381,7 @@ public sealed class BmotionAnimateService
                     double wait = start - offset;
                     if (wait < 0)
                     {
-                        c = config.Clone();
-                        c.Delay += wait; // started -wait seconds ago
+                        c = ShiftedBy(config, wait); // started -wait seconds ago
                         wait = 0;
                     }
                     if (!onEngineClock)
@@ -462,6 +461,18 @@ public sealed class BmotionAnimateService
 
     // ────────────────────────────────────────────────────────────────────────────
 
+    // A copy of `config` starting `seconds` later (earlier, when negative: a negative delay starts it part-way in). Its
+    // per-property overrides move with it, as they are what plays a property that has one - the reduced-motion
+    // transition keeps the properties still animating there, under an instant root.
+    private static BmotionTransitionConfig ShiftedBy(BmotionTransitionConfig config, double seconds)
+    {
+        var shifted = config.Clone();
+        shifted.Delay += seconds;
+        if (shifted.Properties is { } overrides)
+            foreach (var own in overrides.Values) own.Delay += seconds;
+        return shifted;
+    }
+
     // `values` and `config` are the target as checked and lowered before the elements were resolved. The config is the
     // target's embedded transition, else the explicit argument (the component's resolution order), lowered once and
     // shared across all target elements (drivers never mutate the config).
@@ -492,11 +503,7 @@ public sealed class BmotionAnimateService
         Task PlayFrom(double seconds) => Task.WhenAll(elementIds.Select((id, index) =>
         {
             var c = ConfigFor(index);
-            if (seconds > 0)
-            {
-                c = c.Clone();
-                c.Delay -= seconds;
-            }
+            if (seconds > 0) c = ShiftedBy(c, -seconds);
             return _engine.AnimateToAwaitAsync(id, values, c).AsTask();
         }));
 

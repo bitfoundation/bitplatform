@@ -103,6 +103,31 @@ public class AsyncLifecycleTests
         Assert.IsFalse(State(ctx, "box").HasActiveAnimations);
     }
 
+    [TestMethod]
+    public async Task AnimateAsync_ACancellationQueuedBeforeAReplacement_LeavesTheReplacementAlone()
+    {
+        using var ctx = new BmotionTestContext();
+        var cut = RenderBlack(ctx);
+        using var cts = new CancellationTokenSource();
+        await cut.InvokeAsync(async () =>
+            await cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ffffff"), Bm.Tween(1, ease: BmEase.Linear), cts.Token));
+        await ctx.RunFramesAsync(0, 300);
+
+        await cut.InvokeAsync(() =>
+        {
+            // Cancelled off the renderer's context (CancelAfter's timer): the stop is queued on it, behind this.
+            Task.Run(cts.Cancel).Wait();
+            // Before the queued stop runs, a newer animation takes the property over.
+            _ = cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ff0000"), Bm.Tween(1, ease: BmEase.Linear));
+        });
+        await cut.InvokeAsync(() => { }); // the queued stop has run
+        var whenCancelled = State(ctx, "box").StringValues["backgroundColor"];
+
+        Assert.IsTrue(State(ctx, "box").HasActiveAnimations, "the stop belongs to the animation the newer one replaced");
+        await ctx.RunFramesAsync(316, 1500);
+        Assert.AreNotEqual(whenCancelled, State(ctx, "box").StringValues["backgroundColor"]);
+    }
+
     // ── Unmounted while initialising ──────────────────────────────────────────
 
     private static IRenderedComponent<ToggleHost> RenderInteractive(BmotionTestContext ctx)

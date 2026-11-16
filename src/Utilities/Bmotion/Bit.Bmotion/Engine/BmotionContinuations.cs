@@ -39,6 +39,9 @@ internal static class BmotionContinuations
     /// <para>
     /// Disposing the registration (on the caller's context) also drops a callback already posted and not yet run:
     /// the animation it would stop has settled, and a later one on the same properties must not be stopped by it.
+    /// The disposal is itself often posted once the animation settles, so a callback can still run after a newer
+    /// animation took the properties over: <paramref name="work"/> should stop only what is still the animation's own
+    /// (see <see cref="BmotionAnimationEngine.StopOwned"/>).
     /// </para>
     /// </summary>
     internal static IDisposable RegisterOnCallerContext(this CancellationToken token, Action work)

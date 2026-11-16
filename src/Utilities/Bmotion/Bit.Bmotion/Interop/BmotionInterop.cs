@@ -263,6 +263,10 @@ public sealed class BmotionInterop : IBmotionInterop
                     ["fixedRoot"] = options.FixedRoot,
                 });
 
+    /// <summary>The element's rect with the translation it shows backed out, read in one measurement.</summary>
+    public async ValueTask<BmotionBoundingRect?> GetLayoutBoxAsync(string elementId)
+        => await (await Module()).InvokeAsync<BmotionBoundingRect?>("getLayoutBox", elementId);
+
     /// <summary>Run a FLIP animation via the Web Animations API.</summary>
     public async ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
         string elementId, BmotionFlip flip, string? finalTransform, DotNetObjectReference<T>? dotnetRef) where T : class

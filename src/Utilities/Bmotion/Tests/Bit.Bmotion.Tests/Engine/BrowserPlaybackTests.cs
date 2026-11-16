@@ -445,6 +445,51 @@ public partial class BrowserPlaybackTests
     }
 
     [TestMethod]
+    public async Task ADragStartOnServer_ReplaysTheRestOfAFadeThatSharedTheTransformsAnimation()
+    {
+        // One browser animation of x and opacity: the bridge cancels all of it as the drag takes the transform over.
+        var (engine, interop) = NewEngine(inProcess: false);
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("x", 0.0), ("opacity", 0.0)));
+        await engine.AnimateToAsync("el", Values(("x", 100.0), ("opacity", 1.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        await Task.Delay(100);
+
+        engine.GetCurrentXY("el");
+        await WaitUntilAsync(() => interop.CountOf("playWaapiAnimation") == 2);
+
+        // Without a frame loop the fade doesn't land at once: the browser plays the rest of it, and only it.
+        Assert.IsTrue(Keyframes(interop).All(k => !k.ContainsKey("transform")), "the drag has the transform");
+        Assert.IsTrue(Keyframes(interop).Any(k => k.ContainsKey("opacity")));
+        Assert.IsLessThan(4000.0, (double)Timing(interop)["duration"]!, "what was left of it");
+        Assert.IsGreaterThan(3000.0, (double)Timing(interop)["duration"]!);
+        CollectionAssert.AreEqual(new[] { "opacity" }, State(engine).BrowserProperties.ToArray());
+        Assert.IsLessThan(0.5, State(engine).NumericValues["opacity"], "not landed on its target");
+    }
+
+    [TestMethod]
+    public async Task AnExitStartingWhileAGestureReadsThePage_KeepsItsPropertiesFromTheGesture()
+    {
+        var (engine, interop) = NewEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("x", 0.0)));
+        interop.ComputedStyle = (_, property) => property == "opacity" ? "1" : null;
+        var read = new TaskCompletionSource();
+        interop.ReadStylesGate = read.Task;
+
+        // The hover's opacity has never been seen: its start reads it off the page first - and the exit, which
+        // animates the opacity, starts meanwhile.
+        var hover = engine.ActivateGestureLayerAsync("el", "hover", Values(("opacity", 0.5), ("x", 20.0)), Bm.Tween(1).ToConfig()).AsTask();
+        engine.BeginExit("el", ["opacity"]);
+        read.SetResult();
+        await hover;
+
+        // The hover plays the rest, and what it sets the opacity to waits for a re-entry.
+        CollectionAssert.AreEqual(new[] { "x" }, State(engine).BrowserProperties.ToArray());
+        Assert.AreEqual(1.0, State(engine).NumericValues["opacity"], 1e-9);
+        Assert.AreEqual(0.5, engine.EndExit("el")?["opacity"]);
+    }
+
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public async Task PeekingAtXY_LeavesTheBrowserAnimationsPlaying(bool inProcess)

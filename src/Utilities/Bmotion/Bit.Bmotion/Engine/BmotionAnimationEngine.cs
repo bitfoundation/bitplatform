@@ -231,6 +231,9 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     /// <paramref name="onSettled"/> runs once the animation is over however it ended - completed,
     /// superseded or stopped - where <paramref name="onComplete"/> runs only on a natural finish.
     /// </para>
+    /// <para>
+    /// <paramref name="owner"/> names the animation for <see cref="StopOwned(string, IEnumerable{string}, object)"/>.
+    /// </para>
     /// </summary>
     internal async ValueTask AnimateToAsync(
         string elementId,
@@ -239,7 +242,8 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         Func<Task>? onComplete = null,
         bool setAsBase = false,
         BmotionTransitionConfig? baseTransition = null,
-        Action? onSettled = null)
+        Action? onSettled = null,
+        object? owner = null)
     {
         if (!_elements.TryGetValue(elementId, out var state)) { onSettled?.Invoke(); return; }
         if (setAsBase) state.SetBaseAnimation(values, baseTransition ?? transition);
@@ -261,7 +265,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             });
         }
 
-        await PlayAsync(elementId, state, values, transition, tcs);
+        await PlayAsync(elementId, state, values, transition, tcs, owner: owner);
     }
 
     /// <summary>Animate to the given values and await animation completion.</summary>
@@ -466,6 +470,18 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     }
 
     /// <summary>
+    /// Stops what of <paramref name="keys"/> still plays the animation <paramref name="owner"/> started (see
+    /// <see cref="AnimateToAsync"/>): not a key another start has taken since, nor one that has come to rest - a
+    /// cancellation reaching an animation after it lost them leaves whatever took them over alone.
+    /// </summary>
+    internal void StopOwned(string elementId, IEnumerable<string> keys, object owner)
+    {
+        if (!_elements.TryGetValue(elementId, out var state)) return;
+        var own = keys.Where(key => state.StillPlays(key, owner)).ToArray();
+        if (own.Length > 0) Stop(elementId, own);
+    }
+
+    /// <summary>
     /// Sets (or clears) the element's transform-string rewrite - see <see cref="BmTransformTemplate"/>.
     /// </summary>
     internal void SetTransformTemplate(string elementId, BmTransformTemplate? template)
@@ -516,7 +532,8 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         _gestureGenerations[(elementId, gesture)] = generation;
         // A gesture's target is not the element's own: what it borrows from the stylesheet stays borrowed.
         await PlayAsync(elementId, state, request.Values, request.Transition, tcs: null, claim: false,
-            isCurrent: () => _gestureGenerations.TryGetValue((elementId, gesture), out var g) && g == generation);
+            isCurrent: () => _gestureGenerations.TryGetValue((elementId, gesture), out var g) && g == generation,
+            yieldsToExit: true);
     }
 
     public async ValueTask DeactivateGestureLayerAsync(string elementId, string gesture)
@@ -528,7 +545,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         if (state.DeactivateGestureLayer(gesture) is not { } deactivation
             || state.WithoutExitKeys(deactivation) is not { } request) return;
         await PlayAsync(elementId, state, request.Values, request.Transition, tcs: null, claim: false,
-            stylesheetKeys: request.StylesheetKeys);
+            stylesheetKeys: request.StylesheetKeys, yieldsToExit: true);
     }
 
     /// <summary>
@@ -616,8 +633,72 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         // this element's transform, so fold their current values (from the mirrored plans) into state.
         // The rest - a fade, a colour, a scroll-linked animation - play on: a drag takes the transform
         // over and nothing else, and what a cancelled plan animated besides it carries on from where it was.
-        if (state.RealizeWaapiPlans(DragKeys, continueOthers: true) != null) KickFlush(elementId, state);
+        // Without a frame loop (Blazor Server) nothing here can carry it on: the browser plays the rest of it again.
+        var replays = _interop.IsInProcess ? null : new List<BmotionElementAnimationState.PlanReplay>();
+        if (state.RealizeWaapiPlans(DragKeys, continueOthers: true, replays: replays) != null) KickFlush(elementId, state);
+        if (replays is not null)
+            foreach (var replay in replays) _ = ReplayInBrowserAsync(elementId, state, replay);
         return state.GetCurrentXY();
+    }
+
+    // How finely a replay samples the curve it plays the rest of, and at most how many frames it sends.
+    private const double ReplayFrameMs = 1000.0 / 60;
+    private const int MaxReplayFrames = 300;
+
+    /// <summary>
+    /// Plays the rest of the keys an interrupted browser animation still had to play (<paramref name="replay"/>) in the
+    /// browser again: the same curve, sampled from where it had got to, as keyframes. The animation's completion settles
+    /// once the replay is over - as superseded, as when a frame-loop driver carries an interrupted one on.
+    /// </summary>
+    private async Task ReplayInBrowserAsync(string elementId, BmotionElementAnimationState state, BmotionElementAnimationState.PlanReplay replay)
+    {
+        var plan = replay.Plan;
+        bool forever = double.IsInfinity(plan.TotalMs);
+        // A delay not yet over stays a delay; what repeats forever loops one period on from here - an iteration, or
+        // the way out and back of a mirrored one.
+        double from = Math.Max(replay.PlayedMs, plan.DelayMs);
+        double end = forever ? from + (Math.Max(plan.DurationMs, 1) * (plan.Mirror ? 2 : 1)) : plan.TotalMs;
+        int frames = Math.Clamp((int)Math.Ceiling((end - from) / ReplayFrameMs) + 1, 2, MaxReplayFrames);
+
+        var values = new Dictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var key in replay.Keys)
+        {
+            if (plan.Strings?.ContainsKey(key) == true)
+            {
+                var track = new string[frames];
+                for (int i = 0; i < frames; i++) track[i] = plan.StringAt(key, At(i));
+                values[key] = track;
+            }
+            else
+            {
+                var track = new double[frames];
+                for (int i = 0; i < frames; i++) track[i] = plan.ValueAt(key, At(i));
+                values[key] = track;
+            }
+        }
+
+        var transition = new BmotionTransitionConfig
+        {
+            Type = BmotionTransitionType.Tween,
+            Duration = (end - from) / 1000,
+            Delay = (from - replay.PlayedMs) / 1000,
+            Ease = BmEase.Linear,
+            RepeatInfinite = forever,
+        };
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        try
+        {
+            // Still the animation that was interrupted: whoever started it can still stop it.
+            await PlayAsync(elementId, state, values, transition, tcs, claim: false, owner: state.StartedBy(replay.Keys[0]));
+        }
+        catch
+        {
+            tcs.TrySetResult(false);
+        }
+        await tcs.Task;
+        plan.Completion?.TrySetResult(false);
+
+        double At(int i) => from + ((end - from) * i / (frames - 1));
     }
 
     /// <summary>The keys a drag takes over; see <see cref="GetCurrentXY(string)"/>.</summary>
@@ -929,11 +1010,20 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     /// <param name="isCurrent">
     /// Whether this start still stands - checked after the reads, which a later start may have overtaken.
     /// </param>
+    /// <param name="yieldsToExit">
+    /// A gesture's start, which leaves the properties of an exit alone (see <see cref="ActivateGestureLayerAsync"/>):
+    /// checked again after the reads, as the element may have begun its exit meanwhile.
+    /// </param>
+    /// <param name="owner">
+    /// Names this start, so what can stop it later stops only what is still its own
+    /// (<see cref="StopOwned(string, IEnumerable{string}, object)"/>); <c>null</c> when nothing will ask.
+    /// </param>
     private async ValueTask PlayAsync(
         string elementId, BmotionElementAnimationState state,
         Dictionary<string, object?> values, BmotionTransitionConfig? transition,
         TaskCompletionSource<bool>? tcs, bool claim = true,
-        IReadOnlyCollection<string>? stylesheetKeys = null, Func<bool>? isCurrent = null)
+        IReadOnlyCollection<string>? stylesheetKeys = null, Func<bool>? isCurrent = null,
+        bool yieldsToExit = false, object? owner = null)
     {
         if (claim) state.Claim(values.Keys);
 
@@ -955,6 +1045,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         {
             // The read writes the measured targets into what it is given: a copy, as the caller's may be stored - a
             // base or gesture-layer target, which must keep its "auto" for the next time it plays.
+            var requested = values;
             values = new Dictionary<string, object?>(values, values.Comparer);
             landsOnAuto = await ReadStylesheetAsync(elementId, state, values, unknown, stylesheetKeys, fromAuto, toAuto);
             if ((isCurrent is not null && !isCurrent()) || !IsLive(elementId, state))
@@ -962,10 +1053,27 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
                 tcs?.TrySetResult(false);
                 return;
             }
+            // The element may have begun its exit while this read: a gesture leaves the properties the exit took
+            // alone from now on (what it sets them to is kept for a re-entry), and plays the rest.
+            if (yieldsToExit && state.Exiting)
+            {
+                if (state.WithoutExitKeys(new(requested, transition, stylesheetKeys)) is not { } kept)
+                {
+                    tcs?.TrySetResult(false);
+                    return;
+                }
+                foreach (var key in requested.Keys)
+                    if (!kept.Values.ContainsKey(key)) values.Remove(key);
+                landsOnAuto?.RemoveAll(key => !values.ContainsKey(key));
+                stylesheetKeys = kept.StylesheetKeys;
+            }
             // The read can interleave with another start on the same keys, which may have handed them to the
             // browser since: take them back, so this one is their only owner.
             if (InterruptWaapiOverlaps(elementId, state, values.Keys)) interruptedAt = Environment.TickCount64;
         }
+
+        // From here the keys play this start: whoever named an earlier one no longer stops them.
+        state.NoteStarted(values.Keys, owner);
 
         var (loopValues, instantValues, browserValues, loopReason) = Partition(state, values, transition, explain: observed);
 

@@ -25,6 +25,7 @@ public class SpringDriverTests
 
     [TestMethod]
     [DataRow(0.0, 10.0)]
+    [DataRow(0.0, 0.0)]
     [DataRow(-50.0, 10.0)]
     [DataRow(100.0, -5.0)]
     public void ASpringThatCouldNeverSettle_StillSettlesOnItsTarget(double stiffness, double damping)
@@ -379,6 +380,7 @@ public class SpringDriverTests
 
     [TestMethod]
     [DataRow(0.0, 10.0)]
+    [DataRow(0.0, 0.0)]
     [DataRow(-50.0, 10.0)]
     [DataRow(100.0, -5.0)]
     public void ASpringThatCouldNeverSettle_IsScheduledForTheSpringThatRuns(double stiffness, double damping)

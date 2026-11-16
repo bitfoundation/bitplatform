@@ -138,6 +138,27 @@ public class AnimateServiceTests
     }
 
     [TestMethod]
+    public async Task UnderReducedMotion_OnTheFrameLoop_AFadeKeepsItsOwnTransition()
+    {
+        var interop = new FakeBmotionInterop { SelectorResolver = s => [s.TrimStart('#')] };
+        interop.WebAnimationsSupported = false;
+        var engine = new BmotionAnimationEngine(interop, null, new BitBmotionOptions { ReducedMotion = BmReducedMotionMode.Always });
+        await using var _ = engine;
+        var service = new BmotionAnimateService(engine, interop);
+        engine.RegisterElement("box", new Dictionary<string, object?> { ["opacity"] = 0.0 });
+        var transition = Bm.Tween(1, BmEase.Linear);
+        transition.Properties = new() { ["opacity"] = Bm.Tween(0.2, BmEase.Linear) };
+
+        await service.AnimateAsync("#box", Bm.To(x: 100, opacity: 1), transition);
+        RunFrames(engine, 0, 96);
+
+        // A tenth of a second into the fade's own 0.2 s - not a tenth into the 1 s transition around it.
+        var box = engine.GetDiagnostics().Single(d => d.Id == "box");
+        Assert.AreEqual(100, box.Transforms["x"], 1e-6, "the slide landed");
+        Assert.AreEqual(0.5, box.NumericValues["opacity"], 0.1);
+    }
+
+    [TestMethod]
     public async Task BySelector_CancellingTheTokenMidFlight_StopsTheAnimation()
     {
         var (service, engine, interop) = Create();

@@ -227,6 +227,26 @@ public class ControlsTimeTests
     }
 
     [TestMethod]
+    public async Task SeekingUnderReducedMotion_OnTheFrameLoop_MovesTheFadeThatStillPlays()
+    {
+        var interop = new FakeBmotionInterop { SelectorResolver = s => [s.TrimStart('#')] };
+        interop.WebAnimationsSupported = false;
+        var engine = new BmotionAnimationEngine(interop, null, new BitBmotionOptions { ReducedMotion = BmReducedMotionMode.Always });
+        await using var _ = engine;
+        var service = new BmotionAnimateService(engine, interop);
+        engine.RegisterElement("box", new Dictionary<string, object?> { ["opacity"] = 0.0 });
+
+        var controls = await service.AnimateAsync("#box", Bm.To(opacity: 1), Bm.Tween(1, BmEase.Linear));
+        for (int i = 0; i <= 50; i++) engine.ComputeFrame(i * 16);
+
+        // The fade plays with its own transition under the instant one reduced motion wraps it in: the seek moves it.
+        controls.Seek(0.25);
+        engine.ComputeFrame(2000);
+
+        Assert.AreEqual(0.25, engine.GetDiagnostics().Single(d => d.Id == "box").NumericValues["opacity"], 0.02);
+    }
+
+    [TestMethod]
     public void SeekRejectsNonFiniteTimes()
     {
         var (service, engine, _) = Create();

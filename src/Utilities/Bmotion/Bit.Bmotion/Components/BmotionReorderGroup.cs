@@ -272,17 +272,17 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
         _cells.Clear();
         _box.Clear();
 
-        // Measure every row's untransformed position (its rect minus any in-flight transform
-        // from a previous, still-settling reorder).
+        // Measure every row's untransformed position: its rect minus any in-flight transform from a previous,
+        // still-settling reorder - backed out by the bridge in the same measurement, as the row may still be moving
+        // (on Blazor Server the engine's value would be read a round trip after the rect).
         foreach (var e in _entries.ToArray()) // a snapshot: a parameter update can rebuild the list while this awaits
         {
-            var rect = await Interop.GetBoundingRectAsync(e.Id);
+            var box = await Interop.GetLayoutBoxAsync(e.Id);
             if (session != _dragSession) return;
-            if (rect is null || e.Ref is null) { _dragged = null; return; }
-            var xy = e.Ref.PeekCurrentXY();
-            _origStart[e.Key] = (Horizontal ? rect.Left - xy.X : rect.Top - xy.Y);
-            _extent[e.Key] = Horizontal ? rect.Width : rect.Height;
-            _box[e.Key] = (rect.Left - xy.X, rect.Top - xy.Y, rect.Width, rect.Height);
+            if (box is null || e.Ref is null) { _dragged = null; return; }
+            _origStart[e.Key] = Horizontal ? box.Left : box.Top;
+            _extent[e.Key] = Horizontal ? box.Width : box.Height;
+            _box[e.Key] = (box.Left, box.Top, box.Width, box.Height);
         }
         foreach (var e in _visualOrder) _cells.Add(_box[e.Key]);
 

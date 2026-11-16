@@ -350,4 +350,27 @@ public class GestureRevertTests
         Assert.AreEqual(0.0, State(ctx, "card").Transforms["x"], 1e-6);
         Assert.AreEqual(1.0, State(ctx, "card").NumericValues["opacity"], 1e-6);
     }
+
+    [TestMethod]
+    public async Task AHoverStillOnAtTheReEntry_WinsOverTheEnterTargetForWhatTheExitKeptFromIt()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
+        ctx.Options.InertWhileExiting = false;
+        // The Animate target names x too: replaying it must not undo the hover on x.
+        var card = PresenceCard(Bm.To(opacity: 1, x: 0), Bm.To(x: 50), Bm.To(opacity: 0, x: -100));
+        var cut = ctx.Render<BmotionAnimatePresence>(ps => ps.Add(p => p.IsPresent, true).Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(0, 1100);
+
+        // The hover starts while the exit has x; the presence comes back with the pointer still on the card.
+        cut.Render(ps => ps.Add(p => p.IsPresent, false).Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(1116, 1300);
+        await cut.InvokeAsync(Events(ctx, "card").OnPointerEnter);
+        await ctx.RunFramesAsync(1316, 1500);
+        cut.Render(ps => ps.Add(p => p.IsPresent, true).Add(p => p.ChildContent, card));
+        await ctx.RunFramesAsync(1516, 3000);
+
+        Assert.AreEqual(50.0, State(ctx, "card").Transforms["x"], 1e-6);
+        Assert.AreEqual(1.0, State(ctx, "card").NumericValues["opacity"], 1e-6);
+    }
 }

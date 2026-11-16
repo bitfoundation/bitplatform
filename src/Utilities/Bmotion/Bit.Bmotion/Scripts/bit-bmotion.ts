@@ -499,9 +499,26 @@ function _releaseFocusable(el: HTMLElement, owner: string): void {
 }
 
 // Whether the element holds a control of its own that takes focus (a native button or link it wraps): the keyboard
-// reaches that control, so the wrapper needs no tab stop - nor a second one beside it.
+// reaches that control, so the wrapper needs no tab stop - nor a second one beside it. Only one the keyboard can
+// reach counts: not a disabled control, a hidden input, or one that isn't rendered, inert or invisible.
 function _hasFocusableDescendant(el: HTMLElement): boolean {
-    return !!el.querySelector('a[href], button, input, select, textarea, summary, iframe, [contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"])');
+    const candidates = el.querySelectorAll<HTMLElement>('a[href], button, input, select, textarea, summary, iframe, [contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"])');
+    for (const c of candidates) {
+        if (_keyboardReachable(c, el)) return true;
+    }
+    return false;
+}
+
+function _keyboardReachable(c: HTMLElement, within: HTMLElement): boolean {
+    if (c.matches(':disabled')) return false;
+    if (c instanceof HTMLInputElement && c.type === 'hidden') return false;
+    if (c.hasAttribute('tabindex') && c.tabIndex < 0) return false;
+    // Inert inside the wrapper: the wrapper's own inertness (an exit) passes, and goes, with the wrapper.
+    const inert = c.closest('[inert]');
+    if (inert && inert !== within && within.contains(inert)) return false;
+    if (c.getClientRects().length === 0) return false; // display: none, or not rendered at all
+    const visibility = getComputedStyle(c).visibility;
+    return visibility !== 'hidden' && visibility !== 'collapse';
 }
 
 export function registerElement(elementId: string): boolean {
@@ -2089,6 +2106,21 @@ export function getBoundingRect(elementId: string, options?: { trackScroll?: boo
     if (!el) return null;
     // A layout hold is the FLIP's inverse of where the layout put the element, not where the layout put it.
     return _withoutLayoutHold(el, () => _measure(el, options));
+}
+
+/**
+ * The element's box where the layout places it: its rect with the translation it shows backed out - its transform,
+ * an animation of it in flight included, and a drag shown ahead of .NET - read in the same measurement, so the two
+ * describe the same moment (a reorder group measuring items that may still be moving).
+ */
+export function getLayoutBox(elementId: string): BmMeasured | null {
+    const el = document.getElementById(elementId);
+    if (!el) return null;
+    return _withoutLayoutHold(el, () => {
+        const m = _measure(el);
+        const t = _shownTranslation(el);
+        return { x: m.x - t.x, y: m.y - t.y, width: m.width, height: m.height, top: m.top - t.y, left: m.left - t.x };
+    });
 }
 
 type BmMeasured = { x: number; y: number; width: number; height: number; top: number; left: number };

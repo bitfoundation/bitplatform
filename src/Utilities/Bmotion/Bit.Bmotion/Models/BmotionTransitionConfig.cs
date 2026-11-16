@@ -399,7 +399,10 @@ internal sealed class BmotionTransitionConfig
         double d = Damping;
         if (Bounce is { } bounce) (k, d) = SpringFromBounce(VisualDuration ?? Duration, bounce, mass);
         bool settles = k > 0 && d >= 0;
-        return (k > 0 ? k : DefaultSpringStiffness, d >= 0 ? d : DefaultSpringDamping, mass, settles);
+        // A stiffness that falls back takes the default damping with it when the one given is zero: the default
+        // stiffness with no damping would oscillate forever. Zero damping beside a valid stiffness is kept.
+        double damping = d < 0 || (k <= 0 && d == 0) ? DefaultSpringDamping : d;
+        return (k > 0 ? k : DefaultSpringStiffness, damping, mass, settles);
     }
 
     /// <summary>
