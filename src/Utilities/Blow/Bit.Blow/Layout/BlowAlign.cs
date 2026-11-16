@@ -172,13 +172,20 @@ public static class BlowAlign
         return moved;
     }
 
-    /// <summary>The nodes a user could have moved by hand: visible and draggable.</summary>
+    /// <summary>
+    /// The nodes a user could have moved by hand: visible - neither hidden nor inside a hidden node among the given
+    /// ones - and draggable.
+    /// </summary>
     private static List<BlowNode> Movable(IEnumerable<BlowNode> nodes)
     {
+        var all = nodes as IReadOnlyList<BlowNode> ?? [.. nodes];
+        var index = new Dictionary<string, BlowNode>(StringComparer.Ordinal);
+        foreach (var n in all) index.TryAdd(n.Id, n);
+
         var list = new List<BlowNode>();
-        foreach (var n in nodes)
+        foreach (var n in all)
         {
-            if (n.Hidden || !n.Draggable) continue;
+            if (!n.Draggable || !BlowEdgeLayout.IsShown(n, index.GetValueOrDefault)) continue;
             list.Add(n);
         }
         return list;

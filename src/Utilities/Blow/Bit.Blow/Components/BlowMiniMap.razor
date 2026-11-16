@@ -32,7 +32,7 @@
     <svg class="bit-blow-minimap-graph" width="100%" height="100%" viewBox="@ViewBox" aria-hidden="true">
         @foreach (var node in Nodes)
         {
-            if (node.Hidden) continue;
+            if (!Flow.IsNodeShown(node)) continue;
             var r = node.GetRect();
             @if (NodeTemplate is not null)
             {
@@ -192,7 +192,7 @@
         bool any = false;
         foreach (var n in Nodes)
         {
-            if (n.Hidden) continue;
+            if (!Flow.IsNodeShown(n)) continue;
             any = true;
             var r = n.GetRect();
             minX = Math.Min(minX, r.X);
@@ -402,7 +402,7 @@
         BlowNode? found = null;
         foreach (var n in Nodes)
         {
-            if (n.Hidden) continue;
+            if (!Flow.IsNodeShown(n)) continue;
             var r = n.GetRect();
             if (p.X >= r.Left && p.X <= r.Right && p.Y >= r.Top && p.Y <= r.Bottom) found = n;
         }
