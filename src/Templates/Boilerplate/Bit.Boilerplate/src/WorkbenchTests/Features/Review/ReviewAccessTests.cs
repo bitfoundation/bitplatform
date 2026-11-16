@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using Bit.Bcrdt;
 
 namespace Boilerplate.WorkbenchTests.Features.Review;
 
@@ -101,19 +102,19 @@ public class ReviewAccessTests
 
         using (var stranger = new ClientWebSocket())
         {
-            await Assert.ThrowsAsync<WebSocketException>(() => stranger.ConnectAsync(address, TestContext.CancellationToken));
+            await AssertRefused(stranger, address);
         }
 
         using (var guesser = new ClientWebSocket())
         {
             guesser.Options.SetRequestHeader(WorkbenchReviewRelay.SecretHeader, new string('0', 64));
-            await Assert.ThrowsAsync<WebSocketException>(() => guesser.ConnectAsync(address, TestContext.CancellationToken));
+            await AssertRefused(guesser, address);
         }
 
         using (var otherDocument = new ClientWebSocket())
         {
             otherDocument.Options.SetRequestHeader(WorkbenchReviewRelay.SecretHeader, WorkbenchReviewRelay.Secret);
-            await Assert.ThrowsAsync<WebSocketException>(() => otherDocument.ConnectAsync(new UriBuilder(address) { Path = "ws/review/another-document" }.Uri, TestContext.CancellationToken));
+            await AssertRefused(otherDocument, new UriBuilder(address) { Path = "ws/review/another-document" }.Uri);
         }
 
         using var workbench = new ClientWebSocket();
@@ -122,5 +123,22 @@ public class ReviewAccessTests
         await workbench.ConnectAsync(address, TestContext.CancellationToken);
 
         Assert.AreEqual(WebSocketState.Open, workbench.State);
+    }
+
+    private async Task AssertRefused(ClientWebSocket socket, Uri address)
+    {
+        await socket.ConnectAsync(address, TestContext.CancellationToken);
+
+        var buffer = new byte[4096];
+        var refusal = await socket.ReceiveAsync(buffer, TestContext.CancellationToken);
+        var message = BcrdtSyncProtocol.Decode(buffer.AsMemory(0, refusal.Count));
+
+        Assert.AreEqual(BcrdtSyncMessageKind.Auth, message.Kind);
+        Assert.IsFalse(BcrdtSyncProtocol.DecodeAuth(message.Payload).Permitted);
+
+        var close = await socket.ReceiveAsync(buffer, TestContext.CancellationToken);
+
+        Assert.AreEqual(WebSocketMessageType.Close, close.MessageType);
+        Assert.AreEqual(WebSocketCloseStatus.PolicyViolation, close.CloseStatus);
     }
 }
