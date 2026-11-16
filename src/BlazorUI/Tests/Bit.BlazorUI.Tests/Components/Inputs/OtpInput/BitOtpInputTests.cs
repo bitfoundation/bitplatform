@@ -1519,10 +1519,11 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitOtpInputShouldNotCallOnFillAgainWhenTheBoundValueKeepsTheCompletedCode()
+    public async Task BitOtpInputShouldNotCallOnFillAgainWhenARestrictionChangeKeepsTheCompletedCode()
     {
-        // A re-render that hands the component the code it already holds is no clearing, so it must not
-        // reopen the guard that keeps a keystroke over the complete code from submitting it twice.
+        // A change of the restrictions re-applies the code to the inputs, and one that leaves the completed
+        // code as it was is no clearing, so it must not reopen the guard that keeps the very same code from
+        // being submitted twice.
         string? value = null;
         var onFillCallCount = 0;
 
@@ -1537,11 +1538,196 @@ public class BitOtpInputTests : BunitTestContext
         await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
         Assert.AreEqual(1, onFillCallCount);
 
-        com.Render(parameters => parameters.Add(p => p.Value, "12"));
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.Uppercase, true);
+        });
 
         await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
 
+        Assert.AreEqual("12", value);
         Assert.AreEqual(1, onFillCallCount);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotCallOnFillAgainWhenTheBoundValueLagsBehindTheCompletedCode()
+    {
+        // A parent re-rendered in the middle of an async ValueChanged hands the component the value it had
+        // before the code was completed, and then the completed code again. The inputs end up showing the
+        // code that was already reported, so the very same code arriving again must not be submitted twice.
+        string? value = null;
+        var onFillCallCount = 0;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnFill, _ => onFillCallCount++);
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
+        Assert.AreEqual(1, onFillCallCount);
+
+        com.Render(parameters => parameters.Add(p => p.Value, "1"));
+        com.Render(parameters => parameters.Add(p => p.Value, "12"));
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
+
+        Assert.AreEqual(1, onFillCallCount);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldCallOnFillAgainForTheSameCodeAfterTheValueIsCutShort()
+    {
+        // A partial code put into the inputs by the consumer (a roll back to what was typed so far) takes
+        // the completed code out of them just like a clearing does.
+        string? value = null;
+        var filledValues = new List<string?>();
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnFill, v => filledValues.Add(v));
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+        CollectionAssert.AreEqual(new[] { "12" }, filledValues);
+
+        com.Render(parameters => parameters.Add(p => p.Value, "1"));
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+
+        Assert.AreEqual("12", value);
+        CollectionAssert.AreEqual(new[] { "12", "12" }, filledValues);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldCallOnFillAgainForTheSameCodeAfterItWasReplacedByAnotherCompleteCode()
+    {
+        // Another complete code put into the inputs by the consumer (a prefilled or suggested code) takes
+        // the one that was reported out of them, so entering that one again whole is a new fill.
+        string? value = null;
+        var filledValues = new List<string?>();
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnFill, v => filledValues.Add(v));
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+        CollectionAssert.AreEqual(new[] { "12" }, filledValues);
+
+        com.Render(parameters => parameters.Add(p => p.Value, "34"));
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+
+        Assert.AreEqual("12", value);
+        CollectionAssert.AreEqual(new[] { "12", "12" }, filledValues);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldCallOnFillAgainForTheSameCodeAfterARestrictionChangeDroppedPartOfIt()
+    {
+        // A narrowed Pattern that drops characters of the completed code takes it out of the inputs, so the
+        // very same code arriving whole once the Pattern allows it again is a new fill.
+        string? value = null;
+        var filledValues = new List<string?>();
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnFill, v => filledValues.Add(v));
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+        CollectionAssert.AreEqual(new[] { "12" }, filledValues);
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.Pattern, "^[1]$");
+        });
+        Assert.AreEqual("1", value);
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.Pattern, (string?)null);
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+
+        Assert.AreEqual("12", value);
+        CollectionAssert.AreEqual(new[] { "12", "12" }, filledValues);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldCallOnFillAgainForTheSameCodeAfterItWasRejected()
+    {
+        // A rejection that leaves the code in the inputs for the user to retry must not swallow the retry.
+        string? value = null;
+        var filledValues = new List<string?>();
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnFill, v => filledValues.Add(v));
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+        CollectionAssert.AreEqual(new[] { "12" }, filledValues);
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+        CollectionAssert.AreEqual(new[] { "12", "12" }, filledValues);
+
+        // A second keystroke over the code that was just retried is guarded again.
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
+        CollectionAssert.AreEqual(new[] { "12", "12" }, filledValues);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldCallOnFillAgainForTheSameCodeAfterTheLoadingIsTurnedOff()
+    {
+        // The busy state turned off is the answer to the submitted code (a network error, say), and the code
+        // left in the inputs is the one to retry.
+        string? value = null;
+        var filledValues = new List<string?>();
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnFill, v => filledValues.Add(v));
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+        CollectionAssert.AreEqual(new[] { "12" }, filledValues);
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.Loading, true);
+        });
+
+        com.Render(parameters => parameters.Add(p => p.Loading, false));
+
+        await com.InvokeAsync(() => com.Instance._SetValue("12", 0));
+
+        CollectionAssert.AreEqual(new[] { "12", "12" }, filledValues);
     }
 
     [TestMethod]
