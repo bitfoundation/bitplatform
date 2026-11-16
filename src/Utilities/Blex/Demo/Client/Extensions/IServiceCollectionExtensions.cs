@@ -102,7 +102,8 @@ public static class IServiceCollectionExtensions
             options.SyncAcrossTabs = true;
         });
 
-        // In-app undo/redo across every store. <BlexProvider> calls Start() once rehydration finishes.
+        // In-app undo/redo across every store. <BlexProvider> calls Start() before storage is read, and the
+        // history takes each store's stored state into its baseline as it arrives.
         // No filter here: the docs demo is more useful when every action is its own step.
         services.AddBitBlexHistory(maxEntries: 50);
 

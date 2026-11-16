@@ -82,7 +82,7 @@ public class ManagerRegressionTests
         manager.Register(counter);
         manager.Register(profile);
 
-        // Subscribed before the history starts, as components are when <BlexProvider> starts it after hydration.
+        // Subscribed before the history starts, as a component that initialized before the history did.
         using var reactor = manager.SubscribeToAction(CounterStore.Actions.Increment, _ => profile.SignIn("ada"));
         using var history = new BlexHistory(manager);
         history.Start();

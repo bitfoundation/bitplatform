@@ -50,7 +50,7 @@ cd src/Utilities/Blex
 
 # Browser suites (builds the harness hosts first; the hybrid host only on Windows)
 dotnet build Tests/Bit.Blex.Tests.E2E/Bit.Blex.Tests.E2E.csproj
-pwsh Tests/Bit.Blex.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium
+pwsh Tests/Bit.Blex.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium
 cd Tests/Bit.Blex.Tests.E2E && dotnet test
 
 # One mode only

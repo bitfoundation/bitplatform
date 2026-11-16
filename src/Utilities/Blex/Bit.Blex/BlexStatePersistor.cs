@@ -789,6 +789,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             return;
         }
 
+        bool firstRead;
         lock (_saveGate)
         {
             // It left the manager while storage was read: its state is no longer anyone's to restore, and
@@ -796,10 +797,10 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             if (!_manager.Stores.Contains(store))
                 return;
 
-            _hydrated.Add(store);
+            firstRead = _hydrated.Add(store);
         }
 
-        var slice = await ReadSliceAsync(store, sb, raw, cancellationToken).ConfigureAwait(true);
+        var (slice, storedKeys) = await ReadSliceAsync(store, sb, raw, cancellationToken).ConfigureAwait(true);
 
         // What the hold collected before the apply is replaced by the stored state, unless nothing was stored; what a
         // restore subscriber changes during the apply is a change of its own, made after it, and is written either way.
@@ -811,7 +812,13 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             BeginApplying(store);
             try
             {
-                sb.ApplyRestoredState(slice);
+                // The first read is the state the store would have held all along: undo/redo takes it into its baseline
+                // (and every step it took meanwhile) instead of treating it as a move away from them. A later read --
+                // RehydrateAsync over a store read before -- is a restore like any other.
+                if (firstRead)
+                    _manager.ApplyStoredState(sb, slice, storedKeys);
+                else
+                    sb.ApplyRestoredState(slice);
             }
             catch (Exception ex)
             {
@@ -839,12 +846,13 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
 
     /// <summary>
     /// Unwraps, migrates, strips and merges a stored payload: the state to apply, or <c>null</c> when
-    /// there is none. An unreadable payload is reported and removed from storage.
+    /// there is none, and the keys of it that hold the stored value (see <see cref="StoredKeys"/>).
+    /// An unreadable payload is reported and removed from storage.
     /// </summary>
-    private async Task<JsonObject?> ReadSliceAsync(IBlexStore store, BlexStoreBase sb, string? raw, CancellationToken cancellationToken)
+    private async Task<(JsonObject? Slice, IReadOnlyCollection<string> StoredKeys)> ReadSliceAsync(IBlexStore store, BlexStoreBase sb, string? raw, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(raw))
-            return null;
+            return (null, []);
 
         JsonObject? slice = null;
         try
@@ -858,7 +866,38 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             await TryRemoveAsync(store, cancellationToken).ConfigureAwait(true);
         }
 
-        return Merge(store, sb, StripTransient(sb, slice));
+        var stored = StripTransient(sb, slice);
+
+        // Taken before the merge hook runs: it is handed the stored slice, and may change it.
+        var storedValues = stored is null || _options.Merge is null
+            ? null
+            : stored.ToDictionary(p => p.Key, p => p.Value?.ToJsonString(), StringComparer.Ordinal);
+
+        var merged = Merge(store, sb, stored);
+        return (merged, StoredKeys(merged, storedValues));
+    }
+
+    /// <summary>
+    /// The keys of <paramref name="applied"/> that set the store to its stored value: every one without a merge hook
+    /// (a field kept out of storage is not in it at all); with one, those it left as storage holds them -- not one it
+    /// kept the live value of, or made up from both.
+    /// </summary>
+    private static IReadOnlyCollection<string> StoredKeys(JsonObject? applied, Dictionary<string, string?>? storedValues)
+    {
+        if (applied is null)
+            return [];
+
+        var keys = new List<string>(applied.Count);
+        foreach (var (key, value) in applied)
+        {
+            if (storedValues is null
+                || (storedValues.TryGetValue(key, out var stored) && stored == value?.ToJsonString()))
+            {
+                keys.Add(key);
+            }
+        }
+
+        return keys;
     }
 
     /// <summary>

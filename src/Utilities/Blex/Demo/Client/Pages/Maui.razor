@@ -106,7 +106,7 @@
         <ol class="bb-detail-list">
             <li>resolves every store registered with <code>AddBitBlexStore</code>, which attaches it to the manager;</li>
             <li>rehydrates the persisted stores from <code>Preferences</code>;</li>
-            <li>starts <code>BlexHistory</code> recording, when one is registered - after hydration, so undo's baseline is the state the user loaded.</li>
+            <li>starts <code>BlexHistory</code> recording, when one is registered. Unlike <code>&lt;BlexProvider&gt;</code> it does so after hydration, which completes before the first page can take a tap; either way undo's baseline is the state the user loaded.</li>
         </ol>
         <p>
             None of it can stop the app from starting. A service it cannot resolve - typically a lifetime mismatch under
