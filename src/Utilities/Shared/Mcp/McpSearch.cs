@@ -61,9 +61,10 @@ internal sealed class McpSearch
     /// </summary>
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
     {
-        // "without" as much as "with": "shrink a photo WITHOUT its location" is about the photo and the location, not
-        // about every heading that happens to be phrased "Drawing without a UI".
-        "how", "the", "and", "for", "with", "without", "from", "that", "this", "what", "when", "where", "which", "why", "who", "whom",
+        // "without" as much as "with", and "under": "shrink a photo UNDER 200 KB WITHOUT its location" is about the
+        // photo and the location, not about every heading phrased "Drawing without a UI" or every "underlying". A
+        // member called Without is still found by its name (IsSearchable).
+        "how", "the", "and", "for", "with", "without", "under", "from", "that", "this", "what", "when", "where", "which", "why", "who", "whom",
         "does", "did", "are", "was", "were", "had", "you", "your", "than", "then", "its", "but", "any", "some",
         "please", "help", "about", "into", "way", "make", "want", "need", "would", "should", "could",
         "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto",
@@ -75,14 +76,25 @@ internal sealed class McpSearch
         "of", "on", "or", "so", "to", "up", "us", "we"
     };
 
-    private readonly Lazy<Indexed[]> _entries;
+    private readonly Func<IEnumerable<McpSearchEntry>> _build;
+
+    // Not readonly, and neither are the lazies below: a Lazy whose factory threw answers every later read with the
+    // same exception, so one failed build would break the search until the process restarted. ValueOf replaces a
+    // faulted one, and the next search builds again.
+    private Lazy<Indexed[]> _entries;
 
     /// <summary>
     /// The one- and two-letter words that name something here: the "bg" of a colour variable, the "z" of a
     /// stacking one. A query word that short is dropped unless it is one of these (<see cref="IsSearchable"/>),
     /// because the rest ("a", "in", "do") match everything.
     /// </summary>
-    private readonly Lazy<HashSet<string>> _shortNames;
+    private Lazy<HashSet<string>> _shortNames;
+
+    /// <summary>
+    /// What the entries are called, as they are spelled: a stop word written that way ("Without", the member of
+    /// ExifDirectory) is the name of something here and is searched by, while "without" in a sentence is not.
+    /// </summary>
+    private Lazy<HashSet<string>> _names;
 
     /// <summary>
     /// The words every entry carries because of what the index is about. They separate nothing, and they do
@@ -92,6 +104,9 @@ internal sealed class McpSearch
     /// name is what a caller reaches for first.
     /// </summary>
     private readonly HashSet<string> _ambientWords;
+
+    /// <summary>Whether a query made of nothing but <see cref="_ambientWords"/> is searched by them anyway.</summary>
+    private readonly bool _searchAmbientAlone;
 
     /// <summary>
     /// The words a caller uses for something the library calls otherwise, by the stem of each form of the
@@ -106,15 +121,21 @@ internal sealed class McpSearch
     /// Words a caller uses, and the word the library uses for the same thing. Only a word that means nothing else
     /// in the library belongs here. Its plural reaches the synonym too.
     /// </param>
-    public McpSearch(Func<IEnumerable<McpSearchEntry>> build, IEnumerable<string> ambientWords, IEnumerable<(string Word, string Means)>? synonyms = null)
+    /// <param name="searchAmbientAlone">
+    /// Whether a query made of nothing but ambient words is searched by them as a last resort, which suits a library
+    /// whose name is what a caller reaches for first. When it is not, such a query is left with no terms, as one
+    /// made of filler words is, and nothing is scored for it.
+    /// </param>
+    public McpSearch(Func<IEnumerable<McpSearchEntry>> build, IEnumerable<string> ambientWords, IEnumerable<(string Word, string Means)>? synonyms = null,
+                     bool searchAmbientAlone = true)
     {
-        _entries = new(() => [.. build().Select(entry => new Indexed(entry))]);
-
-        // A number that short ("3" of "3. Start it") names nothing: it only matches the number of a numbered heading.
-        _shortNames = new(() => new(_entries.Value.SelectMany(entry => entry.TitleWords).Where(word => word.Length <= 2 && word.Any(char.IsLetter)),
-                                    StringComparer.OrdinalIgnoreCase));
+        _build = build;
+        _entries = new(BuildEntries);
+        _shortNames = new(BuildShortNames);
+        _names = new(BuildNames);
 
         _ambientWords = new(ambientWords, StringComparer.OrdinalIgnoreCase);
+        _searchAmbientAlone = searchAmbientAlone;
 
         // Keyed by the stem of the plural too: a word and its plural do not always share a stem ("alias" and
         // "aliases"), and a caller asks in either.
@@ -122,6 +143,42 @@ internal sealed class McpSearch
         {
             _synonyms[StemOf(word)] = means;
             _synonyms[StemOf(PluralOf(word))] = means;
+        }
+    }
+
+    private Indexed[] Entries => ValueOf(ref _entries, BuildEntries);
+
+    private Indexed[] BuildEntries()
+    {
+        return [.. _build().Select(entry => new Indexed(entry))];
+    }
+
+    private HashSet<string> BuildShortNames()
+    {
+        // A number that short ("3" of "3. Start it") names nothing: it only matches the number of a numbered heading.
+        return new(Entries.SelectMany(entry => entry.TitleWords).Where(word => word.Length <= 2 && word.Any(char.IsLetter)),
+                   StringComparer.OrdinalIgnoreCase);
+    }
+
+    private HashSet<string> BuildNames()
+    {
+        return new(Entries.Select(entry => WithoutTypeParameters(entry.Entry.Name ?? entry.Entry.Title)), StringComparer.Ordinal);
+    }
+
+    /// <summary>The value of a lazy field, which is replaced when its factory throws, so the next read tries again.</summary>
+    private static T ValueOf<T>(ref Lazy<T> field, Func<T> factory)
+    {
+        var lazy = field;
+
+        try
+        {
+            return lazy.Value;
+        }
+        catch (Exception)
+        {
+            Interlocked.CompareExchange(ref field, new Lazy<T>(factory), lazy);
+
+            throw;
         }
     }
 
@@ -140,7 +197,7 @@ internal sealed class McpSearch
         // Every term against every entry, once: how many places a term is found in is its weight, which every
         // entry's score needs before any of them can be worked out. Places, not entries: the rows read through
         // one call are one hit however many of them match, so they are one place too.
-        var matches = _entries.Value.Select(entry => (Entry: entry, Matches: terms.Select(term => MatchOf(entry, term)).ToArray())).ToArray();
+        var matches = Entries.Select(entry => (Entry: entry, Matches: terms.Select(term => MatchOf(entry, term)).ToArray())).ToArray();
         double[] weights = [.. terms.Select((_, i) => WeightOf(matches.Where(candidate => candidate.Matches[i].Found).Select(candidate => ReadKey(candidate.Entry)).Distinct().Count()))];
 
         // A snippet is cut around the rarest word of the query it holds, which is the one that says why the hit
@@ -168,10 +225,13 @@ internal sealed class McpSearch
 
     /// <summary>
     /// What an entry is read through: its call, and its title unless the call takes no argument and so answers
-    /// the same text whichever entry led to it.
+    /// the same text whichever entry led to it. Entries that say the same thing (<see cref="McpSearchEntry.SameAs"/>)
+    /// count as one, whichever of their calls the best-ranked of them carries.
     /// </summary>
     private static (string Title, string Tool) ReadKey(Indexed entry)
     {
+        if (entry.Entry.SameAs is { } same) return (same, string.Empty);
+
         var tool = entry.Entry.Tool;
 
         return tool.EndsWith("()", StringComparison.Ordinal) ? (string.Empty, tool) : (entry.Entry.Title, tool);
@@ -237,7 +297,7 @@ internal sealed class McpSearch
     /// </summary>
     private string[] Suggest(string[] words)
     {
-        return [.. _entries.Value
+        return [.. Entries
             .Where(entry => words.Any(word => word.Length >= 4
                                               && entry.TitleWords.Any(title => title.StartsWith(word, StringComparison.OrdinalIgnoreCase)
                                                                                // A short title word ("UI") is the start of half the
@@ -254,9 +314,11 @@ internal sealed class McpSearch
         var isTitleWord = entry.IsNamedBy(term);
 
         // Text is counted by the stem, which a plural or a tense would otherwise never find inside: "effects" has
-        // to count the "Effect" of BlexEffect, and "waits" every "wait" and "waiting".
+        // to count the "Effect" of BlexEffect, and "waits" every "wait" and "waiting". A term that is a whole
+        // identifier of the title counts once more than one that only ends one: "PointOperation TryFuse" asks for
+        // PointOperation's member, not FusedPointOperation's.
         return new Match(isTitleWord,
-            isTitleWord ? 0 : Count(entry.Entry.Title, term.Stems),
+            isTitleWord ? 0 : Count(entry.Entry.Title, term.Stems) + (entry.IsInTitleAsAWhole(term) ? 1 : 0),
             // A list of names, where a word said twice - "load loads loaded", or a type in every overload's
             // signature - is not twice as much the entry's name.
             Math.Min(Count(entry.Entry.Boosted, term.Stems), 1),
@@ -503,7 +565,9 @@ internal sealed class McpSearch
 
         var meaningful = terms.Where(term => _ambientWords.Contains(term) is false).ToArray();
 
-        return meaningful.Length > 0 ? meaningful : terms;
+        if (meaningful.Length > 0) return meaningful;
+
+        return _searchAmbientAlone ? terms : [];
     }
 
     /// <summary>
@@ -523,13 +587,16 @@ internal sealed class McpSearch
 
     /// <summary>
     /// Whether a word of the query is one to search by. One- and two-letter words ("a", "in", "do") match
-    /// everything and rank nothing, unless they are a name here or a key made of a letter and a digit ("F2").
+    /// everything and rank nothing, unless they are a name here or a key made of a letter and a digit ("F2"). A
+    /// stop word is not searched by either, unless it is written as the exact name of something here: "Without"
+    /// asks for the member called that, "without" in a sentence asks for nothing.
     /// </summary>
     private bool IsSearchable(string word)
     {
-        if (word.Length == 0 || _stopWords.Contains(word)) return false;
+        if (word.Length == 0) return false;
+        if (_stopWords.Contains(word)) return word.Any(char.IsUpper) && ValueOf(ref _names, BuildNames).Contains(word);
 
-        return word.Length > 2 || _shortNames.Value.Contains(word) || (word.Any(char.IsDigit) && word.Any(char.IsLetter));
+        return word.Length > 2 || ValueOf(ref _shortNames, BuildShortNames).Contains(word) || (word.Any(char.IsDigit) && word.Any(char.IsLetter));
     }
 
     /// <summary>An entry as it is searched: with its name taken apart into the words a term is matched against.</summary>
@@ -547,9 +614,27 @@ internal sealed class McpSearch
             // A name written as one identifier is a word of its own as well as its humps: a caller who asks for
             // "ImagePipeline" by name means that type, not every member whose signature mentions it.
             TitleStems = [.. TitleWords.Select(StemOf), .. words.Length > 1 && name.All(char.IsLetterOrDigit) ? [StemOf(name)] : Array.Empty<string>()];
+
+            // Only a title written as code has identifiers: the words of a heading are prose, and one its Name leaves
+            // out ("loading" of "Lazy loading on WebAssembly") is left out on purpose.
+            TitleIdentifiers = entry.Title.Any(char.IsWhiteSpace)
+                ? []
+                : [.. WithoutTypeParameters(entry.Title).Split(_separators, StringSplitOptions.RemoveEmptyEntries).Select(StemOf)];
         }
 
         public McpSearchEntry Entry { get; }
+
+        /// <summary>
+        /// The stems of the identifiers of a title written as code, taken whole: "pointoperation" and "tryfuse" of
+        /// "PointOperation.TryFuse", which a term written as one of them matches more surely than it matches the end
+        /// of "FusedPointOperation". Empty for a title written as prose.
+        /// </summary>
+        public HashSet<string> TitleIdentifiers { get; }
+
+        public bool IsInTitleAsAWhole(Term term)
+        {
+            return term.Stems.Any(stem => TitleIdentifiers.Contains(stem.Text));
+        }
 
         /// <summary>
         /// The name split into words, camel-case humps included, so "GroupWhenSearching" is found by "group when

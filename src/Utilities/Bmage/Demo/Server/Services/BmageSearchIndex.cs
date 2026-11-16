@@ -15,9 +15,9 @@ namespace Bit.Bmage.Demo.Server.Services;
 /// that measures it (RunBmagePipeline) all at once. Each hit therefore carries the exact follow-up
 /// call that returns its full text, so one search is enough to know what to ask for next. The
 /// ranking itself is <see cref="McpSearch"/>, shared with the other utilities' MCP servers: it reads
-/// a query word by its stem ("uploaded" finds "upload"), only ever as a whole word ("under" is not
-/// inside "underlying"), and by how rare it is, so the words a request is phrased in ("without",
-/// "photo") cannot outrank the one it is about ("shrink").
+/// a query word by its stem ("uploaded" finds "upload", "persist" finds "persistence"), only from the
+/// start of a word ("let" is not inside "Balette"), and by how rare it is, so the words a request is
+/// phrased in ("photo") cannot outrank the one it is about ("shrink").
 /// </para>
 /// </summary>
 public static class BmageSearchIndex
@@ -25,35 +25,71 @@ public static class BmageSearchIndex
     /// <summary>
     /// The words that separate nothing here. Every entry is about images in Bmage, so a query saying so
     /// matches everything and ranks nothing; and the words a problem is reported in ("why does it NOT
-    /// WORK", "can I USE") outrank the answer when they are left in. They are dropped only when the query
-    /// says something else as well.
+    /// WORK", "can I USE") outrank the answer when they are left in. They are dropped when the query says
+    /// something else as well, and a query made of nothing else is not searched at all: by them it would
+    /// rank every entry on the strength of a word all of them share. "bit" is not one of them - it is
+    /// the bit depth the guides talk about ("8-bit", "16 bit").
     /// </summary>
-    private static readonly string[] _ambientWords =
+    private static readonly McpSearch _search = new(Build, ambientWords:
     [
-        "bmage", "bit", "blazor", "image", "images", "picture", "pictures",
+        "bmage", "blazor", "image", "images", "picture", "pictures",
         "not", "use", "using", "can", "will", "wont", "isnt", "doesnt", "instead", "still", "just", "only", "even",
         "work", "works", "working",
-    ];
+    ], searchAmbientAlone: false);
 
-    private static readonly McpSearch _search = new(Build, _ambientWords);
-
-    /// <summary>The best matches for a query, each with the call that returns it in full.</summary>
-    public static BmageSearchHitDto[] Search(string? query, int limit)
+    /// <summary>The best matches for a query, each with the call that returns it in full - or, when there are none, why, and what to try instead.</summary>
+    public static BmageSearchResultDto Search(string? query, int limit)
     {
         var result = _search.Search(query, limit);
 
-        // A query made of nothing but those words ("bmage image") is searched by them as a last resort,
-        // which here ranks every entry on the strength of a word all of them share: no answer is better.
-        if (result.Terms.All(term => _ambientWords.Contains(term, StringComparer.OrdinalIgnoreCase))) return [];
-
-        return [.. result.Hits.Select(hit => new BmageSearchHitDto
+        if (result.Terms.Length == 0)
         {
-            Kind = hit.Entry.Kind,
-            Title = hit.Entry.Title,
-            Context = hit.Entry.Context,
-            Tool = hit.Entry.Tool,
-            Snippet = hit.Snippet
-        })];
+            // Nothing was left to search by, which is a different failure from "searched and found
+            // nothing" - and the fix is on the caller's side, so it has to be said rather than returned
+            // as an empty list the agent would read as "Bmage cannot do this".
+            return new BmageSearchResultDto
+            {
+                Terms = [],
+                Hits = [],
+                Message = "The query held nothing but filler words, words too short to search by and words true of " +
+                          "everything here ('bmage', 'image'), so there was nothing to rank by. Search for the thing " +
+                          "itself - 'avatar', 'strip gps', 'MaxFileSize' - rather than for a sentence."
+            };
+        }
+
+        if (result.Hits.Length > 0)
+        {
+            // No echo of the terms: the caller sent the query one message ago, and what it was reduced to
+            // changes nothing about a hit it can read for itself.
+            return new BmageSearchResultDto
+            {
+                Hits = [.. result.Hits.Select(hit => new BmageSearchHitDto
+                {
+                    Kind = hit.Entry.Kind,
+                    Title = hit.Entry.Title,
+                    Context = hit.Entry.Context,
+                    Tool = hit.Entry.Tool,
+                    Snippet = hit.Snippet
+                })],
+                HasMore = result.HasMore
+            };
+        }
+
+        // A search that found nothing is where an agent is most likely to conclude Bmage has no such
+        // feature and hand-roll one, so it is told what came closest and where else to look.
+        var words = result.Terms;
+
+        return new BmageSearchResultDto
+        {
+            Terms = words,
+            Hits = [],
+            Message = result.DidYouMean.Length > 0
+                ? $"Nothing matched {string.Join(" + ", words)}. The closest names are listed in didYouMean - " +
+                   "search for one of those, or for a single word out of this query."
+                : $"Nothing matched {string.Join(" + ", words)}. Try one word rather than several, or call " +
+                   "GetBmageRecipes or GetBmageApiList for the index of what there is.",
+            DidYouMean = result.DidYouMean.Length > 0 ? result.DidYouMean : null
+        };
     }
 
     private static IEnumerable<McpSearchEntry> Build()
@@ -117,10 +153,6 @@ public static class BmageSearchIndex
                 "ReviewBmageCode(code: \"...\")", rule.Catches, rule.Id.Replace('-', ' '));
         }
 
-        // An inherited member documented once - TryFuse on every adjustment, say - is one answer, not
-        // eight: indexed on every type that inherits it, the copies push everything else off the page.
-        var inherited = new HashSet<(string Kind, string Name, string Body)>();
-
         foreach (var type in BmageApiCatalog.Types)
         {
             yield return new McpSearchEntry($"API {type.Kind.ToLowerInvariant()}", type.Name, $"{type.Namespace} ({type.Package})",
@@ -131,19 +163,24 @@ public static class BmageSearchIndex
 
             // One entry per member NAME, not per member: the overloads of a method are one thing to
             // know about, and all are read by the same call anyway. Their documentation is searched as
-            // one body, so a term in any overload finds the member.
+            // one body, so a term in any overload finds the member - each sentence once, however many
+            // overloads repeat it.
             foreach (var overloads in details.Members.Where(member => member.Kind != "Constructor").GroupBy(member => member.Name, StringComparer.Ordinal))
             {
                 var member = overloads.First();
                 var kind = $"API {member.Kind.ToLowerInvariant()}";
-                var body = string.Join(' ', overloads.Select(o => $"{o.Summary} {o.Remarks}".Trim())).Trim();
+                var body = string.Join(' ', overloads.Select(o => $"{o.Summary} {o.Remarks}".Trim()).Where(text => text.Length > 0).Distinct(StringComparer.Ordinal));
+                var signatures = string.Join(' ', overloads.Select(o => $"{o.Type} {o.Signature}".Trim()).Where(text => text.Length > 0).Distinct(StringComparer.Ordinal));
 
-                if (inherited.Add((kind, member.Name, body)) is false) continue;
+                // An inherited member documented once - TryFuse on every adjustment, say - is one answer, not
+                // eight: left in, the copies push everything else off the page. They stay indexed on every type,
+                // so the copy a query names its type for ("CurveOperation TryFuse") is the one it finds. An
+                // undocumented member says nothing to tell the copies apart from different members of one name.
+                var sameAs = body.Length > 0 ? $"{kind}\n{member.Name}\n{body}" : null;
 
                 yield return new McpSearchEntry(kind, $"{type.Name}.{member.Name}", type.Name,
-                    $"GetBmageApiDetails(typeName: \"{type.Name}.{member.Name}\")", body,
-                    string.Join(' ', overloads.Select(o => $"{o.Type} {o.Signature}".Trim())).Trim(),
-                    Name: member.Name);
+                    $"GetBmageApiDetails(typeName: \"{type.Name}.{member.Name}\")", body, signatures,
+                    Name: member.Name, SameAs: sameAs);
             }
         }
 
