@@ -307,6 +307,27 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
     }
 
     [TestMethod]
+    public async Task ADropWhoseAsyncOnDropRunsIsReportedAsACallStillBeingHandled()
+    {
+        // The module asks, when the answer of a drag call is slow to come, whether .NET is still handling one: it waits
+        // for a slow OnDrop, and gives up a call whose answer was lost with the connection.
+        var gate = new TaskCompletionSource();
+        var cut = RenderDustbin(onDrop: async _ => await gate.Task);
+        var bin = cut.FindComponent<BdndDropTarget<string>>();
+        PlanMove(null, "next", TargetIdOf(bin));
+        await StartAsync(Source(cut));
+        await CommandAsync(Source(cut), "next");
+        Assert.IsFalse(Source(cut).Instance.IsHandlingDragCall(), "no call in flight between the keys");
+
+        var drop = CommandAsync(Source(cut), "drop");
+        Assert.IsTrue(Source(cut).Instance.IsHandlingDragCall(), "the drop waits for its OnDrop");
+        gate.SetResult();
+        await drop.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.IsFalse(Source(cut).Instance.IsHandlingDragCall(), "the drop was answered");
+    }
+
+    [TestMethod]
     public async Task AFileDraggedInFromOutsideDuringAKeyboardDragNeitherHoversNorDropsTheKeyboardItem()
     {
         var cut = RenderDustbin();

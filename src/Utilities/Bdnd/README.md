@@ -1552,6 +1552,12 @@ event is being dispatched. The script module covers exactly that gap:
    move lands on (document order, among the targets .NET says can take the item), keeps the focus on the dragged
    item, and owns the live region screen readers hear.
 
+The queue waits for each call's answer, however long .NET takes: an `OnDrop` that saves something, or an `OnHover`
+that loads what it expands, holds up the calls after it, so they reach .NET in order and the drag goes on. On Blazor
+Server an answer can be lost with the circuit's connection. When one is slow to come, the module asks .NET, through
+the drag's source, whether it is still handling a call of the queue. When .NET is not, or does not answer, the module
+gives up that drag and ends it in .NET too, so the drags after it are not held up.
+
 There are no native events in a keyboard or pointer drag, so the manager walks the target chain itself: a target and its
 enclosing targets of the same provider, innermost first - the order nested components put their host elements in,
 and so the order native events bubble in.

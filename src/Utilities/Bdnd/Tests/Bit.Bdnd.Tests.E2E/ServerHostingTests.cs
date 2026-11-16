@@ -87,7 +87,8 @@ public sealed class ServerHostingTests : BdndTest
         await page.WaitForFunctionAsync("() => window.__sockets.some(socket => socket.readyState === WebSocket.OPEN)",
             null, new PageWaitForFunctionOptions { Timeout = 30_000 });
         await Expect(live).Not.ToContainTextAsync("Picked up");
-        // the module gives the lost pickup up (after DRAG_CALL_TIMEOUT_MS) and the keys are the page's again
+        // .NET, reconnected, answers the module it handles no call any more (asked after DRAG_CALL_CHECK_MS): the module
+        // gives the lost pickup up, and the keys are the page's again
         await page.WaitForTimeoutAsync(11_000);
 
         await banana.FocusAsync();

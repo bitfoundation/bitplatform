@@ -381,7 +381,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
             {
                 rect = await registration.InvokeAsync<BdndDomRect?>("getDragStartRect");
             }
-            catch (Exception exception) when (exception is JSException or JSDisconnectedException or TaskCanceledException)
+            catch (Exception exception) when (BdndInterop.IsLostCall(exception))
             {
                 rect = null;
             }
@@ -419,7 +419,9 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
 
     /// <summary>Invoked from JS when the drag of this source ends (drop or cancel).</summary>
     [JSInvokable, EditorBrowsable(EditorBrowsableState.Never)]
-    public async Task HandleDragEnd()
+    public Task HandleDragEnd() => Interop.TrackDragCallAsync(HandleDragEndCoreAsync);
+
+    private async Task HandleDragEndCoreAsync()
     {
         try
         {
@@ -432,6 +434,14 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
             if (_disposed) await ReleaseInteropAsync();
         }
     }
+
+    /// <summary>
+    /// Invoked from JS when the answer of a drag call (a pointer or keyboard drag's) is slow to come: whether one is
+    /// still being handled here - by any draggable or drop target - or its answer was lost with the circuit's
+    /// connection. Asked through the drag's source, which is kept until the drag is over.
+    /// </summary>
+    [JSInvokable, EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsHandlingDragCall() => Interop.IsHandlingDragCall;
 
     // Ends drag dragId of this source: OnEnd runs with the drop's outcome - once the async OnDrop handlers of the
     // drop are done - and the drag state is cleared right after OnEnd's synchronous part, so an async handler does
@@ -523,7 +533,10 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     /// <returns>Whether the drag began.</returns>
     [JSInvokable, EditorBrowsable(EditorBrowsableState.Never)]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndDomRect))]
-    public async Task<bool> HandlePointerDragStart(double clientX, double clientY, BdndDomRect rect)
+    public Task<bool> HandlePointerDragStart(double clientX, double clientY, BdndDomRect rect) =>
+        Interop.TrackDragCallAsync(() => HandlePointerDragStartCoreAsync(clientX, clientY, rect));
+
+    private async Task<bool> HandlePointerDragStartCoreAsync(double clientX, double clientY, BdndDomRect rect)
     {
         var manager = Manager!;
         if (_disposed || _canDrag is false || PointerDrag == BdndPointerDrag.None || await TryProduceItemGuardedAsync() is not (true, var item))
@@ -556,7 +569,10 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     /// <returns>Whether the keyboard drag began.</returns>
     [JSInvokable, EditorBrowsable(EditorBrowsableState.Never)]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndDomRect))]
-    public async Task<bool> HandleKeyboardDragStart(BdndDomRect rect, string? text)
+    public Task<bool> HandleKeyboardDragStart(BdndDomRect rect, string? text) =>
+        Interop.TrackDragCallAsync(() => HandleKeyboardDragStartCoreAsync(rect, text));
+
+    private async Task<bool> HandleKeyboardDragStartCoreAsync(BdndDomRect rect, string? text)
     {
         var manager = Manager!;
         if (_disposed || KeyboardEnabled is false || await TryProduceItemGuardedAsync() is not (true, var item)) return false;
@@ -613,7 +629,10 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     /// </summary>
     /// <returns>Whether the keyboard drag goes on.</returns>
     [JSInvokable, EditorBrowsable(EditorBrowsableState.Never)]
-    public async Task<bool> HandleKeyboardCommand(string command)
+    public Task<bool> HandleKeyboardCommand(string command) =>
+        Interop.TrackDragCallAsync(() => HandleKeyboardCommandCoreAsync(command));
+
+    private async Task<bool> HandleKeyboardCommandCoreAsync(string command)
     {
         var manager = Manager!;
         var dragId = manager.DragId;
@@ -757,7 +776,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         {
             return await Interop.KeyboardNavigateAsync(registration, candidates, sourceTargets, currentId, currentEdge, command, waiting);
         }
-        catch (Exception exception) when (exception is JSException or JSDisconnectedException or TaskCanceledException)
+        catch (Exception exception) when (BdndInterop.IsLostCall(exception))
         {
             return null;
         }
@@ -807,7 +826,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         {
             await Interop.AnnounceAsync(text);
         }
-        catch (Exception exception) when (exception is JSException or JSDisconnectedException or TaskCanceledException) { }
+        catch (Exception exception) when (BdndInterop.IsLostCall(exception)) { }
     }
 
     // After a keyboard drag re-rendered its item as this draggable (moved it to another list, for one), this one
@@ -821,7 +840,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         {
             if (await registration.InvokeAsync<bool>("adoptFocus")) manager.FocusTaken(_handlerId);
         }
-        catch (Exception exception) when (exception is JSException or JSDisconnectedException or TaskCanceledException) { }
+        catch (Exception exception) when (BdndInterop.IsLostCall(exception)) { }
     }
 
     public async ValueTask DisposeAsync()

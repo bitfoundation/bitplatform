@@ -382,7 +382,10 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
 
     /// <summary>Invoked from JS when the pointer enters or leaves this target during any drag.</summary>
     [JSInvokable, EditorBrowsable(EditorBrowsableState.Never)]
-    public async Task HandleHoverChanged(bool isOver, string[]? types)
+    public Task HandleHoverChanged(bool isOver, string[]? types) =>
+        Interop.TrackDragCallAsync(() => HandleHoverChangedCoreAsync(isOver, types));
+
+    private async Task HandleHoverChangedCoreAsync(bool isOver, string[]? types)
     {
         if (_disposed) return;
         var manager = Manager!;
@@ -424,7 +427,7 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
     public Task HandlePointerHover(double clientX, double clientY)
     {
         if (_disposed || Manager!.GetDragInput() != BdndDragInput.Pointer) return Task.CompletedTask;
-        return GuardAsync(HoverCoreAsync, new BdndXYCoord(clientX, clientY));
+        return Interop.TrackDragCallAsync(() => GuardAsync(HoverCoreAsync, new BdndXYCoord(clientX, clientY)));
     }
 
     /// <summary>
@@ -440,7 +443,7 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
     {
         var manager = Manager!;
         if (_disposed || manager.GetDragInput() != BdndDragInput.Pointer) return false;
-        await manager.DropChainAsync(_handlerId, new BdndXYCoord(clientX, clientY));
+        await Interop.TrackDragCallAsync(() => manager.DropChainAsync(_handlerId, new BdndXYCoord(clientX, clientY)));
         return true;
     }
 
@@ -510,7 +513,7 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
             {
                 page = await Interop.GetNativeDropFilesAsync(dropId, files.Count, count - files.Count);
             }
-            catch (Exception exception) when (exception is JSException or JSDisconnectedException or TaskCanceledException)
+            catch (Exception exception) when (BdndInterop.IsLostCall(exception))
             {
                 break;
             }
