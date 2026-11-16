@@ -122,7 +122,7 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#endif-->
 -   **Assume hot reload is working**: `.cs`, `.razor`, `.scss` and `.ts` changes are picked up automatically by the running app, so after an edit do NOT rebuild the project and do NOT reload/refresh the web app. Only rebuild or refresh if you can't see what you were expecting after your change.
 <!--#if (advancedTests == true)-->
--   **Run tests**: Run `dotnet test` in the src/Tests directory, and in src/LandingPage/Boilerplate.LandingPage.Tests for the landing page.
+-   **Run tests**: Run `dotnet test` in the src/Tests directory, in src/WorkbenchTests for the Workbench, and in src/LandingPage/Boilerplate.LandingPage.Tests for the landing page.
 <!--#else-->
 -   **Run tests**: Run `dotnet test` in the src/Tests directory.
 <!--#endif-->
@@ -132,7 +132,7 @@ Before implementing any changes, you **MUST** complete the following:
 -   **Add new migrations**: Run `bit migration add <MigrationName>` in any folder of the project.
 <!--#endif-->
 -   **Format before committing**: Run `dotnet format whitespace --folder .` in the project's root folder. CI fails on anything this would change.
--   **CI runs in CD, on GitHub**: a private repository's Actions minutes are limited, so a pull request starts no workflow and CI never runs on its own; each CD runs `.github/workflows/ci.yml` first and deploys nothing until it passes. Before a pull request, and after each round of changes, run the tests that cover the change (`dotnet test --filter ...` in src/Tests, the way the `write-tests` skill says) and `dotnet format whitespace --folder . --verify-no-changes`. Run CI alone on GitHub (`gh workflow run ci.yml --ref <branch>`) only when it is truly needed.
+-   **CI runs in CD, on GitHub**: a private repository's Actions minutes are limited, so a pull request starts no workflow and CI never runs on its own; each CD runs `.github/workflows/ci.yml` first and deploys nothing until it passes. Before a pull request, and after each round of changes, run the tests that cover the change (`dotnet test --filter ...` in the folder **Run tests** names for the code you changed, the way the `write-tests` skill says) and `dotnet format whitespace --folder . --verify-no-changes`. Run CI alone on GitHub (`gh workflow run ci.yml --ref <branch>`) only when it is truly needed.
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
 -   **Use the bit CLI for the rest**: besides `bit setup` for a fresh clone, `bit keys` creates the project's keys and certificates, `bit pipeline` fills in the secrets of the GitHub Actions workflows, `bit migration` adds EF Core migrations, `bit api check` tells whether a change to the api breaks an app version users still run and `bit run` starts the native apps; `bit --help` lists them all.
 

@@ -58,6 +58,11 @@ dotnet format whitespace --folder . --verify-no-changes
 cd src/Tests && dotnet test --filter "FullyQualifiedName~<the change's test class>"
 ```
 
+<!--#if (advancedTests == true)-->
+A change to the Workbench or the landing page runs that filter in `src/WorkbenchTests` or
+`src/LandingPage/Boilerplate.LandingPage.Tests` instead, where their tests are.
+<!--#endif-->
+
 The whole suite then runs in the CI of the next deployment, the Test CD of the branch included, which deploys nothing
 until it passes. To run CI on GitHub without deploying, only when it is truly needed: `gh workflow run ci.yml --ref <branch>`.
 
