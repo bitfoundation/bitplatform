@@ -214,8 +214,8 @@ public class ProgressUITests : ProgressPageTest
     private async Task OpenAPersianTask(string culture)
     {
         // Under half of its letters are Persian, and most of its texts start with an English word.
-        var (id, _) = await Agent.Create("Claude Code", new(null, "ارتقا به template 11.0.0-pre-20 و telemetry صفحه‌ها", "bit Fabric روی template 11.0.0-pre-20 است.", null,
-            [new("ci", "bit ci روی bit Fabric", null, "done", "همه **check**ها روی 11.0.0-pre-20 سبز است.", null)],
+        var (id, _) = await Agent.Create("Claude Code", new(null, "ارتقا به template 1.2.3-pre-04 و telemetry صفحه‌ها", "bit Fabric روی template 1.2.3-pre-04 است.", null,
+            [new("ci", "bit ci روی bit Fabric", null, "done", "همه **check**ها روی 1.2.3-pre-04 سبز است.", null)],
             [new("prod", "warning", "rule تونل Production گذاشته شد.")], null, null, "bit ci passed (exit 0)"), CancellationToken.None);
 
         await OpenProgress($"progress/{id}", culture);
@@ -230,7 +230,7 @@ public class ProgressUITests : ProgressPageTest
 
         if (culture is "fa-IR")
         {
-            // Persian's font draws 0-9 as Persian digits everywhere else, which would turn 11.0.0-pre-20 into ۱۱.۰.۰-pre-۲۰.
+            // Persian's font draws 0-9 as Persian digits everywhere else, which would turn 1.2.3-pre-04 into ۱.۲.۳-pre-۰۴.
             Assert.DoesNotContain("FD Digits", await Page.Locator("[data-step-id='ci'] .step-text").EvaluateAsync<string>("e => getComputedStyle(e).fontFamily"));
             Assert.Contains("FD Digits", await Page.Locator(".overall-text").EvaluateAsync<string>("e => getComputedStyle(e).fontFamily"));
         }

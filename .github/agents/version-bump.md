@@ -54,7 +54,8 @@ Run the helper with `scan` and make it clean before bumping:
 - **UNCOVERED** (only while the current version is a prerelease, where a plain search is the truth): an occurrence no
   rule matches, so a new kind of place. Add a rule with enough context that it could never match someone else's line
   at a stable version. Never widen a rule into "any line with the version". When the line records the version on
-  purpose, as history rather than as the version in use, the rule is of kind `kept`.
+  purpose, as history rather than as the version in use, the rule is of kind `kept`. A comment or test data that only
+  needs an example version gets a made-up one instead of a rule.
 - **SUSPECTS**: a bare version next to a bit hint that no rule matches. Ours: a rule. Not ours: a `reviewed.json` entry.
 - **Compared with locations.json**: files and lines that came or went since the last bump. New demos and moved
   projects are expected; make sure each one makes sense.
@@ -78,7 +79,8 @@ The build has a net of its own: projects list the files with a hand-written copy
 
 ## Things a bump does not do
 
-- A comment that needs an example version uses a made-up one, never the current version, or the next bump rewrites it.
+- A comment or test data that needs an example version uses a made-up one, never the current version, or the next
+  bump stops on it.
 - The first pre of a new version may need a new heading in BlazorUI's `BreakingChanges.md`. The people who make the
   breaking changes write it, not the bump; mention it if it is missing.
 - Merging, tagging (a `v-*-pre-*` tag publishes the prerelease packages) and the stable publish from `main` stay with
