@@ -47,7 +47,7 @@ dotnet publish Samples/Lazy/Bit.BbScanner.Samples.Lazy/Bit.BbScanner.Samples.Laz
 dotnet build Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
-pwsh Tests/Bit.BbScanner.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium
+pwsh Tests/Bit.BbScanner.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium
 
 cd Tests/Bit.BbScanner.Tests.E2E && dotnet test
 
@@ -68,7 +68,7 @@ dotnet publish src/Utilities/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csp
 dotnet build src/Utilities/BbScanner/Samples/Server/Bit.BbScanner.Samples.Server.csproj -c Release
 dotnet publish src/Utilities/BbScanner/Samples/Lazy/Bit.BbScanner.Samples.Lazy/Bit.BbScanner.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj -c Release
-pwsh src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+pwsh src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.BbScanner.Demo.Server.dll --urls http://127.0.0.1:5000 &)
 cd src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E && BBSCANNER_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename bbscanner-e2e.trx
 ```

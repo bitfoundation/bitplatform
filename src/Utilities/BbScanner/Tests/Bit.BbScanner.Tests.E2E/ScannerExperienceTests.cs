@@ -215,6 +215,47 @@ public class ScannerExperienceTests : BbScannerTest
     }
 
     [TestMethod]
+    public async Task WithoutWebGlEveryFrameReadThroughTheCanvasIsWipedOnceRead()
+    {
+        await using var session = await OpenAsync(SingleQrClip);
+
+        // Without WebGL the frames are read through a 2D canvas, whose getImageData hands back a copy of every frame:
+        // each copy is recorded, to check that none is left holding the camera's pixels once it was read.
+        // The scanner draws on an OffscreenCanvas where there is one, so both kinds of canvas are covered.
+        await session.Page.AddInitScriptAsync(@"
+window.__bscanCopies = [];
+for (const canvas of [window.HTMLCanvasElement, window.OffscreenCanvas]) {
+    if (!canvas) continue;
+    const getContext = canvas.prototype.getContext;
+    canvas.prototype.getContext = function (kind, ...rest) {
+        return kind === 'webgl' || kind === 'webgl2' ? null : getContext.call(this, kind, ...rest);
+    };
+}
+for (const context of [window.CanvasRenderingContext2D, window.OffscreenCanvasRenderingContext2D]) {
+    if (!context) continue;
+    const getImageData = context.prototype.getImageData;
+    context.prototype.getImageData = function (...args) {
+        const image = getImageData.apply(this, args);
+        window.__bscanCopies.push(image.data);
+        return image;
+    };
+}
+");
+        await session.GoToAsync("lifecycle");
+        await session.Page.ClickAsync("button:has-text('Start')");
+        await session.WaitForStatusAsync(["scanning"]);
+        await session.WaitForResultsAsync(1, timeoutMs: 30_000);
+        await session.Page.ClickAsync("button:has-text('Stop')");
+        await session.WaitForStatusAsync(["stopped"]);
+
+        var copies = await session.Page.EvaluateAsync<int[]>(
+            "() => [window.__bscanCopies.length, window.__bscanCopies.filter(data => data.some(value => value !== 0)).length]");
+        Assert.IsGreaterThan(0, copies[0], "No frame was read through the 2D canvas.");
+        Assert.AreEqual(0, copies[1], $"{copies[1]} of {copies[0]} frames read were left as they were.");
+        Assert.IsEmpty(session.PageErrors);
+    }
+
+    [TestMethod]
     public async Task AScanVibratesAndBeepsOnlyWhenAskedTo()
     {
         await using var session = await OpenAsync(SingleQrClip);

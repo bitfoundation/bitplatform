@@ -987,8 +987,9 @@ A page inside a cross-origin `<iframe>` needs the camera delegated to it - `<ifr
   decoded. Under Blazor Server and Hybrid a still image's grayscale, like a frame's region, crosses in slices, and
   those are not zeroed: each is a temporary copy made for one call, in the page by `readData` and in .NET by the
   interop that receives it, and is let go of once copied rather than cleared. The decoder keeps no history of values beyond
-  the duplicate filter, which holds values, not images: it is cleared on every start the application asks for, and by
-  `ResetDuplicateFilter`. A camera the browser ended in the background and the scanner reopened carries on the same
+  the duplicate filter, which holds values, not images: it is cleared by `ResetDuplicateFilter`, and by a start the
+  application asks for - every start under a finite `DuplicateSuppressionWindow`, and under an infinite one a start
+  with no camera open (see [duplicates and the lifecycle](#duplicates-and-the-lifecycle)). A camera the browser ended in the background and the scanner reopened carries on the same
   session, as `Resume` does: under an infinite `DuplicateSuppressionWindow` nothing is reported twice across it.
 - **Untrusted images are bounded.** A file over `MaxImageFileSize` (32 MB by default) is refused before it is
   decoded, a file that declares itself to be something other than an image is refused, an image that decodes to more
@@ -998,6 +999,9 @@ A page inside a cross-origin `<iframe>` needs the camera delegated to it - `<ifr
   3000 pixel image took seven and a half minutes, and now takes half a second. A pair of start and stop shaped stripes
   is a PDF417 candidate on every frame it is in, and resampling one upright to read cost a large share of a second a
   frame; the candidates of a frame now share a budget of a frame and a half of pixels (eight for a still image).
+  MicroPDF417, which has no finder pattern, sweeps a still image at every angle: it scans in full only twelve angles
+  in each polarity - upright and sideways first, then the angle that looks most like rows of one in each group of
+  neighbouring angles, then the rest - so a photograph of noise is given up on in a few seconds rather than ten.
 - **Barcode contents are untrusted input.** A value is whatever someone printed. The component renders it as text
   only - in the live region and nowhere else - and never navigates to a URL, opens a link or runs anything it reads.
   Do the same: render values with Razor's default encoding rather than `MarkupString`, and before acting on a URL,

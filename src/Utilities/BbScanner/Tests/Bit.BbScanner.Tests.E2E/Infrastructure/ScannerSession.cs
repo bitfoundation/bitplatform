@@ -149,6 +149,17 @@ navigator.mediaDevices.getUserMedia = async (constraints) => {
             new PageWaitForFunctionOptions { Timeout = timeoutMs }).ConfigureAwait(false);
     }
 
+    /// <summary>Waits until the demo's result log shows <paramref name="value"/>.</summary>
+    /// <param name="value">The decoded value to wait for.</param>
+    /// <param name="timeoutMs">How long to wait.</param>
+    public async Task WaitForValueAsync(string value, int timeoutMs = 60_000)
+    {
+        await Page.WaitForFunctionAsync(
+            "v => Array.from(document.querySelectorAll('[data-testid=\"result-value\"]')).some(n => n.textContent.trim() === v)",
+            value,
+            new PageWaitForFunctionOptions { Timeout = timeoutMs }).ConfigureAwait(false);
+    }
+
     /// <summary>The decoded values currently shown in the demo's result log, newest first.</summary>
     public async Task<IReadOnlyList<string>> ResultValuesAsync()
     {

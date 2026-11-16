@@ -43,11 +43,30 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     /// <summary>The step between angles a still image is swept with, in degrees.</summary>
     private const float ThoroughStep = 1.5f;
 
+    /// <summary>How many angles a still image is swept with, half a turn in <see cref="ThoroughStep"/>s.</summary>
+    private const int ThoroughAngles = 120;
+
+    /// <summary>
+    /// How many angles a still image is scanned at in full, in each polarity. Every angle is probed, but noise, foliage
+    /// or the bars of other symbols make a piece of a row at angle after angle, and scanning each of those in full took
+    /// an 800 by 600 photograph of noise ten seconds. Upright and sideways are scanned first, then the angle that read
+    /// the most pieces among its neighbours from each group of angles that read any - so a small symbol beside a large
+    /// one, whose angle and the angles next to it read more, still has its own scanned early - then the rest, those
+    /// that read the most first.
+    /// </summary>
+    private const int ThoroughScans = 12;
+
     private static readonly Dictionary<int, int> SideIndex = Index(BbMicroPdf417Tables.SidePatterns);
     private static readonly Dictionary<int, int> CentreIndex = Index(BbMicroPdf417Tables.CentrePatterns);
 
     private readonly BbPdf417ErrorCorrection _errorCorrection = new();
+    private readonly int[] _pieces = new int[ThoroughAngles];
+    private readonly List<(int Index, int Pieces, bool Peak)> _candidates = [];
     private int _liveFrame;
+
+    // How many times the last image was scanned in full, in both polarities: what the sweep of a still image costs, and
+    // what bounds it on any machine, however busy, where a time would not.
+    private int _fullScans;
     private readonly List<Segment> _forward = [];
     private readonly List<Segment> _backward = [];
     private List<Segment> _segments = [];
@@ -68,6 +87,7 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     {
         ArgumentNullException.ThrowIfNull(image);
 
+        _fullScans = 0;
         var result = DecodeAtAnyAngle(image, options.TryHarder);
         if (result is not null || !options.AllowInverted)
         {
@@ -89,31 +109,7 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     {
         if (thorough)
         {
-            for (var angle = 0f; angle < 180f; angle += ThoroughStep)
-            {
-                if (DecodeAlong(image, angle, spacing: 1f) is not { } found)
-                {
-                    continue;
-                }
-
-                // A symbol reads from lines a degree or so off its rows, and its corners come out best from lines along
-                // them, which read the most of its rows' edges: the angles either side of the one that read are tried
-                // too, and the one that read the most edges kept.
-                var best = found;
-                var bestEdges = _edgesRead;
-                foreach (var nudge in (ReadOnlySpan<float>)[-1f, -0.5f, 0.5f, 1f])
-                {
-                    if (DecodeAlong(image, angle + nudge, spacing: 1f) is { } nudged && _edgesRead > bestEdges)
-                    {
-                        best = nudged;
-                        bestEdges = _edgesRead;
-                    }
-                }
-
-                return best;
-            }
-
-            return null;
+            return DecodeAtEveryAngle(image);
         }
 
         var frame = _liveFrame++ & 3;
@@ -135,30 +131,133 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     }
 
     /// <summary>
+    /// Sweeps a still image: every angle is probed, and those that read a piece of a row are scanned in full, as many of
+    /// them as <see cref="ThoroughScans"/> allows, in the order it gives.
+    /// </summary>
+    private BbSymbolDecodeResult? DecodeAtEveryAngle(BbBitMatrix image)
+    {
+        var scansLeft = ThoroughScans;
+
+        // A symbol held upright or sideways, the most usual, is read before the rest of the angles are probed.
+        Array.Clear(_pieces);
+        Span<int> upright = [0, ThoroughAngles / 2];
+        foreach (var index in upright)
+        {
+            _pieces[index] = ProbeAlong(image, index * ThoroughStep, int.MaxValue);
+            if (_pieces[index] > 0)
+            {
+                scansLeft--;
+                if (ScanAlong(image, index * ThoroughStep, spacing: 1f) is { } found)
+                {
+                    return Refine(image, index * ThoroughStep, found);
+                }
+            }
+        }
+
+        for (var index = 0; index < ThoroughAngles; index++)
+        {
+            if (index != upright[0] && index != upright[1])
+            {
+                _pieces[index] = ProbeAlong(image, index * ThoroughStep, int.MaxValue);
+            }
+        }
+
+        // A symbol reads at its angle and at those either side of it: the one of them that read the most pieces is its
+        // group's peak (the first, where several read as many; none, where every angle round the turn reads as many),
+        // and the peaks of every group are scanned before the angles beside them.
+        _candidates.Clear();
+        for (var index = 0; index < ThoroughAngles; index++)
+        {
+            var pieces = _pieces[index];
+            if (pieces > 0 && index != upright[0] && index != upright[1])
+            {
+                var before = _pieces[(index + ThoroughAngles - 1) % ThoroughAngles];
+                var after = _pieces[(index + 1) % ThoroughAngles];
+                _candidates.Add((index, pieces, pieces > before && pieces >= after));
+            }
+        }
+
+        _candidates.Sort((a, b) => a.Peak != b.Peak ? b.Peak.CompareTo(a.Peak)
+            : b.Pieces != a.Pieces ? b.Pieces.CompareTo(a.Pieces)
+            : a.Index.CompareTo(b.Index));
+        foreach (var (index, _, _) in _candidates)
+        {
+            if (scansLeft-- <= 0)
+            {
+                return null;
+            }
+
+            if (ScanAlong(image, index * ThoroughStep, spacing: 1f) is { } found)
+            {
+                return Refine(image, index * ThoroughStep, found);
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// A symbol reads from lines a degree or so off its rows, and its corners come out best from lines along them, which
+    /// read the most of its rows' edges: the angles either side of <paramref name="angle"/>, which read
+    /// <paramref name="found"/>, are tried too, and the one that read the most edges kept.
+    /// </summary>
+    private BbSymbolDecodeResult Refine(BbBitMatrix image, float angle, BbSymbolDecodeResult found)
+    {
+        var best = found;
+        var bestEdges = _edgesRead;
+        foreach (var nudge in (ReadOnlySpan<float>)[-1f, -0.5f, 0.5f, 1f])
+        {
+            if (DecodeAlong(image, angle + nudge, spacing: 1f) is { } nudged && _edgesRead > bestEdges)
+            {
+                best = nudged;
+                bestEdges = _edgesRead;
+            }
+        }
+
+        return best;
+    }
+
+    /// <summary>
     /// Scans parallel lines at <paramref name="degrees"/>, each read both ways, and reads a symbol whose rows run along
     /// them. Lines <see cref="ProbeSpacing"/> apart are scanned first, and the rest only when one of those read a piece of a row: two RAPs
     /// naming the same row of some symbol size, with as many codewords of that row's cluster between them as the size
     /// has there. The bars of other symbols make a RAP or a codeword now and then; that, they practically never do.
     /// </summary>
     private BbSymbolDecodeResult? DecodeAlong(BbBitMatrix image, float degrees, float spacing)
+        => ProbeAlong(image, degrees, limit: 1) > 0 ? ScanAlong(image, degrees, spacing) : null;
+
+    /// <summary>
+    /// Scans lines <see cref="ProbeSpacing"/> apart at <paramref name="degrees"/> and counts the pieces of a row they read,
+    /// up to <paramref name="limit"/>.
+    /// </summary>
+    private int ProbeAlong(BbBitMatrix image, float degrees, int limit)
+    {
+        // Rows are four pixels tall at the least, so these lines cross every other one of them; a spacing of no whole
+        // number of pixels keeps them from all falling on the edges between rows as tall as it.
+        var (centre, direction, normal, reach) = Lines(image, degrees);
+        Scan(image, centre, direction, normal, reach, ProbeSpacing);
+        var pieces = CountRowPieces(_forward, limit);
+        return pieces < limit ? pieces + CountRowPieces(_backward, limit - pieces) : pieces;
+    }
+
+    /// <summary>Scans lines <paramref name="spacing"/> apart at <paramref name="degrees"/> and reads the symbol they cross.</summary>
+    private BbSymbolDecodeResult? ScanAlong(BbBitMatrix image, float degrees, float spacing)
+    {
+        _fullScans++;
+        var (centre, direction, normal, reach) = Lines(image, degrees);
+        Scan(image, centre, direction, normal, reach, spacing);
+        return (_forward.Count > 0 ? Assemble(_forward, direction) : null)
+            ?? (_backward.Count > 0 ? Assemble(_backward, -direction) : null);
+    }
+
+    private static (Vector2 Centre, Vector2 Direction, Vector2 Normal, float Reach) Lines(BbBitMatrix image, float degrees)
     {
         var radians = degrees * MathF.PI / 180f;
         var direction = new Vector2(MathF.Cos(radians), MathF.Sin(radians));
         var normal = new Vector2(-direction.Y, direction.X);
         var centre = new Vector2((image.Width - 1) / 2f, (image.Height - 1) / 2f);
         var reach = MathF.Sqrt((image.Width * image.Width) + (image.Height * image.Height)) / 2f;
-
-        // Rows are four pixels tall at the least, so these lines cross every other one of them; a spacing of no whole
-        // number of pixels keeps them from all falling on the edges between rows as tall as it.
-        Scan(image, centre, direction, normal, reach, ProbeSpacing);
-        if (!HasRowPiece(_forward) && !HasRowPiece(_backward))
-        {
-            return null;
-        }
-
-        Scan(image, centre, direction, normal, reach, spacing);
-        return (_forward.Count > 0 ? Assemble(_forward, direction) : null)
-            ?? (_backward.Count > 0 ? Assemble(_backward, -direction) : null);
+        return (centre, direction, normal, reach);
     }
 
     private void Scan(BbBitMatrix image, Vector2 centre, Vector2 direction, Vector2 normal, float reach, float spacing)
@@ -172,20 +271,21 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
         }
     }
 
-    private bool HasRowPiece(List<Segment> segments)
+    private int CountRowPieces(List<Segment> segments, int limit)
     {
+        var pieces = 0;
         foreach (var segment in segments)
         {
-            for (var i = 0; i < segment.Count; i++)
+            for (var i = 0; i < segment.Count && pieces < limit; i++)
             {
                 if (IsRowPiece(segment, i))
                 {
-                    return true;
+                    pieces++;
                 }
             }
         }
 
-        return false;
+        return pieces;
     }
 
     /// <summary>

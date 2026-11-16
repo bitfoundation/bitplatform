@@ -209,6 +209,9 @@ const IMAGE_NOT_AN_IMAGE = -4;
 /** prepareImage result: the image declares more pixels than it is safe to decode. */
 const IMAGE_TOO_MANY_PIXELS = -5;
 
+/** prepareImage result: the file is of a known image format, but the size it declares is not there to be read. */
+const IMAGE_UNREADABLE = -6;
+
 /**
  * The most pixels a selected image may declare. A phone's largest photograph is around 200 megapixels; an image
  * beyond this is either a panorama nobody aims at a barcode or a file crafted to exhaust memory, and the decoded
@@ -771,7 +774,21 @@ async function open(sessionId: string, videoElementId: string, deviceId: string 
         videoConstraints.height = { ideal: requestedHeight };
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: videoConstraints });
+    let stream: MediaStream;
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: videoConstraints });
+    } catch (error) {
+        // Firefox rejects with AbortError ("Starting videoinput failed") where Chromium rejects with NotReadableError:
+        // the camera was granted but could not be started, held by another application. It is given Chromium's name
+        // here, the one place an AbortError means that: video.play() rejects with AbortError too, for a page or
+        // lifecycle fault, and the scanner's own AbortError is a start superseded by another.
+        const name = (error as { name?: unknown } | null)?.name;
+        if (name === 'AbortError') {
+            throw new Error(`NotReadableError: ${String((error as { message?: unknown }).message ?? '')} (getUserMedia's AbortError)`);
+        }
+
+        throw error;
+    }
 
     const superseded = (): boolean => session.generation !== generation || state.sessions.get(sessionId) !== session;
     if (superseded()) {
@@ -1006,6 +1023,7 @@ export function grabFrame(sessionId: string, buffer: MemoryViewLike): number {
     }
 
     buffer.set(data);
+    doneWithFrame(session, data);
     return data.length;
 }
 
@@ -1065,6 +1083,7 @@ function readyRegion(session: Session, x: number, y: number, width: number, heig
         }
     }
 
+    doneWithFrame(session, data);
     return region.length;
 }
 
@@ -1098,6 +1117,17 @@ function readFrame(session: Session): Uint8Array | null {
     }
 
     return data;
+}
+
+/**
+ * Wipes a frame readFrame returned once it has been copied where it goes, when it is a copy of its own: the 2D
+ * canvas hands back a new array every frame, which would otherwise hold the camera's pixels until it is collected.
+ * The GPU path's array is the session's, reused frame after frame and wiped when the session lets it go.
+ */
+function doneWithFrame(session: Session, data: Uint8Array): void {
+    if (data !== session.readback?.pixels) {
+        wipe(data);
+    }
 }
 
 /** The luminance of the RGBA pixel at offset, with the decoder's own fixed point BT.601 weights. */
@@ -1317,15 +1347,53 @@ function refuseBlob(blob: Blob, maxBytes: number): number {
 const IMAGE_HEADER_BYTES = 512 * 1024;
 
 /**
- * The number of pixels an image declares in its header, read without decoding it, or 0 for a format this does not
- * know - PNG, JPEG, GIF, BMP, WebP, and AVIF and HEIC through their ispe box, are known. The size has to be known
- * before the image is decoded: decoding allocates the whole bitmap, so a small file that declares an enormous image
- * would have exhausted the tab's memory before any check made afterwards could refuse it.
+ * The most JPEG segments walked past on the way to the start of frame: far more than any camera or editor writes, few
+ * enough that a file of empty segments cannot keep the walk going. Stray bytes between them are not counted: they are
+ * stepped over in memory, a chunk of the file at a time.
  */
-async function declaredPixels(blob: Blob): Promise<number> {
+const JPEG_MAX_SEGMENTS = 4096;
+
+/** The most top-level boxes of an ISO base media file walked in search of the ones that give its size. */
+const ISOBMFF_MAX_BOXES = 4096;
+
+/** The most of a meta or moov box searched for the size it gives. */
+const ISOBMFF_MAX_BOX_BYTES = 16 * 1024 * 1024;
+
+/**
+ * The number of pixels an image declares, read without decoding it; 0 for a format this does not know, and null for
+ * a file of a known format whose size cannot be found in it. PNG, JPEG, GIF, BMP, WebP, and AVIF and HEIC through
+ * their ispe box - or, for an image sequence, its tracks' headers - are known. The size has to be known before the
+ * image is decoded: decoding allocates the whole bitmap, so a small file that declares an enormous image would have
+ * exhausted the tab's memory before any check made afterwards could refuse it. A file of a known format whose size is
+ * not there - cut short, its segments or boxes broken - is refused as unreadable, rather than let through unchecked.
+ */
+async function declaredPixels(blob: Blob): Promise<number | null> {
     const bytes = new Uint8Array(await blob.slice(0, IMAGE_HEADER_BYTES).arrayBuffer());
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     const length = bytes.length;
+
+    // Past the header, the file is read a chunk at a time, as far as the walks below need: the chunk in hand serves
+    // every read inside it without waiting, and one outside it reads the chunk that starts there.
+    let chunk = bytes;
+    let chunkStart = 0;
+    const inChunk = (offset: number, count: number): boolean =>
+        offset >= chunkStart && offset + count <= chunkStart + chunk.length;
+    const load = async (offset: number, count: number): Promise<boolean> => {
+        if (inChunk(offset, count)) {
+            return true;
+        }
+
+        if (offset + count > blob.size) {
+            return false;
+        }
+
+        chunk = new Uint8Array(await blob.slice(offset, offset + Math.max(count, IMAGE_HEADER_BYTES)).arrayBuffer());
+        chunkStart = offset;
+        return chunk.length >= count;
+    };
+    const at = (offset: number): number => chunk[offset - chunkStart];
+    const u16 = (offset: number): number => (at(offset) << 8) | at(offset + 1);
+    const u32 = (offset: number): number => ((u16(offset) << 16) | u16(offset + 2)) >>> 0;
     const ascii = (offset: number, text: string): boolean => {
         if (offset + text.length > length) {
             return false;
@@ -1377,23 +1445,36 @@ async function declaredPixels(blob: Blob): Promise<number> {
         return 0;
     }
 
-    // JPEG: the segments are walked to the start of frame, which follows the application segments.
+    // JPEG: the segments are walked to the start of frame, which follows the application segments. Those can run past
+    // the header read above - EXIF with a large thumbnail, a colour profile, a maker's notes, or padding put there to
+    // hide the frame from this walk - so the walk carries on through the rest of the file.
     if (length >= 4 && bytes[0] === 0xFF && bytes[1] === 0xD8) {
         let offset = 2;
-        while (offset + 9 <= length) {
-            if (bytes[offset] !== 0xFF) {
-                return 0;
-            }
+        for (let segments = 0; segments < JPEG_MAX_SEGMENTS; segments++) {
+            // Stray bytes between segments, and fill bytes before a marker, which decoders step over to the next
+            // marker, as this does.
+            for (;;) {
+                if (!inChunk(offset, 2) && !await load(offset, 2)) {
+                    return null;
+                }
 
-            const marker = bytes[offset + 1];
-            if (marker === 0xFF) {
+                if (at(offset) === 0xFF && at(offset + 1) !== 0xFF) {
+                    break;
+                }
+
                 offset++;
-                continue;
             }
 
-            // Every start of frame marker but the three that are not one: DHT, JPG and DAC.
+            // Every start of frame marker but the three that are not one: DHT, JPG and DAC. A height of 0 is one a DNL
+            // marker after the first scan gives, which browsers do not decode: no size is declared up front.
+            const marker = at(offset + 1);
             if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
-                return view.getUint16(offset + 5) * view.getUint16(offset + 7);
+                if (!await load(offset, 9)) {
+                    return null;
+                }
+
+                const pixels = u16(offset + 5) * u16(offset + 7);
+                return pixels > 0 ? pixels : null;
             }
 
             // Markers without a length: the restart markers and the start and end of image.
@@ -1402,25 +1483,95 @@ async function declaredPixels(blob: Blob): Promise<number> {
                 continue;
             }
 
-            offset += 2 + view.getUint16(offset + 2);
+            if (!await load(offset, 4)) {
+                return null;
+            }
+
+            offset += 2 + u16(offset + 2);
         }
 
-        return 0;
+        return null;
     }
 
-    // AVIF and HEIC: an ISO base media file whose image spatial extents box gives the size of each image it holds.
+    // AVIF and HEIC: an ISO base media file. Its top-level boxes are walked wherever in the file they are - the meta box
+    // may follow the image data - and the image spatial extents in the meta box give the size of each image it holds,
+    // the track headers in the moov box that of an image sequence.
     if (length >= 12 && ascii(4, 'ftyp')) {
+        const isType = (offset: number, type: string): boolean =>
+            at(offset + 4) === type.charCodeAt(0) && at(offset + 5) === type.charCodeAt(1) &&
+            at(offset + 6) === type.charCodeAt(2) && at(offset + 7) === type.charCodeAt(3);
         let largest = 0;
-        for (let offset = 8; offset + 16 <= length; offset++) {
-            if (bytes[offset] === 0x69 && ascii(offset, 'ispe')) {
-                largest = Math.max(largest, view.getUint32(offset + 8) * view.getUint32(offset + 12));
+        let offset = 0;
+        for (let boxes = 0; boxes < ISOBMFF_MAX_BOXES && await load(offset, 8); boxes++) {
+            let size = u32(offset);
+            let header = 8;
+            const meta = isType(offset, 'meta');
+            const moov = isType(offset, 'moov');
+            if (size === 1) {
+                // A 64-bit size, after the type.
+                if (!await load(offset, 16)) {
+                    break;
+                }
+
+                size = (u32(offset + 8) * 0x1_0000_0000) + u32(offset + 12);
+                header = 16;
+            } else if (size === 0) {
+                // The last box, to the end of the file.
+                size = blob.size - offset;
             }
+
+            if (size < header) {
+                break;
+            }
+
+            if (meta || moov) {
+                const count = Math.min(size, ISOBMFF_MAX_BOX_BYTES, blob.size - offset);
+                const box = inChunk(offset, count)
+                    ? chunk.subarray(offset - chunkStart, offset - chunkStart + count)
+                    : new Uint8Array(await blob.slice(offset, offset + count).arrayBuffer());
+                largest = Math.max(largest, meta ? spatialExtents(box) : trackSizes(box));
+            }
+
+            offset += size;
         }
 
-        return largest;
+        return largest > 0 ? largest : null;
     }
 
     return 0;
+}
+
+/** The most pixels the ispe boxes in a meta box give. */
+function spatialExtents(box: Uint8Array): number {
+    const view = new DataView(box.buffer, box.byteOffset, box.byteLength);
+    let largest = 0;
+
+    // The type, then the version and flags, then the width and the height.
+    for (let offset = 4; offset + 16 <= box.length; offset++) {
+        if (box[offset] === 0x69 && box[offset + 1] === 0x73 && box[offset + 2] === 0x70 && box[offset + 3] === 0x65) {
+            largest = Math.max(largest, view.getUint32(offset + 8) * view.getUint32(offset + 12));
+        }
+    }
+
+    return largest;
+}
+
+/** The most pixels the tkhd boxes in a moov box give: the size of each track of an image sequence. */
+function trackSizes(box: Uint8Array): number {
+    const view = new DataView(box.buffer, box.byteOffset, box.byteLength);
+    let largest = 0;
+    for (let offset = 4; offset + 8 <= box.length; offset++) {
+        if (box[offset] === 0x74 && box[offset + 1] === 0x6B && box[offset + 2] === 0x68 && box[offset + 3] === 0x64) {
+            // The width and height, 16.16 fixed point, close the box: past the times, the ids, the layer, the volume
+            // and the matrix, which version 1's 64-bit times make twelve bytes longer.
+            const width = offset - 4 + (box[offset + 4] === 1 ? 96 : 84);
+            if (width + 8 <= box.length) {
+                largest = Math.max(largest, (view.getUint32(width) >>> 16) * (view.getUint32(width + 4) >>> 16));
+            }
+        }
+    }
+
+    return largest;
 }
 
 async function decodeBitmap(blob: Blob): Promise<ImageBitmap> {
@@ -1450,7 +1601,12 @@ export async function prepareImageFromBlob(sessionId: string, requestId: number,
     // A small file can still declare an enormous image. Browsers bound what they decode, but not tightly enough to
     // keep a phone's tab alive through it, so the size the file declares is checked before anything is decoded. What
     // is decoded is then copied out at maxDimension, whatever its size.
-    if (await declaredPixels(blob) > MAX_IMAGE_PIXELS) {
+    const pixels = await declaredPixels(blob);
+    if (pixels === null) {
+        return IMAGE_UNREADABLE;
+    }
+
+    if (pixels > MAX_IMAGE_PIXELS) {
         return IMAGE_TOO_MANY_PIXELS;
     }
 
