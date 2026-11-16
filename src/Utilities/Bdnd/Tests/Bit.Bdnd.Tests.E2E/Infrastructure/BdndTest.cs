@@ -76,6 +76,7 @@ public abstract class BdndTest
 
     private readonly List<IBrowserContext> _contexts = [];
     private readonly List<List<string>> _problems = [];
+    private readonly List<Func<string, bool>> _tolerated = [];
     private PlaywrightSession.Session? _session;
 
     public TestContext TestContext { get; set; } = default!;
@@ -124,7 +125,7 @@ public abstract class BdndTest
             // that failed already keeps its own message.
             if (TestContext.CurrentTestOutcome == UnitTestOutcome.Passed)
             {
-                string[] found = [.. _problems.SelectMany(p => { lock (p) return p.ToArray(); })];
+                string[] found = [.. _problems.SelectMany(p => { lock (p) return p.ToArray(); }).Where(p => _tolerated.Any(t => t(p)) is false)];
                 Assert.IsEmpty(found, "the page reported:" + Environment.NewLine + string.Join(Environment.NewLine, found));
             }
         }
@@ -137,8 +138,15 @@ public abstract class BdndTest
             }
             _contexts.Clear();
             _problems.Clear();
+            _tolerated.Clear();
         }
     }
+
+    /// <summary>
+    /// Lets the problems <paramref name="problem"/> matches through: what a test brings about on purpose - a connection
+    /// it drops, say - and the framework reports as an error.
+    /// </summary>
+    protected void Tolerate(Func<string, bool> problem) => _tolerated.Add(problem);
 
     /// <summary>
     /// A fresh page in a browser context of its own, closed when the test ends, whose console errors, unhandled

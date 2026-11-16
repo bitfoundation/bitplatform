@@ -38,7 +38,15 @@ internal sealed class BdndJsRegistration<TOptions> : IAsyncDisposable where TOpt
             while (_pending is { } next && _disposed is false)
             {
                 _pending = null;
-                await ApplyAsync(next.Element, next.Options);
+                try
+                {
+                    await ApplyAsync(next.Element, next.Options);
+                }
+                // A call whose answer never came (lost with the circuit's connection, then timed out): the element is
+                // registered, or its options pushed, by the next sync - the one queued meanwhile, if any, else the next
+                // render's - and a render must not fail for it. A registration that did reach JS is replaced there by
+                // the next one of the same element, not kept beside it.
+                catch (OperationCanceledException) { }
             }
         }
         catch (JSDisconnectedException) { }
@@ -91,16 +99,13 @@ internal sealed class BdndJsRegistration<TOptions> : IAsyncDisposable where TOpt
         await DisposeReferenceAsync(reference);
     }
 
+    // Disposal is best-effort: the circuit may be gone or the JS object already released.
     private static async Task DisposeReferenceAsync(IJSObjectReference? reference)
     {
         if (reference is null) return;
         try { await reference.InvokeVoidAsync("dispose"); }
-        catch (Exception ex) when (IsExpectedDisposalException(ex)) { }
+        catch (Exception ex) when (BdndInterop.IsLostCall(ex)) { }
         try { await reference.DisposeAsync(); }
-        catch (Exception ex) when (IsExpectedDisposalException(ex)) { }
+        catch (Exception ex) when (BdndInterop.IsLostCall(ex)) { }
     }
-
-    // Disposal is best-effort: the circuit may be gone or the JS object already released.
-    private static bool IsExpectedDisposalException(Exception ex) =>
-        ex is JSDisconnectedException or JSException or OperationCanceledException or ObjectDisposedException;
 }

@@ -99,7 +99,7 @@ internal sealed class BdndNativeFileSource(BdndNativeDropFiles drop, int index)
             {
                 await reference.DisposeAsync();
             }
-            catch (Exception exception) when (exception is JSException or JSDisconnectedException or TaskCanceledException) { }
+            catch (Exception exception) when (BdndInterop.IsLostCall(exception)) { }
             await base.DisposeAsync();
         }
     }

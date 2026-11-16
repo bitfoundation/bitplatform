@@ -104,6 +104,43 @@ public sealed class ScreenReaderTests : BdndTest
         await page.Keyboard.PressAsync("Escape");
     }
 
+    [TestMethod]
+    public async Task A_keyboard_drag_in_a_modal_dialog_reaches_nothing_behind_it_and_is_announced_inside_it()
+    {
+        var page = await OpenAsync("/dustbin/single");
+        // The box moves into a modal dialog and the bin stays behind it: the page around the dialog is inert, which
+        // showModal() does without marking any element inert.
+        await page.EvaluateAsync(
+            """
+            () => {
+              const dialog = document.createElement('dialog');
+              document.body.appendChild(dialog);
+              const glass = [...document.querySelectorAll('[draggable]')].find(e => e.textContent.includes('Glass'));
+              dialog.appendChild(glass);
+              dialog.showModal();
+              glass.focus();
+            }
+            """);
+        var region = page.Locator("dialog [data-bit-bdnd-live-region]");
+
+        await page.Keyboard.PressAsync("Space");
+        await Expect(region).ToHaveTextAsync("Picked up Glass. There is no drop target for it; press Escape to cancel.");
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(region).ToHaveTextAsync("Glass is not over a drop target.");
+        if (IsChromium)
+        {
+            // the region the dialog holds is the one a screen reader hears: the body's is out of the tree
+            var cdp = await page.Context.NewCDPSessionAsync(page);
+            var node = await AccessibilityNodeAsync(cdp, "dialog [data-bit-bdnd-live-region]");
+            Assert.IsFalse(node.TryGetProperty("ignored", out var ignored) && ignored.GetBoolean(), "the dialog's live region is in the accessibility tree");
+            Assert.AreEqual("status", Value(node, "role"));
+        }
+        await page.Keyboard.PressAsync("Space");
+        await WaitForQuietAsync(page);
+
+        await Expect(page.Locator(".dustbin")).ToHaveTextAsync("Drag a box here");
+    }
+
     // The accessibility node Chromium builds for the first element matching the selector.
     private static async Task<JsonElement> AccessibilityNodeAsync(ICDPSession cdp, string selector)
     {
