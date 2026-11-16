@@ -10,10 +10,10 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// This is the layout decision CSS cannot express: rendering a different component, or none at all,
-/// rather than restyling one. The two states are written as <see cref="Matched"/> and
-/// <see cref="NotMatched"/>, or as the single <see cref="Template"/> that receives the state and
-/// keeps its content across the flip. The state itself is readable from <see cref="IsMatched"/>,
-/// bindable with <c>@bind-IsMatched</c>, and reported through <see cref="OnChange"/>, so a page can
+/// rather than restyling one. The two states are written as <see cref="MatchedTemplate"/> and
+/// <see cref="NotMatchedTemplate"/>, or as the single <see cref="Template"/> that receives the state and
+/// keeps its content across the flip. The state itself is readable from <see cref="Matched"/>,
+/// bindable with <c>@bind-Matched</c>, and reported through <see cref="OnChange"/>, so a page can
 /// take the answer without rendering anything through the component at all.
 /// <br />
 /// A flip that removes the focused element (zooming in crosses breakpoints for a keyboard user too)
@@ -77,7 +77,7 @@ public partial class BitMediaQuery : BitComponentBase
     /// JavaScript runtime becomes available), where the query cannot be evaluated yet.
     /// </summary>
     /// <remarks>
-    /// Ignored when <see cref="IsMatched"/> is bound, since the value handed over is then the initial
+    /// Ignored when <see cref="Matched"/> is bound, since the value handed over is then the initial
     /// state already.
     /// <br />
     /// Also ignored where the browser can answer before the first render: a WebAssembly app whose script is
@@ -109,24 +109,24 @@ public partial class BitMediaQuery : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is an output of the component rather than an input: the browser owns the state, and the
-    /// component writes the latest result it reports here. Bind it with <c>@bind-IsMatched</c> to
+    /// component writes the latest result it reports here. Bind it with <c>@bind-Matched</c> to
     /// keep a field of the page in step with the query without handling <see cref="OnChange"/>.
     /// <br />
     /// Set one way (without a <c>Changed</c> callback beside it) the value belongs to the page, which
     /// freezes the state at whatever the page hands over; to seed the state before the browser has
     /// answered, leave this alone and use <see cref="DefaultMatched"/> instead.
     /// </remarks>
-    [Parameter, TwoWayBound] public bool IsMatched { get; set; }
+    [Parameter, TwoWayBound] public bool Matched { get; set; }
 
     /// <summary>
     /// The content to be rendered if the provided query is matched (an alias for ChildContent).
     /// </summary>
-    [Parameter] public RenderFragment? Matched { get; set; }
+    [Parameter] public RenderFragment? MatchedTemplate { get; set; }
 
     /// <summary>
     /// The content to be rendered if the provided query is not matched.
     /// </summary>
-    [Parameter] public RenderFragment? NotMatched { get; set; }
+    [Parameter] public RenderFragment? NotMatchedTemplate { get; set; }
 
     /// <summary>
     /// Renders the active content directly, without the wrapping root element.
@@ -183,8 +183,8 @@ public partial class BitMediaQuery : BitComponentBase
     /// when the query flips - which is what keeps the state of the components inside it (a form that
     /// is half filled in, a scroll position, a running animation) across a change of the viewport.
     /// <br />
-    /// It takes precedence over <see cref="Matched"/>, <see cref="ChildContent"/> and
-    /// <see cref="NotMatched"/>, which are not rendered while it is set.
+    /// It takes precedence over <see cref="MatchedTemplate"/>, <see cref="ChildContent"/> and
+    /// <see cref="NotMatchedTemplate"/>, which are not rendered while it is set.
     /// </remarks>
     [Parameter] public RenderFragment<bool>? Template { get; set; }
 
@@ -201,11 +201,11 @@ public partial class BitMediaQuery : BitComponentBase
             // result of the query, which a DefaultMatched may well have guessed right. Nothing on
             // screen changes then, so the render is skipped; the callback below still runs, since a
             // handler waiting for the first real answer of the browser has not had one yet.
-            if (IsMatched != isMatched)
+            if (Matched != isMatched)
             {
                 await InvokeAsync(async () =>
                 {
-                    await AssignIsMatched(isMatched);
+                    await AssignMatched(isMatched);
 
                     StateHasChanged();
                 });
@@ -299,16 +299,16 @@ public partial class BitMediaQuery : BitComponentBase
     {
         // Render with the DefaultMatched state until the browser reports the actual result of the
         // query (e.g. during prerendering); the first JS notification then takes over. A bound
-        // IsMatched hands its own initial value over and owns this instead.
+        // Matched hands its own initial value over and owns this instead.
         // Seeded here rather than on initialization, so a DefaultMatched a BitParams cascades is
         // already in place: the cascade is applied with the rest of the parameters, after it.
         if (_isSeeded is false)
         {
             _isSeeded = true;
 
-            if (IsMatchedHasBeenSet is false && (_InitialMatch ?? DefaultMatched))
+            if (MatchedHasBeenSet is false && (_InitialMatch ?? DefaultMatched))
             {
-                await AssignIsMatched(true);
+                await AssignMatched(true);
             }
         }
 
@@ -514,24 +514,24 @@ public partial class BitMediaQuery : BitComponentBase
 
     // One fragment for both states when there is a Template, so its content keeps its place in the
     // render tree across a flip of the query and is updated rather than built again; the two sides of
-    // Matched and NotMatched sit at sequences of their own, so a flip replaces one with the other.
+    // MatchedTemplate and NotMatchedTemplate sit at sequences of their own, so a flip replaces one with the other.
     private void BuildContent(RenderTreeBuilder builder, int sequence)
     {
         if (Template is not null)
         {
-            builder.AddContent(sequence, Template(IsMatched));
+            builder.AddContent(sequence, Template(Matched));
         }
-        else if (IsMatched)
+        else if (Matched)
         {
-            builder.AddContent(sequence + 1, Matched ?? ChildContent);
+            builder.AddContent(sequence + 1, MatchedTemplate ?? ChildContent);
         }
         else
         {
-            builder.AddContent(sequence + 2, NotMatched);
+            builder.AddContent(sequence + 2, NotMatchedTemplate);
         }
     }
 
-    private bool _HasContent => Template is not null || Matched is not null || ChildContent is not null || NotMatched is not null;
+    private bool _HasContent => Template is not null || MatchedTemplate is not null || ChildContent is not null || NotMatchedTemplate is not null;
 
     // The breakpoints an enclosing BitThemeProvider overrides, as the JS side wants them.
     private Dictionary<string, string>? _ThemeBreakpoints => ToScriptBreakpoints(CascadingTheme);

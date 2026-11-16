@@ -46,16 +46,16 @@ public partial class BitMediaQueryDemo
 </style>
 
 <BitMediaQuery ScreenQuery=""BitScreenQuery.LtMd"">
-    <Matched>
+    <MatchedTemplate>
         <BitButton IconName=""@BitIconName.GlobalNavButton"" AriaLabel=""Menu"" Variant=""BitVariant.Text"" />
-    </Matched>
-    <NotMatched>
+    </MatchedTemplate>
+    <NotMatchedTemplate>
         <div class=""nav-links"">
             <BitLink Href=""#example3"">Home</BitLink>
             <BitLink Href=""#example3"">Docs</BitLink>
             <BitLink Href=""#example3"">Blog</BitLink>
         </div>
-    </NotMatched>
+    </NotMatchedTemplate>
 </BitMediaQuery>";
 
     private readonly string example4RazorCode = @"
@@ -70,46 +70,46 @@ public partial class BitMediaQueryDemo
 
     private readonly string example5RazorCode = @"
 <BitMediaQuery Query=""(400px <= width <= 700px)"">
-    <Matched>The width is <b>between 400px and 700px</b>.</Matched>
-    <NotMatched>The width is <b>outside</b> 400px to 700px.</NotMatched>
+    <MatchedTemplate>The width is <b>between 400px and 700px</b>.</MatchedTemplate>
+    <NotMatchedTemplate>The width is <b>outside</b> 400px to 700px.</NotMatchedTemplate>
 </BitMediaQuery>
 <BitMediaQuery Query=""(orientation: landscape)"">
-    <Matched>The screen is in <b>landscape</b> orientation.</Matched>
-    <NotMatched>The screen is in <b>portrait</b> orientation.</NotMatched>
+    <MatchedTemplate>The screen is in <b>landscape</b> orientation.</MatchedTemplate>
+    <NotMatchedTemplate>The screen is in <b>portrait</b> orientation.</NotMatchedTemplate>
 </BitMediaQuery>
 <BitMediaQuery Query=""(prefers-color-scheme: dark)"">
-    <Matched>The system prefers a <b>dark</b> color scheme.</Matched>
-    <NotMatched>The system prefers a <b>light</b> color scheme.</NotMatched>
+    <MatchedTemplate>The system prefers a <b>dark</b> color scheme.</MatchedTemplate>
+    <NotMatchedTemplate>The system prefers a <b>light</b> color scheme.</NotMatchedTemplate>
 </BitMediaQuery>
 <BitMediaQuery Query=""(pointer: fine)"">
-    <Matched>The primary pointer is <b>precise</b> (a mouse).</Matched>
-    <NotMatched>The primary pointer is <b>coarse</b> (a finger) or absent.</NotMatched>
+    <MatchedTemplate>The primary pointer is <b>precise</b> (a mouse).</MatchedTemplate>
+    <NotMatchedTemplate>The primary pointer is <b>coarse</b> (a finger) or absent.</NotMatchedTemplate>
 </BitMediaQuery>
 <BitMediaQuery Query=""(prefers-reduced-motion: reduce)"">
-    <Matched>Reduced motion is <b>requested</b>.</Matched>
-    <NotMatched>Reduced motion is <b>not requested</b>.</NotMatched>
+    <MatchedTemplate>Reduced motion is <b>requested</b>.</MatchedTemplate>
+    <NotMatchedTemplate>Reduced motion is <b>not requested</b>.</NotMatchedTemplate>
 </BitMediaQuery>";
 
     private readonly string example6RazorCode = @"
 <div><b>Document breakpoints</b> (960px to 1279.98px):</div>
 <BitMediaQuery ScreenQuery=""BitScreenQuery.Md"">
-    <Matched>Md is <b>matched</b>.</Matched>
-    <NotMatched>Md is <b>not matched</b>.</NotMatched>
+    <MatchedTemplate>Md is <b>matched</b>.</MatchedTemplate>
+    <NotMatchedTemplate>Md is <b>not matched</b>.</NotMatchedTemplate>
 </BitMediaQuery>
 
 <div><b>BitThemeProvider</b> (700px to 899.98px):</div>
 <BitThemeProvider Theme=""breakpointsTheme"">
     <BitMediaQuery ScreenQuery=""BitScreenQuery.Md"">
-        <Matched>Md is <b>matched</b>.</Matched>
-        <NotMatched>Md is <b>not matched</b>.</NotMatched>
+        <MatchedTemplate>Md is <b>matched</b>.</MatchedTemplate>
+        <NotMatchedTemplate>Md is <b>not matched</b>.</NotMatchedTemplate>
     </BitMediaQuery>
 </BitThemeProvider>
 
 <div><b>CSS variables</b> (1100px to 1499.98px):</div>
 <div style=""--bit-bp-md: 1100px; --bit-bp-lg: 1500px;"">
     <BitMediaQuery ScreenQuery=""BitScreenQuery.Md"">
-        <Matched>Md is <b>matched</b>.</Matched>
-        <NotMatched>Md is <b>not matched</b>.</NotMatched>
+        <MatchedTemplate>Md is <b>matched</b>.</MatchedTemplate>
+        <NotMatchedTemplate>Md is <b>not matched</b>.</NotMatchedTemplate>
     </BitMediaQuery>
 </div>";
     private readonly string example6CsharpCode = @"
@@ -131,8 +131,8 @@ private readonly BitTheme breakpointsTheme = new()
 <p>
     Your order ships
     <BitMediaQuery Element=""span"" ScreenQuery=""BitScreenQuery.GtSm"">
-        <Matched><b>Wednesday, October 7</b></Matched>
-        <NotMatched><b>Oct 7</b></NotMatched>
+        <MatchedTemplate><b>Wednesday, October 7</b></MatchedTemplate>
+        <NotMatchedTemplate><b>Oct 7</b></NotMatchedTemplate>
     </BitMediaQuery>
     by express courier.
 </p>
@@ -148,12 +148,12 @@ private readonly BitTheme breakpointsTheme = new()
 
     private readonly string example8RazorCode = @"
 <BitMediaQuery DefaultMatched ScreenQuery=""BitScreenQuery.GtSm"">
-    <Matched>Wide content, rendered before the query is answered too.</Matched>
-    <NotMatched>Narrow content.</NotMatched>
+    <MatchedTemplate>Wide content, rendered before the query is answered too.</MatchedTemplate>
+    <NotMatchedTemplate>Narrow content.</NotMatchedTemplate>
 </BitMediaQuery>";
 
     private readonly string example9RazorCode = @"
-<BitMediaQuery @bind-IsMatched=""isSmallScreen"" ScreenQuery=""BitScreenQuery.LtMd"" OnChange=""HandleOnChange"" />
+<BitMediaQuery @bind-Matched=""isSmallScreen"" ScreenQuery=""BitScreenQuery.LtMd"" OnChange=""HandleOnChange"" />
 <div>The screen is <b>@(isSmallScreen ? ""small"" : ""wide"")</b> (LtMd). OnChange calls: <b>@changeCount</b></div>
 <BitButton FullWidth=""isSmallScreen"" Variant=""@(isSmallScreen ? BitVariant.Fill : BitVariant.Outline)"">
     A button driven by the bound value
@@ -169,14 +169,14 @@ private void HandleOnChange(bool value)
 
     private readonly string example10RazorCode = @"
 <BitMediaQuery ScreenQuery=""BitScreenQuery.LtMd"" AriaLabel=""Checkout actions"">
-    <Matched>
+    <MatchedTemplate>
         <BitButton Id=""checkout-pay"" IconName=""@BitIconName.Money"" AriaLabel=""Pay now"" />
         <BitButton Id=""checkout-cart"" IconName=""@BitIconName.ShoppingCart"" AriaLabel=""View cart"" Variant=""BitVariant.Outline"" />
-    </Matched>
-    <NotMatched>
+    </MatchedTemplate>
+    <NotMatchedTemplate>
         <BitButton Id=""checkout-pay"" IconName=""@BitIconName.Money"">Pay now</BitButton>
         <BitButton Id=""checkout-cart"" IconName=""@BitIconName.ShoppingCart"" Variant=""BitVariant.Outline"">View cart</BitButton>
-    </NotMatched>
+    </NotMatchedTemplate>
 </BitMediaQuery>";
 
     private readonly string example11RazorCode = @"
@@ -214,17 +214,17 @@ private readonly BitMediaQueryParams[] mediaQueryParams =
 
     private readonly string example12RazorCode = @"
 <BitMediaQuery Style=""color: tomato; font-weight: bold;"" ScreenQuery=""BitScreenQuery.GtXs"">
-    <Matched>Styled through the Style parameter (GtXs).</Matched>
-    <NotMatched>Styled through the Style parameter, not matched (GtXs).</NotMatched>
+    <MatchedTemplate>Styled through the Style parameter (GtXs).</MatchedTemplate>
+    <NotMatchedTemplate>Styled through the Style parameter, not matched (GtXs).</NotMatchedTemplate>
 </BitMediaQuery>
 <BitMediaQuery Class=""custom-class"" ScreenQuery=""BitScreenQuery.GtXs"">
-    <Matched>Classed through the Class parameter (GtXs).</Matched>
-    <NotMatched>Classed through the Class parameter, not matched (GtXs).</NotMatched>
+    <MatchedTemplate>Classed through the Class parameter (GtXs).</MatchedTemplate>
+    <NotMatchedTemplate>Classed through the Class parameter, not matched (GtXs).</NotMatchedTemplate>
 </BitMediaQuery>";
 
     private readonly string example13RazorCode = @"
 <BitMediaQuery Dir=""BitDir.Rtl"" ScreenQuery=""BitScreenQuery.GtXs"">
-    <Matched>این محتوا در صفحه‌های بزرگ‌تر از <b>Xs</b> نمایش داده می‌شود.</Matched>
-    <NotMatched>عرض صفحه کمتر از حد <b>GtXs</b> است.</NotMatched>
+    <MatchedTemplate>این محتوا در صفحه‌های بزرگ‌تر از <b>Xs</b> نمایش داده می‌شود.</MatchedTemplate>
+    <NotMatchedTemplate>عرض صفحه کمتر از حد <b>GtXs</b> است.</NotMatchedTemplate>
 </BitMediaQuery>";
 }

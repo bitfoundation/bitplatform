@@ -244,8 +244,8 @@ private bool fullHeight;";
 private bool scrollableMain;";
 
     private readonly string example10RazorCode = @"
-<BitMediaQuery ScreenQuery=""BitScreenQuery.LtMd"" @bind-IsMatched=""isLtMd"" />
-<BitMediaQuery ScreenQuery=""BitScreenQuery.LtSm"" @bind-IsMatched=""isLtSm"" />
+<BitMediaQuery ScreenQuery=""BitScreenQuery.LtMd"" @bind-Matched=""isLtMd"" />
+<BitMediaQuery ScreenQuery=""BitScreenQuery.LtSm"" @bind-Matched=""isLtSm"" />
 
 <BitLayout Bordered NavPanelWidth=""120"" AsideWidth=""120"" HideAside=""isLtMd"" HideNavPanel=""isLtSm"">
     <Header>
