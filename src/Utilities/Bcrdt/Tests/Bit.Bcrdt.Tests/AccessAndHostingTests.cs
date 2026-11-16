@@ -810,7 +810,10 @@ public class AccessAndHostingTests
     [TestMethod]
     public async Task The_websocket_keep_alive_hears_a_client_while_the_host_is_busy_with_its_message()
     {
-        TimeSpan busy = TimeSpan.FromSeconds(2);
+        // Generous enough for a loaded CI runner to answer every ping in time, and still a fraction of how long the
+        // host stays busy, so a server that stopped reading meanwhile is given up on several times over.
+        TimeSpan keepAliveTimeout = TimeSpan.FromSeconds(1);
+        TimeSpan busy = 3 * keepAliveTimeout;
         await using var documentHost = new BcrdtDocumentHost(new BcrdtDocumentHostOptions
         {
             ValidateUpdate = async _ =>
@@ -824,11 +827,15 @@ public class AccessAndHostingTests
             options: new BcrdtWebSocketEndpointOptions
             {
                 DocumentHost = documentHost,
-                KeepAliveInterval = TimeSpan.FromMilliseconds(100),
-                KeepAliveTimeout = TimeSpan.FromMilliseconds(500),
+                KeepAliveInterval = TimeSpan.FromMilliseconds(200),
+                KeepAliveTimeout = keepAliveTimeout,
             }));
 
         using ClientWebSocket client = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/busy");
+
+        // A client answers a ping only while it reads, so it starts reading at once: a ping that arrived before it
+        // sent its message would otherwise go unanswered, and the client be given up through no fault of the server.
+        Assert.IsNull(await RawSocket.ReceiveAsync(client, TimeSpan.Zero));
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         byte[]? change = null;
