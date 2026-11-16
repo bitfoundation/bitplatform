@@ -59,6 +59,7 @@ Some changes need more than the text of the diff:
 - **Settings.** New `appsettings` keys and new user secrets come in with their defaults; list the ones that need a real value for production.
 - **Generated code.** Regenerate what the build or a tool generates instead of merging it. The npm lock files are such: `npm install` in the folder of a changed `package.json` rewrites its lock, which should come out the same from npm on Linux. npm on Windows can add a root name to it that Linux npm drops, and then every build in CI leaves the lock modified.
 - **Naming.** The template's text arrives with this project's name already in it; keep the team's own names, branding and copy wherever they replaced the template's.
+- **Projects that moved.** When the team renamed, split or merged the template's projects, as a port does, **This project's layout** below says which project here each of the template's became: bring each change into the project it names, and a change to a split project into each part that holds that code.
 
 ## 4. Update what the project records
 
@@ -85,3 +86,7 @@ Commit the change on its branch, then tell the user, briefly:
 - that nothing is merged or pushed until they say so.
 
 Delete the diff's folders when you're done, with `bit remove` and the folders `bit diff` named or you created, so they don't take up space.
+
+## This project's layout
+
+The template's projects, under the names it gave them. Whoever renames, splits or merges one, such as the **port** skill, writes here which project of this one each became.

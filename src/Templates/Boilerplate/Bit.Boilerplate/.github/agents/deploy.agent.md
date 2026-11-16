@@ -57,9 +57,6 @@ domain and the services of section 5. Then go through the steps with them.
   adds DDoS protection, its cache and a tunnel that keeps every inbound port on the VM closed. Tell the user once, and
   if they want it, turn the option on through the template-diff skill.
 <!--#endif-->
-- **GitHub Free is enough too.** A private repository on it has the environments, their secrets and the branch
-  Production deploys from; only protecting `main` takes GitHub Pro or Team. Tell the user in a line that Pro or
-  Team would make this more professional, with its pros and cons as they stand then, and let them choose.
 <!--#if (aspire != true)-->
 - **This project was created without .NET Aspire**, and this way of deploying is built on it: the AppHost publishes
   the Docker Compose project, and the template's CD builds and deploys it. Propose adding Aspire to the user first,
@@ -557,7 +554,6 @@ have taken requests, so a failure from then on leaves the database ahead and und
 - Hand back a short list: what runs where, the public addresses, how to open the dashboards, where each secret lives,
   what is backed up, and how to roll back (run the CD by hand on a branch or tag at the last good commit, or revert the
   merge on a branch of its own and merge that; the Down of the migrations that commit doesn't have runs once it is up).
-- After the first deployment to Production, unless the database already has a backup, end with a warning the user
-  can't miss: nothing in this project backs the database up, so a lost disk or a bad migration can lose every record.
-  Ask them to arrange a backup kept off the machine the database runs on, and to restore it once to see it works,
-  before real users arrive.
+- After the first deployment to Production, unless the database already has a backup, tell the user plainly that
+  nothing backs it up yet, so a lost disk or a bad migration can lose every record, and offer to set backups up with
+  them before real users arrive.

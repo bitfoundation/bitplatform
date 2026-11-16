@@ -33,6 +33,8 @@ Ports fail in three predictable ways, and this file is built around them:
 - **Spec before code.** Each feature of the source gets its spec under `specs/` (`specs/README.md`) before it is
   built. The product's own vocabulary - what the source calls its tenants, users, documents and places - goes into the
   spec that describes the whole product, and the UI and its translations follow it.
+- **The source's translations come over.** The texts the source has in each language become this project's texts in
+  that language, and machine translation only fills what the source doesn't have.
 - **Recommend; don't interview.** Section 3 lists the decisions every port meets. For each one, recommend what fits
   this source, with a one-line reason, and present them together with the plan. Ask a question on its own only when
   the source can't answer it.
@@ -119,9 +121,9 @@ that word in the UI, and make every entity that belongs to one tenant-aware. A s
 ### 3.3 Further apps
 
 When the source is several apps for different people or devices - a till and a back office, a customer app and a
-staff app, a kiosk - they stay separate apps on this project's one API. The template's projects stay the first app:
-keep their names, so `template-diff` and the `[mirror]` comments still line up with the template. Each further app gets
-projects of its own, named after it:
+staff app, a kiosk - they stay separate apps on this project's one API. The template's projects become the first app,
+and they may be renamed after it, with the `[mirror]` comments that name their files; section 7 records where each
+went. Each further app gets projects of its own, named after it:
 
 - **Web only**: `Boilerplate.Client.<App>.Web` holds the app's pages, layout, navigation and theme, and
   `Boilerplate.Server.<App>.Web` hosts it the way `src/Server/Boilerplate.Server.Web` hosts the first app (App.razor,
@@ -286,6 +288,10 @@ section 4).
   built on `src/LandingPage`, and its chat answers about this product.
 - The main pages of each app are in the Workbench.
 - Each app serves only its own pages, and the tests say so.
+- The project's own instructions describe what it has become: `AGENTS.md` section 2 lists its projects, the
+  **deploy** and **troubleshoot** skills know its apps and where each one runs, and the **template-diff** skill's
+  **This project's layout** says which project here each of the template's became, so a later template change reaches
+  the right one.
 - The build is clean, the tests pass, and the review skill has run.
 
 ## 8. Report

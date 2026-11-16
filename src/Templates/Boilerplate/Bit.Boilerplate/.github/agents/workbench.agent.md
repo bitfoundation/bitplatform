@@ -258,7 +258,7 @@ component, so what the user reviews is what ships.
   port or a rebrand, gets a task of its own on the Progress page (`/progress`), whichever skill runs it, so the user
   follows it there instead of digging through the chat. Each chat keeps its own, and several run side by side. Run the
   Workbench in dev mode first (section 1), and open the task's page in the user's own browser once.
-- Start it with `POST /api/progress` (`title`, `summary`, `steps`, `agent`, `language`), which returns its `id` and its page. From
+- Start it with `POST /api/progress` (`title`, `summary`, `steps`, `agent`), which returns its `id` and its page. From
   then on send only what changed with `PATCH /api/progress/<id>`: a step, note or question with an id the task already
   has changes, a new id adds one, `remove` takes one away, `log` adds a line to its activity, marked with `logKind`
   (`info`, `warning`, `decision`, `success` or `error`) when it is news of that kind, `report` replaces the task's
@@ -271,9 +271,7 @@ component, so what the user reviews is what ships.
   pull request, a dashboard.
 - Details, notes, log lines and the report are Markdown, so a run, an issue or a commit is a link or `code` there rather
   than a bare address; the report also takes headings and tables. Titles, step texts and the summary are plain text.
-- Write the task in the user's language and give it as `language`, like `fa` or `en`: the page then reads it that way,
-  right to left for Persian or Arabic however many English terms it holds, and a text with no letter of that script,
-  like a command, left to right. Digits show as you write them, so keep Latin ones in versions, numbers and code.
+- Write the task in the user's language.
 - Ask on the page rather than in the chat whenever the answer is a choice or a few words: `asks`, each with `id`,
   `question`, `kind` (`text`, `choice`, `choices`, `confirm` or `secret`), `options` for a choice and an optional `detail` and
   `placeholder`. The page plays a sound and counts it in the tab's title, so the user notices it from another window. The

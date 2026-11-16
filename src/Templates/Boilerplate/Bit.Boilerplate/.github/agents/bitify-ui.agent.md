@@ -7,6 +7,10 @@ description: Modernizes Blazor pages by replacing raw HTML elements and custom C
 
 You are an expert Blazor modernization agent. Your job is to replace standard HTML elements and custom CSS in Blazor pages with Bit.BlazorUI components and theme-aware styling, following `AGENTS.md` sections 3 and 5.
 
+A page you bitify keeps doing what it did; only how it is built changes. Its code still passes `AGENTS.md` and the
+**review** skill (`.github/agents/review.agent.md`) like any other change, and the work takes ai-dlc's short track
+(`.github/agents/ai-dlc.agent.md`): a branch of its own, the review, and a pull request.
+
 The name a task suggests is rarely the one this library chose: a "select" is `BitDropdown`, a "toast" is
 `BitSnackBar`, a "skeleton" is `BitShimmer`, an "expander" is `BitAccordion`, a "switch" is `BitToggle`. An icon
 name that does not exist is not a compile error but an empty box on the page, so take every one from
@@ -29,8 +33,12 @@ Read the `.razor`, `.razor.cs`, and `.razor.scss` files in parallel. Identify:
 
 ### Step 2: Find the Replacement for Each Element
 
-Search for each element or hand-written control by what it does - "button with a loading state", "numeric input
-with a spinner", "date range picker" - and batch the searches in parallel. Search for the ones you think you already
+Look at the app's own components first, in `src/Client/Boilerplate.Client.Core/Components/Common` and the components
+the page's siblings use: when one of them already does what the element does, such as `LoadingComponent` or
+`ImageEditorModal`, it is the replacement, since it carries the app's own behavior and look.
+
+For the rest, search for each element or hand-written control by what it does - "button with a loading state",
+"numeric input with a spinner", "date range picker" - and batch the searches in parallel. Search for the ones you think you already
 know a component for too: the search is what turns up the closer fit, a `BitChoiceGroup` for three fixed options
 where a `BitDropdown` came to mind. If you would rather browse, `GetBitBlazorUIComponent` with **no argument** returns
 the full catalog.
@@ -105,8 +113,20 @@ Fix any build errors, then use the page in the running app, driving it as the ru
 than only looking at it: pick a value in every input you
 replaced, toggle every switch, open every dropdown and dialog, and submit each form empty and filled, since a binding
 that broke in the swap shows only there. Do it in both the light and the dark theme, since a hardcoded or non-token
-color only shows up in one of them, and once at phone width. Read the browser console and the server's logs as you
-go.
+color only shows up in one of them, once at phone width, and once in a right-to-left culture the app ships, where a
+hand-written margin or a direction icon shows wrong. Read the browser console and the server's logs as you go.
+
+Then stop the app and run the UI tests Step 1 found, the way the **write-tests** skill
+(`.github/agents/write-tests.agent.md`) describes, and run the review skill on the change.
+
+## Done means
+
+- Every element Step 1 found is a component of the app's own or of Bit.BlazorUI, or stays hand-written with its reason,
+  in `specs/workarounds.md` when bit BlazorUI lacks it.
+- The page does what it did: every attribute Step 1 listed still works, every input, switch, dropdown, dialog and form
+  was used in the running app, and the tests that find the page pass.
+- It looks right in light and dark, at phone width and right to left, with no hardcoded color or size left.
+- The review skill's findings are fixed, and the change is on its own branch, in a pull request (ai-dlc phase 7).
 
 ---
 

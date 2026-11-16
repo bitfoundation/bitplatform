@@ -66,6 +66,9 @@ without one of them, knowing what it hides.
 
 ## 3. Read before you guess
 
+- Ask the environment's dev-mcp for its health first (`GetHealth`): it runs every health check the server has, from
+  the database and the background jobs to email, the AI models and the project's websites, and returns each one that
+  isn't Healthy with its reason.
 - Start from the evidence: the exception and its stack trace, the trace id an error or the diagnostic modal shows, the
   request that failed, the job that failed with its arguments, the row that looks wrong. Follow one trace from end to
   end rather than reading the logs at random: dev-mcp's `GetTrace` gives a trace's spans and the logs written inside it.
@@ -80,8 +83,9 @@ without one of them, knowing what it hides.
     - **The database.** The applied migrations against the code's, and the data itself: a row the code never expected.
     - **Background jobs.** Failed and retried jobs, with their exceptions and arguments, and recurring jobs that
       stopped running.
-    - **A provider.** Email, SMS, push, AI or storage: a key that expired, a quota that ran out, an outage. The
-      provider's own dashboard says.
+    - **A provider.** Email, SMS, push, AI, storage or any other service the app calls: a key that expired, a quota
+      that ran out, an outage, or a change to its API, such as a new required field or a response of another shape,
+      which breaks the app with nothing deployed on its side. The provider's own dashboard and changelog say.
     - **A stale copy.** An older app version on the user's device (`.docs/13- Force Update System.md`), an old
       client the browser's service worker still serves, or a cached response or cached data that outlived what it
       described (`.docs/14- Response Caching System.md`).
