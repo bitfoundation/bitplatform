@@ -129,13 +129,14 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
   `Site:BingSiteVerification`.
 - `AI:OpenAI` holds the chat's model and key, the same setting as the app's server. The chat answers only from the
   facts in `LandingChatPrompts.cs`, so keep those true and in step with the page.
-- Analytics and monitoring go through bit Belemetry to Azure Monitor, with the connection string in the client's
-  `appsettings.json`, and only after the visitor agrees in the consent banner. Errors are the exception: they are sent
-  from the first moment, whatever the visitor chooses, and the privacy page says so.
+- Analytics and monitoring go through bit Belemetry, and only after the visitor agrees in the consent banner. Errors
+  are the exception: they are sent from the first moment, whatever the visitor chooses, and the privacy page says so.
+  They go to the dashboard whose address the deployment gives the landing page as `Belemetry:OtlpEndpoint`, and to
+  Azure Monitor as well once the client's `appsettings.json` has an `ApplicationInsights:ConnectionString`.
 - The deployment reads each of the server's settings from a secret of its own, such as
   `LANDINGPAGE__AI__OPENAI__CHATAPIKEY`, or a variable for what isn't secret; the **deploy** skill
   (`.github/agents/deploy.agent.md`) covers its domain and its secrets. It can't reach the browser: the client's
-  `appsettings.json` is built into its assembly, so the Azure Monitor connection string the browser sends with goes
+  `appsettings.json` is built into its assembly, so an Azure Monitor connection string the browser sends with goes
   there.
 
 ## Done means
