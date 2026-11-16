@@ -89,7 +89,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Toggled, true);
             parameters.Add(p => p.ItemSuffixTemplate, (BitNavItem item) => builder => builder.AddMarkupContent(0, "<span class='suffix'>s</span>"));
         });
 
@@ -106,7 +106,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
+            parameters.Bind(p => p.Toggled, isToggled, v => isToggled = v);
         });
 
         var toggleBtn = component.Find(".bit-npn-tbn");
@@ -330,7 +330,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             parameters.Add(p => p.Items, Items);
             parameters.Add(p => p.NoToggle, true);
-            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Toggled, true);
         });
 
         Assert.AreEqual(0, component.FindAll(".bit-npn-tbn").Count);
@@ -346,7 +346,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             parameters.Add(p => p.Items, Items);
             parameters.Add(p => p.NoToggle, true);
-            parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
+            parameters.Bind(p => p.Toggled, isToggled, v => isToggled = v);
         });
 
         await component.InvokeAsync(() => component.Instance.Toggle());
@@ -1157,7 +1157,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Toggled, true);
         });
 
         Assert.IsTrue(component.Find("nav.bit-nav").ClassList.Contains("bit-nav-ion"));
@@ -1176,7 +1176,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
+            parameters.Bind(p => p.Toggled, isToggled, v => isToggled = v);
         });
 
         component.FindAll("button").Single(b => b.GetAttribute("aria-label") == "Search").Click();
@@ -1262,7 +1262,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             parameters.Add(p => p.Items, Items);
             parameters.Add(p => p.ExpandOnHover, true);
-            parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
+            parameters.Bind(p => p.Toggled, isToggled, v => isToggled = v);
         });
 
         component.Find(".bit-npn").MouseEnter();
@@ -1317,7 +1317,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Toggled, true);
             parameters.Add(p => p.ExpandOnHover, true);
         });
 
@@ -1348,7 +1348,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             parameters.Add(p => p.Items, Items);
             parameters.Add(p => p.ExpandOnHover, true);
-            parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
+            parameters.Bind(p => p.Toggled, isToggled, v => isToggled = v);
         });
 
         // The pointer is over the panel and the focus lands on the button being clicked, both of which
@@ -1375,7 +1375,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Toggled, true);
         });
 
         // No handler is attached at all, so the pointer crossing the panel cannot re-render it.
@@ -1655,7 +1655,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Toggled, true);
             parameters.Add(p => p.SearchIconName, "Zoom");
         });
 
@@ -1666,7 +1666,7 @@ public class BitNavPanelTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Toggled, true);
             parameters.Add(p => p.SearchIcon, BitIconInfo.Fa("solid magnifying-glass"));
         });
 
@@ -1924,7 +1924,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Toggled, true);
             parameters.Add(p => p.ExpandOnHover, true);
         });
 
@@ -2418,7 +2418,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.IconUrl, "/logo.png");
             parameters.Add(p => p.IconNavUrl, "/");
             parameters.Add(p => p.HeaderText, "bit platform");
-            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Toggled, true);
         });
 
         // A link left on screen with nothing visible in it would still be a tab stop of the rail.
@@ -2671,7 +2671,7 @@ public class BitNavPanelTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-npn-tbn").ClassList.Contains("bit-btn-err"));
         Assert.IsTrue(component.Find(".bit-npn-cbn").ClassList.Contains("bit-btn-err"));
 
-        component.Render(parameters => parameters.Add(p => p.IsToggled, true));
+        component.Render(parameters => parameters.Add(p => p.Toggled, true));
 
         Assert.IsTrue(component.Find(".bit-npn-tsb").ClassList.Contains("bit-btn-err"));
     }
@@ -2764,7 +2764,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Toggled, true);
             parameters.Add(p => p.Classes, new BitNavPanelClassStyles { Toggled = "c-toggled", ToggleSearchButton = "c-tsb" });
             parameters.Add(p => p.Styles, new BitNavPanelClassStyles { Toggled = "color:red", ToggleSearchButton = "color:blue" });
         });
@@ -2780,7 +2780,7 @@ public class BitNavPanelTests : BunitTestContext
         StringAssert.Contains(searchButton.GetAttribute("style"), "color:blue");
 
         // The rail is left, and the toggled look with it.
-        component.Render(parameters => parameters.Add(p => p.IsToggled, false));
+        component.Render(parameters => parameters.Add(p => p.Toggled, false));
 
         Assert.IsFalse(component.Find(".bit-npn").ClassList.Contains("c-toggled"));
         Assert.IsFalse((component.Find(".bit-npn").GetAttribute("style") ?? string.Empty).Contains("color:red"));
@@ -2814,7 +2814,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             parameters.Add(p => p.Items, Items);
             parameters.Add(p => p.SearchText, "zzz");
-            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Toggled, true);
         });
 
         // The rail has no room for either; the search box stays rendered but hidden, so it keeps its state.
@@ -2830,7 +2830,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
+            parameters.Bind(p => p.Toggled, isToggled, v => isToggled = v);
         });
 
         component.InvokeAsync(() => component.Instance.FocusSearchBox());
@@ -2839,7 +2839,7 @@ public class BitNavPanelTests : BunitTestContext
 
         // The search box only exists once the panel has left the rail, so the focus is moved in the render that
         // brings it back rather than after a guessed delay.
-        component.Render(parameters => parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v));
+        component.Render(parameters => parameters.Bind(p => p.Toggled, isToggled, v => isToggled = v));
 
         component.WaitForAssertion(() =>
         {
@@ -2857,7 +2857,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             parameters.Add(p => p.Items, Items);
             parameters.Add(p => p.NoSearchBox, true);
-            parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
+            parameters.Bind(p => p.Toggled, isToggled, v => isToggled = v);
         });
 
         await component.InvokeAsync(() => component.Instance.FocusSearchBox());
@@ -2973,7 +2973,7 @@ public class BitNavPanelTests : BunitTestContext
 
         Assert.AreEqual("Collapse the navigation panel", component.Find(".bit-npn-tbn").GetAttribute("aria-label"));
 
-        component.Render(parameters => parameters.Add(p => p.IsToggled, true));
+        component.Render(parameters => parameters.Add(p => p.Toggled, true));
 
         Assert.AreEqual("Expand the navigation panel", component.Find(".bit-npn-tbn").GetAttribute("aria-label"));
     }

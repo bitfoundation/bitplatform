@@ -5,6 +5,26 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `IsToggled` is `Toggled` on `BitMenuButton` and `BitNavPanel` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Loading`, `Checked`), and the toggled state of the
+split menu button's header and of the nav panel's rail were still spelled with one. Each `[Parameter]` is renamed
+with its two-way binding, and on the menu button with its uncontrolled default and its `BitMenuButtonParams`
+counterpart:
+
+| Before | After |
+|---|---|
+| `<BitMenuButton Split Toggle IsToggled="bold" />` | `<BitMenuButton Split Toggle Toggled="bold" />` |
+| `<BitMenuButton Split Toggle @bind-IsToggled="bold" />` | `<BitMenuButton Split Toggle @bind-Toggled="bold" />` |
+| `<BitMenuButton Split Toggle DefaultIsToggled="true" />` | `<BitMenuButton Split Toggle DefaultToggled="true" />` |
+| `new BitMenuButtonParams { DefaultIsToggled = true }` | `new BitMenuButtonParams { DefaultToggled = true }` |
+| `<BitNavPanel @bind-IsToggled="rail" />` | `<BitNavPanel @bind-Toggled="rail" />` |
+| `<BitNavPanel IsToggledChanged="OnRailChanged" />` | `<BitNavPanel ToggledChanged="OnRailChanged" />` |
+
+What the two render is unchanged (`bit-mnb-tgl`, `bit-npn-tgl`, the `Toggled` class-style part). `OnToggleChange` and
+`ToggledWidth` keep their names, and so do the button group's items (`BitButtonGroupItem.IsToggled`,
+`BitButtonGroupOption.IsToggled`): the flag of one item of a parent is spelled with an `Is`.
+
 ### `BitToggleButton`'s `IsChecked` is `Checked` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own state is spelled without an `Is` (`Disabled`, `Vertical`, `Loading`), and the toggle button's

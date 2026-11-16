@@ -28,12 +28,12 @@
 
 <E2ESection Id="rail" Title="Rail">
     <div class="npn-row">
-        <div class="npn-box"><BitNavPanel Id="npn-hover" Items="@I("hover")" ExpandOnHover IsToggled Style="height:300px" /></div>
+        <div class="npn-box"><BitNavPanel Id="npn-hover" Items="@I("hover")" ExpandOnHover Toggled Style="height:300px" /></div>
         <div class="npn-box"><BitNavPanel Id="npn-notoggle" Items="@I("notoggle")" NoToggle Style="height:300px" /></div>
         <div class="npn-box">
             <button id="btn-toggle-hidden" @onclick="() => _hiddenToggled = !_hiddenToggled">Toggle the hidden-toggle panel</button>
             <span id="hidden-toggled">@_hiddenToggled</span>
-            <BitNavPanel Id="npn-hidetoggle" Items="@I("hidetoggle")" HideToggle @bind-IsToggled="_hiddenToggled" ToggleAriaLabel="Never shown" Style="height:300px" />
+            <BitNavPanel Id="npn-hidetoggle" Items="@I("hidetoggle")" HideToggle @bind-Toggled="_hiddenToggled" ToggleAriaLabel="Never shown" Style="height:300px" />
         </div>
         <div class="npn-box"><BitNavPanel Id="npn-togglelabel" Items="@I("togglelabel")" ToggleAriaLabel="Fold the menu" ToggleIconName="@BitIconName.GlobalNavButton" Style="height:300px" /></div>
     </div>
@@ -126,7 +126,7 @@
     <span id="api-state">@_apiState</span>
     <span id="api-toggled">@_apiToggled</span>
     <div class="npn-box">
-        <BitNavPanel @ref="_apiRef" Id="npn-api" Items="@I("api")" @bind-IsToggled="_apiToggled" SearchDebounceTime="0" Style="height:420px" />
+        <BitNavPanel @ref="_apiRef" Id="npn-api" Items="@I("api")" @bind-Toggled="_apiToggled" SearchDebounceTime="0" Style="height:420px" />
     </div>
 </E2ESection>
 
@@ -182,10 +182,10 @@
 <E2ESection Id="icons" Title="External Icons">
     <div class="npn-box">
         <BitNavPanel Id="npn-icons" Items="@I("icons")" ToggleIcon="@BitIconInfo.Bi("list")" SearchIcon="@BitIconInfo.Bi("search")" ChevronDownIcon="@BitIconInfo.Bi("chevron-down")"
-                     IsToggled="_iconsToggled" Style="height:300px" />
+                     Toggled="_iconsToggled" Style="height:300px" />
     </div>
     <button id="btn-icons-toggle" @onclick="() => _iconsToggled = !_iconsToggled">Toggle the icons panel</button>
-    <div class="npn-box"><BitNavPanel Id="npn-icons-names" Items="@I("iconnames")" SearchIconName="@BitIconName.Zoom" ChevronDownIconName="@BitIconName.ChevronDownMed" IsToggled Style="height:300px" /></div>
+    <div class="npn-box"><BitNavPanel Id="npn-icons-names" Items="@I("iconnames")" SearchIconName="@BitIconName.Zoom" ChevronDownIconName="@BitIconName.ChevronDownMed" Toggled Style="height:300px" /></div>
 </E2ESection>
 
 <E2ESection Id="size" Title="Size">
@@ -199,7 +199,7 @@
 <E2ESection Id="style" Title="Style & Class">
     <div class="npn-row">
         <div class="npn-box">
-            <BitNavPanel Id="npn-styled" Items="@I("styled")" IconUrl="@Logo" HeaderText="Styled" ShowCloseButton IsToggled="_styledToggled" Class="npn-root-class"
+            <BitNavPanel Id="npn-styled" Items="@I("styled")" IconUrl="@Logo" HeaderText="Styled" ShowCloseButton Toggled="_styledToggled" Class="npn-root-class"
                          Style="height:300px; border: 2px solid rgb(1, 2, 3)"
                          Classes="@(new() { Root = "c-root", Toggled = "c-toggled", Container = "c-container", Header = "c-header", HeaderIcon = "c-hicon", HeaderText = "c-htext",
                                             ToggleButton = "c-toggle", CloseButton = "c-close", SearchBox = "c-search", ToggleSearchButton = "c-tsearch", NoResults = "c-empty", Nav = "c-nav" })"
@@ -215,7 +215,7 @@
                     --bit-NavPanel-container-padding: 13px; --bit-NavPanel-gap: 17px; --bit-NavPanel-radius: 19px; --bit-NavPanel-border-width: 3px;
                     --bit-NavPanel-border-color: rgb(0, 0, 255); --bit-NavPanel-header-icon-size: 21px; --bit-NavPanel-shadow: rgb(0, 0, 0) 1px 1px 2px 0px;
                     --bit-NavPanel-drawer-shadow: rgb(255, 0, 0) 2px 2px 3px 0px; --bit-NavPanel-overlay-background: rgba(0, 128, 0, 0.5); --bit-NavPanel-overlay-backdrop-filter: blur(2px)">
-            <BitNavPanel Id="npn-vars" Items="@I("vars")" IconUrl="@Logo" IsToggled="_varsToggled" Style="height:300px" />
+            <BitNavPanel Id="npn-vars" Items="@I("vars")" IconUrl="@Logo" Toggled="_varsToggled" Style="height:300px" />
             <button id="btn-vars-toggle" @onclick="() => _varsToggled = !_varsToggled">Toggle the variables panel</button>
             <button id="btn-vars-drawer" @onclick="() => _varsDrawerOpen = true">Open the variables drawer</button>
             <BitNavPanel Id="npn-vars-drawer" Items="@I("varsdrawer")" @bind-IsOpen="_varsDrawerOpen" DrawerBreakpoint="BitNavPanelBreakpoint.Always" />

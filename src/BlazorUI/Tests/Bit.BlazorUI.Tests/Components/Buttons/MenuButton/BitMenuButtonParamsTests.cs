@@ -35,8 +35,8 @@ public class BitMenuButtonParamsTests : BunitTestContext
         nameof(BitMenuButton<BitMenuButtonItem>.Options),
         nameof(BitMenuButton<BitMenuButtonItem>.IsOpen),
         nameof(BitMenuButton<BitMenuButtonItem>.IsOpenChanged),
-        nameof(BitMenuButton<BitMenuButtonItem>.IsToggled),
-        nameof(BitMenuButton<BitMenuButtonItem>.IsToggledChanged),
+        nameof(BitMenuButton<BitMenuButtonItem>.Toggled),
+        nameof(BitMenuButton<BitMenuButtonItem>.ToggledChanged),
         nameof(BitMenuButton<BitMenuButtonItem>.LoadingChanged),
         nameof(BitMenuButton<BitMenuButtonItem>.SelectedItem),
         nameof(BitMenuButton<BitMenuButtonItem>.SelectedItemChanged),
@@ -186,7 +186,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
             Classes = classes,
             CloseOnItemClick = false,
             Color = BitColor.Warning,
-            DefaultIsToggled = true,
+            DefaultToggled = true,
             DisabledInteractive = true,
             DropDirection = BitDropDirection.All,
             FormId = "my-form",
@@ -241,7 +241,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
         Assert.AreSame(classes, instance.Classes);
         Assert.IsFalse(instance.CloseOnItemClick);
         Assert.AreEqual(BitColor.Warning, instance.Color);
-        Assert.IsTrue(instance.DefaultIsToggled);
+        Assert.IsTrue(instance.DefaultToggled);
         Assert.IsTrue(instance.DisabledInteractive);
         Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
         Assert.AreEqual("my-form", instance.FormId);
@@ -376,11 +376,11 @@ public class BitMenuButtonParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMenuButtonParamsShouldSeedTheToggledStateThroughDefaultIsToggled()
+    public void BitMenuButtonParamsShouldSeedTheToggledStateThroughDefaultToggled()
     {
         // The toggled state itself is left out of the params class on purpose: a split toggle button writes to it on
         // every click, so a cascaded value would be written back over the click on the next render.
-        var component = RenderWithParams(new BitMenuButtonParams { Split = true, Toggle = true, DefaultIsToggled = true });
+        var component = RenderWithParams(new BitMenuButtonParams { Split = true, Toggle = true, DefaultToggled = true });
 
         Assert.IsTrue(component.Find(".bit-mnb").ClassList.Contains("bit-mnb-tgl"));
         Assert.AreEqual("true", component.Find(".bit-mnb-opb").GetAttribute("aria-pressed"));

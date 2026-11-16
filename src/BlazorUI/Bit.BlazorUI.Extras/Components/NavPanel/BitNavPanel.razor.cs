@@ -293,12 +293,6 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// Determines if the nav panel is in the toggled state.
-    /// </summary>
-    [Parameter, TwoWayBound]
-    public bool IsToggled { get; set; }
-
-    /// <summary>
     /// A collection of items to display in the nav panel.
     /// </summary>
     [Parameter, CallOnSet(nameof(OnItemsSet))]
@@ -582,6 +576,12 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public string? ToggleAriaLabel { get; set; }
 
     /// <summary>
+    /// Determines if the nav panel is in the toggled state.
+    /// </summary>
+    [Parameter, TwoWayBound]
+    public bool Toggled { get; set; }
+
+    /// <summary>
     /// The width of the nav panel in px in its toggled (rail) state.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -702,7 +702,7 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
         // The state the markup renders rather than the parameter behind it: a rail that is currently expanded
         // over its neighbours (ExpandOnHover) already shows the search box, and un-toggling it for good is not
         // what asking for the focus asked for.
-        if (_IsToggled)
+        if (_Toggled)
         {
             await ToggleForSearch();
             return;
@@ -970,7 +970,7 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     // to be holding it already whatever happens next.
     private async Task FocusOnOpen()
     {
-        if (AutoFocus && NoSearchBox is false && _IsToggled is false && _searchBoxRef is not null)
+        if (AutoFocus && NoSearchBox is false && _Toggled is false && _searchBoxRef is not null)
         {
             await _searchBoxRef.FocusAsync();
             return;
@@ -1142,9 +1142,9 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     {
         if (NoToggle) return;
 
-        if (await AssignIsToggled(!IsToggled) is false) return;
+        if (await AssignToggled(!Toggled) is false) return;
 
-        if (IsToggled)
+        if (Toggled)
         {
             // The pointer that clicked the toggle button is still over the panel, and the focus is still on
             // the button itself - which is inside it - so a rail that expands on either of them would open
@@ -1162,7 +1162,7 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     private async Task ToggleForSearch()
     {
-        if (await AssignIsToggled(false) is false) return;
+        if (await AssignToggled(false) is false) return;
 
         _focusSearchBoxPending = true;
     }
@@ -1351,9 +1351,9 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     }
 
     // A rail that expands on hover renders everything the open panel does while the pointer is over it - or
-    // while the keyboard is inside it - so this, rather than IsToggled, is the rail state everything reads: the
+    // while the keyboard is inside it - so this, rather than Toggled, is the rail state everything reads: the
     // markup that lays the panel out, and the two focus moves that go to what that markup put on screen.
-    private bool _IsToggled => (NoToggle is false) && IsToggled && (ExpandOnHover is false || (_isHovered is false && _isFocused is false));
+    private bool _Toggled => (NoToggle is false) && Toggled && (ExpandOnHover is false || (_isHovered is false && _isFocused is false));
 
     // Which edge the drawer is docked to, and so which way the swipe that closes it goes. The placement is
     // expressed in the text direction, so the End of a right-to-left layout is the left of the screen; every

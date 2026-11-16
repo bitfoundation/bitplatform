@@ -24,7 +24,7 @@ public partial class BitParameterNamingContractTests
     // callback and its uncontrolled default (IsOpen, IsOpenChanged, DefaultIsOpen): they are renamed as one.
     private static readonly Dictionary<string, string[]> _outliersByComponent = new()
     {
-        ["BitMenuButton"] = ["IsOpen", "IsOpenChanged", "IsToggled", "IsToggledChanged", "DefaultIsToggled"],
+        ["BitMenuButton"] = ["IsOpen", "IsOpenChanged"],
         ["BitCircularTimePicker"] = ["IsOpen", "IsOpenChanged"],
         ["BitDatePicker"] = ["IsMonthPickerVisible", "IsOpen", "IsOpenChanged"],
         ["BitDateRangePicker"] = ["IsMonthPickerVisible", "IsOpen", "IsOpenChanged"],
@@ -45,7 +45,7 @@ public partial class BitParameterNamingContractTests
         ["BitCountryPicker"] = ["IsOpen", "IsOpenChanged"],
         ["BitFcDayCell"] = ["IsRovingCell", "IsLastColumn", "IsRowStart"],
         ["BitFcMonthEventBadge"] = ["IsLead"],
-        ["BitNavPanel"] = ["IsOpen", "IsOpenChanged", "IsToggled", "IsToggledChanged"],
+        ["BitNavPanel"] = ["IsOpen", "IsOpenChanged"],
         ["BitNotificationCenter"] = ["IsOpen", "IsOpenChanged"],
         ["BitPhoneInput"] = ["IsOpen", "IsOpenChanged"],
         ["BitPopConfirm"] = ["IsOpen", "IsOpenChanged"],
