@@ -1606,8 +1606,8 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Sind Sie sicher, dass Sie alle Sitzungen von {0} widerrufen möchten? Autorisierte Anwendungen bleiben erhalten.</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>Sie können diesen Benutzer nicht aus der SuperAdmin-Benutzergruppe entfernen.</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>Sie können diesen Benutzer nicht aus der Benutzergruppe der globalen Admins entfernen.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Super-Admin-Berechtigungen dürfen nicht geändert werden.</value>
@@ -1618,11 +1618,11 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>Sie können Ihren eigenen Benutzer nicht entfernen</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>Sie können diesen SuperAdmin-Benutzer nicht entfernen</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>Sie können diesen globalen Admin nicht entfernen</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>Sie können die Sitzungen dieses SuperAdmin-Benutzers nicht widerrufen</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>Sie können die Sitzungen dieses globalen Admins nicht widerrufen</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Sie können Ihre aktuelle Sitzung nicht entfernen</value>

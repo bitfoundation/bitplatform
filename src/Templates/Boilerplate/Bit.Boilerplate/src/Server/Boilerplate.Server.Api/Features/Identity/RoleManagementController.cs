@@ -317,7 +317,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
                 var otherGlobalAdminsCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
 
                 if (otherGlobalAdminsCount == 0)
-                    throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
+                    throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllGlobalAdminsErrorMessage)]);
             }
 
             DbContext.UserRoles.Remove(userRole);
@@ -342,7 +342,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
                 var otherGlobalAdminsCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
 
                 if (otherGlobalAdminsCount == 0)
-                    throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
+                    throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllGlobalAdminsErrorMessage)]);
             }
             var result = await userManager.RemoveFromRoleAsync(user, role.Name!);
             if (result.Succeeded is false)
@@ -377,7 +377,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
             if (User.IsInRole(AppRoles.GlobalAdmin) is false)
                 throw new UnauthorizedException();
 
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllGlobalAdminsErrorMessage)]);
         }
 
         await DbContext.UserRoles.Where(ur => ur.RoleId == role.Id).ExecuteDeleteAsync(cancellationToken);

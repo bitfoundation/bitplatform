@@ -1606,8 +1606,8 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Weet je zeker dat je alle sessies van {0} wilt intrekken? Geautoriseerde applicaties blijven behouden.</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>Je kunt deze gebruiker niet verwijderen uit de SuperAdmin-gebruikersgroep.</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>Je kunt deze gebruiker niet verwijderen uit de gebruikersgroep van globale beheerders.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Superadmin-rechten mogen niet worden gewijzigd.</value>
@@ -1618,11 +1618,11 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>Je kunt je eigen gebruiker niet verwijderen</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>Je kunt deze SuperAdmin-gebruiker niet verwijderen</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>Je kunt deze globale beheerder niet verwijderen</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>U kunt de sessies van deze SuperAdmin-gebruiker niet intrekken</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>U kunt de sessies van deze globale beheerder niet intrekken</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Je kunt je huidige sessie niet verwijderen</value>

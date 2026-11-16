@@ -101,7 +101,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         // UserSession rows for the current tenant, so moving the check after it would re-open the denial of
         // service the guard exists to prevent. Only the message differs - the caller pressed Delete, not Revoke.
         await EnsureCallerCanRevokeSessionsOf(userId, cancellationToken,
-                                              Localizer[nameof(AppStrings.UserCantRemoveSuperAdminErrorMessage)]);
+                                              Localizer[nameof(AppStrings.UserCantRemoveGlobalAdminErrorMessage)]);
 
         //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
@@ -216,7 +216,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
             return;
 
         if (await DbContext.UserRoles.AnyAsync(ur => ur.UserId == targetUserId && ur.Role!.Name == AppRoles.GlobalAdmin, cancellationToken))
-            throw new BadRequestException(errorMessage ?? Localizer[nameof(AppStrings.UserCantRevokeSuperAdminSessionsErrorMessage)]);
+            throw new BadRequestException(errorMessage ?? Localizer[nameof(AppStrings.UserCantRevokeGlobalAdminSessionsErrorMessage)]);
     }
 
     //#if (multitenant == true)

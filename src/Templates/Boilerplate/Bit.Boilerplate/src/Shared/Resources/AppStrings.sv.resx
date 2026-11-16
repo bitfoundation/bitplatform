@@ -1606,8 +1606,8 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Är du säker på att du vill återkalla alla sessioner för {0}? Auktoriserade applikationer behålls.</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort denna användare från SuperAdmin-användargruppen.</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>Du kan inte ta bort denna användare från användargruppen för globala administratörer.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Superadmin-behörigheter kan inte ändras.</value>
@@ -1618,11 +1618,11 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>Du kan inte ta bort din egen användare</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort denna SuperAdmin-användare</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>Du kan inte ta bort denna globala administratör</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>Du kan inte återkalla sessionerna för den här SuperAdmin-användaren</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>Du kan inte återkalla sessionerna för den här globala administratören</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Du kan inte ta bort din nuvarande session</value>

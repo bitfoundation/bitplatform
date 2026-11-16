@@ -1606,8 +1606,8 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Are you sure you want to revoke all sessions of {0}? Authorized applications are kept.</value>
   </data>
-    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>You can't remove this user from the SuperAdmin user group.</value>
+    <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>You can't remove this user from the global admin user group.</value>
   </data>
     <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Super admin permissions may not be modified.</value>
@@ -1618,11 +1618,11 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>You can't remove your own user</value>
   </data>
-    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>You can't remove this SuperAdmin user</value>
+    <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>You can't remove this global admin user</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>You can't revoke the sessions of this SuperAdmin user</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>You can't revoke the sessions of this global admin user</value>
   </data>
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>You can't remove your current session</value>

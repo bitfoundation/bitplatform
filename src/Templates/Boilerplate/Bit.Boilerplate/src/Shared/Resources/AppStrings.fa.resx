@@ -1609,8 +1609,8 @@
     <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید کاربر خود را حذف کنید</value>
   </data>
-    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>شما نمیتوانید گروه کاربری SuperAdmin از این کاربر بگیرید</value>
+    <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید گروه کاربری مدیر کل را از این کاربر بگیرید</value>
   </data>
     <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>دسترسی‌های گروه کاربری SuperAdmin قابل ویرایش نیست</value>
@@ -1618,11 +1618,11 @@
     <data name="CanNotChangeBuiltInRole" xml:space="preserve">
     <value>شما نمیتوانید تغییری در گروه کاربری {0} ایجاد کنید</value>
   </data>
-    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>شما نمیتوانید این کاربر SuperAdmin را حذف کنید</value>
+    <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید این کاربر مدیر کل را حذف کنید</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>شما نمی‌توانید نشست‌های این کاربر مدیر ارشد را باطل کنید</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>شما نمی‌توانید نشست‌های این کاربر مدیر کل را باطل کنید</value>
   </data>
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید نشست جاری خود را حذف کنید</value>

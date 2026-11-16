@@ -1606,8 +1606,8 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>¿Estás seguro de que quieres revocar todas las sesiones de {0}? Las aplicaciones autorizadas se mantienen.</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>No puedes remover este usuario del grupo de usuarios SuperAdmin.</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>No puedes remover este usuario del grupo de usuarios de administradores globales.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Los permisos de super administrador no pueden modificarse.</value>
@@ -1618,11 +1618,11 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>No puedes eliminar tu propio usuario</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>No puedes eliminar este usuario SuperAdmin</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>No puedes eliminar este usuario administrador global</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>No puedes revocar las sesiones de este usuario SuperAdmin</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>No puedes revocar las sesiones de este usuario administrador global</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>No puedes eliminar tu sesión actual</value>

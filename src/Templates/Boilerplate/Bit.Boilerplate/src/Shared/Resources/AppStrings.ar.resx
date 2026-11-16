@@ -1606,8 +1606,8 @@
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>هل أنت متأكد من إلغاء جميع جلسات {0}؟ تبقى التطبيقات المصرّح لها.</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>لا يمكنك إزالة هذا المستخدم من مجموعة SuperAdmin.</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>لا يمكنك إزالة هذا المستخدم من مجموعة المسؤولين العامين.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>لا يمكن تعديل صلاحيات المشرف الفائق.</value>
@@ -1618,11 +1618,11 @@
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة مستخدمك الخاص</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>لا يمكنك إزالة مستخدم SuperAdmin هذا</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>لا يمكنك إزالة هذا المستخدم المسؤول العام</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>لا يمكنك إنهاء جلسات هذا المستخدم المسؤول</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>لا يمكنك إنهاء جلسات هذا المستخدم المسؤول العام</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة جلساتك الحالية</value>

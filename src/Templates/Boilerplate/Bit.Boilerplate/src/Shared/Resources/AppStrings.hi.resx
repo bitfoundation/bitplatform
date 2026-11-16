@@ -1606,8 +1606,8 @@
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>क्या आप निश्चित हैं कि आप {0} के सभी सत्र रद्द करना चाहते हैं? अधिकृत एप्लिकेशन बने रहेंगे।</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>आप इस उपयोगकर्ता को SuperAdmin उपयोगकर्ता समूह से हटा नहीं सकते।</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>आप इस उपयोगकर्ता को ग्लोबल एडमिन उपयोगकर्ता समूह से हटा नहीं सकते।</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>सुपर प्रशासक अनुमतियां संशोधित नहीं की जा सकतीं।</value>
@@ -1618,11 +1618,11 @@
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>आप अपना खुद का उपयोगकर्ता हटा नहीं सकते</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>आप इस SuperAdmin उपयोगकर्ता को हटा नहीं सकते</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>आप इस ग्लोबल एडमिन उपयोगकर्ता को हटा नहीं सकते</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>आप इस SuperAdmin उपयोगकर्ता के सत्र रद्द नहीं कर सकते</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>आप इस ग्लोबल एडमिन उपयोगकर्ता के सत्र रद्द नहीं कर सकते</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>आप अपना वर्तमान सत्र हटा नहीं सकते</value>
