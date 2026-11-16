@@ -23,6 +23,9 @@ internal static partial class BlazeDbOpfsInterop
     [JSImport("isLockHeld", ModuleName)]
     public static partial bool IsLockHeld(string lockName);
 
+    [JSImport("watchPageHide", ModuleName)]
+    public static partial void WatchPageHide([JSMarshalAs<JSType.Function>] Action onPageHide);
+
     [JSImport("openDatabaseDirectory", ModuleName)]
     public static partial Task<JSObject> OpenDatabaseDirectory(string databaseName);
 

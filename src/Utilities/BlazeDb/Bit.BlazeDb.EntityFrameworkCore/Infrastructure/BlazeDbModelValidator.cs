@@ -17,8 +17,19 @@ internal sealed class BlazeDbModelValidator : ModelValidator
 
         foreach (var entityType in model.GetEntityTypes())
         {
-            ThrowIfQueryFiltered(entityType);
+            ThrowIfUnsupported(entityType);
         }
+    }
+
+    /// <summary>
+    /// Every check of an entity type this provider cannot honour. Also run by
+    /// <see cref="BlazeDbModelRuntimeInitializer"/>: a compiled model is not validated when it is loaded,
+    /// so this validator never sees it.
+    /// </summary>
+    internal static void ThrowIfUnsupported(IEntityType entityType)
+    {
+        ThrowIfQueryFiltered(entityType);
+        Storage.BlazeDbConcurrencyTokens.ThrowIfShadowToken(entityType);
     }
 
     /// <summary>

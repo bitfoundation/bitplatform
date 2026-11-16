@@ -19,6 +19,10 @@ internal static partial class BlazeDbBrowserModules
 
     private static readonly ConcurrentDictionary<string, Task> Imports = new();
 
+    /// <summary>Whether the module has been imported, so its bindings can be called without waiting.</summary>
+    public static bool IsLoaded(string moduleName) =>
+        Imports.TryGetValue(moduleName, out var import) && import.IsCompletedSuccessfully;
+
     public static Task EnsureAsync(string moduleName, string? moduleUrl = null)
     {
         // A faulted attempt must not stay cached, otherwise every later attempt replays the failure.
