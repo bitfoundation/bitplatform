@@ -1578,9 +1578,14 @@ function endPointerSession(p: PointerSession, drop: boolean, releaseUnseen = fal
         if (!reportsToDotNet(p)) return;
         // the innermost target under the pointer whose provider owns the drag runs the drop (on itself and on the
         // targets of that provider around it); the targets of other providers answer false
+        // An answer that came after the queue gave it up as lost (see enqueueDrag) finds the drag abandoned: .NET was
+        // told to end it then, and the queue went on - maybe to a newer drag of the source, which this must not drop
+        // or end.
         for (const target of chain) {
             if ((await invokeForResult(target.dotNetRef, 'HandlePointerDrop', x, y)) === true) break;
+            if (!reportsToDotNet(p)) return;
         }
+        if (!reportsToDotNet(p)) return;
         await invokeForResult(p.source.dotNetRef, 'HandleDragEnd');
     }, () => abandonPointerSession(p));
 }
@@ -2490,10 +2495,32 @@ function ensureLiveRegion(): HTMLElement | null {
     return region;
 }
 
+// When each dialog was last opened as a modal, in the order seen: showModal sets its open attribute and puts it on top
+// of the top layer. Watched from the module's load; the dialogs opened before it are below the ones seen.
+const modalOpenedAt = new WeakMap<Element, number>();
+let modalOpenings = 0;
+const modalObserver = typeof MutationObserver !== 'undefined' && typeof document !== 'undefined'
+    ? new MutationObserver(recordModalOpenings)
+    : null;
+modalObserver?.observe(document.documentElement, { attributes: true, attributeFilter: ['open'], subtree: true });
+
+function recordModalOpenings(records: MutationRecord[]): void {
+    for (const record of records) {
+        const dialog = record.target as Element;
+        try {
+            // a dialog opened and closed again before the records came is not on top
+            if (dialog.localName === 'dialog' && dialog.matches(':modal')) modalOpenedAt.set(dialog, ++modalOpenings);
+        } catch {
+            /* an engine that does not know :modal */
+        }
+    }
+}
+
 // The modal dialog on top, or null: everything outside it is inert - out of reach of the keyboard and of screen
-// readers. When one dialog opened another, the one on top is the one opened last, wherever it is in the document, and
-// showModal moved the focus into it: the top one is the innermost open modal holding the element given (the focused
-// one of a keyboard drag), else the focus - and without either in one, the last in document order.
+// readers. When one dialog opened another, the one on top is the one opened last, wherever it is in the document: the
+// last one seen opening. Without one seen, showModal moved the focus into the top one: it is the innermost open modal
+// holding the element given (the focused one of a keyboard drag), else the focus - and without either in one, the last
+// in document order.
 function activeModal(within: Element | null): HTMLElement | null {
     let modals: HTMLElement[];
     try {
@@ -2502,6 +2529,18 @@ function activeModal(within: Element | null): HTMLElement | null {
         return null; // an engine that does not know :modal
     }
     if (modals.length === 0) return null;
+    // the openings still waiting to be reported
+    if (modalObserver) recordModalOpenings(modalObserver.takeRecords());
+    let latest: HTMLElement | null = null;
+    let latestAt = 0;
+    for (const modal of modals) {
+        const at = modalOpenedAt.get(modal) || 0;
+        if (at > latestAt) {
+            latest = modal;
+            latestAt = at;
+        }
+    }
+    if (latest) return latest;
     for (const element of [within, document.activeElement]) {
         if (!element || !element.isConnected) continue;
         let holder: HTMLElement | null = null;

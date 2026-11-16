@@ -38,14 +38,18 @@ internal sealed class BdndJsRegistration<TOptions> : IAsyncDisposable where TOpt
             while (_pending is { } next && _disposed is false)
             {
                 _pending = null;
-                await ApplyAsync(next.Element, next.Options);
+                try
+                {
+                    await ApplyAsync(next.Element, next.Options);
+                }
+                // A call whose answer never came (lost with the circuit's connection, then timed out): the element is
+                // registered, or its options pushed, by the next sync - the one queued meanwhile, if any, else the next
+                // render's - and a render must not fail for it. A registration that did reach JS is replaced there by
+                // the next one of the same element, not kept beside it.
+                catch (OperationCanceledException) { }
             }
         }
         catch (JSDisconnectedException) { }
-        // A call whose answer never came (lost with the circuit's connection, then timed out): the element is
-        // registered, or its options pushed, by the next render's sync - a render must not fail for it. A registration
-        // that did reach JS is replaced there by the next one of the same element, not kept beside it.
-        catch (OperationCanceledException) { }
         // disposed while a call was in flight (e.g. its DotNetObjectReference was released)
         catch (Exception) when (_disposed) { }
         finally

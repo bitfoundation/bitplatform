@@ -221,6 +221,26 @@ public class BdndJsRegistrationTests
     }
 
     [TestMethod]
+    public async Task ASyncQueuedBehindACallWhoseAnswerNeverCameStillRuns()
+    {
+        var gate = new TaskCompletionSource<IJSObjectReference?>();
+        var reference = new FakeJSObjectReference();
+        var registrar = new Registrar(call => call == 0
+            ? new ValueTask<IJSObjectReference?>(gate.Task)
+            : ValueTask.FromResult<IJSObjectReference?>(reference));
+        var registration = new BdndJsRegistration<Options>(registrar.Register);
+
+        var first = registration.SyncAsync(Element, new Options(1));
+        await registration.SyncAsync(Element, new Options(2));
+        gate.SetException(new TaskCanceledException());
+        await first;
+
+        Assert.HasCount(2, registrar.Calls);
+        Assert.AreEqual(new Options(2), registrar.Calls[1].Options);
+        Assert.AreSame(reference, registration.Reference);
+    }
+
+    [TestMethod]
     public async Task ARegistrationWhoseAnswerNeverCameIsRetriedOnTheNextSync()
     {
         var reference = new FakeJSObjectReference();
