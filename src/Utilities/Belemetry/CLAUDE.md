@@ -240,7 +240,9 @@ Notes on the fields:
   `redactedAttributes` (whole key or last dot segment, case-insensitive; `prefix*`) gets
   `REDACTED`; `server.address` and `user_agent.original` are not pattern-scrubbed; the URL attributes (`Uri` of
   HttpClient's logs included), `url.query` and `QueryString` (ASP.NET Core's request logs) get parameter redaction, and
-  so do the absolute URLs in a log body (`cleanBody`, `CleanBody`: one pass, a URL scrubbed after its host as a URL
+  so do the URLs in a log body - absolute ones and relative paths with a query (`/callback?code=...`), a comma before
+  another absolute URL ending one and an apostrophe only when one opened it (`cleanBody`, `CleanBody`: one pass, the same
+  regex, a relative path kept as given, a URL scrubbed after its host as a URL
   attribute is, the text around it scrubbed); every other string (and string array) is pattern-scrubbed in the order bearer, JWT,
   e-mail, card, IPv4 - except IPv4 for a key named like a version (last segment `version`, or ending `_version` or
   PascalCase `Version`). A card is Luhn-valid and neither starts with 0 nor repeats one digit (`IsCardNumber`,
@@ -271,7 +273,8 @@ Notes on the fields:
   only when page views are configured: those of `Browser.PageRouteAssemblies` exactly, or without any, from the entry
   assembly (or, with none - .NET for Android - the loaded assemblies that use components) through the referenced
   assemblies that use `Microsoft.AspNetCore.Components`, transitively; an assembly whose references cannot be read
-  (NativeAOT) still gives its own. Finding none logs one warning (`BelemetryPipeline.WarnIfNoPageRoutes`). Framework
+  (NativeAOT) still gives its own, but marks the discovery incomplete. Finding none, or an incomplete discovery, logs one
+  warning naming `Browser.PageRouteAssemblies` (`BelemetryPipeline.WarnIfNoPageRoutes`). Framework
   assemblies are told by their Microsoft public key token (`BelemetryPageRoutes.IsFramework`), not their name. The bridge
   asks `isStarted()` first and, for a started script, lists only the configured routes
   (`BelemetrySettings.ConfiguredPageRoutes`: `Browser.PageRoutes` and the `PageRouteAssemblies`' routes, no scan): its

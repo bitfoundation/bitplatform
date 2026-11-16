@@ -178,6 +178,40 @@ public class BelemetryExporterSetTests
         }
     }
 
+    [TestMethod]
+    public void Suppression_TakesTheActivityOffTheFlow_AndRestoresIt_ScopeByScope()
+    {
+        // Synchronous: what the export test above shows through an async flush, without depending on how it runs.
+        var outer = new Activity("outer").Start();
+        try
+        {
+            Assert.IsFalse(BelemetrySuppression.IsActive);
+
+            var first = BelemetrySuppression.Begin();
+            Assert.IsNull(Activity.Current, "No activity under the suppression.");
+            Assert.IsTrue(BelemetrySuppression.IsActive);
+
+            var inner = new Activity("inner").Start();
+            Assert.AreSame(inner, Activity.Current);
+            var second = BelemetrySuppression.Begin();
+            Assert.IsNull(Activity.Current);
+            Assert.IsTrue(BelemetrySuppression.IsActive);
+
+            second.Dispose();
+            Assert.AreSame(inner, Activity.Current, "The inner scope gives back what was current when it began.");
+            Assert.IsTrue(BelemetrySuppression.IsActive, "The outer scope still suppresses.");
+
+            inner.Stop();
+            first.Dispose();
+            Assert.AreSame(outer, Activity.Current, "The outer scope gives back the app's activity.");
+            Assert.IsFalse(BelemetrySuppression.IsActive, "Both scopes are disposed.");
+        }
+        finally
+        {
+            outer.Stop();
+        }
+    }
+
     /// <summary>Propagates the current activity as HttpClient's DiagnosticsHandler does, and records what each request carried.</summary>
     private sealed class PropagatingHandler : HttpMessageHandler
     {

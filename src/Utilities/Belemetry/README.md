@@ -866,7 +866,9 @@ options.Browser.PageRouteAssemblies.AddRange([typeof(App).Assembly, typeof(Clien
 ```
 
 An app without an entry assembly (.NET for Android) is searched from its loaded assemblies instead, and an app whose
-search finds no route at all logs a warning under `Bit.Belemetry`: set `PageRouteAssemblies` there. The routes are
+search finds no route at all logs a warning under `Bit.Belemetry`: set `PageRouteAssemblies` there. So does one that
+could not read an assembly's references (NativeAOT keeps no metadata of them): its own pages count, but the libraries
+it references were not searched. The routes are
 written into the browser config only when page views are recorded. A page whose script was started already - an Auto
 app's WebAssembly client in the page its server rendered - keeps the routes its server found and adds those configured
 in the client (`PageRoutes` and the `PageRouteAssemblies`' routes), without a second search. Add routes discovery
@@ -916,7 +918,8 @@ Applied on both sides before anything is queued, and by .NET to every metric poi
 - `RedactQueryParameters`: values of sensitive query parameters (`token`, `code`, `password`, `secret`, `key`,
   `access_token`, `email`, ..., and the signatures and credentials of pre-signed storage URLs - `X-Amz-Signature`,
   `X-Amz-Credential`, `X-Amz-Security-Token`, `X-Goog-Signature`, Azure SAS `sig`) become `REDACTED` in every URL -
-  the URLs a log body carries included (ASP.NET Core's `Request starting HTTP/1.1 GET https://host/path?token=...`),
+  the URLs a log body carries included (ASP.NET Core's `Request starting HTTP/1.1 GET https://host/path?token=...`,
+  or a relative `Redirecting to /callback?code=...`),
   and in the `QueryString` and `Uri` values of ASP.NET Core's and HttpClient's own logs.
 - `RedactedAttributes`: attribute names whose values become `REDACTED`, whatever they look like. A name matches a key
   whole or its last dot-separated segment, case-insensitively, so the default `password` covers a structured log value

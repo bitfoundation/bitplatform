@@ -154,24 +154,36 @@ const HOST_ATTRIBUTES = ['server.address', 'user_agent.original'];
 const URL_QUERY = 'url.query';
 const QUERY_ATTRIBUTES = [URL_QUERY, 'QueryString'];
 
-// An absolute URL in free text: a scheme, "://", and everything up to whitespace, a quote or an angle bracket.
-const URL_IN_TEXT = /\b[A-Za-z][A-Za-z0-9+.-]*:\/\/[^\s"'<>]+/g;
+// A URL in free text: an absolute one (a scheme and "://"), or a relative path with a query after a space, a quote, a
+// bracket, '=', ',' or ';' ("/callback?code=..."), up to whitespace, a double quote or an angle bracket. A comma before
+// another absolute URL ends it ("https://a?x=1,https://b?token=2" is two). An apostrophe ends it only when one opened it
+// ('https://x/a?token=1'): elsewhere it is part of the URL (https://x/O'Reilly?token=1). Built with the constructor for
+// its lookbehinds, as IPV4 is. The C# UrlInTextRegex.
+const SCHEME = '[A-Za-z][A-Za-z0-9+.-]*://';
+const NEXT_URL = `,(?!${SCHEME})`;
+const QUOTED_URL = `(?<=')(?:\\b${SCHEME}(?:[^\\s"'<>,]|${NEXT_URL})+|/[^\\s"'<>?#,]*\\?(?:[^\\s"'<>,]|${NEXT_URL})+)`;
+const BARE_URL = `(?<!')(?:\\b${SCHEME}(?:[^\\s"<>,]|${NEXT_URL})+|(?<![^\\s"(\\[=,;])/[^\\s"<>?#,]*\\?(?:[^\\s"<>,]|${NEXT_URL})+)`;
+const URL_IN_TEXT = new RegExp(`${QUOTED_URL}|${BARE_URL}`, 'g');
 
 /**
- * Applies the privacy rules to a log body in one pass: the absolute URLs in it get a URL attribute's rules (parameter
- * redaction, then scrubbing after the host, which names the server called), and the text around them is scrubbed when
- * `scrubPatterns` is on. A log body: "GET https://host/path?token=...". Matches the C# side (`CleanBody`).
+ * Applies the privacy rules to a log body in one pass: the absolute URLs in it, and the relative paths with a query
+ * ("Redirecting to /callback?code=..."), get a URL attribute's rules (parameter redaction, then scrubbing after the host,
+ * which names the server called), and the text around them is scrubbed when `scrubPatterns` is on. A log body:
+ * "GET https://host/path?token=...". Matches the C# side (`CleanBody`).
  */
 export function cleanBody(text: string, privacy: PrivacyConfig): string {
     if (!text) return text;
     const clean = (part: string) => (privacy.scrubPatterns ? scrub(part) : part);
-    if (text.indexOf('://') < 0) return clean(text);
+    if (text.indexOf('://') < 0 && text.indexOf('?') < 0) return clean(text);
     let result = '';
     let last = 0;
     URL_IN_TEXT.lastIndex = 0;
     for (let match = URL_IN_TEXT.exec(text); match; match = URL_IN_TEXT.exec(text)) {
-        // A URL without a query, a fragment or credentials is not parsed: the URL parser would normalize it.
-        const url = QUERY_FRAGMENT_OR_CREDENTIALS.test(match[0]) ? redactUrl(match[0], privacy) : match[0];
+        // A relative path is kept as given, not resolved against the page. An absolute URL without a query, a fragment
+        // or credentials is not parsed: the URL parser would normalize it.
+        const url = match[0].charAt(0) === '/'
+            ? redactTarget(match[0], privacy)
+            : QUERY_FRAGMENT_OR_CREDENTIALS.test(match[0]) ? redactUrl(match[0], privacy) : match[0];
         result += clean(text.slice(last, match.index)) + (privacy.scrubPatterns ? scrubUrl(url) : url);
         last = match.index + match[0].length;
     }

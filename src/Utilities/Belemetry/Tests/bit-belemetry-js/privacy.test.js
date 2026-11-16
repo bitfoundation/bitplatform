@@ -1,6 +1,6 @@
 ﻿import { describe, expect, it } from 'vitest';
 import { resolveConfig } from '../../Bit.Belemetry/Scripts/config.ts';
-import { applyPrivacy, isVersionKey, luhn, redactQuery, redactUrl, scrub, scrubUrl } from '../../Bit.Belemetry/Scripts/privacy.ts';
+import { applyPrivacy, cleanBody, isVersionKey,luhn, redactQuery, redactUrl, scrub, scrubUrl } from '../../Bit.Belemetry/Scripts/privacy.ts';
 import { log, span } from './helpers.js';
 
 const privacy = (overrides = {}) => ({ ...resolveConfig().privacy, ...overrides });
@@ -122,6 +122,27 @@ describe('applyPrivacy', () => {
         const record = log({ body: 'GET http://10.0.0.5:5000/api/10.1.2.3?token=x&email=a@b.io from 10.0.0.9, then http://10.0.0.6/health' });
         applyPrivacy(record, privacy());
         expect(record.body).toBe('GET http://10.0.0.5:5000/api/[ip]?token=REDACTED&email=REDACTED from [ip], then http://10.0.0.6/health');
+    });
+
+    it('cleans each URL of a log body: comma separated, with apostrophes, or relative (the C# cases)', () => {
+        const body = (text, options) => cleanBody(text, privacy(options));
+
+        // A comma before another URL ends the first: the second's query is redacted on its own.
+        expect(body('GET https://a.test/x?page=1,https://b.test/y?token=2')).toBe('GET https://a.test/x?page=1,https://b.test/y?token=REDACTED');
+        expect(body('ids https://a.test/x?ids=1,2&token=3')).toBe('ids https://a.test/x?ids=1,2&token=REDACTED');
+
+        // An apostrophe inside a URL does not end it; one that opened it does.
+        expect(body("Fetched https://x.test/books/O'Reilly?token=abc&page=2")).toBe("Fetched https://x.test/books/O'Reilly?token=REDACTED&page=2");
+        expect(body("Fetched https://x.test/books/O'Reilly?token=abc", { stripQueryString: true })).toBe("Fetched https://x.test/books/O'Reilly");
+        expect(body("url 'https://x.test/a?token=1' and 'https://x.test/b?code=2'")).toBe("url 'https://x.test/a?token=REDACTED' and 'https://x.test/b?code=REDACTED'");
+
+        // A relative path with a query, kept relative.
+        expect(body('Redirecting to /callback?code=abc&state=1')).toBe('Redirecting to /callback?code=REDACTED&state=1');
+        expect(body('GET https://x.test/a?token=1 then /b?api_key=k&page=2 path=/c?secret=s'))
+            .toBe('GET https://x.test/a?token=REDACTED then /b?api_key=REDACTED&page=2 path=/c?secret=REDACTED');
+
+        // No path: a question mark alone, or a slash inside a word.
+        expect(body('Are you sure? and/or?x=1 1/2?')).toBe('Are you sure? and/or?x=1 1/2?');
     });
 
     it('redacts http.target as a URL, kept relative (as the C# side does)', () => {

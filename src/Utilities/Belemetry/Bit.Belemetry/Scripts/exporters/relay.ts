@@ -81,18 +81,21 @@ export function splitRelayBatch(batch: RecordBatch, sessionRatio: number, maxByt
     let part = { resource: batch.resource, spans: [] as RecordBatch['spans'], logs: [] as RecordBatch['logs'], sessionRatio };
     let size = envelope;
     const add = (record: object, list: 'spans' | 'logs') => {
-        const bytes = jsonBytes(record) + 1;
+        // A record alone in its array needs no comma; one after another needs one.
+        const bytes = jsonBytes(record);
         if (envelope + bytes > maxBytes) {
             countDropped('size_limit');
             return;
         }
-        if (size + bytes > maxBytes) {
+        let comma = part[list].length > 0 ? 1 : 0;
+        if (size + comma + bytes > maxBytes) {
             parts.push(part);
             part = { resource: batch.resource, spans: [], logs: [], sessionRatio };
             size = envelope;
+            comma = 0;
         }
         (part[list] as object[]).push(record);
-        size += bytes;
+        size += comma + bytes;
     };
     for (const span of batch.spans) add(span, 'spans');
     for (const log of batch.logs) add(log, 'logs');

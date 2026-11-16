@@ -168,6 +168,7 @@ internal sealed class BelemetrySettings
     private IReadOnlyList<string>? _configuredPageRoutes;
     private BelemetryPageRouteMatcher? _pageRouteMatcher;
     private volatile bool _noPageRoutesFound;
+    private volatile bool _pageRoutesIncomplete;
     private int _noPageRoutesReported;
 
     /// <summary>
@@ -190,9 +191,16 @@ internal sealed class BelemetrySettings
     /// <summary>
     /// True once, after <see cref="PageRoutes"/> were resolved, when discovery was on and found no route at all - most
     /// likely an app whose pages discovery cannot see (no entry assembly, as on .NET for Android, and its pages not
-    /// loaded yet): every page view then falls back to its path's template, which deserves a warning.
+    /// loaded yet): every page view then falls back to its path's template, which deserves a warning. Also true once when
+    /// discovery could not read an assembly's references (<see cref="PageRoutesIncomplete"/>).
     /// </summary>
-    public bool TakeNoPageRoutesWarning() => _noPageRoutesFound && Interlocked.Exchange(ref _noPageRoutesReported, 1) == 0;
+    public bool TakeNoPageRoutesWarning() => (_noPageRoutesFound || _pageRoutesIncomplete) && Interlocked.Exchange(ref _noPageRoutesReported, 1) == 0;
+
+    /// <summary>
+    /// Whether discovery could not read the references of an assembly it searched
+    /// (<see cref="BelemetryPageRoutes.DiscoveryIncomplete"/>): the pages of the libraries it references may be missing.
+    /// </summary>
+    public bool PageRoutesIncomplete => _pageRoutesIncomplete;
 
     private List<string> ResolveConfiguredPageRoutes()
     {
@@ -216,6 +224,7 @@ internal sealed class BelemetrySettings
 
         var discovered = BelemetryPageRoutes.Discovered;
         _noPageRoutesFound = discovered.Count == 0;
+        _pageRoutesIncomplete = discovered.Count > 0 && BelemetryPageRoutes.DiscoveryIncomplete;
         return AddPageRoutes([.. configured], discovered);
     }
 

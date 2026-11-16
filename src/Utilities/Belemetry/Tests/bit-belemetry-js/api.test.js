@@ -146,6 +146,18 @@ describe('public API', () => {
         expect(splitRelayBatch(large, 1, 4096)).toEqual([]);
         expect(statsSnapshot().dropped.size_limit).toBe(3);
 
+        // Two records that each fit exactly, alone: one part each, both kept - no comma counted before the first of an array.
+        const exact = { resource: { 'service.name': 'shop' }, spans: [], logs: [record(0), record(1)] };
+        const exactLimit = utf8Length(JSON.stringify({ ...exact, logs: [record(0)], sessionRatio: 1 }));
+        const exactParts = splitRelayBatch(exact, 1, exactLimit);
+        expect(exactParts).toEqual([{ ...exact, logs: [record(0)], sessionRatio: 1 }, { ...exact, logs: [record(1)], sessionRatio: 1 }]);
+        for (const part of exactParts) expect(utf8Length(JSON.stringify(part))).toBeLessThanOrEqual(exactLimit);
+        expect(statsSnapshot().dropped.size_limit).toBe(3);
+
+        // Two records in one part count the comma between them.
+        const pairLimit = utf8Length(JSON.stringify({ ...exact, sessionRatio: 1 }));
+        expect(splitRelayBatch({ ...exact, spans: [{ s: 1 }] }, 1, pairLimit + 1).every(part => utf8Length(JSON.stringify(part)) <= pairLimit + 1)).toBe(true);
+
         // The UTF-8 length, without encoding: 1, 2, 3 and 4 (a surrogate pair) bytes a character.
         for (const text of ['a', 'é', '€', '😀', 'aé€😀', '']) expect(utf8Length(text)).toBe(new TextEncoder().encode(text).length);
     });

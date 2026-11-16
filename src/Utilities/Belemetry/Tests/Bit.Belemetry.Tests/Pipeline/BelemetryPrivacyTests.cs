@@ -126,6 +126,30 @@ public class BelemetryPrivacyTests
     }
 
     [TestMethod]
+    public void CleansEachUrlOfALogBody_CommaSeparated_WithApostrophes_OrRelative()
+    {
+        // The same cases as the script's tests.
+        var privacy = Create();
+
+        Assert.AreEqual("GET https://a.test/x?page=1,https://b.test/y?token=REDACTED", privacy.CleanBody("GET https://a.test/x?page=1,https://b.test/y?token=2"),
+                        "A comma before another URL ends the first: the second's query is redacted on its own.");
+        Assert.AreEqual("ids https://a.test/x?ids=1,2&token=REDACTED", privacy.CleanBody("ids https://a.test/x?ids=1,2&token=3"), "A comma in a query is part of it.");
+
+        Assert.AreEqual("Fetched https://x.test/books/O'Reilly?token=REDACTED&page=2", privacy.CleanBody("Fetched https://x.test/books/O'Reilly?token=abc&page=2"),
+                        "An apostrophe inside a URL does not end it.");
+        Assert.AreEqual("Fetched https://x.test/books/O'Reilly", Create(o => o.StripQueryString = true).CleanBody("Fetched https://x.test/books/O'Reilly?token=abc"));
+        Assert.AreEqual("url 'https://x.test/a?token=REDACTED' and 'https://x.test/b?code=REDACTED'", privacy.CleanBody("url 'https://x.test/a?token=1' and 'https://x.test/b?code=2'"),
+                        "An apostrophe that opened a URL ends it.");
+
+        Assert.AreEqual("Redirecting to /callback?code=REDACTED&state=1", privacy.CleanBody("Redirecting to /callback?code=abc&state=1"));
+        Assert.AreEqual("GET https://x.test/a?token=REDACTED then /b?api_key=REDACTED&page=2 path=/c?secret=REDACTED",
+                        privacy.CleanBody("GET https://x.test/a?token=1 then /b?api_key=k&page=2 path=/c?secret=s"));
+
+        const string question = "Are you sure? and/or?x=1 1/2?";
+        Assert.AreSame(question, privacy.CleanBody(question), "No path: a question mark alone, or a slash inside a word.");
+    }
+
+    [TestMethod]
     public void AppliesToSpansAndLogs()
     {
         var privacy = Create(o => o.BlockedAttributes.Add("secret.attr"));

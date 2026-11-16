@@ -57,15 +57,16 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
     }
 
     /// <summary>
-    /// Applies the privacy rules to a log body in one pass: the absolute URLs in it get a URL attribute's rules
-    /// (<see cref="RedactUrl"/>: parameter redaction, then scrubbing after the host, which names the server called), and
-    /// the text around them is scrubbed. ASP.NET Core's "Request starting HTTP/1.1 GET https://host/path?token=..." and
-    /// HttpClient's "Sending HTTP request GET https://..." put the query string the span's <c>url.query</c> redacts into
-    /// the message. Returns the same instance when nothing changed. Matches the script.
+    /// Applies the privacy rules to a log body in one pass: the absolute URLs in it, and the relative paths with a query
+    /// ("Redirecting to /callback?code=..."), get a URL attribute's rules (<see cref="RedactUrl"/>: parameter redaction,
+    /// then scrubbing after the host, which names the server called), and the text around them is scrubbed. ASP.NET
+    /// Core's "Request starting HTTP/1.1 GET https://host/path?token=..." and HttpClient's "Sending HTTP request GET
+    /// https://..." put the query string the span's <c>url.query</c> redacts into the message. Returns the same instance
+    /// when nothing changed. Matches the script.
     /// </summary>
     public string CleanBody(string body)
     {
-        if (body.Contains("://", StringComparison.Ordinal) is false) return Scrub(body);
+        if (body.Contains("://", StringComparison.Ordinal) is false && body.Contains('?', StringComparison.Ordinal) is false) return Scrub(body);
 
         StringBuilder? builder = null;
         var last = 0;
@@ -400,8 +401,17 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
 
     private static bool LooksLikeUrl(string value) => value.Contains("://", StringComparison.Ordinal) || value.Contains('?', StringComparison.Ordinal);
 
-    // An absolute URL in free text: a scheme, "://", and everything up to whitespace, a quote or an angle bracket.
-    [GeneratedRegex(@"\b[A-Za-z][A-Za-z0-9+.\-]*://[^\s""'<>]+", RegexOptions.CultureInvariant)]
+    // A URL in free text: an absolute one (a scheme and "://"), or a relative path with a query after a space, a quote, a
+    // bracket, '=', ',' or ';' ("/callback?code=..."), up to whitespace, a double quote or an angle bracket. A comma
+    // before another absolute URL ends it ("https://a?x=1,https://b?token=2" is two). An apostrophe ends it only when
+    // one opened it ('https://x/a?token=1'): elsewhere it is part of the URL (https://x/O'Reilly?token=1). Matches the
+    // script's URL_IN_TEXT.
+    private const string Scheme = @"[A-Za-z][A-Za-z0-9+.\-]*://";
+    private const string NextUrl = ",(?!" + Scheme + ")";
+    private const string QuotedUrl = @"(?<=')(?:\b" + Scheme + @"(?:[^\s""'<>,]|" + NextUrl + @")+|/[^\s""'<>?#,]*\?(?:[^\s""'<>,]|" + NextUrl + ")+)";
+    private const string BareUrl = @"(?<!')(?:\b" + Scheme + @"(?:[^\s""<>,]|" + NextUrl + @")+|(?<![^\s""(\[=,;])/[^\s""<>?#,]*\?(?:[^\s""<>,]|" + NextUrl + ")+)";
+
+    [GeneratedRegex(QuotedUrl + "|" + BareUrl, RegexOptions.CultureInvariant)]
     private static partial Regex UrlInTextRegex();
 
     [GeneratedRegex(@"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}", RegexOptions.CultureInvariant)]
