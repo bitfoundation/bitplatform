@@ -45,6 +45,45 @@ public sealed class DecodeAmplificationTests
     }
 
     [TestMethod]
+    public void AJpegPaddedAfterItsScanIsRefusedBeforeItsPlanesAreAllocated()
+    {
+        // Comment segments after the scan make the file long enough for its frame, but none of them is image data.
+        using var small = TestImages.Gradient(8, 8);
+        var jpeg = WithFrameSize(JpegEncoder.Encode(small).Data, Side, Side);
+        var comment = new byte[4 + 65533];
+        comment[0] = 0xFF;
+        comment[1] = 0xFE;
+        BinaryPrimitives.WriteUInt16BigEndian(comment.AsSpan(2), 65535);
+        var padded = jpeg[..^2].Concat(Enumerable.Repeat(comment, 32).SelectMany(c => c)).Concat(jpeg[^2..]).ToArray();
+
+        var allocated = Allocated(() => Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(padded)));
+
+        Assert.IsLessThan(Allowance, allocated, $"Allocated {allocated:N0} bytes.");
+    }
+
+    [TestMethod]
+    public void AProgressiveJpegWhoseFirstScanIsAnAcScanIsRefusedBeforeItsCoefficientsAreAllocated()
+    {
+        // An AC scan codes a run of blocks in a few bits, so its length says nothing about the frame it covers.
+        byte[] jpeg =
+        [
+            0xFF, 0xD8,
+            0xFF, 0xDB, 0x00, 0x43, 0x00, .. Enumerable.Repeat((byte)1, 64),
+            0xFF, 0xC2, 0x00, 0x0B, 0x08, 0x20, 0x00, 0x20, 0x00, 0x01, 0x01, 0x11, 0x00,
+            // One AC code, a single bit, for an end of block.
+            0xFF, 0xC4, 0x00, 0x14, 0x10, 0x01, .. new byte[15], 0x00,
+            // One component, spectral selection 1 to 1, no successive approximation.
+            0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0xFF, 0xD9,
+        ];
+
+        var allocated = Allocated(() => Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(jpeg)));
+
+        Assert.IsLessThan(Allowance, allocated, $"Allocated {allocated:N0} bytes.");
+    }
+
+    [TestMethod]
     public void AJpegThatIsWhole_EvenTheSmallest_StillDecodes()
     {
         foreach (var size in new[] { 1, 8, 17, 640 })

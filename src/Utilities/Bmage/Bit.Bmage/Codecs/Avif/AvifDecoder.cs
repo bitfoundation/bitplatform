@@ -32,7 +32,14 @@ public sealed class AvifDecoder : IImageDecoder
     internal static (int Width, int Height)? UncroppedSize(ReadOnlySpan<byte> data)
         => ReadSize(data, cropped: false) is { } size ? (size.Width, size.Height) : null;
 
-    private static (int Width, int Height, bool HasAlpha)? ReadSize(ReadOnlySpan<byte> data, bool cropped)
+    /// <summary>
+    /// How the primary image's irot and imir properties turn it upright, which is what a browser applies to an AVIF; an
+    /// Exif orientation in the file does not change it. Normal when the file has none or cannot be read.
+    /// </summary>
+    internal static Orientation ContainerOrientation(ReadOnlySpan<byte> data)
+        => ReadSize(data, cropped: true) is { } size ? size.Orientation : Orientation.Normal;
+
+    private static (int Width, int Height, bool HasAlpha, Orientation Orientation)? ReadSize(ReadOnlySpan<byte> data, bool cropped)
     {
         if (ImageFormats.Detect(data) != ImageFormat.Avif) return null;
         try
@@ -43,7 +50,7 @@ public sealed class AvifDecoder : IImageDecoder
             {
                 if (file.TrackAv1C is null) return null;
                 var (trackWidth, trackHeight) = file.TrackSize;
-                return trackWidth > 0 && trackHeight > 0 ? (trackWidth, trackHeight, false) : null;
+                return trackWidth > 0 && trackHeight > 0 ? (trackWidth, trackHeight, false, Orientation.Normal) : null;
             }
             if (file.FindProperty(primary, AvifContainer.Ispe) is not { Length: >= 12 } ispe) return null;
             var p = file.PropertyData(ispe);
@@ -53,7 +60,7 @@ public sealed class AvifDecoder : IImageDecoder
             var (crop, orientation) = Transforms(file, primary, width, height);
             if (cropped) (width, height) = (crop.Width, crop.Height);
             if (orientation.SwapsDimensions()) (width, height) = (height, width);
-            return (width, height, FindAlpha(file, primary) is not null);
+            return (width, height, FindAlpha(file, primary) is not null, orientation);
         }
         catch (Exception ex) when (ex is ImageException or ArgumentException or IndexOutOfRangeException or OverflowException)
         {

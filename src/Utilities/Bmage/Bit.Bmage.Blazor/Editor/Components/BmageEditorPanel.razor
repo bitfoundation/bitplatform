@@ -13,7 +13,8 @@
     <div class="bmg-panel-tabs" role="tablist" aria-label="@Context.Strings.PanelLabel">
         @foreach (var tab in Tabs)
         {
-            <button type="button"
+            <button @key="tab.Key"
+                    type="button"
                     role="tab"
                     id="@($"{_id}-tab-{tab.Key}")"
                     class="bmg-panel-tab @(_activeTab == tab.Key ? "bmg-panel-tab-active" : null)"

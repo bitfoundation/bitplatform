@@ -261,6 +261,19 @@ public sealed class BrowserImageDecoder : IImageDecoder
     /// </summary>
     private static ImageMetadata ReadMetadata(ReadOnlyMemory<byte> data, ImageFormat format, DecodeOptions options)
     {
+        var metadata = ReadFileMetadata(data, format, options);
+        if (format != ImageFormat.Avif || options.AutoOrient) return metadata;
+
+        // The browser turns an AVIF upright by its container's irot and imir, not by an Exif orientation in it, so that
+        // is the orientation the pixels are turned back from and the one recorded, the way the managed decoder does.
+        var orientation = Avif.AvifDecoder.ContainerOrientation(data.Span);
+        return metadata.Exif is null
+            ? orientation == Orientation.Normal ? metadata : new ImageMetadata(ExifData.FromOrientation(orientation), metadata.IccProfile, metadata.Xmp, ImageFormat.Avif, metadata.FileName)
+            : metadata.WithOrientation(orientation);
+    }
+
+    private static ImageMetadata ReadFileMetadata(ReadOnlyMemory<byte> data, ImageFormat format, DecodeOptions options)
+    {
         if (!options.ReadMetadata) return new ImageMetadata(sourceFormat: format, fileName: options.FileName);
         try
         {

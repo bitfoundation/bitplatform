@@ -35,8 +35,11 @@ public class DemoRegressionTests : DemoTest
             .ToArray();
         await page.SetInputFilesAsync(".bmg-dropzone-input", files);
 
-        await page.Locator(".results-stats .bb-stat-value").First.Filter(new LocatorFilterOptions { HasText = "100" })
-            .WaitForAsync(new LocatorWaitForOptions { Timeout = 120_000 });
+        // The count grows as files finish, so it is read once the run is over.
+        var count = page.Locator(".results-stats .bb-stat-value").First;
+        await count.WaitForAsync(new LocatorWaitForOptions { Timeout = 120_000 });
+        await page.WaitForSelectorAsync(".optimize-progress", new PageWaitForSelectorOptions { State = WaitForSelectorState.Detached, Timeout = 120_000 });
+        Assert.AreEqual("100", (await count.InnerTextAsync()).Trim());
         Assert.IsFalse(await page.Locator("#blazor-error-ui").IsVisibleAsync());
         Assert.IsEmpty(errors, string.Join(" | ", errors));
     }
