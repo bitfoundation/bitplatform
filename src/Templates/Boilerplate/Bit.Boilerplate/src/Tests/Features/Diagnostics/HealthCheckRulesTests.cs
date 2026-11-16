@@ -413,7 +413,7 @@ public partial class HealthCheckRulesTests
     /// not: <c>example.com</c> and <c>https://EXAMPLE.com/</c> are one site, <c>/A</c> and <c>/a</c> two.
     /// </summary>
     [TestMethod]
-    public void WebsitesHealthCheck_Should_ListEachSiteOnce_ByTheAddressItIsRequestedAt()
+    public void WebsiteHealthCheck_Should_ListEachSiteOnce_ByTheAddressItIsRequestedAt()
     {
         var section = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -422,34 +422,40 @@ public partial class HealthCheckRulesTests
         }).Build().GetSection("Websites");
 
         Assert.AreSequenceEqual(new[] { "example.com", "https://example.com/A", "https://example.com/a", "http://example.com" },
-            WebsitesHealthCheck.Read(section));
+            WebsiteHealthCheck.Read(section));
     }
 
-    /// <summary>
-    /// Two entries for one address are requested once: requested twice, their two failures would be one key of the
-    /// result's data, and the check would throw instead of saying what went wrong.
-    /// </summary>
     [TestMethod]
-    public async Task WebsitesHealthCheck_Should_ReportASiteListedTwiceOnce()
+    public async Task WebsiteHealthCheck_Should_AddANewVToEachRequest_UnlessBypassCacheIsOff()
     {
-        var websitesHealthCheck = new WebsitesHealthCheck(new UnavailableSitesHttpClientFactory(), ["site.example", "https://SITE.example/"]);
+        var httpClientFactory = new RecordingHttpClientFactory();
 
-        var result = await Check(websitesHealthCheck);
+        await Check(new WebsiteHealthCheck(httpClientFactory, "https://example.com/docs?lang=en", bypassCache: true));
+        await Check(new WebsiteHealthCheck(httpClientFactory, "https://example.com/docs?lang=en", bypassCache: true));
+        await Check(new WebsiteHealthCheck(httpClientFactory, "example.com", bypassCache: false));
 
-        Assert.AreEqual(HealthStatus.Degraded, result.Status);
-        Assert.AreEqual("1 of 1 sites failed", result.Description);
-        Assert.AreEqual("503 Service Unavailable.", result.Data["https://site.example/"]);
+        Assert.HasCount(3, httpClientFactory.Requests);
+        var (first, second, plain) = (httpClientFactory.Requests[0].AbsoluteUri, httpClientFactory.Requests[1].AbsoluteUri, httpClientFactory.Requests[2].AbsoluteUri);
+        Assert.IsTrue(first.StartsWith("https://example.com/docs?lang=en&v=", StringComparison.Ordinal), first);
+        Assert.IsTrue(Guid.TryParse(first[^32..], out _), first);
+        Assert.AreNotEqual(first, second);
+        Assert.AreEqual("https://example.com/", plain);
     }
 
-    /// <summary>Every site it is asked for answers 503, without a request leaving the machine.</summary>
-    private sealed class UnavailableSitesHttpClientFactory : IHttpClientFactory
+    private sealed class RecordingHttpClientFactory : IHttpClientFactory
     {
-        public HttpClient CreateClient(string name) => new(new UnavailableHandler());
+        public List<Uri> Requests { get; } = [];
 
-        private sealed class UnavailableHandler : HttpMessageHandler
+        public HttpClient CreateClient(string name) => new(new RecordingHandler(Requests));
+
+        private sealed class RecordingHandler(List<Uri> requests) : HttpMessageHandler
         {
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-                => Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable) { RequestMessage = request });
+            {
+                requests.Add(request.RequestUri!);
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { RequestMessage = request });
+            }
         }
     }
 
