@@ -148,11 +148,11 @@ private void HandleInvalidSubmit()
     private readonly string example6RazorCode = @"
 <BitToggle @bind-Value=""isLoading"" Label=""Toggle loading"" />
 
-<BitActionButton IsLoading=""isLoading"" IconName=""@BitIconName.Save"">
+<BitActionButton Loading=""isLoading"" IconName=""@BitIconName.Save"">
     Save changes
 </BitActionButton>
 
-<BitActionButton IsLoading=""isLoading"" IconName=""@BitIconName.Send"" Color=""BitColor.Success"" IconPlacement=""BitPlacement.End"">
+<BitActionButton Loading=""isLoading"" IconName=""@BitIconName.Send"" Color=""BitColor.Success"" IconPlacement=""BitPlacement.End"">
     Send message
 </BitActionButton>
 
@@ -179,9 +179,9 @@ private void HandleInvalidSubmit()
 </BitActionButton>
 
 
-<BitToggle @bind-Value=""templateIsLoading"" Label=""Toggle loading"" />
+<BitToggle @bind-Value=""templateLoading"" Label=""Toggle loading"" />
 
-<BitActionButton IsLoading=""templateIsLoading"" IconName=""@BitIconName.Download"">
+<BitActionButton Loading=""templateLoading"" IconName=""@BitIconName.Download"">
     <Body>
         Download
     </Body>
@@ -191,7 +191,7 @@ private void HandleInvalidSubmit()
 </BitActionButton>";
     private readonly string example6CsharpCode = @"
 private bool isLoading;
-private bool templateIsLoading;
+private bool templateLoading;
 private int guardedClickCount;
 private int reclickableClickCount;
 

@@ -1,5 +1,34 @@
 ﻿namespace Bit.Bmotion.Tests.E2E;
 
+/// <summary>
+/// A host whose circuit gives up on a JS call after two seconds (<see cref="HarnessProfile.ShortJsCallTimeout"/>)
+/// rather than the framework's minute: an animation that plays longer than that - forever - must still stop when its
+/// element gets a new target. On WebAssembly, with no such timeout, it stops all the same.
+/// </summary>
+[TestClass]
+public sealed class JsCallTimeoutTests : BmotionPageTest
+{
+    protected override string Route => "basics";
+
+    protected override HarnessProfile Profile => HarnessProfile.ShortJsCallTimeout;
+
+    [TestMethod]
+    public async Task AForeverAnimation_PlayingPastTheCallTimeout_StopsAtItsNextTarget()
+    {
+        var spinning = await SampleAsync("#spinner", 400);
+        Assert.IsTrue(spinning.Select(s => Math.Round(s.Rotate)).Distinct().Count() > 3, "The rotation is not playing.");
+
+        // Past the circuit's two seconds: the call that plays it has failed, while the browser plays on.
+        await Task.Delay(3_000);
+        await ClickAsync("spin-stop");
+        await WaitForStateAsync("#spinner", "s => Math.abs(s.rotate) < 0.5", timeout: 5_000);
+
+        var stopped = await SampleAsync("#spinner", 600);
+        Assert.IsTrue(stopped.All(s => Math.Abs(s.Rotate) < 0.5),
+            $"Still turning after it was stopped: {string.Join(" | ", stopped.Select(s => s.Rotate))}");
+    }
+}
+
 /// <summary>The <c>&lt;Bmotion&gt;</c> element: enter animations, re-animating on change, value shapes and injection.</summary>
 [TestClass]
 public sealed class BasicsTests : BmotionPageTest

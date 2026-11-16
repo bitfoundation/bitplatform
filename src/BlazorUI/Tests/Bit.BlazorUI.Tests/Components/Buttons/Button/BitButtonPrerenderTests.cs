@@ -35,7 +35,7 @@ public class BitButtonPrerenderTests
     {
         var html = await Prerenderer.RenderAsync<BitButton>(new Dictionary<string, object?>
         {
-            [nameof(BitButton.IsLoading)] = true,
+            [nameof(BitButton.Loading)] = true,
             [nameof(BitButton.LoadingLabel)] = "Saving...",
             [nameof(BitButton.ChildContent)] = (RenderFragment)(builder => builder.AddContent(0, "Save")),
         });

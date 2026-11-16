@@ -37,6 +37,20 @@
     </BitDataGrid>
 </E2ESection>
 
+@* 2,000 rows in five groups of 400 under Virtualize: the grouped view is virtualized as one list of group rows and
+   data rows, each 36px tall. *@
+<E2ESection Id="group-virtual" Title="A virtualized grouped view">
+    <button id="btn-group-virtual" type="button" @onclick="() => _virtualGrid.GroupByAsync(nameof(Product.Category))">GroupByAsync(Category)</button>
+    <button id="btn-reveal-virtual-last" type="button" @onclick="() => _virtualGrid.RevealItemAsync(_many[^1])">RevealItemAsync(the last row)</button>
+    <BitDataGrid @ref="_virtualGrid" TItem="Product" Id="grid-group-virtual" Items="@_many" Groupable="true" CellNavigation="true"
+                 Virtualize="true" Height="300px" RowHeight="36">
+        <BitDataGridColumn Property="p => p.Id" Groupable="false" />
+        <BitDataGridColumn Property="p => p.Name" Groupable="false" />
+        <BitDataGridColumn Property="p => p.Category" />
+        <BitDataGridColumn Property="p => p.Stock" Groupable="false" Aggregate="BitDataGridAggregateType.Sum" />
+    </BitDataGrid>
+</E2ESection>
+
 <E2EStatus />
 
 @code {
@@ -67,6 +81,12 @@
         new() { Id = 10, Name = "Puzzle", Category = Category.Toys, Supplier = "Globex", Stock = 70, Price = 20, Rating = 4 },
     ];
 
+    // Row n (1-based) is "Item nnnn" in the (n - 1) % 5th category, so a group holds every fifth row, in order.
+    private readonly List<Product> _many = Enumerable.Range(1, 2000)
+        .Select(i => new Product { Id = i, Name = $"Item {i:0000}", Category = (Category)((i - 1) % 5), Supplier = "Acme", Stock = 1 })
+        .ToList();
+
+    private BitDataGrid<Product> _virtualGrid = default!;
     private BitDataGrid<Product> _groupGrid = default!;
     private BitDataGrid<Product> _collapsedGrid = default!;
     private int _groupCount;

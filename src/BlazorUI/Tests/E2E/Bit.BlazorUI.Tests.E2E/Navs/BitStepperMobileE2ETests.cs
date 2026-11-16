@@ -75,7 +75,7 @@ public class BitStepperMobileE2ETests : E2ETestBase
             Assert.IsTrue(box.X >= 0 && box.X + box.Width <= widths[3], $"an indicator inside the screen ({box.X}px).");
         }
 
-        await Expect(Page.Locator("#stp-responsive .bit-stp-txt").Last).ToBeInViewportAsync(new() { Ratio = 1 });
+        await Expect(Page.Locator("#stp-responsive .bit-str-txt").Last).ToBeInViewportAsync(new() { Ratio = 1 });
     }
 
     [TestMethod]
@@ -83,12 +83,12 @@ public class BitStepperMobileE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        var buttons = Page.Locator("#stp-responsive .bit-stp-btn");
+        var buttons = Page.Locator("#stp-responsive .bit-str-btn");
 
         await buttons.Nth(2).TapAsync();
         await Expect(Page.Locator("#responsive-index")).ToHaveTextAsync("2");
 
-        await Expect(Page.Locator("#stp-responsive > li").Nth(2)).ToHaveClassAsync(HasClass("bit-stp-cur"));
+        await Expect(Page.Locator("#stp-responsive > li").Nth(2)).ToHaveClassAsync(HasClass("bit-str-cur"));
         await Expect(buttons.Nth(2)).ToHaveAttributeAsync("aria-current", "step");
     }
 }

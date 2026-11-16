@@ -126,16 +126,16 @@
 
 <E2ESection Id="loading" Title="Loading">
     <BitMenuButton Id="mnb-loading" Split Text="Save" IconName="@BitIconName.Save" TItem="BitMenuButtonOption" AutoLoading LoadingLabel="Saving..."
-                   OnClick="(BitMenuButtonOption? i) => LoadingClick()" @bind-IsLoading="_loadingValue">@BasicOptions</BitMenuButton>
+                   OnClick="(BitMenuButtonOption? i) => LoadingClick()" @bind-Loading="_loadingValue">@BasicOptions</BitMenuButton>
     <span id="loading-clicks">@_loadingClicks</span>
     <span id="loading-value">@_loadingValue</span>
     <button id="btn-release-loading" type="button" @onclick="() => _loadingTcs.TrySetResult()">Release</button>
-    <BitMenuButton Id="mnb-loading-plain" Text="Busy" TItem="BitMenuButtonOption" IsLoading LoadingLabel="Working...">@BasicOptions</BitMenuButton>
-    <BitMenuButton Id="mnb-loading-template" Text="Template" TItem="BitMenuButtonOption" IsLoading>
+    <BitMenuButton Id="mnb-loading-plain" Text="Busy" TItem="BitMenuButtonOption" Loading LoadingLabel="Working...">@BasicOptions</BitMenuButton>
+    <BitMenuButton Id="mnb-loading-template" Text="Template" TItem="BitMenuButtonOption" Loading>
         <LoadingTemplate><span class="tpl-loading">Please wait</span></LoadingTemplate>
         <Options>@BasicOptions</Options>
     </BitMenuButton>
-    <BitMenuButton Id="mnb-loading-reclickable" Split Text="Again" TItem="BitMenuButtonOption" IsLoading Reclickable OnClick="(BitMenuButtonOption? i) => _reclicks++">@BasicOptions</BitMenuButton>
+    <BitMenuButton Id="mnb-loading-reclickable" Split Text="Again" TItem="BitMenuButtonOption" Loading Reclickable OnClick="(BitMenuButtonOption? i) => _reclicks++">@BasicOptions</BitMenuButton>
     <span id="reclicks">@_reclicks</span>
 </E2ESection>
 

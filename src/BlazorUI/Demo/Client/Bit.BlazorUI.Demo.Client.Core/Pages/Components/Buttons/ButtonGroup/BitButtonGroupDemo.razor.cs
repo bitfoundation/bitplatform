@@ -22,13 +22,6 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
-            Name = "IconOnly",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines that only the icon should be rendered, which also squares the buttons the way every icon button in the library is shaped. The hidden text stays the accessible name of the button, so an icon-only group is still readable without an AriaLabel being set on every item.",
-        },
-        new()
-        {
             Name = "Classes",
             Type = "BitButtonGroupClassStyles?",
             DefaultValue = "null",
@@ -96,10 +89,10 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
-            Name = "Justified",
+            Name = "IconOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Gives every button an equal width so that the buttons evenly fill the width of the ButtonGroup.",
+            Description = "Determines that only the icon should be rendered, which also squares the buttons the way every icon button in the library is shaped. The hidden text stays the accessible name of the button, so an icon-only group is still readable without an AriaLabel being set on every item.",
         },
         new()
         {
@@ -116,6 +109,13 @@ public partial class BitButtonGroupDemo
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
             Description = "The content inside the item can be customized.",
+        },
+        new()
+        {
+            Name = "Justified",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gives every button an equal width so that the buttons evenly fill the width of the ButtonGroup.",
         },
         new()
         {
@@ -200,6 +200,24 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of ButtonGroup, Possible values: Small | Medium | Large. An explicit value wins over the --bit-ButtonGroup-* size variables (min-height, padding, font size, icon size, badge font size); left unset, the group is medium unless they say otherwise.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitButtonGroupClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the ButtonGroup.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
             Name = "Toggle",
             Type = "bool",
             DefaultValue = "false",
@@ -218,24 +236,6 @@ public partial class BitButtonGroupDemo
             Type = "IEnumerable<string>?",
             DefaultValue = "null",
             Description = "The keys of the toggled items in the Multiple selection mode. (two-way bound)",
-        },
-        new()
-        {
-            Name = "Size",
-            Type = "BitSize?",
-            DefaultValue = "null",
-            Description = "The size of ButtonGroup, Possible values: Small | Medium | Large. An explicit value wins over the --bit-ButtonGroup-* size variables (min-height, padding, font size, icon size, badge font size); left unset, the group is medium unless they say otherwise.",
-            LinkType = LinkType.Link,
-            Href = "#size-enum",
-        },
-        new()
-        {
-            Name = "Styles",
-            Type = "BitButtonGroupClassStyles?",
-            DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the ButtonGroup.",
-            LinkType = LinkType.Link,
-            Href = "#class-styles",
         },
         new()
         {

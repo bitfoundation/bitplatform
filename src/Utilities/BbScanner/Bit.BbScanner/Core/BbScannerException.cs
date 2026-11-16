@@ -32,6 +32,9 @@ public sealed class BbScannerException : Exception
                        m.Contains("SecurityError", StringComparison.Ordinal) => BbScannerErrorKind.PermissionDenied,
             var m when m.Contains("NotFoundError", StringComparison.Ordinal) ||
                        m.Contains("DevicesNotFoundError", StringComparison.Ordinal) => BbScannerErrorKind.NoCamera,
+            // Firefox's AbortError from getUserMedia, for a camera another application holds, arrives as NotReadableError:
+            // the page renames it where it is raised. Any other AbortError - video.play() interrupted, or a start
+            // superseded by another - says nothing about the camera, and is not classified as this.
             var m when m.Contains("NotReadableError", StringComparison.Ordinal) ||
                        m.Contains("TrackStartError", StringComparison.Ordinal) => BbScannerErrorKind.CameraUnavailable,
             var m when m.Contains("OverconstrainedError", StringComparison.Ordinal) ||

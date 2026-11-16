@@ -79,7 +79,7 @@ public static class NewCommand
         var shared = new SharedOptions();
 
         var nameArgument = new Argument<string?>("name") { Description = "The project name, e.g. Contoso.Shop.", Arity = ArgumentArity.ZeroOrOne };
-        var outputOption = new Option<string?>("--output", "-o") { Description = "The folder to create the project in. Default: ./<name>." };
+        var outputOption = new Option<string?>("--output", "-o") { Description = "The folder to create the project in. Default: ./<name>, or ~/source/repos/<name> when that's in a system folder or one bit can't write to." };
         var ideOption = new Option<string?>("--ide") { Description = "Open the project in this IDE when done: code, vs, rider or none.", HelpName = "code|vs|rider|none" };
         ideOption.AcceptOnlyFromAmong("code", "vs", "rider", "none");
         var templateVersionOption = new Option<string?>("--template-version") { Description = "The bit Boilerplate version to use. Default: the same as this CLI." };

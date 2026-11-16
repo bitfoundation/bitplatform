@@ -148,6 +148,11 @@
             the resource (the browser attributes) from the page - and none of the server's own host, process or cloud
             attributes are added, just as with Direct.
         </li>
+        <li>
+            Each relay call is a message of the circuit's connection, which SignalR closes on a message over the hub's
+            <code>MaximumReceiveMessageSize</code> (32 KB by default). So the script relays a batch in parts of at most
+            <code>Browser.MaxRelayMessageBytes</code> (16384) bytes, and drops a record that alone is larger - raise both together.
+        </li>
     </ul>
 </div>
 

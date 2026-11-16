@@ -57,6 +57,19 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     private bool _stepShown;
 
     /// <summary>
+    /// The current visit to a step: bumped each time a step is entered afresh (Next, Back, a jump, a skip), kept when
+    /// the same step is shown again (<see cref="BonboardingStepChangeReason.Retarget"/>, a hold for its page). A click or
+    /// a signal belongs to the visit it was raised in, never to a later one, even of the same step.
+    /// </summary>
+    private long _visit;
+
+    /// <summary>
+    /// True once the current visit's step has been on screen. Unlike <see cref="_stepShown"/>, it survives the step
+    /// being shown again within the visit, so a step held and re-entered still takes what was meant for it.
+    /// </summary>
+    private bool _visitShown;
+
+    /// <summary>
     /// True once the current step got as far as <see cref="BonboardingStepDefinition.OnBeforeShow"/>,
     /// so <see cref="BonboardingStepDefinition.OnBeforeLeave"/> runs exactly for the steps whose show
     /// hook ran, including one that was then skipped because its target was missing.
@@ -69,8 +82,12 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     /// <summary>The footer actions whose handlers are running; see <see cref="InvokeActionAsync"/>.</summary>
     private readonly HashSet<BonboardingStepAction> _runningActions = new(ReferenceEqualityComparer.Instance);
 
-    /// <summary>Indices of the steps whose conditions currently pass, in order.</summary>
+    /// <summary>Indices of the steps whose conditions currently pass, in order. Read through <see cref="Plan"/>.</summary>
     private List<int> _plan = [];
+
+    /// <summary>The steps <see cref="_plan"/> points at, and every step the tour had when it was made.</summary>
+    private BonboardingStepDefinition[] _plannedSteps = [];
+    private BonboardingStepDefinition[] _planSource = [];
 
     private CancellationTokenSource? _stepCts;
     private BonboardingBrowserEnvironment _environment = BonboardingBrowserEnvironment.Unknown;
@@ -86,6 +103,19 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
     /// <summary>True from the engine navigating to <see cref="_pendingRoute"/> until the location changes.</summary>
     private bool _navigatingToRoute;
+
+    /// <summary>
+    /// The page a step without a <see cref="BonboardingStepDefinition.Route"/> was activated on (normalized), or null.
+    /// The step goes on showing when the user leaves it - an advance can be on its way, the user's click or the
+    /// application's signal - but a target it misses there holds it for that page (see <see cref="IsAwayFromStepPage"/>).
+    /// </summary>
+    private string? _stepPath;
+
+    /// <summary>
+    /// The way the user was going when they set off for the current step: +1 forwards, -1 back. Back to +1 once the
+    /// step has been on screen, from where only Next is the way on.
+    /// </summary>
+    private int _travelDirection = +1;
 
     private BonboardingStepTarget _resolvedTarget = BonboardingStepTarget.None;
 
@@ -131,7 +161,27 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
     public BonboardingStepDefinition? CurrentStep { get; private set; }
 
-    public int CurrentIndex { get; private set; } = -1;
+    /// <remarks>
+    /// Found again whenever the step is no longer at the index it was entered at: a declarative tour rebuilds its
+    /// steps in place, so a step rendered or removed ahead of the current one moves it while it shows.
+    /// </remarks>
+    public int CurrentIndex
+    {
+        get
+        {
+            if (CurrentStep is { } step && (_currentIndex < 0 || _currentIndex >= Tour.Steps.Count || !ReferenceEquals(Tour.Steps[_currentIndex], step)))
+            {
+                var index = Tour.Steps.IndexOf(step);
+                if (index < 0 && step.HasExplicitId) index = Tour.IndexOf(step.Id);
+                if (index >= 0) _currentIndex = index;
+            }
+
+            return _currentIndex;
+        }
+        private set => _currentIndex = value;
+    }
+
+    private int _currentIndex = -1;
 
     public BonboardingEffectiveStepOptions? CurrentOptions { get; private set; }
 
@@ -194,14 +244,14 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         is BonboardingTourStatus.Completed or BonboardingTourStatus.Dismissed or BonboardingTourStatus.Skipped
         or BonboardingTourStatus.Cancelled or BonboardingTourStatus.Failed or BonboardingTourStatus.Snoozed;
 
-    public int DisplayCount => _plan.Count > 0 ? _plan.Count : (CurrentIndex >= 0 ? 1 : 0);
+    public int DisplayCount => Plan.Count > 0 ? Plan.Count : (CurrentIndex >= 0 ? 1 : 0);
 
     public int DisplayPosition
     {
         get
         {
             if (CurrentIndex < 0) return 0;
-            var position = _plan.IndexOf(CurrentIndex);
+            var position = Plan.IndexOf(CurrentIndex);
             return position >= 0 ? position + 1 : Math.Min(Math.Max(_history.Count, 1), DisplayCount);
         }
     }
@@ -218,8 +268,8 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             // forward button keeps saying "Next" and the hook decides at click time.
             if (CurrentStep.ResolveNext is not null) return false;
 
-            var position = _plan.IndexOf(CurrentIndex);
-            return position < 0 ? CurrentIndex >= Tour.Steps.Count - 1 : position >= _plan.Count - 1;
+            var position = Plan.IndexOf(CurrentIndex);
+            return position < 0 ? CurrentIndex >= Tour.Steps.Count - 1 : position >= Plan.Count - 1;
         }
     }
 
@@ -669,7 +719,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             // Steps being backed past that are no longer eligible are not somewhere to return to.
             if (direction < 0)
             {
-                while (_history.Count > 0 && _history[^1] != step.Id && !_plan.Contains(Tour.IndexOf(_history[^1])))
+                while (_history.Count > 0 && _history[^1] != step.Id && !Plan.Contains(Tour.IndexOf(_history[^1])))
                 {
                     _history.RemoveAt(_history.Count - 1);
                 }
@@ -681,6 +731,8 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
             _enteredBy = reason;
             _stepPrepared = false;
+            _visit++;
+            _visitShown = false;
         }
         else if (_stepShown)
         {
@@ -691,9 +743,12 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         }
 
         _stepShown = false;
+        _stepPath = null;
 
         CancelStep();
-        _stepCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        // The step's own: it outlives the command that showed it - a target found again, a wait run out, progress
+        // written - so the token of that command, which its caller may cancel once the command is done, is not it.
+        _stepCts = new CancellationTokenSource();
         var stepToken = _stepCts.Token;
 
         await SafeDeactivateAsync();
@@ -705,6 +760,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         CurrentStep = step;
         CurrentIndex = index;
         CurrentOptions = ResolveOptions(step);
+        // A re-entry keeps the way the user set off for a step still on its way to the screen; one that was already on
+        // screen is left by Next, whatever way it was reached.
+        if (!isReentry) _travelDirection = direction < 0 ? -1 : +1;
+        else if (previousShown) _travelDirection = +1;
         _geometry = null;
         _lastSequence = -1;
         Placement = null;
@@ -716,6 +775,8 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         // Route handling comes first: the element cannot exist until the right page is rendered.
         if (!await EnsureRouteAsync(step)) return;
+
+        _stepPath = step.Route is null ? CurrentPath() : null;
 
         var target = step.Target;
         _resolvedTarget = target.IsDynamic
@@ -796,6 +857,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         BonboardingStepChangeReason reason, CancellationToken stepToken)
     {
         _stepShown = true;
+        _visitShown = true;
 
         await PersistAsync(stepToken);
         await PublishAsync(BonboardingEventKind.StepShown, step, changeReason: reason);
@@ -989,11 +1051,14 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     /// </summary>
     private async Task RebuildPlanAsync()
     {
-        var plan = new List<int>(Tour.Steps.Count);
+        // A snapshot: a declarative tour may rebuild its steps while a condition is awaited, and Plan maps the result
+        // onto the steps as they are then.
+        BonboardingStepDefinition[] steps = [.. Tour.Steps];
+        var plan = new List<int>(steps.Length);
 
-        for (var i = 0; i < Tour.Steps.Count; i++)
+        for (var i = 0; i < steps.Length; i++)
         {
-            var step = Tour.Steps[i];
+            var step = steps[i];
             var index = i;
 
             if (step.When is not { } when || await InvokeHookAsync(() => when(CreateContext(step, index: index))))
@@ -1002,8 +1067,49 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             }
         }
 
-        _plan = plan;
+        SetPlan(plan, steps);
     }
+
+    private void SetPlan(List<int> plan, BonboardingStepDefinition[] steps)
+    {
+        _plan = plan;
+        _planSource = steps;
+        _plannedSteps = [.. plan.Select(index => steps[index])];
+    }
+
+    /// <summary>
+    /// <see cref="_plan"/>, mapped onto <see cref="BonboardingTourDefinition.Steps"/> again when they changed since it
+    /// was made: a declarative tour rebuilds its steps in place, so a step rendered or removed ahead of the current one
+    /// moves the indices while the step shows, as <see cref="CurrentIndex"/> follows it. Each planned step keeps its
+    /// place in the plan; a step new to the tour joins it unless a <see cref="BonboardingStepDefinition.When"/>, which
+    /// only the next transition asks, conditions it.
+    /// </summary>
+    private List<int> Plan
+    {
+        get
+        {
+            var steps = Tour.Steps;
+            if (steps.Count == _planSource.Length && !steps.Where((step, i) => !ReferenceEquals(step, _planSource[i])).Any()) return _plan;
+
+            var plan = new List<int>(steps.Count);
+            for (var i = 0; i < steps.Count; i++)
+            {
+                var step = steps[i];
+                if (_plannedSteps.Any(planned => IsSameStep(planned, step))
+                    || (step.When is null && !_planSource.Any(known => IsSameStep(known, step))))
+                {
+                    plan.Add(i);
+                }
+            }
+
+            SetPlan(plan, [.. steps]);
+            return _plan;
+        }
+    }
+
+    /// <summary>The same step, or one rendered again in its place: a new definition with the same explicit id.</summary>
+    private static bool IsSameStep(BonboardingStepDefinition a, BonboardingStepDefinition b)
+        => ReferenceEquals(a, b) || (a.HasExplicitId && b.HasExplicitId && a.Id == b.Id);
 
     /// <summary>
     /// Where a transition lands: the requested step (snapped onto an eligible one), or the next
@@ -1017,12 +1123,12 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     /// <summary>Snaps a requested index onto the nearest planned step in the direction of travel.</summary>
     private int ResolveEligible(int requestedIndex, int direction)
     {
-        if (_plan.Count == 0) return -1;
-        if (_plan.Contains(requestedIndex)) return requestedIndex;
+        if (Plan.Count == 0) return -1;
+        if (Plan.Contains(requestedIndex)) return requestedIndex;
 
         if (direction >= 0)
         {
-            foreach (var candidate in _plan)
+            foreach (var candidate in Plan)
             {
                 if (candidate >= requestedIndex) return candidate;
             }
@@ -1030,9 +1136,9 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             return -1;
         }
 
-        for (var i = _plan.Count - 1; i >= 0; i--)
+        for (var i = Plan.Count - 1; i >= 0; i--)
         {
-            if (_plan[i] <= requestedIndex) return _plan[i];
+            if (Plan[i] <= requestedIndex) return Plan[i];
         }
 
         return -1;
@@ -1040,7 +1146,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
     private int NextPlanned(int fromIndex)
     {
-        foreach (var index in _plan)
+        foreach (var index in Plan)
         {
             if (index > fromIndex) return index;
         }
@@ -1050,9 +1156,9 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
     private int PreviousPlanned(int fromIndex)
     {
-        for (var i = _plan.Count - 1; i >= 0; i--)
+        for (var i = Plan.Count - 1; i >= 0; i--)
         {
-            if (_plan[i] < fromIndex) return _plan[i];
+            if (Plan[i] < fromIndex) return Plan[i];
         }
 
         return -1;
@@ -1206,6 +1312,13 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         _geometry = null;
         Placement = null;
 
+        // Lost on another page than the step's own: it is not gone from there.
+        if (IsAwayFromStepPage)
+        {
+            await HoldOnStepPageAsync();
+            return;
+        }
+
         switch (options.MissingTarget)
         {
             case BonboardingMissingTargetBehavior.Center:
@@ -1261,19 +1374,58 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             case "Escape" when options.CloseOnEscape:
                 await DismissAsync();
                 break;
+            // A step that waits for the user to do something, or for a signal, is not moved on by a key.
             case "ArrowRight" when options.KeyboardNavigation:
-                await (rtl ? PreviousAsync() : NextAsync());
+                await (rtl ? PreviousAsync() : KeyNextAsync());
                 break;
             case "ArrowLeft" when options.KeyboardNavigation:
-                await (rtl ? NextAsync() : PreviousAsync());
+                await (rtl ? KeyNextAsync() : PreviousAsync());
                 break;
-            case "Home" when options.KeyboardNavigation && _plan.Count > 0:
-                await GoToAsync(_plan[0]);
+            case "Home" when options.KeyboardNavigation:
+            {
+                var plan = Plan;
+                if (plan.Count > 0) await GoToAsync(plan[0]);
                 break;
-            case "End" when options.KeyboardNavigation && _plan.Count > 0:
-                await GoToAsync(_plan[^1]);
+            }
+            case "End" when options.KeyboardNavigation:
+            {
+                var plan = Plan;
+                if (plan.Count > 0 && CanJumpToLast(plan)) await GoToAsync(plan[^1]);
                 break;
+            }
         }
+    }
+
+    private Task KeyNextAsync() => CurrentStep is { } step && WaitsForUser(step) ? Task.CompletedTask : NextAsync();
+
+    /// <summary>
+    /// True for a step whose way on is something the user does (<see cref="BonboardingStepDefinition.AdvanceOn"/>) or
+    /// the application reports (<see cref="BonboardingStepDefinition.AdvanceOnSignal"/>), with no Next shown to skip it.
+    /// A step that only hides the built-in Next - custom markup or a template carrying a button of its own, say - is
+    /// not one: the keys go on standing in for that button.
+    /// </summary>
+    private bool WaitsForUser(BonboardingStepDefinition step)
+        => (step.AdvanceOn is not null || step.AdvanceOnSignal is not null) && !ResolveOptions(step).ShowNext;
+
+    /// <summary>
+    /// Whether End may jump straight to the last planned step: only when no step from here to there would hold the
+    /// user (<see cref="BonboardingStepDefinition.CanAdvance"/>, <see cref="WaitsForUser"/>) or pick the way on
+    /// (<see cref="BonboardingStepDefinition.ResolveNext"/>) - Next, pressed step by step, would not get past those.
+    /// </summary>
+    private bool CanJumpToLast(List<int> plan)
+    {
+        var from = plan.IndexOf(CurrentIndex);
+        if (from < 0) return false;
+
+        for (var position = from; position < plan.Count - 1; position++)
+        {
+            // Here, the step on screen: Next asks its definition, which a step rendered again in its place has not
+            // replaced yet.
+            var step = position == from && CurrentStep is { } current ? current : Tour.Steps[plan[position]];
+            if (step.CanAdvance is not null || step.ResolveNext is not null || WaitsForUser(step)) return false;
+        }
+
+        return true;
     }
 
     public async ValueTask OnOverlayClickAsync()
@@ -1286,18 +1438,18 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
     public async ValueTask OnAdvanceTriggeredAsync()
     {
-        if (_disposed || Status != BonboardingTourStatus.Running || CurrentStep is not { } step) return;
+        if (_disposed || !CanTakeAdvance || CurrentStep is null) return;
 
-        var generation = _generation;
+        var visit = _visit;
 
         // The browser keeps the trigger armed until the step changes, because CanAdvance may hold the user
         // and they must be able to try again. Several events can therefore be in flight for one step (a
         // second click while the first advance is still being decided): only one that still finds its
-        // step on screen moves the tour on, so a click is never charged to the step after it.
+        // visit live moves the tour on, so a click is never charged to the step after it, nor to a later
+        // visit to the same one. A visit that has been held since - a link the step advances on took the
+        // user to a page where its target is missing - still takes it: the click is what took them there.
         await RunGuardedAsync(
-            ct => generation == _generation && ReferenceEquals(CurrentStep, step) && Status == BonboardingTourStatus.Running
-                ? NextCoreAsync(ct)
-                : Task.CompletedTask,
+            ct => visit == _visit && CanTakeAdvance ? NextCoreAsync(ct) : Task.CompletedTask,
             CancellationToken.None);
     }
 
@@ -1307,23 +1459,34 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     /// </summary>
     internal async Task<bool> SignalAsync(string signal)
     {
-        if (_disposed || Status != BonboardingTourStatus.Running || CurrentStep is not { AdvanceOnSignal: { } expected } step) return false;
-        if (!string.Equals(expected, signal, StringComparison.Ordinal)) return false;
+        if (_disposed || !CanTakeAdvance || !WaitsForSignal(signal)) return false;
 
-        var generation = _generation;
+        var visit = _visit;
         var advanced = false;
 
-        // Like an advance trigger: the signal belongs to the step that was showing when it was raised.
+        // Like an advance trigger: the signal belongs to the visit that was showing when it was raised. That step may
+        // have lost its target or been held since - an application that navigates and then signals takes its page
+        // away first - and the signal still moves it on: it reports what the user did on it. A later visit to the
+        // same step is not it.
         await RunGuardedAsync(async ct =>
         {
-            if (generation != _generation || !ReferenceEquals(CurrentStep, step) || Status != BonboardingTourStatus.Running) return;
+            if (visit != _visit || !CanTakeAdvance || !WaitsForSignal(signal)) return;
 
             await NextCoreAsync(ct);
-            advanced = IsFinished || !ReferenceEquals(CurrentStep, step);
+            advanced = IsFinished || visit != _visit;
         }, CancellationToken.None);
 
         return advanced;
     }
+
+    private bool WaitsForSignal(string signal)
+        => CurrentStep is { AdvanceOnSignal: { } expected } && string.Equals(expected, signal, StringComparison.Ordinal);
+
+    /// <summary>
+    /// True while the current visit is live for an advance, a click or a signal: on screen, or waiting after it was
+    /// shown in this visit (its target lost, held for its page, or shown again on coming back to it).
+    /// </summary>
+    private bool CanTakeAdvance => Status == BonboardingTourStatus.Running || (Status == BonboardingTourStatus.Waiting && _visitShown);
 
     public ValueTask OnWaitTimedOutAsync() => OnWaitTimedOutAsync(BonboardingTargetIssue.None);
 
@@ -1344,6 +1507,14 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             if (generation != _generation || !ReferenceEquals(CurrentStep, step)) return;
             if (Status != BonboardingTourStatus.Waiting || _pendingRoute is not null) return;
 
+            // The user left the step's page while it waited: the target may still turn up there, so the step waits
+            // for them to come back rather than giving up on it.
+            if (IsAwayFromStepPage)
+            {
+                await HoldOnStepPageAsync();
+                return;
+            }
+
             // What was found at activation may no longer hold: a target that did not exist then may have rendered
             // hidden since. The browser says how it stands now, and that is what the log and the root report.
             if (issue is not BonboardingTargetIssue.None && issue != TargetIssue)
@@ -1363,7 +1534,9 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
                 return;
             }
 
-            await HandleMissingTargetAsync(behavior, step, +1, ct);
+            // On in the direction the user was going: a wait that runs out on the way back goes on back. A step that
+            // was on screen and lost its target later goes on forwards, as LoseTargetAsync's own skip does.
+            await HandleMissingTargetAsync(behavior, step, _stepShown ? +1 : _travelDirection, ct);
         }, CancellationToken.None);
     }
 
@@ -1557,23 +1730,48 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         {
             // The user navigated away from the step's page. Hold rather than yanking them back:
             // fighting the user for control of the address bar is never the right call.
-            _generation++;
-            _pendingRoute = route;
-            _navigatingToRoute = false;
-            Status = BonboardingTourStatus.Waiting;
-            _geometry = null;
-            Placement = null;
-            await SafeDeactivateAsync();
-            Notify(BonboardingTourSessionChange.Step);
+            await HoldForRouteAsync(route);
             return;
         }
 
-        // Same page, new content: the target may have been re-rendered underneath us, or be gone.
+        // Same page, new content: the target may have been re-rendered underneath us, or be gone. A step without a
+        // route goes on showing on another page too - what took the user there may be the very thing that moves it on
+        // (a link it advances on, an application that navigates and then signals) - until it misses its target there.
         if (Status == BonboardingTourStatus.Running)
         {
             await RefreshCoreAsync(cancellationToken);
         }
     }
+
+    /// <summary>Holds the current step until the user is back on <paramref name="route"/>; the location change resumes it.</summary>
+    private async Task HoldForRouteAsync(string route)
+    {
+        _generation++;
+        _pendingRoute = route;
+        _navigatingToRoute = false;
+        Status = BonboardingTourStatus.Waiting;
+        _geometry = null;
+        Placement = null;
+        await SafeDeactivateAsync();
+        Notify(BonboardingTourSessionChange.Step);
+    }
+
+    /// <summary>The current page, normalized; null without a <see cref="NavigationManager"/>.</summary>
+    private string? CurrentPath()
+        => _navigation is null ? null : BonboardingRouteMatcher.Normalize(_navigation.ToBaseRelativePath(_navigation.Uri));
+
+    /// <summary>
+    /// True while the current step, one without a route, is shown somewhere other than the page it was activated on.
+    /// A target it misses there is not gone from its page: the step holds for that page (<see cref="HoldOnStepPageAsync"/>)
+    /// rather than applying its missing-target behaviour - skipping there would skip the steps after it one by one, and
+    /// complete the tour, while the user is somewhere else.
+    /// </summary>
+    private bool IsAwayFromStepPage
+        => CurrentStep is { Route: null } && _stepPath is { } stepPath && CurrentPath() is { } here
+            && !here.Equals(stepPath, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Holds the current step for the page it was activated on. The leading slash keeps the home page's empty path from matching every page.</summary>
+    private Task HoldOnStepPageAsync() => HoldForRouteAsync("/" + _stepPath);
 
     // ---- Persistence -------------------------------------------------------
 

@@ -196,6 +196,16 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
+    /// The list of dates that are disabled (not selectable) in the calendar, in addition to MinDate and MaxDate.
+    /// </summary>
+    [Parameter] public IEnumerable<DateTimeOffset>? DisabledDates { get; set; }
+
+    /// <summary>
+    /// The days of the week that are disabled (not selectable) in the calendar (e.g. weekends).
+    /// </summary>
+    [Parameter] public IEnumerable<DayOfWeek>? DisabledDaysOfWeek { get; set; }
+
+    /// <summary>
     /// Disables every day after today, exactly as a <see cref="MaxDate"/> of now would.
     /// When both are set, the earlier of the two bounds wins.
     /// </summary>
@@ -220,25 +230,15 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     public bool DisablePast { get; set; }
 
     /// <summary>
-    /// The list of dates that are disabled (not selectable) in the calendar, in addition to MinDate and MaxDate.
+    /// The title (tooltip) and the accessible name of the close button of the event details dialog.
     /// </summary>
-    [Parameter] public IEnumerable<DateTimeOffset>? DisabledDates { get; set; }
-
-    /// <summary>
-    /// The days of the week that are disabled (not selectable) in the calendar (e.g. weekends).
-    /// </summary>
-    [Parameter] public IEnumerable<DayOfWeek>? DisabledDaysOfWeek { get; set; }
+    [Parameter] public string EventDetailsCloseButtonTitle { get; set; } = "Close";
 
     /// <summary>
     /// The list of events to display on calendar days. The events of a day are ordered the way an agenda of it
     /// is: the all-day ones (which carry no start time) first, then the rest by the time they start at.
     /// </summary>
     [Parameter] public IEnumerable<BitCalendarEvent>? Events { get; set; }
-
-    /// <summary>
-    /// The title (tooltip) and the accessible name of the close button of the event details dialog.
-    /// </summary>
-    [Parameter] public string EventDetailsCloseButtonTitle { get; set; } = "Close";
 
     /// <summary>
     /// Used to customize how an event is rendered in the details dialog, in place of its title, its time and
@@ -257,12 +257,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public string EventTimeUntilText { get; set; } = "Until";
 
     /// <summary>
-    /// Rendered under the pickers, inside the root of the calendar: the place for the actions a calendar is
-    /// often given of its own, such as a Clear button or a summary of the selection.
-    /// </summary>
-    [Parameter] public RenderFragment? FooterTemplate { get; set; }
-
-    /// <summary>
     /// Overrides the first day of the week in the day picker. If not set, the first day of the week of the Culture is used.
     /// </summary>
     [Parameter]
@@ -279,15 +273,15 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     public bool FixedWeeks { get; set; }
 
     /// <summary>
+    /// Rendered under the pickers, inside the root of the calendar: the place for the actions a calendar is
+    /// often given of its own, such as a Clear button or a summary of the selection.
+    /// </summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    /// <summary>
     /// Custom function to provide additional CSS classes for each day button of the calendar.
     /// </summary>
     [Parameter] public Func<DateTimeOffset, string?>? GetDayClass { get; set; }
-
-    /// <summary>
-    /// Rendered above the pickers, inside the root of the calendar: the place for a caption or a legend of
-    /// its own, before the day, month and year grids.
-    /// </summary>
-    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
     /// <summary>
     /// The title of the Go to next month button (tooltip).
@@ -303,22 +297,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// The title of the Go to next year button (tooltip).
     /// </summary>
     [Parameter] public string GoToNextYearTitle { get; set; } = "Go to next year {0}";
-
-    /// <summary>
-    /// Gets or sets the icon to display in the now button using custom CSS classes for external icon libraries.
-    /// Takes precedence over <see cref="NowButtonIconName"/> when both are set.
-    /// </summary>
-    [Parameter] public BitIconInfo? NowButtonIcon { get; set; }
-
-    /// <summary>
-    /// Gets or sets the name of the icon to display in the now button from the built-in Fluent UI icons.
-    /// </summary>
-    [Parameter] public string? NowButtonIconName { get; set; }
-
-    /// <summary>
-    /// The title of the now button (tooltip).
-    /// </summary>
-    [Parameter] public string NowButtonTitle { get; set; } = "Go to now";
 
     /// <summary>
     /// The title of the Go to previous month button (tooltip).
@@ -350,6 +328,12 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// The title of the GoToToday button (tooltip).
     /// </summary>
     [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
+
+    /// <summary>
+    /// Rendered above the pickers, inside the root of the calendar: the place for a caption or a legend of
+    /// its own, before the day, month and year grids.
+    /// </summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display in the HideTimePicker button using custom CSS classes for external icon libraries.
@@ -439,6 +423,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
     /// <summary>
+    /// Used to customize how content inside the month cell is rendered.
+    /// </summary>
+    [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
+
+    /// <summary>
     /// The number of consecutive months rendered side by side in the day picker (1 to 3), which turns the
     /// calendar into a view of a whole season - the arrow keys, the selection and the events carry on
     /// across the months of it.
@@ -451,11 +440,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(OnSetParameters))]
     public int MonthCount { get; set; } = 1;
-
-    /// <summary>
-    /// Used to customize how content inside the month cell is rendered.
-    /// </summary>
-    [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
 
     /// <summary>
     /// The title of the month picker's toggle (tooltip).
@@ -494,6 +478,22 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// Gets or sets the name of the icon to display in the Go to next year range button from the built-in Fluent UI icons.
     /// </summary>
     [Parameter] public string? NextYearRangeNavIconName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to display in the now button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="NowButtonIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? NowButtonIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display in the now button from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? NowButtonIconName { get; set; }
+
+    /// <summary>
+    /// The title of the now button (tooltip).
+    /// </summary>
+    [Parameter] public string NowButtonTitle { get; set; } = "Go to now";
 
     /// <summary>
     /// Callback for when the displayed month of the day picker changes.
@@ -553,21 +553,16 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public string SelectedDateAriaAtomic { get; set; } = "Selected date {0}";
 
     /// <summary>
-    /// Whether the now button should be shown or not.
-    /// </summary>
-    [Parameter] public bool ShowNowButton { get; set; } = true;
-
-    /// <summary>
-    /// Whether the GoToToday button should be shown or not.
-    /// </summary>
-    [Parameter] public bool ShowGoToToday { get; set; } = true;
-
-    /// <summary>
     /// Whether clicking a day that carries events opens the dialog listing them.
     /// The day is selected either way; turning this off leaves the events to the indicator, the tooltip and
     /// whatever the page itself shows for the selected day.
     /// </summary>
     [Parameter] public bool ShowEventDetails { get; set; } = true;
+
+    /// <summary>
+    /// Whether the GoToToday button should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowGoToToday { get; set; } = true;
 
     /// <summary>
     /// Whether the month picker is shown or hidden.
@@ -582,6 +577,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public bool ShowMonthPickerAsOverlay { get; set; }
+
+    /// <summary>
+    /// Whether the now button should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowNowButton { get; set; } = true;
 
     /// <summary>
     /// Whether the days of the previous and next months should be shown in the day picker.
@@ -669,11 +669,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public string TimePickerDecreaseHourTitle { get; set; } = "Decrease hour";
 
     /// <summary>
-    /// The title (tooltip) and the accessible name of the time-picker's decrease-minute button.
-    /// </summary>
-    [Parameter] public string TimePickerDecreaseMinuteTitle { get; set; } = "Decrease minute";
-
-    /// <summary>
     /// Gets or sets the icon to display in the decrease-minute button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="TimePickerDecreaseMinuteIconName"/> when both are set.
     /// </summary>
@@ -685,14 +680,14 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public string? TimePickerDecreaseMinuteIconName { get; set; }
 
     /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's decrease-minute button.
+    /// </summary>
+    [Parameter] public string TimePickerDecreaseMinuteTitle { get; set; } = "Decrease minute";
+
+    /// <summary>
     /// The title (tooltip) and the accessible name of the time-picker's hour input.
     /// </summary>
     [Parameter] public string TimePickerHourTitle { get; set; } = "Hour";
-
-    /// <summary>
-    /// The title (tooltip) and the accessible name of the time-picker's minute input.
-    /// </summary>
-    [Parameter] public string TimePickerMinuteTitle { get; set; } = "Minute";
 
     /// <summary>
     /// Gets or sets the icon to display in the increase-hour button using custom CSS classes for external icon libraries.
@@ -706,6 +701,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public string? TimePickerIncreaseHourIconName { get; set; }
 
     /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's increase-hour button.
+    /// </summary>
+    [Parameter] public string TimePickerIncreaseHourTitle { get; set; } = "Increase hour";
+
+    /// <summary>
     /// Gets or sets the icon to display in the increase-minute button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="TimePickerIncreaseMinuteIconName"/> when both are set.
     /// </summary>
@@ -717,14 +717,14 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public string? TimePickerIncreaseMinuteIconName { get; set; }
 
     /// <summary>
-    /// The title (tooltip) and the accessible name of the time-picker's increase-hour button.
-    /// </summary>
-    [Parameter] public string TimePickerIncreaseHourTitle { get; set; } = "Increase hour";
-
-    /// <summary>
     /// The title (tooltip) and the accessible name of the time-picker's increase-minute button.
     /// </summary>
     [Parameter] public string TimePickerIncreaseMinuteTitle { get; set; } = "Increase minute";
+
+    /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's minute input.
+    /// </summary>
+    [Parameter] public string TimePickerMinuteTitle { get; set; } = "Minute";
 
     /// <summary>
     /// TimeZone for the DatePicker.

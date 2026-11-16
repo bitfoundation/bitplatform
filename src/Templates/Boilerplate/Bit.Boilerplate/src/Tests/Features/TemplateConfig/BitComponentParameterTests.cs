@@ -56,6 +56,8 @@ public class BitComponentParameterTests
         ("BitBasicList", "EnableVirtualization", "Virtualize"),
         ("BitSearchBox", "Accent", "Background"),
         ("BitColorPicker", "ChildContent", "Label"),
+        ("BitCarousel", "GoLeftAriaLabel", "NextAriaLabel"),
+        ("BitCarousel", "GoRightAriaLabel", "PrevAriaLabel"),
     ];
 
     [TestMethod]

@@ -66,13 +66,15 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
 
     /// <summary>
-    /// Whether the TimePicker allows input a time string directly or not.
+    /// The hours that can be selected, on top of what <see cref="MinTime"/>, <see cref="MaxTime"/> and
+    /// <see cref="HourStep"/> already allow.
     /// </summary>
     /// <remarks>
-    /// The text is parsed with the exact <see cref="ValueFormat"/> of the picker, so what is typed has to
-    /// match the format the picker itself writes.
+    /// The predicate receives an hour of the day (0-23), whichever <see cref="TimeFormat"/> the clock is in,
+    /// and returns whether it can be picked. Hours it rejects are dimmed on the dial, skipped by the keyboard
+    /// and refused by the pointer.
     /// </remarks>
-    [Parameter] public bool AllowTextInput { get; set; }
+    [Parameter] public Func<int, bool>? AllowedHours { get; set; }
 
     /// <summary>
     /// The minutes that can be selected, on top of what <see cref="MinTime"/>, <see cref="MaxTime"/> and
@@ -85,17 +87,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public Func<int, bool>? AllowedMinutes { get; set; }
 
     /// <summary>
-    /// The hours that can be selected, on top of what <see cref="MinTime"/>, <see cref="MaxTime"/> and
-    /// <see cref="HourStep"/> already allow.
-    /// </summary>
-    /// <remarks>
-    /// The predicate receives an hour of the day (0-23), whichever <see cref="TimeFormat"/> the clock is in,
-    /// and returns whether it can be picked. Hours it rejects are dimmed on the dial, skipped by the keyboard
-    /// and refused by the pointer.
-    /// </remarks>
-    [Parameter] public Func<int, bool>? AllowedHours { get; set; }
-
-    /// <summary>
     /// The seconds that can be selected, on top of what <see cref="MinTime"/>, <see cref="MaxTime"/> and
     /// <see cref="SecondStep"/> already allow.
     /// </summary>
@@ -104,6 +95,15 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// rejects are dimmed on the dial, skipped by the keyboard and refused by the pointer.
     /// </remarks>
     [Parameter] public Func<int, bool>? AllowedSeconds { get; set; }
+
+    /// <summary>
+    /// Whether the TimePicker allows input a time string directly or not.
+    /// </summary>
+    /// <remarks>
+    /// The text is parsed with the exact <see cref="ValueFormat"/> of the picker, so what is typed has to
+    /// match the format the picker itself writes.
+    /// </remarks>
+    [Parameter] public bool AllowTextInput { get; set; }
 
     /// <summary>
     /// Renders the AM/PM pair under the clock instead of beside the time in the toolbar.
@@ -163,11 +163,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// </summary>
     [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
 
-    // The callout attributes the BitCircularTimePickerParams of this pass cascades, which those of
-    // CalloutHtmlAttributes win over. Held apart from that dictionary, which is the app's own and never written into,
-    // and dropped on every pass so a params object that stops supplying one leaves nothing of it behind.
-    internal Dictionary<string, object>? CascadedCalloutHtmlAttributes { get; set; }
-
     /// <summary>
     /// Custom CSS classes for different parts of the TimePicker component.
     /// </summary>
@@ -220,12 +215,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
-    /// The custom validation error message for a time entered as text that
-    /// <see cref="AllowedHours"/>, <see cref="AllowedMinutes"/> or <see cref="AllowedSeconds"/> rejects.
-    /// </summary>
-    [Parameter] public string? DisallowedTimeErrorMessage { get; set; }
-
-    /// <summary>
     /// Disables every time of day after the current time, exactly as a <see cref="MaxTime"/> of now would.
     /// When both are set, the earlier of the two bounds wins.
     /// </summary>
@@ -241,6 +230,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// </summary>
     /// <inheritdoc cref="DisableFuture" path="/remarks"/>
     [Parameter] public bool DisablePast { get; set; }
+
+    /// <summary>
+    /// The custom validation error message for a time entered as text that
+    /// <see cref="AllowedHours"/>, <see cref="AllowedMinutes"/> or <see cref="AllowedSeconds"/> rejects.
+    /// </summary>
+    [Parameter] public string? DisallowedTimeErrorMessage { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the callout.
@@ -266,6 +261,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public bool HasBorder { get; set; } = true;
 
     /// <summary>
+    /// The title (and accessible name) of the button that switches the dial to the hours.
+    /// </summary>
+    [Parameter] public string HourButtonTitle { get; set; } = "Select hour";
+
+    /// <summary>
     /// The step, in hours, the dial and the keyboard move the hour by.
     /// </summary>
     /// <remarks>
@@ -274,22 +274,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <see cref="MinTime"/>, and at midnight where there is none. Values below 1 are treated as 1.
     /// </remarks>
     [Parameter] public int HourStep { get; set; } = 1;
-
-    /// <summary>
-    /// The title (and accessible name) of the button that switches the dial to the hours.
-    /// </summary>
-    [Parameter] public string HourButtonTitle { get; set; } = "Select hour";
-
-    /// <summary>
-    /// Determines the side of the input the CircularTimePicker's icon is rendered on (default is the end side).
-    /// </summary>
-    /// <remarks>
-    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here; every
-    /// other placement leaves the icon on the end side. The side follows the reading direction: Start is the
-    /// left of an LTR input and the right of an RTL one.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public BitPlacement IconPlacement { get; set; } = BitPlacement.End;
 
     /// <summary>
     /// The icon to display using custom CSS classes for external icon libraries.
@@ -318,6 +302,17 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
+    /// Determines the side of the input the CircularTimePicker's icon is rendered on (default is the end side).
+    /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here; every
+    /// other placement leaves the icon on the end side. The side follows the reading direction: Start is the
+    /// left of an LTR input and the right of an RTL one.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitPlacement IconPlacement { get; set; } = BitPlacement.End;
+
+    /// <summary>
     /// Custom TimePicker icon template
     /// </summary>
     [Parameter] public RenderFragment? IconTemplate { get; set; }
@@ -341,6 +336,16 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public bool IsOpen { get; set; }
 
     /// <summary>
+    /// Label for the TimePicker
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Shows the custom label for text field
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
     /// Lays the clock out beside its toolbar instead of under it, for a picker that has more width than
     /// height to work with.
     /// </summary>
@@ -351,16 +356,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// already using all of it.
     /// </remarks>
     [Parameter] public bool Landscape { get; set; }
-
-    /// <summary>
-    /// Label for the TimePicker
-    /// </summary>
-    [Parameter] public string? Label { get; set; }
-
-    /// <summary>
-    /// Shows the custom label for text field
-    /// </summary>
-    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// The latest time that can be selected.
@@ -533,6 +528,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public BitSize? Size { get; set; }
 
     /// <summary>
+    /// Whether the TimePicker is rendered standalone or with the input component and callout.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Standalone { get; set; }
+
+    /// <summary>
     /// The time an empty TimePicker starts from, instead of midnight.
     /// </summary>
     /// <remarks>
@@ -558,12 +559,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter, ResetStyleBuilder] public BitCircularTimePickerClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// Whether the TimePicker is rendered standalone or with the input component and callout.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Standalone { get; set; }
-
-    /// <summary>
     /// The time format of the time-picker, 24H or 12H.
     /// </summary>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
@@ -578,6 +573,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// The format of the time in the TimePicker
     /// </summary>
     [Parameter] public string? ValueFormat { get; set; }
+
+    // The callout attributes the BitCircularTimePickerParams of this pass cascades, which those of
+    // CalloutHtmlAttributes win over. Held apart from that dictionary, which is the app's own and never written into,
+    // and dropped on every pass so a params object that stops supplying one leaves nothing of it behind.
+    internal Dictionary<string, object>? CascadedCalloutHtmlAttributes { get; set; }
 
 
 

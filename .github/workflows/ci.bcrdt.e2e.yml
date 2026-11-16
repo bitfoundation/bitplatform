@@ -1,8 +1,8 @@
 name: CI Bcrdt E2E
 
-# The browser suite: the demo (prerendered, then running on WebAssembly) driven with Playwright in each of the three
-# engines - Chromium, Firefox and WebKit, one job apiece - the side-by-side replicas of every demo page merging in one
-# tab, and two browser contexts meeting on the live page through the demo server's SignalR hub and WebSocket endpoint -
+# The browser suite: the demo, published as cd.bcrdt.demo.yml publishes it (prerendered, then running on WebAssembly),
+# driven with Playwright in each of the three engines - Chromium, Firefox and WebKit, one job apiece - the side-by-side
+# replicas of every demo page merging in one tab, and two browser contexts meeting on the live page through the demo server's SignalR hub and WebSocket endpoint -
 # and the published lazy loading sample next to it, trimmed in every engine and AOT-compiled in a job of its own. It
 # takes far longer than the build-and-unit pipeline (ci.bcrdt.yml), so it runs only when started by hand. See
 # src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/README.md for what it proves and how to run it locally.
@@ -55,11 +55,12 @@ jobs:
     - name: dotnet workload restore
       run: cd src/Utilities/Bcrdt && dotnet workload restore Demo/Server/Bit.Bcrdt.Demo.Server.csproj
 
-    - name: Build the demo, publish the lazy loading sample and build the E2E suite
-      # The sample is published rather than built: LazyLoadingTests drives what an app that lazy loads ships, and only a
-      # publish trims it.
+    # The tests drive the demo published the way cd.bcrdt.demo.yml publishes it, and the lazy loading sample published
+    # too, not build outputs: only a publish trims the WebAssembly client, and an interop payload the trimmer breaks
+    # works in every build and fails only there (src/CLAUDE.md).
+    - name: Publish the demo and the lazy loading sample, and build the E2E suite
       run: |
-        dotnet build src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release
+        dotnet publish src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o demo -p:InvariantGlobalization=true
         dotnet publish src/Utilities/Bcrdt/Samples/Lazy/Bit.Bcrdt.Samples.Lazy/Bit.Bcrdt.Samples.Lazy.csproj -c Release
         dotnet build src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
 
@@ -67,9 +68,11 @@ jobs:
       run: pwsh src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
 
     - name: Run E2E tests
-      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies. The suite starts the
+      # published demo itself, on a free port, and stops it when the run ends.
       env:
         BCRDT_E2E_BROWSER: ${{ matrix.browser }}
+        BCRDT_E2E_DEMO_DIR: ${{ github.workspace }}/demo
       run: >
         cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E &&
         dotnet test -c Release --no-build
@@ -117,9 +120,9 @@ jobs:
       run: dotnet publish src/Utilities/Bcrdt/Samples/Lazy/Bit.Bcrdt.Samples.Lazy/Bit.Bcrdt.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
 
     # Every test of the suite boots the demo before anything else (BcrdtTest), the lazy loading tests included.
-    - name: Build the demo and the E2E suite
+    - name: Publish the demo and build the E2E suite
       run: |
-        dotnet build src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release
+        dotnet publish src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o demo -p:InvariantGlobalization=true
         dotnet build src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
@@ -129,6 +132,7 @@ jobs:
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       env:
         BCRDT_E2E_LAZY_AOT: 1
+        BCRDT_E2E_DEMO_DIR: ${{ github.workspace }}/demo
       run: >
         cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E &&
         dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"

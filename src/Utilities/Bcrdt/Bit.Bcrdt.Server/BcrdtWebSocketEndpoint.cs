@@ -2,7 +2,9 @@
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -84,7 +86,8 @@ public sealed class BcrdtWebSocketEndpointOptions
     /// A <see cref="DocumentHost"/>'s answer to a client's own handshake does not count: it can be the
     /// whole document in many parts, all produced at once, and would disconnect the client it was meant
     /// for - again on every reconnection. It is queued as the client drains, within a budget of this
-    /// many messages of its own, and the client's next message is not read until it is.
+    /// many messages of its own, and the client's next message is not handled until it is - though it is read, up
+    /// to <see cref="MaxMessageSize"/> bytes ahead, so that the client's answers to the keep-alive are heard meanwhile.
     /// </para>
     /// </remarks>
     public int OutboundQueueCapacity { get; init; } = 256;
@@ -106,6 +109,48 @@ public sealed class BcrdtWebSocketEndpointOptions
     /// before their sockets are aborted.
     /// </summary>
     public TimeSpan ShutdownGracePeriod { get; init; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// The longest document identifier, in characters, a client may ask for: 256 by default, as for
+    /// <see cref="BcrdtHubOptions.MaxDocumentIdLength"/>.
+    /// </summary>
+    /// <remarks>
+    /// A longer one is refused like an unauthorized request, before any authorization callback runs. Raise it for
+    /// an application whose identifiers are long by design; an identifier is held in memory by the relay and the
+    /// host, and named in every log line about its document.
+    /// </remarks>
+    public int MaxDocumentIdLength { get; init; } = BcrdtHubOptions.DefaultMaxDocumentIdLength;
+
+    /// <summary>How often the server pings a client to find out whether it is still there: 15 seconds by default.</summary>
+    /// <remarks>
+    /// Zero turns the keep-alive off. See <see cref="KeepAliveTimeout"/>.
+    /// </remarks>
+    public TimeSpan KeepAliveInterval { get; init; } = TimeSpan.FromSeconds(15);
+
+    /// <summary>
+    /// How long a ping may go unanswered before the server gives the client up for gone: 30 seconds by default.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A client whose network vanished without a word - a laptop put to sleep, a NAT entry expiring - leaves a
+    /// socket that looks open until TCP itself gives up, often many minutes later. Until the server notices, the
+    /// dead connection keeps its place in the room and, with a <see cref="DocumentHost"/>, the presence identity
+    /// it published - which the same client, back on a new connection, may not be able to take over in the
+    /// meantime. Every browser and <see cref="System.Net.WebSockets.ClientWebSocket"/> answers a ping on its own,
+    /// so a live client, a hidden tab included, is never dropped by this.
+    /// </para>
+    /// <para>
+    /// An answer is only heard while the socket is being read, so the endpoint keeps reading while a
+    /// <see cref="DocumentHost"/> handles a message or paces out a large answer, holding up to
+    /// <see cref="MaxMessageSize"/> bytes of what the client sends meanwhile. A client that sends more than that
+    /// before the host is done with it is no longer read until it is, and may be given up for gone.
+    /// </para>
+    /// <para>
+    /// <see cref="Timeout.InfiniteTimeSpan"/> sends pings without waiting for their answers, as the server did
+    /// before this setting existed.
+    /// </para>
+    /// </remarks>
+    public TimeSpan KeepAliveTimeout { get; init; } = TimeSpan.FromSeconds(30);
 }
 
 /// <summary>
@@ -159,8 +204,11 @@ public static class BcrdtWebSocketEndpoint
     /// <param name="pattern">The route pattern, optionally containing a <c>{documentId}</c> segment.</param>
     /// <param name="authorize">
     /// Consulted before the socket is accepted. Omitted means every request is accepted, which is
-    /// right for a demo and wrong for anything reachable from outside. A refusal is answered with 403,
-    /// which the client transport reports as a final refusal rather than a failure to retry.
+    /// right for a demo and wrong for anything reachable from outside. A refused socket is accepted only
+    /// to be sent an <c>Auth</c> message granting nothing, and closed: the client's provider reports that
+    /// as a final refusal rather than a failure to retry - in a browser too, whose WebSocket never shows
+    /// the status of a refused upgrade. A request naming a document identifier longer than
+    /// <see cref="BcrdtWebSocketEndpointOptions.MaxDocumentIdLength"/> is refused the same way, before this is consulted.
     /// </param>
     /// <param name="options">Message size, queue and shutdown settings; defaults when omitted.</param>
     /// <returns>The mapped endpoint, for further conventions such as authorization policies.</returns>
@@ -177,6 +225,12 @@ public static class BcrdtWebSocketEndpoint
         ArgumentOutOfRangeException.ThrowIfLessThan(options.MaxMessageSize, 2, nameof(options));
         ArgumentOutOfRangeException.ThrowIfLessThan(options.OutboundQueueCapacity, 1, nameof(options));
         ArgumentOutOfRangeException.ThrowIfLessThan(options.OutboundQueueByteLimit, options.MaxMessageSize, nameof(options));
+        ArgumentOutOfRangeException.ThrowIfLessThan(options.MaxDocumentIdLength, 1, nameof(options));
+        ArgumentOutOfRangeException.ThrowIfLessThan(options.KeepAliveInterval, TimeSpan.Zero, nameof(options));
+        if (options.KeepAliveTimeout != Timeout.InfiniteTimeSpan)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(options.KeepAliveTimeout, TimeSpan.Zero, nameof(options));
+        }
 
         // One relay - and so one set of rooms - per mapping.
         var relay = new Relay(authorize, options, options.Connections ?? endpoints.ServiceProvider.GetService<BcrdtRelayConnections>());
@@ -208,11 +262,18 @@ public static class BcrdtWebSocketEndpoint
                 return;
             }
 
-            // Refused before the upgrade, so the client is told with an HTTP status it can read rather
-            // than by a socket that opens and closes again for no stated reason.
+            // Refused after the upgrade, with an Auth message, the way the hub refuses: a browser's WebSocket
+            // never shows the page the status of a failed upgrade, so a 403 there reads as a network failure the
+            // client would retry for ever.
+            if (BcrdtRelayRefusals.IsTooLong(documentId, options.MaxDocumentIdLength))
+            {
+                await RefuseAsync(context, BcrdtRelayRefusals.DocumentIdTooLong).ConfigureAwait(false);
+                return;
+            }
+
             if (authorize is not null && !await authorize(context, documentId).ConfigureAwait(false))
             {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await RefuseAsync(context, BcrdtRelayRefusals.AccessDenied).ConfigureAwait(false);
                 return;
             }
 
@@ -222,7 +283,7 @@ public static class BcrdtWebSocketEndpoint
 
             if (access == BcrdtDocumentAccess.None)
             {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await RefuseAsync(context, BcrdtRelayRefusals.AccessDenied).ConfigureAwait(false);
                 return;
             }
 
@@ -247,7 +308,7 @@ public static class BcrdtWebSocketEndpoint
 
             try
             {
-                using WebSocket socket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
+                using WebSocket socket = await context.WebSockets.AcceptWebSocketAsync(AcceptContext()).ConfigureAwait(false);
                 await RelayAsync(documentId, socket, context, connection, session).ConfigureAwait(false);
             }
             finally
@@ -256,15 +317,133 @@ public static class BcrdtWebSocketEndpoint
             }
         }
 
+        /// <summary>How the endpoint accepts a socket: with the keep-alive the options ask for.</summary>
+        private WebSocketAcceptContext AcceptContext() => new()
+        {
+            KeepAliveInterval = options.KeepAliveInterval,
+            KeepAliveTimeout = options.KeepAliveTimeout,
+        };
+
+        /// <summary>
+        /// Accepts the socket only to refuse it: an <c>Auth</c> message granting nothing - which the client's provider
+        /// treats as final, in a browser as anywhere - and then a close frame.
+        /// </summary>
+        /// <remarks>
+        /// The whole exchange - the refusal, the close frame and the client's answer to it - shares one
+        /// <see cref="CloseTimeout"/>, so a refused request holds its socket no longer than that, however the client
+        /// behaves; one that answers at once, as every browser does, holds it for a round trip. A client gone before
+        /// the upgrade completed is simply let go.
+        /// </remarks>
+        private static async Task RefuseAsync(HttpContext context, string reason)
+        {
+            WebSocket socket;
+            try
+            {
+                socket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // The client dropped during the upgrade: nobody is left to tell, and nothing worth reporting happened.
+                return;
+            }
+
+            using (socket)
+            {
+                using CancellationTokenSource deadline = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
+                deadline.CancelAfter(CloseTimeout);
+
+                try
+                {
+                    await socket
+                        .SendAsync(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.None, reason), WebSocketMessageType.Binary, endOfMessage: true, deadline.Token)
+                        .ConfigureAwait(false);
+
+                    await socket
+                        .CloseOutputAsync(WebSocketCloseStatus.PolicyViolation, "Refused", deadline.Token)
+                        .ConfigureAwait(false);
+
+                    // Waits for the client's answer to the close frame, so the socket ends cleanly and the refusal
+                    // is read before the connection goes.
+                    byte[] buffer = new byte[256];
+                    while (socket.State is WebSocketState.CloseSent)
+                    {
+                        WebSocketReceiveResult result = await socket.ReceiveAsync(buffer, deadline.Token).ConfigureAwait(false);
+                        if (result.MessageType == WebSocketMessageType.Close) break;
+                    }
+                }
+                catch (Exception)
+                {
+                    // The client went away, or did not answer in time: the socket is dropped with the request.
+                }
+            }
+        }
+
         private static string? ResolveDocumentId(HttpContext context)
         {
             if (context.Request.RouteValues.TryGetValue(DocumentIdKey, out object? routeValue) &&
                 routeValue?.ToString() is { Length: > 0 } fromRoute)
             {
-                return fromRoute;
+                return UnescapeSlashes(context, fromRoute);
             }
 
             return context.Request.Query[DocumentIdKey].ToString() is { Length: > 0 } fromQuery ? fromQuery : null;
+        }
+
+        /// <summary>
+        /// The identifier a route value stands for, with the slashes it holds put back.
+        /// </summary>
+        /// <remarks>
+        /// The client escapes a <c>/</c> in an identifier as <c>%2F</c>, and the server decodes every escape of a
+        /// path but that one, so the route value of <c>team/notes</c> is <c>team%2Fnotes</c> - a different document
+        /// from the one the hub, the host and the application's own code call <c>team/notes</c>. Nor can the route
+        /// value simply be unescaped: an identifier that holds the text <c>%2F</c> arrives as the same route value.
+        /// So the segment the route captured is read again from the path as the client sent it, and unescaped once.
+        /// It is found by its place in the route pattern, not by its value: another segment - a tenant, say - can
+        /// decode to the same text, and stands for something else.
+        /// </remarks>
+        private static string UnescapeSlashes(HttpContext context, string routeValue)
+        {
+            if (!routeValue.Contains("%2F", StringComparison.OrdinalIgnoreCase)) return routeValue;
+
+            string? rawTarget = context.Features.Get<IHttpRequestFeature>()?.RawTarget;
+            if (string.IsNullOrEmpty(rawTarget)) return routeValue;
+
+            // Only a segment that is the parameter and nothing else is the identifier as the client escaped it.
+            if (context.GetEndpoint() is not RouteEndpoint { RoutePattern: { } pattern }) return routeValue;
+            int index = pattern.PathSegments.ToList().FindIndex(segment =>
+                segment.Parts is [RoutePatternParameterPart { IsCatchAll: false } parameter] &&
+                string.Equals(parameter.Name, DocumentIdKey, StringComparison.OrdinalIgnoreCase));
+            if (index < 0) return routeValue;
+
+            int query = rawTarget.IndexOfAny(['?', '#']);
+            string[] rawSegments = (query < 0 ? rawTarget : rawTarget[..query]).Split('/');
+
+            // The raw path is the path base and then the path the pattern matched, segment for segment: the server
+            // decodes no "/" within a segment. A path it rewrote - a dot segment resolved, say - is left as routed.
+            string pathBase = context.Request.PathBase.Value ?? string.Empty;
+            int position = (pathBase.Length == 0 ? 0 : pathBase.Split('/').Length - 1) + index + 1;
+            string[] pathSegments = (pathBase + context.Request.Path.Value).Split('/');
+            if (rawSegments.Length != pathSegments.Length || position >= rawSegments.Length) return routeValue;
+
+            string segment = rawSegments[position];
+            return string.Equals(UnescapeAllButSlashes(segment), routeValue, StringComparison.Ordinal)
+                ? Uri.UnescapeDataString(segment)
+                : routeValue;
+
+            // What the server makes of a raw segment: every escape decoded but %2F.
+            static string UnescapeAllButSlashes(string segment)
+            {
+                var decoded = new System.Text.StringBuilder(segment.Length);
+                int start = 0;
+                while (true)
+                {
+                    int slash = segment.IndexOf("%2F", start, StringComparison.OrdinalIgnoreCase);
+                    decoded.Append(Uri.UnescapeDataString(slash < 0 ? segment[start..] : segment[start..slash]));
+                    if (slash < 0) return decoded.ToString();
+                    decoded.Append(segment, slash, 3);
+                    start = slash + 3;
+                }
+            }
         }
 
         /// <summary>The signed-in user, the way SignalR identifies one by default, or null for an anonymous request.</summary>
@@ -307,25 +486,16 @@ public static class BcrdtWebSocketEndpoint
             using CancellationTokenRegistration stopping = lifetime?.ApplicationStopping.Register(
                 () => Volatile.Write(ref closing, CloseForShutdownAsync(member, pump, socket, shutdown))) ?? default;
 
+            // The socket is read on its own, so that a receive is pending even while the host handles a message
+            // or the answer to one is paced out: a pong is only processed by a pending receive, and with none the
+            // keep-alive would give up on a client that is merely waiting for a large answer.
+            Inbound inbound = new(options.MaxMessageSize);
+            Task reading = ReadAsync(socket, inbound, shutdown.Token);
+
             try
             {
-                byte[] buffer = new byte[BcrdtWebSocketFraming.DefaultBufferSize];
-                using MemoryStream accumulator = new(BcrdtWebSocketFraming.DefaultBufferSize);
-
-                while (socket.State is WebSocketState.Open && !shutdown.IsCancellationRequested && !connection.Refused)
+                while (!connection.Refused && await inbound.ReadAsync(shutdown.Token).ConfigureAwait(false) is { } message)
                 {
-                    byte[]? message = await BcrdtWebSocketFraming
-                        .ReceiveMessageAsync(socket, buffer, accumulator, options.MaxMessageSize, shutdown.Token)
-                        .ConfigureAwait(false);
-
-                    if (message is null) break;
-                    if (message.Length == 0) continue;
-
-                    // Only the server may refuse a client, and this endpoint does so with a 403 before
-                    // the upgrade; an Auth frame from a client is a forgery that would disconnect the
-                    // whole room for good.
-                    if (!BcrdtSyncProtocol.IsRelayable(message)) continue;
-
                     // What a reader writes reaches nobody, nor anything from a connection refused while this
                     // waited for it. A revocation waits for a message that got past here to go where it is going.
                     if (connection.TryBeginRelay(message) is not { } relaying) continue;
@@ -360,19 +530,14 @@ public static class BcrdtWebSocketEndpoint
                         relaying.End();
                     }
 
-                    // What the host answered is queued before this client is heard again, so however
-                    // often it asks, it has at most one answer waiting on the server.
+                    // What the host answered is queued before the next message from this client is handled,
+                    // so however often it asks, it has at most one answer waiting on the server.
                     await connection.DeliverAnswerAsync(answer, shutdown.Token).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
             {
                 // The client went away, was evicted for falling behind, or the host is shutting down.
-            }
-            catch (WebSocketException)
-            {
-                // An abrupt disconnection is the ordinary way a browser tab closes, not an error worth
-                // reporting; an oversized message lands here too. The room is tidied below either way.
             }
             finally
             {
@@ -405,7 +570,49 @@ public static class BcrdtWebSocketEndpoint
                 }
 
                 await refusal.ConfigureAwait(false);
+
+                // A refused client was sent a close frame and is given a moment to answer it; otherwise nothing
+                // more from this client is handled, so the read stops now.
+                if (!reading.IsCompleted && !connection.Refused) shutdown.Cancel();
+
+                await reading.ConfigureAwait(false);
                 await BcrdtWebSocketFraming.AcknowledgeCloseAsync(socket).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Reads the client's messages into <paramref name="inbound"/> until the socket closes, fails or the relay
+        /// stops, leaving out what is never handled: empty messages, and <c>Auth</c> frames, which only the server
+        /// may send - from a client one is a forgery that would disconnect the whole room for good.
+        /// </summary>
+        /// <remarks>Never throws: however the read ends, <paramref name="inbound"/> is completed.</remarks>
+        private async Task ReadAsync(WebSocket socket, Inbound inbound, CancellationToken cancellationToken)
+        {
+            try
+            {
+                byte[] buffer = new byte[BcrdtWebSocketFraming.DefaultBufferSize];
+                using MemoryStream accumulator = new(BcrdtWebSocketFraming.DefaultBufferSize);
+
+                while (socket.State is WebSocketState.Open)
+                {
+                    byte[]? message = await BcrdtWebSocketFraming
+                        .ReceiveMessageAsync(socket, buffer, accumulator, options.MaxMessageSize, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    if (message is null) break;
+                    if (message.Length == 0 || !BcrdtSyncProtocol.IsRelayable(message)) continue;
+
+                    await inbound.WriteAsync(message, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex) when (ex is OperationCanceledException or WebSocketException or ObjectDisposedException or IOException)
+            {
+                // An abrupt disconnection is the ordinary way a browser tab closes, not an error worth reporting;
+                // an oversized message, an eviction and a shutdown end here too.
+            }
+            finally
+            {
+                inbound.Complete();
             }
         }
 
@@ -621,6 +828,53 @@ public static class BcrdtWebSocketEndpoint
                 member.Complete();
             }
         }
+    }
+
+    /// <summary>
+    /// What a client sent and the relay has not handled yet, between the socket's reader and the relay loop.
+    /// </summary>
+    /// <remarks>
+    /// Bounded by bytes: the reader waits once a budget's worth is queued - and with it the socket's receive, so a
+    /// client that keeps sending while the host is busy with it is slowed down rather than buffered without bound.
+    /// A message is always admitted to an empty queue, whatever its size.
+    /// </remarks>
+    private sealed class Inbound(long byteLimit)
+    {
+        private readonly Channel<byte[]> _messages = Channel.CreateUnbounded<byte[]>(new UnboundedChannelOptions { SingleReader = true, SingleWriter = true });
+
+        // Released once for every message taken, so a writer waiting for room looks again.
+        private readonly SemaphoreSlim _taken = new(0);
+        private long _bytes;
+
+        /// <summary>Queues a message once there is room for it. Called by the reader alone.</summary>
+        public async ValueTask WriteAsync(byte[] message, CancellationToken cancellationToken)
+        {
+            while (Interlocked.Read(ref _bytes) is var queued && queued > 0 && queued + message.Length > byteLimit)
+            {
+                await _taken.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            Interlocked.Add(ref _bytes, message.Length);
+            _messages.Writer.TryWrite(message);
+        }
+
+        /// <summary>The next message, or <see langword="null"/> once the reader has finished and nothing is left.</summary>
+        public async ValueTask<byte[]?> ReadAsync(CancellationToken cancellationToken)
+        {
+            while (await _messages.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                if (!_messages.Reader.TryRead(out byte[]? message)) continue;
+
+                Interlocked.Add(ref _bytes, -message.Length);
+                _taken.Release();
+                return message;
+            }
+
+            return null;
+        }
+
+        /// <summary>Marks the end of what the client sent.</summary>
+        public void Complete() => _messages.Writer.TryComplete();
     }
 
     /// <summary>

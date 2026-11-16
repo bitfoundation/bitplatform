@@ -682,6 +682,8 @@ public partial class BitResourceTimeline : BitComponentBase
         return FormattableString.Invariant($"height:{height}px;padding-left:{8 + row.Depth * _layout.ResourceIndent}px");
     }
 
+    private static string GetResourceGapStyle(BitResourceTimelineResourceRow row) => FormattableString.Invariant($"height:{row.Gap}px");
+
     // Where the overlay of the TooltipTemplate is drawn until the script has measured it (PlaceTooltipOverlayAsync): at
     // the pointer, offset by the translate of the stylesheet.
     private string GetTooltipOverlayStyle() => FormattableString.Invariant($"left:{_hoverClientX}px;top:{_hoverClientY}px");
@@ -1329,7 +1331,7 @@ public partial class BitResourceTimeline : BitComponentBase
     /// expanded), so the overlay of the ResourceTemplate renders them. Public only because the interop requires it; not
     /// part of the API of the component.
     /// </summary>
-    /// <param name="rows">The visible rows in display order, as objects of id, name, depth, hasChildren, collapsed and height.</param>
+    /// <param name="rows">The visible rows in display order, as objects of id, name, depth, hasChildren, collapsed, height and gap (the group separator above the row).</param>
     [JSInvokable("OnResourceRowsChanged")]
     public void _OnResourceRowsChanged(JsonElement rows)
     {
@@ -1753,7 +1755,8 @@ public partial class BitResourceTimeline : BitComponentBase
                                                                  Depth: ReadInt(row, "depth"),
                                                                  HasChildren: ReadBool(row, "hasChildren"),
                                                                  Collapsed: ReadBool(row, "collapsed"),
-                                                                 Height: ReadDouble(row, "height"));
+                                                                 Height: ReadDouble(row, "height"),
+                                                                 Gap: ReadDouble(row, "gap"));
         }
 
         return result;

@@ -61,7 +61,7 @@ public partial class BitShimmerDemo
     Content loaded successfully.
 </BitShimmer>
 
-<BitToggleButton @bind-IsChecked=""@isDataLoaded"" Text=""Toggle shimmer"" />";
+<BitToggleButton @bind-Checked=""@isDataLoaded"" Text=""Toggle shimmer"" />";
     private readonly string example6CsharpCode = @"
 private bool isDataLoaded;";
 
@@ -123,7 +123,7 @@ private async Task SimulateLoading(int duration)
     </BitCard>
 </BitShimmer>
 
-<BitToggleButton @bind-IsChecked=""@isOverlayLoaded"" Text=""Toggle shimmer"" />";
+<BitToggleButton @bind-Checked=""@isOverlayLoaded"" Text=""Toggle shimmer"" />";
     private readonly string example8CsharpCode = @"
 private bool isOverlayLoaded;";
 
@@ -152,7 +152,7 @@ private bool isOverlayLoaded;";
     </Template>
 </BitShimmer>
 
-<BitToggleButton @bind-IsChecked=""@isContentLoaded"" Text=""Toggle shimmer"" />";
+<BitToggleButton @bind-Checked=""@isContentLoaded"" Text=""Toggle shimmer"" />";
     private readonly string example9CsharpCode = @"
 private bool isContentLoaded;";
 
@@ -166,7 +166,7 @@ private bool isContentLoaded;";
     Xafan Salina, Software Engineer.
 </BitShimmer>
 
-<BitToggleButton @bind-IsChecked=""@isAccessibleLoaded"" Text=""Toggle shimmer"" />";
+<BitToggleButton @bind-Checked=""@isAccessibleLoaded"" Text=""Toggle shimmer"" />";
     private readonly string example10CsharpCode = @"
 private bool isAccessibleLoaded;";
 

@@ -108,17 +108,10 @@ public partial class BitStackDemo
         },
         new()
         {
-            Name = "GapXs",
+            Name = "GapLg",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack from the extra small breakpoint (from 0px) upwards, using any CSS length value. The value keeps applying to every wider breakpoint until another one replaces it, and Gap is the base of that chain. This is the pair of HorizontalXs for the spacing rather than the direction, and the two are most often set together."
-        },
-        new()
-        {
-            Name = "GapSm",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+            Description = "Gets or sets the spacing between the children of the stack from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
         },
         new()
         {
@@ -129,10 +122,10 @@ public partial class BitStackDemo
         },
         new()
         {
-            Name = "GapLg",
+            Name = "GapSm",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+            Description = "Gets or sets the spacing between the children of the stack from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
         },
         new()
         {
@@ -140,6 +133,13 @@ public partial class BitStackDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets the spacing between the children of the stack from the extra large breakpoint (from 1920px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+        },
+        new()
+        {
+            Name = "GapXs",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the spacing between the children of the stack from the extra small breakpoint (from 0px) upwards, using any CSS length value. The value keeps applying to every wider breakpoint until another one replaces it, and Gap is the base of that chain. This is the pair of HorizontalXs for the spacing rather than the direction, and the two are most often set together."
         },
         new()
         {
@@ -194,17 +194,10 @@ public partial class BitStackDemo
         },
         new()
         {
-            Name = "HorizontalGapXs",
+            Name = "HorizontalGapLg",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack measured along the horizontal axis from the extra small breakpoint (from 0px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and HorizontalGap is the base of that chain. A breakpoint this chain never reaches falls back to whatever the Gap chain resolves to there, so only the axis that needs its own answer has to be written out."
-        },
-        new()
-        {
-            Name = "HorizontalGapSm",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack measured along the horizontal axis from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+            Description = "Gets or sets the spacing between the children of the stack measured along the horizontal axis from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
         },
         new()
         {
@@ -215,10 +208,10 @@ public partial class BitStackDemo
         },
         new()
         {
-            Name = "HorizontalGapLg",
+            Name = "HorizontalGapSm",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack measured along the horizontal axis from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+            Description = "Gets or sets the spacing between the children of the stack measured along the horizontal axis from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
         },
         new()
         {
@@ -229,31 +222,17 @@ public partial class BitStackDemo
         },
         new()
         {
+            Name = "HorizontalGapXs",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the spacing between the children of the stack measured along the horizontal axis from the extra small breakpoint (from 0px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and HorizontalGap is the base of that chain. A breakpoint this chain never reaches falls back to whatever the Gap chain resolves to there, so only the axis that needs its own answer has to be written out."
+        },
+        new()
+        {
             Name = "HorizontalGapXxl",
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets the spacing between the children of the stack measured along the horizontal axis from the extra extra large breakpoint (from 2560px) upwards."
-        },
-        new()
-        {
-            Name = "HorizontalXs",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Gets or sets the direction of the stack from the extra small breakpoint (from 0px) upwards: true lays the children out in a row and false in a column. The value keeps applying to every wider breakpoint until another one replaces it, and Horizontal is the base of that chain. HorizontalAlign and VerticalAlign follow the direction each breakpoint gives, so the stack is realigned along with it."
-        },
-        new()
-        {
-            Name = "HorizontalSm",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Gets or sets the direction of the stack from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
-        },
-        new()
-        {
-            Name = "HorizontalMd",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Gets or sets the direction of the stack from the medium breakpoint (from 960px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
         },
         new()
         {
@@ -264,10 +243,31 @@ public partial class BitStackDemo
         },
         new()
         {
+            Name = "HorizontalMd",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Gets or sets the direction of the stack from the medium breakpoint (from 960px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+        },
+        new()
+        {
+            Name = "HorizontalSm",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Gets or sets the direction of the stack from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+        },
+        new()
+        {
             Name = "HorizontalXl",
             Type = "bool?",
             DefaultValue = "null",
             Description = "Gets or sets the direction of the stack from the extra large breakpoint (from 1920px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+        },
+        new()
+        {
+            Name = "HorizontalXs",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Gets or sets the direction of the stack from the extra small breakpoint (from 0px) upwards: true lays the children out in a row and false in a column. The value keeps applying to every wider breakpoint until another one replaces it, and Horizontal is the base of that chain. HorizontalAlign and VerticalAlign follow the direction each breakpoint gives, so the stack is realigned along with it."
         },
         new()
         {
@@ -368,17 +368,10 @@ public partial class BitStackDemo
         },
         new()
         {
-            Name = "VerticalGapXs",
+            Name = "VerticalGapLg",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack measured along the vertical axis from the extra small breakpoint (from 0px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and VerticalGap is the base of that chain. A breakpoint this chain never reaches falls back to whatever the Gap chain resolves to there, so only the axis that needs its own answer has to be written out."
-        },
-        new()
-        {
-            Name = "VerticalGapSm",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack measured along the vertical axis from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+            Description = "Gets or sets the spacing between the children of the stack measured along the vertical axis from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
         },
         new()
         {
@@ -389,10 +382,10 @@ public partial class BitStackDemo
         },
         new()
         {
-            Name = "VerticalGapLg",
+            Name = "VerticalGapSm",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack measured along the vertical axis from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+            Description = "Gets or sets the spacing between the children of the stack measured along the vertical axis from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
         },
         new()
         {
@@ -400,6 +393,13 @@ public partial class BitStackDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets the spacing between the children of the stack measured along the vertical axis from the extra large breakpoint (from 1920px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+        },
+        new()
+        {
+            Name = "VerticalGapXs",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the spacing between the children of the stack measured along the vertical axis from the extra small breakpoint (from 0px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and VerticalGap is the base of that chain. A breakpoint this chain never reaches falls back to whatever the Gap chain resolves to there, so only the axis that needs its own answer has to be written out."
         },
         new()
         {
@@ -417,17 +417,10 @@ public partial class BitStackDemo
         },
         new()
         {
-            Name = "WrapXs",
+            Name = "WrapLg",
             Type = "bool?",
             DefaultValue = "null",
-            Description = "Gets or sets whether the children of the stack may move onto more rows, from the extra small breakpoint (from 0px) upwards: true lets them wrap and false keeps them on one row. The value keeps applying to every wider breakpoint until another one replaces it, and Wrap is the base of that chain. WrapReverse is not part of it: it is the way every breakpoint that wraps at all wraps."
-        },
-        new()
-        {
-            Name = "WrapSm",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Gets or sets whether the children of the stack may move onto more rows, from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+            Description = "Gets or sets whether the children of the stack may move onto more rows, from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
         },
         new()
         {
@@ -438,10 +431,17 @@ public partial class BitStackDemo
         },
         new()
         {
-            Name = "WrapLg",
+            Name = "WrapReverse",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the children of the stack move onto more rows when they no longer fit on one, with the rows laid out from the far edge of the stack back towards the near one. It takes precedence over Wrap when both are set."
+        },
+        new()
+        {
+            Name = "WrapSm",
             Type = "bool?",
             DefaultValue = "null",
-            Description = "Gets or sets whether the children of the stack may move onto more rows, from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+            Description = "Gets or sets whether the children of the stack may move onto more rows, from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
         },
         new()
         {
@@ -452,17 +452,17 @@ public partial class BitStackDemo
         },
         new()
         {
+            Name = "WrapXs",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Gets or sets whether the children of the stack may move onto more rows, from the extra small breakpoint (from 0px) upwards: true lets them wrap and false keeps them on one row. The value keeps applying to every wider breakpoint until another one replaces it, and Wrap is the base of that chain. WrapReverse is not part of it: it is the way every breakpoint that wraps at all wraps."
+        },
+        new()
+        {
             Name = "WrapXxl",
             Type = "bool?",
             DefaultValue = "null",
             Description = "Gets or sets whether the children of the stack may move onto more rows, from the extra extra large breakpoint (from 2560px) upwards."
-        },
-        new()
-        {
-            Name = "WrapReverse",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Lets the children of the stack move onto more rows when they no longer fit on one, with the rows laid out from the far edge of the stack back towards the near one. It takes precedence over Wrap when both are set."
         }
     ];
 

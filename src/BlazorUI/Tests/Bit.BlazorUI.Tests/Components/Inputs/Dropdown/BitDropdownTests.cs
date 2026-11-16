@@ -3823,7 +3823,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingText, "Fetching");
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });
@@ -4058,7 +4058,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });
 
@@ -4066,7 +4066,7 @@ public class BitDropdownTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Loading, false);
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });
 
@@ -4155,6 +4155,90 @@ public class BitDropdownTests : BunitTestContext
         // With one, the key belongs to the search box - the keydown listener of Dropdowns.ts hands it
         // back to it - so the component must not move the focus away from the field being typed into.
         Assert.AreEqual(countBefore, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+    }
+
+    // What each key typed into the list handed the script: the search string, whether the focused option is searched
+    // too, and the culture it is matched in.
+    private List<(string? Text, bool FromCurrent, string? Culture)> TypeaheadSearches()
+    {
+        return Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"]
+                      .Where(i => (string?)i.Arguments[1] == "char")
+                      .Select(i => ((string?)i.Arguments[2], (bool)i.Arguments[7]!, (string?)i.Arguments[8]))
+                      .ToList();
+    }
+
+    private IRenderedComponent<BitDropdown<BitDropdownItem<string>, string>> RenderOpenForTypeahead()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        return component;
+    }
+
+    [TestMethod]
+    public void BitDropdownTypeaheadShouldCycleWhenTheSameLetterIsTypedAgainInTheOtherCase()
+    {
+        var component = RenderOpenForTypeahead();
+
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "b" });
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "B" });
+
+        CollectionAssert.AreEqual(new[] { ("b", false), ("b", false) },
+                                  TypeaheadSearches().Select(s => (s.Text, s.FromCurrent)).ToList());
+    }
+
+    [TestMethod]
+    public void BitDropdownTypeaheadShouldSearchAStringTypedFurtherFromTheFocusedOption()
+    {
+        var component = RenderOpenForTypeahead();
+
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "b" });
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "r" });
+
+        CollectionAssert.AreEqual(new[] { ("b", false), ("br", true) },
+                                  TypeaheadSearches().Select(s => (s.Text, s.FromCurrent)).ToList());
+    }
+
+    [TestMethod]
+    [DataRow("en-US")]
+    [DataRow("sv-SE")]
+    public void BitDropdownTypeaheadShouldHandTheScriptTheCurrentCultureToMatchIn(string name)
+    {
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(name);
+
+        try
+        {
+            var component = RenderOpenForTypeahead();
+
+            component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "b" });
+
+            Assert.AreEqual(name, TypeaheadSearches().Single().Culture);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+        }
+    }
+
+    [TestMethod]
+    public void BitDropdownTypeaheadShouldStartOverWhenTheListIsOpenedAgain()
+    {
+        var component = RenderOpenForTypeahead();
+
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "b" });
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "r" });
+
+        CollectionAssert.AreEqual(new[] { ("b", false), ("r", false) },
+                                  TypeaheadSearches().Select(s => (s.Text, s.FromCurrent)).ToList());
     }
 
     [TestMethod]
@@ -5259,7 +5343,7 @@ public class BitDropdownTests : BunitTestContext
             Description = "Test description text",
             DropDirection = BitDropDirection.All,
             FitWidth = true,
-            IsLoading = true,
+            Loading = true,
             Items = items,
             ItemSize = 40,
             Label = "Test label",
@@ -5307,7 +5391,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual("Test description text", instance.Description);
         Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
         Assert.IsTrue(instance.FitWidth);
-        Assert.IsTrue(instance.IsLoading);
+        Assert.IsTrue(instance.Loading);
         Assert.AreSame(items, instance.Items);
         Assert.AreEqual(40, instance.ItemSize);
         Assert.AreEqual("Test label", instance.Label);
@@ -5545,7 +5629,7 @@ public class BitDropdownTests : BunitTestContext
     {
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingText, "Fetching");
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });

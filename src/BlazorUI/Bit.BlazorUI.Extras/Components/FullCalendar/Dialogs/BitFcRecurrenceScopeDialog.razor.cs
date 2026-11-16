@@ -15,8 +15,7 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
-    /// <summary>The question being asked, such as "Delete recurring event".</summary>
-    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnCancel { get; set; }
 
     /// <summary>Raised with <c>true</c> when the whole series was chosen, <c>false</c> for this occurrence only.</summary>
     [Parameter] public EventCallback<bool> OnConfirm { get; set; }
@@ -27,12 +26,15 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     /// </summary>
     [Parameter] public EventCallback OnConfirmFollowing { get; set; }
 
-    [Parameter] public EventCallback OnCancel { get; set; }
+    /// <summary>The question being asked, such as "Delete recurring event".</summary>
+    [Parameter] public string Title { get; set; } = string.Empty;
 
     private readonly string _titleId = $"bfc-scope-title-{Guid.NewGuid():N}";
     private readonly string _groupName = $"bfc-scope-{Guid.NewGuid():N}";
 
     private ElementReference _dialogRef;
+    // The id of the dialog element: the focus trap and the focus it hands back as it closes are kept by it.
+    private readonly string _dialogId = $"bfc-dlg-{Guid.NewGuid():N}";
     private Scope _scope;
 
     private enum Scope { This, Following, All }
@@ -41,7 +43,7 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     {
         // A modal of its own on top of the details dialog, so it takes focus and traps Tab the same way.
         if (firstRender)
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _titleId);
+            await BitFcDialogInterop.SetupAsync(JS, _dialogId);
     }
 
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
@@ -58,6 +60,6 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await BitFcDialogInterop.TeardownAsync(JS, _titleId);
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogId);
     }
 }

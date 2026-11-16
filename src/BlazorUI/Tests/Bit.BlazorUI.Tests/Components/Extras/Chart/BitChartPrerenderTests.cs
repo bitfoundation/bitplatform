@@ -65,7 +65,7 @@ public class BitChartPrerenderTests
         var loading = await PrerenderAsync(new Dictionary<string, object?>
         {
             [nameof(BitChart.Data)] = TwoSeries(),
-            [nameof(BitChart.IsLoading)] = true,
+            [nameof(BitChart.Loading)] = true,
             [nameof(BitChart.LoadingLabel)] = "Fetching",
         });
 

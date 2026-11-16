@@ -73,36 +73,6 @@ public partial class BitGridItem : BitComponentBase
     public bool Auto { get; set; }
 
     /// <summary>
-    /// Sizes this item to its own content from the extra small breakpoint (from 0px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
-    /// an item that is sized to its content below this breakpoint is given its columns back from it upwards.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool? AutoXs { get; set; }
-
-    /// <summary>
-    /// Sizes this item to its own content from the small breakpoint (from 600px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
-    /// an item that is sized to its content below this breakpoint is given its columns back from it upwards.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool? AutoSm { get; set; }
-
-    /// <summary>
-    /// Sizes this item to its own content from the medium breakpoint (from 960px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
-    /// an item that is sized to its content below this breakpoint is given its columns back from it upwards.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool? AutoMd { get; set; }
-
-    /// <summary>
     /// Sizes this item to its own content from the large breakpoint (from 1280px) upwards.
     /// </summary>
     /// <remarks>
@@ -113,24 +83,14 @@ public partial class BitGridItem : BitComponentBase
     public bool? AutoLg { get; set; }
 
     /// <summary>
-    /// Sizes this item to its own content from the extra large breakpoint (from 1920px) upwards.
+    /// Sizes this item to its own content from the medium breakpoint (from 960px) upwards.
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
     /// an item that is sized to its content below this breakpoint is given its columns back from it upwards.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public bool? AutoXl { get; set; }
-
-    /// <summary>
-    /// Sizes this item to its own content from the extra extra large breakpoint (from 2560px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// <c>false</c> is how an item that is sized to its content below this breakpoint is given its columns back
-    /// from it upwards.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool? AutoXxl { get; set; }
+    public bool? AutoMd { get; set; }
 
     /// <summary>
     /// Pushes this item to the end edge of its row by turning every column left over before it into the offset.
@@ -155,24 +115,14 @@ public partial class BitGridItem : BitComponentBase
     public bool AutoOffset { get; set; }
 
     /// <summary>
-    /// Pushes this item to the end edge of its row from the extra small breakpoint (from 0px) upwards.
+    /// Pushes this item to the end edge of its row from the large breakpoint (from 1280px) upwards.
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
     /// an item that is pushed to the end edge below this breakpoint falls back to <see cref="Offset"/> from it upwards.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public bool? AutoOffsetXs { get; set; }
-
-    /// <summary>
-    /// Pushes this item to the end edge of its row from the small breakpoint (from 600px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
-    /// an item that is pushed to the end edge below this breakpoint falls back to <see cref="Offset"/> from it upwards.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool? AutoOffsetSm { get; set; }
+    public bool? AutoOffsetLg { get; set; }
 
     /// <summary>
     /// Pushes this item to the end edge of its row from the medium breakpoint (from 960px) upwards.
@@ -185,14 +135,14 @@ public partial class BitGridItem : BitComponentBase
     public bool? AutoOffsetMd { get; set; }
 
     /// <summary>
-    /// Pushes this item to the end edge of its row from the large breakpoint (from 1280px) upwards.
+    /// Pushes this item to the end edge of its row from the small breakpoint (from 600px) upwards.
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
     /// an item that is pushed to the end edge below this breakpoint falls back to <see cref="Offset"/> from it upwards.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public bool? AutoOffsetLg { get; set; }
+    public bool? AutoOffsetSm { get; set; }
 
     /// <summary>
     /// Pushes this item to the end edge of its row from the extra large breakpoint (from 1920px) upwards.
@@ -205,6 +155,16 @@ public partial class BitGridItem : BitComponentBase
     public bool? AutoOffsetXl { get; set; }
 
     /// <summary>
+    /// Pushes this item to the end edge of its row from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
+    /// an item that is pushed to the end edge below this breakpoint falls back to <see cref="Offset"/> from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? AutoOffsetXs { get; set; }
+
+    /// <summary>
     /// Pushes this item to the end edge of its row from the extra extra large breakpoint (from 2560px) upwards.
     /// </summary>
     /// <remarks>
@@ -213,6 +173,46 @@ public partial class BitGridItem : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool? AutoOffsetXxl { get; set; }
+
+    /// <summary>
+    /// Sizes this item to its own content from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
+    /// an item that is sized to its content below this breakpoint is given its columns back from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? AutoSm { get; set; }
+
+    /// <summary>
+    /// Sizes this item to its own content from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
+    /// an item that is sized to its content below this breakpoint is given its columns back from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? AutoXl { get; set; }
+
+    /// <summary>
+    /// Sizes this item to its own content from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
+    /// an item that is sized to its content below this breakpoint is given its columns back from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? AutoXs { get; set; }
+
+    /// <summary>
+    /// Sizes this item to its own content from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// <c>false</c> is how an item that is sized to its content below this breakpoint is given its columns back
+    /// from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? AutoXxl { get; set; }
 
     /// <summary>
     /// The content of the Grid item.
@@ -268,24 +268,14 @@ public partial class BitGridItem : BitComponentBase
     public bool Grow { get; set; }
 
     /// <summary>
-    /// Lets this item grow into whatever width is left over in its row from the extra small breakpoint (from 0px) upwards.
+    /// Lets this item grow into whatever width is left over in its row from the large breakpoint (from 1280px) upwards.
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
     /// an item that grows below this breakpoint is given its columns back from it upwards.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public bool? GrowXs { get; set; }
-
-    /// <summary>
-    /// Lets this item grow into whatever width is left over in its row from the small breakpoint (from 600px) upwards.
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
-    /// an item that grows below this breakpoint is given its columns back from it upwards.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool? GrowSm { get; set; }
+    public bool? GrowLg { get; set; }
 
     /// <summary>
     /// Lets this item grow into whatever width is left over in its row from the medium breakpoint (from 960px) upwards.
@@ -298,14 +288,14 @@ public partial class BitGridItem : BitComponentBase
     public bool? GrowMd { get; set; }
 
     /// <summary>
-    /// Lets this item grow into whatever width is left over in its row from the large breakpoint (from 1280px) upwards.
+    /// Lets this item grow into whatever width is left over in its row from the small breakpoint (from 600px) upwards.
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
     /// an item that grows below this breakpoint is given its columns back from it upwards.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public bool? GrowLg { get; set; }
+    public bool? GrowSm { get; set; }
 
     /// <summary>
     /// Lets this item grow into whatever width is left over in its row from the extra large breakpoint (from 1920px) upwards.
@@ -318,6 +308,16 @@ public partial class BitGridItem : BitComponentBase
     public bool? GrowXl { get; set; }
 
     /// <summary>
+    /// Lets this item grow into whatever width is left over in its row from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
+    /// an item that grows below this breakpoint is given its columns back from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? GrowXs { get; set; }
+
+    /// <summary>
     /// Lets this item grow into whatever width is left over in its row from the extra extra large breakpoint (from 2560px) upwards.
     /// </summary>
     /// <remarks>
@@ -325,6 +325,26 @@ public partial class BitGridItem : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool? GrowXxl { get; set; }
+
+    /// <summary>
+    /// Number of columns this item should fill in the large breakpoint (from 1280px).
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and 0 hides the item
+    /// from this breakpoint upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public int? Lg { get; set; }
+
+    /// <summary>
+    /// Number of columns this item should fill in the medium breakpoint (from 960px).
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and 0 hides the item
+    /// from this breakpoint upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public int? Md { get; set; }
 
     /// <summary>
     /// Number of columns to leave empty before this item.
@@ -345,22 +365,13 @@ public partial class BitGridItem : BitComponentBase
     public int? Offset { get; set; }
 
     /// <summary>
-    /// Number of columns to leave empty before this item in the extra small breakpoint (from 0px).
+    /// Number of columns to leave empty before this item in the large breakpoint (from 1280px).
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public int? OffsetXs { get; set; }
-
-    /// <summary>
-    /// Number of columns to leave empty before this item in the small breakpoint (from 600px).
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public int? OffsetSm { get; set; }
+    public int? OffsetLg { get; set; }
 
     /// <summary>
     /// Number of columns to leave empty before this item in the medium breakpoint (from 960px).
@@ -372,13 +383,13 @@ public partial class BitGridItem : BitComponentBase
     public int? OffsetMd { get; set; }
 
     /// <summary>
-    /// Number of columns to leave empty before this item in the large breakpoint (from 1280px).
+    /// Number of columns to leave empty before this item in the small breakpoint (from 600px).
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public int? OffsetLg { get; set; }
+    public int? OffsetSm { get; set; }
 
     /// <summary>
     /// Number of columns to leave empty before this item in the extra large breakpoint (from 1920px).
@@ -388,6 +399,15 @@ public partial class BitGridItem : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? OffsetXl { get; set; }
+
+    /// <summary>
+    /// Number of columns to leave empty before this item in the extra small breakpoint (from 0px).
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public int? OffsetXs { get; set; }
 
     /// <summary>
     /// Number of columns to leave empty before this item in the extra extra large breakpoint (from 2560px).
@@ -415,22 +435,13 @@ public partial class BitGridItem : BitComponentBase
     public int? Order { get; set; }
 
     /// <summary>
-    /// Defines the position of this item among its siblings in the extra small breakpoint (from 0px).
+    /// Defines the position of this item among its siblings in the large breakpoint (from 1280px).
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public int? OrderXs { get; set; }
-
-    /// <summary>
-    /// Defines the position of this item among its siblings in the small breakpoint (from 600px).
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public int? OrderSm { get; set; }
+    public int? OrderLg { get; set; }
 
     /// <summary>
     /// Defines the position of this item among its siblings in the medium breakpoint (from 960px).
@@ -442,13 +453,13 @@ public partial class BitGridItem : BitComponentBase
     public int? OrderMd { get; set; }
 
     /// <summary>
-    /// Defines the position of this item among its siblings in the large breakpoint (from 1280px).
+    /// Defines the position of this item among its siblings in the small breakpoint (from 600px).
     /// </summary>
     /// <remarks>
     /// The value keeps applying to every wider breakpoint until another one replaces it.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public int? OrderLg { get; set; }
+    public int? OrderSm { get; set; }
 
     /// <summary>
     /// Defines the position of this item among its siblings in the extra large breakpoint (from 1920px).
@@ -460,20 +471,19 @@ public partial class BitGridItem : BitComponentBase
     public int? OrderXl { get; set; }
 
     /// <summary>
+    /// Defines the position of this item among its siblings in the extra small breakpoint (from 0px).
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public int? OrderXs { get; set; }
+
+    /// <summary>
     /// Defines the position of this item among its siblings in the extra extra large breakpoint (from 2560px).
     /// </summary>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? OrderXxl { get; set; }
-
-    /// <summary>
-    /// Number of columns this item should fill in the extra small breakpoint (from 0px).
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it, and 0 hides the item
-    /// from this breakpoint upwards.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public int? Xs { get; set; }
 
     /// <summary>
     /// Number of columns this item should fill in the small breakpoint (from 600px).
@@ -486,26 +496,6 @@ public partial class BitGridItem : BitComponentBase
     public int? Sm { get; set; }
 
     /// <summary>
-    /// Number of columns this item should fill in the medium breakpoint (from 960px).
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it, and 0 hides the item
-    /// from this breakpoint upwards.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public int? Md { get; set; }
-
-    /// <summary>
-    /// Number of columns this item should fill in the large breakpoint (from 1280px).
-    /// </summary>
-    /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it, and 0 hides the item
-    /// from this breakpoint upwards.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public int? Lg { get; set; }
-
-    /// <summary>
     /// Number of columns this item should fill in the extra large breakpoint (from 1920px).
     /// </summary>
     /// <remarks>
@@ -514,6 +504,16 @@ public partial class BitGridItem : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? Xl { get; set; }
+
+    /// <summary>
+    /// Number of columns this item should fill in the extra small breakpoint (from 0px).
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and 0 hides the item
+    /// from this breakpoint upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public int? Xs { get; set; }
 
     /// <summary>
     /// Number of columns this item should fill in the extra extra large breakpoint (from 2560px).

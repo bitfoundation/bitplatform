@@ -83,7 +83,7 @@ public partial class BitMarkdownEditorLegacy : BitComponentBase
 
 
 
-    protected override string RootElementClass => "bit-mde";
+    protected override string RootElementClass => "bit-mel";
 
     protected override void OnInitialized()
     {

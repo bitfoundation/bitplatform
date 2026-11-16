@@ -225,7 +225,7 @@
 @* ---------- Loading and invalid ---------- *@
 
 <E2ESection Id="loading" Title="Loading and invalid">
-    <BitOtpInput Id="otp-loading" Length="6" Type="BitInputType.Number" Invalid="_invalid" IsLoading="_isLoading"
+    <BitOtpInput Id="otp-loading" Length="6" Type="BitInputType.Number" Invalid="_invalid" Loading="_isLoading"
                  Description="@_loadingDescription" @bind-Value="_loadingValue" />
     <span id="loading-value">[@_loadingValue]</span>
     <button id="btn-toggle-loading" type="button" @onclick="() => _isLoading = !_isLoading">toggle loading</button>
@@ -328,7 +328,7 @@
     <span id="mounted">@_mounted</span>
     @if (_mounted)
     {
-        <BitOtpInput Id="otp-mount" Length="4" IsLoading="_mountLoading" />
+        <BitOtpInput Id="otp-mount" Length="4" Loading="_mountLoading" />
     }
 </E2ESection>
 

@@ -166,6 +166,12 @@ $rtm-private-properties: dir;
     padding-right: spacing(1);
 }
 
+// The room of a group separator between the rows: empty, so the engine's separator shows through it.
+.bit-rtm-rgp {
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
 .bit-rtm-rct {
     min-width: 0;
     overflow: hidden;
@@ -239,7 +245,8 @@ $rtm-private-properties: dir;
 // a template wider than it is cut off at its right edge rather than running past it, where the pointer, which a tooltip
 // does not take, could never scroll it into view.
 .bit-rtm-tov {
-    z-index: 2147483647;
+    // The layer of every tooltip of the library (BitTooltip): the floating surfaces.
+    z-index: $zindex-callout;
     position: fixed;
     overflow: hidden;
     pointer-events: none;

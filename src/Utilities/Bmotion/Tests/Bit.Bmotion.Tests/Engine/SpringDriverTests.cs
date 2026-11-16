@@ -24,6 +24,25 @@ public class SpringDriverTests
     }
 
     [TestMethod]
+    [DataRow(0.0, 10.0)]
+    [DataRow(0.0, 0.0)]
+    [DataRow(-50.0, 10.0)]
+    [DataRow(100.0, -5.0)]
+    public void ASpringThatCouldNeverSettle_StillSettlesOnItsTarget(double stiffness, double damping)
+    {
+        // Nothing pulling it to the target, or an oscillation that grows without bound: the rest test could never
+        // pass, and an exit with this spring kept its element mounted for good.
+        double lastValue = double.NaN;
+        var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = stiffness, Damping = damping }, v => lastValue = v);
+
+        bool done = false;
+        for (double ts = 0; !done && ts < 10_000; ts += 1000.0 / 60) done = driver.Tick(ts);
+
+        Assert.IsTrue(done, "the spring never came to rest");
+        Assert.AreEqual(100.0, lastValue, 1e-2);
+    }
+
+    [TestMethod]
     public void Tick_EventuallySettlesAtTarget()
     {
         double lastValue = double.NaN;
@@ -357,5 +376,22 @@ public class SpringDriverTests
             if (driver.Tick(ts)) return ticks;
         }
         return -1;
+    }
+
+    [TestMethod]
+    [DataRow(0.0, 10.0)]
+    [DataRow(0.0, 0.0)]
+    [DataRow(-50.0, 10.0)]
+    [DataRow(100.0, -5.0)]
+    public void ASpringThatCouldNeverSettle_IsScheduledForTheSpringThatRuns(double stiffness, double damping)
+    {
+        // The driver runs it with the defaults: what waits on it (BeforeChildren, a timeline's duration) waits that
+        // long, not for the 10s cap an estimate of the configured physics would hit.
+        var config = new BmotionTransitionConfig { Type = BmotionTransitionType.Spring, Stiffness = stiffness, Damping = damping };
+        var defaults = new BmotionTransitionConfig { Type = BmotionTransitionType.Spring };
+
+        Assert.AreEqual(defaults.EstimatedDurationSeconds(), config.EstimatedDurationSeconds(), 1e-9);
+        Assert.AreEqual(defaults.TotalSeconds(), config.TotalSeconds(), 1e-9);
+        Assert.IsLessThan(10.0, config.EstimatedDurationSeconds());
     }
 }

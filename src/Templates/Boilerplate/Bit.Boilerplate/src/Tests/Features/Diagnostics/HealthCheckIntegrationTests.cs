@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Diagnostics;
 using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Infrastructure.HealthChecks;
+using Boilerplate.Server.Shared.Infrastructure.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
@@ -359,7 +360,7 @@ public partial class HealthCheckIntegrationTests
         ["hangfire"] = HealthCheckCategories.Platform,
         ["appCertificate"] = HealthCheckCategories.Platform,
         ["userProfileImages"] = HealthCheckCategories.Platform,
-        ["websites"] = HealthCheckCategories.Websites,
+        ["website:https://site.invalid/"] = HealthCheckCategories.Websites,
         //#if (redis == true)
         ["StackExchange.Redis_redis-persistent"] = HealthCheckCategories.Platform,
         ["StackExchange.Redis_redis-cache"] = HealthCheckCategories.Platform,
@@ -417,16 +418,17 @@ public partial class HealthCheckIntegrationTests
     /// </summary>
     /// <summary>
     /// The project's other sites in <c>HealthChecks:Websites</c>, given as one value the way a single environment or GitHub
-    /// variable carries them and as a list, are each requested over HTTP: one that answers stays out of the data, and each
-    /// one that failed is in it with what went wrong. The check runs directly, as the detailed report needs an operator.
+    /// variable carries them and as a list, each get a check of their own, so the Operations page shows a card for each, and
+    /// a site listed twice gets one. Each request carries a new <c>v</c> by default, which <c>/up</c> requires. Each one that
+    /// failed says what went wrong. The checks run directly, as the detailed report needs an operator.
     /// </summary>
     [TestMethod]
-    public async Task Websites_Should_SayWhatWentWrongWithEachSiteThatFailed()
+    public async Task Websites_Should_EachGetACheck_ThatSaysWhatWentWrong()
     {
         // Sites of the project's own: one that answers, one that's down and one whose redirect ends in a missing page.
         await using var sites = WebApplication.CreateSlimBuilder().Build();
         sites.Urls.Add("http://127.0.0.1:0");
-        sites.MapGet("/up", () => "up");
+        sites.MapGet("/up", (Guid v) => "up");
         sites.MapGet("/down", () => Results.StatusCode(StatusCodes.Status503ServiceUnavailable));
         sites.MapGet("/moved", () => Results.Redirect("/gone"));
         await sites.StartAsync(TestContext.CancellationToken);
@@ -436,25 +438,28 @@ public partial class HealthCheckIntegrationTests
 
         await server.Build(configureTestConfiguration: configuration =>
         {
-            configuration["HealthChecks:Websites"] = $"{origin}/up, {origin}/down site.invalid";
+            configuration["HealthChecks:Websites"] = $"{origin}/up, {origin}/down site.invalid https://SITE.invalid/";
             configuration["HealthChecks:Websites:0"] = $"{origin}/moved";
             configuration["HealthChecks:Websites:1"] = "ftp://files.example.com";
         }).Start(TestContext.CancellationToken);
 
-        var registration = server.ApiApp.Services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations.Single(r => r.Name == "websites");
-        Assert.IsLessThan(TimeSpan.FromSeconds(15), registration.Timeout, "A monitor waits about 15 seconds for /health, so the check must end well before.");
+        var registrations = server.ApiApp.Services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations
+            .Where(r => r.Tags.Contains(HealthCheckCategories.Websites)).ToArray();
+
+        Assert.AreSequenceEqual(new[] { $"website:{origin}/up", $"website:{origin}/down", "website:https://site.invalid/", $"website:{origin}/moved", "website:ftp://files.example.com" },
+            registrations.Select(r => r.Name).ToArray());
+        Assert.IsTrue(registrations.All(r => r.Timeout < TimeSpan.FromSeconds(15)), "A monitor waits about 15 seconds for /health, so each check must end well before.");
+        Assert.AreEqual("site.invalid", server.ApiApp.Services.GetRequiredService<IOptions<HealthCheckDescriptions>>().Value["website:https://site.invalid/"].Title);
 
         var report = await server.ApiApp.Services.GetRequiredService<HealthCheckService>()
-            .CheckHealthAsync(r => r.Name == "websites", TestContext.CancellationToken);
-        var entry = report.Entries["websites"];
+            .CheckHealthAsync(r => r.Tags.Contains(HealthCheckCategories.Websites), TestContext.CancellationToken);
 
-        Assert.AreEqual(HealthStatus.Degraded, entry.Status, entry.Description);
-        Assert.AreEqual("4 of 5 sites failed", entry.Description);
-        Assert.DoesNotContain(site => site.EndsWith("/up", StringComparison.Ordinal), entry.Data.Keys, "A site that answers stays out of the data.");
-        Assert.AreEqual("503 Service Unavailable.", entry.Data[$"{origin}/down"]);
-        Assert.AreEqual("404 Not Found.", entry.Data[$"{origin}/moved"], "The status is the one the redirects end in.");
-        Assert.AreEqual("Its name doesn't resolve.", entry.Data["https://site.invalid/"]);
-        Assert.AreEqual("Not an http or https address.", entry.Data["ftp://files.example.com"]);
+        Assert.AreEqual(HealthStatus.Healthy, report.Entries[$"website:{origin}/up"].Status, report.Entries[$"website:{origin}/up"].Description);
+        Assert.AreEqual("503 Service Unavailable.", report.Entries[$"website:{origin}/down"].Description);
+        Assert.AreEqual("404 Not Found.", report.Entries[$"website:{origin}/moved"].Description, "The status is the one the redirects end in.");
+        Assert.AreEqual("Its name doesn't resolve.", report.Entries["website:https://site.invalid/"].Description);
+        Assert.AreEqual("Not an http or https address.", report.Entries["website:ftp://files.example.com"].Description);
+        Assert.AreEqual(4, report.Entries.Values.Count(entry => entry.Status is HealthStatus.Degraded), "A site that failed reports Degraded, not Unhealthy.");
     }
 
     [TestMethod]
@@ -499,7 +504,7 @@ public partial class HealthCheckIntegrationTests
 
         string[] expectedExternalChecks =
         [
-            "userProfileImages", "websites", "smtp", "emailDelivery", "sms", "keycloakIdentity", "entraId", "appleSignIn",
+            "userProfileImages", "website:https://site.invalid/", "smtp", "emailDelivery", "sms", "keycloakIdentity", "entraId", "appleSignIn",
             //#if (captcha == "reCaptcha")
             "reCaptcha",
             //#endif

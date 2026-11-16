@@ -39,17 +39,17 @@ public partial class BitMarkdownViewerLegacyDemo
         },
         new()
         {
-           Name = "OnParsing",
-           Type = "EventCallback<string?>",
-           DefaultValue = "null",
-           Description = "A callback that is called before starting to parse the markdown.",
-        },
-        new()
-        {
            Name = "OnParsed",
            Type = "EventCallback<string?>",
            DefaultValue = "null",
            Description = "A callback that is called after parsing the markdown.",
+        },
+        new()
+        {
+           Name = "OnParsing",
+           Type = "EventCallback<string?>",
+           DefaultValue = "null",
+           Description = "A callback that is called before starting to parse the markdown.",
         },
         new()
         {

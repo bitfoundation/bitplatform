@@ -115,6 +115,14 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask<BmotionBoundingRect?> GetBoundingRectAsync(string elementId, BmotionMeasureOptions options = default);
 
     /// <summary>
+    /// The element's box where the layout places it: its <see cref="GetBoundingRectAsync"/> rect with the translation it
+    /// shows backed out (its transform, an animation of it in flight included, and a drag shown ahead of .NET), both
+    /// read in one measurement - so they describe the same moment, which reading the translation from the engine
+    /// after a round trip would not. Defaults to <see cref="GetBoundingRectAsync"/>, backing nothing out.
+    /// </summary>
+    ValueTask<BmotionBoundingRect?> GetLayoutBoxAsync(string elementId) => GetBoundingRectAsync(elementId);
+
+    /// <summary>
     /// <see cref="GetBoundingRectAsync"/> for the snapshot taken before a re-render, which also holds the element
     /// where it is through that render until its FLIP arrives - or <see cref="ReleaseLayoutHoldAsync"/>. Without
     /// synchronous interop the FLIP is a round trip behind the render, and the element would show at its new place

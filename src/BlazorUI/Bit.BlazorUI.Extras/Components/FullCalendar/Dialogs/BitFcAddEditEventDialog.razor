@@ -7,7 +7,7 @@
        the dialog because focus is trapped inside it while it is open. data-bit-esc claims that press (see
        Utils.claimEscape), so a surface the calendar sits in (a BitModal, a BitPanel) does not close on it too -
        during a save as well, when the press does nothing. *@
-    <div @ref="_dialogRef" class="bit-bfc-dialog @Parts.Classes?.Dialog" style="@Parts.Styles?.Dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1"
+    <div id="@_dialogId" @ref="_dialogRef" class="bit-bfc-dialog @Parts.Classes?.Dialog" style="@Parts.Styles?.Dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1"
          data-bit-esc="claim"
          @onkeydown="OnDialogKeyDown" @onclick:stopPropagation="true"
          @onmousedown="() => _pressStartedOnOverlay = false" @onmousedown:stopPropagation="true">

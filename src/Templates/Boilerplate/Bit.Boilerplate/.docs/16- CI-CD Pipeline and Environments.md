@@ -24,7 +24,7 @@ runs in: `Development`, `Test`, `Staging` or `Production`.
 
 | Workflow | Runs on | Does |
 | --- | --- | --- |
-| `ci.yml` | by hand: `bit ci` on your machine, or on GitHub; and before every deployment | checks the formatting, builds the whole solution with the code style enforced, checks the api's compatibility and runs every test |
+| `ci.yml` | before every deployment, called by `cd-template.yml`; by hand only when truly needed | checks the formatting, builds the whole solution with the code style enforced, checks the api's compatibility and runs every test |
 | `cd-test.yml` | by hand, on any branch | deploys that branch to the Test environment |
 | `cd-production.yml` | by hand, and once its `push` trigger is on, every push to `main` that changes the app | deploys the Production environment |
 | `cd-template.yml` | called by the two above | the jobs both deployments share, with `ENV_NAME` naming the environment |
@@ -46,22 +46,25 @@ one to the docs, the tests or the agent files doesn't spend the plan's Actions m
 workflow queue up instead of overlapping, and one that has started is never cancelled halfway. Each CD runs `ci.yml`
 first, alongside the server's build, and deploys or publishes nothing until it passes.
 
-## Running CI on your machine
+## CI runs in CD
 
-A pull request starts no workflow, so its pushes spend none of the plan's Actions minutes. Run `ci.yml` before asking for
-a review, or before merging:
+A private repository's Actions minutes are limited, so CI never runs on its own, only on GitHub as part of each CD: a
+pull request starts no workflow, and a push starts one only through the Production CD, once its `push` trigger is on.
+Before opening a pull request, and after each round of changes, run the formatting check CI runs, from the project's
+root, and the tests that cover the change:
 
 ```bash
-bit ci
+dotnet format whitespace --folder . --verify-no-changes
+cd src/Tests && dotnet test --filter "FullyQualifiedName~<the change's test class>"
 ```
 
-It runs the workflow's steps with [act](https://nektosact.com) on this machine itself, not in a container, with the .NET
-SDK, workloads, NuGet packages, Playwright's browsers and Android SDK that `bit setup` installed here, so a run downloads
-nothing again. act runs them on a copy of the project's files without what `.gitignore` leaves out, such as `bin` and
-`obj`: each run builds from scratch, and the app can keep running from the project's folder meanwhile. On Windows the
-steps run in PowerShell 7 rather than bash, so `ci.yml`'s commands are ones both run. The CI each CD runs on GitHub's Linux
-runners is still the clean check. `bit setup` installs act and PowerShell 7 along with the rest. Extra arguments go to act as they are,
-such as `bit ci -- --list`. To run it on GitHub instead: `gh workflow run ci.yml --ref <branch>`.
+<!--#if (advancedTests == true)-->
+A change to the Workbench or the landing page runs that filter in `src/WorkbenchTests` or
+`src/LandingPage/Boilerplate.LandingPage.Tests` instead, where their tests are.
+<!--#endif-->
+
+The whole suite then runs in the CI of the next deployment, the Test CD of the branch included, which deploys nothing
+until it passes. To run CI on GitHub without deploying, only when it is truly needed: `gh workflow run ci.yml --ref <branch>`.
 
 In a public repository, every build also gets a signed attestation of the commit and the run that made it, which
 `gh attestation verify` checks, and the About page links to them.

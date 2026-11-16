@@ -17,8 +17,6 @@ public static partial class ToolCatalog
         new HomebrewTool(),
         new WslTool(),
         new DockerTool(),
-        new ActTool(),
-        new PowerShellTool(),
         new AspireCliTool(),
         new DevCertificateTool(),
         new LongPathsTool(),
@@ -46,7 +44,7 @@ public static partial class ToolCatalog
             }
         }));
 
-        var checks = applicable.Select((tool, i) => new ToolCheck(tool, statuses[i], tool.IsNeeded(context), tool.Why(context), statuses[i].IsSatisfied ? null : tool.PlanInstall(context, statuses[i]), tool.ManualInstructions(context))).ToList();
+        var checks = applicable.Select((tool, i) => new ToolCheck(tool, statuses[i], tool.IsNeeded(context), tool.Why(context), statuses[i].IsSatisfied ? null : tool.PlanInstall(context, statuses[i]), tool.ManualInstructions(context, statuses[i]))).ToList();
 
         var dockerMissing = checks.Any(c => c.Tool is DockerTool && c.Status.State is ToolState.Missing);
         checks.RemoveAll(c => c.Tool is WslTool && dockerMissing is false);
@@ -56,7 +54,7 @@ public static partial class ToolCatalog
             checks[docker] = checks[docker] with { Action = DockerTool.AfterWslRestart(checks[docker].Action!) };
         }
 
-        var brewNeeded = checks.Any(c => c.Status.IsSatisfied is false && c.Tool is not HomebrewTool && c.Action is null && context.Environment.IsMacOS && context.PackageManagers.Brew is null && c.Tool is NodeTool or GitTool or DockerTool or ActTool or PowerShellTool or VsCodeTool);
+        var brewNeeded = checks.Any(c => c.Status.IsSatisfied is false && c.Tool is not HomebrewTool && c.Action is null && context.Environment.IsMacOS && context.PackageManagers.Brew is null && c.Tool is NodeTool or GitTool or DockerTool or VsCodeTool);
         checks.RemoveAll(c => c.Tool is HomebrewTool && (c.Status.IsSatisfied || brewNeeded is false));
 
         return checks;
@@ -111,6 +109,24 @@ public static partial class ToolCatalog
             ? "podman"
             : null;
     }
+
+    internal const int DockerEngineDidntAnswer = 2;
+
+    private const int DockerEngineWaitSeconds = 180;
+
+    internal static ProcessSpec WaitForDockerEngine(CliEnvironment environment) => environment.IsWindows
+        ? new ProcessSpec
+        {
+            FileName = "powershell.exe",
+            Arguments = ["-NoProfile", "-NonInteractive", "-Command", $"$deadline = (Get-Date).AddSeconds({DockerEngineWaitSeconds}); while ((Get-Date) -lt $deadline) {{ docker version --format '{{{{.Server.Version}}}}' *> $null; if ($LASTEXITCODE -eq 0) {{ exit 0 }}; Start-Sleep -Seconds 2 }}; exit {DockerEngineDidntAnswer}"],
+            Timeout = TimeSpan.FromSeconds(DockerEngineWaitSeconds + 60)
+        }
+        : new ProcessSpec
+        {
+            FileName = "/bin/sh",
+            Arguments = ["-c", $"i=0; while [ $i -lt {DockerEngineWaitSeconds / 2} ]; do docker version --format '{{{{.Server.Version}}}}' >/dev/null 2>&1 && exit 0; sleep 2; i=$((i+1)); done; exit {DockerEngineDidntAnswer}"],
+            Timeout = TimeSpan.FromSeconds(DockerEngineWaitSeconds + 60)
+        };
 
     public static string? DotnetRoot(ToolContext context) => DotnetRoot(context.Runner);
 
@@ -639,17 +655,12 @@ public static partial class ToolCatalog
                 {
                     HostOs.Windows when status.Detail is PodmanWithoutMachine or PodmanMachineStopped && FindPodman(context) is { } podman
                         => new ToolAction { ToolId = Id, Title = "Start Podman", Commands = PodmanMachine(podman, init: status.Detail is PodmanWithoutMachine) },
-                    HostOs.Windows when FindDockerDesktop(context) is { } desktop => new ToolAction
-                    {
-                        ToolId = Id,
-                        Title = "Start Docker Desktop",
-                        Commands = [new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-Command", $"Start-Process -FilePath '{desktop.Replace("'", "''", StringComparison.Ordinal)}'"] }],
-                        AfterInstall = "Docker Desktop is starting; accept its terms if it asks."
-                    },
+                    HostOs.Windows when FindDockerDesktop(context) is { } desktop
+                        => StartDockerDesktop(context, new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-Command", $"Start-Process -FilePath '{desktop.Replace("'", "''", StringComparison.Ordinal)}'"] }),
                     HostOs.MacOS when context.Runner.FindExecutable("colima") is { } colima
                         => new ToolAction { ToolId = Id, Title = "Start Colima", Commands = [new ProcessSpec { FileName = colima, Arguments = ["start"], Timeout = TimeSpan.FromMinutes(15) }] },
                     HostOs.MacOS when Directory.Exists("/Applications/Docker.app")
-                        => new ToolAction { ToolId = Id, Title = "Start Docker Desktop", Commands = [new ProcessSpec { FileName = "open", Arguments = ["-a", "Docker"] }] },
+                        => StartDockerDesktop(context, new ProcessSpec { FileName = "open", Arguments = ["-a", "Docker"] }),
                     HostOs.MacOS => Colima(context),
                     HostOs.Linux when status.Detail is DockerWithoutAccess
                         => new ToolAction { ToolId = Id, Title = "Enable Docker for your user", Elevation = Elevation.Sudo, AfterInstall = SignOutAndIn, Commands = [JoinDockerGroup(context)] },
@@ -689,6 +700,18 @@ public static partial class ToolCatalog
             HostOs.Windows => "https://podman.io/docs/installation#windows",
             HostOs.MacOS => "https://github.com/abiosoft/colima#installation",
             _ => "https://docs.docker.com/engine/install/"
+        };
+
+        public override string? ManualInstructions(ToolContext context, ToolStatus status) => status.State is ToolState.NotRunning
+            ? "start Docker Desktop, or whatever runs the engine of your docker command"
+            : ManualInstructions(context);
+
+        private ToolAction StartDockerDesktop(ToolContext context, ProcessSpec start) => new()
+        {
+            ToolId = Id,
+            Title = "Start Docker Desktop",
+            Commands = [start, WaitForDockerEngine(context.Environment)],
+            Partial = new PartialSuccess(DockerEngineDidntAnswer, $"it didn't answer within {DockerEngineWaitSeconds / 60} minutes", "Docker Desktop may be waiting for you to accept its terms or sign in. Aspire needs it running.", StepStatus.Warning)
         };
 
         private static ProcessSpec JoinDockerGroup(ToolContext context) => PackageManagers.Sudo("usermod", "-aG", "docker", context.Environment.GetVariable("USER") ?? Environment.UserName);
@@ -747,94 +770,25 @@ public static partial class ToolCatalog
 
         private static string? FindDockerDesktop(ToolContext context)
         {
-            var path = Path.Combine(context.Environment.GetVariable("ProgramFiles") ?? @"C:\Program Files", "Docker", "Docker", "Docker Desktop.exe");
-            return File.Exists(path) ? path : null;
-        }
-    }
+            var folders = new List<string?>();
 
-    private sealed class ActTool : Tool
-    {
-        public override string Id => "act";
-
-        public override string Name => "act";
-
-        public override bool AppliesInCi(ToolContext context) => false;
-
-        public override bool AppliesTo(ToolContext context) => context.Needs.Ci;
-
-        public override string Why(ToolContext context) => "bit ci runs the project's CI workflow on this machine with it";
-
-        public override bool IsNeeded(ToolContext context) => true;
-
-        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
-        {
-            var result = await context.RunAsync("act", ["--version"], cancellationToken);
-            return result.Succeeded ? ToolStatus.Installed(ParseVersion(result.Output)?.ToString()) : ToolStatus.Missing();
-        }
-
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
-        {
-            var action = context.Environment.Os switch
+            for (var folder = Path.GetDirectoryName(context.Runner.FindExecutable("docker")); folder is not null && folders.Count < 3; folder = Path.GetDirectoryName(folder))
             {
-                HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install act", "nektos.act", admin: false),
-                HostOs.MacOS => context.PackageManagers.BrewInstall(Id, "Install act", "act"),
-                _ => new ToolAction
-                {
-                    ToolId = Id,
-                    Title = "Install act",
-                    Elevation = Elevation.Sudo,
-                    Commands = [PackageManagers.Sudo("bash", "-c", "set -o pipefail; curl --proto '=https' -fsSL https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s -- -b /usr/local/bin")]
-                }
-            };
+                folders.Add(folder);
+            }
 
-            // The app builds and runs without it; only bit ci needs it.
-            return action is null ? null : action with { Optional = true };
+            folders.Add(OperatingSystem.IsWindows() ? RegisteredDockerDesktop() : null);
+            folders.Add(Path.Combine(context.Environment.GetVariable("ProgramFiles") ?? @"C:\Program Files", "Docker", "Docker"));
+
+            return folders.OfType<string>().Select(folder => Path.Combine(folder, "Docker Desktop.exe")).FirstOrDefault(File.Exists);
         }
 
-        public override string? ManualInstructions(ToolContext context) => "https://nektosact.com/installation/";
-    }
-
-    private sealed class PowerShellTool : Tool
-    {
-        public override string Id => "pwsh";
-
-        public override string Name => "PowerShell 7";
-
-        public override bool AppliesInCi(ToolContext context) => false;
-
-        public override bool AppliesTo(ToolContext context) => context.Needs.Ci;
-
-        public override string Why(ToolContext context) => "bit ci runs the workflow's steps in it, as GitHub's runners do";
-
-        public override bool IsNeeded(ToolContext context) => true;
-
-        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
+        [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+        private static string? RegisteredDockerDesktop()
         {
-            var result = await context.RunAsync("pwsh", ["--version"], cancellationToken);
-            return result.Succeeded ? ToolStatus.Installed(ParseVersion(result.Output)?.ToString()) : ToolStatus.Missing();
+            using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Docker Desktop");
+            return (key?.GetValue("InstallLocation") as string) is { Length: > 0 } location ? location : null;
         }
-
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
-        {
-            var action = context.Environment.Os switch
-            {
-                HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install PowerShell 7", "Microsoft.PowerShell"),
-                HostOs.MacOS => context.PackageManagers.BrewInstall(Id, "Install PowerShell 7", "powershell", cask: true),
-                _ when context.PackageManagers.Snap is not null => new ToolAction
-                {
-                    ToolId = Id,
-                    Title = "Install PowerShell 7",
-                    Elevation = Elevation.Sudo,
-                    Commands = [PackageManagers.Sudo("snap", "install", "powershell", "--classic")]
-                },
-                _ => null
-            };
-
-            // The app builds and runs without it; only bit ci needs it.
-            return action is null ? null : action with { Optional = true };
-        }
-
-        public override string? ManualInstructions(ToolContext context) => "https://aka.ms/install-powershell";
     }
 
     private sealed class AspireCliTool : Tool

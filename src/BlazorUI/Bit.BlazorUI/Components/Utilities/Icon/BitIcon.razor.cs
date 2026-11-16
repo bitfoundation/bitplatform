@@ -43,6 +43,17 @@ public partial class BitIcon : BitComponentBase
     public BitIconAnimation? Animation { get; set; }
 
     /// <summary>
+    /// Waits this long before the <see cref="Animation"/> starts, as any CSS time.
+    /// </summary>
+    /// <remarks>
+    /// One animation waiting is not worth much; a row of them each waiting a little longer than the one
+    /// before it is the loader written as three dots rather than as a spinner. The wait is not slowed
+    /// down under reduced motion the way the cycle is - a delay is not motion.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? AnimationDelay { get; set; }
+
+    /// <summary>
     /// Overrides how long one cycle of the <see cref="Animation"/> takes, as any CSS time.
     /// </summary>
     /// <remarks>
@@ -54,17 +65,6 @@ public partial class BitIcon : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? AnimationDuration { get; set; }
-
-    /// <summary>
-    /// Waits this long before the <see cref="Animation"/> starts, as any CSS time.
-    /// </summary>
-    /// <remarks>
-    /// One animation waiting is not worth much; a row of them each waiting a little longer than the one
-    /// before it is the loader written as three dots rather than as a spinner. The wait is not slowed
-    /// down under reduced motion the way the cycle is - a delay is not motion.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? AnimationDelay { get; set; }
 
     /// <summary>
     /// How many times the <see cref="Animation"/> plays before it stops. Left unset, it loops for as

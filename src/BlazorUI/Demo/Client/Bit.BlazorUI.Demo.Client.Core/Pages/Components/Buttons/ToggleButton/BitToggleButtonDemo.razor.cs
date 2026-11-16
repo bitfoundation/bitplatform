@@ -64,6 +64,13 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
+            Name = "Checked",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines if the toggle button is in the checked state.",
+        },
+        new()
+        {
             Name = "CheckMarkIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -103,10 +110,10 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "DefaultIsChecked",
+            Name = "DefaultChecked",
             Type = "bool?",
             DefaultValue = "null",
-            Description = "Default value of the IsChecked parameter.",
+            Description = "Default value of the Checked parameter.",
         },
         new()
         {
@@ -161,14 +168,7 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "IsChecked",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines if the toggle button is in the checked state.",
-        },
-        new()
-        {
-            Name = "IsLoading",
+            Name = "Loading",
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines whether the toggle button is in the loading state, which covers its content with a spinner and prevents subsequent clicks unless Reclickable is enabled. While the clicks are refused the toggle button renders aria-disabled beside aria-busy, and the content stays in place behind the spinner, so the accessible name does not disappear while it is busy.",
@@ -281,7 +281,7 @@ public partial class BitToggleButtonDemo
         {
             Name = "OnChange",
             Type = "EventCallback<bool>",
-            Description = "Callback for when the IsChecked value has changed.",
+            Description = "Callback for when the Checked value has changed.",
         },
         new()
         {
@@ -1030,7 +1030,7 @@ public partial class BitToggleButtonDemo
     [
         new()
         {
-            DefaultIsChecked = true,
+            DefaultChecked = true,
             Variant = BitVariant.Outline
         }
     ];

@@ -5,12 +5,15 @@ public partial class BitFcBody
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
-    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? DayEventTemplate { get; set; }
+
+    [Parameter] public bool Loading { get; set; }
 
     [Parameter] public RenderFragment<BitFullCalendarEvent>? MonthEventTemplate { get; set; }
-    [Parameter] public RenderFragment<BitFullCalendarEvent>? WeekEventTemplate { get; set; }
-    [Parameter] public RenderFragment<BitFullCalendarEvent>? DayEventTemplate { get; set; }
+
     [Parameter] public RenderFragment<BitFullCalendarEvent>? TimelineEventTemplate { get; set; }
+
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? WeekEventTemplate { get; set; }
 
     // The tab strips render only with the toolbar, the view strip only with more than one view and the mode strip
     // only while Timeline is reachable - and the panel role is worth stating only when a tab actually controls it.

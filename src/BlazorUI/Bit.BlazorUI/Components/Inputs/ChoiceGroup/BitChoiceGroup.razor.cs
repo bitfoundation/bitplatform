@@ -192,13 +192,6 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     public bool Invalid { get; set; }
 
     /// <summary>
-    /// Sets the data source that populates the items of the list.
-    /// The values of built-in items of another T than TValue are read as TValue when they are one or convert to one, like
-    /// those of BitChoiceGroupItem&lt;Guid&gt; items in a ChoiceGroup of Guid?, unless NameSelectors say how the items are read.
-    /// </summary>
-    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
-
-    /// <summary>
     /// Used to customize the label for the Item Label content.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemLabelTemplate { get; set; }
@@ -207,6 +200,13 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Used to add a prefix to each item.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemPrefixTemplate { get; set; }
+
+    /// <summary>
+    /// Sets the data source that populates the items of the list.
+    /// The values of built-in items of another T than TValue are read as TValue when they are one or convert to one, like
+    /// those of BitChoiceGroupItem&lt;Guid&gt; items in a ChoiceGroup of Guid?, unless NameSelectors say how the items are read.
+    /// </summary>
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Used to add a suffix to each item, rendered after the content of the item.

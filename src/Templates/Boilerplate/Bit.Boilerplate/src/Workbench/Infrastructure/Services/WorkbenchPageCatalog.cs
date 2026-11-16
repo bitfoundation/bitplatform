@@ -4,14 +4,25 @@ using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
 //#endif
 using Boilerplate.Workbench.Components.Pages.AppPages.Settings.Data;
 
+[assembly: System.Reflection.Metadata.MetadataUpdateHandler(typeof(Boilerplate.Workbench.Infrastructure.Services.WorkbenchPageCatalog))]
+
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
-/// The pages the Workbench shows, with their texts, icons, categories, design options and switches. A new page is added here.
+/// The pages the Workbench shows, with their texts, icons, categories, design options and switches. A new page is added here,
+/// in <see cref="Build"/>, and shows up while the Workbench runs: hot reload applies an edit to a method, not to an
+/// initializer, which would need a restart, and <see cref="ClearCache"/> has the list built again after it.
 /// </summary>
 public static class WorkbenchPageCatalog
 {
-    public static IReadOnlyList<WorkbenchPageInfo> Pages { get; } =
+    private static IReadOnlyList<WorkbenchPageInfo>? pages;
+
+    public static IReadOnlyList<WorkbenchPageInfo> Pages => pages ??= Build();
+
+    /// <summary>Called by hot reload after it applies an edit (<see cref="System.Reflection.Metadata.MetadataUpdateHandlerAttribute"/>).</summary>
+    public static void ClearCache(Type[]? updatedTypes) => pages = null;
+
+    private static IReadOnlyList<WorkbenchPageInfo> Build() =>
     [
         new("theme",
             nameof(WorkbenchStrings.ThemePageTitle),

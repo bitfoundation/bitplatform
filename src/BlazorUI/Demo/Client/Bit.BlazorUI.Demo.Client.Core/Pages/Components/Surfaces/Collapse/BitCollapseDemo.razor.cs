@@ -38,17 +38,17 @@ public partial class BitCollapseDemo
         },
         new()
         {
-            Name = "CollapseDuration",
-            Type = "int?",
-            DefaultValue = "null",
-            Description = "The duration of the collapse transition in ms, which overrides Duration while the collapse is closing and leaves the opening alone."
-        },
-        new()
-        {
             Name = "CollapsedSize",
             Type = "string?",
             DefaultValue = "null",
             Description = "The size the collapse keeps while it is collapsed, as any CSS length, which leaves a peek of the content on the page instead of closing it all the way. It is a width instead of a height while Horizontal is on."
+        },
+        new()
+        {
+            Name = "CollapseDuration",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The duration of the collapse transition in ms, which overrides Duration while the collapse is closing and leaves the opening alone."
         },
         new()
         {

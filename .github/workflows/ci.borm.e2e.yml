@@ -1,6 +1,7 @@
 name: CI Borm E2E
 
-# The browser suite: the demo (prerendered, then running on WebAssembly) driven in Chromium with Playwright. It
+# The browser suite: the demo (prerendered, then running on WebAssembly), published the way cd.borm.demo.yml
+# publishes it, driven in Chromium with Playwright. It
 # takes far longer than the build-and-unit pipeline (ci.borm.yml), so it runs only when started by hand. See
 # src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E/README.md for what it proves and how to run it locally.
 
@@ -41,19 +42,40 @@ jobs:
       with:
         node-version: 24
 
-    # The workloads of what this job builds, not of the whole solution, whose MAUI sample would bring maui-android.
-    - name: dotnet workload restore
-      run: cd src/Utilities/Borm && dotnet workload restore Demo/Server/Bit.Borm.Demo.Server.csproj
+    # What cd.borm.demo.yml installs before it publishes the demo, not the workloads of the whole solution, whose MAUI
+    # sample would bring maui-android.
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
 
-    - name: Build the demo and the E2E suite
-      run: |
-        dotnet build src/Utilities/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj -c Release
-        dotnet build src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E/Bit.Borm.Tests.E2E.csproj -c Release
+    # The tests drive the demo published the way cd.borm.demo.yml publishes it, not a build output: only a publish
+    # trims the WebAssembly client and applies InvariantGlobalization, which the deployed site runs with - Borm itself
+    # opts out of trimming, but the client around it and the framework do not.
+    - name: Publish the demo
+      run: dotnet publish src/Utilities/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o demo -p:InvariantGlobalization=true
+
+    - name: Build the E2E suite
+      run: dotnet build src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E/Bit.Borm.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
       run: pwsh src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
+    # In the Production environment it is deployed to. cd.borm.demo.yml strips the appsettings files from what it ships
+    # because the server keeps its own copies, which CI does not have, so the repository's appsettings.json stays as
+    # the stand-in for them: a setting only the server's copy holds is not exercised here.
+    - name: Start the published demo
+      run: |
+        cd demo
+        nohup dotnet Bit.Borm.Demo.Server.dll --urls http://127.0.0.1:5000 > ../demo.log 2>&1 &
+        for attempt in $(seq 1 60); do
+          curl --silent --fail --output /dev/null http://127.0.0.1:5000/ && exit 0
+          sleep 2
+        done
+        cat ../demo.log
+        exit 1
+
     - name: Run E2E tests
+      env:
+        BORM_E2E_BASE_URL: http://127.0.0.1:5000
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
         cd src/Utilities/Borm/Tests/Bit.Borm.Tests.E2E &&
@@ -65,5 +87,7 @@ jobs:
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: borm-e2e
-        path: '**/borm-e2e.trx'
+        path: |
+          **/borm-e2e.trx
+          demo.log
         if-no-files-found: ignore

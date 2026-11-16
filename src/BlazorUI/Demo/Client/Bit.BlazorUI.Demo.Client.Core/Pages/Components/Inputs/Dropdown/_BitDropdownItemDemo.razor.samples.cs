@@ -1363,21 +1363,21 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     }
 </style>
 
-<BitDropdown Label=""IsLoading""
-             IsLoading
+<BitDropdown Label=""Loading""
+             Loading
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item"" />
 
 <BitDropdown Label=""LoadingText""
-             IsLoading
+             Loading
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
              LoadingText=""Fetching the products..."" />
 
 <BitDropdown Label=""LoadingTemplate""
-             IsLoading
+             Loading
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item"">
@@ -1389,9 +1389,9 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     </LoadingTemplate>
 </BitDropdown>
 
-<BitButton OnClick=""LoadDelayedItems"" IsLoading=""isLoadingItems"">Load the items</BitButton>
+<BitButton OnClick=""LoadDelayedItems"" Loading=""isLoadingItems"">Load the items</BitButton>
 <BitDropdown Label=""Products""
-             IsLoading=""isLoadingItems""
+             Loading=""isLoadingItems""
              Items=""delayedItems""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item"" />";
@@ -1616,7 +1616,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>>
              EmptyText=""Es gibt hier nichts""
              TItem=""BitDropdownItem<string>"" TValue=""string"" />
 
-<BitDropdown IsLoading
+<BitDropdown Loading
              Label=""Wird geladen""
              Items=""emptyItems""
              LoadingText=""Wird geladen...""

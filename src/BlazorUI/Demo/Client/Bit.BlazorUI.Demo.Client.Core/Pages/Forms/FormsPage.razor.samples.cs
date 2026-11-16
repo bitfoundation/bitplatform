@@ -92,7 +92,7 @@ public class SignUpModel
                       Required
                       ShowValidationMessage
                       @bind-Value="model.UserName" />
-        <BitButton ButtonType="BitButtonType.Submit" IsLoading="saving">Save</BitButton>
+        <BitButton ButtonType="BitButtonType.Submit" Loading="saving">Save</BitButton>
     </BitStack>
 </EditForm>
 """;

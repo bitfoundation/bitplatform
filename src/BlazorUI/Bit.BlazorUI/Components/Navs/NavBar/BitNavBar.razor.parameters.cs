@@ -135,14 +135,6 @@ public partial class BitNavBar<TItem>
     [Parameter] public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
-    /// Gives every item an equal share of the navbar so that the items evenly fill it, which is how a
-    /// navigation bar keeps its destinations on a predictable grid instead of letting a long label claim
-    /// more room than a short one. By default each item only takes the width of its own content.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Justified { get; set; }
-
-    /// <summary>
     /// Used to customize how content inside the item is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
@@ -155,6 +147,14 @@ public partial class BitNavBar<TItem>
     /// The mode of an item applies to the template of that item, and this one to the navbar's own template.
     /// </summary>
     [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; }
+
+    /// <summary>
+    /// Gives every item an equal share of the navbar so that the items evenly fill it, which is how a
+    /// navigation bar keeps its destinations on a predictable grid instead of letting a long label claim
+    /// more room than a short one. By default each item only takes the width of its own content.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Justified { get; set; }
 
     /// <summary>
     /// Modifies how the URL of an item is matched against the current URL in the automatic mode.

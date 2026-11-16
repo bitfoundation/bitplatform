@@ -4,7 +4,9 @@
 /// The hosting samples (src/Utilities/Bmage/Samples): one set of pages hosted by three Blazor Web Apps, under
 /// Interactive Server, Interactive WebAssembly and Interactive Auto. Each is built (unless
 /// <c>BMAGE_E2E_SKIP_BUILD=1</c>) and started on a free port the first time a test asks for it, then shared by the
-/// rest of the run - so a run that never reaches <see cref="SamplesBrowserTests"/> never builds them.
+/// rest of the run - so a run that never reaches <see cref="SamplesBrowserTests"/> never builds them. One already running
+/// is driven instead when <c>BMAGE_E2E_SAMPLE_SERVER_URL</c>, <c>BMAGE_E2E_SAMPLE_WASM_URL</c> or
+/// <c>BMAGE_E2E_SAMPLE_AUTO_URL</c> names it.
 /// </summary>
 public static class SampleHosts
 {
@@ -28,7 +30,7 @@ public static class SampleHosts
         {
             try
             {
-                await (await instance.Value).Process.DisposeAsync();
+                if ((await instance.Value).Process is { } process) await process.DisposeAsync();
             }
             catch (Exception)
             {
@@ -39,6 +41,11 @@ public static class SampleHosts
 
     private static async Task<Instance> StartAsync(string sample)
     {
+        if (E2EEnvironment.SampleUrl(sample) is { } running)
+        {
+            return new Instance(running, null);
+        }
+
         var project = RepoLayout.SampleProject(sample);
         if (E2EEnvironment.SkipBuild is false)
         {
@@ -72,5 +79,5 @@ public static class SampleHosts
         return new Instance(baseUrl, process);
     }
 
-    private sealed record Instance(string BaseUrl, ChildProcess Process);
+    private sealed record Instance(string BaseUrl, ChildProcess? Process);
 }

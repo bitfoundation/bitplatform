@@ -28,11 +28,6 @@ public partial class BitPullToRefresh : BitComponentBase
 
 
     /// <summary>
-    /// The anchor element that the pull to refresh component adheres to (alias of ChildContent).
-    /// </summary>
-    [Parameter] public RenderFragment? Anchor { get; set; }
-
-    /// <summary>
     /// Gets or sets the cascading parameters for the pull to refresh component.
     /// </summary>
     /// <remarks>
@@ -42,6 +37,11 @@ public partial class BitPullToRefresh : BitComponentBase
     /// </remarks>
     [CascadingParameter(Name = BitPullToRefreshParams.ParamName)]
     public BitPullToRefreshParams? CascadingParameters { get; set; }
+
+    /// <summary>
+    /// The anchor element that the pull to refresh component adheres to (alias of ChildContent).
+    /// </summary>
+    [Parameter] public RenderFragment? Anchor { get; set; }
 
     /// <summary>
     /// The anchor element that the pull to refresh component adheres to.
@@ -182,14 +182,14 @@ public partial class BitPullToRefresh : BitComponentBase
     [Parameter] public bool NoMouse { get; set; }
 
     /// <summary>
-    /// The callback for when the trigger condition of the pull-down happens.
+    /// The callback for when the pull-down gets canceled before release, providing the last pull height.
     /// </summary>
-    [Parameter] public EventCallback OnRefresh { get; set; }
+    [Parameter] public EventCallback<decimal> OnPullCancel { get; set; }
 
     /// <summary>
-    /// The callback for the starting of the pull-down.
+    /// The callback for the ending of the pull-down.
     /// </summary>
-    [Parameter] public EventCallback<BitPullToRefreshPullStartArgs> OnPullStart { get; set; }
+    [Parameter] public EventCallback<decimal> OnPullEnd { get; set; }
 
     /// <summary>
     /// The callback for when the pull-down is in progress.
@@ -206,14 +206,14 @@ public partial class BitPullToRefresh : BitComponentBase
     [Parameter] public EventCallback<decimal> OnPullMove { get; set; }
 
     /// <summary>
-    /// The callback for the ending of the pull-down.
+    /// The callback for the starting of the pull-down.
     /// </summary>
-    [Parameter] public EventCallback<decimal> OnPullEnd { get; set; }
+    [Parameter] public EventCallback<BitPullToRefreshPullStartArgs> OnPullStart { get; set; }
 
     /// <summary>
-    /// The callback for when the pull-down gets canceled before release, providing the last pull height.
+    /// The callback for when the trigger condition of the pull-down happens.
     /// </summary>
-    [Parameter] public EventCallback<decimal> OnPullCancel { get; set; }
+    [Parameter] public EventCallback OnRefresh { get; set; }
 
     /// <summary>
     /// The callback for when the gesture moves on to another stage - see <see cref="State"/>.

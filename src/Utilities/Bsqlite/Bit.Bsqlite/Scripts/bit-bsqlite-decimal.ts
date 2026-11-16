@@ -12,6 +12,18 @@
 const MAX_COEFF = (1n << 96n) - 1n;
 const MAX_SCALE = 28;
 
+/** `coeff` with its last `count` digits dropped, rounded half to even on all of them. */
+function roundHalfEven(coeff: bigint, count: number): bigint {
+    if (count === 0) {
+        return coeff;
+    }
+
+    const divisor = 10n ** BigInt(count);
+    const quotient = coeff / divisor;
+    const twice = (coeff % divisor) * 2n;
+    return twice > divisor || (twice === divisor && (quotient & 1n) === 1n) ? quotient + 1n : quotient;
+}
+
 export class DecimalOverflowError extends Error {
     constructor() {
         super('Decimal overflow.');
@@ -48,8 +60,10 @@ export class Decimal {
     }
 
     /**
-     * Parses invariant-culture decimal text. Leading and trailing whitespace and a leading sign are
-     * accepted; thousands separators and exponents are not - EF never writes those.
+     * Parses invariant-culture decimal text. Leading and trailing whitespace, a leading sign and an
+     * exponent are accepted; thousands separators are not. EF never writes an exponent, but SQLite does:
+     * a REAL in a decimal column - stored by raw SQL, or arriving as an argument - reads as text such
+     * as `1.0e-05`, which Microsoft.Data.Sqlite's functions accept as well.
      */
     static parse(text: string): Decimal {
         if (typeof text !== 'string') {
@@ -68,7 +82,19 @@ export class Decimal {
             body = body.slice(1);
         }
 
-        if (!body || /[^0-9.]/.test(body)) {
+        let exponent = 0;
+        const e = body.search(/[eE]/);
+        if (e !== -1) {
+            const power = body.slice(e + 1);
+            if (!/^[+-]?\d{1,4}$/.test(power)) {
+                throw new DecimalFormatError(text);
+            }
+
+            exponent = Number(power);
+            body = body.slice(0, e);
+        }
+
+        if (!body || /[^0-9.]/.test(body) || body === '.') {
             throw new DecimalFormatError(text);
         }
 
@@ -77,20 +103,40 @@ export class Decimal {
             throw new DecimalFormatError(text);
         }
 
-        const digits = (dot === -1 ? body : body.slice(0, dot) + body.slice(dot + 1)).replace(/^0+(?=\d)/, '');
-        const scale = dot === -1 ? 0 : body.length - dot - 1;
-
-        if (scale > MAX_SCALE) {
-            throw new DecimalFormatError(text);
+        let digits = (dot === -1 ? body : body.slice(0, dot) + body.slice(dot + 1)).replace(/^0+(?=\d)/, '');
+        let scale = (dot === -1 ? 0 : body.length - dot - 1) - exponent;
+        if (scale < 0) {
+            // 1.5e3: the exponent moves the point right, past the digits there are.
+            digits = digits === '0' ? digits : digits + '0'.repeat(-scale);
+            scale = 0;
         }
 
         if (!digits) {
             return Decimal.zero();
         }
 
-        const coeff = BigInt(digits);
-        if (coeff > MAX_COEFF) {
-            throw new DecimalOverflowError();
+        let coeff = BigInt(digits);
+
+        // More digits after the point than 28, or more than 96 bits hold: rounded off the end, half to even, as
+        // .NET's decimal.Parse - which Microsoft.Data.Sqlite reads decimals with - rounds them, so a REAL that
+        // SQLite prints as 1.23456789012345e-15 or 1.0e-30 reads as a value here too. Rounded once, from all the
+        // digits there are, to the fewest dropped that fit; a value too small for scale 28 rounds to zero.
+        if (scale > MAX_SCALE || coeff > MAX_COEFF) {
+            let rounded = coeff;
+            let dropped = Math.max(0, scale - MAX_SCALE);
+            for (; dropped <= scale; dropped++) {
+                rounded = roundHalfEven(coeff, dropped);
+                if (rounded <= MAX_COEFF) {
+                    break;
+                }
+            }
+
+            if (rounded > MAX_COEFF) {
+                throw new DecimalOverflowError();
+            }
+
+            coeff = rounded;
+            scale -= dropped;
         }
 
         return new Decimal(sign, coeff, scale);

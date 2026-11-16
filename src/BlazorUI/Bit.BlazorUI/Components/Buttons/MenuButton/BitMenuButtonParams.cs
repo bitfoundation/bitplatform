@@ -173,7 +173,7 @@ public partial class BitMenuButtonParams : BitComponentBaseParams, IBitComponent
     /// <summary>
     /// Determines whether the menu button is in the loading state.
     /// </summary>
-    public bool? IsLoading { get; set; }
+    public bool? Loading { get; set; }
 
     /// <summary>
     /// The delay in milliseconds before the spinner appears after the menu button enters the loading state.
@@ -428,9 +428,9 @@ public partial class BitMenuButtonParams : BitComponentBaseParams, IBitComponent
             bitMenuButton.TakeFromCascade(nameof(IconOnly), IconOnly.Value, static m => m.IconOnly, static (m, v) => m.IconOnly = v);
         }
 
-        if (IsLoading.HasValue)
+        if (Loading.HasValue)
         {
-            bitMenuButton.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static m => m.IsLoading, static (m, v) => m.IsLoading = v);
+            bitMenuButton.TakeFromCascade(nameof(Loading), Loading.Value, static m => m.Loading, static (m, v) => m.Loading = v);
         }
 
         if (LoadingDelay.HasValue)

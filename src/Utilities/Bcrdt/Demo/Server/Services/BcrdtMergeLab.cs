@@ -164,7 +164,7 @@ public static class BcrdtMergeLab
             string? reference = null;
             JsonNode? merged = null;
             JsonNode? mergedFormatting = null;
-            HashSet<string> mergedCounters = [];
+            HashSet<string> mergedSurvivors = [];
             var mergedBytes = 0;
             var diverged = new List<string>();
 
@@ -195,7 +195,7 @@ public static class BcrdtMergeLab
                             reference = snapshot;
                             merged = state;
                             mergedFormatting = formatting;
-                            mergedCounters = Counters(receiver.Document, operations);
+                            mergedSurvivors = Survivors(receiver.Document, operations);
                             mergedBytes = receiver.Document.EncodeStateAsUpdate().Length;
                         }
                         else if (snapshot != reference)
@@ -211,7 +211,7 @@ public static class BcrdtMergeLab
                 }
             }
 
-            var decisions = Decide(replicas, baseState, before, merged, mergedCounters);
+            var decisions = Decide(replicas, baseState, before, merged, mergedSurvivors);
 
             return new BcrdtMergeReportDto
             {
@@ -425,7 +425,7 @@ public static class BcrdtMergeLab
     /// is also contested when a replica created a nested type at it - an operation on 'root/key' while the key held
     /// no such type - because that creation is a write to the key like any other.
     /// </summary>
-    private static BcrdtMergeDecisionDto[] Decide(Replica[] replicas, JsonNode? start, Dictionary<string, JsonNode?> before, JsonNode? merged, HashSet<string> counters)
+    private static BcrdtMergeDecisionDto[] Decide(Replica[] replicas, JsonNode? start, Dictionary<string, JsonNode?> before, JsonNode? merged, HashSet<string> survivors)
     {
         var decisions = new List<BcrdtMergeDecisionDto>();
         var steps = replicas.SelectMany(replica => replica.Steps).ToArray();
@@ -458,12 +458,18 @@ public static class BcrdtMergeLab
             {
                 "text" => DecideText(group.Key.Path, editors, [.. group], merged),
                 "array" => DecideArray(group.Key.Path, editors, [.. group], before, merged),
-                "counter" => DecideCounter(group.Key.Path, editors, [.. group], start, merged, counters.Contains(group.Key.Path)),
-                _ => DecideSet(group.Key.Path, editors, [.. group], merged)
+                "counter" => DecideCounter(group.Key.Path, editors, [.. group], start, merged, survivors.Contains($"counter:{group.Key.Path}")),
+                _ => DecideSet(group.Key.Path, editors, [.. group], merged, survivors.Contains($"set:{group.Key.Path}"), KeyContested(group.Key.Path))
             });
         }
 
         return [.. decisions];
+
+        // Whether more than one replica wrote the map key a nested type lives at - a decision of its own above.
+        bool KeyContested(string path) =>
+            path.Split('/') is [var root, var key] &&
+            keys.TryGetValue((root, key), out var writes) &&
+            writes.Select(step => step.Operation.Label).Distinct(StringComparer.Ordinal).Skip(1).Any();
 
         static void Add(Dictionary<(string, string), List<Step>> keys, (string, string) key, Step step)
         {
@@ -670,21 +676,27 @@ public static class BcrdtMergeLab
         static string Signed(long amount) => amount < 0 ? $"{amount}" : $"+{amount}";
     }
 
-    /// <summary>The paths the operations change a counter at that still hold one in <paramref name="document"/>.</summary>
-    private static HashSet<string> Counters(BcrdtDocument document, List<Operation> operations) =>
+    /// <summary>
+    /// The paths the operations change a counter or a set at that still hold one in <paramref name="document"/>, each
+    /// as "kind:path".
+    /// </summary>
+    private static HashSet<string> Survivors(BcrdtDocument document, List<Operation> operations) =>
         [.. operations
-            .Where(op => op.Kind == "counter")
-            .Where(op => op.Key is null || document.GetMap(op.Root).Get(op.Key) is BcrdtCounter)
-            .Select(op => op.Path)];
+            .Where(op => op.Kind is "counter" or "set")
+            .Where(op => op.Key is null || Holds(document.GetMap(op.Root).Get(op.Key), op.Kind))
+            .Select(op => $"{op.Kind}:{op.Path}")];
 
-    private static BcrdtMergeDecisionDto DecideSet(string path, string[] editors, Step[] steps, JsonNode? merged)
+    /// <param name="isSet">Whether the merged document still holds a set at <paramref name="path"/>.</param>
+    /// <param name="keyContested">Whether more than one replica wrote the map key the nested set lives at.</param>
+    private static BcrdtMergeDecisionDto DecideSet(string path, string[] editors, Step[] steps, JsonNode? merged, bool isSet, bool keyContested)
     {
         TryGet(merged, path.Split('/'), out var value);
-        var members = value as JsonArray;
+        var members = isSet ? value as JsonArray : null;
 
         var notes = new List<string>();
         var addWins = false;
         var removeStands = false;
+        var lostWithKey = false;
 
         foreach (var element in steps.GroupBy(step => ToNode(step.Operation.Arguments[0])?.ToJsonString() ?? "null"))
         {
@@ -700,6 +712,20 @@ public static class BcrdtMergeLab
             {
                 addWins = true;
                 notes.Add($"{Join(removing)} removed {element.Key} while {Join(effectiveAdders)} added it: add wins - it is in the set on every replica, because a remove deletes the entry its replica saw and the add made a new one.");
+            }
+            // Gone with the set itself: the map key holding it was written over, or the set was created on more than one
+            // replica and one that never held the element won the key - no remove deleted an entry anybody added. A
+            // remove that did delete one is still explained as a remove below; one that created the set it removed from
+            // deleted nothing.
+            else if (present is false && (isSet is false || (keyContested && removers.All(step => step.Update is null || step.Created))))
+            {
+                lostWithKey = true;
+                notes.Add($"{Join(removing)} removed {element.Key} while {Join(adders.Select(step => step.Operation.Label).Distinct(StringComparer.Ordinal))} added it, and it is in no replica's set - but not because of the remove: the set it was added to was replaced through its map key{(keyContested ? " (see that decision)" : "")}, and everything in it went with it. Create a nested set once, before people change it - a 'base:' line here - and change it through the set, never by writing its key.");
+            }
+            else if (present is false && effectiveAdders.Length > 1)
+            {
+                removeStands = true;
+                notes.Add($"{Join(effectiveAdders)} each added {element.Key} while apart, and {Join(removing)} removed it. Concurrent adds of one element keep one entry, the way concurrent writes of one map key keep one value, and the entry kept is the one the remove deleted - so it is gone on every replica, though the other add was never seen by the remove. An add wins over a concurrent remove only when its own entry is the one kept.");
             }
             else if (present is false && effectiveAdders.Length == 0)
             {
@@ -720,7 +746,7 @@ public static class BcrdtMergeLab
         {
             Target = $"set '{path}'",
             Replicas = editors,
-            Outcome = addWins ? "add wins" : removeStands ? "the remove wins" : $"{Both(editors)} apply",
+            Outcome = addWins ? "add wins" : removeStands ? "the remove wins" : lostWithKey ? "an element is lost with its map key" : $"{Both(editors)} apply",
             Detail = $"{Join(described)} while apart. Every replica now holds {Render(value)}. {string.Join(" ", notes)}"
         };
     }
@@ -782,7 +808,7 @@ public static class BcrdtMergeLab
         if (kinds.Contains("map")) notes.Add("BcrdtMap: a key written concurrently keeps one value and loses the other. Fields a person types prose into belong in a nested BcrdtText - created once, before people edit it - where both edits merge.");
         if (kinds.Contains("text")) notes.Add("BcrdtText: every concurrent insertion survives, each author's run contiguous. Write an input's new value with BcrdtTextSynchronizer.Apply (BcrdtTextArea does), never by replacing the whole text, or every concurrent edit is lost.");
         if (kinds.Contains("array")) notes.Add("BcrdtArray: concurrent insertions all survive. Replace and Move are a delete plus an insert, so a concurrent edit to that element is lost and two concurrent moves of one element leave two copies - mutate a nested type in place when that matters.");
-        if (kinds.Contains("set")) notes.Add("BcrdtSet: an add wins over a concurrent remove of an entry the adder had not seen. Adding an element already present is a no-op, so it does not save that element from a concurrent remove.");
+        if (kinds.Contains("set")) notes.Add("BcrdtSet: an add wins over a concurrent remove of an entry the adder had not seen. Adding an element already present is a no-op, so it does not save that element from a concurrent remove; and concurrent adds of one element keep one entry, so a remove of the entry kept takes the element out though another add was never seen.");
         if (kinds.Contains("counter")) notes.Add("BcrdtCounter: every concurrent increment and decrement is summed - each replica's changes live under a key of its own, its client id, so none overwrites another, where a number in a BcrdtMap written back as count + 1 keeps one of two concurrent writes. A nested counter, like a nested text, is created once, before people change it.");
 
         if (decisions.Length == 0)

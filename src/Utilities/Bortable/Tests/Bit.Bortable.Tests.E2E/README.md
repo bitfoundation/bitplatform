@@ -80,7 +80,7 @@ dotnet publish Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.
 dotnet build Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
-pwsh Tests/Bit.Bortable.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium
+pwsh Tests/Bit.Bortable.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium
 
 cd Tests/Bit.Bortable.Tests.E2E && dotnet test
 
@@ -94,30 +94,37 @@ BORTABLE_E2E_BROWSER=firefox dotnet test
 ```
 
 The built test assembly is also an executable test host, which takes the same options:
-`dotnet bin/Debug/net10.0/Bit.Bortable.Tests.E2E.dll --filter "FullyQualifiedName~.PluginTests."`.
+`dotnet bin/Debug/net11.0/Bit.Bortable.Tests.E2E.dll --filter "FullyQualifiedName~.PluginTests."`.
 
-The workflow `.github/workflows/ci.bortable.e2e.yml` does the same in Release. It is started by hand
-(`workflow_dispatch`) only, since the suite takes far longer than the build-and-unit pipeline in
-`ci.bortable.yml`:
+The workflow `.github/workflows/ci.bortable.e2e.yml` does the same in Release, against the demo published the way
+`cd.bortable.demo.yml` publishes it rather than a build output: only a publish trims the WebAssembly client, so an
+interop payload the trimmer breaks (an anonymous type whose constructor lost its parameter names, a getter nothing but
+System.Text.Json reads) fails there and nowhere else. It is started by hand (`workflow_dispatch`) only, since the suite
+takes far longer than the build-and-unit pipeline in `ci.bortable.yml`:
 
 ```bash
-dotnet build src/Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj -c Release
+demo="$PWD/demo" # where the demo is published, as a full path
+dotnet publish src/Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj -c Release -o "$demo" -p:InvariantGlobalization=true
 dotnet publish src/Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj -c Release
-pwsh src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
-cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bortable-e2e.trx
+pwsh src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E && BORTABLE_E2E_PUBLISHED_HOST="$demo" dotnet test -c Release --no-build --report-trx --report-trx-filename bortable-e2e.trx
 ```
 
+`BORTABLE_E2E_PUBLISHED_HOST` takes the full path of the publish output. The suite boots that publish itself, on a free
+port, and stops it when the run ends, as it does the build output: a run never drives a demo left over from an earlier
+one. Before a change that touches what crosses JS interop is merged, run the suite against such a publish locally too.
+
 Without PowerShell 7, the browser can be installed with Windows PowerShell
-(`powershell -ExecutionPolicy Bypass -File bin/Debug/net10.0/playwright.ps1 install chromium`) or with the Node.js
+(`powershell -ExecutionPolicy Bypass -File bin/Debug/net11.0/playwright.ps1 install chromium`) or with the Node.js
 runtime Playwright ships:
-`bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.
+`bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.
 
 The suite starts the demo server itself (`dotnet Bit.Bortable.Demo.Server.dll --urls http://127.0.0.1:<free port>`,
-in the Development environment so the build output finds its static web assets), waits until it answers, shares
-it between all tests and stops it when the run ends. To drive a demo that is already running instead - one started
-from the IDE, or a published copy (`dotnet publish` output, started with `dotnet Bit.Bortable.Demo.Server.dll --urls
-http://127.0.0.1:5563`) - point `BORTABLE_E2E_BASE_URL` at it; nothing is then built or booted for the run.
+in the Development environment so the build output finds its static web assets, or in Production from the publish
+output `BORTABLE_E2E_PUBLISHED_HOST` names), waits until it answers, shares it between all tests and stops it when the
+run ends. To drive a demo that is already running instead - one started from the IDE - point `BORTABLE_E2E_BASE_URL`
+at it; nothing is then built or booted for the run.
 
 The lazy loading sample is started the same way, from its publish folder (`bin/<configuration>/net11.0/publish`) in
 the Production environment, by the first test that drives it (`src/Utilities/Shared/Tests/E2E/LazyLoadingSample.cs`,
@@ -148,7 +155,8 @@ On a build server (`CI=true`) the same tests **fail** instead, so a suite that n
 | Variable | Effect |
 |---|---|
 | `BORTABLE_E2E_CONFIGURATION` | Build configuration of the demo server to boot; defaults to the test assembly's own. |
-| `BORTABLE_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE, or a published copy) instead of booting one. |
+| `BORTABLE_E2E_PUBLISHED_HOST` | The full path of a `dotnet publish` output of the demo server, which the suite boots (trimmed, as it ships) instead of the build output. Cannot be combined with `BORTABLE_E2E_BASE_URL`. |
+| `BORTABLE_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of booting one. |
 | `BORTABLE_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |
 | `BORTABLE_E2E_LAZY_AOT=1` | The lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy mark out: `LazyLoadingTests` then checks that Bit.Bortable comes with the app and nothing is downloaded on demand. |
 | `BORTABLE_E2E_BROWSER` | The engine: `chromium` (the default), `firefox` or `webkit`, each the one Playwright installed (`playwright.ps1 install firefox webkit`). The touch and pen tests send their input through the Chrome DevTools Protocol, so they report **Inconclusive** outside Chromium. |

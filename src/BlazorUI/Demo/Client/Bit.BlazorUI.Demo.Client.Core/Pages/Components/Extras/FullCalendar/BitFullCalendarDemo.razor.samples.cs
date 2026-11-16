@@ -662,7 +662,7 @@ private void HandleDateChange(BitFullCalendarDateChangeEventArgs args)
 " + resourcesCode;
 
     private readonly string example17RazorCode = @"
-<BitFullCalendar Events=""events"" IsLoading=""isLoading"" OnDateChange=""LoadRange"" />
+<BitFullCalendar Events=""events"" Loading=""isLoading"" OnDateChange=""LoadRange"" />
 
 <BitText>Loaded: <b>@(loadedRange ?? ""-"")</b></BitText>";
     private readonly string example17CsharpCode = @"

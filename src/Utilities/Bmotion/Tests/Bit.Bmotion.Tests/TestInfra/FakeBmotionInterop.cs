@@ -80,6 +80,12 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     public Func<string, BmotionBoundingRect?>? BoundingRectProvider { get; set; }
 
     /// <summary>
+    /// Optional box provider for <see cref="GetLayoutBoxAsync"/> - the rect with the element's translation backed out
+    /// in the same measurement. Falls back to <see cref="BoundingRectProvider"/> (an element that isn't translated).
+    /// </summary>
+    public Func<string, BmotionBoundingRect?>? LayoutBoxProvider { get; set; }
+
+    /// <summary>
     /// Resolves a selector to the element ids the bridge would have registered for it. Defaults to a
     /// single <c>"bm-sel-1"</c>; set it to model multi-element (or empty) matches.
     /// </summary>
@@ -327,6 +333,13 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
         Record("getBoundingRect", elementId, options);
         if (BoundingRectGate is { } gate) await gate;
         return BoundingRectProvider?.Invoke(elementId);
+    }
+
+    public async ValueTask<BmotionBoundingRect?> GetLayoutBoxAsync(string elementId)
+    {
+        Record("getLayoutBox", elementId);
+        if (BoundingRectGate is { } gate) await gate;
+        return (LayoutBoxProvider ?? BoundingRectProvider)?.Invoke(elementId);
     }
 
     public ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(

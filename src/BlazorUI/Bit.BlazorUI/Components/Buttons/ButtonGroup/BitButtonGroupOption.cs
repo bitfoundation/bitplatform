@@ -99,6 +99,11 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     [Parameter] public string? OffTitle { get; set; }
 
     /// <summary>
+    /// Click event handler of the option.
+    /// </summary>
+    [Parameter] public EventCallback<BitButtonGroupOption> OnClick { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon to display when the option is checked using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="OnIconName"/> when both are set.
     /// </summary>
@@ -129,20 +134,15 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     [Parameter] public string? OnTitle { get; set; }
 
     /// <summary>
-    /// Click event handler of the option.
+    /// The rel attribute of the link when the option renders as an anchor (by providing the Href parameter).
+    /// When <see cref="Target"/> is _blank and no opener-related rel is given, noopener is added automatically.
     /// </summary>
-    [Parameter] public EventCallback<BitButtonGroupOption> OnClick { get; set; }
+    [Parameter] public BitLinkRels? Rel { get; set; }
 
     /// <summary>
     /// Reverses the positions of the icon and the main content of the option.
     /// </summary>
     [Parameter] public bool ReversedIcon { get; set; }
-
-    /// <summary>
-    /// The rel attribute of the link when the option renders as an anchor (by providing the Href parameter).
-    /// When <see cref="Target"/> is _blank and no opener-related rel is given, noopener is added automatically.
-    /// </summary>
-    [Parameter] public BitLinkRels? Rel { get; set; }
 
     /// <summary>
     /// The custom value for the style attribute of the option.

@@ -81,6 +81,22 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
 
 
     /// <summary>
+    /// The image types the paste/drop/picker upload accepts, as a comma separated list of MIME types
+    /// or extensions (the shape of an input's accept attribute, e.g. <c>image/png,image/jpeg</c>
+    /// or <c>.png,.jpg</c>). Null (the default) accepts every image type.
+    /// </summary>
+    [Parameter] public string? AcceptedImageTypes { get; set; }
+
+    /// <summary>
+    /// Closes a bracket or a quote as it is typed with nothing selected: the closing half is
+    /// inserted after the caret, typing that closing character steps over it instead of
+    /// doubling it, and Backspace between the two halves removes both. Only
+    /// <c>(</c>, <c>[</c>, <c>{</c>, <c>`</c> and <c>"</c> take part - a <c>*</c> or a
+    /// <c>-</c> opens a list far more often than it opens a span. Defaults to false.
+    /// </summary>
+    [Parameter] public bool AutoClosePairs { get; set; }
+
+    /// <summary>
     /// Moves the keyboard focus into the editor as soon as it is initialized.
     /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
@@ -94,10 +110,10 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     public bool AutoHeight { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the editor.
+    /// Enables wrapping the current selection when a pairing character
+    /// (for example <c>*</c>, <c>`</c>, <c>[</c>) is typed. Defaults to true.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitMarkdownEditorClassStyles? Classes { get; set; }
+    [Parameter] public bool AutoPair { get; set; } = true;
 
     /// <summary>
     /// A stable key under which the editor content is autosaved to the browser's
@@ -109,29 +125,9 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [Parameter] public string? AutoSaveId { get; set; }
 
     /// <summary>
-    /// Enables wrapping the current selection when a pairing character
-    /// (for example <c>*</c>, <c>`</c>, <c>[</c>) is typed. Defaults to true.
-    /// </summary>
-    [Parameter] public bool AutoPair { get; set; } = true;
-
-    /// <summary>
-    /// Closes a bracket or a quote as it is typed with nothing selected: the closing half is
-    /// inserted after the caret, typing that closing character steps over it instead of
-    /// doubling it, and Backspace between the two halves removes both. Only
-    /// <c>(</c>, <c>[</c>, <c>{</c>, <c>`</c> and <c>"</c> take part - a <c>*</c> or a
-    /// <c>-</c> opens a list far more often than it opens a span. Defaults to false.
-    /// </summary>
-    [Parameter] public bool AutoClosePairs { get; set; }
-
-    /// <summary>
     /// The characters the Bold command wraps a selection in: <c>**</c> (the default) or <c>__</c>.
     /// </summary>
     [Parameter] public BitMarkdownEditorEmphasisStyle BoldStyle { get; set; }
-
-    /// <summary>
-    /// The character the Italic command wraps a selection in: <c>*</c> (the default) or <c>_</c>.
-    /// </summary>
-    [Parameter] public BitMarkdownEditorEmphasisStyle ItalicStyle { get; set; }
 
     /// <summary>
     /// The character an unordered or task list item starts with: <c>-</c> (the default),
@@ -140,15 +136,21 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [Parameter] public BitMarkdownEditorBulletStyle BulletStyle { get; set; }
 
     /// <summary>
-    /// The debounce window (in milliseconds) before the preview re-renders while typing.
-    /// </summary>
-    [Parameter] public int DebounceTime { get; set; } = 150;
-
-    /// <summary>
     /// The debounce window (in milliseconds) before the typed value is pushed to .NET.
     /// Increase it to reduce interop traffic on Blazor Server. Defaults to 0 (immediate).
     /// </summary>
     [Parameter] public int ChangeDebounceTime { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the editor.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitMarkdownEditorClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The debounce window (in milliseconds) before the preview re-renders while typing.
+    /// </summary>
+    [Parameter] public int DebounceTime { get; set; } = 150;
 
     /// <summary>
     /// A hint rendered below the panes (the markdown flavor accepted, what the text is for) and tied to the
@@ -174,18 +176,14 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     public string? Height { get; set; }
 
     /// <summary>
-    /// The smallest height the editor may shrink to (any CSS length), which is also the floor
-    /// of the <see cref="Resizable"/> drag handle. Ignored in full-screen mode.
+    /// The string inserted per indent level (default: two spaces).
     /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public string? MinHeight { get; set; }
+    [Parameter] public string IndentUnit { get; set; } = "  ";
 
     /// <summary>
-    /// The largest height the editor may grow to (any CSS length), which is also the ceiling
-    /// of the <see cref="Resizable"/> drag handle. Ignored in full-screen mode.
+    /// The character the Italic command wraps a selection in: <c>*</c> (the default) or <c>_</c>.
     /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public string? MaxHeight { get; set; }
+    [Parameter] public BitMarkdownEditorEmphasisStyle ItalicStyle { get; set; }
 
     /// <summary>
     /// A visible label rendered above the toolbar and tied to the textarea, so clicking it
@@ -199,9 +197,18 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// The string inserted per indent level (default: two spaces).
+    /// The largest height the editor may grow to (any CSS length), which is also the ceiling
+    /// of the <see cref="Resizable"/> drag handle. Ignored in full-screen mode.
     /// </summary>
-    [Parameter] public string IndentUnit { get; set; } = "  ";
+    [Parameter, ResetStyleBuilder]
+    public string? MaxHeight { get; set; }
+
+    /// <summary>
+    /// The largest pasted, dropped or picked image (in bytes) the editor uploads. A bigger file is
+    /// refused before its bytes are read, and reported through <see cref="OnImageRejected"/>.
+    /// Null (the default) leaves the size unlimited.
+    /// </summary>
+    [Parameter] public long? MaxImageSize { get; set; }
 
     /// <summary>
     /// The maximum number of characters the editor accepts. Null (the default) leaves the
@@ -213,24 +220,41 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [Parameter] public int? MaxLength { get; set; }
 
     /// <summary>
-    /// The largest pasted, dropped or picked image (in bytes) the editor uploads. A bigger file is
-    /// refused before its bytes are read, and reported through <see cref="OnImageRejected"/>.
-    /// Null (the default) leaves the size unlimited.
+    /// The smallest height the editor may shrink to (any CSS length), which is also the floor
+    /// of the <see cref="Resizable"/> drag handle. Ignored in full-screen mode.
     /// </summary>
-    [Parameter] public long? MaxImageSize { get; set; }
-
-    /// <summary>
-    /// The image types the paste/drop/picker upload accepts, as a comma separated list of MIME types
-    /// or extensions (the shape of an input's accept attribute, e.g. <c>image/png,image/jpeg</c>
-    /// or <c>.png,.jpg</c>). Null (the default) accepts every image type.
-    /// </summary>
-    [Parameter] public string? AcceptedImageTypes { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? MinHeight { get; set; }
 
     /// <summary>
     /// Determines which panes of the editor are visible (edit / split / preview).
     /// </summary>
     [Parameter, TwoWayBound]
     public BitMarkdownEditorMode Mode { get; set; } = BitMarkdownEditorMode.Split;
+
+    /// <summary>
+    /// Callback for when the editor loses the keyboard focus.
+    /// </summary>
+    [Parameter] public EventCallback OnBlur { get; set; }
+
+    /// <summary>
+    /// Callback for an autosaved draft restored at initialization, carrying the restored text.
+    /// It only fires when <see cref="AutoSaveId"/> is set and the draft was actually used, so
+    /// the app can say so and offer to drop it rather than guessing where the text came from.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnDraftRestored { get; set; }
+
+    /// <summary>
+    /// Callback for when the editor receives the keyboard focus.
+    /// </summary>
+    [Parameter] public EventCallback OnFocus { get; set; }
+
+    /// <summary>
+    /// Callback for a pasted or dropped image the editor refused to upload because of
+    /// <see cref="MaxImageSize"/> or <see cref="AcceptedImageTypes"/>, so the app can tell
+    /// the user why nothing was inserted.
+    /// </summary>
+    [Parameter] public EventCallback<BitMarkdownEditorImageRejection> OnImageRejected { get; set; }
 
     /// <summary>
     /// A handler that uploads a pasted, dropped or picked image and returns the URL to reference
@@ -243,11 +267,6 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [Parameter] public Func<BitMarkdownEditorImageUploadInfo, Task<string?>>? OnImageUpload { get; set; }
 
     /// <summary>
-    /// Callback for when the editor loses the keyboard focus.
-    /// </summary>
-    [Parameter] public EventCallback OnBlur { get; set; }
-
-    /// <summary>
     /// Callback for Ctrl/Cmd+Enter pressed inside the editor, carrying the current value.
     /// The shortcut is only captured while this callback is set, so a form that binds it
     /// elsewhere keeps its own submit key otherwise.
@@ -255,38 +274,9 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [Parameter] public EventCallback<string?> OnSubmit { get; set; }
 
     /// <summary>
-    /// Callback for when the editor receives the keyboard focus.
-    /// </summary>
-    [Parameter] public EventCallback OnFocus { get; set; }
-
-    /// <summary>
-    /// Callback for an autosaved draft restored at initialization, carrying the restored text.
-    /// It only fires when <see cref="AutoSaveId"/> is set and the draft was actually used, so
-    /// the app can say so and offer to drop it rather than guessing where the text came from.
-    /// </summary>
-    [Parameter] public EventCallback<string?> OnDraftRestored { get; set; }
-
-    /// <summary>
-    /// Callback for a pasted or dropped image the editor refused to upload because of
-    /// <see cref="MaxImageSize"/> or <see cref="AcceptedImageTypes"/>, so the app can tell
-    /// the user why nothing was inserted.
-    /// </summary>
-    [Parameter] public EventCallback<BitMarkdownEditorImageRejection> OnImageRejected { get; set; }
-
-    /// <summary>
     /// The placeholder text shown when the editor is empty.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
-
-    /// <summary>
-    /// How many columns the toolbar's table command inserts. Defaults to 2.
-    /// </summary>
-    [Parameter] public int TableColumns { get; set; } = 2;
-
-    /// <summary>
-    /// How many body rows the toolbar's table command inserts, beside its header row. Defaults to 1.
-    /// </summary>
-    [Parameter] public int TableRows { get; set; } = 1;
 
     /// <summary>
     /// The markdown processing pipeline used by the preview pane.
@@ -307,16 +297,6 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     public bool Resizable { get; set; }
 
     /// <summary>
-    /// Whether the word/character status bar is shown.
-    /// </summary>
-    [Parameter] public bool ShowStatusBar { get; set; } = true;
-
-    /// <summary>
-    /// Whether the estimated reading time is shown in the status bar.
-    /// </summary>
-    [Parameter] public bool ShowReadingTime { get; set; }
-
-    /// <summary>
     /// Whether the status bar reports the caret's line and column, and how much text is
     /// selected. Reporting it costs a (debounced) round trip per caret move, so it is off
     /// by default.
@@ -324,27 +304,19 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [Parameter] public bool ShowCursorPosition { get; set; }
 
     /// <summary>
+    /// Whether the estimated reading time is shown in the status bar.
+    /// </summary>
+    [Parameter] public bool ShowReadingTime { get; set; }
+
+    /// <summary>
+    /// Whether the word/character status bar is shown.
+    /// </summary>
+    [Parameter] public bool ShowStatusBar { get; set; } = true;
+
+    /// <summary>
     /// Whether the formatting toolbar is shown.
     /// </summary>
     [Parameter] public bool ShowToolbar { get; set; } = true;
-
-    /// <summary>
-    /// Synchronizes scrolling between the editor and preview panes in split mode.
-    /// Defaults to true.
-    /// </summary>
-    [Parameter] public bool SyncScroll { get; set; } = true;
-
-    /// <summary>
-    /// Whether the Tab key indents the selection instead of moving the focus to the next
-    /// control. Defaults to true; pressing Escape first always lets a single Tab out, so the
-    /// editor never traps the keyboard either way.
-    /// </summary>
-    [Parameter] public bool TabIndents { get; set; } = true;
-
-    /// <summary>
-    /// Words-per-minute used to estimate reading time. Defaults to 200.
-    /// </summary>
-    [Parameter] public int WordsPerMinute { get; set; } = 200;
 
     /// <summary>
     /// Enables the native browser spell checking in the textarea.
@@ -366,6 +338,29 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     public BitMarkdownEditorClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Synchronizes scrolling between the editor and preview panes in split mode.
+    /// Defaults to true.
+    /// </summary>
+    [Parameter] public bool SyncScroll { get; set; } = true;
+
+    /// <summary>
+    /// Whether the Tab key indents the selection instead of moving the focus to the next
+    /// control. Defaults to true; pressing Escape first always lets a single Tab out, so the
+    /// editor never traps the keyboard either way.
+    /// </summary>
+    [Parameter] public bool TabIndents { get; set; } = true;
+
+    /// <summary>
+    /// How many columns the toolbar's table command inserts. Defaults to 2.
+    /// </summary>
+    [Parameter] public int TableColumns { get; set; } = 2;
+
+    /// <summary>
+    /// How many body rows the toolbar's table command inserts, beside its header row. Defaults to 1.
+    /// </summary>
+    [Parameter] public int TableRows { get; set; } = 1;
+
+    /// <summary>
     /// The localized strings of the editor UI (status bar, help panel, aria labels).
     /// Defaults to English; override individual properties on a <see cref="BitMarkdownEditorTexts"/>
     /// instance to localize them.
@@ -376,6 +371,11 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     /// A custom toolbar layout. Defaults to <see cref="BitMarkdownEditorToolbar.Default"/> when null.
     /// </summary>
     [Parameter] public IReadOnlyList<BitMarkdownEditorToolbarItem>? Toolbar { get; set; }
+
+    /// <summary>
+    /// Words-per-minute used to estimate reading time. Defaults to 200.
+    /// </summary>
+    [Parameter] public int WordsPerMinute { get; set; } = 200;
 
 
 

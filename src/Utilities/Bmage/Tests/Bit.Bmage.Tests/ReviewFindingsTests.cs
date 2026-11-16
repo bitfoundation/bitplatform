@@ -434,6 +434,45 @@ public sealed class ReviewFindingsTests
         Assert.AreEqual(2, called.Count(identifier => identifier == "decode"));
     }
 
+    /// <summary>
+    /// A browser shows an image upright however it is asked to decode it ('none' is not an orientation it honours), so
+    /// the fake answers with the upright pixels: decoding without AutoOrient has to turn them back to how the file
+    /// stores them, which the tag then describes, as the managed decoders give them. Before, the pixels came back
+    /// upright with the tag still saying to turn them, and anything applying it turned them twice.
+    /// </summary>
+    [TestMethod]
+    [DataRow(Orientation.Rotate90)]
+    [DataRow(Orientation.Rotate270)]
+    [DataRow(Orientation.FlipHorizontal)]
+    [DataRow(Orientation.Transpose)]
+    public async Task TheBrowserDecoderGivesAnImageAsStoredWhenItIsNotToBeTurnedUpright(Orientation orientation)
+    {
+        var processor = new ImageProcessor();
+        using var upright = TestImages.Quadrants(32, 24);
+        using var stored = new OrientationOperation(orientation.Inverse()).Apply(upright, OperationContext.Default);
+        stored.Metadata = new Metadata.ImageMetadata(Metadata.ExifData.FromOrientation(orientation), sourceFormat: ImageFormat.Jpeg);
+        var jpeg = (await processor.EncodeAsync(stored, ImageExportOptions.Jpeg with { Quality = 1.0, Metadata = Metadata.MetadataPolicy.Preserve })).Data;
+
+        var module = new FakeModule(_ => { }, respond: (identifier, _) => identifier == "decode"
+            ? new FakeHandle(new Codecs.Browser.BrowserImageInfo { Width = upright.Width, Height = upright.Height }, upright.Bytes.ToArray())
+            : null);
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+
+        using var asStored = await decoder.DecodeAsync(jpeg, new DecodeOptions { AutoOrient = false }, PooledPixelAllocator.Shared);
+        Assert.AreEqual(stored.Size, asStored.Size);
+        Assert.AreEqual(0, TestImages.MaxChannelDifference(stored, asStored), $"{orientation}: the pixels are not as stored.");
+        Assert.AreEqual(orientation, asStored.Metadata?.Orientation);
+
+        // Without its metadata read, the image is still given as stored.
+        using var bare = await decoder.DecodeAsync(jpeg, new DecodeOptions { AutoOrient = false, ReadMetadata = false }, PooledPixelAllocator.Shared);
+        Assert.AreEqual(stored.Size, bare.Size);
+
+        using var shown = await decoder.DecodeAsync(jpeg, new DecodeOptions { AutoOrient = true }, PooledPixelAllocator.Shared);
+        Assert.AreEqual(upright.Size, shown.Size);
+        Assert.AreEqual(Orientation.Normal, shown.Metadata?.Orientation ?? Orientation.Normal);
+    }
+
     [TestMethod]
     public void ADocumentNestingMasksDeeplyIsRefused_AChainBuiltAStepAtATimeIsNot()
     {

@@ -226,6 +226,71 @@ public sealed class JsToDotNetTests : IDisposable
         Assert.IsTrue(records[0].At <= before.AddSeconds(-1), $"{records[0].At:O} is at least a second before {before:O}");
         Assert.IsTrue(records[0].StartTicks < records[1].StartTicks, "in the order they were made");
     }
+
+    [TestMethod]
+    public void A_folded_entry_counts_every_call_it_stands_for()
+    {
+        // The hub folds a window's calls past the ones it reports one by one, so a report fits in a circuit message.
+        var calls = Calls("App.OnScroll", 2, 0, durationMs: 2);
+        calls[1].Count = 400;
+        calls[1].DurationMs = 5;
+        calls[1].TotalMs = 801;
+
+        _bridge.ReportJsToDotNet(calls);
+
+        Assert.AreEqual(401, _session.Browser.JsToDotNetCalls);
+        var evt = Assert.ContainsSingle(Events("← .NET App.OnScroll"));
+        Assert.IsTrue(evt.TryGetData("calls", out var count) && count is 401, "the timeline event counts every call");
+        Assert.IsTrue(evt.TryGetData("totalMs", out var total) && total is 803.0, "and their total time, not the longest");
+        Assert.AreEqual(5, evt.DurationMs);
+        StringAssert.StartsWith(evt.Detail, "401 calls in this second");
+
+        var folded = Assert.ContainsSingle(r => r.CallCount > 1, _session.Interop.Snapshot());
+        Assert.AreEqual(400, folded.CallCount);
+        Assert.AreEqual(801, folded.TotalDurationMs);
+        var aggregate = Assert.ContainsSingle(_session.Interop.Aggregates());
+        Assert.AreEqual(401, aggregate.Count);
+        Assert.AreEqual(803, aggregate.TotalMs);
+        Assert.AreEqual(401, _session.Interop.CallCount);
+
+        _session.Diagnostics.Evaluate(force: true);
+        var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", _session.Diagnostics.Findings).Diagnostic;
+        Assert.AreEqual("← .NET App.OnScroll called 401 times in 1 s", finding.Title);
+        StringAssert.Contains(finding.Evidence, "The calls took 803 ms");
+    }
+
+    [TestMethod]
+    public void A_folded_entry_of_failed_calls_counts_them_all_as_failed()
+    {
+        var calls = Calls("App.OnScroll", 1, 0);
+        calls[0].Count = 30;
+        calls[0].TotalMs = 15;
+        calls[0].Error = "boom";
+
+        _bridge.ReportJsToDotNet(calls);
+
+        var evt = Assert.ContainsSingle(Events("← .NET App.OnScroll"));
+        Assert.AreEqual(BevToolsSeverity.Error, evt.Severity);
+        Assert.IsTrue(evt.TryGetData("calls", out var count) && count is 30);
+        StringAssert.EndsWith(evt.Detail, "all failed, the first: boom");
+        var aggregate = Assert.ContainsSingle(_session.Interop.Aggregates());
+        Assert.AreEqual(30, aggregate.Count);
+        Assert.AreEqual(30, aggregate.Failures);
+    }
+
+    [TestMethod]
+    public void Calls_the_hub_counted_without_listing_are_counted_under_no_name()
+    {
+        _bridge.ReportUnlistedJsToDotNet(250);
+
+        Assert.AreEqual(250, _session.Browser.JsToDotNetCalls);
+        Assert.AreEqual(250, _session.Browser.JsToDotNetUnlisted);
+        var evt = Assert.ContainsSingle(_session.Timeline.Snapshot(), "one event saying what is known");
+        Assert.AreNotEqual(BevToolsEventKind.JsInterop, evt.Kind, "never taken for one function's calls");
+        Assert.IsEmpty(_session.Interop.Snapshot());
+        _session.Diagnostics.Evaluate(force: true);
+        Assert.DoesNotContain(f => f.Diagnostic.RuleId == "jsinterop.excessive", _session.Diagnostics.Findings);
+    }
 }
 
 public sealed class FrameLoop

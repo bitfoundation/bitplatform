@@ -103,8 +103,8 @@
     <button id="btn-variant-text" type="button" @onclick="() => _runtimeVariant = BitVariant.Text">Text</button>
 </E2ESection>
 
-<E2ESection Id="loading" Title="IsLoading">
-    <BitDropMenu Id="dm-loading" Text="Cloud sync" IconName="@BitIconName.Cloud" IsLoading="_isLoading" @bind-IsOpen="_loadingOpen">
+<E2ESection Id="loading" Title="Loading">
+    <BitDropMenu Id="dm-loading" Text="Cloud sync" IconName="@BitIconName.Cloud" Loading="_isLoading" @bind-IsOpen="_loadingOpen">
         <div id="loading-content" style="padding:8px">Last synced 5 minutes ago</div>
     </BitDropMenu>
     <button id="btn-toggle-loading" type="button" @onclick="() => _isLoading = !_isLoading">Toggle loading</button>
@@ -400,7 +400,7 @@
                                    Opened = "background-color: rgb(218, 165, 32);" })">
         <div style="padding:8px">Styles</div>
     </BitDropMenu>
-    <BitDropMenu Id="dm-styles-spinner" Text="Spinner" IsLoading
+    <BitDropMenu Id="dm-styles-spinner" Text="Spinner" Loading
                  Styles="@(new() { Spinner = "width: 30px; height: 30px;" })"
                  Classes="@(new() { Spinner = "custom-spinner" })">
         <div style="padding:8px">Spinner</div>

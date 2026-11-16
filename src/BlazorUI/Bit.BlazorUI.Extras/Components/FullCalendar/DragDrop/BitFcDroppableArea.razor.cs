@@ -4,11 +4,11 @@ public partial class BitFcDroppableArea
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Class { get; set; }
     [Parameter] public DateTime Date { get; set; }
     [Parameter] public int? Hour { get; set; }
     [Parameter] public int? Minute { get; set; }
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public string? Class { get; set; }
 
     private bool _isOver;
     // Set when a dragover fires while already hovering: the hover state is unchanged, so the render

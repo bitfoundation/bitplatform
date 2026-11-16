@@ -306,9 +306,19 @@ public static class BcrdtAnyCodec
     /// Produces a stable string key for a value, suitable for set membership.
     /// </summary>
     /// <remarks>
-    /// Two logically equal values always produce the same key on every replica, because
+    /// <para>
+    /// A value produces the same key on every replica, because
     /// <see cref="Write(ref BcrdtBufferWriter, object?)"/> is canonical. Short primitives get a readable key so that a document's
     /// internal state stays legible when inspected; everything else falls back to base64.
+    /// </para>
+    /// <para>
+    /// The key is exact about a number's type and representation, which <see cref="DeepEquals"/> is not: an integer
+    /// and a double of the same value (<c>1</c> and <c>1.0</c>), decimals that differ only in scale (<c>1.0m</c> and
+    /// <c>1.00m</c>), and <c>0.0</c> and <c>-0.0</c> each produce two keys - two members of a <see cref="BcrdtSet"/> -
+    /// though <see cref="DeepEquals"/> reports them equal. Integers of any width do share a key. The keys are what a
+    /// set stores, so they cannot change without orphaning the members of documents already written; a set that may be
+    /// given one number in more than one form should be given it in one form - normalized by the application.
+    /// </para>
     /// </remarks>
     public static string CanonicalKey(object? value) => value switch
     {
@@ -322,6 +332,12 @@ public static class BcrdtAnyCodec
     };
 
     /// <summary>Structural equality over the value model, including nested arrays and objects.</summary>
+    /// <remarks>
+    /// Numbers compare by value whatever their type, so a value still equals itself after a round trip that widened an
+    /// <see cref="int"/> to a <see cref="long"/>, and <c>1</c> equals <c>1.0</c>. That is looser than
+    /// <see cref="CanonicalKey"/>, and so than <see cref="BcrdtSet"/> membership, which tell numbers apart by type and
+    /// representation.
+    /// </remarks>
     public static bool DeepEquals(object? left, object? right)
     {
         if (ReferenceEquals(left, right)) return true;

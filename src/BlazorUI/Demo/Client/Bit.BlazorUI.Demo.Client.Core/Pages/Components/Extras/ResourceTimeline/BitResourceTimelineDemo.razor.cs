@@ -559,6 +559,7 @@ public partial class BitResourceTimelineDemo
                 new() { Name = "Colors", Type = "BitResourceTimelineColors?", DefaultValue = "null", Description = "Color overrides, winning over the theme and the --bit-ResourceTimeline-* variables.", LinkType = LinkType.Link, Href = "#timeline-colors" },
                 new() { Name = "Surface", Type = "BitResourceTimelineSurface?", DefaultValue = "null", Description = "Stripes, per-resource colors and bands under the grid. Replaced as a whole; empty clears it.", LinkType = LinkType.Link, Href = "#timeline-surface" },
                 new() { Name = "AxisLines", Type = "BitResourceTimelineAxisLines?", DefaultValue = "null", Description = "Colors of the time and resource lines. Replaced as a whole; empty clears it.", LinkType = LinkType.Link, Href = "#axis-lines" },
+                new() { Name = "GroupSeparators", Type = "BitResourceTimelineGroupSeparators?", DefaultValue = "null", Description = "Separator bands between resource groups, across the resource column and the content pane, taking room of their own between the rows. Replaced as a whole; empty clears it.", LinkType = LinkType.Link, Href = "#group-separators" },
             ]
         },
         new()
@@ -654,6 +655,22 @@ public partial class BitResourceTimelineDemo
                 new() { Name = "Horizontal", Type = "BitResourceTimelineRowStripes?", DefaultValue = "null", Description = "The colors of the horizontal lines - the top edge of each resource row - cycled down the rows.", LinkType = LinkType.Link, Href = "#row-stripes" },
                 new() { Name = "ResourceColors", Type = "Dictionary<string, string>?", DefaultValue = "null", Description = "A CSS color per resource id for the line of its row, for the resources that set no LineColor of their own." },
                 new() { Name = "BoundariesOnly", Type = "bool?", DefaultValue = "null", Description = "When true, only the line at the start of each vertical stripe (each midnight for days, the week boundary, every hour the span covers) is recolored; the others keep Colors.Grid." },
+            ]
+        },
+        new()
+        {
+            Id = "group-separators",
+            Title = "BitResourceTimelineGroupSeparators",
+            Description = "Separator bands between resource groups, drawn across the resource column and the content pane wherever a group begins or ends among its siblings - never between two leaves, nor between a group's row and its first child. A separator is Height plus twice BorderWidth pixels tall and takes that room between the rows, in place of the grid line there; a point over it hits no row. One with neither a Height nor a BorderWidth draws nothing, so an empty instance clears it.",
+            Parameters =
+            [
+                new() { Name = "Height", Type = "int?", DefaultValue = "null", Description = "Height of the band between the borders, in pixels, painted with Background. Null is 0." },
+                new() { Name = "Background", Type = "string?", DefaultValue = "null", Description = "CSS color of the band between the borders. Null is Colors.AxisBorder; transparent spaces the groups apart only." },
+                new() { Name = "BorderWidth", Type = "int?", DefaultValue = "null", Description = "Width of the border along the top and along the bottom of the band, in pixels. Null is 0: no borders." },
+                new() { Name = "BorderColor", Type = "string?", DefaultValue = "null", Description = "CSS color of the borders. Null is Colors.AxisBorder." },
+                new() { Name = "BorderStyle", Type = "BitLineStyle?", DefaultValue = "null", Description = "How the borders are stroked: Solid (the default), Dashed, Dotted or Double (which needs a BorderWidth of 3 or more, and is solid when thinner).", LinkType = LinkType.Link, Href = "#line-style-enum" },
+                new() { Name = "MaxDepth", Type = "int?", DefaultValue = "null", Description = "The deepest level whose groups are separated: 0 (the default) the top-level resources alone, 1 their child groups as well, and so on. A negative value separates nothing." },
+                new() { Name = "ShowInResourceAxis", Type = "bool?", DefaultValue = "null", Description = "Whether the separators also cross the resource column, under its labels. Null is true; false keeps them to the content pane, taking the same room." },
             ]
         },
         new()
@@ -914,6 +931,7 @@ public partial class BitResourceTimelineDemo
                 new() { Name = "Week", Value = "2", Description = "A stripe per week, starting on Options.FirstDayOfWeek (or the week start of the locale, otherwise Monday)." },
             ]
         },
+        DemoSharedEnums.BitLineStyle(),
     ];
 
 
@@ -959,6 +977,45 @@ public partial class BitResourceTimelineDemo
 
     private readonly BitResourceTimelineConfig hierarchyConfig = CreateHierarchyConfig();
 
+    private string? separatorPreset = "band";
+    private bool separateSubGroups;
+    private BitResourceTimelineOptions hierarchyOptions = CreateHierarchyOptions("band", false);
+
+    private void UpdateHierarchyOptions() => hierarchyOptions = CreateHierarchyOptions(separatorPreset, separateSubGroups);
+
+    private static BitResourceTimelineOptions CreateHierarchyOptions(string? preset, bool subGroups)
+    {
+        // A new instance replaces the separators as a whole, and an empty one clears them.
+        BitResourceTimelineGroupSeparators separators = preset switch
+        {
+            // A plain 2px line in the color of the axis borders.
+            "line" => new() { Height = 2 },
+            // A tinted band between two thin borders.
+            "band" => new()
+            {
+                Height = 6,
+                Background = "rgba(25, 113, 194, 0.12)",
+                BorderWidth = 1,
+                BorderColor = "rgba(25, 113, 194, 0.5)",
+            },
+            // An empty gap between two dashed borders.
+            "dashed" => new()
+            {
+                Height = 4,
+                Background = "transparent",
+                BorderWidth = 1,
+                BorderColor = "#868e96",
+                BorderStyle = BitLineStyle.Dashed,
+            },
+            _ => new(),
+        };
+
+        // 1 separates the groups inside the terminals (the remote stands) as well.
+        separators.MaxDepth = subGroups ? 1 : 0;
+
+        return new() { GroupSeparators = separators };
+    }
+
     private static BitResourceTimelineConfig CreateHierarchyConfig()
     {
         var today = BitResourceTimelineDemoData.Today;
@@ -971,9 +1028,13 @@ public partial class BitResourceTimelineDemo
             new() { Id = "AR", Name = "Remote stands", ParentId = "TA" },
             new() { Id = "R1", Name = "Stand R1", ParentId = "AR" },
             new() { Id = "R2", Name = "Stand R2", ParentId = "AR" },
+            new() { Id = "A3", Name = "Gate A3", ParentId = "TA" },
             new() { Id = "TB", Name = "Terminal B", Collapsed = true },
             new() { Id = "B1", Name = "Gate B1", ParentId = "TB" },
             new() { Id = "B2", Name = "Gate B2", ParentId = "TB" },
+            new() { Id = "TC", Name = "Terminal C" },
+            new() { Id = "C1", Name = "Gate C1", ParentId = "TC" },
+            new() { Id = "C2", Name = "Gate C2", ParentId = "TC" },
         ];
 
         return new()

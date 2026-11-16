@@ -42,14 +42,14 @@ public partial class BitRichTextEditorLegacy : BitComponentBase
     [Parameter] public EventCallback<string> OnEditorReady { get; set; }
 
     /// <summary>
-    /// Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment.
-    /// </summary>
-    [Parameter] public EventCallback OnQuillReady { get; set; }
-
-    /// <summary>
     /// Callback for when the scripts of the provided Quill Modules are loaded and their api are ready to use.
     /// </summary>
     [Parameter] public EventCallback OnQuillModulesReady { get; set; }
+
+    /// <summary>
+    /// Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment.
+    /// </summary>
+    [Parameter] public EventCallback OnQuillReady { get; set; }
 
     /// <summary>
     /// The placeholder value of the editor.
@@ -140,17 +140,13 @@ public partial class BitRichTextEditorLegacy : BitComponentBase
 
 
 
-    protected override string RootElementClass => "bit-rte";
+    protected override string RootElementClass => "bit-rel";
 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        // The Extras BitRichTextEditor shares the bit-rte-* class names, so the legacy stylesheet
-        // is scoped under this class to keep its rules off the other editor.
-        ClassBuilder.Register(() => "bit-rte-lgc");
-
-        ClassBuilder.Register(() => Reversed ? "bit-rte-rvs" : string.Empty);
+        ClassBuilder.Register(() => Reversed ? "bit-rel-rvs" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

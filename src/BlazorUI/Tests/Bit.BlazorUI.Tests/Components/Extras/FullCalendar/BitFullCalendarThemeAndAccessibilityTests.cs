@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Components.Extras.FullCalendar;
 
 /// <summary>
-/// Covers the theme surface (BitFullCalendarParams, Classes/Styles, IsLoading) and the accessibility contract of the
+/// Covers the theme surface (BitFullCalendarParams, Classes/Styles, Loading) and the accessibility contract of the
 /// calendar's chrome: a named root, labelled tab strips controlling a labelled panel, a settings popup of real form
 /// semantics, today marked as the current date, form errors tied to their fields, and keys that follow the rendered
 /// direction rather than the culture's.
@@ -142,13 +142,13 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Loading, true);
         });
 
         Assert.AreEqual("true", component.Find(".bit-bfc-body").GetAttribute("aria-busy"));
         Assert.AreEqual(1, component.FindAll(".bit-bfc-loading").Count);
 
-        component.Render(parameters => parameters.Add(p => p.IsLoading, false));
+        component.Render(parameters => parameters.Add(p => p.Loading, false));
 
         Assert.IsNull(component.Find(".bit-bfc-body").GetAttribute("aria-busy"));
         Assert.AreEqual(0, component.FindAll(".bit-bfc-loading").Count);

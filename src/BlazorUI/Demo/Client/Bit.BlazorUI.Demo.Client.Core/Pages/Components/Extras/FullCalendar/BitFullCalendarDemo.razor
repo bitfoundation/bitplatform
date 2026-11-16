@@ -340,11 +340,11 @@
         <DemoExample Title="Loading" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
                 <b>OnDateChange</b> fires on the first render and whenever the visible range moves - fetch that range there,
-                and set <b>IsLoading</b> meanwhile: a progress bar runs across the top and the body is marked busy for screen
+                and set <b>Loading</b> meanwhile: a progress bar runs across the top and the body is marked busy for screen
                 readers, without blocking the calendar.
             </div>
             <br />
-            <BitFullCalendar Events="loadedEvents" IsLoading="isLoading" OnDateChange="LoadRange" />
+            <BitFullCalendar Events="loadedEvents" Loading="isLoading" OnDateChange="LoadRange" />
             <br />
             <BitText>Loaded: <b>@(loadedRange ?? "-")</b></BitText>
         </DemoExample>

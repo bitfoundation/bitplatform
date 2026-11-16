@@ -56,8 +56,28 @@
                     of Terminal A.
                 </div>
                 <br />
+                <div>
+                    <b>GroupSeparators</b> draws a band between the groups, across the resource column and the content:
+                    its <b>Height</b> and <b>Background</b>, a <b>BorderWidth</b>, <b>BorderColor</b> and
+                    <b>BorderStyle</b> along both of its edges, and <b>MaxDepth</b>, the deepest level whose groups it
+                    separates (1 adds the remote stands of Terminal A). A separator takes room of its own between the rows,
+                    and moves with them as a group is collapsed or expanded. A new instance replaces the previous one, and an
+                    empty one clears it.
+                </div>
+                <br />
+                <BitChoiceGroup Label="GroupSeparators" Horizontal
+                                TItem="BitChoiceGroupOption<string>" TValue="string"
+                                @bind-Value="separatorPreset" @bind-Value:after="UpdateHierarchyOptions">
+                    <BitChoiceGroupOption Text="None" Value="@("none")" />
+                    <BitChoiceGroupOption Text="Line" Value="@("line")" />
+                    <BitChoiceGroupOption Text="Band" Value="@("band")" />
+                    <BitChoiceGroupOption Text="Dashed" Value="@("dashed")" />
+                </BitChoiceGroup>
+                <br />
+                <BitToggle @bind-Value="separateSubGroups" @bind-Value:after="UpdateHierarchyOptions" Label="MaxDepth 1" Inline />
+                <br />
                 <div class="timeline">
-                    <BitResourceTimeline Config="hierarchyConfig" />
+                    <BitResourceTimeline Config="hierarchyConfig" Options="hierarchyOptions" />
                 </div>
             </DemoExample>
 

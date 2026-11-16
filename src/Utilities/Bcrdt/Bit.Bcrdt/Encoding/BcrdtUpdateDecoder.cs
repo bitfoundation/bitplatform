@@ -241,6 +241,19 @@ public static class BcrdtUpdateDecoder
         {
             foreach (BcrdtAbstractStruct blocked in stack)
             {
+                // What each held block itself waits for. Only the block on top of the stack noted its own wait;
+                // the ones below it jumped to another author's blocks in this update, and when one of those turns
+                // out to be out of order it notes its own clock, which lies past what the block below needs. Content
+                // from that author arriving later would then release nothing, and the blocks held here would wait
+                // until the next handshake.
+                if (blocked is BcrdtItem item)
+                {
+                    for (int dependency = 0; dependency < BcrdtItem.DependencyCount; dependency++)
+                    {
+                        if (item.GetUnmetDependency(dependency, store) is { } unmet) NoteMissing(unmet.Client, store.GetState(unmet.Client));
+                    }
+                }
+
                 ulong client = blocked.Id.Client;
                 if (groups.TryGetValue(client, out BcrdtClientBlocks? group))
                 {

@@ -513,6 +513,38 @@ public class BitResourceTimelineWireFormatTests
     }
 
     [TestMethod]
+    public void BitResourceTimelineOptionsShouldSerializeTheGroupSeparatorsWithTheExpectedNames()
+    {
+        var root = Serialize(new BitResourceTimelineOptions
+        {
+            GroupSeparators = new()
+            {
+                Height = 4,
+                Background = "#eee",
+                BorderWidth = 1,
+                BorderColor = "#333",
+                BorderStyle = BitLineStyle.Dashed,
+                MaxDepth = 1,
+                ShowInResourceAxis = false,
+            },
+        });
+
+        var separators = root.GetProperty("groupSeparators");
+
+        Assert.AreEqual(4, separators.GetProperty("height").GetInt32());
+        Assert.AreEqual("#eee", separators.GetProperty("background").GetString());
+        Assert.AreEqual(1, separators.GetProperty("borderWidth").GetInt32());
+        Assert.AreEqual("#333", separators.GetProperty("borderColor").GetString());
+        // The engine reads the style by its name, not by the number of the enum member.
+        Assert.AreEqual("dashed", separators.GetProperty("borderStyle").GetString(), ignoreCase: true);
+        Assert.AreEqual(1, separators.GetProperty("maxDepth").GetInt32());
+        Assert.IsFalse(separators.GetProperty("showInResourceAxis").GetBoolean());
+
+        // An empty instance is sent as one, which is what clears the separators applied before.
+        Assert.AreEqual("""{"groupSeparators":{}}""", JsonSerializer.Serialize(new BitResourceTimelineOptions { GroupSeparators = new() }, Web));
+    }
+
+    [TestMethod]
     public void BitResourceTimelineOptionsShouldOmitTheSurfaceWhenNull()
     {
         Assert.IsFalse(Serialize(new BitResourceTimelineOptions()).TryGetProperty("surface", out _));

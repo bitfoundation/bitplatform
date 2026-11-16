@@ -216,15 +216,6 @@ public partial class BitBasicListDemo
         },
         new()
         {
-            Name = "Styles",
-            Type = "BitBasicListClassStyles?",
-            DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the list.",
-            LinkType = LinkType.Link,
-            Href = "#class-styles",
-        },
-        new()
-        {
             Name = "StickyFooter",
             Type = "bool",
             DefaultValue = "false",
@@ -236,6 +227,15 @@ public partial class BitBasicListDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Keeps the header in view at the start of the list while its rows scroll past it (at the inline start of a horizontal list). It pins the wrapper the HeaderTemplate is rendered into, which has no background of its own: paint one in the template or through Styles.Header.",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitBasicListClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the list.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
         new()
         {

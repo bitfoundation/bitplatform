@@ -108,7 +108,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// through its aria-describedby so that screen readers announce it along with the name of the group.
     /// It is where the sentence that turns a row of empty boxes into a question the user can answer
     /// belongs: where the code was sent, how long it is good for, or what a server that rejected it said.
-    /// While <see cref="Invalid"/> or <see cref="IsLoading"/> is on it also sits in the live region of the
+    /// While <see cref="Invalid"/> or <see cref="Loading"/> is on it also sits in the live region of the
     /// component, so the wait for the answer and a rejection are announced at the moment they happen rather
     /// than waiting for the focus to come back to the code.
     /// </summary>
@@ -133,21 +133,20 @@ public partial class BitOtpInput : BitInputBase<string?>
     public bool FullWidth { get; set; }
 
     /// <summary>
-    /// Label displayed above the inputs.
-    /// </summary>
-    [Parameter] public string? Label { get; set; }
-
-    /// <summary>
-    /// Custom template for the label displayed above the inputs.
-    /// </summary>
-    [Parameter] public RenderFragment? LabelTemplate { get; set; }
-
-    /// <summary>
     /// The composite format of the aria-label rendered on each input, where {0} is the one based index
     /// of the input and {1} is the <see cref="Length"/>. Set it to localize the position that screen
     /// readers announce for each input. The default is "{0} of {1}".
     /// </summary>
     [Parameter] public string? InputAriaLabelFormat { get; set; }
+
+    /// <summary>
+    /// Sets the inputmode html attribute of the inputs, which is what decides the virtual keyboard that a
+    /// phone brings up without changing the element that is rendered. It defaults to the keyboard that
+    /// matches the <see cref="Type"/>, so it is only needed to ask for a keyboard the type does not imply,
+    /// like the telephone keypad (whose keys are larger than the numeric ones on most Android keyboards)
+    /// for a code of digits.
+    /// </summary>
+    [Parameter] public BitInputMode? InputMode { get; set; }
 
     /// <summary>
     /// Paints the inputs with the error state without an EditContext taking part in it, which is what
@@ -162,6 +161,21 @@ public partial class BitOtpInput : BitInputBase<string?>
     public bool Invalid { get; set; }
 
     /// <summary>
+    /// Label displayed above the inputs.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom template for the label displayed above the inputs.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Length of the OTP or number of the inputs.
+    /// </summary>
+    [Parameter] public int Length { get; set; } = 5;
+
+    /// <summary>
     /// Puts the component into the busy state of a code that has been submitted and is being checked, which
     /// is the step between the <see cref="OnFill"/> and the answer that either lets the user through or sets
     /// the <see cref="Invalid"/>. It paints an indeterminate progress bar under the inputs, marks the group
@@ -172,21 +186,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// answer is already on its way.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public bool IsLoading { get; set; }
-
-    /// <summary>
-    /// Sets the inputmode html attribute of the inputs, which is what decides the virtual keyboard that a
-    /// phone brings up without changing the element that is rendered. It defaults to the keyboard that
-    /// matches the <see cref="Type"/>, so it is only needed to ask for a keyboard the type does not imply,
-    /// like the telephone keypad (whose keys are larger than the numeric ones on most Android keyboards)
-    /// for a code of digits.
-    /// </summary>
-    [Parameter] public BitInputMode? InputMode { get; set; }
-
-    /// <summary>
-    /// Length of the OTP or number of the inputs.
-    /// </summary>
-    [Parameter] public int Length { get; set; } = 5;
+    public bool Loading { get; set; }
 
     /// <summary>
     /// Turns every character of the code into its lower case form as it is typed or pasted, the mirror of
@@ -352,14 +352,6 @@ public partial class BitOtpInput : BitInputBase<string?>
     public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Turns every character of the code into its upper case form as it is typed or pasted, which is what
-    /// lets a code that is printed in upper case be typed in either case. The conversion happens before
-    /// the <see cref="Pattern"/> is applied, so an expression restricted to upper case letters accepts a
-    /// lower case keystroke instead of rejecting it.
-    /// </summary>
-    [Parameter] public bool Uppercase { get; set; }
-
-    /// <summary>
     /// Custom CSS styles for different parts of the BitOtpInput.
     /// </summary>
     [Parameter, ResetStyleBuilder] public BitOtpInputClassStyles? Styles { get; set; }
@@ -368,6 +360,14 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// Type of the inputs.
     /// </summary>
     [Parameter] public BitInputType? Type { get; set; }
+
+    /// <summary>
+    /// Turns every character of the code into its upper case form as it is typed or pasted, which is what
+    /// lets a code that is printed in upper case be typed in either case. The conversion happens before
+    /// the <see cref="Pattern"/> is applied, so an expression restricted to upper case letters accepts a
+    /// lower case keystroke instead of rejecting it.
+    /// </summary>
+    [Parameter] public bool Uppercase { get; set; }
 
     /// <summary>
     /// The visual variant of the inputs, which decides how much of the frame around each input is
@@ -410,7 +410,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     /// <summary>
     /// Clears the value of all of the inputs of the BitOtpInput. It does nothing while the component is
-    /// disabled or read-only, and it is deliberately not refused by the <see cref="IsLoading"/>: that state
+    /// disabled or read-only, and it is deliberately not refused by the <see cref="Loading"/>: that state
     /// belongs to the consumer calling this, whose answer from the server is usually what clears the code.
     /// </summary>
     public async Task Clear()
@@ -549,7 +549,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         ClassBuilder.Register(() => IsReadOnly ? "bit-otp-rdl" : string.Empty);
 
-        ClassBuilder.Register(() => IsLoading ? "bit-otp-ldg" : string.Empty);
+        ClassBuilder.Register(() => Loading ? "bit-otp-ldg" : string.Empty);
 
         ClassBuilder.Register(() => Disabled is false && Required ? "bit-otp-req" : string.Empty);
 
@@ -600,7 +600,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         // and is therefore not announced, which is what keeps a state that merely re-renders quiet. A
         // DescriptionTemplate is markup rather than text, so there is nothing to copy into the region and
         // the consumer keeps the announcement of it.
-        _statusMessage = (Invalid || IsLoading) && DescriptionTemplate is null ? Description : null;
+        _statusMessage = (Invalid || Loading) && DescriptionTemplate is null ? Description : null;
 
         // Narrowing the set of characters that the code may hold has to reach the characters that are
         // already in the inputs too, otherwise the component would keep showing (and reporting) a code
@@ -705,7 +705,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     // code that has already been submitted alike, so everything the user could edit it with consults the
     // two together. The programmatic API is deliberately left out of it: the busy state belongs to the
     // consumer, so a Clear of its own must not be refused by the very state it has just switched on.
-    private bool IsReadOnly => ReadOnly || IsLoading;
+    private bool IsReadOnly => ReadOnly || Loading;
 
     protected override bool HasError => Invalid;
 
@@ -1398,7 +1398,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         await OnFill.InvokeAsync(value);
 
         // Submitted after the callback on purpose, so that whatever the consumer switches on in it (the
-        // IsLoading of the round trip above all) is already in place when the submit handler of the form runs.
+        // Loading of the round trip above all) is already in place when the submit handler of the form runs.
         if (AutoSubmit is false || IsDisposed || IsRendered is false) return;
 
         try

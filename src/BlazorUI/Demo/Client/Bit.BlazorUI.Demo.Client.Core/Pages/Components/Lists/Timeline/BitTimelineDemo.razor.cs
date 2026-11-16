@@ -40,19 +40,19 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Name = "DotTemplate",
-            Type = "RenderFragment<TItem>?",
-            DefaultValue = "null",
-            Description = "The default custom template for the dot of the items, used by the items that provide no dot template of their own.",
-        },
-        new()
-        {
             Name = "DotAlignment",
             Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Where the dot of each item sits along its item, with the contents aligned to it: at its middle (Center, the default), its Start (the top in a vertical timeline) or its End (the bottom in a vertical timeline). Start pins the dot to the first line of multi-line contents. Only Center, Start and End are honoured; every other value renders the default Center.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
+        },
+        new()
+        {
+            Name = "DotTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "The default custom template for the dot of the items, used by the items that provide no dot template of their own.",
         },
         new()
         {
@@ -79,21 +79,21 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Name = "LineStyle",
-            Type = "BitLineStyle?",
-            DefaultValue = "null",
-            Description = "The way the connecting line of the timeline is painted, which the items can override one by one. Only Solid, Dashed and Dotted are drawn: the connector is a hairline, which leaves Double no room for its two strokes, so it is drawn solid.",
-            LinkType = LinkType.Link,
-            Href = "#line-style-enum",
-        },
-        new()
-        {
             Name = "LinePlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Where the connecting line runs: through the middle (Center, the default), with the primary contents on one side of it and the secondary ones on the other, or along the Start edge (the top in a horizontal timeline) or the End edge (the bottom in a horizontal timeline), with the contents of each item stacked beside it. Reversed and Alternate only apply to the centered line. Only Center, Start and End are honoured; every other value renders the default Center.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
+        },
+        new()
+        {
+            Name = "LineStyle",
+            Type = "BitLineStyle?",
+            DefaultValue = "null",
+            Description = "The way the connecting line of the timeline is painted, which the items can override one by one. Only Solid, Dashed and Dotted are drawn: the connector is a hairline, which leaves Double no room for its two strokes, so it is drawn solid.",
+            LinkType = LinkType.Link,
+            Href = "#line-style-enum",
         },
         new()
         {
@@ -119,17 +119,17 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Name = "ReverseOrder",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Renders the items in the reverse order, so the last item of the list is painted first. The reading and the focus order keep the order of the list.",
-        },
-        new()
-        {
             Name = "Reversed",
             Type = "bool",
             DefaultValue = "false",
             Description = "Reverses all of the timeline items direction, so their contents swap sides of the line.",
+        },
+        new()
+        {
+            Name = "ReverseOrder",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the items in the reverse order, so the last item of the list is painted first. The reading and the focus order keep the order of the list.",
         },
         new()
         {

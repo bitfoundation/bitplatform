@@ -209,17 +209,17 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "DefaultValues",
-            Type = "IEnumerable<TValue?>?",
-            DefaultValue = "null",
-            Description = "The default values that will be initially used to set selected items in multi select mode if the Values parameter is not set.",
-        },
-        new()
-        {
             Name = "DebounceTime",
             Type = "int",
             DefaultValue = "0",
             Description = "The debounce time in milliseconds for the search and combo box inputs (applied when Immediate is enabled).",
+        },
+        new()
+        {
+            Name = "DefaultValues",
+            Type = "IEnumerable<TValue?>?",
+            DefaultValue = "null",
+            Description = "The default values that will be initially used to set selected items in multi select mode if the Values parameter is not set.",
         },
         new()
         {
@@ -351,13 +351,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "InitialSelectedItems",
-            Type = "IEnumerable<TItem>?",
-            DefaultValue = "null",
-            Description = "The initial items that will be used to set selected items when using an ItemProvider.",
-        },
-        new()
-        {
             Name = "Immediate",
             Type = "bool",
             DefaultValue = "false",
@@ -365,17 +358,17 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "InitialSelectedItems",
+            Type = "IEnumerable<TItem>?",
+            DefaultValue = "null",
+            Description = "The initial items that will be used to set selected items when using an ItemProvider.",
+        },
+        new()
+        {
             Name = "Invalid",
             Type = "bool",
             DefaultValue = "false",
             Description = "Marks the dropdown as invalid without an EditContext having said so, which is what a rejection the app decided on its own (a server response, a rule spanning two fields) needs. It gives the dropdown the same look and the same aria-invalid attribute an invalid bound value does. Setting ErrorMessage implies it. It says nothing more to a screen reader unless ErrorMessageAriaLabel gives it a reason to announce.",
-        },
-        new()
-        {
-            Name = "IsLoading",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched. The dropdown stays interactive, so the user can still open the callout and see the loading state.",
         },
         new()
         {
@@ -453,17 +446,24 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched. The dropdown stays interactive, so the user can still open the callout and see the loading state.",
+        },
+        new()
+        {
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to render in the callout in place of the items while IsLoading is enabled.",
+            Description = "The custom template to render in the callout in place of the items while Loading is enabled.",
         },
         new()
         {
             Name = "LoadingText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text to render in the callout in place of the items while IsLoading is enabled. Defaults to \"Loading...\".",
+            Description = "The text to render in the callout in place of the items while Loading is enabled. Defaults to \"Loading...\".",
         },
         new()
         {

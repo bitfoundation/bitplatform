@@ -13,7 +13,7 @@ public partial class _BitMenuButtonCustomDemo
     private bool oneWayIsOpen;
     private bool twoWayIsOpen;
 
-    private bool customIsLoading;
+    private bool customLoading;
 
     private string? submenuClickedCustom;
 

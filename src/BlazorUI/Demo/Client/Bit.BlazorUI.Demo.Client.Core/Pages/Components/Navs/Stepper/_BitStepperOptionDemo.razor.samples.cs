@@ -137,11 +137,11 @@ private string? eventsClicked;";
         background-color: var(--bit-clr-bg-sec);
     }
 
-    .custom-item .bit-stp-txt {
+    .custom-item .bit-str-txt {
         color: dodgerblue;
     }
 
-    .custom-current .bit-stp-ind {
+    .custom-current .bit-str-ind {
         box-shadow: 0 0 0 0.25rem var(--bit-clr-pri-light);
     }
 

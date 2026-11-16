@@ -7,10 +7,10 @@ public partial class BitFcMonthEventBadge
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
-    [Parameter] public BitFullCalendarEvent Event { get; set; } = default!;
     [Parameter] public DateTime CellDate { get; set; }
-    [Parameter] public string Position { get; set; } = "none";
-    [Parameter] public EventCallback<BitFullCalendarEvent> OnSelected { get; set; }
+
+    [Parameter] public BitFullCalendarEvent Event { get; set; } = default!;
+
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
 
     /// <summary>
@@ -19,6 +19,10 @@ public partial class BitFcMonthEventBadge
     /// the rest stay clickable but are skipped, instead of repeating the same event once per day.
     /// </summary>
     [Parameter] public bool IsLead { get; set; } = true;
+
+    [Parameter] public EventCallback<BitFullCalendarEvent> OnSelected { get; set; }
+
+    [Parameter] public string Position { get; set; } = "none";
 
     // The ids a badge drawn by an EventTemplate is named through (BitFcEventTemplateHost).
     private readonly string _instanceId = Guid.NewGuid().ToString("N");

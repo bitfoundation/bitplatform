@@ -6,41 +6,6 @@ public partial class BitModalServiceDemo : IDisposable
     [
         new()
         {
-            Name = "OnAddModal",
-            Type = "event Func<BitModalReference, Task>?",
-            DefaultValue = "",
-            Description = "Raised for every modal shown through this service, whoever showed it.",
-        },
-        new()
-        {
-            Name = "OnCloseModal",
-            Type = "event Func<BitModalReference, Task>?",
-            DefaultValue = "",
-            Description = "Raised once for every modal of this service that closes, however it closed: answered or closed by the application, dismissed by the user, closed by a navigation or by its container going away.",
-        },
-        new()
-        {
-            Name = "IsContainerAvailable",
-            Type = "bool",
-            DefaultValue = "",
-            Description = "Whether a BitModalContainer is currently mounted for this service, i.e. whether a Show call right now would actually render its modal. It reflects live state rather than registration in DI.",
-        },
-        new()
-        {
-            Name = "OpenModals",
-            Type = "IReadOnlyList<BitModalReference>",
-            DefaultValue = "",
-            Description = "A snapshot of the modals this service currently has open, in the order they were opened. It holds what the mounted container renders, plus the persistent modals that are still waiting for a container to mount.",
-        },
-        new()
-        {
-            Name = "GetModal",
-            Type = "BitModalReference? (string? id)",
-            DefaultValue = "",
-            Description = "The open modal with the given id, or null when there is none - it was closed, or the id belongs to another service.",
-        },
-        new()
-        {
             Name = "Close",
             Type = "Task (BitModalReference modal)",
             DefaultValue = "",
@@ -55,17 +20,45 @@ public partial class BitModalServiceDemo : IDisposable
         },
         new()
         {
-            Name = "TryClose",
-            Type = "Task<bool> (BitModalReference modal, object? result)",
-            DefaultValue = "",
-            Description = "Asks a modal to close and reports whether it did: a modal whose CanClose guard turns the close down stays open and this answers false.",
-        },
-        new()
-        {
             Name = "CloseAll",
             Type = "Task",
             DefaultValue = "",
             Description = "Closes every modal this service currently has open, each with a null result, the last one opened first - so each hands the focus back to the modal under it, and the last to the page. The CanClose guards are not asked.",
+        },
+        new()
+        {
+            Name = "GetModal",
+            Type = "BitModalReference? (string? id)",
+            DefaultValue = "",
+            Description = "The open modal with the given id, or null when there is none - it was closed, or the id belongs to another service.",
+        },
+        new()
+        {
+            Name = "IsContainerAvailable",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Whether a BitModalContainer is currently mounted for this service, i.e. whether a Show call right now would actually render its modal. It reflects live state rather than registration in DI.",
+        },
+        new()
+        {
+            Name = "OnAddModal",
+            Type = "event Func<BitModalReference, Task>?",
+            DefaultValue = "",
+            Description = "Raised for every modal shown through this service, whoever showed it.",
+        },
+        new()
+        {
+            Name = "OnCloseModal",
+            Type = "event Func<BitModalReference, Task>?",
+            DefaultValue = "",
+            Description = "Raised once for every modal of this service that closes, however it closed: answered or closed by the application, dismissed by the user, closed by a navigation or by its container going away.",
+        },
+        new()
+        {
+            Name = "OpenModals",
+            Type = "IReadOnlyList<BitModalReference>",
+            DefaultValue = "",
+            Description = "A snapshot of the modals this service currently has open, in the order they were opened. It holds what the mounted container renders, plus the persistent modals that are still waiting for a container to mount.",
         },
         new()
         {
@@ -122,6 +115,13 @@ public partial class BitModalServiceDemo : IDisposable
             Type = "Task<BitModalReference> (Func<BitModalReference, Dictionary<string, object>?> parametersFactory, BitModalParameters? modalParameters, bool persistent)",
             DefaultValue = "",
             Description = "Shows a new BitModal, building the content component's parameters from a factory that receives the modal reference. Use this overload when a parameter needs the reference itself, such as an OnClose callback that closes this very modal.",
+        },
+        new()
+        {
+            Name = "TryClose",
+            Type = "Task<bool> (BitModalReference modal, object? result)",
+            DefaultValue = "",
+            Description = "Asks a modal to close and reports whether it did: a modal whose CanClose guard turns the close down stays open and this answers false.",
         },
     ];
 

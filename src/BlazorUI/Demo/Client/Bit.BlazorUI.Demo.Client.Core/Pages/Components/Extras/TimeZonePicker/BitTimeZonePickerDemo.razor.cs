@@ -151,17 +151,17 @@ public partial class BitTimeZonePickerDemo
         },
         new()
         {
-            Name = "NoResultsText",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The message to show, and to announce, when the search result of the time zone list is empty. Defaults to BitStrings.NoResultsFound (\"No results found\").",
-        },
-        new()
-        {
             Name = "NoResultsTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template to show when the search result of the time zone list is empty.",
+        },
+        new()
+        {
+            Name = "NoResultsText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The message to show, and to announce, when the search result of the time zone list is empty. Defaults to BitStrings.NoResultsFound (\"No results found\").",
         },
         new()
         {

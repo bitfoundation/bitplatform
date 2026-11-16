@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Components.Buttons.ToggleButton;
 
 /// <summary>
 /// Covers the BitParams cascade of the ToggleButton: what a BitToggleButtonParams fills in, what it leaves alone
-/// because the toggle button wrote it for itself, that the checked state is only seeded through DefaultIsChecked, and
+/// because the toggle button wrote it for itself, that the checked state is only seeded through DefaultChecked, and
 /// that what the toggle button derives from its parameters follows the cascaded values.
 /// </summary>
 [TestClass]
@@ -19,7 +19,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
 {
     // What a toggle button is about rather than how it looks - its content, its templates, its callbacks and the
     // checked state the page binds to - is written per toggle button, so it has no place on the params object. The
-    // IsLoadingChanged callback is the other half of a binding the page owns.
+    // LoadingChanged callback is the other half of a binding the page owns.
     private static readonly string[] _notCascaded =
     [
         nameof(BitToggleButton.CascadingParameters),
@@ -30,9 +30,9 @@ public class BitToggleButtonParamsTests : BunitTestContext
         nameof(BitToggleButton.OnChange),
         nameof(BitToggleButton.OnChanging),
         nameof(BitToggleButton.OnClick),
-        nameof(BitToggleButton.IsChecked),
-        nameof(BitToggleButton.IsCheckedChanged),
-        nameof(BitToggleButton.IsLoadingChanged),
+        nameof(BitToggleButton.Checked),
+        nameof(BitToggleButton.CheckedChanged),
+        nameof(BitToggleButton.LoadingChanged),
     ];
 
     private IRenderedComponent<BitParams> RenderWithParams(BitToggleButtonParams toggleParams, Action<RenderTreeBuilder>? extraAttributes = null)
@@ -166,7 +166,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
             CheckMarkIconName = "CheckMark",
             Classes = classes,
             Color = BitColor.Warning,
-            DefaultIsChecked = true,
+            DefaultChecked = true,
             FixedCheckMark = true,
             FixedColor = true,
             FullWidth = true,
@@ -174,7 +174,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
             IconName = "Share",
             IconOnly = true,
             IconPlacement = BitPlacement.End,
-            IsLoading = true,
+            Loading = true,
             LoadingDelay = 300,
             LoadingLabel = "Saving...",
             LoadingLabelPlacement = BitPlacement.Top,
@@ -222,7 +222,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
         Assert.AreEqual("CheckMark", instance.CheckMarkIconName);
         Assert.AreSame(classes, instance.Classes);
         Assert.AreEqual(BitColor.Warning, instance.Color);
-        Assert.IsTrue(instance.DefaultIsChecked);
+        Assert.IsTrue(instance.DefaultChecked);
         Assert.IsTrue(instance.FixedCheckMark);
         Assert.IsTrue(instance.FixedColor);
         Assert.IsTrue(instance.FullWidth);
@@ -230,7 +230,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
         Assert.AreEqual("Share", instance.IconName);
         Assert.IsTrue(instance.IconOnly);
         Assert.AreEqual(BitPlacement.End, instance.IconPlacement);
-        Assert.IsTrue(instance.IsLoading);
+        Assert.IsTrue(instance.Loading);
         Assert.AreEqual(300, instance.LoadingDelay);
         Assert.AreEqual("Saving...", instance.LoadingLabel);
         Assert.AreEqual(BitPlacement.Top, instance.LoadingLabelPlacement);
@@ -289,11 +289,11 @@ public class BitToggleButtonParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitToggleButtonParamsShouldSeedTheCheckedStateThroughDefaultIsChecked()
+    public void BitToggleButtonParamsShouldSeedTheCheckedStateThroughDefaultChecked()
     {
         // The checked state itself is left out of the params class on purpose - a toggle button writes to it on
         // every click, so a cascaded value would be written back over the click on the next render.
-        var component = RenderWithParams(new BitToggleButtonParams { DefaultIsChecked = true });
+        var component = RenderWithParams(new BitToggleButtonParams { DefaultChecked = true });
 
         var bitToggleButton = component.Find(".bit-tgb");
 
@@ -311,7 +311,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitToggleButtonParams
         {
-            DefaultIsChecked = true,
+            DefaultChecked = true,
             OnText = "Muted",
             OffText = "Unmuted",
             OnColor = BitColor.Error,

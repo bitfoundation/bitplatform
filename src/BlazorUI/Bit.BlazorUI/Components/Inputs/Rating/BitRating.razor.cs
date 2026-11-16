@@ -95,6 +95,17 @@ public partial class BitRating : BitInputBase<double>
     [Parameter, ResetClassBuilder] public BitRatingClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The general color of the rating, applied to the filled part of the items.
+    /// The unfilled part stays neutral so it reads as "not rated yet" whichever color is picked.
+    /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Rating-*</c> color variables (the fill and its hover, active and
+    /// focus colors); left unset, the rating is primary unless those variables say otherwise.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
     /// The hint shown under the items and pointed at by <c>aria-describedby</c>, for the instruction a row
     /// of stars cannot give by itself - that half a star is selectable, say, or that clicking the current
     /// one clears it. It describes the rating rather than naming it, so it is announced after the label.
@@ -106,17 +117,6 @@ public partial class BitRating : BitInputBase<double>
     /// for assistive technologies.
     /// </summary>
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
-
-    /// <summary>
-    /// The general color of the rating, applied to the filled part of the items.
-    /// The unfilled part stays neutral so it reads as "not rated yet" whichever color is picked.
-    /// </summary>
-    /// <remarks>
-    /// An explicit value wins over the <c>--bit-Rating-*</c> color variables (the fill and its hover, active and
-    /// focus colors); left unset, the rating is primary unless those variables say otherwise.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public BitColor? Color { get; set; }
 
     /// <summary>
     /// A line under the items saying why the value was rejected, which marks the rating invalid in the same way

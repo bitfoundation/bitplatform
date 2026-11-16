@@ -47,7 +47,7 @@ dotnet publish Samples/Lazy/Bit.Blow.Samples.Lazy/Bit.Blow.Samples.Lazy.csproj -
 dotnet build Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
-pwsh Tests/Bit.Blow.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium
+pwsh Tests/Bit.Blow.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium
 
 cd Tests/Bit.Blow.Tests.E2E && dotnet test
 
@@ -76,7 +76,7 @@ reads) fails there and nowhere else:
 dotnet publish src/Utilities/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 dotnet publish src/Utilities/Blow/Samples/Lazy/Bit.Blow.Samples.Lazy/Bit.Blow.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj -c Release
-pwsh src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+pwsh src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.Blow.Demo.Server.dll --urls http://127.0.0.1:5000 &)
 cd src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E && BLOW_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename blow-e2e.trx
 ```
@@ -92,9 +92,9 @@ cd src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E && BLOW_E2E_LAZY_AOT=1 dotnet tes
 ```
 
 Without PowerShell 7, the browser can be installed with Windows PowerShell
-(`powershell -ExecutionPolicy Bypass -File bin/Debug/net10.0/playwright.ps1 install chromium`) or with the Node.js
+(`powershell -ExecutionPolicy Bypass -File bin/Debug/net11.0/playwright.ps1 install chromium`) or with the Node.js
 runtime Playwright ships:
-`bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.
+`bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.
 
 The suite starts the demo server itself (`dotnet Bit.Blow.Demo.Server.dll --urls http://127.0.0.1:<free port>`,
 in the Development environment so the build output finds its static web assets), waits until it answers, shares

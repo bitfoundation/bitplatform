@@ -8,13 +8,6 @@ public partial class BitTagsInputDemo
     [
         new()
         {
-            Name = "AllowReorder",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Lets a tag be moved within the list, either by dragging it onto the position it should take or from the keyboard: Alt with the arrow keys walks the focused tag one position at a time, and Alt with Home or End sends it to either end.",
-        },
-        new()
-        {
             Name = "AddedAnnouncementFormat",
             Type = "string?",
             DefaultValue = "null",
@@ -26,6 +19,13 @@ public partial class BitTagsInputDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The format of the message announced by screen readers when several tags are added at once (a pasted list, most of the time), where {0} is how many of them there were. The default is \"{0} tags added.\". An empty string keeps the addition from being announced. A single tag is always announced with AddedAnnouncementFormat instead.",
+        },
+        new()
+        {
+            Name = "AllowReorder",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets a tag be moved within the list, either by dragging it onto the position it should take or from the keyboard: Alt with the arrow keys walks the focused tag one position at a time, and Alt with Home or End sends it to either end.",
         },
         new()
         {
@@ -237,17 +237,17 @@ public partial class BitTagsInputDemo
         },
         new()
         {
-            Name = "GetTagName",
-            Type = "Func<string, string?>?",
-            DefaultValue = "null",
-            Description = "How a tag is called wherever the component names it: the accessible name of its chip, of the dismiss button, of the reorder handle and of the inline edit, and the announcements it takes part in. It defaults to the tag itself, which a TagTemplate is exactly what breaks - a chip drawing \"Ada Lovelace\" over ada@example.com is announced by neither without this. null falls back to the tag.",
-        },
-        new()
-        {
             Name = "GetTagClass",
             Type = "Func<string, string?>?",
             DefaultValue = "null",
             Description = "A function returning extra CSS classes for a single tag, which is what tells one chip apart from the next. It is called for every drawn tag on every render, so it should be a lookup rather than a computation, and the classes are added to those the Classes give every chip alike.",
+        },
+        new()
+        {
+            Name = "GetTagName",
+            Type = "Func<string, string?>?",
+            DefaultValue = "null",
+            Description = "How a tag is called wherever the component names it: the accessible name of its chip, of the dismiss button, of the reorder handle and of the inline edit, and the announcements it takes part in. It defaults to the tag itself, which a TagTemplate is exactly what breaks - a chip drawing \"Ada Lovelace\" over ada@example.com is announced by neither without this. null falls back to the tag.",
         },
         new()
         {
@@ -264,13 +264,6 @@ public partial class BitTagsInputDemo
             Description = "Sets the inputmode html attribute of the input element, which decides the virtual keyboard a phone opens over the field. It changes nothing about what the field accepts - that is what Pattern and Validator are for - only about which keys the user is given to type it with.",
             LinkType = LinkType.Link,
             Href = "#input-mode-enum",
-        },
-        new()
-        {
-            Name = "IsLoading",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Draws a spinner at the end of the field, for the wait the field itself is the cause of: the suggestions being fetched for what is being typed, the tag being checked against a server. It is an indeterminate progressbar rather than a decoration, and it changes nothing about what the field accepts.",
         },
         new()
         {
@@ -302,10 +295,17 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Draws a spinner at the end of the field, for the wait the field itself is the cause of: the suggestions being fetched for what is being typed, the tag being checked against a server. It is an indeterminate progressbar rather than a decoration, and it changes nothing about what the field accepts.",
+        },
+        new()
+        {
             Name = "LoadingAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible name of the spinner IsLoading draws, which is the whole of what a screen reader has to go on. The default is \"Loading\".",
+            Description = "The accessible name of the spinner Loading draws, which is the whole of what a screen reader has to go on. The default is \"Loading\".",
         },
         new()
         {
@@ -344,17 +344,17 @@ public partial class BitTagsInputDemo
         },
         new()
         {
-            Name = "MoreTagsFormat",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The format of the label of the chip that stands for the tags MaxDisplayedTags folded away, where {0} is how many of them there are. The default is \"+{0}\".",
-        },
-        new()
-        {
             Name = "MoreTagsAriaLabelFormat",
             Type = "string?",
             DefaultValue = "null",
             Description = "The format of the accessible label of that same chip, where {0} is how many tags are folded away. The default is \"Show {0} more tags\", since \"+3\" read out on its own says nothing about what pressing it would do.",
+        },
+        new()
+        {
+            Name = "MoreTagsFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format of the label of the chip that stands for the tags MaxDisplayedTags folded away, where {0} is how many of them there are. The default is \"+{0}\".",
         },
         new()
         {
@@ -428,19 +428,19 @@ public partial class BitTagsInputDemo
         },
         new()
         {
-            Name = "OnBeforeRemove",
-            Type = "EventCallback<BitTagsInputBeforeArgs>",
-            Description = "Callback invoked before a tag is removed. Set args.Cancel = true to cancel the remove.",
-            LinkType = LinkType.Link,
-            Href = "#before-args",
-        },
-        new()
-        {
             Name = "OnBeforeClear",
             Type = "EventCallback<BitTagsInputClearArgs>",
             Description = "Callback invoked before every tag is removed at once, by the clear button, the Escape key or the Clear method, carrying the whole list that is about to go. Set args.Cancel = true to leave it as it is.",
             LinkType = LinkType.Link,
             Href = "#clear-args",
+        },
+        new()
+        {
+            Name = "OnBeforeRemove",
+            Type = "EventCallback<BitTagsInputBeforeArgs>",
+            Description = "Callback invoked before a tag is removed. Set args.Cancel = true to cancel the remove.",
+            LinkType = LinkType.Link,
+            Href = "#before-args",
         },
         new()
         {
@@ -652,13 +652,6 @@ public partial class BitTagsInputDemo
         },
         new()
         {
-            Name = "Suggestions",
-            Type = "IEnumerable<string>?",
-            DefaultValue = "null",
-            Description = "The values offered to the user while typing, through the suggestion list the browser itself renders for a datalist. Picking one fills the input; the usual Enter (or a separator) turns it into a tag, so every validation rule still applies. Values already in the list are left out unless Duplicates allows them back in, and all of them are once the MaxTags ceiling is reached. See RestrictToSuggestions to make them the only accepted values.",
-        },
-        new()
-        {
             Name = "Styles",
             Type = "BitTagsInputClassStyles?",
             DefaultValue = "null",
@@ -682,10 +675,10 @@ public partial class BitTagsInputDemo
         },
         new()
         {
-            Name = "TagTemplate",
-            Type = "RenderFragment<string>?",
+            Name = "Suggestions",
+            Type = "IEnumerable<string>?",
             DefaultValue = "null",
-            Description = "A custom template for rendering each tag.",
+            Description = "The values offered to the user while typing, through the suggestion list the browser itself renders for a datalist. Picking one fills the input; the usual Enter (or a separator) turns it into a tag, so every validation rule still applies. Values already in the list are left out unless Duplicates allows them back in, and all of them are once the MaxTags ceiling is reached. See RestrictToSuggestions to make them the only accepted values.",
         },
         new()
         {
@@ -714,6 +707,13 @@ public partial class BitTagsInputDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The placeholder text of the input shown once there is at least one tag in the list, where the Placeholder would otherwise be replaced by nothing at all.",
+        },
+        new()
+        {
+            Name = "TagTemplate",
+            Type = "RenderFragment<string>?",
+            DefaultValue = "null",
+            Description = "A custom template for rendering each tag.",
         },
         new()
         {
@@ -1164,7 +1164,7 @@ public partial class BitTagsInputDemo
         {
             Name = "--bit-TagsInput-spinner-color",
             DefaultValue = "--bit-clr-pri",
-            Description = "The turning arc of the spinner IsLoading draws. The Color parameter wins over it.",
+            Description = "The turning arc of the spinner Loading draws. The Color parameter wins over it.",
         },
         new()
         {
@@ -1533,7 +1533,7 @@ public partial class BitTagsInputDemo
                     Name = "Spinner",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the spinner IsLoading draws at the end of the field.",
+                    Description = "Custom CSS classes/styles for the spinner Loading draws at the end of the field.",
                 },
                 new()
                 {

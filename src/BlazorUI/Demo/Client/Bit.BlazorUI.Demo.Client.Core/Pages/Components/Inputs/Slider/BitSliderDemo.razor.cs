@@ -117,27 +117,6 @@ public partial class BitSliderDemo
         },
         new()
         {
-            Name = "IsOriginFromZero",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Attaches the origin of the filled part of the track to zero. Shorthand for setting Origin to 0.",
-        },
-        new()
-        {
-            Name = "IsRanged",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If ranged is true, display two thumbs that allow the lower and upper bounds of a range to be selected.",
-        },
-        new()
-        {
-            Name = "IsVertical",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether to render the slider vertically. Its length comes from the --bit-Slider-length CSS variable, which defaults to 12rem.",
-        },
-        new()
-        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -173,19 +152,19 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "MarkLabelTemplate",
+            Type = "RenderFragment<BitSliderMark>?",
+            DefaultValue = "null",
+            Description = "Replaces the text under every mark with content of your own, built from the mark it belongs to. Setting it also asks for the marks.",
+        },
+        new()
+        {
             Name = "Marks",
             Type = "IEnumerable<BitSliderMark>?",
             DefaultValue = "null",
             Description = "The marks drawn along the track of the Slider, each optionally carrying a label. Takes precedence over ShowMarks.",
             LinkType = LinkType.Link,
             Href = "#slider-mark",
-        },
-        new()
-        {
-            Name = "MarkLabelTemplate",
-            Type = "RenderFragment<BitSliderMark>?",
-            DefaultValue = "null",
-            Description = "Replaces the text under every mark with content of your own, built from the mark it belongs to. Setting it also asks for the marks.",
         },
         new()
         {
@@ -196,17 +175,17 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "Max",
+            Type = "double",
+            DefaultValue = "10",
+            Description = "The max value of the Slider.",
+        },
+        new()
+        {
             Name = "MaxRange",
             Type = "double?",
             DefaultValue = "null",
             Description = "The largest distance the two thumbs of a ranged slider are allowed to be apart.",
-        },
-        new()
-        {
-            Name = "MinRange",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "The smallest distance the two thumbs of a ranged slider are allowed to be apart. Any value above zero also stops the thumbs from crossing.",
         },
         new()
         {
@@ -217,10 +196,10 @@ public partial class BitSliderDemo
         },
         new()
         {
-            Name = "Max",
+            Name = "MinRange",
             Type = "double",
-            DefaultValue = "10",
-            Description = "The max value of the Slider.",
+            DefaultValue = "0",
+            Description = "The smallest distance the two thumbs of a ranged slider are allowed to be apart. Any value above zero also stops the thumbs from crossing.",
         },
         new()
         {
@@ -292,10 +271,24 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "OriginFromZero",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Attaches the origin of the filled part of the track to zero. Shorthand for setting Origin to 0.",
+        },
+        new()
+        {
             Name = "Pushable",
             Type = "bool",
             DefaultValue = "false",
             Description = "Lets a thumb of a ranged slider push the other one along instead of stopping against it. It has nothing to do without a MinRange to keep or a NoSwap ordering to hold, and it keeps the thumbs on their own sides since pushing and crossing are opposites.",
+        },
+        new()
+        {
+            Name = "Ranged",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If ranged is true, display two thumbs that allow the lower and upper bounds of a range to be selected.",
         },
         new()
         {
@@ -329,6 +322,13 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "ShowMarkLabels",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Writes each mark's own value underneath it, which also asks for the marks. A mark handed to Marks with a label of its own keeps that label.",
+        },
+        new()
+        {
             Name = "ShowMarks",
             Type = "bool",
             DefaultValue = "false",
@@ -340,13 +340,6 @@ public partial class BitSliderDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Shows the messages the cascading EditContext holds for the bound field (Value, or RangeValue for a ranged Slider) under the Slider, where ErrorMessage goes, so an EditForm needs no ValidationMessage component beside it. Every thumb references them through aria-describedby, so they are read out when it takes the focus; they are not announced as they appear, since a submit validates every field at once. An ErrorMessage or ErrorMessageTemplate of the app's own wins the place while it is set.",
-        },
-        new()
-        {
-            Name = "ShowMarkLabels",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Writes each mark's own value underneath it, which also asks for the marks. A mark handed to Marks with a label of its own keeps that label.",
         },
         new()
         {
@@ -430,6 +423,13 @@ public partial class BitSliderDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Custom format for the displayed value of the Slider, applied to the value labels, the mark labels and the floating thumb labels alike.",
+        },
+        new()
+        {
+            Name = "Vertical",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to render the slider vertically. Its length comes from the --bit-Slider-length CSS variable, which defaults to 12rem.",
         }
     ];
 
@@ -643,7 +643,7 @@ public partial class BitSliderDemo
         {
             Name = "--bit-Slider-origin-color",
             DefaultValue = "--bit-clr-fg-sec",
-            Description = "The tick marking where the fill grows out of, drawn by Origin and IsOriginFromZero.",
+            Description = "The tick marking where the fill grows out of, drawn by Origin and OriginFromZero.",
         },
         new()
         {

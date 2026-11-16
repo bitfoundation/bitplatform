@@ -421,17 +421,17 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "HighlightedDates",
-            Type = "IEnumerable<DateTimeOffset>?",
-            DefaultValue = "null",
-            Description = "The list of dates that are highlighted (marked) in the day picker."
-        },
-        new()
-        {
             Name = "HighlightedDateAriaLabel",
             Type = "string",
             DefaultValue = "{0}, highlighted",
             Description = "The accessible name of a day of HighlightedDates, which its full date is formatted into. A highlighted day is marked by a background alone, so the mark is said in the name of the day as well. Set it to an empty string to name a highlighted day like any other."
+        },
+        new()
+        {
+            Name = "HighlightedDates",
+            Type = "IEnumerable<DateTimeOffset>?",
+            DefaultValue = "null",
+            Description = "The list of dates that are highlighted (marked) in the day picker."
         },
         new()
         {
@@ -465,19 +465,19 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "IconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the DatePicker's icon from the built-in Fluent UI icon set. For external icon libraries, use Icon instead."
+        },
+        new()
+        {
             Name = "IconPlacement",
             Type = "BitPlacement",
             DefaultValue = "BitPlacement.End",
             Description = "Determines the side of the input the DatePicker's icon is rendered on. Only Start and End are honoured; any other value leaves the icon on the end side. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one.",
             LinkType = LinkType.Link,
             Href = "#placement-enum"
-        },
-        new()
-        {
-            Name = "IconName",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The name of the DatePicker's icon from the built-in Fluent UI icon set. For external icon libraries, use Icon instead."
         },
         new()
         {
@@ -565,20 +565,6 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "MonthCount",
-            Type = "int",
-            DefaultValue = "1",
-            Description = "The number of consecutive months rendered side by side in the day picker (1 to 3). Such a strip always draws six week rows, never draws the days of the adjacent months, and falls back to fewer months on a viewport too narrow to hold them."
-        },
-        new()
-        {
-            Name = "PagedNavigation",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the previous and next navigation buttons move the day picker by all of its rendered months instead of one. It has no effect when MonthCount renders a single month."
-        },
-        new()
-        {
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
@@ -599,6 +585,13 @@ public partial class BitDatePickerDemo
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
             Description = "Custom template to render the month cells of the DatePicker."
+        },
+        new()
+        {
+            Name = "MonthCount",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "The number of consecutive months rendered side by side in the day picker (1 to 3). Such a strip always draws six week rows, never draws the days of the adjacent months, and falls back to fewer months on a viewport too narrow to hold them."
         },
         new()
         {
@@ -738,6 +731,13 @@ public partial class BitDatePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The custom validation error message for a typed value that falls outside of the MinDate and MaxDate range."
+        },
+        new()
+        {
+            Name = "PagedNavigation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the previous and next navigation buttons move the day picker by all of its rendered months instead of one. It has no effect when MonthCount renders a single month."
         },
         new()
         {
@@ -974,6 +974,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "TimePickerDecreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Decrease hour",
+            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-hour button."
+        },
+        new()
+        {
             Name = "TimePickerDecreaseMinuteIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -987,6 +994,13 @@ public partial class BitDatePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the time-picker's decrease-minute button icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseMinuteTitle",
+            Type = "string",
+            DefaultValue = "Decrease minute",
+            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-minute button."
         },
         new()
         {
@@ -1006,17 +1020,10 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "TimePickerDecreaseHourTitle",
+            Name = "TimePickerDecreaseSecondTitle",
             Type = "string",
-            DefaultValue = "Decrease hour",
-            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-hour button."
-        },
-        new()
-        {
-            Name = "TimePickerDecreaseMinuteTitle",
-            Type = "string",
-            DefaultValue = "Decrease minute",
-            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-minute button."
+            DefaultValue = "Decrease second",
+            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-second button."
         },
         new()
         {
@@ -1043,6 +1050,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "TimePickerIncreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Increase hour",
+            Description = "The title (tooltip) and the accessible name of the time-picker's increase-hour button."
+        },
+        new()
+        {
             Name = "TimePickerIncreaseMinuteIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -1059,24 +1073,10 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "TimePickerIncreaseHourTitle",
-            Type = "string",
-            DefaultValue = "Increase hour",
-            Description = "The title (tooltip) and the accessible name of the time-picker's increase-hour button."
-        },
-        new()
-        {
             Name = "TimePickerIncreaseMinuteTitle",
             Type = "string",
             DefaultValue = "Increase minute",
             Description = "The title (tooltip) and the accessible name of the time-picker's increase-minute button."
-        },
-        new()
-        {
-            Name = "TimePickerDecreaseSecondTitle",
-            Type = "string",
-            DefaultValue = "Decrease second",
-            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-second button."
         },
         new()
         {

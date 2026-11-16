@@ -34,9 +34,9 @@
 //                                          when disabled                                 (default: $clr-fg-dis)
 //   --bit-OtpInput-disabled-background     box background when disabled                  (default: $clr-bg-dis)
 //   --bit-OtpInput-disabled-border-color   box rule when disabled                        (default: $clr-brd-dis)
-//   --bit-OtpInput-loader-color            the sweep of the IsLoading bar                (default: $clr-pri)
-//   --bit-OtpInput-loader-background       the track of the IsLoading bar                (default: $clr-bg-sec)
-//   --bit-OtpInput-loader-height           thickness of the IsLoading bar                (default: $siz-track-sm)
+//   --bit-OtpInput-loader-color            the sweep of the Loading bar                (default: $clr-pri)
+//   --bit-OtpInput-loader-background       the track of the Loading bar                (default: $clr-bg-sec)
+//   --bit-OtpInput-loader-height           thickness of the Loading bar                (default: $siz-track-sm)
 //                                          The box colors and focus rings have a twin per variant, read ahead of
 //                                          the shared one, so a theme can set one look apart from the other two:
 //   --bit-OtpInput-fill-background                  box background at rest, Fill variant           (default: --bit-OtpInput-background)

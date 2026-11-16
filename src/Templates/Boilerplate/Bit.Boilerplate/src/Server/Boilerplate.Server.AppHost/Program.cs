@@ -189,16 +189,7 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     //#endif
     landingPageProject.WithReference(mailpit);
 
-    var workbench = builder.AddProject("workbench", "../../Workbench/Boilerplate.Workbench.csproj")
-        .WithExplicitStart()
-        .WithOtlpExporter(OtlpProtocol.HttpProtobuf);
-
     //#if (cloudflare == true)
-    builder.AddCloudflareQuickTunnel("cloudflare-tunnel-workbench")
-        .WithReference(workbench)
-        .WaitFor(workbench)
-        .WithExplicitStart();
-
     builder.AddCloudflareQuickTunnel("cloudflare-tunnel-landingpage")
         .WithReference(landingPageProject)
         .WaitFor(landingPageProject)

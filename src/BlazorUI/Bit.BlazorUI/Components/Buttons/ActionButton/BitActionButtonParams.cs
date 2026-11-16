@@ -151,7 +151,7 @@ public partial class BitActionButtonParams : BitComponentBaseParams, IBitCompone
     /// <summary>
     /// Determines whether the action button is in loading mode or not.
     /// </summary>
-    public bool? IsLoading { get; set; }
+    public bool? Loading { get; set; }
 
     /// <summary>
     /// The delay in milliseconds before the loading indicator appears after entering the loading state.
@@ -331,9 +331,9 @@ public partial class BitActionButtonParams : BitComponentBaseParams, IBitCompone
             bitActionButton.TakeFromCascade(nameof(IconUrl), IconUrl, static a => a.IconUrl, static (a, v) => a.IconUrl = v);
         }
 
-        if (IsLoading.HasValue)
+        if (Loading.HasValue)
         {
-            bitActionButton.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static a => a.IsLoading, static (a, v) => a.IsLoading = v);
+            bitActionButton.TakeFromCascade(nameof(Loading), Loading.Value, static a => a.Loading, static (a, v) => a.Loading = v);
         }
 
         if (LoadingDelay.HasValue)

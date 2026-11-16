@@ -223,6 +223,55 @@ for (const [name, Renderer] of Object.entries(renderers)) {
             renderer.dispose();
         });
     });
+
+    test(`the ${name} renderer paints the group separators across the content pane and, where asked, the resource column`, () => {
+        const scene = makeSceneEngine([bar('a', 'r0', 1, 3)]).buildScene();
+        const v = scene.viewport;
+        const solid = { y: 100, height: 4, color: '#123456', dash: 0, dashGap: 0, axis: true };
+        const dashed = { y: 200, height: 2, color: '#654321', dash: 6, dashGap: 4, axis: false };
+
+        // The visible elements painting a strip of the given color: the left and
+        // width of each, as numbers, from the inline style or the attributes.
+        const painted = (root, color) => {
+            const out = [];
+            const walk = (node) => {
+                if (node.style.display === 'none') return;
+                const fill = node.style.backgroundColor === color || node.getAttribute('fill') === color;
+                const dashes = (node.style.backgroundImage || '').includes(color) || node.getAttribute('stroke') === color;
+                if (fill || dashes) {
+                    const left = node.getAttribute('x') ?? node.getAttribute('x1') ?? parseFloat(node.style.left);
+                    const right = node.getAttribute('x2');
+                    const width = node.getAttribute('width') ?? (right != null ? right - left : parseFloat(node.style.width));
+                    out.push({ left: +left, width: +width, dash: node.getAttribute('stroke-dasharray'), image: node.style.backgroundImage || '' });
+                }
+                for (const child of node.childNodes) walk(child);
+            };
+            walk(root);
+            return out.sort((a, b) => a.left - b.left);
+        };
+
+        withFakeDocument(() => {
+            const wrapper = new FakeElement('div');
+            const host = { requestRender() { }, paintNow() { }, getImage() { return null; } };
+            const renderer = new Renderer(wrapper, host);
+            renderer.resize(v.width, v.height);
+
+            renderer.render({ ...scene, groupSeparators: [solid, dashed] });
+            assert.deepEqual(painted(wrapper, '#123456').map(n => [n.left, n.width]),
+                [[0, v.axisWidth], [v.axisWidth, v.width - v.axisWidth]], 'the resource column and the content pane');
+            const dash = painted(wrapper, '#654321');
+            assert.deepEqual(dash.map(n => [n.left, n.width]), [[v.axisWidth, v.width - v.axisWidth]],
+                'the content pane alone');
+            assert.ok(dash[0].dash === '6 4' || /#654321 0 6px, transparent 6px 10px/.test(dash[0].image),
+                `drawn as dashes 6 long, 4 apart: ${JSON.stringify(dash[0])}`);
+
+            renderer.render(scene);
+            assert.equal(painted(wrapper, '#123456').length, 0, 'a frame without separators shows none');
+            assert.equal(painted(wrapper, '#654321').length, 0);
+
+            renderer.dispose();
+        });
+    });
 }
 
 test('Hour12 tick labels are 12-hour', () => {

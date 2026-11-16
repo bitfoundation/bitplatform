@@ -28,11 +28,11 @@ public class BitSliderTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitSliderShouldRespectIsVertical(bool isVertical)
+    public void BitSliderShouldRespectVertical(bool isVertical)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsVertical, isVertical);
+            parameters.Add(p => p.Vertical, isVertical);
         });
 
         var slider = com.Find(".bit-sld");
@@ -45,11 +45,11 @@ public class BitSliderTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitSliderShouldRespectIsRanged(bool ranged)
+    public void BitSliderShouldRespectRanged(bool ranged)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Ranged, ranged);
         });
 
         var slider = com.Find(".bit-sld");
@@ -69,8 +69,8 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, ranged);
-            parameters.Add(p => p.IsVertical, vertical);
+            parameters.Add(p => p.Ranged, ranged);
+            parameters.Add(p => p.Vertical, vertical);
         });
 
         var expected = $"bit-sld-{(ranged ? "rgd-" : null)}{(vertical ? "vrt" : "hrz")}";
@@ -292,7 +292,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.ThumbLabel, BitSliderThumbLabel.On);
             parameters.Add(p => p.LowerValue, 2D);
             parameters.Add(p => p.UpperValue, 7D);
@@ -323,7 +323,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.ThumbLabel, BitSliderThumbLabel.On);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 7D);
@@ -484,7 +484,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Ranged, ranged);
             parameters.Add(p => p.Min, min);
             parameters.Add(p => p.Max, max);
         });
@@ -514,7 +514,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Ranged, ranged);
             parameters.Add(p => p.Step, step);
         });
 
@@ -538,7 +538,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Ranged, ranged);
             parameters.Add(p => p.ShowValue, showValue);
         });
 
@@ -715,7 +715,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 1000D);
             parameters.Add(p => p.LowerValue, 2D);
             parameters.Add(p => p.UpperValue, 700D);
@@ -733,7 +733,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.LowerValue, 2D);
             parameters.Add(p => p.UpperValue, 7D);
         });
@@ -753,7 +753,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsVertical, vertical);
+            parameters.Add(p => p.Vertical, vertical);
             parameters.Add(p => p.Value, 3D);
         });
 
@@ -771,8 +771,8 @@ public class BitSliderTests : BunitTestContext
         // Standing upright, the labels stack instead of flanking, so the upper end belongs above the track.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
-            parameters.Add(p => p.IsVertical, true);
+            parameters.Add(p => p.Ranged, true);
+            parameters.Add(p => p.Vertical, true);
             parameters.Add(p => p.LowerValue, 2D);
             parameters.Add(p => p.UpperValue, 7D);
         });
@@ -792,7 +792,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DefaultLowerValue, 3D);
             parameters.Add(p => p.DefaultUpperValue, 8D);
         });
@@ -806,7 +806,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.LowerValue, 1D);
             parameters.Add(p => p.UpperValue, 4D);
             parameters.Add(p => p.DefaultLowerValue, 3D);
@@ -822,7 +822,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.RangeValue, new BitSliderRangeValue(2, 6));
         });
 
@@ -838,7 +838,7 @@ public class BitSliderTests : BunitTestContext
         // a default - the defaults would silently overwrite half of what it was handed.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.RangeValue, new BitSliderRangeValue(2, 6));
             parameters.Add(p => p.DefaultLowerValue, 3D);
             parameters.Add(p => p.DefaultUpperValue, 8D);
@@ -853,7 +853,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.LowerValue, 8D);
             parameters.Add(p => p.UpperValue, 2D);
         });
@@ -867,7 +867,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Min, 0D);
             parameters.Add(p => p.Max, 10D);
             parameters.Add(p => p.LowerValue, -20D);
@@ -985,7 +985,7 @@ public class BitSliderTests : BunitTestContext
         double? lower = null;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.LowerValue, 2D);
             parameters.Add(p => p.UpperValue, 8D);
             parameters.Add(p => p.LowerValueChanged, (double v) => lower = v);
@@ -1007,7 +1007,7 @@ public class BitSliderTests : BunitTestContext
         BitSliderRangeValue? range = null;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.RangeValue, new BitSliderRangeValue(2, 8));
             parameters.Add(p => p.RangeValueChanged, (BitSliderRangeValue? v) => range = v);
         });
@@ -1026,7 +1026,7 @@ public class BitSliderTests : BunitTestContext
         BitSliderRangeValue? committed = null;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 8D);
             parameters.Add(p => p.OnRangeChange, (BitSliderRangeValue _) => stepCount++);
@@ -1052,7 +1052,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.LowerValue, 2D);
             parameters.Add(p => p.UpperValue, 8D);
         });
@@ -1088,7 +1088,7 @@ public class BitSliderTests : BunitTestContext
         var focusedIn = 0;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.OnFocusIn, () => focusedIn++);
         });
 
@@ -1118,7 +1118,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 5D);
         });
@@ -1143,7 +1143,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.NoSwap, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 30D);
@@ -1161,7 +1161,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.MinRange, 20D);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 20D);
@@ -1177,7 +1177,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.MaxRange, 30D);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 30D);
@@ -1197,7 +1197,7 @@ public class BitSliderTests : BunitTestContext
         // seen. So each input is laid over exactly the piece of the track its bounds describe.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.NoSwap, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 30D);
@@ -1220,7 +1220,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 30D);
             parameters.Add(p => p.DefaultUpperValue, 70D);
@@ -1243,7 +1243,7 @@ public class BitSliderTests : BunitTestContext
         // is not drawing.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.MinRange, 20D);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 30D);
@@ -1263,7 +1263,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.MinRange, 40D);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 90D);
@@ -1279,7 +1279,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.MaxRange, 30D);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 10D);
@@ -1297,7 +1297,7 @@ public class BitSliderTests : BunitTestContext
         // and would quietly undo the ordering NoSwap is asking for.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.NoSwap, true);
             parameters.Add(p => p.MinRange, -20D);
             parameters.Add(p => p.Max, 100D);
@@ -1316,7 +1316,7 @@ public class BitSliderTests : BunitTestContext
         // resolves by pinning the input somewhere the component is not drawing.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.MinRange, 30D);
             parameters.Add(p => p.MaxRange, 10D);
             parameters.Add(p => p.Max, 100D);
@@ -1341,7 +1341,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.MaxRange, -30D);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 20D);
@@ -1362,7 +1362,7 @@ public class BitSliderTests : BunitTestContext
         double? upper = null;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Min, 0D);
             parameters.Add(p => p.Max, 10D);
             parameters.Add(p => p.LowerValue, -20D);
@@ -1381,7 +1381,7 @@ public class BitSliderTests : BunitTestContext
         BitSliderRangeValue? range = null;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.MinRange, 20D);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.RangeValue, new BitSliderRangeValue(30, 35));
@@ -1399,7 +1399,7 @@ public class BitSliderTests : BunitTestContext
         var reports = 0;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.LowerValue, 30D);
             parameters.Add(p => p.UpperValue, 70D);
@@ -1417,7 +1417,7 @@ public class BitSliderTests : BunitTestContext
         var reports = 0;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 10D);
             parameters.Add(p => p.LowerValue, -20D);
             parameters.Add(p => p.UpperValue, 40D);
@@ -1435,7 +1435,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 30D);
             parameters.Add(p => p.DefaultUpperValue, 70D);
@@ -1458,7 +1458,7 @@ public class BitSliderTests : BunitTestContext
         // less the room the pushed thumb needs to keep there.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Pushable, true);
             parameters.Add(p => p.MinRange, 20D);
             parameters.Add(p => p.Max, 100D);
@@ -1477,7 +1477,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Pushable, true);
             parameters.Add(p => p.MinRange, 20D);
             parameters.Add(p => p.Max, 100D);
@@ -1496,7 +1496,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Pushable, true);
             parameters.Add(p => p.MinRange, 20D);
             parameters.Add(p => p.Max, 100D);
@@ -1515,7 +1515,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Pushable, true);
             parameters.Add(p => p.MinRange, 20D);
             parameters.Add(p => p.Max, 100D);
@@ -1538,7 +1538,7 @@ public class BitSliderTests : BunitTestContext
         // that meets travels on together.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Pushable, true);
             parameters.Add(p => p.NoSwap, true);
             parameters.Add(p => p.Max, 100D);
@@ -1559,7 +1559,7 @@ public class BitSliderTests : BunitTestContext
         // always did, and there is nothing for a push to mean.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Pushable, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 5D);
@@ -1578,7 +1578,7 @@ public class BitSliderTests : BunitTestContext
         // stay in order however far a thumb is taken.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Pushable, true);
             parameters.Add(p => p.MinRange, 20D);
             parameters.Add(p => p.Max, 100D);
@@ -1604,7 +1604,7 @@ public class BitSliderTests : BunitTestContext
         // what lets a press on the bare rail move the near thumb instead of nothing at all.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.LowerValue, 20D);
             parameters.Add(p => p.UpperValue, 60D);
@@ -1622,7 +1622,7 @@ public class BitSliderTests : BunitTestContext
         // than of the whole scale - so the same midpoint comes out as two different fractions.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.NoSwap, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 30D);
@@ -1639,7 +1639,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 5D);
         });
@@ -1656,7 +1656,7 @@ public class BitSliderTests : BunitTestContext
         // thumb, and neither one could be grabbed at all.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 5D);
         });
@@ -1723,7 +1723,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.Min, -5D);
             parameters.Add(p => p.Max, 5D);
             parameters.Add(p => p.Value, 3D);
-            parameters.Add(p => p.IsOriginFromZero, true);
+            parameters.Add(p => p.OriginFromZero, true);
         });
 
         var style = com.Find(".bit-sld-fil").GetAttribute("style");
@@ -1743,7 +1743,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.Min, -2D);
             parameters.Add(p => p.Max, 8D);
             parameters.Add(p => p.Value, 4D);
-            parameters.Add(p => p.IsOriginFromZero, true);
+            parameters.Add(p => p.OriginFromZero, true);
         });
 
         StringAssert.Contains(com.Find(".bit-sld-ztk").GetAttribute("style"), "inset-inline-start:20%");
@@ -1790,7 +1790,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsOriginFromZero, fromZero);
+            parameters.Add(p => p.OriginFromZero, fromZero);
             if (hasOrigin) parameters.Add(p => p.Origin, 4D);
         });
 
@@ -1802,7 +1802,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.LowerValue, 20D);
             parameters.Add(p => p.UpperValue, 60D);
@@ -1820,7 +1820,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Inverted, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.LowerValue, 35D);
@@ -1845,7 +1845,7 @@ public class BitSliderTests : BunitTestContext
         var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.NoFill, true);
-            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Ranged, ranged);
             parameters.Add(p => p.Max, 10D);
             parameters.Add(p => p.Value, 4D);
             parameters.Add(p => p.LowerValue, 2D);
@@ -1885,7 +1885,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.NoFill, true);
             parameters.Add(p => p.Min, -5D);
             parameters.Add(p => p.Max, 5D);
-            parameters.Add(p => p.IsOriginFromZero, true);
+            parameters.Add(p => p.OriginFromZero, true);
         });
 
         Assert.AreEqual(0, com.FindAll(".bit-sld-ztk").Count);
@@ -1898,10 +1898,10 @@ public class BitSliderTests : BunitTestContext
         // would only be pointing at a value that has no part in what is drawn.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Min, -5D);
             parameters.Add(p => p.Max, 5D);
-            parameters.Add(p => p.IsOriginFromZero, true);
+            parameters.Add(p => p.OriginFromZero, true);
             parameters.Add(p => p.Origin, 2D);
         });
 
@@ -1913,7 +1913,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsVertical, true);
+            parameters.Add(p => p.Vertical, true);
             parameters.Add(p => p.Max, 10D);
             parameters.Add(p => p.Value, 3D);
         });
@@ -2289,7 +2289,7 @@ public class BitSliderTests : BunitTestContext
         // counts as reached is inverted with it.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Inverted, true);
             parameters.Add(p => p.Max, 10D);
             parameters.Add(p => p.LowerValue, 4D);
@@ -2432,7 +2432,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.RestrictToMarks, true);
             parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
@@ -2472,7 +2472,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.RestrictToMarks, true);
             parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
@@ -2494,7 +2494,7 @@ public class BitSliderTests : BunitTestContext
         // the one beside it and drag that one along with it - a push on a slider nobody asked to be pushable.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.MinRange, 30D);
             parameters.Add(p => p.RestrictToMarks, true);
@@ -2519,7 +2519,7 @@ public class BitSliderTests : BunitTestContext
         // up the scale is not the single step it was pressed for.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.MinRange, 30D);
             parameters.Add(p => p.RestrictToMarks, true);
@@ -2543,7 +2543,7 @@ public class BitSliderTests : BunitTestContext
         // Holding the snap against the bounds must not stop it landing on the marks that do fit.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.NoSwap, true);
             parameters.Add(p => p.RestrictToMarks, true);
@@ -2564,7 +2564,7 @@ public class BitSliderTests : BunitTestContext
         // Pushing is the one case where a snapped thumb is meant to take the other one with it.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Pushable, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.MinRange, 30D);
@@ -2588,7 +2588,7 @@ public class BitSliderTests : BunitTestContext
         // re-render of an unbound slider never passes through the correction that would fix it.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.RestrictToMarks, true);
             parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(20), new BitSliderMark(60), new BitSliderMark(100)]);
@@ -2860,7 +2860,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 1000D);
             parameters.Add(p => p.Step, 10D);
             parameters.Add(p => p.LargeStep, 250D);
@@ -2883,7 +2883,7 @@ public class BitSliderTests : BunitTestContext
         // that were pushed into those bounds have to be applied to it directly.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.NoSwap, true);
             parameters.Add(p => p.Max, 1000D);
             parameters.Add(p => p.Step, 10D);
@@ -2905,7 +2905,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Pushable, true);
             parameters.Add(p => p.MinRange, 20D);
             parameters.Add(p => p.Max, 100D);
@@ -3024,7 +3024,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 1D);
             parameters.Add(p => p.Step, 0.1D);
             parameters.Add(p => p.MinRange, 0.2D);
@@ -3044,7 +3044,7 @@ public class BitSliderTests : BunitTestContext
         // own min - so noise in it would put the whole grid a fraction off the values the slider counts in.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Max, 1D);
             parameters.Add(p => p.Step, 0.1D);
             parameters.Add(p => p.MinRange, 0.2D);
@@ -3061,7 +3061,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.Max, 1D);
             parameters.Add(p => p.Step, 0.1D);
@@ -3088,7 +3088,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Ranged, ranged);
             parameters.Add(p => p.DraggableTrack, draggable);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 6D);
@@ -3102,7 +3102,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 20D);
@@ -3128,7 +3128,7 @@ public class BitSliderTests : BunitTestContext
         // lower value again would be noise rather than a way through.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 6D);
@@ -3147,7 +3147,7 @@ public class BitSliderTests : BunitTestContext
         // covers could not would be a range that can never be opened up again.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.DefaultLowerValue, 4D);
             parameters.Add(p => p.DefaultUpperValue, 4D);
@@ -3164,7 +3164,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.Disabled, enabled is false);
             parameters.Add(p => p.ReadOnly, readOnly);
@@ -3180,7 +3180,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 20D);
@@ -3198,7 +3198,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 20D);
@@ -3217,7 +3217,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.MinRange, 20D);
             parameters.Add(p => p.MaxRange, 20D);
@@ -3237,7 +3237,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.RestrictToMarks, true);
             parameters.Add(p => p.Max, 100D);
@@ -3260,7 +3260,7 @@ public class BitSliderTests : BunitTestContext
         // do not have, which is the one thing a mark-restricted slider promises never to happen.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.RestrictToMarks, true);
             parameters.Add(p => p.Max, 100D);
@@ -3284,7 +3284,7 @@ public class BitSliderTests : BunitTestContext
         BitSliderRangeValue? committed = null;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 20D);
@@ -3314,7 +3314,7 @@ public class BitSliderTests : BunitTestContext
         double? upper = null;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.LowerValue, 20D);
@@ -3334,7 +3334,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.LowerValue, 20D);
@@ -3352,7 +3352,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 6D);
@@ -3374,7 +3374,7 @@ public class BitSliderTests : BunitTestContext
         // the whole range on every arrow key with nothing to announce it.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 20D);
@@ -3397,7 +3397,7 @@ public class BitSliderTests : BunitTestContext
         // back on.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 6D);
@@ -3418,7 +3418,7 @@ public class BitSliderTests : BunitTestContext
         // neither a pointerup nor a change behind it. The focus must not be left on the hidden band.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 6D);
@@ -3444,7 +3444,7 @@ public class BitSliderTests : BunitTestContext
         // focus back and the other finds nothing left to do.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 20D);
@@ -3468,7 +3468,7 @@ public class BitSliderTests : BunitTestContext
         // being dragged is left holding it.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 20D);
@@ -3561,7 +3561,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.AriaLabel, "Price range");
             parameters.Add(p => p.LowerAriaLabel, "Minimum price");
             parameters.Add(p => p.UpperAriaLabel, "Maximum price");
@@ -3579,7 +3579,7 @@ public class BitSliderTests : BunitTestContext
         // otherwise would leave a screen reader reading out a number the arrow keys do not move from.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 5D);
         });
@@ -3599,7 +3599,7 @@ public class BitSliderTests : BunitTestContext
         // beside it has already changed ends.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.LowerAriaLabel, "Minimum price");
             parameters.Add(p => p.UpperAriaLabel, "Maximum price");
             parameters.Add(p => p.DefaultLowerValue, 2D);
@@ -3621,7 +3621,7 @@ public class BitSliderTests : BunitTestContext
         // constraint narrows to the thumb beside it rather than leaving at the ends of the scale.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.NoSwap, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 30D);
@@ -3641,7 +3641,7 @@ public class BitSliderTests : BunitTestContext
         // value, so the true ends of the scale are what it announces.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.ReadOnly, true);
             parameters.Add(p => p.Max, 100D);
             parameters.Add(p => p.DefaultLowerValue, 30D);
@@ -3664,7 +3664,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.AriaLabel, "Price range");
         });
 
@@ -3680,7 +3680,7 @@ public class BitSliderTests : BunitTestContext
         // of a ranged slider nameless.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.LabelTemplate, "<span>Frequency band</span>");
         });
 
@@ -3696,7 +3696,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Label, "Frequency band");
             parameters.Add(p => p.LowerAriaLabel, "Lowest frequency");
         });
@@ -3723,7 +3723,7 @@ public class BitSliderTests : BunitTestContext
         // both would say it twice - and on a range, four times over two thumbs.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Ranged, ranged);
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.DefaultValue, 4D);
             parameters.Add(p => p.DefaultLowerValue, 2D);
@@ -3744,7 +3744,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsVertical, vertical);
+            parameters.Add(p => p.Vertical, vertical);
         });
 
         Assert.AreEqual(expected, com.Find(".bit-sld-inp").GetAttribute("aria-orientation"));
@@ -3781,7 +3781,7 @@ public class BitSliderTests : BunitTestContext
         // Posted under one name twice, the two ends of a range would be indistinguishable to a plain form.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Name, "budget");
             parameters.Add(p => p.LowerValue, 2D);
             parameters.Add(p => p.UpperValue, 6D);
@@ -3812,7 +3812,7 @@ public class BitSliderTests : BunitTestContext
         // ranged one, which leaves the upper thumb with no way of being reached from code at all.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 6D);
         });
@@ -3862,7 +3862,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.AriaDescription, "The band to include.");
         });
 
@@ -3913,7 +3913,7 @@ public class BitSliderTests : BunitTestContext
         // what the pair selects together has a word of its own.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Label, "Price range");
         });
 
@@ -3929,7 +3929,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Label, "Price range");
             parameters.Add(p => p.AriaLabel, "Price, in euros");
         });
@@ -3948,7 +3948,7 @@ public class BitSliderTests : BunitTestContext
         var com = Context.Render(builder =>
         {
             builder.OpenComponent<BitSlider>(0);
-            builder.AddAttribute(1, nameof(BitSlider.IsRanged), true);
+            builder.AddAttribute(1, nameof(BitSlider.Ranged), true);
             builder.AddAttribute(2, nameof(BitSlider.Label), "Price");
             builder.AddAttribute(3, "aria-label", "written by hand");
             builder.AddAttribute(4, "data-probe", "yes");
@@ -4044,7 +4044,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.Classes, new BitSliderClassStyles
             {
                 LowerValueInput = "custom-lower-input",
@@ -4084,7 +4084,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.LowerValue, 2D);
             parameters.Add(p => p.UpperValue, 8D);
             parameters.Add(p => p.Classes, new BitSliderClassStyles
@@ -4265,7 +4265,7 @@ public class BitSliderTests : BunitTestContext
         // [aria-disabled="true"] each find it - every thumb of a range alike - and the root says so once.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Ranged, ranged);
             parameters.Add(p => p.Disabled, disabled);
         });
 
@@ -4333,7 +4333,7 @@ public class BitSliderTests : BunitTestContext
         // ranged slider, which is the first of its two tab stops - and FocusUpperAsync at the other one.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 6D);
         });
@@ -4375,8 +4375,8 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
-            parameters.Add(p => p.IsVertical, true);
+            parameters.Add(p => p.Ranged, true);
+            parameters.Add(p => p.Vertical, true);
         });
 
         foreach (var input in com.FindAll(".bit-sld-inp"))
@@ -4393,7 +4393,7 @@ public class BitSliderTests : BunitTestContext
         var changed = 0;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.ReadOnly, true);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 6D);

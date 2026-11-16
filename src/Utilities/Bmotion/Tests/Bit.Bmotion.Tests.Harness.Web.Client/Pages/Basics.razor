@@ -65,6 +65,13 @@
         <div id="forever" class="small"></div>
     </Bmotion>
 
+    @* Stopped by #spin-stop: however long it has been playing, a new target ends a forever animation. *@
+    <button id="spin-stop" @onclick="() => Change(() => _spinning = false)">stop</button>
+    <Bmotion Animate="@(_spinning ? Bm.To(rotate: [0, 360]) : Bm.To(rotate: 0))"
+             Transition="@(_spinning ? Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever) : Bm.Tween(0.1))">
+        <div id="spinner" class="small"></div>
+    </Bmotion>
+
     <Bmotion Initial='Bm.To(backgroundColor: "rgb(255, 0, 0)")'
              Animate='_play ? Bm.To(backgroundColor: "rgb(0, 0, 255)") : null'
              Transition="Bm.Tween(1, BmEase.Linear)"
@@ -158,6 +165,7 @@
 @code {
     private bool _toggled;
     private bool _play;
+    private bool _spinning = true;
     private int _renders;
     private int _frameCount;
     private Readout _frames = default!;

@@ -29,17 +29,17 @@ public partial class BitInfiniteScrollingDemo
          },
          new()
          {
-            Name = "EmptyText",
-            Type = "string",
-            DefaultValue = "null",
-            Description = "The message to render when there is no item available and no EmptyTemplate is provided. Defaults to BitStrings.NoItemsFound (\"No items found\").",
-         },
-         new()
-         {
             Name = "EmptyTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template to render when there is no item available.",
+         },
+         new()
+         {
+            Name = "EmptyText",
+            Type = "string",
+            DefaultValue = "null",
+            Description = "The message to render when there is no item available and no EmptyTemplate is provided. Defaults to BitStrings.NoItemsFound (\"No items found\").",
          },
          new()
          {
@@ -234,6 +234,13 @@ public partial class BitInfiniteScrollingDemo
          },
          new()
          {
+            Name = "RetryText",
+            Type = "string",
+            DefaultValue = "Retry",
+            Description = "The text of the button that retries the failed load.",
+         },
+         new()
+         {
             Name = "Reversed",
             Type = "bool",
             DefaultValue = "false",
@@ -245,13 +252,6 @@ public partial class BitInfiniteScrollingDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The rootMargin parameter of the IntersectionObserver, which grows (or shrinks) the area around the scroll viewport that the last element is checked against.",
-         },
-         new()
-         {
-            Name = "RetryText",
-            Type = "string",
-            DefaultValue = "Retry",
-            Description = "The text of the button that retries the failed load.",
          },
          new()
          {

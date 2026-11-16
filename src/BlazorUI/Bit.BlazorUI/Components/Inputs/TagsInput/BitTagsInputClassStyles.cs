@@ -120,7 +120,7 @@ public class BitTagsInputClassStyles
     public string? Counter { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the spinner IsLoading draws at the end of the field.
+    /// Custom CSS classes/styles for the spinner Loading draws at the end of the field.
     /// </summary>
     public string? Spinner { get; set; }
 

@@ -95,7 +95,7 @@ public class BitSliderErrorMessageTests : BunitTestContext
         var component = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.Label, "Price bracket");
-            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Ranged, true);
             parameters.Add(p => p.DraggableTrack, true);
             parameters.Add(p => p.LowerValue, 2);
             parameters.Add(p => p.UpperValue, 8);

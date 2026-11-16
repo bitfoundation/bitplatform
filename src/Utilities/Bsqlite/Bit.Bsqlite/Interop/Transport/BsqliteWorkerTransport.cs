@@ -91,6 +91,7 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
     public async Task OpenAsync(string databaseName, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
+        BsqliteDatabaseNames.ThrowIfInvalidInBrowser(databaseName, nameof(databaseName));
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         _module ??= await _js

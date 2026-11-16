@@ -123,7 +123,7 @@
 
     <DemoExample Title="Loading" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
-            <b>IsLoading</b> stacks a spinner over the content instead of replacing it, so the button keeps the size and
+            <b>Loading</b> stacks a spinner over the content instead of replacing it, so the button keeps the size and
             the accessible name it had before the click. It refuses a second click and says so with
             <code>aria-busy</code> and <code>aria-disabled</code> - busy alone would report progress without reporting
             that the press now does nothing. <b>LoadingLabel</b> adds text beside the spinner - announced from a live
@@ -131,16 +131,16 @@
         </div>
         <br />
         <div class="example-content">
-            <BitButton IsLoading="fillIsLoading" Variant="BitVariant.Fill" OnClick="LoadingFillClick">
+            <BitButton Loading="fillLoading" Variant="BitVariant.Fill" OnClick="LoadingFillClick">
                 Click me
             </BitButton>
 
-            <BitButton IsLoading="outlineIsLoading" Variant="BitVariant.Outline" LoadingLabel="Loading..."
+            <BitButton Loading="outlineLoading" Variant="BitVariant.Outline" LoadingLabel="Loading..."
                        OnClick="LoadingOutlineClick">
                 Click me
             </BitButton>
 
-            <BitButton IsLoading="textIsLoading" Variant="BitVariant.Text"
+            <BitButton Loading="textLoading" Variant="BitVariant.Text"
                        SecondaryText="this is the secondary text" OnClick="LoadingTextClick">
                 Click me
             </BitButton>
@@ -152,13 +152,13 @@
         </div>
         <br />
         <div class="example-content">
-            <BitButton IsLoading LoadingLabel="End..." Variant="BitVariant.Outline"
+            <BitButton Loading LoadingLabel="End..." Variant="BitVariant.Outline"
                        LoadingLabelPlacement="BitPlacement.End">End</BitButton>
-            <BitButton IsLoading LoadingLabel="Start..." Variant="BitVariant.Outline"
+            <BitButton Loading LoadingLabel="Start..." Variant="BitVariant.Outline"
                        LoadingLabelPlacement="BitPlacement.Start">Start</BitButton>
-            <BitButton IsLoading LoadingLabel="Top..." Variant="BitVariant.Outline"
+            <BitButton Loading LoadingLabel="Top..." Variant="BitVariant.Outline"
                        LoadingLabelPlacement="BitPlacement.Top">Top</BitButton>
-            <BitButton IsLoading LoadingLabel="Bottom..." Variant="BitVariant.Outline"
+            <BitButton Loading LoadingLabel="Bottom..." Variant="BitVariant.Outline"
                        LoadingLabelPlacement="BitPlacement.Bottom">Bottom</BitButton>
         </div>
         <br /><br />
@@ -346,7 +346,7 @@
         </div>
         <br /><br />
         <div class="example-content">
-            <BitButton IsLoading="templateIsLoading" OnClick="LoadingTemplateClick">
+            <BitButton Loading="templateLoading" OnClick="LoadingTemplateClick">
                 <PrimaryTemplate>Click me</PrimaryTemplate>
                 <LoadingTemplate>
                     <div class="custom-loading">
@@ -756,7 +756,7 @@
                 Outline
             </BitButton>
             <BitButton Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
-            <BitButton Size="BitSize.Small" IsLoading LoadingLabel="Loading..." Variant="BitVariant.Outline">
+            <BitButton Size="BitSize.Small" Loading LoadingLabel="Loading..." Variant="BitVariant.Outline">
                 Loading
             </BitButton>
             <BitButton Size="BitSize.Small" SecondaryText="this is the secondary text"
@@ -771,7 +771,7 @@
                 Outline
             </BitButton>
             <BitButton Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
-            <BitButton Size="BitSize.Medium" IsLoading LoadingLabel="Loading..." Variant="BitVariant.Outline">
+            <BitButton Size="BitSize.Medium" Loading LoadingLabel="Loading..." Variant="BitVariant.Outline">
                 Loading
             </BitButton>
             <BitButton Size="BitSize.Medium" SecondaryText="this is the secondary text"
@@ -786,7 +786,7 @@
                 Outline
             </BitButton>
             <BitButton Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
-            <BitButton Size="BitSize.Large" IsLoading LoadingLabel="Loading..." Variant="BitVariant.Outline">
+            <BitButton Size="BitSize.Large" Loading LoadingLabel="Loading..." Variant="BitVariant.Outline">
                 Loading
             </BitButton>
             <BitButton Size="BitSize.Large" SecondaryText="this is the secondary text"
@@ -818,7 +818,7 @@
         <div><b>Styles</b> & <b>Classes</b>:</div>
         <br />
         <div class="example-content">
-            <BitButton IsLoading="stylesIsLoading" LoadingLabel="Wait..." OnClick="LoadingStylesClick" Styles="@(new()
+            <BitButton Loading="stylesLoading" LoadingLabel="Wait..." OnClick="LoadingStylesClick" Styles="@(new()
                        {
                            Root = "background-color: peachpuff; border-color: peachpuff; min-width: 6rem;",
                            LoadingLabel = "color: tomato; font-weight: bold;",
@@ -827,7 +827,7 @@
                 Click me
             </BitButton>
 
-            <BitButton IsLoading="classesIsLoading" LoadingLabel="Sending..." OnClick="LoadingClassesClick"
+            <BitButton Loading="classesLoading" LoadingLabel="Sending..." OnClick="LoadingClassesClick"
                        Variant="BitVariant.Outline" Classes="@(new()
                        {
                            Root = "custom-root",
@@ -889,9 +889,9 @@
         </div>
         <br />
         <div class="example-content" dir="rtl">
-            <BitButton IsLoading Dir="BitDir.Rtl" LoadingLabel="در حال بارگذاری" Variant="BitVariant.Fill" />
-            <BitButton IsLoading Dir="BitDir.Rtl" LoadingLabel="در حال بارگذاری" Variant="BitVariant.Outline" />
-            <BitButton IsLoading Dir="BitDir.Rtl" LoadingLabel="در حال بارگذاری" Variant="BitVariant.Text" />
+            <BitButton Loading Dir="BitDir.Rtl" LoadingLabel="در حال بارگذاری" Variant="BitVariant.Fill" />
+            <BitButton Loading Dir="BitDir.Rtl" LoadingLabel="در حال بارگذاری" Variant="BitVariant.Outline" />
+            <BitButton Loading Dir="BitDir.Rtl" LoadingLabel="در حال بارگذاری" Variant="BitVariant.Text" />
         </div>
     </DemoExample>
 </DemoPage>

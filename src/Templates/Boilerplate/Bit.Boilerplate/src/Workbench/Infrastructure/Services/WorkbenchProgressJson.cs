@@ -30,6 +30,7 @@ public static class WorkbenchProgressJson
             Status = Name(task.Status),
             task.Agent,
             task.Cursor,
+            task.Language,
             task.Report,
             Steps = task.Steps.Select(step => new { step.Id, step.Text, Owner = Name(step.Owner), Status = Name(step.Status), step.Detail, step.Link }).ToArray(),
             Notes = task.Notes.Select(note => new { note.Id, Kind = Name(note.Kind), note.Text }).ToArray(),
@@ -51,11 +52,11 @@ public static class WorkbenchProgressJson
     private static object? DescribeSecret(WorkbenchProgressTask task, WorkbenchProgressAsk? ask)
     {
         return ask?.Secret is { } secret
-            ? new { To = Name(secret.To), secret.Name, secret.Environment, File = secret.To is WorkbenchProgressSecretTo.File ? WorkbenchSecrets.FilePath(task.Id, ask.Id) : null }
+            ? new { To = WorkbenchProgressDocument.SecretToName(secret.To), secret.Name, secret.Environment, secret.Project, File = secret.To is WorkbenchProgressSecretTo.File ? WorkbenchSecrets.FilePath(task.Id, ask.Id) : null }
             : null;
     }
 
-    /// <summary>What the user did since the cursor: answers, finished steps and messages, oldest first.</summary>
+    /// <summary>What the user did since the cursor: answers, finished steps, messages and what they removed, oldest first.</summary>
     public static object DescribeWait(long cursor, WorkbenchProgressTask task, IEnumerable<WorkbenchProgressEntry> events)
     {
         return new
@@ -72,6 +73,8 @@ public static class WorkbenchProgressJson
                     {
                         WorkbenchProgressEntryKind.Answer => "answer",
                         WorkbenchProgressEntryKind.Step => "step",
+                        WorkbenchProgressEntryKind.NoteRemoved => "removed-note",
+                        WorkbenchProgressEntryKind.EntryRemoved => "removed-line",
                         _ => "message"
                     },
                     Ask = ask?.Id,
@@ -79,6 +82,7 @@ public static class WorkbenchProgressJson
                     Choices = ask?.Answer?.Choices,
                     Secret = DescribeSecret(task, ask),
                     Step = entry.Kind is WorkbenchProgressEntryKind.Step ? entry.RefId : null,
+                    Note = entry.Kind is WorkbenchProgressEntryKind.NoteRemoved ? entry.RefId : null,
                     Text = string.IsNullOrEmpty(entry.Text) ? null : entry.Text,
                     By = entry.Author,
                     entry.At

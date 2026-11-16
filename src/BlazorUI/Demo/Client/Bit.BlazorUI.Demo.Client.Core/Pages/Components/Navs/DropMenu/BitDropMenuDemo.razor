@@ -147,16 +147,16 @@
 
     <DemoExample Title="Loading &amp; lazy content" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>
-            <b>IsLoading</b> swaps the icon for a spinner, closes an open callout and keeps it from opening until the
+            <b>Loading</b> swaps the icon for a spinner, closes an open callout and keeps it from opening until the
             content is ready. The button keeps the focus and is announced as busy and unavailable.
             <b>LazyRender</b> keeps the content out of the page until the first opening - worth it for heavy content
             or a drop menu repeated down a list - and keeps it afterwards, so its state survives a close.
         </div>
         <br />
-        <BitToggle @bind-Value="isLoading" Label="IsLoading" />
+        <BitToggle @bind-Value="isLoading" Label="Loading" />
         <br />
         <BitStack Horizontal Wrap Gap="1rem" FitHeight>
-            <BitDropMenu Text="Cloud sync" IconName="@BitIconName.Cloud" IsLoading="isLoading">
+            <BitDropMenu Text="Cloud sync" IconName="@BitIconName.Cloud" Loading="isLoading">
                 <BitStack Gap="0.5rem" Style="padding:0.5rem">
                     <BitText Typography="BitTypography.Body2">Last synced 5 minutes ago</BitText>
                     <BitToggle Label="Sync on cellular data" />

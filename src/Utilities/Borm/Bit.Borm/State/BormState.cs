@@ -3411,8 +3411,49 @@ public sealed class BormState : IDisposable
 
     // A list's rows, before and after a structural edit - an insert, a removal, a move, a swap, a copy, a
     // clear - as the row objects themselves. Restoring a sequence of rows undoes any of them alike, and each
-    // row's messages and touched state follow it by identity.
-    private sealed record RowsEntry(string Path, object?[]? Before, object?[]? After) : HistoryEntry(Path);
+    // row's state follows it by identity. A row that leaves the list - the edit removing it, or undo taking
+    // back the edit that added it - takes its state with it, and that state is kept here, by the row's
+    // position in Before or After, so the row gets its own back when restoring puts it there again.
+    private sealed record RowsEntry(string Path, object?[]? Before, object?[]? After) : HistoryEntry(Path)
+    {
+        // Where the edit took each row of Before in After, null for one it dropped, as its re-keyings said.
+        // A list may hold one object more than once, and only this tells which occurrence went where: a
+        // removal of the first of two copies leaves one, which matching by reference pairs with the first.
+        public int?[]? Moves { get; init; }
+
+        // Filled as rows leave: BeforeStates by the edit itself, AfterStates by the undo that takes it back.
+        public Dictionary<int, RowState>? BeforeStates { get; set; }
+
+        public Dictionary<int, RowState>? AfterStates { get; set; }
+    }
+
+    /// <summary>
+    /// Everything the form kept per path for one row that left its list - messages, touched, dirty and
+    /// validated flags, a refused entry, loaded choices, a search and a chosen option - as what putting each
+    /// back at the row's new index takes. Gathered by <see cref="RemapArrayIndices"/> from every store it
+    /// re-keys, so a store added there is carried here too.
+    /// </summary>
+    private sealed class RowState
+    {
+        private readonly List<Action<int, Func<string, bool>>> _putBack = [];
+
+        public void Add(Action<int, Func<string, bool>> putBack) => _putBack.Add(putBack);
+
+        // `exists`: whether the schema still has a path. The schema may have changed since the row left, and
+        // what NotifyDefinitionChanged dropped for a removed field must not come back with the row.
+        public void PutBack(int index, Func<string, bool> exists)
+        {
+            foreach (var putBack in _putBack) putBack(index, exists);
+        }
+    }
+
+    // While a structural edit is being recorded: the list it edits, and where each re-keying of that list
+    // leaves what the rows it drops carried, by the index each stood at in Before.
+    private (string Path, Dictionary<int, RowState> States)? _leavingRows;
+
+    // While a structural edit is being recorded: the list it edits, and where every re-keying of that list
+    // so far has taken each of its rows from Before, null for one dropped.
+    private (string Path, int?[] Moves)? _movingRows;
 
     private sealed class HistoryStep
     {
@@ -3542,22 +3583,34 @@ public sealed class BormState : IDisposable
                 var recorded = before ? value.Before : value.After;
                 Write(value.Path, recorded is List<object?> items ? new List<object?>(items) : recorded, markTouched: false);
                 break;
+            case RowsEntry rows when before:
+                rows.AfterStates = RestoreRows(rows.Path, rows.Before, rows.BeforeStates, rows.After, Invert(rows.Moves, rows.After?.Length ?? 0));
+                break;
             case RowsEntry rows:
-                RestoreRows(rows.Path, before ? rows.Before : rows.After);
+                rows.BeforeStates = RestoreRows(rows.Path, rows.After, rows.AfterStates, rows.Before, rows.Moves);
                 break;
         }
     }
 
-    /// <summary>Puts a list back to <paramref name="rows"/>, each row's state following it by identity.</summary>
-    private void RestoreRows(string arrayPath, object?[]? rows)
+    /// <summary>
+    /// Puts a list back to <paramref name="rows"/>, each row's state following it by identity. A row that comes
+    /// back - one a removal or a clear took away - is given what it carried then, kept in
+    /// <paramref name="states"/> by its index in <paramref name="rows"/>. Returns what the rows leaving now
+    /// carried, by their index in <paramref name="other"/>, the rows the list is taken back from, for
+    /// restoring those again. <paramref name="moves"/> is where the recorded edit took each row of
+    /// <paramref name="other"/> in <paramref name="rows"/>; while the list still holds exactly
+    /// <paramref name="other"/>, it says which occurrence of a row listed twice is which.
+    /// </summary>
+    private Dictionary<int, RowState>? RestoreRows(string arrayPath, object?[]? rows, Dictionary<int, RowState>? states, object?[]? other, int?[]? moves)
     {
         var current = Data.GetValue(arrayPath) as IList;
         var old = current?.Cast<object?>().ToArray() ?? [];
+        var leaving = new Dictionary<int, RowState>();
 
         if (rows is null)
         {
-            if (current is null) return;
-            RemapArrayIndices(arrayPath, _ => null);
+            if (current is null) return null;
+            RemapArrayIndices(arrayPath, _ => null, leaving);
             Data.SetValue(arrayPath, null);
         }
         else
@@ -3568,20 +3621,80 @@ public sealed class BormState : IDisposable
                     l.Clear();
                     foreach (var row in rows) l.Add(row);
                 }))
-                return;
+                return null;
 
-            var target = new Dictionary<object, int>(ReferenceEqualityComparer.Instance);
-            for (var i = 0; i < rows.Length; i++)
-                if (rows[i] is { } row && IsRowObject(row)) target.TryAdd(row, i);
-            RemapArrayIndices(arrayPath, i => i < old.Length && old[i] is { } row && target.TryGetValue(row, out var j) ? j : null);
+            var target = moves is not null && other is not null && SameRows(old, other) ? moves : MatchRows(old, rows);
+            RemapArrayIndices(arrayPath, i => i < target.Length ? target[i] : null, leaving);
+
+            // Removing a row dropped its state with it, so taking the removal back left the row - its empty
+            // required answer and all - looking valid until something judged it again. Only a row no row of
+            // the list stood for arrives: the others brought their own state along.
+            if (states is not null)
+            {
+                var arrived = new bool[rows.Length];
+                Array.Fill(arrived, true);
+                foreach (var j in target)
+                    if (j is { } stayed) arrived[stayed] = false;
+                for (var i = 0; i < rows.Length; i++)
+                {
+                    if (arrived[i] && rows[i] is { } row && IsRowObject(row) && states.TryGetValue(i, out var state))
+                        state.PutBack(i, path => FindField(path) is not null);
+                }
+            }
         }
 
         TrackDirty(arrayPath, rowsFollowed: true);
         NotifyArrayChanged(arrayPath);
 
-        // A value in a list of plain values is not a row with an identity of its own: two equal strings are
-        // the same answer, and which one a message belonged to cannot be told.
-        static bool IsRowObject(object row) => row is not string && !row.GetType().IsValueType;
+        if (leaving.Count == 0 || other is null) return null;
+
+        // The list being taken back from is normally exactly other; matched by identity all the same, so a
+        // row is filed under the position restoring other will put it at.
+        var inOther = MatchRows(old, other);
+        var kept = new Dictionary<int, RowState>();
+        foreach (var (i, state) in leaving)
+            if (i < inOther.Length && inOther[i] is { } j) kept[j] = state;
+        return kept.Count == 0 ? null : kept;
+    }
+
+    private static bool SameRows(object?[] a, object?[] b)
+        => a.Length == b.Length && a.SequenceEqual(b, ReferenceEqualityComparer.Instance);
+
+    // Where each row of the edited list came from in the list before the edit: the inverse of a RowsEntry's Moves.
+    private static int?[]? Invert(int?[]? moves, int length)
+    {
+        if (moves is null) return null;
+        var inverse = new int?[length];
+        for (var i = 0; i < moves.Length; i++)
+            if (moves[i] is { } j) inverse[j] = i;
+        return inverse;
+    }
+
+    // A value in a list of plain values is not a row with an identity of its own: two equal strings are
+    // the same answer, and which one a message belonged to cannot be told.
+    private static bool IsRowObject(object row) => row is not string && !row.GetType().IsValueType;
+
+    /// <summary>
+    /// Where each row of <paramref name="from"/> stands in <paramref name="to"/>, null for one that is not
+    /// there. A list may hold one object more than once, so the n-th time a row appears in
+    /// <paramref name="from"/> is paired with the n-th time it appears in <paramref name="to"/>, and each copy
+    /// keeps its own state rather than the first copy's.
+    /// </summary>
+    private static int?[] MatchRows(object?[] from, object?[] to)
+    {
+        var slots = new Dictionary<object, Queue<int>>(ReferenceEqualityComparer.Instance);
+        for (var i = 0; i < to.Length; i++)
+        {
+            if (to[i] is not { } row || !IsRowObject(row)) continue;
+            if (!slots.TryGetValue(row, out var queue)) slots[row] = queue = new Queue<int>();
+            queue.Enqueue(i);
+        }
+
+        var map = new int?[from.Length];
+        for (var i = 0; i < from.Length; i++)
+            if (from[i] is { } row && IsRowObject(row) && slots.TryGetValue(row, out var queue) && queue.TryDequeue(out var j))
+                map[i] = j;
+        return map;
     }
 
     /// <summary>
@@ -3657,16 +3770,34 @@ public sealed class BormState : IDisposable
     /// </summary>
     private T WithRows<T>(string arrayPath, Func<T> edit)
     {
+        // An edit of the same list made while one is being recorded - a change handler removing a second row
+        // as the first goes - is part of that one. Recorded apart, the two entries overlapped: redoing the
+        // outer took the inner's rows too, so redoing the inner found nothing leaving and kept nothing, and
+        // the next undo brought those rows back bare.
+        if (_movingRows is { } recording && string.Equals(recording.Path, arrayPath, StringComparison.OrdinalIgnoreCase))
+            return edit();
+
         using var step = Step();
         var rows = Recording && Data.GetValue(arrayPath) is IList list ? list.Cast<object?>().ToArray() : null;
         var at = _openStep?.Entries.Count ?? 0;
+
+        // Only the rows the edit drops are kept, as the edit drops them: a move or a swap keeps every row,
+        // and snapshotting each row's state for it would cost a walk of every store for nothing.
+        var outer = _leavingRows;
+        var outerMoves = _movingRows;
+        var leaving = rows is null ? null : new Dictionary<int, RowState>();
+        var moves = rows is null ? null : Enumerable.Range(0, rows.Length).Select(i => (int?)i).ToArray();
+        if (leaving is not null) _leavingRows = (arrayPath, leaving);
+        if (moves is not null) _movingRows = (arrayPath, moves);
         try
         {
             return edit();
         }
         finally
         {
-            RecordRows(arrayPath, rows, at);
+            _leavingRows = outer;
+            _movingRows = outerMoves;
+            RecordRows(arrayPath, rows, at, leaving, moves);
         }
     }
 
@@ -3676,13 +3807,31 @@ public sealed class BormState : IDisposable
         return 0;
     });
 
-    private void RecordRows(string arrayPath, object?[]? before, int at)
+    private void RecordRows(string arrayPath, object?[]? before, int at, Dictionary<int, RowState>? leaving, int?[]? moves)
     {
         if (_openStep is not { } step) return;
         var after = Data.GetValue(arrayPath) is IList list ? list.Cast<object?>().ToArray() : null;
-        if ((before?.Length ?? 0) == (after?.Length ?? 0)
-            && (before ?? []).SequenceEqual(after ?? [], ReferenceEqualityComparer.Instance)) return;
-        step.Entries.Insert(Math.Min(at, step.Entries.Count), new RowsEntry(arrayPath, before, after));
+        if (SameRows(before ?? [], after ?? [])) return;
+        step.Entries.Insert(Math.Min(at, step.Entries.Count), new RowsEntry(arrayPath, before, after)
+        {
+            BeforeStates = leaving is { Count: > 0 } ? leaving : null,
+            Moves = before is not null && after is not null && moves is not null && Consistent(moves, before, after) ? moves : null
+        });
+
+        // The re-keyings are trusted only as far as the rows bear them out - each row taken to a slot holding
+        // that very row, no two to the same one. Anything else that reshaped the list leaves undo to match by
+        // reference.
+        static bool Consistent(int?[] moves, object?[] before, object?[] after)
+        {
+            var taken = new bool[after.Length];
+            for (var i = 0; i < moves.Length; i++)
+            {
+                if (moves[i] is not { } j) continue;
+                if (j < 0 || j >= after.Length || taken[j] || !ReferenceEquals(before[i], after[j])) return false;
+                taken[j] = true;
+            }
+            return true;
+        }
     }
 
     // ---------------------------------------------------------------- internals
@@ -3880,18 +4029,44 @@ public sealed class BormState : IDisposable
     /// cities. Entries are lifted out before any are put back, so two rows swapping places cannot
     /// collide mid-flight. Baselines are deliberately left where they are: <see cref="Reset()"/>
     /// restores them position by position into the original rows.
+    /// <para>
+    /// What a dropped row carried is kept, row by row, in <paramref name="leaving"/> — or, for a
+    /// re-keying of the list a recorded structural edit makes, in the history entry (see
+    /// <see cref="WithRows{T}"/>) — so undo can give the row all of it back.
+    /// </para>
     /// </remarks>
-    private void RemapArrayIndices(string arrayPath, Func<int, int?> map)
+    private void RemapArrayIndices(string arrayPath, Func<int, int?> map, Dictionary<int, RowState>? leaving = null)
     {
-        RemapMessages(arrayPath, map);
-        RemapKeys(_touched, arrayPath, map);
-        RemapKeys(_dirty, arrayPath, map);
-        RemapKeys(_validated, arrayPath, map);
-        RemapKeys(_conversionErrors, arrayPath, map);
-        RemapKeys(_loadedOptions, arrayPath, map);
-        RemapKeys(_optionsErrors, arrayPath, map);
-        RemapKeys(_searchText, arrayPath, map);
-        RemapKeys(_chosen, arrayPath, map);
+        Func<int, RowState>? lift = leaving is null ? null : i => leaving.TryGetValue(i, out var state) ? state : leaving[i] = new RowState();
+        if (leaving is null && _leavingRows is { } recording && string.Equals(recording.Path, arrayPath, StringComparison.OrdinalIgnoreCase)
+            && _movingRows is { } recorded && string.Equals(recorded.Path, arrayPath, StringComparison.OrdinalIgnoreCase))
+        {
+            // Every re-keying of the edit's list keeps what the rows it drops carried, by the index each stood
+            // at in the edit's Before: a later one counts from rows already moved, so the moves so far say
+            // which row of Before stands at each index. A row the edit itself added was not in Before, and
+            // undo does not put it back.
+            var states = recording.States;
+            var from = Invert(recorded.Moves, recorded.Moves.Max(m => m + 1) ?? 0)!;
+            lift = i => i < from.Length && from[i] is { } k ? states.TryGetValue(k, out var state) ? state : states[k] = new RowState() : new RowState();
+        }
+
+        // Every re-keying of a recorded edit's list, not only the first, carries its rows on from where the
+        // last left them, so the entry knows which occurrence of a row listed twice ended where.
+        if (_movingRows is { } moving && string.Equals(moving.Path, arrayPath, StringComparison.OrdinalIgnoreCase))
+        {
+            for (var i = 0; i < moving.Moves.Length; i++)
+                if (moving.Moves[i] is { } k) moving.Moves[i] = map(k);
+        }
+
+        RemapMessages(arrayPath, map, lift);
+        RemapKeys(_touched, arrayPath, map, lift);
+        RemapKeys(_dirty, arrayPath, map, lift);
+        RemapKeys(_validated, arrayPath, map, lift);
+        RemapKeys(_conversionErrors, arrayPath, map, lift);
+        RemapKeys(_loadedOptions, arrayPath, map, lift);
+        RemapKeys(_optionsErrors, arrayPath, map, lift);
+        RemapKeys(_searchText, arrayPath, map, lift);
+        RemapKeys(_chosen, arrayPath, map, lift);
         OptionsVersion++;
 
         // Work still in flight was started for whichever row stood at its path at the time, and its
@@ -3910,7 +4085,9 @@ public sealed class BormState : IDisposable
         bool Moves(string key) => BormPath.IndexIn(key, arrayPath) is { } index && map(index) != index;
     }
 
-    private void RemapMessages(string arrayPath, Func<int, int?> map)
+    // `lift`: where a dropped row's entries go, by the index the row stood at, each as how to put it back
+    // at the row's new index. Null when nothing keeps them.
+    private void RemapMessages(string arrayPath, Func<int, int?> map, Func<int, RowState>? lift)
     {
         var lifted = new List<(string Key, List<BormValidationMessage> Messages)>();
         foreach (var key in _messages.Keys.ToList())
@@ -3920,19 +4097,26 @@ public sealed class BormState : IDisposable
             if (target == index) continue;
 
             _messages.Remove(key, out var list);
-            if (target is not { } moved || BormPath.Reindex(key, arrayPath, moved) is not { } newKey) continue;
-
-            lifted.Add((newKey, list!.Select(m => m with
+            if (target is not { } moved)
             {
-                FieldPath = BormPath.Reindex(m.FieldPath, arrayPath, moved) ?? m.FieldPath
-            }).ToList()));
+                // The list itself is kept, not a copy: a message list is replaced, never changed in place.
+                lift?.Invoke(index).Add((at, exists) =>
+                {
+                    if (BormPath.Reindex(key, arrayPath, at) is { } path && exists(path)) AppendMessages(path, Reindexed(list!, at));
+                });
+                continue;
+            }
+            if (BormPath.Reindex(key, arrayPath, moved) is { } newKey) lifted.Add((newKey, Reindexed(list!, moved)));
         }
 
         foreach (var (key, messages) in lifted)
             AppendMessages(key, messages);
+
+        List<BormValidationMessage> Reindexed(List<BormValidationMessage> messages, int at)
+            => [.. messages.Select(m => m with { FieldPath = BormPath.Reindex(m.FieldPath, arrayPath, at) ?? m.FieldPath })];
     }
 
-    private static void RemapKeys(HashSet<string> set, string arrayPath, Func<int, int?> map)
+    private static void RemapKeys(HashSet<string> set, string arrayPath, Func<int, int?> map, Func<int, RowState>? lift)
     {
         if (set.Count == 0) return;
 
@@ -3944,12 +4128,22 @@ public sealed class BormState : IDisposable
             if (target == index) continue;
 
             set.Remove(key);
-            if (target is { } moved && BormPath.Reindex(key, arrayPath, moved) is { } newKey) lifted.Add(newKey);
+            if (target is { } moved)
+            {
+                if (BormPath.Reindex(key, arrayPath, moved) is { } newKey) lifted.Add(newKey);
+            }
+            else
+            {
+                lift?.Invoke(index).Add((at, exists) =>
+                {
+                    if (BormPath.Reindex(key, arrayPath, at) is { } path && exists(path)) set.Add(path);
+                });
+            }
         }
         foreach (var key in lifted) set.Add(key);
     }
 
-    private static void RemapKeys<T>(Dictionary<string, T> entries, string arrayPath, Func<int, int?> map)
+    private static void RemapKeys<T>(Dictionary<string, T> entries, string arrayPath, Func<int, int?> map, Func<int, RowState>? lift)
     {
         if (entries.Count == 0) return;
 
@@ -3961,8 +4155,17 @@ public sealed class BormState : IDisposable
             if (target == index) continue;
 
             entries.Remove(key, out var value);
-            if (target is { } moved && BormPath.Reindex(key, arrayPath, moved) is { } newKey)
-                lifted.Add((newKey, value!));
+            if (target is { } moved)
+            {
+                if (BormPath.Reindex(key, arrayPath, moved) is { } newKey) lifted.Add((newKey, value!));
+            }
+            else
+            {
+                lift?.Invoke(index).Add((at, exists) =>
+                {
+                    if (BormPath.Reindex(key, arrayPath, at) is { } path && exists(path)) entries[path] = value!;
+                });
+            }
         }
         foreach (var (key, value) in lifted) entries[key] = value;
     }

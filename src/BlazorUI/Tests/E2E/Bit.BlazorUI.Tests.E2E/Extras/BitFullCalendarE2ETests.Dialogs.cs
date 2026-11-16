@@ -372,6 +372,26 @@ public partial class BitFullCalendarE2ETests
     }
 
     [TestMethod]
+    public async Task Delete_TheFocusStaysInTheCalendar_OnceTheEventTheDialogWasOpenedFromIsGone()
+    {
+        await OpenMainAsync();
+        await Badge(Cal, "e7").FocusAsync();
+        await Page.Keyboard.PressAsync("Enter");
+
+        var dialog = Dialog(Cal);
+        await Expect(dialog).ToBeVisibleAsync();
+        await Page.WaitForFunctionAsync("d => d.contains(document.activeElement)", await dialog.ElementHandleAsync());
+
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Delete" }).FocusAsync();
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(dialog).ToHaveCountAsync(0);
+
+        // The badge the focus would have gone back to left the page with the event, so the calendar puts it on the
+        // grid rather than letting it drop to the body.
+        await Page.WaitForFunctionAsync("c => c.contains(document.activeElement)", await Cal.ElementHandleAsync());
+    }
+
+    [TestMethod]
     public async Task OnChanging_CancellingASave_KeepsTheDialogOpenAndReportsNoChange()
     {
         await OpenMainAsync();

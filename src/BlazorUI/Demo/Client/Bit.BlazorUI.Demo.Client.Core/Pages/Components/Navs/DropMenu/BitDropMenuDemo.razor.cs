@@ -173,13 +173,6 @@ public partial class BitDropMenuDemo
         },
         new()
         {
-            Name = "IsLoading",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines whether the drop menu is in the loading state: the icon becomes a spinner, an open callout closes and it cannot be opened again until the loading ends. The button keeps the focus and is marked aria-disabled and aria-busy."
-        },
-        new()
-        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -191,6 +184,13 @@ public partial class BitDropMenuDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Keeps the content of the callout out of the page until the first opening, then keeps it, so its state survives a close."
+        },
+        new()
+        {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the drop menu is in the loading state: the icon becomes a spinner, an open callout closes and it cannot be opened again until the loading ends. The button keeps the focus and is marked aria-disabled and aria-busy."
         },
         new()
         {
@@ -273,6 +273,15 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Placement",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "The side of the button the callout opens on when there is room for it there; it falls back to the opposite side when there is not. Top, Bottom, Left and Right are honoured as they are named, Start and End against the reading direction; Center, the two combined values, or none leave the choice to DropDirection.",
+            LinkType = LinkType.Link,
+            Href = "#placement-enum"
+        },
+        new()
+        {
             Name = "Responsive",
             Type = "bool",
             DefaultValue = "false",
@@ -284,15 +293,6 @@ public partial class BitDropMenuDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The id of the element which needs to be scrollable in the content of the callout of the drop menu."
-        },
-        new()
-        {
-            Name = "Placement",
-            Type = "BitPlacement?",
-            DefaultValue = "null",
-            Description = "The side of the button the callout opens on when there is room for it there; it falls back to the opposite side when there is not. Top, Bottom, Left and Right are honoured as they are named, Start and End against the reading direction; Center, the two combined values, or none leave the choice to DropDirection.",
-            LinkType = LinkType.Link,
-            Href = "#placement-enum"
         },
         new()
         {

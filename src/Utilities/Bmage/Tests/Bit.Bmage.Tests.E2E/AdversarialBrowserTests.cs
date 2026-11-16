@@ -527,6 +527,48 @@ public class EditorLifecycleTests : DemoTest
     }
 
     /// <summary>
+    /// A control's accessible name contains the text it shows (WCAG 2.5.3), so a speech user can say what they see: the
+    /// zoom readout showed "100%" and was named "Fit to window". And no control sits inside a listbox option, whose
+    /// content is presentational: the annotation list was a listbox, which hid each annotation's Delete button.
+    /// </summary>
+    [TestMethod]
+    public async Task EditorControlsAreNamedForWhatTheyShow_AndNoneIsHiddenInsideAnOption()
+    {
+        var page = await OpenAsync("annotate");
+        await page.WaitForSelectorAsync(".bmg-editor", new PageWaitForSelectorOptions { Timeout = 60_000 });
+        await LoadSampleIntoEditorAsync(page);
+
+        // An annotation, so the annotation list on the Layers tab is there.
+        await ScrollEditorIntoViewAsync(page);
+        await page.Locator(".bmg-tool[title=Rectangle]").ClickAsync();
+        var canvas = (await page.Locator(".bmg-canvas").BoundingBoxAsync())!;
+        await page.Mouse.MoveAsync(canvas.X + 40, canvas.Y + 40);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(canvas.X + 140, canvas.Y + 110, new MouseMoveOptions { Steps = 8 });
+        await page.Mouse.UpAsync();
+        await page.GetByRole(AriaRole.Tab, new PageGetByRoleOptions { Name = "Layers" }).ClickAsync();
+        await page.Locator(".bmg-layer-name", new PageLocatorOptions { HasText = "Rectangle" }).First.WaitForAsync(new LocatorWaitForOptions { Timeout = 30_000 });
+
+        var problems = await page.EvaluateAsync<string[]>("""
+            () => {
+                const problems = [];
+                for (const el of document.querySelectorAll('.bmg-editor button')) {
+                    if (el.hidden || el.offsetParent === null) continue;
+                    const shown = (el.textContent || '').replace(/\s+/g, ' ').trim();
+                    const label = el.getAttribute('aria-label');
+                    // A symbol such as + or − is no text label, which WCAG leaves out of label in name.
+                    const words = /[\p{L}\p{N}]/u.test(shown);
+                    if (words && label && !label.toLowerCase().includes(shown.toLowerCase())) problems.push(`"${label}" shows "${shown}"`);
+                    if (el.closest('[role=option]')) problems.push(`"${label || shown}" is inside an option`);
+                }
+                return problems;
+            }
+            """);
+        Assert.IsEmpty(problems, string.Join(", ", problems));
+        Assert.AreEqual(0, await page.Locator(".bmg-editor [role=listbox]").CountAsync());
+    }
+
+    /// <summary>
     /// The panel tabs use a roving tabindex, which is only correct if arrow keys actually move between them. Without
     /// that, four of the five panels would be unreachable for a keyboard user.
     /// </summary>
@@ -548,6 +590,15 @@ public class EditorLifecycleTests : DemoTest
         await page.WaitForTimeoutAsync(300);
         var selectedNext = await page.Locator(".bmg-panel-tab[aria-selected=true]").InnerTextAsync();
         Assert.AreNotEqual(selectedFirst, selectedNext);
+
+        // Focus follows the selection, so the next arrow goes on from there: it moved the selection only, focus stayed
+        // on the first tab, and every later arrow selected the second tab again.
+        Assert.IsTrue(await page.EvaluateAsync<bool>("() => document.activeElement?.getAttribute('aria-selected') === 'true'"),
+            "Focus stayed behind on a tab that is no longer selected.");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.WaitForTimeoutAsync(300);
+        var allNames = await tabs.AllInnerTextsAsync();
+        Assert.AreEqual(allNames[2].Trim(), (await page.Locator(".bmg-panel-tab[aria-selected=true]").InnerTextAsync()).Trim());
 
         await page.Keyboard.PressAsync("End");
         await page.WaitForTimeoutAsync(300);

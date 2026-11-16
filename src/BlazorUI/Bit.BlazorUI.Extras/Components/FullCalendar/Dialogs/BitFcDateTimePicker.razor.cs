@@ -4,11 +4,10 @@ namespace Bit.BlazorUI;
 
 public partial class BitFcDateTimePicker : IDisposable
 {
-    [Parameter] public DateTime Value { get; set; }
-    [Parameter] public EventCallback<DateTime> ValueChanged { get; set; }
     [Parameter] public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
-    /// <summary>When true the time selects/display use 24-hour values; otherwise a 12-hour hour list plus an AM/PM select.</summary>
-    [Parameter] public bool Use24HourFormat { get; set; } = true;
+
+    /// <summary>The id of the element describing the field, typically its validation message.</summary>
+    [Parameter] public string? DescribedBy { get; set; }
 
     /// <summary>
     /// Day the picker's week starts on. <c>null</c> follows the culture. Supplied by the calendar so
@@ -16,23 +15,32 @@ public partial class BitFcDateTimePicker : IDisposable
     /// </summary>
     [Parameter] public DayOfWeek? FirstDayOfWeek { get; set; }
 
+    [Parameter] public string HourAriaLabel { get; set; } = "Hour";
+
+    /// <summary>Whether the field the picker edits failed validation (aria-invalid on the trigger).</summary>
+    [Parameter] public bool Invalid { get; set; }
+
+    /// <summary>Latest selectable date; later days render disabled. <c>null</c> leaves it open.</summary>
+    [Parameter] public DateTime? MaxDate { get; set; }
+
+    [Parameter] public string MeridiemAriaLabel { get; set; } = "AM/PM";
+
+    /// <summary>Earliest selectable date; earlier days render disabled. <c>null</c> leaves it open.</summary>
+    [Parameter] public DateTime? MinDate { get; set; }
+
+    [Parameter] public string MinuteAriaLabel { get; set; } = "Minute";
+
+    [Parameter] public string NextMonthAriaLabel { get; set; } = "Next month";
+
+    [Parameter] public string PreviousMonthAriaLabel { get; set; } = "Previous month";
+
+    [Parameter] public string SelectedDayAriaLabel { get; set; } = "selected";
+
     /// <summary>
     /// When false the picker chooses a date only: the time selects are left out and the trigger shows
     /// the date alone. A picked date keeps the time of day <see cref="Value"/> already had.
     /// </summary>
     [Parameter] public bool ShowTime { get; set; } = true;
-
-    /// <summary>Earliest selectable date; earlier days render disabled. <c>null</c> leaves it open.</summary>
-    [Parameter] public DateTime? MinDate { get; set; }
-
-    /// <summary>Latest selectable date; later days render disabled. <c>null</c> leaves it open.</summary>
-    [Parameter] public DateTime? MaxDate { get; set; }
-    [Parameter] public string PreviousMonthAriaLabel { get; set; } = "Previous month";
-    [Parameter] public string NextMonthAriaLabel { get; set; } = "Next month";
-    [Parameter] public string HourAriaLabel { get; set; } = "Hour";
-    [Parameter] public string MinuteAriaLabel { get; set; } = "Minute";
-    [Parameter] public string MeridiemAriaLabel { get; set; } = "AM/PM";
-    [Parameter] public string SelectedDayAriaLabel { get; set; } = "selected";
 
     /// <summary>
     /// Accessible name for the picker's trigger button. When set, assistive tech announces this
@@ -43,11 +51,12 @@ public partial class BitFcDateTimePicker : IDisposable
     /// <summary>The id of the trigger button, so a form can move the focus onto a field it found invalid.</summary>
     [Parameter] public string? TriggerId { get; set; }
 
-    /// <summary>Whether the field the picker edits failed validation (aria-invalid on the trigger).</summary>
-    [Parameter] public bool Invalid { get; set; }
+    /// <summary>When true the time selects/display use 24-hour values; otherwise a 12-hour hour list plus an AM/PM select.</summary>
+    [Parameter] public bool Use24HourFormat { get; set; } = true;
 
-    /// <summary>The id of the element describing the field, typically its validation message.</summary>
-    [Parameter] public string? DescribedBy { get; set; }
+    [Parameter] public DateTime Value { get; set; }
+
+    [Parameter] public EventCallback<DateTime> ValueChanged { get; set; }
 
     [CascadingParameter] public BitFullCalendarState? State { get; set; }
 

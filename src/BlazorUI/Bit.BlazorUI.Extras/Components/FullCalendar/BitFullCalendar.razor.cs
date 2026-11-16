@@ -103,14 +103,6 @@ public partial class BitFullCalendar : BitComponentBase
     [Parameter] public IReadOnlyList<BitFullCalendarColorOption>? EventColorOptions { get; set; }
 
     /// <summary>
-    /// Events displayed in the calendar. Assign a list from parent state; updates are synced on each
-    /// render when the reference or contents change. User-driven add, edit, and delete actions are
-    /// reported through <see cref="OnChange"/> - update this list (or your backing store) in the handler
-    /// to keep the UI in sync.
-    /// </summary>
-    [Parameter] public List<BitFullCalendarEvent>? Events { get; set; }
-
-    /// <summary>
     /// Optional extra content for the built-in event details dialog, under the built-in rows - a location, a meeting
     /// link, whatever the application keeps in <see cref="BitFullCalendarEvent.Data"/>.
     /// </summary>
@@ -124,6 +116,14 @@ public partial class BitFullCalendar : BitComponentBase
     /// leaves the event as it was.
     /// </summary>
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventEditorTemplate { get; set; }
+
+    /// <summary>
+    /// Events displayed in the calendar. Assign a list from parent state; updates are synced on each
+    /// render when the reference or contents change. User-driven add, edit, and delete actions are
+    /// reported through <see cref="OnChange"/> - update this list (or your backing store) in the handler
+    /// to keep the UI in sync.
+    /// </summary>
+    [Parameter] public List<BitFullCalendarEvent>? Events { get; set; }
 
     /// <summary>
     /// When <c>true</c>, the built-in color and attendee filter dropdowns are hidden from the calendar header.
@@ -150,7 +150,7 @@ public partial class BitFullCalendar : BitComponentBase
     /// marked busy for assistive technology. Set it while the events of a newly reported range (see
     /// <see cref="OnDateChange"/>) are being fetched; the calendar stays fully interactive meanwhile.
     /// </summary>
-    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool Loading { get; set; }
 
     /// <summary>
     /// The latest date the calendar can navigate to and display. Navigation past it is refused, the
@@ -282,18 +282,18 @@ public partial class BitFullCalendar : BitComponentBase
     [Parameter] public bool ReadOnly { get; set; }
 
     /// <summary>
-    /// Optional template for the header cell of a resource row in the timeline view (the sticky gutter on the
-    /// leading side). When provided, it replaces the default title and subtitle - an avatar, a capacity, a status.
-    /// The "Unassigned" row keeps its built-in label.
-    /// </summary>
-    [Parameter] public RenderFragment<BitFullCalendarResource>? ResourceTemplate { get; set; }
-
-    /// <summary>
     /// Resources displayed as rows in the resource timeline view. When <c>null</c> or empty,
     /// the resource timeline tab is hidden from the header. Each event's
     /// <see cref="BitFullCalendarEvent.Resource"/> is matched against the resource <c>Id</c>.
     /// </summary>
     [Parameter] public IReadOnlyList<BitFullCalendarResource>? Resources { get; set; }
+
+    /// <summary>
+    /// Optional template for the header cell of a resource row in the timeline view (the sticky gutter on the
+    /// leading side). When provided, it replaces the default title and subtitle - an avatar, a capacity, a status.
+    /// The "Unassigned" row keeps its built-in label.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarResource>? ResourceTemplate { get; set; }
 
     /// <summary>
     /// Configuration settings controlling calendar preferences such as the time format, the visible
@@ -317,6 +317,13 @@ public partial class BitFullCalendar : BitComponentBase
     [Parameter] public BitFullCalendarTexts Texts { get; set; } = new();
 
     /// <summary>
+    /// Optional template for customizing event rendering in the resource timeline view.
+    /// When provided, replaces the default event card content inside the timeline blocks.
+    /// The event is then named by the text the template shows followed by its title, time and date ("Pin: Planning Planning, 09:00 - 10:00, 7/16/2025").
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? TimelineEventTemplate { get; set; }
+
+    /// <summary>
     /// The clock the calendar reads "now" and "today" from: the today highlight, the current-time line, the
     /// "Today" button, the "Happening now" panel and the date it opens on. Defaults to
     /// <see cref="System.TimeProvider.System"/>, which on Blazor Server is the SERVER's clock and time zone - hand
@@ -324,13 +331,6 @@ public partial class BitFullCalendar : BitComponentBase
     /// fake one to pin the date in tests and screenshots.
     /// </summary>
     [Parameter] public TimeProvider? TimeProvider { get; set; }
-
-    /// <summary>
-    /// Optional template for customizing event rendering in the resource timeline view.
-    /// When provided, replaces the default event card content inside the timeline blocks.
-    /// The event is then named by the text the template shows followed by its title, time and date ("Pin: Planning Planning, 09:00 - 10:00, 7/16/2025").
-    /// </summary>
-    [Parameter] public RenderFragment<BitFullCalendarEvent>? TimelineEventTemplate { get; set; }
 
     /// <summary>
     /// The currently active view of the calendar (day, week, month, year, or agenda). (two-way bound)

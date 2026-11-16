@@ -202,6 +202,13 @@ function scrollToEstimate(list: HTMLElement, position: number, count: number): v
  */
 export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles: string[] | null, commands: string[] | null,
     suppressInEditable: boolean, sequenceTimeout: number, vim: boolean, inline?: boolean): BaletteHandle {
+    // A palette removed while its init was on its way - the page left while the module downloaded, or while the call
+    // crossed a Blazor Server connection - sends a reference to an element that is gone, which arrives as null. Nothing is
+    // listened to then: a listener on the document would outlive the palette and fail on every key the page gets.
+    if (!(dialog instanceof HTMLElement)) {
+        throw new Error('Bit.Balette: the palette\'s element is no longer in the document.');
+    }
+
     const isMac = detectMac();
     // An inline palette is a section of the page, always shown: no modal to open or close, no backdrop, and no global
     // keys - the page's modal palette owns those.

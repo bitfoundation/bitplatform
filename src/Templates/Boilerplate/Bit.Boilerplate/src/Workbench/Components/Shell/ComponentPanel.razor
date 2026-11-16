@@ -24,7 +24,7 @@
             <BitText Typography="BitTypography.Subtitle1" Class="component-name">@Info.Name</BitText>
             @if (Info.Tag is { } tag)
             {
-                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="source" Title="@tag.File">@FileName(tag.File):@tag.Line</BitText>
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="source" title="@tag.File">@FileName(tag.File):@tag.Line</BitText>
             }
             else if (Info.DrawnBy is { } drawnBy)
             {

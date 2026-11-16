@@ -249,12 +249,12 @@
         if (!_favourites.Remove(type)) _favourites.Add(type);
     }
 
-    private void OnDrop(DragEventArgs e)
+    private async Task OnDrop(DragEventArgs e)
     {
-        if (_flow is null || _dragType is null) return;
-        var at = _flow.ScreenToFlowPosition(e.ClientX, e.ClientY);
-        Add(_dragType, new BlowXYPosition(at.X - 75, at.Y - 20));
+        if (_flow is null || _dragType is not { } type) return;
         _dragType = null;
+        var at = await _flow.ScreenToFlowPositionAsync(e.ClientX, e.ClientY);
+        Add(type, new BlowXYPosition(at.X - 75, at.Y - 20));
     }
 
     private void AddAtCentre(string type)

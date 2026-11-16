@@ -15,12 +15,7 @@ public class KeyboardTests : BortableTestContext
 {
     /// <summary>Space or Enter on the item labelled <paramref name="label"/>.</summary>
     private Task<BortableKeyResult> PickAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string label)
-        => Renderer.Dispatcher.InvokeAsync(() => Zone(list).KeyAsync(KeyOf(list, label), "pick", null, -1));
-
-    /// <summary>A step of the keyboard drag in progress, reported through the bridge of <paramref name="list"/>.</summary>
-
-    private Task<BortableKeyResult> KeyAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string action, string? toList = null, int index = -1)
-        => Renderer.Dispatcher.InvokeAsync(() => Zone(list).KeyAsync("", action, toList, index));
+        => KeyAsync(list, "pick", key: KeyOf(list, label));
 
     // ---- the markup ----
 

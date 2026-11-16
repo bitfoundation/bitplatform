@@ -5031,6 +5031,12 @@
     <data name="ProgressDeleteConfirm" xml:space="preserve">
         <value>Definitief verwijderen?</value>
     </data>
+    <data name="ProgressRemoveNote" xml:space="preserve">
+        <value>Deze notitie verwijderen</value>
+    </data>
+    <data name="ProgressRemoveEntry" xml:space="preserve">
+        <value>Uit de activiteit verwijderen</value>
+    </data>
     <data name="ProgressPickTask" xml:space="preserve">
         <value>Kies een taak om te zien hoe het ervoor staat.</value>
     </data>
@@ -5078,6 +5084,9 @@
     </data>
     <data name="ProgressSecretToFile" xml:space="preserve">
         <value>Het komt in een bestand buiten het project, dat {0} in zijn opdrachten gebruikt zonder het ooit te zien.</value>
+    </data>
+    <data name="ProgressSecretToUserSecrets" xml:space="preserve">
+        <value>Het blijft op deze computer, in de user secrets van {1} als {0}. {2} ziet het nooit.</value>
     </data>
     <data name="ProgressSecretPlaceholder" xml:space="preserve">
         <value>Plak het hier</value>

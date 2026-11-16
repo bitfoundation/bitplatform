@@ -34,7 +34,7 @@ Switch between **Edit**, **Split** and **Preview** using the choice group above,
 the eye button of the toolbar, the F9 key, or the `@bind-Mode` parameter."";";
 
     private readonly string example4RazorCode = @"
-<BitToggleButton @bind-IsChecked=""fullScreen"" OnText=""Exit full-screen"" OffText=""Go full-screen"" />
+<BitToggleButton @bind-Checked=""fullScreen"" OnText=""Exit full-screen"" OffText=""Go full-screen"" />
 
 <BitMarkdownEditor @bind-FullScreen=""fullScreen"" Height=""10rem"" MinHeight=""6rem"" MaxHeight=""20rem"" Resizable />
 

@@ -50,7 +50,13 @@ public sealed partial class NewWorkflow(CliServices cli)
         if (request.GitHubRepo && request.NoGit)
             return cli.UsageError("github-repo-no-git", "--github-repo pushes the project's git repository, so it can't go with --no-git.");
 
-        var directory = Path.GetFullPath(request.Output ?? name, cli.Environment.CurrentDirectory);
+        var (directory, relocated) = ProjectLocation.Choose(cli.Environment, Path.GetFullPath(request.Output ?? name, cli.Environment.CurrentDirectory), name);
+
+        if (relocated is not null)
+        {
+            cli.Console.Warn($"{relocated}, so bit creates {name} in {directory}.");
+            cli.Log.Write($"Project folder: {relocated}, using {directory}");
+        }
 
         if (Directory.Exists(directory) && Directory.EnumerateFileSystemEntries(directory).Any())
             return cli.UsageError("folder-not-empty", $"{directory} already exists and isn't empty. Pick another name, or a folder with -o.");
@@ -68,7 +74,7 @@ public sealed partial class NewWorkflow(CliServices cli)
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
         var requirements = (request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory))).For(selection);
-        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), ContainersRequired = selection.NeedsContainers, NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Ci = true, Platforms = platforms, Ide = ide, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
+        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), ContainersRequired = selection.NeedsContainers, NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
         var hardware = request.NoSetup ? null : ProbeHardwareAsync(cli, directory, cancellationToken);
         var selectedTools = request.NoTools ? [] : await ChooseToolsAsync(cli, needs, request.Tools, request.ToolsGiven, interactive, hardware, cancellationToken);
 
@@ -501,7 +507,7 @@ public sealed partial class NewWorkflow(CliServices cli)
             cli.Telemetry.SetTag(TelemetryFields.TemplateVersion, installed?.Version);
 
             return installed is null
-                ? StepResult.FromProcess(result.Succeeded ? result with { ExitCode = 1 } : result, "", "Couldn't get bit Boilerplate", request.TemplatePackage is null ? $"dotnet new install Bit.Boilerplate::{request.TemplateVersion ?? BuildInfo.Version}" : null)
+                ? StepResult.FromProcess(result.Succeeded ? result with { ExitCode = 1 } : result, "", "Couldn't get bit Boilerplate", request.TemplatePackage is null ? $"dotnet new install Bit.Boilerplate@{request.TemplateVersion ?? BuildInfo.Version}" : null)
                 : StepResult.Succeeded(installed.Version is TemplateSource.FolderVersion ? "Got bit Boilerplate" : $"Got bit Boilerplate {installed.Version}", request.TemplatePackage is null ? "from nuget.org" : installed.Version is TemplateSource.FolderVersion ? "from its folder" : "from the local package");
         }, cancellationToken);
 
@@ -631,7 +637,7 @@ public sealed partial class NewWorkflow(CliServices cli)
             cli.Console.Out.MarkupLine($"  [green bold]{Markup.Escape(context.Name)} is ready[/][grey]{Markup.Escape(attention)} in {CliConsole.FormatDuration(elapsed)}[/]");
             cli.Console.Out.WriteLine();
 
-            var relative = Path.GetRelativePath(cli.Environment.CurrentDirectory, context.Directory);
+            var relative = ProjectLocation.ForDisplay(cli.Environment.CurrentDirectory, context.Directory);
             var run = selection.Aspire ? "aspire start" : $"dotnet watch --project src/Server/{context.Name}.Server.Web";
 
             if (setupSkipped)

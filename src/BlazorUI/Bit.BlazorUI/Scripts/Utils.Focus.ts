@@ -323,7 +323,8 @@
         // side, in the browser's collation for the culture given: case is ignored, and so are the accents the culture
         // treats as marks on a letter ("e" finds "Éclair" in English, "a" does not find "Åland" in Swedish). No culture,
         // the invariant one (an empty name) or a name the browser does not know takes the browser's own collation.
-        function typeaheadMatcher(term: string, culture?: string | null): (text: string) => boolean {
+        // Dropdowns.ts matches its options with it too.
+        export function typeaheadMatcher(term: string, culture?: string | null): (text: string) => boolean {
             const options: Intl.CollatorOptions = { usage: 'search', sensitivity: 'base' };
             let collator: Intl.Collator;
             try {

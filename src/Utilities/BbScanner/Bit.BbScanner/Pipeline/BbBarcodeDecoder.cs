@@ -401,9 +401,25 @@ public sealed class BbBarcodeDecoder : IDisposable
         int frameWidth,
         int frameHeight,
         bool suppressDuplicates = true)
+        => DecodeRegion(pixels, format, region, frameWidth, frameHeight, stride: 0, suppressDuplicates);
+
+    /// <summary>
+    /// Decodes the region of a frame <paramref name="region"/> gives, its first pixel at the start of
+    /// <paramref name="pixels"/> and its rows <paramref name="stride"/> bytes apart - 0 for tightly packed - whatever
+    /// region <see cref="BbScannerOptions.Region"/> holds: a region taken once for a frame, which a change to the
+    /// options meanwhile cannot tear. A region cut out of a whole frame in place is its rows at the frame's stride.
+    /// </summary>
+    internal BbBarcodeResult? DecodeRegion(
+        ReadOnlySpan<byte> pixels,
+        BbPixelFormat format,
+        (int X, int Y, int Width, int Height) region,
+        int frameWidth,
+        int frameHeight,
+        int stride,
+        bool suppressDuplicates = true)
     {
         var start = Stopwatch.GetTimestamp();
-        var view = PrepareCutOut(pixels, format, region, frameWidth, frameHeight, out var step);
+        var view = PrepareCutOut(pixels, format, region, frameWidth, frameHeight, stride, out var step);
         var afterGrayscale = Stopwatch.GetTimestamp();
 
         return DecodeCore(view, region.X, region.Y, step, start, afterGrayscale, frameWidth, frameHeight, suppressDuplicates, maxSymbols: 1, results: null);
@@ -411,7 +427,8 @@ public sealed class BbBarcodeDecoder : IDisposable
 
     /// <summary>
     /// Decodes every symbol in a frame of which only the searched region was supplied; see
-    /// <see cref="DecodeRegion"/> and <see cref="DecodeAll(ReadOnlySpan{byte}, int, int, BbPixelFormat, int, bool)"/>.
+    /// <see cref="DecodeRegion(ReadOnlySpan{byte}, BbPixelFormat, ValueTuple{int, int, int, int}, int, int, bool)"/> and
+    /// <see cref="DecodeAll(ReadOnlySpan{byte}, int, int, BbPixelFormat, int, bool)"/>.
     /// </summary>
     internal IReadOnlyList<BbBarcodeResult> DecodeAllRegion(
         ReadOnlySpan<byte> pixels,
@@ -421,11 +438,26 @@ public sealed class BbBarcodeDecoder : IDisposable
         int frameHeight,
         int maxSymbols = 16,
         bool suppressDuplicates = true)
+        => DecodeAllRegion(pixels, format, region, frameWidth, frameHeight, stride: 0, maxSymbols, suppressDuplicates);
+
+    /// <summary>
+    /// Decodes every symbol in the region of a frame <paramref name="region"/> gives, its rows <paramref name="stride"/>
+    /// bytes apart; see <see cref="DecodeRegion(ReadOnlySpan{byte}, BbPixelFormat, ValueTuple{int, int, int, int}, int, int, int, bool)"/>.
+    /// </summary>
+    internal IReadOnlyList<BbBarcodeResult> DecodeAllRegion(
+        ReadOnlySpan<byte> pixels,
+        BbPixelFormat format,
+        (int X, int Y, int Width, int Height) region,
+        int frameWidth,
+        int frameHeight,
+        int stride,
+        int maxSymbols = 16,
+        bool suppressDuplicates = true)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxSymbols);
 
         var start = Stopwatch.GetTimestamp();
-        var view = PrepareCutOut(pixels, format, region, frameWidth, frameHeight, out var step);
+        var view = PrepareCutOut(pixels, format, region, frameWidth, frameHeight, stride, out var step);
         var afterGrayscale = Stopwatch.GetTimestamp();
 
         var results = new List<BbBarcodeResult>();
@@ -439,9 +471,11 @@ public sealed class BbBarcodeDecoder : IDisposable
         (int X, int Y, int Width, int Height) region,
         int frameWidth,
         int frameHeight,
+        int stride,
         out int step)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentOutOfRangeException.ThrowIfNegative(stride);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(region.Width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(region.Height);
 
@@ -458,12 +492,29 @@ public sealed class BbBarcodeDecoder : IDisposable
         }
 
         var bpp = BbPixelConverter.BytesPerPixel(format);
-        if (pixels.Length / bpp < (long)region.Width * region.Height)
+        if (stride == 0)
         {
-            throw new ArgumentException("The pixels are fewer than the region holds.", nameof(pixels));
+            if (pixels.Length / bpp < (long)region.Width * region.Height)
+            {
+                throw new ArgumentException("The pixels are fewer than the region holds.", nameof(pixels));
+            }
+
+            stride = region.Width * bpp;
+        }
+        else
+        {
+            if (stride / bpp < region.Width)
+            {
+                throw new ArgumentOutOfRangeException(nameof(stride), stride, "A row is wider than the stride between rows.");
+            }
+
+            // The last row needs only its own pixels, not the padding after them. Each product fits in 64 bits.
+            if (pixels.Length < ((long)stride * (region.Height - 1)) + ((long)region.Width * bpp))
+            {
+                throw new ArgumentException("The pixels are fewer than the region holds.", nameof(pixels));
+            }
         }
 
-        var stride = region.Width * bpp;
         return PrepareRegion(pixels, region.Width, region.Height, stride, format, out step);
     }
 

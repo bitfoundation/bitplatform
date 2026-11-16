@@ -47,11 +47,11 @@ public partial class BitToggleButtonDemo
                  OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />";
 
     private readonly string example5RazorCode = @"
-<BitToggleButton DefaultIsChecked=""true""
+<BitToggleButton DefaultChecked=""true""
                  OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
                  OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />
 
-<BitToggleButton @bind-IsChecked=""twoWayBoundValue""
+<BitToggleButton @bind-Checked=""twoWayBoundValue""
                  Text=""@(twoWayBoundValue ? ""Muted"" : ""Unmuted"")""
                  IconName=""@(twoWayBoundValue ? BitIconName.MicOff : BitIconName.Microphone)"" />
 <BitCheckbox Label=""Checked Toggle Button"" @bind-Value=""twoWayBoundValue"" />
@@ -75,14 +75,14 @@ private async Task FocusTheToggleButton() => await programmaticToggleRef.FocusAs
 <BitToggleButton OnColor=""BitColor.Success"" OffColor=""BitColor.Error""
                  OnText=""Recording"" OnIconName=""@BitIconName.CircleFill""
                  OffText=""Stopped"" OffIconName=""@BitIconName.CircleStopSolid"" />
-<BitToggleButton DefaultIsChecked=""true""
+<BitToggleButton DefaultChecked=""true""
                  OnColor=""BitColor.Success"" OffColor=""BitColor.Error""
                  OnText=""Recording"" OnIconName=""@BitIconName.CircleFill""
                  OffText=""Stopped"" OffIconName=""@BitIconName.CircleStopSolid"" />
 
 <BitToggleButton OnVariant=""BitVariant.Fill"" OffVariant=""BitVariant.Outline""
                  OnText=""Following"" OffText=""Follow"" />
-<BitToggleButton DefaultIsChecked=""true""
+<BitToggleButton DefaultChecked=""true""
                  OnVariant=""BitVariant.Fill"" OffVariant=""BitVariant.Outline""
                  OnText=""Following"" OffText=""Follow"" />
 
@@ -90,28 +90,28 @@ private async Task FocusTheToggleButton() => await programmaticToggleRef.FocusAs
                  OnColor=""BitColor.Warning"" OnVariant=""BitVariant.Fill"" OffVariant=""BitVariant.Text""
                  OnText=""Notifications muted"" OnIconName=""@BitIconName.RingerOff""
                  OffText=""Notifications on"" OffIconName=""@BitIconName.Ringer"" />
-<BitToggleButton DefaultIsChecked=""true"" Color=""BitColor.Info""
+<BitToggleButton DefaultChecked=""true"" Color=""BitColor.Info""
                  OnColor=""BitColor.Warning"" OnVariant=""BitVariant.Fill"" OffVariant=""BitVariant.Text""
                  OnText=""Notifications muted"" OnIconName=""@BitIconName.RingerOff""
                  OffText=""Notifications on"" OffIconName=""@BitIconName.Ringer"" />
 
 <BitToggleButton Disabled Variant=""BitVariant.Fill"" Text=""Fill"" />
-<BitToggleButton Disabled Variant=""BitVariant.Fill"" DefaultIsChecked=""true"" Text=""Fill"" />
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" DefaultChecked=""true"" Text=""Fill"" />
 <BitToggleButton Disabled Variant=""BitVariant.Outline"" Text=""Outline"" />
-<BitToggleButton Disabled Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Outline"" />
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" DefaultChecked=""true"" Text=""Outline"" />
 <BitToggleButton Disabled Variant=""BitVariant.Text"" Text=""Text"" />
-<BitToggleButton Disabled Variant=""BitVariant.Text"" DefaultIsChecked=""true"" Text=""Text"" />";
+<BitToggleButton Disabled Variant=""BitVariant.Text"" DefaultChecked=""true"" Text=""Text"" />";
 
     private readonly string example7RazorCode = @"
-<BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Bold heading"" />
+<BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" DefaultChecked=""true"" Text=""Bold heading"" />
 <BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" Text=""Bold heading"" />
 
-<BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Bold heading"" />
+<BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" DefaultChecked=""true"" Text=""Bold heading"" />
 <BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" Text=""Bold heading"" />
 
 <BitToggleButton ShowCheckMark FixedCheckMark CheckMarkIconName=""@BitIconName.FavoriteStarFill""
                  Variant=""BitVariant.Outline"" Color=""BitColor.Warning""
-                 DefaultIsChecked=""true"" Text=""Favorite"" />";
+                 DefaultChecked=""true"" Text=""Favorite"" />";
 
     private readonly string example8RazorCode = @"
 <style>
@@ -184,11 +184,11 @@ private void HandleOnChanging(BitToggleButtonChangeArgs args)
 }";
 
     private readonly string example10RazorCode = @"
-<BitToggleButton IsLoading=""isLoading"" OnText=""Muted"" OffText=""Unmuted"" />
-<BitCheckbox Label=""IsLoading"" @bind-Value=""isLoading"" />
+<BitToggleButton Loading=""isLoading"" OnText=""Muted"" OffText=""Unmuted"" />
+<BitCheckbox Label=""Loading"" @bind-Value=""isLoading"" />
 
-<BitToggleButton IsLoading OnClick=""() => blockedClickCounter++"" Text=""@($""Blocked ({blockedClickCounter})"")"" />
-<BitToggleButton IsLoading Reclickable OnClick=""() => reclickCounter++"" Text=""@($""Reclickable ({reclickCounter})"")"" />
+<BitToggleButton Loading OnClick=""() => blockedClickCounter++"" Text=""@($""Blocked ({blockedClickCounter})"")"" />
+<BitToggleButton Loading Reclickable OnClick=""() => reclickCounter++"" Text=""@($""Reclickable ({reclickCounter})"")"" />
 
 <BitToggleButton AutoLoading OnChange=""HandleAutoLoadingChange""
                  OnText=""Muted"" OffText=""Unmuted"" />
@@ -196,14 +196,14 @@ private void HandleOnChanging(BitToggleButtonChangeArgs args)
 <BitToggleButton AutoLoading OnChange=""HandleAutoLoadingChange"" Text=""No delay"" />
 <BitToggleButton AutoLoading LoadingDelay=""700"" OnChange=""HandleAutoLoadingChange"" Text=""700ms delay"" />
 
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.End"" Text=""End"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Start"" Text=""Start"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Top"" Text=""Top"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Bottom"" Text=""Bottom"" />
+<BitToggleButton Loading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.End"" Text=""End"" />
+<BitToggleButton Loading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Start"" Text=""Start"" />
+<BitToggleButton Loading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Top"" Text=""Top"" />
+<BitToggleButton Loading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Bottom"" Text=""Bottom"" />
 
-<BitToggleButton IsLoading IconOnly Text=""Save"" IconName=""@BitIconName.Save"" LoadingLabel=""Saving..."" />
+<BitToggleButton Loading IconOnly Text=""Save"" IconName=""@BitIconName.Save"" LoadingLabel=""Saving..."" />
 
-<BitToggleButton IsLoading Text=""Muted"">
+<BitToggleButton Loading Text=""Muted"">
     <LoadingTemplate>
         <div class=""custom-template"">
             <BitRollerLoading CustomSize=""20"" Color=""BitColor.PrimaryForeground"" />
@@ -294,12 +294,12 @@ private async Task HandleAutoLoadingChange()
                  AriaMode=""BitToggleButtonAriaMode.Expanded""
                  AriaControls=""accessibility-details""
                  AriaDescription=""Expands the details panel below the button.""
-                 @bind-IsChecked=""detailsVisible""
+                 @bind-Checked=""detailsVisible""
                  Text=""Details"" />
 <div id=""accessibility-details"" hidden=""@(detailsVisible is false)"">The details panel is visible.</div>
 
 <BitToggleButton role=""checkbox"" Variant=""BitVariant.Text""
-                 @bind-IsChecked=""statusBarVisible""
+                 @bind-Checked=""statusBarVisible""
                  AriaLabel=""Show the status bar"" ShowCheckMark FixedCheckMark Text=""Status bar"" />";
 
     private readonly string example14RazorCode = @"
@@ -328,7 +328,7 @@ private readonly BitToggleButtonParams[] checkedToggleButtonParams =
 [
     new()
     {
-        DefaultIsChecked = true,
+        DefaultChecked = true,
         Variant = BitVariant.Outline
     }
 ];";
@@ -591,7 +591,7 @@ private readonly BitToggleButtonParams[] checkedToggleButtonParams =
 <BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" Text=""Check mark""
                  Styles=""@(new() { CheckMark = ""color: hotpink;"" })"" />
 
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" Text=""Loading parts""
+<BitToggleButton Loading LoadingLabel=""Saving..."" Text=""Loading parts""
                  Styles=""@(new() { Spinner = ""border-top-color: gold;"",
                                    LoadingLabel = ""color: gold; font-style: italic;"" })"" />
 

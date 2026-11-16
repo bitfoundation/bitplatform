@@ -117,6 +117,14 @@ public abstract class BortableTestContext : BunitContext
     protected Task EndAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string how)
         => Renderer.Dispatcher.InvokeAsync(() => Zone(list).EndAsync(how));
 
+    /// <summary>
+    /// A key the browser layer reports through the bridge of <paramref name="list"/>: <paramref name="action"/> on the item
+    /// rendered with <paramref name="key"/> (<c>pick</c>, <c>select</c>), or a step of the keyboard drag in progress, to
+    /// <paramref name="index"/> of the list <paramref name="toList"/> (or of the list the item is in).
+    /// </summary>
+    internal Task<BortableKeyResult> KeyAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string action, string? toList = null, int index = -1, string key = "")
+        => Renderer.Dispatcher.InvokeAsync(() => Zone(list).KeyAsync(key, action, toList, index));
+
     protected static Task ClickAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string label)
         => ItemElement(list, label).ClickAsync(new MouseEventArgs());
 
@@ -161,17 +169,27 @@ public abstract class BortableTestContext : BunitContext
     /// <summary>One lifecycle event (or <c>ItemsChanged</c> notification) raised by a list.</summary>
     protected sealed record Raised<TItem>(string List, string Name, BortableEventArgs<TItem>? Args);
 
-    /// <summary>Wires every callback of a list into <paramref name="log"/>, in the order they are raised.</summary>
-    protected static void Record<TItem>(ComponentParameterCollectionBuilder<Bortable<TItem>> p, string list, List<Raised<TItem>> log)
+    /// <summary>
+    /// Wires every callback of a list into <paramref name="log"/>, in the order they are raised. The one named
+    /// <paramref name="throwing"/> (<c>Start</c>, <c>End</c>, <c>ItemsChanged</c>...) then throws an
+    /// <see cref="InvalidOperationException"/> with the message <c>boom</c>, once logged.
+    /// </summary>
+    protected static void Record<TItem>(ComponentParameterCollectionBuilder<Bortable<TItem>> p, string list, List<Raised<TItem>> log, string? throwing = null)
     {
-        p.Add(c => c.OnStart, e => log.Add(new(list, "Start", e)));
-        p.Add(c => c.OnChange, e => log.Add(new(list, "Change", e)));
-        p.Add(c => c.OnUpdate, e => log.Add(new(list, "Update", e)));
-        p.Add(c => c.OnRemove, e => log.Add(new(list, "Remove", e)));
-        p.Add(c => c.OnAdd, e => log.Add(new(list, "Add", e)));
-        p.Add(c => c.OnSort, e => log.Add(new(list, "Sort", e)));
-        p.Add(c => c.OnEnd, e => log.Add(new(list, "End", e)));
-        p.Add(c => c.ItemsChanged, _ => log.Add(new(list, "ItemsChanged", null)));
+        void On(string name, BortableEventArgs<TItem>? e)
+        {
+            log.Add(new(list, name, e));
+            if (name == throwing) throw new InvalidOperationException("boom");
+        }
+
+        p.Add(c => c.OnStart, e => On("Start", e));
+        p.Add(c => c.OnChange, e => On("Change", e));
+        p.Add(c => c.OnUpdate, e => On("Update", e));
+        p.Add(c => c.OnRemove, e => On("Remove", e));
+        p.Add(c => c.OnAdd, e => On("Add", e));
+        p.Add(c => c.OnSort, e => On("Sort", e));
+        p.Add(c => c.OnEnd, e => On("End", e));
+        p.Add(c => c.ItemsChanged, _ => On("ItemsChanged", null));
     }
 
     /// <summary>The log as "Name:List" entries, e.g. <c>Start:L1 Update:L1 End:L1</c>.</summary>

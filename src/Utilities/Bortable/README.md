@@ -916,6 +916,11 @@ destination, then `OnEnd` on the source. A drag that leaves the lists as they we
 `OnEnd`. All of them are raised once the drag is over, so a handler that takes its time - a save in `ItemsChanged`,
 say - never holds up the next drag.
 
+A handler that throws does not keep the others from running - `OnEnd` still follows `OnStart` - and what it threw is
+passed on once the drag's step is done. A move made by `MoveAsync` or `MoveToAsync` throws it to the code that called
+it; during a drag the user makes, it is raised as the list's own, which the nearest `ErrorBoundary` handles, and the
+drop is still announced. An `OnStart` that throws then ends the drag before it begins, reported as cancelled.
+
 A drag can also end before it is released: when its source list leaves the page (a tab or a panel closing over
 it), or when the browser never reports its end and the next drag starts. It ends where it is: a preview in another
 list is dropped, while a live reorder of the source list stays, and is reported like any other - `ItemsChanged`,

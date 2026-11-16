@@ -15,10 +15,10 @@ internal sealed class _BitResourceTimelineRenderGate : ComponentBase
 {
     private long? _renderedKey;
 
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
     /// <summary>The version of what the content depends on; the content renders again when it differs.</summary>
     [Parameter] public long RenderKey { get; set; }
-
-    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     protected override bool ShouldRender() => _renderedKey != RenderKey;
 

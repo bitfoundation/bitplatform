@@ -97,11 +97,6 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IBitCascadeTarget, ID
     [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the boundary's default error UI.
-    /// </summary>
-    [Parameter] public BitErrorBoundaryClassStyles? Classes { get; set; }
-
-    /// <summary>
     /// The CSS class of the root element of the boundary's error UI.
     /// </summary>
     /// <remarks>
@@ -109,6 +104,11 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IBitCascadeTarget, ID
     /// <see cref="Style"/>, <see cref="Id"/> and the splatted HTML attributes - lands on the error UI only.
     /// </remarks>
     [Parameter] public string? Class { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the boundary's default error UI.
+    /// </summary>
+    [Parameter] public BitErrorBoundaryClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The text the Copy button carries while what it copied is still on the clipboard.

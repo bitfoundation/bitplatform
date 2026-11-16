@@ -222,10 +222,16 @@ public sealed class BlowConnectionSession
     {
         get
         {
-            if (_from is null || !_from.Connectable || _from.Hidden) return false;
+            if (_from is null || !_from.Connectable || !IsShown(_from)) return false;
             return !IsFull(_from, FromType, FromHandleId);
         }
     }
+
+    /// <summary>
+    /// Whether a node is on show: neither it nor any node it is nested in is hidden. A node inside a hidden or collapsed
+    /// one is out of sight, and takes no connections any more than a hidden one does.
+    /// </summary>
+    private bool IsShown(BlowNode node) => BlowEdgeLayout.IsShown(node, _graph.GetNode);
 
     /// <summary>
     /// The connection completing on the given handle would make, normalised so <c>Source</c> is the source end.
@@ -242,7 +248,7 @@ public sealed class BlowConnectionSession
 
         if (_from is null || _graph.GetNode(nodeId) is not { } to) return Reject(BlowConnectionRejection.MissingNode);
 
-        if (!_from.Connectable || _from.Hidden || !to.Connectable || to.Hidden)
+        if (!_from.Connectable || !IsShown(_from) || !to.Connectable || !IsShown(to))
             return Reject(BlowConnectionRejection.NotConnectable);
 
         if (_policy.Mode == BlowConnectionMode.Strict && handleType == FromType)

@@ -175,7 +175,7 @@ $clo-cal-private-properties: wid, mnw, mnw-def, mxw, mxh;
     // with transitions suppressed, forces it into effect, then drops it, which leaves the callout
     // transitioning from here to the open state above. Declared after .bit-clo-ocl, which is already on
     // the element by the time the callout is positioned.
-    &.bit-cal-ent {
+    &.bit--entry {
         transition: none;
         --bit-clo-opa: 0;
         --bit-clo-tra: var(--bit-clo-tra-ent);

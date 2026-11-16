@@ -32,7 +32,8 @@ public static class BitBcrdtServer
     /// </para>
     /// <para>
     /// Also registers <see cref="BcrdtRelayConnections"/> (<see cref="AddBitBcrdtRelayConnections"/>), where the hub
-    /// lists the connections it admits.
+    /// lists the connections it admits, and the default <see cref="BcrdtHubOptions"/> - how many documents one
+    /// connection may join, and how long an identifier may be - unless the container already has some.
     /// </para>
     /// </remarks>
     /// <param name="services">The container to register with.</param>
@@ -61,6 +62,7 @@ public static class BitBcrdtServer
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumReceiveMessageSize, 1);
 
         services.AddBitBcrdtRelayConnections();
+        services.TryAddSingleton(new BcrdtHubOptions());
         ISignalRServerBuilder builder = services.AddSignalR();
         builder.AddHubOptions<THub>(options => options.MaximumReceiveMessageSize = maximumReceiveMessageSize);
         return builder;

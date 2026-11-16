@@ -92,7 +92,7 @@ public class BitTagsInputParamsTests : BunitTestContext
             EnterKeyHint = BitEnterKeyHint.Next,
             FixedTagAriaDescription = "Stays.",
             InputMode = BitInputMode.Email,
-            IsLoading = true,
+            Loading = true,
             Label = "Cascaded label",
             LessTagsText = "Fewer",
             LoadingAriaLabel = "Cascaded loading",

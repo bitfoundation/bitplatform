@@ -31,19 +31,19 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "CurrentPage",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "The focused page (1-based), two-way bindable. Reading it gives the page the reader is on; assigning it navigates there. Bound one way (without CurrentPageChanged) the page becomes the host's to control: the viewer then reports navigation through OnPageChanged but does not move the value itself.",
+        },
+        new()
+        {
             Name = "CursorTool",
             Type = "BitPdfCursorTool",
             DefaultValue = "BitPdfCursorTool.Select",
             Description = "What dragging on the document surface does: select text (the default) or pan the document, as the hand tool of a desktop viewer does.",
             LinkType = LinkType.Link,
             Href = "#pdf-cursor-tool-enum"
-        },
-        new()
-        {
-            Name = "CurrentPage",
-            Type = "int",
-            DefaultValue = "1",
-            Description = "The focused page (1-based), two-way bindable. Reading it gives the page the reader is on; assigning it navigates there. Bound one way (without CurrentPageChanged) the page becomes the host's to control: the viewer then reports navigation through OnPageChanged but does not move the value itself.",
         },
         new()
         {
@@ -107,13 +107,6 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
-            Name = "MaxZoom",
-            Type = "double",
-            DefaultValue = "8",
-            Description = "The largest zoom factor the viewer allows (1 means 100%).",
-        },
-        new()
-        {
             Name = "MaxRenderedPageCount",
             Type = "int",
             DefaultValue = "24",
@@ -125,6 +118,13 @@ public partial class BitPdfViewerDemo
             Type = "int",
             DefaultValue = "40",
             Description = "How many thumbnails stay materialized in the sidebar at once. A thumbnail fragment is as heavy as a full page, so this bounds the sidebar the way MaxRenderedPageCount bounds the document surface.",
+        },
+        new()
+        {
+            Name = "MaxZoom",
+            Type = "double",
+            DefaultValue = "8",
+            Description = "The largest zoom factor the viewer allows (1 means 100%).",
         },
         new()
         {
@@ -158,18 +158,18 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
-            Name = "OnPageChanged",
-            Type = "EventCallback<int>",
-            DefaultValue = "",
-            Description = "The callback for when the focused page changes (with the 1-based page number).",
-        },
-        new()
-        {
             Name = "OnFileOpened",
             Type = "EventCallback<BitPdfSource>",
             Description = "The callback for when the reader picks a file with the toolbar's open-file button, with the source built from it. Handle it to drive Source yourself; when unset the viewer opens the file on its own.",
             LinkType = LinkType.Link,
             Href = "#pdf-source"
+        },
+        new()
+        {
+            Name = "OnPageChanged",
+            Type = "EventCallback<int>",
+            DefaultValue = "",
+            Description = "The callback for when the focused page changes (with the 1-based page number).",
         },
         new()
         {
@@ -232,6 +232,15 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "RenderMode",
+            Type = "BitPdfRenderMode",
+            DefaultValue = "BitPdfRenderMode.Html",
+            Description = "How page content is painted. Canvas replays a display list onto a per-page canvas, while Html (the default) renders prerenderable positioned DOM.",
+            LinkType = LinkType.Link,
+            Href = "#pdf-render-mode-enum"
+        },
+        new()
+        {
             Name = "RespectPermissions",
             Type = "bool",
             DefaultValue = "false",
@@ -239,12 +248,10 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
-            Name = "RenderMode",
-            Type = "BitPdfRenderMode",
-            DefaultValue = "BitPdfRenderMode.Html",
-            Description = "How page content is painted. Canvas replays a display list onto a per-page canvas, while Html (the default) renders prerenderable positioned DOM.",
-            LinkType = LinkType.Link,
-            Href = "#pdf-render-mode-enum"
+            Name = "Rotation",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The rotation applied to every page, in degrees, two-way bindable. Assigned values are normalized to the nearest quarter turn (0, 90, 180 or 270).",
         },
         new()
         {
@@ -289,20 +296,6 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
-            Name = "Width",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The CSS width of the viewer (sets --bit-PdfViewer-width on the instance). When not set, the viewer fills the width its host gives it.",
-        },
-        new()
-        {
-            Name = "ZoomPresets",
-            Type = "IEnumerable<double>?",
-            DefaultValue = "null",
-            Description = "The explicit zoom factors the toolbar's zoom dropdown offers (1 means 100%). Values outside MinZoom..MaxZoom are dropped. Defaults to 50%, 75%, 100%, 125%, 150%, 200%, 300% and 400%.",
-        },
-        new()
-        {
             Name = "Styles",
             Type = "BitPdfViewerClassStyles?",
             DefaultValue = "null",
@@ -330,6 +323,13 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "ToolbarEndTemplate",
+            Type = "RenderFragment<BitPdfViewer>?",
+            DefaultValue = "null",
+            Description = "Custom content rendered at the end of the toolbar, after the built-in controls. The context is the viewer itself.",
+        },
+        new()
+        {
             Name = "ToolbarItems",
             Type = "BitPdfToolbarItems",
             DefaultValue = "BitPdfToolbarItems.All",
@@ -346,17 +346,10 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
-            Name = "ToolbarEndTemplate",
-            Type = "RenderFragment<BitPdfViewer>?",
+            Name = "Width",
+            Type = "string?",
             DefaultValue = "null",
-            Description = "Custom content rendered at the end of the toolbar, after the built-in controls. The context is the viewer itself.",
-        },
-        new()
-        {
-            Name = "Rotation",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The rotation applied to every page, in degrees, two-way bindable. Assigned values are normalized to the nearest quarter turn (0, 90, 180 or 270).",
+            Description = "The CSS width of the viewer (sets --bit-PdfViewer-width on the instance). When not set, the viewer fills the width its host gives it.",
         },
         new()
         {
@@ -364,6 +357,13 @@ public partial class BitPdfViewerDemo
             Type = "double",
             DefaultValue = "1",
             Description = "The zoom factor (1 means 100%), two-way bindable. Assigning it switches the viewer to Custom zoom mode and clamps the value to MinZoom..MaxZoom.",
+        },
+        new()
+        {
+            Name = "ZoomPresets",
+            Type = "IEnumerable<double>?",
+            DefaultValue = "null",
+            Description = "The explicit zoom factors the toolbar's zoom dropdown offers (1 means 100%). Values outside MinZoom..MaxZoom are dropped. Defaults to 50%, 75%, 100%, 125%, 150%, 200%, 300% and 400%.",
         },
         new()
         {
@@ -1819,6 +1819,9 @@ public partial class BitPdfViewerDemo
 
     private static BitPdfSource CreateArticleSource()
         => BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
+
+    private static BitPdfSource CreateRangeSource()
+        => BitPdfSource.FromUrl("https://assets.bitplatform.dev/pdf-viewer-sample.pdf", "pdf-viewer-sample.pdf").WithRangeLoading();
 
     private async Task OnBasicFileChange(InputFileChangeEventArgs e)
     {

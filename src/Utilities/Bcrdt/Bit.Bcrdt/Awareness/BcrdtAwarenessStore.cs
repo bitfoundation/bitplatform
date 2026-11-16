@@ -52,7 +52,30 @@ public sealed class BcrdtAwarenessStore : IDisposable
     /// <summary>How far ahead of our own clock a claim about our own entry may be and still be believed.</summary>
     private const long MaxSelfClockJump = 1L << 32;
 
+    /// <summary>How many departures of clients never seen the store remembers at most.</summary>
+    /// <remarks>
+    /// Such a departure is kept apart from <see cref="Entries"/> and bounded, because nothing proves it is real: one
+    /// message of made-up identifiers - a million fit in a few megabytes - would otherwise fill the store until
+    /// they timed out. Past the bound the oldest is forgotten first.
+    /// </remarks>
+    private const int MaxUnseenDepartures = 1024;
+
+    /// <summary>The most entries <see cref="ReadEntries"/> reads from one update.</summary>
+    /// <remarks>
+    /// A client publishes its own entry and announces the departures of the peers it times out: a handful, or as
+    /// many as a room has participants. The bound by the bytes left alone lets a few megabytes declare millions
+    /// of entries, each one materialized before the server can look at any.
+    /// </remarks>
+    internal const int MaxPolicedEntries = 10_000;
+
     private readonly Dictionary<ulong, BcrdtAwarenessEntry> _entries = [];
+
+    // Departures of clients this store has no entry for, by client, and the order they were first heard in.
+    // The sequence number tells an entry of the queue from a later departure of the same client.
+    private readonly Dictionary<ulong, (long Clock, DateTimeOffset At, long Sequence)> _unseenDepartures = [];
+    private readonly Queue<(ulong ClientId, long Sequence)> _unseenDepartureOrder = new();
+    private long _unseenDepartureSequence;
+
     private readonly object _gate = new();
     private readonly TimeSpan _timeout;
     private readonly TimeProvider _time;
@@ -213,6 +236,23 @@ public sealed class BcrdtAwarenessStore : IDisposable
             if (forgotten is not null)
             {
                 foreach (ulong clientId in forgotten) _entries.Remove(clientId);
+            }
+
+            // Departures of clients never seen are forgotten after a timeout, like those of clients that were: by
+            // then every peer has timed out whatever older entry of the client it held.
+            if (_unseenDepartures.Count > 0)
+            {
+                List<ulong>? departed = null;
+                foreach ((ulong clientId, var departure) in _unseenDepartures)
+                {
+                    if (now - departure.At > _timeout) (departed ??= []).Add(clientId);
+                }
+
+                if (departed is not null)
+                {
+                    foreach (ulong clientId in departed) _unseenDepartures.Remove(clientId);
+                    if (_unseenDepartures.Count == 0) _unseenDepartureOrder.Clear();
+                }
             }
 
             // Removed at their current clock, which only they may advance: their own next update
@@ -387,6 +427,25 @@ public sealed class BcrdtAwarenessStore : IDisposable
                     continue;
                 }
 
+                if (existing is null)
+                {
+                    // The departure of a client never seen: nothing to show, but it must still outrank an
+                    // older entry of that client arriving after it - a presence answer from a peer that had not
+                    // heard the goodbye yet - or the client would be shown as here until it timed out.
+                    if (state is null)
+                    {
+                        RememberUnseenDeparture(clientId, clock, now);
+                        continue;
+                    }
+
+                    // At an equal clock the removal wins, as it does over an entry held.
+                    if (_unseenDepartures.TryGetValue(clientId, out var departure))
+                    {
+                        if (clock <= departure.Clock) continue;
+                        _unseenDepartures.Remove(clientId);
+                    }
+                }
+
                 if (existing is not null)
                 {
                     if (clock < existing.Clock) continue;
@@ -441,6 +500,8 @@ public sealed class BcrdtAwarenessStore : IDisposable
         {
             _disposed = true;
             _entries.Clear();
+            _unseenDepartures.Clear();
+            _unseenDepartureOrder.Clear();
             _snapshot = null;
         }
 
@@ -508,6 +569,46 @@ public sealed class BcrdtAwarenessStore : IDisposable
         }
     }
 
+    /// <summary>Remembers the departure of a client the store has no entry for, within <see cref="MaxUnseenDepartures"/>.</summary>
+    private void RememberUnseenDeparture(ulong clientId, long clock, DateTimeOffset now)
+    {
+        if (_unseenDepartures.TryGetValue(clientId, out var known))
+        {
+            if (clock > known.Clock) _unseenDepartures[clientId] = (clock, now, known.Sequence);
+            return;
+        }
+
+        while (_unseenDepartures.Count >= MaxUnseenDepartures && _unseenDepartureOrder.TryDequeue(out var oldest))
+        {
+            if (_unseenDepartures.TryGetValue(oldest.ClientId, out var held) && held.Sequence == oldest.Sequence)
+            {
+                _unseenDepartures.Remove(oldest.ClientId);
+            }
+        }
+
+        long sequence = ++_unseenDepartureSequence;
+        _unseenDepartures[clientId] = (clock, now, sequence);
+        _unseenDepartureOrder.Enqueue((clientId, sequence));
+
+        // Departures forgotten otherwise - superseded by the client's return, or timed out - leave their place in
+        // the queue behind; dropping those now and then keeps it as small as the departures it orders.
+        if (_unseenDepartureOrder.Count > 2 * MaxUnseenDepartures) CompactUnseenDepartureOrder();
+    }
+
+    /// <summary>Drops the places in the order of departures no longer remembered.</summary>
+    private void CompactUnseenDepartureOrder()
+    {
+        int count = _unseenDepartureOrder.Count;
+        for (int i = 0; i < count; i++)
+        {
+            var place = _unseenDepartureOrder.Dequeue();
+            if (_unseenDepartures.TryGetValue(place.ClientId, out var held) && held.Sequence == place.Sequence)
+            {
+                _unseenDepartureOrder.Enqueue(place);
+            }
+        }
+    }
+
     private byte[] EncodeLocked(IReadOnlyList<ulong> clients)
     {
         var entries = new List<BcrdtAwarenessEntry>(clients.Count);
@@ -524,12 +625,19 @@ public sealed class BcrdtAwarenessStore : IDisposable
     /// Reads who an awareness update speaks for, without applying it: each entry's client, clock, and
     /// whether it publishes state or announces a departure.
     /// </summary>
-    /// <remarks>For a server that polices which connection may speak for which client.</remarks>
-    /// <exception cref="BcrdtFormatException">The update is malformed.</exception>
+    /// <remarks>
+    /// For a server that polices which connection may speak for which client. An update of more than
+    /// <see cref="MaxPolicedEntries"/> entries is refused before any is read.
+    /// </remarks>
+    /// <exception cref="BcrdtFormatException">The update is malformed, or holds too many entries.</exception>
     internal static List<(ulong ClientId, long Clock, bool Online)> ReadEntries(ReadOnlyMemory<byte> update)
     {
         var reader = new BcrdtBufferReader(update);
         int count = reader.ValidateCount(reader.ReadVarUInt32(), "awareness entry");
+        if (count > MaxPolicedEntries)
+        {
+            throw new BcrdtFormatException($"An awareness update of {count} entries exceeds the limit of {MaxPolicedEntries}.");
+        }
 
         var entries = new List<(ulong, long, bool)>(count);
         for (int i = 0; i < count; i++)
@@ -542,6 +650,43 @@ public sealed class BcrdtAwarenessStore : IDisposable
             entries.Add((clientId, (long)rawClock, state is not null));
         }
         return entries;
+    }
+
+    /// <summary>
+    /// The same awareness update without some of its entries - those at the given positions, counted as
+    /// <see cref="ReadEntries"/> lists them. Every entry kept is copied byte for byte.
+    /// </summary>
+    /// <remarks>For a server that passes on what an update may say and leaves out the rest.</remarks>
+    /// <exception cref="BcrdtFormatException">The update is malformed.</exception>
+    internal static byte[] WithoutEntries(ReadOnlyMemory<byte> update, IReadOnlySet<int> skipped)
+    {
+        var reader = new BcrdtBufferReader(update);
+        int count = reader.ValidateCount(reader.ReadVarUInt32(), "awareness entry");
+
+        var writer = new BcrdtBufferWriter(update.Length);
+        try
+        {
+            int left = 0;
+            foreach (int index in skipped)
+            {
+                if (index >= 0 && index < count) left++;
+            }
+
+            writer.WriteVarUInt((ulong)(count - left));
+            for (int i = 0; i < count; i++)
+            {
+                int start = reader.Position;
+                reader.ReadVarUInt();
+                reader.ReadVarUInt();
+                BcrdtAnyCodec.Read(ref reader);
+                if (!skipped.Contains(i)) writer.WriteRaw(update.Span[start..reader.Position]);
+            }
+            return writer.ToArray();
+        }
+        finally
+        {
+            writer.Dispose();
+        }
     }
 
     /// <summary>Encodes departures: each client gone, at the clock it was last seen with.</summary>

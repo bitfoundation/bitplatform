@@ -21,9 +21,9 @@ public partial class _BitAccordionListItem<[DynamicallyAccessedMembers(Dynamical
         }
     }
 
-    [Parameter] public TItem Item { get; set; } = default!;
-
     [Parameter] public BitAccordionList<TItem> AccordionList { get; set; } = default!;
+
+    [Parameter] public TItem Item { get; set; } = default!;
 
 
 

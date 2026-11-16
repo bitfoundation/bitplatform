@@ -18,7 +18,7 @@ namespace Bit.BlazorUI.Tests.Components.Buttons.ActionButton;
 public class BitActionButtonParamsTests : BunitTestContext
 {
     // What a button is about rather than how it looks - its content, its templates and what it does when it is
-    // clicked - is written per button, so it has no place on the params object. The IsLoadingChanged callback is the
+    // clicked - is written per button, so it has no place on the params object. The LoadingChanged callback is the
     // other half of a binding the page owns.
     private static readonly string[] _notCascaded =
     [
@@ -27,7 +27,7 @@ public class BitActionButtonParamsTests : BunitTestContext
         nameof(BitActionButton.ChildContent),
         nameof(BitActionButton.LoadingTemplate),
         nameof(BitActionButton.OnClick),
-        nameof(BitActionButton.IsLoadingChanged),
+        nameof(BitActionButton.LoadingChanged),
     ];
 
     private IRenderedComponent<BitParams> RenderWithParams(BitActionButtonParams buttonParams, Action<RenderTreeBuilder>? extraAttributes = null)
@@ -159,7 +159,7 @@ public class BitActionButtonParamsTests : BunitTestContext
             IconOnly = true,
             IconPlacement = BitPlacement.End,
             IconUrl = "/images/icon.svg",
-            IsLoading = true,
+            Loading = true,
             LoadingDelay = 250,
             LoadingLabel = "Sending...",
             NoWrap = true,
@@ -197,7 +197,7 @@ public class BitActionButtonParamsTests : BunitTestContext
         Assert.IsTrue(instance.IconOnly);
         Assert.AreEqual(BitPlacement.End, instance.IconPlacement);
         Assert.AreEqual("/images/icon.svg", instance.IconUrl);
-        Assert.IsTrue(instance.IsLoading);
+        Assert.IsTrue(instance.Loading);
         Assert.AreEqual(250, instance.LoadingDelay);
         Assert.AreEqual("Sending...", instance.LoadingLabel);
         Assert.IsTrue(instance.NoWrap);

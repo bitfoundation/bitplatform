@@ -14,17 +14,17 @@ public partial class BitSliderDemo
 <BitSlider Label=""ReadOnly slider"" DefaultValue=""6"" ReadOnly />";
 
     private readonly string example2RazorCode = @"
-<BitSlider Label=""Basic range"" IsRanged />
+<BitSlider Label=""Basic range"" Ranged />
 
-<BitSlider Label=""Price"" IsRanged Min=""0"" Max=""1000"" Step=""50""
+<BitSlider Label=""Price"" Ranged Min=""0"" Max=""1000"" Step=""50""
            ValueFormat=""C0""
            DefaultLowerValue=""200""
            DefaultUpperValue=""750"" />
 
-<BitSlider Label=""Age band"" IsRanged Min=""0"" Max=""100"" Step=""5"" @bind-RangeValue=""ageBand"" />
+<BitSlider Label=""Age band"" Ranged Min=""0"" Max=""100"" Step=""5"" @bind-RangeValue=""ageBand"" />
 <BitLabel>From @ageBand.Lower to @ageBand.Upper (@ageBand.Length years wide)</BitLabel>
 
-<BitSlider Label=""Disabled range"" IsRanged DefaultLowerValue=""2"" DefaultUpperValue=""5"" Disabled />";
+<BitSlider Label=""Disabled range"" Ranged DefaultLowerValue=""2"" DefaultUpperValue=""5"" Disabled />";
     private readonly string example2CsharpCode = @"
 private BitSliderRangeValue ageBand = new(25, 45);";
 
@@ -59,7 +59,7 @@ private BitSliderRangeValue ageBand = new(25, 45);";
            @bind-Value=""storageValue"" />
 <BitLabel>Value: @storageValue GB</BitLabel>
 
-<BitSlider Label=""Shift"" IsRanged RestrictToMarks MinRange=""4""
+<BitSlider Label=""Shift"" Ranged RestrictToMarks MinRange=""4""
            ShowMarkLabels
            Min=""0"" Max=""24"" Step=""1"" MarkStep=""4""
            ValueFormat=""0'h'""
@@ -110,34 +110,34 @@ private readonly List<BitSliderMark> storageMarks =
 private double storageValue = 256;";
 
     private readonly string example4RazorCode = @"
-<BitSlider Label=""Basic"" IsVertical DefaultValue=""4"" />
+<BitSlider Label=""Basic"" Vertical DefaultValue=""4"" />
 
-<BitSlider Label=""Disabled"" IsVertical DefaultValue=""4"" Disabled />
+<BitSlider Label=""Disabled"" Vertical DefaultValue=""4"" Disabled />
 
-<BitSlider Label=""Formatted"" IsVertical DefaultValue=""2"" ValueFormat=""0 cm"" />
+<BitSlider Label=""Formatted"" Vertical DefaultValue=""2"" ValueFormat=""0 cm"" />
 
-<BitSlider Label=""Ranged"" IsVertical IsRanged DefaultLowerValue=""2"" DefaultUpperValue=""7"" />
+<BitSlider Label=""Ranged"" Vertical Ranged DefaultLowerValue=""2"" DefaultUpperValue=""7"" />
 
-<BitSlider Label=""Marks"" IsVertical ShowMarks ShowMarkLabels MarkStep=""2"" DefaultValue=""6"" />
+<BitSlider Label=""Marks"" Vertical ShowMarks ShowMarkLabels MarkStep=""2"" DefaultValue=""6"" />
 
-<BitSlider Label=""Taller"" IsVertical Style=""--bit-Slider-length: 18rem"" DefaultValue=""8"" />";
+<BitSlider Label=""Taller"" Vertical Style=""--bit-Slider-length: 18rem"" DefaultValue=""8"" />";
 
     private readonly string example5RazorCode = @"
-<BitSlider Label=""Balance"" Min=""-5"" Max=""5"" DefaultValue=""3"" IsOriginFromZero />
+<BitSlider Label=""Balance"" Min=""-5"" Max=""5"" DefaultValue=""3"" OriginFromZero />
 
-<BitSlider Label=""Temperature"" Min=""-2"" Max=""8"" DefaultValue=""-1"" IsOriginFromZero ValueFormat=""0 °C"" />
+<BitSlider Label=""Temperature"" Min=""-2"" Max=""8"" DefaultValue=""-1"" OriginFromZero ValueFormat=""0 °C"" />
 
 <BitSlider Label=""Against target"" Min=""0"" Max=""100"" Step=""5"" Origin=""60"" DefaultValue=""85"" ValueFormat=""0'%'"" />
 
 <BitSlider Label=""Remaining"" Max=""100"" Step=""5"" Inverted DefaultValue=""30"" ValueFormat=""0'%'"" />
 
-<BitSlider Label=""Excluded"" IsRanged Inverted Min=""0"" Max=""100"" Step=""5""
+<BitSlider Label=""Excluded"" Ranged Inverted Min=""0"" Max=""100"" Step=""5""
            DefaultLowerValue=""35""
            DefaultUpperValue=""65"" />
 
 <BitSlider Label=""Position"" NoFill ShowMarks Max=""100"" Step=""5"" MarkStep=""10"" DefaultValue=""45"" />
 
-<BitSlider Label=""Bounds"" NoFill IsRanged Max=""100"" Step=""5""
+<BitSlider Label=""Bounds"" NoFill Ranged Max=""100"" Step=""5""
            DefaultLowerValue=""25""
            DefaultUpperValue=""75"" />";
 
@@ -146,13 +146,13 @@ private double storageValue = 256;";
 
 <BitSlider Label=""On"" ThumbLabel=""BitSliderThumbLabel.On"" ShowValue=""false"" Max=""100"" Step=""5"" DefaultValue=""35"" ValueFormat=""0'%'"" />
 
-<BitSlider Label=""Range"" IsRanged ThumbLabel=""BitSliderThumbLabel.On"" ShowValue=""false""
+<BitSlider Label=""Range"" Ranged ThumbLabel=""BitSliderThumbLabel.On"" ShowValue=""false""
            Min=""0"" Max=""1000"" Step=""50""
            ValueFormat=""C0""
            DefaultLowerValue=""250""
            DefaultUpperValue=""700"" />
 
-<BitSlider Label=""Gain"" IsVertical ThumbLabel=""BitSliderThumbLabel.On"" ShowValue=""false"" DefaultValue=""6"" ValueFormat=""0 dB"" />
+<BitSlider Label=""Gain"" Vertical ThumbLabel=""BitSliderThumbLabel.On"" ShowValue=""false"" DefaultValue=""6"" ValueFormat=""0 dB"" />
 
 <BitSlider Label=""Volume"" ThumbLabel=""BitSliderThumbLabel.On"" ShowValue=""false"" Max=""100"" Step=""5"" DefaultValue=""60"">
     <ThumbLabelTemplate Context=""value"">
@@ -172,40 +172,40 @@ private static string GetVolumeIcon(double value) => value switch
 };";
 
     private readonly string example7RazorCode = @"
-<BitSlider IsRanged Max=""100"" Step=""5"" @bind-RangeValue=""freeRange"" />
+<BitSlider Ranged Max=""100"" Step=""5"" @bind-RangeValue=""freeRange"" />
 <BitLabel>@freeRange.Lower - @freeRange.Upper</BitLabel>
 
-<BitSlider IsRanged NoSwap Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""70"" />
+<BitSlider Ranged NoSwap Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""70"" />
 
-<BitSlider IsRanged MinRange=""20"" Max=""100"" Step=""5"" DefaultLowerValue=""20"" DefaultUpperValue=""60"" />
+<BitSlider Ranged MinRange=""20"" Max=""100"" Step=""5"" DefaultLowerValue=""20"" DefaultUpperValue=""60"" />
 
-<BitSlider IsRanged MaxRange=""30"" Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""50"" />
+<BitSlider Ranged MaxRange=""30"" Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""50"" />
 
-<BitSlider IsRanged MinRange=""10"" MaxRange=""40"" Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""50"" />
+<BitSlider Ranged MinRange=""10"" MaxRange=""40"" Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""50"" />
 
-<BitSlider IsRanged Pushable MinRange=""20"" Max=""100"" Step=""5"" @bind-RangeValue=""pushableRange"" />
+<BitSlider Ranged Pushable MinRange=""20"" Max=""100"" Step=""5"" @bind-RangeValue=""pushableRange"" />
 <BitLabel>@pushableRange.Lower - @pushableRange.Upper (@pushableRange.Length wide)</BitLabel>
 
-<BitSlider IsRanged Pushable NoSwap Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""70"" />";
+<BitSlider Ranged Pushable NoSwap Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""70"" />";
     private readonly string example7CsharpCode = @"
 private BitSliderRangeValue freeRange = new(30, 70);
 private BitSliderRangeValue pushableRange = new(20, 40);";
 
     private readonly string example8RazorCode = @"
-<BitSlider IsRanged DraggableTrack Max=""100"" Step=""5"" @bind-RangeValue=""draggableRange"" />
+<BitSlider Ranged DraggableTrack Max=""100"" Step=""5"" @bind-RangeValue=""draggableRange"" />
 <BitLabel>@draggableRange.Lower - @draggableRange.Upper (@draggableRange.Length wide)</BitLabel>
 
-<BitSlider IsRanged DraggableTrack MinRange=""20"" MaxRange=""20"" Max=""100"" Step=""5""
+<BitSlider Ranged DraggableTrack MinRange=""20"" MaxRange=""20"" Max=""100"" Step=""5""
            DefaultLowerValue=""30""
            DefaultUpperValue=""50"" />
 
-<BitSlider IsRanged DraggableTrack RestrictToMarks ShowMarks ShowMarkLabels
+<BitSlider Ranged DraggableTrack RestrictToMarks ShowMarks ShowMarkLabels
            Min=""0"" Max=""24"" Step=""1"" MarkStep=""3""
            ValueFormat=""0'h'""
            DefaultLowerValue=""9""
            DefaultUpperValue=""15"" />
 
-<BitSlider Label=""Band"" IsVertical IsRanged DraggableTrack Max=""100"" Step=""5""
+<BitSlider Label=""Band"" Vertical Ranged DraggableTrack Max=""100"" Step=""5""
            DefaultLowerValue=""30""
            DefaultUpperValue=""60"" />";
     private readonly string example8CsharpCode = @"
@@ -245,7 +245,7 @@ private static string GetTimeText(double minutes)
 <BitSlider Label=""Two-way"" @bind-Value=""twoWayBinding"" />
 <BitRating Max=""10"" @bind-Value=""twoWayBinding"" />
 
-<BitSlider Label=""Range"" IsRanged Max=""100"" Step=""5""
+<BitSlider Label=""Range"" Ranged Max=""100"" Step=""5""
            @bind-LowerValue=""boundLower""
            @bind-UpperValue=""boundUpper"" />
 <BitLabel>LowerValue: @boundLower &nbsp; UpperValue: @boundUpper</BitLabel>";
@@ -262,7 +262,7 @@ private double boundUpper = 75;";
            OnChangeEnd=""v => onChangeEndValue = v"" />
 <BitLabel>OnChange fired @onChangeCount times &nbsp; · &nbsp; OnChangeEnd committed @onChangeEndValue</BitLabel>
 
-<BitSlider Label=""Drag me too"" IsRanged Max=""100""
+<BitSlider Label=""Drag me too"" Ranged Max=""100""
            DefaultLowerValue=""20""
            DefaultUpperValue=""60""
            OnRangeChange=""r => onRangeChangeCount++""
@@ -272,7 +272,7 @@ private double boundUpper = 75;";
     OnRangeChangeEnd committed @onRangeChangeEndValue?.Lower - @onRangeChangeEndValue?.Upper
 </BitLabel>
 
-<BitSlider Label=""Focus me"" IsRanged Max=""100"" Step=""5""
+<BitSlider Label=""Focus me"" Ranged Max=""100"" Step=""5""
            DefaultLowerValue=""30""
            DefaultUpperValue=""70""
            OnFocusIn=""() => focusState = focusedText""
@@ -306,7 +306,7 @@ private string focusState = blurredText;";
 
         <br />
 
-        <BitSlider IsRanged
+        <BitSlider Ranged
                    Label=""Budget bracket""
                    Max=""100""
                    Step=""5""
@@ -331,7 +331,7 @@ else
 
 <BitSlider Label=""Marked invalid, explained elsewhere"" Max=""10"" DefaultValue=""5"" Invalid />
 
-<BitSlider IsRanged
+<BitSlider Ranged
            Label=""Price bracket""
            Max=""100""
            DefaultLowerValue=""20""
@@ -391,13 +391,13 @@ private double budgetValue = 9;";
 
 <BitSlider Label=""Frequency"" Min=""0"" Max=""1000"" Step=""10"" LargeStep=""100"" DefaultValue=""400"" ValueFormat=""0 Hz"" />
 
-<BitSlider IsRanged NoSwap Max=""1000"" Step=""10"" LargeStep=""250""
+<BitSlider Ranged NoSwap Max=""1000"" Step=""10"" LargeStep=""250""
            LowerAriaLabel=""From""
            UpperAriaLabel=""To""
            DefaultLowerValue=""200""
            DefaultUpperValue=""800"" />
 
-<BitSlider IsRanged
+<BitSlider Ranged
            AriaLabel=""Price range""
            LowerAriaLabel=""Minimum price""
            UpperAriaLabel=""Maximum price""
@@ -406,7 +406,7 @@ private double budgetValue = 9;";
            DefaultLowerValue=""150""
            DefaultUpperValue=""800"" />
 
-<BitSlider @ref=""focusableSlider"" IsRanged Max=""100"" Step=""5""
+<BitSlider @ref=""focusableSlider"" Ranged Max=""100"" Step=""5""
            LowerAriaLabel=""From""
            UpperAriaLabel=""To""
            DefaultLowerValue=""25""
@@ -422,7 +422,7 @@ private double budgetValue = 9;";
            Min=""0"" Max=""100"" Step=""5""
            DefaultValue=""40"" />
 
-<BitSlider IsRanged
+<BitSlider Ranged
            Label=""Delivery window""
            LowerAriaLabel=""Earliest""
            UpperAriaLabel=""Latest""
@@ -431,7 +431,7 @@ private double budgetValue = 9;";
            DefaultLowerValue=""5""
            DefaultUpperValue=""14"" />
 
-<BitSlider IsRanged Max=""10"" DefaultLowerValue=""3"" DefaultUpperValue=""7"">
+<BitSlider Ranged Max=""10"" DefaultLowerValue=""3"" DefaultUpperValue=""7"">
     <LabelTemplate>
         <span class=""template-label"">
             <BitIcon IconName=""@BitIconName.Equalizer"" />
@@ -507,9 +507,9 @@ private readonly BitSliderParams[] sliderParams =
 
 <BitSlider Size=""BitSize.Large"" ShowMarks DefaultValue=""6"" />
 
-<BitSlider Size=""BitSize.Small"" IsVertical DefaultValue=""6"" />
-<BitSlider Size=""BitSize.Medium"" IsVertical DefaultValue=""6"" />
-<BitSlider Size=""BitSize.Large"" IsVertical DefaultValue=""6"" />";
+<BitSlider Size=""BitSize.Small"" Vertical DefaultValue=""6"" />
+<BitSlider Size=""BitSize.Medium"" Vertical DefaultValue=""6"" />
+<BitSlider Size=""BitSize.Large"" Vertical DefaultValue=""6"" />";
 
     private readonly string example17RazorCode = @"
 <style>
@@ -545,7 +545,7 @@ private readonly BitSliderParams[] sliderParams =
            Label=""Custom classes""
            Classes=""@(new() { Fill = ""custom-fill"", Mark = ""custom-mark"" })"" />
 
-<BitSlider IsRanged
+<BitSlider Ranged
            Label=""Two-tone thumbs""
            DefaultLowerValue=""3""
            DefaultUpperValue=""7""
@@ -577,5 +577,5 @@ private readonly BitSliderParams[] sliderParams =
 
 <BitSlider Dir=""BitDir.Rtl"" Label=""با علامت‌ها"" ShowMarks ShowMarkLabels Max=""5"" DefaultValue=""3"" />
 
-<BitSlider Dir=""BitDir.Rtl"" Label=""بازه"" IsRanged DefaultLowerValue=""2"" DefaultUpperValue=""7"" />";
+<BitSlider Dir=""BitDir.Rtl"" Label=""بازه"" Ranged DefaultLowerValue=""2"" DefaultUpperValue=""7"" />";
 }

@@ -50,6 +50,32 @@ public class DragEdgesTests
             "propagation must default off (nested drags isolated) and not emit the flag");
     }
 
+    [TestMethod]
+    public void OnDrag_WithoutAHandler_TheBridgeReportsNoMoves()
+    {
+        // Each move reported to .NET is a SignalR message on Blazor Server: none is sent for no handler.
+        using var ctx = new BmotionTestContext();
+        ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.Drag, BmDrag.Both)
+            .Add(p => p.ChildContent, Div));
+
+        Assert.AreEqual(false, AttachedFlags(ctx.Interop)["dragMoveEvents"]);
+    }
+
+    [TestMethod]
+    public void OnDrag_WithAHandler_TheBridgeReportsMoves()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.Drag, BmDrag.Both)
+            .Add(p => p.OnDrag, EventCallback.Factory.Create(this, () => { }))
+            .Add(p => p.ChildContent, Div));
+
+        Assert.IsFalse(AttachedFlags(ctx.Interop).ContainsKey("dragMoveEvents"));
+    }
+
     // ── Direction lock reporting ──────────────────────────────────────────────
 
     [TestMethod]

@@ -47,14 +47,14 @@ public partial class BitMarkdownViewerLegacy : BitComponentBase
     public bool NoPrerender { get; set; }
 
     /// <summary>
-    /// A callback that is called before starting to parse the markdown.
-    /// </summary>
-    [Parameter] public EventCallback<string?> OnParsing { get; set; }
-
-    /// <summary>
     /// A callback that is called after parsing the markdown.
     /// </summary>
     [Parameter] public EventCallback<string?> OnParsed { get; set; }
+
+    /// <summary>
+    /// A callback that is called before starting to parse the markdown.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnParsing { get; set; }
 
     /// <summary>
     /// A callback that is called after rendering the parsed markdown.
@@ -63,15 +63,7 @@ public partial class BitMarkdownViewerLegacy : BitComponentBase
 
 
 
-    protected override string RootElementClass => "bit-mdv";
-
-    // The native BitMarkdownViewer of Bit.BlazorUI.Extras shares the bit-mdv root class, so the reset this
-    // component's stylesheet applies is keyed to a class of its own: an app loading both bundles would
-    // otherwise have it wipe out the native viewer's styles.
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => "bit-mdv-lgc");
-    }
+    protected override string RootElementClass => "bit-mvl";
 
     protected override async Task OnInitializedAsync()
     {

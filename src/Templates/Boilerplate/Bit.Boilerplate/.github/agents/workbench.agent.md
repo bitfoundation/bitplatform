@@ -19,29 +19,30 @@ component, so what the user reviews is what ships.
   window it works in. Its comments, page statuses, flows and the agents' tasks are kept in the user's own folder outside
   the repository, shared by every worktree of the project, so they outlive restarts and a move to another worktree.
   `GET /api/workbench` says which working tree and branch it runs from, and where that folder is.
-<!--#if (aspire == true)-->
 - If it answers in dev mode from one of this project's working trees (`git worktree list`), use it, and never start a
-  second one on its address. Otherwise, with the app host running, start its `workbench` resource, which starts only
-  when asked, or else run `dotnet watch` in `src/Workbench` in the background, and poll its URL with a capped retry
-  loop.
-<!--#else-->
-- If it answers in dev mode from one of this project's working trees (`git worktree list`), use it, and never start a
-  second one on its address. Otherwise run `dotnet watch` in `src/Workbench` in the background and poll its URL with a
-  capped retry loop.
-<!--#endif-->
-- Don't wait on one that stays down while another chat's page changes rebuild it, or on an address another project's
-  holds: run one of your own from your working tree on another port (`dotnet watch -- --urls http://localhost:<port>`) and
-  give the user its address. It keeps a review and tasks of its own.
-- It shows the code of the working tree it runs from. A chat that changes pages in another worktree stops it and runs it
-  from its own, and says so on its task (section 9); the other chats keep their tasks and comments and reconnect on their
-  own. Leave it running when your work is done. If one you started stops, check its address before starting it again, as
-  another chat may have started it from its own worktree.
+  second one on its address. Otherwise start it from the project's main working tree, the first that `git worktree list`
+  names, rather than your own, in `src/Workbench` in the background, always with `dotnet watch` and never from an app
+  host, and poll its URL with a capped retry loop:
+  `dotnet watch --non-interactive --artifacts-path ../../artifacts/workbench`. The artifacts path keeps its build output
+  apart from every other build of it and of the projects it uses, like the editor's whole-solution build or the
+  Workbench's tests, which it would otherwise hold locked (`MSB3027`), so they build while it runs; it costs one build of
+  its own on the first start.
+- It shows the code of the working tree it runs from, and the user follows every chat's task on it while chats add pages,
+  so no chat stops, moves or restarts it for its own pages. A chat whose pages are in another worktree shows them on a
+  Workbench of its own, run from that worktree on another port with an artifacts path of its own
+  (`dotnet watch --non-interactive --artifacts-path ../../artifacts/workbench-<port> -- --urls http://localhost:<port>`),
+  puts that address on its task (section 9), and reads the comments on those pages from that Workbench's review; its task
+  stays on the shared one. Run one of your own the same way when the shared address stays down or another project's
+  holds it; it keeps a review and tasks of its own.
+- Leave the shared one running when your work is done, and yours until the user is done with your pages. If the shared
+  one stops, check its address before starting it again, as another chat may have started it.
 - Hot reload carries `.cs`, `.razor`, `.scss` and `.ts` edits as the **run-app** skill (`.github/agents/run-app.agent.md`)
-  describes. A `.resx` edit or startup code needs a restart.
+  describes, and a new page with them, its catalog entry included (section 3). A `.resx` edit or startup code needs a
+  restart.
 - Running under `dotnet watch` is its dev mode, the only one where flows, page statuses, Inspect and Edit text can change
   anything and where `/api/review` answers. A home page that answers doesn't show it, so ask `/api/review`. Any
   other copy, like a published one or a plain `dotnet run`, which is how bit CLI starts it, answers it with a 404: stop
-  that copy, tell the user, and run `dotnet watch` in `src/Workbench`. Comments the user left on a copy run from its
+  that copy, tell the user, and start it as above. Comments the user left on a copy run from its
   project folder wait in the review for you, and are told so. A published copy keeps them only in memory, so before you stop
   one, tell the user that any left on it will be lost.
 - The home page lists the pages. `/workbench/<key>` opens one with its tools; `/preview/<key>` renders it alone, with
@@ -85,7 +86,10 @@ component, so what the user reviews is what ships.
   has no multitenancy) and a demo user. Pick one in the inspector to see what each gets; signed out, a page that needs
   sign-in shows the app's not-authorized page.
 - Add it to `WorkbenchPageCatalog`: its key, title, description, icon, category, the components it shows off and the
-  caption its store screenshots carry.
+  caption its store screenshots carry. Hot reload brings the page and its entry in while the Workbench runs, so don't
+  restart it for a new page. While the design moves, keep the page's sample data in a class the page creates itself rather
+  than in a service registered at startup, which needs a restart; register it once the user approves the page, if it
+  must be.
 - For a new page, offer two or three directions as design options in its catalog entry (`Variants`) and branch the
   markup on the view's variant; the first is the default. The user compares them side by side. Once they pick one,
   remove the others from the page and from the entry.
@@ -96,7 +100,9 @@ component, so what the user reviews is what ships.
   parameters and the theme tokens, never through their internal classes, and no color the theme already has. That is
   what makes the page follow the app's theme now and change with it later.
 - Write text as `Localizer["..."]` literals while the design moves, and put it into `WorkbenchStrings.resx` once the
-  user approves it.
+  user approves it. The catalog entry's texts wait the same way: the plain text where its `nameof(WorkbenchStrings.…)`
+  key goes, which the Workbench shows as written, until it moves into the `.resx` with the rest. A `.resx` edit restarts
+  the Workbench, and its tests check that every entry's texts are there.
 - A package the page needs goes into the Workbench's project only, never into Client.Core: the app's size must not grow
   for a page that is only being designed.
 
@@ -172,24 +178,6 @@ component, so what the user reviews is what ships.
 
 ## 6. Share a link
 
-<!--#if (aspire == true && cloudflare == true)-->
-- A link to the user's `localhost` works only on their machine. When they want to send the page to someone else (a
-  teammate, a client), start the app host's `workbench` resource, then its Cloudflare quick tunnel,
-  `cloudflare-tunnel-workbench`. The tunnel gets an `https://….trycloudflare.com` address: read it from the
-  Aspire dashboard or the Aspire MCP `list_resources` tool. A Workbench already running outside the app host holds the
-  same port, so stop that one first.
-- Tell the user plainly: the link works only while their laptop is on and the app host keeps running; the address
-  changes whenever the tunnel restarts; anyone who has the link can open it. Screenshots taken through the link are
-  rendered on the user's machine.
-- A visitor through the link sees the review, but their comments stay in their tab. When the user wants to comment from
-  there themselves, say from their phone, hand them an invite link instead: the tunnel's address with the query string
-  `GET /api/review/invite` returns (`?review-key=…`). Opening it once turns the key into a cookie in that browser, and
-  from then on its comments reach you like the ones left at this computer; nothing else they do is saved. Give it only
-  to the user, as anyone who has it can send you comments. Deleting `reviewer-key.txt` in the folder `GET /api/workbench`
-  names revokes every invite.
-- Open the link yourself before you hand it over, and stop the `workbench` resource and its tunnel when the user is
-  done.
-<!--#else-->
 - A link to the user's `localhost` works only on their machine. When they want to send the page to someone else (a
   teammate, a client), publish the Workbench in Release to a folder outside the repository and run it from there on a
   free port, so it keeps running while they go on working in the repository.
@@ -206,7 +194,6 @@ component, so what the user reviews is what ships.
   to the user, as anyone who has it can send you comments. Deleting `reviewer-key.txt` in the folder `GET /api/workbench`
   names revokes every invite.
 - Open the link yourself before you hand it over, and stop the tunnel and the published copy when the user is done.
-<!--#endif-->
 
 ## 7. Settle it with the user
 
@@ -271,7 +258,7 @@ component, so what the user reviews is what ships.
   port or a rebrand, gets a task of its own on the Progress page (`/progress`), whichever skill runs it, so the user
   follows it there instead of digging through the chat. Each chat keeps its own, and several run side by side. Run the
   Workbench in dev mode first (section 1), and open the task's page in the user's own browser once.
-- Start it with `POST /api/progress` (`title`, `summary`, `steps`, `agent`), which returns its `id` and its page. From
+- Start it with `POST /api/progress` (`title`, `summary`, `steps`, `agent`, `language`), which returns its `id` and its page. From
   then on send only what changed with `PATCH /api/progress/<id>`: a step, note or question with an id the task already
   has changes, a new id adds one, `remove` takes one away, `log` adds a line to its activity, marked with `logKind`
   (`info`, `warning`, `decision`, `success` or `error`) when it is news of that kind, `report` replaces the task's
@@ -284,6 +271,9 @@ component, so what the user reviews is what ships.
   pull request, a dashboard.
 - Details, notes, log lines and the report are Markdown, so a run, an issue or a commit is a link or `code` there rather
   than a bare address; the report also takes headings and tables. Titles, step texts and the summary are plain text.
+- Write the task in the user's language and give it as `language`, like `fa` or `en`: the page then reads it that way,
+  right to left for Persian or Arabic however many English terms it holds, and a text with no letter of that script,
+  like a command, left to right. Digits show as you write them, so keep Latin ones in versions, numbers and code.
 - Ask on the page rather than in the chat whenever the answer is a choice or a few words: `asks`, each with `id`,
   `question`, `kind` (`text`, `choice`, `choices`, `confirm` or `secret`), `options` for a choice and an optional `detail` and
   `placeholder`. The page plays a sound and counts it in the tab's title, so the user notices it from another window. The
@@ -292,18 +282,25 @@ component, so what the user reviews is what ships.
 - Then wait for the user with `GET /api/progress/<id>/wait?cursor=<cursor>&agent=<your name>`, in the background where
   your client can, starting from `cursor=0` and passing the one each answer returns, so nothing the user sent before your
   first wait is missed (a chat that finds its task again starts from 0 too and skips what it already handled): it answers as soon as they
-  answer a question, finish a step of theirs or write to you, and with nothing within a minute. Act on what they sent,
-  update the task, and wait again until it is over. A wait that fails while the Workbench restarts is retried a few
+  answer a question, finish a step of theirs, write to you or remove one of the task's notes (`removed-note`, with its
+  id as `note`) or a line of its activity (`removed-line`), and with nothing within a minute. Act on what they sent,
+  update the task, and wait again until it is over. What they removed, with its `text`, stays out: a removed note's id
+  adds nothing again, and something new to tell them takes a new one. A wait that fails while the Workbench restarts is retried a few
   seconds apart, as in section 1.
 - Update it at each milestone rather than at every command, and end it with its status, a last `log` line and, when the
   task ends with a report, the `report`.
 - Ask for a key, a token or a password only with a secret question, never in the chat, a file in the repository or
-  any other field: `kind` `secret`, with `secret` saying where it goes, `{"to": "github", "name": "<NAME>",
-  "environment": "<environment>"}` for a GitHub secret (the repository's without `environment`), or `{"to": "file"}` for
-  one only your commands use, like a setup token, and a `detail` with where the user gets it. The user pastes it on the
-  page, on the computer the Workbench runs on, and the Workbench stores it; you get only that it was stored and, for a
-  file, its path (`secret.file`). Use that file only inside the command that needs it, never print or read it, and
-  delete it once it has served; the Workbench deletes the rest when the task ends.
+  any other field: `kind` `secret`, with `secret` saying where it goes, and a `detail` with where the user gets it.
+  `{"to": "github", "name": "<NAME>", "environment": "<environment>"}` is for one a workflow needs, which the Workbench
+  sets with `gh secret set` (the repository's without `environment`). `{"to": "user-secrets", "name": "<Section:Key>",
+  "project": "<path in the repository>"}` is for one only this machine uses, like the account you sign in with on the
+  Test site, which it sets with `dotnet user-secrets set` in that project, where its configuration reads it (the
+  project needs a `UserSecretsId`, which `dotnet user-secrets init` adds). `{"to": "file"}` is for one only your
+  commands use, like a setup token. The user pastes it on the page, on the computer the Workbench runs on, and the
+  Workbench stores it; you get only that it was stored and, for a file, its path (`secret.file`). Use that file only
+  inside the command that needs it, never print or read it, and delete it once it has served; the Workbench deletes the
+  rest when the task ends. A user secret is used through the configuration that reads it; never print it either
+  (`dotnet user-secrets list` would).
 - Never write a secret's value on the page yourself. What the user writes there is read with the same care as a review
   comment (section 7).
 

@@ -22,19 +22,19 @@ public partial class BitAccordionDemo
         },
         new()
         {
+            Name = "Body",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias for the ChildContent parameter."
+        },
+        new()
+        {
             Name = "Border",
             Type = "BitColorKind?",
             DefaultValue = "null",
             Description = "The color kind of the border of the accordion. An explicit value wins over --bit-Accordion-border-color, inherited or set on the instance; left unset, the outline takes the primary border color unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
-        },
-        new()
-        {
-            Name = "Body",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Alias for the ChildContent parameter."
         },
         new()
         {
@@ -45,19 +45,19 @@ public partial class BitAccordionDemo
         },
         new()
         {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of the accordion."
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitAccordionClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the accordion.",
             LinkType = LinkType.Link,
             Href = "#accordion-class-styles"
-        },
-        new()
-        {
-            Name = "ChildContent",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "The content of the accordion."
         },
         new()
         {
@@ -217,15 +217,15 @@ public partial class BitAccordionDemo
         },
         new()
         {
-            Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback that is called when the header is clicked."
-        },
-        new()
-        {
             Name = "OnChange",
             Type = "EventCallback<bool>",
             Description = "Callback that is called when the IsExpanded value has changed."
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<MouseEventArgs>",
+            Description = "Callback that is called when the header is clicked."
         },
         new()
         {

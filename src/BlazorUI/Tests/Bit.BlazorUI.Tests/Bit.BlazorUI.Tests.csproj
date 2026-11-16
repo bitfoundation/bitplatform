@@ -42,6 +42,9 @@
       <!-- Compile-linked so BitPublicCssVariablesTests can pin how a style string is cut into declarations
            (quotes, brackets, escapes) without InternalsVisibleTo. -->
       <Compile Include="..\..\Bit.BlazorUI\Utils\BitPublicCssVariables.cs" Link="Utils\BitPublicCssVariables.cs" />
+      <!-- Compile-linked so BitDataGridValueComparerTests can pin that the comparer a sort picks for a column's keys
+           orders them exactly as the general one does, without InternalsVisibleTo. -->
+      <Compile Include="..\..\Bit.BlazorUI.Extras\Components\DataGrid\Infrastructure\BitDataGridValueComparer.cs" Link="Components\Extras\DataGrid\BitDataGridValueComparer.cs" />
       <!-- Compile-linked so BitPdfOpCodeTests can pin the internal enum's contiguous
            blocks without InternalsVisibleTo (same source the Extras assembly builds). -->
       <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\Content\BitPdfOpCode.cs" Link="Components\Extras\PdfViewer\BitPdfOpCode.cs" />

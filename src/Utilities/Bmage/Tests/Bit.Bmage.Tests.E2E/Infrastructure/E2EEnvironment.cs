@@ -38,6 +38,12 @@ public static class E2EEnvironment
     public static string? LazyBaseUrl { get; } = Read("BMAGE_E2E_LAZY_BASE_URL");
 
     /// <summary>
+    /// <c>BMAGE_E2E_SAMPLE_SERVER_URL</c>, <c>BMAGE_E2E_SAMPLE_WASM_URL</c>, <c>BMAGE_E2E_SAMPLE_AUTO_URL</c>: an already
+    /// running hosting sample for <see cref="SamplesBrowserTests"/> to drive instead of building and booting one.
+    /// </summary>
+    public static string? SampleUrl(string sample) => Read($"BMAGE_E2E_SAMPLE_{sample.ToUpperInvariant()}_URL")?.TrimEnd('/');
+
+    /// <summary>
     /// <c>BMAGE_E2E_LAZY_AOT=1</c>: the lazy loading sample was published with <c>-p:RunAOTCompilation=true</c>, which
     /// loads Bmage with the app. Read by the shared harness too; the suite then leaves that publish as it is.
     /// </summary>

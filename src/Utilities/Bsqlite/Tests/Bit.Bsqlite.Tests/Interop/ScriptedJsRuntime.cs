@@ -94,6 +94,12 @@ internal sealed class ScriptedJsRuntime : IJSRuntime
             return ValueTask.FromResult(default(TValue)!);
         }
 
+        // The lock an open that may migrate takes before any worker exists. Nothing to play back either.
+        if (objectName == "module" && identifier is "acquireOpenLock" or "releaseOpenLock")
+        {
+            return ValueTask.FromResult(default(TValue)!);
+        }
+
         // Web Locks. Nothing to play back - the recorded calls are what the tests assert on.
         if (objectName == "host" && identifier is "acquireLock" or "releaseLock")
         {

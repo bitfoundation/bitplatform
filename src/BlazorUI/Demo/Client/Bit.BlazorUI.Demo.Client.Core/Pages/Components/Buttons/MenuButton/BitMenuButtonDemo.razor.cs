@@ -132,17 +132,17 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "DefaultSelectedItem",
-            Type = "TItem?",
-            DefaultValue = "null",
-            Description = "Default value of the SelectedItem."
-        },
-        new()
-        {
             Name = "DefaultIsToggled",
             Type = "bool?",
             DefaultValue = "null",
             Description = "Default value of the IsToggled parameter in toggle mode.",
+        },
+        new()
+        {
+            Name = "DefaultSelectedItem",
+            Type = "TItem?",
+            DefaultValue = "null",
+            Description = "Default value of the SelectedItem."
         },
         new()
         {
@@ -206,13 +206,6 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "IsLoading",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines whether the menu button is in the loading state. It replaces the default icon of the header button with a spinner and ignores its click; in split mode the chevron still opens the menu.",
-        },
-        new()
-        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -240,6 +233,13 @@ public partial class BitMenuButtonDemo
             Type = "RenderFragment<TItem?>?",
             DefaultValue = "null",
             Description = "The custom template content to render each item.",
+        },
+        new()
+        {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the menu button is in the loading state. It replaces the default icon of the header button with a spinner and ignores its click; in split mode the chevron still opens the menu.",
         },
         new()
         {
@@ -308,15 +308,15 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "OnClick",
-            Type = "EventCallback<TItem?>",
-            Description = "The callback that is called when the header button is clicked, with the selected item in Sticky mode and null otherwise, and when an item of the menu is activated outside of Sticky mode, with that item."
-        },
-        new()
-        {
             Name = "OnChange",
             Type = "EventCallback<TItem>",
             Description = "The callback that is called when the selected item has changed."
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<TItem?>",
+            Description = "The callback that is called when the header button is clicked, with the selected item in Sticky mode and null otherwise, and when an item of the menu is activated outside of Sticky mode, with that item."
         },
         new()
         {

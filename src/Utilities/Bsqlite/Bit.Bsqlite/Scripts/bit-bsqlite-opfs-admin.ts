@@ -5,6 +5,7 @@
 // Related files (-journal, -wal) and the VFS's temporary .ahp-* directories are not databases.
 
 const RELATED_SUFFIXES = ['-journal', '-wal'];
+const SQLITE_HEADER_LENGTH = 100;
 const TEMP_DIR_PREFIX = '.ahp-';
 
 /** What `probe` reports to the .NET provider, which turns it into a BsqliteProbeResult. */
@@ -138,6 +139,25 @@ export async function exportDatabase(databaseName: string): Promise<Uint8Array> 
     } catch (error) {
         if (isNotFound(error)) {
             throw new Error(`OPFS holds no database named '${name}'.`);
+        }
+
+        throw error;
+    }
+}
+
+/**
+ * The first bytes of the database, up to the 100 of the SQLite header, or null when it does not exist - what a
+ * migration checks before it exports the whole of it.
+ */
+export async function readHeader(databaseName: string): Promise<Uint8Array | null> {
+    const name = requireName(databaseName);
+
+    try {
+        const file = await (await getFileHandle(name, { create: false })).getFile();
+        return new Uint8Array(await file.slice(0, SQLITE_HEADER_LENGTH).arrayBuffer());
+    } catch (error) {
+        if (isNotFound(error)) {
+            return null;
         }
 
         throw error;

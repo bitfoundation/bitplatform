@@ -48,7 +48,7 @@
 
     <DemoExample Title="Range" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
-            <b>IsRanged</b> gives the slider a second thumb, so it selects a span rather than a point - a price
+            <b>Ranged</b> gives the slider a second thumb, so it selects a span rather than a point - a price
             bracket, an age band, the hours a shift covers. The ends are <b>LowerValue</b> and <b>UpperValue</b>,
             each bindable on its own, with <b>RangeValue</b> carrying both at once and <b>DefaultLowerValue</b> /
             <b>DefaultUpperValue</b> as their unbound counterparts.
@@ -62,20 +62,20 @@
         <br />
         <div class="example-box">
             <div>Basic:</div>
-            <BitSlider Label="Basic range" IsRanged />
+            <BitSlider Label="Basic range" Ranged />
             <br />
             <div>DefaultLowerValue and DefaultUpperValue:</div>
-            <BitSlider Label="Price" IsRanged Min="0" Max="1000" Step="50"
+            <BitSlider Label="Price" Ranged Min="0" Max="1000" Step="50"
                        ValueFormat="C0"
                        DefaultLowerValue="200"
                        DefaultUpperValue="750" />
             <br />
             <div>RangeValue, bound to both ends at once:</div>
-            <BitSlider Label="Age band" IsRanged Min="0" Max="100" Step="5" @bind-RangeValue="ageBand" />
+            <BitSlider Label="Age band" Ranged Min="0" Max="100" Step="5" @bind-RangeValue="ageBand" />
             <BitLabel>From @ageBand.Lower to @ageBand.Upper (@ageBand.Length years wide)</BitLabel>
             <br />
             <div>Disabled:</div>
-            <BitSlider Label="Disabled range" IsRanged DefaultLowerValue="2" DefaultUpperValue="5" Disabled />
+            <BitSlider Label="Disabled range" Ranged DefaultLowerValue="2" DefaultUpperValue="5" Disabled />
         </div>
     </DemoExample>
 
@@ -149,7 +149,7 @@
             <BitLabel>Value: @storageValue GB</BitLabel>
             <br />
             <div>On a range, restricted to the marks and keeping its ends four apart:</div>
-            <BitSlider Label="Shift" IsRanged RestrictToMarks MinRange="4"
+            <BitSlider Label="Shift" Ranged RestrictToMarks MinRange="4"
                        ShowMarkLabels
                        Min="0" Max="24" Step="1" MarkStep="4"
                        ValueFormat="0'h'"
@@ -160,7 +160,7 @@
 
     <DemoExample Title="Vertical" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            <b>IsVertical</b> stands the slider upright and fills it from the bottom up, so "more" is up - the
+            <b>Vertical</b> stands the slider upright and fills it from the bottom up, so "more" is up - the
             direction <b>ArrowUp</b> already means. The marks, their labels and the floating thumb label follow,
             and the value labels stack instead of flanking. An upright slider has no length of its own to inherit,
             so it takes one from the <b>--bit-Slider-length</b> CSS variable, per instance or globally. Reach for
@@ -168,23 +168,23 @@
         </div>
         <br />
         <div class="example-box row">
-            <BitSlider Label="Basic" IsVertical DefaultValue="4" />
+            <BitSlider Label="Basic" Vertical DefaultValue="4" />
 
-            <BitSlider Label="Disabled" IsVertical DefaultValue="4" Disabled />
+            <BitSlider Label="Disabled" Vertical DefaultValue="4" Disabled />
 
-            <BitSlider Label="Formatted" IsVertical DefaultValue="2" ValueFormat="0 cm" />
+            <BitSlider Label="Formatted" Vertical DefaultValue="2" ValueFormat="0 cm" />
 
-            <BitSlider Label="Ranged" IsVertical IsRanged DefaultLowerValue="2" DefaultUpperValue="7" />
+            <BitSlider Label="Ranged" Vertical Ranged DefaultLowerValue="2" DefaultUpperValue="7" />
 
-            <BitSlider Label="Marks" IsVertical ShowMarks ShowMarkLabels MarkStep="2" DefaultValue="6" />
+            <BitSlider Label="Marks" Vertical ShowMarks ShowMarkLabels MarkStep="2" DefaultValue="6" />
 
-            <BitSlider Label="Taller" IsVertical Style="--bit-Slider-length: 18rem" DefaultValue="8" />
+            <BitSlider Label="Taller" Vertical Style="--bit-Slider-length: 18rem" DefaultValue="8" />
         </div>
     </DemoExample>
 
     <DemoExample Title="Fill, origin & inversion" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            The fill normally grows out of the near end, which reads as "how much". <b>IsOriginFromZero</b> anchors
+            The fill normally grows out of the near end, which reads as "how much". <b>OriginFromZero</b> anchors
             it to zero instead, so a negative value fills one way and a positive one the other, with a tick where
             zero actually sits - only the middle of the track on a scale symmetric around it, as the -2..8 example
             shows. <b>Origin</b> is the same idea with any anchor: a target, a baseline, last month's figure. Both
@@ -199,11 +199,11 @@
         </div>
         <br />
         <div class="example-box">
-            <div>IsOriginFromZero on a symmetric scale:</div>
-            <BitSlider Label="Balance" Min="-5" Max="5" DefaultValue="3" IsOriginFromZero />
+            <div>OriginFromZero on a symmetric scale:</div>
+            <BitSlider Label="Balance" Min="-5" Max="5" DefaultValue="3" OriginFromZero />
             <br />
-            <div>IsOriginFromZero on an asymmetric one (zero is not the middle):</div>
-            <BitSlider Label="Temperature" Min="-2" Max="8" DefaultValue="-1" IsOriginFromZero ValueFormat="0 °C" />
+            <div>OriginFromZero on an asymmetric one (zero is not the middle):</div>
+            <BitSlider Label="Temperature" Min="-2" Max="8" DefaultValue="-1" OriginFromZero ValueFormat="0 °C" />
             <br />
             <div>Origin, anchored to a target rather than to zero:</div>
             <BitSlider Label="Against target" Min="0" Max="100" Step="5" Origin="60" DefaultValue="85" ValueFormat="0'%'" />
@@ -212,7 +212,7 @@
             <BitSlider Label="Remaining" Max="100" Step="5" Inverted DefaultValue="30" ValueFormat="0'%'" />
             <br />
             <div>An inverted range, drawing the excluded band:</div>
-            <BitSlider Label="Excluded" IsRanged Inverted Min="0" Max="100" Step="5"
+            <BitSlider Label="Excluded" Ranged Inverted Min="0" Max="100" Step="5"
                        DefaultLowerValue="35"
                        DefaultUpperValue="65" />
             <br />
@@ -220,7 +220,7 @@
             <BitSlider Label="Position" NoFill ShowMarks Max="100" Step="5" MarkStep="10" DefaultValue="45" />
             <br />
             <div>NoFill on a range:</div>
-            <BitSlider Label="Bounds" NoFill IsRanged Max="100" Step="5"
+            <BitSlider Label="Bounds" NoFill Ranged Max="100" Step="5"
                        DefaultLowerValue="25"
                        DefaultUpperValue="75" />
         </div>
@@ -249,7 +249,7 @@
             <BitSlider Label="On" ThumbLabel="BitSliderThumbLabel.On" ShowValue="false" Max="100" Step="5" DefaultValue="35" ValueFormat="0'%'" />
             <br />
             <div>On a range:</div>
-            <BitSlider Label="Range" IsRanged ThumbLabel="BitSliderThumbLabel.On" ShowValue="false"
+            <BitSlider Label="Range" Ranged ThumbLabel="BitSliderThumbLabel.On" ShowValue="false"
                        Min="0" Max="1000" Step="50"
                        ValueFormat="C0"
                        DefaultLowerValue="250"
@@ -257,7 +257,7 @@
             <br />
             <div>Vertical:</div>
             <div class="row">
-                <BitSlider Label="Gain" IsVertical ThumbLabel="BitSliderThumbLabel.On" ShowValue="false" DefaultValue="6" ValueFormat="0 dB" />
+                <BitSlider Label="Gain" Vertical ThumbLabel="BitSliderThumbLabel.On" ShowValue="false" DefaultValue="6" ValueFormat="0 dB" />
             </div>
             <br />
             <div>ThumbLabelTemplate, an icon that follows the level:</div>
@@ -298,28 +298,28 @@
         <br />
         <div class="example-box">
             <div>Unconstrained (drag the thumbs past each other):</div>
-            <BitSlider IsRanged Max="100" Step="5" @bind-RangeValue="freeRange" />
+            <BitSlider Ranged Max="100" Step="5" @bind-RangeValue="freeRange" />
             <BitLabel>@freeRange.Lower - @freeRange.Upper</BitLabel>
             <br />
             <div>NoSwap:</div>
-            <BitSlider IsRanged NoSwap Max="100" Step="5" DefaultLowerValue="30" DefaultUpperValue="70" />
+            <BitSlider Ranged NoSwap Max="100" Step="5" DefaultLowerValue="30" DefaultUpperValue="70" />
             <br />
             <div>MinRange of 20:</div>
-            <BitSlider IsRanged MinRange="20" Max="100" Step="5" DefaultLowerValue="20" DefaultUpperValue="60" />
+            <BitSlider Ranged MinRange="20" Max="100" Step="5" DefaultLowerValue="20" DefaultUpperValue="60" />
             <br />
             <div>MaxRange of 30:</div>
-            <BitSlider IsRanged MaxRange="30" Max="100" Step="5" DefaultLowerValue="30" DefaultUpperValue="50" />
+            <BitSlider Ranged MaxRange="30" Max="100" Step="5" DefaultLowerValue="30" DefaultUpperValue="50" />
             <br />
             <div>MinRange of 10 and MaxRange of 40 together:</div>
-            <BitSlider IsRanged MinRange="10" MaxRange="40" Max="100" Step="5" DefaultLowerValue="30" DefaultUpperValue="50" />
+            <BitSlider Ranged MinRange="10" MaxRange="40" Max="100" Step="5" DefaultLowerValue="30" DefaultUpperValue="50" />
             <br />
             <div>Pushable, on a range 20 wide (drag either thumb into the other):</div>
-            <BitSlider IsRanged Pushable MinRange="20" Max="100" Step="5"
+            <BitSlider Ranged Pushable MinRange="20" Max="100" Step="5"
                        @bind-RangeValue="pushableRange" />
             <BitLabel>@pushableRange.Lower - @pushableRange.Upper (@pushableRange.Length wide)</BitLabel>
             <br />
             <div>Pushable with NoSwap alone, so the thumbs may meet before they push:</div>
-            <BitSlider IsRanged Pushable NoSwap Max="100" Step="5" DefaultLowerValue="30" DefaultUpperValue="70" />
+            <BitSlider Ranged Pushable NoSwap Max="100" Step="5" DefaultLowerValue="30" DefaultUpperValue="70" />
         </div>
     </DemoExample>
 
@@ -345,16 +345,16 @@
         <br />
         <div class="example-box">
             <div>Drag the band, not just the thumbs:</div>
-            <BitSlider IsRanged DraggableTrack Max="100" Step="5" @bind-RangeValue="draggableRange" />
+            <BitSlider Ranged DraggableTrack Max="100" Step="5" @bind-RangeValue="draggableRange" />
             <BitLabel>@draggableRange.Lower - @draggableRange.Upper (@draggableRange.Length wide)</BitLabel>
             <br />
             <div>A fixed-width window, MinRange and MaxRange both 20:</div>
-            <BitSlider IsRanged DraggableTrack MinRange="20" MaxRange="20" Max="100" Step="5"
+            <BitSlider Ranged DraggableTrack MinRange="20" MaxRange="20" Max="100" Step="5"
                        DefaultLowerValue="30"
                        DefaultUpperValue="50" />
             <br />
             <div>With marks, where the band lands on them:</div>
-            <BitSlider IsRanged DraggableTrack RestrictToMarks ShowMarks ShowMarkLabels
+            <BitSlider Ranged DraggableTrack RestrictToMarks ShowMarks ShowMarkLabels
                        Min="0" Max="24" Step="1" MarkStep="3"
                        ValueFormat="0'h'"
                        DefaultLowerValue="9"
@@ -362,7 +362,7 @@
             <br />
             <div>Vertical:</div>
             <div class="row">
-                <BitSlider Label="Band" IsVertical IsRanged DraggableTrack Max="100" Step="5"
+                <BitSlider Label="Band" Vertical Ranged DraggableTrack Max="100" Step="5"
                            DefaultLowerValue="30"
                            DefaultUpperValue="60" />
             </div>
@@ -431,7 +431,7 @@
             <BitRating Max="10" @bind-Value="twoWayBinding" />
             <br />
             <div>Two-way on both ends of a range:</div>
-            <BitSlider Label="Range" IsRanged Max="100" Step="5"
+            <BitSlider Label="Range" Ranged Max="100" Step="5"
                        @bind-LowerValue="boundLower"
                        @bind-UpperValue="boundUpper" />
             <BitLabel>LowerValue: @boundLower &nbsp; UpperValue: @boundUpper</BitLabel>
@@ -460,7 +460,7 @@
             <BitLabel>OnChange fired @onChangeCount times &nbsp; · &nbsp; OnChangeEnd committed @onChangeEndValue</BitLabel>
             <br />
             <div>OnRangeChange and OnRangeChangeEnd:</div>
-            <BitSlider Label="Drag me too" IsRanged Max="100"
+            <BitSlider Label="Drag me too" Ranged Max="100"
                        DefaultLowerValue="20"
                        DefaultUpperValue="60"
                        OnRangeChange="r => onRangeChangeCount++"
@@ -471,7 +471,7 @@
             </BitLabel>
             <br />
             <div>OnFocusIn and OnFocusOut (tab into the slider, then out of it):</div>
-            <BitSlider Label="Focus me" IsRanged Max="100" Step="5"
+            <BitSlider Label="Focus me" Ranged Max="100" Step="5"
                        DefaultLowerValue="30"
                        DefaultUpperValue="70"
                        OnFocusIn="() => focusState = focusedText"
@@ -523,7 +523,7 @@
 
                     <br />
 
-                    <BitSlider IsRanged
+                    <BitSlider Ranged
                                Label="Budget bracket"
                                Max="100"
                                Step="5"
@@ -560,7 +560,7 @@
             <br />
             <BitSlider Label="Marked invalid, explained elsewhere" Max="10" DefaultValue="5" Invalid />
             <br />
-            <BitSlider IsRanged
+            <BitSlider Ranged
                        Label="Price bracket"
                        Max="100"
                        DefaultLowerValue="20"
@@ -626,14 +626,14 @@
             <BitSlider Label="Frequency" Min="0" Max="1000" Step="10" LargeStep="100" DefaultValue="400" ValueFormat="0 Hz" />
             <br />
             <div>LargeStep on a range, where each thumb stops against the other:</div>
-            <BitSlider IsRanged NoSwap Max="1000" Step="10" LargeStep="250"
+            <BitSlider Ranged NoSwap Max="1000" Step="10" LargeStep="250"
                        LowerAriaLabel="From"
                        UpperAriaLabel="To"
                        DefaultLowerValue="200"
                        DefaultUpperValue="800" />
             <br />
             <div>Named ends on a range (inspect the aria-label of each thumb):</div>
-            <BitSlider IsRanged
+            <BitSlider Ranged
                        AriaLabel="Price range"
                        LowerAriaLabel="Minimum price"
                        UpperAriaLabel="Maximum price"
@@ -643,7 +643,7 @@
                        DefaultUpperValue="800" />
             <br />
             <div>FocusAsync and FocusUpperAsync, reaching either thumb from code:</div>
-            <BitSlider @ref="focusableSlider" IsRanged Max="100" Step="5"
+            <BitSlider @ref="focusableSlider" Ranged Max="100" Step="5"
                        LowerAriaLabel="From"
                        UpperAriaLabel="To"
                        DefaultLowerValue="25"
@@ -661,7 +661,7 @@
                        DefaultValue="40" />
             <br />
             <div>A range in a labelled group (inspect the role and the aria-labelledby of the root):</div>
-            <BitSlider IsRanged
+            <BitSlider Ranged
                        Label="Delivery window"
                        LowerAriaLabel="Earliest"
                        UpperAriaLabel="Latest"
@@ -671,7 +671,7 @@
                        DefaultUpperValue="14" />
             <br />
             <div>A range captioned only by a LabelTemplate (inspect the aria-labelledby of each thumb):</div>
-            <BitSlider IsRanged Max="10" DefaultLowerValue="3" DefaultUpperValue="7">
+            <BitSlider Ranged Max="10" DefaultLowerValue="3" DefaultUpperValue="7">
                 <LabelTemplate>
                     <span class="template-label">
                         <BitIcon IconName="@BitIconName.Equalizer" />
@@ -774,9 +774,9 @@
             <br />
             <div>Vertical, in all three:</div>
             <div class="row">
-                <BitSlider Size="BitSize.Small" IsVertical DefaultValue="6" />
-                <BitSlider Size="BitSize.Medium" IsVertical DefaultValue="6" />
-                <BitSlider Size="BitSize.Large" IsVertical DefaultValue="6" />
+                <BitSlider Size="BitSize.Small" Vertical DefaultValue="6" />
+                <BitSlider Size="BitSize.Medium" Vertical DefaultValue="6" />
+                <BitSlider Size="BitSize.Large" Vertical DefaultValue="6" />
             </div>
         </div>
     </DemoExample>
@@ -810,7 +810,7 @@
                        Classes="@(new() { Fill = "custom-fill", Mark = "custom-mark" })" />
             <br /><br />
             <div>The two thumbs of a range, styled apart:</div>
-            <BitSlider IsRanged
+            <BitSlider Ranged
                        Label="Two-tone thumbs"
                        DefaultLowerValue="3"
                        DefaultUpperValue="7"
@@ -867,7 +867,7 @@
             <br />
             <BitSlider Dir="BitDir.Rtl" Label="با علامت‌ها" ShowMarks ShowMarkLabels Max="5" DefaultValue="3" />
             <br />
-            <BitSlider Dir="BitDir.Rtl" Label="بازه" IsRanged DefaultLowerValue="2" DefaultUpperValue="7" />
+            <BitSlider Dir="BitDir.Rtl" Label="بازه" Ranged DefaultLowerValue="2" DefaultUpperValue="7" />
         </div>
     </DemoExample>
 </DemoPage>

@@ -272,7 +272,7 @@ public class BitOtpInputParamsTests : BunitTestContext
             InputAriaLabelFormat = "Digit {0} of {1}",
             InputMode = BitInputMode.Tel,
             Invalid = true,
-            IsLoading = true,
+            Loading = true,
             Label = "Cascaded label",
             Length = 7,
             Lowercase = true,
@@ -313,7 +313,7 @@ public class BitOtpInputParamsTests : BunitTestContext
         Assert.AreEqual("Digit {0} of {1}", instance.InputAriaLabelFormat);
         Assert.AreEqual(BitInputMode.Tel, instance.InputMode);
         Assert.IsTrue(instance.Invalid);
-        Assert.IsTrue(instance.IsLoading);
+        Assert.IsTrue(instance.Loading);
         Assert.AreEqual("Cascaded label", instance.Label);
         Assert.AreEqual(7, instance.Length);
         Assert.IsTrue(instance.Lowercase);

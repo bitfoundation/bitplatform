@@ -248,6 +248,61 @@ public class CoreEngineTests
     }
 
     [TestMethod]
+    public void Set_membership_tells_numbers_apart_by_type_and_representation_as_documented()
+    {
+        // The canonical keys are what a set stores, so they stay as documents already hold them: exact about a number's
+        // form, where DeepEquals compares values.
+        using BcrdtDocument doc = Doc(1);
+        BcrdtSet numbers = doc.GetSet("numbers");
+        numbers.AddRange([1, 1L, 1.0, 1.0m, 1.00m, 0.0, -0.0]);
+
+        Assert.AreEqual(BcrdtAnyCodec.CanonicalKey(1), BcrdtAnyCodec.CanonicalKey(1L));
+        Assert.AreNotEqual(BcrdtAnyCodec.CanonicalKey(1L), BcrdtAnyCodec.CanonicalKey(1.0));
+        Assert.AreNotEqual(BcrdtAnyCodec.CanonicalKey(1.0m), BcrdtAnyCodec.CanonicalKey(1.00m));
+        Assert.AreNotEqual(BcrdtAnyCodec.CanonicalKey(0.0), BcrdtAnyCodec.CanonicalKey(-0.0));
+        Assert.AreEqual(6, numbers.Count);
+
+        Assert.IsTrue(BcrdtAnyCodec.DeepEquals(1L, 1.0));
+        Assert.IsTrue(BcrdtAnyCodec.DeepEquals(1.0m, 1.00m));
+        Assert.IsTrue(BcrdtAnyCodec.DeepEquals(0.0, -0.0));
+
+        // Each form finds its own member, after a round trip too.
+        using BcrdtDocument peer = Doc(2);
+        peer.ApplyUpdate(doc.EncodeStateAsUpdate());
+        Assert.IsTrue(peer.GetSet("numbers").Contains(1.00m));
+        Assert.IsTrue(peer.GetSet("numbers").Contains(-0.0));
+        Assert.IsTrue(peer.GetSet("numbers").Remove(1.0));
+        Assert.AreEqual(5, peer.GetSet("numbers").Count);
+    }
+
+    [TestMethod]
+    [DataRow(1UL, 2UL)]
+    [DataRow(2UL, 1UL)]
+    public void Concurrent_adds_of_one_element_keep_one_entry_and_a_remove_of_it_stands(ulong clientA, ulong clientB)
+    {
+        // What BcrdtSet documents rather than a full observed-remove set: A and B each add the element while apart, so
+        // the two adds are one map key written twice and keep one entry; A then removes the entry it holds. Every
+        // replica agrees on the outcome, which is the element gone exactly when A's entry is the one kept.
+        using BcrdtDocument a = Doc(clientA);
+        using BcrdtDocument b = Doc(clientB);
+
+        a.GetSet("tags").Add("urgent");
+        b.GetSet("tags").Add("urgent");
+
+        // Which of two concurrent writes of one key is kept, with A's removal left out.
+        using BcrdtDocument probe = Doc(3);
+        probe.ApplyUpdate(a.EncodeStateAsUpdate());
+        probe.ApplyUpdate(b.EncodeStateAsUpdate());
+        bool keptIsA = probe.GetSet("tags").KeyIndex.Values.Single().Id.Client == clientA;
+
+        a.GetSet("tags").Remove("urgent");
+        Exchange(a, b);
+
+        Assert.AreEqual(a.GetSet("tags").Contains("urgent"), b.GetSet("tags").Contains("urgent"));
+        Assert.AreEqual(!keptIsA, a.GetSet("tags").Contains("urgent"));
+    }
+
+    [TestMethod]
     public void Set_deduplicates_concurrent_additions_of_equal_values()
     {
         using BcrdtDocument a = Doc(1);

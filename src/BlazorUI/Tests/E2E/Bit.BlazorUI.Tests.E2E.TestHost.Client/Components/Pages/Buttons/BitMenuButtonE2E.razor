@@ -81,15 +81,15 @@
 
 <E2ESection Id="loading" Title="Loading">
     <BitMenuButton Id="mnb-loading" Split Text="Save" IconName="@BitIconName.Save" Items="_loadingItems" AutoLoading LoadingLabel="Saving..."
-                   OnClick="(BitMenuButtonItem? i) => LoadingClick()" @bind-IsLoading="_loadingValue" />
+                   OnClick="(BitMenuButtonItem? i) => LoadingClick()" @bind-Loading="_loadingValue" />
     <span id="loading-clicks">@_loadingClicks</span>
     <span id="loading-value">@_loadingValue</span>
     <button id="btn-release-loading" type="button" @onclick="() => _loadingTcs.TrySetResult()">Release</button>
-    <BitMenuButton Id="mnb-loading-plain" Text="Busy" Items="_loadingPlain" IsLoading LoadingLabel="Working..." />
-    <BitMenuButton Id="mnb-loading-template" Text="Template" Items="_loadingTemplate" IsLoading>
+    <BitMenuButton Id="mnb-loading-plain" Text="Busy" Items="_loadingPlain" Loading LoadingLabel="Working..." />
+    <BitMenuButton Id="mnb-loading-template" Text="Template" Items="_loadingTemplate" Loading>
         <LoadingTemplate><span class="tpl-loading">Please wait</span></LoadingTemplate>
     </BitMenuButton>
-    <BitMenuButton Id="mnb-loading-reclickable" Split Text="Again" Items="_loadingReclick" IsLoading Reclickable OnClick="(BitMenuButtonItem? i) => _reclicks++" />
+    <BitMenuButton Id="mnb-loading-reclickable" Split Text="Again" Items="_loadingReclick" Loading Reclickable OnClick="(BitMenuButtonItem? i) => _reclicks++" />
     <span id="reclicks">@_reclicks</span>
 </E2ESection>
 
@@ -252,7 +252,7 @@
                    Classes="@(new() { Root = "c-root", Toggled = "c-toggled", Opened = "c-opened", OperatorButton = "c-opb", Icon = "c-icon", Text = "c-text", ChevronDownButton = "c-chb", ChevronDown = "c-chv", Separator = "c-spb", Callout = "c-callout", CalloutContainer = "c-cul", ItemWrapper = "c-iwr", ItemButton = "c-itm", ItemIcon = "c-iic", ItemText = "c-itx", ItemSecondaryText = "c-isc", ItemCheckIcon = "c-ick", ItemHeader = "c-ihd", ItemSeparator = "c-isp", ItemChevron = "c-sch", Submenu = "c-sub", Overlay = "c-ovl" })" />
     <BitMenuButton Id="sc-sticky" Sticky Items="_stickyStyles" Styles="@(new() { OperatorButtonIcon = "color: rgb(255, 0, 0);", OperatorButtonText = "color: rgb(0, 128, 0);" })"
                    Classes="@(new() { OperatorButtonIcon = "c-obi", OperatorButtonText = "c-obt" })" />
-    <BitMenuButton Id="sc-spinner" Text="Spinner" IsLoading Items="@(L("sc-spinner"))" Styles="@(new() { Spinner = "border-top-color: rgb(218, 165, 32);" })" Classes="@(new() { Spinner = "c-spinner" })" />
+    <BitMenuButton Id="sc-spinner" Text="Spinner" Loading Items="@(L("sc-spinner"))" Styles="@(new() { Spinner = "border-top-color: rgb(218, 165, 32);" })" Classes="@(new() { Spinner = "c-spinner" })" />
 </E2ESection>
 
 <E2ESection Id="css-vars" Title="CSS variables">

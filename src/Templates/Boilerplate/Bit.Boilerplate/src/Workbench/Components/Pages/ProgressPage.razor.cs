@@ -18,6 +18,9 @@ public partial class ProgressPage
     // The task whose Delete was pressed once; the next press deletes only that one.
     private string? confirmingDeleteId;
     private Timer? clock;
+    // What the first visit's guide came to, which a test waits on: shown, seen before, the Workbench tour's step, or none while
+    // another guide runs.
+    private string? guideState;
     // What the user is writing to each task's agent, kept with its task as the page moves between them.
     private readonly Dictionary<string, string?> drafts = [];
 
@@ -107,10 +110,20 @@ public partial class ProgressPage
         if (bonboardingService.FindSession(WorkbenchViewPage.TourId) is { WaitReason: BonboardingWaitReason.Route } tour)
         {
             await tour.PreviousAsync();
+            guideState = "tour";
         }
         else if (bonboardingService.Active is null)
         {
-            await bonboardingService.StartOnceAsync(CreateGuide());
+            guideState = await bonboardingService.StartOnceAsync(CreateGuide()) is null ? "seen" : "shown";
+        }
+        else
+        {
+            guideState = "busy";
+        }
+
+        if (CurrentCancellationToken.IsCancellationRequested is false)
+        {
+            StateHasChanged();
         }
     }
 
@@ -301,6 +314,12 @@ public partial class ProgressPage
         NavigationManager.NavigateTo(WorkbenchUrls.Progress);
     }
 
+    /// <summary>Takes a note off the task; one gone meanwhile is gone all the same.</summary>
+    private void RemoveNote(WorkbenchProgressTask task, WorkbenchProgressNote note) => reviewSession.RemoveNote(task, note.Id, Author);
+
+    /// <summary>Takes a line off the task's activity; one gone meanwhile is gone all the same.</summary>
+    private void RemoveEntry(WorkbenchProgressTask task, WorkbenchProgressEntry entry) => reviewSession.RemoveEntry(task, entry.Id, Author);
+
     private void Reload() => NavigationManager.Refresh(forceReload: true);
 
     /// <summary>Unlocks audio for the sound that calls the user back, which browsers allow only after a click.</summary>
@@ -367,18 +386,12 @@ public partial class ProgressPage
     };
 
     /// <summary>
-    /// The direction the agent writes the task in, from the letters of its title and summary, when it isn't the page's: its
-    /// texts then all read that way, rather than each by its first word, which is often a name in Latin letters.
+    /// The way a text of the task reads, in the task's direction (see WorkbenchTextDirection) rather than by its first word,
+    /// which is often a name in Latin letters even in a Persian line.
     /// </summary>
-    private static string? TaskDirection(WorkbenchProgressTask task)
-    {
-        var letters = $"{task.Title} {task.Summary}".Where(char.IsLetter).ToArray();
-        var rightToLeft = letters.Count(IsRightToLeft) * 2 > letters.Length;
+    private static string Dir(string? text, string taskDirection) => WorkbenchTextDirection.Of(text, taskDirection);
 
-        return letters.Length == 0 || rightToLeft == CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? null : rightToLeft ? "rtl" : "ltr";
-    }
-
-    private static bool IsRightToLeft(char letter) => letter is >= '\u0590' and <= '\u08FF' or >= '\uFB1D' and <= '\uFDFF' or >= '\uFE70' and <= '\uFEFF';
+    private static BitDir BitDirOf(string? text, string taskDirection) => WorkbenchTextDirection.ToBitDir(Dir(text, taskDirection));
 
     /// <summary>A Workbench page opens in place; anything else in a new tab.</summary>
     private static string? LinkTarget(string url) => url.StartsWith('/') ? null : "_blank";

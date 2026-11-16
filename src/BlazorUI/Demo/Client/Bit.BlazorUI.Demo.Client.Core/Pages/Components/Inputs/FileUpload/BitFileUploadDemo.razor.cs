@@ -99,6 +99,13 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "CancelAllText",
+            Type = "string",
+            DefaultValue = "Cancel all",
+            Description = "The text of the \"Cancel all\" button of the batch actions (see ShowBatchActions).",
+        },
+        new()
+        {
             Name = "CancelButtonTitle",
             Type = "string?",
             DefaultValue = "null",
@@ -106,10 +113,10 @@ public partial class BitFileUploadDemo
         },
         new()
         {
-            Name = "CancelAllText",
+            Name = "CanceledUploadMessage",
             Type = "string",
-            DefaultValue = "Cancel all",
-            Description = "The text of the \"Cancel all\" button of the batch actions (see ShowBatchActions).",
+            DefaultValue = "File upload canceled",
+            Description = "The message shown for canceled file uploads."
         },
         new()
         {
@@ -128,13 +135,6 @@ public partial class BitFileUploadDemo
             Description = "The name of the icon to use for the cancel upload button from the built-in Fluent UI icons. Defaults to Cancel when not set.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography"
-        },
-        new()
-        {
-            Name = "CanceledUploadMessage",
-            Type = "string",
-            DefaultValue = "File upload canceled",
-            Description = "The message shown for canceled file uploads."
         },
         new()
         {
@@ -445,14 +445,6 @@ public partial class BitFileUploadDemo
         },
         new()
         {
-            Name = "OnUploading",
-            Type = "EventCallback<BitFileInfo>",
-            Description = "Callback for when a file upload is about to start, invoked before the request that carries its first byte and therefore once per run of the file rather than once per chunk. It is the place to attach the HttpHeaders and the FormFields that belong to this one file, both of which are read again for every request it makes.",
-            LinkType = LinkType.Link,
-            Href = "#file-info"
-        },
-        new()
-        {
             Name = "OnUploadComplete",
             Type = "EventCallback<BitFileInfo>",
             Description = "Callback for when a file has been uploaded successfully, with the body of the server response of its last request on its Message.",
@@ -464,6 +456,14 @@ public partial class BitFileUploadDemo
             Name = "OnUploadFailed",
             Type = "EventCallback<BitFileInfo>",
             Description = "Callback for when the upload of a file failed for good - after the automatic retries, if any, have all been spent - with the body of the failed response on its Message.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
+            Name = "OnUploading",
+            Type = "EventCallback<BitFileInfo>",
+            Description = "Callback for when a file upload is about to start, invoked before the request that carries its first byte and therefore once per run of the file rather than once per chunk. It is the place to attach the HttpHeaders and the FormFields that belong to this one file, both of which are read again for every request it makes.",
             LinkType = LinkType.Link,
             Href = "#file-info"
         },
@@ -784,19 +784,19 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "Value",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The names of the files of the list joined with commas (report.pdf,photo.png), or null while it holds none - this is the parameter to bind (@bind-Value), so a [Required] or a [RegularExpression] on the bound property validates the selection in an EditForm. Only the files that are still part of it count: one the validations rejected, or whose upload failed, was canceled or was removed, is left out, while a preloaded one and one still waiting to be uploaded are in. A browser cannot be handed files from code, so the value is the list's to write: one set from outside that empties it resets the selection (as Reset does, keeping the preloaded files), and any other is left until the list next changes and writes its own back.",
+        },
+        new()
+        {
             Name = "Variant",
             Type = "BitVariant?",
             DefaultValue = "null",
             Description = "The visual variant of the browse button, which decides how much of the Color it carries: a full fill, only an outline, or neither.",
             LinkType = LinkType.Link,
             Href = "#variant-enum"
-        },
-        new()
-        {
-            Name = "Value",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The names of the files of the list joined with commas (report.pdf,photo.png), or null while it holds none - this is the parameter to bind (@bind-Value), so a [Required] or a [RegularExpression] on the bound property validates the selection in an EditForm. Only the files that are still part of it count: one the validations rejected, or whose upload failed, was canceled or was removed, is left out, while a preloaded one and one still waiting to be uploaded are in. A browser cannot be handed files from code, so the value is the list's to write: one set from outside that empties it resets the selection (as Reset does, keeping the preloaded files), and any other is left until the list next changes and writes its own back.",
         },
         new()
         {

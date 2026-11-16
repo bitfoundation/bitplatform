@@ -161,6 +161,161 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("Cherry", FirstCellTexts(component)[^1]);
     }
 
+    [TestMethod]
+    public async Task SortingNumbersPutsAMissingValueFirstAscendingAndLastDescending()
+    {
+        // Numbers of one type are sorted through a comparer picked for them (BitDataGridValueComparer.For); a key
+        // that is null still sorts below every number.
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, TemplateOnlyColumn("custom", sortBy: r => r.Name == "Cherry" ? null : r.Price));
+        });
+
+        // The column's template writes each row's name.
+        await component.InvokeAsync(() => component.Instance.SortByAsync("custom", BitDataGridSortDirection.Ascending));
+        CollectionAssert.AreEqual(new[] { "Cherry", "Apple", "Elderberry", "Banana", "Date" }, FirstCellTexts(component).ToArray());
+
+        await component.InvokeAsync(() => component.Instance.SortByAsync("custom", BitDataGridSortDirection.Descending));
+        CollectionAssert.AreEqual(new[] { "Date", "Banana", "Elderberry", "Apple", "Cherry" }, FirstCellTexts(component).ToArray());
+    }
+
+    // ------------------------------------------- A re-render over a list changed in place
+
+    // A grid over a list refreshes on every render of its parent, and hands the last sort back when the rows and their
+    // keys are what they were (BitDataGridSortCache). These change the list in place - the same instance - and render the
+    // grid again, as a parent does: the order has to follow every change the sort would see.
+
+    private async Task<IRenderedComponent<BitDataGrid<TestRow>>> RenderSortedByPriceAsync(List<TestRow> items,
+        Action<ComponentParameterCollectionBuilder<BitDataGrid<TestRow>>>? configure = null)
+    {
+        var component = RenderGrid(items, configure);
+        await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Ascending));
+        return component;
+    }
+
+    private static void RenderAgain(IRenderedComponent<BitDataGrid<TestRow>> component, List<TestRow> items)
+        => component.Render(parameters => parameters.Add(p => p.Items, items));
+
+    [TestMethod]
+    public async Task ARowWhoseSortKeyIsEditedInPlaceMovesOnTheNextRender()
+    {
+        var items = CreateRows();
+        var component = await RenderSortedByPriceAsync(items);
+        CollectionAssert.AreEqual(new[] { "Apple", "Elderberry", "Banana", "Date", "Cherry" }, FirstCellTexts(component).ToArray());
+
+        items.Single(r => r.Name == "Apple").Price = 100;
+        RenderAgain(component, items);
+
+        CollectionAssert.AreEqual(new[] { "Elderberry", "Banana", "Date", "Cherry", "Apple" }, FirstCellTexts(component).ToArray());
+    }
+
+    [TestMethod]
+    public async Task RowsOfEqualKeysTakeTheOrderTheyAreMovedToInPlace()
+    {
+        // Every price equal: the stable sort keeps the list's order, whichever it is now.
+        var items = CreateRows();
+        foreach (var row in items) row.Price = 1;
+        var component = await RenderSortedByPriceAsync(items);
+        CollectionAssert.AreEqual(new[] { "Banana", "Apple", "Cherry", "Date", "Elderberry" }, FirstCellTexts(component).ToArray());
+
+        items.Reverse();
+        RenderAgain(component, items);
+
+        CollectionAssert.AreEqual(new[] { "Elderberry", "Date", "Cherry", "Apple", "Banana" }, FirstCellTexts(component).ToArray());
+    }
+
+    [TestMethod]
+    public async Task ARowAddedOrRemovedInPlaceIsSortedInOrOut()
+    {
+        var items = CreateRows();
+        var component = await RenderSortedByPriceAsync(items);
+
+        items.Add(new TestRow { Id = 6, Name = "Fig", Price = 3 });
+        items.RemoveAll(r => r.Name == "Date");
+        RenderAgain(component, items);
+
+        CollectionAssert.AreEqual(new[] { "Apple", "Elderberry", "Banana", "Fig", "Cherry" }, FirstCellTexts(component).ToArray());
+    }
+
+    [TestMethod]
+    public async Task ARowReplacedInPlaceByAnotherInstanceWithTheSameKeyIsTheOneShown()
+    {
+        // The view hands the row instances on: an instance put in the place of another one shows, even with the same key.
+        var items = CreateRows();
+        var component = await RenderSortedByPriceAsync(items);
+
+        var index = items.FindIndex(r => r.Name == "Cherry");
+        items[index] = new TestRow { Id = 3, Name = "Cherry (new)", Price = 10 };
+        RenderAgain(component, items);
+
+        Assert.AreEqual("Cherry (new)", FirstCellTexts(component)[^1]);
+    }
+
+    // A sort key of a type the grid does not trust to stay as it is: an instance, changed in place, that orders by its text.
+    private sealed class Rank(int value)
+    {
+        public int Value { get; set; } = value;
+
+        public override string ToString() => Value.ToString("D3", CultureInfo.InvariantCulture);
+    }
+
+    [TestMethod]
+    public async Task AKeyOfAnotherTypeChangedInPlaceIsSortedByAgain()
+    {
+        var items = CreateRows();
+        var ranks = items.ToDictionary(r => r.Id, r => new Rank(r.Id));
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ChildContent, TemplateOnlyColumn("rank", sortBy: r => ranks[r.Id]));
+        });
+        await component.InvokeAsync(() => component.Instance.SortByAsync("rank", BitDataGridSortDirection.Ascending));
+        CollectionAssert.AreEqual(new[] { "Banana", "Apple", "Cherry", "Date", "Elderberry" }, FirstCellTexts(component).ToArray());
+
+        // The same Rank instances, the first one now ranked last.
+        ranks[1].Value = 9;
+        RenderAgain(component, items);
+
+        CollectionAssert.AreEqual(new[] { "Apple", "Cherry", "Date", "Elderberry", "Banana" }, FirstCellTexts(component).ToArray());
+    }
+
+    // A column's own comparer, whose order the app turns around.
+    private sealed class TurnableComparer : IComparer<object?>
+    {
+        public bool Reversed { get; set; }
+
+        public int Compare(object? x, object? y) => (Reversed ? -1 : 1) * Comparer<double>.Default.Compare((double)x!, (double)y!);
+    }
+
+    [TestMethod]
+    public async Task AColumnsOwnComparerIsAskedAgainOnEveryRender()
+    {
+        var items = CreateRows();
+        var comparer = new TurnableComparer();
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+                builder.AddComponentParameter(1, "Field", "Name");
+                builder.CloseComponent();
+                builder.OpenComponent<BitDataGridColumn<TestRow>>(2);
+                builder.AddComponentParameter(3, "Field", "Price");
+                builder.AddComponentParameter(4, "Comparer", comparer);
+                builder.CloseComponent();
+            }));
+        });
+        await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Ascending));
+        Assert.AreEqual("Apple", FirstCellTexts(component)[0]);
+
+        comparer.Reversed = true;
+        RenderAgain(component, items);
+
+        Assert.AreEqual("Cherry", FirstCellTexts(component)[0]);
+    }
+
     // A template-only column: no Field, so it has a sort key only through SortBy (in memory) or ServerSortable (server).
     private static RenderFragment TemplateOnlyColumn(string? columnId, Func<TestRow, object?>? sortBy = null, bool? sortable = null,
         bool serverSortable = false) => builder =>
@@ -1646,6 +1801,35 @@ public class BitDataGridTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.Items, replacement));
 
         Assert.AreEqual(0, selected!.Count, "selection must not keep rows that left the data source");
+    }
+
+    [TestMethod]
+    public void ARenderWithNothingSelectedOrExpandedReadsTheKeysOfTheRowsShownOnly()
+    {
+        // A grid over a list refreshes on every render of its parent; the rows it keeps selected or expanded are pruned
+        // of the ones the list lost, which reads the key of every row of the list - only worth it when there are some.
+        var keyReads = 0;
+        var items = Enumerable.Range(1, 1000).Select(i => new TestRow { Id = i, Name = $"Row {i}", Price = i }).ToList();
+        IReadOnlyList<TestRow>? selected = null;
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.KeyField, (Func<TestRow, object>)(r => { keyReads++; return r.Id; }));
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
+            parameters.Add(p => p.SelectedItemsChanged, EventCallback.Factory.Create<IReadOnlyList<TestRow>>(this, v => selected = v));
+        });
+
+        keyReads = 0;
+        component.Render(parameters => parameters.Add(p => p.Items, items));
+        Assert.IsTrue(keyReads < items.Count, $"a render with nothing to prune read {keyReads} keys of the {items.Count} rows");
+
+        // With a row selected there is something to prune: the row removed in place leaves the selection.
+        component.FindAll(".bit-dtg-cell-select input")[0].Change(true);
+        Assert.AreEqual(1, selected!.Count);
+        items.RemoveAt(0);
+        component.Render(parameters => parameters.Add(p => p.Items, items));
+        Assert.AreEqual(0, selected!.Count, "a row removed in place must not stay selected");
     }
 
     [TestMethod]
@@ -3773,6 +3957,131 @@ public class BitDataGridTests : BunitTestContext
             StringAssert.Contains(style, ";height:40px;");
             Assert.IsFalse(style.Contains("min-height"), style);
         }
+    }
+
+    // ------------------------------------------------- Virtualized grouped views
+
+    // The window a virtualized grid renders ahead of Virtualize, at the default 36px RowHeight (see
+    // BitDataGridPrerenderTests). bUnit's Virtualize renders every item it is given after it, so a test sees every row
+    // and checks the list the grid hands it; that the browser keeps only a window of it is the E2E tests' to check.
+    private const int EstimatedWindow = 24;
+
+    // 200 rows in four groups of 50, "Group 0" to "Group 3"; a group holds every fourth row, in order.
+    private static List<TestRow> CreateGroupedRows()
+        => Enumerable.Range(0, 200).Select(i => new TestRow { Id = i, Name = $"Group {i % 4}", Price = i }).ToList();
+
+    private async Task<IRenderedComponent<BitDataGrid<TestRow>>> RenderGroupedGridAsync(List<TestRow> items, bool virtualize = true,
+        Action<ComponentParameterCollectionBuilder<BitDataGrid<TestRow>>>? configure = null)
+    {
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.Groupable, true);
+            parameters.Add(p => p.Virtualize, virtualize);
+            parameters.Add(p => p.Height, "300px");
+            configure?.Invoke(parameters);
+        });
+        await component.InvokeAsync(() => component.Instance.GroupByAsync("Name"));
+        return component;
+    }
+
+    [TestMethod]
+    public async Task AGroupedViewIsVirtualizedWhileVirtualizeIsOn()
+    {
+        // Four group rows and 200 data rows: the body lists 204 rows, the first window of them ahead of Virtualize.
+        var component = await RenderGroupedGridAsync(CreateGroupedRows());
+
+        // The rows in the grouped view's order and numbering, on across the seam between the window and Virtualize's
+        // rows: each group's row (after the header row, aria-rowindex 1), then its 50 rows.
+        var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
+        Assert.IsTrue(rows.Count > EstimatedWindow + 51, $"{rows.Count} rows: Virtualize's rows, the second group's among them, follow the window");
+        for (var i = 0; i < rows.Count; i++)
+        {
+            Assert.AreEqual((i + 2).ToString(CultureInfo.InvariantCulture), rows[i].GetAttribute("aria-rowindex"), $"row {i}");
+            Assert.AreEqual(i % 51 == 0, rows[i].ClassList.Contains("bit-dtg-group-row"), $"row {i}");
+            if (i % 51 != 0) Assert.AreEqual($"Group {i / 51}", rows[i].QuerySelector(".bit-dtg-cell")!.TextContent.Trim(), $"row {i}");
+        }
+
+        // The rows past the window are reserved until Virtualize has measured, group rows and data rows alike, each
+        // RowHeight tall.
+        var spacer = component.Find(".bit-dtg-body > .bit-dtg-vsp");
+        StringAssert.Contains(spacer.GetAttribute("style"), $"height: {(204 - EstimatedWindow) * 36}px;");
+
+        // Virtualize's spacers sit among the rows, so the body drops the rowgroup role, as a flat virtualized body does.
+        Assert.IsNull(component.Find(".bit-dtg-body").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public async Task AGroupedViewIsRenderedWholeWithoutVirtualize()
+    {
+        var component = await RenderGroupedGridAsync(CreateGroupedRows(), virtualize: false);
+
+        Assert.AreEqual(4, component.FindAll(".bit-dtg-body > .bit-dtg-group-row").Count);
+        Assert.AreEqual(200, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count);
+        Assert.AreEqual("rowgroup", component.Find(".bit-dtg-body").GetAttribute("role"));
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-vsp").Count);
+
+        // Its group rows grow with their content as they always have.
+        var groupRow = component.Find(".bit-dtg-body > .bit-dtg-group-row");
+        Assert.IsFalse(groupRow.ClassList.Contains("bit-dtg-group-row-fix"));
+        Assert.IsFalse((groupRow.GetAttribute("style") ?? "").Contains("height"), groupRow.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task TheGroupRowsOfAVirtualizedGridAreExactlyRowHeightTall()
+    {
+        // Virtualize and the grid's spacers place every row RowHeight down from the last, a group row too, so its
+        // height is pinned and its content kept to one line (the bit-dtg-group-row-fix rules).
+        var component = await RenderGroupedGridAsync(CreateGroupedRows(), configure: parameters =>
+        {
+            parameters.Add(p => p.RowHeight, 40f);
+            parameters.Add(p => p.GroupsInitiallyCollapsed, true);
+        });
+
+        var groupRows = component.FindAll(".bit-dtg-body > .bit-dtg-group-row");
+        Assert.AreEqual(4, groupRows.Count);
+        foreach (var row in groupRows)
+        {
+            Assert.IsTrue(row.ClassList.Contains("bit-dtg-group-row-fix"), row.ClassName);
+            var style = row.GetAttribute("style") ?? "";
+            StringAssert.Contains(style, ";height:40px;");
+            Assert.IsFalse(style.Contains("min-height"), style);
+        }
+    }
+
+    [TestMethod]
+    public async Task OpeningAGroupOfAVirtualizedGridAddsItsRowsToTheList()
+    {
+        // Four closed groups fit the window, and nothing is left to reserve.
+        var component = await RenderGroupedGridAsync(CreateGroupedRows(), configure: parameters => parameters.Add(p => p.GroupsInitiallyCollapsed, true));
+        Assert.AreEqual(4, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-vsp").Count);
+
+        // Opening the second group puts its 50 rows right after its group row; the list is now 54 rows long.
+        component.FindAll(".bit-dtg-body > .bit-dtg-group-row")[1].QuerySelector("button")!.Click();
+
+        var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
+        Assert.AreEqual(54, rows.Count);
+        Assert.IsTrue(rows[0].ClassList.Contains("bit-dtg-group-row"));
+        Assert.IsTrue(rows[1].ClassList.Contains("bit-dtg-group-row"));
+        Assert.IsTrue(rows.Skip(2).Take(50).All(r => r.QuerySelector(".bit-dtg-cell")!.TextContent.Trim() == "Group 1"));
+        Assert.IsTrue(rows[52].ClassList.Contains("bit-dtg-group-row"));
+        Assert.IsTrue(rows[53].ClassList.Contains("bit-dtg-group-row"));
+        StringAssert.Contains(component.Find(".bit-dtg-body > .bit-dtg-vsp").GetAttribute("style"), $"height: {(54 - EstimatedWindow) * 36}px;");
+    }
+
+    [TestMethod]
+    public async Task RevealItemAsyncPassesTheRowsPlaceInAVirtualizedGroupedBody()
+    {
+        var items = CreateGroupedRows();
+        var component = await RenderGroupedGridAsync(items);
+
+        // The first row of "Group 1" (Id 1) comes after the first group's row, its 50 rows and its own group row.
+        await component.InvokeAsync(() => component.Instance.RevealItemAsync(items[1]));
+
+        var args = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.revealRow"].Single().Arguments;
+        Assert.AreEqual(1 + 1 + 50 + 1 + 1, args[1], "its aria-rowindex: the header row, then the rows above it, then itself");
+        Assert.AreEqual(52, args[2], "its place in the body, group rows included");
+        Assert.AreEqual(36f, args[3]);
     }
 
     // -------------------------------------------------------------- Row events

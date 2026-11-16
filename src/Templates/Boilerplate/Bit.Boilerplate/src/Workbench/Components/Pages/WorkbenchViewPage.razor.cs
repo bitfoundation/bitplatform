@@ -129,8 +129,9 @@ public partial class WorkbenchViewPage
             BuildCompareItems();
         }
 
-        // A comment being written, a thread that's open and what was picked belong to the page that was left.
-        if (pageInfo != previous)
+        // A comment being written, a thread that's open and what was picked belong to the page that was left. Told by its key,
+        // as a hot reload builds the catalog again, and with it a new entry for the same page.
+        if (pageInfo?.Key != previous?.Key)
         {
             inPageSwitches.Clear();
             pendingComment = null;
@@ -599,7 +600,7 @@ public partial class WorkbenchViewPage
     [JSInvokable]
     public void ReportPage(string pageKey)
     {
-        if (WorkbenchPageCatalog.Find(pageKey) is not { } page || page == pageInfo)
+        if (WorkbenchPageCatalog.Find(pageKey) is not { } page || page.Key == pageInfo?.Key)
             return;
 
         NavigationManager.NavigateTo($"{WorkbenchUrls.Workbench(page.Key)}{store.OtherPageQueryString}");

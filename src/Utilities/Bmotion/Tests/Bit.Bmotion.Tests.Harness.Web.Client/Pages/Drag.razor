@@ -6,6 +6,18 @@
 
 <HarnessHeader Title="Drag" Ready="Ready" OnLog="BindLog" />
 
+@* Grabbed while it fades (#fade-start): the drag takes the transform over, and the fade plays on. *@
+<div class="track">
+    <button id="fade-start" @onclick="() => Change(() => _faded = true)">fade</button>
+    <Bmotion Drag="true" DragMomentum="false"
+             Animate="@(_faded ? Bm.To(opacity: 0.1) : Bm.To(opacity: 1))"
+             Transition="Bm.Tween(2, BmEase.Linear)"
+             OnAnimationStart='_ => Log("armed:fading")'
+             OnDragEnd='() => Log("fading:end")'>
+        <div id="fading" class="small"></div>
+    </Bmotion>
+</div>
+
 <div class="track">
     <Bmotion Drag="true" DragMomentum="false"
              Animate="Bm.To(opacity: 1)"
@@ -147,6 +159,7 @@
 
 @code {
     private readonly BmDragControls _controls = new();
+    private bool _faded;
 
     private async Task StartControlledDragAsync(PointerEventArgs e)
     {

@@ -106,10 +106,11 @@ public class BitBhNavigationMenuContent : BitBhFloatingContentBase
             return;
         }
         // Shown in the viewport: the viewport takes this content's size.
-        if (ViewportId is { } viewport && Floating.IsActive && _measuredIn != viewport)
+        if (ViewportId is { } viewport && Floating.IsActive && _measuredIn != viewport
+            && MenuContext?.Root.Viewport is { } target && target.ViewportId == viewport)
         {
             _measuredIn = viewport;
-            await Interop.NavigationMenuMeasureAsync(viewport, ContentId);
+            await target.FollowAsync(ContentId);
         }
     }
 

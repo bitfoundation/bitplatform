@@ -79,6 +79,38 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "ClearButtonAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Accessible label text for the clear button (for screen reader users), useful for localization. Unset or blank, the button is named BitStrings.Current.ClearValue (\"Clear value\" by default), whatever a ClearButtonTemplate shows in it.",
+        },
+        new()
+        {
+            Name = "ClearButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display on the clear button using custom CSS classes for external icon libraries. Takes precedence over ClearButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ClearButtonIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon for the clear button from the built-in Fluent UI icons. For external icon libraries, use ClearButtonIcon instead. Unset, the button shows Cancel.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "ClearButtonTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "A custom template rendered inside the clear button in place of its icon. The button itself - its accessible name, its click and Escape handling - stays the same. That name is ClearButtonAriaLabel, not the template: a template showing words (a visible \"Reset\") needs ClearButtonAriaLabel to contain them, or a voice-control user saying what they see finds no button.",
+        },
+        new()
+        {
             Name = "ContinuousSpinDelay",
             Type = "int",
             DefaultValue = "400",
@@ -195,19 +227,19 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "IconAriaLabel",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The aria label of the icon for the benefit of screen readers.",
-        },
-        new()
-        {
             Name = "Icon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
             Description = "Gets or sets the icon to display alongside the number field using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
             LinkType = LinkType.Link,
             Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "IconAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The aria label of the icon for the benefit of screen readers.",
         },
         new()
         {
@@ -282,6 +314,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "Label",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Descriptive label for the number field, rendered next to it (per LabelPlacement) and read by screen readers.",
+        },
+        new()
+        {
             Name = "LabelPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
@@ -291,24 +330,10 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "Label",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Descriptive label for the number field, rendered next to it (per LabelPlacement) and read by screen readers.",
-        },
-        new()
-        {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.",
-        },
-        new()
-        {
-            Name = "Min",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The minimum value of the number field. Values below it get clamped to it, both when typed and when spinning. It is a string to support any numeric type of the field; an unparsable value falls back to the type's MinValue.",
         },
         new()
         {
@@ -337,6 +362,13 @@ public partial class BitNumberFieldDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The maximum value of the number field. Values above it get clamped to it, both when typed and when spinning. It is a string to support any numeric type of the field; an unparsable value falls back to the type's MaxValue.",
+        },
+        new()
+        {
+            Name = "Min",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The minimum value of the number field. Values below it get clamped to it, both when typed and when spinning. It is a string to support any numeric type of the field; an unparsable value falls back to the type's MinValue.",
         },
         new()
         {
@@ -370,17 +402,17 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "NoSelectOnFocus",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Disables the automatic select-all of the input's text when the field receives focus.",
-        },
-        new()
-        {
             Name = "NormalizeDigits",
             Type = "bool",
             DefaultValue = "false",
             Description = "Normalizes non-Latin (e.g. Persian \"۱۲۳\" or Arabic \"١٢٣\") decimal digits to their Latin (0-9) equivalents before parsing. This is culture-agnostic and works for any Unicode decimal digit system.",
+        },
+        new()
+        {
+            Name = "NoSelectOnFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables the automatic select-all of the input's text when the field receives focus.",
         },
         new()
         {
@@ -514,38 +546,6 @@ public partial class BitNumberFieldDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Shows the custom prefix for numeric field.",
-        },
-        new()
-        {
-            Name = "ClearButtonIcon",
-            Type = "BitIconInfo?",
-            DefaultValue = "null",
-            Description = "Gets or sets the icon to display on the clear button using custom CSS classes for external icon libraries. Takes precedence over ClearButtonIconName when both are set.",
-            LinkType = LinkType.Link,
-            Href = "#bit-icon-info",
-        },
-        new()
-        {
-            Name = "ClearButtonIconName",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Gets or sets the name of the icon for the clear button from the built-in Fluent UI icons. For external icon libraries, use ClearButtonIcon instead. Unset, the button shows Cancel.",
-            LinkType = LinkType.Link,
-            Href = "https://blazorui.bitplatform.dev/iconography",
-        },
-        new()
-        {
-            Name = "ClearButtonAriaLabel",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Accessible label text for the clear button (for screen reader users), useful for localization. Unset or blank, the button is named BitStrings.Current.ClearValue (\"Clear value\" by default), whatever a ClearButtonTemplate shows in it.",
-        },
-        new()
-        {
-            Name = "ClearButtonTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "A custom template rendered inside the clear button in place of its icon. The button itself - its accessible name, its click and Escape handling - stays the same. That name is ClearButtonAriaLabel, not the template: a template showing words (a visible \"Reset\") needs ClearButtonAriaLabel to contain them, or a voice-control user saying what they see finds no button.",
         },
         new()
         {

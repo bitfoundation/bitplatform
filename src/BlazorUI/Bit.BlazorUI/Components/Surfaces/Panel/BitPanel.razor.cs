@@ -410,9 +410,9 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
 
     /// <summary>
-    /// The event callback for when the swipe action starts on the container of the panel.
+    /// The event callback for when the swipe action ends on the container of the panel.
     /// </summary>
-    [Parameter] public EventCallback<decimal> OnSwipeStart { get; set; }
+    [Parameter] public EventCallback<decimal> OnSwipeEnd { get; set; }
 
     /// <summary>
     /// The event callback for when the swipe action moves on the container of the panel.
@@ -420,9 +420,9 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public EventCallback<decimal> OnSwipeMove { get; set; }
 
     /// <summary>
-    /// The event callback for when the swipe action ends on the container of the panel.
+    /// The event callback for when the swipe action starts on the container of the panel.
     /// </summary>
-    [Parameter] public EventCallback<decimal> OnSwipeEnd { get; set; }
+    [Parameter] public EventCallback<decimal> OnSwipeStart { get; set; }
 
     /// <summary>
     /// A callback function for when the panel opens or closes, called with the new open state.
@@ -468,6 +468,40 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public string? Role { get; set; }
 
     /// <summary>
+    /// The element reference of the scroller whose scrolling is taken away while the panel is open, for the
+    /// layouts whose scroller is not the page and cannot be named by a selector.
+    /// </summary>
+    /// <remarks>
+    /// Takes precedence over <see cref="ScrollerSelector"/> when both are set, and over the scroller a
+    /// <c>BitAppShell</c> cascades. Read only by <see cref="AutoToggleScroll"/>, which is what takes the hold.
+    /// </remarks>
+    [Parameter] public ElementReference? ScrollerElement { get; set; }
+
+    /// <summary>
+    /// The CSS selector of the element whose scrolling is taken away while the panel is open, for
+    /// <see cref="AutoToggleScroll"/>.
+    /// </summary>
+    /// <remarks>
+    /// A panel inside a <c>BitAppShell</c> holds the shell's scroller without being told to, since the shell
+    /// cascades it; the page (<c>body</c>) is what is held when there is no shell and this is not set, which
+    /// is the scroller of an ordinary page. Any other layout that scrolls a region of its own - a fixed
+    /// header over a scrolling main area - names that region here, since holding a page that never scrolls
+    /// holds nothing.
+    /// </remarks>
+    [Parameter] public string? ScrollerSelector { get; set; }
+
+    /// <summary>
+    /// Shows the close button of the panel, at the end of the header row.
+    /// </summary>
+    /// <remarks>
+    /// It is what a panel that cannot be dismissed by a click on the overlay - a <see cref="Blocking"/> or a
+    /// <see cref="Modeless"/> one - needs to be closable with the pointer at all. The dismissal it performs
+    /// is reported through <see cref="OnDismissing"/> as <see cref="BitPanelDismissReason.CloseButton"/>,
+    /// which is what tells it apart from the gestures that could be a slip.
+    /// </remarks>
+    [Parameter] public bool ShowCloseButton { get; set; }
+
+    /// <summary>
     /// The size of the panel in pixels along the axis it slides on: the width of a panel at the start or the
     /// end of the screen, and the height of one at the top or the bottom. It is capped so that a strip of
     /// the page stays visible beside the panel, unless <see cref="FullSize"/> takes the whole screen.
@@ -502,40 +536,6 @@ public partial class BitPanel : BitComponentBase
     /// strip of the page showing, and they are only read by a panel at the bottom that is not <see cref="FullSize"/>.
     /// </remarks>
     [Parameter] public IReadOnlyList<double>? SnapPoints { get; set; }
-
-    /// <summary>
-    /// The element reference of the scroller whose scrolling is taken away while the panel is open, for the
-    /// layouts whose scroller is not the page and cannot be named by a selector.
-    /// </summary>
-    /// <remarks>
-    /// Takes precedence over <see cref="ScrollerSelector"/> when both are set, and over the scroller a
-    /// <c>BitAppShell</c> cascades. Read only by <see cref="AutoToggleScroll"/>, which is what takes the hold.
-    /// </remarks>
-    [Parameter] public ElementReference? ScrollerElement { get; set; }
-
-    /// <summary>
-    /// The CSS selector of the element whose scrolling is taken away while the panel is open, for
-    /// <see cref="AutoToggleScroll"/>.
-    /// </summary>
-    /// <remarks>
-    /// A panel inside a <c>BitAppShell</c> holds the shell's scroller without being told to, since the shell
-    /// cascades it; the page (<c>body</c>) is what is held when there is no shell and this is not set, which
-    /// is the scroller of an ordinary page. Any other layout that scrolls a region of its own - a fixed
-    /// header over a scrolling main area - names that region here, since holding a page that never scrolls
-    /// holds nothing.
-    /// </remarks>
-    [Parameter] public string? ScrollerSelector { get; set; }
-
-    /// <summary>
-    /// Shows the close button of the panel, at the end of the header row.
-    /// </summary>
-    /// <remarks>
-    /// It is what a panel that cannot be dismissed by a click on the overlay - a <see cref="Blocking"/> or a
-    /// <see cref="Modeless"/> one - needs to be closable with the pointer at all. The dismissal it performs
-    /// is reported through <see cref="OnDismissing"/> as <see cref="BitPanelDismissReason.CloseButton"/>,
-    /// which is what tells it apart from the gestures that could be a slip.
-    /// </remarks>
-    [Parameter] public bool ShowCloseButton { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the panel component.

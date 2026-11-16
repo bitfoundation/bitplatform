@@ -25,10 +25,10 @@
 //   data-bit-ash-scrolled                             while the main container is away from its top (TrackScrollState)
 //   data-bit-ash-scroll-direction="up|down"           the way it was last scrolled (TrackScrollState)
 
-// Deliberately outside the library's z-index scale (which tops out at the snackbar's 1400). The four
-// bars mask the physical chrome of the device - the notch, the rounded corners, the home indicator - so
-// there is nothing an application can render that is allowed to paint over them.
-$bit-ash-inset-zindex: 999999;
+// Right above the top of the library's z-index scale (the snackbar's layer), and following it where an app moves
+// the scale (BitThemeZIndices). The four bars mask the physical chrome of the device - the notch, the rounded
+// corners, the home indicator - so nothing the library renders is allowed to paint over them.
+$bit-ash-inset-zindex: calc(#{$zindex-snackbar} + 1);
 
 // The four bars around the main container are sized from custom properties of their own rather than
 // straight off the env() values, so that NoInsets has one place to take all four back to zero and a page

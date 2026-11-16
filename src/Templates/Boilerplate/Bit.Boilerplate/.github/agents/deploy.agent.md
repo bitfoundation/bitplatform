@@ -81,8 +81,9 @@ domain and the services of section 5. Then go through the steps with them.
 - **Secrets.** `bit pipeline` creates the ones it can - the app certificate, the VAPID keys, the database and Redis
   passwords - and stores them straight into the environment's secrets (section 6). Ask the user only for what nobody
   else can give, each with a secret question on the task's Progress page (`workbench` skill, section 9): a key from
-  their accounts goes straight into the environment's secrets, and what only your commands use, like the root password
-  or a setup token, into a file you never read. Never ask for one in the chat or in a file in the repository. No secret
+  their accounts goes straight into the environment's secrets, what only this machine needs, like the account you sign
+  in with on the deployed site, into the user secrets of the project that reads it, and what only your commands use,
+  like the root password or a setup token, into a file you never read. Never ask for one in the chat or in a file in the repository. No secret
   goes into a commit or a log.
 <!--#if (cloudflare == true)-->
 - **No inbound port, and no locked door.** SSH is open only while you set the VM up: key only, with password and root
@@ -109,8 +110,8 @@ domain and the services of section 5. Then go through the steps with them.
   80 and 443 stay open, for Caddy (section 8).
 <!--#endif-->
 - A self-hosted runner runs whatever a workflow hands it. Register it only with a private repository, and give it only
-  the deploy jobs. CI stays on GitHub-hosted runners or on the developer's machine (`bit ci`), and a pull request starts
-  no workflow, so a pull request never runs code on the VM.
+  the deploy jobs. CI stays on GitHub-hosted runners, and a pull request starts no workflow, so a pull request never
+  runs code on the VM.
 - `bit pipeline` (section 6) also lets only collaborators open pull requests and makes the workflows' token read-only,
   so a repository made public by mistake doesn't hand the VM to strangers. A repository that has to be public keeps
   the deploy jobs in a separate private repository.
@@ -381,7 +382,8 @@ there, and the setting or secret that carries it. Every environment gets its own
   Play, App Store Connect and its provisioning profile). Settle Production's id before the first release of a native
   app: changing it later leaves the copies already installed without updates.
 - With GitHub Pro or Team, protect `main`, so it takes changes only through a pull request. A pull request starts no
-  workflow, so CI is `bit ci` on the developer's machine, and each CD runs it again before it deploys.
+  workflow: CI runs in each CD, before it deploys, and the pull request's author runs the change's own tests and the
+  formatting check first (`AGENTS.md` section 4).
 
 ## 7. The pipeline
 

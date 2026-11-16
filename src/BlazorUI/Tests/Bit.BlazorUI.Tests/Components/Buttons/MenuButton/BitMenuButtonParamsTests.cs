@@ -37,7 +37,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
         nameof(BitMenuButton<BitMenuButtonItem>.IsOpenChanged),
         nameof(BitMenuButton<BitMenuButtonItem>.IsToggled),
         nameof(BitMenuButton<BitMenuButtonItem>.IsToggledChanged),
-        nameof(BitMenuButton<BitMenuButtonItem>.IsLoadingChanged),
+        nameof(BitMenuButton<BitMenuButtonItem>.LoadingChanged),
         nameof(BitMenuButton<BitMenuButtonItem>.SelectedItem),
         nameof(BitMenuButton<BitMenuButtonItem>.SelectedItemChanged),
     ];
@@ -194,7 +194,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
             Icon = icon,
             IconName = "Share",
             IconOnly = true,
-            IsLoading = true,
+            Loading = true,
             LoadingDelay = 300,
             LoadingLabel = "Loading...",
             MaxHeight = "12rem",
@@ -249,7 +249,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
         Assert.AreSame(icon, instance.Icon);
         Assert.AreEqual("Share", instance.IconName);
         Assert.IsTrue(instance.IconOnly);
-        Assert.IsTrue(instance.IsLoading);
+        Assert.IsTrue(instance.Loading);
         Assert.AreEqual(300, instance.LoadingDelay);
         Assert.AreEqual("Loading...", instance.LoadingLabel);
         Assert.AreEqual("12rem", instance.MaxHeight);

@@ -12,7 +12,7 @@
 //   --bit-Stepper-connector-width     thickness of the line between two steps                    (default: $shp-border-width-thick)
 // The colors never override a disabled step, which keeps its disabled palette.
 
-.bit-stp {
+.bit-str {
     margin: 0;
     padding: 0;
     display: flex;
@@ -33,15 +33,15 @@
     flex-direction: column;
 }
 
-.bit-stp-hrz {
+.bit-str-hrz {
     @include stp-horizontal-root;
 }
 
-.bit-stp-vrt {
+.bit-str-vrt {
     @include stp-vertical-root;
 }
 
-.bit-stp-stp {
+.bit-str-stp {
     display: flex;
 }
 
@@ -65,11 +65,11 @@
     align-items: stretch;
 }
 
-.bit-stp-hrz > .bit-stp-stp {
+.bit-str-hrz > .bit-str-stp {
     @include stp-horizontal-step;
 }
 
-.bit-stp-vrt > .bit-stp-stp {
+.bit-str-vrt > .bit-str-stp {
     @include stp-vertical-step;
 }
 
@@ -78,8 +78,8 @@
 // The hover plate is painted from a private variable the hover rule sets, rather than by the hover rule itself, so an
 // app's class on the part still wins over it as it does at rest. It starts out unset on each step, so a stepper nested
 // in a hovered step never inherits the plate.
-.bit-stp-btn {
-    --bit-stp-btn-bg: initial;
+.bit-str-btn {
+    --bit-str-btn-bg: initial;
     margin: 0;
     border: none;
     display: flex;
@@ -90,10 +90,10 @@
     align-items: center;
     padding: spacing(0.5);
     border-radius: $shp-radius-control;
-    background-color: var(--bit-stp-btn-bg, transparent);
+    background-color: var(--bit-str-btn-bg, transparent);
 }
 
-button.bit-stp-btn {
+button.bit-str-btn {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 
@@ -107,12 +107,12 @@ button.bit-stp-btn {
 
     @media (hover: hover) {
         &:not(:disabled):hover {
-            --bit-stp-btn-bg: #{$clr-bg-pri-hover};
+            --bit-str-btn-bg: #{$clr-bg-pri-hover};
         }
     }
 }
 
-.bit-stp-ind {
+.bit-str-ind {
     flex: none;
     line-height: 1;
     display: inline-flex;
@@ -128,47 +128,47 @@ button.bit-stp-btn {
     height: var(--bit-Stepper-indicator-size, #{spacing(4)});
 }
 
-.bit-stp-lbl {
+.bit-str-lbl {
     display: flex;
     flex-direction: column;
 }
 
-.bit-stp-dsc {
+.bit-str-dsc {
     color: $clr-fg-sec;
     font-size: $tg-fs-sm;
 }
 
 // The state of a completed step or of one in error, said to a screen reader after the text.
-.bit-stp-sts {
+.bit-str-sts {
     @include visually-hidden;
 }
 
-.bit-stp-upc .bit-stp-txt {
+.bit-str-upc .bit-str-txt {
     color: $clr-fg-sec;
 }
 
-.bit-stp-cur .bit-stp-txt {
+.bit-str-cur .bit-str-txt {
     font-weight: $tg-fw-semibold;
 }
 
-.bit-stp-cmp .bit-stp-ind,
-.bit-stp-cur .bit-stp-ind {
+.bit-str-cmp .bit-str-ind,
+.bit-str-cur .bit-str-ind {
     color: var(--bit-Stepper-active-text-color, #{$clr-pri-text});
     border-color: var(--bit-Stepper-active-color, #{$clr-pri});
     background-color: var(--bit-Stepper-active-color, #{$clr-pri});
 }
 
-.bit-stp-err .bit-stp-ind {
+.bit-str-err .bit-str-ind {
     color: $clr-err-text;
     border-color: var(--bit-Stepper-error-color, #{$clr-err});
     background-color: var(--bit-Stepper-error-color, #{$clr-err});
 }
 
-.bit-stp-err .bit-stp-txt {
+.bit-str-err .bit-str-txt {
     color: var(--bit-Stepper-error-color, #{$clr-err});
 }
 
-.bit-stp-con {
+.bit-str-con {
     flex: 1 1 auto;
     background-color: var(--bit-Stepper-connector-color, #{$clr-brd-sec});
 }
@@ -179,7 +179,7 @@ button.bit-stp-btn {
     height: var(--bit-Stepper-connector-width, #{$shp-border-width-thick});
 }
 
-.bit-stp-hrz .bit-stp-con {
+.bit-str-hrz .bit-str-con {
     @include stp-horizontal-connector;
 }
 
@@ -192,102 +192,104 @@ button.bit-stp-btn {
     margin-inline-start: calc(#{spacing(0.5)} + var(--bit-Stepper-indicator-size, #{spacing(4)}) / 2 - var(--bit-Stepper-connector-width, #{$shp-border-width-thick}) / 2);
 }
 
-.bit-stp-vrt .bit-stp-con {
+.bit-str-vrt .bit-str-con {
     @include stp-vertical-connector;
 }
 
 // A Responsive horizontal stepper is a row while it is 600px wide or more and a column below that, by the width of its
 // own container rather than the screen's: one in a sidebar, a card or a dialog takes the column on a wide screen too.
-// An element cannot be queried against its own width, so the list stands in a wrapper (bit-stp-rsw) that is the query
+// An element cannot be queried against its own width, so the list stands in a wrapper (bit-str-rsw) that is the query
 // container; it takes the full width of its container, which also keeps it from collapsing in a flex row, where a
-// size-contained box would otherwise have no width of its own. The root carries bit-stp-rsp instead of bit-stp-hrz, so
+// size-contained box would otherwise have no width of its own. The root carries bit-str-rsp instead of bit-str-hrz, so
 // each layout is taken whole from its mixins, at the weight of the rules of a stepper of that orientation.
-.bit-stp-rsw {
+.bit-str-rsw {
     width: 100%;
     container: bit-stepper / inline-size;
 }
 
 @container bit-stepper (width >= #{$mq-sm-min}) {
-    .bit-stp-rsp {
+    .bit-str-rsp {
         @include stp-horizontal-root;
     }
 
-    .bit-stp-rsp > .bit-stp-stp {
+    .bit-str-rsp > .bit-str-stp {
         @include stp-horizontal-step;
     }
 
-    .bit-stp-rsp .bit-stp-con {
+    .bit-str-rsp .bit-str-con {
         @include stp-horizontal-connector;
     }
 }
 
 @container bit-stepper (width < #{$mq-sm-min}) {
-    .bit-stp-rsp {
+    .bit-str-rsp {
         @include stp-vertical-root;
     }
 
-    .bit-stp-rsp > .bit-stp-stp {
+    .bit-str-rsp > .bit-str-stp {
         @include stp-vertical-step;
     }
 
-    .bit-stp-rsp .bit-stp-con {
+    .bit-str-rsp .bit-str-con {
         @include stp-vertical-connector;
     }
 }
 
 // The way already come is drawn in the active color, up to the current step.
-.bit-stp-cmp > .bit-stp-con {
+.bit-str-cmp > .bit-str-con {
     background-color: var(--bit-Stepper-active-color, #{$clr-pri});
 }
 
 // A disabled step, or every step of a disabled stepper, keeps its disabled palette whatever its state. These rules
-// come after the state ones, which they share their specificity with.
-.bit-stp-sdi .bit-stp-btn,
-.bit-dis .bit-stp-btn,
-.bit-stp-sdi .bit-stp-txt,
-.bit-dis .bit-stp-txt,
-.bit-stp-sdi .bit-stp-dsc,
-.bit-dis .bit-stp-dsc {
+// come after the state ones, which they share their specificity with. A disabled stepper is read off its own root
+// (.bit-dis:where(.bit-str), no weight added), never off any .bit-dis ancestor: an enabled stepper inside another
+// disabled component keeps its own palette.
+.bit-str-sdi .bit-str-btn,
+.bit-dis:where(.bit-str) .bit-str-btn,
+.bit-str-sdi .bit-str-txt,
+.bit-dis:where(.bit-str) .bit-str-txt,
+.bit-str-sdi .bit-str-dsc,
+.bit-dis:where(.bit-str) .bit-str-dsc {
     color: $clr-fg-dis;
 }
 
-.bit-stp-sdi .bit-stp-ind,
-.bit-dis .bit-stp-ind {
+.bit-str-sdi .bit-str-ind,
+.bit-dis:where(.bit-str) .bit-str-ind {
     color: $clr-fg-dis;
     border-color: $clr-brd-dis;
     background-color: transparent;
 }
 
 // A disabled stepper draws no way already come either.
-.bit-dis .bit-stp-con {
+.bit-dis:where(.bit-str) .bit-str-con {
     background-color: $clr-brd-dis;
 }
 
 // Forced-colors modes drop the fills of the indicators and the painted lines, so the active and error indicators
 // become Highlight discs, the lines are drawn in the text color, and a disabled step in GrayText.
 @media (forced-colors: active) {
-    .bit-stp-cmp .bit-stp-ind,
-    .bit-stp-cur .bit-stp-ind,
-    .bit-stp-err .bit-stp-ind {
+    .bit-str-cmp .bit-str-ind,
+    .bit-str-cur .bit-str-ind,
+    .bit-str-err .bit-str-ind {
         color: HighlightText;
         border-color: Highlight;
         forced-color-adjust: none;
         background-color: Highlight;
     }
 
-    .bit-stp-con,
-    .bit-stp-cmp > .bit-stp-con {
+    .bit-str-con,
+    .bit-str-cmp > .bit-str-con {
         forced-color-adjust: none;
         background-color: CanvasText;
     }
 
-    .bit-stp-sdi .bit-stp-btn,
-    .bit-dis .bit-stp-btn {
+    .bit-str-sdi .bit-str-btn,
+    .bit-dis:where(.bit-str) .bit-str-btn {
         color: GrayText;
     }
 
-    .bit-stp-sdi .bit-stp-ind,
-    .bit-dis .bit-stp-ind {
+    .bit-str-sdi .bit-str-ind,
+    .bit-dis:where(.bit-str) .bit-str-ind {
         color: GrayText;
         border-color: GrayText;
         forced-color-adjust: none;

@@ -71,6 +71,21 @@ public sealed partial class WorkbenchReviewSession
         return EditProgress(task, progress => WorkbenchProgressDocument.AddMessage(progress, task.Id, text, by));
     }
 
+    /// <summary>Whether the user may take a note or a line of the activity off a task: wherever they may act on it, a finished one too.</summary>
+    public bool CanRemoveItems(WorkbenchProgressTask task) => task.IsSample || CanSeeTasks;
+
+    /// <summary>Takes a note off the task; its agent learns of it and doesn't add it again.</summary>
+    public bool RemoveNote(WorkbenchProgressTask task, string noteId, string by)
+    {
+        return CanRemoveItems(task) && EditProgress(task, progress => WorkbenchProgressDocument.RemoveNote(progress, task.Id, noteId, by));
+    }
+
+    /// <summary>Takes a line off the task's activity; its agent learns of it.</summary>
+    public bool RemoveEntry(WorkbenchProgressTask task, string entryId, string by)
+    {
+        return CanRemoveItems(task) && EditProgress(task, progress => WorkbenchProgressDocument.RemoveEntry(progress, task.Id, entryId, by));
+    }
+
     /// <summary>
     /// Whether this circuit may put a secret where a question says: in dev mode on this machine only, as gh runs in the user's
     /// name there, so never an invited reviewer elsewhere. A sample takes one anywhere and keeps nothing of it.

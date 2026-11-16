@@ -220,16 +220,6 @@ public partial class BitDropMenu : BitComponentBase
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Determines whether the drop menu is in the loading state. It replaces the icon of the button with a
-    /// spinner and makes the button unavailable, so the callout can no longer be opened by the user or by the
-    /// <see cref="Open"/> and <see cref="Toggle"/> methods, and a callout that is already open is closed.
-    /// The button keeps the focus (it is marked aria-disabled rather than disabled), so a keyboard user is not
-    /// dropped to the top of the page while the content is loading.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool IsLoading { get; set; }
-
-    /// <summary>
     /// Determines the opening state of the callout of the drop menu.
     /// </summary>
     [Parameter, CallOnSet(nameof(OnSetIsOpen))]
@@ -242,6 +232,16 @@ public partial class BitDropMenu : BitComponentBase
     /// nobody may ever open. Once rendered the content stays, so whatever state it holds survives a close.
     /// </summary>
     [Parameter] public bool LazyRender { get; set; }
+
+    /// <summary>
+    /// Determines whether the drop menu is in the loading state. It replaces the icon of the button with a
+    /// spinner and makes the button unavailable, so the callout can no longer be opened by the user or by the
+    /// <see cref="Open"/> and <see cref="Toggle"/> methods, and a callout that is already open is closed.
+    /// The button keeps the focus (it is marked aria-disabled rather than disabled), so a keyboard user is not
+    /// dropped to the top of the page while the content is loading.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Loading { get; set; }
 
     /// <summary>
     /// Expands the callout of the drop menu to at least the width of the button of the drop menu.
@@ -314,16 +314,6 @@ public partial class BitDropMenu : BitComponentBase
     [Parameter] public BitPlacement? PanelPlacement { get; set; }
 
     /// <summary>
-    /// Renders the drop menu in responsive mode on small screens.
-    /// </summary>
-    [Parameter] public bool Responsive { get; set; }
-
-    /// <summary>
-    /// The id of the element which needs to be scrollable in the content of the callout of the drop menu.
-    /// </summary>
-    [Parameter] public string? ScrollContainerId { get; set; }
-
-    /// <summary>
     /// The side of the button the callout opens on when there is room for it there - Top for a drop menu in
     /// a bottom bar, End for one in a side bar. It is a preference: a callout that does not fit there is placed
     /// on the opposite side, and leaving it unset leaves the choice to <see cref="DropDirection"/> alone.
@@ -334,6 +324,16 @@ public partial class BitDropMenu : BitComponentBase
     /// choice to DropDirection, exactly as leaving this unset does.
     /// </remarks>
     [Parameter] public BitPlacement? Placement { get; set; }
+
+    /// <summary>
+    /// Renders the drop menu in responsive mode on small screens.
+    /// </summary>
+    [Parameter] public bool Responsive { get; set; }
+
+    /// <summary>
+    /// The id of the element which needs to be scrollable in the content of the callout of the drop menu.
+    /// </summary>
+    [Parameter] public string? ScrollContainerId { get; set; }
 
     /// <summary>
     /// The size of the button of the drop menu.
@@ -542,7 +542,7 @@ public partial class BitDropMenu : BitComponentBase
 
         ClassBuilder.Register(() => FullWidth ? "bit-drm-flw" : string.Empty);
 
-        ClassBuilder.Register(() => IsLoading ? "bit-drm-ldg" : string.Empty);
+        ClassBuilder.Register(() => Loading ? "bit-drm-ldg" : string.Empty);
 
         ClassBuilder.Register(() => Transparent ? "bit-drm-trn" : string.Empty);
 
@@ -682,7 +682,7 @@ public partial class BitDropMenu : BitComponentBase
         var focusCallout = _focusCalloutOnClick;
         _focusCalloutOnClick = false;
 
-        if (Disabled || IsLoading) return;
+        if (Disabled || Loading) return;
 
         // A click on the trigger while the callout is open usually lands on the overlay above it, but a
         // keyboard activation always arrives here, as does a click when an ancestor stacking context
@@ -720,7 +720,7 @@ public partial class BitDropMenu : BitComponentBase
 
     private async Task HandleOnButtonKeyDown(KeyboardEventArgs e)
     {
-        if (Disabled || IsLoading) return;
+        if (Disabled || Loading) return;
 
         // Escape dismisses the callout, and so does tabbing off the trigger: the callout is relocated to the
         // end of the body while it is open, so the tab sequence runs from the trigger on into the page
@@ -795,7 +795,7 @@ public partial class BitDropMenu : BitComponentBase
         // button scheduled, and coming back to the button cancels the close leaving the callout scheduled.
         CancelHover();
 
-        if (Disabled || IsLoading || IsOpen) return;
+        if (Disabled || Loading || IsOpen) return;
 
         if (await DelayHover(HoverOpenDelay) is false) return;
 
@@ -831,7 +831,7 @@ public partial class BitDropMenu : BitComponentBase
         // A drop menu the user cannot reach must not be opened by the Open and Toggle methods either,
         // since the callout would then hang over the page with a disabled trigger under it. An IsOpen
         // the parent sets itself is left alone: the state is the parent's to own there.
-        if (IsOpen || Disabled || IsLoading) return;
+        if (IsOpen || Disabled || Loading) return;
 
         // Assigning IsOpen runs OnSetIsOpen, which is the entry point for the open state changing from
         // the outside and toggles the callout on its own. Here the toggling is done below instead, once
@@ -875,7 +875,7 @@ public partial class BitDropMenu : BitComponentBase
     {
         if (IsOpen is false) return;
 
-        if (Disabled is false && IsLoading is false) return;
+        if (Disabled is false && Loading is false) return;
 
         if (IsRendered)
         {

@@ -15,10 +15,10 @@
            (bit-aivci-lsn) shows it. While a recording is being transcribed the button waits for it, unavailable but
            focusable, so the focus stays where the user left it. *@
         <BitToggleButton IconName="Microphone"
-                         IsChecked="@_listening"
+                         Checked="@_listening"
                          OnClick="ToggleAsync"
                          Disabled="Disabled"
-                         IsLoading="_transcribing"
+                         Loading="_transcribing"
                          Variant="BitVariant.Text"
                          OnAriaLabel="@Strings.StopDictation"
                          OffAriaLabel="@Strings.StartDictation"

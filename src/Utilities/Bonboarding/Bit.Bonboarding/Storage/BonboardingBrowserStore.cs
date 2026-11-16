@@ -200,8 +200,10 @@ public sealed class BonboardingBrowserStore : IBonboardingStore, IBonboardingSto
 
         _mirror.TryRemove(key, out _);
 
-        // Only the records of whoever this scope is for are news here.
-        var prefix = await ScopedPrefixAsync(CancellationToken.None).ConfigureAwait(false);
+        // Only the records of whoever this scope is for are news here. Not ConfigureAwait(false): the change is raised
+        // after it, and what hears it - a tour ended here because another tab ended it, its hooks, the components
+        // listening - has to run on the context it came in on, the renderer's on Blazor Server.
+        var prefix = await ScopedPrefixAsync(CancellationToken.None);
         if (!key.StartsWith(prefix, StringComparison.Ordinal)) return;
 
         // Unscoped here, a user's record changing in another tab is not this scope's business.

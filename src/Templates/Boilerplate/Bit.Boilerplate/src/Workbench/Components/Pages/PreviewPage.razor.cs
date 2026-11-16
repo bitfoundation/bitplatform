@@ -58,7 +58,7 @@ public partial class PreviewPage
         pageInfo = WorkbenchPageCatalog.Find(PageKey);
 
         // The app's navigation moved this preview to another page: the shell follows it.
-        if (previous is not null && pageInfo is not null && previous != pageInfo)
+        if (previous is not null && pageInfo is not null && previous.Key != pageInfo.Key)
         {
             await JSRuntime.InvokeVoidAsync("workbench.reportPage", pageInfo.Key);
         }

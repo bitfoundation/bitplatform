@@ -348,7 +348,7 @@
 <DemoExample Title="Loading" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15"
              PreventRenderForMcpClient>
     <div>
-        IsLoading replaces the header icon with a spinner and ignores the click of the header button; in Split mode the
+        Loading replaces the header icon with a spinner and ignores the click of the header button; in Split mode the
         chevron still opens the menu, and Reclickable lifts the guard where a second click is wanted. AutoLoading holds
         that state for as long as the OnClick handler runs, and LoadingDelay keeps a fast one from flashing a spinner.
         LoadingLabel replaces the text beside the spinner and is announced through a status live region, which is what
@@ -360,8 +360,8 @@
                        AutoLoading OnClick="(BitMenuButtonItem _) => HandleOnSaveClick()" />
         <BitMenuButton Split Text="Refresh" Items="basicItemsIcon" IconName="@BitIconName.Refresh"
                        AutoLoading LoadingDelay="500" OnClick="(BitMenuButtonItem _) => HandleOnRefreshClick()" />
-        <BitMenuButton Text="Loading" Items="basicItemsIcon" IsLoading="itemIsLoading" />
-        <BitCheckbox Label="IsLoading" @bind-Value="itemIsLoading" />
+        <BitMenuButton Text="Loading" Items="basicItemsIcon" Loading="itemLoading" />
+        <BitCheckbox Label="Loading" @bind-Value="itemLoading" />
     </div>
     <br /><br />
     <div>LoadingTemplate:</div>

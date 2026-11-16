@@ -105,4 +105,55 @@ public class ForceInstantInertiaTests
         Assert.AreEqual(120, rest, 1e-9, "10 + 0.5 * 300 = 160, snapped to 150, clamped to 120");
         Assert.AreEqual(rest, last, 1e-6);
     }
+
+    // ── Reduced motion: no coast ──────────────────────────────────────────────
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task ReducedMotion_ARelease_StaysWhereItWasLetGo(bool inProcess)
+    {
+        var interop = new FakeBmotionInterop { IsInProcess = inProcess };
+        var engine = new BmotionAnimationEngine(interop);
+        await using var _ = engine;
+        engine.RegisterElement("el");
+        engine.SetDragPosition("el", 30, 0);
+
+        await engine.EndDragAsync("el", velX: 2, velY: 0, momentum: true, null, axis: "x", null, reducedMotion: true);
+        engine.ComputeFrame(0);
+        engine.ComputeFrame(500);
+
+        Assert.AreEqual(30, X(engine), 1e-6, "a throw is a movement: reduced, it does not glide on");
+        Assert.IsFalse(interop.WasCalled("playWaapiAnimation"));
+    }
+
+    [TestMethod]
+    public async Task ReducedMotion_AReleaseWithASnap_LandsOnItsTargetAtOnce()
+    {
+        var (engine, interop) = NewServerEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el");
+        engine.SetDragPosition("el", 30, 0);
+
+        await engine.EndDragAsync("el", velX: 2, velY: 0, momentum: true, null, axis: "x",
+            Bm.Inertia(modifyTarget: Bm.SnapTo(100)).ToConfig(), reducedMotion: true);
+
+        Assert.AreEqual(100, X(engine), 1e-6, "a slider still clicks onto its stop - without travelling to it");
+        Assert.IsFalse(interop.WasCalled("playWaapiAnimation"));
+    }
+
+    [TestMethod]
+    public async Task ReducedMotion_AReleaseOutOfBounds_LandsOnTheBound()
+    {
+        var (engine, interop) = NewServerEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el");
+        engine.SetDragPosition("el", 300, 0);
+
+        await engine.EndDragAsync("el", velX: 0, velY: 0, momentum: false, new BmDragConstraints { Left = 0, Right = 200 },
+            axis: "x", null, reducedMotion: true);
+
+        Assert.AreEqual(200, X(engine), 1e-6);
+        Assert.IsFalse(interop.WasCalled("playWaapiAnimation"), "no spring back");
+    }
 }

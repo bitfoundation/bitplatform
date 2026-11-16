@@ -176,6 +176,15 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
+    /// Whether the Dialog can be light dismissed by clicking outside the Dialog (on the overlay).
+    /// </summary>
+    /// <remarks>
+    /// A blocking Dialog also ignores the Escape key, so the only ways out of it are its own buttons and
+    /// the parent closing it.
+    /// </remarks>
+    [Parameter] public bool Blocking { get; set; }
+
+    /// <summary>
     /// Alias for child content.
     /// </summary>
     [Parameter] public RenderFragment? Body { get; set; }
@@ -337,15 +346,6 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
-    /// Whether the Dialog can be light dismissed by clicking outside the Dialog (on the overlay).
-    /// </summary>
-    /// <remarks>
-    /// A blocking Dialog also ignores the Escape key, so the only ways out of it are its own buttons and
-    /// the parent closing it.
-    /// </remarks>
-    [Parameter] public bool Blocking { get; set; }
-
-    /// <summary>
     /// Whether the Cancel button of the Dialog can be pressed.
     /// <br />
     /// The default value is <strong>true</strong>.
@@ -366,16 +366,6 @@ public partial class BitDialog : BitComponentBase
     /// place comes back where it was laid out the next time it is shown, kept mounted or not.
     /// </remarks>
     [Parameter] public bool IsDraggable { get; set; }
-
-    /// <summary>
-    /// Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). if true: Blocking is ignored, there will be no overlay.
-    /// </summary>
-    /// <remarks>
-    /// A modeless Dialog leaves the page behind it clickable and does not trap the focus, so it is
-    /// announced with <c>aria-modal="false"</c>.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool Modeless { get; set; }
 
     /// <summary>
     /// Whether the Ok button of the Dialog can be pressed.
@@ -456,6 +446,16 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public string? MinWidth { get; set; }
 
     /// <summary>
+    /// Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). if true: Blocking is ignored, there will be no overlay.
+    /// </summary>
+    /// <remarks>
+    /// A modeless Dialog leaves the page behind it clickable and does not trap the focus, so it is
+    /// announced with <c>aria-modal="false"</c>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Modeless { get; set; }
+
+    /// <summary>
     /// Turns off the shake the Dialog plays when a dismissal is refused.
     /// </summary>
     /// <remarks>
@@ -524,12 +524,6 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public EventCallback<BitDialogDismissReason> OnDismissPrevented { get; set; }
 
     /// <summary>
-    /// A callback function for when the overlay of the Dialog is clicked, whether or not the click goes on
-    /// to dismiss the Dialog.
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
-
-    /// <summary>
     /// A callback function for when the Ok button is clicked.
     /// </summary>
     /// <remarks>
@@ -545,6 +539,12 @@ public partial class BitDialog : BitComponentBase
     /// A callback function for when the Dialog is opened.
     /// </summary>
     [Parameter] public EventCallback OnOpen { get; set; }
+
+    /// <summary>
+    /// A callback function for when the overlay of the Dialog is clicked, whether or not the click goes on
+    /// to dismiss the Dialog.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
 
     /// <summary>
     /// Position of the Dialog on the screen. Centered both ways by default.

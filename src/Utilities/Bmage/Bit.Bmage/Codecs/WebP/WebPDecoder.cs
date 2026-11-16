@@ -197,7 +197,15 @@ public sealed class WebPDecoder : IImageDecoder
     {
         if (fourcc == "VP8L")
             return Vp8LDecoder.ReadHeader(payload) is { } l ? (l.Width, l.Height) : throw new ImageDecodeException("Invalid WebP lossless header.");
-        return Vp8Decoder.ReadHeader(payload) ?? throw new ImageDecodeException("Invalid WebP lossy header.");
+        var size = Vp8Decoder.ReadHeader(payload) ?? throw new ImageDecodeException("Invalid WebP lossy header.");
+
+        // Every macroblock's prediction modes are coded in the first partition, at well over half a bit each however
+        // likely they are: a partition far too short for the frame it declares is refused here, before the frame is
+        // allocated - a 358 byte file declaring 8909 x 4302 allocated 311 MB before it was found to be truncated.
+        var firstPartition = Math.Min((payload[0] | payload[1] << 8 | payload[2] << 16) >> 5, payload.Length - 10);
+        var macroblocks = (long)((size.Width + 15) >> 4) * ((size.Height + 15) >> 4);
+        if (firstPartition * 16L < macroblocks) throw new ImageDecodeException("Truncated WebP lossy data.");
+        return size;
     }
 
     /// <summary>Decodes one bitstream chunk into the rectangle of <paramref name="image"/> at (<paramref name="x"/>, <paramref name="y"/>).</summary>

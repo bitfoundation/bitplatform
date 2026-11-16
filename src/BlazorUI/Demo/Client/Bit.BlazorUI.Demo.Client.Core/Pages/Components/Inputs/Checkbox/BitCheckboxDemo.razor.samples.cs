@@ -148,19 +148,19 @@ private void HandleSubscribedValueChanged(bool value) => subscribed = subscribed
 <BitCheckbox Label=""One-way checked (Fixed)"" Value=""true"" />
 
 <BitCheckbox Label=""One-way"" Value=""oneWayValue"" />
-<BitToggleButton @bind-IsChecked=""oneWayValue"" Text=""Toggle"" />
+<BitToggleButton @bind-Checked=""oneWayValue"" Text=""Toggle"" />
 
 <BitCheckbox Label=""Two-way controlled checkbox"" @bind-Value=""twoWayValue"" />
-<BitToggleButton @bind-IsChecked=""twoWayValue"" Text=""Toggle"" />
+<BitToggleButton @bind-Checked=""twoWayValue"" Text=""Toggle"" />
 
 
 <BitCheckbox Label=""One-way indeterminate (Fixed)"" Indeterminate />
 
 <BitCheckbox Label=""One-way indeterminate"" Indeterminate=""oneWayIndeterminate"" />
-<BitToggleButton @bind-IsChecked=""oneWayIndeterminate"" Text=""Toggle"" />
+<BitToggleButton @bind-Checked=""oneWayIndeterminate"" Text=""Toggle"" />
 
 <BitCheckbox Label=""Two-way indeterminate"" @bind-Indeterminate=""twoWayIndeterminate"" />
-<BitToggleButton @bind-IsChecked=""twoWayIndeterminate"" Text=""Toggle"" />";
+<BitToggleButton @bind-Checked=""twoWayIndeterminate"" Text=""Toggle"" />";
 
     private readonly string example7CsharpCode = @"
 private bool oneWayValue;
@@ -276,7 +276,7 @@ private void HandleOnChanging(BitCheckboxChangeArgs args)
 
     private readonly string example10RazorCode = @"
 <BitCheckbox Label=""Read-only checkbox"" ReadOnly @bind-Value=""readOnlyValue"" />
-<BitToggleButton @bind-IsChecked=""readOnlyValue"" Text=""Change it from here"" />
+<BitToggleButton @bind-Checked=""readOnlyValue"" Text=""Change it from here"" />
 
 
 <BitCheckbox Label=""I accept the terms"" Required />

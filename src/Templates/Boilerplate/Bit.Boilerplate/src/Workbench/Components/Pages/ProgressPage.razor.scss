@@ -63,6 +63,12 @@
     color: $bit-color-foreground-secondary;
 }
 
+// What the agent and the user wrote keeps the digits it was written with: Persian's font draws 0-9 as ۰-۹ everywhere else
+// (_rtl-fonts.scss), which would turn a version like 11.0.0-pre-20 into ۱۱.۰.۰-pre-۲۰. The ask and task cards inside take it too.
+.progress-page:lang(fa) ::deep .as-written {
+    font-family: var(--app-preset-font-family), "Vazirmatn";
+}
+
 // The Workbench's own words keep their language's direction in a task written in another.
 .overall-text,
 .meta-item,
@@ -714,6 +720,18 @@
 .entry-author {
     font-weight: 600;
     color: $bit-color-foreground-secondary;
+}
+
+.entry-end {
+    gap: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+// Small enough to sit in the line with the time, without making it taller.
+::deep .entry-remove {
+    margin-block: -0.375rem;
+    margin-inline-end: -0.375rem;
 }
 
 .entry-question {

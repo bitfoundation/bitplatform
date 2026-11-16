@@ -14,8 +14,8 @@
      @onpointerdown:stopPropagation="true"
      @onpointerup="OnPointerUp"
      @onpointerup:stopPropagation="true"
-     @onpointerenter="OnPointerEnter"
-     @onpointerleave="OnPointerLeave">
+     @onpointerenter="PointerEnterHandler"
+     @onpointerleave="PointerLeaveHandler">
 </div>
 
 @code {
@@ -211,6 +211,18 @@
         _registeredKey = null;
         _registration = null;
     }
+
+    // Listened for only while a connection is being drawn - the only time the handlers do anything - so the pointer
+    // crossing the handles of an idle graph sends nothing over a Blazor Server circuit. The handle renders again as a
+    // connection starts and ends (ConnectionVersion), which adds and removes the listeners. A pointer already over a
+    // handle when they are added never enters it: the canvas asks the browser for that handle once they are.
+    private EventCallback<PointerEventArgs> PointerEnterHandler => Attached && Flow.IsConnecting
+        ? EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerEnter)
+        : default;
+
+    private EventCallback<PointerEventArgs> PointerLeaveHandler => Attached && Flow.IsConnecting
+        ? EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerLeave)
+        : default;
 
     private void OnPointerEnter(PointerEventArgs e)
     {

@@ -15,6 +15,20 @@ public partial class BitSplitterDemo
         },
         new()
         {
+            Name = "Collapsed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the panel that folds is collapsed; bindable. A collapsed panel keeps its content in the DOM, drops to CollapsedSize past its minimum, and is made inert when that size is 0. Expanding restores the previous split.",
+        },
+        new()
+        {
+            Name = "CollapsedSize",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The size, in pixels, the folded panel is held at while it is collapsed.",
+        },
+        new()
+        {
             Name = "CollapseIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -33,17 +47,10 @@ public partial class BitSplitterDemo
         },
         new()
         {
-            Name = "Collapsed",
+            Name = "CollapseSecondPanel",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the panel that folds is collapsed; bindable. A collapsed panel keeps its content in the DOM, drops to CollapsedSize past its minimum, and is made inert when that size is 0. Expanding restores the previous split.",
-        },
-        new()
-        {
-            Name = "CollapsedSize",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The size, in pixels, the folded panel is held at while it is collapsed.",
+            Description = "Folds the second panel instead of the first - an inspector or a preview at the far end. Everything collapse-related follows it; Percent still describes the first panel.",
         },
         new()
         {
@@ -51,13 +58,6 @@ public partial class BitSplitterDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Lets the reader fold a panel away from the gutter: Enter, Ctrl + arrow, the collapse button, or a drag that snaps it shut at its edge.",
-        },
-        new()
-        {
-            Name = "CollapseSecondPanel",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Folds the second panel instead of the first - an inspector or a preview at the far end. Everything collapse-related follows it; Percent still describes the first panel.",
         },
         new()
         {
@@ -100,13 +100,6 @@ public partial class BitSplitterDemo
         },
         new()
         {
-            Name = "FirstPanelSize",
-            Type = "int?",
-            DefaultValue = "null",
-            Description = "The initial size of the first panel in pixels. From the first drag on, the split is held as a percentage in Percent, which takes precedence over this and over SecondPanelSize.",
-        },
-        new()
-        {
             Name = "FirstPanelMaxSize",
             Type = "int?",
             DefaultValue = "null",
@@ -118,6 +111,13 @@ public partial class BitSplitterDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "The min size of the first panel in pixels.",
+        },
+        new()
+        {
+            Name = "FirstPanelSize",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The initial size of the first panel in pixels. From the first drag on, the split is held as a percentage in Percent, which takes precedence over this and over SecondPanelSize.",
         },
         new()
         {
@@ -225,10 +225,10 @@ public partial class BitSplitterDemo
         },
         new()
         {
-            Name = "PersistKey",
-            Type = "string?",
+            Name = "Percent",
+            Type = "double?",
             DefaultValue = "null",
-            Description = "The storage key the position and the fold are remembered under, and restored from on the next visit. Unique per splitter within the origin.",
+            Description = "The share of the splitter the first panel takes up, as a percentage between 0 and 100. It survives the container being resized and can be bound, so every drag, key press and collapse is reported back to the page. While it has a value it takes precedence over FirstPanelSize and SecondPanelSize.",
         },
         new()
         {
@@ -239,10 +239,10 @@ public partial class BitSplitterDemo
         },
         new()
         {
-            Name = "Percent",
-            Type = "double?",
+            Name = "PersistKey",
+            Type = "string?",
             DefaultValue = "null",
-            Description = "The share of the splitter the first panel takes up, as a percentage between 0 and 100. It survives the container being resized and can be bound, so every drag, key press and collapse is reported back to the page. While it has a value it takes precedence over FirstPanelSize and SecondPanelSize.",
+            Description = "The storage key the position and the fold are remembered under, and restored from on the next visit. Unique per splitter within the origin.",
         },
         new()
         {
@@ -260,13 +260,6 @@ public partial class BitSplitterDemo
         },
         new()
         {
-            Name = "SecondPanelSize",
-            Type = "int?",
-            DefaultValue = "null",
-            Description = "The initial size of the second panel in pixels. Ignored while Percent has a value, which is the case from the first drag on.",
-        },
-        new()
-        {
             Name = "SecondPanelMaxSize",
             Type = "int?",
             DefaultValue = "null",
@@ -278,6 +271,13 @@ public partial class BitSplitterDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "The min size of the second panel in pixels.",
+        },
+        new()
+        {
+            Name = "SecondPanelSize",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The initial size of the second panel in pixels. Ignored while Percent has a value, which is the case from the first drag on.",
         },
         new()
         {

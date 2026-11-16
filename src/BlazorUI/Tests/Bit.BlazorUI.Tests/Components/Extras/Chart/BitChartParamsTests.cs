@@ -59,7 +59,7 @@ public class BitChartParamsTests : BunitTestContext
         nameof(BitChart.Config),
         nameof(BitChart.Data),
         nameof(BitChart.Description),
-        nameof(BitChart.IsLoading),
+        nameof(BitChart.Loading),
         nameof(BitChart.OnElementClick),
         nameof(BitChart.OnElementHover),
         nameof(BitChart.OnLegendItemClick),
@@ -141,7 +141,7 @@ public class BitChartParamsTests : BunitTestContext
             EmptyTemplate = Marker("cascaded-nodata"),
         };
 
-        var loading = RenderWithParams(chartParams, builder => builder.AddAttribute(1, nameof(BitChart.IsLoading), true));
+        var loading = RenderWithParams(chartParams, builder => builder.AddAttribute(1, nameof(BitChart.Loading), true));
         Assert.AreEqual(1, loading.FindAll(".bit-cht-ldg .cascaded-loading").Count);
 
         var empty = RenderWithParams(chartParams);

@@ -33,8 +33,6 @@ internal sealed class BitCountryList
     internal static readonly string[] TriggerClosedKeys = ["ArrowDown", "ArrowUp", "Home", "End", "Alt+ArrowDown", "Alt+ArrowUp", "Character"];
     internal static readonly string[] TriggerOpenKeys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", "Enter", " ", "Spacebar", "Alt+ArrowDown", "Alt+ArrowUp", "Character"];
 
-    private static readonly TimeSpan _typeAheadTimeout = TimeSpan.FromMilliseconds(1000);
-
     // The packaged flag file of a country, keyed by its ISO code, or null for a code that has none. Every open list
     // renders one image per country it offers, and the url of each of them is otherwise built from scratch on every
     // render.
@@ -64,8 +62,7 @@ internal sealed class BitCountryList
 
     private List<BitCountry> _view = [];
 
-    private string _typeAhead = string.Empty;
-    private DateTimeOffset _typeAheadAt;
+    private readonly BitTypeahead _typeahead = new();
 
 
 
@@ -127,7 +124,7 @@ internal sealed class BitCountryList
     /// <summary>
     /// Whether a type-ahead term is still being typed, which is when a space is part of it rather than a choice.
     /// </summary>
-    internal bool IsTypeAheadInProgress => _typeAhead.Length > 0 && (DateTimeOffset.UtcNow - _typeAheadAt) <= _typeAheadTimeout;
+    internal bool IsTypeAheadInProgress => _typeahead.IsTyping;
 
 
 
@@ -185,14 +182,14 @@ internal sealed class BitCountryList
         SearchText = null;
         ActiveIndex = -1;
         LastScrolledIndex = -1;
-        _typeAhead = string.Empty;
+        _typeahead.Reset();
         _viewValid = false;
     }
 
     /// <summary>
     /// Forgets the type-ahead term, so the next letter starts a new one.
     /// </summary>
-    internal void ResetTypeAhead() => _typeAhead = string.Empty;
+    internal void ResetTypeAhead() => _typeahead.Reset();
 
     /// <summary>
     /// Puts the active country on the selected one, or on the first country when none is, so the list always opens
@@ -255,7 +252,9 @@ internal sealed class BitCountryList
 
     /// <summary>
     /// Moves the active country to the next one whose name starts with what was typed, the way a native select
-    /// behaves.
+    /// behaves, with the rules every typeahead of the library shares (BitTypeahead): a pause starts a new term, the
+    /// same letter typed again cycles through the countries starting with it, and the names are matched in the
+    /// current culture, so "a" finds "Åland Islands" in English but not in Swedish, where å is a letter of its own.
     /// </summary>
     internal void TypeAhead(string key)
     {
@@ -263,21 +262,7 @@ internal sealed class BitCountryList
 
         if (view.Count == 0) return;
 
-        var now = DateTimeOffset.UtcNow;
-
-        // A pause longer than the timeout starts a new term, and repeating a single letter cycles through the
-        // countries starting with it instead of searching for a doubled letter.
-        _typeAhead = (now - _typeAheadAt) > _typeAheadTimeout ? key : _typeAhead + key;
-        _typeAheadAt = now;
-
-        var term = BitCountrySearch.Fold(_typeAhead);
-        var start = _typeAhead.Length == 1 ? ActiveIndex + 1 : Math.Max(ActiveIndex, 0);
-
-        // The type-ahead runs on the unfiltered list (there is no search box to filter it with), so the names folded
-        // once with the list are the same ones this walks over.
-        var folded = ReferenceEquals(view, All) ? _foldedNames : null;
-
-        var index = BitCountrySearch.FindByNameStart(view, folded, term, start);
+        var index = _typeahead.Find(key, view.Count, ActiveIndex, i => view[i].Name);
 
         if (index >= 0)
         {

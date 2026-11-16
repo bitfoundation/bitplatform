@@ -76,17 +76,17 @@ public partial class BitCheckboxDemo
         },
         new()
         {
-            Name = "CheckIconName",
-            Type = "string?",
-            DefaultValue = "Accept",
-            Description = "The name of the built-in icon to render as the check mark inside the checkbox.",
-        },
-        new()
-        {
             Name = "CheckIconAriaLabel",
             Type = "string?",
             DefaultValue = "null",
             Description = "Exposes the glyph inside the box as an image with this name. It is hidden from assistive technologies by default, since the state it stands for is already announced by the input itself.",
+        },
+        new()
+        {
+            Name = "CheckIconName",
+            Type = "string?",
+            DefaultValue = "Accept",
+            Description = "The name of the built-in icon to render as the check mark inside the checkbox.",
         },
         new()
         {

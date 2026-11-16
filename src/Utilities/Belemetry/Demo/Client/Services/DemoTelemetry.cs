@@ -51,6 +51,12 @@ public static class DemoTelemetry
 
         foreach (var url in SelfUrls) options.Browser.IgnoreUrls.Add(url);
 
+        // A reader's session id is the only key to their records on the Live telemetry page, and every poll of
+        // /api/telemetry carries it: no record - the server's request spans and logs, which any reader can list as
+        // shared records, nor HttpClient's logs of the polls on either side - may name it. Here rather than on the
+        // server alone, so the WebAssembly pipeline redacts it too; DemoNoiseFilter only drops what it recognizes.
+        options.Privacy.RedactQueryParameters.Add("sessionId");
+
         options.AddProcessor(new DemoNoiseFilter());
 
         // Production diagnostics, for the Support bundles page: a local timeline, exported only as a bundle the reader

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Reflection;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
@@ -8,7 +9,7 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 /// <summary>Where the Workbench keeps its files on disk.</summary>
 public static class WorkbenchFolders
 {
-    /// <summary>The folder of the Workbench's project file, found above the build output; null in a published copy. Tests point it at a copy of the project.</summary>
+    /// <summary>The folder of the Workbench's project file, found above the build output, or where the build recorded it when its output went to an artifacts path; null in a published copy. Tests point it at a copy of the project.</summary>
     public static string? Project { get; set; } = FindProject();
 
     /// <summary>
@@ -66,7 +67,14 @@ public static class WorkbenchFolders
                 return folder.FullName;
         }
 
-        return null;
+        // Built with an artifacts path, its output is away from the project, and the build recorded where the project is. Only
+        // the Workbench itself under dotnet watch reads it, so a published copy or a test host keeps no project, as before.
+        if (Environment.GetEnvironmentVariable("DOTNET_WATCH") is not "1" || Assembly.GetEntryAssembly() != typeof(WorkbenchFolders).Assembly)
+            return null;
+
+        return typeof(WorkbenchFolders).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                                         .FirstOrDefault(attribute => attribute.Key == "WorkbenchProject")?.Value is { } project
+                                         && File.Exists(Path.Combine(project, "Boilerplate.Workbench.csproj")) ? project : null;
     }
 
     /// <summary>

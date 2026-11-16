@@ -116,7 +116,10 @@
                 and ISO codes (<code>de</code>, <code>deu</code>), and the result count is announced to screen readers.
                 Typing on the closed field opens it with the search already started. <b>SearchBoxPlaceholder</b>,
                 <b>SearchBoxAriaLabel</b> and <b>NoResultsText</b> set its texts. <b>NoSearchBox</b> removes it; the
-                field then answers to type-ahead, open or closed.
+                field then answers to type-ahead, open or closed. The same letter typed again cycles through the
+                countries starting with it, and what is typed is matched by the rules of the current culture: case is
+                ignored, and so are the accents that culture treats as marks on a letter ("a" finds Åland Islands in
+                English, but not in Swedish, where å is a letter of its own).
             </div>
             <br />
             <div class="example-box">

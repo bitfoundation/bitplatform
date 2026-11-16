@@ -13,13 +13,15 @@
     <div class="bmg-panel-tabs" role="tablist" aria-label="@Context.Strings.PanelLabel">
         @foreach (var tab in Tabs)
         {
-            <button type="button"
+            <button @key="tab.Key"
+                    type="button"
                     role="tab"
                     id="@($"{_id}-tab-{tab.Key}")"
                     class="bmg-panel-tab @(_activeTab == tab.Key ? "bmg-panel-tab-active" : null)"
                     aria-selected="@(_activeTab == tab.Key ? "true" : "false")"
                     aria-controls="@($"{_id}-panel-{tab.Key}")"
                     tabindex="@(_activeTab == tab.Key ? 0 : -1)"
+                    @ref="_tabElements[tab.Key]"
                     @onclick="() => _activeTab = tab.Key"
                     @onkeydown="e => OnTabKeyDown(e, tab.Key)">
                 @tab.Label
@@ -377,13 +379,15 @@
                 }
                 @if (Context.Annotations.Count > 0)
                 {
-                    <ul class="bmg-layer-list" role="listbox" aria-label="@(Context.Layers.Count > 0 ? Context.Strings.Annotations : Context.Strings.Layers)">
+                    @* A plain list of buttons, as the layers' is: an option's content is presentational, so a listbox of options
+                       would hide each Delete button from assistive technology, and offers arrow keys it never had. The
+                       selected annotation is the one whose button is pressed. *@
+                    <ul class="bmg-layer-list" aria-label="@(Context.Layers.Count > 0 ? Context.Strings.Annotations : Context.Strings.Layers)">
                         @foreach (var annotation in Context.Annotations.Reverse())
                         {
-                            <li class="bmg-layer @(Context.SelectedAnnotationId == annotation.Id ? "bmg-layer-selected" : null)"
-                                role="option"
-                                aria-selected="@(Context.SelectedAnnotationId == annotation.Id ? "true" : "false")">
-                                <button type="button" class="bmg-layer-name" @onclick="() => Context.SelectAnnotation(annotation.Id)">
+                            <li class="bmg-layer @(Context.SelectedAnnotationId == annotation.Id ? "bmg-layer-selected" : null)">
+                                <button type="button" class="bmg-layer-name" aria-pressed="@(Context.SelectedAnnotationId == annotation.Id ? "true" : "false")"
+                                        @onclick="() => Context.SelectAnnotation(annotation.Id)">
                                     @KindOf(annotation)
                                 </button>
                                 <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {KindOf(annotation)}")"
@@ -476,6 +480,10 @@
 @code {
     private readonly string _id = $"bmg-panel-{Guid.NewGuid():N}";
     private PanelTab _activeTab = PanelTab.Adjust;
+    private readonly Dictionary<PanelTab, ElementReference> _tabElements = [];
+    // The tab an arrow key selected, which takes the focus once it is rendered: in a tablist focus follows the
+    // selection, or the next arrow would go on from the tab that was left.
+    private PanelTab? _focusTab;
     // The Export tab starts from the editor's ExportOptions, and the reader's choices there win until the host hands
     // in other options.
     private ImageExportOptions? _exportDefaults;
@@ -568,7 +576,24 @@
             "End" => tabs.Length - 1,
             _ => -1,
         };
-        if (next >= 0) _activeTab = tabs[next].Key;
+        if (next < 0) return;
+        _activeTab = tabs[next].Key;
+        _focusTab = _activeTab;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusTab is not { } tab) return;
+        _focusTab = null;
+        if (!_tabElements.TryGetValue(tab, out var element)) return;
+        try
+        {
+            await element.FocusAsync();
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException)
+        {
+            // The page is going away, or the tab went with a tool change; the selection still moved.
+        }
     }
 
     private float GetValue<TOperation>(Func<TOperation, float> read) where TOperation : class, IImageOperation

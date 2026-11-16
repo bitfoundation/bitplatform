@@ -21,10 +21,23 @@ public partial class BitChartLegacy : IAsyncDisposable
     [Parameter] public BitChartLegacyConfigBase? Config { get; set; }
 
     /// <summary>
+    /// The list of scripts required for the customized chartjs date adapter.
+    /// see available adapters here: https://github.com/chartjs/awesome#adapters
+    /// </summary>
+    [Parameter] public IEnumerable<string>? DateAdapterScripts { get; set; }
+
+    /// <summary>
     /// The height of the canvas HTML element. 
     /// Use <see langword="null"/> when using <see cref="BitChartLegacyBaseConfigOptions.AspectRatio"/>.
     /// </summary>
     [Parameter] public int? Height { get; set; }
+
+    /// <summary>
+    /// Whether the date adapter is required for the current configuration.
+    /// By default BitChartLegacy uses the date-fns adapter. you can change the adapter using <see cref="BitChartLegacy.DateAdapterScripts"/>.
+    /// for more info check out https://www.chartjs.org/docs/2.9.4/axes/cartesian/time.html#date-adapters
+    /// </summary>
+    [Parameter] public bool IsDateAdapterRequired { get; set; }
 
     /// <summary>
     /// This event is fired when the chart has been setup through interop and
@@ -37,19 +50,6 @@ public partial class BitChartLegacy : IAsyncDisposable
     /// The width of the canvas HTML element.
     /// </summary>
     [Parameter] public int? Width { get; set; }
-
-    /// <summary>
-    /// Whether the date adapter is required for the current configuration.
-    /// By default BitChartLegacy uses the date-fns adapter. you can change the adapter using <see cref="BitChartLegacy.DateAdapterScripts"/>.
-    /// for more info check out https://www.chartjs.org/docs/2.9.4/axes/cartesian/time.html#date-adapters
-    /// </summary>
-    [Parameter] public bool IsDateAdapterRequired { get; set; }
-
-    /// <summary>
-    /// The list of scripts required for the customized chartjs date adapter.
-    /// see available adapters here: https://github.com/chartjs/awesome#adapters
-    /// </summary>
-    [Parameter] public IEnumerable<string>? DateAdapterScripts { get; set; }
 
 
 

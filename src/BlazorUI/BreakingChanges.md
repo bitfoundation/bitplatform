@@ -5,6 +5,125 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitToggleButton`'s `IsChecked` is `Checked` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Vertical`, `Loading`), and the toggle button's
+checked state was the one flag of the buttons still spelled with one. The `[Parameter]`, its two-way binding and its
+uncontrolled default are renamed together, and so is `BitToggleButtonParams.DefaultIsChecked`:
+
+| Before | After |
+|---|---|
+| `<BitToggleButton IsChecked="on" />` | `<BitToggleButton Checked="on" />` |
+| `<BitToggleButton @bind-IsChecked="on" />` | `<BitToggleButton @bind-Checked="on" />` |
+| `<BitToggleButton IsCheckedChanged="OnCheckedChanged" />` | `<BitToggleButton CheckedChanged="OnCheckedChanged" />` |
+| `<BitToggleButton DefaultIsChecked="true" />` | `<BitToggleButton DefaultChecked="true" />` |
+| `new BitToggleButtonParams { DefaultIsChecked = true }` | `new BitToggleButtonParams { DefaultChecked = true }` |
+
+What the toggle button renders is unchanged (`bit-tgb-chk`, `aria-pressed`, `aria-checked`). The menu button's items
+keep their `Is` (`BitMenuButtonItem.IsChecked`, `BitMenuButtonOption.IsChecked`): the flag of one item of a parent is
+spelled with one.
+
+### `IsLoading` is `Loading` on every component ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The loading state had two names: `Loading` on `BitCard`, `BitCheckbox`, `BitDataGrid`, `BitBasicList`,
+`BitNumberField`, `BitSearchBox`, `BitTextField` and `BitToggle`, and `IsLoading` on eleven others. A component's own
+state is spelled without an `Is`, so those eleven now say `Loading` too: `BitActionButton`, `BitButton`,
+`BitMenuButton`, `BitToggleButton`, `BitDropdown`, `BitOtpInput`, `BitTagsInput`, `BitDropMenu`, `BitChart`,
+`BitFullCalendar` and `BitFcBody`. Their `*Params` counterparts are renamed with them, and on the four buttons the
+two-way binding follows the value (`IsLoadingChanged` is `LoadingChanged`):
+
+| Before | After |
+|---|---|
+| `<BitButton IsLoading="saving" />` | `<BitButton Loading="saving" />` |
+| `<BitButton @bind-IsLoading="saving" AutoLoading />` | `<BitButton @bind-Loading="saving" AutoLoading />` |
+| `<BitButton IsLoadingChanged="OnLoadingChanged" />` | `<BitButton LoadingChanged="OnLoadingChanged" />` |
+| `new BitDropdownParams { IsLoading = true }` | `new BitDropdownParams { Loading = true }` |
+
+What the components render is unchanged. The models of one item keep their `Is` (`BitButtonGroupItem.IsLoading`,
+`BitButtonGroupOption.IsLoading`, `BitSnackBarItem.IsLoading`), and so do the read-only state that a reference exposes
+(`BitInfiniteScrolling.IsLoading`, `BitAiReadAloud.IsLoading`) and `BitSearchBoxAnnouncementArgs.IsLoading`: none
+of them is a parameter of a component.
+
+### `BitSlider`'s `IsRanged` and `IsOriginFromZero` are `Ranged` and `OriginFromZero` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The slider's last two flags spelled with an `Is` lose it, like its `Vertical` before them (a component's own state is
+spelled without one). The `[Parameter]`s and their `BitSliderParams` counterparts are renamed:
+
+| Before | After |
+|---|---|
+| `<BitSlider IsRanged />` | `<BitSlider Ranged />` |
+| `<BitSlider IsOriginFromZero />` | `<BitSlider OriginFromZero />` |
+| `new BitSliderParams { IsRanged = true, IsOriginFromZero = true }` | `new BitSliderParams { Ranged = true, OriginFromZero = true }` |
+
+What the slider renders is unchanged (`bit-sld-rgd`, the `OriginFromZero` class-style part of the zero tick).
+
+### `BitSlider`'s `IsVertical` is `Vertical` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Vertical`, `Loading`), and the eleven other
+components that stand upright already call it `Vertical`; `BitSlider` was the one `IsVertical`. The `[Parameter]` and
+its `BitSliderParams` counterpart are renamed:
+
+| Before | After |
+|---|---|
+| `<BitSlider IsVertical />` | `<BitSlider Vertical />` |
+| `new BitSliderParams { IsVertical = true }` | `new BitSliderParams { Vertical = true }` |
+
+What the slider renders is unchanged (`bit-sld-vrt`, `aria-orientation="vertical"`).
+
+### A grouped `BitDataGrid` with `Virtualize` is virtualized ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+`Virtualize` used to be turned off while the rows were grouped, so every row of every open group was in the DOM: 10,000
+grouped rows took 130,000 elements and seconds to render. A grouped view is now virtualized like a flat one, as one
+list of group rows and data rows, which changes what a grouped grid with `Virtualize` renders:
+
+- **Only a window of the rows is in the DOM**, with the spacers `Virtualize` keeps around it. A script or a test that
+  read every row of a grouped grid off the page reads the rows in view; scroll a row into view first, or call
+  `RevealItemAsync`, which scrolls to its place.
+- **A group row is exactly `RowHeight` tall**, like every other row of a virtualized grid, and keeps its toggle, title,
+  count and aggregates on one line: a title or aggregates that used to wrap end in an ellipsis. A group row carries
+  the class `bit-dtg-group-row-fix` there.
+- **The body has no `rowgroup` role**, as the body of a flat virtualized grid has none: the spacers sit among its rows.
+
+A grouped grid without `Virtualize` renders as it did.
+
+### Three Extras surfaces stack on the layer scale rather than above it ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+Three surfaces of `Bit.BlazorUI.Extras` were stacked with a literal z-index far above the library's layer scale (the
+`--bit-zin-*` tokens, 1000 to 1400 by default), so moving the scale with `BitThemeZIndices` left them where they were.
+They now read the scale:
+
+| Surface | Before | After |
+|---|---|---|
+| The bars over the device's insets of `BitAppShell` | `999999` | one above the snackbar's layer, `calc(var(--bit-zin-snackbar) + 1)` (1401 by default) |
+| The pointer catcher of a `BitDataGrid` column resize | `9999` | one above the snackbar's layer, `calc(var(--bit-zin-snackbar) + 1)` (1401 by default) |
+| The tooltip of `BitResourceTimeline` | `2147483647` | the callout layer, `var(--bit-zin-callout)` (1300 by default), like `BitTooltip` |
+
+The inset bars and the resize catcher still sit above everything the library renders; the tooltip now shares its
+layer with every other tooltip and popup. An element of an app stacked between the old and the new value (a z-index
+of 2000, say) now paints over them: give it a value under the scale, or move the scale above it with
+`BitThemeZIndices`.
+
+### Every component has a root class of its own ([#15137](https://github.com/bitfoundation/bitplatform/issues/15137))
+
+Two components that shared a root class shared every rule written for it, so each restyled the other wherever both
+were on a page: a `BitNavPanel` lost its width and the top of its list to the `BitStepper` rules that matched the
+`BitSwipeTrap` inside it. The newer component of each pair - or the Legacy twin, which keeps its own prefix beside the
+component it predates - takes a class prefix of its own; no public API is renamed, but an app's stylesheets, scripts
+and tests written against the old classes move to the new ones:
+
+| Component | Before | After |
+|---|---|---|
+| `BitStepper` | `bit-stp`, `bit-stp-*` (shared with `BitSwipeTrap`) | `bit-str`, `bit-str-*`, and the `data-bit-str-opt` attribute |
+| `BitMarkdownEditorLegacy` | `bit-mde`, `bit-mde-txa` (shared with `BitMarkdownEditor`) | `bit-mel`, `bit-mel-txa` |
+| `BitMarkdownViewerLegacy` | `bit-mdv bit-mdv-lgc` (shared with `BitMarkdownViewer`) | `bit-mvl` |
+| `BitRichTextEditorLegacy` | `bit-rte bit-rte-lgc`, `bit-rte-tlb`, `bit-rte-edt`, `bit-rte-rvs` (shared with `BitRichTextEditor`) | `bit-rel`, `bit-rel-tlb`, `bit-rel-edt`, `bit-rel-rvs` |
+| The popups of `BitCallout`, `BitDropMenu`, `BitMenuButton` and `BitSearchBox` | `bit-cal-ent` for the frame their entry starts from (under `BitCalendar`'s prefix) | `bit--entry` |
+
+The Legacy rules also weigh less than they did: `.bit-mdv.bit-mdv-lgc` (two classes) is now `.bit-mvl` (one), and
+`.bit-rte.bit-rte-lgc ...` is now `.bit-rel ...`. A rule of an app with a single class, on a `BitMarkdownViewerLegacy`
+or `BitRichTextEditorLegacy` or inside one, that used to lose to the component's rule now ties with it, and wins
+when the app's stylesheet loads after the Legacy bundle (`.my-viewer { width: 50% }` on a `BitMarkdownViewerLegacy`
+now applies). Remove or narrow such a rule where the component's own look is the one wanted.
 ### What axe-core found inside the components is fixed, and the markup it changed ([#14891](https://github.com/bitfoundation/bitplatform/issues/14891))
 
 No public API is renamed or removed, but an app's stylesheets, scripts and tests written against the markup below

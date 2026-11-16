@@ -90,24 +90,6 @@ internal static class BitCountrySearch
         return -1;
     }
 
-    // The index of the first country from the start index on (wrapping around the end of the list) whose name starts
-    // with the folded term, or -1 where none does. The folded names are the ones folded once with the list, when they
-    // belong to the very list walked over, and are folded here otherwise.
-    internal static int FindByNameStart(IReadOnlyList<BitCountry> items, string[]? foldedNames, string term, int start)
-    {
-        for (var i = 0; i < items.Count; i++)
-        {
-            var index = (start + i) % items.Count;
-            if (index < 0) index += items.Count;
-
-            var name = foldedNames is not null ? foldedNames[index] : Fold(items[index].Name);
-
-            if (name.StartsWith(term, StringComparison.InvariantCultureIgnoreCase)) return index;
-        }
-
-        return -1;
-    }
-
     // A copy of the text with the diacritic of each character removed, so a country is found by the
     // plain letters of its name ("Aland", "Reunion", "Curacao") as much as by the accented ones.
     internal static string Fold(string text)

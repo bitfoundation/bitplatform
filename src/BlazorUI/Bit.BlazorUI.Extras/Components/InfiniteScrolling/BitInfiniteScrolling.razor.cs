@@ -165,15 +165,15 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     [Parameter, ResetClassBuilder] public BitInfiniteScrollingClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The custom template to render when there is no item available.
+    /// </summary>
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
     /// The message to render when there is no item available and no EmptyTemplate is provided. Default:
     /// <see cref="BitStrings.NoItemsFound"/>.
     /// </summary>
     [Parameter] public string? EmptyText { get; set; }
-
-    /// <summary>
-    /// The custom template to render when there is no item available.
-    /// </summary>
-    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
     /// The message to render after the last page, when there is no more item to fetch.
@@ -225,6 +225,15 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     [Parameter, ResetClassBuilder] public bool Horizontal { get; set; }
 
     /// <summary>
+    /// The function that returns the accessible name of the article of each item in the Feed mode, which is what
+    /// a screen reader announces as the focus lands on it (the title of a post, the name of a product).
+    /// </summary>
+    /// <remarks>
+    /// Without one an article is announced by its whole content. It has no effect outside the Feed mode.
+    /// </remarks>
+    [Parameter] public Func<TItem, string?>? ItemAriaLabel { get; set; }
+
+    /// <summary>
     /// The function that returns a stable key for each item, which is rendered as the @key of that item.
     /// A keyed item is matched by its key instead of by its position, so a page prepended above the rendered
     /// items inserts new nodes rather than rewriting the content of every node below it.
@@ -234,15 +243,6 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     /// nothing to the layout. The keys have to be unique among the loaded items.
     /// </remarks>
     [Parameter] public Func<TItem, object>? ItemKey { get; set; }
-
-    /// <summary>
-    /// The function that returns the accessible name of the article of each item in the Feed mode, which is what
-    /// a screen reader announces as the focus lands on it (the title of a post, the name of a product).
-    /// </summary>
-    /// <remarks>
-    /// Without one an article is announced by its whole content. It has no effect outside the Feed mode.
-    /// </remarks>
-    [Parameter] public Func<TItem, string?>? ItemAriaLabel { get; set; }
 
     /// <summary>
     /// The item provider function that will be called when scrolling ends.
@@ -356,6 +356,11 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     [Parameter] public object? ResetKey { get; set; }
 
     /// <summary>
+    /// The text of the button that retries the failed load.
+    /// </summary>
+    [Parameter] public string RetryText { get; set; } = "Retry";
+
+    /// <summary>
     /// Prepends each loaded page before the already rendered items and moves the sentinel element to the top of
     /// the list, so scrolling up loads the older items of a chat or a log while the scroll position stays put.
     /// </summary>
@@ -371,11 +376,6 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     /// pixels before the end of the list becomes visible.
     /// </summary>
     [Parameter] public string? RootMargin { get; set; }
-
-    /// <summary>
-    /// The text of the button that retries the failed load.
-    /// </summary>
-    [Parameter] public string RetryText { get; set; } = "Retry";
 
     /// <summary>
     /// The CSS selector of the scroll container, by default the root element of the component is selected for this purpose.

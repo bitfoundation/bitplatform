@@ -190,7 +190,8 @@
         }
 
         public static async focusItem(calloutId: string, mode: string, char: string | null, virtualize: boolean,
-                                      selectedIndex: number = -1, itemSize: number = 0, noWrap: boolean = false) {
+                                      selectedIndex: number = -1, itemSize: number = 0, noWrap: boolean = false,
+                                      fromCurrent: boolean = false, culture: string | null = null) {
             const callout = document.getElementById(calloutId);
             if (!callout) return;
 
@@ -251,7 +252,7 @@
                 }
             }
 
-            const index = Dropdowns._resolveIndex(items, current, mode, char, virtualize, noWrap);
+            const index = Dropdowns._resolveIndex(items, current, mode, char, virtualize, noWrap, fromCurrent, culture);
 
             if (index > -1) {
                 items[index].focus();
@@ -497,7 +498,7 @@
         }
 
         private static _resolveIndex(items: HTMLElement[], current: number, mode: string, char: string | null,
-                                    virtualize: boolean, noWrap: boolean = false) {
+                                    virtualize: boolean, noWrap: boolean = false, fromCurrent: boolean = false, culture: string | null = null) {
             // Wrapping around is only correct when every item is rendered; in virtualize mode the ends
             // of the rendered window are not the ends of the list, so the focus stops there instead -
             // and so it does when the dropdown was asked to stop there (noWrap).
@@ -527,19 +528,18 @@
             }
 
             if (mode === 'char' && char) {
-                // Type-ahead per the APG: a repeated single character cycles through the options starting
-                // with it, while a multi-character buffer matches the accumulated string without leaving
-                // the current option (so typing a longer prefix refines the match instead of jumping).
-                const buffer = char.toLowerCase();
-                const sameChar = buffer.split('').every(c => c === buffer[0]);
-                const query = sameChar ? buffer[0] : buffer;
-                const start = current < 0 ? 0 : (sameChar ? current + 1 : current);
+                // Type-ahead per the APG, with the search the .NET side built (BitTypeahead): a repeated single
+                // character arrives as that character, searched from the option after the focused one so it cycles,
+                // and a real string arrives with fromCurrent, searched from the focused option so typing a longer
+                // prefix refines the match instead of jumping. The match is the one of the current culture.
+                const matches = Utils.typeaheadMatcher(char, culture);
+                const start = current < 0 ? 0 : (fromCurrent ? current : current + 1);
                 for (let i = 0; i < items.length; i++) {
                     const candidate = (start + i) % items.length;
                     // The select all item is not an option, so its text must not be matched.
                     if (items[candidate].getAttribute('role') !== 'option') continue;
 
-                    if ((items[candidate].textContent || '').trim().toLowerCase().indexOf(query) === 0) {
+                    if (matches(items[candidate].textContent || '')) {
                         return candidate;
                     }
                 }

@@ -570,14 +570,9 @@ public partial class BitCarousel : BitComponentBase
     [Parameter] public int VisibleItemsCount { get; set; } = 1;
 
     /// <summary>
-    /// Number of visible items in the extra small breakpoint (from 0 up, see <see cref="VisibleItemsCount"/>).
+    /// Number of visible items in the large breakpoint (from 1280px up, see <see cref="VisibleItemsCount"/>).
     /// </summary>
-    [Parameter] public int? VisibleItemsCountXs { get; set; }
-
-    /// <summary>
-    /// Number of visible items in the small breakpoint (from 600px up, see <see cref="VisibleItemsCount"/>).
-    /// </summary>
-    [Parameter] public int? VisibleItemsCountSm { get; set; }
+    [Parameter] public int? VisibleItemsCountLg { get; set; }
 
     /// <summary>
     /// Number of visible items in the medium breakpoint (from 960px up, see <see cref="VisibleItemsCount"/>).
@@ -585,14 +580,19 @@ public partial class BitCarousel : BitComponentBase
     [Parameter] public int? VisibleItemsCountMd { get; set; }
 
     /// <summary>
-    /// Number of visible items in the large breakpoint (from 1280px up, see <see cref="VisibleItemsCount"/>).
+    /// Number of visible items in the small breakpoint (from 600px up, see <see cref="VisibleItemsCount"/>).
     /// </summary>
-    [Parameter] public int? VisibleItemsCountLg { get; set; }
+    [Parameter] public int? VisibleItemsCountSm { get; set; }
 
     /// <summary>
     /// Number of visible items in the extra large breakpoint (from 1920px up, see <see cref="VisibleItemsCount"/>).
     /// </summary>
     [Parameter] public int? VisibleItemsCountXl { get; set; }
+
+    /// <summary>
+    /// Number of visible items in the extra small breakpoint (from 0 up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountXs { get; set; }
 
     /// <summary>
     /// Number of visible items in the extra extra large breakpoint (from 2560px up, see <see cref="VisibleItemsCount"/>).

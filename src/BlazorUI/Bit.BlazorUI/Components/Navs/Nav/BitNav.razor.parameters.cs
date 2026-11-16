@@ -251,6 +251,11 @@ public partial class BitNav<TItem>
     public TItem? SelectedItem { get; set; }
 
     /// <summary>
+    /// Enables the single-expand mode in the BitNav.
+    /// </summary>
+    [Parameter] public bool SingleExpand { get; set; }
+
+    /// <summary>
     /// The size of the nav items.
     /// </summary>
     /// <remarks>
@@ -259,11 +264,6 @@ public partial class BitNav<TItem>
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
-
-    /// <summary>
-    /// Enables the single-expand mode in the BitNav.
-    /// </summary>
-    [Parameter] public bool SingleExpand { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitNav component.

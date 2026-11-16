@@ -45,23 +45,23 @@ public partial class BitButtonDemo
 <BitButton Rounded IconOnly AriaLabel=""Delete"" IconName=""@BitIconName.Delete"" Variant=""BitVariant.Text"" />";
 
     private readonly string example4RazorCode = @"
-<BitButton IsLoading=""fillIsLoading"" Variant=""BitVariant.Fill"" OnClick=""LoadingFillClick"">
+<BitButton Loading=""fillLoading"" Variant=""BitVariant.Fill"" OnClick=""LoadingFillClick"">
     Click me
 </BitButton>
 
-<BitButton IsLoading=""outlineIsLoading"" Variant=""BitVariant.Outline"" LoadingLabel=""Loading..."" OnClick=""LoadingOutlineClick"">
+<BitButton Loading=""outlineLoading"" Variant=""BitVariant.Outline"" LoadingLabel=""Loading..."" OnClick=""LoadingOutlineClick"">
     Click me
 </BitButton>
 
-<BitButton IsLoading=""textIsLoading"" Variant=""BitVariant.Text"" SecondaryText=""this is the secondary text"" OnClick=""LoadingTextClick"">
+<BitButton Loading=""textLoading"" Variant=""BitVariant.Text"" SecondaryText=""this is the secondary text"" OnClick=""LoadingTextClick"">
     Click me
 </BitButton>
 
 
-<BitButton IsLoading LoadingLabel=""End..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.End"">End</BitButton>
-<BitButton IsLoading LoadingLabel=""Start..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.Start"">Start</BitButton>
-<BitButton IsLoading LoadingLabel=""Top..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.Top"">Top</BitButton>
-<BitButton IsLoading LoadingLabel=""Bottom..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.Bottom"">Bottom</BitButton>
+<BitButton Loading LoadingLabel=""End..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.End"">End</BitButton>
+<BitButton Loading LoadingLabel=""Start..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.Start"">Start</BitButton>
+<BitButton Loading LoadingLabel=""Top..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.Top"">Top</BitButton>
+<BitButton Loading LoadingLabel=""Bottom..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.Bottom"">Bottom</BitButton>
 
 
 <BitButton OnClick=""AutoLoadingClick"" AutoLoading>Click me</BitButton>
@@ -84,28 +84,28 @@ public partial class BitButtonDemo
 </BitButton>";
 
     private readonly string example4CsharpCode = @"
-private bool fillIsLoading;
+private bool fillLoading;
 private async Task LoadingFillClick()
 {
-    fillIsLoading = true;
+    fillLoading = true;
     await Task.Delay(3000);
-    fillIsLoading = false;
+    fillLoading = false;
 }
 
-private bool outlineIsLoading;
+private bool outlineLoading;
 private async Task LoadingOutlineClick()
 {
-    outlineIsLoading = true;
+    outlineLoading = true;
     await Task.Delay(3000);
-    outlineIsLoading = false;
+    outlineLoading = false;
 }
 
-private bool textIsLoading;
+private bool textLoading;
 private async Task LoadingTextClick()
 {
-    textIsLoading = true;
+    textLoading = true;
     await Task.Delay(3000);
-    textIsLoading = false;
+    textLoading = false;
 }
 
 private int autoLoadCount;
@@ -279,7 +279,7 @@ private async Task HandleExternalFormValidSubmit()
 </BitButton>
 
 
-<BitButton IsLoading=""templateIsLoading"" OnClick=""LoadingTemplateClick"">
+<BitButton Loading=""templateLoading"" OnClick=""LoadingTemplateClick"">
     <PrimaryTemplate>Click me</PrimaryTemplate>
     <LoadingTemplate>
         <div class=""custom-loading"">
@@ -290,12 +290,12 @@ private async Task HandleExternalFormValidSubmit()
 </BitButton>";
 
     private readonly string example7CsharpCode = @"
-private bool templateIsLoading;
+private bool templateLoading;
 private async Task LoadingTemplateClick()
 {
-    templateIsLoading = true;
+    templateLoading = true;
     await Task.Delay(3000);
-    templateIsLoading = false;
+    templateLoading = false;
 }";
 
     private readonly string example8RazorCode = @"
@@ -580,21 +580,21 @@ private readonly BitButtonParams[] buttonParams =
 <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"">Fill</BitButton>
 <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
 <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
-<BitButton Size=""BitSize.Small"" IsLoading LoadingLabel=""Loading..."" Variant=""BitVariant.Outline"">Loading</BitButton>
+<BitButton Size=""BitSize.Small"" Loading LoadingLabel=""Loading..."" Variant=""BitVariant.Outline"">Loading</BitButton>
 <BitButton Size=""BitSize.Small"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"">Compound</BitButton>
 
 <BitButton Size=""BitSize.Medium"" IconOnly AriaLabel=""Emoji"" IconName=""@BitIconName.Emoji2"" />
 <BitButton Size=""BitSize.Medium"" IconName=""@BitIconName.Emoji2"">Fill</BitButton>
 <BitButton Size=""BitSize.Medium"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
 <BitButton Size=""BitSize.Medium"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
-<BitButton Size=""BitSize.Medium"" IsLoading LoadingLabel=""Loading..."" Variant=""BitVariant.Outline"">Loading</BitButton>
+<BitButton Size=""BitSize.Medium"" Loading LoadingLabel=""Loading..."" Variant=""BitVariant.Outline"">Loading</BitButton>
 <BitButton Size=""BitSize.Medium"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"">Compound</BitButton>
 
 <BitButton Size=""BitSize.Large"" IconOnly AriaLabel=""Emoji"" IconName=""@BitIconName.Emoji2"" />
 <BitButton Size=""BitSize.Large"" IconName=""@BitIconName.Emoji2"">Fill</BitButton>
 <BitButton Size=""BitSize.Large"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
 <BitButton Size=""BitSize.Large"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
-<BitButton Size=""BitSize.Large"" IsLoading LoadingLabel=""Loading..."" Variant=""BitVariant.Outline"">Loading</BitButton>
+<BitButton Size=""BitSize.Large"" Loading LoadingLabel=""Loading..."" Variant=""BitVariant.Outline"">Loading</BitButton>
 <BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"">Compound</BitButton>";
 
     private readonly string example17RazorCode = @"
@@ -609,7 +609,7 @@ private readonly BitButtonParams[] buttonParams =
 </BitButton>
 
 
-<BitButton IsLoading=""stylesIsLoading"" LoadingLabel=""Wait..."" OnClick=""LoadingStylesClick"" Styles=""@(new()
+<BitButton Loading=""stylesLoading"" LoadingLabel=""Wait..."" OnClick=""LoadingStylesClick"" Styles=""@(new()
            {
                Root = ""background-color: peachpuff; border-color: peachpuff; min-width: 6rem;"",
                LoadingLabel = ""color: tomato; font-weight: bold;"",
@@ -618,7 +618,7 @@ private readonly BitButtonParams[] buttonParams =
     Click me
 </BitButton>
 
-<BitButton IsLoading=""classesIsLoading"" LoadingLabel=""Sending..."" OnClick=""LoadingClassesClick"" Variant=""BitVariant.Outline"" Classes=""@(new()
+<BitButton Loading=""classesLoading"" LoadingLabel=""Sending..."" OnClick=""LoadingClassesClick"" Variant=""BitVariant.Outline"" Classes=""@(new()
            {
                Root = ""custom-root"",
                LoadingContainer = ""custom-container"",
@@ -654,20 +654,20 @@ private readonly BitButtonParams[] buttonParams =
 </BitButton>";
 
     private readonly string example17CsharpCode = @"
-private bool stylesIsLoading;
+private bool stylesLoading;
 private async Task LoadingStylesClick()
 {
-    stylesIsLoading = true;
+    stylesLoading = true;
     await Task.Delay(3000);
-    stylesIsLoading = false;
+    stylesLoading = false;
 }
 
-private bool classesIsLoading;
+private bool classesLoading;
 private async Task LoadingClassesClick()
 {
-    classesIsLoading = true;
+    classesLoading = true;
     await Task.Delay(3000);
-    classesIsLoading = false;
+    classesLoading = false;
 }";
 
     private const string example17ScssCode = @"
@@ -731,7 +731,7 @@ private async Task LoadingClassesClick()
     دکمه با آیکن
 </BitButton>
 
-<BitButton IsLoading Dir=""BitDir.Rtl"" LoadingLabel=""در حال بارگذاری"" Variant=""BitVariant.Fill"" />
-<BitButton IsLoading Dir=""BitDir.Rtl"" LoadingLabel=""در حال بارگذاری"" Variant=""BitVariant.Outline"" />
-<BitButton IsLoading Dir=""BitDir.Rtl"" LoadingLabel=""در حال بارگذاری"" Variant=""BitVariant.Text"" />";
+<BitButton Loading Dir=""BitDir.Rtl"" LoadingLabel=""در حال بارگذاری"" Variant=""BitVariant.Fill"" />
+<BitButton Loading Dir=""BitDir.Rtl"" LoadingLabel=""در حال بارگذاری"" Variant=""BitVariant.Outline"" />
+<BitButton Loading Dir=""BitDir.Rtl"" LoadingLabel=""در حال بارگذاری"" Variant=""BitVariant.Text"" />";
 }

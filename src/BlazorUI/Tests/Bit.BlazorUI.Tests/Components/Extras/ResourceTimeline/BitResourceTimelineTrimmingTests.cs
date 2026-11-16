@@ -139,6 +139,7 @@ public class BitResourceTimelineTrimmingTests
             typeof(BitResourceTimelineColumnStripes),
             typeof(BitResourceTimelineRowStripes),
             typeof(BitResourceTimelineAxisLines),
+            typeof(BitResourceTimelineGroupSeparators),
             typeof(BitResourceTimelineTexts),
             typeof(BitResourceTimelineResource),
             typeof(BitResourceTimelineAllocation),

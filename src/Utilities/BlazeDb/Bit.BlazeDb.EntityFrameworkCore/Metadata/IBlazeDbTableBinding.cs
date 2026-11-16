@@ -36,6 +36,21 @@ internal interface IBlazeDbTableBinding
     void Insert(object row);
 
     /// <summary>
+    /// The row the table holds under <paramref name="row"/>'s key - <paramref name="row"/> itself when
+    /// it is the live instance, another object when it is a detached one - or null when there is none.
+    /// <paramref name="seq"/> is the sequence number of the write that put it there, which changes with
+    /// every write to the row, whatever API made it, and returns to its old value on a rollback.
+    /// </summary>
+    object? HeldRow(object row, out long seq);
+
+    /// <summary>
+    /// Has the table record <paramref name="tokens"/>' values for every row it holds and every row it is
+    /// given from now on, as written; see <see cref="Storage.BlazeDbConcurrencyTokens"/>. Does nothing
+    /// when there are no tokens.
+    /// </summary>
+    void ObserveConcurrencyTokens(Microsoft.EntityFrameworkCore.Metadata.IProperty[] tokens);
+
+    /// <summary>
     /// Applies an update where <paramref name="row"/> is normally the instance the table already
     /// holds, mutated in place. <paramref name="previousValues"/> carries the values the indexes
     /// were built from, without which stale index entries would be left behind. A detached

@@ -411,19 +411,19 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "Value",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The names of the valid files of the list joined with commas (report.pdf,photo.png), or null while it holds none - this is the parameter to bind (@bind-Value), so a [Required] or a [RegularExpression] on the bound property validates the selection in an EditForm. A file the component's own validations rejected is not part of it. A browser cannot be handed files from code, so the value is the selection's to write: one set from outside that empties it clears the selection, and any other is left until the selection next changes and writes its own back. The files themselves are read through Files and OnFilesChange.",
+        },
+        new()
+        {
             Name = "Variant",
             Type = "BitVariant?",
             DefaultValue = "null",
             Description = "The visual variant of the browse button, which decides how much of the Color it carries: a full fill, only an outline, or neither.",
             LinkType = LinkType.Link,
             Href = "#variant-enum"
-        },
-        new()
-        {
-            Name = "Value",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The names of the valid files of the list joined with commas (report.pdf,photo.png), or null while it holds none - this is the parameter to bind (@bind-Value), so a [Required] or a [RegularExpression] on the bound property validates the selection in an EditForm. A file the component's own validations rejected is not part of it. A browser cannot be handed files from code, so the value is the selection's to write: one set from outside that empties it clears the selection, and any other is left until the selection next changes and writes its own back. The files themselves are read through Files and OnFilesChange.",
         },
     ];
 

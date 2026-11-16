@@ -111,10 +111,10 @@ public partial class BitDropMenuDemo
 private BitVariant variant = BitVariant.Fill;";
 
     private readonly string example5RazorCode = @"
-<BitToggle @bind-Value=""isLoading"" Label=""IsLoading"" />
+<BitToggle @bind-Value=""isLoading"" Label=""Loading"" />
 
 <BitStack Horizontal Wrap Gap=""1rem"" FitHeight>
-    <BitDropMenu Text=""Cloud sync"" IconName=""@BitIconName.Cloud"" IsLoading=""isLoading"">
+    <BitDropMenu Text=""Cloud sync"" IconName=""@BitIconName.Cloud"" Loading=""isLoading"">
         <BitStack Gap=""0.5rem"" Style=""padding:0.5rem"">
             <BitText Typography=""BitTypography.Body2"">Last synced 5 minutes ago</BitText>
             <BitToggle Label=""Sync on cellular data"" />

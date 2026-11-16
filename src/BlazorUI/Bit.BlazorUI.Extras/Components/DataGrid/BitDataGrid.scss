@@ -529,10 +529,13 @@ button.bit-dtg-htext {
     --bit-dtg-rsz-sbg: var(--bit-DataGrid-focus-color, #{$clr-pri-focus});
 }
 
+/* The catcher of a column resize takes every pointer move until the button is released, and the resize ends when the
+   pointer leaves it: nothing of the page may paint over it meanwhile, a snackbar or a callout included, so it sits
+   right above the top of the layer scale - and follows it where an app moves the scale (BitThemeZIndices). */
 .bit-dtg-resize-overlay {
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    z-index: calc(#{$zindex-snackbar} + 1);
     cursor: col-resize;
     touch-action: none;
 }
@@ -565,6 +568,25 @@ button.bit-dtg-htext {
 .bit-dtg-group-agg {
     color: $clr-fg-sec;
     font-size: $tg-fs-xs;
+}
+
+/* A group row of a virtualized grid is RowHeight tall like every other row there, so it keeps to one line: the toggle
+   and the count keep their size, and the title and the aggregates give way, ending in an ellipsis. */
+.bit-dtg-group-row-fix .bit-dtg-group-cell {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.bit-dtg-group-row-fix .bit-dtg-icon-btn,
+.bit-dtg-group-row-fix .bit-dtg-group-count {
+    flex-shrink: 0;
+}
+
+.bit-dtg-group-row-fix .bit-dtg-group-title,
+.bit-dtg-group-row-fix .bit-dtg-group-agg {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ----------------------------------------------- Grouped column headers */

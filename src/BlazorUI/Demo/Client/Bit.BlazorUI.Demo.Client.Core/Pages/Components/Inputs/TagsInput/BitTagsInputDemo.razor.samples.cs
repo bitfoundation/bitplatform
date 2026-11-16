@@ -83,7 +83,7 @@ public partial class BitTagsInputDemo
 
 <BitTagsInput Label=""Fetched while you type""
               Suggestions=""asyncSuggestions""
-              IsLoading=""asyncLoading""
+              Loading=""asyncLoading""
               DebounceTime=""300""
               OnInput=""HandleAsyncInput""
               Placeholder=""Start typing a country...""

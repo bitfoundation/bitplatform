@@ -25,6 +25,9 @@ public partial class ProgressAskCard
     /// <summary>Whether a secret can be pasted here: only on the computer the Workbench runs on.</summary>
     [Parameter] public bool CanStoreSecret { get; set; }
 
+    /// <summary>The way the question's task reads, which its question and detail read in (see WorkbenchTextDirection).</summary>
+    [Parameter] public string TaskDirection { get; set; } = WorkbenchTextDirection.LeftToRight;
+
     /// <summary>Sends the answer: the options picked and the text; true once it reached the task.</summary>
     [Parameter] public Func<WorkbenchProgressAsk, IReadOnlyList<string>, string?, Task<bool>>? OnAnswer { get; set; }
 
@@ -47,6 +50,7 @@ public partial class ProgressAskCard
     {
         { To: WorkbenchProgressSecretTo.GitHub, Environment: { } environment } github => Localizer[nameof(WorkbenchStrings.ProgressSecretToGitHubEnvironment), github.Name ?? string.Empty, environment, Agent ?? string.Empty],
         { To: WorkbenchProgressSecretTo.GitHub } github => Localizer[nameof(WorkbenchStrings.ProgressSecretToGitHub), github.Name ?? string.Empty, Agent ?? string.Empty],
+        { To: WorkbenchProgressSecretTo.UserSecrets } userSecret => Localizer[nameof(WorkbenchStrings.ProgressSecretToUserSecrets), userSecret.Name ?? string.Empty, userSecret.Project ?? string.Empty, Agent ?? string.Empty],
         _ => Localizer[nameof(WorkbenchStrings.ProgressSecretToFile), Agent ?? string.Empty]
     };
 
