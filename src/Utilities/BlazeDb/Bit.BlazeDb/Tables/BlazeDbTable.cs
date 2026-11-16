@@ -140,6 +140,24 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
 
     public TRow? Get(TKey key) => _rows.TryGetValue(key, out var entry) ? entry.Row : default;
 
+    /// <summary>
+    /// The row held under <paramref name="key"/> together with the sequence number of the write that
+    /// put it there. Every write - through any API - gives the row a new number, and a rollback puts
+    /// the old one back, so an unchanged number means the row has not been written since.
+    /// </summary>
+    internal bool TryGetEntry(TKey key, out TRow row, out long seq)
+    {
+        if (_rows.TryGetValue(key, out var entry))
+        {
+            row = entry.Row;
+            seq = entry.Seq;
+            return true;
+        }
+        row = default!;
+        seq = 0;
+        return false;
+    }
+
     public bool Contains(TKey key) => _rows.ContainsKey(key);
 
     /// <summary>

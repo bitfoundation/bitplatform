@@ -420,4 +420,62 @@ public class EncryptionTests
         using var reader = new BlazeDbEncryptedStorage(inner, new BlazeDbAesGcmCipher(sameKey), ownsCipher: true);
         Assert.AreSequenceEqual("payload"u8.ToArray(), await reader.ReadAsync("snapshot"));
     }
+
+    [TestMethod]
+    public void Disposing_Releases_The_Owned_Inner_Storage_Even_When_The_Cipher_Throws_And_Only_Once()
+    {
+        var inner = new CountingDisposeStorage();
+        var cipher = new ThrowingDisposeCipher();
+        var storage = new BlazeDbEncryptedStorage(inner, cipher, ownsCipher: true, ownsInner: true);
+
+        // The inner storage holds the writer lock; a cipher that fails to dispose used to keep it held.
+        Assert.ThrowsExactly<InvalidOperationException>(storage.Dispose);
+        Assert.AreEqual(1, inner.Disposals);
+
+        storage.Dispose();
+        Assert.AreEqual(1, inner.Disposals, "A second Dispose disposes nothing again.");
+        Assert.AreEqual(1, cipher.Disposals);
+    }
+
+    private sealed class CountingDisposeStorage : IBlazeDbStorage, IDisposable
+    {
+        private readonly BlazeDbInMemoryStorage _inner = new();
+
+        public int Disposals { get; private set; }
+
+        public ValueTask<byte[]?> ReadAsync(string name, CancellationToken cancellationToken = default) =>
+            _inner.ReadAsync(name, cancellationToken);
+
+        public ValueTask WriteAtomicAsync(string name, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default) =>
+            _inner.WriteAtomicAsync(name, data, cancellationToken);
+
+        public ValueTask AppendAsync(string name, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default) =>
+            _inner.AppendAsync(name, data, cancellationToken);
+
+        public ValueTask DeleteAsync(string name, CancellationToken cancellationToken = default) =>
+            _inner.DeleteAsync(name, cancellationToken);
+
+        public void Dispose() => Disposals++;
+    }
+
+    private sealed class ThrowingDisposeCipher : IBlazeDbAeadCipher, IDisposable
+    {
+        public int Disposals { get; private set; }
+
+        public int NonceSizeInBytes => 12;
+
+        public int TagSizeInBytes => 16;
+
+        public ValueTask<byte[]> EncryptAsync(ReadOnlyMemory<byte> nonce, ReadOnlyMemory<byte> plaintext,
+            ReadOnlyMemory<byte> associatedData, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
+        public ValueTask<byte[]> DecryptAsync(ReadOnlyMemory<byte> nonce, ReadOnlyMemory<byte> ciphertextWithTag,
+            ReadOnlyMemory<byte> associatedData, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
+        public void Dispose()
+        {
+            Disposals++;
+            throw new InvalidOperationException("Interop teardown failed.");
+        }
+    }
 }

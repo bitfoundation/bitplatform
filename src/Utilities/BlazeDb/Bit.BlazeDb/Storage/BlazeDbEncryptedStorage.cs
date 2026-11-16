@@ -41,6 +41,7 @@ public sealed class BlazeDbEncryptedStorage : IBlazeDbQuotaAwareStorage, IBlazeD
     private readonly IBlazeDbAeadCipher _cipher;
     private readonly bool _ownsCipher;
     private readonly bool _ownsInner;
+    private int _disposed;
 
     // Files whose last read stopped at a torn frame, and the offset that frame starts at.
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, long> _tornTails = new();
@@ -294,15 +295,30 @@ public sealed class BlazeDbEncryptedStorage : IBlazeDbQuotaAwareStorage, IBlazeD
         return frame;
     }
 
+    /// <summary>
+    /// Disposes what this wrapper owns. The inner storage is disposed even when disposing the cipher
+    /// throws - it is what holds the writer lock, and leaving that held would lock the database out for
+    /// every other tab or process. Calling it again does nothing.
+    /// </summary>
     public void Dispose()
     {
-        if (_ownsCipher && _cipher is IDisposable disposable)
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
-            disposable.Dispose();
+            return;
         }
-        if (_ownsInner && _inner is IDisposable inner)
+        try
         {
-            inner.Dispose();
+            if (_ownsCipher && _cipher is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
+        finally
+        {
+            if (_ownsInner && _inner is IDisposable inner)
+            {
+                inner.Dispose();
+            }
         }
     }
 }

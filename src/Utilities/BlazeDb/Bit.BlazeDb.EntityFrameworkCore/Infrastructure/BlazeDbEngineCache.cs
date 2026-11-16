@@ -57,8 +57,8 @@ internal sealed class BlazeDbEngineCache
                 // Someone else is opening this store. Where this thread cannot block - the browser's
                 // only thread, or one with a synchronization context - waiting here would wait for a
                 // continuation that can only run on this thread, so the caller is told how to start
-                // asynchronously instead.
-                ThrowIfCannotBlock();
+                // asynchronously instead - or, when the holder is closing the store, to await that first.
+                ThrowIfCannotBlock(slot.Releasing ? ClosingMessage : OpeningMessage);
                 slot.Gate.Wait();
             }
             try
@@ -74,7 +74,7 @@ internal sealed class BlazeDbEngineCache
                     // work on one storage.
                     if (!disposed.Closed.IsCompleted)
                     {
-                        ThrowIfCannotBlock();
+                        ThrowIfCannotBlock(ClosingMessage);
                     }
                     disposed.Closed.GetAwaiter().GetResult();
                     slot.Database = null;
@@ -159,20 +159,45 @@ internal sealed class BlazeDbEngineCache
     /// Disposes the store's engine - its final flush included - and forgets it, so the next access
     /// opens afresh. <paramref name="afterClose"/>, when given, runs once the engine is closed and
     /// before anyone can open the store again: <c>EnsureDeleted</c> deletes the storage there.
-    /// Returns whether an engine was open.
+    /// With <paramref name="keepInMemory"/>, an open engine without storage is left alone: closing it
+    /// would only throw its rows away. Returns whether an engine was closed.
     /// </summary>
-    public async ValueTask<bool> ReleaseAsync(object key, Func<ValueTask>? afterClose = null)
+    public async ValueTask<bool> ReleaseAsync(object key, Func<ValueTask>? afterClose = null, bool keepInMemory = false)
     {
-        // A slot even for a store this process never opened: the delete that may follow is then
-        // made under its gate too, where no open can start on the storage until it is done.
-        var slot = SlotFor(key);
+        while (true)
+        {
+            // A slot even for a store this process never opened: the delete that may follow is then
+            // made under its gate too, where no open can start on the storage until it is done.
+            var slot = SlotFor(key);
 
-        // Taken so an open in flight finishes first and is then disposed, rather than escaping
-        // into a slot nobody can find any more. The slot stays registered, and its gate held,
-        // until the engine is closed and afterClose has run: a context that asks for the store
-        // meanwhile waits here instead of opening a second engine on storage the first is still
-        // flushing to, or that is about to be deleted under it.
-        await slot.Gate.WaitAsync().ConfigureAwait(false);
+            // Taken so an open in flight finishes first and is then disposed, rather than escaping
+            // into a slot nobody can find any more. The slot stays registered, and its gate held,
+            // until the engine is closed and afterClose has run: a context that asks for the store
+            // meanwhile waits here instead of opening a second engine on storage the first is still
+            // flushing to, or that is about to be deleted under it.
+            await slot.Gate.WaitAsync().ConfigureAwait(false);
+            if (slot.Removed)
+            {
+                // Another release finished with this slot while we waited, and a context may already
+                // have opened the store again in a fresh one. That engine is the one to close - and
+                // the delete, if any, has to wait for it - so the release starts over on the slot the
+                // dictionary holds now, rather than deleting storage a live engine is writing to.
+                slot.Gate.Release();
+                continue;
+            }
+            if (keepInMemory && slot.PendingOpen is null && slot.Database is { IsDisposed: false, IsPersistent: false })
+            {
+                slot.Gate.Release();
+                return false;
+            }
+            return await ReleaseCoreAsync(key, slot, afterClose).ConfigureAwait(false);
+        }
+    }
+
+    private async ValueTask<bool> ReleaseCoreAsync(object key, Slot slot, Func<ValueTask>? afterClose)
+    {
+        // Under the gate: a synchronous caller that finds it taken can tell a close from an open.
+        slot.Releasing = true;
         var closed = false;
         try
         {
@@ -213,7 +238,11 @@ internal sealed class BlazeDbEngineCache
         {
             lock (_gate)
             {
-                _slots.Remove(key);
+                // Only this slot: one registered after it belongs to an engine opened since.
+                if (_slots.TryGetValue(key, out var current) && ReferenceEquals(current, slot))
+                {
+                    _slots.Remove(key);
+                }
                 slot.Removed = true;
             }
             Interlocked.Increment(ref _version);
@@ -241,13 +270,20 @@ internal sealed class BlazeDbEngineCache
     /// </summary>
     internal static bool CanBlock => !OperatingSystem.IsBrowser() && SynchronizationContext.Current is null;
 
-    private static void ThrowIfCannotBlock()
+    private const string OpeningMessage =
+        "This BlazeDb store is being opened asynchronously. Await " +
+        "context.Database.EnsureCreatedAsync() before the first synchronous query.";
+
+    private const string ClosingMessage =
+        "This BlazeDb store is being closed - an EnsureDeletedAsync or CloseBlazeDbAsync is still flushing or " +
+        "deleting it, or its engine was disposed and is finishing its final flush - and this thread cannot " +
+        "wait for that. Await that call, or context.Database.EnsureCreatedAsync(), before querying the store again.";
+
+    private static void ThrowIfCannotBlock(string message)
     {
         if (!CanBlock)
         {
-            throw new InvalidOperationException(
-                "This BlazeDb store is being opened asynchronously. Await " +
-                "context.Database.EnsureCreatedAsync() before the first synchronous query.");
+            throw new InvalidOperationException(message);
         }
     }
 
@@ -318,5 +354,8 @@ internal sealed class BlazeDbEngineCache
         public Task<BlazeDbDatabase>? PendingOpen;
 
         public bool Removed;
+
+        /// <summary>Set while a release holds the gate, so a caller that cannot wait is told what it waits for.</summary>
+        public volatile bool Releasing;
     }
 }

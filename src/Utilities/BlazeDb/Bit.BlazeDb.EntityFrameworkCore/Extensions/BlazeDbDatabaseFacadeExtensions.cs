@@ -20,14 +20,23 @@ public static class BlazeDbDatabaseFacadeExtensions
     }
 
     /// <summary>
-    /// Closes the engine this context's store is open on - flushing everything committed and, for a
-    /// persistent store, releasing its lock - without deleting anything. The engine is shared by every
-    /// context on the store, so they all see it closed; the next access opens the store again. Call it
-    /// when the application stops (<c>IHostApplicationLifetime.ApplicationStopping</c>, a MAUI window's
-    /// <c>Destroying</c>): otherwise the provider keeps an engine open for the life of the process, and
-    /// what was committed within the last <c>FlushInterval</c> is not flushed when the process ends.
-    /// Returns false when no engine was open, and for a store passed to <c>UseBlazeDb</c> as an open
+    /// Closes the engine this context's store is open on - flushing everything committed - without
+    /// deleting anything. The engine is shared by every context on the store, so they all see it closed;
+    /// the next access opens the store again. Call it when the application stops
+    /// (<c>IHostApplicationLifetime.ApplicationStopping</c>, a MAUI window's <c>Destroying</c>): otherwise
+    /// the provider keeps an engine open for the life of the process, and what was committed within the
+    /// last <c>FlushInterval</c> is not flushed when the process ends.
+    /// <para>
+    /// The storage itself is not closed: a storage passed to <c>UseBlazeDb</c> belongs to the application,
+    /// and the lock it holds on its files - an OPFS tab's writer lock, <c>BlazeDbFileStorage</c>'s
+    /// <c>writer.lock</c> - is released when the application disposes it, after this call.
+    /// </para>
+    /// <para>
+    /// An in-memory store has nothing to flush, and closing it would throw its rows away, so it is left
+    /// open and the call returns false; <c>EnsureDeletedAsync</c> is what drops one. Returns false as well
+    /// when no engine was open, and for a store passed to <c>UseBlazeDb</c> as an open
     /// <see cref="Bit.BlazeDb.BlazeDbDatabase"/>, which is the application's to dispose.
+    /// </para>
     /// </summary>
     public static async Task<bool> CloseBlazeDbAsync(this DatabaseFacade database)
     {
@@ -38,7 +47,7 @@ public static class BlazeDbDatabaseFacadeExtensions
         {
             return false;
         }
-        var closed = await database.GetService<BlazeDbEngineCache>().ReleaseAsync(extension.StoreKey).ConfigureAwait(false);
+        var closed = await database.GetService<BlazeDbEngineCache>().ReleaseAsync(extension.StoreKey, keepInMemory: true).ConfigureAwait(false);
         database.GetService<IBlazeDbTableCache>().Reset();
         return closed;
     }

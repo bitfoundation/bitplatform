@@ -38,8 +38,10 @@ internal interface IBlazeDbTableBinding
     /// <summary>
     /// The row the table holds under <paramref name="row"/>'s key - <paramref name="row"/> itself when
     /// it is the live instance, another object when it is a detached one - or null when there is none.
+    /// <paramref name="seq"/> is the sequence number of the write that put it there, which changes with
+    /// every write to the row, whatever API made it, and returns to its old value on a rollback.
     /// </summary>
-    object? HeldRow(object row);
+    object? HeldRow(object row, out long seq);
 
     /// <summary>
     /// Applies an update where <paramref name="row"/> is normally the instance the table already

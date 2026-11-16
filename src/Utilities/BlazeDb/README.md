@@ -1034,10 +1034,15 @@ for a persistent store in the browser, or under a synchronization context, use
 
 The provider opens one engine per store and keeps it open for the life of the process, shared by every
 context. `await context.Database.CloseBlazeDbAsync()` closes it without deleting anything - its last
-flush included, and for a persistent store its lock released - and the next access opens it again. A
-server or a Blazor Hybrid app calls it when it stops (`IHostApplicationLifetime.ApplicationStopping`, a
-MAUI window's `Destroying`), so the commits of the last `FlushInterval` reach storage. An engine disposed
-through `GetBlazeDb().DisposeAsync()` counts as closed in the same way.
+flush included - and the next access opens it again. A server or a Blazor Hybrid app calls it when it
+stops (`IHostApplicationLifetime.ApplicationStopping`, a MAUI window's `Destroying`), so the commits of
+the last `FlushInterval` reach storage. The storage passed to `UseBlazeDb` stays the application's: its
+lock - an OPFS tab's writer lock, `BlazeDbFileStorage`'s `writer.lock` - is released when the application
+disposes it, after closing the store. An in-memory store has nothing to flush and would lose its rows,
+so `CloseBlazeDbAsync` leaves it open and returns `false`; `EnsureDeletedAsync` drops one. An engine
+disposed through `GetBlazeDb().DisposeAsync()` counts as closed in the same way, for every context - one
+that had already cached it included - and for an in-memory store that means its rows are gone: the next
+access opens an empty one.
 
 ### What follows from memory-first
 

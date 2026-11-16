@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
 using Bit.BlazeDb.Storage;
 using Microsoft.EntityFrameworkCore;
 
@@ -103,6 +104,119 @@ public sealed class StoreLifetimeTests
         await next.Database.EnsureDeletedAsync();
     }
 
+    [TestMethod]
+    public async Task Two_Releases_Racing_Close_The_Engine_Opened_Between_Them_Rather_Than_Orphan_It()
+    {
+        var options = new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb(new BlazeDbInMemoryStorage()).Options;
+        var extension = options.FindExtension<BlazeDbOptionsExtension>()!;
+        using var context = new PeopleContext(options);
+        var model = context.Model;
+        var cache = new BlazeDbEngineCache();
+        var key = extension.StoreKey;
+        cache.GetOrCreate(extension, model, out _);
+
+        // The first release holds the store's gate until let go; an opener and then a second release queue on it,
+        // in that order.
+        var holdFirst = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var first = cache.ReleaseAsync(key, async () => await holdFirst.Task).AsTask();
+        var opening = cache.GetOrCreateAsync(extension, model, CancellationToken.None).AsTask();
+        var holdSecond = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var second = cache.ReleaseAsync(key, async () => await holdSecond.Task).AsTask();
+
+        // The opener opens the store again once the first release is done; the second release finishes only
+        // after that, when it can.
+        holdFirst.SetResult();
+        await first;
+        await Task.WhenAny(opening, Task.Delay(TimeSpan.FromSeconds(2)));
+        holdSecond.SetResult();
+        await second;
+        var (opened, _) = await opening;
+
+        // Whichever order they ran in, one engine is open on the storage: the opener's, still in the cache, or a
+        // fresh one once the second release has closed the opener's. The second release used to skip the
+        // opener's engine - leaving it open and its flusher running - and drop it from the cache, so the next
+        // access opened another engine on the same storage.
+        var next = cache.GetOrCreate(extension, model, out _);
+        Assert.IsTrue(ReferenceEquals(next, opened) || opened.IsDisposed,
+            "The engine opened between the two releases was left open outside the cache.");
+        await cache.ReleaseAsync(key);
+        if (!opened.IsDisposed)
+        {
+            await opened.DisposeAsync();
+        }
+    }
+
+    [TestMethod]
+    public async Task A_Context_That_Cached_An_Engine_The_Application_Disposed_Opens_The_Store_Again()
+    {
+        var storage = new BlazeDbInMemoryStorage();
+        var options = new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb(storage).Options;
+        using var context = new PeopleContext(options);
+        context.People.Add(new Person { Id = 1, Name = "Saved", City = "c" });
+        context.SaveChanges();
+        var engine = context.Database.GetBlazeDb();
+
+        await engine.DisposeAsync();
+
+        // The context had cached the engine, and disposing it changes no version: it used to keep handing out
+        // the disposed one, and every query and save failed with ObjectDisposedException.
+        Assert.AreEqual("Saved", context.People.Single().Name);
+        Assert.AreNotSame(engine, context.Database.GetBlazeDb());
+        context.People.Add(new Person { Id = 2, Name = "After", City = "c" });
+        Assert.AreEqual(1, context.SaveChanges());
+        await context.Database.EnsureDeletedAsync();
+    }
+
+    [TestMethod]
+    public async Task CloseBlazeDbAsync_Leaves_An_In_Memory_Store_Open_With_Its_Rows()
+    {
+        var options = new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb("close-" + Guid.NewGuid().ToString("N")).Options;
+        using (var context = new PeopleContext(options))
+        {
+            context.People.Add(new Person { Id = 1, Name = "Kept", City = "c" });
+            context.SaveChanges();
+            Assert.IsFalse(await context.Database.CloseBlazeDbAsync(), "An in-memory store has nothing to flush and is left open.");
+        }
+
+        using var next = new PeopleContext(options);
+        Assert.AreEqual("Kept", next.People.Single().Name);
+        await next.Database.EnsureDeletedAsync();
+    }
+
+    [TestMethod]
+    public async Task A_Synchronous_Query_That_Cannot_Wait_For_A_Close_Says_The_Store_Is_Being_Closed()
+    {
+        var storage = new GatedStorage();
+        var options = new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb(storage).Options;
+        using var context = new PeopleContext(options);
+        context.People.Add(new Person { Id = 1, Name = "Saved", City = "c" });
+        context.SaveChanges();
+
+        storage.HoldNextWrite();
+        using var closer = new PeopleContext(options);
+        var closing = closer.Database.CloseBlazeDbAsync();
+        await storage.WriteHeld.WaitAsync(TimeSpan.FromSeconds(10));
+
+        // A synchronization context stands in for the browser's one thread: this thread cannot wait for the close.
+        var previous = SynchronizationContext.Current;
+        InvalidOperationException error;
+        SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        try
+        {
+            error = Assert.ThrowsExactly<InvalidOperationException>(() => context.People.ToList());
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+        storage.Release();
+        Assert.IsTrue(await closing);
+
+        // It used to say the store was being opened, and to await EnsureCreatedAsync.
+        StringAssert.Contains(error.Message, "being closed");
+        await context.Database.EnsureDeletedAsync();
+    }
+
     // ---- Concurrency tokens ----
 
     [TestMethod]
@@ -193,6 +307,63 @@ public sealed class StoreLifetimeTests
             Assert.AreEqual(1, context.SaveChanges());
         }
         Assert.AreEqual(4, ticket.Version);
+    }
+
+    [TestMethod]
+    public void A_Token_Written_Through_The_Engine_After_A_Save_Is_The_One_The_Next_Save_Starts_From()
+    {
+        var options = TokenStore();
+        using (var context = new TicketContext(options))
+        {
+            context.Tickets.Single().Version++;
+            context.SaveChanges();
+
+            // The engine's own API moves the token on, on the very instance the save recorded.
+            var table = context.Database.GetBlazeDb().GetTable(Ticket.Table);
+            var ticket = table.Get(1)!;
+            var previous = new Ticket { Id = ticket.Id, Title = ticket.Title, Notes = ticket.Notes, Version = ticket.Version };
+            ticket.Version = 3;
+            table.UpdateInPlace(ticket, previous);
+        }
+
+        // The record of the EF save used to outlive that write, and every later save failed against it.
+        using (var next = new TicketContext(options))
+        {
+            var ticket = next.Tickets.Single();
+            Assert.AreEqual(3, ticket.Version);
+            ticket.Notes = "After the engine's write";
+            Assert.AreEqual(1, next.SaveChanges());
+        }
+
+        // And a detached entity still carrying the version the EF save left is stale.
+        using var stale = new TicketContext(options);
+        stale.Update(new Ticket { Id = 1, Title = "Ticket", Version = 2 });
+        Assert.ThrowsExactly<DbUpdateConcurrencyException>(() => stale.SaveChanges());
+    }
+
+    [TestMethod]
+    public void A_Save_Rolled_Back_With_Its_Transaction_Leaves_The_Token_As_It_Was()
+    {
+        var options = TokenStore();
+        using (var context = new TicketContext(options))
+        {
+            using var transaction = context.Database.BeginTransaction();
+            var ticket = context.Tickets.Single();
+            ticket.Version++;
+            ticket.Notes = "Rolled back";
+            context.SaveChanges();
+            transaction.Rollback();
+        }
+
+        // The save recorded version 2 as committed although its transaction never was; what a later save is
+        // checked against is version 1, the one the database still holds.
+        using (var current = new TicketContext(options))
+        {
+            current.Update(new Ticket { Id = 1, Title = "Ticket", Notes = "Current", Version = 1 });
+            Assert.AreEqual(1, current.SaveChanges());
+        }
+        using var check = new TicketContext(options);
+        Assert.AreEqual("Current", check.Tickets.Single().Notes);
     }
 
     private static DbContextOptions<TicketContext> TokenStore()

@@ -589,6 +589,9 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
     /// <summary>Completes once <see cref="DisposeAsync"/> has finished, its final flush included.</summary>
     internal Task Closed => _closed.Task;
 
+    /// <summary>Whether the database keeps its rows in a storage backend, rather than in memory alone.</summary>
+    internal bool IsPersistent => _wal is not null;
+
     internal bool HasActiveTransaction => _activeTransaction is not null;
 
     /// <summary>The open transaction every write currently joins, or null.</summary>
