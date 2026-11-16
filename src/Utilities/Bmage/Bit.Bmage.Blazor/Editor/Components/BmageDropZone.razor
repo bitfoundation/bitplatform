@@ -65,7 +65,7 @@
     /// <summary>Raised with the selected or dropped files.</summary>
     [Parameter] public EventCallback<IReadOnlyList<IBrowserFile>> OnFilesSelected { get; set; }
 
-    /// <summary>Maximum number of files accepted at once.</summary>
+    /// <summary>Maximum number of files accepted at once; the files dropped or chosen past it are left out.</summary>
     [Parameter] public int MaxFiles { get; set; } = 100;
 
     private void OnDragEnter()
@@ -93,7 +93,9 @@
     {
         _dragOver = false;
         _dragDepth = 0;
-        var files = e.FileCount == 1 ? [e.File] : e.GetMultipleFiles(MaxFiles);
+        // GetMultipleFiles throws when more files came than it is allowed, which would end a Server circuit over a drop of
+        // a folder: every file is taken, and the first MaxFiles of them kept.
+        var files = e.FileCount == 1 ? [e.File] : e.GetMultipleFiles(Math.Max(MaxFiles, e.FileCount)).Take(Math.Max(MaxFiles, 0)).ToList();
         if (files.Count > 0) await OnFilesSelected.InvokeAsync(files);
     }
 }
