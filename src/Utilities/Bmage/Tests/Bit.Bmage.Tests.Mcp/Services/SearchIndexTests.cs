@@ -15,7 +15,7 @@ public class SearchIndexTests
     [DataRow("MaxFileSize", "GetBmageApiDetails(typeName: \"ImageExportOptions.MaxFileSize\")")]
     [DataRow("ImagePipeline", "GetBmageApiDetails(typeName: \"ImagePipeline\")")]
     [DataRow("the optimiser fuses adjustments", "GetBmageDocument(name: \"pipelines\", section: \"The optimiser\")")]
-    [DataRow("prerendering", "GetBmageDocument(name: \"getting-started\", section: \"When things run\")")]
+    [DataRow("prerendering", "GetBmageDocument(name: \"browser-support\", section: \"Prerendering\")")]
     [DataRow("browser call during prerender", "ReviewBmageCode(code: \"...\")")]
     [DataRow("how many bytes at quality 0.8", "RunBmagePipeline(pipeline: \"...\")")]
     [DataRow("headless console registration", "GetBmageSetupGuide(renderMode: \"headless\")")]
@@ -25,6 +25,34 @@ public class SearchIndexTests
 
         CollectionAssert.Contains(hits.Select(hit => hit.Tool).ToArray(), expected,
                                   $"'{query}' found: {string.Join(" | ", hits.Select(hit => $"{hit.Kind}: {hit.Title}"))}");
+    }
+
+    /// <summary>
+    /// A request that joins two things finds the one it is mostly about first. "Shrink a photo without its
+    /// location" is a shrink with a privacy rider: the recipe that strips the location and never shrinks
+    /// anything must not lead, nor anything that merely has "without" or "under" in its name or prose. The
+    /// other way round, a request to strip the location from uploads is the location recipe's.
+    /// </summary>
+    [TestMethod]
+    [DataRow("shrink an uploaded photo under 200 KB without its location", "GetBmageRecipe(id: \"upload-optimise\")")]
+    [DataRow("shrink a photo before uploading it", "GetBmageRecipe(id: \"upload-optimise\")")]
+    [DataRow("compress photos before they are uploaded", "GetBmageRecipe(id: \"upload-optimise\")")]
+    [DataRow("strip gps from uploads", "GetBmageRecipe(id: \"strip-location\")")]
+    public void Search_TheMainPartOfTheRequest_IsTheFirstHit(string query, string expected)
+    {
+        var hits = BmageSearchIndex.Search(query, 8);
+
+        Assert.AreEqual(expected, hits[0].Tool, $"'{query}' found: {string.Join(" | ", hits.Select(hit => $"{hit.Kind}: {hit.Title}"))}");
+    }
+
+    /// <summary>The rider of such a request stays in view too: an agent asked for both needs both.</summary>
+    [TestMethod]
+    public void Search_TheSecondPartOfTheRequest_StaysInView()
+    {
+        var hits = BmageSearchIndex.Search("shrink an uploaded photo under 200 KB without its location", 8);
+
+        CollectionAssert.Contains(hits.Select(hit => hit.Tool).ToArray(), "GetBmageRecipe(id: \"strip-location\")",
+                                  string.Join(" | ", hits.Select(hit => $"{hit.Kind}: {hit.Title}")));
     }
 
     [TestMethod]

@@ -78,7 +78,7 @@ public static class BmageRecipeCatalog
             Id = "upload-optimise",
             Title = "Shrink an upload before it is sent",
             Intent = "Resize and re-encode a photo on the user's device so the server never receives the full-size original.",
-            Keywords = "upload optimise optimize compress shrink reencode before send httpclient multipart webp jpeg bandwidth maxsize strip metadata",
+            Keywords = "upload optimise optimize compress shrink reduce smaller photo file size reencode before send httpclient multipart webp jpeg bandwidth maxsize strip metadata location",
             RunsIn = "Browser",
             SeeAlso = "/optimize",
             Code = """
@@ -207,7 +207,7 @@ public static class BmageRecipeCatalog
             Id = "strip-location",
             Title = "Keep camera details, remove the location",
             Intent = "Publish photos with their camera and exposure data but without GPS, serial numbers or the owner's name.",
-            Keywords = "strip gps location exif metadata privacy stripsensitive remove preserve camera serial owner geotag warn user",
+            Keywords = "strip gps location exif metadata privacy stripsensitive remove preserve camera serial owner geotag warn user upload publish",
             RunsIn = "Anywhere",
             SeeAlso = "/metadata",
             Code = """

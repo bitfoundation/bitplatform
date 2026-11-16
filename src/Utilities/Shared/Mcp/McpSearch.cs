@@ -61,7 +61,9 @@ internal sealed class McpSearch
     /// </summary>
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
     {
-        "how", "the", "and", "for", "with", "from", "that", "this", "what", "when", "where", "which", "why", "who", "whom",
+        // "without" as much as "with": "shrink a photo WITHOUT its location" is about the photo and the location, not
+        // about every heading that happens to be phrased "Drawing without a UI".
+        "how", "the", "and", "for", "with", "without", "from", "that", "this", "what", "when", "where", "which", "why", "who", "whom",
         "does", "did", "are", "was", "were", "had", "you", "your", "than", "then", "its", "but", "any", "some",
         "please", "help", "about", "into", "way", "make", "want", "need", "would", "should", "could",
         "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto",
@@ -536,8 +538,15 @@ internal sealed class McpSearch
         public Indexed(McpSearchEntry entry)
         {
             Entry = entry;
-            TitleWords = [.. SplitWords(WithoutTypeParameters(entry.Name ?? entry.Title)), .. SplitWords(entry.Aliases ?? string.Empty)];
-            TitleStems = [.. TitleWords.Select(StemOf)];
+
+            var name = WithoutTypeParameters(entry.Name ?? entry.Title);
+            var words = SplitWords(name);
+
+            TitleWords = [.. words, .. SplitWords(entry.Aliases ?? string.Empty)];
+
+            // A name written as one identifier is a word of its own as well as its humps: a caller who asks for
+            // "ImagePipeline" by name means that type, not every member whose signature mentions it.
+            TitleStems = [.. TitleWords.Select(StemOf), .. words.Length > 1 && name.All(char.IsLetterOrDigit) ? [StemOf(name)] : Array.Empty<string>()];
         }
 
         public McpSearchEntry Entry { get; }
