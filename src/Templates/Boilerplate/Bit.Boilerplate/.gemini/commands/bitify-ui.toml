@@ -1,4 +1,4 @@
-description = "Replace raw HTML elements and hardcoded CSS in a Blazor page with Bit.BlazorUI components and theme-aware SCSS variables."
+description = "Replace raw HTML and hand-written CSS in a Blazor page with the app's own and Bit.BlazorUI components, on ai-dlc's short track."
 
 prompt = """
 Follow these instructions exactly:

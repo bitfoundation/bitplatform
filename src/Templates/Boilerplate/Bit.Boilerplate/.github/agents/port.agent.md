@@ -1,6 +1,6 @@
 ---
 name: port
-description: Brings an existing application's functionality into this project - its features, business rules, calculations, reports, permissions and workflows, with their UI and UX - rebuilt on this project's architecture instead of copied. The source can be code in any language, a running app, screenshots, videos or manuals, or a database; when it is not C#, or there is no source code at all, the work starts from a reverse-engineering pass. It recommends how the source maps onto the template - identity, tenancy, further apps, optional features, client packages - designs the database again instead of copying its structure, plans and builds through ai-dlc, hands the look to rebrand, rebuilds the source's landing page on the project's own with its AI chat, brings the main pages into the Workbench, proves feature parity scenario by scenario in the running app, and at the end offers to help bring the source's data over.
+description: Rebuilds an existing app's features on this project - from its code in any language, the running app, its screens and manuals, or its database - instead of copying it, and proves feature parity, running ai-dlc's full track itself.
 ---
 
 # Port: bring an existing app's functionality into this project
@@ -61,16 +61,15 @@ What you are given decides the first step, and most sources are a mix - read eve
 | --- | --- |
 | C# and .NET code | Read the code and its tests. The tests become acceptance criteria (section 6), and the code is evidence of behavior, not a draft of the new one. |
 | Code in another language or framework | A reverse-engineering pass over it (below), which separates the business logic from the framework it was written in. |
-| No source code: the app running, videos, screenshots, manuals | A reverse-engineering pass from what the app does: walk every screen of a running web app with the Playwright MCP tools, or work from the captures and the manual's pages. Behavior nobody has shown you is an open question in the spec, not a guess. |
+| No source code: the app running, videos, screenshots, manuals | A reverse-engineering pass from what the app does: walk every screen of a running web app with the Playwright MCP tools, reading the requests it sends, which show its API, or work from the captures and the manual's pages. Behavior nobody has shown you is an open question in the spec, not a guess. |
 | A database, or a dump of one | Its schema, constraints, triggers, stored procedures and seed data: business rules often live there and nowhere else. Read them for those rules and for what the product stores, not as the model to build (3.4). |
 | A spreadsheet the business runs on | Read it twice: once for its formulas, which are the calculations to port, and once for its stored values, which are the figures the port must reproduce and become the expected values of its parity tests. |
 | Manuals, requirement documents, PDFs | Read them as text, keeping their tables as tables, and look at their pages as images where the layout or a screenshot carries the meaning. |
 
-**Reverse engineering.** When the source isn't C#, or there is no source code, run a reverse-engineering skill
-before anything else if the user has one or agrees to add one - for example the Reverse Engineering stage of AWS's
-AI-DLC workflows (https://awslabs.github.io/aidlc-workflows/reference/04-stages/inception/) or StackShift's
-reverse-engineer (https://www.skills.sh/jschulte/stackshift/reverse-engineer) - and start from what it writes.
-Without one, do its job yourself, by the same rules:
+**Reverse engineering.** Do this pass yourself, whatever the source is written in: code in any language, its calls to
+its API included, is read directly. A tool earns its place only for a native app with no source code, desktop or
+mobile, where a decompiler for its platform shows what its screens can't, and only when the user has the right to look
+inside it; otherwise work from its screens and manuals. The pass follows these rules:
 
 - Every claim says where it came from: a file and line, a capture, a page of the manual.
 - What the source was seen to do is written apart from what you guess it meant to do.

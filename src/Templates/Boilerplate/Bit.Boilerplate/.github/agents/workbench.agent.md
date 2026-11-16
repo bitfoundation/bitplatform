@@ -61,6 +61,11 @@ component, so what the user reviews is what ships.
 
 ## 2. Build the page
 
+A new page whose data is settled, so its DTOs and its controller's shared interface (`IAppController`) can be
+written, is built in the app from the start: in Client.Core against that interface, and shown here the way section 3
+shows a page the app already has, through a stand-in of the controller. Then the approved design is the page that
+ships, and section 8 has nothing to rebuild. What follows is for a page whose data is still open:
+
 - One folder per page under `src/Workbench/Components/Pages/`: the page, its parts, and a `Data` folder with its own
   models and an in-memory service. The data looks real, varies and comes out the same on every run. The page never calls
   the app's API, its database or its pages, and adds nothing to Client.Core; it uses what the app offers that works
@@ -237,6 +242,9 @@ component, so what the user reviews is what ships.
 - Write what was decided into the feature's spec, as `AGENTS.md` section 6 asks.
 
 ## 8. Bring it into the app
+
+A page built in the app from the start (section 2) is already there: build its server side, and its stand-in stays
+as its host here. The rest of this section is for a page of the Workbench's own.
 
 - **Important:** the approval covers how the page looks and behaves, its UI, styles and design, and its text with every
   translation, not its code. Workbench pages are written for the Workbench: they don't inherit `AppPageBase` or

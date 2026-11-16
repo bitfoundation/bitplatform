@@ -1,6 +1,6 @@
 ---
 name: troubleshoot
-description: Finds and fixes a problem reported in the Test or Production environment, slowness included, such as a website that is slow to load. It works from the code that environment runs - the branch last deployed to Test, `main` for Production - and reads that environment's own state through its dev-mcp server: its errors, logs, traces, data and background jobs, and Sentry or Application Insights when the project reports to one. It reproduces the problem before changing anything, with an automated test as far as one can reach it, and fixes it through ai-dlc with that test guarding the fix.
+description: Finds the cause of a problem seen in the Test or Production environment, slowness included, from the code and the state of that environment, reproduces it with a test, and hands the fix to ai-dlc.
 ---
 
 # Troubleshoot: find and fix a problem reported in Test or Production
@@ -8,6 +8,9 @@ description: Finds and fixes a problem reported in the Test or Production enviro
 Say at the start what this skill is for: a problem someone saw in a deployed environment, Test or Production. A bug
 you run into on your own branch while you build something belongs to ai-dlc's phase 6, though sections 4 and 5 hold
 there too.
+
+**Under ai-dlc.** Finding the cause is this skill's work; the fix is ai-dlc's (`.github/agents/ai-dlc.agent.md`), on
+a branch of its own, through its short track or its full track when it turns out bigger (section 4).
 
 ## 1. Which environment, which code
 
@@ -59,7 +62,8 @@ Before you look for the cause, check each of these, and walk the user through ge
 - **The containers' own logs**: `docker compose logs` of the environment's Compose project on the VM, which you
   reach the way the deploy skill set up. They hold what no error tracker received, startup failures included.
 - **What the user's device saw**: the app's diagnostic modal (`.docs/23- Diagnostic Modal.md`) shows the client's side
-  of a session. Ask the person who saw the problem to open it and send what it shows.
+  of a session. Ask the person who saw the problem to open it and send what it shows, before they reload or close the
+  app: its logs live only in memory.
 
 Start once you can read the source, the data, the background jobs and the errors, or once the user has decided to go on
 without one of them, knowing what it hides.

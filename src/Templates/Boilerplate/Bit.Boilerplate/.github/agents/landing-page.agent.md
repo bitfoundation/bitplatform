@@ -1,6 +1,6 @@
 ---
 name: landing-page
-description: Changes the product's landing page, the public marketing site in `src/LandingPage` that runs apart from the app - makes one of its sample landing pages the product's own home page, switches it from a waitlist before launch to the store links after it, and edits its pages, texts in English and Persian, look, chat answers, store links, legal pages, emails, waitlist storage and analytics - then checks every change prerendered, in both languages and color schemes, on phones and desktops. Use for any change under `src/LandingPage`, for launching or announcing the app, or for questions about its landing page samples.
+description: Changes the product's landing page in `src/LandingPage`, a site apart from the app - makes a sample its home page, launches it, or changes its pages, texts, look, chat, waitlist, emails and store links - through ai-dlc. Use for any change under `src/LandingPage`, for launching or announcing the app, or for questions about its landing page samples.
 ---
 
 # Landing page: the product's public site
@@ -10,6 +10,10 @@ prerenders it, and `src/LandingPage/Boilerplate.LandingPage.Client` is its Blazo
 of the app's projects, has its own settings and deploys as its own service. It ships several sample landing pages, one
 per kind of business, each under its own path (`/ecommerce`, `/ecommerce/about` and so on), with a gallery of them at
 `/`. A project keeps the one closest to its product, makes it its home page and deletes the rest (section 4).
+
+**Under ai-dlc.** A change here runs through ai-dlc (`.github/agents/ai-dlc.agent.md`): its short track for a text, a
+link or a color, its full track for a new page, a sample made the home page or a launch. When the work has no ai-dlc
+task yet, start there, and come back here for the work itself.
 
 Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` unless they start with `src/`.
 

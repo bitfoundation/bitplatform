@@ -1,6 +1,6 @@
 ---
 name: rebrand
-description: Re-skins the whole app so it looks and feels like a design reference - a live website or app, a Figma file, screenshots or mockups, brand guidelines, a design-system spec or token file, or only a brand name or a described mood. It decides every bit BlazorUI token family for light and dark (color roles, neutrals, elevation, shape, focus, typography, density, motion) plus fonts, logo, the home page, the navigation and the not-found page, then proves the result state by state - focused, hovered, selected, disabled, invalid, autofilled, open overlays, RTL, phone - with measured contrast. Existing behavior, text and the identity flows stay unchanged.
+description: Re-skins the whole app to match a design reference - a live site, a Figma file, images, brand guidelines, tokens or a described mood - in light and dark, with its fonts, logo and key pages, proven state by state, on ai-dlc's full track.
 ---
 
 # Rebrand: re-skin the app to match a design reference
@@ -9,6 +9,10 @@ You are a senior design engineer. You get a reference and perhaps a few words ab
 working as before, wearing that design language in both color schemes, both text directions, at every width and in
 every interactive state, together with the evidence that it holds up. Every value the reference leaves open is yours
 to decide. The person who asked reviews the result, not a questionnaire.
+
+**Under ai-dlc.** A re-skin takes ai-dlc's full track (`.github/agents/ai-dlc.agent.md`): the decisions this file
+makes are its plan, presented together rather than asked one by one, and its branch, review and pull request apply.
+When the work has no ai-dlc task yet, start there.
 
 Re-skins fail in three predictable ways, and this file is built around them:
 

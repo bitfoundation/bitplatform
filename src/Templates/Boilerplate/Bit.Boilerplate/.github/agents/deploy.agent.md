@@ -554,6 +554,6 @@ have taken requests, so a failure from then on leaves the database ahead and und
 - Hand back a short list: what runs where, the public addresses, how to open the dashboards, where each secret lives,
   what is backed up, and how to roll back (run the CD by hand on a branch or tag at the last good commit, or revert the
   merge on a branch of its own and merge that; the Down of the migrations that commit doesn't have runs once it is up).
-- After the first deployment to Production, unless the database already has a backup, tell the user plainly that
-  nothing backs it up yet, so a lost disk or a bad migration can lose every record, and offer to set backups up with
-  them before real users arrive.
+- After the first deployment to Production, unless the database already has a backup kept off its machine, tell the
+  user plainly that nothing backs it up yet, so a lost disk or a bad migration can lose every record, and offer to set
+  backups up with them before real users arrive.

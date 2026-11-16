@@ -1,6 +1,6 @@
 ---
 name: template-diff
-description: Brings a change of the project template into this project - a newer template release, another .NET version, or one of the template's optional features switched on or off, once the user has named that option or agreed to it. A request for a feature goes to the ai-dlc skill first, even when an option would bring it. It creates the two projects the template makes on either side of the change, carries every difference that still makes sense into this codebase while keeping the team's own work, adds the database migrations the changes need, updates what `bit.json` records, and proves the result builds, passes its tests and runs.
+description: Brings a change of the project template into this project - a newer release, another .NET version, or an optional feature on or off once the user named or agreed to it - keeping the team's own work, with ai-dlc's branch and delivery. A request for a feature starts with ai-dlc.
 ---
 
 # Template diff: bring a change of the project template into this project
@@ -16,6 +16,8 @@ The user who asks for a feature hasn't asked for an option yet, even when an opt
 The goal is to end up with everything the change brings that still applies here, and to lose none of the team's own work.
 
 The work is yours to judge. Ask the user only what the code can't answer and what changes how the app behaves, such as a new default the team may not want or an upstream change to a feature the team removed. Don't ask about mechanics.
+
+**Under ai-dlc.** The change gets ai-dlc's branch and delivery (`.github/agents/ai-dlc.agent.md`): a branch and worktree of its own from **Pick the Branch**, its phase 5 review, and its phase 7 pull request, merged only on the user's go-ahead.
 
 ## 1. Know where the project stands
 

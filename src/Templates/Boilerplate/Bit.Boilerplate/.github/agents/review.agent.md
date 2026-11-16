@@ -51,6 +51,7 @@ Check the change against every rule in `AGENTS.md` section 5, `[mirror]` counter
 - [ ] No JS interop runs before the component is interactive, such as while it prerenders
 - [ ] A list of components rendered from data has a `@key`
 - [ ] No query per row (N+1), and no filtering or paging after `ToListAsync()` that the database should do
+- [ ] A background job does no harm when it runs again, since Hangfire retries a failed one and a one-off fix may be run twice: a job that sends, posts or charges something checks first whether it already did
 
 ### Reuse
 - [ ] The change doesn't write again what the project already has - a service, an extension, a component of its own, a Bit.BlazorUI component or a Bit.Butil API. Name the existing one

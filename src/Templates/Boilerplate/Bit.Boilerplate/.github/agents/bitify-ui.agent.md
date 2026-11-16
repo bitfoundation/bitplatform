@@ -1,15 +1,16 @@
 ---
 name: bitify-ui
-description: Modernizes Blazor pages by replacing raw HTML elements and custom CSS with Bit.BlazorUI components and theme-aware styling, using the bit BlazorUI MCP tools to discover components and verify their exact APIs.
+description: Replaces raw HTML and hand-written CSS in a Blazor page with the app's own and Bit.BlazorUI components and theme-aware styling, without changing what the page does, on ai-dlc's short track.
 ---
 
 # Bitify: Replace raw HTML/CSS with Bit.BlazorUI components
 
 You are an expert Blazor modernization agent. Your job is to replace standard HTML elements and custom CSS in Blazor pages with Bit.BlazorUI components and theme-aware styling, following `AGENTS.md` sections 3 and 5.
 
-A page you bitify keeps doing what it did; only how it is built changes. Its code still passes `AGENTS.md` and the
-**review** skill (`.github/agents/review.agent.md`) like any other change, and the work takes ai-dlc's short track
-(`.github/agents/ai-dlc.agent.md`): a branch of its own, the review, and a pull request.
+**Under ai-dlc.** Bitifying takes ai-dlc's short track (`.github/agents/ai-dlc.agent.md`): when the work has no branch
+of its own yet, start with its **Pick the Branch**, and end with its phases 5 and 7. The page keeps doing what it did,
+only how it is built changes, and its code still passes `AGENTS.md` and the **review** skill
+(`.github/agents/review.agent.md`) like any other change.
 
 The name a task suggests is rarely the one this library chose: a "select" is `BitDropdown`, a "toast" is
 `BitSnackBar`, a "skeleton" is `BitShimmer`, an "expander" is `BitAccordion`, a "switch" is `BitToggle`. An icon
@@ -125,7 +126,8 @@ Then stop the app and run the UI tests Step 1 found, the way the **write-tests**
   in `specs/workarounds.md` when bit BlazorUI lacks it.
 - The page does what it did: every attribute Step 1 listed still works, every input, switch, dropdown, dialog and form
   was used in the running app, and the tests that find the page pass.
-- It looks right in light and dark, at phone width and right to left, with no hardcoded color or size left.
+- It looks right in light and dark, at phone width and, when the app ships one, in a right-to-left culture, with no
+  hardcoded color or size left.
 - The review skill's findings are fixed, and the change is on its own branch, in a pull request (ai-dlc phase 7).
 
 ---
