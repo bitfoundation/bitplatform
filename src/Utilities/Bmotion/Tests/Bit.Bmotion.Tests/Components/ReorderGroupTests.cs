@@ -89,6 +89,36 @@ public class ReorderGroupTests
     }
 
     [TestMethod]
+    public async Task ADragMove_DoesNotRenderTheListAgain()
+    {
+        using var ctx = new BmotionTestContext();
+        int renders = 0;
+        RenderFragment<string> counting = item => b =>
+        {
+            renders++;
+            b.AddContent(0, Row(item));
+        };
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "a", "b", "c" })
+            .Add(p => p.ChildContent, counting));
+        var ids = RowIds(cut);
+        UseVerticalLayout(ctx, ids);
+        var row = (Bmotion)ctx.Interop.EventListenerRefs[ids[0]];
+        await cut.InvokeAsync(row.OnPointerDown_Drag);
+
+        // Every move of the drag raises OnDrag; the rows make way in the engine, and nothing rendered changes.
+        var before = renders;
+        for (int i = 1; i <= 5; i++)
+        {
+            var dy = i * 15.0;
+            await cut.InvokeAsync(() => row.SetDragPosition(0, dy));
+            await cut.InvokeAsync(row.OnDragMove);
+        }
+
+        Assert.AreEqual(before, renders, "the moves re-rendered every row of the list");
+    }
+
+    [TestMethod]
     public async Task DraggingARowPastItsNeighbour_CommitsTheNewOrderOnRelease()
     {
         using var ctx = new BmotionTestContext();

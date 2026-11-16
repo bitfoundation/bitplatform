@@ -23,6 +23,12 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 
     /// <summary>The mass the driver runs with (a mass &lt;= 0 falls back to 1).</summary>
     internal double Mass => _m;
+
+    /// <summary>
+    /// False when the configured (or derived) stiffness isn't positive or the damping is negative - a spring that
+    /// could never settle, which runs with the defaults instead.
+    /// </summary>
+    internal bool Settles { get; }
     private readonly double _initialVel;
     private readonly double _baseRestSpeed;
     private readonly double _baseRestDelta;
@@ -83,17 +89,13 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
         // Mass divides the acceleration each sub-step; a value <= 0 would yield NaN/Infinity and
         // trap the spring (the rest test would never pass). Fall back to the default mass of 1 - before
         // deriving stiffness/damping from it, so the derived spring is the one that actually runs.
-        _m = config.Mass > 0 ? config.Mass : 1.0;
-        double k = config.Stiffness;
-        double d = config.Damping;
-        if (config.Bounce.HasValue)
-        {
-            double vd = config.VisualDuration ?? config.Duration;
-            (k, d) = BmotionTransitionConfig.SpringFromBounce(vd, config.Bounce.Value, _m);
-        }
-
-        _k = k;
-        _d = d;
+        // Likewise a stiffness <= 0 (nothing pulls towards the target) or a negative damping (the oscillation grows
+        // without bound, to Infinity and NaN): the rest test would never pass, the driver would tick forever, and an
+        // exit using it would never complete. Fall back to the defaults, the values BmSpring.Analyze rejects them for -
+        // as the duration estimates do (BmotionTransitionConfig.ResolveSpring is the one rule for all of them).
+        bool settles;
+        (_k, _d, _m, settles) = config.ResolveSpring();
+        Settles = settles;
         _vel = _initialVel = config.Velocity;
         _baseRestSpeed = config.RestSpeed;
         _baseRestDelta = config.RestDelta;

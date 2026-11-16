@@ -61,7 +61,7 @@ dotnet build Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\Bit.Bmotion.Tests.E2E
 dotnet publish Utilities\Bmotion\Samples\Lazy\Bit.Bmotion.Samples.Lazy\Bit.Bmotion.Samples.Lazy.csproj -c Debug
 
 # First time only: the Playwright-managed Chromium.
-pwsh Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\bin\Debug\net10.0\playwright.ps1 install chromium
+pwsh Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\bin\Debug\net11.0\playwright.ps1 install chromium
 
 # The default host (WebAssembly). The harness host is built before the first test.
 dotnet test --project Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\Bit.Bmotion.Tests.E2E.csproj

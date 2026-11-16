@@ -32,6 +32,49 @@ internal static class BmotionContinuations
         return true;
     }
 
+    /// <summary>
+    /// Runs <paramref name="work"/> when <paramref name="token"/> is cancelled, posted to the caller's context - so a
+    /// token cancelled from another thread (<c>CancelAfter</c>'s timer) still stops the engine from the thread that
+    /// started the animation. Run at once when cancelled on that context, or when there is none.
+    /// <para>
+    /// Disposing the registration (on the caller's context) also drops a callback already posted and not yet run:
+    /// the animation it would stop has settled, and a later one on the same properties must not be stopped by it.
+    /// The disposal is itself often posted once the animation settles, so a callback can still run after a newer
+    /// animation took the properties over: <paramref name="work"/> should stop only what is still the animation's own
+    /// (see <see cref="BmotionAnimationEngine.StopOwned"/>).
+    /// </para>
+    /// </summary>
+    internal static IDisposable RegisterOnCallerContext(this CancellationToken token, Action work)
+        => new CallerContextRegistration(token, work);
+
+    private sealed class CallerContextRegistration : IDisposable
+    {
+        private readonly CancellationTokenRegistration _registration;
+        // Read and written on the caller's context only: by Dispose, and by the posted callback.
+        private bool _disposed;
+
+        public CallerContextRegistration(CancellationToken token, Action work)
+        {
+            var context = SynchronizationContext.Current;
+            _registration = token.Register(() =>
+            {
+                if (context is null || context == SynchronizationContext.Current) Run();
+                else context.Post(_ => Run(), null);
+            });
+
+            void Run()
+            {
+                if (!_disposed) work();
+            }
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            _registration.Dispose();
+        }
+    }
+
     private static TaskScheduler CallerScheduler()
         => SynchronizationContext.Current is null
             ? TaskScheduler.Default

@@ -402,6 +402,123 @@ public partial class BrowserPlaybackTests
     }
 
     [TestMethod]
+    public async Task Server_AnAnimationTheCircuitStoppedWaitingFor_IsCancelledInTheBrowser()
+    {
+        var (engine, interop) = NewEngine(inProcess: false);
+        await using var _ = engine;
+        // A forever animation whose play call outlasts the circuit's patience: the call fails as a timeout would,
+        // while the browser goes on playing it.
+        interop.PlayWaapiHandler = async (_, _, _, _) =>
+        {
+            await Task.Delay(120);
+            throw new TaskCanceledException("the JS call timed out");
+        };
+        engine.RegisterElement("el", Values(("rotate", 0.0)));
+
+        await engine.AnimateToAsync("el", Values(("rotate", new double[] { 0, 360 })),
+            Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever).ToConfig());
+        var token = (int)interop.ArgsOf("playWaapiAnimation").Single()[1]!;
+        await WaitUntilAsync(() => interop.WasCalled("cancelWaapiAnimation"));
+
+        var cancel = interop.ArgsOf("cancelWaapiAnimation").Single();
+        Assert.AreEqual("el", cancel[0]);
+        Assert.AreEqual(token, cancel[1], "the very animation the plan played is the one ended");
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task ADragStart_TakesOverTheTransformAndLeavesAFadeToTheBrowser(bool inProcess)
+    {
+        var (engine, interop) = NewEngine(inProcess);
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("x", 0.0), ("opacity", 0.0)));
+
+        await engine.AnimateToAsync("el", Values(("opacity", 1.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        CollectionAssert.AreEquivalent(new[] { "opacity", "x" }, State(engine).BrowserProperties.ToArray());
+
+        engine.GetCurrentXY("el");
+
+        // The bridge cancelled the transform's animation and nothing else: the fade is still the browser's to finish.
+        CollectionAssert.AreEqual(new[] { "opacity" }, State(engine).BrowserProperties.ToArray());
+    }
+
+    [TestMethod]
+    public async Task ADragStartOnServer_ReplaysTheRestOfAFadeThatSharedTheTransformsAnimation()
+    {
+        // One browser animation of x and opacity: the bridge cancels all of it as the drag takes the transform over.
+        var (engine, interop) = NewEngine(inProcess: false);
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("x", 0.0), ("opacity", 0.0)));
+        await engine.AnimateToAsync("el", Values(("x", 100.0), ("opacity", 1.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        await Task.Delay(100);
+
+        engine.GetCurrentXY("el");
+        await WaitUntilAsync(() => interop.CountOf("playWaapiAnimation") == 2);
+
+        // Without a frame loop the fade doesn't land at once: the browser plays the rest of it, and only it.
+        Assert.IsTrue(Keyframes(interop).All(k => !k.ContainsKey("transform")), "the drag has the transform");
+        Assert.IsTrue(Keyframes(interop).Any(k => k.ContainsKey("opacity")));
+        Assert.IsLessThan(4000.0, (double)Timing(interop)["duration"]!, "what was left of it");
+        Assert.IsGreaterThan(3000.0, (double)Timing(interop)["duration"]!);
+        CollectionAssert.AreEqual(new[] { "opacity" }, State(engine).BrowserProperties.ToArray());
+        Assert.IsLessThan(0.5, State(engine).NumericValues["opacity"], "not landed on its target");
+    }
+
+    [TestMethod]
+    public async Task AnExitStartingWhileAGestureReadsThePage_KeepsItsPropertiesFromTheGesture()
+    {
+        var (engine, interop) = NewEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("x", 0.0)));
+        interop.ComputedStyle = (_, property) => property == "opacity" ? "1" : null;
+        var read = new TaskCompletionSource();
+        interop.ReadStylesGate = read.Task;
+
+        // The hover's opacity has never been seen: its start reads it off the page first - and the exit, which
+        // animates the opacity, starts meanwhile.
+        var hover = engine.ActivateGestureLayerAsync("el", "hover", Values(("opacity", 0.5), ("x", 20.0)), Bm.Tween(1).ToConfig()).AsTask();
+        engine.BeginExit("el", ["opacity"]);
+        read.SetResult();
+        await hover;
+
+        // The hover plays the rest, and what it sets the opacity to waits for a re-entry.
+        CollectionAssert.AreEqual(new[] { "x" }, State(engine).BrowserProperties.ToArray());
+        Assert.AreEqual(1.0, State(engine).NumericValues["opacity"], 1e-9);
+        Assert.AreEqual(0.5, engine.EndExit("el")?["opacity"]);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task PeekingAtXY_LeavesTheBrowserAnimationsPlaying(bool inProcess)
+    {
+        // A popLayout exit pinning the element, a reorder group measuring its items: they read where the element is,
+        // and take nothing over - the browser goes on playing, and the plan goes on naming what it plays.
+        var (engine, interop) = NewEngine(inProcess);
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("x", 0.0), ("opacity", 0.0)));
+
+        await engine.AnimateToAsync("el", Values(("opacity", 1.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        await Task.Delay(100);
+
+        var (x, _) = engine.PeekCurrentXY("el");
+
+        Assert.IsGreaterThan(0.0, x, "the x the browser has the element at");
+        Assert.IsLessThan(100.0, x);
+        CollectionAssert.AreEquivalent(new[] { "opacity", "x" }, State(engine).BrowserProperties.ToArray());
+        Assert.IsFalse(interop.WasCalled("cancelWaapiAnimation"));
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        while (!condition() && clock.ElapsedMilliseconds < 5_000) await Task.Delay(10);
+    }
+
+    [TestMethod]
     public async Task Server_GestureOverlays_PlayInTheBrowser()
     {
         var (engine, interop) = NewEngine(inProcess: false);

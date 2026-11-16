@@ -84,4 +84,39 @@ public class ContinuationsTests
         handler.SetException(new InvalidOperationException("handler failed"));
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => continuation.WaitAsync(TimeSpan.FromSeconds(5)));
     }
+
+    [TestMethod]
+    public void RegisterOnCallerContext_DisposedBeforeThePostedStopRuns_DropsIt()
+    {
+        // CancelAfter's timer cancels from the thread pool, so the stop is posted to the caller's context. The
+        // animation settling first (which disposes the registration) must keep that stop from reaching a later one.
+        var context = new ManualSynchronizationContext();
+        using var cts = new CancellationTokenSource();
+        int stops = 0;
+        var registration = ManualSynchronizationContext.RunUnder(context, () => cts.Token.RegisterOnCallerContext(() => stops++));
+
+        Task.Run(cts.Cancel).Wait();
+        Assert.AreEqual(1, context.Posted, "cancelled off the caller's context, the stop is posted to it");
+
+        registration.Dispose();
+        context.Pump();
+
+        Assert.AreEqual(0, stops);
+    }
+
+    [TestMethod]
+    public void RegisterOnCallerContext_CancelledOffTheCallersContext_StopsOnIt()
+    {
+        var context = new ManualSynchronizationContext();
+        using var cts = new CancellationTokenSource();
+        SynchronizationContext? ranOn = null;
+        using var registration = ManualSynchronizationContext.RunUnder(context,
+            () => cts.Token.RegisterOnCallerContext(() => ranOn = SynchronizationContext.Current));
+
+        Task.Run(cts.Cancel).Wait();
+        Assert.IsNull(ranOn, "not on the thread that cancelled");
+        context.Pump();
+
+        Assert.AreSame(context, ranOn);
+    }
 }

@@ -128,6 +128,50 @@ internal sealed class BmotionElementAnimationState
     internal IReadOnlyCollection<string> ActiveDriverKeys => _activeAnims.Keys;
     internal bool IsDragging => _isDragging;
 
+    // The properties the exit playing now animates (null when the element isn't exiting), and what the gestures that
+    // changed while it played would have set them to - which a re-entry plays once the exit is cancelled.
+    private HashSet<string>? _exitKeys;
+    private Dictionary<string, object?>? _heldBackByExit;
+
+    /// <summary>True while the element plays its exit, which then has priority over the gestures for its properties.</summary>
+    internal bool Exiting => _exitKeys is not null;
+
+    /// <summary>The element starts its exit, which animates <paramref name="keys"/>: from now on the gestures leave those alone.</summary>
+    internal void BeginExit(IEnumerable<string> keys) => _exitKeys = new HashSet<string>(keys, StringComparer.Ordinal);
+
+    /// <summary>
+    /// The element is back from its exit (a presence that re-entered): the gestures own every property again. Returns
+    /// what the gestures that changed while it exited set the properties the exit held back, for the re-entry to play.
+    /// </summary>
+    internal Dictionary<string, object?>? EndExit()
+    {
+        var held = _heldBackByExit;
+        _exitKeys = null;
+        _heldBackByExit = null;
+        return held;
+    }
+
+    /// <summary>
+    /// <paramref name="request"/> without the properties the exit animates, which it has priority over: what the
+    /// gesture would have set them to is kept for a re-entry (see <see cref="EndExit"/>). Null when nothing is left.
+    /// </summary>
+    internal AnimationRequest? WithoutExitKeys(AnimationRequest request)
+    {
+        if (_exitKeys is not { } exitKeys) return request;
+        var rest = new Dictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var (key, value) in request.Values)
+        {
+            if (!exitKeys.Contains(key)) { rest[key] = value; continue; }
+            // A key going back to the stylesheet has no value to hold; the stale one a gesture set earlier goes.
+            if (value is null) _heldBackByExit?.Remove(key);
+            else (_heldBackByExit ??= new(StringComparer.Ordinal))[key] = value;
+        }
+        var stylesheet = request.StylesheetKeys?.Where(k => !exitKeys.Contains(k)).ToArray();
+        if (stylesheet is { Length: 0 }) stylesheet = null;
+        if (rest.Count == 0 && stylesheet is null) return null;
+        return request with { Values = rest, StylesheetKeys = stylesheet };
+    }
+
     /// <summary>
     /// Optional per-frame callback invoked with the CSS declarations flushed this frame
     /// (the <c>Bmotion.OnUpdate</c> parameter).
@@ -791,6 +835,37 @@ internal sealed class BmotionElementAnimationState
         _borrowed.Add(key);
     }
 
+    // The start each key's animation came from, for a start that names itself (an owner): what can stop it later -
+    // a cancellation token - stops only what is still its own. Every other start of a key takes the key out.
+    private Dictionary<string, object>? _startedBy;
+
+    /// <summary>
+    /// Notes that an animation of <paramref name="keys"/> starts, from <paramref name="owner"/> - or from a start that
+    /// doesn't name itself, when null.
+    /// </summary>
+    internal void NoteStarted(IEnumerable<string> keys, object? owner)
+    {
+        if (owner is null)
+        {
+            if (_startedBy is { Count: > 0 } startedBy)
+                foreach (var key in keys) startedBy.Remove(key);
+            return;
+        }
+        _startedBy ??= new Dictionary<string, object>(StringComparer.Ordinal);
+        foreach (var key in keys) _startedBy[key] = owner;
+    }
+
+    /// <summary>
+    /// Whether <paramref name="key"/> still plays the animation <paramref name="owner"/> started: no other start has
+    /// taken it since, and it hasn't come to rest.
+    /// </summary>
+    internal bool StillPlays(string key, object owner)
+        => _startedBy is { } startedBy && startedBy.TryGetValue(key, out var started) && ReferenceEquals(started, owner)
+            && (_activeAnims.ContainsKey(key) || PlanOwns(key));
+
+    /// <summary>The owner that started what <paramref name="key"/> plays, if one named itself (see <see cref="NoteStarted"/>).</summary>
+    internal object? StartedBy(string key) => _startedBy?.GetValueOrDefault(key);
+
     /// <summary>Marks <paramref name="keys"/> as set by a target rather than borrowed from the stylesheet.</summary>
     internal void Claim(IEnumerable<string> keys)
     {
@@ -935,6 +1010,26 @@ internal sealed class BmotionElementAnimationState
 
     public (double x, double y) GetCurrentXY()
         => (Transforms.GetValueOrDefault("x"), Transforms.GetValueOrDefault("y"));
+
+    /// <summary>
+    /// The x/y the element shows now, a compositor animation still moving it included - read from the mirrored plans
+    /// without realizing them, so the browser animations play on and their plans keep naming them.
+    /// </summary>
+    public (double x, double y) PeekCurrentXY()
+    {
+        var (x, y) = GetCurrentXY();
+        if (_waapiPlans.Count == 0) return (x, y);
+        long now = Environment.TickCount64;
+        // In the order they started: a later plan on a key is the one the element shows.
+        foreach (var plan in _waapiPlans)
+        {
+            if (!plan.Values.ContainsKey("x") && !plan.Values.ContainsKey("y")) continue;
+            double played = plan.PlayedMs(now);
+            if (plan.Values.ContainsKey("x")) x = plan.ValueAt("x", played);
+            if (plan.Values.ContainsKey("y")) y = plan.ValueAt("y", played);
+        }
+        return (x, y);
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Driver factory helpers
@@ -1369,6 +1464,12 @@ internal sealed class BmotionElementAnimationState
     // ═══════════════════════════════════════════════════════════════════════════
 
     /// <summary>
+    /// The <paramref name="Keys"/> an interrupted <paramref name="Plan"/> still had to play, <paramref name="PlayedMs"/>
+    /// into it, for the browser to play the rest of (see <see cref="RealizeWaapiPlans"/>).
+    /// </summary>
+    internal sealed record PlanReplay(WaapiPlan Plan, IReadOnlyList<string> Keys, double PlayedMs);
+
+    /// <summary>
     /// A compositor-offloaded animation the browser plays via the Web Animations API.
     /// The engine keeps this record so it can compute the element's current values (and
     /// velocity) at any moment WITHOUT reading the DOM - the sample table is the same
@@ -1630,10 +1731,13 @@ internal sealed class BmotionElementAnimationState
     /// property, a plan touching any transform component overlaps a key set touching any other.
     /// Pass <c>null</c> to realize all plans. Returns the removed plans' tokens (for JS cancel).
     /// <paramref name="overwritten"/> names keys the caller writes straight afterwards: a plan that animates
-    /// nothing else is dropped without working out where it has got to.
+    /// nothing else is dropped without working out where it has got to. Given <paramref name="replays"/>, the keys
+    /// an interrupted plan still had to play, which nothing could carry on without a frame loop, are collected there
+    /// for the browser to play again from where they are, rather than landing on their targets at once.
     /// </summary>
     internal List<int>? RealizeWaapiPlans(
-        IReadOnlyCollection<string>? keys, bool continueOthers = false, IReadOnlyDictionary<string, object?>? overwritten = null)
+        IReadOnlyCollection<string>? keys, bool continueOthers = false, IReadOnlyDictionary<string, object?>? overwritten = null,
+        List<PlanReplay>? replays = null)
     {
         if (_waapiPlans.Count == 0) return null;
 
@@ -1659,7 +1763,7 @@ internal sealed class BmotionElementAnimationState
             if (realize) RealizePlanValues(plan, now, played);
             // The plan was cancelled for some of its keys only (transform is one CSS property, so
             // animating y takes the compositor's x with it): the rest carry on where they were.
-            if (realize && continueOthers && keys != null) ContinuePlan(plan, keys, played);
+            if (realize && continueOthers && keys != null) ContinuePlan(plan, keys, played, replays);
             else ForgetAuto(plan.Keys);
             if (keys != null) ForgetAuto(keys);
         }
@@ -1678,16 +1782,24 @@ internal sealed class BmotionElementAnimationState
     /// drivers that carry on along the very same curve from where the compositor left them - with
     /// the plan's completion, so whoever awaits it still hears when it is over. It was partly
     /// superseded, so it settles as superseded (false), as a batch with a superseded key does.
-    /// Without a frame loop nothing can carry them, so they land on their targets at once instead.
+    /// Without a frame loop nothing can carry them, so they land on their targets at once instead - or, given
+    /// <paramref name="replays"/>, the ones besides the transform are handed back for the browser to play the rest of.
     /// </summary>
-    private void ContinuePlan(WaapiPlan plan, IReadOnlyCollection<string> interrupted, double played)
+    private void ContinuePlan(WaapiPlan plan, IReadOnlyCollection<string> interrupted, double played, List<PlanReplay>? replays = null)
     {
         HashSet<string>? continued = null;
+        List<string>? replayed = null;
         foreach (var key in plan.Keys)
         {
             if (interrupted.Contains(key)) continue;
             bool isString = plan.Strings?.ContainsKey(key) == true;
-            if (ForceInstant || double.IsInfinity(plan.TotalMs) is false && played >= plan.TotalMs)
+            bool over = double.IsInfinity(plan.TotalMs) is false && played >= plan.TotalMs;
+            if (ForceInstant && replays is not null && !over && !BmotionTransformComposer.IsTransformProp(key))
+            {
+                (replayed ??= []).Add(key);
+                continue;
+            }
+            if (ForceInstant || over)
             {
                 if (isString) WriteRealizedString(key, plan.Strings![key].Final, markDirty: true);
                 else WriteRealizedValue(key, plan.ValueAt(key, double.MaxValue / 4), markDirty: true);
@@ -1704,6 +1816,15 @@ internal sealed class BmotionElementAnimationState
                 _activeAnims[key] = new BmotionWaapiContinuationDriver(plan, key, played, apply);
             }
             (continued ??= new HashSet<string>()).Add(key);
+        }
+
+        if (replayed is not null)
+        {
+            // Without a frame loop nothing else can carry on, so the replay holds the plan's completion: it settles
+            // (as superseded) once the replay is over.
+            replays!.Add(new PlanReplay(plan, replayed, played));
+            plan.HandedOff = true;
+            return;
         }
 
         if (continued is null || plan.Completion is not { } completion) return;

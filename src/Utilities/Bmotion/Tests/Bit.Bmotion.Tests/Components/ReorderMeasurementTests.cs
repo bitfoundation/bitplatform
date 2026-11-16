@@ -35,14 +35,16 @@ public class ReorderMeasurementTests
             .Add(p => p.ChildContent, Row));
         var ids = cut.FindAll("div.row").Select(d => d.Id!).ToArray();
 
-        // Rows stacked 50px apart, measured the way getBoundingClientRect does - transform included,
-        // so a row that has already been dragged reports where it is now.
-        ctx.Interop.BoundingRectProvider = id =>
+        // Rows stacked 50px apart, measured the way the bridge's getLayoutBox does: the rect - transform included,
+        // so a row that has already been dragged shows where it is now - with that translation backed out, both read
+        // in the one measurement.
+        ctx.Interop.LayoutBoxProvider = id =>
         {
             int index = Array.IndexOf(ids, id);
             if (index < 0) return null;
             double dragged = ctx.Engine.GetState(id)?.Transforms.GetValueOrDefault("y") ?? 0;
-            return new BmotionBoundingRect { Left = 0, Top = (index * RowHeight) + dragged, Width = 200, Height = RowHeight };
+            double shownTop = (index * RowHeight) + dragged;
+            return new BmotionBoundingRect { Left = 0, Top = shownTop - dragged, Width = 200, Height = RowHeight };
         };
         var measurement = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         ctx.Interop.BoundingRectGate = measurement.Task;

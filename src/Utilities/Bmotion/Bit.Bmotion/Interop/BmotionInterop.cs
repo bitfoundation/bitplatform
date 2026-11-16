@@ -25,8 +25,9 @@ public sealed class BmotionInterop : IBmotionInterop
 
     /// <summary>
     /// <c>true</c> when the JS runtime supports synchronous interop (Blazor WebAssembly).
-    /// Bit.Bmotion's animation loop and drag handlers rely on synchronous JS↔.NET calls, so the
-    /// library only functions on WebAssembly. This is checked before the rAF loop starts.
+    /// The C# frame loop needs synchronous JS↔.NET calls and runs only then; without them (Blazor
+    /// Server, Hybrid) the browser plays the animations the engine hands it, and what needs the frame loop
+    /// lands at once. This is checked before the rAF loop starts.
     /// </summary>
     public bool IsInProcess { get; }
 
@@ -262,6 +263,10 @@ public sealed class BmotionInterop : IBmotionInterop
                     ["fixedRoot"] = options.FixedRoot,
                 });
 
+    /// <summary>The element's rect with the translation it shows backed out, read in one measurement.</summary>
+    public async ValueTask<BmotionBoundingRect?> GetLayoutBoxAsync(string elementId)
+        => await (await Module()).InvokeAsync<BmotionBoundingRect?>("getLayoutBox", elementId);
+
     /// <summary>Run a FLIP animation via the Web Animations API.</summary>
     public async ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
         string elementId, BmotionFlip flip, string? finalTransform, DotNetObjectReference<T>? dotnetRef) where T : class
@@ -326,9 +331,15 @@ public sealed class BmotionInterop : IBmotionInterop
     /// Plays a pre-sampled compositor animation via <c>element.animate()</c>. Resolves
     /// <c>true</c> on natural completion, <c>false</c> when cancelled or failed to start.
     /// </summary>
+    /// <remarks>
+    /// The call lasts as long as the animation plays - forever, for one that repeats forever - so it opts out of the
+    /// runtime's default call timeout (a minute on Blazor Server, whose expiry would read as an animation that never
+    /// finished while the browser went on playing it).
+    /// </remarks>
     public async ValueTask<bool> PlayWaapiAnimationAsync(
         string elementId, int token, object keyframes, object timing)
-        => await (await Module()).InvokeAsync<bool>("playWaapiAnimation", elementId, token, keyframes, timing);
+        => await (await Module()).InvokeAsync<bool>("playWaapiAnimation", CancellationToken.None,
+            [elementId, token, keyframes, timing]);
 
     /// <summary>Cancels one compositor animation; <paramref name="commit"/> snapshots current values inline first.</summary>
     public async ValueTask CancelWaapiAnimationAsync(string elementId, int token, bool commit)

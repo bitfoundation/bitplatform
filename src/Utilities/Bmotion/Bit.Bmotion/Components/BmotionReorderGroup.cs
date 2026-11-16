@@ -187,8 +187,9 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             builder.AddComponentParameter(4, "WhileDrag", WhileDrag ?? (BmTarget?)Bm.To(scale: 1.03));
             builder.AddComponentParameter(5, "OnDragStart",
                 EventCallback.Factory.Create(this, () => HandleDragStartAsync(captured)));
-            builder.AddComponentParameter(6, "OnDrag",
-                EventCallback.Factory.Create(this, () => HandleDragMove(captured)));
+            // With no receiver: a move only reorders the items in the engine (nothing rendered changes), and an
+            // EventCallback on this group would re-render the whole list - every item - on every move of a drag.
+            builder.AddComponentParameter(6, "OnDrag", new EventCallback(null, (Action)(() => HandleDragMove(captured))));
             builder.AddComponentParameter(7, "OnDragEnd",
                 EventCallback.Factory.Create(this, () => HandleDragEndAsync(captured)));
             builder.AddComponentParameter(8, "DragHandle", HandleSelector);
@@ -271,17 +272,17 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
         _cells.Clear();
         _box.Clear();
 
-        // Measure every row's untransformed position (its rect minus any in-flight transform
-        // from a previous, still-settling reorder).
+        // Measure every row's untransformed position: its rect minus any in-flight transform from a previous,
+        // still-settling reorder - backed out by the bridge in the same measurement, as the row may still be moving
+        // (on Blazor Server the engine's value would be read a round trip after the rect).
         foreach (var e in _entries.ToArray()) // a snapshot: a parameter update can rebuild the list while this awaits
         {
-            var rect = await Interop.GetBoundingRectAsync(e.Id);
+            var box = await Interop.GetLayoutBoxAsync(e.Id);
             if (session != _dragSession) return;
-            if (rect is null || e.Ref is null) { _dragged = null; return; }
-            var xy = e.Ref.GetCurrentXY();
-            _origStart[e.Key] = (Horizontal ? rect.Left - xy.X : rect.Top - xy.Y);
-            _extent[e.Key] = Horizontal ? rect.Width : rect.Height;
-            _box[e.Key] = (rect.Left - xy.X, rect.Top - xy.Y, rect.Width, rect.Height);
+            if (box is null || e.Ref is null) { _dragged = null; return; }
+            _origStart[e.Key] = Horizontal ? box.Left : box.Top;
+            _extent[e.Key] = Horizontal ? box.Width : box.Height;
+            _box[e.Key] = (box.Left, box.Top, box.Width, box.Height);
         }
         foreach (var e in _visualOrder) _cells.Add(_box[e.Key]);
 
@@ -307,7 +308,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     {
         if (_dragged != entry || !_measured || entry.Ref is null) return;
 
-        var xy = entry.Ref.GetCurrentXY();
+        var xy = entry.Ref.PeekCurrentXY();
         if (Grid)
         {
             // The cell nearest the dragged item's centre is its place; the others close up around it.
@@ -360,7 +361,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     // move once the item is dropped.
     private async Task CommitAsync(Entry entry)
     {
-        await Engine.AnimateToAwaitAsync(entry.Id, DisplacementValues(entry, _visualOrder.IndexOf(entry)), DisplacementConfig());
+        await Engine.AnimateToAwaitAsync(entry.Id, DisplacementValues(entry, _visualOrder.IndexOf(entry)), DisplacementConfig(entry));
 
         if (_dragged != entry) return; // a new drag or external change superseded this session
         _dragged = null;
@@ -497,7 +498,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
         _visualOrder.Insert(to, entry);
         // The others make way exactly as for a drag; the held item moves into its new slot itself.
         AnimateDisplacements();
-        _ = Engine.AnimateToAsync(entry.Id, DisplacementValues(entry, to), DisplacementConfig());
+        _ = Engine.AnimateToAsync(entry.Id, DisplacementValues(entry, to), DisplacementConfig(entry));
         await AnnounceAsync(BmReorderEvent.Moved, entry);
     }
 
@@ -523,7 +524,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             // Everything goes back to where it was; nothing is committed.
             _visualOrder = before;
             AnimateDisplacements();
-            _ = Engine.AnimateToAsync(entry.Id, DisplacementValues(entry, _visualOrder.IndexOf(entry)), DisplacementConfig());
+            _ = Engine.AnimateToAsync(entry.Id, DisplacementValues(entry, _visualOrder.IndexOf(entry)), DisplacementConfig(entry));
             _dragged = null;
             try { await Interop.ApplyStylesAsync(entry.Id, new Dictionary<string, string> { ["position"] = "", ["zIndex"] = "" }); }
             catch { /* cosmetic only */ }
@@ -564,7 +565,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             var target = Displacement(e, i);
             if (_dispTarget.TryGetValue(e.Key, out var prev) && prev == target) continue;
             _dispTarget[e.Key] = target;
-            _ = Engine.AnimateToAsync(e.Id, DisplacementValues(e, i), DisplacementConfig());
+            _ = Engine.AnimateToAsync(e.Id, DisplacementValues(e, i), DisplacementConfig(e));
         }
     }
 
@@ -608,6 +609,10 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
         return Math.Max(1, _cells.Count(c => Math.Abs(c.Top - _cells[0].Top) < 1));
     }
 
-    private BmotionTransitionConfig DisplacementConfig()
-        => (Transition ?? new BmSpring { Stiffness = 550, Damping = 40 }).ToConfig();
+    // How an item moves to its place - as the item plays it, so reduced motion lands it there at once.
+    private BmotionTransitionConfig? DisplacementConfig(Entry e)
+    {
+        var normal = (Transition ?? new BmSpring { Stiffness = 550, Damping = 40 }).ToConfig();
+        return e.Ref is { } item ? item.AsPlayedHere(normal) : normal;
+    }
 }
