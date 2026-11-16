@@ -44,7 +44,7 @@
         <div style="@Styles?.TooltipWrapper"
              class="bit-ttp-wrp @GetTooltipClasses() @Classes?.TooltipWrapper"
              data-bit-ttp-esc="@(NoDismissOnEscape is false && IsControlledExternally is false)"
-             data-bit-ttp-clk="@(_isShownByClick && IsShown)"
+             data-bit-ttp-clk="@(_isShownByClick && Shown)"
              @onpointerup="@HandleSurfacePointerUp"
              @onpointerup:stopPropagation="true"
              @onpointerdown="@HandleSurfacePointerDown"

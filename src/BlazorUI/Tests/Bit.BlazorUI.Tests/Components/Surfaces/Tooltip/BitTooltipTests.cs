@@ -20,7 +20,7 @@ public class BitTooltipTests : BunitTestContext
 
 
     [TestMethod]
-    public void BitTooltipShouldRenderTextAndRespectDefaultIsShown()
+    public void BitTooltipShouldRenderTextAndRespectDefaultShown()
     {
         var component = RenderComponent<BitTooltip>(parameters =>
         {
@@ -36,7 +36,7 @@ public class BitTooltipTests : BunitTestContext
         var component2 = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Shown tooltip");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
         });
 
         var wrapper2 = component2.Find(".bit-ttp-wrp");
@@ -361,7 +361,7 @@ public class BitTooltipTests : BunitTestContext
     {
         var component = RenderComponent<BitTooltip>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
         });
 
         Assert.IsNull(component.Find(".bit-ttp").GetAttribute("aria-describedby"));
@@ -680,7 +680,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
             parameters.Add(p => p.HideDelay, 5000);
         });
 
@@ -711,7 +711,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
         });
 
         component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Escape" });
@@ -729,7 +729,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
         });
 
         // An Escape with a modifier goes on to the surface around the tooltip, as the JS side leaves it.
@@ -748,7 +748,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
         });
 
         component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter" });
@@ -762,7 +762,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
             parameters.Add(p => p.NoDismissOnEscape, true);
         });
 
@@ -797,7 +797,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
         });
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
@@ -808,12 +808,12 @@ public class BitTooltipTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTooltipDisabledShouldOverrideDefaultIsShown()
+    public void BitTooltipDisabledShouldOverrideDefaultShown()
     {
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
             parameters.Add(p => p.Disabled, true);
         });
 
@@ -844,8 +844,8 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsShown, isShown);
-            parameters.Add(p => p.IsShownChanged, EventCallback.Factory.Create<bool>(this, v => isShown = v));
+            parameters.Add(p => p.Shown, isShown);
+            parameters.Add(p => p.ShownChanged, EventCallback.Factory.Create<bool>(this, v => isShown = v));
         });
 
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
@@ -863,13 +863,13 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsShown, false);
+            parameters.Add(p => p.Shown, false);
         });
 
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        component.Render(parameters => parameters.Add(p => p.IsShown, true));
+        component.Render(parameters => parameters.Add(p => p.Shown, true));
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
         component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
@@ -877,13 +877,13 @@ public class BitTooltipTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTooltipDefaultIsShownShouldBeIgnoredWhenIsShownIsGiven()
+    public void BitTooltipDefaultShownShouldBeIgnoredWhenShownIsGiven()
     {
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
-            parameters.Add(p => p.IsShown, false);
+            parameters.Add(p => p.DefaultShown, true);
+            parameters.Add(p => p.Shown, false);
         });
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
@@ -961,7 +961,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
             parameters.Add(p => p.OnShow, EventCallback.Factory.Create(this, () => shown++));
         });
 
@@ -997,7 +997,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.LazyRender, true);
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
             parameters.Add(p => p.Template, Markup("<span class=\"tpl\">TemplateContent</span>"));
         });
 
@@ -1121,7 +1121,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(p =>
         {
             p.Add(x => x.Text, "Tip");
-            p.Add(x => x.DefaultIsShown, true);
+            p.Add(x => x.DefaultShown, true);
             p.Add(x => x.HideDelay, 5000);
             p.Add(x => x.ShowOnHover, true);
             p.AddChildContent("<button>Hover me</button>");
@@ -1166,7 +1166,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(p =>
         {
             p.Add(x => x.Text, "Tip");
-            p.Add(x => x.DefaultIsShown, true);
+            p.Add(x => x.DefaultShown, true);
             p.Add(x => x.ShowOnClick, true);
         });
 
@@ -1183,7 +1183,7 @@ public class BitTooltipTests : BunitTestContext
     {
         var component = RenderComponent<BitTooltip>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
             parameters.AddChildContent("<button>Anchor</button>");
         });
 
@@ -1423,7 +1423,7 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.Text, "Tip");
             parameters.Add(p => p.Interactive, true);
             parameters.Add(p => p.ShowOnClick, true);
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
         });
 
         component.Find(".bit-ttp-ctn").TriggerEvent("onpointerup", new PointerEventArgs());
@@ -1615,7 +1615,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "   ");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
         });
 
         Assert.AreEqual(0, component.FindAll(".bit-ttp-wrp").Count);
@@ -1945,7 +1945,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsShown, true);
+            parameters.Add(p => p.Shown, true);
             parameters.Add(p => p.ShowOnClick, true);
         });
 
@@ -2164,7 +2164,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsShown, false);
+            parameters.Add(p => p.Shown, false);
             parameters.Add(p => p.ShowOnClick, true);
         });
 
@@ -2197,7 +2197,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
         });
 
         // Shown and dismissible is what the JS side reads to take the key on the spot, before it travels on.
@@ -2214,7 +2214,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.DefaultShown, true);
             parameters.Add(p => p.NoDismissOnEscape, true);
         });
 
@@ -2232,7 +2232,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsShown, true);
+            parameters.Add(p => p.Shown, true);
         });
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-esc"));
@@ -2324,17 +2324,17 @@ public class BitTooltipTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
 
-    // DefaultIsShown seeds a state the page only listens to, and the page hears about it.
+    // DefaultShown seeds a state the page only listens to, and the page hears about it.
     [TestMethod]
-    public void BitTooltipDefaultIsShownShouldBeReportedThroughIsShownChanged()
+    public void BitTooltipDefaultShownShouldBeReportedThroughShownChanged()
     {
         bool? reported = null;
 
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.DefaultIsShown, true);
-            parameters.Add(p => p.IsShownChanged, EventCallback.Factory.Create<bool>(this, v => reported = v));
+            parameters.Add(p => p.DefaultShown, true);
+            parameters.Add(p => p.ShownChanged, EventCallback.Factory.Create<bool>(this, v => reported = v));
         });
 
         Assert.AreEqual(true, reported);
@@ -2353,8 +2353,8 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsShown, true);
-            parameters.Add(p => p.IsShownChanged, EventCallback.Factory.Create<bool>(this, _ => { }));
+            parameters.Add(p => p.Shown, true);
+            parameters.Add(p => p.ShownChanged, EventCallback.Factory.Create<bool>(this, _ => { }));
         });
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
