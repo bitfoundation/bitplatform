@@ -108,6 +108,8 @@ dotnet publish src/Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit
 dotnet build src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj -c Release
 pwsh src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.Bortable.Demo.Server.dll --urls http://127.0.0.1:5000 &)
+# Wait (up to two minutes) until the demo answers.
+for attempt in $(seq 1 60); do curl --silent --fail --output /dev/null http://127.0.0.1:5000/ && break; sleep 2; done
 cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E && BORTABLE_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename bortable-e2e.trx
 ```
 

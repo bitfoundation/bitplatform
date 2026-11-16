@@ -48,7 +48,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     private bool _defaultsApplied;
     private bool _playFlipOnRender;
     private bool _disposed;
-    // The module's import threw on the last render: the next render tries again (see OnAfterRenderAsync).
+    // The module's import threw or was canceled on the last render: the next render tries again (see OnAfterRenderAsync).
     private bool _importFailed;
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
@@ -2096,18 +2096,14 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         if (firstRender || _importFailed)
         {
-            // Every list of the scope shares the one import. One that failed - the module's download, say - is tried
-            // again on the next render instead of leaving the list without its browser layer for good.
-            _importFailed = false;
-            try
-            {
-                _module = await Service.GetModuleAsync();
-            }
-            catch
-            {
-                _importFailed = true;
-                throw;
-            }
+            // Every list of the scope shares the one import. One that failed - the module's download, say - or that was
+            // canceled (an interop call that timed out) is tried again on the next render instead of leaving the list
+            // without its browser layer for good. A failure is still thrown, to the nearest ErrorBoundary (which
+            // renders a new list on recovery, importing afresh) or, without one, to the renderer: on WebAssembly the
+            // app keeps running and this list's next render retries; on Server the circuit ends with it.
+            _importFailed = true;
+            _module = await Service.GetModuleAsync();
+            _importFailed = _module is null;
             if (_disposed) _module = null;
         }
 

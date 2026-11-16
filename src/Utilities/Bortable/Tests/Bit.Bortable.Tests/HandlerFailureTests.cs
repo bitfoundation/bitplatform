@@ -102,17 +102,19 @@ public class HandlerFailureTests : BortableTestContext
     }
 }
 
-/// <summary>An import of <c>bit-bortable.js</c> that failed is not kept, so the next list, or render, imports it again.</summary>
+/// <summary>An import of <c>bit-bortable.js</c> that failed, or was canceled, is not kept, so the next list, or render, imports it again.</summary>
 [TestClass]
 public class ModuleImportTests : BunitContext
 {
     [TestMethod]
     public async Task AFailedImportIsTriedAgain()
     {
-        var js = new FailingOnceJSRuntime();
+        var js = new FirstImportPendingJSRuntime();
         var service = new BortableService(js, []);
 
-        await Assert.ThrowsExactlyAsync<JSException>(service.GetModuleAsync);
+        var failing = service.GetModuleAsync();
+        js.FirstImport.SetException(new JSException("Failed to fetch dynamically imported module"));
+        await Assert.ThrowsExactlyAsync<JSException>(() => failing);
         var module = await service.GetModuleAsync();
 
         Assert.IsNotNull(module);
@@ -122,13 +124,11 @@ public class ModuleImportTests : BunitContext
     [TestMethod]
     public async Task AListWhoseImportFailedImportsAgainOnItsNextRender()
     {
-        var js = new FailingOnceJSRuntime();
-        Services.AddBitBortableServices();
-        Services.AddSingleton<IJSRuntime>(js);
+        var js = new FirstImportPendingJSRuntime();
+        var list = RenderList(js);
 
-        var list = Render<Bortable<string>>(p => p
-            .Add(c => c.Items, new List<string> { "A" })
-            .Add(c => c.ItemTemplate, i => $"<span>{i}</span>"));
+        // The import fails only once the first render is over, as a download does when the browser answers.
+        js.FirstImport.SetException(new JSException("Failed to fetch dynamically imported module"));
         Assert.IsInstanceOfType<JSException>(await Renderer.UnhandledException);
 
         // bUnit throws the exception the last render left unhandled once more, from the next one.
@@ -139,23 +139,47 @@ public class ModuleImportTests : BunitContext
         Assert.Contains("register", js.ModuleCalls);
     }
 
-    private sealed class FailingOnceJSRuntime : IJSRuntime
+    [TestMethod]
+    public void AListWhoseImportWasCanceledImportsAgainOnItsNextRender()
     {
+        var js = new FirstImportPendingJSRuntime();
+        var list = RenderList(js);
+
+        // A canceled import (an interop call that timed out) throws nothing: the list is left without its module.
+        js.FirstImport.SetCanceled();
+        list.Render();
+
+        Assert.IsFalse(Renderer.UnhandledException.IsCompleted);
+        Assert.AreEqual(2, js.Imports);
+        Assert.Contains("register", js.ModuleCalls);
+    }
+
+    private IRenderedComponent<Bortable<string>> RenderList(IJSRuntime js)
+    {
+        Services.AddBitBortableServices();
+        Services.AddSingleton(js);
+
+        return Render<Bortable<string>>(p => p
+            .Add(c => c.Items, new List<string> { "A" })
+            .Add(c => c.ItemTemplate, i => $"<span>{i}</span>"));
+    }
+
+    private sealed class FirstImportPendingJSRuntime : IJSRuntime
+    {
+        // The first import stays pending until the test fails or cancels it, as a module's download does until the
+        // browser answers; the next one answers at once.
+        public TaskCompletionSource<IJSObjectReference> FirstImport { get; } = new();
+
         public int Imports { get; private set; }
 
         public List<string> ModuleCalls { get; } = [];
 
-        // The first import fails, as a module whose download failed does - later, as the browser answers; the next one answers.
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {
             if (identifier != "import") return ValueTask.FromResult(default(TValue)!);
-            return ++Imports == 1 ? FailAsync<TValue>() : ValueTask.FromResult((TValue)(object)new Module(ModuleCalls));
-        }
-
-        private static async ValueTask<TValue> FailAsync<TValue>()
-        {
-            await Task.Yield();
-            throw new JSException("Failed to fetch dynamically imported module");
+            return ++Imports == 1
+                ? new ValueTask<TValue>((Task<TValue>)(object)FirstImport.Task)
+                : ValueTask.FromResult((TValue)(object)new Module(ModuleCalls));
         }
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
