@@ -330,7 +330,9 @@ servers migrate only in Development, so a change to the database model - even on
 migration - reaches the database the Boilerplate demos share only by hand. Until it does, every sign-in and token
 refresh of those demos fails with a 500 whose Application log line names the missing column or table. Check the
 CD's commit for migration changes since the last one; applying them to that database changes the machine, so ask
-first.
+first. A rename breaks the demos that still run the old build, so apply it in two steps: before the CD, rename and
+keep the old name working (a view for a table, a second column a trigger keeps in sync for a column), and once every
+Boilerplate demo runs the new build, drop what kept the old name.
 
 **Nor are the demos' settings.** The CD leaves out the template's `appsettings.json`, so each Boilerplate backend runs
 on the server-owned one in its `C:\inetpub\<site>`. When the template renames or reshapes a section there, the demos
