@@ -5,7 +5,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 
 /// <summary>
 /// Drives BitNavPanel at /e2e/nav-panel (and /e2e/nav-panel/drawer) at a desktop viewport in a real browser: the
-/// column of a wide screen and its rail (the toggle button, IsToggled two-way, ExpandOnHover, NoToggle, HideToggle,
+/// column of a wide screen and its rail (the toggle button, Toggled two-way, ExpandOnHover, NoToggle, HideToggle,
 /// the toggle's name and icon), Width / ToggledWidth / FitWidth / FullWidth, the logo, title and their link, the search
 /// box filtering the items (SearchText two-way, OnSearch, SearchFilter, the empty message and template, the live
 /// announcement, NoSearchBox, the rail's search button), navigation selecting the item (Automatic) and the Manual
@@ -155,7 +155,7 @@ public class BitNavPanelE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task NoToggleAndHideToggle_TakeTheButtonAwayAndIsToggledStillWorks()
+    public async Task NoToggleAndHideToggle_TakeTheButtonAwayAndToggledStillWorks()
     {
         await OpenAsync(Route);
 
@@ -182,7 +182,7 @@ public class BitNavPanelE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsToggled_TwoWay_FollowsTheToggleButtonAndThePage()
+    public async Task Toggled_TwoWay_FollowsTheToggleButtonAndThePage()
     {
         await OpenAsync(Route);
         await ShowAsync("npn-api");

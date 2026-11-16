@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// render the item-level sections with the same ids and data, so every item-level test runs once per API: opening
 /// and closing the callout (trigger, chevron, overlay, item click, bound IsOpen) and where it is placed, Split,
 /// Sticky (SelectedItem two-way, DefaultSelectedItem, IsSelected, OnChange, the split header running the selected
-/// item), the header and item icons, IconOnly, NoIcon, the split Toggle (IsToggled two-way, DefaultIsToggled,
+/// item), the header and item icons, IconOnly, NoIcon, the split Toggle (Toggled two-way, DefaultToggled,
 /// OnToggleChange), checkable and radio items, HeaderTemplate, ItemTemplate and an item's own Template, headers and
 /// separators, SecondaryText, Title, AriaLabel, disabled items and DisabledInteractive, links with Rel and the
 /// new-tab hint (NewTabHint, NoNewTabHint), the loading states (AutoLoading, Loading two-way, LoadingLabel and its

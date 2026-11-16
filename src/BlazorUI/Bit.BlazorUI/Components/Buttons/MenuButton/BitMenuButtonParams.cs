@@ -116,9 +116,9 @@ public partial class BitMenuButtonParams : BitComponentBaseParams, IBitComponent
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Default value of the IsToggled parameter in toggle mode.
+    /// Default value of the Toggled parameter in toggle mode.
     /// </summary>
-    public bool? DefaultIsToggled { get; set; }
+    public bool? DefaultToggled { get; set; }
 
     /// <summary>
     /// Keeps a disabled menu button, and the disabled items of any menu button, focusable: the disabled state is
@@ -387,9 +387,9 @@ public partial class BitMenuButtonParams : BitComponentBaseParams, IBitComponent
             bitMenuButton.TakeFromCascade(nameof(Color), Color.Value, static m => m.Color, static (m, v) => m.Color = v);
         }
 
-        if (DefaultIsToggled.HasValue)
+        if (DefaultToggled.HasValue)
         {
-            bitMenuButton.TakeFromCascade(nameof(DefaultIsToggled), DefaultIsToggled.Value, static m => m.DefaultIsToggled, static (m, v) => m.DefaultIsToggled = v);
+            bitMenuButton.TakeFromCascade(nameof(DefaultToggled), DefaultToggled.Value, static m => m.DefaultToggled, static (m, v) => m.DefaultToggled = v);
         }
 
         if (DisabledInteractive.HasValue)

@@ -228,13 +228,6 @@ public partial class BitNavPanelDemo
         },
         new()
         {
-           Name = "IsToggled",
-           Type = "bool",
-           DefaultValue = "false",
-           Description = "Determines if the nav panel is in the toggled state.",
-        },
-        new()
-        {
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "[]",
@@ -573,6 +566,13 @@ public partial class BitNavPanelDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The aria-label of the toggle button of the nav panel.",
+        },
+        new()
+        {
+            Name = "Toggled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines if the nav panel is in the toggled state.",
         },
         new()
         {

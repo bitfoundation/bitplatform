@@ -10,7 +10,7 @@ public partial class _BitMenuButtonOptionDemo
     private bool oneWayIsOpen;
     private bool twoWayIsOpen;
 
-    private bool optionIsToggled;
+    private bool optionToggled;
     private bool optionToggledValue;
 
     private BitMenuButtonOption optionA = default!;

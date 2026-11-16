@@ -148,7 +148,7 @@
 <DemoExample Title="Toggle" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7"
              PreventRenderForMcpClient>
     <div>
-        Enable toggle behavior on the header button in Split mode. Clicking the operator button toggles the IsToggled
+        Enable toggle behavior on the header button in Split mode. Clicking the operator button toggles the Toggled
         state, while the chevron button still opens the callout. The toggled header is painted with the darker end of
         its color role in every variant, so the button that is on reads stronger than the one that is off.
     </div>
@@ -159,22 +159,22 @@
         <BitMenuButton Text="Toggle" Items="basicCustoms" NameSelectors="nameSelectors" Split Toggle />
     </div>
     <br /><br />
-    <div>DefaultIsToggled:</div>
+    <div>DefaultToggled:</div>
     <br />
     <div class="example-content">
-        <BitMenuButton Text="DefaultIsToggled" Items="basicCustoms" NameSelectors="nameSelectors" Split Toggle
-                       DefaultIsToggled="true" />
+        <BitMenuButton Text="DefaultToggled" Items="basicCustoms" NameSelectors="nameSelectors" Split Toggle
+                       DefaultToggled="true" />
     </div>
     <br /><br />
     <div>Variant:</div>
     <br />
     <div class="example-content">
         <BitMenuButton Text="Fill" Items="basicCustoms" NameSelectors="nameSelectors" Split Toggle
-                       Variant="BitVariant.Fill" DefaultIsToggled="true" />
+                       Variant="BitVariant.Fill" DefaultToggled="true" />
         <BitMenuButton Text="Outline" Items="basicCustoms" NameSelectors="nameSelectors" Split Toggle
-                       Variant="BitVariant.Outline" DefaultIsToggled="true" />
+                       Variant="BitVariant.Outline" DefaultToggled="true" />
         <BitMenuButton Text="Text" Items="basicCustoms" NameSelectors="nameSelectors" Split Toggle
-                       Variant="BitVariant.Text" DefaultIsToggled="true" />
+                       Variant="BitVariant.Text" DefaultToggled="true" />
     </div>
     <br />
     <div class="example-content">
@@ -190,8 +190,8 @@
     <br />
     <div class="example-content">
         <BitMenuButton Text="Two-way" Items="basicCustoms" NameSelectors="nameSelectors" Split Toggle
-                       @bind-IsToggled="customIsToggled" />
-        <BitCheckbox Label="IsToggled" @bind-Value="customIsToggled" />
+                       @bind-Toggled="customToggled" />
+        <BitCheckbox Label="Toggled" @bind-Value="customToggled" />
     </div>
     <br /><br />
     <div>OnToggleChange: @customToggledValue</div>

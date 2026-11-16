@@ -200,24 +200,24 @@ public partial class _BitMenuButtonOptionDemo
 </BitMenuButton>
 
 
-<BitMenuButton Text=""DefaultIsToggled"" TItem=""BitMenuButtonOption"" Split Toggle DefaultIsToggled=""true"">
+<BitMenuButton Text=""DefaultToggled"" TItem=""BitMenuButtonOption"" Split Toggle DefaultToggled=""true"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
-<BitMenuButton Text=""Fill"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Fill"" DefaultIsToggled=""true"">
+<BitMenuButton Text=""Fill"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Fill"" DefaultToggled=""true"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Outline"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Outline"" DefaultIsToggled=""true"">
+<BitMenuButton Text=""Outline"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Outline"" DefaultToggled=""true"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Text"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Text"" DefaultIsToggled=""true"">
+<BitMenuButton Text=""Text"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Text"" DefaultToggled=""true"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
@@ -240,12 +240,12 @@ public partial class _BitMenuButtonOptionDemo
 </BitMenuButton>
 
 
-<BitMenuButton Text=""Two-way"" TItem=""BitMenuButtonOption"" Split Toggle @bind-IsToggled=""optionIsToggled"">
+<BitMenuButton Text=""Two-way"" TItem=""BitMenuButtonOption"" Split Toggle @bind-Toggled=""optionToggled"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitCheckbox Label=""IsToggled"" @bind-Value=""optionIsToggled"" />
+<BitCheckbox Label=""Toggled"" @bind-Value=""optionToggled"" />
 
 
 <BitMenuButton Text=""OnToggleChange"" TItem=""BitMenuButtonOption"" Split Toggle OnToggleChange=""v => optionToggledValue = v"">

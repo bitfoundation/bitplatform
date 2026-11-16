@@ -189,14 +189,14 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Default value of the IsToggled parameter in toggle mode.
-    /// </summary>
-    [Parameter] public bool? DefaultIsToggled { get; set; }
-
-    /// <summary>
     /// Default value of the SelectedItem.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
+
+    /// <summary>
+    /// Default value of the Toggled parameter in toggle mode.
+    /// </summary>
+    [Parameter] public bool? DefaultToggled { get; set; }
 
     /// <summary>
     /// Keeps a disabled menu button, and the disabled items of any menu button, focusable: the disabled state is
@@ -266,12 +266,6 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     [CallOnSet(nameof(OnSetIsOpen))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
-
-    /// <summary>
-    /// Determines whether the header button is in the checked/toggled state when Toggle is enabled.
-    /// </summary>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
-    public bool IsToggled { get; set; }
 
     /// <summary>
     ///  List of items to show in the menu button.
@@ -382,7 +376,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     [Parameter] public EventCallback<TItem?> OnClick { get; set; }
 
     /// <summary>
-    /// The callback that is called when the IsToggled value changes in toggle mode.
+    /// The callback that is called when the Toggled value changes in toggle mode.
     /// </summary>
     [Parameter] public EventCallback<bool> OnToggleChange { get; set; }
 
@@ -491,6 +485,12 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     /// </summary>
     [Parameter, ResetClassBuilder, ResetStyleBuilder] 
     public bool Toggle { get; set; }
+
+    /// <summary>
+    /// Determines whether the header button is in the checked/toggled state when Toggle is enabled.
+    /// </summary>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
+    public bool Toggled { get; set; }
 
     /// <summary>
     /// The visual variant of the menu button.
@@ -656,7 +656,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
 
-        ClassBuilder.Register(() => Toggle && Split && IsToggled ? $"bit-mnb-tgl {Classes?.Toggled}" : string.Empty);
+        ClassBuilder.Register(() => Toggle && Split && Toggled ? $"bit-mnb-tgl {Classes?.Toggled}" : string.Empty);
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -673,7 +673,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         StyleBuilder.Register(() => IsOpen ? Styles?.Opened : string.Empty);
 
-        StyleBuilder.Register(() => Toggle && Split && IsToggled ? Styles?.Toggled : string.Empty);
+        StyleBuilder.Register(() => Toggle && Split && Toggled ? Styles?.Toggled : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -683,14 +683,14 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         _overlayId = $"BitMenuButton-{UniqueId}-overlay";
         _pointId = $"BitMenuButton-{UniqueId}-point";
 
-        // The cascade is read here as well as in OnParametersSet because DefaultIsToggled (and the Split and Toggle
+        // The cascade is read here as well as in OnParametersSet because DefaultToggled (and the Split and Toggle
         // it depends on) is acted on while initializing, which is before OnParametersSet has run for the first time -
         // a cascaded one applied only there would come too late to seed anything.
         CascadingParameters?.UpdateParameters(this);
 
-        if (Split && Toggle && IsToggledHasBeenSet is false && DefaultIsToggled.HasValue)
+        if (Split && Toggle && ToggledHasBeenSet is false && DefaultToggled.HasValue)
         {
-            await AssignIsToggled(DefaultIsToggled.Value);
+            await AssignToggled(DefaultToggled.Value);
         }
 
         if (Sticky && SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
@@ -1446,9 +1446,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         if (Toggle && Split)
         {
-            if (await AssignIsToggled(!IsToggled) is false) return;
+            if (await AssignToggled(!Toggled) is false) return;
 
-            await OnToggleChange.InvokeAsync(IsToggled);
+            await OnToggleChange.InvokeAsync(Toggled);
         }
 
         if (item is not null && GetIsDisabled(item)) return;

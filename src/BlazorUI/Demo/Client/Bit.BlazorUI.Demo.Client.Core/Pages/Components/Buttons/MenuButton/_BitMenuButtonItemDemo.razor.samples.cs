@@ -108,24 +108,24 @@ private List<BitMenuButtonItem> longItems =
     private readonly string example7RazorCode = @"
 <BitMenuButton Text=""Toggle"" Items=""basicItems"" Split Toggle />
 
-<BitMenuButton Text=""DefaultIsToggled"" Items=""basicItems"" Split Toggle DefaultIsToggled=""true"" />
+<BitMenuButton Text=""DefaultToggled"" Items=""basicItems"" Split Toggle DefaultToggled=""true"" />
 
-<BitMenuButton Text=""Fill"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Fill"" DefaultIsToggled=""true"" />
-<BitMenuButton Text=""Outline"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Outline"" DefaultIsToggled=""true"" />
-<BitMenuButton Text=""Text"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Text"" DefaultIsToggled=""true"" />
+<BitMenuButton Text=""Fill"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Fill"" DefaultToggled=""true"" />
+<BitMenuButton Text=""Outline"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Outline"" DefaultToggled=""true"" />
+<BitMenuButton Text=""Text"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Text"" DefaultToggled=""true"" />
 
 <BitMenuButton Text=""Fill"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Fill"" />
 <BitMenuButton Text=""Outline"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Outline"" />
 <BitMenuButton Text=""Text"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Text"" />
 
-<BitMenuButton Text=""Two-way"" Items=""basicItems"" Split Toggle @bind-IsToggled=""itemIsToggled"" />
-<BitCheckbox Label=""IsToggled"" @bind-Value=""itemIsToggled"" />
+<BitMenuButton Text=""Two-way"" Items=""basicItems"" Split Toggle @bind-Toggled=""itemToggled"" />
+<BitCheckbox Label=""Toggled"" @bind-Value=""itemToggled"" />
 
 <div>OnToggleChange: @itemToggledValue</div>
 <BitMenuButton Text=""OnToggleChange"" Items=""basicItems"" Split Toggle OnToggleChange=""v => itemToggledValue = v"" />";
 
     private readonly string example7CsharpCode = @"
-private bool itemIsToggled;
+private bool itemToggled;
 private bool itemToggledValue;
 
 private List<BitMenuButtonItem> basicItems =
