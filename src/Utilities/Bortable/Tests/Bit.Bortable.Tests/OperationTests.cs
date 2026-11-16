@@ -266,8 +266,8 @@ public class OperationTests : BortableTestContext
 
         var error = await Assert.ThrowsExactlyAsync<AggregateException>(() => list.InvokeAsync(() => list.Instance.MoveAsync("C", 0)));
 
-        // The handler's exception first, then what CanDrop threw: neither is lost.
-        Assert.AreSequenceEqual(["boom", "offline"], error.InnerExceptions.Select(e => e.Message));
+        // In the order they were thrown - what CanDrop threw, which refused the move, first - and neither is lost.
+        Assert.AreSequenceEqual(["offline", "boom"], error.InnerExceptions.Select(e => e.Message));
         Assert.AreSequenceEqual(["A", "B", "C"], items);
         Assert.IsNull(Coordinator.Context);
     }

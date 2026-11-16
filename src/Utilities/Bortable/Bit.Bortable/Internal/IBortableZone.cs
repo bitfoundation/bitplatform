@@ -41,7 +41,7 @@ internal interface IBortableZone
 
     /// <summary>
     /// Whether this list's <c>CanDrop</c> lets the dragged item take index <paramref name="newIndex"/> here. One that
-    /// throws refuses, and its exception is kept on <paramref name="ctx"/> (<see cref="BortableDragContext.Failure"/>).
+    /// throws refuses, and its exception is kept on <paramref name="ctx"/> (<see cref="BortableDragContext.Fail"/>).
     /// </summary>
     bool AllowsDropAt(BortableDragContext ctx, int newIndex);
 
@@ -136,6 +136,13 @@ internal interface IBortableZone
 
     /// <summary>Asks this list's <c>ConfirmDrop</c>, if it has one, whether to keep the move <paramref name="info"/>.</summary>
     Task<bool> ConfirmAsync(BortableMoveInfo info);
+
+    /// <summary>
+    /// Raises <paramref name="exception"/>, which the app's code threw during a call the browser layer made, as this
+    /// list's own, for the nearest <c>ErrorBoundary</c> to handle - or, should this list be gone, as one of another list
+    /// of the scope that is still on the page.
+    /// </summary>
+    Task PassOnAsync(Exception exception);
 
     // ----- called by the browser layer, through BortableBridge -----
 

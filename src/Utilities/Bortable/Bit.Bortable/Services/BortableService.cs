@@ -114,29 +114,41 @@ internal sealed class BortableService(IJSRuntime js, IEnumerable<BortableConfigu
     /// </summary>
     internal HashSet<IBortableZone> Zones { get; } = new(ReferenceEqualityComparer.Instance);
 
+    // How many times in a row an import that was canceled is made again before GetModuleAsync gives up for now.
+    private const int ImportAttempts = 3;
+
+    private bool _disposed;
+
     /// <summary>
     /// The <c>bit-bortable.js</c> module, imported by the first list that asks for it. <c>null</c> when the
     /// browser is gone (a disconnected circuit). An import that failed is not kept: a later list, or a later render of
-    /// the same one, tries again rather than meeting the same failure until the page is reloaded.
+    /// the same one, tries again rather than meeting the same failure until the page is reloaded. One that was canceled -
+    /// an interop call that timed out while the browser was busy - is made again at once, as no render of the list
+    /// may come to try it again, and the list would never drag.
     /// </summary>
     internal async Task<IJSObjectReference?> GetModuleAsync()
     {
-        var import = _import ??= js.InvokeAsync<IJSObjectReference>("import", ModulePath).AsTask();
-        try
+        for (int attempt = 1; ; attempt++)
         {
-            return await import;
-        }
-        catch (Exception e)
-        {
-            if (ReferenceEquals(_import, import)) _import = null;
-            if (e is JSDisconnectedException or TaskCanceledException) return null;
-            throw;
+            var import = _import ??= js.InvokeAsync<IJSObjectReference>("import", ModulePath).AsTask();
+            try
+            {
+                return await import;
+            }
+            catch (Exception e)
+            {
+                if (ReferenceEquals(_import, import)) _import = null;
+                if (e is TaskCanceledException && !_disposed && attempt < ImportAttempts) continue;
+                if (e is JSDisconnectedException or TaskCanceledException) return null;
+                throw;
+            }
         }
     }
 
     /// <summary>Releases the shared module.</summary>
     public async ValueTask DisposeAsync()
     {
+        _disposed = true;
         var import = _import;
         _import = null;
         if (import is not { IsCompletedSuccessfully: true }) return;
@@ -150,5 +162,9 @@ internal sealed class BortableService(IJSRuntime js, IEnumerable<BortableConfigu
     /// For a container disposed synchronously, which cannot wait for the browser: the module is only let go
     /// of, and the browser releases it with the page.
     /// </summary>
-    public void Dispose() => _import = null;
+    public void Dispose()
+    {
+        _disposed = true;
+        _import = null;
+    }
 }

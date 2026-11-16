@@ -63,20 +63,10 @@ jobs:
     - name: Install Playwright Chromium
       run: pwsh src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
-    - name: Start the published demo
-      run: |
-        cd demo
-        nohup dotnet Bit.Bortable.Demo.Server.dll --urls http://127.0.0.1:5000 > ../demo.log 2>&1 &
-        for attempt in $(seq 1 60); do
-          curl --silent --fail --output /dev/null http://127.0.0.1:5000/ && exit 0
-          sleep 2
-        done
-        cat ../demo.log
-        exit 1
-
+    # The suite boots the published demo itself, on a free port, and stops it once the run ends.
     - name: Run E2E tests
       env:
-        BORTABLE_E2E_BASE_URL: http://127.0.0.1:5000
+        BORTABLE_E2E_PUBLISHED_HOST: ${{ github.workspace }}/demo
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
         cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E &&
@@ -88,9 +78,7 @@ jobs:
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: bortable-e2e
-        path: |
-          **/bortable-e2e.trx
-          demo.log
+        path: '**/bortable-e2e.trx'
         if-no-files-found: ignore
 
   # The README's AOT setup: the sample's project file leaves the lazy mark and the router's switch out of an AOT build,
