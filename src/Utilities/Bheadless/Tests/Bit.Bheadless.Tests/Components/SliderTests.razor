@@ -352,4 +352,72 @@
         cut.Find("[role=slider]").Press("ArrowRight");
         Assert.AreEqual("10", cut.Find("[role=slider]").GetAttribute("aria-valuenow"));
     }
+
+    [TestMethod]
+    public void A_step_that_is_no_short_decimal_still_reaches_max()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValue="0" Min="0" Max="1" Step="@(1.0 / 3)">
+                <BitBhSliderThumb aria-label="Level" />
+            </BitBhSlider>);
+
+        cut.Find("[role=slider]").Press("End");
+        Assert.AreEqual("1", cut.Find("[role=slider]").GetAttribute("aria-valuenow"));
+        cut.Find("[role=slider]").Press("Home");
+        cut.Find("[role=slider]").Press("ArrowRight");
+        cut.Find("[role=slider]").Press("ArrowRight");
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual("1", cut.Find("[role=slider]").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void A_step_under_decimal_precision_does_not_throw()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValue="0" Min="0" Max="1e-29" Step="1e-30">
+                <BitBhSliderThumb aria-label="Level" />
+            </BitBhSlider>);
+
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual(1e-30, double.Parse(cut.Find("[role=slider]").GetAttribute("aria-valuenow")!, System.Globalization.CultureInfo.InvariantCulture), 1e-44);
+    }
+
+    [TestMethod]
+    public void Pushed_thumbs_stay_in_range_when_the_gap_does_not_fit()
+    {
+        IReadOnlyList<double>? values = null;
+        var cut = Render(
+            @<BitBhSlider DefaultValues="@(new double[] { 0, 4, 7 })" Min="0" Max="10" MinStepsBetweenThumbs="6"
+                          ThumbCollision="BitBhSliderThumbCollision.Push" ValuesChanged="v => values = v">
+                <BitBhSliderThumb aria-label="Low" />
+                <BitBhSliderThumb aria-label="Middle" />
+                <BitBhSliderThumb aria-label="High" />
+            </BitBhSlider>);
+
+        cut.FindAll("[role=slider]")[1].Press("ArrowRight");
+        Assert.IsNotNull(values);
+        foreach (var value in values) Assert.IsTrue(value is >= 0 and <= 10, $"{value} is out of range");
+        CollectionAssert.AreEqual(new double[] { 0, 5, 10 }, values.ToArray());
+    }
+
+    [TestMethod]
+    [DataRow(0.15, 0.2)]
+    [DataRow(0.25, 0.3)]
+    [DataRow(0.35, 0.4)]
+    [DataRow(-0.25, -0.3)]
+    [DataRow(1.0 / 3, 0.3)]
+    [DataRow(0.30000000000000004, 0.3)]
+    public void Snap_rounds_midpoints_away_from_zero(double value, double expected)
+        => Assert.AreEqual(expected, BitBhMath.Snap(value, 0, 0.1));
+
+    [TestMethod]
+    public void Snap_keeps_a_fine_step_on_a_large_origin()
+        => Assert.AreEqual(1e6 + 123e-6, BitBhMath.Snap(1e6 + 123.2e-6, 1e6, 1e-6), 1e-9);
+
+    [TestMethod]
+    [DataRow(double.NaN)]
+    [DataRow(1e30)]
+    [DataRow(double.PositiveInfinity)]
+    public void Snap_falls_back_to_double_out_of_decimal_range(double value)
+        => BitBhMath.Snap(value, 0, 1);
 }

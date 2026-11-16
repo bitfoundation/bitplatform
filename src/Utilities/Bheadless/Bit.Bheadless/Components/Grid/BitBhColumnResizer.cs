@@ -142,7 +142,7 @@ public class BitBhColumnResizer : BitBhComponentBase, IAsyncDisposable
     // Returns the width set: a controlled Width only catches up when the parent renders again.
     private async Task<double> SetWidthAsync(double width)
     {
-        width = Math.Clamp(width, Min, Math.Max(Min, Max));
+        width = BitBhMath.Clamp(width, Min, Max);
         _lastWidth = width;
         if (Math.Abs(width - CurrentWidth) < 0.5) return width;
         if (!IsProvided(nameof(Width))) _width = width;

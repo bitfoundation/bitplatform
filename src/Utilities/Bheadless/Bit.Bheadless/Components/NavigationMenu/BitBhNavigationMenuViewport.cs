@@ -32,9 +32,21 @@ public class BitBhNavigationMenuViewport : BitBhComponentBase, IAsyncDisposable
 
     protected override string DefaultTag => "div";
 
+    // Whether the JS runtime follows a content's size for this viewport - only then is there anything to release.
+    private bool _followed;
+
+    internal string ViewportId => ComponentId;
+
     private bool IsOpen => MenuContext?.IsOpen ?? false;
 
-    protected override void OnInitialized() => MenuContext?.Root.RegisterViewport(ComponentId);
+    protected override void OnInitialized() => MenuContext?.Root.RegisterViewport(this);
+
+    /// <summary>Sizes the viewport after <paramref name="contentId"/>, shown in it, and follows its size.</summary>
+    internal ValueTask FollowAsync(string contentId)
+    {
+        _followed = true;
+        return Interop.NavigationMenuMeasureAsync(ComponentId, contentId);
+    }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -71,9 +83,10 @@ public class BitBhNavigationMenuViewport : BitBhComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (MenuContext?.ViewportId == ComponentId) MenuContext.Root.RegisterViewport(null);
-        // A prerendered viewport never reached the browser, and its request's services are gone by now.
-        if (IsInteractiveRenderer()) await Interop.NavigationMenuReleaseAsync(ComponentId);
+        if (MenuContext?.Root.Viewport == this) MenuContext.Root.RegisterViewport(null);
+        // Only a viewport a content was measured into (after an interactive render) has anything to release; a
+        // prerendered one never reached the browser, and its request's services are gone by now.
+        if (_followed) await Interop.NavigationMenuReleaseAsync(ComponentId);
         GC.SuppressFinalize(this);
     }
 }

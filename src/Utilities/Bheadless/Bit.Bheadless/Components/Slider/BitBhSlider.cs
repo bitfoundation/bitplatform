@@ -375,30 +375,21 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
 
     // ── Value updates ────────────────────────────────────────────────────────
 
-    private double Snap(double value)
-    {
-        var step = EffectiveStep;
-        double snapped;
-        try
-        {
-            // In decimal, so a step like 0.125 or 0.1 lands exactly on its multiples instead of on a binary
-            // approximation that has to be rounded to a guessed number of decimals.
-            var decimalStep = (decimal)step;
-            var decimalMin = (decimal)Min;
-            snapped = (double)(Math.Round(((decimal)value - decimalMin) / decimalStep) * decimalStep + decimalMin);
-        }
-        catch (OverflowException)
-        {
-            snapped = Math.Round((value - Min) / step) * step + Min;
-        }
-        return Clamp(snapped, Min, Max);
-    }
+    private double Snap(double value) => BitBhMath.Clamp(BitBhMath.Snap(value, Min, EffectiveStep), Min, Max);
 
     /// <summary>
-    /// <see cref="Math.Clamp(double, double, double)"/> that does not throw while the bounds are crossed - a bound
-    /// <see cref="Min"/> and <see cref="Max"/> can be for a render, and a thumb gap can leave no room: the lower bound wins.
+    /// The space kept between neighbouring thumbs: <see cref="MinStepsBetweenThumbs"/> steps, or as many whole steps
+    /// as <paramref name="count"/> thumbs leave room for between <see cref="Min"/> and <see cref="Max"/> - a gap the
+    /// range cannot hold would push the outer thumbs past its ends.
     /// </summary>
-    private static double Clamp(double value, double min, double max) => Math.Clamp(value, min, Math.Max(min, max));
+    private double ThumbGap(int count)
+    {
+        var step = EffectiveStep;
+        var gap = MinStepsBetweenThumbs * step;
+        if (count < 2 || gap <= 0) return gap;
+        var room = Math.Floor(Math.Max(0, Max - Min) / (count - 1) / step) * step;
+        return Math.Min(gap, room);
+    }
 
     /// <summary>
     /// Moves a thumb. Returns the resulting values - the ones to report: a controlled <see cref="Value"/> /
@@ -410,19 +401,20 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
         if (IsDisabled || index < 0 || index >= values.Length) return (values, false);
 
         var next = Snap(value);
-        var gap = MinStepsBetweenThumbs * EffectiveStep;
+        var gap = ThumbGap(values.Length);
         var before = values.ToArray();
         switch (ThumbCollision)
         {
             case BitBhSliderThumbCollision.Push:
-                // The thumb may go as far as leaves room for the ones it pushes.
-                next = Clamp(next, Min + gap * index, Max - gap * (values.Length - 1 - index));
+                // The thumb may go as far as leaves room for the ones it pushes; the gap fits the range, so the
+                // bounds do not cross and the pushed values stay in it (the clamps only absorb rounding).
+                next = BitBhMath.Clamp(next, Min + gap * index, Max - gap * (values.Length - 1 - index));
                 values[index] = next;
-                for (var i = index + 1; i < values.Length; i++) values[i] = Math.Max(values[i], values[i - 1] + gap);
-                for (var i = index - 1; i >= 0; i--) values[i] = Math.Min(values[i], values[i + 1] - gap);
+                for (var i = index + 1; i < values.Length; i++) values[i] = BitBhMath.Clamp(Math.Max(values[i], values[i - 1] + gap), Min, Max);
+                for (var i = index - 1; i >= 0; i--) values[i] = BitBhMath.Clamp(Math.Min(values[i], values[i + 1] - gap), Min, Max);
                 break;
             case BitBhSliderThumbCollision.Swap:
-                next = Clamp(next, Min, Max);
+                next = BitBhMath.Clamp(next, Min, Max);
                 values[index] = next;
                 // Passing a neighbour swaps them: the values stay in order and the moving value changes thumb.
                 var moved = index;
@@ -437,7 +429,7 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
             default:
                 if (index > 0) next = Math.Max(next, values[index - 1] + gap);
                 if (index < values.Length - 1) next = Math.Min(next, values[index + 1] - gap);
-                next = Clamp(next, Min, Max);
+                next = BitBhMath.Clamp(next, Min, Max);
                 values[index] = next;
                 break;
         }
