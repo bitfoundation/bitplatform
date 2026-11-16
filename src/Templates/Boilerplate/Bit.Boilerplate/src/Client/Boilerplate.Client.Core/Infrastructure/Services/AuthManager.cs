@@ -18,6 +18,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IAuthorizationService authorizationService = default!;
     [AutoInject] private ElevatedAccessService elevatedAccessService = default!;
+    [AutoInject] private AccountPinCipher pinCipher = default!;
 
     public void OnInit()
     {
@@ -96,6 +97,8 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         {
             await KeepActiveAccount();
         }
+
+        await storageService.RemoveItem("pin_lock");
 
         await StoreTokens(response, rememberMe);
     }
@@ -357,7 +360,9 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     private async Task ClearTokens(bool activateNextAccount = true)
     {
-        var nextAccount = activateNextAccount ? (await GetOtherAccounts()).FirstOrDefault() : null;
+        var nextAccount = activateNextAccount ? (await GetOtherAccounts()).FirstOrDefault(account => account.HasPin is false) : null;
+
+        await storageService.RemoveItem("pin_lock");
 
         if (nextAccount is null)
         {
@@ -366,13 +371,13 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         }
         else
         {
-            var (_, persistent) = await FindAccount(nextAccount.User.Id);
+            var (_, persistent) = await FindAccount(nextAccount.UserId);
 
-            await RemoveAccount(nextAccount.User.Id);
+            await RemoveAccount(nextAccount.UserId);
 
             await WriteActiveTokens(nextAccount.AccessToken, nextAccount.RefreshToken, persistent);
 
-            activeAccountProfile = nextAccount.User;
+            activeAccountProfile = nextAccount;
         }
 
         await NotifyActiveAccountChanged(softRestartOnSwitch: nextAccount is not null);

@@ -1,0 +1,28 @@
+@inherits AppComponentBase
+
+<BitStack HorizontalAlign="BitAlignment.Center" Gap="0.5rem" AutoHeight>
+    <BitOtpInput @ref="otpInput"
+                 Value="@Value"
+                 ValueChanged="ValueChanged"
+                 AutoFocus="AutoFocus"
+                 NoValidate
+                 Sequential
+                 NormalizeDigits
+                 NoSmsAutoFill
+                 Length="AccountPinCipher.PinLength"
+                 Type="BitInputType.Password"
+                 InputMode="@(useLetters ? BitInputMode.Text : BitInputMode.Numeric)"
+                 Invalid="Invalid"
+                 IsLoading="IsLoading"
+                 Label="@Label"
+                 Description="@Description"
+                 OnFill="OnFill" />
+
+    <BitButton Variant="BitVariant.Text"
+               Size="BitSize.Small"
+               ButtonType="BitButtonType.Button"
+               IconName="@BitIconName.KeyboardClassic"
+               OnClick="WrapHandled(ToggleKeyboard)">
+        @Localizer[useLetters ? nameof(AppStrings.PinUseDigits) : nameof(AppStrings.PinUseLetters)]
+    </BitButton>
+</BitStack>

@@ -1,0 +1,55 @@
+@inherits AppComponentBase
+
+<section>
+    <BitStack Gap="0">
+        <BitStack Horizontal Gap="0.75rem" AutoHeight VerticalAlign="BitAlignment.Center" Class="header-stack">
+            <BitPersona Size="BitPersonaSize.Size40"
+                        ImageUrl="@Account.GetProfileImageUrl(AbsoluteServerAddress)"
+                        PrimaryText="@Account.DisplayName"
+                        SecondaryText="@(Account.Email ?? Account.PhoneNumber)" />
+
+            <BitSpacer />
+
+            <BitButton IconOnly
+                       Variant="BitVariant.Text"
+                       Color="BitColor.Tertiary"
+                       IconName="@BitIconName.ChromeClose"
+                       OnClick="() => OnResult?.Invoke(false)"
+                       Title="@Localizer[nameof(AppStrings.Cancel)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.Cancel)]" />
+        </BitStack>
+
+        <BitStack Gap="1.25rem" Padding="1.25rem 1rem" HorizontalAlign="BitAlignment.Center">
+            <BitText Id="account-pin-title" Typography="BitTypography.Subtitle1" Weight="BitFontWeight.Semibold">
+                @Localizer[nameof(AppStrings.EnterPinTitle)]
+            </BitText>
+
+            <PinInput @ref="pinInput"
+                      @bind-Value="pin"
+                      AutoFocus
+                      Invalid="isWrongPin"
+                      IsLoading="isUnlocking"
+                      Description="@(isWrongPin ? Localizer[nameof(AppStrings.WrongPin)] : null)"
+                      OnFill="WrapHandled(async (string? _) => await Unlock())" />
+
+            <BitStack Horizontal Wrap Gap="0.5rem" AutoHeight VerticalAlign="BitAlignment.Center" Class="actions-stack">
+                <BitButton Variant="BitVariant.Text"
+                           Color="BitColor.Tertiary"
+                           Disabled="isUnlocking"
+                           ButtonType="BitButtonType.Button"
+                           OnClick="() => OnSignInAgain?.Invoke()">
+                    @Localizer[nameof(AppStrings.SignInAgainToResetPin)]
+                </BitButton>
+
+                <BitSpacer />
+
+                <BitButton IsLoading="isUnlocking"
+                           Disabled="CanUnlock is false"
+                           ButtonType="BitButtonType.Button"
+                           OnClick="WrapHandled(Unlock)">
+                    @Localizer[nameof(AppStrings.Confirm)]
+                </BitButton>
+            </BitStack>
+        </BitStack>
+    </BitStack>
+</section>

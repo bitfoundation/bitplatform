@@ -2192,6 +2192,51 @@
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>ما يُبلغ عنه هذا الجهاز والخادم بشأن التطبيق، لاستكشاف الأخطاء وإصلاحها.</value>
   </data>
+    <data name="Pin" xml:space="preserve">
+    <value>رمز PIN</value>
+  </data>
+    <data name="PinDescription" xml:space="preserve">
+    <value>يُبقي رمز PIN هذا الحساب مقفلاً على هذا الجهاز أثناء استخدامك حساباً آخر. يُحفظ على هذا الجهاز فقط، وتعمل كلمة مرورك دائماً.</value>
+  </data>
+    <data name="PinIsSet" xml:space="preserve">
+    <value>لهذا الحساب رمز PIN على هذا الجهاز.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>رمز PIN جديد</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>أدخل رمز PIN مرة أخرى</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>رمزا PIN غير متطابقين. حاول مرة أخرى.</value>
+  </data>
+    <data name="ChangePin" xml:space="preserve">
+    <value>تغيير رمز PIN</value>
+  </data>
+    <data name="RemovePin" xml:space="preserve">
+    <value>إزالة رمز PIN</value>
+  </data>
+    <data name="PinSavedMessage" xml:space="preserve">
+    <value>تم حفظ رمز PIN.</value>
+  </data>
+    <data name="PinRemovedMessage" xml:space="preserve">
+    <value>تمت إزالة رمز PIN.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>أدخل رمز PIN</value>
+  </data>
+    <data name="WrongPin" xml:space="preserve">
+    <value>رمز PIN غير صحيح.</value>
+  </data>
+    <data name="SignInAgainToResetPin" xml:space="preserve">
+    <value>سجّل الدخول مرة أخرى لإعادة تعيين رمز PIN</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>استخدام الأحرف</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>استخدام الأرقام</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>وضع الكشك</value>

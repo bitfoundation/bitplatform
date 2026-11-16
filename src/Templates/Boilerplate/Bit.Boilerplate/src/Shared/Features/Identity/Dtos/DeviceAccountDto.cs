@@ -1,3 +1,5 @@
+using Boilerplate.Shared.Features.Attachments;
+
 namespace Boilerplate.Shared.Features.Identity.Dtos;
 
 /// <summary>
@@ -7,9 +9,42 @@ public partial class DeviceAccountDto
 {
     public const string QueryParameter = "account";
 
-    public UserDto User { get; set; } = default!;
+    public Guid UserId { get; set; }
+
+    public string? UserName { get; set; }
+
+    public string? Email { get; set; }
+
+    public string? PhoneNumber { get; set; }
+
+    public string? FullName { get; set; }
+
+    public bool HasProfilePicture { get; set; }
+
+    public string? Version { get; set; }
+
+    public Guid? SessionId { get; set; }
+
+    public DateTimeOffset? RefreshTokenExpiresOn { get; set; }
 
     public string? AccessToken { get; set; }
 
     public string? RefreshToken { get; set; }
+
+    public DevicePinLockDto? PinLock { get; set; }
+
+    public DeviceSealedDataDto? SealedTokens { get; set; }
+
+    [JsonIgnore] public string? DisplayName => FullName ?? DisplayUserName;
+
+    [JsonIgnore] public string? DisplayUserName => Email ?? PhoneNumber ?? UserName;
+
+    [JsonIgnore] public bool HasPin => PinLock is not null;
+
+    public string? GetProfileImageUrl(Uri absoluteServerAddress)
+    {
+        return HasProfilePicture is false
+            ? null
+            : new Uri(absoluteServerAddress, $"/api/v1/Attachment/GetAttachment/{UserId}/{AttachmentKind.UserProfileImageSmall}?v={Version}").ToString();
+    }
 }

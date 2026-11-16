@@ -2192,6 +2192,51 @@
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>समस्या निवारण के लिए, यह डिवाइस और सर्वर ऐप के बारे में क्या बताते हैं।</value>
   </data>
+    <data name="Pin" xml:space="preserve">
+    <value>PIN</value>
+  </data>
+    <data name="PinDescription" xml:space="preserve">
+    <value>जब आप किसी दूसरे खाते का उपयोग करते हैं, तब PIN इस खाते को इस डिवाइस पर लॉक रखता है। यह केवल इसी डिवाइस पर सहेजा जाता है, और आपका पासवर्ड हमेशा काम करता है।</value>
+  </data>
+    <data name="PinIsSet" xml:space="preserve">
+    <value>इस खाते का इस डिवाइस पर एक PIN है।</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>नया PIN</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>PIN फिर से दर्ज करें</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>PIN मेल नहीं खाते। फिर से कोशिश करें।</value>
+  </data>
+    <data name="ChangePin" xml:space="preserve">
+    <value>PIN बदलें</value>
+  </data>
+    <data name="RemovePin" xml:space="preserve">
+    <value>PIN हटाएँ</value>
+  </data>
+    <data name="PinSavedMessage" xml:space="preserve">
+    <value>PIN सहेज लिया गया।</value>
+  </data>
+    <data name="PinRemovedMessage" xml:space="preserve">
+    <value>PIN हटा दिया गया।</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>PIN दर्ज करें</value>
+  </data>
+    <data name="WrongPin" xml:space="preserve">
+    <value>गलत PIN।</value>
+  </data>
+    <data name="SignInAgainToResetPin" xml:space="preserve">
+    <value>PIN रीसेट करने के लिए फिर से साइन इन करें</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>अक्षरों का उपयोग करें</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>अंकों का उपयोग करें</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>कियोस्क मोड</value>

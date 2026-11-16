@@ -105,6 +105,11 @@ active account. Only the active account signs out, and another account on the de
 dialog can also sign out every account at once. Push notifications reach every account on the device, realtime
 messages only the active one.
 
+An account can also get an 8 character PIN on a device, in the account settings. While another account is active, its
+tokens stay encrypted with a key only that PIN opens, so switching back asks for it and a sign-out never makes it the
+active account on its own. The PIN never leaves the device: the password always works, and signing in again removes a
+forgotten PIN.
+
 ### Configuration
 
 Everything lives under the `Identity` section of

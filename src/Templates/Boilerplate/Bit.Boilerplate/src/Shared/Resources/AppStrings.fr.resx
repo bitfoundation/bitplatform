@@ -2192,6 +2192,51 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Ce que cet appareil et le serveur indiquent sur l'application, pour le dépannage.</value>
   </data>
+    <data name="Pin" xml:space="preserve">
+    <value>PIN</value>
+  </data>
+    <data name="PinDescription" xml:space="preserve">
+    <value>Un code PIN garde ce compte verrouillé sur cet appareil pendant que vous utilisez un autre compte. Il est stocké uniquement sur cet appareil et votre mot de passe fonctionne toujours.</value>
+  </data>
+    <data name="PinIsSet" xml:space="preserve">
+    <value>Ce compte a un code PIN sur cet appareil.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>Nouveau code PIN</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>Saisissez à nouveau le code PIN</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>Les codes PIN ne correspondent pas. Réessayez.</value>
+  </data>
+    <data name="ChangePin" xml:space="preserve">
+    <value>Modifier le code PIN</value>
+  </data>
+    <data name="RemovePin" xml:space="preserve">
+    <value>Supprimer le code PIN</value>
+  </data>
+    <data name="PinSavedMessage" xml:space="preserve">
+    <value>Le code PIN est enregistré.</value>
+  </data>
+    <data name="PinRemovedMessage" xml:space="preserve">
+    <value>Le code PIN est supprimé.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>Saisissez le code PIN</value>
+  </data>
+    <data name="WrongPin" xml:space="preserve">
+    <value>Code PIN incorrect.</value>
+  </data>
+    <data name="SignInAgainToResetPin" xml:space="preserve">
+    <value>Reconnectez-vous pour réinitialiser le code PIN</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>Utiliser des lettres</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>Utiliser des chiffres</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>Mode kiosque</value>

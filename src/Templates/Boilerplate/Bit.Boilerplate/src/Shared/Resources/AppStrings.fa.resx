@@ -2192,6 +2192,51 @@
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>آنچه این دستگاه و سرور درباره‌ی برنامه گزارش می‌دهند، برای عیب‌یابی.</value>
   </data>
+    <data name="Pin" xml:space="preserve">
+    <value>PIN</value>
+  </data>
+    <data name="PinDescription" xml:space="preserve">
+    <value>وقتی با حساب دیگری کار می‌کنید، PIN این حساب را روی این دستگاه قفل نگه می‌دارد. فقط روی همین دستگاه ذخیره می‌شود و رمز عبورتان همیشه کار می‌کند.</value>
+  </data>
+    <data name="PinIsSet" xml:space="preserve">
+    <value>این حساب روی این دستگاه PIN دارد.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>PIN جدید</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>PIN را دوباره وارد کنید</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>PINها یکی نیستند. دوباره امتحان کنید.</value>
+  </data>
+    <data name="ChangePin" xml:space="preserve">
+    <value>تغییر PIN</value>
+  </data>
+    <data name="RemovePin" xml:space="preserve">
+    <value>حذف PIN</value>
+  </data>
+    <data name="PinSavedMessage" xml:space="preserve">
+    <value>PIN ذخیره شد.</value>
+  </data>
+    <data name="PinRemovedMessage" xml:space="preserve">
+    <value>PIN حذف شد.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>PIN را وارد کنید</value>
+  </data>
+    <data name="WrongPin" xml:space="preserve">
+    <value>PIN اشتباه است.</value>
+  </data>
+    <data name="SignInAgainToResetPin" xml:space="preserve">
+    <value>برای بازنشانی PIN دوباره وارد شوید</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>استفاده از حروف</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>استفاده از اعداد</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>حالت کیوسک</value>

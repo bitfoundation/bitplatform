@@ -29,6 +29,7 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
+    [AutoInject] private AccountSwitchService accountSwitchService = default!;
     [AutoInject] private ILogger<AppClientCoordinator> logger = default!;
     [AutoInject] private BitAccentColorService accentColorService = default!;
     //#if (notification == true)
@@ -161,7 +162,10 @@ public partial class AppClientCoordinator : AppComponentBase
             if (user.IsAuthenticated() && user.GetUserId() == userId)
                 return;
 
-            await AuthManager.SwitchAccount(userId);
+            if ((await AuthManager.GetOtherAccounts()).FirstOrDefault(account => account.UserId == userId) is { } account)
+            {
+                await accountSwitchService.Switch(account);
+            }
         }
         catch (Exception exp)
         {

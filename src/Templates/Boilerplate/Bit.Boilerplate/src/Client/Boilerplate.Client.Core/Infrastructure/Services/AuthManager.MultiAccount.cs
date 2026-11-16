@@ -10,7 +10,7 @@ public partial class AuthManager
 
         foreach (var account in otherAccounts)
         {
-            await RemoveAccount(account.User.Id);
+            await RemoveAccount(account.UserId);
         }
 
         await Task.WhenAll(otherAccounts.Select(account => RevokeQuietly(account.RefreshToken)));
@@ -29,20 +29,20 @@ public partial class AuthManager
             accounts.AddRange(await ReadAccounts(persistent));
         }
 
-        return [.. accounts.Where(account => account.User.Id != activeUserId)
-                           .OrderBy(account => account.User.DisplayName, StringComparer.CurrentCultureIgnoreCase)];
+        return [.. accounts.Where(account => account.UserId != activeUserId)
+                           .OrderBy(account => account.DisplayName, StringComparer.CurrentCultureIgnoreCase)];
     }
 
     //#if (notification == true)
     public async Task<Guid[]> GetDeviceSessionIds()
     {
-        var accessTokens = (await GetOtherAccounts()).Select(account => account.AccessToken).Append(await tokenProvider.GetAccessToken());
+        var sessionIds = (await GetOtherAccounts()).Select(account => account.SessionId).Append(GetSessionId(await tokenProvider.GetAccessToken()));
 
-        return [.. accessTokens.Select(GetSessionId).OfType<Guid>()];
+        return [.. sessionIds.OfType<Guid>()];
     }
     //#endif
 
-    public async Task<bool> SwitchAccount(Guid userId)
+    public async Task<bool> SwitchAccount(Guid userId, string? pin = null)
     {
         if (GetUserId(await storageService.GetItem("access_token")) == userId)
             return true;
@@ -52,24 +52,60 @@ public partial class AuthManager
         if (account is null)
             return false;
 
-        await RemoveAccount(userId);
+        var tokens = await OpenTokens(account, pin);
+
+        if (tokens is null)
+            return false;
 
         await KeepActiveAccount();
 
-        await WriteActiveTokens(account.AccessToken, account.RefreshToken, persistent);
+        await RemoveAccount(userId);
 
-        activeAccountProfile = account.User;
+        await WriteActiveTokens(tokens.AccessToken, tokens.RefreshToken, persistent);
+
+        await WritePinLock(account.PinLock, persistent);
+
+        activeAccountProfile = account;
 
         await NotifyActiveAccountChanged(softRestartOnSwitch: true);
 
         return true;
     }
 
-    private UserDto? activeAccountProfile;
+    public ValueTask<bool> IsPinSupported() => pinCipher.IsSupported();
+
+    public async Task<bool> HasPin()
+    {
+        return await ReadPinLock() is not null;
+    }
+
+    public async Task SetPin(string pin)
+    {
+        if (string.IsNullOrWhiteSpace(await storageService.GetItem("refresh_token")))
+            throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
+
+        await WritePinLock(await pinCipher.CreateLock(pin), await storageService.IsPersistent("refresh_token"));
+    }
+
+    public async Task RemovePin()
+    {
+        await storageService.RemoveItem("pin_lock");
+    }
+
+    private DeviceAccountDto? activeAccountProfile;
 
     public void SetActiveAccountProfile(UserDto user)
     {
-        activeAccountProfile = user;
+        activeAccountProfile = new()
+        {
+            UserId = user.Id,
+            UserName = user.UserName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            FullName = user.FullName,
+            HasProfilePicture = user.HasProfilePicture,
+            Version = user.Version
+        };
     }
 
     private static Guid? GetUserId(string? accessToken)
@@ -131,12 +167,22 @@ public partial class AuthManager
         if (GetUserId(user) is not Guid userId || string.IsNullOrWhiteSpace(refreshToken))
             return;
 
-        await AddAccount(new()
+        var profile = activeAccountProfile?.UserId == userId ? activeAccountProfile : null;
+
+        DeviceAccountDto account = new()
         {
-            User = activeAccountProfile?.Id == userId ? activeAccountProfile : new() { Id = userId, UserName = user.Identity?.Name, Email = user.GetEmail() },
-            AccessToken = accessToken,
-            RefreshToken = refreshToken
-        }, await storageService.IsPersistent("refresh_token"));
+            UserId = userId,
+            UserName = profile is null ? user.Identity?.Name : profile.UserName,
+            Email = profile is null ? user.GetEmail() : profile.Email,
+            PhoneNumber = profile?.PhoneNumber,
+            FullName = profile?.FullName,
+            HasProfilePicture = profile?.HasProfilePicture ?? false,
+            Version = profile?.Version
+        };
+
+        await SetAccountTokens(account, accessToken, refreshToken, await ReadPinLock());
+
+        await AddAccount(account, await storageService.IsPersistent("refresh_token"));
     }
 
     private async Task<bool> StoreRefreshedTokens(string? sentRefreshToken, TokenResponseDto refreshTokenResponse)
@@ -152,22 +198,84 @@ public partial class AuthManager
 
         var (account, persistent) = await FindAccount(userId);
 
-        if (account is null || GetSessionId(account.AccessToken) != GetSessionId(refreshTokenResponse.AccessToken))
+        if (account?.SessionId is not Guid sessionId || sessionId != GetSessionId(refreshTokenResponse.AccessToken))
             return false;
 
-        account.AccessToken = refreshTokenResponse.AccessToken;
-        account.RefreshToken = refreshTokenResponse.RefreshToken;
+        await SetAccountTokens(account, refreshTokenResponse.AccessToken, refreshTokenResponse.RefreshToken, account.PinLock);
 
         await AddAccount(account, persistent);
 
         return false;
     }
 
+    private async Task SetAccountTokens(DeviceAccountDto account, string? accessToken, string? refreshToken, DevicePinLockDto? pinLock)
+    {
+        account.SessionId = GetSessionId(accessToken);
+        account.RefreshTokenExpiresOn = GetExpiry(refreshToken);
+        account.PinLock = pinLock;
+
+        if (pinLock is null)
+        {
+            account.AccessToken = accessToken;
+            account.RefreshToken = refreshToken;
+            account.SealedTokens = null;
+            return;
+        }
+
+        var tokens = new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
+
+        account.AccessToken = account.RefreshToken = null;
+        account.SealedTokens = await pinCipher.Seal(pinLock, JsonSerializer.SerializeToUtf8Bytes(tokens, IdentityJsonContext.Default.TokenResponseDto));
+    }
+
+    private async Task<TokenResponseDto?> OpenTokens(DeviceAccountDto account, string? pin)
+    {
+        if (account.PinLock is null)
+            return new() { AccessToken = account.AccessToken, RefreshToken = account.RefreshToken };
+
+        if (string.IsNullOrEmpty(pin) || account.SealedTokens is null)
+            return null;
+
+        var tokens = await pinCipher.Open(account.PinLock, pin, account.SealedTokens);
+
+        return tokens is null ? null : JsonSerializer.Deserialize(tokens, IdentityJsonContext.Default.TokenResponseDto);
+    }
+
+    private async Task<DevicePinLockDto?> ReadPinLock()
+    {
+        var json = await storageService.GetItem("pin_lock");
+
+        if (string.IsNullOrWhiteSpace(json))
+            return null;
+
+        try
+        {
+            return JsonSerializer.Deserialize(json, IdentityJsonContext.Default.DevicePinLockDto);
+        }
+        catch (JsonException exp)
+        {
+            authLogger.LogWarning(exp, "Failed to read the PIN of the active account.");
+            return null;
+        }
+    }
+
+    private async Task WritePinLock(DevicePinLockDto? pinLock, bool persistent)
+    {
+        if (pinLock is null)
+        {
+            await storageService.RemoveItem("pin_lock");
+            return;
+        }
+
+        await storageService.SetItem("pin_lock", JsonSerializer.Serialize(pinLock, IdentityJsonContext.Default.DevicePinLockDto), persistent);
+    }
+
     private async Task ForgetAccount(string? refreshToken)
     {
-        if ((await GetOtherAccounts()).FirstOrDefault(account => account.RefreshToken == refreshToken) is { } account)
+        if (GetSessionId(refreshToken) is Guid sessionId
+            && (await GetOtherAccounts()).FirstOrDefault(account => account.SessionId == sessionId) is { } account)
         {
-            await RemoveAccount(account.User.Id);
+            await RemoveAccount(account.UserId);
         }
     }
 
@@ -184,7 +292,7 @@ public partial class AuthManager
     {
         foreach (var persistent in (bool[])[true, false])
         {
-            if ((await ReadAccounts(persistent)).FirstOrDefault(account => account.User.Id == userId) is { } account)
+            if ((await ReadAccounts(persistent)).FirstOrDefault(account => account.UserId == userId) is { } account)
                 return (account, persistent);
         }
 
@@ -193,10 +301,7 @@ public partial class AuthManager
 
     private async Task AddAccount(DeviceAccountDto account, bool persistent)
     {
-        await RemoveAccount(account.User.Id);
-
-        await storageService.SetItem(AccountTokenKey(account.User.Id, "refresh_token"), account.RefreshToken, persistent);
-        await storageService.SetItem(AccountTokenKey(account.User.Id, "access_token"), account.AccessToken, persistent);
+        await RemoveAccount(account.UserId);
 
         await WriteAccounts(persistent, [.. await ReadAccounts(persistent), account]);
     }
@@ -207,14 +312,11 @@ public partial class AuthManager
         {
             var accounts = await ReadAccounts(persistent);
 
-            if (accounts.RemoveAll(account => account.User.Id == userId) > 0)
+            if (accounts.RemoveAll(account => account.UserId == userId) > 0)
             {
                 await WriteAccounts(persistent, accounts);
             }
         }
-
-        await storageService.RemoveItem(AccountTokenKey(userId, "access_token"));
-        await storageService.RemoveItem(AccountTokenKey(userId, "refresh_token"));
     }
 
     private async Task<List<DeviceAccountDto>> ReadAccounts(bool persistent)
@@ -236,23 +338,10 @@ public partial class AuthManager
             accounts = [];
         }
 
-        foreach (var account in accounts)
+        var now = TimeProvider.GetUtcNow();
+
+        if (accounts.RemoveAll(account => account.RefreshTokenExpiresOn is not DateTimeOffset expiresOn || expiresOn <= now) > 0)
         {
-            account.AccessToken = await storageService.GetItem(AccountTokenKey(account.User.Id, "access_token"));
-            account.RefreshToken = await storageService.GetItem(AccountTokenKey(account.User.Id, "refresh_token"));
-        }
-
-        var endedAccounts = accounts.Where(account => IAuthTokenProvider.ParseAccessToken(account.RefreshToken, validateExpiry: true).IsAuthenticated() is false).ToArray();
-
-        if (endedAccounts.Length > 0)
-        {
-            foreach (var account in endedAccounts)
-            {
-                accounts.Remove(account);
-                await storageService.RemoveItem(AccountTokenKey(account.User.Id, "access_token"));
-                await storageService.RemoveItem(AccountTokenKey(account.User.Id, "refresh_token"));
-            }
-
             await WriteAccounts(persistent, accounts);
         }
 
@@ -269,12 +358,15 @@ public partial class AuthManager
             return;
         }
 
-        List<DeviceAccountDto> profiles = [.. accounts.Select(account => new DeviceAccountDto { User = account.User })];
-
-        await storageService.SetItem(key, JsonSerializer.Serialize(profiles, IdentityJsonContext.Default.ListDeviceAccountDto), persistent);
+        await storageService.SetItem(key, JsonSerializer.Serialize(accounts, IdentityJsonContext.Default.ListDeviceAccountDto), persistent);
     }
 
-    private static string AccountTokenKey(Guid userId, string token) => $"account:{userId}:{token}";
+    private static DateTimeOffset? GetExpiry(string? token)
+    {
+        return long.TryParse(IAuthTokenProvider.ParseAccessToken(token, validateExpiry: false).FindFirst("exp")?.Value, out var expSeconds)
+            ? DateTimeOffset.FromUnixTimeSeconds(expSeconds)
+            : null;
+    }
 
     private async Task RevokeQuietly(string? refreshToken)
     {

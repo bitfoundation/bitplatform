@@ -75,9 +75,13 @@
                         {
                             <BitActionButton FullWidth Class="account-button" OnClick="WrapHandled(() => SwitchAccount(account))">
                                 <BitPersona Size="BitPersonaSize.Size32"
-                                            ImageUrl="@account.User.GetProfileImageUrl(AbsoluteServerAddress)"
-                                            PrimaryText="@account.User.DisplayName"
-                                            SecondaryText="@(account.User.Email ?? account.User.PhoneNumber)" />
+                                            ImageUrl="@account.GetProfileImageUrl(AbsoluteServerAddress)"
+                                            PrimaryText="@account.DisplayName"
+                                            SecondaryText="@(account.Email ?? account.PhoneNumber)" />
+                                @if (account.HasPin)
+                                {
+                                    <BitIcon IconName="@BitIconName.Lock" Size="BitSize.Small" Color="BitColor.SecondaryForeground" />
+                                }
                             </BitActionButton>
                         }
 

@@ -2192,6 +2192,51 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Wat dit apparaat en de server over de app melden, voor het oplossen van problemen.</value>
   </data>
+    <data name="Pin" xml:space="preserve">
+    <value>Pincode</value>
+  </data>
+    <data name="PinDescription" xml:space="preserve">
+    <value>Een pincode houdt dit account op dit apparaat vergrendeld terwijl je een ander account gebruikt. Hij wordt alleen op dit apparaat bewaard en je wachtwoord werkt altijd.</value>
+  </data>
+    <data name="PinIsSet" xml:space="preserve">
+    <value>Dit account heeft een pincode op dit apparaat.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>Nieuwe pincode</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>Voer de pincode opnieuw in</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>De pincodes komen niet overeen. Probeer het opnieuw.</value>
+  </data>
+    <data name="ChangePin" xml:space="preserve">
+    <value>Pincode wijzigen</value>
+  </data>
+    <data name="RemovePin" xml:space="preserve">
+    <value>Pincode verwijderen</value>
+  </data>
+    <data name="PinSavedMessage" xml:space="preserve">
+    <value>De pincode is opgeslagen.</value>
+  </data>
+    <data name="PinRemovedMessage" xml:space="preserve">
+    <value>De pincode is verwijderd.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>Voer de pincode in</value>
+  </data>
+    <data name="WrongPin" xml:space="preserve">
+    <value>Onjuiste pincode.</value>
+  </data>
+    <data name="SignInAgainToResetPin" xml:space="preserve">
+    <value>Meld je opnieuw aan om de pincode te herstellen</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>Letters gebruiken</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>Cijfers gebruiken</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>Kioskmodus</value>

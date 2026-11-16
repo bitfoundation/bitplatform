@@ -23,6 +23,7 @@ public partial class AppMenu
     [AutoInject] private CultureService cultureService = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
+    [AutoInject] private AccountSwitchService accountSwitchService = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     [AutoInject] private IPushNotificationController pushNotificationController = default!;
@@ -332,7 +333,7 @@ public partial class AppMenu
     private async Task SwitchAccount(DeviceAccountDto account)
     {
         CloseMenu();
-        await AuthManager.SwitchAccount(account.User.Id);
+        await accountSwitchService.Switch(account);
     }
 
     private async Task AddAccount()

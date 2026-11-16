@@ -25,5 +25,11 @@
         <BitPivotItem Key="@nameof(AppStrings.Password)" HeaderText="@Localizer[nameof(AppStrings.Password)]">
             <ChangePasswordTab />
         </BitPivotItem>
+        @if (isPinSupported)
+        {
+            <BitPivotItem Key="@nameof(AppStrings.Pin)" HeaderText="@Localizer[nameof(AppStrings.Pin)]">
+                <PinTab />
+            </BitPivotItem>
+        }
     </BitPivot>
 </section>

@@ -2192,6 +2192,51 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Lo que este dispositivo y el servidor informan sobre la aplicación, para solucionar problemas.</value>
   </data>
+    <data name="Pin" xml:space="preserve">
+    <value>PIN</value>
+  </data>
+    <data name="PinDescription" xml:space="preserve">
+    <value>Un PIN mantiene esta cuenta bloqueada en este dispositivo mientras usas otra cuenta. Se guarda solo en este dispositivo y tu contraseña siempre funciona.</value>
+  </data>
+    <data name="PinIsSet" xml:space="preserve">
+    <value>Esta cuenta tiene un PIN en este dispositivo.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>PIN nuevo</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>Vuelve a introducir el PIN</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>Los PIN no coinciden. Inténtalo de nuevo.</value>
+  </data>
+    <data name="ChangePin" xml:space="preserve">
+    <value>Cambiar PIN</value>
+  </data>
+    <data name="RemovePin" xml:space="preserve">
+    <value>Quitar PIN</value>
+  </data>
+    <data name="PinSavedMessage" xml:space="preserve">
+    <value>El PIN se ha guardado.</value>
+  </data>
+    <data name="PinRemovedMessage" xml:space="preserve">
+    <value>El PIN se ha quitado.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>Introduce el PIN</value>
+  </data>
+    <data name="WrongPin" xml:space="preserve">
+    <value>PIN incorrecto.</value>
+  </data>
+    <data name="SignInAgainToResetPin" xml:space="preserve">
+    <value>Inicia sesión de nuevo para restablecer el PIN</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>Usar letras</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>Usar números</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>Modo quiosco</value>

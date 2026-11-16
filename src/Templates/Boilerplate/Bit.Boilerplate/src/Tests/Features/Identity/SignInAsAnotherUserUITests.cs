@@ -90,6 +90,45 @@ public partial class SignInAsAnotherUserUITests : AppPageTest
             "A sign-in the server refused must not end the session the user already had.");
     }
 
+    [TestMethod]
+    public async Task SwitchingToAnAccountWithAPin_Should_AskForThatPin()
+    {
+        await using var server = new AppTestServer(Context);
+        await server.Build().Start(TestContext.CancellationToken);
+
+        var firstEmail = MagicLinkSignInUtils.NewTestEmail();
+        var secondEmail = MagicLinkSignInUtils.NewTestEmail();
+        const string pin = "12ab34cd";
+
+        await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, firstEmail, TestContext.CancellationToken);
+        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(firstEmail);
+
+        await Page.GotoAsync(new Uri(server.WebAppAddress, $"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}").ToString(),
+            new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Page.WaitForBlazorInteractive();
+        await Page.GetByText(AppStrings.Pin, new() { Exact = true }).ClickAsync();
+
+        await BitOtpInputUtils.FillOtpInputs(Page.Locator(".bit-otp", new() { HasText = AppStrings.NewPin }), pin);
+        await BitOtpInputUtils.FillOtpInputs(Page.Locator(".bit-otp", new() { HasText = AppStrings.RepeatPin }), pin);
+        await Expect(Page.GetByText(AppStrings.PinIsSet)).ToBeVisibleAsync();
+
+        await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, secondEmail, TestContext.CancellationToken);
+        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(secondEmail);
+
+        await AppMenuUtils.ClickItem(Page, callout => callout.Locator(".account-button", new() { HasText = firstEmail }));
+
+        var pinModal = Page.Locator(".bit-mdl", new() { HasText = AppStrings.EnterPinTitle });
+
+        await BitOtpInputUtils.FillOtpInputs(pinModal, "87654321");
+        await Expect(pinModal.GetByText(AppStrings.WrongPin)).ToBeVisibleAsync();
+        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(secondEmail);
+
+        await BitOtpInputUtils.FillOtpInputs(pinModal, pin);
+
+        await Expect(pinModal).ToBeHiddenAsync();
+        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(firstEmail);
+    }
+
     private async Task<int> CountUserSessions(AppTestServer server, string email)
     {
         await using var scope = server.ApiApp.Services.CreateAsyncScope();
