@@ -144,15 +144,15 @@ In [`src/Shared/appsettings.json`](/src/Shared/appsettings.json), you can see lo
     "ApplicationInsights": {
         "ConnectionString": null
     },
+    "Sentry": {
+        "Dsn": ""
+    },
     "Logging": {
         "LogLevel": {
             "Default": "Warning",
             "Microsoft.Hosting.Lifetime": "Information",
             "Microsoft.EntityFrameworkCore.Database.Command": "Information",
             "Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware": "None"
-        },
-        "Sentry": {
-            "Dsn": ""
         },
         "Belemetry": {
             "LogLevel": {

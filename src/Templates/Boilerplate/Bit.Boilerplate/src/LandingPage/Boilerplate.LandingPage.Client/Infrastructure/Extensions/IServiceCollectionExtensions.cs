@@ -33,9 +33,9 @@ public static class IServiceCollectionExtensions
             }
 
             //#if (sentry == true)
-            if (string.IsNullOrWhiteSpace(configuration["Logging:Sentry:Dsn"]) is false)
+            if (string.IsNullOrWhiteSpace(configuration["Sentry:Dsn"]) is false)
             {
-                options.AddSentryExporter(configuration["Logging:Sentry:Dsn"]!);
+                options.AddSentryExporter(configuration["Sentry:Dsn"]!);
             }
             //#endif
 

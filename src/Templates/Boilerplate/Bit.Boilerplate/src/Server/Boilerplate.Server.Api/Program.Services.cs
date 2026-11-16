@@ -130,10 +130,13 @@ public static partial class Program
         services.AddScoped<ProductEmbeddingService>();
         //#endif
         //#endif
-        var smsBridge = services.AddSmsBridge(options => configuration.GetSection("Sms").Bind(options));
         if (appSettings.Sms?.Configured is true)
         {
-            smsBridge.UseTwilio("Twilio", twilio => configuration.GetSection("Sms:Providers:Twilio").Bind(twilio));
+            services.AddSmsBridge(configuration.GetSection("Sms"));
+        }
+        else
+        {
+            services.AddSmsBridge(options => configuration.GetSection("Sms").Bind(options));
         }
 
         services.AddSingleton(_ => PhoneNumberUtil.GetInstance());

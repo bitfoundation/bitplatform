@@ -136,7 +136,9 @@ client brings SQLitePCLRaw 3, while `Bit.Bsqlite` for .NET 10 asks for 2.x and t
 Outside the Boilerplate, a project that targets only .NET 10 keeps every package built with .NET on its .NET 10
 line the same way: `Microsoft.Extensions.*` (the AI ones too), `Microsoft.AspNetCore.*`, `System.*` and
 `System.CommandLine`, whose 2.0.x ships with .NET 10 and 3.x with .NET 11. A .NET 11 project takes their new
-major. The few literals that differ per framework are switch
+major. The bit CLI's OpenTelemetry packages are the one exception: their newest can bring the next major's
+`System.Diagnostics.DiagnosticSource` with it, and they move anyway once the CLI's tests pass and the built CLI
+runs on the .NET 10 runtime. The few literals that differ per framework are switch
 symbols in `template.json` (the SDK, the dev container image, the `dotnet-ef` version, the
 runner image), so they move together with the files they replace. A template line written with the .NET 10 value
 of such a literal is one no symbol maps, so look for the .NET 10 values in the template's files and give them the
