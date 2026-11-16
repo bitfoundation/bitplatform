@@ -88,7 +88,7 @@ public class BitTooltipGroup : ComponentBase
         // from it to the next control of the row, before its own hide delay has run out and started the window.
         foreach (var member in _members)
         {
-            if (ReferenceEquals(member, tooltip) is false && member.IsShown) return true;
+            if (ReferenceEquals(member, tooltip) is false && member.Shown) return true;
         }
 
         if (_lastHiddenAt == 0) return false;

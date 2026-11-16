@@ -1949,6 +1949,34 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.AssignIsShown(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.get_DefaultIsShown</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.get_IsShown</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.get_IsShownChanged</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitTooltip.get_MirrorInRtl</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
@@ -1957,6 +1985,27 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitTooltip.get_Position</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.set_DefaultIsShown(System.Nullable{System.Boolean})</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.set_IsShown(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.set_IsShownChanged(Microsoft.AspNetCore.Components.EventCallback{System.Boolean})</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

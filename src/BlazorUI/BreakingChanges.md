@@ -5,6 +5,21 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitTooltip`'s `IsShown` is `Shown` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Checked`, `Toggled`), and the tooltip's shown state
+was still spelled with one. The `[Parameter]` is renamed with its two-way binding and its uncontrolled default:
+
+| Before | After |
+|---|---|
+| `<BitTooltip IsShown="visible" />` | `<BitTooltip Shown="visible" />` |
+| `<BitTooltip @bind-IsShown="visible" />` | `<BitTooltip @bind-Shown="visible" />` |
+| `<BitTooltip IsShownChanged="OnShownChanged" />` | `<BitTooltip ShownChanged="OnShownChanged" />` |
+| `<BitTooltip DefaultIsShown="true" />` | `<BitTooltip DefaultShown="true" />` |
+
+What the tooltip renders is unchanged (`bit-ttp-vis`), and so are its `Show`, `Hide` and `Toggle` methods and its
+`OnShow`, `OnHide` and `OnToggle` events.
+
 ### `IsToggled` is `Toggled` on `BitMenuButton` and `BitNavPanel` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own state is spelled without an `Is` (`Disabled`, `Loading`, `Checked`), and the toggled state of the
