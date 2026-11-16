@@ -3,10 +3,29 @@ using System.Security.Cryptography;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
+/// <summary>
+/// Keeps a locked account's tokens on this device encrypted with a key that only its PIN opens. Nothing here reaches
+/// the server.
+/// <para>How it works:</para>
+/// <list type="number">
+/// <item><see cref="CreateLock"/> makes an ECDH P-256 key pair and encrypts its private key with AES-GCM under a key
+/// derived from the PIN (PBKDF2, SHA-256, 600,000 rounds). The public key stays readable (See <see cref="DevicePinLockDto"/>).</item>
+/// <item><see cref="Seal"/> encrypts to that public key without the PIN: a one-time key pair, ECDH with the lock's public
+/// key, and SHA-256 of the shared secret as the AES-GCM key. That is how a locked account's refreshed tokens are stored
+/// while another account is active (See <see cref="DeviceSealedDataDto"/>).</item>
+/// <item><see cref="Open"/> derives the PIN's key, decrypts the private key and repeats the ECDH. A wrong PIN fails the
+/// GCM tag and returns null.</item>
+/// </list>
+/// <para>
+/// The rounds only slow down guessing a copy of the storage; <see cref="MaxFailedAttempts"/> limits the app's own prompt.
+/// The browser runs these primitives with Butil's Crypto (See WebAccountPinCipher), every other platform with .NET's.
+/// </para>
+/// </summary>
 public partial class AccountPinCipher
 {
     public const int PinLength = 8;
 
+    /// <summary>Wrong PINs in a row after which AuthManager removes the session from the device.</summary>
     public const int MaxFailedAttempts = 10;
 
     private const int PinIterations = 600_000;
