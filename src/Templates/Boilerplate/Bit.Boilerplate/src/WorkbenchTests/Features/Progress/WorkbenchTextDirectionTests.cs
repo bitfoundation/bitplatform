@@ -19,8 +19,8 @@ public class WorkbenchTextDirectionTests
     }
 
     // An agent's task, word for word, with under half of its letters Persian.
-    private static readonly WorkbenchProgressTask persianTask = Task("ارتقا به template 11.0.0-pre-20 و telemetry صفحه‌ها و اپ‌ها",
-                                                                     "bit Fabric روی template 11.0.0-pre-20 است و روی Test کار می‌کند.",
+    private static readonly WorkbenchProgressTask persianTask = Task("ارتقا به template 1.2.3-pre-04 و telemetry صفحه‌ها و اپ‌ها",
+                                                                     "bit Fabric روی template 1.2.3-pre-04 است و روی Test کار می‌کند.",
                                                                      ["bit ci روی bit Fabric", "squash-merge به main (Production)", "rule تونل Cloudflare برای telemetry روی Test و Production"]);
 
     [TestMethod]
@@ -34,7 +34,7 @@ public class WorkbenchTextDirectionTests
     [DataRow("squash-merge به main (Production)", WorkbenchTextDirection.RightToLeft)]
     [DataRow("bit ci passed (exit 0)", WorkbenchTextDirection.LeftToRight)]
     [DataRow("`dotnet test`", WorkbenchTextDirection.LeftToRight)]
-    [DataRow("11.0.0-pre-20", WorkbenchTextDirection.LeftToRight)]
+    [DataRow("1.2.3-pre-04", WorkbenchTextDirection.LeftToRight)]
     [DataRow("۲۰۲۶-۱۱-۱۵", WorkbenchTextDirection.RightToLeft)]
     public void ATextOfAPersianTask_Should_ReadRightToLeftOnlyWithPersianInIt(string text, string direction)
     {
@@ -55,7 +55,7 @@ public class WorkbenchTextDirectionTests
     public void TheLanguageTheAgentGives_Should_DecideOverTheWords()
     {
         Assert.AreEqual(WorkbenchTextDirection.RightToLeft, WorkbenchTextDirection.Of(Task("Deploy to Test", null, ["bit ci"], language: "fa")));
-        Assert.AreEqual(WorkbenchTextDirection.LeftToRight, WorkbenchTextDirection.Of(Task("ارتقا به template 11.0.0-pre-20", null, [], language: "en")));
+        Assert.AreEqual(WorkbenchTextDirection.LeftToRight, WorkbenchTextDirection.Of(Task("ارتقا به template 1.2.3-pre-04", null, [], language: "en")));
         Assert.AreEqual(WorkbenchTextDirection.RightToLeft, WorkbenchTextDirection.Of(Task("Deploy", null, [], language: "ar-SA")));
         Assert.AreEqual(BitDir.Rtl, WorkbenchTextDirection.ToBitDir(WorkbenchTextDirection.RightToLeft));
     }

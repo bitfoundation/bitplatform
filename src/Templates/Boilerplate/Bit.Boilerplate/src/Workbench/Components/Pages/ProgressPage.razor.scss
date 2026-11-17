@@ -64,7 +64,7 @@
 }
 
 // What the agent and the user wrote keeps the digits it was written with: Persian's font draws 0-9 as ۰-۹ everywhere else
-// (_rtl-fonts.scss), which would turn a version like 11.0.0-pre-20 into ۱۱.۰.۰-pre-۲۰. The ask and task cards inside take it too.
+// (_rtl-fonts.scss), which would turn a version like 1.2.3-pre-04 into ۱.۲.۳-pre-۰۴. The ask and task cards inside take it too.
 .progress-page:lang(fa) ::deep .as-written {
     font-family: var(--app-preset-font-family), "Vazirmatn";
 }
