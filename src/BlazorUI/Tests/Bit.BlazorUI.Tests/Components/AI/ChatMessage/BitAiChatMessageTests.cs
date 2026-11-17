@@ -669,7 +669,7 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         var component = RenderComponent<BitAiChatMessage>(p => p
             .Add(c => c.Message, message)
-            .Add(c => c.IsLatest, false)
+            .Add(c => c.Latest, false)
             .Add(c => c.OnFollowUp, _ => { }));
 
         Assert.IsEmpty(component.FindAll(".bit-aicms-fup"));

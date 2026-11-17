@@ -45,9 +45,6 @@ public partial class BitParameterNamingContractTests
         ["BitTimeZonePicker"] = ["IsOpen", "IsOpenChanged"],
         ["BitChartLegacy"] = ["IsDateAdapterRequired"],
         ["BitDataGridLegacyColumnBase"] = ["IsDefaultSort"],
-        ["BitAiChatMessage"] = ["IsLatest"],
-        ["BitAiCodeBlockView"] = ["IsStreaming"],
-        ["BitAiStreamingMarkdown"] = ["IsStreaming"],
     };
 
     private static IEnumerable<(string Component, string Parameter)> Outliers =>

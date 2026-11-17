@@ -36,7 +36,7 @@ private const string jsonCode = """"""
 
 <BitButton OnClick=""StreamAsync"" Disabled=""isStreaming"" IconName=""@BitIconName.Play"">Stream the code</BitButton>
 
-<BitAiCodeBlockView Language=""python"" Code=""@streamedCode"" IsStreaming=""isStreaming"" />";
+<BitAiCodeBlockView Language=""python"" Code=""@streamedCode"" Streaming=""isStreaming"" />";
     private readonly string example4CsharpCode = @"
 private const string pythonCode = """"""
     def fibonacci(n: int) -> list[int]:

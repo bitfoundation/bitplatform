@@ -29,13 +29,6 @@ public partial class BitAiCodeBlockViewDemo
         },
         new()
         {
-            Name = "IsStreaming",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the block is still receiving content, which holds the highlighting back: the code is shown as plain text while it is true, and highlighted once when it turns false.",
-        },
-        new()
-        {
             Name = "Language",
             Type = "string?",
             DefaultValue = "null",
@@ -49,6 +42,13 @@ public partial class BitAiCodeBlockViewDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Shows the header bar with the language (or file name) and the copy button. The copy button also needs BitAiUiOptions.ShowCodeCopy, which is on by default.",
+        },
+        new()
+        {
+            Name = "Streaming",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the block is still receiving content, which holds the highlighting back: the code is shown as plain text while it is true, and highlighted once when it turns false.",
         },
         new()
         {

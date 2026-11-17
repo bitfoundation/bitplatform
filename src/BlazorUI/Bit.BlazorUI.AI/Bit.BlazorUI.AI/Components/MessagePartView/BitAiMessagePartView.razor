@@ -41,7 +41,7 @@
                 return @<BitAiCodeBlockView Code="@source.Text"
                                             Language="@source.Language"
                                             FileName="@source.FileName"
-                                            IsStreaming="@source.IsStreaming" />;
+                                            Streaming="@source.IsStreaming" />;
 
             case BitAiTextPart prose:
                 return @<BitAiTextPartView Part="prose" Message="Message" OnCitationClick="OnCitationClick" />;

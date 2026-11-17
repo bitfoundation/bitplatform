@@ -7,7 +7,7 @@
 /// <remarks>
 /// Highlighting is deferred while the block is still streaming. Re-tokenising a growing block on every delta is wasted
 /// work, and colors that shift as the lexer changes its mind about an unterminated string are worse than no colors at
-/// all; the block is highlighted once, the moment <see cref="IsStreaming"/> turns false.
+/// all; the block is highlighted once, the moment <see cref="Streaming"/> turns false.
 /// <br />
 /// The colors of the tokens are read from the theme - each one a role color tuned to be read on the page, so they
 /// follow the preset and the color scheme - and every one of them can be restyled through its public
@@ -67,13 +67,6 @@ public partial class BitAiCodeBlockView : BitAiComponentBase
     [Parameter] public string? FileName { get; set; }
 
     /// <summary>
-    /// Whether the block is still receiving content, which holds the highlighting back until it is complete.
-    /// <br />
-    /// The default value is <strong>false</strong>.
-    /// </summary>
-    [Parameter] public bool IsStreaming { get; set; }
-
-    /// <summary>
     /// The language identifier used to pick a highlighter, also shown in the header when there is no file name.
     /// </summary>
     [Parameter] public string? Language { get; set; }
@@ -84,6 +77,13 @@ public partial class BitAiCodeBlockView : BitAiComponentBase
     /// The default value is <strong>true</strong>.
     /// </summary>
     [Parameter] public bool ShowHeader { get; set; } = true;
+
+    /// <summary>
+    /// Whether the block is still receiving content, which holds the highlighting back until it is complete.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    [Parameter] public bool Streaming { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the code block.
@@ -129,7 +129,7 @@ public partial class BitAiCodeBlockView : BitAiComponentBase
 
     private void Tokenize()
     {
-        if (IsStreaming)
+        if (Streaming)
         {
             _tokens = [];
             _tokenizedFor = null;
