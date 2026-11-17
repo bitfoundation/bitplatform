@@ -160,7 +160,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>] [-AllLibraries]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. `-AllLibraries` lists every bit library's tools, as the website's chat does; without it BlazorUI's and Butil's are the only library tools listed. |
 | `devcontainer [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Keep]` | Creates a project with `bit new`, for the template's default .NET or the one `-Framework` names, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
 | `aspire [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
-| `agents [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Scenario <ids>] [-Model <models>] [-Long] [-Keep]` | Creates a project with `bit new` as users get it and hands each scenario of `agent-scenarios.json` to a headless Claude Code that sees nothing but a copy of that project, then checks which skills it read, which tools it called and which files it changed after each turn. Keeps the transcripts and final messages. |
+| `agents [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Scenario <ids>] [-Model <models>] [-Effort <level>] [-Long] [-Keep]` | Creates a project with `bit new` as users get it and hands each scenario of `agent-scenarios.json` to a headless Claude Code that sees nothing but a copy of that project, then checks which skills it read, which tools it called and which files it changed after each turn. Keeps the transcripts and final messages. |
 
 ## 1. The CI run
 
@@ -718,6 +718,9 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
   its questions are answered, Opus asks first. `-Long` also lets `crud-feature` build the whole feature after the
   approval, which takes up to an hour. The two baselines run only when named: the same requests in the same project
   with every agent instruction removed, to show what the instructions add.
+- `-Effort low`, `medium`, `high`, `xhigh` or `max` sets the effort every agent runs at. Without it they run at Claude
+  Code's default for their model, which a transcript doesn't record, so say which effort a comparison between models
+  used. Each scenario's `result.json` and the summary table show the effort that was asked for, `default` when none was.
 - The Bit packages are as for `devcontainer`. A library packed on this machine is not a stand-in for a prerelease:
   `Bit.BlazorES2019` gets its scripts from building aspnetcore in the prerelease workflow, and a local pack has none,
   so every page renders blank.

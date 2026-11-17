@@ -100,6 +100,10 @@ param(
     # agents: the models each scenario runs with, as Claude Code names them.
     [string[]] $Model = @('sonnet'),
 
+    # agents: the effort every agent runs at; Claude Code's default for the model when omitted.
+    [ValidateSet('low', 'medium', 'high', 'xhigh', 'max')]
+    [string] $Effort,
+
     # agents: also sends the turns that have the agent build a whole feature, up to an hour each.
     [switch] $Long,
 
@@ -1692,6 +1696,10 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
         $arguments += '--resume', $session
     }
 
+    if ($Effort) {
+        $arguments += '--effort', $Effort
+    }
+
     $start = [Diagnostics.ProcessStartInfo]::new((Get-ClaudeCli))
     $arguments | ForEach-Object { $start.ArgumentList.Add($_) }
     $start.WorkingDirectory = $folder
@@ -1853,6 +1861,7 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     [pscustomobject]@{
         Scenario = $id
         Model = $model
+        Effort = $(if ($Effort) { $Effort } else { 'default' })
         Minutes = [Math]::Round(([DateTimeOffset]::Now - $started).TotalMinutes, 1)
         Cost = [Math]::Round((@($turns) + @($handoff) | Where-Object { $_ -and $_.Cost } | Measure-Object Cost -Sum).Sum, 2)
         Checks = @($checks)
@@ -1908,7 +1917,7 @@ function Invoke-AgentsTest {
 
             while ($running.Count -lt 3 -and ($run = $pending | Where-Object { -not $_.Heavy -or -not ($running | Where-Object Heavy) } | Select-Object -First 1)) {
                 $pending.Remove($run) | Out-Null
-                $arguments = @('-NoProfile', '-File', "`"$PSCommandPath`"", 'agents', '-Worker', '-Lab', "`"$lab`"", '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' }))
+                $arguments = @('-NoProfile', '-File', "`"$PSCommandPath`"", 'agents', '-Worker', '-Lab', "`"$lab`"", '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' })) + @($(if ($Effort) { '-Effort', $Effort }))
                 $log = Join-Path $lab "worker-$($run.Id)-$($run.Model).log"
                 $process = Start-Process $pwsh -ArgumentList $arguments -PassThru -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError "$log.err"
                 $running.Add(($run | Add-Member -PassThru Process $process | Add-Member -PassThru Started ([DateTimeOffset]::Now)))
@@ -1925,6 +1934,7 @@ function Invoke-AgentsTest {
             [pscustomobject]@{
                 Scenario = $_.Scenario
                 Model = $_.Model
+                Effort = $_.Effort
                 Passed = "$(@($_.Checks | Where-Object Verdict -eq 'pass').Count)/$(@($_.Checks | Where-Object Verdict -ne 'skipped').Count)"
                 Minutes = $_.Minutes
                 Cost = $_.Cost
