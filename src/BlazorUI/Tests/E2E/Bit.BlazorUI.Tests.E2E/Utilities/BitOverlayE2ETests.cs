@@ -78,6 +78,9 @@ public class BitOverlayE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-open-basic");
         var layer = Page.Locator("#ovl-basic");
         await Expect(layer).ToHaveClassAsync(HasClass("bit-ovl-opn"));
+        // OnOpen is raised once the scroller has been taken, a few round trips after the class shows, and a closing
+        // that overtakes it stands it down: a click before then is reported as a close of an opening never reported.
+        await Expect(Page.Locator("#basic-opened")).ToHaveTextAsync("1");
 
         await Page.Mouse.ClickAsync(10, 10);
 

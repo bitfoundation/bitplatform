@@ -35,6 +35,13 @@ public class BitTagsInputE2ETests : E2ETestBase
 
     private Task ExpectTextAsync(string id, string text) => Expect(Page.Locator($"#{id}")).ToHaveTextAsync(text);
 
+    // Replaces the text of a correction that was handed back in one go, in the page. FillAsync selects the text and types
+    // over it in two steps, and the caret the field puts at the end of a handed-back correction (a round trip after the
+    // refusal, on a circuit) can land between them and collapse the selection: the typing then joined the old text, and
+    // emptying it deleted nothing.
+    private static Task ReplaceHandedBackTextAsync(ILocator editor, string text)
+        => editor.EvaluateAsync("(el, text) => { el.value = text; el.dispatchEvent(new Event('input', { bubbles: true })); }", text);
+
     private async Task AddAsync(string id, string text)
     {
         await Input(id).FillAsync(text);
@@ -654,12 +661,12 @@ public class BitTagsInputE2ETests : E2ETestBase
         await Expect(editor).ToHaveValueAsync("ab");
 
         // A duplicate is refused the same way.
-        await editor.FillAsync("web");
+        await ReplaceHandedBackTextAsync(editor, "web");
         await editor.PressAsync("Enter");
         await Expect(InvalidMessage("tgi-edit")).ToHaveTextAsync("web was not added. It is already in the list.");
 
         // Emptied, the edit removes the tag.
-        await editor.FillAsync("");
+        await ReplaceHandedBackTextAsync(editor, "");
         await editor.PressAsync("Enter");
         await ExpectTextAsync("edit-value", "dotnet|web");
     }
