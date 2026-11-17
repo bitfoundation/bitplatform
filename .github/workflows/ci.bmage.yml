@@ -12,6 +12,8 @@ on:
     - 'src/Utilities/Bink/Bit.Bink/**'
     - 'src/Utilities/BbScanner/Bit.BbScanner/**'
     - 'src/Utilities/BbScanner/Tests/Bit.BbScanner.TestKit/**'
+    # The MCP server's search ranking, linked in from there.
+    - 'src/Utilities/Shared/Mcp/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true

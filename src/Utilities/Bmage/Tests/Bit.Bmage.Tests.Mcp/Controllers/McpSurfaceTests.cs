@@ -297,7 +297,7 @@ public class McpSurfaceTests
     {
         foreach (var query in new[] { "avatar", "strip gps", "prerender", "MaxFileSize", "editor toolbar", "thumbnail server", "webp", "dispose" })
         {
-            foreach (var hit in BmageSearchIndex.Search(query, 50))
+            foreach (var hit in BmageSearchIndex.Search(query, 50).Hits)
             {
                 var tool = hit.Tool[..hit.Tool.IndexOf('(', StringComparison.Ordinal)];
 

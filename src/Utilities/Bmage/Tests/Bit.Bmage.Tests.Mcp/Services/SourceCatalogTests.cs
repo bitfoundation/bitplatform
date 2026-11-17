@@ -96,7 +96,7 @@ public class SourceCatalogTests
         Assert.IsTrue(chrome.All(file => file.Kind == BmageSourceCatalog.SiteChromeKind), string.Join(", ", chrome.Where(file => file.Kind != BmageSourceCatalog.SiteChromeKind).Select(file => file.Path)));
         Assert.IsFalse(BmageSourceCatalog.SourceFiles.Any(file => file.Kind == BmageSourceCatalog.SiteChromeKind && file.Path.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal) is false));
 
-        var hits = BmageSearchIndex.Search("command palette header footer navigation layout", 50);
+        var hits = BmageSearchIndex.Search("command palette header footer navigation layout", 50).Hits;
 
         Assert.IsNotEmpty(hits);
         Assert.IsFalse(hits.Any(hit => hit.Title.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal)),

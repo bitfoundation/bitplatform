@@ -108,8 +108,8 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBmage), Title = "Search everything about Bit.Bmage",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Start here. Searches everything known about Bit.Bmage at once - every guide section, every public type and member of the packages, the setup guides, the ready-made recipes, the code-review rules and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Call it whenever you do not already know which guide, type or recipe holds the answer. Example queries: 'avatar under 100 KB', 'strip gps from uploads', 'paste a screenshot and redact it', 'why is the editor unstyled', 'thumbnail on the server'.")]
-    public BmageSearchHitDto[] SearchBmage(
+    [Description("Start here. Searches everything known about Bit.Bmage at once - every guide section, every public type and member of the packages, the setup guides, the ready-made recipes, the code-review rules and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text; when nothing matches, it says why and names the closest matches. Call it whenever you do not already know which guide, type or recipe holds the answer. Example queries: 'avatar under 100 KB', 'strip gps from uploads', 'paste a screenshot and redact it', 'why is the editor unstyled', 'thumbnail on the server'.")]
+    public BmageSearchResultDto SearchBmage(
         [Description("What you are trying to do or what went wrong, in your own words, e.g. 'crop an avatar to a circle' or 'AVIF export fails on Safari'.")] string query,
         [Description("How many hits to return, 1 to 50. Default 12.")] int limit = 12)
     {
