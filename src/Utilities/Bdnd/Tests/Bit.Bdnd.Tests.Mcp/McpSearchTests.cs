@@ -84,6 +84,39 @@ public partial class McpSearchTests
     }
 
     [TestMethod]
+    public async Task A_query_joining_two_things_keeps_both_in_view()
+    {
+        // The thing with more material behind it would otherwise fill every place, and the caller
+        // would conclude the other has no answer.
+        foreach (var (query, first, second) in new[]
+                 {
+                     ("sortable list with handles", "Sortable lists", "Drag handles"),
+                     ("sortable list with a drag layer", "Sortable lists", "Custom drag layers"),
+                     ("drag handle in a tree", "Drag handles", "Trees"),
+                     ("custom drag preview for files", "Custom drag layers", "Files")
+                 })
+        {
+            var result = await McpCall.StructuredAsync<BdndSearchResultDto>("SearchBdnd", new() { ["query"] = query, ["limit"] = 2 });
+            var titles = result.Hits.Select(hit => hit.Title).ToArray();
+
+            CollectionAssert.Contains(titles, first, $"{query}: {string.Join(" | ", titles)}");
+            CollectionAssert.Contains(titles, second, $"{query}: {string.Join(" | ", titles)}");
+        }
+    }
+
+    [TestMethod]
+    public async Task A_single_hit_is_the_best_answer_rather_than_one_kept_for_another_word()
+    {
+        // With one place there is nothing to make room in: the hit that answers the question stays,
+        // instead of giving way to the best entry named by a word it is not named by ("items").
+        var result = await McpCall.StructuredAsync<BdndSearchResultDto>("SearchBdnd", new() { ["query"] = "reorder a list by dragging its items", ["limit"] = 1 });
+
+        Assert.HasCount(1, result.Hits);
+        Assert.AreEqual("Sortable lists", result.Hits[0].Title);
+        Assert.AreEqual("Guide section", result.Hits[0].Kind);
+    }
+
+    [TestMethod]
     public async Task A_word_inside_another_word_does_not_count()
     {
         // Every other title of this library says "drag", so "rag" counted inside a word would match nearly everything.
