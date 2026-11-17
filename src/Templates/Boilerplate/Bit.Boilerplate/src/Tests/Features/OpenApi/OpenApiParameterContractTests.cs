@@ -117,15 +117,23 @@ public partial class OpenApiParameterContractTests
 
             foreach (var operation in path.EnumerateObject())
             {
-                string?[] names = operation.Value.TryGetProperty("parameters", out var parameters)
-                    ? [.. parameters.EnumerateArray().Select(parameter => parameter.TryGetProperty("name", out var name) ? name.GetString() : null)]
-                    : [];
+                // Each query option by its name, with the type of its schema, which OpenAPI 3.1 requires on a parameter.
+                var types = (operation.Value.TryGetProperty("parameters", out var parameters) ? parameters.EnumerateArray().ToArray() : [])
+                    .Where(parameter => parameter.TryGetProperty("name", out var name) && name.GetString()?.StartsWith('$') is true)
+                    .ToDictionary(
+                        parameter => parameter.GetProperty("name").GetString()!,
+                        parameter => parameter.TryGetProperty("schema", out var schema) && schema.TryGetProperty("type", out var type) ? type.ToString() : null);
 
-                var missing = new[] { "$filter", "$orderby", "$top", "$skip" }.Except(names).ToArray();
-
-                if (missing.Length is not 0)
+                foreach (var (name, type) in new[] { ("$filter", "string"), ("$orderby", "string"), ("$top", "integer"), ("$skip", "integer") })
                 {
-                    offenders.Add($"{operation.Name.ToUpperInvariant()} {action} lists no {string.Join(", ", missing)}");
+                    if (types.TryGetValue(name, out var declared) is false)
+                    {
+                        offenders.Add($"{operation.Name.ToUpperInvariant()} {action} lists no {name}");
+                    }
+                    else if (declared != type)
+                    {
+                        offenders.Add($"{operation.Name.ToUpperInvariant()} {action} gives {name} the schema type {declared ?? "(none)"} instead of {type}");
+                    }
                 }
             }
         }

@@ -46,6 +46,12 @@ public partial class ProductController : AppControllerBase, IProductController
         return new PagedResponse<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
 
+    //#if (database == "PostgreSQL" || database == "SqlServer")
+    /// <summary>
+    /// Finds the products closest in meaning to <paramref name="searchQuery"/>, most relevant first. <c>$orderby</c> is ignored,
+    /// as ordering would disrupt the embedding service's relevance order.
+    /// </summary>
+    //#endif
     [HttpGet("{searchQuery}")]
     public async Task<PagedResponse<ProductDto>> SearchProducts(string searchQuery, ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {

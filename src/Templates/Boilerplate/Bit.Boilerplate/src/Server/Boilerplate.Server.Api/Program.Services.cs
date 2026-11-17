@@ -513,15 +513,16 @@ public static partial class Program
 
                 if (isODataEnabledAction)
                 {
+                    // OpenAPI 3.1 requires a schema (or content) on every parameter.
                     operation.Parameters.AddRange([
 
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$filter", Description = "Filters the results, based on a Boolean condition. (ex. Age gt 25)" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$select", Description = "Returns only the selected properties. (ex. FirstName, LastName)" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$expand", Description = "Include only the selected objects. (ex. Orders, Locations)" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$search", Description = "Finds resources that match a search criteria. (ex. \"search term\")" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$top", Description = "Returns only the first n items from a collection. (ex. 10)" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$skip", Description = "Skips the first n items from a collection. (ex. 10)" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$orderby", Description = "Orders the results of a query by one or more properties. (ex. Name desc)" }
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$filter", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Filters the results, based on a Boolean condition. (ex. Age gt 25)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$select", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Returns only the selected properties. (ex. FirstName, LastName)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$expand", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Include only the selected objects. (ex. Orders, Locations)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$search", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Finds resources that match a search criteria. (ex. \"search term\")" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$top", Schema = new OpenApiSchema { Type = JsonSchemaType.Integer }, Description = "Returns only the first n items from a collection. (ex. 10)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$skip", Schema = new OpenApiSchema { Type = JsonSchemaType.Integer }, Description = "Skips the first n items from a collection. (ex. 10)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$orderby", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Orders the results of a query by one or more properties. (ex. Name desc)" }
                     ]);
                 }
 
