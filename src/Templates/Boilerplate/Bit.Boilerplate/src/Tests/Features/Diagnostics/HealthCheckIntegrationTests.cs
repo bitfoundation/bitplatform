@@ -382,6 +382,7 @@ public partial class HealthCheckIntegrationTests
         ["emailDelivery"] = HealthCheckCategories.Messaging,
         ["sms"] = HealthCheckCategories.Messaging,
         //#if (notification == true)
+        ["webPush"] = HealthCheckCategories.Messaging,
         ["firebase"] = HealthCheckCategories.Messaging,
         ["apns"] = HealthCheckCategories.Messaging,
         //#endif
@@ -545,7 +546,7 @@ public partial class HealthCheckIntegrationTests
             "StackExchange.Redis_redis-cache",
             //#endif
             //#if (notification == true)
-            "firebase", "apns",
+            "webPush", "firebase", "apns",
             //#endif
             //#if (appInsights == true)
             "appInsights",
@@ -655,7 +656,7 @@ public partial class HealthCheckIntegrationTests
             "sentry",
             //#endif
             //#if (notification == true)
-            "firebase", "apns",
+            "webPush", "firebase", "apns",
             //#endif
             //#if (appInsights == true)
             "appInsights",
@@ -676,8 +677,8 @@ public partial class HealthCheckIntegrationTests
             "Authentication:Apple:ClientId", "Cloudflare:ApiToken", "Azure:SignalR:ConnectionString", "AdsPushFirebase:PrivateKey",
             "AdsPushAPNS:P8PrivateKey", "AI:OpenAI:ChatApiKey", "AI:OpenAI:EmbeddingApiKey", "AI:HuggingFace:EmbeddingEndpoint",
             "AI:OpenAI:SpeechToTextApiKey", "AI:OpenAI:TextToSpeechApiKey", "AI:OpenAI:RealtimeApiKey", "Sentry:Dsn",
-            "ApplicationInsights:ConnectionString", "OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT", "Belemetry:OtlpEndpoint",
-            "AspireDashboard:Url"
+            "AdsPushVapid:PrivateKey", "ApplicationInsights:ConnectionString", "OTEL_EXPORTER_OTLP_ENDPOINT",
+            "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT", "Belemetry:OtlpEndpoint", "AspireDashboard:Url"
         })
         {
             builder.Configuration[key] = "";

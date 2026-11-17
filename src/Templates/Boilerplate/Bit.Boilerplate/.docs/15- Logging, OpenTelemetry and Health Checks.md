@@ -441,6 +441,11 @@ provider outage does not take an otherwise healthy instance out of the load bala
   detected.
 - **`azureSignalR`**: calls the service's health API, and with an `AccessKey` it also makes a signed user lookup. Only
   200 or 404 passes; a wrong key answers 401.
+- **`webPush`**: sends a web push signed with the VAPID keys to a subscription that FCM, the push service Chrome uses,
+  never issued. FCM checks the signature first, so "subscription expired" (410) means the check passed, while a public key
+  of another private key, a server clock that is off or an unreachable FCM fails it. Mozilla's push service refuses the
+  made-up subscription before it looks at the signature, and Apple's leaves some bad signatures unanswered, so neither is
+  asked.
 - **`firebase`** and **`apns`**: send to a device token that does not exist. Firebase and APNs reject the token only
   after they accept the credentials, so a token error means the check passed.
 - **`aiChat`**: gets a real answer (at most 16 output tokens) from an Agent Framework agent
@@ -464,7 +469,7 @@ In development, `sms`, `keycloakIdentity`,
 <!--#if (sentry == true)-->
 `sentry`,
 <!--#endif-->
-`entraId`, `appleSignIn`, `googleSignIn`, `gitHubSignIn`, `twitterSignIn`, `facebookSignIn`, `firebase`, `apns`,
+`entraId`, `appleSignIn`, `googleSignIn`, `gitHubSignIn`, `twitterSignIn`, `facebookSignIn`, `webPush`, `firebase`, `apns`,
 <!--#if (appInsights == true)-->
 `appInsights`,
 <!--#endif-->
@@ -483,7 +488,7 @@ app serves SignalR itself and live updates keep working, so a missing connection
 its telemetry only to Application Insights or Sentry, and only a Docker Compose deployment has an Aspire dashboard next to
 it, so a missing setting is a choice rather than a gap.
 
-`smtp`, `emailDelivery`, `websites`, `firebase`, `apns`, `otlp`, `aspireDashboard`,
+`smtp`, `emailDelivery`, `websites`, `webPush`, `firebase`, `apns`, `otlp`, `aspireDashboard`,
 <!--#if (cloudflare == true)-->
 `cloudflare`,
 <!--#endif-->

@@ -40,6 +40,7 @@ public class HealthCheckDescriptions : Dictionary<string, HealthCheckDescription
         this["smtp"] = new("Email", "Mail", "Signs in to the SMTP server without sending anything.");
         this["emailDelivery"] = new("Email sender domain", "MailCheck", "The sender's domain has SPF and DMARC records, so mail can reach inboxes rather than spam.");
         this["sms"] = new("SMS", "CellPhone", "The Twilio account is active.");
+        this["webPush"] = new("Web push", "Ringer", "FCM, the push service Chrome uses, accepts the VAPID signature.");
         this["firebase"] = new("Android push", "Ringer", "Firebase Cloud Messaging accepts the credentials.");
         this["apns"] = new("Apple push", "Ringer", "APNs accepts the credentials.");
         this["azureSignalR"] = new("Azure SignalR", "Streaming", "The service is healthy and accepts the access key.");

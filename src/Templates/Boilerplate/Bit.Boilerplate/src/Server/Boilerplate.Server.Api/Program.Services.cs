@@ -1167,7 +1167,10 @@ public static partial class Program
         //#endif
 
         //#if (notification == true)
-        // Web Push (VAPID) signs locally, so it has nothing to check.
+        // Of the web push services, only FCM, which Chrome uses, checks the VAPID signature for a subscription it never issued.
+        AddCachedCheckIfConfigured("webPush", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(appSettings.AdsPushVapid?.PrivateKey) is false, "AdsPushVapid",
+            sp => ActivatorUtilities.CreateInstance<WebPushHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+
         AddCachedCheckIfConfigured("firebase", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(appSettings.AdsPushFirebase?.PrivateKey) is false, "AdsPushFirebase",
             sp => ActivatorUtilities.CreateInstance<PushNotificationHealthCheck>(sp, AdsPushTarget.Android), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
