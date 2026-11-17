@@ -70,12 +70,12 @@ public class BitAiCodeBlockViewTests : BitAiTestBase
         var component = RenderComponent<BitAiCodeBlockView>(p => p
             .Add(c => c.Code, "public int Count = 1;")
             .Add(c => c.Language, "csharp")
-            .Add(c => c.IsStreaming, true));
+            .Add(c => c.Streaming, true));
 
         Assert.IsEmpty(component.FindAll(".bit-aicbv-cod span"));
         Assert.AreEqual("public int Count = 1;", component.Find(".bit-aicbv-cod").TextContent);
 
-        component.Render(p => p.Add(c => c.IsStreaming, false));
+        component.Render(p => p.Add(c => c.Streaming, false));
 
         Assert.IsNotEmpty(component.FindAll(".bit-aicbv-kwd"));
         Assert.IsNotEmpty(component.FindAll(".bit-aicbv-num"));
@@ -125,7 +125,7 @@ public class BitAiCodeBlockViewTests : BitAiTestBase
     {
         var component = RenderComponent<BitAiCodeBlockView>(p => p
             .Add(c => c.Code, "a\nb")
-            .Add(c => c.IsStreaming, true)
+            .Add(c => c.Streaming, true)
             .Add(c => c.Classes, new() { Line = "c-line" })
             .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { ShowLineNumbers = true }));
 

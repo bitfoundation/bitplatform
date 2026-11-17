@@ -17,7 +17,7 @@
     <button id="sm-reset" @onclick="Reset">Reset</button>
     <pre id="sm-raw">@_stepText</pre>
     <div style="width:640px">
-        <BitAiStreamingMarkdown Id="sm-steps" Text="@_stepText" IsStreaming="_streaming" />
+        <BitAiStreamingMarkdown Id="sm-steps" Text="@_stepText" Streaming="_streaming" />
     </div>
 </E2ESection>
 
@@ -28,19 +28,19 @@
     <div style="width:640px">
         @if (LiveText is { } part)
         {
-            <BitAiStreamingMarkdown Id="sm-live" Text="@part.Text" IsStreaming="@part.IsStreaming" />
+            <BitAiStreamingMarkdown Id="sm-live" Text="@part.Text" Streaming="@part.IsStreaming" />
         }
     </div>
 </E2ESection>
 
 <E2ESection Id="caret" Title="Caret">
-    <BitAiStreamingMarkdown Id="sm-caret" Text="The answer is still being" IsStreaming />
+    <BitAiStreamingMarkdown Id="sm-caret" Text="The answer is still being" Streaming />
     <BitAiStreamingMarkdown Id="sm-caret-done" Text="The answer is complete." />
     <BitAiOptionsProvider UiOptions="_noCaret">
-        <BitAiStreamingMarkdown Id="sm-caret-off" Text="No caret is drawn after this" IsStreaming />
+        <BitAiStreamingMarkdown Id="sm-caret-off" Text="No caret is drawn after this" Streaming />
     </BitAiOptionsProvider>
     <div class="bit-fam">
-        <BitAiStreamingMarkdown Id="sm-caret-fam" Text="ForceAnimation keeps the caret blinking" IsStreaming />
+        <BitAiStreamingMarkdown Id="sm-caret-fam" Text="ForceAnimation keeps the caret blinking" Streaming />
     </div>
 </E2ESection>
 
@@ -53,23 +53,23 @@
 
 <E2ESection Id="rtl" Title="RTL">
     <div style="width:480px">
-        <BitAiStreamingMarkdown Id="sm-rtl" Dir="BitDir.Rtl" Text="@RtlText" IsStreaming />
+        <BitAiStreamingMarkdown Id="sm-rtl" Dir="BitDir.Rtl" Text="@RtlText" Streaming />
     </div>
     <div dir="rtl" style="width:480px">
-        <BitAiStreamingMarkdown Id="sm-rtl-inherited" Text="@RtlText" IsStreaming />
+        <BitAiStreamingMarkdown Id="sm-rtl-inherited" Text="@RtlText" Streaming />
     </div>
     <div style="width:480px">
-        <BitAiStreamingMarkdown Id="sm-ltr" Text="The answer is still being" IsStreaming />
+        <BitAiStreamingMarkdown Id="sm-ltr" Text="The answer is still being" Streaming />
     </div>
 </E2ESection>
 
 <E2ESection Id="styles" Title="Style & Class">
     <div style="--bit-AiMarkdownView-caret-color: rgb(1, 2, 3); --bit-AiMarkdownView-heading-color: rgb(4, 5, 6)">
-        <BitAiStreamingMarkdown Id="sm-vars" Text="@StyledText" IsStreaming />
+        <BitAiStreamingMarkdown Id="sm-vars" Text="@StyledText" Streaming />
     </div>
     <BitAiStreamingMarkdown Id="sm-parts"
                             Text="@StyledText"
-                            IsStreaming
+                            Streaming
                             Class="e2e-sm-class"
                             Style="outline: 2px solid rgb(7, 8, 9)"
                             Classes="@(new() { Root = "e2e-sm-root", Markdown = new() { Root = "e2e-sm-view", Heading = "e2e-sm-heading", Caret = "e2e-sm-caret" } })"

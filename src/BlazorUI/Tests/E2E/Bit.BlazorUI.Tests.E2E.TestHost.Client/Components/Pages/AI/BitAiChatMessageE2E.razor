@@ -33,7 +33,7 @@
                               Message="message"
                               Conversation="_session.Conversation"
                               Session="_session"
-                              IsLatest="@ReferenceEquals(message, _session.Conversation.LastMessage)"
+                              Latest="@ReferenceEquals(message, _session.Conversation.LastMessage)"
                               OnFeedback="HandleOnFeedback" />
         }
     </div>

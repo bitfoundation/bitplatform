@@ -41,7 +41,7 @@
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>
-                <b>Text</b> is the Markdown received so far. With <b>IsStreaming</b> left false the text is complete, and it renders
+                <b>Text</b> is the Markdown received so far. With <b>Streaming</b> left false the text is complete, and it renders
                 like any Markdown view.
             </div>
             <br />
@@ -50,7 +50,7 @@
 
         <DemoExample Title="Streaming" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
             <div>
-                While <b>IsStreaming</b> is true more text is expected: a caret trails it and its last block is left open. Stream
+                While <b>Streaming</b> is true more text is expected: a caret trails it and its last block is left open. Stream
                 this answer and watch the raw text beside what is drawn: the dangling <b>**</b> of a bold run never shows, a table
                 fills in row by row, the code block stays plain until its closing fence arrives and is highlighted then. Turn on
                 <b>Slow motion</b> to follow every step. The page re-renders through a <b>BitAiRenderScheduler</b>, at most once per
@@ -70,7 +70,7 @@
                 </div>
                 <div>
                     <div class="stream-title">Rendered</div>
-                    <BitAiStreamingMarkdown Text="@streamedText" IsStreaming="isStreaming" />
+                    <BitAiStreamingMarkdown Text="@streamedText" Streaming="isStreaming" />
                 </div>
             </div>
         </DemoExample>
@@ -95,7 +95,7 @@
                 and is built again when a different options instance is cascaded, so the parser and the renderer always agree.
                 Chat-tuned models often write one line per sentence and mean the line breaks: <b>SoftBreaksAsHardBreaks</b> keeps
                 them (the first text). <b>HideDanglingDelimiters</b>, on by default, keeps the opening <b>**</b> of a bold run that
-                has not closed yet out of sight while the text streams (the second text, frozen mid-word with <b>IsStreaming</b>);
+                has not closed yet out of sight while the text streams (the second text, frozen mid-word with <b>Streaming</b>);
                 turned off, the asterisks flash on the way in. Make a new options instance only when a choice changes and keep it
                 in a field - a new one on every render would rebuild the parser every time.
             </div>
@@ -105,7 +105,7 @@
             <BitAiOptionsProvider UiOptions="markdownOptions">
                 <BitAiStreamingMarkdown Text="@lineBreakMarkdown" />
                 <br />
-                <BitAiStreamingMarkdown Text="@danglingMarkdown" IsStreaming />
+                <BitAiStreamingMarkdown Text="@danglingMarkdown" Streaming />
             </BitAiOptionsProvider>
         </DemoExample>
 
@@ -155,7 +155,7 @@
                 direction comes from <b>Dir</b> or from a <b>dir</b> attribute around it.
             </div>
             <br />
-            <BitAiStreamingMarkdown Dir="BitDir.Rtl" Text="@rtlMarkdown" IsStreaming />
+            <BitAiStreamingMarkdown Dir="BitDir.Rtl" Text="@rtlMarkdown" Streaming />
         </DemoExample>
     </Examples>
 </DemoPage>

@@ -5,6 +5,26 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `IsStreaming` is `Streaming` on `BitAiCodeBlockView` and `BitAiStreamingMarkdown`, and `BitAiChatMessage`'s `IsLatest` is `Latest` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is`, and three parameters of `Bit.BlazorUI.AI` were still spelled with
+one:
+
+| Before | After |
+|---|---|
+| `<BitAiCodeBlockView Code="@code" IsStreaming="streaming" />` | `<BitAiCodeBlockView Code="@code" Streaming="streaming" />` |
+| `<BitAiStreamingMarkdown Text="@text" IsStreaming="streaming" />` | `<BitAiStreamingMarkdown Text="@text" Streaming="streaming" />` |
+| `<BitAiChatMessage Message="message" IsLatest="false" />` | `<BitAiChatMessage Message="message" Latest="false" />` |
+
+What they do and their defaults (`false`, `false` and `true`) are unchanged. The models keep their `Is`, as the models
+of one item do: `BitAiMessage.IsStreaming`, the parts' `IsStreaming` (`BitAiTextPart`, `IBitAiStreamablePart`, ...)
+and the render contexts' (`BitAiCodeBlockContext.IsStreaming`) are as they were, so
+`<BitAiStreamingMarkdown Text="@part.Text" Streaming="@part.IsStreaming" />` is the new spelling of the usual binding.
+
+An old name left on a tag still builds and is ignored: a streaming block is highlighted and a streaming reply drawn
+without its caret as if they were complete, and an older `BitAiChatMessage` marked `IsLatest="false"` offers
+regeneration and follow-ups again. Search for both names when upgrading.
+
 ### `BitFcDayCell`'s `IsLastColumn` and `IsRovingCell` are `LastColumn` and `TabStop` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 `BitFcDayCell` is the day cell `BitFullCalendar`'s month view renders for itself, public only because Razor needs it to

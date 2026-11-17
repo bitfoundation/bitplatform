@@ -137,7 +137,7 @@
         if (kind == BitAiArtifactKind.Document)
         {
             <div style="@Styles?.Content" class="bit-aiatv-doc @Classes?.Content">
-                <BitAiStreamingMarkdown Text="@content" IsStreaming="@IsStreaming" />
+                <BitAiStreamingMarkdown Text="@content" Streaming="@IsStreaming" />
             </div>
         }
         else if (kind == BitAiArtifactKind.Html && IsStreaming is false)
@@ -179,7 +179,7 @@
         {
             <BitAiCodeBlockView Code="@content"
                                 Language="@(Artifact.Language ?? DefaultLanguage(kind))"
-                                IsStreaming="@IsStreaming"
+                                Streaming="@IsStreaming"
                                 ShowHeader="false" />
         }
     };

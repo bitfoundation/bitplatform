@@ -113,14 +113,14 @@ public class BitAiStreamingMarkdownTests : BitAiTestBase
     {
         var component = RenderComponent<BitAiStreamingMarkdown>(p => p
             .Add(c => c.Text, "First.\n\nSecond **bo")
-            .Add(c => c.IsStreaming, true));
+            .Add(c => c.Streaming, true));
 
         Assert.IsNotEmpty(component.FindAll(".bit-aimdv-crt"));
         Assert.IsFalse(component.Markup.Contains("**"));
 
         component.Render(p => p
             .Add(c => c.Text, "First.\n\nSecond **bold**.")
-            .Add(c => c.IsStreaming, false));
+            .Add(c => c.Streaming, false));
 
         StringAssert.Contains(component.Markup, "<strong>bold</strong>");
         Assert.IsEmpty(component.FindAll(".bit-aimdv-crt"));

@@ -46,16 +46,16 @@ public partial class BitAiStreamingMarkdown : BitAiComponentBase
     [Parameter, ResetClassBuilder] public BitAiStreamingMarkdownClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The callback for when the user activates an inline citation marker.
+    /// </summary>
+    [Parameter] public EventCallback<BitAiCitation> OnCitationClick { get; set; }
+
+    /// <summary>
     /// Whether more text is expected, which draws the streaming caret and keeps the last block open.
     /// <br />
     /// The default value is <strong>false</strong>.
     /// </summary>
-    [Parameter] public bool IsStreaming { get; set; }
-
-    /// <summary>
-    /// The callback for when the user activates an inline citation marker.
-    /// </summary>
-    [Parameter] public EventCallback<BitAiCitation> OnCitationClick { get; set; }
+    [Parameter] public bool Streaming { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the streaming Markdown.
@@ -93,11 +93,11 @@ public partial class BitAiStreamingMarkdown : BitAiComponentBase
             _lastText = null;
         }
 
-        if (_lastText != Text || _lastStreaming != IsStreaming)
+        if (_lastText != Text || _lastStreaming != Streaming)
         {
             _lastText = Text;
-            _lastStreaming = IsStreaming;
-            _document = _parser.Parse(Text, IsStreaming is false);
+            _lastStreaming = Streaming;
+            _document = _parser.Parse(Text, Streaming is false);
         }
 
         base.OnParametersSet();

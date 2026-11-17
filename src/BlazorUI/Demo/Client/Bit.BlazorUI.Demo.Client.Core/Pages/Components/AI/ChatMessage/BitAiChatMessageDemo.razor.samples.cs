@@ -64,7 +64,7 @@ private readonly BitAiConversation partsConversation = AiDemoConversations.Long(
                       Message=""message""
                       Session=""session""
                       Conversation=""session.Conversation""
-                      IsLatest=""@(message == session.Conversation.LastMessage)"" />
+                      Latest=""@(message == session.Conversation.LastMessage)"" />
 }";
     private readonly string example3CsharpCode = @"
 // A transport that fails its first answer with a retryable error, and succeeds from then on.
