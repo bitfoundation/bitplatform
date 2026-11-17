@@ -10,7 +10,7 @@ public sealed record CreateProjectOption(string Name, CreateProjectOptionKind Ki
 {
     public static IReadOnlyList<CreateProjectOption> All { get; } =
     [
-        new("framework", CreateProjectOptionKind.Choice, "net10.0", "net10.0", ["net10.0", "net11.0"]),
+        new("framework", CreateProjectOptionKind.Choice, "net11.0", "net11.0", ["net10.0", "net11.0"]),
         new("api", CreateProjectOptionKind.Choice, "Integrated", "Integrated", ["Integrated", "Standalone"]),
         new("filesStorage", CreateProjectOptionKind.Choice, "S3", "Local", ["Local", "S3", "AzureBlobStorage", "Other"]) { IsTechnical = true },
         new("captcha", CreateProjectOptionKind.Choice, "None", "None", ["reCaptcha", "None"]),
