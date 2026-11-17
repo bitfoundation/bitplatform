@@ -1698,12 +1698,14 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
     $start.UseShellExecute = $false
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
+    $start.RedirectStandardInput = $true
 
     $output = [IO.FileStream]::new($log, [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite, 1)
     $errors = [IO.FileStream]::new("$log.err", [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite, 1)
 
     try {
         $process = [Diagnostics.Process]::Start($start)
+        $process.StandardInput.Close()
         $copies = @($process.StandardOutput.BaseStream.CopyToAsync($output), $process.StandardError.BaseStream.CopyToAsync($errors))
         $answeredAt = $null
 
