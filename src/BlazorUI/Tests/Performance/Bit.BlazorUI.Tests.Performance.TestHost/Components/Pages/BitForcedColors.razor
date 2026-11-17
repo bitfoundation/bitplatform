@@ -107,7 +107,7 @@
 
         case "dropdown":
             <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_dropdownItems" DefaultValue="@("a")" Label="Single" />
-            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_dropdownItems" MultiSelect DefaultValues="_dropdownValues" Chips MaxChips="1" Label="Chips" />
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_dropdownItems" MultiSelect DefaultValues="_dropdownValues" Chips MaxDisplayedItems="1" Label="Chips" />
             break;
 
         case "dropdown-open":
@@ -131,7 +131,7 @@
 
         case "numberfield":
             <BitNumberField TValue="int" DefaultValue="3" Prefix="$" Suffix="kg" Mode="BitSpinButtonMode.Inline" />
-            <BitNumberField TValue="int" DefaultValue="3" Prefix="$" Suffix="kg" Color="BitColor.PrimaryBackground" />
+            <BitNumberField TValue="int" DefaultValue="3" Prefix="$" Suffix="kg" Accent="BitColor.PrimaryBackground" />
             break;
 
         case "rating":
@@ -161,7 +161,7 @@
 
         case "textfield":
             <BitTextField DefaultValue="text" IconName="@BitIconName.Mail" Prefix="to:" Suffix=".com" />
-            <BitTextField DefaultValue="secret" Type="BitInputType.Password" CanRevealPassword Color="BitColor.PrimaryBackground" IconName="@BitIconName.Lock" Prefix="pw:" />
+            <BitTextField DefaultValue="secret" Type="BitInputType.Password" CanRevealPassword Accent="BitColor.PrimaryBackground" IconName="@BitIconName.Lock" Prefix="pw:" />
             break;
 
         case "timepicker":
