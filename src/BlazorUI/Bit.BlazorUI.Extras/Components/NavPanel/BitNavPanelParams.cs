@@ -7,7 +7,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// What belongs to a single panel rather than to a group of them is left out on purpose: its items, the state
-/// it two-way binds (IsOpen, IsToggled, SearchText and SelectedItem), the initial selection, the templates and
+/// it two-way binds (IsOpen, Toggled, SearchText and SelectedItem), the initial selection, the templates and
 /// the selectors typed over its items, the search filter, and its event callbacks.
 /// <br />
 /// None of the parameters here depends on the type of the items, so the class is not generic: one instance

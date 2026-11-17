@@ -29,6 +29,7 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
+    [AutoInject] private AccountSwitchService accountSwitchService = default!;
     [AutoInject] private ILogger<AppClientCoordinator> logger = default!;
     [AutoInject] private BitAccentColorService accentColorService = default!;
     //#if (notification == true)
@@ -148,10 +149,10 @@ public partial class AppClientCoordinator : AppComponentBase
             var uri = new Uri(location);
             var query = HttpUtility.ParseQueryString(uri.Query);
 
-            if (Guid.TryParse(query[DeviceAccountDto.QueryParameter], out var userId) is false)
+            if (Guid.TryParse(query[DeviceUserSessionDto.QueryParameter], out var userId) is false)
                 return;
 
-            query.Remove(DeviceAccountDto.QueryParameter);
+            query.Remove(DeviceUserSessionDto.QueryParameter);
             var remainingQuery = query.ToString();
 
             NavigationManager.NavigateTo($"{uri.AbsolutePath}{(string.IsNullOrWhiteSpace(remainingQuery) ? "" : $"?{remainingQuery}")}{uri.Fragment}", replace: true);
@@ -161,7 +162,10 @@ public partial class AppClientCoordinator : AppComponentBase
             if (user.IsAuthenticated() && user.GetUserId() == userId)
                 return;
 
-            await AuthManager.SwitchAccount(userId);
+            if ((await AuthManager.GetOtherUserSessions()).FirstOrDefault(userSession => userSession.UserId == userId) is { } userSession)
+            {
+                await accountSwitchService.Switch(userSession);
+            }
         }
         catch (Exception exp)
         {

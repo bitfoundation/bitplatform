@@ -1606,8 +1606,8 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir révoquer toutes les sessions de {0} ? Les applications autorisées sont conservées.</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>Vous ne pouvez pas retirer cet utilisateur du groupe d'utilisateurs SuperAdmin.</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>Vous ne pouvez pas retirer cet utilisateur du groupe d'utilisateurs des administrateurs globaux.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Les permissions super administrateur ne peuvent pas être modifiées.</value>
@@ -1618,11 +1618,11 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>Vous ne pouvez pas supprimer votre propre utilisateur</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>Vous ne pouvez pas supprimer cet utilisateur SuperAdmin</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>Vous ne pouvez pas supprimer cet utilisateur administrateur global</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>Vous ne pouvez pas révoquer les sessions de cet utilisateur SuperAdmin</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>Vous ne pouvez pas révoquer les sessions de cet utilisateur administrateur global</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Vous ne pouvez pas supprimer votre session actuelle</value>
@@ -2191,6 +2191,42 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Ce que cet appareil et le serveur indiquent sur l'application, pour le dépannage.</value>
+  </data>
+    <data name="Lock" xml:space="preserve">
+    <value>Verrouiller</value>
+  </data>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>Verrouiller ce compte</value>
+  </data>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>Le premier verrouillage de ce compte nécessite un code PIN. Vous le saisirez pour revenir à ce compte sur cet appareil, et il ne quitte jamais cet appareil.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>Nouveau code PIN</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>Saisissez à nouveau le code PIN</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>Les codes PIN ne correspondent pas. Réessayez.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>Saisissez le code PIN</value>
+  </data>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>Code PIN incorrect. Tentatives restantes : {0}.</value>
+  </data>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>Trop de codes PIN incorrects : ce compte n'est plus conservé sur cet appareil. Reconnectez-vous pour l'utiliser.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>Reconnectez-vous pour supprimer le code PIN</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>Utiliser des lettres</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>Utiliser des chiffres</value>
   </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">

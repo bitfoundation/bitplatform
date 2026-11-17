@@ -5,6 +5,93 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `IsAlert` is `Alert` on `BitDialog`, `BitModal` and `BitPanel` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own setting is spelled without an `Is` (`Disabled`, `Blocking`, `Modeless`), and the flag that makes
+the three surfaces an `alertdialog` was still spelled with one. The `[Parameter]` is renamed on the three components,
+with its counterparts on `BitModalParams` and `BitPanelParams` and on the option classes their services take,
+`BitModalParameters` and `BitPanelParameters`:
+
+| Before | After |
+|---|---|
+| `<BitDialog IsAlert="true" />` | `<BitDialog Alert="true" />` |
+| `<BitModal IsAlert="false" />` | `<BitModal Alert="false" />` |
+| `<BitPanel IsAlert />` | `<BitPanel Alert />` |
+| `new BitModalParameters { IsAlert = true }` | `new BitModalParameters { Alert = true }` |
+| `new BitPanelParams { IsAlert = true }` | `new BitPanelParams { Alert = true }` |
+
+The role each of them renders is unchanged (`alertdialog` or `dialog`).
+
+### `BitMediaQuery`'s `IsMatched` is `Matched`, and its `Matched` and `NotMatched` are `MatchedTemplate` and `NotMatchedTemplate` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Checked`, `Expanded`), but the media query's
+`Matched` was already taken by the content it renders while the query matches. The two pieces of content take the
+`...Template` name, which frees `Matched` for the state; the state's uncontrolled default was already `DefaultMatched`:
+
+| Before | After |
+|---|---|
+| `<BitMediaQuery @bind-IsMatched="isMd" />` | `<BitMediaQuery @bind-Matched="isMd" />` |
+| `<BitMediaQuery IsMatchedChanged="OnMatchedChanged" />` | `<BitMediaQuery MatchedChanged="OnMatchedChanged" />` |
+| `<Matched>wide</Matched>` | `<MatchedTemplate>wide</MatchedTemplate>` |
+| `<NotMatched>narrow</NotMatched>` | `<NotMatchedTemplate>narrow</NotMatchedTemplate>` |
+
+Code that still uses the old names builds: a `<Matched>` or `<NotMatched>` tag left inside a `BitMediaQuery` only
+draws the warning RZ10012 ("Found markup element with unexpected name") and renders as an unknown HTML element, so
+the content of both states shows at once. Search for the warning after upgrading. What the media query renders with
+the new names is unchanged, and so are `ChildContent`, `Template`, `DefaultMatched` and `OnChange`.
+
+### `BitAccordion`'s `IsExpanded` is `Expanded` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Checked`, `Shown`), and the accordion's expanded
+state was still spelled with one. The `[Parameter]` is renamed with its two-way binding and its uncontrolled default:
+
+| Before | After |
+|---|---|
+| `<BitAccordion IsExpanded="open" />` | `<BitAccordion Expanded="open" />` |
+| `<BitAccordion @bind-IsExpanded="open" />` | `<BitAccordion @bind-Expanded="open" />` |
+| `<BitAccordion IsExpandedChanged="OnExpandedChanged" />` | `<BitAccordion ExpandedChanged="OnExpandedChanged" />` |
+| `<BitAccordion DefaultIsExpanded />` | `<BitAccordion DefaultExpanded />` |
+
+What the accordion renders is unchanged (`bit-acd-exp`, `aria-expanded`), and so are its `Expand`, `Collapse` and
+`Toggle` methods and its `OnChange`, `OnExpand`, `OnCollapse` and `OnToggling` callbacks. The models of one item keep
+their `Is` (`BitAccordionListItem.IsExpanded`, `BitNavItem.IsExpanded` and the like): the flag of one item of a parent
+is spelled with one.
+
+### `BitTooltip`'s `IsShown` is `Shown` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Checked`, `Toggled`), and the tooltip's shown state
+was still spelled with one. The `[Parameter]` is renamed with its two-way binding and its uncontrolled default:
+
+| Before | After |
+|---|---|
+| `<BitTooltip IsShown="visible" />` | `<BitTooltip Shown="visible" />` |
+| `<BitTooltip @bind-IsShown="visible" />` | `<BitTooltip @bind-Shown="visible" />` |
+| `<BitTooltip IsShownChanged="OnShownChanged" />` | `<BitTooltip ShownChanged="OnShownChanged" />` |
+| `<BitTooltip DefaultIsShown="true" />` | `<BitTooltip DefaultShown="true" />` |
+
+What the tooltip renders is unchanged (`bit-ttp-vis`), and so are its `Show`, `Hide` and `Toggle` methods and its
+`OnShow`, `OnHide` and `OnToggle` events.
+
+### `IsToggled` is `Toggled` on `BitMenuButton` and `BitNavPanel` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is` (`Disabled`, `Loading`, `Checked`), and the toggled state of the
+split menu button's header and of the nav panel's rail were still spelled with one. Each `[Parameter]` is renamed
+with its two-way binding, and on the menu button with its uncontrolled default and its `BitMenuButtonParams`
+counterpart:
+
+| Before | After |
+|---|---|
+| `<BitMenuButton Split Toggle IsToggled="bold" />` | `<BitMenuButton Split Toggle Toggled="bold" />` |
+| `<BitMenuButton Split Toggle @bind-IsToggled="bold" />` | `<BitMenuButton Split Toggle @bind-Toggled="bold" />` |
+| `<BitMenuButton Split Toggle DefaultIsToggled="true" />` | `<BitMenuButton Split Toggle DefaultToggled="true" />` |
+| `new BitMenuButtonParams { DefaultIsToggled = true }` | `new BitMenuButtonParams { DefaultToggled = true }` |
+| `<BitNavPanel @bind-IsToggled="rail" />` | `<BitNavPanel @bind-Toggled="rail" />` |
+| `<BitNavPanel IsToggledChanged="OnRailChanged" />` | `<BitNavPanel ToggledChanged="OnRailChanged" />` |
+
+What the two render is unchanged (`bit-mnb-tgl`, `bit-npn-tgl`, the `Toggled` class-style part). `OnToggleChange` and
+`ToggledWidth` keep their names, and so do the button group's items (`BitButtonGroupItem.IsToggled`,
+`BitButtonGroupOption.IsToggled`): the flag of one item of a parent is spelled with an `Is`.
+
 ### `BitToggleButton`'s `IsChecked` is `Checked` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own state is spelled without an `Is` (`Disabled`, `Vertical`, `Loading`), and the toggle button's

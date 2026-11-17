@@ -71,7 +71,7 @@ public partial class PersonalDataJourneyTests
         var sessionId = await GetSessionId(apiClient);
 
         // ---- Something in every store the export has a section for ----
-        using (await Upload(apiClient.HttpClient, "UploadUserProfilePicture", "e2e-profile.png")) { }
+        using (await Upload(apiClient.HttpClient, "UploadUserProfileImage", "e2e-profile.png")) { }
 
         var pushSubscription = NewPushSubscription(marker);
         await apiClient.Services.GetRequiredService<IPushNotificationController>().Subscribe(pushSubscription, cancellationToken);
@@ -146,10 +146,10 @@ public partial class PersonalDataJourneyTests
         Assert.AreEqual(0, await afterDelete.Users.IgnoreQueryFilters().CountAsync(user => user.Id == userId, cancellationToken), "The account row survived its own deletion.");
         Assert.AreEqual(0, await afterDelete.UserSessions.IgnoreQueryFilters().CountAsync(session => session.UserId == userId, cancellationToken), "A session of the deleted account is still signed in.");
         Assert.AreEqual(0, await afterDelete.PushNotificationSubscriptions.IgnoreQueryFilters().CountAsync(sub => sub.DeviceId == pushSubscription.DeviceId, cancellationToken), "The device can still be pushed to.");
-        Assert.AreEqual(0, await afterDelete.Attachments.IgnoreQueryFilters().CountAsync(attachment => attachment.Id == userId, cancellationToken), "The profile picture's rows are still there.");
+        Assert.AreEqual(0, await afterDelete.Attachments.IgnoreQueryFilters().CountAsync(attachment => attachment.Id == userId, cancellationToken), "The profile image's rows are still there.");
         Assert.AreEqual(0, await afterDelete.UserTokens.IgnoreQueryFilters().CountAsync(token => token.UserId == userId, cancellationToken), "The authenticator's shared key outlived the account it belonged to.");
         // The section claims CascadeFromUser rather than a delete of its own, which is a claim about the schema.
-        Assert.AreEqual(0, await afterDelete.TenantUsers.IgnoreQueryFilters().CountAsync(membership => membership.UserId == userId, cancellationToken), "The organisation membership did not cascade from the deleted user.");
+        Assert.AreEqual(0, await afterDelete.TenantMemberships.IgnoreQueryFilters().CountAsync(membership => membership.UserId == userId, cancellationToken), "The organisation membership did not cascade from the deleted user.");
 
         // Left behind on purpose: only the hourly retention job reaches it (See AttachmentsPersonalDataSource.Notes,
         // and RetentionJobsTests, which is where that job is proven to run).
@@ -172,7 +172,7 @@ public partial class PersonalDataJourneyTests
     {
         var stored = await dbContext.Users.IgnoreQueryFilters().AsNoTracking()
             .Where(user => user.Id == userId)
-            .Select(user => new { user.Email, user.UserName, user.FullName, user.Gender, user.BirthDate, user.PasswordHash, user.SecurityStamp, user.HasProfilePicture })
+            .Select(user => new { user.Email, user.UserName, user.FullName, user.Gender, user.BirthDate, user.PasswordHash, user.SecurityStamp, user.HasProfileImage })
             .SingleAsync(cancellationToken);
 
         var account = section["data"]!;
@@ -185,8 +185,8 @@ public partial class PersonalDataJourneyTests
         Assert.AreEqual(stored.BirthDate, account["birthDate"]!.GetValue<DateTimeOffset>());
         Assert.IsTrue(account["emailConfirmed"]!.GetValue<bool>());
         Assert.IsTrue(account["twoFactorEnabled"]!.GetValue<bool>());
-        Assert.AreEqual(stored.HasProfilePicture, account["hasProfilePicture"]!.GetValue<bool>());
-        Assert.IsTrue(stored.HasProfilePicture, "The upload did not mark the account as having a profile picture.");
+        Assert.AreEqual(stored.HasProfileImage, account["hasProfileImage"]!.GetValue<bool>());
+        Assert.IsTrue(stored.HasProfileImage, "The upload did not mark the account as having a profile image.");
 
         // What the account is opened with is not a fact about the person, and handing it out would only weaken it.
         Assert.DoesNotContain(stored.PasswordHash!, dataJson, "The password hash is in the export.");
@@ -224,7 +224,7 @@ public partial class PersonalDataJourneyTests
 
         Assert.AreSequenceEqual(new[] { nameof(AttachmentKind.UserProfileImageSmall), nameof(AttachmentKind.UserProfileImageOriginal) },
                                 exported.Select(attachment => attachment!["kind"]!.GetValue<string>()),
-                                "The profile picture's two kinds are not both in the export.");
+                                "The profile image's two kinds are not both in the export.");
 
         // Both are stored as WebP, the small one resized and the original at full size, so both are named .webp (See
         // AttachmentsPersonalDataSource.BuildFileName) - a file the subject has to guess the format of is a poor answer to
@@ -232,7 +232,7 @@ public partial class PersonalDataJourneyTests
         var files = section["files"]!.AsArray().Select(file => file!.GetValue<string>()).ToArray();
 
         Assert.AreSequenceEqual(new[] { "files/attachments/UserProfileImageOriginal.webp", "files/attachments/UserProfileImageSmall.webp" }, files.Order(),
-                                "The files the attachments section names are not the ones the profile picture is stored as.");
+                                "The files the attachments section names are not the ones the profile image is stored as.");
 
         foreach (var file in files)
         {
@@ -313,7 +313,7 @@ public partial class PersonalDataJourneyTests
         await dbContext.Tenants.AddAsync(tenant, TestContext.CancellationToken);
         await dbContext.Users.AddAsync(user, TestContext.CancellationToken);
         // Accepted, so signing in selects this tenant (See IdentityController.GetTenantId).
-        await dbContext.TenantUsers.AddAsync(new TenantUser { Id = Guid.NewGuid(), TenantId = tenant.Id, UserId = user.Id, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
+        await dbContext.TenantMemberships.AddAsync(new TenantMembership { Id = Guid.NewGuid(), TenantId = tenant.Id, UserId = user.Id, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
         // Where UserManager.SetAuthenticatorKeyAsync puts it; both names are internal constants of Identity's own store.
         await dbContext.UserTokens.AddAsync(new UserToken { UserId = user.Id, LoginProvider = "[AspNetUserStore]", Name = "AuthenticatorKey", Value = authenticatorKey }, TestContext.CancellationToken);
 
@@ -355,7 +355,7 @@ public partial class PersonalDataJourneyTests
     private async Task<HttpResponseMessage> Upload(HttpClient httpClient, string action, string fileName)
     {
         using var form = new MultipartFormDataContent();
-        var file = new ByteArrayContent(TestImages.ProfilePicturePng());
+        var file = new ByteArrayContent(TestImages.ProfileImagePng());
         file.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         form.Add(file, "file", fileName);
 
@@ -403,7 +403,7 @@ public partial class PersonalDataJourneyTests
             await authManager.SignIn(new() { Email = email, Password = password }, CancellationToken.None);
             await authManager.SignIn(new() { Email = email, Password = password, TwoFactorCode = Code(authenticatorKey) }, CancellationToken.None);
 
-            await apiClient.Services.GetRequiredService<IAttachmentController>().DeleteUserProfilePicture(CancellationToken.None);
+            await apiClient.Services.GetRequiredService<IAttachmentController>().DeleteUserProfileImage(CancellationToken.None);
         }
         catch (Exception)
         {
@@ -414,7 +414,7 @@ public partial class PersonalDataJourneyTests
         var globalApiClient = await DeployedApiClientProvider.GetGlobalApiClient(CancellationToken.None);
         await using var dbContext = await globalApiClient.DbContextFactory!.CreateDbContextAsync(CancellationToken.None);
 
-        var userIds = await dbContext.TenantUsers.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId)
+        var userIds = await dbContext.TenantMemberships.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId)
             .Select(membership => membership.UserId).ToArrayAsync(CancellationToken.None);
 
         // The subscription's tenant is a foreign key of its own, so it goes before the tenant whatever its user did.
@@ -422,7 +422,7 @@ public partial class PersonalDataJourneyTests
         await dbContext.UserSessions.IgnoreQueryFilters().Where(session => userIds.Contains(session.UserId)).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.Attachments.IgnoreQueryFilters().Where(attachment => userIds.Contains(attachment.Id)).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.UserTokens.IgnoreQueryFilters().Where(token => userIds.Contains(token.UserId)).ExecuteDeleteAsync(CancellationToken.None);
-        await dbContext.TenantUsers.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
+        await dbContext.TenantMemberships.IgnoreQueryFilters().Where(membership => membership.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.Users.IgnoreQueryFilters().Where(user => userIds.Contains(user.Id)).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.Tenants.IgnoreQueryFilters().Where(tenant => tenant.Id == tenantId).ExecuteDeleteAsync(CancellationToken.None);
     }

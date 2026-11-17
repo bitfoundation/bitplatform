@@ -1,6 +1,6 @@
 ---
 name: troubleshoot
-description: Finds and fixes a problem reported in the Test or Production environment, slowness included, such as a website that is slow to load. It works from the code that environment runs - the branch last deployed to Test, `main` for Production - and reads that environment's own state through its dev-mcp server: its errors, logs, traces, data and background jobs, and Sentry or Application Insights when the project reports to one. It reproduces the problem before changing anything, with an automated test as far as one can reach it, and fixes it through ai-dlc with that test guarding the fix.
+description: Finds and reproduces the cause of a problem seen in the Test or Production environment, slowness included, from the code and the state of that environment.
 ---
 
 # Troubleshoot: find and fix a problem reported in Test or Production
@@ -8,6 +8,9 @@ description: Finds and fixes a problem reported in the Test or Production enviro
 Say at the start what this skill is for: a problem someone saw in a deployed environment, Test or Production. A bug
 you run into on your own branch while you build something belongs to ai-dlc's phase 6, though sections 4 and 5 hold
 there too.
+
+**Under ai-dlc.** Finding the cause is this skill's work; the fix is ai-dlc's (`.github/agents/ai-dlc.agent.md`), on
+its short track, or its full track when it turns out bigger.
 
 ## 1. Which environment, which code
 
@@ -59,13 +62,17 @@ Before you look for the cause, check each of these, and walk the user through ge
 - **The containers' own logs**: `docker compose logs` of the environment's Compose project on the VM, which you
   reach the way the deploy skill set up. They hold what no error tracker received, startup failures included.
 - **What the user's device saw**: the app's diagnostic modal (`.docs/23- Diagnostic Modal.md`) shows the client's side
-  of a session. Ask the person who saw the problem to open it and send what it shows.
+  of a session. Ask the person who saw the problem to open it and send what it shows, before they reload or close the
+  app: its logs live only in memory.
 
 Start once you can read the source, the data, the background jobs and the errors, or once the user has decided to go on
 without one of them, knowing what it hides.
 
 ## 3. Read before you guess
 
+- Ask the environment's dev-mcp for its health first (`GetHealth`): it runs every health check the server has, from
+  the database and the background jobs to email, the AI models and the project's websites, and returns each one that
+  isn't Healthy with its reason.
 - Start from the evidence: the exception and its stack trace, the trace id an error or the diagnostic modal shows, the
   request that failed, the job that failed with its arguments, the row that looks wrong. Follow one trace from end to
   end rather than reading the logs at random: dev-mcp's `GetTrace` gives a trace's spans and the logs written inside it.
@@ -80,8 +87,9 @@ without one of them, knowing what it hides.
     - **The database.** The applied migrations against the code's, and the data itself: a row the code never expected.
     - **Background jobs.** Failed and retried jobs, with their exceptions and arguments, and recurring jobs that
       stopped running.
-    - **A provider.** Email, SMS, push, AI or storage: a key that expired, a quota that ran out, an outage. The
-      provider's own dashboard says.
+    - **A provider.** Email, SMS, push, AI, storage or any other service the app calls: a key that expired, a quota
+      that ran out, an outage, or a change to its API, such as a new required field or a response of another shape,
+      which breaks the app with nothing deployed on its side. The provider's own dashboard and changelog say.
     - **A stale copy.** An older app version on the user's device (`.docs/13- Force Update System.md`), an old
       client the browser's service worker still serves, or a cached response or cached data that outlived what it
       described (`.docs/14- Response Caching System.md`).
@@ -104,17 +112,12 @@ without one of them, knowing what it hides.
 - A problem seen in the Windows app is reproduced in the Windows app, an installed copy included. It opens no
   debugging port unless started with `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` set to `--remote-debugging-port=9222`;
   start it that way, then read and drive its page as the run-app skill's section 6 says.
-- As far as an automated test can reach the problem, the reproduction ends in one: an integration test under
-  `src/Tests` for what the server does, a UI test for what the user saw. Write it before the fix and see it fail the way
-  the environment does. Only then fix the cause rather than the symptom, and see the test pass; it's what keeps the
-  problem from coming back. When no test can reach it, say why in your report.
+- The test that guards the fix is the one ai-dlc's short track writes first, on the fix's branch: an integration test
+  under `src/Tests` for what the server does, a UI test for what the user saw, failing the way the environment does.
 - A problem seen on Test while it runs a branch that isn't merged yet belongs to that branch: fix it there, through the
   ai-dlc work that branch is part of.
-- Any other fix goes through ai-dlc's short track, or its full track when it turns out bigger, on a branch of its own
-  off `main`. Ai-dlc's phase 7 deploys that branch to Test, where you check it against the same evidence that showed
-  the problem, and merges it into `main`, Production, on the user's go-ahead.
-- A Production problem that can't wait is a hotfix and takes the same way, only ahead of other work: say so when its
-  phase 7 checks the open work, so it isn't held behind changes that aren't ready.
+- Any other fix is ai-dlc work of its own, a hotfix when a Production problem can't wait. On Test, check it against
+  the same evidence that showed the problem.
 
 ## 5. Report
 

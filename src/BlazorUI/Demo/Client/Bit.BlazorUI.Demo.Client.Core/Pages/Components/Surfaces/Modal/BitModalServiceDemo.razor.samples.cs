@@ -166,7 +166,7 @@ private async Task ShowConfirmModal()
     var modal = await modalService.Show<ConfirmModalContent>(new BitModalContentParameters<ConfirmModalContent>
     {
         { c => c.Question, ""Delete the project?"" }
-    }, new BitModalParameters { AriaLabel = ""Delete the project?"", IsAlert = true });
+    }, new BitModalParameters { AriaLabel = ""Delete the project?"", Alert = true });
 
     var confirmed = await modal.GetResult<bool>();
 
@@ -618,7 +618,7 @@ private async Task ShowNamedModal()
     });
 }
 
-// Blocking and no IsAlert: announced as an alertdialog. Only the overlay click is refused; Escape and the
+// Blocking and no Alert: announced as an alertdialog. Only the overlay click is refused; Escape and the
 // close button still dismiss it.
 private async Task ShowBlockingModal()
 {

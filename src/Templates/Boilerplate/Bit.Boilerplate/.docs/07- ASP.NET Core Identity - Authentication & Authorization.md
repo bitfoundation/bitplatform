@@ -105,6 +105,12 @@ active account. Only the active account signs out, and another account on the de
 dialog can also sign out every account at once. Push notifications reach every account on the device, realtime
 messages only the active one.
 
+The account menu can also lock the active account, leaving no account active. The first lock on a device asks for an
+8 character PIN after elevated access. A locked account's session stays on the device encrypted with a key only that PIN
+opens, so switching back asks for it, a sign-out never makes it the active account on its own, and 10 wrong PINs remove
+it from the device. The PIN never leaves the device: signing in again always works and removes the PIN, and the next
+lock sets a new one.
+
 ### Configuration
 
 Everything lives under the `Identity` section of
@@ -236,7 +242,7 @@ with a different tenant claim.
 
 - [`Tenant`](/src/Server/Boilerplate.Server.Api/Features/Tenants/Tenant.cs) - its `Name` must be a valid sub-domain
   label, because that is how anonymous requests resolve it. `IsActive` controls whether it can be used at all.
-- [`TenantUser`](/src/Server/Boilerplate.Server.Api/Features/Tenants/TenantUser.cs) - membership. `AcceptedOn` is
+- [`TenantMembership`](/src/Server/Boilerplate.Server.Api/Features/Tenants/TenantMembership.cs) - membership. `AcceptedOn` is
   null while the user has only been invited.
 - A seeded default tenant (`store`) owns all sample data and acts as the fallback.
 

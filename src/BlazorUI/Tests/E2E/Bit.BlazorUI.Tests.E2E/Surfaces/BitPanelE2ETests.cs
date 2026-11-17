@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// the page inert and off the screen; every Placement entering from its own edge, Size and FullSize; the bound IsOpen, the
 /// Open/Close/Toggle methods and the order and arguments of every event (OnOpen, OnToggle, OnTransitionEnd, OnOverlayClick,
 /// OnEscapeKeyDown, OnDismissing with its reasons, OnDismiss); the header/body/footer chrome; ModeFull, Blocking,
-/// NoDismissOnEscape and Modeless; refusing a dismissal; the dialog semantics, Role and IsAlert; focus moved in, trapped and
+/// NoDismissOnEscape and Modeless; refusing a dismissal; the dialog semantics, Role and Alert; focus moved in, trapped and
 /// restored and the No* opt-outs; the page scroll lock, NoScrollLock, AutoToggleScroll, ScrollerSelector and the gesture
 /// forwarding; mouse swipes towards each edge with SwipeTrigger and NoSwipe; nested panels where one Escape closes one layer
 /// and ZIndex; AbsolutePosition; KeepMounted; BitParams; close icons; Style/Class/Styles/Classes and the --bit-Panel-*
@@ -548,7 +548,7 @@ public class BitPanelE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsAlert_AnnouncesAnAlertDialog()
+    public async Task Alert_AnnouncesAnAlertDialog()
     {
         await OpenAsync(PagePath);
         await OpenPanelAsync("btn-alert-open", "a11y-panel");

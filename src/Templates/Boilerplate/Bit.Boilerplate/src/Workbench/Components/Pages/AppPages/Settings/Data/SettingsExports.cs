@@ -19,10 +19,10 @@ public static class SettingsExports
     public static byte[] PersonalData(UserDto user, IEnumerable<UserSessionDto> sessions, DateTimeOffset exportedOn, string? photoPath)
     {
         // photoPath is the demo user's own photo on disk, which the profile shows until a picture is uploaded.
-        var picture = user.HasProfilePicture ? WorkbenchProfilePictures.Find(user.Id) : null;
-        var pictureFile = user.HasProfilePicture is false ? null
-                        : picture is { } uploaded ? $"files/attachments/profile-picture{ExtensionOf(uploaded.ContentType)}"
-                        : photoPath is null ? null : "files/attachments/profile-picture.svg";
+        var picture = user.HasProfileImage ? WorkbenchProfileImages.Find(user.Id) : null;
+        var pictureFile = user.HasProfileImage is false ? null
+                        : picture is { } uploaded ? $"files/attachments/profile-image{ExtensionOf(uploaded.ContentType)}"
+                        : photoPath is null ? null : "files/attachments/profile-image.svg";
 
         var export = new
         {
@@ -63,12 +63,12 @@ public static class SettingsExports
                 },
                 ["attachments"] = new
                 {
-                    purpose = "Showing your profile picture in the application.",
-                    retention = "For as long as the account exists. Deleting your profile picture, or your account, removes both the row and the stored image.",
+                    purpose = "Showing your profile image in the application.",
+                    retention = "For as long as the account exists. Deleting your profile image, or your account, removes both the row and the stored image.",
                     recipients = Array.Empty<string>(),
                     erasedOnAccountDeletion = true,
                     erasurePath = "ErasureService",
-                    data = new { hasProfilePicture = pictureFile is not null },
+                    data = new { hasProfileImage = pictureFile is not null },
                     files = pictureFile is null ? [] : new[] { pictureFile }
                 }
             }

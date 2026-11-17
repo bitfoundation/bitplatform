@@ -5,12 +5,12 @@ using Boilerplate.Shared.Features.Attachments;
 namespace Boilerplate.Tests.Features.Attachments;
 
 [TestClass, TestCategory("IntegrationTest")]
-public partial class UserProfilePictureWebPTests
+public partial class UserProfileImageWebPTests
 {
     public TestContext TestContext { get; set; } = default!;
 
     /// <summary>
-    /// Verifies the server-side image pipeline of <c>AttachmentController.UploadUserProfilePicture</c>: uploading a
+    /// Verifies the server-side image pipeline of <c>AttachmentController.UploadUserProfileImage</c>: uploading a
     /// NON-webp source image (the repo's 512x512 <c>images/icons/bit-icon-512.png</c>) must produce a
     /// <see cref="AttachmentKind.UserProfileImageSmall"/> attachment that is resized to 256x256 and re-encoded to WebP
     /// by bit Bmage (<c>imageProcessor.EncodeAsync</c>). After signing in with the seeded default
@@ -21,7 +21,7 @@ public partial class UserProfilePictureWebPTests
     /// original PNG being served back.
     /// </summary>
     [TestMethod]
-    public async Task UploadUserProfilePicture_Should_StoreAndServeSmallImageAsWebP()
+    public async Task UploadUserProfileImage_Should_StoreAndServeSmallImageAsWebP()
     {
         await using var server = new AppTestServer();
 
@@ -62,11 +62,11 @@ public partial class UserProfilePictureWebPTests
             // The endpoint binds an IFormFile parameter named "file".
             form.Add(fileContent, "file", "bit-icon-512.png");
 
-            using var uploadResponse = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfilePicture", form, TestContext.CancellationToken);
+            using var uploadResponse = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfileImage", form, TestContext.CancellationToken);
             uploadResponse.EnsureSuccessStatusCode();
             pictureWasUploadedByThisTest = true;
 
-            // Download the generated small (256x256) attachment. attachmentId for a profile picture is the user id.
+            // Download the generated small (256x256) attachment. attachmentId for a profile image is the user id.
             var downloadedBytes = await httpClient.GetByteArrayAsync(
                 $"api/v1/Attachment/GetAttachment/{currentUser.Id}/{AttachmentKind.UserProfileImageSmall}",
                 TestContext.CancellationToken);
@@ -82,14 +82,14 @@ public partial class UserProfilePictureWebPTests
         {
             // This test signs in as the SEEDED default account and the database outlives the run (all tests share one
             // application database), so the uploaded picture must be removed again - otherwise the canonical account
-            // permanently carries HasProfilePicture=true pointing at a blob under this run's working directory.
-            // Best effort, mirroring AttachmentReplacementTests.DeleteProfilePicture: a test that fails early must not
+            // permanently carries HasProfileImage=true pointing at a blob under this run's working directory.
+            // Best effort, mirroring AttachmentReplacementTests.DeleteProfileImage: a test that fails early must not
             // take the cleanup down with it.
             if (pictureWasUploadedByThisTest)
             {
                 try
                 {
-                    using var _ = await httpClient.DeleteAsync("api/v1/Attachment/DeleteUserProfilePicture", CancellationToken.None);
+                    using var _ = await httpClient.DeleteAsync("api/v1/Attachment/DeleteUserProfileImage", CancellationToken.None);
                 }
                 catch (Exception) { }
             }

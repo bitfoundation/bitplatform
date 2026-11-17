@@ -829,6 +829,7 @@ services.AddHangfire(configuration => configuration
 | `SessionSampleRatio` | `1.0` | fraction of sessions recorded, whole; Azure Monitor sends it as every browser item's `sampleRate` (`1 / N` keeps the counts exact) |
 | `FlushInterval`, `MaxBatchSize`, `MaxQueueSize` | 5 s, 100, 1024 | batching |
 | `MaxRelayedPerMinute` | 3000 | records one circuit may relay per minute on Blazor Server (see [Transport](#transport-direct-and-relay)) |
+| `MaxRelayMessageBytes` | 16384 | bytes of JSON one relay call may carry on Blazor Server: a larger batch goes in parts (see [Transport](#transport-direct-and-relay)) |
 | `Debug` | `false` | the script's own diagnostics in `console.debug` |
 
 ### Page route templates
@@ -865,7 +866,9 @@ options.Browser.PageRouteAssemblies.AddRange([typeof(App).Assembly, typeof(Clien
 ```
 
 An app without an entry assembly (.NET for Android) is searched from its loaded assemblies instead, and an app whose
-search finds no route at all logs a warning under `Bit.Belemetry`: set `PageRouteAssemblies` there. The routes are
+search finds no route at all logs a warning under `Bit.Belemetry`: set `PageRouteAssemblies` there. So does one that
+could not read an assembly's references (NativeAOT keeps no metadata of them): its own pages count, but the libraries
+it references were not searched. The routes are
 written into the browser config only when page views are recorded. A page whose script was started already - an Auto
 app's WebAssembly client in the page its server rendered - keeps the routes its server found and adds those configured
 in the client (`PageRoutes` and the `PageRouteAssemblies`' routes), without a second search. Add routes discovery
@@ -914,7 +917,10 @@ Applied on both sides before anything is queued, and by .NET to every metric poi
 
 - `RedactQueryParameters`: values of sensitive query parameters (`token`, `code`, `password`, `secret`, `key`,
   `access_token`, `email`, ..., and the signatures and credentials of pre-signed storage URLs - `X-Amz-Signature`,
-  `X-Amz-Credential`, `X-Amz-Security-Token`, `X-Goog-Signature`, Azure SAS `sig`) become `REDACTED` in every URL.
+  `X-Amz-Credential`, `X-Amz-Security-Token`, `X-Goog-Signature`, Azure SAS `sig`) become `REDACTED` in every URL -
+  the URLs a log body carries included (ASP.NET Core's `Request starting HTTP/1.1 GET https://host/path?token=...`,
+  or a relative `Redirecting to /callback?code=...`),
+  and in the `QueryString` and `Uri` values of ASP.NET Core's and HttpClient's own logs.
 - `RedactedAttributes`: attribute names whose values become `REDACTED`, whatever they look like. A name matches a key
   whole or its last dot-separated segment, case-insensitively, so the default `password` covers a structured log value
   `{Password}` and `user.password`, and `authorization` covers `http.request.header.authorization` - while
@@ -924,8 +930,9 @@ Applied on both sides before anything is queued, and by .NET to every metric poi
   blocked one) is exported with its template as the body (`Sign-in for {User} with {Password}`), so the value does not
   reach the backend in the message either.
 - `StripQueryString` (off; it also drops `url.query`) and `StripFragment` (on - fragments may carry OAuth tokens).
-  `url.query` gets the same parameter redaction as a URL.
-- `ScrubPatterns` (on): bearer tokens, JWTs, e-mail addresses, card numbers (Luhn-checked) and IPv4 addresses are
+  `url.query` (and a log's `QueryString`) gets the same parameter redaction as a URL.
+- `ScrubPatterns` (on): bearer tokens, JWTs, e-mail addresses, card numbers (Luhn-checked; a run starting with 0 or of
+  one repeated digit - an all-zero trace parent id - is no card) and IPv4 addresses are
   replaced in log bodies, span status messages and **every string attribute** - structured log values
   (`logger.LogInformation("User {Email}", email)`) and event attributes included - on both sides. Kept verbatim: the
   ids (`session.id`, `enduser.pseudo.id`, `user.id`), `server.address` and `user_agent.original` (whose four-part
@@ -939,9 +946,9 @@ Applied on both sides before anything is queued, and by .NET to every metric poi
 - Azure Monitor's `MaskIp` (on) stops IP-based geolocation; Belemetry never adds the client IP itself.
 
 IP scrubbing leaves the **host** of a URL and `server.address` alone, even when they are IP literals: they name the
-server that was called (`http://10.0.0.5:5000/api` stays readable in a dependency), not the user. The rest of the URL
-is still scrubbed, credentials in a URL are always dropped, and IPs in any other text (messages, stack traces,
-`client.address` in the browser) are replaced with `[ip]`.
+server that was called (`http://10.0.0.5:5000/api` stays readable in a dependency), not the user - an absolute URL in a
+log body included. The rest of the URL is still scrubbed, credentials in a URL are always dropped, and IPs in any other
+text (messages, stack traces, `client.address` in the browser) are replaced with `[ip]`.
 
 ---
 
@@ -1385,6 +1392,12 @@ circuit), drops features the configuration switched off, and decides the service
 `service.namespace`, `service.version` and `deployment.environment.name` come from the server, the rest of the
 resource from the page, and none of the server's own host or process attributes are added (as with the Direct
 transport).
+
+Each relay call is a message of the circuit's connection, which SignalR closes on a message over the hub's
+`MaximumReceiveMessageSize` (32 KB by default) - the circuit and the records with it. So on Blazor Server the script
+relays a batch in parts of at most `Browser.MaxRelayMessageBytes` (16384) bytes of JSON, and drops a record that alone is
+larger (counted as `size_limit` in `getStats()`) - every record, when the resource alone leaves no room for one. Raise
+both together if your records are larger.
 
 ---
 

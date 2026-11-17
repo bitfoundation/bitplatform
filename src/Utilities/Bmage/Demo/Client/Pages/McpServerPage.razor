@@ -444,10 +444,10 @@
     {
         <div class="bb-note bb-note-danger demo-error" role="alert">@_searchError</div>
     }
-    else if (_hits is { Length: > 0 })
+    else if (_search?.Hits is { Length: > 0 } hits)
     {
         <ul class="mcp-hits">
-            @foreach (var hit in _hits)
+            @foreach (var hit in hits)
             {
                 <li>
                     <span class="bb-badge demo-badge-off">@hit.Kind</span>
@@ -457,9 +457,9 @@
             }
         </ul>
     }
-    else if (_hits is not null)
+    else if (_search is not null)
     {
-        <p class="demo-small bb-muted">Nothing matched that.</p>
+        <p class="demo-small bb-muted">@(_search.Message ?? "Nothing matched that.")</p>
     }
 </div>
 
@@ -622,6 +622,8 @@
     private sealed record Finding(string? Severity, string Rule, int? Line, string Message, string Fix);
 
     private sealed record Hit(string Kind, string Title, string? Context, string Tool, string Snippet);
+
+    private sealed record SearchResult(Hit[]? Hits, string? Message);
 
     private sealed record Catalog(CatalogMember[] Tools, CatalogMember[] Prompts, CatalogMember[] Resources);
 
@@ -791,7 +793,7 @@
     private string _query = "avatar under 100 KB";
     private bool _searching;
     private string? _searchError;
-    private Hit[]? _hits;
+    private SearchResult? _search;
 
     private Catalog? _catalog;
 
@@ -959,8 +961,8 @@
 
         try
         {
-            _hits = await GetAsync<Hit[]>($"api/mcp/SearchBmage?query={Uri.EscapeDataString(_query)}&limit=8");
-            _searchError = _hits is null ? Unreachable : null;
+            _search = await GetAsync<SearchResult>($"api/mcp/SearchBmage?query={Uri.EscapeDataString(_query)}&limit=8");
+            _searchError = _search is null ? Unreachable : null;
         }
         finally
         {

@@ -202,7 +202,7 @@ public sealed class DrawingTests : BinkTest
         await page.WaitForTimeoutAsync(250);
 
         string text = await description.InnerTextAsync();
-        Assert.Contains("1 elements", text, StringComparison.Ordinal);
+        Assert.Contains("Drawing with 1 element on", text, StringComparison.Ordinal);
         Assert.Contains("Stroke", text, StringComparison.Ordinal);
 
         // The container is what a screen reader lands on, and it has to describe itself.

@@ -36,10 +36,10 @@
 </E2ESection>
 
 <E2ESection Id="toggle" Title="Toggle">
-    <BitMenuButton Id="mnb-toggle" Split Toggle Text="Bold" Items="_toggle" @bind-IsToggled="_isToggled" OnToggleChange="v => _toggleChanges.Add(v.ToString())" />
+    <BitMenuButton Id="mnb-toggle" Split Toggle Text="Bold" Items="_toggle" @bind-Toggled="_isToggled" OnToggleChange="v => _toggleChanges.Add(v.ToString())" />
     <span id="toggle-value">@_isToggled</span>
     <span id="toggle-changes">@string.Join(",", _toggleChanges)</span>
-    <BitMenuButton Id="mnb-toggle-default" Split Toggle DefaultIsToggled="true" Text="Italic" Items="_toggleDefault" />
+    <BitMenuButton Id="mnb-toggle-default" Split Toggle DefaultToggled="true" Text="Italic" Items="_toggleDefault" />
 </E2ESection>
 
 <E2ESection Id="checkable" Title="Checkable">
@@ -153,7 +153,7 @@
     {
         <BitMenuButton Id="@($"mnb-color-{color}")" Color="color" Text="@color.ToString()" Items="@(L($"color-{color}"))" />
         <BitMenuButton Id="@($"mnb-color-outline-{color}")" Color="color" Variant="BitVariant.Outline" Text="@color.ToString()" Items="@(L($"color-outline-{color}"))" />
-        <BitMenuButton Id="@($"mnb-color-toggle-{color}")" Color="color" Split Toggle DefaultIsToggled="true" Text="@color.ToString()" Items="@(L($"color-toggle-{color}"))" />
+        <BitMenuButton Id="@($"mnb-color-toggle-{color}")" Color="color" Split Toggle DefaultToggled="true" Text="@color.ToString()" Items="@(L($"color-toggle-{color}"))" />
         <BitMenuButton Id="@($"mnb-color-dis-{color}")" Color="color" Disabled Text="@color.ToString()" Items="@(L($"color-dis-{color}"))" />
     }
 </E2ESection>
@@ -246,9 +246,9 @@
 
 <E2ESection Id="style-class" Title="Style &amp; Class">
     <BitMenuButton Id="sc-style" Style="margin-left: 11px;" Class="e2e-custom-class" Text="Styled" Items="@(L("sc-style"))" data-e2e="custom-attribute" />
-    <BitMenuButton Id="sc-styles" Split Toggle DefaultIsToggled="true" Text="Styles" IconName="@BitIconName.Add" Items="_stylesItems" CloseOnItemClick="false"
+    <BitMenuButton Id="sc-styles" Split Toggle DefaultToggled="true" Text="Styles" IconName="@BitIconName.Add" Items="_stylesItems" CloseOnItemClick="false"
                    Styles="@(new() { Root = "outline: 3px dotted rgb(9, 9, 9);", Toggled = "border-color: rgb(0, 0, 255);", Opened = "margin-top: 3px;", OperatorButton = "letter-spacing: 2px;", Icon = "color: rgb(255, 0, 0);", Text = "text-decoration: underline;", ChevronDownButton = "padding-left: 9px;", ChevronDown = "color: rgb(0, 128, 0);", Separator = "width: 5px;", Callout = "border: 2px solid rgb(255, 0, 255);", CalloutContainer = "padding-top: 6px;", ItemWrapper = "margin-left: 4px;", ItemButton = "letter-spacing: 3px;", ItemIcon = "color: rgb(128, 0, 128);", ItemText = "text-decoration: underline;", ItemSecondaryText = "color: rgb(0, 0, 255);", ItemCheckIcon = "color: rgb(255, 165, 0);", ItemHeader = "color: rgb(0, 100, 0);", ItemSeparator = "height: 4px;", ItemChevron = "color: rgb(10, 10, 10);", Submenu = "padding-top: 7px;" })" />
-    <BitMenuButton Id="sc-classes" Split Toggle DefaultIsToggled="true" Text="Classes" IconName="@BitIconName.Add" Items="_classesItems" CloseOnItemClick="false"
+    <BitMenuButton Id="sc-classes" Split Toggle DefaultToggled="true" Text="Classes" IconName="@BitIconName.Add" Items="_classesItems" CloseOnItemClick="false"
                    Classes="@(new() { Root = "c-root", Toggled = "c-toggled", Opened = "c-opened", OperatorButton = "c-opb", Icon = "c-icon", Text = "c-text", ChevronDownButton = "c-chb", ChevronDown = "c-chv", Separator = "c-spb", Callout = "c-callout", CalloutContainer = "c-cul", ItemWrapper = "c-iwr", ItemButton = "c-itm", ItemIcon = "c-iic", ItemText = "c-itx", ItemSecondaryText = "c-isc", ItemCheckIcon = "c-ick", ItemHeader = "c-ihd", ItemSeparator = "c-isp", ItemChevron = "c-sch", Submenu = "c-sub", Overlay = "c-ovl" })" />
     <BitMenuButton Id="sc-sticky" Sticky Items="_stickyStyles" Styles="@(new() { OperatorButtonIcon = "color: rgb(255, 0, 0);", OperatorButtonText = "color: rgb(0, 128, 0);" })"
                    Classes="@(new() { OperatorButtonIcon = "c-obi", OperatorButtonText = "c-obt" })" />
@@ -260,7 +260,7 @@
         <BitMenuButton Id="vars-default" Text="Restyled" IconName="@BitIconName.Add" Items="@(L("vars-default"))" />
         <BitMenuButton Id="vars-color" Color="BitColor.Error" Text="Explicit color" Items="@(L("vars-color"))" />
         <BitMenuButton Id="vars-size" Size="BitSize.Small" Text="Explicit size" Items="@(L("vars-size"))" />
-        <BitMenuButton Id="vars-toggled" Split Toggle DefaultIsToggled="true" Text="Toggled" Items="@(L("vars-toggled"))" />
+        <BitMenuButton Id="vars-toggled" Split Toggle DefaultToggled="true" Text="Toggled" Items="@(L("vars-toggled"))" />
         <BitMenuButton Id="vars-disabled" Disabled Text="Disabled" Items="@(L("vars-disabled"))" />
         <BitMenuButton Id="vars-background" Background="BitColorKind.Tertiary" Text="Explicit background" Items="@(L("vars-background"))" />
     </div>

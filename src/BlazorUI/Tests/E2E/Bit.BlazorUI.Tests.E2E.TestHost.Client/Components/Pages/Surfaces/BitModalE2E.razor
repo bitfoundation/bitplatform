@@ -274,10 +274,10 @@
     </BitModal>
 </E2ESection>
 
-<E2ESection Id="a11y" Title="Accessibility: TitleAriaId, SubtitleAriaId, IsAlert, AriaLabel">
+<E2ESection Id="a11y" Title="Accessibility: TitleAriaId, SubtitleAriaId, Alert, AriaLabel">
     <button id="btn-labelled-open" @onclick="() => _labelledOpen = true">TitleAriaId and SubtitleAriaId</button>
-    <button id="btn-alert-open" @onclick="() => _alertOpen = true">IsAlert</button>
-    <button id="btn-notalert-open" @onclick="() => _notAlertOpen = true">Blocking, IsAlert false</button>
+    <button id="btn-alert-open" @onclick="() => _alertOpen = true">Alert</button>
+    <button id="btn-notalert-open" @onclick="() => _notAlertOpen = true">Blocking, Alert false</button>
     <button id="btn-arialabel-open" @onclick="() => _ariaLabelOpen = true">AriaLabel over HeaderText</button>
 
     <BitModal Id="labelled-modal" @bind-IsOpen="_labelledOpen" TitleAriaId="mdl-title" SubtitleAriaId="mdl-subtitle">
@@ -286,10 +286,10 @@
             <p id="mdl-subtitle">Described by my own paragraph.</p>
         </div>
     </BitModal>
-    <BitModal Id="alert-modal" @bind-IsOpen="_alertOpen" IsAlert Blocking AriaLabel="Delete the project">
+    <BitModal Id="alert-modal" @bind-IsOpen="_alertOpen" Alert Blocking AriaLabel="Delete the project">
         <div style="padding: 24px;"><button id="alert-close" @onclick="() => _alertOpen = false">Keep it</button></div>
     </BitModal>
-    <BitModal Id="notalert-modal" @bind-IsOpen="_notAlertOpen" IsAlert="false" Blocking>
+    <BitModal Id="notalert-modal" @bind-IsOpen="_notAlertOpen" Alert="false" Blocking>
         <div style="padding: 24px;">Blocking but announced as a plain dialog.</div>
     </BitModal>
     <BitModal Id="arialabel-modal" @bind-IsOpen="_ariaLabelOpen" HeaderText="Visible title" AriaLabel="Spoken name">
@@ -338,7 +338,7 @@
             <input id="nested-claim" data-bit-esc="claim" placeholder="claims Escape" />
             <button id="btn-inner-open" @onclick="() => _innerOpen = true">Delete</button>
 
-            <BitModal Id="inner-modal" @bind-IsOpen="_innerOpen" IsAlert Blocking AriaLabel="Confirm the deletion"
+            <BitModal Id="inner-modal" @bind-IsOpen="_innerOpen" Alert Blocking AriaLabel="Confirm the deletion"
                       OnEscapeKeyDown="@(() => _nestedLog.Add("inner"))">
                 <div style="padding: 24px;">
                     <button id="inner-first">Yes</button>

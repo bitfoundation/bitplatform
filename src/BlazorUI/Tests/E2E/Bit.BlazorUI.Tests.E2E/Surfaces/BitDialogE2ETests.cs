@@ -616,7 +616,7 @@ public class BitDialogE2ETests : E2ETestBase
     [TestMethod]
     [DataRow("btn-notalert-open", "notalert-dialog", "dialog")]
     [DataRow("btn-alert-open", "alert-dialog", "alertdialog")]
-    public async Task IsAlert_OverridesTheRoleBlockingWouldGive(string buttonId, string dialogId, string role)
+    public async Task Alert_OverridesTheRoleBlockingWouldGive(string buttonId, string dialogId, string role)
     {
         await OpenAsync(PagePath);
         await OpenDialogAsync(buttonId, dialogId);

@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Mail;
 using Bit.Bmage;
 using Bit.Bmage.Memory;
+using Bit.Belemetry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Server.Api.Features.Identity.OAuth;
@@ -130,10 +131,13 @@ public static partial class Program
         services.AddScoped<ProductEmbeddingService>();
         //#endif
         //#endif
-        var smsBridge = services.AddSmsBridge(configuration.GetSection("Sms"));
         if (appSettings.Sms?.Configured is true)
         {
-            smsBridge.UseTwilio("Twilio", twilio => configuration.GetSection("Sms:Providers:Twilio").Bind(twilio));
+            services.AddSmsBridge(configuration.GetSection("Sms"));
+        }
+        else
+        {
+            services.AddSmsBridge(options => configuration.GetSection("Sms").Bind(options));
         }
 
         services.AddSingleton(_ => PhoneNumberUtil.GetInstance());
@@ -1019,7 +1023,7 @@ public static partial class Program
             .AddCheck<AppCertificateHealthCheck>("appCertificate", tags: [HealthCheckCategories.Platform])
             // Remote dependencies from here on are bounded and report Degraded, which keeps `/health` at 200 (See
             // MapAppHealthChecks): a provider outage must not drain an otherwise healthy instance.
-            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", failureStatus: HealthStatus.Degraded, tags: [HealthCheckCategories.Platform], timeout: TimeSpan.FromSeconds(5))
+            .AddCheck<FileStorageHealthCheck>("fileStorage", failureStatus: HealthStatus.Degraded, tags: [HealthCheckCategories.Platform], timeout: TimeSpan.FromSeconds(5))
             // Cached, as signing in on every probe can trip the mail provider's brute force protection.
             .AddCachedCheck("smtp", HealthCheckCategories.Messaging, _ => new SmtpHealthCheck(GetSmtpSettings(configuration)), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
@@ -1063,6 +1067,12 @@ public static partial class Program
             }
         }
 
+        // Remove it if a service other than bit Fabric watches the app from outside.
+        if (builder.Environment.IsDevelopment() is false)
+        {
+            healthChecksBuilder.AddCheck<BitFabricHealthCheck>("bitFabric", failureStatus: HealthStatus.Degraded, tags: [HealthCheckCategories.Integrations], timeout: TimeSpan.FromSeconds(5));
+        }
+
         // Outside development, a missing configuration is most likely a deployment mistake, so it reports Degraded.
         // A project that doesn't use a dependency should remove its code.
         var reportNotConfigured = builder.Environment.IsDevelopment() is false;
@@ -1091,6 +1101,29 @@ public static partial class Program
             sp => ActivatorUtilities.CreateInstance<CloudflareHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
+        //#if (sentry == true)
+        AddCachedCheckIfConfigured("sentry", HealthCheckCategories.Integrations, string.IsNullOrWhiteSpace(configuration["Sentry:Dsn"]) is false, "Sentry:Dsn",
+            sp => ActivatorUtilities.CreateInstance<SentryHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+        //#endif
+
+        //#if (appInsights == true)
+        AddCachedCheckIfConfigured("appInsights", HealthCheckCategories.Integrations, string.IsNullOrWhiteSpace(configuration["ApplicationInsights:ConnectionString"]) is false, "ApplicationInsights:ConnectionString",
+            sp => ActivatorUtilities.CreateInstance<AppInsightsHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+        //#endif
+
+        if (string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false || string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false
+            || configuration.GetBelemetryOtlpEndpoint() is not null)
+        {
+            healthChecksBuilder.AddCachedCheck("otlp", HealthCheckCategories.Integrations, sp => ActivatorUtilities.CreateInstance<OtlpHealthCheck>(sp),
+                cacheDuration: TimeSpan.FromMinutes(1), timeout: TimeSpan.FromSeconds(10));
+        }
+
+        if (string.IsNullOrWhiteSpace(configuration["AspireDashboard:Url"]) is false)
+        {
+            healthChecksBuilder.AddCachedCheck("aspireDashboard", HealthCheckCategories.Integrations, sp => ActivatorUtilities.CreateInstance<AspireDashboardHealthCheck>(sp),
+                cacheDuration: TimeSpan.FromMinutes(1), timeout: TimeSpan.FromSeconds(10));
+        }
+
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];
         AddCheckIfConfigured("keycloakIdentity", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(keycloakBaseUrl) is false, "Authentication:Keycloak", tags =>
         {
@@ -1104,11 +1137,15 @@ public static partial class Program
                 configureClient: (_, client) => client.Timeout = TimeSpan.FromSeconds(10));
         });
 
-        // These can't be verified without a user signing in, so they only report a missing configuration.
-        AddCheckIfConfigured("googleSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false, "Authentication:Google", _ => { });
-        AddCheckIfConfigured("gitHubSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:GitHub:ClientId"]) is false, "Authentication:GitHub", _ => { });
-        AddCheckIfConfigured("twitterSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Twitter:ConsumerKey"]) is false, "Authentication:Twitter", _ => { });
-        AddCheckIfConfigured("facebookSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Facebook:AppId"]) is false, "Authentication:Facebook", _ => { });
+        // Each asks the provider's token endpoint with the app's own credentials, and a code that doesn't exist where one is needed.
+        AddCachedCheckIfConfigured("googleSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false, "Authentication:Google",
+            sp => ActivatorUtilities.CreateInstance<GoogleSignInHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+        AddCachedCheckIfConfigured("gitHubSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:GitHub:ClientId"]) is false, "Authentication:GitHub",
+            sp => ActivatorUtilities.CreateInstance<GitHubSignInHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+        AddCachedCheckIfConfigured("twitterSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Twitter:ConsumerKey"]) is false, "Authentication:Twitter",
+            sp => ActivatorUtilities.CreateInstance<TwitterSignInHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+        AddCachedCheckIfConfigured("facebookSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Facebook:AppId"]) is false, "Authentication:Facebook",
+            sp => ActivatorUtilities.CreateInstance<FacebookSignInHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
         AddCachedCheckIfConfigured("entraId", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:AzureAD:ClientId"]) is false, "Authentication:AzureAD",
             sp => ActivatorUtilities.CreateInstance<EntraIdHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
@@ -1130,7 +1167,10 @@ public static partial class Program
         //#endif
 
         //#if (notification == true)
-        // Web Push (VAPID) signs locally, so it has nothing to check.
+        // Of the web push services, only FCM, which Chrome uses, checks the VAPID signature for a subscription it never issued.
+        AddCachedCheckIfConfigured("webPush", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(appSettings.AdsPushVapid?.PrivateKey) is false, "AdsPushVapid",
+            sp => ActivatorUtilities.CreateInstance<WebPushHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+
         AddCachedCheckIfConfigured("firebase", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(appSettings.AdsPushFirebase?.PrivateKey) is false, "AdsPushFirebase",
             sp => ActivatorUtilities.CreateInstance<PushNotificationHealthCheck>(sp, AdsPushTarget.Android), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 

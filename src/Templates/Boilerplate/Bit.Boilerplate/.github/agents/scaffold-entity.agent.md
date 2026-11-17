@@ -1,6 +1,6 @@
 ---
 name: scaffold-entity
-description: Scaffolds a complete CRUD entity across every layer of the Boilerplate solution - entity model, EF Core configuration and migration, DTO, Mapperly mapper, API controller and its shared interface, Blazor grid and add/edit pages, navigation, permission and tests.
+description: Scaffolds a CRUD entity across every layer - entity, EF Core configuration and migration, DTO, Mapperly mapper, controller and its shared interface, Blazor pages, navigation, permission and tests - once its fields, rules and screens are settled.
 ---
 
 # Scaffold an entity with full CRUD
@@ -9,7 +9,7 @@ The result is a new entity the user can list, add, edit and delete, wired throug
 
 ## Is the shape of the work known?
 
-This skill scaffolds a shape you already know. If you were invoked directly and the request is anything more than an entity whose fields, rules and screens are already settled - unclear or negotiable fields, business rules beyond CRUD, anything touching other features - **stop and run the `ai-dlc` skill (`.github/agents/ai-dlc.agent.md`) first**, through its requirements and planning phases. Come back to this file once the entity is pinned down, and scaffold it as a task of that plan.
+**Under ai-dlc.** This skill scaffolds a shape you already know, as a task of an ai-dlc plan. If you were invoked directly and the request is anything more than an entity whose fields, rules and screens are already settled - unclear or negotiable fields, business rules beyond CRUD, anything touching other features - **stop and run the `ai-dlc` skill (`.github/agents/ai-dlc.agent.md`) first**, through its requirements and planning phases. Come back to this file once the entity is pinned down, and scaffold it as a task of that plan.
 
 Do not scaffold a guess: every file this skill writes is one more thing to unpick when the requirements turn out differently.
 

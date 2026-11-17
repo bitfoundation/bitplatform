@@ -35,7 +35,7 @@ public class BitAccordionPrerenderTests
         var html = await Prerenderer.RenderAsync<BitAccordion>(new Dictionary<string, object?>
         {
             [nameof(BitAccordion.Title)] = "Shipping",
-            [nameof(BitAccordion.DefaultIsExpanded)] = true,
+            [nameof(BitAccordion.DefaultExpanded)] = true,
         });
 
         StringAssert.Contains(html, "bit-acd-exp");

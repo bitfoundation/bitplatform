@@ -60,12 +60,15 @@ export interface DotNetRequest {
 export interface AttachOptions {
     relay?: boolean;
     unloadDrain?: boolean;
+    /** The most bytes one relay call may carry (a Blazor Server circuit's message limit); absent or 0: no limit. */
+    maxRelayBytes?: number;
 }
 
 interface Bridge {
     ref: DotNetRef;
     relay: boolean;
     unloadDrain: boolean;
+    maxRelayBytes: number;
 }
 
 interface State {
@@ -177,7 +180,7 @@ function updateSink(s: State): void {
     const relay = s.config.transport === 'relay' || (bridge !== null && bridge.relay);
     if (relay) {
         // Without the .NET bridge yet, records wait in the queue.
-        s.pipeline.sink = bridge ? (batch => relayBatch((bridge as Bridge).ref, batch, s.config.sampling.sessionRatio)) : null;
+        s.pipeline.sink = bridge ? (batch => relayBatch((bridge as Bridge).ref, batch, s.config.sampling.sessionRatio, (bridge as Bridge).maxRelayBytes)) : null;
     } else {
         s.pipeline.sink = (batch, unload, mark) => Promise.all(s.exporters.map(exporter => {
             try {
@@ -613,7 +616,8 @@ export function getContext(): BelemetryContext {
 /** Registers the .NET bridge (BelemetryJsCallbacks). */
 export function attachDotNet(dotNetRef: DotNetRef, options?: AttachOptions | null): void {
     try {
-        bridge = dotNetRef ? { ref: dotNetRef, relay: !!(options && options.relay), unloadDrain: !!(options && options.unloadDrain) } : null;
+        const maxRelayBytes = options && typeof options.maxRelayBytes === 'number' && options.maxRelayBytes > 0 ? options.maxRelayBytes : 0;
+        bridge = dotNetRef ? { ref: dotNetRef, relay: !!(options && options.relay), unloadDrain: !!(options && options.unloadDrain), maxRelayBytes } : null;
         lastContext = '';
         if (state) {
             updateSink(state);

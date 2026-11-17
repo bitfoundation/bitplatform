@@ -232,6 +232,29 @@ public record BmageSearchHitDto
     public required string Snippet { get; init; }
 }
 
+/// <summary>What SearchBmage answers: the ranked hits, or - when there are none - why, and what to try instead.</summary>
+public record BmageSearchResultDto
+{
+    /// <summary>The matches, best first. Empty when nothing matched - Message then says what to do about it.</summary>
+    public required BmageSearchHitDto[] Hits { get; init; }
+
+    /// <summary>True when the ranking was cut short at the requested limit, so a narrower query would show more.</summary>
+    public bool HasMore { get; init; }
+
+    /// <summary>
+    /// The words the query was actually searched by - punctuation, duplicates and filler words removed.
+    /// Present only when nothing matched, which is the one time it explains something the caller could
+    /// not work out from the query it just sent.
+    /// </summary>
+    public string[]? Terms { get; init; }
+
+    /// <summary>Set only when Hits is empty: the reason, and the tool to fall back to.</summary>
+    public string? Message { get; init; }
+
+    /// <summary>Titles that nearly matched, when nothing matched outright - a query worth retrying with.</summary>
+    public string[]? DidYouMean { get; init; }
+}
+
 /// <summary>The result of running a pipeline on the real Bmage engine against a generated image.</summary>
 public record BmagePipelineRunDto
 {

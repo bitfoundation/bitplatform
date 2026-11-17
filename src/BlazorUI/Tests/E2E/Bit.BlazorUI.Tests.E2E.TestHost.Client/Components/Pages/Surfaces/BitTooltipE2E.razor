@@ -11,7 +11,7 @@
 
 <h1>BitTooltip</h1>
 
-<E2ESection Id="basic" Title="Text, hover, focus, Disabled, DefaultIsShown">
+<E2ESection Id="basic" Title="Text, hover, focus, Disabled, DefaultShown">
     <div class="e2e-ttp-row">
         <BitTooltip Id="ttp-basic" Text="This is the tooltip text">
             <button id="ttp-basic-anchor" type="button">Hover over me</button>
@@ -140,14 +140,14 @@
     </div>
 </E2ESection>
 
-<E2ESection Id="binding" Title="@@bind-IsShown, IsShown, Show, Hide, Toggle, events">
+<E2ESection Id="binding" Title="@@bind-Shown, Shown, Show, Hide, Toggle, events">
     <div class="e2e-ttp-row">
         <button id="btn-bind" type="button" @onclick="() => _isShown = !_isShown">Toggle bound</button>
         <span id="bind-value">@_isShown</span>
-        <BitTooltip Id="ttp-bind" @bind-IsShown="_isShown" Text="Bound to the toggle" Placement="BitPlacement.Bottom">
+        <BitTooltip Id="ttp-bind" @bind-Shown="_isShown" Text="Bound to the toggle" Placement="BitPlacement.Bottom">
             <button id="ttp-bind-anchor" type="button">Bound</button>
         </BitTooltip>
-        <BitTooltip Id="ttp-ctl" IsShown="_controlled" Text="The page alone decides" Placement="BitPlacement.Bottom">
+        <BitTooltip Id="ttp-ctl" Shown="_controlled" Text="The page alone decides" Placement="BitPlacement.Bottom">
             <button id="ttp-ctl-anchor" type="button">Controlled</button>
         </BitTooltip>
         <button id="btn-ctl" type="button" @onclick="() => _controlled = !_controlled">Toggle controlled</button>
@@ -194,7 +194,7 @@
         <BitTooltip Id="ttp-vis-hidden" Visibility="BitVisibility.Hidden" Text="Hidden"><span>Hidden</span></BitTooltip>
         <BitTooltip Id="ttp-vis-collapsed" Visibility="BitVisibility.Collapsed" Text="Collapsed"><span>Collapsed</span></BitTooltip>
         <BitTooltip Id="ttp-attrs" data-e2e="custom" HtmlAttributes="@_attrs" Text="Attributes"><span>Attributes</span></BitTooltip>
-        <BitTooltip Id="ttp-rr" Text="@_rrText" Color="_rrColor" Placement="_rrPlacement" IsShown="_rrShown"><span id="ttp-rr-anchor">Re-rendered</span></BitTooltip>
+        <BitTooltip Id="ttp-rr" Text="@_rrText" Color="_rrColor" Placement="_rrPlacement" Shown="_rrShown"><span id="ttp-rr-anchor">Re-rendered</span></BitTooltip>
         <button id="btn-rr" type="button" @onclick="Rerender">Change parameters</button>
         @if (_showUnmount)
         {

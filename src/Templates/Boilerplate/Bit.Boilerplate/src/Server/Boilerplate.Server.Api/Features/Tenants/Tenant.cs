@@ -42,5 +42,5 @@ public partial class Tenant
 
     public long Version { get; set; }
 
-    public List<TenantUser> Users { get; set; } = [];
+    public List<TenantMembership> Memberships { get; set; } = [];
 }

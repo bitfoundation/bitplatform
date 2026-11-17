@@ -1606,8 +1606,8 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>¿Estás seguro de que quieres revocar todas las sesiones de {0}? Las aplicaciones autorizadas se mantienen.</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>No puedes remover este usuario del grupo de usuarios SuperAdmin.</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>No puedes remover este usuario del grupo de usuarios de administradores globales.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Los permisos de super administrador no pueden modificarse.</value>
@@ -1618,11 +1618,11 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>No puedes eliminar tu propio usuario</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>No puedes eliminar este usuario SuperAdmin</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>No puedes eliminar este usuario administrador global</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>No puedes revocar las sesiones de este usuario SuperAdmin</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>No puedes revocar las sesiones de este usuario administrador global</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>No puedes eliminar tu sesión actual</value>
@@ -2191,6 +2191,42 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Lo que este dispositivo y el servidor informan sobre la aplicación, para solucionar problemas.</value>
+  </data>
+    <data name="Lock" xml:space="preserve">
+    <value>Bloquear</value>
+  </data>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>Bloquear esta cuenta</value>
+  </data>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>Para bloquear esta cuenta por primera vez se necesita un PIN. Lo introducirás para volver a esta cuenta en este dispositivo, y nunca sale de este dispositivo.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>PIN nuevo</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>Vuelve a introducir el PIN</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>Los PIN no coinciden. Inténtalo de nuevo.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>Introduce el PIN</value>
+  </data>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>PIN incorrecto. Intentos restantes: {0}.</value>
+  </data>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>Demasiados PIN incorrectos, así que esta cuenta ya no se guarda en este dispositivo. Inicia sesión de nuevo para usarla.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>Inicia sesión de nuevo para quitar el PIN</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>Usar letras</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>Usar números</value>
   </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">

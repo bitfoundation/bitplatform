@@ -49,9 +49,9 @@ public static class BelemetryOptionsExtensions
             //#endif
 
             //#if (sentry == true)
-            if (options.SentryExporters.Count is 0 && string.IsNullOrWhiteSpace(configuration["Logging:Sentry:Dsn"]) is false)
+            if (options.SentryExporters.Count is 0 && string.IsNullOrWhiteSpace(configuration["Sentry:Dsn"]) is false)
             {
-                options.AddSentryExporter(configuration["Logging:Sentry:Dsn"]!);
+                options.AddSentryExporter(configuration["Sentry:Dsn"]!);
             }
             //#endif
 

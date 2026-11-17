@@ -60,6 +60,26 @@ public class ResponsivenessTests
     }
 
     [TestMethod]
+    public void A_report_sent_in_parts_is_read_once_whole()
+    {
+        var (session, scope) = TestHelpers.CreateSession();
+        using (scope)
+        {
+            var bridge = new BevJsBridge(session, () => { });
+            bridge.ReportResponsiveness([new BevLongFramePayload { AgeMs = 900, DurationMs = 240, BlockingMs = 190 }], [], 0, 3);
+            bridge.ReportResponsiveness([new BevLongFramePayload { AgeMs = 700, DurationMs = 120, BlockingMs = 70 }], [], 1, 3);
+            Assert.AreEqual(0, session.Browser.Responsiveness.LongFrameCount, "nothing is read before the last part");
+
+            bridge.ReportResponsiveness([], [Interaction(500, 320, 10, 280)], 2, 3);
+
+            var r = session.Browser.Responsiveness;
+            Assert.AreEqual(2, r.LongFrameCount);
+            Assert.AreEqual(260, r.TotalBlockingMs);
+            Assert.AreEqual(1, r.InteractionCount);
+        }
+    }
+
+    [TestMethod]
     public void On_webassembly_the_handler_that_ran_inside_an_interaction_and_the_work_inside_a_frame_are_named()
     {
         var (session, scope) = TestHelpers.CreateSession();

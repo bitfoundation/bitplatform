@@ -284,8 +284,8 @@
             below the <b>Md</b> breakpoint and the nav panel below <b>Sm</b>. Resize the window.
         </div>
         <br />
-        <BitMediaQuery ScreenQuery="BitScreenQuery.LtMd" @bind-IsMatched="isLtMd" />
-        <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" @bind-IsMatched="isLtSm" />
+        <BitMediaQuery ScreenQuery="BitScreenQuery.LtMd" @bind-Matched="isLtMd" />
+        <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" @bind-Matched="isLtSm" />
         <div class="container">
             <BitLayout Bordered NavPanelWidth="120" AsideWidth="120" HideAside="isLtMd" HideNavPanel="isLtSm">
                 <Header>

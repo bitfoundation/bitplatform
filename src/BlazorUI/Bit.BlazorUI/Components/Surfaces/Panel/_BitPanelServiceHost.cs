@@ -78,7 +78,7 @@ internal sealed class _BitPanelServiceHost : ComponentBase
         Add(builder, ref seq, nameof(BitPanel.GrabberAriaLabelFormat), p.GrabberAriaLabelFormat);
         Add(builder, ref seq, nameof(BitPanel.Header), p.Header);
         Add(builder, ref seq, nameof(BitPanel.HeaderText), p.HeaderText);
-        Add(builder, ref seq, nameof(BitPanel.IsAlert), p.IsAlert);
+        Add(builder, ref seq, nameof(BitPanel.Alert), p.Alert);
         Add(builder, ref seq, nameof(BitPanel.ModeFull), p.ModeFull);
         Add(builder, ref seq, nameof(BitPanel.Modeless), p.Modeless);
         Add(builder, ref seq, nameof(BitPanel.NoAutoFocus), p.NoAutoFocus);

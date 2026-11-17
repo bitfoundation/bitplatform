@@ -29,14 +29,14 @@ public class BitAccordionParamsTests : BunitTestContext
         nameof(BitAccordion.Body),
         nameof(BitAccordion.Busy),
         nameof(BitAccordion.ChildContent),
-        nameof(BitAccordion.DefaultIsExpanded),
+        nameof(BitAccordion.DefaultExpanded),
         nameof(BitAccordion.Description),
         nameof(BitAccordion.ExpanderTemplate),
         nameof(BitAccordion.HeaderAriaLabel),
         nameof(BitAccordion.HeaderTemplate),
         nameof(BitAccordion.Icon),
         nameof(BitAccordion.IconName),
-        nameof(BitAccordion.IsExpanded),
+        nameof(BitAccordion.Expanded),
         nameof(BitAccordion.OnChange),
         nameof(BitAccordion.OnClick),
         nameof(BitAccordion.OnCollapse),
@@ -141,7 +141,7 @@ public class BitAccordionParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitAccordionParams { NoExpanderRotation = true }, builder =>
         {
-            builder.AddAttribute(2, nameof(BitAccordion.DefaultIsExpanded), true);
+            builder.AddAttribute(2, nameof(BitAccordion.DefaultExpanded), true);
         });
 
         Assert.IsTrue(component.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
@@ -219,7 +219,7 @@ public class BitAccordionParamsTests : BunitTestContext
 
         header.Click();
 
-        Assert.IsFalse(component.FindComponent<BitAccordion>().Instance.IsExpanded);
+        Assert.IsFalse(component.FindComponent<BitAccordion>().Instance.Expanded);
     }
 
     [TestMethod]

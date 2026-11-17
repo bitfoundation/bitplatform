@@ -1,18 +1,18 @@
 //+:cnd:noEmit
 namespace Boilerplate.Server.Api.Features.Tenants;
 
-public partial class TenantUserConfiguration : IEntityTypeConfiguration<TenantUser>
+public partial class TenantMembershipConfiguration : IEntityTypeConfiguration<TenantMembership>
 {
-    public void Configure(EntityTypeBuilder<TenantUser> builder)
+    public void Configure(EntityTypeBuilder<TenantMembership> builder)
     {
-        builder.HasIndex(tu => new { tu.TenantId, tu.UserId }).IsUnique();
+        builder.HasIndex(tm => new { tm.TenantId, tm.UserId }).IsUnique();
 
         //#if (database != "MySql")
-        builder.HasIndex(tu => new { tu.TenantId, tu.UserId }, "IX_TenantUsers_TenantId_UserId_Accepted")
+        builder.HasIndex(tm => new { tm.TenantId, tm.UserId }, "IX_TenantMemberships_TenantId_UserId_Accepted")
             //#if (database == "PostgreSQL")
-            .HasFilter($"\"{nameof(TenantUser.AcceptedOn)}\" IS NOT NULL")
+            .HasFilter($"\"{nameof(TenantMembership.AcceptedOn)}\" IS NOT NULL")
             //#else
-            .HasFilter($"[{nameof(TenantUser.AcceptedOn)}] IS NOT NULL")
+            .HasFilter($"[{nameof(TenantMembership.AcceptedOn)}] IS NOT NULL")
             //#endif
             ;
         //#endif
@@ -22,7 +22,7 @@ public partial class TenantUserConfiguration : IEntityTypeConfiguration<TenantUs
         var storeUserUserId = Guid.Parse("4ff71671-a1d6-4f97-abb9-d87d7b47d6e4");
 
         // The value of AcceptedOn is set upfront for the users that have created the tenant (data seed in this case).
-        builder.HasData(new TenantUser
+        builder.HasData(new TenantMembership
         {
             Id = Guid.Parse("5ff71671-a1d6-4f97-abb9-d87d7b47d6e2"),
             TenantId = TenantConfiguration.FallbackTenantId,
@@ -30,7 +30,7 @@ public partial class TenantUserConfiguration : IEntityTypeConfiguration<TenantUs
             AcceptedOn = new DateTimeOffset(new DateOnly(2023, 1, 1), default, default)
         });
 
-        builder.HasData(new TenantUser
+        builder.HasData(new TenantMembership
         {
             Id = Guid.Parse("5ff71671-a1d6-4f97-abb9-d87d7b47d6e3"),
             TenantId = TenantConfiguration.FallbackTenantId,
@@ -40,7 +40,7 @@ public partial class TenantUserConfiguration : IEntityTypeConfiguration<TenantUs
 
         // store-user@bitplatform.dev is an accepted member of the default store tenant, so a tenant gets selected for her
         // at sign-in and her demo user-group's (tenant-scoped) feature claims flow into her token (See IdentityController.GetTenantId).
-        builder.HasData(new TenantUser
+        builder.HasData(new TenantMembership
         {
             Id = Guid.Parse("5ff71671-a1d6-4f97-abb9-d87d7b47d6e1"),
             TenantId = TenantConfiguration.FallbackTenantId,

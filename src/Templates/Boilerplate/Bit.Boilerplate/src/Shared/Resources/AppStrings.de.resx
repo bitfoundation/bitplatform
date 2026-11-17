@@ -1606,8 +1606,8 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Sind Sie sicher, dass Sie alle Sitzungen von {0} widerrufen möchten? Autorisierte Anwendungen bleiben erhalten.</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>Sie können diesen Benutzer nicht aus der SuperAdmin-Benutzergruppe entfernen.</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>Sie können diesen Benutzer nicht aus der Benutzergruppe der globalen Admins entfernen.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Super-Admin-Berechtigungen dürfen nicht geändert werden.</value>
@@ -1618,11 +1618,11 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>Sie können Ihren eigenen Benutzer nicht entfernen</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>Sie können diesen SuperAdmin-Benutzer nicht entfernen</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>Sie können diesen globalen Admin nicht entfernen</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>Sie können die Sitzungen dieses SuperAdmin-Benutzers nicht widerrufen</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>Sie können die Sitzungen dieses globalen Admins nicht widerrufen</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Sie können Ihre aktuelle Sitzung nicht entfernen</value>
@@ -2191,6 +2191,42 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   </data>
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Was dieses Gerät und der Server über die App melden, zur Fehlerbehebung.</value>
+  </data>
+    <data name="Lock" xml:space="preserve">
+    <value>Sperren</value>
+  </data>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>Dieses Konto sperren</value>
+  </data>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>Zum ersten Sperren dieses Kontos ist eine PIN nötig. Sie geben sie ein, um auf diesem Gerät zu diesem Konto zurückzukehren, und sie verlässt dieses Gerät nie.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>Neue PIN</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>PIN erneut eingeben</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>Die PINs stimmen nicht überein. Versuchen Sie es erneut.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>PIN eingeben</value>
+  </data>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>Falsche PIN. Verbleibende Versuche: {0}.</value>
+  </data>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>Zu viele falsche PINs, daher wird dieses Konto nicht mehr auf diesem Gerät gespeichert. Melden Sie sich erneut an, um es zu verwenden.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>Erneut anmelden, um die PIN zu entfernen</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>Buchstaben verwenden</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>Ziffern verwenden</value>
   </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">

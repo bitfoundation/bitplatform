@@ -203,6 +203,60 @@ public class BdndJsRegistrationTests
     }
 
     [TestMethod]
+    public async Task ACallWhoseAnswerNeverCameIsSwallowedAndSentAgainByTheNextSync()
+    {
+        // Blazor Server cancels a call into JS once it has waited out JSInteropDefaultCallTimeout: an answer lost with
+        // the connection. The sync runs from OnAfterRenderAsync, where an exception would end the circuit.
+        var reference = new FakeJSObjectReference();
+        var registration = new BdndJsRegistration<Options>(new Registrar(reference).Register);
+        await registration.SyncAsync(Element, new Options(1));
+        reference.Fails("update", new TaskCanceledException());
+
+        await registration.SyncAsync(Element, new Options(2));
+        reference.Succeeds("update");
+        await registration.SyncAsync(Element, new Options(2));
+
+        Assert.AreSequenceEqual(new object?[] { new Options(2), new Options(2) },
+            reference.CallsTo("update").Select(args => args![0]));
+    }
+
+    [TestMethod]
+    public async Task ASyncQueuedBehindACallWhoseAnswerNeverCameStillRuns()
+    {
+        var gate = new TaskCompletionSource<IJSObjectReference?>();
+        var reference = new FakeJSObjectReference();
+        var registrar = new Registrar(call => call == 0
+            ? new ValueTask<IJSObjectReference?>(gate.Task)
+            : ValueTask.FromResult<IJSObjectReference?>(reference));
+        var registration = new BdndJsRegistration<Options>(registrar.Register);
+
+        var first = registration.SyncAsync(Element, new Options(1));
+        await registration.SyncAsync(Element, new Options(2));
+        gate.SetException(new TaskCanceledException());
+        await first;
+
+        Assert.HasCount(2, registrar.Calls);
+        Assert.AreEqual(new Options(2), registrar.Calls[1].Options);
+        Assert.AreSame(reference, registration.Reference);
+    }
+
+    [TestMethod]
+    public async Task ARegistrationWhoseAnswerNeverCameIsRetriedOnTheNextSync()
+    {
+        var reference = new FakeJSObjectReference();
+        var registrar = new Registrar(call => call == 0
+            ? ValueTask.FromException<IJSObjectReference?>(new TaskCanceledException())
+            : ValueTask.FromResult<IJSObjectReference?>(reference));
+        var registration = new BdndJsRegistration<Options>(registrar.Register);
+
+        await registration.SyncAsync(Element, new Options(1));
+        Assert.IsNull(registration.Reference);
+        await registration.SyncAsync(Element, new Options(1));
+
+        Assert.AreSame(reference, registration.Reference);
+    }
+
+    [TestMethod]
     public async Task DisposingReleasesTheJsObject()
     {
         var reference = new FakeJSObjectReference();

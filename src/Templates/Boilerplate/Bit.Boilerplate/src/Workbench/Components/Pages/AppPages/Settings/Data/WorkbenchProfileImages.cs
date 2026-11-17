@@ -1,11 +1,11 @@
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Settings.Data;
 
 /// <summary>
-/// The demo users' profile pictures, served at the attachment address the app's pages ask for: the one uploaded on the
+/// The demo users' profile images, served at the attachment address the app's pages ask for: the one uploaded on the
 /// settings page since the Workbench started, or else the demo user's own photo. An upload is the Workbench's, not the
 /// view's, so a screenshot of another view of the same user shows it too.
 /// </summary>
-public static class WorkbenchProfilePictures
+public static class WorkbenchProfileImages
 {
     /// <summary>The settings page's own limit (ProfileSection's BitFileUpload).</summary>
     public const int MaxBytes = 10 * 1024 * 1024;

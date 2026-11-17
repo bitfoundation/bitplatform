@@ -556,6 +556,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitNavPanel`1.AssignIsToggled(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitNavPanel`1.get_EmptyListMessage</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
@@ -564,6 +571,20 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitNavPanel`1.get_EmptyListTemplate</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitNavPanel`1.get_IsToggled</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitNavPanel`1.get_IsToggledChanged</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -585,6 +606,20 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitNavPanel`1.set_EmptyListTemplate(Microsoft.AspNetCore.Components.RenderFragment)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitNavPanel`1.set_IsToggled(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitNavPanel`1.set_IsToggledChanged(Microsoft.AspNetCore.Components.EventCallback{System.Boolean})</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

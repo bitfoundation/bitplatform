@@ -1,8 +1,10 @@
 ﻿import type { PrivacyConfig } from './config';
 import { isSpan, type Attributes, type TelemetryRecord } from './model';
 
-// Attributes that hold URLs: their query parameters and fragment are redacted before scrubbing.
-const URL_ATTRIBUTES = ['url.full', 'page.referrer', 'url.original', 'http.url'];
+// Attributes that hold URLs: their query parameters and fragment are redacted before scrubbing. "Uri" is the URL of
+// HttpClient's own logs; "http.target" (the old conventions' request target) is a path with its query. The C# list.
+const HTTP_TARGET = 'http.target';
+const URL_ATTRIBUTES = ['url.full', 'page.referrer', 'url.original', 'http.url', HTTP_TARGET, 'Uri'];
 
 // Attributes added by the enrichment step after privacy: ids, never scrubbed - only blocked, by the operator's choice.
 const ID_ATTRIBUTES = ['session.id', 'enduser.pseudo.id', 'user.id'];
@@ -39,6 +41,14 @@ export function luhn(digits: string): boolean {
     return sum % 10 === 0;
 }
 
+/**
+ * Whether digits read as a payment card number: Luhn-valid, and neither starting with 0 (no card issuer's number does)
+ * nor one digit repeated - an all-zero id (a W3C parent id) passes the checksum. Matches the C# side.
+ */
+export function isCardNumber(digits: string): boolean {
+    return luhn(digits) && digits.charAt(0) !== '0' && !/^(\d)\1*$/.test(digits);
+}
+
 const BEARER_WORD = /bearer/i;
 const ABSOLUTE = /^https?:\/\//i;
 const QUERY_FRAGMENT_OR_CREDENTIALS = /[?#@]/;
@@ -66,7 +76,7 @@ export function scrub(text: string, addresses = true): string {
     if (digits >= 13) {
         text = text.replace(CARD, match => {
             const cardDigits = match.replace(/[ -]/g, '');
-            return cardDigits.length >= 13 && cardDigits.length <= 19 && luhn(cardDigits) ? '[card]' : match;
+            return cardDigits.length >= 13 && cardDigits.length <= 19 && isCardNumber(cardDigits) ? '[card]' : match;
         });
     }
     if (addresses && digits >= 4 && dots >= 3) text = text.replace(IPV4, '[ip]');
@@ -139,8 +149,46 @@ export function redactUrl(url: string, privacy: PrivacyConfig): string {
 // as in the host of a URL); and the user agent, whose four-part versions ("Chrome/120.0.0.0") read as IPv4 addresses.
 const HOST_ATTRIBUTES = ['server.address', 'user_agent.original'];
 
-// A bare query string (without the `?`, per the conventions): its parameters are redacted like a URL's.
+// A bare query string (without the `?`, per the conventions): its parameters are redacted like a URL's. ASP.NET
+// Core's request logs call theirs QueryString (with the `?`), as C# knows.
 const URL_QUERY = 'url.query';
+const QUERY_ATTRIBUTES = [URL_QUERY, 'QueryString'];
+
+// A URL in free text: an absolute one (a scheme and "://"), or a relative path with a query after a space, a quote, a
+// bracket, '=', ',' or ';' ("/callback?code=..."), up to whitespace, a double quote or an angle bracket. A comma before
+// another absolute URL ends it ("https://a?x=1,https://b?token=2" is two). An apostrophe ends it only when one opened it
+// ('https://x/a?token=1'): elsewhere it is part of the URL (https://x/O'Reilly?token=1). Built with the constructor for
+// its lookbehinds, as IPV4 is. The C# UrlInTextRegex.
+const SCHEME = '[A-Za-z][A-Za-z0-9+.-]*://';
+const NEXT_URL = `,(?!${SCHEME})`;
+const QUOTED_URL = `(?<=')(?:\\b${SCHEME}(?:[^\\s"'<>,]|${NEXT_URL})+|/[^\\s"'<>?#,]*\\?(?:[^\\s"'<>,]|${NEXT_URL})+)`;
+const BARE_URL = `(?<!')(?:\\b${SCHEME}(?:[^\\s"<>,]|${NEXT_URL})+|(?<![^\\s"(\\[=,;])/[^\\s"<>?#,]*\\?(?:[^\\s"<>,]|${NEXT_URL})+)`;
+const URL_IN_TEXT = new RegExp(`${QUOTED_URL}|${BARE_URL}`, 'g');
+
+/**
+ * Applies the privacy rules to a log body in one pass: the absolute URLs in it, and the relative paths with a query
+ * ("Redirecting to /callback?code=..."), get a URL attribute's rules (parameter redaction, then scrubbing after the host,
+ * which names the server called), and the text around them is scrubbed when `scrubPatterns` is on. A log body:
+ * "GET https://host/path?token=...". Matches the C# side (`CleanBody`).
+ */
+export function cleanBody(text: string, privacy: PrivacyConfig): string {
+    if (!text) return text;
+    const clean = (part: string) => (privacy.scrubPatterns ? scrub(part) : part);
+    if (text.indexOf('://') < 0 && text.indexOf('?') < 0) return clean(text);
+    let result = '';
+    let last = 0;
+    URL_IN_TEXT.lastIndex = 0;
+    for (let match = URL_IN_TEXT.exec(text); match; match = URL_IN_TEXT.exec(text)) {
+        // A relative path is kept as given, not resolved against the page. An absolute URL without a query, a fragment
+        // or credentials is not parsed: the URL parser would normalize it.
+        const url = match[0].charAt(0) === '/'
+            ? redactTarget(match[0], privacy)
+            : QUERY_FRAGMENT_OR_CREDENTIALS.test(match[0]) ? redactUrl(match[0], privacy) : match[0];
+        result += clean(text.slice(last, match.index)) + (privacy.scrubPatterns ? scrubUrl(url) : url);
+        last = match.index + match[0].length;
+    }
+    return result + clean(text.slice(last));
+}
 
 /**
  * Scrubs a URL after its origin: the host (an IP literal included) names the server that was called, not the user,
@@ -202,9 +250,28 @@ export function isRedacted(key: string, privacy: PrivacyConfig): boolean {
     return redacted;
 }
 
+/**
+ * Redacts a request target (`http.target`: "/orders?token=..."): as a URL, but kept as given - not resolved against the
+ * page, which would put the page's origin into a path. Matches the C# side, which never resolves a URL.
+ */
+export function redactTarget(target: string, privacy: PrivacyConfig): string {
+    if (ABSOLUTE.test(target)) return redactUrl(target, privacy);
+    if (!target || !QUERY_FRAGMENT_OR_CREDENTIALS.test(target)) return target;
+    const hashAt = target.indexOf('#');
+    const withoutHash = hashAt >= 0 ? target.slice(0, hashAt) : target;
+    const queryAt = withoutHash.indexOf('?');
+    const path = queryAt >= 0 ? withoutHash.slice(0, queryAt) : withoutHash;
+    const names = redactionNames(privacy);
+    const query = queryAt >= 0 && !privacy.stripQueryString ? redactQuery(withoutHash.slice(queryAt), names) : '';
+    const hash = hashAt >= 0 && !privacy.stripFragment ? redactQuery(target.slice(hashAt), names) : '';
+    return path + query + hash;
+}
+
 function cleanText(key: string, value: string, privacy: PrivacyConfig): string {
     const isUrl = URL_ATTRIBUTES.indexOf(key) >= 0;
-    let next = isUrl ? redactUrl(value, privacy) : key === URL_QUERY ? redactQuery(value, redactionNames(privacy)) : value;
+    let next = key === HTTP_TARGET
+        ? redactTarget(value, privacy)
+        : isUrl ? redactUrl(value, privacy) : QUERY_ATTRIBUTES.indexOf(key) >= 0 ? redactQuery(value, redactionNames(privacy)) : value;
     if (privacy.scrubPatterns) next = isUrl ? scrubUrl(next) : scrub(next, !isVersionKey(key));
     return next;
 }
@@ -216,7 +283,7 @@ function clean(attributes: Attributes, privacy: PrivacyConfig): void {
             continue;
         }
         if (ID_ATTRIBUTES.indexOf(key) >= 0) continue;
-        if (key === URL_QUERY && privacy.stripQueryString) {
+        if (QUERY_ATTRIBUTES.indexOf(key) >= 0 && privacy.stripQueryString) {
             delete attributes[key];
             continue;
         }
@@ -228,7 +295,7 @@ function clean(attributes: Attributes, privacy: PrivacyConfig): void {
         if (typeof value === 'string') {
             if (HOST_ATTRIBUTES.indexOf(key) >= 0) continue;
             attributes[key] = cleanText(key, value, privacy);
-        } else if (Array.isArray(value) && typeof value[0] === 'string' && (URL_ATTRIBUTES.indexOf(key) >= 0 || key === URL_QUERY)) {
+        } else if (Array.isArray(value) && typeof value[0] === 'string' && (URL_ATTRIBUTES.indexOf(key) >= 0 || QUERY_ATTRIBUTES.indexOf(key) >= 0)) {
             attributes[key] = (value as string[]).map(item => cleanText(key, item, privacy));
         } else if (privacy.scrubPatterns && Array.isArray(value) && typeof value[0] === 'string') {
             // Not .map(scrub): map passes the index as the second argument.
@@ -244,7 +311,7 @@ export function applyPrivacy(record: TelemetryRecord, privacy: PrivacyConfig): v
     if (isSpan(record)) {
         if (privacy.scrubPatterns && record.status.message) record.status.message = scrub(record.status.message);
         for (const event of record.events) clean(event.attributes, privacy);
-    } else if (privacy.scrubPatterns) {
-        record.body = scrub(record.body);
+    } else {
+        record.body = cleanBody(record.body, privacy);
     }
 }

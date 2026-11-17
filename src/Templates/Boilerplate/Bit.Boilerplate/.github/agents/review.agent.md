@@ -27,8 +27,20 @@ Then check every candidate before you report it: read the code it points at agai
 
 Check the change against every rule in `AGENTS.md` section 5, `[mirror]` counterparts included, and code written against a bit platform library against section 3. Under section 5, new text goes through the literal `Localizer["..."]` indexer, so that is not a violation and needs no new `.resx` key; a raw, unlocalized string in the UI is one. Beyond those rules:
 
+### General
+- [ ] New files sit in the project and folder that `AGENTS.md` section 2 gives their kind, next to their feature's siblings
+- [ ] New code is nullable-aware, with no `!` that hides a value that can really be null, and uses the language's current features the way the code around it does
+- [ ] I/O is async all the way: no `.Result`, `.Wait()` or other blocking call on it
+- [ ] Logs are structured: a message template with named placeholders, never an interpolated string
+
 ### Blazor Components
 - [ ] Every parameter set on a Bit.BlazorUI component exists on it (an unknown name compiles and lands on the element as a plain HTML attribute, so a renamed parameter silently does nothing)
+
+### Right to Left and Localization
+- [ ] Spacing, alignment and positions use start and end (`margin-inline-start`, `text-align: start`, `inset-inline-end`), not left and right, so the page mirrors in a right-to-left culture, and an icon that points a way, such as an arrow, a chevron or back, turns with it
+- [ ] Every text a user sees is localized, messages and validation errors included; a sentence is one string with placeholders, never pieces joined in code; and nothing depends on its English length, since a translation can be much longer
+- [ ] Dates, numbers and amounts shown to a user are formatted in their culture
+- [ ] A name, number or code inside right-to-left text keeps its order, isolated where it could move
 
 ### C# and Blazor Pitfalls
 - [ ] No `async void` outside an event handler wrapped in `WrapHandled`, and no task started and forgotten: every call that returns a task is awaited, or left to run on purpose with its exceptions handled
@@ -39,6 +51,7 @@ Check the change against every rule in `AGENTS.md` section 5, `[mirror]` counter
 - [ ] No JS interop runs before the component is interactive, such as while it prerenders
 - [ ] A list of components rendered from data has a `@key`
 - [ ] No query per row (N+1), and no filtering or paging after `ToListAsync()` that the database should do
+- [ ] A background job does no harm when it runs again, since Hangfire retries a failed one and a one-off fix may be run twice: a job that sends, posts or charges something checks first whether it already did
 
 ### Reuse
 - [ ] The change doesn't write again what the project already has - a service, an extension, a component of its own, a Bit.BlazorUI component or a Bit.Butil API. Name the existing one

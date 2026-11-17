@@ -10,11 +10,18 @@ public abstract class BinkTest
 {
     private readonly List<IBrowserContext> _contexts = [];
     private PlaywrightSession.Session? _session;
+    private DemoHost? _demo;
 
     public TestContext TestContext { get; set; } = default!;
 
     /// <summary>The origin the app under test is served from - the demo's, unless a suite drives another - without a trailing slash.</summary>
-    protected virtual string BaseUrl => Session.Host!.BaseUrl;
+    protected virtual string BaseUrl => _demo?.BaseUrl ?? throw new InvalidOperationException($"{GetType().Name} does not drive the demo.");
+
+    /// <summary>
+    /// Whether the suite drives the shared demo, which the first such test publishes and starts. A suite that serves
+    /// its own app says no, so a run of that suite alone never pays for the demo.
+    /// </summary>
+    protected virtual bool DrivesDemo => true;
 
     protected IBrowser Browser => Session.Browser!;
 
@@ -24,8 +31,17 @@ public abstract class BinkTest
     public async Task OpenSessionAsync()
     {
         _session = await PlaywrightSession.GetAsync();
-        if (_session.Unavailable is not { } reason) return;
+        if (_session.Unavailable is { } reason) CannotRun(reason);
 
+        if (DrivesDemo is false) return;
+
+        var demo = await PlaywrightSession.GetDemoAsync();
+        if (demo.Unavailable is { } demoReason) CannotRun(demoReason);
+        _demo = demo.Host;
+    }
+
+    private static void CannotRun(string reason)
+    {
         // A build server must not report a suite that never ran as anything but a failure.
         if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + reason);
         Assert.Inconclusive("The browser tests could not run: " + reason);

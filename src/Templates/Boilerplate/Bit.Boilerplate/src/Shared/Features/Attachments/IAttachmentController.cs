@@ -5,7 +5,7 @@ namespace Boilerplate.Shared.Features.Attachments;
 public interface IAttachmentController : IAppController
 {
     [HttpDelete]
-    Task DeleteUserProfilePicture(CancellationToken cancellationToken);
+    Task DeleteUserProfileImage(CancellationToken cancellationToken);
 
     //#if (module == "Sales" || module == "Admin")
     [HttpDelete("{productId}")]

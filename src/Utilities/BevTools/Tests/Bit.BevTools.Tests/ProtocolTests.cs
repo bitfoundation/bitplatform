@@ -192,6 +192,41 @@ public class ProtocolTests : BunitContext
         Assert.Contains(f => f.Diagnostic.RuleId == "circuit.large-render-batch", Session.Diagnostics.Findings);
     }
 
+    [TestMethod]
+    public void A_traffic_snapshot_sent_in_parts_is_read_once_whole()
+    {
+        var bridge = new BevJsBridge(Session, () => { });
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        BevSocketStats Socket(int id, bool closed = false) => new()
+        {
+            Id = id,
+            Url = "wss://app.example/hub" + id,
+            Kind = "signalr",
+            OpenedAt = now,
+            ObservedFrom = now,
+            ClosedAt = closed ? now : null,
+            CloseCode = closed ? 1006 : null,
+        };
+
+        bridge.ReportTraffic([Socket(1)], 0, 2);
+        Assert.IsEmpty(Session.Browser.Sockets, "nothing is read before the last part");
+        bridge.ReportTraffic([Socket(2)], 1, 2);
+        Assert.HasCount(2, Session.Browser.Sockets);
+
+        bridge.ReportTraffic([Socket(1, closed: true)], 0, 2);
+        bridge.ReportTraffic([Socket(2)], 1, 2);
+        // A run cut off (the connection dropped after its first part) is dropped; the next run starts at its part 0.
+        bridge.ReportTraffic([Socket(1, closed: true)], 0, 2);
+        bridge.ReportTraffic([Socket(3)], 0, 2);
+        bridge.ReportTraffic([Socket(2)], 1, 2);
+
+        var events = Session.Timeline.Snapshot().Where(e => e.Category == "websocket").ToList();
+        Assert.AreEqual(3, events.Count(e => e.Title.StartsWith("WebSocket opened", StringComparison.Ordinal)), "each socket opened once");
+        var closed = Assert.ContainsSingle(e => e.Title.StartsWith("WebSocket closed", StringComparison.Ordinal), events);
+        Assert.AreEqual(BevToolsSeverity.Warning, closed.Severity);
+        CollectionAssert.AreEqual(new[] { 3, 2 }, Session.Browser.Sockets.Select(s => s.Id).ToArray());
+    }
+
     /// <summary>
     /// The states of a dropped connection reach a circuit only once it is back, so each carries its age: the reconnect
     /// is counted, and each state is put on the timeline when the browser saw it, by the server's own clock.

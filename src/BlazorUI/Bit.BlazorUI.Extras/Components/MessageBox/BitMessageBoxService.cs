@@ -20,7 +20,7 @@
 /// <c>alertdialog</c>, the role the WAI-ARIA pattern gives a dialog that interrupts to get a response, and so is
 /// one whose <see cref="BitMessageBoxParameters.Color"/> is Warning, SevereWarning or Error. A notice that is only
 /// acknowledged stays a plain <c>dialog</c>, and so does a <see cref="Prompt(BitMessageBoxPromptParameters)"/>, which is a
-/// form. <see cref="BitModalParameters.IsAlert"/> on <see cref="BitMessageBoxParameters.Modal"/> has the last word.
+/// form. <see cref="BitModalParameters.Alert"/> on <see cref="BitMessageBoxParameters.Modal"/> has the last word.
 /// </remarks>
 public class BitMessageBoxService(BitModalService modalService)
 {
@@ -289,7 +289,7 @@ public class BitMessageBoxService(BitModalService modalService)
             // The alertdialog role is for a dialog that interrupts to get a response - a question, which is what
             // the WAI-ARIA pattern's own example (a confirmation) is - and for the colors that carry urgency.
             // A notice that is only acknowledged is left to the Modal's own decision.
-            IsAlert = isAlert ? true : null,
+            Alert = isAlert ? true : null,
         };
 
         // Precedence to what the caller asked for: these are only the values the service works out on its own.

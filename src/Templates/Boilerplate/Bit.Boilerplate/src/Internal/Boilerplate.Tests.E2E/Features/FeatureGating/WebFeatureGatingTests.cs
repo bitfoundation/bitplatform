@@ -54,7 +54,7 @@ public partial class WebFeatureGatingTests : AppTestBase
         await dbContext.Tenants.AddAsync(tenant, TestContext.CancellationToken);
         await dbContext.Users.AddAsync(user, TestContext.CancellationToken);
         // Accepted, so signing in selects this tenant (See IdentityController.GetTenantId).
-        await dbContext.TenantUsers.AddAsync(new TenantUser { Id = Guid.NewGuid(), TenantId = tenant.Id, UserId = user.Id, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
+        await dbContext.TenantMemberships.AddAsync(new TenantMembership { Id = Guid.NewGuid(), TenantId = tenant.Id, UserId = user.Id, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
         await dbContext.SaveChangesAsync(TestContext.CancellationToken);
 
         var page = await OpenApp(app);
@@ -107,7 +107,7 @@ public partial class WebFeatureGatingTests : AppTestBase
         await db.RoleClaims.IgnoreQueryFilters().Where(rc => roleIds.Contains(rc.RoleId)).ExecuteDeleteAsync(CancellationToken.None);
         await db.Roles.IgnoreQueryFilters().Where(role => role.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
         await db.UserSessions.IgnoreQueryFilters().Where(session => session.UserId == userId).ExecuteDeleteAsync(CancellationToken.None);
-        await db.TenantUsers.IgnoreQueryFilters().Where(tu => tu.UserId == userId || tu.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
+        await db.TenantMemberships.IgnoreQueryFilters().Where(tm => tm.UserId == userId || tm.TenantId == tenantId).ExecuteDeleteAsync(CancellationToken.None);
         await db.Users.IgnoreQueryFilters().Where(u => u.Id == userId).ExecuteDeleteAsync(CancellationToken.None);
         await db.Tenants.IgnoreQueryFilters().Where(t => t.Id == tenantId).ExecuteDeleteAsync(CancellationToken.None);
     }

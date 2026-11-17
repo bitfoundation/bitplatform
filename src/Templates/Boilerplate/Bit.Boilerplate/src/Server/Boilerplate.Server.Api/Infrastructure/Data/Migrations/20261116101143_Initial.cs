@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations;
 
 /// <inheritdoc />
-public partial class Initial : Migration
+public partial class _20261116101143_Initial : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -165,7 +165,7 @@ public partial class Initial : Migration
                 TwoFactorTokenRequestedOn = table.Column<long>(type: "INTEGER", nullable: true),
                 OtpRequestedOn = table.Column<long>(type: "INTEGER", nullable: true),
                 ElevatedAccessTokenRequestedOn = table.Column<long>(type: "INTEGER", nullable: true),
-                HasProfilePicture = table.Column<bool>(type: "INTEGER", nullable: false),
+                HasProfileImage = table.Column<bool>(type: "INTEGER", nullable: false),
                 UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                 NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                 Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
@@ -284,7 +284,7 @@ public partial class Initial : Migration
             });
 
         migrationBuilder.CreateTable(
-            name: "TenantUsers",
+            name: "TenantMemberships",
             columns: table => new
             {
                 Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -294,15 +294,15 @@ public partial class Initial : Migration
             },
             constraints: table =>
             {
-                table.PrimaryKey("PK_TenantUsers", x => x.Id);
+                table.PrimaryKey("PK_TenantMemberships", x => x.Id);
                 table.ForeignKey(
-                    name: "FK_TenantUsers_Tenants_TenantId",
+                    name: "FK_TenantMemberships_Tenants_TenantId",
                     column: x => x.TenantId,
                     principalTable: "Tenants",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
-                    name: "FK_TenantUsers_Users_UserId",
+                    name: "FK_TenantMemberships_Users_UserId",
                     column: x => x.UserId,
                     principalTable: "Users",
                     principalColumn: "Id",
@@ -711,7 +711,7 @@ public partial class Initial : Migration
 
         migrationBuilder.InsertData(
             table: "Users",
-            columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "CreatedOn", "ElevatedAccessTokenRequestedOn", "Email", "EmailConfirmed", "EmailTokenRequestedOn", "FullName", "Gender", "HasProfilePicture", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OtpRequestedOn", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "PhoneNumberTokenRequestedOn", "ResetPasswordTokenRequestedOn", "SecurityStamp", "TwoFactorEnabled", "TwoFactorTokenRequestedOn", "UserName" },
+            columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "CreatedOn", "ElevatedAccessTokenRequestedOn", "Email", "EmailConfirmed", "EmailTokenRequestedOn", "FullName", "Gender", "HasProfileImage", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OtpRequestedOn", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "PhoneNumberTokenRequestedOn", "ResetPasswordTokenRequestedOn", "SecurityStamp", "TwoFactorEnabled", "TwoFactorTokenRequestedOn", "UserName" },
             values: new object[,]
             {
                 { new Guid("4ff71671-a1d6-4f97-abb9-d87d7b47d6e4"), 0, 1306790461440000000L, "435e1a26-5b3a-4544-8e91-2760cd28e229", 0L, null, "store-user@bitplatform.dev", true, 1306790461440000000L, "Store tenant user", 0, false, true, null, "STORE-USER@BITPLATFORM.DEV", "STORE-USER", null, "AQAAAAIAAYagAAAAEFuqh6w3S1JOhGgtXfJK8lagE8kg3CNNj/8RqjIksya+UXhqDL/5ehmXfOSiGJfz/w==", null, false, null, null, "469ff4a9-4b07-4cc1-8141-c5fc033daf84", false, null, "store-user" },
@@ -755,7 +755,7 @@ public partial class Initial : Migration
             });
 
         migrationBuilder.InsertData(
-            table: "TenantUsers",
+            table: "TenantMemberships",
             columns: new[] { "Id", "AcceptedOn", "TenantId", "UserId" },
             values: new object[,]
             {
@@ -1032,6 +1032,23 @@ public partial class Initial : Migration
             unique: true);
 
         migrationBuilder.CreateIndex(
+            name: "IX_TenantMemberships_TenantId_UserId",
+            table: "TenantMemberships",
+            columns: new[] { "TenantId", "UserId" },
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_TenantMemberships_TenantId_UserId_Accepted",
+            table: "TenantMemberships",
+            columns: new[] { "TenantId", "UserId" },
+            filter: "[AcceptedOn] IS NOT NULL");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_TenantMemberships_UserId",
+            table: "TenantMemberships",
+            column: "UserId");
+
+        migrationBuilder.CreateIndex(
             name: "IX_Tenants_Domain",
             table: "Tenants",
             column: "Domain",
@@ -1043,23 +1060,6 @@ public partial class Initial : Migration
             table: "Tenants",
             column: "Name",
             unique: true);
-
-        migrationBuilder.CreateIndex(
-            name: "IX_TenantUsers_TenantId_UserId",
-            table: "TenantUsers",
-            columns: new[] { "TenantId", "UserId" },
-            unique: true);
-
-        migrationBuilder.CreateIndex(
-            name: "IX_TenantUsers_TenantId_UserId_Accepted",
-            table: "TenantUsers",
-            columns: new[] { "TenantId", "UserId" },
-            filter: "[AcceptedOn] IS NOT NULL");
-
-        migrationBuilder.CreateIndex(
-            name: "IX_TenantUsers_UserId",
-            table: "TenantUsers",
-            column: "UserId");
 
         migrationBuilder.CreateIndex(
             name: "IX_TodoItems_UserId_UpdatedAt",
@@ -1228,7 +1228,7 @@ public partial class Initial : Migration
             name: "SystemPrompts");
 
         migrationBuilder.DropTable(
-            name: "TenantUsers");
+            name: "TenantMemberships");
 
         migrationBuilder.DropTable(
             name: "TodoItems");

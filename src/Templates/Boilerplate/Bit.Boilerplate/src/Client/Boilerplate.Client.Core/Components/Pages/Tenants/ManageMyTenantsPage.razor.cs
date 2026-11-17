@@ -57,17 +57,17 @@ public partial class ManageMyTenantsPage
     private bool IsSelected(TenantDto tenant) => tenant.Id == currentTenant?.Id;
 
     // A pending invitation (Accept action) is only relevant for regular users; global admins always just switch.
-    private bool IsPendingInvitation(TenantDto tenant) => tenant.CurrentUserHasAcceptedThisTenantInvitation is false && isGlobalAdmin is false;
+    private bool IsPendingInvitation(TenantDto tenant) => tenant.CurrentUserMembershipStatus is TenantMembershipStatus.Invited && isGlobalAdmin is false;
 
-    // Whether the current user has a membership row for this tenant at all. Null means she has none, which only happens
+    // Whether the current user has a membership row for this tenant at all. None means she has none, which only happens
     // for a global admin (she is listed every active tenant) - and leaving a tenant she never joined can only 404.
-    private bool IsMemberOf(TenantDto tenant) => tenant.CurrentUserHasAcceptedThisTenantInvitation is not null;
+    private bool IsMemberOf(TenantDto tenant) => tenant.CurrentUserMembershipStatus is not TenantMembershipStatus.None;
 
     // Keyed off AcceptedOn exactly like the server: leaving a membership that was never accepted DELETES it (declining
     // the invitation) rather than resetting it, and that is irreversible without a fresh invite. Deliberately not
     // IsPendingInvitation, which also ands in isGlobalAdmin and so would promise the recoverable outcome to a global
     // admin whose row the server is about to delete.
-    private bool IsDecliningInvitation(TenantDto tenant) => tenant.CurrentUserHasAcceptedThisTenantInvitation is false;
+    private bool IsDecliningInvitation(TenantDto tenant) => tenant.CurrentUserMembershipStatus is TenantMembershipStatus.Invited;
 
     // Reopening a section starts its form fresh, discarding any edits left over from a previous (un-saved) visit.
     private void OnSectionExpand(BitAccordionListOption section)

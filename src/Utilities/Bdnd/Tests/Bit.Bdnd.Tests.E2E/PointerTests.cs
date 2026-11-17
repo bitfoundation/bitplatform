@@ -285,6 +285,30 @@ public sealed class PointerTests : BdndTest
     }
 
     [TestMethod]
+    public async Task A_key_still_clicks_a_button_after_a_drag_the_window_cancelled_and_whose_release_went_unseen()
+    {
+        var page = await OpenAsync("/customize/pointer");
+        var glass = page.Locator(".pointer-box:not([data-bit-bdnd-preview])", new() { HasText = "Glass" });
+        var info = page.GetByRole(AriaRole.Button, new() { Name = "About Banana" });
+        var from = (await BoxAsync(glass)).Centre;
+
+        await page.Mouse.MoveAsync((float)from.X, (float)from.Y);
+        await page.Mouse.DownAsync();
+        await MoveAsync(page, (await BoxAsync(Slot(page, 1))).Centre);
+        await Expect(page.Locator(Preview)).ToHaveCountAsync(1);
+        // the window loses the focus and the button comes up outside it: the page sees no release, and the next
+        // click is one of the keyboard's
+        await page.EvaluateAsync("() => window.dispatchEvent(new Event('blur'))");
+        await Expect(page.Locator(Preview)).ToHaveCountAsync(0);
+        await WaitForQuietAsync(page);
+
+        await info.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.Locator(".pointer-status")).ToHaveTextAsync("Banana is a box.");
+        await page.Mouse.UpAsync();
+    }
+
+    [TestMethod]
     public async Task A_press_in_a_no_drag_region_drags_nothing_and_its_button_still_clicks()
     {
         var page = await OpenAsync("/customize/pointer");

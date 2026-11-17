@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// and <see cref="BitDialog.IsCancelButtonEnabled"/>), the callbacks, and what points at elements of one dialog
 /// or one page (<see cref="BitDialog.AutoFocusSelector"/>, <see cref="BitDialog.DragElementSelector"/>,
 /// <see cref="BitDialog.ScrollerElement"/>, <see cref="BitDialog.TitleAriaId"/>,
-/// <see cref="BitDialog.SubtitleAriaId"/> and <see cref="BitDialog.IsAlert"/>) are left off, since they are the
+/// <see cref="BitDialog.SubtitleAriaId"/> and <see cref="BitDialog.Alert"/>) are left off, since they are the
 /// business of the dialog they belong to.
 /// </remarks>
 public partial class BitDialogParams : BitComponentBaseParams, IBitComponentParams

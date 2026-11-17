@@ -259,7 +259,7 @@
         {
             { c => c.Text, "Delete the project?" },
             { c => c.Answer, true },
-        }, new BitModalParameters { IsAlert = true, AriaLabel = "Delete the project", HtmlAttributes = Marker("confirm") });
+        }, new BitModalParameters { Alert = true, AriaLabel = "Delete the project", HtmlAttributes = Marker("confirm") });
 
         var confirmed = await modal.GetResult<bool>();
         _confirm = modal.IsDismissed ? $"dismissed:{confirmed}" : confirmed.ToString();

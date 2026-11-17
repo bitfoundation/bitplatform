@@ -63,7 +63,7 @@ public partial class ResponseCacheService
     /// </summary>
     public const string AttachmentCacheTagTemplate = "Attachment-{attachmentId}";
 
-    /// <summary>Every response of one attachment, product image and profile picture alike.</summary>
+    /// <summary>Every response of one attachment, product image and profile image alike.</summary>
     public async Task PurgeAttachmentCache(params Guid[] attachmentIds)
     {
         await PurgeCacheTags([.. attachmentIds.Select(attachmentId => AttachmentCacheTagTemplate.Replace("{attachmentId}", attachmentId.ToString()).ToLowerInvariant())]);

@@ -18,7 +18,7 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
     {
         /// <summary>
         /// What the browser fetches or sends by address for the app's settings page, rather than its code through a controller:
-        /// the demo users' profile pictures and an upload of a new one. Who uploads comes from the view's access token, which the
+        /// the demo users' profile images and an upload of a new one. Who uploads comes from the view's access token, which the
         /// page sends as it would to its server. The personal data export, which the page's code asks for, is answered in the
         /// view (See WorkbenchExportHandler).
         /// </summary>
@@ -27,18 +27,18 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
             foreach (var kind in (AttachmentKind[])[AttachmentKind.UserProfileImageSmall, AttachmentKind.UserProfileImageOriginal])
             {
                 endpoints.MapGet($"api/v1/Attachment/GetAttachment/{{id:guid}}/{kind}", (Guid id, IWebHostEnvironment environment) =>
-                    WorkbenchProfilePictures.Find(id) is { } uploaded ? Results.File(uploaded.Content, uploaded.ContentType)
-                    : WorkbenchProfilePictures.SampleOf(id) is { } photo ? Results.File(environment.WebRootFileProvider.GetFileInfo(photo).CreateReadStream(), "image/svg+xml")
+                    WorkbenchProfileImages.Find(id) is { } uploaded ? Results.File(uploaded.Content, uploaded.ContentType)
+                    : WorkbenchProfileImages.SampleOf(id) is { } photo ? Results.File(environment.WebRootFileProvider.GetFileInfo(photo).CreateReadStream(), "image/svg+xml")
                     : Results.NotFound());
             }
 
             // The page posts the picture itself: the image editor's result as a form, or BitFileUpload's file as the body.
-            endpoints.MapPost("api/v1/Attachment/UploadUserProfilePicture", async (HttpRequest request, IStringLocalizer<AppStrings> appLocalizer, CancellationToken cancellationToken) =>
+            endpoints.MapPost("api/v1/Attachment/UploadUserProfileImage", async (HttpRequest request, IStringLocalizer<AppStrings> appLocalizer, CancellationToken cancellationToken) =>
             {
                 if (WorkbenchClaims.UserOf(request.Headers.Authorization.ToString(), elevated: false) is not { } userId)
                     return Results.Unauthorized();
 
-                if (request.ContentLength > WorkbenchProfilePictures.MaxBytes)
+                if (request.ContentLength > WorkbenchProfileImages.MaxBytes)
                     return Results.StatusCode(StatusCodes.Status413PayloadTooLarge);
 
                 byte[] content;
@@ -60,16 +60,16 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
                     content = stream.ToArray();
                 }
 
-                if (content.Length is 0 || content.Length > WorkbenchProfilePictures.MaxBytes)
+                if (content.Length is 0 || content.Length > WorkbenchProfileImages.MaxBytes)
                     return Results.BadRequest();
 
                 // Only the images the app's page accepts, told by their bytes as the server tells them, and served as that type:
                 // the picture's address answers anyone, so a page or a script sent as one would run on the Workbench's origin.
                 // What the upload says it is counts for nothing, as BitFileUpload sends a slice of the file, which has no type.
-                if (WorkbenchProfilePictures.ImageTypeOf(content) is not { } imageType)
+                if (WorkbenchProfileImages.ImageTypeOf(content) is not { } imageType)
                     return Results.BadRequest(appLocalizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
 
-                WorkbenchProfilePictures.Keep(userId, content, imageType);
+                WorkbenchProfileImages.Keep(userId, content, imageType);
                 return Results.Ok();
             });
         }

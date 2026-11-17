@@ -12,8 +12,12 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
 {
     internal const string Redacted = "REDACTED";
 
-    // Attributes that hold URLs: their query parameters and fragment are redacted before scrubbing.
-    private static readonly HashSet<string> _urlAttributes = new([BelemetrySemanticConventions.UrlFull, "url.original", "page.referrer", "http.url", "http.target"], StringComparer.Ordinal);
+    // Attributes that hold URLs: their query parameters and fragment are redacted before scrubbing. "Uri" is the URL of
+    // HttpClient's own logs ("Sending HTTP request {HttpMethod} {Uri}").
+    private static readonly HashSet<string> _urlAttributes = new([BelemetrySemanticConventions.UrlFull, "url.original", "page.referrer", "http.url", "http.target", "Uri"], StringComparer.Ordinal);
+
+    // Attributes that hold a query string alone: url.query, and the QueryString of ASP.NET Core's request logs.
+    private static readonly HashSet<string> _queryAttributes = new([BelemetrySemanticConventions.UrlQuery, "QueryString"], StringComparer.Ordinal);
 
     // Untouched by every rule but BlockedAttributes, as in the script: the ids the enrichment step adds (and the browser
     // adds before relaying) are governed by consent - an app that sets an e-mail address as the user id with
@@ -49,7 +53,34 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
     public void Apply(BelemetryLogRecord log)
     {
         ApplyToAttributes(log.Attributes);
-        if (log.Body is not null) log.Body = Scrub(log.Body);
+        if (log.Body is not null) log.Body = CleanBody(log.Body);
+    }
+
+    /// <summary>
+    /// Applies the privacy rules to a log body in one pass: the absolute URLs in it, and the relative paths with a query
+    /// ("Redirecting to /callback?code=..."), get a URL attribute's rules (<see cref="RedactUrl"/>: parameter redaction,
+    /// then scrubbing after the host, which names the server called), and the text around them is scrubbed. ASP.NET
+    /// Core's "Request starting HTTP/1.1 GET https://host/path?token=..." and HttpClient's "Sending HTTP request GET
+    /// https://..." put the query string the span's <c>url.query</c> redacts into the message. Returns the same instance
+    /// when nothing changed. Matches the script.
+    /// </summary>
+    public string CleanBody(string body)
+    {
+        if (body.Contains("://", StringComparison.Ordinal) is false && body.Contains('?', StringComparison.Ordinal) is false) return Scrub(body);
+
+        StringBuilder? builder = null;
+        var last = 0;
+        foreach (var match in UrlInTextRegex().EnumerateMatches(body))
+        {
+            builder ??= new StringBuilder(body.Length);
+            builder.Append(Scrub(body[last..match.Index])).Append(RedactUrl(body.Substring(match.Index, match.Length)));
+            last = match.Index + match.Length;
+        }
+
+        if (builder is null) return Scrub(body);
+
+        var cleaned = builder.Append(Scrub(body[last..])).ToString();
+        return string.Equals(cleaned, body, StringComparison.Ordinal) ? body : cleaned;
     }
 
     /// <summary>Whether <paramref name="key"/> is one of <see cref="BelemetryPrivacyOptions.BlockedAttributes"/>: the enrichment step does not add a blocked id.</summary>
@@ -69,7 +100,10 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
     {
         if (_blocked.Count > 0) attributes.RemoveWhere((key, _) => _blocked.Contains(key));
 
-        if (options.StripQueryString) attributes.Remove(BelemetrySemanticConventions.UrlQuery);
+        if (options.StripQueryString)
+        {
+            foreach (var key in _queryAttributes) attributes.Remove(key);
+        }
 
         List<KeyValuePair<string, object>>? changed = null;
         foreach (var (key, value) in attributes)
@@ -134,7 +168,7 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
              : IsRedacted(key) ? KeyRule.Redacted
              : _hostAttributes.Contains(key) ? KeyRule.Host
              : _urlAttributes.Contains(key) ? KeyRule.Url
-             : key == BelemetrySemanticConventions.UrlQuery ? KeyRule.Query
+             : _queryAttributes.Contains(key) ? KeyRule.Query
              : IsVersionKey(key) ? KeyRule.Version
              : KeyRule.None;
 
@@ -292,7 +326,7 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
         // A card number needs 13 digits and an IPv4 address 3 dots: a URL with an id in it, a version, a status text
         // has neither, and one pass over it is cheaper than running the two regexes (measured by PrivacyBenchmarks).
         var (digits, dots) = CountDigitsAndDots(text);
-        if (digits >= 13) text = CardRegex().Replace(text, m => IsLuhnValid(m.Value) ? "[card]" : m.Value);
+        if (digits >= 13) text = CardRegex().Replace(text, m => IsCardNumber(m.Value) ? "[card]" : m.Value);
         if (addresses && digits >= 4 && dots >= 3) text = Ipv4Regex().Replace(text, "[ip]");
 
         return text;
@@ -315,6 +349,27 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
             else if (c == '.') dots++;
         }
         return (digits, dots);
+    }
+
+    /// <summary>
+    /// Whether a run of 13 to 19 digits reads as a payment card number: Luhn-valid, and neither starting with 0 (no card
+    /// issuer's number does) nor one digit repeated - an all-zero id, such as the W3C parent id ASP.NET Core's logging
+    /// scope gives every request without one, passes the checksum. Matches the script.
+    /// </summary>
+    internal static bool IsCardNumber(string candidate)
+    {
+        if (IsLuhnValid(candidate) is false) return false;
+
+        var first = '\0';
+        var repeated = true;
+        foreach (var c in candidate)
+        {
+            if (c is < '0' or > '9') continue;
+            if (first == '\0') first = c;
+            else if (c != first) repeated = false;
+        }
+
+        return first != '0' && repeated is false;
     }
 
     internal static bool IsLuhnValid(string candidate)
@@ -345,6 +400,19 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
     }
 
     private static bool LooksLikeUrl(string value) => value.Contains("://", StringComparison.Ordinal) || value.Contains('?', StringComparison.Ordinal);
+
+    // A URL in free text: an absolute one (a scheme and "://"), or a relative path with a query after a space, a quote, a
+    // bracket, '=', ',' or ';' ("/callback?code=..."), up to whitespace, a double quote or an angle bracket. A comma
+    // before another absolute URL ends it ("https://a?x=1,https://b?token=2" is two). An apostrophe ends it only when
+    // one opened it ('https://x/a?token=1'): elsewhere it is part of the URL (https://x/O'Reilly?token=1). Matches the
+    // script's URL_IN_TEXT.
+    private const string Scheme = @"[A-Za-z][A-Za-z0-9+.\-]*://";
+    private const string NextUrl = ",(?!" + Scheme + ")";
+    private const string QuotedUrl = @"(?<=')(?:\b" + Scheme + @"(?:[^\s""'<>,]|" + NextUrl + @")+|/[^\s""'<>?#,]*\?(?:[^\s""'<>,]|" + NextUrl + ")+)";
+    private const string BareUrl = @"(?<!')(?:\b" + Scheme + @"(?:[^\s""<>,]|" + NextUrl + @")+|(?<![^\s""(\[=,;])/[^\s""<>?#,]*\?(?:[^\s""<>,]|" + NextUrl + ")+)";
+
+    [GeneratedRegex(QuotedUrl + "|" + BareUrl, RegexOptions.CultureInvariant)]
+    private static partial Regex UrlInTextRegex();
 
     [GeneratedRegex(@"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}", RegexOptions.CultureInvariant)]
     private static partial Regex EmailRegex();

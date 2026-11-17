@@ -37,7 +37,7 @@ public class BitAccordionE2ETests : E2ETestBase
         StringAssert.Contains(html, "id=\"acd-basic-hdr\"");
         StringAssert.Contains(html, "aria-expanded=\"false\"");
         StringAssert.Contains(html, "Basic title");
-        Assert.IsTrue(Regex.IsMatch(html, "id=\"acd-default\"[^>]*class=\"[^\"]*bit-acd-exp"), "DefaultIsExpanded is not prerendered open.");
+        Assert.IsTrue(Regex.IsMatch(html, "id=\"acd-default\"[^>]*class=\"[^\"]*bit-acd-exp"), "DefaultExpanded is not prerendered open.");
         StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
     }
 
@@ -70,7 +70,7 @@ public class BitAccordionE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task DefaultIsExpanded_FirstRender_IsOpen()
+    public async Task DefaultExpanded_FirstRender_IsOpen()
     {
         await OpenAsync(Url);
 

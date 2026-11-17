@@ -178,6 +178,20 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitAccordion.AssignIsExpanded(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitAccordion.get_DefaultIsExpanded</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitAccordion.get_ExpanderIconPosition</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
@@ -185,7 +199,42 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitAccordion.get_IsExpanded</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitAccordion.get_IsExpandedChanged</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitAccordion.set_DefaultIsExpanded(System.Nullable{System.Boolean})</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitAccordion.set_ExpanderIconPosition(System.Nullable{Bit.BlazorUI.BitIconPosition})</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitAccordion.set_IsExpanded(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitAccordion.set_IsExpandedChanged(Microsoft.AspNetCore.Components.EventCallback{System.Boolean})</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -941,6 +990,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitDialog.get_IsAlert</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitDialog.get_IsBlocking</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
@@ -956,6 +1012,13 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitDialog.get_Position</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitDialog.set_IsAlert(System.Nullable{System.Boolean})</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -1158,7 +1221,77 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.AssignIsMatched(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.get_IsMatched</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.get_IsMatchedChanged</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.get_Matched</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.get_NotMatched</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.set_IsMatched(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.set_IsMatchedChanged(Microsoft.AspNetCore.Components.EventCallback{System.Boolean})</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMediaQuery.set_NotMatched(Microsoft.AspNetCore.Components.RenderFragment)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitMenuButton`1.AssignIsLoading(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMenuButton`1.AssignIsToggled(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMenuButton`1.get_DefaultIsToggled</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -1179,6 +1312,27 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMenuButton`1.get_IsToggled</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMenuButton`1.get_IsToggledChanged</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMenuButton`1.set_DefaultIsToggled(System.Nullable{System.Boolean})</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitMenuButton`1.set_IsLoading(System.Boolean)</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
@@ -1187,6 +1341,20 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitMenuButton`1.set_IsLoadingChanged(Microsoft.AspNetCore.Components.EventCallback{System.Boolean})</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMenuButton`1.set_IsToggled(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMenuButton`1.set_IsToggledChanged(Microsoft.AspNetCore.Components.EventCallback{System.Boolean})</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -1235,7 +1403,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMenuButtonParams.get_DefaultIsToggled</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitMenuButtonParams.get_IsLoading</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMenuButtonParams.set_DefaultIsToggled(System.Nullable{System.Boolean})</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -1249,7 +1431,35 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitModal.get_IsAlert</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitModal.set_IsAlert(System.Nullable{System.Boolean})</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitModalParameters.get_IsAlert</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitModalParameters.get_IsEnabled</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitModalParameters.set_IsAlert(System.Nullable{System.Boolean})</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -1382,7 +1592,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitPanel.get_IsAlert</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitPanel.get_Position</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitPanel.set_IsAlert(System.Boolean)</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -1886,6 +2110,34 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.AssignIsShown(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.get_DefaultIsShown</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.get_IsShown</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.get_IsShownChanged</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitTooltip.get_MirrorInRtl</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
@@ -1894,6 +2146,27 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitTooltip.get_Position</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.set_DefaultIsShown(System.Nullable{System.Boolean})</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.set_IsShown(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitTooltip.set_IsShownChanged(Microsoft.AspNetCore.Components.EventCallback{System.Boolean})</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

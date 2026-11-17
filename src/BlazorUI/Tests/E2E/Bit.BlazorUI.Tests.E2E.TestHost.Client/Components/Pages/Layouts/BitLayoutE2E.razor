@@ -160,8 +160,8 @@
 </E2ESection>
 
 <E2ESection Id="sec-responsive" Title="Hide parameters driven by BitMediaQuery">
-    <BitMediaQuery ScreenQuery="BitScreenQuery.LtMd" @bind-IsMatched="_isLtMd" />
-    <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" @bind-IsMatched="_isLtSm" />
+    <BitMediaQuery ScreenQuery="BitScreenQuery.LtMd" @bind-Matched="_isLtMd" />
+    <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" @bind-Matched="_isLtSm" />
     <span id="responsive-state">@($"ltMd={_isLtMd};ltSm={_isLtSm}")</span>
     <div class="lyt-host">
         <BitLayout Id="responsive" NavPanelWidth="120" AsideWidth="100" HideAside="_isLtMd" HideNavPanel="_isLtSm">

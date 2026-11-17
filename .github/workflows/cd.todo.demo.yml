@@ -510,7 +510,7 @@ jobs:
       env:
         WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
         ServerAddress: ${{ env.SERVER_API_ADDRESS }}
-        Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
+        Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         WindowsUpdate.FilesUrl: https://windows-todo.bitplatform.dev
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
@@ -621,7 +621,7 @@ jobs:
       env:
         WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
         ServerAddress: ${{ env.SERVER_API_ADDRESS }}
-        Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
+        Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
     - name: Delete App Icon
@@ -724,7 +724,7 @@ jobs:
       env:
         WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
         ServerAddress: ${{ env.SERVER_API_ADDRESS }}
-        Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
+        Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
     - name: Import Code-Signing Certificates

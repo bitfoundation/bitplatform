@@ -14,7 +14,7 @@ public partial class User : IdentityUser<Guid>
     public string? FullName { get; set; }
 
     public string? DisplayName => FullName ?? DisplayUserName;
-    public string? DisplayUserName => FullName ?? Email ?? PhoneNumber ?? UserName;
+    public string? DisplayUserName => Email ?? PhoneNumber ?? UserName;
 
     [PersonalData]
     public Gender? Gender { get; set; }
@@ -51,7 +51,7 @@ public partial class User : IdentityUser<Guid>
     public List<WebAuthnCredential> WebAuthnCredentials { get; set; } = [];
 
     //#if (multitenant == true)
-    public List<TenantUser> Tenants { get; set; } = [];
+    public List<TenantMembership> TenantMemberships { get; set; } = [];
     //#endif
 
     public List<UserRole> Roles { get; set; } = [];
@@ -59,5 +59,5 @@ public partial class User : IdentityUser<Guid>
     public List<UserLogin> Logins { get; set; } = [];
     public List<UserToken> Tokens { get; set; } = [];
 
-    public bool HasProfilePicture { get; set; }
+    public bool HasProfileImage { get; set; }
 }

@@ -4,11 +4,11 @@ using Boilerplate.Workbench.Infrastructure.Services.StandIns;
 namespace Boilerplate.WorkbenchTests.Features.AppPages;
 
 /// <summary>
-/// The profile picture upload the Workbench takes at the app's address: as the server's, it keeps only an image the page
+/// The profile image upload the Workbench takes at the app's address: as the server's, it keeps only an image the page
 /// accepts, told by its bytes, as the picture's address answers anyone with it.
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]
-public class ProfilePictureApiTests
+public class ProfileImageApiTests
 {
     public TestContext TestContext { get; set; } = default!;
 
@@ -36,7 +36,7 @@ public class ProfilePictureApiTests
         file.Headers.ContentType = new(declaredType);
         form.Add(file, "file", "picture");
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/Attachment/UploadUserProfilePicture") { Content = form };
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/Attachment/UploadUserProfileImage") { Content = form };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", WorkbenchClaims.AccessToken(WorkbenchClaims.Of(new()), DateTimeOffset.UtcNow, elevatedUntil: null));
 
         using var response = await client.SendAsync(request, TestContext.CancellationToken);

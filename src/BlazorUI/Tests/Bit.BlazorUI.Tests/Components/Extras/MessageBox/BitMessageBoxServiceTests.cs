@@ -338,7 +338,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
         {
             Title = "Title",
             Body = "Body",
-            Modal = new BitModalParameters { IsAlert = true }
+            Modal = new BitModalParameters { Alert = true }
         });
 
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll("[role='alertdialog']").Count));
@@ -491,7 +491,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
         var confirming = MessageBoxService.Confirm(new BitMessageBoxParameters
         {
             Title = "Publish",
-            Modal = new BitModalParameters { IsAlert = false }
+            Modal = new BitModalParameters { Alert = false }
         });
 
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll("[role='dialog']").Count));

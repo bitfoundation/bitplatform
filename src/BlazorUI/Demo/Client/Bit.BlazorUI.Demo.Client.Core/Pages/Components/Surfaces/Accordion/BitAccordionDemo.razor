@@ -17,7 +17,7 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             <b>Title</b> names the header; everything inside the component is the panel. <b>Description</b> adds a quieter
-            second line, <b>IconName</b> (or <b>Icon</b>) a leading glyph, and <b>DefaultIsExpanded</b> opens it on the first
+            second line, <b>IconName</b> (or <b>Icon</b>) a leading glyph, and <b>DefaultExpanded</b> opens it on the first
             render. Each accordion keeps its own state - for one collection driving many (one open at a time, arrow keys),
             use <BitLink Href="/components/accordionlist">BitAccordionList</BitLink>.
         </div>
@@ -28,7 +28,7 @@
         <BitAccordion Title="General settings" Description="The general settings of the application" IconName="@BitIconName.Settings">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
-        <BitAccordion Title="Expanded by default" IconName="@BitIconName.People" DefaultIsExpanded>
+        <BitAccordion Title="Expanded by default" IconName="@BitIconName.People" DefaultExpanded>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
     </DemoExample>
@@ -79,7 +79,7 @@
 
     <DemoExample Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
-            <b>@@bind-IsExpanded</b> keeps the state and a field in step both ways. <b>IsExpanded</b> bound one way makes the
+            <b>@@bind-Expanded</b> keeps the state and a field in step both ways. <b>Expanded</b> bound one way makes the
             accordion controlled: it never moves on its own, and <b>OnClick</b> is where the page decides - here, one open at a
             time. <b>Disabled</b> ignores pointer and keyboard, while the binding still drives it.
         </div>
@@ -87,8 +87,8 @@
         <div class="example-content">
             <div>Two-way:</div>
             <BitToggle @bind-Value="bindingIsDisabled" OnText="Disabled" OffText="Enabled" />
-            <BitToggle @bind-Value="bindingIsExpanded" OnText="Expanded" OffText="Collapsed" />
-            <BitAccordion Title="Bound" Disabled="bindingIsDisabled" @bind-IsExpanded="bindingIsExpanded">
+            <BitToggle @bind-Value="bindingExpanded" OnText="Expanded" OffText="Collapsed" />
+            <BitAccordion Title="Bound" Disabled="bindingIsDisabled" @bind-Expanded="bindingExpanded">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
         </div>
@@ -96,17 +96,17 @@
         <div class="example-content">
             <div>Controlled (one open at a time):</div>
             <BitAccordion Title="General settings"
-                          IsExpanded="controlledExpandedItem == 1"
+                          Expanded="controlledExpandedItem == 1"
                           OnClick="() => controlledExpandedItem = controlledExpandedItem == 1 ? 0 : 1">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
             <BitAccordion Title="Users"
-                          IsExpanded="controlledExpandedItem == 2"
+                          Expanded="controlledExpandedItem == 2"
                           OnClick="() => controlledExpandedItem = controlledExpandedItem == 2 ? 0 : 2">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
             <BitAccordion Title="Advanced settings"
-                          IsExpanded="controlledExpandedItem == 3"
+                          Expanded="controlledExpandedItem == 3"
                           OnClick="() => controlledExpandedItem = controlledExpandedItem == 3 ? 0 : 3">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
@@ -124,7 +124,7 @@
         <br />
         <BitAccordion Title="Unsaved changes"
                       Description="@(lockAccordion ? "Unlock to close this panel" : "Free to close")"
-                      DefaultIsExpanded
+                      DefaultExpanded
                       OnClick="() => clickCount++"
                       OnChange="(bool v) => lastChange = v"
                       OnExpand="() => expandCount++"
@@ -274,10 +274,10 @@
                       Description="@($"Clicked {readOnlyClickCount} times, still open")"
                       OnClick="() => readOnlyClickCount++"
                       ReadOnly
-                      DefaultIsExpanded>
+                      DefaultExpanded>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
-        <BitAccordion Title="Disabled" Disabled DefaultIsExpanded>
+        <BitAccordion Title="Disabled" Disabled DefaultExpanded>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
     </DemoExample>
@@ -305,7 +305,7 @@
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </Body>
         </BitAccordion>
-        <BitAccordion Title="Nested (aria-level 3)" NoContentRegion DefaultIsExpanded>
+        <BitAccordion Title="Nested (aria-level 3)" NoContentRegion DefaultExpanded>
             <BitAccordion Title="Nested (aria-level 4)" NoContentRegion>
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>

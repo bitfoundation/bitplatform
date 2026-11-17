@@ -102,6 +102,12 @@ public partial class BitPanel : BitComponentBase
     public bool AbsolutePosition { get; set; }
 
     /// <summary>
+    /// Reports the panel to assistive technologies as an alert dialog rather than a plain one, for the
+    /// panels that carry an urgent message the user is expected to deal with before carrying on.
+    /// </summary>
+    [Parameter] public bool Alert { get; set; }
+
+    /// <summary>
     /// Enables the auto scrollbar toggle behavior of the panel, which takes the overflow off the scroller
     /// while the panel is open and hands it back once it closes.
     /// </summary>
@@ -215,12 +221,6 @@ public partial class BitPanel : BitComponentBase
     /// <see cref="Header"/> takes precedence over it.
     /// </summary>
     [Parameter] public string? HeaderText { get; set; }
-
-    /// <summary>
-    /// Reports the panel to assistive technologies as an alert dialog rather than a plain one, for the
-    /// panels that carry an urgent message the user is expected to deal with before carrying on.
-    /// </summary>
-    [Parameter] public bool IsAlert { get; set; }
 
     /// <summary>
     /// Determines the openness of the panel.
@@ -458,7 +458,7 @@ public partial class BitPanel : BitComponentBase
 
     /// <summary>
     /// The ARIA role the panel reports itself under, which takes over from the <c>dialog</c> it is announced
-    /// as by default (or the <c>alertdialog</c> of an <see cref="IsAlert"/> panel).
+    /// as by default (or the <c>alertdialog</c> of an <see cref="Alert"/> panel).
     /// </summary>
     /// <remarks>
     /// It is for the panel that is not a dialog at all: a <see cref="Modeless"/> panel that sits alongside
@@ -1126,7 +1126,7 @@ public partial class BitPanel : BitComponentBase
                              || FooterText.HasValue()
                              || ShowCloseButton;
 
-    private string GetRole() => IsAlert ? "alertdialog" : "dialog";
+    private string GetRole() => Alert ? "alertdialog" : "dialog";
 
     // A dialog needs an accessible name, and a panel that renders a header of its own is already showing the
     // name it should be given. A name set by hand wins over it, and so does an AriaLabel, which the panel

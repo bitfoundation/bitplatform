@@ -29,7 +29,7 @@ public partial class UserDto : IValidatableObject
     [Display(Name = nameof(AppStrings.BirthDate))]
     public DateTimeOffset? BirthDate { get; set; }
 
-    public bool HasProfilePicture { get; set; }
+    public bool HasProfileImage { get; set; }
 
     public string? Version { get; set; }
 
@@ -38,7 +38,7 @@ public partial class UserDto : IValidatableObject
 
     public string? GetProfileImageUrl(Uri absoluteServerAddress)
     {
-        return HasProfilePicture is false
+        return HasProfileImage is false
             ? null
             : new Uri(absoluteServerAddress, $"/api/v1/Attachment/GetAttachment/{Id}/{AttachmentKind.UserProfileImageSmall}?v={Version}").ToString();
     }

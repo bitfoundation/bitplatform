@@ -53,7 +53,7 @@
                 </LabelTemplate>
             </BitFileUpload>
 
-            @if (CurrentUser?.HasProfilePicture is true)
+            @if (CurrentUser?.HasProfileImage is true)
             {
                 <BitButton IsLoading=@isSaving OnClick="WrapHandled(RemoveProfileImage)" Color="BitColor.Error">
                     @Localizer[nameof(AppStrings.Remove)]

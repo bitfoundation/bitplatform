@@ -263,6 +263,9 @@
 
             foreach (var url in SelfUrls) options.Browser.IgnoreUrls.Add(url);   // "/otlp/", "/api/telemetry"
 
+            // Every poll of /api/telemetry carries the reader's session id: no record, on either side, may name it.
+            options.Privacy.RedactQueryParameters.Add("sessionId");
+
             options.AddProcessor(new DemoNoiseFilter());
         }
         """;

@@ -79,7 +79,7 @@ public partial class TenantController : AppControllerBase, ITenantController
         }
 
         // The value of AcceptedOn is set upfront for the user who has created the tenant.
-        await DbContext.TenantUsers.AddAsync(new()
+        await DbContext.TenantMemberships.AddAsync(new()
         {
             TenantId = tenantToAdd.Id,
             UserId = userId,
@@ -148,7 +148,7 @@ public partial class TenantController : AppControllerBase, ITenantController
         var user = await userManager.FindUser(new() { Email = request.Email, PhoneNumber = request.PhoneNumber })
             ?? await userManager.CreateUserWithDemoRole(new IdentityRequestDto { Email = request.Email, PhoneNumber = request.PhoneNumber }); // Creates the user with a random password. The user can reset it later.
 
-        if (await DbContext.TenantUsers.AnyAsync(tu => tu.TenantId == tenantId && tu.UserId == user.Id, cancellationToken))
+        if (await DbContext.TenantMemberships.AnyAsync(tm => tm.TenantId == tenantId && tm.UserId == user.Id, cancellationToken))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsAlreadyInTenantErrorMessage)]);
 
         // Grant the tenant's demo role so that once she accepts the invitation she actually gets the tenant's demo
@@ -159,7 +159,7 @@ public partial class TenantController : AppControllerBase, ITenantController
 
         var invitationLink = new Uri(HttpContext.Request.GetWebAppUrl(), PageUrls.ManageMyTenants);
 
-        await DbContext.TenantUsers.AddAsync(new()
+        await DbContext.TenantMemberships.AddAsync(new()
         {
             TenantId = tenantId,
             UserId = user.Id,

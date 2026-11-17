@@ -811,7 +811,7 @@ public class BitModalE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsAlert_AnnouncesAnAlertDialogNamedByItsAriaLabel()
+    public async Task Alert_AnnouncesAnAlertDialogNamedByItsAriaLabel()
     {
         await OpenAsync(PagePath);
         await OpenModalAsync("btn-alert-open", "alert-modal");
@@ -821,7 +821,7 @@ public class BitModalE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsAlertFalse_OnABlockingModal_KeepsThePlainDialogRole()
+    public async Task AlertFalse_OnABlockingModal_KeepsThePlainDialogRole()
     {
         await OpenAsync(PagePath);
         await OpenModalAsync("btn-notalert-open", "notalert-modal");

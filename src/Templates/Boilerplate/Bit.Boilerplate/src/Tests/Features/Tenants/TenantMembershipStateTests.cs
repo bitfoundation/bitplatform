@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 using Boilerplate.Shared.Features.Tenants;
+using Boilerplate.Shared.Features.Tenants.Dtos;
 
 namespace Boilerplate.Tests.Features.Tenants;
 
@@ -71,21 +72,21 @@ public class TenantMembershipStateTests
         var own = tenants.SingleOrDefault(t => t.Id == ownTenant.Id);
         var invited = tenants.SingleOrDefault(t => t.Id == invitedTenant);
 
-        // Non-vacuity first: if a global admin stopped being listed every active tenant, the null assertion below would
+        // Non-vacuity first: if a global admin stopped being listed every active tenant, the None assertion below would
         // pass by absence rather than by state and this test would silently stop covering anything.
         Assert.IsNotNull(foreign,
             "A global admin must be listed every active tenant, including ones she never joined - that listing is exactly what makes the no-membership state reachable.");
         Assert.IsNotNull(own, "Her own tenant must be in her list.");
         Assert.IsNotNull(invited, "The tenant she was invited to must be in her list.");
 
-        Assert.IsNull(foreign.CurrentUserHasAcceptedThisTenantInvitation,
-            "A tenant the caller has no TenantUser row for must come back as null, not false. Reported as false, ManageMyTenantsPage renders a 'Leave tenant' button on it, and clicking that spends an elevated-access one-time code only to receive ResourceNotFoundException from UserController.LeaveTenant.");
+        Assert.AreEqual(TenantMembershipStatus.None, foreign.CurrentUserMembershipStatus,
+            "A tenant the caller has no TenantMembership row for must come back as None, not Invited. Reported as Invited, ManageMyTenantsPage renders a 'Leave tenant' button on it, and clicking that spends an elevated-access one-time code only to receive ResourceNotFoundException from UserController.LeaveTenant.");
 
-        Assert.IsTrue(own.CurrentUserHasAcceptedThisTenantInvitation,
+        Assert.AreEqual(TenantMembershipStatus.Member, own.CurrentUserMembershipStatus,
             "Creating a tenant accepts the creator's membership immediately (See TenantController.Create).");
 
-        Assert.IsFalse(invited.CurrentUserHasAcceptedThisTenantInvitation,
-            "An invitation that has not been accepted is false - distinct from the null above. This is the state in which leaving DELETES the membership rather than resetting it, which is why the client has to be able to tell the two apart before it words the confirmation.");
+        Assert.AreEqual(TenantMembershipStatus.Invited, invited.CurrentUserMembershipStatus,
+            "An invitation that has not been accepted is Invited - distinct from the None above. This is the state in which leaving DELETES the membership rather than resetting it, which is why the client has to be able to tell the two apart before it words the confirmation.");
     }
 
     /// <summary>

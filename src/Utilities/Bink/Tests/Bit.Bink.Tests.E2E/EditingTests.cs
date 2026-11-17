@@ -1,4 +1,4 @@
-using Bit.Bink.Tests.E2E.Infrastructure;
+﻿using Bit.Bink.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 
 namespace Bit.Bink.Tests.E2E;
@@ -15,7 +15,7 @@ public sealed class EditingTests : BinkTest
     {
         string text = await page.EvaluateAsync<string>("() => document.querySelector('.bit-bink-canvas [id$=\"-desc\"]').textContent");
         if (text.StartsWith("Empty", StringComparison.Ordinal)) return 0;
-        var match = System.Text.RegularExpressions.Regex.Match(text, @"Drawing with (\d+) elements");
+        var match = System.Text.RegularExpressions.Regex.Match(text, @"Drawing with (\d+) elements?\b");
         Assert.IsTrue(match.Success, "Unexpected description: " + text);
         return int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
     }
@@ -267,7 +267,7 @@ public sealed class EditingTests : BinkTest
         await page.Mouse.UpAsync();
         await page.Keyboard.UpAsync("Alt");
         await page.WaitForTimeoutAsync(250);
-        StringAssert.Contains(await page.Locator(".bit-bink-canvas [role=status]").TextContentAsync() ?? "", "1 elements selected");
+        StringAssert.Contains(await page.Locator(".bit-bink-canvas [role=status]").TextContentAsync() ?? "", "1 element selected");
 
         // Alt-dragging the selected stroke leaves it in place and moves a copy.
         await page.Keyboard.DownAsync("Alt");

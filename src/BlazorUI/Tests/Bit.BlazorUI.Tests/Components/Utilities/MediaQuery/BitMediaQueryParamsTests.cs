@@ -29,8 +29,8 @@ public class BitMediaQueryParamsTests : BunitTestContext
             {
                 builder.OpenComponent<BitMediaQuery>(0);
                 extraAttributes?.Invoke(builder);
-                builder.AddAttribute(100, nameof(BitMediaQuery.Matched), (RenderFragment)(b => b.AddMarkupContent(0, "<div class=\"matched\">Matched</div>")));
-                builder.AddAttribute(101, nameof(BitMediaQuery.NotMatched), (RenderFragment)(b => b.AddMarkupContent(0, "<div class=\"notmatched\">NotMatched</div>")));
+                builder.AddAttribute(100, nameof(BitMediaQuery.MatchedTemplate), (RenderFragment)(b => b.AddMarkupContent(0, "<div class=\"matched\">Matched</div>")));
+                builder.AddAttribute(101, nameof(BitMediaQuery.NotMatchedTemplate), (RenderFragment)(b => b.AddMarkupContent(0, "<div class=\"notmatched\">NotMatched</div>")));
                 builder.CloseComponent();
             });
         });
@@ -110,7 +110,7 @@ public class BitMediaQueryParamsTests : BunitTestContext
 
         Assert.AreEqual(1, component.FindAll(".matched").Count);
         Assert.AreEqual(0, component.FindAll(".notmatched").Count);
-        Assert.IsTrue(component.FindComponent<BitMediaQuery>().Instance.IsMatched);
+        Assert.IsTrue(component.FindComponent<BitMediaQuery>().Instance.Matched);
     }
 
     [TestMethod]
@@ -248,10 +248,10 @@ public class BitMediaQueryParamsTests : BunitTestContext
         [
             nameof(BitMediaQuery.CascadingParameters),
             nameof(BitMediaQuery.ChildContent),
-            nameof(BitMediaQuery.IsMatched),
-            "IsMatchedChanged",
             nameof(BitMediaQuery.Matched),
-            nameof(BitMediaQuery.NotMatched),
+            "MatchedChanged",
+            nameof(BitMediaQuery.MatchedTemplate),
+            nameof(BitMediaQuery.NotMatchedTemplate),
             nameof(BitMediaQuery.OnChange),
             nameof(BitMediaQuery.Template),
         ];
@@ -273,9 +273,9 @@ public class BitMediaQueryParamsTests : BunitTestContext
     public void BitMediaQueryShouldNotCascadeTheStateOrTheContent()
     {
         // The state is the browser's answer for each query, and the content is what each one renders.
-        Assert.IsNull(typeof(BitMediaQueryParams).GetProperty(nameof(BitMediaQuery.IsMatched)));
         Assert.IsNull(typeof(BitMediaQueryParams).GetProperty(nameof(BitMediaQuery.Matched)));
-        Assert.IsNull(typeof(BitMediaQueryParams).GetProperty(nameof(BitMediaQuery.NotMatched)));
+        Assert.IsNull(typeof(BitMediaQueryParams).GetProperty(nameof(BitMediaQuery.MatchedTemplate)));
+        Assert.IsNull(typeof(BitMediaQueryParams).GetProperty(nameof(BitMediaQuery.NotMatchedTemplate)));
         Assert.IsNull(typeof(BitMediaQueryParams).GetProperty(nameof(BitMediaQuery.Template)));
         Assert.IsNull(typeof(BitMediaQueryParams).GetProperty(nameof(BitMediaQuery.OnChange)));
     }

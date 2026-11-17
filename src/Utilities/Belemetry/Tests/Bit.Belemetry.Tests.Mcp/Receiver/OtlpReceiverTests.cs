@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Bit.Belemetry.Demo.Client.Services;
 using Bit.Belemetry.Tests.Mcp.TestInfra;
 
@@ -297,5 +298,24 @@ public class OtlpReceiverTests
         }
 
         Assert.Fail("The server's request span for /api/demo/echo never reached the receiver.");
+    }
+
+    [TestMethod]
+    public void TheSharedRecords_NeverNameAnotherReadersSession()
+    {
+        // Any reader may list the shared records, the server's own: ASP.NET Core's log of another reader's poll
+        // ("Request starting HTTP/1.1 GET .../api/telemetry?sessionId=...") would be the key to that reader's records.
+        var filter = new DemoNoiseFilter();
+        var poll = new BelemetryLogRecord { Body = "Request starting HTTP/1.1 GET http://localhost/api/telemetry?sessionId=0af7651916cd43dd8448eb211c80319c - - -" };
+        poll.Attributes.Set("RequestPath", "/api/telemetry");
+        var page = new BelemetryLogRecord { Body = "Request starting HTTP/1.1 GET http://localhost/orders - - -" };
+        page.Attributes.Set("RequestPath", "/orders");
+
+        Assert.IsFalse(filter.OnLog(poll), "The demo talking to itself is noise, its request logs included.");
+        Assert.IsTrue(filter.OnLog(page));
+
+        // And wherever a URL with it is recorded anyway, the id is redacted.
+        var options = _server.Services.GetRequiredService<IOptions<BelemetryOptions>>().Value;
+        CollectionAssert.Contains(options.Privacy.RedactQueryParameters, "sessionId");
     }
 }

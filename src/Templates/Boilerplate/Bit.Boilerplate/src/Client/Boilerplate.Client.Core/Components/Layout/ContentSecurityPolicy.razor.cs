@@ -43,7 +43,7 @@ public partial class ContentSecurityPolicy
         //#if (sentry == true)
         // --- Add Sentry ---
         connectSrc.Add("https://*.sentry.io");
-        if (Uri.TryCreate(configuration["Logging:Sentry:Dsn"], UriKind.Absolute, out var sentryDsn))
+        if (Uri.TryCreate(configuration["Sentry:Dsn"], UriKind.Absolute, out var sentryDsn))
         {
             connectSrc.Add($"{sentryDsn.Scheme}://{sentryDsn.Authority}");
         }

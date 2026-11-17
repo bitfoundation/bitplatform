@@ -78,7 +78,7 @@ public static class BmageRecipeCatalog
             Id = "upload-optimise",
             Title = "Shrink an upload before it is sent",
             Intent = "Resize and re-encode a photo on the user's device so the server never receives the full-size original.",
-            Keywords = "upload optimise optimize compress shrink reencode before send httpclient multipart webp jpeg bandwidth maxsize strip metadata",
+            Keywords = "upload optimise optimize compress shrink reduce smaller photo file size reencode before send httpclient multipart webp jpeg bandwidth maxsize strip metadata",
             RunsIn = "Browser",
             SeeAlso = "/optimize",
             Code = """

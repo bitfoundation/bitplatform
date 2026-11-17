@@ -54,10 +54,10 @@ public partial class BitTooltipDemo
         },
         new()
         {
-            Name = "DefaultIsShown",
+            Name = "DefaultShown",
             Type = "bool?",
             DefaultValue = "null",
-            Description = "The shown state the tooltip starts in when IsShown is not bound."
+            Description = "The shown state the tooltip starts in when Shown is not bound."
         },
         new()
         {
@@ -93,20 +93,6 @@ public partial class BitTooltipDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Keeps the tooltip shown while the pointer moves into it (WCAG 1.4.13). False lets the pointer through to what lies underneath."
-        },
-        new()
-        {
-            Name = "IsShown",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "The shown state of the tooltip. Bound one way (without IsShownChanged) it is yours alone: the triggers leave it alone."
-        },
-        new()
-        {
-            Name = "IsShownChanged",
-            Type = "EventCallback<bool>",
-            DefaultValue = "",
-            Description = "The callback for when the shown state changes."
         },
         new()
         {
@@ -195,6 +181,20 @@ public partial class BitTooltipDemo
             Type = "int",
             DefaultValue = "0",
             Description = "Delay in ms before showing on hover; focus and click show at once. Inside a BitTooltipGroup an unset one takes the group's."
+        },
+        new()
+        {
+            Name = "Shown",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "The shown state of the tooltip. Bound one way (without ShownChanged) it is yours alone: the triggers leave it alone."
+        },
+        new()
+        {
+            Name = "ShownChanged",
+            Type = "EventCallback<bool>",
+            DefaultValue = "",
+            Description = "The callback for when the shown state changes."
         },
         new()
         {
