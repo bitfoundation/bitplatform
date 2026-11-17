@@ -190,7 +190,11 @@ public class BitMapE2ETests : E2ETestBase
     /// </summary>
     internal static async Task<(double WindowTop, float X, float Y)> ScrollPartOfTheMapOutOfViewAsync(IPage page)
     {
-        await page.Locator("#btn-show-scroller").ClickAsync();
+        // Dispatched rather than clicked: the button only brings the section in, and the maps above it are still laying
+        // themselves out as Leaflet loads after the page turns interactive, which can move it from under a click between
+        // Playwright finding it and pressing it (in WebKit the press then went nowhere and the map never came).
+        await page.Locator("#btn-show-scroller").DispatchEventAsync("click");
+        await Expect(page.Locator("#map-scroller")).ToHaveCountAsync(1);
         await ReadyAsync(page, "map-scrolled");
 
         var scroller = page.Locator("#map-scroller");
