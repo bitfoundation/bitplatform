@@ -394,6 +394,17 @@ provider outage does not take an otherwise healthy instance out of the load bala
   listed there's no entry, as the check is optional.
 - **`bitFabric`**: outside development, whether [bit Fabric](https://bitfabric.co) holds an OAuth grant on the app, since
   checks nobody reads from outside go down with the server. Remove it if another service watches the app from outside.
+- **`otlp`**: sends an empty log export, which carries no telemetry, where Belemetry sends the app's logs:
+  `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` or `OTEL_EXPORTER_OTLP_ENDPOINT` with `OTEL_EXPORTER_OTLP_PROTOCOL` and
+  `OTEL_EXPORTER_OTLP_HEADERS`, or `Belemetry:OtlpEndpoint` when only that is set. A wrong API key header (401, or a
+  grpc-status other than 0) and an unreachable collector fail it.
+- **`aspireDashboard`**: lists the resources of the dashboard's telemetry API with `AspireDashboard:ApiKey`, the call the
+  dev MCP's telemetry tools make. A key the dashboard refuses fails it.
+<!--#if (appInsights == true)-->
+- **`appInsights`**: posts an envelope without data, which Application Insights refuses without storing anything, to the
+  ingestion endpoint of `ApplicationInsights:ConnectionString`. An unknown instrumentation key ("Invalid instrumentation
+  key"), throttling and a resource that only accepts Entra ID tokens fail it.
+<!--#endif-->
 - **`smtp`**: connects, runs STARTTLS when `EnableSsl` is on, signs in when credentials are set, then quits without sending.
 - **`emailDelivery`**: reads the DNS of the domain of `Email:DefaultFromEmail`, the address every mail is sent from, so it
   needs no setting of its own. Without an SPF record, with one that ends in `+all` (any server may send as the domain),
@@ -421,6 +432,11 @@ provider outage does not take an otherwise healthy instance out of the load bala
 - **`appleSignIn`**: signs the client secret with `AppleAuthKey.p8` (so a missing or broken key fails the check) and
   makes sure Apple is reachable. Apple checks the authorization code before the client, so the secret itself can't be
   verified.
+- **`googleSignIn`** and **`gitHubSignIn`**: redeem an authorization code that doesn't exist with the app's client id and
+  secret. Both check the client first, so `invalid_grant` (Google) and `bad_verification_code` (GitHub) pass, while
+  `invalid_client` and `incorrect_client_credentials` (a wrong secret) fail.
+- **`twitterSignIn`** and **`facebookSignIn`**: ask for an app-only token with the consumer key and secret (X) or the app
+  id and secret (Facebook). A token passes; nothing is posted and no user is involved.
 - **`reCaptcha`**: makes sure siteverify answers. Google checks the response before the secret, so a wrong secret is not
   detected.
 - **`azureSignalR`**: calls the service's health API, and with an `AccessKey` it also makes a signed user lookup. Only
@@ -448,7 +464,10 @@ In development, `sms`, `keycloakIdentity`,
 <!--#if (sentry == true)-->
 `sentry`,
 <!--#endif-->
-`entraId`, `appleSignIn`, `firebase`, `apns`
+`entraId`, `appleSignIn`, `googleSignIn`, `gitHubSignIn`, `twitterSignIn`, `facebookSignIn`, `firebase`, `apns`,
+<!--#if (appInsights == true)-->
+`appInsights`,
+<!--#endif-->
 and the AI checks are registered only when their settings are present. In any other environment they are always
 registered, and one without settings reports Degraded with "... is not configured", and `/healthz` marks its entry
 `isNotConfigured`, so the Operations page and a monitor show it as a setup gap rather than as a failing dependency. A
@@ -460,19 +479,22 @@ doesn't use one of them, remove its code, check included.
 app serves SignalR itself and live updates keep working, so a missing connection string is a choice rather than a gap.
 <!--#endif-->
 
-Google, GitHub, Twitter and Facebook sign-in can't be verified without a user signing in, so they have no check. Outside
-development, `googleSignIn`, `gitHubSignIn`, `twitterSignIn` and `facebookSignIn` appear only when their settings are
-missing, reporting Degraded the same way.
+`otlp` and `aspireDashboard` are registered only when their settings are set, in every environment: a deployment can send
+its telemetry only to Application Insights or Sentry, and only a Docker Compose deployment has an Aspire dashboard next to
+it, so a missing setting is a choice rather than a gap.
 
-`smtp`, `emailDelivery`, `websites`, `firebase`, `apns`,
+`smtp`, `emailDelivery`, `websites`, `firebase`, `apns`, `otlp`, `aspireDashboard`,
 <!--#if (cloudflare == true)-->
 `cloudflare`,
 <!--#endif-->
 <!--#if (sentry == true)-->
 `sentry`,
 <!--#endif-->
+<!--#if (appInsights == true)-->
+`appInsights`,
+<!--#endif-->
 the sign-in checks, `reCaptcha` and the AI checks are registered with
-`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`, 30 seconds for `websites`, 30 minutes for
+`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`, `otlp` and `aspireDashboard`, 30 seconds for `websites`, 30 minutes for
 `emailDelivery`, whose DNS lookups also keep each answer for its TTL). Probes that arrive together share one run. A
 failing result is never reused, so each probe checks again and a recovery shows up right away. This keeps load balancer
 probes from turning into paid calls or repeated sign-ins. `/healthz` reports a reused result with its own run's

@@ -1,6 +1,8 @@
 using System.Text;
 using System.Security.Cryptography;
 using AspNet.Security.OAuth.Apple;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Boilerplate.Server.Api.Features.Identity.Services;
@@ -9,8 +11,9 @@ using Boilerplate.Server.Api.Features.Identity.HealthChecks;
 namespace Boilerplate.Tests.Features.Identity;
 
 /// <summary>
-/// entraId and appleSignIn, with the providers replaced. The answers they are judged by were observed live on
-/// login.microsoftonline.com and appleid.apple.com.
+/// entraId, appleSignIn and the Google, GitHub, X and Facebook sign in checks, with the providers replaced. The answers they
+/// are judged by were observed live on login.microsoftonline.com, appleid.apple.com, oauth2.googleapis.com, github.com,
+/// api.x.com and graph.facebook.com.
 /// </summary>
 [TestClass, TestCategory("UnitTest")]
 public class ExternalSignInHealthChecksTests
@@ -146,6 +149,131 @@ public class ExternalSignInHealthChecksTests
         var result = await RunAppleCheck(handler, keyPath: null);
 
         Assert.AreEqual(HealthStatus.Degraded, result.Status);
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.BadRequest, """{"error":"invalid_grant","error_description":"Malformed auth code."}""", HealthStatus.Healthy, DisplayName = "Credentials accepted")]
+    [DataRow(HttpStatusCode.Unauthorized, """{"error":"invalid_client","error_description":"The provided client secret is invalid."}""", HealthStatus.Degraded, DisplayName = "Wrong secret")]
+    [DataRow(HttpStatusCode.ServiceUnavailable, "<html>Unavailable</html>", HealthStatus.Degraded, DisplayName = "Outage")]
+    public async Task GoogleCheck_Should_JudgeTheTokenEndpointsAnswer(HttpStatusCode status, string body, HealthStatus expected)
+    {
+        var form = string.Empty;
+        var handler = new RoutingHandler(async (request, cancellationToken) =>
+        {
+            Assert.AreEqual(GoogleDefaults.TokenEndpoint, request.RequestUri!.AbsoluteUri);
+            form = await request.Content!.ReadAsStringAsync(cancellationToken);
+            return Json(status, body);
+        });
+
+        var result = await RunSignInCheck<GoogleSignInHealthCheck>(handler, "Google", "Google", ("ClientId", "test-client"), ("ClientSecret", "test-secret"));
+
+        Assert.AreEqual(expected, result.Status, result.Description);
+        Assert.Contains("grant_type=authorization_code", form);
+        Assert.Contains("client_id=test-client", form);
+        Assert.DoesNotContain("test-secret", result.Description!);
+    }
+
+    [TestMethod]
+    [DataRow("""{"error":"bad_verification_code","error_description":"The code passed is incorrect or expired."}""", HealthStatus.Healthy, DisplayName = "Credentials accepted")]
+    [DataRow("""{"error":"incorrect_client_credentials","error_description":"The client_id and/or client_secret passed are incorrect."}""", HealthStatus.Degraded, DisplayName = "Wrong secret")]
+    public async Task GitHubCheck_Should_JudgeTheTokenEndpointsAnswer(string body, HealthStatus expected)
+    {
+        HttpRequestMessage? sent = null;
+        var handler = new RoutingHandler((request, _) =>
+        {
+            sent = request;
+            return Task.FromResult(Json(HttpStatusCode.OK, body));
+        });
+
+        var result = await RunSignInCheck<GitHubSignInHealthCheck>(handler, "GitHub", "GitHub", ("ClientId", "test-client"), ("ClientSecret", "test-secret"));
+
+        Assert.AreEqual(expected, result.Status, result.Description);
+        Assert.AreEqual("https://github.com/login/oauth/access_token", sent!.RequestUri!.AbsoluteUri);
+        Assert.Contains("application/json", sent.Headers.Accept.ToString(), "GitHub answers a form unless asked for JSON.");
+    }
+
+    [TestMethod]
+    public async Task GitHubCheck_Should_AskTheEnterpriseServer_WhenOneIsSet()
+    {
+        var handler = new RoutingHandler((_, _) => Task.FromResult(Json(HttpStatusCode.OK, """{"error":"bad_verification_code"}""")));
+
+        var result = await RunSignInCheck<GitHubSignInHealthCheck>(handler, "GitHub", "GitHub", ("ClientId", "test-client"), ("ClientSecret", "test-secret"), ("EnterpriseDomain", "github.contoso.com"));
+
+        Assert.AreEqual(HealthStatus.Healthy, result.Status, result.Description);
+        Assert.AreEqual("https://github.contoso.com/login/oauth/access_token", handler.Requests.Single().AbsoluteUri);
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.OK, """{"token_type":"bearer","access_token":"AAAA"}""", HealthStatus.Healthy, DisplayName = "Token issued")]
+    [DataRow(HttpStatusCode.Forbidden, """{"errors":[{"code":99,"message":"Unable to verify your credentials","label":"authenticity_token_error"}]}""", HealthStatus.Degraded, DisplayName = "Wrong secret")]
+    public async Task TwitterCheck_Should_JudgeTheTokenEndpointsAnswer(HttpStatusCode status, string body, HealthStatus expected)
+    {
+        HttpRequestMessage? sent = null;
+        var handler = new RoutingHandler((request, _) =>
+        {
+            sent = request;
+            return Task.FromResult(Json(status, body));
+        });
+
+        var result = await RunSignInCheck<TwitterSignInHealthCheck>(handler, "Twitter", "Twitter", ("ConsumerKey", "test key"), ("ConsumerSecret", "test-secret"));
+
+        Assert.AreEqual(expected, result.Status, result.Description);
+        Assert.AreEqual("https://api.x.com/oauth2/token", sent!.RequestUri!.AbsoluteUri);
+        Assert.AreEqual("Basic", sent.Headers.Authorization!.Scheme);
+        Assert.AreEqual("test%20key:test-secret", Encoding.UTF8.GetString(Convert.FromBase64String(sent.Headers.Authorization.Parameter!)), "X wants each part url-encoded.");
+        if (expected is HealthStatus.Degraded)
+        {
+            Assert.Contains("Unable to verify your credentials", result.Description!);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.OK, """{"access_token":"1234|AAAA","token_type":"bearer"}""", HealthStatus.Healthy, DisplayName = "Token issued")]
+    [DataRow(HttpStatusCode.BadRequest, """{"error":{"message":"Error validating client secret.","type":"OAuthException","code":1}}""", HealthStatus.Degraded, DisplayName = "Wrong secret")]
+    [DataRow(HttpStatusCode.BadRequest, """{"error":{"message":"Invalid Client ID","type":"OAuthException","code":101}}""", HealthStatus.Degraded, DisplayName = "Unknown app")]
+    public async Task FacebookCheck_Should_JudgeTheTokenEndpointsAnswer(HttpStatusCode status, string body, HealthStatus expected)
+    {
+        var form = string.Empty;
+        var handler = new RoutingHandler(async (request, cancellationToken) =>
+        {
+            Assert.AreEqual(FacebookDefaults.TokenEndpoint, request.RequestUri!.AbsoluteUri);
+            Assert.AreEqual(HttpMethod.Post, request.Method, "The secret goes in the body, not in a url a proxy may log.");
+            form = await request.Content!.ReadAsStringAsync(cancellationToken);
+            return Json(status, body);
+        });
+
+        var result = await RunSignInCheck<FacebookSignInHealthCheck>(handler, "Facebook", "Facebook", ("AppId", "1234"), ("AppSecret", "test-secret"));
+
+        Assert.AreEqual(expected, result.Status, result.Description);
+        Assert.Contains("grant_type=client_credentials", form);
+        Assert.DoesNotContain("test-secret", result.Description!);
+    }
+
+    [TestMethod]
+    public async Task SignInChecks_Should_ReportDegraded_WhenTheProviderIsUnreachable()
+    {
+        var handler = new RoutingHandler((_, _) => throw new HttpRequestException("No route to host"));
+
+        Assert.AreEqual(HealthStatus.Degraded, (await RunSignInCheck<GoogleSignInHealthCheck>(handler, "Google", "Google", ("ClientId", "test-client"))).Status);
+        Assert.AreEqual(HealthStatus.Degraded, (await RunSignInCheck<GitHubSignInHealthCheck>(handler, "GitHub", "GitHub", ("ClientId", "test-client"))).Status);
+        Assert.AreEqual(HealthStatus.Degraded, (await RunSignInCheck<TwitterSignInHealthCheck>(handler, "Twitter", "Twitter", ("ConsumerKey", "test-key"))).Status);
+        Assert.AreEqual(HealthStatus.Degraded, (await RunSignInCheck<FacebookSignInHealthCheck>(handler, "Facebook", "Facebook", ("AppId", "1234"))).Status);
+    }
+
+    private async Task<HealthCheckResult> RunSignInCheck<THealthCheck>(RoutingHandler handler, string clientName, string section, params (string Key, string Value)[] settings)
+        where THealthCheck : IHealthCheck
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(settings.ToDictionary(setting => $"Authentication:{section}:{setting.Key}", setting => (string?)setting.Value))
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(configuration);
+        AddHttpClient(services, handler, clientName);
+
+        await using var serviceProvider = services.BuildServiceProvider();
+
+        return await Run(ActivatorUtilities.CreateInstance<THealthCheck>(serviceProvider));
     }
 
     private async Task<HealthCheckResult> RunEntraIdCheck(RoutingHandler handler, string? clientSecret, Action<IConfiguration>? configure = null)

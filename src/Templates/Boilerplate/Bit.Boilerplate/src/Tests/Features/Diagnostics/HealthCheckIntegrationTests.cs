@@ -373,6 +373,11 @@ public partial class HealthCheckIntegrationTests
         //#if (cloudflare == true)
         ["cloudflare"] = HealthCheckCategories.Platform,
         //#endif
+        ["otlp"] = HealthCheckCategories.Integrations,
+        ["aspireDashboard"] = HealthCheckCategories.Integrations,
+        //#if (appInsights == true)
+        ["appInsights"] = HealthCheckCategories.Integrations,
+        //#endif
         ["smtp"] = HealthCheckCategories.Messaging,
         ["emailDelivery"] = HealthCheckCategories.Messaging,
         ["sms"] = HealthCheckCategories.Messaging,
@@ -481,6 +486,16 @@ public partial class HealthCheckIntegrationTests
             configuration["Authentication:Keycloak:Realm"] = "dev";
             configuration["Authentication:AzureAD:ClientId"] = "not-a-real-client";
             configuration["Authentication:Apple:ClientId"] = "not-a-real-client";
+            configuration["Authentication:Google:ClientId"] = "not-a-real-client";
+            configuration["Authentication:Google:ClientSecret"] = "not-a-real-secret";
+            configuration["Authentication:GitHub:ClientId"] = "not-a-real-client";
+            configuration["Authentication:GitHub:ClientSecret"] = "not-a-real-secret";
+            configuration["Authentication:Twitter:ConsumerKey"] = "not-a-real-key";
+            configuration["Authentication:Twitter:ConsumerSecret"] = "not-a-real-secret";
+            configuration["Authentication:Facebook:AppId"] = "not-a-real-app";
+            configuration["Authentication:Facebook:AppSecret"] = "not-a-real-secret";
+            configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = "http://otlp.invalid:4318";
+            configuration["AspireDashboard:Url"] = "http://dashboard.invalid:18888";
             configuration["Sms:Providers:Twilio:AccountSid"] = "not-a-real-sid";
             configuration["Sms:Providers:Twilio:AuthToken"] = "not-a-real-token";
             configuration["Sms:Providers:Twilio:From"] = "+15005550006";
@@ -494,6 +509,9 @@ public partial class HealthCheckIntegrationTests
             //#if (notification == true)
             configuration["AdsPushFirebase:PrivateKey"] = "not-a-real-key";
             configuration["AdsPushAPNS:P8PrivateKey"] = "not-a-real-key";
+            //#endif
+            //#if (appInsights == true)
+            configuration["ApplicationInsights:ConnectionString"] = "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://ingestion.invalid/";
             //#endif
             //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
             configuration["AI:OpenAI:ChatApiKey"] = "not-a-real-key";
@@ -513,6 +531,7 @@ public partial class HealthCheckIntegrationTests
         string[] expectedExternalChecks =
         [
             "fileStorage", "website:https://site.invalid/", "smtp", "emailDelivery", "sms", "keycloakIdentity", "entraId", "appleSignIn",
+            "googleSignIn", "gitHubSignIn", "twitterSignIn", "facebookSignIn", "otlp", "aspireDashboard",
             //#if (captcha == "reCaptcha")
             "reCaptcha",
             //#endif
@@ -527,6 +546,9 @@ public partial class HealthCheckIntegrationTests
             //#endif
             //#if (notification == true)
             "firebase", "apns",
+            //#endif
+            //#if (appInsights == true)
+            "appInsights",
             //#endif
             //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
             "aiChat", "aiEmbedding",
@@ -635,6 +657,9 @@ public partial class HealthCheckIntegrationTests
             //#if (notification == true)
             "firebase", "apns",
             //#endif
+            //#if (appInsights == true)
+            "appInsights",
+            //#endif
             //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
             "aiChat", "aiEmbedding",
             //#endif
@@ -650,7 +675,9 @@ public partial class HealthCheckIntegrationTests
             "Authentication:Google:ClientId", "Authentication:GitHub:ClientId", "Authentication:Twitter:ConsumerKey", "Authentication:Facebook:AppId",
             "Authentication:Apple:ClientId", "Cloudflare:ApiToken", "Azure:SignalR:ConnectionString", "AdsPushFirebase:PrivateKey",
             "AdsPushAPNS:P8PrivateKey", "AI:OpenAI:ChatApiKey", "AI:OpenAI:EmbeddingApiKey", "AI:HuggingFace:EmbeddingEndpoint",
-            "AI:OpenAI:SpeechToTextApiKey", "AI:OpenAI:TextToSpeechApiKey", "AI:OpenAI:RealtimeApiKey", "Sentry:Dsn"
+            "AI:OpenAI:SpeechToTextApiKey", "AI:OpenAI:TextToSpeechApiKey", "AI:OpenAI:RealtimeApiKey", "Sentry:Dsn",
+            "ApplicationInsights:ConnectionString", "OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT", "Belemetry:OtlpEndpoint",
+            "AspireDashboard:Url"
         })
         {
             builder.Configuration[key] = "";
@@ -692,6 +719,9 @@ public partial class HealthCheckIntegrationTests
         Assert.AreEqual(HealthStatus.Degraded, bitFabric.FailureStatus, "bit Fabric not being connected must not take the instance out of rotation.");
         Assert.AreNotEqual(Timeout.InfiniteTimeSpan, bitFabric.Timeout);
         AssertCategory(bitFabric);
+
+        Assert.DoesNotContain(r => r.Name is "otlp", registrations, "A deployment can send its telemetry only to Application Insights or Sentry, so a missing OTLP endpoint is no setup gap.");
+        Assert.DoesNotContain(r => r.Name is "aspireDashboard", registrations, "Only a Docker Compose deployment has an Aspire dashboard next to it.");
         //#if (signalR == true)
 
         Assert.DoesNotContain(r => r.Name is "azureSignalR", registrations, "Without Azure SignalR the app serves SignalR itself, so a missing connection string is no setup gap.");
