@@ -18,7 +18,7 @@ public partial class McpSearchTests
         ("which data type should I use", "Choosing a data type"),
         ("last writer wins", "Inspect a merge"),
         ("decode an update", "Inspect an update"),
-        ("signalr hub absolute url", "Getting started"),
+        ("signalr hub absolute url", "Register the services"),
         ("presence cursor", "Presence"),
         ("offline reconnect", "Offline and reconnection"),
         ("undo only my edits", "Undo"),
@@ -41,6 +41,8 @@ public partial class McpSearchTests
         ("BcrdtFormatException", "BcrdtFormatException"),
         ("presence timeout", "PresenceTimeout"),
         ("render coalescing", "BcrdtComponentBase"),
+        ("a text field two people can edit at once without losing either's words", "Binding to inputs"),
+        ("a text field two people can edit at once without losing either's words", "BcrdtTextArea"),
     ];
 
     [TestMethod]
@@ -85,6 +87,45 @@ public partial class McpSearchTests
             var result = await McpCall.StructuredAsync<BcrdtSearchResultDto>("SearchBcrdt", new() { ["query"] = query, ["limit"] = 50 });
 
             Assert.IsFalse(result.Hits.Any(hit => hit.Kind == "Guide section" && hit.Title is "MCP server" or "Contents"), query);
+        }
+    }
+
+    /// <summary>
+    /// A section is ranked by its own text, not by its sub-sections', which are hits of their own.
+    /// Counted with them, a parent holds the words of all of them - the architecture, 32 KB written for
+    /// contributors, was the first hit for questions about using the library put in plain words.
+    /// </summary>
+    [TestMethod]
+    public async Task A_section_is_not_ranked_by_the_text_of_its_sub_sections()
+    {
+        foreach (var query in new[] { "a text field two people can edit at once without losing either's words", "how do concurrent edits merge without losing data" })
+        {
+            var result = await McpCall.StructuredAsync<BcrdtSearchResultDto>("SearchBcrdt", new() { ["query"] = query, ["limit"] = 50 });
+
+            Assert.IsFalse(result.Hits.Any(hit => hit.Kind == "Guide section" && hit.Title == "Architecture"),
+                $"'{query}' ranked the architecture: {string.Join(" | ", result.Hits.Take(12).Select(hit => hit.Title))}");
+        }
+
+        // The section itself is still read whole, sub-sections included.
+        var architecture = await McpCall.TextAsync("GetBcrdtGuideSection", new() { ["heading"] = "Architecture" });
+
+        Assert.Contains("### The CRDT model", architecture);
+    }
+
+    /// <summary>
+    /// A guide section is named by the API its opening paragraph names, not by every name it lists: the
+    /// packages, the projects and the changes since the last release name half the API in passing, and
+    /// counted as their names they were among the first hits for questions they do not answer.
+    /// </summary>
+    [TestMethod]
+    public async Task A_section_is_not_named_by_the_api_it_lists()
+    {
+        foreach (var query in new[] { "presence cursor", "keep documents on the server", "sync between browser tabs", "how do I bind a form to a map", "websocket relay" })
+        {
+            var result = await McpCall.StructuredAsync<BcrdtSearchResultDto>("SearchBcrdt", new() { ["query"] = query, ["limit"] = 6 });
+
+            Assert.IsFalse(result.Hits.Any(hit => hit.Kind == "Guide section" && hit.Title is "Packages" or "Projects" or "Upgrading"),
+                $"'{query}' ranked a list of the API: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
         }
     }
 

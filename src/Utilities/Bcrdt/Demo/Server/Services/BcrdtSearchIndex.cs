@@ -12,7 +12,7 @@ namespace Bit.Bcrdt.Demo.Server.Services;
 /// the full text, so one search is enough to know what to ask for next.
 /// </para>
 /// </summary>
-public static class BcrdtSearchIndex
+public static partial class BcrdtSearchIndex
 {
     private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight)
     {
@@ -72,7 +72,7 @@ public static class BcrdtSearchIndex
     {
         "how", "the", "and", "for", "with", "from", "that", "this", "what", "when", "where", "which",
         "does", "did", "are", "was", "you", "your", "than", "then", "its", "but", "any", "some",
-        "please", "help", "about", "into", "way", "make", "want", "need", "would", "should", "could",
+        "please", "help", "about", "into", "way", "make", "want", "need", "would", "should", "could", "can", "will", "may", "might", "must",
         "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto"
     };
 
@@ -159,7 +159,10 @@ public static class BcrdtSearchIndex
     /// and the one with more material behind it would otherwise fill every place, leaving the
     /// caller to conclude the other has no answer. So for each word that is the name of some entry yet
     /// names none of the top hits, the best entry it does name takes the place of the lowest-ranked hit
-    /// that is not itself there for that reason. The order stays the ranking's.
+    /// that is not itself there for that reason and does not say the word itself. A hit that explains the
+    /// word in its text already keeps it in view, and swapping it for one that merely has the word in its
+    /// name loses an answer to gain nothing: "url" would trade the guide section on the hub's absolute URL
+    /// for an avatar's URL. The order stays the ranking's.
     /// </summary>
     private static (Entry Entry, int Score)[] Cover((Entry Entry, int Score)[] ranked, string[] terms, int take)
     {
@@ -175,8 +178,10 @@ public static class BcrdtSearchIndex
             var best = ranked.Skip(take).FirstOrDefault(hit => hit.Entry.TitleWords.Any(word => Equivalent(word, term)));
             if (best.Entry is null) continue;
 
-            var replace = top.FindLastIndex(hit => kept.Contains(hit.Entry) is false);
-            if (replace < 0) break;
+            var stem = Stem(term);
+            var replace = top.FindLastIndex(hit => kept.Contains(hit.Entry) is false
+                                                   && Count(hit.Entry.Title, stem) + Count(hit.Entry.Boosted, stem) + Count(hit.Entry.Body, stem) == 0);
+            if (replace < 0) continue;
 
             top[replace] = best;
             kept.Add(best.Entry);
@@ -218,7 +223,9 @@ public static class BcrdtSearchIndex
             // inside: "transports" has to count the "Transport" of IBcrdtTransport, and "replicas" every "replica".
             var stem = Stem(term);
             var inTitle = isTitleWord ? 0 : Count(entry.Title, stem);
-            var inBoosted = Count(entry.Boosted, stem);
+            // A section is named by a term once, however many of the names it opens with share it: one
+            // that opens on BcrdtText, BcrdtTextArea and BcrdtTextSynchronizer is not three times as much about "text".
+            var inBoosted = entry.Kind == "Guide section" ? Math.Min(Count(entry.Boosted, stem), 1) : Count(entry.Boosted, stem);
             var inBody = Count(entry.Body, stem);
 
             if (isTitleWord is false && inTitle + inBoosted + inBody == 0) continue;
@@ -397,10 +404,10 @@ public static class BcrdtSearchIndex
             // they are only kept out of the ranking.
             if (_metaSections.Contains(section.Key)) continue;
 
-            var body = BcrdtSourceCatalog.GetGuideSection(section.Key) ?? string.Empty;
+            var body = BcrdtSourceCatalog.GetGuideSectionOwnText(section.Key) ?? string.Empty;
 
             entries.Add(new Entry("Guide section", section.Heading, section.Parent,
-                $"GetBcrdtGuideSection(heading: \"{section.Key}\")", body, string.Empty));
+                $"GetBcrdtGuideSection(heading: \"{section.Key}\")", body, NamesIn(body)));
         }
 
         foreach (var type in BcrdtApiCatalog.Types)
@@ -458,6 +465,45 @@ public static class BcrdtSearchIndex
 
         return [.. entries];
     }
+
+    /// <summary>
+    /// The API a guide section's opening paragraph names - <c>`BcrdtText`</c>, <c>`BcrdtMap`</c> - which a
+    /// section is named by the way a member is named by its signature. Without them a heading is the only
+    /// name a section has, so a question about a "text field" ranked every member with "Text" in its name
+    /// above the section on binding text inputs to a <c>BcrdtText</c>.
+    /// <para>
+    /// Only the opening paragraph, and only when it is prose, because that is where a section says what
+    /// it is about; further down it names whatever it touches. A section that lists the packages, or the
+    /// changes since the last release, names half the API in passing - in a table or a list, often from
+    /// its first line - and would then be named by every question.
+    /// </para>
+    /// </summary>
+    private static string NamesIn(string body)
+    {
+        var paragraph = body.Split('\n')
+            .Skip(1) // the heading
+            .SkipWhile(string.IsNullOrWhiteSpace)
+            .TakeWhile(line => string.IsNullOrWhiteSpace(line) is false)
+            .ToArray();
+
+        // A table, a list, a quote or a code block, rather than a sentence.
+        if (paragraph.Length == 0 || paragraph[0].TrimStart() is ['|' or '-' or '*' or '>', ..] || paragraph[0].TrimStart().StartsWith("```", StringComparison.Ordinal)) return string.Empty;
+
+        var lead = string.Join(' ', paragraph);
+
+        return string.Join(' ', CodeSpanRegex().Matches(lead)
+            .Select(match => match.Groups["name"].Value)
+            .Distinct(StringComparer.Ordinal));
+    }
+
+    /// <summary>
+    /// An inline code span holding a name rather than code: a type or a member, qualified or not,
+    /// optionally called or generic - <c>`BcrdtText`</c>, <c>`Sync.LastSyncedAt`</c>, <c>`ConnectAsync()`</c>,
+    /// <c>`BcrdtListBinding&lt;T&gt;`</c>. A span starting lower-case is code (<c>`document.Text("body")`</c>,
+    /// <c>`null`</c>) unless it is qualified, and a fenced block never matches because its fence is three backticks.
+    /// </summary>
+    [System.Text.RegularExpressions.GeneratedRegex(@"(?<!`)`(?<name>(?:[A-Z]\w*|[a-z]\w*(?=\.))(?:\.\w+)*)(?:<[\w, ]+>)?(?:\(\))?`(?!`)")]
+    private static partial System.Text.RegularExpressions.Regex CodeSpanRegex();
 
     /// <summary>
     /// The query without the words that are true of everything here - unless that is all it said,
