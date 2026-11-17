@@ -669,14 +669,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public Func<DateTimeOffset, bool>? IsDateDisabled { get; set; }
 
     /// <summary>
-    /// Whether the month picker is shown next to the day picker or hidden.
-    /// It has no effect in the MonthPicker and YearPicker modes, where the month or the year picker is the only view.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public bool IsMonthPickerVisible { get; set; } = true;
-
-    /// <summary>
     /// Whether or not the DatePicker's callout is open
     /// </summary>
     [Parameter, ResetClassBuilder, TwoWayBound]
@@ -963,6 +955,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// Whether the GoToToday button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowGoToToday { get; set; } = true;
+
+    /// <summary>
+    /// Whether the month picker is shown next to the day picker or hidden.
+    /// It has no effect in the MonthPicker and YearPicker modes, where the month or the year picker is the only view.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool ShowMonthPicker { get; set; } = true;
 
     /// <summary>
     /// Show month picker on top of date picker when visible.
@@ -2713,11 +2713,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             _focusedDate = GetFocusableDay();
             _focusElementIdAfterRender = GetDayButtonId(_focusedDate.Value);
         }
-        else if (ShowMonthPicker() && ShowMonthGrid)
+        else if (MonthPickerIsVisible() && ShowMonthGrid)
         {
             FocusMonthCell(GetFocusableMonth());
         }
-        else if (ShowMonthPicker())
+        else if (MonthPickerIsVisible())
         {
             FocusYearCell(GetFocusableYear());
         }
@@ -3137,7 +3137,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // BitCalendar.GetMonthTitleId.
     private string? GetMonthTitleId(int monthIndex)
     {
-        if (monthIndex == 0 && IsMonthPickerVisible && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && ShowTimePickerAsOverlay is false))) return null;
+        if (monthIndex == 0 && ShowMonthPicker && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && ShowTimePickerAsOverlay is false))) return null;
 
         return FormattableString.Invariant($"{_datePickerId}-title-{monthIndex}");
     }
@@ -3991,14 +3991,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             _focusedDate = GetFocusableDay();
             _focusElementIdAfterRender = GetDayButtonId(_focusedDate.Value);
         }
-        else if (ShowMonthPicker() && ShowMonthGrid)
+        else if (MonthPickerIsVisible() && ShowMonthGrid)
         {
             // With no day picker on screen (the MonthPicker mode, or the month picker as an overlay)
             // the month grid is what the callout opens onto.
             _focusedMonthCell = GetFocusableMonth();
             _focusElementIdAfterRender = GetMonthButtonId(_focusedMonthCell.Value);
         }
-        else if (ShowMonthPicker())
+        else if (MonthPickerIsVisible())
         {
             // The YearPicker opens onto its year grid.
             FocusYearCell(GetFocusableYear());
@@ -4091,13 +4091,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
     }
 
-    private bool ShowMonthPicker()
+    private bool MonthPickerIsVisible()
     {
         if (Mode != BitDatePickerMode.DatePicker) return true;
 
         // The month picker of the MonthPicker mode is the whole component, so only the one that sits
         // next to (or on top of) the day picker can be turned off.
-        if (IsMonthPickerVisible is false) return false;
+        if (ShowMonthPicker is false) return false;
 
         if (ShowTimePicker)
         {
@@ -4130,7 +4130,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // A hidden month picker must not take the day picker's place as an overlay either, so the
         // overlay mode is only entered while the month picker is actually rendered.
         _showMonthPickerAsOverlayInternal = Mode != BitDatePickerMode.DatePicker ||
-                                            (ShowMonthPickerAsOverlay && IsMonthPickerVisible);
+                                            (ShowMonthPickerAsOverlay && ShowMonthPicker);
         _isTimePickerOverlayOnTop = false;
         _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
         _focusedYearCell = null;

@@ -5,6 +5,23 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `IsMonthPickerVisible` is `ShowMonthPicker` on `BitDatePicker` and `BitDateRangePicker` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own setting is spelled without an `Is`, and the switch that shows or hides a part of a component is
+spelled `Show...` (`ShowGoToToday`, `ShowTimePicker`, `ShowMonthPickerAsOverlay`). The two pickers' month picker
+switch was spelled `IsMonthPickerVisible`; it takes the name `BitCalendar` already gives the same setting, with its
+counterpart on `BitDatePickerParams` and `BitDateRangePickerParams`:
+
+| Before | After |
+|---|---|
+| `<BitDatePicker IsMonthPickerVisible="false" />` | `<BitDatePicker ShowMonthPicker="false" />` |
+| `<BitDateRangePicker IsMonthPickerVisible="false" />` | `<BitDateRangePicker ShowMonthPicker="false" />` |
+| `new BitDatePickerParams { IsMonthPickerVisible = false }` | `new BitDatePickerParams { ShowMonthPicker = false }` |
+| `new BitDateRangePickerParams { IsMonthPickerVisible = false }` | `new BitDateRangePickerParams { ShowMonthPicker = false }` |
+
+What it does and its default (`true`) are unchanged. An `IsMonthPickerVisible="false"` left on a picker still builds
+and is ignored, so the month picker shows again; search for the name when upgrading.
+
 ### `BitDialog`'s `IsDraggable` is `Draggable`, and its `IsOkButtonEnabled` and `IsCancelButtonEnabled` are `OkButtonDisabled` and `CancelButtonDisabled` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own setting is spelled without an `Is` (`Disabled`, `Blocking`, `Alert`), and three of the dialog's

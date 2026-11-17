@@ -745,13 +745,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public Func<DateTimeOffset, bool>? IsDateDisabled { get; set; }
 
     /// <summary>
-    /// Whether the month picker is shown or hidden.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public bool IsMonthPickerVisible { get; set; } = true;
-
-    /// <summary>
     /// Whether or not the DateRangePicker's callout is open.
     /// </summary>
     [Parameter, TwoWayBound, ResetClassBuilder]
@@ -1018,6 +1011,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// Whether the GoToToday button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowGoToToday { get; set; } = true;
+
+    /// <summary>
+    /// Whether the month picker is shown or hidden.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool ShowMonthPicker { get; set; } = true;
 
     /// <summary>
     /// Show month picker on top of date range picker when visible.
@@ -1924,7 +1924,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = IsMonthPickerVisible && notEnoughWidthAvailable;
+            _showMonthPickerAsOverlayInternal = ShowMonthPicker && notEnoughWidthAvailable;
         }
 
         if (_showMonthPickerAsOverlayInternal)
@@ -1944,7 +1944,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (_showMonthPickerAsOverlayInternal is false &&
             _showTimePickerAsOverlayInternal is false &&
-            ShowTimePicker && IsMonthPickerVisible)
+            ShowTimePicker && ShowMonthPicker)
         {
             _showMonthPickerAsOverlayInternal = true;
         }
@@ -2174,7 +2174,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
             if (_showMonthPickerAsOverlayInternal is false &&
                 _showTimePickerAsOverlayInternal is false &&
-                ShowTimePicker && IsMonthPickerVisible)
+                ShowTimePicker && ShowMonthPicker)
             {
                 _showMonthPickerAsOverlayInternal = true;
             }
@@ -3250,7 +3250,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     // BitCalendar.GetMonthTitleId.
     private string? GetMonthTitleId(int monthIndex)
     {
-        if (monthIndex == 0 && IsMonthPickerVisible && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false))) return null;
+        if (monthIndex == 0 && ShowMonthPicker && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false))) return null;
 
         return FormattableString.Invariant($"{_dateRangePickerId}-title-{monthIndex}");
     }
@@ -3454,11 +3454,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             _focusedDate = GetFocusableDay();
             _focusAfterRender = true;
         }
-        else if (ShowMonthPicker() && _showMonthPicker)
+        else if (MonthPickerIsVisible() && _showMonthPicker)
         {
             FocusMonthCell(GetFocusableMonth());
         }
-        else if (ShowMonthPicker())
+        else if (MonthPickerIsVisible())
         {
             FocusYearCell(GetFocusableYear());
         }
@@ -4174,7 +4174,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private bool ShowDayPicker()
     {
-        if (IsMonthPickerVisible is false)
+        if (ShowMonthPicker is false)
         {
             return _showTimePickerAsOverlayInternal is false || _isTimePickerOverlayOnTop is false;
         }
@@ -4204,9 +4204,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
     }
 
-    private bool ShowMonthPicker()
+    private bool MonthPickerIsVisible()
     {
-        if (IsMonthPickerVisible is false) return false;
+        if (ShowMonthPicker is false) return false;
 
         if (ShowTimePicker)
         {
@@ -4417,7 +4417,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _hoveredDate = null;
         _showMonthPicker = true;
         _isMonthPickerOverlayOnTop = false;
-        _showMonthPickerAsOverlayInternal = IsMonthPickerVisible && ShowMonthPickerAsOverlay;
+        _showMonthPickerAsOverlayInternal = ShowMonthPicker && ShowMonthPickerAsOverlay;
         _isTimePickerOverlayOnTop = false;
         _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
     }

@@ -557,13 +557,6 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "IsMonthPickerVisible",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the month picker is shown or hidden.",
-        },
-        new()
-        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -890,6 +883,13 @@ public partial class BitDateRangePickerDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the GoToToday button should be shown or not."
+        },
+        new()
+        {
+            Name = "ShowMonthPicker",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the month picker is shown or hidden.",
         },
         new()
         {

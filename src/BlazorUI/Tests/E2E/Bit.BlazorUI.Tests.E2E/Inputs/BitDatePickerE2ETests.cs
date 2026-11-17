@@ -464,7 +464,7 @@ public class BitDatePickerE2ETests : BitDatePickersE2ETestBase
     }
 
     [TestMethod]
-    public async Task MonthPicker_HiddenByIsMonthPickerVisible_LeavesTheDayPickerAlone()
+    public async Task MonthPicker_HiddenByShowMonthPicker_LeavesTheDayPickerAlone()
     {
         await OpenAsync(Route);
 
