@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Reflection;
 using System.Globalization;
 using System.Collections.Concurrent;
@@ -133,7 +133,8 @@ public static class BmotionApiCatalog
                                      // by ulong has members that do not fit in an Int64.
                                      Default = Format(field.GetRawConstantValue()),
                                      Summary = BmotionXmlDocs.GetSummary(DocumentationId(field)),
-                                     Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(field))
+                                     Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(field)),
+                                     DeclaringType = type.FullName
                                  }));
         }
         else
@@ -208,7 +209,8 @@ public static class BmotionApiCatalog
                 Default = DefaultValueOf(property, instance),
                 Required = property.IsDefined(typeof(EditorRequiredAttribute), inherit: true),
                 Summary = BmotionXmlDocs.GetSummary(DocumentationId(property)),
-                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(property))
+                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(property)),
+                DeclaringType = property.DeclaringType?.FullName
             };
         }
     }
@@ -229,7 +231,8 @@ public static class BmotionApiCatalog
                 Type = FriendlyName(field.FieldType),
                 Default = field.IsLiteral ? Format(field.GetRawConstantValue()) : null,
                 Summary = BmotionXmlDocs.GetSummary(DocumentationId(field)),
-                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(field))
+                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(field)),
+                DeclaringType = field.DeclaringType?.FullName
             };
         }
     }
@@ -263,7 +266,8 @@ public static class BmotionApiCatalog
                 Type = FriendlyName(method.ReturnType),
                 Signature = signature,
                 Summary = summary,
-                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(method))
+                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(method)),
+                DeclaringType = method.DeclaringType?.FullName
             };
         }
     }
@@ -282,7 +286,8 @@ public static class BmotionApiCatalog
                 Kind = "Event",
                 Type = FriendlyName(member.EventHandlerType ?? typeof(void)),
                 Summary = BmotionXmlDocs.GetSummary(DocumentationId(member)),
-                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(member))
+                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(member)),
+                DeclaringType = member.DeclaringType?.FullName
             };
         }
     }

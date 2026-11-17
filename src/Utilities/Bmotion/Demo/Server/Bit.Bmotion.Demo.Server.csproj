@@ -25,6 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The MCP tests reach the shared ranking itself, to pin its rules down on a corpus of their own. -->
+    <InternalsVisibleTo Include="Bit.Bmotion.Tests.Mcp" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Bit.Bmotion" />
     <Using Include="Microsoft.AspNetCore.Mvc" />
   </ItemGroup>

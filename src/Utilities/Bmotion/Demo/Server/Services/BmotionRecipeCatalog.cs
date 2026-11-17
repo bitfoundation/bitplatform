@@ -23,9 +23,7 @@ public static class BmotionRecipeCatalog
             Id = "fade-in-on-mount",
             Title = "Fade and slide in on mount",
             Intent = "Make an element appear smoothly when the page or component first renders.",
-            // What is faded in is named as often as the fade: "fade a list item in", "slide a card in". One
-            // element of any kind is this recipe; only a whole list in sequence is staggered-list.
-            Keywords = "fade in enter mount appear entrance intro initial animate slide up first render single item card row",
+            Keywords = "fade in enter mount appear entrance intro initial animate slide up first render",
             SeeAlso = "/basic",
             Code = """
                 <Bmotion Initial="Bm.To(opacity: 0, y: 20)"

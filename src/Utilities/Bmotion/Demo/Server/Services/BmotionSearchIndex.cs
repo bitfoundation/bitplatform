@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Bit.Bmotion.Demo.Server.Dtos;
 using Bit.Bmotion.Demo.Client;
 using Bit.Utilities.Mcp;
@@ -22,7 +21,7 @@ namespace Bit.Bmotion.Demo.Server.Services;
 /// is about ("fade").
 /// </para>
 /// </summary>
-public static partial class BmotionSearchIndex
+public static class BmotionSearchIndex
 {
     /// <summary>
     /// The words that separate nothing here. Every entry is about animating something in Bmotion, so
@@ -38,6 +37,14 @@ public static partial class BmotionSearchIndex
         "can", "will", "wont", "isnt", "doesnt", "instead", "still", "just", "only", "even"
     ];
 
+    /// <summary>
+    /// What a request calls the one element it animates: "fade a list item in" and "slide the card in" ask for what
+    /// fades or slides one element in, not for the staggered list or the reorder group's Items, which "list" and
+    /// "item" would otherwise name. Said of one thing they are dropped; "items", "each list item" and "one item at a
+    /// time" are about the items of a list, and stay questions about the list.
+    /// </summary>
+    private static readonly string[] _ambientNouns = ["item", "list item", "card", "row", "tile"];
+
     // Not readonly: a Lazy<Task> holds on to a faulted task, which would answer every later search
     // with the exception the first one hit. Replacing it lets the next search build the index again.
     // Built asynchronously because two of the catalogs it indexes run the engine to describe themselves.
@@ -48,11 +55,7 @@ public static partial class BmotionSearchIndex
     {
         if (string.IsNullOrWhiteSpace(query)) return [];
 
-        var search = await GetSearchAsync();
-
-        // Said with nothing else, "an item" is all there is to search by, and it is searched as it is.
-        var result = search.Search(OneItem().Replace(query, " "), limit);
-        if (result.Terms.Length == 0) result = search.Search(query, limit);
+        var result = (await GetSearchAsync()).Search(query, limit);
 
         return [.. result.Hits.Select(hit => new BmotionSearchHitDto
         {
@@ -63,16 +66,6 @@ public static partial class BmotionSearchIndex
             Snippet = hit.Snippet
         })];
     }
-
-    /// <summary>
-    /// "An item" or "a list item", in the singular, is one element, and an element is what everything here
-    /// animates: "fade an item in" and "fade a list item in" ask for what fades one element in, not for the
-    /// staggered list or the reorder group's Items, which "list" and "item" would otherwise name. "Items",
-    /// "each item" and "one item at a time" are about the items of a list, and stay questions about the list.
-    /// </summary>
-    [GeneratedRegex(@"\b(?:(?:an?|the)\s+(?:single\s+)?(?:list[\s-]+)?item|list[\s-]+item)\b(?![\s-]*key)",
-                    RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
-    private static partial Regex OneItem();
 
     private static async Task<McpSearch> GetSearchAsync()
     {
@@ -95,7 +88,7 @@ public static partial class BmotionSearchIndex
     {
         McpSearchEntry[] entries = [.. await BuildEntriesAsync()];
 
-        return new McpSearch(() => entries, _ambientWords, searchAmbientAlone: false);
+        return new McpSearch(() => entries, _ambientWords, searchAmbientAlone: false, ambientNouns: _ambientNouns, preferExactNames: true);
     }
 
     private static async Task<List<McpSearchEntry>> BuildEntriesAsync()
@@ -168,12 +161,13 @@ public static partial class BmotionSearchIndex
                 var body = string.Join(' ', overloads.Select(o => $"{o.Summary} {o.Remarks}".Trim()).Where(text => text.Length > 0).Distinct(StringComparer.Ordinal));
                 var signatures = string.Join(' ', overloads.Select(o => $"{o.Type} {o.Signature}".Trim()).Where(text => text.Length > 0).Distinct(StringComparer.Ordinal));
 
-                // An inherited member documented once - ChildStagger on every transition type, say - is one
-                // answer, not four: left in, the copies push everything else off the page. They stay indexed
-                // on every type, so the copy a query names its type for ("BmSpring ChildStagger") is the one
-                // it finds. An undocumented member says nothing to tell the copies apart from different
-                // members of one name.
-                var sameAs = body.Length > 0 ? $"{kind}\n{member.Name}\n{body}" : null;
+                // An inherited member - ChildStagger on every transition type, say - is one answer, not four:
+                // left in, the copies push everything else off the page. They stay indexed on every type, so
+                // the copy a query names its type for ("BmSpring ChildStagger") is the one it finds. Keyed by
+                // the types that declare it, not by what its documentation says: two members of one name that
+                // share a stock sentence ("Style" on two components) are still two answers.
+                string[] declaredBy = [.. overloads.Select(o => o.DeclaringType).OfType<string>().Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+                var sameAs = declaredBy.Length > 0 ? $"{member.Kind}:{string.Join('+', declaredBy)}.{member.Name}" : null;
 
                 // Named by the member alone: "TItem" of "BmotionReorderGroup<TItem>.Items" and the words of
                 // the type's own name say where the member lives, which every other member of the type shares.
@@ -195,8 +189,10 @@ public static partial class BmotionSearchIndex
 
         foreach (var easing in await BmotionEasingCatalog.GetAsync())
         {
+            // Named by the preset alone, as a member is: "EaseInOut" is the preset's name, and "BmEase" the
+            // type every preset shares.
             entries.Add(new McpSearchEntry("Easing preset", $"BmEase.{easing.Name}", easing.Family,
-                "GetBmotionEasings()", easing.Feel, $"{easing.Direction} {easing.Family}"));
+                "GetBmotionEasings()", easing.Feel, $"{easing.Direction} {easing.Family}", Name: easing.Name));
         }
 
         // The demo pages and their sources are examples, not answers: a page is the whole of a
