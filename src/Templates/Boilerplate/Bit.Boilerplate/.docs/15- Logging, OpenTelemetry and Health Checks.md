@@ -135,15 +135,15 @@ The logging configuration is centralized in [`src/Shared/appsettings.json`](/src
   "ApplicationInsights": {
     "ConnectionString": null
   },
+  "Sentry": {
+    "Dsn": ""
+  },
   "Logging": {
     "LogLevel": {
       "Default": "Warning",
       "Microsoft.Hosting.Lifetime": "Information",
       "Microsoft.EntityFrameworkCore.Database.Command": "Information",
       "Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware": "None"
-    },
-    "Sentry": {
-      "Dsn": ""
     },
     "Belemetry": {
       "LogLevel": {
@@ -234,7 +234,7 @@ public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [Fr
 
 ### 🖥️ Server Applications
 
-Every project sends its telemetry through [bit Belemetry](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Belemetry): logs, traces and metrics over OTLP (the Aspire dashboard, Grafana, Datadog, New Relic etc.) and to Azure Application Insights, and errors to Sentry as Issues. [`ConfigureAppTelemetry`](../src/Shared/Infrastructure/Extensions/BelemetryOptionsExtensions.cs) adds each exporter whose setting is there: `OTEL_EXPORTER_OTLP_ENDPOINT`, `ApplicationInsights:ConnectionString` or `Logging:Sentry:Dsn`.
+Every project sends its telemetry through [bit Belemetry](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Belemetry): logs, traces and metrics over OTLP (the Aspire dashboard, Grafana, Datadog, New Relic etc.) and to Azure Application Insights, and errors to Sentry as Issues. [`ConfigureAppTelemetry`](../src/Shared/Infrastructure/Extensions/BelemetryOptionsExtensions.cs) adds each exporter whose setting is there: `OTEL_EXPORTER_OTLP_ENDPOINT`, `ApplicationInsights:ConnectionString` or `Sentry:Dsn`.
 
 * **Server.Api** and **Server.Web**
 
@@ -411,6 +411,10 @@ provider outage does not take an otherwise healthy instance out of the load bala
 <!--#if (cloudflare == true)-->
 - **`cloudflare`**: purges a cache tag nothing carries, through the same call content changes use.
 <!--#endif-->
+<!--#if (sentry == true)-->
+- **`sentry`**: posts an empty client report, which creates no event, to the envelope endpoint of `Sentry:Dsn`. It fails
+  when Sentry rejects the key or the project, and when Sentry is dropping the app's errors over a quota or rate limit.
+<!--#endif-->
 - **`entraId`**: reads the tenant's discovery document, then asks for an app-only token, sending the secret only to an
   https token endpoint on the authority's own origin. Only a token, `invalid_scope` or `invalid_resource` passes, so
   `unauthorized_client` (unknown client id), `invalid_client` (wrong secret) and throttling all fail the check.
@@ -441,6 +445,9 @@ In development, `sms`, `keycloakIdentity`,
 <!--#if (cloudflare == true)-->
 `cloudflare`,
 <!--#endif-->
+<!--#if (sentry == true)-->
+`sentry`,
+<!--#endif-->
 `entraId`, `appleSignIn`, `firebase`, `apns`
 and the AI checks are registered only when their settings are present. In any other environment they are always
 registered, and one without settings reports Degraded with "... is not configured", and `/healthz` marks its entry
@@ -460,6 +467,9 @@ missing, reporting Degraded the same way.
 `smtp`, `emailDelivery`, `websites`, `firebase`, `apns`,
 <!--#if (cloudflare == true)-->
 `cloudflare`,
+<!--#endif-->
+<!--#if (sentry == true)-->
+`sentry`,
 <!--#endif-->
 the sign-in checks, `reCaptcha` and the AI checks are registered with
 `AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`, 30 seconds for `websites`, 30 minutes for

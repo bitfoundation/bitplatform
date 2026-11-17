@@ -28,6 +28,9 @@ public class HealthCheckDescriptions : Dictionary<string, HealthCheckDescription
         //#endif
         this["serverApi"] = new("Server API", "PlugConnected", "Server.Web reaches the API it prerenders with and forwards to.");
         this["bitFabric"] = new("bit Fabric", "View", "bit Fabric is connected, so these checks are read from outside the server.");
+        //#if (sentry == true)
+        this["sentry"] = new("Sentry", "Bug", "Sentry accepts the DSN and isn't dropping the app's errors over a quota or rate limit.");
+        //#endif
 
         this["smtp"] = new("Email", "Mail", "Signs in to the SMTP server without sending anything.");
         this["emailDelivery"] = new("Email sender domain", "MailCheck", "The sender's domain has SPF and DMARC records, so mail can reach inboxes rather than spam.");

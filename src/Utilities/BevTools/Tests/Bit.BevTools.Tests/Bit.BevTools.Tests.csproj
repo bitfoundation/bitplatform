@@ -18,7 +18,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MSTest" Version="4.5.2" />
+        <PackageReference Include="MSTest" Version="4.5.3" />
         <PackageReference Include="bunit" Version="2.15.2" />
         <!-- DbCommandsTests: what Entity Framework Core really logs for its commands, against an in-memory SQLite database. -->
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.15" />

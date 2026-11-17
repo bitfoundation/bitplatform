@@ -162,7 +162,7 @@ public static class IDistributedApplicationBuilderExtensions
                 return builder;
 
             builder.CreateResourceBuilder(dbGate)
-                .WithImageTag("7.3.4")
+                .WithImageTag("7.3.6")
                 .WithDataVolume()
                 .WithExplicitStart();
             //#if (redis == true)

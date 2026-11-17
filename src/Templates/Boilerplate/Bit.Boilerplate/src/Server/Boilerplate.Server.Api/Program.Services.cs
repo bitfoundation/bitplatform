@@ -130,10 +130,13 @@ public static partial class Program
         services.AddScoped<ProductEmbeddingService>();
         //#endif
         //#endif
-        var smsBridge = services.AddSmsBridge(configuration.GetSection("Sms"));
         if (appSettings.Sms?.Configured is true)
         {
-            smsBridge.UseTwilio("Twilio", twilio => configuration.GetSection("Sms:Providers:Twilio").Bind(twilio));
+            services.AddSmsBridge(configuration.GetSection("Sms"));
+        }
+        else
+        {
+            services.AddSmsBridge(options => configuration.GetSection("Sms").Bind(options));
         }
 
         services.AddSingleton(_ => PhoneNumberUtil.GetInstance());
@@ -1095,6 +1098,11 @@ public static partial class Program
         //#if (cloudflare == true)
         AddCachedCheckIfConfigured("cloudflare", HealthCheckCategories.Platform, appSettings.Cloudflare?.Configured is true, "Cloudflare",
             sp => ActivatorUtilities.CreateInstance<CloudflareHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+        //#endif
+
+        //#if (sentry == true)
+        AddCachedCheckIfConfigured("sentry", HealthCheckCategories.Integrations, string.IsNullOrWhiteSpace(configuration["Sentry:Dsn"]) is false, "Sentry:Dsn",
+            sp => ActivatorUtilities.CreateInstance<SentryHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];

@@ -1006,6 +1006,7 @@
                         "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
                         "src/Tests/Features/Diagnostics/DeploymentConfigurationTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckRulesTests.cs",
+                        "src/Tests/Features/Diagnostics/SentryHealthCheckTests.cs",
                         "src/Tests/Features/Diagnostics/DiagnosticTestMessagesTests.cs",
                         "src/Tests/Features/Identity/ExternalSignInHealthChecksTests.cs",
                         "src/Tests/Features/Identity/GoogleRecaptchaHealthCheckTests.cs",
@@ -1172,6 +1173,13 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Services/CloudflarePurgeResponse.cs",
                         "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/CloudflareHealthCheck.cs"
+                    ]
+                },
+                {
+                    "condition": "(sentry != true)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/SentryHealthCheck.cs",
+                        "src/Tests/Features/Diagnostics/SentryHealthCheckTests.cs"
                     ]
                 },
                 {
