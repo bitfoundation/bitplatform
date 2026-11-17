@@ -431,6 +431,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     public BitInputMode? InputMode { get; set; }
 
     /// <summary>
+    /// Makes only the text input part read-only, preventing typing, while the value can still be
+    /// changed using the increment/decrement buttons, the arrow keys and the mouse wheel
+    /// (unlike ReadOnly, which blocks all of them).
+    /// </summary>
+    [Parameter] public bool InputReadOnly { get; set; }
+
+    /// <summary>
     /// Marks the field as invalid without a message of its own, for a rejection that is already explained
     /// elsewhere (a summary at the top of the form, a message beside a group of fields). It paints the field
     /// and renders aria-invalid exactly as a failing validation does, and says nothing more to a screen reader
@@ -444,13 +451,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// (the wheel only changes the value while the Shift key is held down, to keep normal page scrolling intact).
     /// </summary>
     [Parameter] public bool InvertMouseWheel { get; set; }
-
-    /// <summary>
-    /// Makes only the text input part read-only, preventing typing, while the value can still be
-    /// changed using the increment/decrement buttons, the arrow keys and the mouse wheel
-    /// (unlike ReadOnly, which blocks all of them).
-    /// </summary>
-    [Parameter] public bool IsInputReadOnly { get; set; }
 
     /// <summary>
     /// Descriptive label for the number field, rendered next to it (per LabelPlacement) and read by screen readers.
@@ -1534,7 +1534,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     // The spinbutton role replaces the native role of the input, and with it the readonly attribute's own
     // mapping into the accessibility tree, so the state is written out - the same reasoning that writes out
-    // aria-required. IsInputReadOnly is deliberately not included: it only stops the text being typed into,
+    // aria-required. InputReadOnly is deliberately not included: it only stops the text being typed into,
     // while the arrows and the buttons go on changing the value, so the widget is not read-only at all.
     private string? AriaReadOnly => ReadOnly ? "true" : GetSplattedInputAttribute("aria-readonly");
 

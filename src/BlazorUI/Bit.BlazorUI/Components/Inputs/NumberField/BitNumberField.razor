@@ -166,7 +166,7 @@
                    @bind-value:event="@(Immediate ? "oninput" : "onchange")"
                    name="@Name"
                    id="@_inputId"
-                   readonly="@(ReadOnly || IsInputReadOnly)"
+                   readonly="@(ReadOnly || InputReadOnly)"
                    data-bit-esc="@(ClearsOnEscape() ? "claim" : null)"
                    data-bit-focus-value="@GetPlainText()"
                    required="@Required"

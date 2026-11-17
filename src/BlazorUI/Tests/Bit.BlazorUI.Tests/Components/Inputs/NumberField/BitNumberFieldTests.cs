@@ -2525,11 +2525,11 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNumberFieldIsInputReadOnlyShouldBlockTypingButNotStepping()
+    public void BitNumberFieldInputReadOnlyShouldBlockTypingButNotStepping()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.IsInputReadOnly, true);
+            parameters.Add(p => p.InputReadOnly, true);
             parameters.Add(p => p.DefaultValue, 1);
         });
 
@@ -3363,7 +3363,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         // Only the text is protected here - the buttons, the arrows and the wheel still change the value,
         // so the widget is not read-only.
-        var inputReadOnly = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.IsInputReadOnly, true));
+        var inputReadOnly = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.InputReadOnly, true));
         Assert.IsNull(inputReadOnly.Find("input").GetAttribute("aria-readonly"));
         Assert.IsTrue(inputReadOnly.Find("input").HasAttribute("readonly"));
     }

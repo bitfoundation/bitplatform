@@ -5,6 +5,20 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitNumberField`'s `IsInputReadOnly` is `InputReadOnly` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own setting is spelled without an `Is`, and the number field's switch that stops the typing but
+leaves the stepping was spelled `IsInputReadOnly`. It drops the `Is` and keeps the `Input` the field's `HideInput` and
+`InputMode` start with, with its counterpart on `BitNumberFieldParams`:
+
+| Before | After |
+|---|---|
+| `<BitNumberField IsInputReadOnly />` | `<BitNumberField InputReadOnly />` |
+| `new BitNumberFieldParams { IsInputReadOnly = true }` | `new BitNumberFieldParams { InputReadOnly = true }` |
+
+What it does and its default (`false`) are unchanged. An `IsInputReadOnly` left on a field still builds and is
+ignored, so the field can be typed into again; search for the name when upgrading.
+
 ### `IsMonthPickerVisible` is `ShowMonthPicker` on `BitDatePicker` and `BitDateRangePicker` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own setting is spelled without an `Is`, and the switch that shows or hides a part of a component is
