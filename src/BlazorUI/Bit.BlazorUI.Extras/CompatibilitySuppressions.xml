@@ -416,6 +416,34 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFcDayCell.get_IsLastColumn</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFcDayCell.get_IsRovingCell</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFcDayCell.set_IsLastColumn(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFcDayCell.set_IsRovingCell(System.Boolean)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitFullCalendarChangeNotifier.get_RefusalReporter</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>

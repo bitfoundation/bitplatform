@@ -26,22 +26,22 @@ public partial class BitFcDayCell
     /// marks it because the grid is not always seven wide: a work week narrows it and the
     /// week-number rail adds a leading child to every row.
     /// </summary>
-    [Parameter] public bool IsLastColumn { get; set; }
+    [Parameter] public bool LastColumn { get; set; }
 
-    /// <summary>
-    /// True while this cell owns the month grid's single tab stop. The month view moves it with the
-    /// arrow keys so the grid never puts one stop in the tab order per day.
-    /// </summary>
-    [Parameter] public bool IsRovingCell { get; set; }
+    /// <summary>Raised for every key pressed on the cell's roving tab stop, together with this cell's date.</summary>
+    [Parameter] public EventCallback<(DateTime Date, KeyboardEventArgs Args)> OnCellKeyDown { get; set; }
 
     /// <summary>
     /// True for the first day a week row shows (its leading column, or the first day after the blanked days of a
     /// neighbouring month), where a multi-day event that began earlier starts the row's run of its bar.
     /// </summary>
-    [Parameter] public bool IsRowStart { get; set; }
+    [Parameter] public bool RowStart { get; set; }
 
-    /// <summary>Raised for every key pressed on the cell's roving tab stop, together with this cell's date.</summary>
-    [Parameter] public EventCallback<(DateTime Date, KeyboardEventArgs Args)> OnCellKeyDown { get; set; }
+    /// <summary>
+    /// True while this cell owns the month grid's single tab stop. The month view moves it with the
+    /// arrow keys so the grid never puts one stop in the tab order per day.
+    /// </summary>
+    [Parameter] public bool TabStop { get; set; }
 
     private bool _showEventList;
 
@@ -112,7 +112,7 @@ public partial class BitFcDayCell
     /// </summary>
     private bool IsLeadSegment(BitFullCalendarEvent ev, string position)
     {
-        if (IsRowStart || position is "first" or "none")
+        if (RowStart || position is "first" or "none")
             return true;
 
         var previousShown = Cell.Date.Date.AddDays(-1);
