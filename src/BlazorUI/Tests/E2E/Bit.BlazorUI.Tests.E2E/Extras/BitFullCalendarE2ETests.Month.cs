@@ -99,7 +99,7 @@ public partial class BitFullCalendarE2ETests
 
         await Expect(badge).ToHaveClassAsync(HasClass("dot-variant"));
         await Expect(badge.Locator(".bit-bfc-event-badge-time")).ToHaveTextAsync("9:00 AM");
-        await Expect(badge).ToHaveAttributeAsync("aria-label", "Morning, 7/16/2025 9:00 AM - 7/16/2025 10:00 AM");
+        await Expect(badge).ToHaveAttributeAsync("aria-label", "Morning, 9:00 AM - 10:00 AM, 7/16/2025");
         await Expect(badge.Locator(".bit-bfc-bullet")).ToHaveCSSAsync("background-color", "rgb(168, 85, 247)");
         await Expect(Badge(cal, "d2").Locator(".bit-bfc-bullet")).ToHaveCSSAsync("background-color", "rgb(249, 115, 22)");
         await Expect(Badge(cal, "d2").Locator(".bit-bfc-event-badge-time")).ToHaveTextAsync("7:00 PM");
