@@ -41,8 +41,8 @@
         <DemoExample Title="Buttons" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
                 <b>OkText</b> and <b>CancelText</b> relabel the actions - name what happens rather than "Ok". <b>ShowOkButton</b>,
-                <b>ShowCancelButton</b> and <b>ShowCloseButton</b> remove one each. <b>IsOkButtonEnabled</b> (and
-                <b>IsCancelButtonEnabled</b>) holds a button shut until the answer exists, while every other way out keeps working.
+                <b>ShowCancelButton</b> and <b>ShowCloseButton</b> remove one each. <b>OkButtonDisabled</b> (and
+                <b>CancelButtonDisabled</b>) holds a button shut until the answer exists, while every other way out keeps working.
             </div>
             <br />
             <div class="btn-container">
@@ -65,7 +65,7 @@
                        OkText="Got it" />
 
             <BitDialog @bind-IsOpen="isOpenGated"
-                       IsOkButtonEnabled="agreed"
+                       OkButtonDisabled="agreed is false"
                        Title="Before you continue"
                        OkText="Accept">
                 <div class="dialog-body">
@@ -370,24 +370,24 @@
 
         <DemoExample Title="Draggable" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
-                <b>IsDraggable</b> lets the Dialog be moved by its header - or by its whole surface when it has none - within its area,
+                <b>Draggable</b> lets the Dialog be moved by its header - or by its whole surface when it has none - within its area,
                 and puts it back on the next showing. <b>DragElementSelector</b> names a handle of your own; buttons and fields inside
                 it keep working.
             </div>
             <br />
-            <BitToggle Label="IsDraggable" @bind-Value="isDraggable" />
+            <BitToggle Label="Draggable" @bind-Value="isDraggable" />
             <br />
             <div class="btn-container">
                 <BitButton OnClick="@(() => isOpenDraggable = true)">Header handle</BitButton>
                 <BitButton OnClick="@(() => isOpenDragHandle = true)">DragElementSelector</BitButton>
             </div>
 
-            <BitDialog IsDraggable="isDraggable"
+            <BitDialog Draggable="isDraggable"
                        @bind-IsOpen="isOpenDraggable"
                        Title="Draggable dialog"
                        Message="Drag it by its header while the toggle is on." />
 
-            <BitDialog IsDraggable
+            <BitDialog Draggable
                        DragElementSelector=".dialog-title"
                        @bind-IsOpen="isOpenDragHandle"
                        TitleAriaId="dialog-drag-title"
@@ -531,7 +531,7 @@
                 <b>CloseButtonTitle</b> ("Close" by default). While <b>OnOk</b> runs, the Ok button keeps its text as its name and
                 reports <b>aria-busy</b> and <b>aria-disabled</b> without being disabled, so the focus stays on it. The overlay is
                 hidden from screen readers, and a closed <b>KeepMounted</b> Dialog is hidden and <b>inert</b>. Under reduced motion
-                a refused dismissal rings the surface instead of shaking it. <b>IsDraggable</b> answers the pointer only: no key
+                a refused dismissal rings the surface instead of shaking it. <b>Draggable</b> answers the pointer only: no key
                 moves the Dialog.
             </div>
             <br />

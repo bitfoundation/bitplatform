@@ -135,7 +135,7 @@ public partial class BitDialog : BitComponentBase
     /// or <c>autofocus</c>, the button a <see cref="BitParams"/> ancestor sets here for every Dialog under it,
     /// the first focusable element, and the Dialog itself. A button cannot take it while it is not being
     /// shown or while it is disabled - by <see cref="BitComponentBase.Disabled"/>, by
-    /// <see cref="IsOkButtonEnabled"/> or <see cref="IsCancelButtonEnabled"/>, and for the Cancel and close
+    /// <see cref="OkButtonDisabled"/> or <see cref="CancelButtonDisabled"/>, and for the Cancel and close
     /// buttons while an <see cref="OnOk"/> callback is being awaited - and is passed over for the next one.
     /// <br />
     /// One a <see cref="BitParams"/> ancestor sets is only a default for every Dialog under it, so it comes
@@ -193,6 +193,16 @@ public partial class BitDialog : BitComponentBase
     /// Alias for child content.
     /// </summary>
     [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
+    /// Disables the Cancel button of the Dialog.
+    /// </summary>
+    /// <remarks>
+    /// This is the Cancel button on its own, unlike <see cref="BitComponentBase.Disabled"/>, which turns
+    /// the whole Dialog off. Disabling it leaves every other way out of the Dialog open, so a Dialog whose
+    /// Cancel is disabled is still not a Dialog that cannot be left.
+    /// </remarks>
+    [Parameter] public bool CancelButtonDisabled { get; set; }
 
     /// <summary>
     /// The text of the cancel button.
@@ -307,6 +317,16 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public string? DragElementSelector { get; set; }
 
     /// <summary>
+    /// Whether the Dialog can be dragged around.
+    /// </summary>
+    /// <remarks>
+    /// This and <see cref="DragElementSelector"/> are both read again on every render, so a Dialog that is
+    /// handed a different answer while it is standing picks it up there and then. A Dialog dragged out of
+    /// place comes back where it was laid out the next time it is shown, kept mounted or not.
+    /// </remarks>
+    [Parameter] public bool Draggable { get; set; }
+
+    /// <summary>
     /// Used to customize how the footer inside the Dialog is rendered.
     /// </summary>
     [Parameter] public RenderFragment? FooterTemplate { get; set; }
@@ -344,42 +364,6 @@ public partial class BitDialog : BitComponentBase
     /// unless it is set to something else.
     /// </remarks>
     [Parameter] public string? Height { get; set; }
-
-    /// <summary>
-    /// Whether the Cancel button of the Dialog can be pressed.
-    /// <br />
-    /// The default value is <strong>true</strong>.
-    /// </summary>
-    /// <remarks>
-    /// This is the Cancel button on its own, unlike <see cref="BitComponentBase.Disabled"/>, which turns
-    /// the whole Dialog off. Turning it off leaves every other way out of the Dialog open, so a Dialog whose
-    /// Cancel is disabled is still not a Dialog that cannot be left.
-    /// </remarks>
-    [Parameter] public bool IsCancelButtonEnabled { get; set; } = true;
-
-    /// <summary>
-    /// Whether the Dialog can be dragged around.
-    /// </summary>
-    /// <remarks>
-    /// This and <see cref="DragElementSelector"/> are both read again on every render, so a Dialog that is
-    /// handed a different answer while it is standing picks it up there and then. A Dialog dragged out of
-    /// place comes back where it was laid out the next time it is shown, kept mounted or not.
-    /// </remarks>
-    [Parameter] public bool IsDraggable { get; set; }
-
-    /// <summary>
-    /// Whether the Ok button of the Dialog can be pressed.
-    /// <br />
-    /// The default value is <strong>true</strong>.
-    /// </summary>
-    /// <remarks>
-    /// The answer a Dialog is asking for is not always available the moment it opens: a consent that has to
-    /// be ticked, a name that has to be typed, a code that has to be six digits long. This holds the Ok
-    /// button shut until it is, without turning the rest of the Dialog off the way
-    /// <see cref="BitComponentBase.Disabled"/> would - the Cancel and close buttons, the Escape key and a
-    /// click on the overlay all keep working, so the Dialog can still be walked away from.
-    /// </remarks>
-    [Parameter] public bool IsOkButtonEnabled { get; set; } = true;
 
     /// <summary>
     /// Whether the Dialog is displayed.
@@ -468,6 +452,18 @@ public partial class BitDialog : BitComponentBase
     /// <c>prefers-reduced-motion</c> along with it, since the two are the same answer told two ways.
     /// </remarks>
     [Parameter] public bool NoDismissPreventedAnimation { get; set; }
+
+    /// <summary>
+    /// Disables the Ok button of the Dialog.
+    /// </summary>
+    /// <remarks>
+    /// The answer a Dialog is asking for is not always available the moment it opens: a consent that has to
+    /// be ticked, a name that has to be typed, a code that has to be six digits long. Set this while it is
+    /// not, and the Ok button is held shut until it is, without turning the rest of the Dialog off the way
+    /// <see cref="BitComponentBase.Disabled"/> would - the Cancel and close buttons, the Escape key and a
+    /// click on the overlay all keep working, so the Dialog can still be walked away from.
+    /// </remarks>
+    [Parameter] public bool OkButtonDisabled { get; set; }
 
     /// <summary>
     /// The text of the ok button.
@@ -930,7 +926,7 @@ public partial class BitDialog : BitComponentBase
     // down from the element they were put on rather than from whatever the selector names now.
     private async Task SyncDragHandlers()
     {
-        var wanted = IsDraggable ? GetDragElementSelector() : null;
+        var wanted = Draggable ? GetDragElementSelector() : null;
 
         if (wanted == _dragElementSelectorOnSetup) return;
 
@@ -1046,9 +1042,9 @@ public partial class BitDialog : BitComponentBase
     // element the focus is on when it is pressed, and a button that turns disabled drops the focus onto the
     // page behind the Dialog. The Cancel and close buttons are, since a press on either would answer a showing
     // the Ok has already answered.
-    private bool IsOkButtonDisabled => Disabled || IsOkButtonEnabled is false;
+    private bool IsOkButtonDisabled => Disabled || OkButtonDisabled;
 
-    private bool IsCancelButtonDisabled => Disabled || IsCancelButtonEnabled is false || _isLoading;
+    private bool IsCancelButtonDisabled => Disabled || CancelButtonDisabled || _isLoading;
 
     private bool IsCloseButtonDisabled => Disabled || _isLoading;
 
@@ -1308,7 +1304,7 @@ public partial class BitDialog : BitComponentBase
 
     private async Task HandleOnCancelClick(MouseEventArgs e)
     {
-        if (Disabled || IsCancelButtonEnabled is false || _isLoading || _isDismissing) return;
+        if (Disabled || CancelButtonDisabled || _isLoading || _isDismissing) return;
 
         // The answer is in place before the callback runs, so a callback that closes the Dialog itself
         // still reports the answer it was given - and is taken back again when the callback throws, which
@@ -1332,7 +1328,7 @@ public partial class BitDialog : BitComponentBase
     {
         // A second click while the first one is still being awaited would run the callback twice and
         // resolve the showing twice over, so the Ok button answers only once per showing.
-        if (Disabled || IsOkButtonEnabled is false || _isLoading || _isDismissing) return;
+        if (Disabled || OkButtonDisabled || _isLoading || _isDismissing) return;
 
         Result = BitDialogResult.Ok;
 
