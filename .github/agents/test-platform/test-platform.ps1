@@ -1672,7 +1672,7 @@ function Read-AgentTranscript([string] $log) {
             }
         }
         elseif ($event.type -eq 'result') {
-            $final = $event.result
+            $final ??= $event.result
             $cost = $event.total_cost_usd
         }
     }
@@ -1692,17 +1692,65 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
         $arguments += '--resume', $session
     }
 
-    Push-Location $folder
+    $start = [Diagnostics.ProcessStartInfo]::new((Get-ClaudeCli))
+    $arguments | ForEach-Object { $start.ArgumentList.Add($_) }
+    $start.WorkingDirectory = $folder
+    $start.UseShellExecute = $false
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+
+    $output = [IO.FileStream]::new($log, [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite, 1)
+    $errors = [IO.FileStream]::new("$log.err", [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite, 1)
 
     try {
-        & (Get-ClaudeCli) @arguments *> $log
+        $process = [Diagnostics.Process]::Start($start)
+        $copies = @($process.StandardOutput.BaseStream.CopyToAsync($output), $process.StandardError.BaseStream.CopyToAsync($errors))
+        $answeredAt = $null
+
+        while (-not $process.WaitForExit(5000)) {
+            if (-not $answeredAt -and (Test-AgentAnswered $log)) {
+                $answeredAt = Get-Date
+            }
+
+            if ($answeredAt -and ((Get-Date) - $answeredAt).TotalSeconds -gt 60) {
+                taskkill /PID $process.Id /T /F 2>&1 | Out-Null
+                break
+            }
+        }
+
+        $process.WaitForExit()
+        [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]$copies, 10000) | Out-Null
     }
     finally {
-        Pop-Location
+        $output.Dispose()
+        $errors.Dispose()
         Stop-FolderProcesses $folder
     }
 
     Read-AgentTranscript $log
+}
+
+function Test-AgentAnswered([string] $log) {
+    $stream = [IO.File]::Open($log, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+
+    try {
+        $lines = (New-Object IO.StreamReader $stream).ReadToEnd() -split "`n" | Where-Object { $_.StartsWith('{') -and $_.Contains('"type":"result"') }
+
+        foreach ($line in $lines) {
+            try {
+                if (($line | ConvertFrom-Json -Depth 64).type -eq 'result') {
+                    return $true
+                }
+            }
+            catch {
+            }
+        }
+
+        $false
+    }
+    finally {
+        $stream.Dispose()
+    }
 }
 
 function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {

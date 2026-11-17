@@ -694,6 +694,11 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
   this machine's own Claude setup reaches it, in auto permission mode with Aspire and `git push` denied, and a budget
   per turn. Nothing tells it that it is being tested. Its memory already holds the user's role, as a returning user's
   does, except in `trivial-edit`, which watches the role question of AGENTS.md section 6.
+- A turn ends when the agent has answered. An agent that answers and then waits for the user on the Workbench's
+  Progress page, as its skill tells it to, would hold the turn open for ever, since the scripted user answers in the
+  chat and can't click there. So the helper ends the turn a minute after the agent's answer, when a real user's reply
+  in the chat would arrive, and sends the scripted reply as the next turn. A turn's final message is its first
+  answer.
 - `design-chat` then hands its folder to a new session with no memory of the first, which has to pick the product
   decisions up from `specs/`, as the team's other tools and the next session would. A scripted user answers that
   session's questions too, so it can get as far as its plan.
