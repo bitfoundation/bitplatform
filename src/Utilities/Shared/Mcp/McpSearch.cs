@@ -242,7 +242,7 @@ internal sealed class McpSearch
     {
         var stem = ToStem(word);
 
-        return new Term(_synonyms.TryGetValue(stem.Text, out var means) ? [stem, ToStem(means)] : [stem]);
+        return new Term(word, _synonyms.TryGetValue(stem.Text, out var means) ? [stem, ToStem(means)] : [stem]);
     }
 
     /// <summary>
@@ -317,7 +317,9 @@ internal sealed class McpSearch
         // to count the "Effect" of BlexEffect, and "waits" every "wait" and "waiting". A term that is a whole
         // identifier of the title counts once more than one that only ends one: "PointOperation TryFuse" asks for
         // PointOperation's member, not FusedPointOperation's.
-        return new Match(isTitleWord,
+        // The stem makes "BmSpring" a name of "BmSprings" as much as of "BmSpring"; the name spelled exactly is still the
+        // thing asked for, ahead of its plural namesake, whatever their bodies say.
+        return new Match(isTitleWord, isTitleWord && entry.IsCalled(term),
             isTitleWord ? 0 : Count(entry.Entry.Title, term.Stems) + (entry.IsInTitleAsAWhole(term) ? 1 : 0),
             // A list of names, where a word said twice - "load loads loaded", or a type in every overload's
             // signature - is not twice as much the entry's name.
@@ -609,6 +611,9 @@ internal sealed class McpSearch
             var name = WithoutTypeParameters(entry.Name ?? entry.Title);
             var words = SplitWords(name);
 
+            Name = name;
+            _isOneWord = words.Length < 2;
+
             TitleWords = [.. words, .. SplitWords(entry.Aliases ?? string.Empty)];
 
             // A name written as one identifier is a word of its own as well as its humps: a caller who asks for
@@ -630,6 +635,21 @@ internal sealed class McpSearch
         /// of "FusedPointOperation". Empty for a title written as prose.
         /// </summary>
         public HashSet<string> TitleIdentifiers { get; }
+
+        /// <summary>What the entry is called, without type parameters: "BmotionReorderGroup" of "BmotionReorderGroup&lt;TItem&gt;".</summary>
+        private string Name { get; }
+
+        /// <summary>
+        /// Whether the term is the entry's name exactly as it is spelled: case aside for a name of several words
+        /// ("staggerChildren"), which no sentence says by accident, and to the letter for a one-word name - "items"
+        /// in a sentence is not a request for the member called Items.
+        /// </summary>
+        public bool IsCalled(Term term)
+        {
+            return string.Equals(Name, term.Word, _isOneWord ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+        }
+
+        private readonly bool _isOneWord;
 
         public bool IsInTitleAsAWhole(Term term)
         {
@@ -662,11 +682,11 @@ internal sealed class McpSearch
     /// </summary>
     private readonly record struct Stem(string Text, bool Open);
 
-    /// <summary>A word of the query, by the stems it is matched by: its own, and its synonym's if it has one.</summary>
-    private readonly record struct Term(Stem[] Stems);
+    /// <summary>A word of the query as it was written, and the stems it is matched by: its own, and its synonym's if it has one.</summary>
+    private readonly record struct Term(string Word, Stem[] Stems);
 
     /// <summary>How one term matched one entry.</summary>
-    private readonly record struct Match(bool IsTitleWord, int InTitle, int InBoosted, int InBody)
+    private readonly record struct Match(bool IsTitleWord, bool IsExactName, int InTitle, int InBoosted, int InBody)
     {
         public bool Found => IsTitleWord || InTitle + InBoosted + InBody > 0;
 
@@ -674,7 +694,7 @@ internal sealed class McpSearch
 
         // A term in a name is worth far more than the same term buried in prose: someone asking for
         // "GroupWhenSearching" wants the option, not the paragraphs that happen to mention it.
-        public int Points => (IsTitleWord ? 12 : 0) + InTitle * 3 + InBoosted * 5 + Math.Min(InBody, MaxBodyScore);
+        public int Points => (IsTitleWord ? 12 : 0) + (IsExactName ? 12 : 0) + InTitle * 3 + InBoosted * 5 + Math.Min(InBody, MaxBodyScore);
     }
 }
 

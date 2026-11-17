@@ -172,6 +172,81 @@ public class SearchIndexTests
     }
 
     /// <summary>
+    /// The thing a request asks to be done outranks the words it names what to do it to: "fade a list
+    /// item in" is about the fade, and one item is one element, not the staggered list or the reorder
+    /// group's Items. Ranked by "list" and "item", an agent following the first hit staggers a whole
+    /// list when one item was asked for.
+    /// </summary>
+    [TestMethod]
+    [DataRow("fade a list item in")]
+    [DataRow("fade in a list item")]
+    [DataRow("fade a list-item in")]
+    [DataRow("fade an item in")]
+    [DataRow("fade the item in")]
+    [DataRow("fade a single item in")]
+    public async Task Search_FadingOneItemIn_PutsTheFadeInRecipeFirst(string query)
+    {
+        var hits = await BmotionSearchIndex.SearchAsync(query, 12);
+        var titles = string.Join(", ", hits.Select(hit => hit.Title));
+
+        Assert.AreNotEqual(0, hits.Length, $"'{query}' found nothing.");
+        Assert.AreEqual("Fade and slide in on mount", hits[0].Title, $"'{query}' ranked: {titles}.");
+        Assert.IsTrue(hits.Take(3).Any(hit => hit.Title == "BmPresets.Fade"), $"'{query}' ranked: {titles}.");
+        Assert.IsFalse(hits.Take(5).Any(hit => hit.Title.Contains("Reorder", StringComparison.Ordinal)),
+                       $"'{query}' ranked the reorder group, which has nothing to do with fading, among the first hits: {titles}.");
+    }
+
+    /// <summary>
+    /// The plural is still a question about the list: "stagger list items" is the staggered list, and
+    /// the singular rule above must not take that away.
+    /// </summary>
+    [TestMethod]
+    [DataRow("stagger list items")]
+    [DataRow("fade list items in one by one")]
+    [DataRow("make a list appear one item at a time")]
+    public async Task Search_AWholeListInSequence_StillPutsTheStaggeredListFirst(string query)
+    {
+        var hits = await BmotionSearchIndex.SearchAsync(query, 12);
+
+        Assert.AreNotEqual(0, hits.Length, $"'{query}' found nothing.");
+        Assert.AreEqual("Staggered list entrance", hits[0].Title, $"'{query}' ranked: {string.Join(", ", hits.Select(hit => hit.Title))}.");
+    }
+
+    /// <summary>
+    /// "The item key" is the name of a parameter, not one element: the rule that reads "an item" as an
+    /// element must leave it to find ItemKey.
+    /// </summary>
+    [TestMethod]
+    [DataRow("set the item key")]
+    [DataRow("an item key")]
+    public async Task Search_TheItemKey_StillFindsItemKey(string query)
+    {
+        var hits = await BmotionSearchIndex.SearchAsync(query, 5);
+
+        Assert.IsTrue(hits.Length > 0 && hits[0].Title.EndsWith(".ItemKey", StringComparison.Ordinal),
+                      $"'{query}' ranked: {string.Join(", ", hits.Select(hit => hit.Title))}.");
+    }
+
+    /// <summary>
+    /// A word is matched from the start of a word only: "item" is not inside every "TItem", nor "fade"
+    /// inside "Crossfade", and a method's overloads are one hit rather than one per overload.
+    /// </summary>
+    [TestMethod]
+    public async Task Search_MatchesWholeWordsAndListsAnOverloadedMethodOnce()
+    {
+        var hits = await BmotionSearchIndex.SearchAsync("fade", 20);
+        var titles = string.Join(", ", hits.Select(hit => hit.Title));
+
+        Assert.AreNotEqual("Bmotion.LayoutCrossfade", hits[0].Title, titles);
+        Assert.IsTrue(hits.Take(2).Any(hit => hit.Title == "BmPresets.Fade"), titles);
+
+        var stagger = await BmotionSearchIndex.SearchAsync("stagger", 20);
+
+        Assert.AreEqual(1, stagger.Count(hit => hit.Title == "Bm.Stagger"),
+                        $"Bm.Stagger was listed once per overload: {string.Join(", ", stagger.Select(hit => hit.Title))}.");
+    }
+
+    /// <summary>
     /// A question phrased as a symptom names no section, type or recipe. Without the two entries for
     /// the engine-running tools it would match whatever else happens to contain the word "server" -
     /// and this is the single most common thing to go wrong with a Bmotion app.

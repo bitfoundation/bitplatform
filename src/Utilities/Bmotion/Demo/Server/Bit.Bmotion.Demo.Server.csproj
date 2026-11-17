@@ -20,6 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The ranking SearchBmotion answers with, which every utility's MCP server that searches this way shares. -->
+    <Compile Include="..\..\..\Shared\Mcp\*.cs" LinkBase="Services\Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Bit.Bmotion" />
     <Using Include="Microsoft.AspNetCore.Mvc" />
   </ItemGroup>
