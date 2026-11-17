@@ -100,6 +100,10 @@ param(
     # agents: the models each scenario runs with, as Claude Code names them.
     [string[]] $Model = @('sonnet'),
 
+    # agents: the effort every agent runs at; Claude Code's default for the model when omitted.
+    [ValidateSet('low', 'medium', 'high', 'xhigh', 'max')]
+    [string] $Effort,
+
     # agents: also sends the turns that have the agent build a whole feature, up to an hour each.
     [switch] $Long,
 
@@ -1672,7 +1676,7 @@ function Read-AgentTranscript([string] $log) {
             }
         }
         elseif ($event.type -eq 'result') {
-            $final = $event.result
+            $final ??= $event.result
             $cost = $event.total_cost_usd
         }
     }
@@ -1692,17 +1696,71 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
         $arguments += '--resume', $session
     }
 
-    Push-Location $folder
+    if ($Effort) {
+        $arguments += '--effort', $Effort
+    }
+
+    $start = [Diagnostics.ProcessStartInfo]::new((Get-ClaudeCli))
+    $arguments | ForEach-Object { $start.ArgumentList.Add($_) }
+    $start.WorkingDirectory = $folder
+    $start.UseShellExecute = $false
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $start.RedirectStandardInput = $true
+
+    $output = [IO.FileStream]::new($log, [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite, 1)
+    $errors = [IO.FileStream]::new("$log.err", [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite, 1)
 
     try {
-        & (Get-ClaudeCli) @arguments *> $log
+        $process = [Diagnostics.Process]::Start($start)
+        $process.StandardInput.Close()
+        $copies = @($process.StandardOutput.BaseStream.CopyToAsync($output), $process.StandardError.BaseStream.CopyToAsync($errors))
+        $answeredAt = $null
+
+        while (-not $process.WaitForExit(5000)) {
+            if (-not $answeredAt -and (Test-AgentAnswered $log)) {
+                $answeredAt = Get-Date
+            }
+
+            if ($answeredAt -and ((Get-Date) - $answeredAt).TotalSeconds -gt 60) {
+                taskkill /PID $process.Id /T /F 2>&1 | Out-Null
+                break
+            }
+        }
+
+        $process.WaitForExit()
+        [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]$copies, 10000) | Out-Null
     }
     finally {
-        Pop-Location
+        $output.Dispose()
+        $errors.Dispose()
         Stop-FolderProcesses $folder
     }
 
     Read-AgentTranscript $log
+}
+
+function Test-AgentAnswered([string] $log) {
+    $stream = [IO.File]::Open($log, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+
+    try {
+        $lines = (New-Object IO.StreamReader $stream).ReadToEnd() -split "`n" | Where-Object { $_.StartsWith('{') -and $_.Contains('"type":"result"') }
+
+        foreach ($line in $lines) {
+            try {
+                if (($line | ConvertFrom-Json -Depth 64).type -eq 'result') {
+                    return $true
+                }
+            }
+            catch {
+            }
+        }
+
+        $false
+    }
+    finally {
+        $stream.Dispose()
+    }
 }
 
 function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
@@ -1803,6 +1861,7 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     [pscustomobject]@{
         Scenario = $id
         Model = $model
+        Effort = $(if ($Effort) { $Effort } else { 'default' })
         Minutes = [Math]::Round(([DateTimeOffset]::Now - $started).TotalMinutes, 1)
         Cost = [Math]::Round((@($turns) + @($handoff) | Where-Object { $_ -and $_.Cost } | Measure-Object Cost -Sum).Sum, 2)
         Checks = @($checks)
@@ -1858,7 +1917,7 @@ function Invoke-AgentsTest {
 
             while ($running.Count -lt 3 -and ($run = $pending | Where-Object { -not $_.Heavy -or -not ($running | Where-Object Heavy) } | Select-Object -First 1)) {
                 $pending.Remove($run) | Out-Null
-                $arguments = @('-NoProfile', '-File', "`"$PSCommandPath`"", 'agents', '-Worker', '-Lab', "`"$lab`"", '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' }))
+                $arguments = @('-NoProfile', '-File', "`"$PSCommandPath`"", 'agents', '-Worker', '-Lab', "`"$lab`"", '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' })) + @($(if ($Effort) { '-Effort', $Effort }))
                 $log = Join-Path $lab "worker-$($run.Id)-$($run.Model).log"
                 $process = Start-Process $pwsh -ArgumentList $arguments -PassThru -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError "$log.err"
                 $running.Add(($run | Add-Member -PassThru Process $process | Add-Member -PassThru Started ([DateTimeOffset]::Now)))
@@ -1875,6 +1934,7 @@ function Invoke-AgentsTest {
             [pscustomobject]@{
                 Scenario = $_.Scenario
                 Model = $_.Model
+                Effort = $_.Effort
                 Passed = "$(@($_.Checks | Where-Object Verdict -eq 'pass').Count)/$(@($_.Checks | Where-Object Verdict -ne 'skipped').Count)"
                 Minutes = $_.Minutes
                 Cost = $_.Cost
