@@ -652,7 +652,7 @@ BitIconInfo.Bit("Home")               // back to the built-in set</CodeBox>
                                 <BitGrid Columns="4" Spacing="1rem">
                                     @foreach (var color in previewColors)
                                     {
-                                        <BitGridItem Title="@color.Label">
+                                        <BitGridItem title="@color.Label">
                                             <BitStack Alignment="BitAlignment.Center" Gap="0.375rem">
                                                 <BitIcon IconName="@_selected.Name" Color="color.Value" />
                                                 <BitText Typography="BitTypography.Caption2">@color.Label</BitText>
