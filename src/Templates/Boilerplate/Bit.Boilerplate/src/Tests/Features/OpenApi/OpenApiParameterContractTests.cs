@@ -78,10 +78,10 @@ public partial class OpenApiParameterContractTests
     }
 
     /// <summary>
-    /// An action that takes <c>ODataQueryOptions</c>, such as <c>GetTenants</c>, reads <c>$filter</c>, <c>$top</c> and the rest
-    /// from the query string. The document used to describe the parameter itself instead, as an object holding
-    /// <c>HttpContext</c>, the EDM model and about a hundred types they reach, which no client sends, and listed none of the
-    /// query options a client does send.
+    /// An action that takes <c>ODataQueryOptions</c>, such as <c>GetTenants</c>, applies <c>$filter</c>, <c>$orderby</c>,
+    /// <c>$top</c> and <c>$skip</c> from the query string. The document used to describe the parameter itself instead, as an
+    /// object holding <c>HttpContext</c>, the EDM model and about a hundred types they reach, which no client sends, and listed
+    /// none of the query options a client does send.
     /// </summary>
     [TestMethod]
     public async Task AnActionThatTakesODataQueryOptions_Should_PublishItsQueryOptionsRatherThanTheType()
@@ -134,6 +134,13 @@ public partial class OpenApiParameterContractTests
                     {
                         offenders.Add($"{operation.Name.ToUpperInvariant()} {action} gives {name} the schema type {declared ?? "(none)"} instead of {type}");
                     }
+                }
+
+                // The action casts what ApplyTo returns to its typed query: $select and $expand would make that throw, and
+                // nothing applies $search.
+                foreach (var name in new[] { "$select", "$expand", "$search" }.Where(types.ContainsKey))
+                {
+                    offenders.Add($"{operation.Name.ToUpperInvariant()} {action} lists {name}, which it doesn't apply");
                 }
             }
         }

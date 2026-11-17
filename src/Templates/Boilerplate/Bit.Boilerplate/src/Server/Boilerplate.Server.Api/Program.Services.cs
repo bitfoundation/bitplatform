@@ -496,10 +496,11 @@ public static partial class Program
                 // MapControllers().RequireAuthorization() makes every action authorized, so [AllowAnonymous] is what
                 // marks the exceptions - the AuthorizeAttribute on an action only narrows an already required token.
                 var isAnonymousAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is IAllowAnonymous);
-                // [EnableQuery] applies the query options to what the action returns; an ODataQueryOptions parameter has the action
-                // apply them itself.
-                var isODataEnabledAction = context.Description.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is EnableQueryAttribute)
-                    || context.Description.ActionDescriptor.Parameters.Any(p => p.ParameterType.IsAssignableTo(typeof(ODataQueryOptions)));
+                // [EnableQuery] applies the query options to what the action returns.
+                var isODataEnabledAction = context.Description.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is EnableQueryAttribute);
+                // An ODataQueryOptions parameter has the action apply them itself, to the typed query it pages: $filter, $orderby,
+                // $top and $skip. $select and $expand would turn its rows into wrappers it can't cast back, and nothing applies $search.
+                var takesODataQueryOptions = context.Description.ActionDescriptor.Parameters.Any(p => p.ParameterType.IsAssignableTo(typeof(ODataQueryOptions)));
 
                 operation.Parameters ??= [];
 
@@ -511,11 +512,11 @@ public static partial class Program
                     ];
                 }
 
-                if (isODataEnabledAction)
+                if (isODataEnabledAction || takesODataQueryOptions)
                 {
                     // OpenAPI 3.1 requires a schema (or content) on every parameter.
-                    operation.Parameters.AddRange([
-
+                    OpenApiParameter[] queryOptions =
+                    [
                         new OpenApiParameter() { In = ParameterLocation.Query, Name = "$filter", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Filters the results, based on a Boolean condition. (ex. Age gt 25)" },
                         new OpenApiParameter() { In = ParameterLocation.Query, Name = "$select", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Returns only the selected properties. (ex. FirstName, LastName)" },
                         new OpenApiParameter() { In = ParameterLocation.Query, Name = "$expand", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Include only the selected objects. (ex. Orders, Locations)" },
@@ -523,7 +524,11 @@ public static partial class Program
                         new OpenApiParameter() { In = ParameterLocation.Query, Name = "$top", Schema = new OpenApiSchema { Type = JsonSchemaType.Integer }, Description = "Returns only the first n items from a collection. (ex. 10)" },
                         new OpenApiParameter() { In = ParameterLocation.Query, Name = "$skip", Schema = new OpenApiSchema { Type = JsonSchemaType.Integer }, Description = "Skips the first n items from a collection. (ex. 10)" },
                         new OpenApiParameter() { In = ParameterLocation.Query, Name = "$orderby", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Orders the results of a query by one or more properties. (ex. Name desc)" }
-                    ]);
+                    ];
+
+                    operation.Parameters.AddRange(isODataEnabledAction
+                        ? queryOptions
+                        : [.. queryOptions.Where(option => option.Name is "$filter" or "$orderby" or "$top" or "$skip")]);
                 }
 
                 // OData lists about 40 JSON variants per body, which made the document 1 MB; application/json alone describes them.
