@@ -31,10 +31,16 @@ public class HealthCheckDescriptions : Dictionary<string, HealthCheckDescription
         //#if (sentry == true)
         this["sentry"] = new("Sentry", "Bug", "Sentry accepts the DSN and isn't dropping the app's errors over a quota or rate limit.");
         //#endif
+        //#if (appInsights == true)
+        this["appInsights"] = new("Application Insights", "Insights", "Application Insights accepts the instrumentation key, and isn't throttling the app.");
+        //#endif
+        this["otlp"] = new("OTLP telemetry", "LineChart", "The OTLP endpoint takes an empty export with the configured protocol and headers.");
+        this["aspireDashboard"] = new("Aspire dashboard", "ViewDashboard", "The dashboard's telemetry API accepts AspireDashboard:ApiKey.");
 
         this["smtp"] = new("Email", "Mail", "Signs in to the SMTP server without sending anything.");
         this["emailDelivery"] = new("Email sender domain", "MailCheck", "The sender's domain has SPF and DMARC records, so mail can reach inboxes rather than spam.");
         this["sms"] = new("SMS", "CellPhone", "The Twilio account is active.");
+        this["webPush"] = new("Web push", "Ringer", "FCM, the push service Chrome uses, accepts the VAPID signature.");
         this["firebase"] = new("Android push", "Ringer", "Firebase Cloud Messaging accepts the credentials.");
         this["apns"] = new("Apple push", "Ringer", "APNs accepts the credentials.");
         this["azureSignalR"] = new("Azure SignalR", "Streaming", "The service is healthy and accepts the access key.");
@@ -42,10 +48,10 @@ public class HealthCheckDescriptions : Dictionary<string, HealthCheckDescription
         this["keycloakIdentity"] = new("Keycloak", "Permissions", "The realm's discovery document answers.");
         this["entraId"] = new("Microsoft Entra ID", "AuthenticatorApp", "The tenant answers and accepts the app's credentials.");
         this["appleSignIn"] = new("Sign in with Apple", "Signin", "The client secret can be signed and Apple answers.");
-        this["googleSignIn"] = new("Sign in with Google", "Signin", "Can't be verified without a user; only reported while not configured.");
-        this["gitHubSignIn"] = new("Sign in with GitHub", "Signin", "Can't be verified without a user; only reported while not configured.");
-        this["twitterSignIn"] = new("Sign in with X", "Signin", "Can't be verified without a user; only reported while not configured.");
-        this["facebookSignIn"] = new("Sign in with Facebook", "Signin", "Can't be verified without a user; only reported while not configured.");
+        this["googleSignIn"] = new("Sign in with Google", "Signin", "Google's token endpoint accepts the client id and secret.");
+        this["gitHubSignIn"] = new("Sign in with GitHub", "Signin", "GitHub's token endpoint accepts the client id and secret.");
+        this["twitterSignIn"] = new("Sign in with X", "Signin", "X issues an app token for the consumer key and secret.");
+        this["facebookSignIn"] = new("Sign in with Facebook", "Signin", "Facebook issues an app token for the app id and secret.");
         this["reCaptcha"] = new("reCAPTCHA", "Shield", "Google's siteverify answers.");
 
         this["aiChat"] = new("AI chat", "ChatBot", "The chat model gives a short answer.");
