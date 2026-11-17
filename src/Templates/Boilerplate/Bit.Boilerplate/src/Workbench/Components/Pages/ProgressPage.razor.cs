@@ -6,8 +6,8 @@ namespace Boilerplate.Workbench.Components.Pages;
 /// <summary>
 /// /progress shows the long tasks agents run from their chats, each chat's own: what each one did, what it does now, what
 /// is left, and what it needs from the user, who answers here with a click, a few words or their voice. With no task yet,
-/// and for a visitor who may not see the real ones, it shows three samples that can be tried. A short guide walks a first
-/// visit through it.
+/// and for a visitor who may not see the real ones, it shows three samples that can be tried. Its help button starts a short
+/// guide through it.
 /// </summary>
 public partial class ProgressPage
 {
@@ -18,8 +18,7 @@ public partial class ProgressPage
     // The task whose Delete was pressed once; the next press deletes only that one.
     private string? confirmingDeleteId;
     private Timer? clock;
-    // What the first visit's guide came to, which a test waits on: shown, seen before, the Workbench tour's step, or none while
-    // another guide runs.
+    // What the page's start did about guides, which a test waits on: stepped the Workbench tour back, or none.
     private string? guideState;
     // What the user is writing to each task's agent, kept with its task as the page moves between them.
     private readonly Dictionary<string, string?> drafts = [];
@@ -106,19 +105,17 @@ public partial class ProgressPage
             return;
 
         // The browser's Back on the Workbench tour's Flows step lands here: back a step, as the tour would otherwise wait out of
-        // sight for that page. Otherwise the first visit gets this page's guide, unless the tour brought it here.
+        // sight for that page. This page's own guide starts only from its help button: most visits come from an agent's task
+        // that waits for the user, and Bonboarding remembers a guide it showed in the browser's storage, which a Workbench on
+        // another port doesn't share, so a guide that started by itself would be back on each of them.
         if (bonboardingService.FindSession(WorkbenchViewPage.TourId) is { WaitReason: BonboardingWaitReason.Route } tour)
         {
             await tour.PreviousAsync();
             guideState = "tour";
         }
-        else if (bonboardingService.Active is null)
-        {
-            guideState = await bonboardingService.StartOnceAsync(CreateGuide()) is null ? "seen" : "shown";
-        }
         else
         {
-            guideState = "busy";
+            guideState = "none";
         }
 
         if (CurrentCancellationToken.IsCancellationRequested is false)
