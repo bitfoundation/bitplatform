@@ -16,7 +16,13 @@ Before phase 1, decide which track the task takes, and tell the user in one line
 
 A short-track task that turns out bigger moves to the full track, and you stop and ask before going on: when it needs a migration, changes behavior someone may rely on, touches security, or spreads beyond its feature.
 
-On the full track, the first thing you do, before the branch, before reading the code and before your first question, is open the **workbench** skill (`.github/agents/workbench.agent.md`) and start your task on the Workbench's Progress page, the way its section on a long task's progress describes. Do it even though the user is talking to you in this chat: they follow the work on that page from another window, and the plan, the decisions and the questions stay there after the chat is over, which a chat alone doesn't give them. These phases are its steps, the plan's approval and every question go there, and it stays current until delivery.
+## Before Phase 1
+
+On the full track, take these three steps in this order, before your first question and before you read the code. Each is one action and part of the work, not something to fit in when there is time:
+
+1. **Start your Progress task.** Open the **workbench** skill (`.github/agents/workbench.agent.md`) and start your task on the Workbench's Progress page, the way its section on a long task's progress describes. Do it even though the user is talking to you in this chat: they follow the work on that page from another window, and the plan, the decisions and the questions stay there after the chat is over, which a chat alone doesn't give them. These phases are its steps, the plan's approval and every question go there, and it stays current until delivery.
+2. **Check the release.** Do what **Staying on the Newest bit Platform** below says, which starts with one call to the bit platform MCP server's `GetBitPlatformReleases` tool. Make the call even when the project looks new: only the server knows which release is the newest today, and a project is behind the day a release comes out.
+3. **Pick the branch**, the way the next section says.
 
 ## Pick the Branch
 
@@ -35,7 +41,6 @@ port, rebrand, landing-page, bitify-ui, template-diff and scaffold-entity, and t
 ## Workflow Phases
 
 ### 1. Requirements Elaboration
-- In the same step as your first reads, check whether the project is on the newest bit platform release - see **Staying on the Newest bit Platform** below. It runs alongside this phase and never holds it up
 - Ask clarifying questions to fully understand the feature/task
 - Identify acceptance criteria, edge cases, and constraints
 - When the feature rests on rules from outside the codebase - a tax, an invoicing or payroll regulation, a retention period, a payment provider's API - research them from primary sources, with a citation for each, and note where sources disagree. They go into the spec as input for the user to decide on, and what is still undecided under its open questions
@@ -70,9 +75,14 @@ port, rebrand, landing-page, bitify-ui, template-diff and scaffold-entity, and t
 - After each task: verify correctness, run relevant checks
 
 ### 5. Validation
-- Run the build and the tests after completing all tasks, the way the **write-tests** skill describes
-- Invoke the **review** skill (`.github/agents/review.agent.md`) on the resulting changes
-- Confirm acceptance criteria are met
+Before you hand anything back, these three happen, in this order, and each leaves evidence you can name:
+
+1. Run the build and the tests after completing all tasks, the way the **write-tests** skill describes.
+2. Open the **review** skill (`.github/agents/review.agent.md`) and run it on the resulting changes; fix what it finds.
+3. Confirm acceptance criteria are met.
+
+Then, as they apply:
+
 - When the change shows in the UI, walk its acceptance criteria in the running app, driving it as the run-app skill describes, through the UI the way a user would rather than through the API: the states it adds too - empty, invalid, busy, a long text - in light and dark, at phone width, and in an RTL culture the app ships. Tests and a clean build don't show a value that renders empty, a button that does nothing or a layout that breaks at one width. Read the browser console and the server's logs while you walk: a page can render while every request behind it fails
 - When the change produces a file or a message - a PDF, a spreadsheet, a CSV, an email - produce it through the running app and open it: look at every page, at RTL text and its fonts, at figures that should match the screen, and at placeholder text left behind. The emails arrive in the development inbox the run-app skill names
 - When the change shows in the Windows or Android app, check it there too, driving it as the run-app skill describes. What the WebView doesn't contain - the native chrome, permission prompts, file pickers, notifications - is checked the way run-app says or listed as a check left to the user, never assumed
