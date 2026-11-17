@@ -3939,7 +3939,8 @@
         // label gap. Icons go first: one at the start or end hugs that edge and
         // narrows the room left, then text at an edge takes the next slot in from
         // it. Centered items form one group (icon before text) centered on the
-        // section. Whatever does not fit the room left is dropped - the text when
+        // section, moved in only as far as the room the edge items left it
+        // takes. Whatever does not fit the room left is dropped - the text when
         // a centered pair is too wide - so nothing overlaps or leaves the section.
         private _buildSectionContent(section: ResourceTimelineBarSection, node: any, left: number, right: number, centerY: number, height: number): void {
             const metrics = this._labelMetrics();
@@ -3996,35 +3997,42 @@
                 }
                 icon = null;
             }
-            // Text at an edge narrows only the room the centered group slides in
-            // (and steps aside within) with stickyBarLabels; where it is drawn
-            // still centered, the room is the one it has always been checked by.
-            let slideLo = lo;
-            let slideHi = hi;
+            // Text at an edge narrows the room left for the centered group just
+            // as an edge icon does, so the two never overlap.
             let centerText = text;
             if (text && textPos !== 'center') {
                 if (textWidth <= hi - lo) {
                     if (textPos === 'end') {
                         placeText(hi, 'right');
-                        slideHi = hi - textWidth - gap;
+                        hi -= textWidth + gap;
                     } else {
                         placeText(lo, 'left');
-                        slideLo = lo + textWidth + gap;
+                        lo += textWidth + gap;
                     }
                 }
                 centerText = null;
             }
 
+            // The centered group is drawn whenever it fits the room the edge
+            // items left, which is where it is drawn: centered on the section
+            // while that keeps it clear of them, else moved in just far enough.
+            // Requiring it to fit while centered on the whole section instead
+            // dropped it, at the zooms where the section is only a little wider
+            // than the group and its edge items, despite the room beside them.
             const centerX = (left + right) / 2;
-            const fits = (width: number) => centerX - width / 2 >= lo && centerX + width / 2 <= hi;
+            const fits = (width: number) => width <= hi - lo;
             // With stickyBarLabels the centered group follows the section's
             // visible part, within the room the edge items left it, and is noted
             // so the bar's center icons, placed later on the same line, can move
             // it out of their way (see _avoidStickySections).
             const sticky = this.config.stickyBarLabels;
-            const at = (width: number) => sticky ? this._stickyCenter(centerX, width, slideLo, slideHi) : centerX;
+            const at = (width: number) => {
+                const half = width / 2;
+                const x = Math.min(Math.max(centerX, lo + half), hi - half);
+                return sticky ? this._stickyCenter(x, width, lo, hi) : x;
+            };
             const note = (placedIcon: any, placedText: any, width: number, center: number) => {
-                if (sticky) this._stickySections.push({ icon: placedIcon, text: placedText, width, center, lo: slideLo, hi: slideHi });
+                if (sticky) this._stickySections.push({ icon: placedIcon, text: placedText, width, center, lo, hi });
             };
             if (icon && centerText && fits(icon.width + gap + textWidth)) {
                 const width = icon.width + gap + textWidth;

@@ -186,6 +186,77 @@ test('a centered icon and text form one group centered on the section', () => {
     assert.equal((icon.x + groupRight) / 2, node.x + node.width / 2);
 });
 
+test('centered text with room beside an edge icon is moved clear of it, not dropped', () => {
+    // A 104px section: 3 + 16 (icon) + 3 + 77 (text) + 3 = 102px are needed, but
+    // the text centered on the section would cover the icon.
+    const engine = makeSceneEngine([
+        sectioned([{ startTime: at(2), endTime: at(4.6), icon: 'a.png', text: 'Hello world' }])
+    ]);
+    const node = engine.buildScene().bars[0];
+    const gap = engine.config.barLabelGap;
+    const [icon] = node.icons;
+    const [label] = node.labels;
+    const width = 'Hello world'.length * 7;
+
+    assert.equal(icon.x, engine.getTimeToX(at(2)) + gap);
+    assert.equal(label.align, 'center');
+    assert.equal(label.x - width / 2, icon.x + icon.width + gap, 'the text must clear the icon');
+    assert.ok(label.x + width / 2 <= engine.getTimeToX(at(4.6)) - gap, 'and stay inside the section');
+
+    // Wider, the text is centered on the section again.
+    const wide = makeSceneEngine([
+        sectioned([{ startTime: at(1), endTime: at(6), icon: 'a.png', text: 'Hello world' }])
+    ]);
+    const wideNode = wide.buildScene().bars[0];
+    assert.equal(wideNode.labels[0].x, wideNode.x + wideNode.width / 2);
+});
+
+test('section text stays drawn at every zoom once its section has room for it', () => {
+    // The section is a fixed share of the bar, so it widens with the zoom: once
+    // the icon and the text fit, no wider zoom may drop the text again.
+    let shown = false;
+    for (let pph = 10; pph <= 80; pph += 0.5) {
+        const engine = makeSceneEngine([
+            sectioned([{ startPercent: 20, endPercent: 60, icon: 'a.png', text: 'Hello world' }])
+        ]);
+        engine._pixelsPerHour = pph;
+        engine._pixelsPerMs = pph / HOUR;
+        engine.visibleTimeRange = engine.calculateVisibleTimeRange();
+        const node = engine.buildScene().bars[0];
+        // 20%-60% of the 1h-6h bar is 2h-4h.
+        const room = engine.getTimeToX(at(4)) - engine.getTimeToX(at(2));
+        const drawn = !!(node.labels && node.labels.length);
+        if (shown) assert.ok(drawn, `the text must not hide again at ${pph}px per hour`);
+        assert.equal(drawn, room >= 3 + 16 + 3 + 77 + 3, `at ${pph}px per hour (${room}px section)`);
+        shown = drawn;
+    }
+    assert.ok(shown);
+});
+
+test('a centered icon stays clear of text at the section\'s edge', () => {
+    // A 120px section: the start text covers 3-80px of it, so the icon centered
+    // on the section (52-68px) would sit on the text.
+    const engine = makeSceneEngine([
+        sectioned([{ startTime: at(2), endTime: at(5), icon: 'a.png', iconPosition: 'center', text: 'Hello world', textPosition: 'start' }])
+    ]);
+    const node = engine.buildScene().bars[0];
+    const gap = engine.config.barLabelGap;
+    const [icon] = node.icons;
+    const [label] = node.labels;
+
+    assert.equal(label.align, 'left');
+    assert.equal(label.x, engine.getTimeToX(at(2)) + gap);
+    assert.equal(icon.x, label.x + 'Hello world'.length * 7 + gap);
+
+    // With no room left beside the text, the icon is dropped rather than drawn over it.
+    const narrow = makeSceneEngine([
+        sectioned([{ startTime: at(2), endTime: at(4.5), icon: 'a.png', iconPosition: 'center', text: 'Hello world', textPosition: 'start' }])
+    ]);
+    const narrowNode = narrow.buildScene().bars[0];
+    assert.equal(narrowNode.icons, null);
+    assert.equal(narrowNode.labels.length, 1);
+});
+
 test('an icon shrinks to the bar height and is dropped when the section is too narrow', () => {
     const engine = makeSceneEngine([
         sectioned([
