@@ -3,7 +3,7 @@ using System.Collections;
 using System.Globalization;
 using System.Text.Json;
 
-namespace Bit.Bcrdt.Integrations;
+namespace Bit.Bcrdt;
 
 /// <summary>
 /// Moves an object between a library's own JSON format and the entries of a collaborative map, one top-level

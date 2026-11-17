@@ -83,8 +83,8 @@ public sealed record EditorToolSettings
         Stroke = new StrokeStyle
         {
             Width = StrokeWidth,
-            Cap = LineCap.Round,
-            Join = LineJoin.Round,
+            Cap = BmageLineCap.Round,
+            Join = BmageLineJoin.Round,
             DashPattern = Dashed ? [StrokeWidth * 3, StrokeWidth * 2] : null,
         },
     };

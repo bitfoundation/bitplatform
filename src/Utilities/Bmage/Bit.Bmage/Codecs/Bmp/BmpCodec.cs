@@ -5,8 +5,8 @@ namespace Bit.Bmage;
 /// <summary>Managed BMP decoder: uncompressed 1/4/8-bit palette, 16/24/32-bit RGB and BI_BITFIELDS images, top-down or bottom-up.</summary>
 public sealed class BmpDecoder : IImageDecoder
 {
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Bmp];
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.Bmp];
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     public ImageInfo? Identify(ReadOnlySpan<byte> data)
     {
@@ -14,14 +14,14 @@ public sealed class BmpDecoder : IImageDecoder
         var headerSize = BinaryPrimitives.ReadInt32LittleEndian(data[14..]);
         if (headerSize == 12)
         {
-            return new ImageInfo(BinaryPrimitives.ReadUInt16LittleEndian(data[18..]), Math.Abs((int)BinaryPrimitives.ReadInt16LittleEndian(data[20..])), ImageFormat.Bmp, HasAlpha: false);
+            return new ImageInfo(BinaryPrimitives.ReadUInt16LittleEndian(data[18..]), Math.Abs((int)BinaryPrimitives.ReadInt16LittleEndian(data[20..])), BmageImageFormat.Bmp, HasAlpha: false);
         }
         var w = BinaryPrimitives.ReadInt32LittleEndian(data[18..]);
         var rawHeight = BinaryPrimitives.ReadInt32LittleEndian(data[22..]);
         if (rawHeight == int.MinValue) return null; // has no positive counterpart
         var h = Math.Abs(rawHeight);
         var bpp = data.Length >= 30 ? BinaryPrimitives.ReadUInt16LittleEndian(data[28..]) : 0;
-        return w <= 0 || h <= 0 ? null : new ImageInfo(w, h, ImageFormat.Bmp, HasAlpha: bpp == 32);
+        return w <= 0 || h <= 0 ? null : new ImageInfo(w, h, BmageImageFormat.Bmp, HasAlpha: bpp == 32);
     }
 
     public ValueTask<ImageBuffer> DecodeAsync(ReadOnlyMemory<byte> data, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken = default)
@@ -145,7 +145,7 @@ public sealed class BmpDecoder : IImageDecoder
                 for (var i = 0; i < px.Length; i++) if (px[i].A != 0) { allZero = false; break; }
                 if (allZero) for (var i = 0; i < px.Length; i++) px[i] = px[i].WithAlpha(255);
             }
-            image.Metadata = new ImageMetadata(sourceFormat: ImageFormat.Bmp, fileName: options.FileName);
+            image.Metadata = new ImageMetadata(sourceFormat: BmageImageFormat.Bmp, fileName: options.FileName);
             return image;
         }
         catch { image.Dispose(); throw; }
@@ -166,8 +166,8 @@ public sealed class BmpDecoder : IImageDecoder
 /// <summary>Managed BMP encoder writing 24-bit (opaque) or 32-bit BGRA (with alpha, BITMAPV4HEADER) images.</summary>
 public sealed class BmpEncoder : IImageEncoder
 {
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Bmp];
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.Bmp];
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     public ValueTask<EncodedImage> EncodeAsync(ImageBuffer image, ImageExportOptions options, CancellationToken cancellationToken = default)
         => new(Encode(image, cancellationToken));
@@ -213,6 +213,6 @@ public sealed class BmpEncoder : IImageEncoder
             else
                 for (var x = 0; x < w; x++) { var p = row[x]; buf[o + x * 3] = p.B; buf[o + x * 3 + 1] = p.G; buf[o + x * 3 + 2] = p.R; }
         }
-        return new EncodedImage(buf, ImageFormat.Bmp, w, h);
+        return new EncodedImage(buf, BmageImageFormat.Bmp, w, h);
     }
 }

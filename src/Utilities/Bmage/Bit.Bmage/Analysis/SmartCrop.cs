@@ -95,7 +95,7 @@ public static class SmartCrop
         }
         else
         {
-            small = new ResizeOperation(analysisWidth, analysisHeight, ResizeMode.Stretch, ResamplingFilter.Box)
+            small = new ResizeOperation(analysisWidth, analysisHeight, BmageResizeMode.Stretch, ResamplingFilter.Box)
                 .Apply(image, context.WithProgress(null).WithMutation(false));
             ownsSmall = true;
         }

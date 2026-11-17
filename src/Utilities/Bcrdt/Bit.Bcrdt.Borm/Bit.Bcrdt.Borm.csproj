@@ -28,7 +28,6 @@
     <ItemGroup>
         <Using Include="Bit.Bcrdt" />
         <Using Include="Bit.Borm" />
-        <Using Include="Bit.Bcrdt.Integrations" />
     </ItemGroup>
 
 </Project>

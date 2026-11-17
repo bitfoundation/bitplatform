@@ -291,7 +291,7 @@ public sealed class ImageSharpnessTests
     public void APhotoAndItsReductionToTheAnalysisSizeScoreAlike()
     {
         using var large = Pages.Text(1024, 768);
-        using var reduced = new ResizeOperation(512, 384, ResizeMode.Stretch, ResamplingFilter.Box).Apply(large, OperationContext.Default);
+        using var reduced = new ResizeOperation(512, 384, BmageResizeMode.Stretch, ResamplingFilter.Box).Apply(large, OperationContext.Default);
         var a = ImageSharpness.Measure(large);
         var b = ImageSharpness.Measure(reduced);
         Assert.AreEqual(1, a / b, 0.05, $"{a} against {b}");

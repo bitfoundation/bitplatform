@@ -43,7 +43,7 @@ callback so the page re-renders.
     }
 
     async Task Save() => await _editor!.DownloadAsync("edited",
-        new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.9 });
+        new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.9 });
 
     async Task AddCallout() => await _editor!.AddAnnotationAsync(new ArrowAnnotation
     {
@@ -112,14 +112,14 @@ setup. Add them from your own controls:
 
 ```csharp
 // A colour wash over the whole photo, through the Color blend mode.
-await context.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BlendMode.Color, Opacity = 0.4f });
+await context.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BmageBlendMode.Color, Opacity = 0.4f });
 
 // A watermark in the corner, blended in.
 await context.AddLayerAsync(new ImageLayer
 {
     Image = logo,
     Bounds = new RectangleF(context.OutputSize.Width - 220, context.OutputSize.Height - 220, 200, 200),
-    BlendMode = BlendMode.Overlay,
+    BlendMode = BmageBlendMode.Overlay,
 });
 
 // A graduated filter over the sky, as one undoable step.

@@ -39,7 +39,7 @@ public sealed class ExifTests
         Assert.AreEqual("BlazorPhone", restored!.Make);
         Assert.AreEqual("BP-9 Pro", restored.Model);
         Assert.AreEqual("© 2026 Example", restored.Copyright);
-        Assert.AreEqual(Orientation.Rotate90, restored.Orientation);
+        Assert.AreEqual(BmageOrientation.Rotate90, restored.Orientation);
         Assert.AreEqual(200, restored.Iso);
         Assert.AreEqual(1.0 / 250, restored.ExposureTime!.Value, 0.5e-6);
         Assert.AreEqual(1.8, restored.FNumber!.Value, 0.5e-3);
@@ -97,8 +97,8 @@ public sealed class ExifTests
     public void OrientationCanBeReadAndReset()
     {
         var exif = BuildCameraExif();
-        Assert.AreEqual(Orientation.Rotate90, exif.Orientation);
-        Assert.AreEqual(Orientation.Normal, exif.WithOrientation(Orientation.Normal).Orientation);
+        Assert.AreEqual(BmageOrientation.Rotate90, exif.Orientation);
+        Assert.AreEqual(BmageOrientation.Normal, exif.WithOrientation(BmageOrientation.Normal).Orientation);
     }
 
     [TestMethod]
@@ -132,7 +132,7 @@ public sealed class ExifTests
     [TestMethod]
     public void MetadataPolicyControlsWhatSurvives()
     {
-        var metadata = new ImageMetadata(BuildCameraExif(), new byte[] { 1, 2, 3, 4 }, "<x:xmpmeta/>"u8.ToArray(), ImageFormat.Jpeg);
+        var metadata = new ImageMetadata(BuildCameraExif(), new byte[] { 1, 2, 3, 4 }, "<x:xmpmeta/>"u8.ToArray(), BmageImageFormat.Jpeg);
 
         var removed = metadata.Apply(MetadataPolicy.Remove, 100, 80);
         Assert.IsNull(removed.Exif);
@@ -156,12 +156,12 @@ public sealed class ExifTests
         // The orientation tag describes the pixels in the buffer, so a policy carries it through rather than
         // forcing it to normal. Forcing it would export a sideways image whenever the caller decoded with
         // AutoOrient off, with nothing left in the file to correct it.
-        Assert.AreEqual(Orientation.Rotate90, stripped.Exif.Orientation);
-        Assert.AreEqual(Orientation.Rotate90, preserved.Exif.Orientation);
+        Assert.AreEqual(BmageOrientation.Rotate90, stripped.Exif.Orientation);
+        Assert.AreEqual(BmageOrientation.Rotate90, preserved.Exif.Orientation);
 
         // A buffer whose pixels have been brought upright reports normal, and that is what gets written.
-        var upright = metadata.WithExif(metadata.Exif!.WithOrientation(Orientation.Normal));
-        Assert.AreEqual(Orientation.Normal, upright.Apply(MetadataPolicy.Preserve, 100, 80).Exif!.Orientation);
+        var upright = metadata.WithExif(metadata.Exif!.WithOrientation(BmageOrientation.Normal));
+        Assert.AreEqual(BmageOrientation.Normal, upright.Apply(MetadataPolicy.Preserve, 100, 80).Exif!.Orientation);
     }
 }
 
@@ -172,13 +172,13 @@ public sealed class ContainerTests
     public void JpegMetadataSurvivesAWriteReadRoundTrip()
     {
         using var image = TestImages.Gradient(32, 32);
-        var jpeg = JpegEncoder.Encode(image, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9 }).Data;
+        var jpeg = JpegEncoder.Encode(image, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.9 }).Data;
         var metadata = new ImageMetadata(
             new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Artist, ExifValue.FromString("A Photographer"))),
-            sourceFormat: ImageFormat.Jpeg);
+            sourceFormat: BmageImageFormat.Jpeg);
 
         var withMetadata = JpegContainer.WriteMetadata(jpeg, metadata);
-        Assert.AreEqual(ImageFormat.Jpeg, ImageFormats.Detect(withMetadata));
+        Assert.AreEqual(BmageImageFormat.Jpeg, ImageFormats.Detect(withMetadata));
         var read = JpegContainer.ReadMetadata(withMetadata);
         Assert.AreEqual("A Photographer", read.Exif?.Artist);
 
@@ -210,7 +210,7 @@ public sealed class ContainerTests
             new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Software, ExifValue.FromString("Bmage"))),
             icc,
             "<x:xmpmeta xmlns:x='adobe:ns:meta/'/>"u8.ToArray(),
-            ImageFormat.Png);
+            BmageImageFormat.Png);
 
         var withMetadata = PngContainer.WriteMetadata(png, metadata);
         var read = PngContainer.ReadMetadata(withMetadata);
@@ -252,14 +252,14 @@ public sealed class ContainerTests
 public sealed class OrientationDecodeTests
 {
     [TestMethod]
-    [DataRow(Orientation.Rotate90)]
-    [DataRow(Orientation.Rotate180)]
-    [DataRow(Orientation.Rotate270)]
-    [DataRow(Orientation.FlipHorizontal)]
-    [DataRow(Orientation.FlipVertical)]
-    [DataRow(Orientation.Transpose)]
-    [DataRow(Orientation.Transverse)]
-    public void AutoOrientMakesEveryOrientationUpright(Orientation orientation)
+    [DataRow(BmageOrientation.Rotate90)]
+    [DataRow(BmageOrientation.Rotate180)]
+    [DataRow(BmageOrientation.Rotate270)]
+    [DataRow(BmageOrientation.FlipHorizontal)]
+    [DataRow(BmageOrientation.FlipVertical)]
+    [DataRow(BmageOrientation.Transpose)]
+    [DataRow(BmageOrientation.Transverse)]
+    public void AutoOrientMakesEveryOrientationUpright(BmageOrientation orientation)
     {
         // Start from an upright image, store it rotated, and tag it so a decoder should undo the rotation.
         using var upright = TestImages.Quadrants(16, 16);
@@ -272,7 +272,7 @@ public sealed class OrientationDecodeTests
         using var decoded = PngDecoder.Decode(tagged, new DecodeOptions { AutoOrient = true });
         Assert.AreEqual(upright.Size, decoded.Size);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(upright, decoded));
-        Assert.AreEqual(Orientation.Normal, decoded.Metadata!.Orientation);
+        Assert.AreEqual(BmageOrientation.Normal, decoded.Metadata!.Orientation);
     }
 
     [TestMethod]
@@ -280,10 +280,10 @@ public sealed class OrientationDecodeTests
     {
         using var source = TestImages.Quadrants(8, 8);
         var png = PngEncoder.Encode(source).Data;
-        var tagged = PngContainer.WriteMetadata(png, new ImageMetadata(ExifData.FromOrientation(Orientation.Rotate90)));
+        var tagged = PngContainer.WriteMetadata(png, new ImageMetadata(ExifData.FromOrientation(BmageOrientation.Rotate90)));
         using var decoded = PngDecoder.Decode(tagged, new DecodeOptions { AutoOrient = false });
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, decoded));
         // The orientation is reported rather than applied, so the caller can decide.
-        Assert.AreEqual(Orientation.Rotate90, decoded.Metadata!.Orientation);
+        Assert.AreEqual(BmageOrientation.Rotate90, decoded.Metadata!.Orientation);
     }
 }

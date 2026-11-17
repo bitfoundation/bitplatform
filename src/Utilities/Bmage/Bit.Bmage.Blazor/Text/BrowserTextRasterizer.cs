@@ -106,7 +106,7 @@ public sealed class BrowserTextRasterizer : IDisposable
     {
         var font = BuildFontString(style);
         var color = (style.FillColor ?? Rgba32.Black).ToCss();
-        var align = style.Alignment switch { TextAlignment.Center => "center", TextAlignment.Right => "right", _ => "left" };
+        var align = style.Alignment switch { BmageTextAlignment.Center => "center", BmageTextAlignment.Right => "right", _ => "left" };
         var key = new CacheKey(text, font, color, style.MaxWidth ?? 0, style.LetterSpacing, style.LineHeight, align);
         if (_cache.TryGetValue(key, out var cached)) return cached;
 

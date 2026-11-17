@@ -209,7 +209,7 @@ public sealed class BmageEditorContext
     public Task AddPaintLayerAsync() => _editor.AddPaintLayerAsync();
 
     /// <summary>Loads an image and places it as a layer in the middle of the image.</summary>
-    public Task AddImageLayerAsync(ImageSource source) => _editor.AddImageLayerAsync(source);
+    public Task AddImageLayerAsync(BmageImageSource source) => _editor.AddImageLayerAsync(source);
 
     /// <summary>The pixel selection, in output coordinates, or null when nothing is selected.</summary>
     public Mask? Selection => _editor.Selection;
@@ -304,7 +304,7 @@ public sealed class BmageEditorContext
     public void FitToWindow() => _editor.FitToWindow();
 
     /// <summary>Loads an image from any source.</summary>
-    public Task LoadAsync(ImageSource source) => _editor.LoadAsync(source);
+    public Task LoadAsync(BmageImageSource source) => _editor.LoadAsync(source);
 
     /// <summary>Loads the image on the clipboard.</summary>
     public Task PasteAsync() => _editor.PasteAsync();

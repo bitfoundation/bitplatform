@@ -11,17 +11,17 @@ public sealed class IcoDecoder : IImageDecoder
     /// <summary>The most images an icon file may list.</summary>
     internal const int MaxEntries = 256;
 
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Ico];
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.Ico];
 
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     public ImageInfo? Identify(ReadOnlySpan<byte> data)
     {
-        if (ImageFormats.Detect(data) != ImageFormat.Ico) return null;
+        if (ImageFormats.Detect(data) != BmageImageFormat.Ico) return null;
         try
         {
             var entry = Largest(data);
-            return new ImageInfo(entry.Width, entry.Height, ImageFormat.Ico, HasAlpha: true);
+            return new ImageInfo(entry.Width, entry.Height, BmageImageFormat.Ico, HasAlpha: true);
         }
         catch (ImageDecodeException)
         {
@@ -38,17 +38,17 @@ public sealed class IcoDecoder : IImageDecoder
         options ??= DecodeOptions.Default;
         allocator ??= PooledPixelAllocator.Shared;
         options.Limits.ValidateEncodedSize(data.Length);
-        if (ImageFormats.Detect(data) != ImageFormat.Ico) throw new ImageDecodeException("Not an ICO file.");
+        if (ImageFormats.Detect(data) != BmageImageFormat.Ico) throw new ImageDecodeException("Not an ICO file.");
         var entry = Largest(data);
         var body = data.Slice(entry.Offset, entry.Length);
-        if (ImageFormats.Detect(body) == ImageFormat.Png)
+        if (ImageFormats.Detect(body) == BmageImageFormat.Png)
         {
             var png = PngDecoder.Decode(body, options with { ReadMetadata = false }, allocator, cancellationToken);
-            png.Metadata = new ImageMetadata(sourceFormat: ImageFormat.Ico, fileName: options.FileName);
+            png.Metadata = new ImageMetadata(sourceFormat: BmageImageFormat.Ico, fileName: options.FileName);
             return png;
         }
         var image = DecodeBitmap(body, options, allocator, cancellationToken);
-        image.Metadata = new ImageMetadata(sourceFormat: ImageFormat.Ico, fileName: options.FileName);
+        image.Metadata = new ImageMetadata(sourceFormat: BmageImageFormat.Ico, fileName: options.FileName);
         return image;
     }
 
@@ -72,7 +72,7 @@ public sealed class IcoDecoder : IImageDecoder
             int width = e[0] == 0 ? 256 : e[0], height = e[1] == 0 ? 256 : e[1];
             var body = data.Slice(offset, length);
             // A PNG entry's own header gives its real size, which can exceed what the directory's bytes can say.
-            if (ImageFormats.Detect(body) == ImageFormat.Png && body.Length >= 24)
+            if (ImageFormats.Detect(body) == BmageImageFormat.Png && body.Length >= 24)
             {
                 width = BinaryPrimitives.ReadInt32BigEndian(body[16..]);
                 height = BinaryPrimitives.ReadInt32BigEndian(body[20..]);
@@ -205,9 +205,9 @@ public sealed class IcoEncoder : IImageEncoder
     /// <summary>The sizes <see cref="CreateFavicon"/> makes when none are given.</summary>
     public static IReadOnlyList<int> DefaultFaviconSizes { get; } = [16, 32, 48];
 
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Ico];
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.Ico];
 
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     /// <summary>
     /// Writes <paramref name="image"/> as a one-image icon file. An image larger than 256 pixels either way is first
@@ -217,7 +217,7 @@ public sealed class IcoEncoder : IImageEncoder
     {
         ArgumentNullException.ThrowIfNull(image);
         if (image.Width <= MaxSize && image.Height <= MaxSize) return new(Encode([image], options, cancellationToken));
-        using var fitted = new ResizeOperation(MaxSize, MaxSize, ResizeMode.Max, ResamplingFilter.Auto, Anchor.Center, Rgba32.Transparent)
+        using var fitted = new ResizeOperation(MaxSize, MaxSize, BmageResizeMode.Max, ResamplingFilter.Auto, Anchor.Center, Rgba32.Transparent)
             .Apply(image, new OperationContext(cancellationToken: cancellationToken));
         return new(Encode([fitted], options, cancellationToken));
     }
@@ -235,7 +235,7 @@ public sealed class IcoEncoder : IImageEncoder
                 throw new ArgumentException($"An icon image is at most {MaxSize} pixels either way, not {image.Width} x {image.Height}: resize it first, or use CreateFavicon.", nameof(images));
         }
         // Icons carry no metadata, and their PNGs need none; nor a palette, which would lose the exact colours.
-        var png = (options ?? new ImageExportOptions()) with { Format = ImageFormat.Png, Metadata = MetadataPolicy.Remove, MaxFileSize = null, MaxColors = null };
+        var png = (options ?? new ImageExportOptions()) with { Format = BmageImageFormat.Png, Metadata = MetadataPolicy.Remove, MaxFileSize = null, MaxColors = null };
         var bodies = new byte[images.Count][];
         for (var i = 0; i < images.Count; i++)
         {
@@ -264,7 +264,7 @@ public sealed class IcoEncoder : IImageEncoder
         }
         foreach (var body in bodies) ms.Write(body);
         var largest = images.MaxBy(i => (long)i.Width * i.Height)!;
-        return new EncodedImage(ms.ToArray(), ImageFormat.Ico, largest.Width, largest.Height);
+        return new EncodedImage(ms.ToArray(), BmageImageFormat.Ico, largest.Width, largest.Height);
     }
 
     /// <summary>
@@ -286,7 +286,7 @@ public sealed class IcoEncoder : IImageEncoder
             foreach (var size in sizes.Distinct().Order())
             {
                 if (size is < 1 or > MaxSize) throw new ArgumentOutOfRangeException(nameof(sizes), size, $"Each size is between 1 and {MaxSize} pixels.");
-                images.Add(new ResizeOperation(size, size, ResizeMode.Contain, ResamplingFilter.Auto, Anchor.Center, Rgba32.Transparent).Apply(source, context));
+                images.Add(new ResizeOperation(size, size, BmageResizeMode.Contain, ResamplingFilter.Auto, Anchor.Center, Rgba32.Transparent).Apply(source, context));
             }
             return Encode(images, cancellationToken: cancellationToken);
         }

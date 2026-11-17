@@ -5,9 +5,9 @@
 /// or over the limits it enforces by refusing where the second scales down) or that <paramref name="prefersFallback"/>
 /// sends there directly.
 /// </summary>
-internal sealed class FallbackImageDecoder(ImageFormat format, IImageDecoder preferred, IImageDecoder fallback, Func<ReadOnlyMemory<byte>, bool>? prefersFallback = null) : IImageDecoder
+internal sealed class FallbackImageDecoder(BmageImageFormat format, IImageDecoder preferred, IImageDecoder fallback, Func<ReadOnlyMemory<byte>, bool>? prefersFallback = null) : IImageDecoder
 {
-    public IReadOnlyCollection<ImageFormat> Formats { get; } = [format];
+    public IReadOnlyCollection<BmageImageFormat> Formats { get; } = [format];
 
     public ImageInfo? Identify(ReadOnlySpan<byte> data) => preferred.Identify(data) ?? fallback.Identify(data);
 

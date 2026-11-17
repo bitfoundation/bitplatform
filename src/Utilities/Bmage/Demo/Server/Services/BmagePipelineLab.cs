@@ -217,7 +217,7 @@ public static class BmagePipelineLab
     {
         var target = ParseFormat(format);
 
-        if (target is not (ImageFormat.Jpeg or ImageFormat.Png or ImageFormat.Bmp or ImageFormat.WebP))
+        if (target is not (BmageImageFormat.Jpeg or BmageImageFormat.Png or BmageImageFormat.Bmp or BmageImageFormat.WebP))
         {
             return new BmageMetadataComparisonDto
             {
@@ -225,7 +225,7 @@ public static class BmagePipelineLab
                 Original = [],
                 Policies = [],
                 Reading = string.Empty,
-                Error = target is ImageFormat.Avif
+                Error = target is BmageImageFormat.Avif
                     ? "AVIF is encoded by the browser, which this server does not have, and it is not written with metadata by " +
                       "this library at all: a browser's AVIF carries none."
                     : $"'{format}' is not a format this can test. Use 'jpeg', 'png', 'bmp' or 'webp'."
@@ -365,8 +365,8 @@ public static class BmagePipelineLab
         var cy = height / 2f;
         var radius = Math.Min(width, height) * 0.42f;
 
-        canvas.FillPath(new PathBuilder().AddEllipse(new RectangleF(cx - radius, cy - radius, radius * 2, radius * 2)).Build(),
-            new LinearGradientPaint(new Vector2(cx - radius, cy - radius), new Vector2(cx + radius, cy + radius),
+        canvas.FillPath(new BmagePathBuilder().AddEllipse(new RectangleF(cx - radius, cy - radius, radius * 2, radius * 2)).Build(),
+            new BmageLinearGradientPaint(new Vector2(cx - radius, cy - radius), new Vector2(cx + radius, cy + radius),
                 [(0f, new Rgba32(124, 58, 237)), (1f, new Rgba32(37, 99, 235))]));
         canvas.FillPolygon(
         [
@@ -387,14 +387,14 @@ public static class BmagePipelineLab
         return (result, watch.Elapsed.TotalMilliseconds);
     }
 
-    private static async Task<BmageEncodingDto[]> EncodeAllAsync(ImageBuffer output, ImageFormat[] formats, double[] qualities, bool transparent, CancellationToken cancellationToken)
+    private static async Task<BmageEncodingDto[]> EncodeAllAsync(ImageBuffer output, BmageImageFormat[] formats, double[] qualities, bool transparent, CancellationToken cancellationToken)
     {
         var results = new List<BmageEncodingDto>();
         var pixels = (double)output.PixelCount;
 
         foreach (var format in formats)
         {
-            if (format == ImageFormat.Avif)
+            if (format == BmageImageFormat.Avif)
             {
                 results.Add(new BmageEncodingDto
                 {
@@ -424,8 +424,8 @@ public static class BmagePipelineLab
                     EncodeMilliseconds = Math.Round(ms, 1),
                     Note = transparent && format.SupportsAlpha() is false
                         ? $"{format} has no alpha channel: the transparent pixels were flattened onto ImageExportOptions.Background (white by default)."
-                        : format == ImageFormat.Png ? "Lossless, compression level 6 (the default); level 1 encodes about 3.4 times faster for a larger file."
-                        : format == ImageFormat.Gif ? "One frame of at most 256 colours (median cut, dithered): a photo loses colour, and a pixel is either opaque or fully transparent. Use PNG or WebP for photos."
+                        : format == BmageImageFormat.Png ? "Lossless, compression level 6 (the default); level 1 encodes about 3.4 times faster for a larger file."
+                        : format == BmageImageFormat.Gif ? "One frame of at most 256 colours (median cut, dithered): a photo loses colour, and a pixel is either opaque or fully transparent. Use PNG or WebP for photos."
                         : null
                 });
             }
@@ -434,7 +434,7 @@ public static class BmagePipelineLab
         return [.. results];
     }
 
-    private static async Task<BmageBudgetDto[]> RunBudgetsAsync(ImageBuffer output, ImageFormat[] formats, double[] qualities, long budget, List<string> warnings, CancellationToken cancellationToken)
+    private static async Task<BmageBudgetDto[]> RunBudgetsAsync(ImageBuffer output, BmageImageFormat[] formats, double[] qualities, long budget, List<string> warnings, CancellationToken cancellationToken)
     {
         if (budget <= 0)
         {
@@ -444,7 +444,7 @@ public static class BmagePipelineLab
 
         var results = new List<BmageBudgetDto>();
 
-        foreach (var format in formats.Where(format => format is ImageFormat.Jpeg or ImageFormat.Png))
+        foreach (var format in formats.Where(format => format is BmageImageFormat.Jpeg or BmageImageFormat.Png))
         {
             try
             {
@@ -609,7 +609,7 @@ public static class BmagePipelineLab
         return string.Join(' ', parts);
     }
 
-    private static string ReadPolicies(ImageFormat format, List<BmageMetadataPolicyDto> results)
+    private static string ReadPolicies(BmageImageFormat format, List<BmageMetadataPolicyDto> results)
     {
         var parts = results.Select(result =>
             $"{result.Policy}: {(result.LeaksLocation ? "the GPS position IS still in the file" : "no location")}, " +
@@ -646,18 +646,18 @@ public static class BmagePipelineLab
         return (clampedW, clampedH);
     }
 
-    private static (ImageFormat[] Formats, string[] Warnings) ParseFormats(string? formats)
+    private static (BmageImageFormat[] Formats, string[] Warnings) ParseFormats(string? formats)
     {
-        if (string.IsNullOrWhiteSpace(formats)) return ([ImageFormat.Jpeg, ImageFormat.Png], []);
+        if (string.IsNullOrWhiteSpace(formats)) return ([BmageImageFormat.Jpeg, BmageImageFormat.Png], []);
 
         var warnings = new List<string>();
-        var result = new List<ImageFormat>();
+        var result = new List<BmageImageFormat>();
 
         foreach (var name in formats.Split([',', ';', ' ', '|'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
             var format = ParseFormat(name);
 
-            if (format == ImageFormat.Unknown)
+            if (format == BmageImageFormat.Unknown)
             {
                 warnings.Add($"'{name}' is not a format; it was skipped. Use jpeg, png, bmp, webp or avif.");
                 continue;
@@ -672,18 +672,18 @@ public static class BmagePipelineLab
             result = result[..MaxFormats];
         }
 
-        return (result.Count == 0 ? [ImageFormat.Jpeg, ImageFormat.Png] : [.. result], [.. warnings]);
+        return (result.Count == 0 ? [BmageImageFormat.Jpeg, BmageImageFormat.Png] : [.. result], [.. warnings]);
     }
 
-    private static ImageFormat ParseFormat(string? name) => (name ?? string.Empty).Trim().TrimStart('.').ToLowerInvariant() switch
+    private static BmageImageFormat ParseFormat(string? name) => (name ?? string.Empty).Trim().TrimStart('.').ToLowerInvariant() switch
     {
-        "jpeg" or "jpg" => ImageFormat.Jpeg,
-        "png" => ImageFormat.Png,
-        "bmp" => ImageFormat.Bmp,
-        "webp" => ImageFormat.WebP,
-        "avif" => ImageFormat.Avif,
-        "gif" => ImageFormat.Gif,
-        _ => ImageFormat.Unknown
+        "jpeg" or "jpg" => BmageImageFormat.Jpeg,
+        "png" => BmageImageFormat.Png,
+        "bmp" => BmageImageFormat.Bmp,
+        "webp" => BmageImageFormat.WebP,
+        "avif" => BmageImageFormat.Avif,
+        "gif" => BmageImageFormat.Gif,
+        _ => BmageImageFormat.Unknown
     };
 
     private static (double[] Qualities, string[] Warnings) ParseQualities(string? qualities)

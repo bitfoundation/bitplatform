@@ -29,7 +29,7 @@ public sealed class DemoFonts(HttpClient http, FontTextRasterizer fonts)
                 http.GetByteArrayAsync("fonts/NotoSans-Bold.ttf"),
                 http.GetByteArrayAsync("fonts/Vazirmatn-Regular.ttf"),
                 http.GetByteArrayAsync("fonts/Vazirmatn-Bold.ttf"));
-            var loaded = files.Select(file => FontFile.Load(file)).ToArray();
+            var loaded = files.Select(file => BmageFontFile.Load(file)).ToArray();
             fonts.Register("Noto Sans", loaded[0])
                  .Register("Noto Sans", loaded[1], bold: true)
                  .Register("Vazirmatn", loaded[2])

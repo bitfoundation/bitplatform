@@ -64,7 +64,7 @@ pipeline.AutoOrient()                       // apply the EXIF rotation so the im
         .MaxSize(1920, 1080)                // shrink to fit, never enlarge
         .Cover(512, 512, Anchor.Top)        // fill exactly, cropping the overflow
         .Rotate(12.5, background)           // arbitrary angle, canvas expands
-        .Orient(Orientation.Rotate90)       // lossless, no resampling
+        .Orient(BmageOrientation.Rotate90)       // lossless, no resampling
         .FlipHorizontal()
         .Straighten(-3.5)                   // level a tilt, cropping to the largest rectangle with no empty corners
         .CanvasSize(1200, 1200, Anchor.Top, Rgba32.White)  // a square canvas, the image at the top, unscaled
@@ -281,7 +281,7 @@ var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
 {
     MaxConcurrency = 2,
     StopOnFirstError = false,
-    ExportOptions = new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.82 },
+    ExportOptions = new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.82 },
     Progress = new Progress<BatchProgress>(p =>
     {
         _done = p.Completed;
@@ -335,7 +335,7 @@ await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, 
 {
     MaxConcurrency = 4,
     MaxMemoryBytes = 512L * 1024 * 1024,
-    ExportOptions = new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.82 },
+    ExportOptions = new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.82 },
 }))
 {
     if (result.Output is { } output) await SaveAsync(result.FileName, output.Data);

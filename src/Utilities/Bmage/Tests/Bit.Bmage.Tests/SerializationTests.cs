@@ -25,11 +25,11 @@ public sealed class SerializationTests
         new CropOperation(10, 5, 120, 90),
         new AspectCropOperation(AspectRatio.Ratio16x9, Anchor.TopRight),
         new SmartCropOperation(AspectRatio.Square, SmartCropOptions.Default with { SkinWeight = 0.5, SearchSteps = 12 }),
-        new ResizeOperation(100, null, ResizeMode.Max, ResamplingFilter.Lanczos3),
-        new ResizeOperation(90, 70, ResizeMode.Contain, ResamplingFilter.Bicubic, Anchor.Bottom, new Rgba32(1, 2, 3, 4)),
-        (IImageOperation)ImagePipeline.Create().Resize(100, 80, ResizeMode.Stretch).Crop(10, 10, 50, 40).Optimize(new Size(160, 120))[0],
+        new ResizeOperation(100, null, BmageResizeMode.Max, ResamplingFilter.Lanczos3),
+        new ResizeOperation(90, 70, BmageResizeMode.Contain, ResamplingFilter.Bicubic, Anchor.Bottom, new Rgba32(1, 2, 3, 4)),
+        (IImageOperation)ImagePipeline.Create().Resize(100, 80, BmageResizeMode.Stretch).Crop(10, 10, 50, 40).Optimize(new Size(160, 120))[0],
         new RotateOperation(33.25, new Rgba32(9, 8, 7, 6), expandCanvas: false, WarpSampling.NearestNeighbor),
-        new OrientationOperation(Orientation.Transverse),
+        new OrientationOperation(BmageOrientation.Transverse),
         new StraightenOperation(-7.25, WarpSampling.Bilinear),
         new CanvasSizeOperation(200, 90, Anchor.BottomLeft, new Rgba32(1, 2, 3, 200)),
         CanvasSizeOperation.Margins(12, -3, 0, 7, Rgba32.White),
@@ -69,7 +69,7 @@ public sealed class SerializationTests
         new RectangleMask(new RectangleF(10, 10, 80, 60)) { CornerRadius = 8, Feather = 2, Inverted = true },
         Mask.Ellipse() with { Opacity = 0.7f },
         new PolygonMask([new(5, 5), new(120, 20), new(60, 100)]) { Rule = FillRule.EvenOdd },
-        new PathMask(new PathBuilder().AddEllipse(new RectangleF(20, 20, 60, 40)).Build()),
+        new PathMask(new BmagePathBuilder().AddEllipse(new RectangleF(20, 20, 60, 40)).Build()),
         new BrushMask([new BrushStroke([new(10, 10), new(80, 50)], 12), new BrushStroke([new(40, 0), new(40, 90)], 6) { Erase = true, Opacity = 0.5f }]),
         Mask.Gradient(new(0, 0), new(0, 0.7f)),
         new RadialGradientMask(new Vector2(70, 50), 50, 30) { Hardness = 0.3f, Rotation = 20 },
@@ -87,17 +87,17 @@ public sealed class SerializationTests
     private static IEnumerable<object[]> AllLayers() => new Layer[]
     {
         new ImageLayer { Image = Stamp, Bounds = new RectangleF(20, 10, 64, 48), Rotation = 15, Pipeline = ImagePipeline.Create().Grayscale(), Filter = ResamplingFilter.Bilinear, Name = "Logo" },
-        new FillLayer(new Rgba32(30, 60, 200, 128)) { BlendMode = BlendMode.Color, Opacity = 0.8f, Mask = Mask.Gradient(new(0, 1), new(0, 0.4f)) },
+        new FillLayer(new Rgba32(30, 60, 200, 128)) { BlendMode = BmageBlendMode.Color, Opacity = 0.8f, Mask = Mask.Gradient(new(0, 1), new(0, 0.4f)) },
         new AdjustmentLayer(ImagePipeline.Create().Contrast(0.3f).Vibrance(0.2f)) { Mask = new LuminanceRangeMask(0, 0.4f), IsVisible = false, IsLocked = true },
         new PaintLayer([new PaintStroke([new(10, 10), new(60, 40)], 9, new Rgba32(200, 30, 30)) { Pressures = [0.5f, 1f] }]) { Opacity = 0.6f },
         new FillLayer(new Rgba32(40, 160, 90)) { Mask = new FloodMask([new(30, 30)]) { Tolerance = 0.2f }, Name = "Bucket" },
         new GroupLayer(
         [
             new FillLayer(new Rgba32(200, 120, 20)) { Mask = new EllipseMask(new RectangleF(10, 10, 50, 40)) },
-            new FillLayer(new Rgba32(20, 40, 220)) { ClipToLayerBelow = true, BlendMode = BlendMode.Multiply },
+            new FillLayer(new Rgba32(20, 40, 220)) { ClipToLayerBelow = true, BlendMode = BmageBlendMode.Multiply },
             new GroupLayer([new AdjustmentLayer(ImagePipeline.Create().Invert())]) { Isolated = true, Opacity = 0.7f },
         ]) { Name = "Badge", Opacity = 0.8f, Mask = new RectangleMask(new RectangleF(0.1f, 0.1f, 0.8f, 0.8f)) { Units = MaskUnits.Relative } },
-        new GroupLayer([new FillLayer(new Rgba32(90, 90, 90))]) { BlendMode = BlendMode.Screen },
+        new GroupLayer([new FillLayer(new Rgba32(90, 90, 90))]) { BlendMode = BmageBlendMode.Screen },
     }.Select(layer => new object[] { layer });
 
     private static IEnumerable<object[]> AllAnnotations() => new Annotation[]
@@ -108,7 +108,7 @@ public sealed class SerializationTests
         new ArrowAnnotation { Start = new Vector2(5, 80), End = new Vector2(100, 10), HeadLengthFactor = 5 },
         new FreehandAnnotation { Points = [new(10, 10), new(20, 30), new(40, 25), new(60, 50)], Closed = true },
         new PolygonAnnotation { Points = [new(10, 10), new(60, 15), new(30, 60)], Closed = false, IsLocked = true },
-        new TextAnnotation { Text = "Hello\nworld", Position = new Vector2(20, 40), BackgroundColor = Rgba32.White, MeasuredSize = new SizeF(80, 40), Style = new TextStyle { FontSize = 22, Bold = true, MaxWidth = 120, Alignment = TextAlignment.Center } },
+        new TextAnnotation { Text = "Hello\nworld", Position = new Vector2(20, 40), BackgroundColor = Rgba32.White, MeasuredSize = new SizeF(80, 40), Style = new TextStyle { FontSize = 22, Bold = true, MaxWidth = 120, Alignment = BmageTextAlignment.Center } },
         new HighlightAnnotation { Rectangle = new RectangleF(0, 0, 40, 10) },
         new RedactionAnnotation { Rectangle = new RectangleF(50, 50, 30, 20), Mode = RedactionMode.Pixelate, Strength = 8 },
         new CalloutAnnotation { Bubble = new RectangleF(60, 5, 60, 30), Target = new Vector2(20, 70), Text = "Look" },
@@ -198,7 +198,7 @@ public sealed class SerializationTests
             .AddOperation(new CropOperation(10, 10, 180, 130))
             .AddOperation(new MaskedOperation(new PipelineOperation(ImagePipeline.Create().Exposure(-0.4f).Saturation(0.2f)), Mask.Gradient(new(0, 0), new(0, 0.5f))))
             .AddOperation(new SharpenFilter(0.4f))
-            .AddLayer(new ImageLayer { Image = Stamp, Bounds = new RectangleF(100, 80, 48, 36), BlendMode = BlendMode.Multiply })
+            .AddLayer(new ImageLayer { Image = Stamp, Bounds = new RectangleF(100, 80, 48, 36), BlendMode = BmageBlendMode.Multiply })
             .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Vibrance(0.3f)) { Mask = Mask.Ellipse() with { Feather = 6 } })
             .AddAnnotation(new ArrowAnnotation { Start = new Vector2(10, 100), End = new Vector2(90, 30) })
             .AddAnnotation(new RedactionAnnotation { Rectangle = new RectangleF(120, 10, 40, 20) });
@@ -327,7 +327,7 @@ public sealed class SerializationTests
         static void AssertMode(string mode, bool ok)
         {
             var json = $$"""{"type":"fill","color":"#ff0000ff","blendMode":"{{mode}}"}""";
-            if (ok) Assert.AreEqual(BlendMode.Multiply, BmageJson.DeserializeObject<Layer>(json).BlendMode);
+            if (ok) Assert.AreEqual(BmageBlendMode.Multiply, BmageJson.DeserializeObject<Layer>(json).BlendMode);
             else Assert.ThrowsExactly<ImageDocumentFormatException>(() => BmageJson.DeserializeObject<Layer>(json), mode);
         }
     }
@@ -344,7 +344,7 @@ public sealed class SerializationTests
     [TestMethod]
     public void AnUndefinedEnumValueIsNotWritten()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => BmageJson.SerializeObject(new FillLayer(Rgba32.Black) { BlendMode = (BlendMode)99 }));
+        Assert.ThrowsExactly<ArgumentException>(() => BmageJson.SerializeObject(new FillLayer(Rgba32.Black) { BlendMode = (BmageBlendMode)99 }));
     }
 
     private sealed class MyMatrix() : ColorMatrixOperation(ColorMatrix.Saturate(0.5f), "Mine");

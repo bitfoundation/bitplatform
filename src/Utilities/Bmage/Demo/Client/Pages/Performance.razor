@@ -317,7 +317,7 @@
     // The same operations as the reference table, so the reader's numbers line up against it row by row.
     private static readonly (string Name, Func<ImagePipeline> Pipeline)[] Benchmarks =
     [
-        ("Resize to 1280, Lanczos3", () => ImagePipeline.Create().Resize(1280, 1280, ResizeMode.Fit, ResamplingFilter.Lanczos3)),
+        ("Resize to 1280, Lanczos3", () => ImagePipeline.Create().Resize(1280, 1280, BmageResizeMode.Fit, ResamplingFilter.Lanczos3)),
         ("Brightness", () => ImagePipeline.Create().Brightness(0.2f)),
         ("Four adjustments, fused", () => ImagePipeline.Create().Brightness(0.1f).Contrast(0.15f).Saturation(0.2f).Vibrance(0.2f)),
         ("Gaussian blur, radius 8", () => ImagePipeline.Create().Blur(8f)),
@@ -378,7 +378,7 @@
         (new("Paint layer, 20 long strokes", 1383, 179, 134), i => Composite(i.Photo, i.Paint)),
         (new("Motion blur 20px", 618, 267, 142), i => Apply(new MotionBlurFilter(20, 0), i.Photo)),
         (new("Isolated group: paint and a multiplied fill", 3281, 372, 225), i => Composite(i.Photo,
-            new GroupLayer([i.Paint, new FillLayer(new Rgba32(250, 220, 160)) { BlendMode = BlendMode.Multiply }]) { Isolated = true })),
+            new GroupLayer([i.Paint, new FillLayer(new Rgba32(250, 220, 160)) { BlendMode = BmageBlendMode.Multiply }]) { Isolated = true })),
         (new("A fill clipped to the paint layer", 2313, 327, 200), i => Composite(i.Photo, i.Paint, new FillLayer(new Rgba32(40, 90, 200)) { ClipToLayerBelow = true })),
     ];
 

@@ -197,7 +197,7 @@
             FontSize  = composed.Height * 0.06f,
             Bold      = true,
             FillColor = Rgba32.White,
-            Alignment = TextAlignment.Center,
+            Alignment = BmageTextAlignment.Center,
             MaxWidth  = composed.Width * 0.86f,
         });
         """;
@@ -310,7 +310,7 @@
             try
             {
                 if (!string.IsNullOrWhiteSpace(_caption)) await DrawCaptionAsync(composed);
-                var encoded = await Exporter.EncodeWithFallbackAsync(composed, [ImageFormat.WebP, ImageFormat.Jpeg], new ImageExportOptions
+                var encoded = await Exporter.EncodeWithFallbackAsync(composed, [BmageImageFormat.WebP, BmageImageFormat.Jpeg], new ImageExportOptions
                 {
                     Quality = 0.86,
                     Metadata = MetadataPolicy.Remove,
@@ -360,7 +360,7 @@
             FontSize = fontSize,
             Bold = true,
             FillColor = _captionColor,
-            Alignment = TextAlignment.Center,
+            Alignment = BmageTextAlignment.Center,
             Baseline = TextBaseline.Bottom,
             MaxWidth = image.Width * 0.86f,
             LineHeight = 1.15f,
@@ -375,11 +375,11 @@
             // A soft gradient rather than a hard band, so the photo still shows through.
             var top = Math.Max(0, baseline - metrics.Height - margin);
             var height = image.Height - top;
-            var paint = new LinearGradientPaint(
+            var paint = new BmageLinearGradientPaint(
                 new Vector2(0, top),
                 new Vector2(0, image.Height),
                 [(0f, new Rgba32(0, 0, 0, 0)), (0.55f, new Rgba32(0, 0, 0, 120)), (1f, new Rgba32(0, 0, 0, 175))]);
-            var scrimPath = new PathBuilder().AddRectangle(new System.Drawing.RectangleF(0, top, image.Width, height)).Build();
+            var scrimPath = new BmagePathBuilder().AddRectangle(new System.Drawing.RectangleF(0, top, image.Width, height)).Build();
             canvas.FillPath(scrimPath, paint);
         }
 

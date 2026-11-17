@@ -13,9 +13,9 @@ namespace Bit.Bmage;
 /// </remarks>
 public sealed class GifEncoder : IImageEncoder
 {
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Gif];
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.Gif];
 
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     public ValueTask<EncodedImage> EncodeAsync(ImageBuffer image, ImageExportOptions options, CancellationToken cancellationToken = default)
         => new(Encode(image, options, cancellationToken));
@@ -25,7 +25,7 @@ public sealed class GifEncoder : IImageEncoder
     public static EncodedImage Encode(ImageBuffer image, ImageExportOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(image);
-        options ??= new ImageExportOptions { Format = ImageFormat.Gif };
+        options ??= new ImageExportOptions { Format = BmageImageFormat.Gif };
         if (image.Width > ushort.MaxValue || image.Height > ushort.MaxValue)
             throw new ArgumentOutOfRangeException(nameof(image), $"GIF holds images up to {ushort.MaxValue} pixels either way, not {image.Width} x {image.Height}.");
 
@@ -72,7 +72,7 @@ public sealed class GifEncoder : IImageEncoder
         ms.WriteByte((byte)minimumCodeSize);
         LzwCompress(quantized.Indices, minimumCodeSize, ms, cancellationToken);
         ms.WriteByte(0x3B);
-        return new EncodedImage(ms.ToArray(), ImageFormat.Gif, image.Width, image.Height);
+        return new EncodedImage(ms.ToArray(), BmageImageFormat.Gif, image.Width, image.Height);
     }
 
     /// <summary>

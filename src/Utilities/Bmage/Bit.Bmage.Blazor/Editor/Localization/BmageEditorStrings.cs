@@ -263,14 +263,14 @@ public sealed record BmageEditorStrings
     public Func<string, string> FormatEditLayer { get; init; } = static name => $"Edit {name.ToLowerInvariant()}";
 
     /// <summary>The name of a blend mode in the layer panel.</summary>
-    public Func<BlendMode, string> FormatBlendMode { get; init; } = static mode => mode switch
+    public Func<BmageBlendMode, string> FormatBlendMode { get; init; } = static mode => mode switch
     {
-        global::Bit.Bmage.BlendMode.SourceOver => "Normal",
-        global::Bit.Bmage.BlendMode.ColorDodge => "Colour dodge",
-        global::Bit.Bmage.BlendMode.ColorBurn => "Colour burn",
-        global::Bit.Bmage.BlendMode.HardLight => "Hard light",
-        global::Bit.Bmage.BlendMode.SoftLight => "Soft light",
-        global::Bit.Bmage.BlendMode.Color => "Colour",
+        global::Bit.Bmage.BmageBlendMode.SourceOver => "Normal",
+        global::Bit.Bmage.BmageBlendMode.ColorDodge => "Colour dodge",
+        global::Bit.Bmage.BmageBlendMode.ColorBurn => "Colour burn",
+        global::Bit.Bmage.BmageBlendMode.HardLight => "Hard light",
+        global::Bit.Bmage.BmageBlendMode.SoftLight => "Soft light",
+        global::Bit.Bmage.BmageBlendMode.Color => "Colour",
         _ => mode.ToString(),
     };
 

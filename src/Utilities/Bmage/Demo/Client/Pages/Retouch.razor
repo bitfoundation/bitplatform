@@ -248,7 +248,7 @@
             document = document.AddLayer(new FillLayer(color)
             {
                 Name = "Label colour",
-                BlendMode = BlendMode.Color,
+                BlendMode = BmageBlendMode.Color,
                 Mask = new FloodMask([LabelSeed]) { Tolerance = 0.2f }.Expand(1),
             });
         }
@@ -271,7 +271,7 @@
         // Recolour one region: the wand from a point inside it, grown a pixel to take its anti-aliased edge.
         document = document.AddLayer(new FillLayer(new Rgba32(20, 170, 160))
         {
-            BlendMode = BlendMode.Color,
+            BlendMode = BmageBlendMode.Color,
             Mask = new FloodMask([new(450, 360)]) { Tolerance = 0.2f }.Expand(1),
         });
 

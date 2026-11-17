@@ -12,7 +12,7 @@ public sealed class FontTests
 {
     private const string FontPath = "Assets/BmageTest.ttf";
 
-    private static FontFile LoadFont() => FontFile.Load(File.ReadAllBytes(FontPath));
+    private static BmageFontFile LoadFont() => BmageFontFile.Load(File.ReadAllBytes(FontPath));
 
     [TestMethod]
     public void ParsesFontHeaderAndNames()
@@ -78,12 +78,12 @@ public sealed class FontTests
     [TestMethod]
     public void RejectsDataThatIsNotAFont()
     {
-        Assert.ThrowsExactly<ImageDecodeException>(() => FontFile.Load(new byte[64]));
-        Assert.ThrowsExactly<ImageDecodeException>(() => FontFile.Load(new byte[4]));
+        Assert.ThrowsExactly<ImageDecodeException>(() => BmageFontFile.Load(new byte[64]));
+        Assert.ThrowsExactly<ImageDecodeException>(() => BmageFontFile.Load(new byte[4]));
         // A plausible header with nothing behind it must fail cleanly rather than reading out of bounds.
         var fake = new byte[64];
         fake[1] = 1;
-        Assert.ThrowsExactly<ImageDecodeException>(() => FontFile.Load(fake));
+        Assert.ThrowsExactly<ImageDecodeException>(() => BmageFontFile.Load(fake));
     }
 
     [TestMethod]
@@ -94,7 +94,7 @@ public sealed class FontTests
         {
             try
             {
-                var font = FontFile.Load(full[..length]);
+                var font = BmageFontFile.Load(full[..length]);
                 // If it parsed, using it must still be safe.
                 _ = font.GetGlyphOutline(1);
                 _ = font.GetGlyphIndex('A');
@@ -112,7 +112,7 @@ public sealed class FontTextRasterizerTests
 {
     private static FontTextRasterizer CreateRasterizer()
     {
-        var font = FontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
+        var font = BmageFontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
         return new FontTextRasterizer().Register("Test", font);
     }
 
@@ -188,9 +188,9 @@ public sealed class FontTextRasterizerTests
     {
         var rasterizer = CreateRasterizer();
         using var left = ImageCanvas.Create(300, 200, Rgba32.White);
-        left.DrawText("A", new Vector2(150, 150), Style() with { Alignment = TextAlignment.Left }, rasterizer);
+        left.DrawText("A", new Vector2(150, 150), Style() with { Alignment = BmageTextAlignment.Left }, rasterizer);
         using var right = ImageCanvas.Create(300, 200, Rgba32.White);
-        right.DrawText("A", new Vector2(150, 150), Style() with { Alignment = TextAlignment.Right }, rasterizer);
+        right.DrawText("A", new Vector2(150, 150), Style() with { Alignment = BmageTextAlignment.Right }, rasterizer);
 
         static int FirstInkColumn(ImageCanvas c)
         {
@@ -259,7 +259,7 @@ public sealed class FontTextRasterizerTests
     {
         // The default family is "sans-serif", so with fonts registered under their own name every style of the editor
         // lands on the fallback: a bold step number must still get the bold face.
-        static FontFile LoadFont() => FontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
+        static BmageFontFile LoadFont() => BmageFontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
         var regular = LoadFont();
         var bold = LoadFont();
         var italic = LoadFont();

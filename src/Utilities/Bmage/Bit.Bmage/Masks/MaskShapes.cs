@@ -22,7 +22,7 @@ public sealed record RectangleMask(RectangleF Rectangle) : Mask
         // Mapped to pixels before the corners are flattened, so their tolerance is a fraction of a pixel.
         var rect = MaskRasterizer.Transform(Rectangle, context.ToPixels);
         var radius = Units == MaskUnits.Relative ? CornerRadius * Math.Min(context.Size.Width, context.Size.Height) : CornerRadius;
-        var builder = new PathBuilder();
+        var builder = new BmagePathBuilder();
         MaskRasterizer.Fill(target, context.Window, (radius > 0 ? builder.AddRoundedRectangle(rect, radius) : builder.AddRectangle(rect)).Build(), FillRule.NonZero);
     }
 
@@ -39,7 +39,7 @@ public sealed record RectangleMask(RectangleF Rectangle) : Mask
     {
         if (AffineParts.PreservesAxes(matrix))
             return this with { Rectangle = AffineParts.MapRectangle(Rectangle, matrix), CornerRadius = CornerRadius * AffineParts.Of(matrix).Scale };
-        var outline = CornerRadius > 0 ? new PathBuilder().AddRoundedRectangle(Rectangle, CornerRadius) : new PathBuilder().AddRectangle(Rectangle);
+        var outline = CornerRadius > 0 ? new BmagePathBuilder().AddRoundedRectangle(Rectangle, CornerRadius) : new BmagePathBuilder().AddRectangle(Rectangle);
         return Inherit(new PathMask(outline.Build().Transform(matrix)));
     }
 }
@@ -53,7 +53,7 @@ public sealed record EllipseMask(RectangleF Rectangle) : Mask
     private protected override bool DrawsWindows => true;
 
     protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
-        => MaskRasterizer.Fill(target, context.Window, new PathBuilder().AddEllipse(MaskRasterizer.Transform(Rectangle, context.ToPixels)).Build(), FillRule.NonZero);
+        => MaskRasterizer.Fill(target, context.Window, new BmagePathBuilder().AddEllipse(MaskRasterizer.Transform(Rectangle, context.ToPixels)).Build(), FillRule.NonZero);
 
     public override RectangleF? GetCoverageBounds(Size size) => MaskRasterizer.Transform(Rectangle, MaskRasterizer.ToPixels(Units, size));
 
@@ -62,7 +62,7 @@ public sealed record EllipseMask(RectangleF Rectangle) : Mask
     /// <summary>An upright transform maps the ellipse's rectangle exactly; any other turns it into the transformed outline.</summary>
     protected override Mask TransformGeometry(Matrix3x2 matrix) => AffineParts.PreservesAxes(matrix)
         ? this with { Rectangle = AffineParts.MapRectangle(Rectangle, matrix) }
-        : Inherit(new PathMask(new PathBuilder().AddEllipse(Rectangle).Build().Transform(matrix)));
+        : Inherit(new PathMask(new BmagePathBuilder().AddEllipse(Rectangle).Build().Transform(matrix)));
 }
 
 /// <summary>A polygon through arbitrary points: a lasso selection.</summary>
@@ -91,7 +91,7 @@ public sealed record PolygonMask : Mask
     {
         if (_points.Length < 3) return;
         var m = context.ToPixels;
-        MaskRasterizer.Fill(target, context.Window, new PathBuilder().AddPolygon([.. _points.Select(p => Vector2.Transform(p, m))]).Build(), Rule);
+        MaskRasterizer.Fill(target, context.Window, new BmagePathBuilder().AddPolygon([.. _points.Select(p => Vector2.Transform(p, m))]).Build(), Rule);
     }
 
     public override RectangleF? GetCoverageBounds(Size size)
@@ -213,13 +213,13 @@ public sealed record BrushMask : Mask
             {
                 var p = points[0];
                 var r = width / 2;
-                outline = new PathBuilder().AddEllipse(new RectangleF(p.X - r, p.Y - r, r * 2, r * 2)).Build();
+                outline = new BmagePathBuilder().AddEllipse(new RectangleF(p.X - r, p.Y - r, r * 2, r * 2)).Build();
             }
             else
             {
-                var builder = new PathBuilder();
+                var builder = new BmagePathBuilder();
                 FreehandAnnotation.AppendSmoothed(builder, points, closed: false);
-                outline = Stroker.CreateStrokeOutline(builder.Build(), new StrokeStyle { Width = width, Cap = LineCap.Round, Join = LineJoin.Round });
+                outline = Stroker.CreateStrokeOutline(builder.Build(), new StrokeStyle { Width = width, Cap = BmageLineCap.Round, Join = BmageLineJoin.Round });
             }
             MaskRasterizer.Fill(target, context.Window, outline, FillRule.NonZero, stroke.Opacity, stroke.Erase);
         }

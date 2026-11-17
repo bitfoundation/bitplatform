@@ -1,7 +1,7 @@
 ﻿namespace Bit.Bmage;
 
 /// <summary>Encoded image formats known to Bmage.</summary>
-public enum ImageFormat
+public enum BmageImageFormat
 {
     Unknown = 0,
     Jpeg,
@@ -17,116 +17,116 @@ public enum ImageFormat
     Ico,
 }
 
-/// <summary>Helpers for <see cref="ImageFormat"/>: MIME types, extensions and magic-byte detection.</summary>
+/// <summary>Helpers for <see cref="BmageImageFormat"/>: MIME types, extensions and magic-byte detection.</summary>
 public static class ImageFormats
 {
     /// <summary>Returns the canonical MIME type for the format, or <c>application/octet-stream</c> when unknown.</summary>
-    public static string GetMimeType(this ImageFormat format) => format switch
+    public static string GetMimeType(this BmageImageFormat format) => format switch
     {
-        ImageFormat.Jpeg => "image/jpeg",
-        ImageFormat.Png => "image/png",
-        ImageFormat.WebP => "image/webp",
-        ImageFormat.Avif => "image/avif",
-        ImageFormat.Gif => "image/gif",
-        ImageFormat.Bmp => "image/bmp",
-        ImageFormat.Svg => "image/svg+xml",
-        ImageFormat.Tiff => "image/tiff",
-        ImageFormat.Ico => "image/x-icon",
+        BmageImageFormat.Jpeg => "image/jpeg",
+        BmageImageFormat.Png => "image/png",
+        BmageImageFormat.WebP => "image/webp",
+        BmageImageFormat.Avif => "image/avif",
+        BmageImageFormat.Gif => "image/gif",
+        BmageImageFormat.Bmp => "image/bmp",
+        BmageImageFormat.Svg => "image/svg+xml",
+        BmageImageFormat.Tiff => "image/tiff",
+        BmageImageFormat.Ico => "image/x-icon",
         _ => "application/octet-stream",
     };
 
     /// <summary>Returns the default file extension (including the leading dot).</summary>
-    public static string GetExtension(this ImageFormat format) => format switch
+    public static string GetExtension(this BmageImageFormat format) => format switch
     {
-        ImageFormat.Jpeg => ".jpg",
-        ImageFormat.Png => ".png",
-        ImageFormat.WebP => ".webp",
-        ImageFormat.Avif => ".avif",
-        ImageFormat.Gif => ".gif",
-        ImageFormat.Bmp => ".bmp",
-        ImageFormat.Svg => ".svg",
-        ImageFormat.Tiff => ".tiff",
-        ImageFormat.Ico => ".ico",
+        BmageImageFormat.Jpeg => ".jpg",
+        BmageImageFormat.Png => ".png",
+        BmageImageFormat.WebP => ".webp",
+        BmageImageFormat.Avif => ".avif",
+        BmageImageFormat.Gif => ".gif",
+        BmageImageFormat.Bmp => ".bmp",
+        BmageImageFormat.Svg => ".svg",
+        BmageImageFormat.Tiff => ".tiff",
+        BmageImageFormat.Ico => ".ico",
         _ => ".bin",
     };
 
     /// <summary>True for formats that can store an alpha channel.</summary>
-    public static bool SupportsAlpha(this ImageFormat format) => format is ImageFormat.Png or ImageFormat.WebP or ImageFormat.Avif or ImageFormat.Gif or ImageFormat.Svg or ImageFormat.Tiff or ImageFormat.Ico;
+    public static bool SupportsAlpha(this BmageImageFormat format) => format is BmageImageFormat.Png or BmageImageFormat.WebP or BmageImageFormat.Avif or BmageImageFormat.Gif or BmageImageFormat.Svg or BmageImageFormat.Tiff or BmageImageFormat.Ico;
 
     /// <summary>Why an SVG is refused, in the words every decode path uses: docs/security.md quotes it.</summary>
     internal const string SvgRefused = "SVG input is not decoded by Bmage because rasterising untrusted SVG can execute embedded scripts and fetch remote resources. Rasterise it yourself and pass the pixels instead.";
 
     /// <summary>True for formats that use lossy compression controlled by a quality setting.</summary>
-    public static bool IsLossy(this ImageFormat format) => format is ImageFormat.Jpeg or ImageFormat.WebP or ImageFormat.Avif;
+    public static bool IsLossy(this BmageImageFormat format) => format is BmageImageFormat.Jpeg or BmageImageFormat.WebP or BmageImageFormat.Avif;
 
     /// <summary>True for formats that can carry EXIF metadata.</summary>
-    public static bool SupportsExif(this ImageFormat format) => format is ImageFormat.Jpeg or ImageFormat.Png or ImageFormat.WebP or ImageFormat.Avif or ImageFormat.Tiff;
+    public static bool SupportsExif(this BmageImageFormat format) => format is BmageImageFormat.Jpeg or BmageImageFormat.Png or BmageImageFormat.WebP or BmageImageFormat.Avif or BmageImageFormat.Tiff;
 
     /// <summary>Maps a MIME type (case-insensitive, parameters ignored) to a format.</summary>
-    public static ImageFormat FromMimeType(string? mimeType)
+    public static BmageImageFormat FromMimeType(string? mimeType)
     {
-        if (string.IsNullOrWhiteSpace(mimeType)) return ImageFormat.Unknown;
+        if (string.IsNullOrWhiteSpace(mimeType)) return BmageImageFormat.Unknown;
         var s = mimeType.AsSpan().Trim();
         var semi = s.IndexOf(';');
         if (semi >= 0) s = s[..semi].Trim();
-        if (s.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) || s.Equals("image/jpg", StringComparison.OrdinalIgnoreCase) || s.Equals("image/pjpeg", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Jpeg;
-        if (s.Equals("image/png", StringComparison.OrdinalIgnoreCase) || s.Equals("image/apng", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Png;
-        if (s.Equals("image/webp", StringComparison.OrdinalIgnoreCase)) return ImageFormat.WebP;
-        if (s.Equals("image/avif", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Avif;
-        if (s.Equals("image/gif", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Gif;
-        if (s.Equals("image/bmp", StringComparison.OrdinalIgnoreCase) || s.Equals("image/x-ms-bmp", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Bmp;
-        if (s.Equals("image/svg+xml", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Svg;
-        if (s.Equals("image/tiff", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Tiff;
-        if (s.Equals("image/x-icon", StringComparison.OrdinalIgnoreCase) || s.Equals("image/vnd.microsoft.icon", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Ico;
-        return ImageFormat.Unknown;
+        if (s.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) || s.Equals("image/jpg", StringComparison.OrdinalIgnoreCase) || s.Equals("image/pjpeg", StringComparison.OrdinalIgnoreCase)) return BmageImageFormat.Jpeg;
+        if (s.Equals("image/png", StringComparison.OrdinalIgnoreCase) || s.Equals("image/apng", StringComparison.OrdinalIgnoreCase)) return BmageImageFormat.Png;
+        if (s.Equals("image/webp", StringComparison.OrdinalIgnoreCase)) return BmageImageFormat.WebP;
+        if (s.Equals("image/avif", StringComparison.OrdinalIgnoreCase)) return BmageImageFormat.Avif;
+        if (s.Equals("image/gif", StringComparison.OrdinalIgnoreCase)) return BmageImageFormat.Gif;
+        if (s.Equals("image/bmp", StringComparison.OrdinalIgnoreCase) || s.Equals("image/x-ms-bmp", StringComparison.OrdinalIgnoreCase)) return BmageImageFormat.Bmp;
+        if (s.Equals("image/svg+xml", StringComparison.OrdinalIgnoreCase)) return BmageImageFormat.Svg;
+        if (s.Equals("image/tiff", StringComparison.OrdinalIgnoreCase)) return BmageImageFormat.Tiff;
+        if (s.Equals("image/x-icon", StringComparison.OrdinalIgnoreCase) || s.Equals("image/vnd.microsoft.icon", StringComparison.OrdinalIgnoreCase)) return BmageImageFormat.Ico;
+        return BmageImageFormat.Unknown;
     }
 
     /// <summary>Maps a file name or extension to a format.</summary>
-    public static ImageFormat FromFileName(string? fileName)
+    public static BmageImageFormat FromFileName(string? fileName)
     {
-        if (string.IsNullOrWhiteSpace(fileName)) return ImageFormat.Unknown;
+        if (string.IsNullOrWhiteSpace(fileName)) return BmageImageFormat.Unknown;
         var ext = Path.GetExtension(fileName);
         if (ext.Length == 0) ext = fileName.StartsWith('.') ? fileName : "." + fileName;
         return ext.ToLowerInvariant() switch
         {
-            ".jpg" or ".jpeg" or ".jpe" or ".jfif" => ImageFormat.Jpeg,
-            ".png" or ".apng" => ImageFormat.Png,
-            ".webp" => ImageFormat.WebP,
-            ".avif" => ImageFormat.Avif,
-            ".gif" => ImageFormat.Gif,
-            ".bmp" or ".dib" => ImageFormat.Bmp,
-            ".svg" => ImageFormat.Svg,
-            ".tif" or ".tiff" => ImageFormat.Tiff,
-            ".ico" => ImageFormat.Ico,
-            _ => ImageFormat.Unknown,
+            ".jpg" or ".jpeg" or ".jpe" or ".jfif" => BmageImageFormat.Jpeg,
+            ".png" or ".apng" => BmageImageFormat.Png,
+            ".webp" => BmageImageFormat.WebP,
+            ".avif" => BmageImageFormat.Avif,
+            ".gif" => BmageImageFormat.Gif,
+            ".bmp" or ".dib" => BmageImageFormat.Bmp,
+            ".svg" => BmageImageFormat.Svg,
+            ".tif" or ".tiff" => BmageImageFormat.Tiff,
+            ".ico" => BmageImageFormat.Ico,
+            _ => BmageImageFormat.Unknown,
         };
     }
 
     /// <summary>
     /// Detects the format from the leading bytes of an encoded image (magic numbers). At least 12 bytes
-    /// should be supplied for reliable detection; fewer bytes may yield <see cref="ImageFormat.Unknown"/>.
+    /// should be supplied for reliable detection; fewer bytes may yield <see cref="BmageImageFormat.Unknown"/>.
     /// </summary>
-    public static ImageFormat Detect(ReadOnlySpan<byte> data)
+    public static BmageImageFormat Detect(ReadOnlySpan<byte> data)
     {
-        if (data.Length >= 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF) return ImageFormat.Jpeg;
-        if (data.Length >= 8 && data[0] == 0x89 && data[1] == 'P' && data[2] == 'N' && data[3] == 'G' && data[4] == 0x0D && data[5] == 0x0A && data[6] == 0x1A && data[7] == 0x0A) return ImageFormat.Png;
-        if (data.Length >= 6 && data[0] == 'G' && data[1] == 'I' && data[2] == 'F' && data[3] == '8' && (data[4] == '7' || data[4] == '9') && data[5] == 'a') return ImageFormat.Gif;
-        if (data.Length >= 12 && data[0] == 'R' && data[1] == 'I' && data[2] == 'F' && data[3] == 'F' && data[8] == 'W' && data[9] == 'E' && data[10] == 'B' && data[11] == 'P') return ImageFormat.WebP;
-        if (data.Length >= 2 && data[0] == 'B' && data[1] == 'M') return ImageFormat.Bmp;
-        if (data.Length >= 4 && ((data[0] == 'I' && data[1] == 'I' && data[2] == 0x2A && data[3] == 0) || (data[0] == 'M' && data[1] == 'M' && data[2] == 0 && data[3] == 0x2A))) return ImageFormat.Tiff;
+        if (data.Length >= 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF) return BmageImageFormat.Jpeg;
+        if (data.Length >= 8 && data[0] == 0x89 && data[1] == 'P' && data[2] == 'N' && data[3] == 'G' && data[4] == 0x0D && data[5] == 0x0A && data[6] == 0x1A && data[7] == 0x0A) return BmageImageFormat.Png;
+        if (data.Length >= 6 && data[0] == 'G' && data[1] == 'I' && data[2] == 'F' && data[3] == '8' && (data[4] == '7' || data[4] == '9') && data[5] == 'a') return BmageImageFormat.Gif;
+        if (data.Length >= 12 && data[0] == 'R' && data[1] == 'I' && data[2] == 'F' && data[3] == 'F' && data[8] == 'W' && data[9] == 'E' && data[10] == 'B' && data[11] == 'P') return BmageImageFormat.WebP;
+        if (data.Length >= 2 && data[0] == 'B' && data[1] == 'M') return BmageImageFormat.Bmp;
+        if (data.Length >= 4 && ((data[0] == 'I' && data[1] == 'I' && data[2] == 0x2A && data[3] == 0) || (data[0] == 'M' && data[1] == 'M' && data[2] == 0 && data[3] == 0x2A))) return BmageImageFormat.Tiff;
         if (data.Length >= 12 && data[4] == 'f' && data[5] == 't' && data[6] == 'y' && data[7] == 'p')
         {
             // ISO BMFF brand: avif / avis
-            if (data[8] == 'a' && data[9] == 'v' && data[10] == 'i' && (data[11] == 'f' || data[11] == 's')) return ImageFormat.Avif;
+            if (data[8] == 'a' && data[9] == 'v' && data[10] == 'i' && (data[11] == 'f' || data[11] == 's')) return BmageImageFormat.Avif;
             // Some encoders write a compatible-brand list; scan the box for an avif brand.
             var boxLen = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
             var limit = Math.Min(data.Length - 3, Math.Max(12, Math.Min(boxLen, 64)));
             for (var i = 16; i + 3 < limit; i += 4)
-                if (data[i] == 'a' && data[i + 1] == 'v' && data[i + 2] == 'i' && (data[i + 3] == 'f' || data[i + 3] == 's')) return ImageFormat.Avif;
+                if (data[i] == 'a' && data[i + 1] == 'v' && data[i + 2] == 'i' && (data[i + 3] == 'f' || data[i + 3] == 's')) return BmageImageFormat.Avif;
         }
-        if (LooksLikeIco(data)) return ImageFormat.Ico;
-        if (LooksLikeSvg(data)) return ImageFormat.Svg;
-        return ImageFormat.Unknown;
+        if (LooksLikeIco(data)) return BmageImageFormat.Ico;
+        if (LooksLikeSvg(data)) return BmageImageFormat.Svg;
+        return BmageImageFormat.Unknown;
     }
 
     /// <summary>

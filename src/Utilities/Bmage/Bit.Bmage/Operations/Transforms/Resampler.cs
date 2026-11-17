@@ -7,7 +7,7 @@ namespace Bit.Bmage;
 
 /// <summary>
 /// High quality separable resampling with premultiplied-alpha filtering. Works on rectangular regions so a single routine
-/// implements every <see cref="ResizeMode"/>. The vertical pass runs first and produces one floating point row at a time,
+/// implements every <see cref="BmageResizeMode"/>. The vertical pass runs first and produces one floating point row at a time,
 /// so no full-size intermediate buffer is needed.
 /// </summary>
 public static class Resampler

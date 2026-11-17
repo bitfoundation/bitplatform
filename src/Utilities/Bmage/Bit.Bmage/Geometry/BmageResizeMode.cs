@@ -3,7 +3,7 @@
 namespace Bit.Bmage;
 
 /// <summary>Controls how an image is fitted into a target size when resizing.</summary>
-public enum ResizeMode
+public enum BmageResizeMode
 {
     /// <summary>Scale to exactly the target size, ignoring the aspect ratio.</summary>
     Stretch = 0,

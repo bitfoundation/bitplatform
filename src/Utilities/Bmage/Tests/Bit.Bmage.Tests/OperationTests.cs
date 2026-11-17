@@ -70,7 +70,7 @@ public sealed class ResizeTests
     public void ProducesTheExpectedSizeForEveryMode()
     {
         using var source = TestImages.Gradient(100, 50);
-        foreach (var mode in Enum.GetValues<ResizeMode>())
+        foreach (var mode in Enum.GetValues<BmageResizeMode>())
         {
             var op = new ResizeOperation(60, 60, mode);
             using var result = op.Apply(source, OperationContext.Default);
@@ -84,7 +84,7 @@ public sealed class ResizeTests
         using var source = ImageBuffer.Create(64, 64, new Rgba32(37, 111, 200));
         foreach (var filter in new[] { ResamplingFilter.Box, ResamplingFilter.Bilinear, ResamplingFilter.Bicubic, ResamplingFilter.Lanczos3, ResamplingFilter.NearestNeighbor })
         {
-            using var result = new ResizeOperation(23, 41, ResizeMode.Stretch, filter).Apply(source, OperationContext.Default);
+            using var result = new ResizeOperation(23, 41, BmageResizeMode.Stretch, filter).Apply(source, OperationContext.Default);
             var p = result[11, 20];
             Assert.IsTrue(Math.Abs(p.R - 37) <= 1 && Math.Abs(p.G - 111) <= 1 && Math.Abs(p.B - 200) <= 1, $"{filter} produced {p}");
             Assert.AreEqual(255, p.A);
@@ -95,7 +95,7 @@ public sealed class ResizeTests
     public void IdentityResizeIsAPassThrough()
     {
         using var source = TestImages.Gradient(32, 32);
-        using var result = new ResizeOperation(32, 32, ResizeMode.Stretch).Apply(source, OperationContext.Default);
+        using var result = new ResizeOperation(32, 32, BmageResizeMode.Stretch).Apply(source, OperationContext.Default);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, result));
     }
 
@@ -107,7 +107,7 @@ public sealed class ResizeTests
         for (var y = 0; y < 64; y++)
             for (var x = 0; x < 64; x++)
                 source[x, y] = ((x + y) & 1) == 0 ? Rgba32.White : Rgba32.Black;
-        using var result = new ResizeOperation(32, 32, ResizeMode.Stretch, ResamplingFilter.Box).Apply(source, OperationContext.Default);
+        using var result = new ResizeOperation(32, 32, BmageResizeMode.Stretch, ResamplingFilter.Box).Apply(source, OperationContext.Default);
         var p = result[16, 16];
         Assert.IsInRange(100, 155, p.R);
     }
@@ -117,7 +117,7 @@ public sealed class ResizeTests
     {
         using var source = ImageBuffer.Create(100, 50, Rgba32.White);
         var bg = new Rgba32(10, 20, 30);
-        using var result = new ResizeOperation(100, 100, ResizeMode.Contain, ResamplingFilter.Bilinear, Anchor.Center, bg).Apply(source, OperationContext.Default);
+        using var result = new ResizeOperation(100, 100, BmageResizeMode.Contain, ResamplingFilter.Bilinear, Anchor.Center, bg).Apply(source, OperationContext.Default);
         Assert.AreEqual(new Size(100, 100), result.Size);
         Assert.AreEqual(bg, result[50, 2]);
         Assert.AreEqual(Rgba32.White, result[50, 50]);
@@ -129,7 +129,7 @@ public sealed class ResizeTests
         // A fully opaque red square on a transparent field must stay red after downscaling (premultiplied filtering).
         using var source = ImageBuffer.Create(64, 64, Rgba32.Transparent);
         source.Fill(new Rectangle(16, 16, 32, 32), new Rgba32(255, 0, 0, 255));
-        using var result = new ResizeOperation(32, 32, ResizeMode.Stretch, ResamplingFilter.Bilinear).Apply(source, OperationContext.Default);
+        using var result = new ResizeOperation(32, 32, BmageResizeMode.Stretch, ResamplingFilter.Bilinear).Apply(source, OperationContext.Default);
         var centre = result[16, 16];
         Assert.AreEqual(255, centre.A);
         Assert.IsTrue(centre.R > 250 && centre.G < 5 && centre.B < 5, $"Centre was {centre}");
@@ -460,7 +460,7 @@ public sealed class OperationCancellationTests
         using var cts = new CancellationTokenSource();
         cts.Cancel();
         var ctx = new OperationContext(cancellationToken: cts.Token);
-        Assert.ThrowsExactly<OperationCanceledException>(() => new ResizeOperation(512, 512, ResizeMode.Stretch).Apply(source, ctx));
+        Assert.ThrowsExactly<OperationCanceledException>(() => new ResizeOperation(512, 512, BmageResizeMode.Stretch).Apply(source, ctx));
     }
 
     [TestMethod]
@@ -469,7 +469,7 @@ public sealed class OperationCancellationTests
         using var source = TestImages.Gradient(64, 64);
         var values = new List<double>();
         var ctx = new OperationContext(progress: new Progress<double>(v => { lock (values) values.Add(v); }));
-        using var result = new ResizeOperation(32, 32, ResizeMode.Stretch).Apply(source, ctx);
+        using var result = new ResizeOperation(32, 32, BmageResizeMode.Stretch).Apply(source, ctx);
         Assert.AreEqual(new Size(32, 32), result.Size);
     }
 }

@@ -149,7 +149,7 @@
             };
 
             using var processed = await pipeline.ExecuteAsync(_source);
-            var encoded = await Exporter.EncodeWithFallbackAsync(processed, [ImageFormat.WebP, ImageFormat.Jpeg],
+            var encoded = await Exporter.EncodeWithFallbackAsync(processed, [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
                 new ImageExportOptions { Quality = 0.85 });
 
             // A newer change superseded this one while it ran.

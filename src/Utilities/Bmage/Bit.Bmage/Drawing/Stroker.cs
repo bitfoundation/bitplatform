@@ -3,7 +3,7 @@
 namespace Bit.Bmage;
 
 /// <summary>How the ends of an open stroked path are drawn.</summary>
-public enum LineCap
+public enum BmageLineCap
 {
     /// <summary>Ends exactly at the endpoint.</summary>
     Butt = 0,
@@ -14,7 +14,7 @@ public enum LineCap
 }
 
 /// <summary>How corners between segments are drawn.</summary>
-public enum LineJoin
+public enum BmageLineJoin
 {
     /// <summary>Extends the outer edges until they meet, falling back to a bevel past the miter limit.</summary>
     Miter = 0,
@@ -33,9 +33,9 @@ public sealed record StrokeStyle
     /// <summary>Stroke width in pixels. Must be positive.</summary>
     public float Width { get; init; } = 1f;
 
-    public LineCap Cap { get; init; } = LineCap.Round;
+    public BmageLineCap Cap { get; init; } = BmageLineCap.Round;
 
-    public LineJoin Join { get; init; } = LineJoin.Round;
+    public BmageLineJoin Join { get; init; } = BmageLineJoin.Round;
 
     /// <summary>Maximum ratio of miter length to stroke width before falling back to a bevel.</summary>
     public float MiterLimit { get; init; } = 4f;
@@ -77,7 +77,7 @@ public static class Stroker
         ArgumentNullException.ThrowIfNull(path);
         ArgumentNullException.ThrowIfNull(style);
         if (style.Width <= 0) throw new ArgumentOutOfRangeException(nameof(style), "Stroke width must be positive.");
-        var builder = new PathBuilder();
+        var builder = new BmagePathBuilder();
         var half = style.Width / 2;
 
         for (var c = 0; c < path.Contours.Count; c++)
@@ -86,7 +86,7 @@ public static class Stroker
             if (points.Count < 2)
             {
                 // A degenerate contour still paints a dot for round or square caps.
-                if (points.Count == 1 && style.Cap != LineCap.Butt) AddDot(builder, points[0], half, style.Cap);
+                if (points.Count == 1 && style.Cap != BmageLineCap.Butt) AddDot(builder, points[0], half, style.Cap);
                 continue;
             }
             var closed = path.Closed[c] && points.Count > 2;
@@ -94,7 +94,7 @@ public static class Stroker
             {
                 foreach (var segment in ApplyDashes(points, closed, dashes, style.DashOffset))
                     if (segment.Count >= 2) StrokePolyline(builder, segment, false, half, style);
-                    else if (segment.Count == 1 && style.Cap != LineCap.Butt) AddDot(builder, segment[0], half, style.Cap);
+                    else if (segment.Count == 1 && style.Cap != BmageLineCap.Butt) AddDot(builder, segment[0], half, style.Cap);
             }
             else
             {
@@ -115,9 +115,9 @@ public static class Stroker
         return result;
     }
 
-    private static void AddDot(PathBuilder builder, Vector2 center, float radius, LineCap cap)
+    private static void AddDot(BmagePathBuilder builder, Vector2 center, float radius, BmageLineCap cap)
     {
-        if (cap == LineCap.Round)
+        if (cap == BmageLineCap.Round)
             builder.AddEllipse(new System.Drawing.RectangleF(center.X - radius, center.Y - radius, radius * 2, radius * 2));
         else
             builder.AddRectangle(new System.Drawing.RectangleF(center.X - radius, center.Y - radius, radius * 2, radius * 2));
@@ -127,7 +127,7 @@ public static class Stroker
     /// Emits the outline of one polyline. Each segment contributes a quad; joins and caps are emitted as separate
     /// closed shapes. Overlaps are harmless because the result is filled with the non-zero rule.
     /// </summary>
-    private static void StrokePolyline(PathBuilder builder, List<Vector2> points, bool closed, float half, StrokeStyle style)
+    private static void StrokePolyline(BmagePathBuilder builder, List<Vector2> points, bool closed, float half, StrokeStyle style)
     {
         var n = points.Count;
         var segments = closed ? n : n - 1;
@@ -162,7 +162,7 @@ public static class Stroker
         }
     }
 
-    private static void AddJoin(PathBuilder builder, Vector2 prev, Vector2 cur, Vector2 next, float half, StrokeStyle style)
+    private static void AddJoin(BmagePathBuilder builder, Vector2 prev, Vector2 cur, Vector2 next, float half, StrokeStyle style)
     {
         var d0 = Vector2.Normalize(cur - prev);
         var d1 = Vector2.Normalize(next - cur);
@@ -171,14 +171,14 @@ public static class Stroker
 
         switch (style.Join)
         {
-            case LineJoin.Round:
+            case BmageLineJoin.Round:
                 // Wound the same way as the segment quads. AddEllipse winds the opposite way, which under the non-zero
                 // rule cancels the quads wherever the two overlap and leaves holes in the stroke.
                 builder.MoveTo(cur + new Vector2(half, 0));
                 builder.ArcTo(cur, half, half, 0, -MathF.Tau);
                 builder.Close();
                 return;
-            case LineJoin.Bevel:
+            case BmageLineJoin.Bevel:
                 AddBevel(builder, cur, d0, d1, half, cross);
                 return;
             default:
@@ -205,7 +205,7 @@ public static class Stroker
         }
     }
 
-    private static void AddBevel(PathBuilder builder, Vector2 cur, Vector2 d0, Vector2 d1, float half, float cross)
+    private static void AddBevel(BmagePathBuilder builder, Vector2 cur, Vector2 d0, Vector2 d1, float half, float cross)
     {
         var sign = cross > 0 ? -1f : 1f;
         var n0 = new Vector2(-d0.Y, d0.X) * half * sign;
@@ -216,13 +216,13 @@ public static class Stroker
         builder.Close();
     }
 
-    private static void AddCap(PathBuilder builder, Vector2 from, Vector2 end, float half, LineCap cap)
+    private static void AddCap(BmagePathBuilder builder, Vector2 from, Vector2 end, float half, BmageLineCap cap)
     {
-        if (cap == LineCap.Butt) return;
+        if (cap == BmageLineCap.Butt) return;
         var dir = Vector2.Normalize(end - from);
         if (!float.IsFinite(dir.X) || !float.IsFinite(dir.Y)) return;
         var normal = new Vector2(-dir.Y, dir.X) * half;
-        if (cap == LineCap.Square)
+        if (cap == BmageLineCap.Square)
         {
             var ext = dir * half;
             builder.MoveTo(end + normal);

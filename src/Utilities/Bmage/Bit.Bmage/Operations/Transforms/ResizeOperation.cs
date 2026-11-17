@@ -3,10 +3,10 @@ using System.Numerics;
 
 namespace Bit.Bmage;
 
-/// <summary>Resizes an image according to a <see cref="ResizeMode"/>.</summary>
+/// <summary>Resizes an image according to a <see cref="BmageResizeMode"/>.</summary>
 public sealed class ResizeOperation : ImageOperation, IGeometricOperation
 {
-    public ResizeOperation(int? width, int? height, ResizeMode mode = ResizeMode.Fit, ResamplingFilter filter = ResamplingFilter.Auto, Anchor anchor = Anchor.Center, Rgba32 background = default)
+    public ResizeOperation(int? width, int? height, BmageResizeMode mode = BmageResizeMode.Fit, ResamplingFilter filter = ResamplingFilter.Auto, Anchor anchor = Anchor.Center, Rgba32 background = default)
     {
         if (width is null && height is null) throw new ArgumentException("At least one of width or height must be specified.");
         if (width is <= 0) throw new ArgumentOutOfRangeException(nameof(width));
@@ -19,25 +19,25 @@ public sealed class ResizeOperation : ImageOperation, IGeometricOperation
         Background = background;
     }
 
-    /// <summary>Creates a resize to an exact size using <see cref="ResizeMode.Stretch"/>.</summary>
-    public static ResizeOperation Exact(int width, int height, ResamplingFilter filter = ResamplingFilter.Auto) => new(width, height, ResizeMode.Stretch, filter);
+    /// <summary>Creates a resize to an exact size using <see cref="BmageResizeMode.Stretch"/>.</summary>
+    public static ResizeOperation Exact(int width, int height, ResamplingFilter filter = ResamplingFilter.Auto) => new(width, height, BmageResizeMode.Stretch, filter);
 
     /// <summary>Creates a resize that scales proportionally by a factor.</summary>
     public static ResizeOperation Scale(Size source, double factor, ResamplingFilter filter = ResamplingFilter.Auto)
     {
         if (factor <= 0) throw new ArgumentOutOfRangeException(nameof(factor));
-        return new ResizeOperation(Math.Max(1, (int)Math.Round(source.Width * factor)), Math.Max(1, (int)Math.Round(source.Height * factor)), ResizeMode.Stretch, filter);
+        return new ResizeOperation(Math.Max(1, (int)Math.Round(source.Width * factor)), Math.Max(1, (int)Math.Round(source.Height * factor)), BmageResizeMode.Stretch, filter);
     }
 
     /// <summary>Creates a resize that shrinks an image to fit within the given bounds without enlarging it.</summary>
-    public static ResizeOperation Max(int maxWidth, int maxHeight, ResamplingFilter filter = ResamplingFilter.Auto) => new(maxWidth, maxHeight, ResizeMode.Max, filter);
+    public static ResizeOperation Max(int maxWidth, int maxHeight, ResamplingFilter filter = ResamplingFilter.Auto) => new(maxWidth, maxHeight, BmageResizeMode.Max, filter);
 
     public int? Width { get; }
     public int? Height { get; }
-    public ResizeMode Mode { get; }
+    public BmageResizeMode Mode { get; }
     public ResamplingFilter Filter { get; }
     public Anchor Anchor { get; }
-    /// <summary>Colour used for padding in <see cref="ResizeMode.Contain"/>.</summary>
+    /// <summary>Colour used for padding in <see cref="BmageResizeMode.Contain"/>.</summary>
     public Rgba32 Background { get; }
 
     public override string Name => "Resize";

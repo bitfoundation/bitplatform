@@ -35,7 +35,7 @@ what came back.
 ```csharp
 var capabilities = await capabilityProvider.GetAsync();
 
-if (capabilities.CanEncode(ImageFormat.Avif)) { /* ... */ }
+if (capabilities.CanEncode(BmageImageFormat.Avif)) { /* ... */ }
 if (capabilities.SupportsWebP) { /* ... */ }
 ```
 
@@ -58,7 +58,7 @@ If you would rather degrade than handle an exception, ask for a preference order
 ```csharp
 var encoded = await exporter.EncodeWithFallbackAsync(
     image,
-    [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg],
+    [BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg],
     new ImageExportOptions { Quality = 0.82 });
 
 Console.WriteLine(encoded.Format);   // whichever one this browser can actually write
@@ -121,7 +121,7 @@ Circular avatars need transparency, so prefer WebP or PNG there; a lossy opaque 
 ```csharp
 var encoded = await exporter.EncodeAsync(image, new ImageExportOptions
 {
-    Format      = ImageFormat.WebP,
+    Format      = BmageImageFormat.WebP,
     Quality     = 0.9,
     MaxFileSize = 100 * 1024,
     MinQuality  = 0.5,
@@ -147,7 +147,7 @@ JPEG has no alpha channel. Exporting a transparent image as JPEG composites it o
 which defaults to white. Set it explicitly if white is wrong for your page:
 
 ```csharp
-new ImageExportOptions { Format = ImageFormat.Jpeg, Background = new Rgba32(18, 18, 20) }
+new ImageExportOptions { Format = BmageImageFormat.Jpeg, Background = new Rgba32(18, 18, 20) }
 ```
 
 Without this, browsers composite over black, which is rarely what anyone wants.
@@ -182,8 +182,8 @@ the first frame of an animation, which, as with GIF, is the only frame decoded. 
 the alpha channel stored losslessly beside it when the image has transparency, and lossless WebP when asked:
 
 ```csharp
-new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.8 }      // lossy
-new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true }    // lossless; Quality is ignored
+new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.8 }      // lossy
+new ImageExportOptions { Format = BmageImageFormat.WebP, Lossless = true }    // lossless; Quality is ignored
 ```
 
 A browser's canvas writes only lossy WebP, so a lossless export is always made by the managed encoder, wherever it
@@ -217,8 +217,8 @@ thresholded to black and white becomes a 1-bit PNG. A photo is reduced to the pa
 the option is off unless set.
 
 ```csharp
-var logo = await processor.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png, MaxColors = 64 });
-var scan = await processor.EncodeAsync(page, new ImageExportOptions { Format = ImageFormat.Png, MaxColors = 2 });
+var logo = await processor.EncodeAsync(image, new ImageExportOptions { Format = BmageImageFormat.Png, MaxColors = 64 });
+var scan = await processor.EncodeAsync(page, new ImageExportOptions { Format = BmageImageFormat.Png, MaxColors = 2 });
 ```
 
 When the image has more colours than allowed, the palette is chosen by median cut, every fully transparent pixel shares
@@ -241,7 +241,7 @@ var favicon = IcoEncoder.CreateFavicon(logo);            // favicon.ico with thr
 var app = IcoEncoder.CreateFavicon(logo, [16, 24, 32, 48, 64, 256]);
 ```
 
-Through `ImageProcessor.EncodeAsync` with `ImageFormat.Ico`, one image becomes a one-image icon. The decoder reads the
+Through `ImageProcessor.EncodeAsync` with `BmageImageFormat.Ico`, one image becomes a one-image icon. The decoder reads the
 largest image in a file, stored as PNG or as a Windows bitmap of 1, 4, 8, 24 or 32 bits a pixel with its transparency
 mask, and checks every directory entry against the file's length before reading it.
 

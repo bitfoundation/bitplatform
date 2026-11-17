@@ -464,7 +464,7 @@
                 .Rotate(12.5, background)           // arbitrary angle, canvas expands
                 .Rotate(12.5, expandCanvas: false)  // ...or keeps its size, corners cut off
                 .Straighten(-3.5)                   // level a tilt and crop the empty corners
-                .Orient(Orientation.Rotate90)       // lossless, no resampling
+                .Orient(BmageOrientation.Rotate90)       // lossless, no resampling
                 .FlipHorizontal()
                 .FlipVertical()
                 .Skew(10, 0)

@@ -16,10 +16,10 @@ public sealed class ParallelProcessingTests
         yield return [new BrightnessAdjustment(0.15f)];
         yield return [new SaturationAdjustment(0.4f)];
         yield return [new FusedPointOperation([new ContrastAdjustment(0.2f), new SaturationAdjustment(-0.3f), new GammaAdjustment(1.3f)])];
-        yield return [new ResizeOperation(611, 433, ResizeMode.Stretch, ResamplingFilter.Lanczos3)];
-        yield return [new ResizeOperation(1500, 1100, ResizeMode.Stretch, ResamplingFilter.Bicubic)];
-        yield return [new ResizeOperation(97, 61, ResizeMode.Stretch, ResamplingFilter.Lanczos3)];
-        yield return [new ResizeOperation(333, 222, ResizeMode.Stretch, ResamplingFilter.NearestNeighbor)];
+        yield return [new ResizeOperation(611, 433, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3)];
+        yield return [new ResizeOperation(1500, 1100, BmageResizeMode.Stretch, ResamplingFilter.Bicubic)];
+        yield return [new ResizeOperation(97, 61, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3)];
+        yield return [new ResizeOperation(333, 222, BmageResizeMode.Stretch, ResamplingFilter.NearestNeighbor)];
         yield return [new RotateOperation(37, new Rgba32(10, 20, 30, 200))];
         yield return [new RotateOperation(-12.5, sampling: WarpSampling.Bilinear)];
         yield return [new RotateOperation(80, sampling: WarpSampling.NearestNeighbor)];
@@ -28,9 +28,9 @@ public sealed class ParallelProcessingTests
         yield return [new MedianFilter(1)];
         yield return [new MedianFilter(3, new Rectangle(100, 50, 600, 400))];
         yield return [new VignetteFilter(0.7f)];
-        yield return [new OrientationOperation(Orientation.Rotate90)];
-        yield return [new OrientationOperation(Orientation.Transverse)];
-        yield return [new OrientationOperation(Orientation.FlipHorizontal)];
+        yield return [new OrientationOperation(BmageOrientation.Rotate90)];
+        yield return [new OrientationOperation(BmageOrientation.Transverse)];
+        yield return [new OrientationOperation(BmageOrientation.FlipHorizontal)];
     }
 
     [TestMethod]

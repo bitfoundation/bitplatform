@@ -81,7 +81,7 @@ public sealed class AvifCodecTests
         Assert.IsNotNull(info);
         Assert.AreEqual(96, info.Width);
         Assert.AreEqual(64, info.Height);
-        Assert.AreEqual(ImageFormat.Avif, info.Format);
+        Assert.AreEqual(BmageImageFormat.Avif, info.Format);
         Assert.IsTrue(info.HasAlpha);
         Assert.IsFalse(decoder.Identify(Asset("photo-420.avif"))!.HasAlpha);
         Assert.IsNull(decoder.Identify(Asset("photo-420.png")));
@@ -91,22 +91,22 @@ public sealed class AvifCodecTests
     public async Task DecodesThroughTheDecoderInterface()
     {
         IImageDecoder decoder = new AvifDecoder();
-        CollectionAssert.AreEqual(new[] { ImageFormat.Avif }, decoder.Formats.ToArray());
+        CollectionAssert.AreEqual(new[] { BmageImageFormat.Avif }, decoder.Formats.ToArray());
         using var decoded = await decoder.DecodeAsync(Asset("photo-420.avif"), DecodeOptions.Default, PooledPixelAllocator.Shared);
         Assert.AreEqual(96, decoded.Width);
-        Assert.AreEqual(ImageFormat.Avif, decoded.Metadata!.SourceFormat);
+        Assert.AreEqual(BmageImageFormat.Avif, decoded.Metadata!.SourceFormat);
     }
 
     // ------------------------------------------------------------------ HEIF container features
 
     [TestMethod]
-    [DataRow(1, -1, Orientation.Rotate270)]      // irot turns anti-clockwise
-    [DataRow(2, -1, Orientation.Rotate180)]
-    [DataRow(3, -1, Orientation.Rotate90)]
-    [DataRow(-1, 0, Orientation.FlipVertical)]   // imir axis 0 exchanges top and bottom
-    [DataRow(-1, 1, Orientation.FlipHorizontal)] // axis 1 exchanges left and right
-    [DataRow(1, 0, Orientation.Transpose)]       // turn anti-clockwise, then exchange top and bottom
-    public void AppliesRotationAndMirroring(int irot, int imir, Orientation expected)
+    [DataRow(1, -1, BmageOrientation.Rotate270)]      // irot turns anti-clockwise
+    [DataRow(2, -1, BmageOrientation.Rotate180)]
+    [DataRow(3, -1, BmageOrientation.Rotate90)]
+    [DataRow(-1, 0, BmageOrientation.FlipVertical)]   // imir axis 0 exchanges top and bottom
+    [DataRow(-1, 1, BmageOrientation.FlipHorizontal)] // axis 1 exchanges left and right
+    [DataRow(1, 0, BmageOrientation.Transpose)]       // turn anti-clockwise, then exchange top and bottom
+    public void AppliesRotationAndMirroring(int irot, int imir, BmageOrientation expected)
     {
         var properties = new List<byte[]>();
         if (irot >= 0) properties.Add(Box("irot", [(byte)irot]));
@@ -117,7 +117,7 @@ public sealed class AvifCodecTests
 
         using var decoded = DecodeLikeLibheif(file);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(upright, decoded));
-        Assert.AreEqual(Orientation.Normal, decoded.Metadata!.Orientation);
+        Assert.AreEqual(BmageOrientation.Normal, decoded.Metadata!.Orientation);
 
         // Without auto-orientation the pixels stay as stored and the metadata says how to show them.
         using var stored = DecodeLikeLibheif(file, new DecodeOptions { AutoOrient = false });
@@ -251,7 +251,7 @@ public sealed class AvifCodecTests
     {
         var source = AvifContainer.Parse(Asset("photo-420.avif"));
         var color = source.GetItem(1)!;
-        var exif = new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Make, ExifValue.FromString("Bmage"))).WithOrientation(Orientation.Rotate90);
+        var exif = new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Make, ExifValue.FromString("Bmage"))).WithOrientation(BmageOrientation.Rotate90);
         var tiff = exif.ToTiff();
         var exifItem = new byte[4 + 6 + tiff.Length];
         BinaryPrimitives.WriteUInt32BigEndian(exifItem, 6); // exif_tiff_header_offset, past "Exif\0\0"
@@ -272,14 +272,14 @@ public sealed class AvifCodecTests
         Assert.AreEqual("Bmage", metadata.Exif?.Make);
         CollectionAssert.AreEqual(icc, metadata.IccProfile.ToArray());
         CollectionAssert.AreEqual(xmp, metadata.Xmp.ToArray());
-        Assert.AreEqual(ImageFormat.Avif, metadata.SourceFormat);
+        Assert.AreEqual(BmageImageFormat.Avif, metadata.SourceFormat);
         Assert.AreEqual("photo.avif", metadata.FileName);
 
         // An Exif orientation does not turn AVIF pixels (irot and imir do), and the decoded image records them as upright.
         using var plain = DecodeLikeLibheif(Asset("photo-420.avif"));
         using var decoded = DecodeLikeLibheif(file);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(plain, decoded));
-        Assert.AreEqual(Orientation.Normal, decoded.Metadata!.Orientation);
+        Assert.AreEqual(BmageOrientation.Normal, decoded.Metadata!.Orientation);
         Assert.AreEqual("Bmage", decoded.Metadata.Exif?.Make);
 
         using var withoutMetadata = DecodeLikeLibheif(file, new DecodeOptions { ReadMetadata = false });
@@ -392,7 +392,7 @@ public sealed class AvifCodecTests
         Assert.IsFalse(AvifDecoder.HasNonSrgbColors(Asset("photo-420.avif")), "no colr says nothing about the gamut");
         // The colours are decoded either way; only a host with a browser can do better with them.
         using var decoded = AvifDecoder.Decode(file);
-        Assert.AreEqual(ImageFormat.Avif, decoded.Metadata!.SourceFormat);
+        Assert.AreEqual(BmageImageFormat.Avif, decoded.Metadata!.SourceFormat);
     }
 
     [TestMethod]

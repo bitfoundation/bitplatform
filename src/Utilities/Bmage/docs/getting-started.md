@@ -167,7 +167,7 @@ trade-offs.
         // Encode, preferring WebP but falling back where it is unavailable.
         var encoded = await Exporter.EncodeWithFallbackAsync(
             processed,
-            [ImageFormat.WebP, ImageFormat.Jpeg],
+            [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
             new ImageExportOptions { Quality = 0.85 });
 
         _size = encoded.Length;
@@ -201,7 +201,7 @@ but base64 inflates the payload by a third and forces it through the DOM as a st
     private BmageEditor? _editor;
 
     private Task Save() => _editor!.DownloadAsync("edited",
-        new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.9 });
+        new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.9 });
 
     private void OnExported(EncodedImage image)
     {
@@ -232,7 +232,7 @@ app.MapPost("/upload", async (IFormFile file, ImageProcessor processor) =>
     var thumbnail = await processor.ProcessAsync(
         buffer.ToArray(),
         ImagePipeline.Create().AutoOrient().MaxSize(400, 400),
-        new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 });
+        new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 });
 
     return Results.File(thumbnail.Data, thumbnail.MimeType);
 });

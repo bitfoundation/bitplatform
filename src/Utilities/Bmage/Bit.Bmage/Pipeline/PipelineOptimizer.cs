@@ -129,12 +129,12 @@ public static class PipelineOptimizer
         // Dropping the first resize changes the second's input size, which changes its output for modes whose
         // output depends on the input aspect ratio. Only safe when the second produces a fixed canvas covering
         // the whole output regardless of what came before.
-        if (second.Mode is not (ResizeMode.Stretch or ResizeMode.Cover)) return false;
+        if (second.Mode is not (BmageResizeMode.Stretch or BmageResizeMode.Cover)) return false;
         if (second.Width is null || second.Height is null) return false;
         // Cover crops based on the input aspect ratio; a preceding proportional resize does not change the ratio,
         // but Contain/Cover/Stretch in the first step can. Only drop when the first preserves aspect ratio.
-        if (first.Mode is not (ResizeMode.Fit or ResizeMode.Max or ResizeMode.Min)) return false;
-        if (second.Mode == ResizeMode.Stretch) return true;
+        if (first.Mode is not (BmageResizeMode.Fit or BmageResizeMode.Max or BmageResizeMode.Min)) return false;
+        if (second.Mode == BmageResizeMode.Stretch) return true;
         // Proportional modes round to whole pixels, so they only nearly keep the ratio, and Cover frames from the exact
         // ratio. Drop the first only when its output ratio is provably identical to its input's.
         if (inputSize is not { } size) return false;

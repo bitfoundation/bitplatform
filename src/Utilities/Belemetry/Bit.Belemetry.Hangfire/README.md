@@ -7,6 +7,8 @@ parameters - and marked as an error when the job throws. The spans land on the `
 source, which Bit.Belemetry collects by default, and show up in Application Insights as requests.
 
 ```csharp
+using Bit.Belemetry;   // UseBitBelemetry
+
 services.AddHangfire(configuration => configuration
     .UseSqlServerStorage(connectionString)
     .UseBitBelemetry(o =>

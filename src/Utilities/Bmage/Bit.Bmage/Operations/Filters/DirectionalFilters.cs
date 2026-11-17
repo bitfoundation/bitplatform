@@ -233,7 +233,7 @@ public sealed class MotionBlurFilter : RegionOperation
 
 /// <summary>
 /// Keeps only the fine detail of an image: each channel becomes mid grey plus its difference from a blurred copy.
-/// Blended over the image with <see cref="BlendMode.Overlay"/> or <see cref="BlendMode.SoftLight"/> it
+/// Blended over the image with <see cref="BmageBlendMode.Overlay"/> or <see cref="BmageBlendMode.SoftLight"/> it
 /// sharpens; on its own it shows edges and texture, and finds blurred areas.
 /// </summary>
 public sealed class HighPassFilter : RegionOperation

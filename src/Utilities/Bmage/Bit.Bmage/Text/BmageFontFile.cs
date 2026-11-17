@@ -9,7 +9,7 @@ namespace Bit.Bmage;
 /// tables. Enough of the format is implemented to shape, lay out and rasterise text without any external dependency.
 /// CFF (PostScript) outlines are out of scope; use a browser-backed rasteriser for those.
 /// </summary>
-public sealed class FontFile
+public sealed class BmageFontFile
 {
     private readonly byte[] _data;
     private readonly Dictionary<string, (int Offset, int Length)> _tables = new(StringComparer.Ordinal);
@@ -22,7 +22,7 @@ public sealed class FontFile
     private readonly Dictionary<ushort, GlyphOutline?> _glyphCache = [];
     private (ushort Left, ushort Right, short Value)[] _kerningPairs = [];
 
-    private FontFile(byte[] data) => _data = data;
+    private BmageFontFile(byte[] data) => _data = data;
 
     /// <summary>Units per em from the head table; all glyph coordinates are in these units.</summary>
     public int UnitsPerEm { get; private set; } = 1000;
@@ -49,16 +49,16 @@ public sealed class FontFile
     public bool HasKerning => _kerningPairs.Length > 0;
 
     /// <summary>Parses a font from its bytes. Throws <see cref="ImageDecodeException"/> for unsupported or corrupt files.</summary>
-    public static FontFile Load(ReadOnlyMemory<byte> data)
+    public static BmageFontFile Load(ReadOnlyMemory<byte> data)
     {
         if (data.Length < 12) throw new ImageDecodeException("Font data is too short.");
-        var font = new FontFile(data.ToArray());
+        var font = new BmageFontFile(data.ToArray());
         font.Parse();
         return font;
     }
 
     /// <summary>Parses a font from a stream.</summary>
-    public static async ValueTask<FontFile> LoadAsync(Stream stream, CancellationToken cancellationToken = default)
+    public static async ValueTask<BmageFontFile> LoadAsync(Stream stream, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
         using var ms = new MemoryStream();
@@ -599,7 +599,7 @@ public sealed class GlyphOutline
     /// Appends the glyph to a path builder, converting quadratic segments and flipping the Y axis so the result is in
     /// screen coordinates.
     /// </summary>
-    public void AppendTo(PathBuilder builder, Vector2 origin, float scale)
+    public void AppendTo(BmagePathBuilder builder, Vector2 origin, float scale)
     {
         ArgumentNullException.ThrowIfNull(builder);
         foreach (var contour in Contours)
@@ -633,7 +633,7 @@ public sealed class GlyphOutline
         }
     }
 
-    private static void EmitFrom(PathBuilder builder, IReadOnlyList<GlyphPoint> pts, int n, int startIndex, Func<GlyphPoint, Vector2> map, Vector2 startPoint, bool allOffCurve)
+    private static void EmitFrom(BmagePathBuilder builder, IReadOnlyList<GlyphPoint> pts, int n, int startIndex, Func<GlyphPoint, Vector2> map, Vector2 startPoint, bool allOffCurve)
     {
         Vector2? pendingControl = null;
         var count = allOffCurve ? n : n - 1;

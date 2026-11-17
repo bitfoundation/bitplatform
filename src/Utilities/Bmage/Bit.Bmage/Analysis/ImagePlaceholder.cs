@@ -70,7 +70,7 @@ public sealed record ImagePlaceholder
         if (rows is < 1 or > MaxGrid) throw new ArgumentOutOfRangeException(nameof(rows), $"Rows must be between 1 and {MaxGrid}.");
 
         // Box averaging into exactly the grid, which is what a placeholder is.
-        using var small = new ResizeOperation(columns, rows, ResizeMode.Stretch, ResamplingFilter.Box)
+        using var small = new ResizeOperation(columns, rows, BmageResizeMode.Stretch, ResamplingFilter.Box)
             .Apply(image, OperationContext.Default);
 
         var colors = new Rgba32[columns * rows];

@@ -59,7 +59,7 @@ public sealed class VectorPath
 }
 
 /// <summary>Builds a <see cref="VectorPath"/> from move/line/curve commands, flattening curves as it goes.</summary>
-public sealed class PathBuilder
+public sealed class BmagePathBuilder
 {
     private readonly List<Vector2[]> _contours = [];
     private readonly List<bool> _closed = [];
@@ -75,7 +75,7 @@ public sealed class PathBuilder
     public Vector2 Position => _position;
 
     /// <summary>Starts a new contour at the given point.</summary>
-    public PathBuilder MoveTo(Vector2 point)
+    public BmagePathBuilder MoveTo(Vector2 point)
     {
         EndContour(false);
         _current.Add(point);
@@ -86,10 +86,10 @@ public sealed class PathBuilder
     }
 
     /// <summary>Starts a new contour at the given point.</summary>
-    public PathBuilder MoveTo(float x, float y) => MoveTo(new Vector2(x, y));
+    public BmagePathBuilder MoveTo(float x, float y) => MoveTo(new Vector2(x, y));
 
     /// <summary>Adds a straight segment to the given point.</summary>
-    public PathBuilder LineTo(Vector2 point)
+    public BmagePathBuilder LineTo(Vector2 point)
     {
         if (!_hasCurrent) return MoveTo(point);
         if (Vector2.DistanceSquared(_position, point) > 1e-12f) _current.Add(point);
@@ -98,10 +98,10 @@ public sealed class PathBuilder
     }
 
     /// <summary>Adds a straight segment to the given point.</summary>
-    public PathBuilder LineTo(float x, float y) => LineTo(new Vector2(x, y));
+    public BmagePathBuilder LineTo(float x, float y) => LineTo(new Vector2(x, y));
 
     /// <summary>Adds a quadratic Bézier segment.</summary>
-    public PathBuilder QuadraticTo(Vector2 control, Vector2 end)
+    public BmagePathBuilder QuadraticTo(Vector2 control, Vector2 end)
     {
         if (!_hasCurrent) MoveTo(control);
         var p0 = _position;
@@ -118,7 +118,7 @@ public sealed class PathBuilder
     }
 
     /// <summary>Adds a cubic Bézier segment.</summary>
-    public PathBuilder CubicTo(Vector2 control1, Vector2 control2, Vector2 end)
+    public BmagePathBuilder CubicTo(Vector2 control1, Vector2 control2, Vector2 end)
     {
         if (!_hasCurrent) MoveTo(control1);
         var p0 = _position;
@@ -135,7 +135,7 @@ public sealed class PathBuilder
     }
 
     /// <summary>Adds an elliptical arc segment, sweeping from <paramref name="startAngle"/> by <paramref name="sweepAngle"/> (radians).</summary>
-    public PathBuilder ArcTo(Vector2 center, float radiusX, float radiusY, float startAngle, float sweepAngle)
+    public BmagePathBuilder ArcTo(Vector2 center, float radiusX, float radiusY, float startAngle, float sweepAngle)
     {
         var steps = Math.Max(2, (int)Math.Ceiling(Math.Abs(sweepAngle) / (2 * Math.PI) * EstimateEllipseSteps(radiusX, radiusY, FlatteningTolerance)));
         for (var i = 0; i <= steps; i++)
@@ -149,7 +149,7 @@ public sealed class PathBuilder
     }
 
     /// <summary>Closes the current contour by joining its end back to its start.</summary>
-    public PathBuilder Close()
+    public BmagePathBuilder Close()
     {
         if (_hasCurrent && _current.Count > 0)
         {
@@ -166,7 +166,7 @@ public sealed class PathBuilder
     /// normalise before drawing. The contour is wound in the opposite direction in that case, which is invisible for
     /// a single shape but does cancel against an overlapping contour under the non-zero fill rule.
     /// </remarks>
-    public PathBuilder AddRectangle(System.Drawing.RectangleF rect)
+    public BmagePathBuilder AddRectangle(System.Drawing.RectangleF rect)
     {
         MoveTo(rect.Left, rect.Top);
         LineTo(rect.Right, rect.Top);
@@ -176,7 +176,7 @@ public sealed class PathBuilder
     }
 
     /// <summary>Adds a closed rounded-rectangle contour. The radius is clamped to half the smaller side.</summary>
-    public PathBuilder AddRoundedRectangle(System.Drawing.RectangleF rect, float radius)
+    public BmagePathBuilder AddRoundedRectangle(System.Drawing.RectangleF rect, float radius)
     {
         radius = Math.Min(radius, Math.Min(rect.Width, rect.Height) / 2);
         if (radius <= 0) return AddRectangle(rect);
@@ -194,7 +194,7 @@ public sealed class PathBuilder
     }
 
     /// <summary>Adds a closed ellipse contour inscribed in the rectangle.</summary>
-    public PathBuilder AddEllipse(System.Drawing.RectangleF rect)
+    public BmagePathBuilder AddEllipse(System.Drawing.RectangleF rect)
     {
         var center = new Vector2(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
         ArcTo(center, rect.Width / 2, rect.Height / 2, 0, MathF.Tau);
@@ -202,7 +202,7 @@ public sealed class PathBuilder
     }
 
     /// <summary>Adds a polygon contour through the given points.</summary>
-    public PathBuilder AddPolygon(IReadOnlyList<Vector2> points, bool close = true)
+    public BmagePathBuilder AddPolygon(IReadOnlyList<Vector2> points, bool close = true)
     {
         if (points is null || points.Count == 0) return this;
         MoveTo(points[0]);
@@ -211,7 +211,7 @@ public sealed class PathBuilder
     }
 
     /// <summary>Adds an open polyline through the given points.</summary>
-    public PathBuilder AddPolyline(IReadOnlyList<Vector2> points) => AddPolygon(points, close: false);
+    public BmagePathBuilder AddPolyline(IReadOnlyList<Vector2> points) => AddPolygon(points, close: false);
 
     /// <summary>Finishes the path. The builder can be reused after this call.</summary>
     public VectorPath Build()

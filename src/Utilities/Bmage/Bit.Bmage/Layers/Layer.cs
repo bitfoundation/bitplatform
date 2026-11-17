@@ -25,7 +25,7 @@ public abstract record Layer
     public string? Name { get; init; }
 
     /// <summary>How the layer combines with what is beneath it.</summary>
-    public BlendMode BlendMode { get; init; } = BlendMode.SourceOver;
+    public BmageBlendMode BlendMode { get; init; } = BmageBlendMode.SourceOver;
 
     /// <summary>Overall opacity in [0,1].</summary>
     public float Opacity
@@ -98,7 +98,7 @@ public abstract record Layer
     protected delegate ReadOnlySpan<Rgba32> LayerRow(int y);
 
     /// <summary>
-    /// Blends <paramref name="rows"/> of layer pixels onto the target through the layer's <see cref="BlendMode"/>,
+    /// Blends <paramref name="rows"/> of layer pixels onto the target through the layer's <see cref="BmageBlendMode"/>,
     /// <see cref="Opacity"/> and <see cref="Mask"/>, over <paramref name="area"/> and on as many threads as the context
     /// allows. <paramref name="rows"/> returns the layer's pixels for a target row, starting at <paramref name="area"/>'s
     /// left, and may be called from several threads at once. With <paramref name="mixForSourceOver"/>, the normal mode
@@ -117,9 +117,9 @@ public abstract record Layer
         var mode = BlendMode;
         var opacity = Opacity;
         // An edit at full strength through a normal layer replaces what is below, exactly; partly, it mixes towards it.
-        var mix = mixForSourceOver && mode == BlendMode.SourceOver;
+        var mix = mixForSourceOver && mode == BmageBlendMode.SourceOver;
         var coverageScale = (int)MathF.Round(opacity * 255);
-        ParallelRows.For(context, area.Top, area.Bottom, area.Width * (mode is BlendMode.SourceOver or BlendMode.Copy ? 1L : 4L), (start, end, band) =>
+        ParallelRows.For(context, area.Top, area.Bottom, area.Width * (mode is BmageBlendMode.SourceOver or BmageBlendMode.Copy ? 1L : 4L), (start, end, band) =>
         {
             var scaled = mix && mask is not null && coverageScale < 255 ? ArrayPool<byte>.Shared.Rent(area.Width) : null;
             try
@@ -252,18 +252,18 @@ public sealed record ImageLayer : Layer
             {
                 if (Rotation == 0)
                 {
-                    canvas.DrawImage(pixels, new RectangleF(device.X - area.X, device.Y - area.Y, device.Width, device.Height), BlendMode.SourceOver, Filter);
+                    canvas.DrawImage(pixels, new RectangleF(device.X - area.X, device.Y - area.Y, device.Width, device.Height), BmageBlendMode.SourceOver, Filter);
                 }
                 else
                 {
                     canvas.Translate(-area.X, -area.Y);
                     canvas.Rotate(Rotation, new Vector2(Bounds.X + Bounds.Width / 2, Bounds.Y + Bounds.Height / 2));
-                    canvas.DrawImage(pixels, Bounds, BlendMode.SourceOver, Filter);
+                    canvas.DrawImage(pixels, Bounds, BmageBlendMode.SourceOver, Filter);
                 }
             }
             // Copy replaces what is below, so a rotated layer must stop at its own outline: the raster's corners around
             // it are empty, not part of the layer.
-            var layer = BlendMode == BlendMode.Copy && Rotation != 0
+            var layer = BlendMode == BmageBlendMode.Copy && Rotation != 0
                 ? this with { Mask = Mask is null ? Outline() : Mask.Intersect(Outline()) }
                 : this;
             layer.BlendRows(target, area, context, y => raster.GetRow(y - area.Y));
@@ -307,7 +307,7 @@ public sealed record ImageLayer : Layer
         var width = Math.Max(1, (int)Math.Round(Image.Width * scale));
         var height = Math.Max(1, (int)Math.Round(Image.Height * scale));
         // Never in place: the image is the caller's, and a resize to its own size would hand it straight back.
-        using var reduced = new ResizeOperation(width, height, ResizeMode.Stretch, Filter).Apply(Image, context.WithProgress(null).WithMutation(false));
+        using var reduced = new ResizeOperation(width, height, BmageResizeMode.Stretch, Filter).Apply(Image, context.WithProgress(null).WithMutation(false));
         return Pipeline.ForScale(scale).Execute(reduced, options);
     }
 
@@ -339,7 +339,7 @@ public sealed record ImageLayer : Layer
 
 /// <summary>
 /// A colour over the whole image, usually shaped by a mask and combined through a blend mode: a colour wash with
-/// <see cref="BlendMode.Color"/>, a duotone with <see cref="BlendMode.Multiply"/> and <see cref="BlendMode.Screen"/>,
+/// <see cref="BmageBlendMode.Color"/>, a duotone with <see cref="BmageBlendMode.Multiply"/> and <see cref="BmageBlendMode.Screen"/>,
 /// a gradient fade through a <see cref="LinearGradientMask"/>.
 /// </summary>
 /// <param name="Color">The fill colour, alpha included.</param>
@@ -347,7 +347,7 @@ public sealed record FillLayer(Rgba32 Color) : Layer
 {
     public override string Kind => "Fill";
 
-    public override bool IsNoOp => base.IsNoOp || (Color.A == 0 && BlendMode != BlendMode.Copy);
+    public override bool IsNoOp => base.IsNoOp || (Color.A == 0 && BlendMode != BmageBlendMode.Copy);
 
     protected internal override void CompositeCore(ImageBuffer target, OperationContext context)
     {
@@ -365,9 +365,9 @@ public sealed record FillLayer(Rgba32 Color) : Layer
 /// hidden or faded without touching anything else.
 /// </summary>
 /// <remarks>
-/// With <see cref="BlendMode.SourceOver"/> the edited pixels replace the ones below by the layer's coverage, so at full
+/// With <see cref="BmageBlendMode.SourceOver"/> the edited pixels replace the ones below by the layer's coverage, so at full
 /// opacity and without a mask the result is exactly the pipeline's. Other modes blend the edited pixels onto the
-/// unedited ones: an empty pipeline in <see cref="BlendMode.Multiply"/> darkens the image by itself.
+/// unedited ones: an empty pipeline in <see cref="BmageBlendMode.Multiply"/> darkens the image by itself.
 /// </remarks>
 public sealed record AdjustmentLayer : Layer
 {
@@ -383,7 +383,7 @@ public sealed record AdjustmentLayer : Layer
 
     public override string Kind => "Adjustment";
 
-    public override bool IsNoOp => base.IsNoOp || (BlendMode == BlendMode.SourceOver && Pipeline.All(operation => operation.IsIdentity));
+    public override bool IsNoOp => base.IsNoOp || (BlendMode == BmageBlendMode.SourceOver && Pipeline.All(operation => operation.IsIdentity));
 
     protected internal override void CompositeCore(ImageBuffer target, OperationContext context)
     {
@@ -478,7 +478,7 @@ public static class LayerCompositor
         if (bottom.IsNoOp) return;
         var inner = context.WithProgress(null);
         using var stack = ImageBuffer.Create(target.Width, target.Height, context.Allocator, clear: true, ImageLimits.Unrestricted);
-        CompositeOne(bottom with { BlendMode = BlendMode.SourceOver, Opacity = 1 }, stack, inner, cache);
+        CompositeOne(bottom with { BlendMode = BmageBlendMode.SourceOver, Opacity = 1 }, stack, inner, cache);
 
         // The base's transparency, which the layers clipped to it are limited to, and the area it covers: outside it
         // the base is transparent, so nothing clipped to it can show there and nothing outside it is blended.
@@ -564,7 +564,7 @@ public static class LayerCompositor
     /// using var card = LayerCompositor.Flatten(new Size(1200, 630), Rgba32.White,
     /// [
     ///     new ImageLayer { Image = photo, Bounds = new RectangleF(0, 0, 1200, 630) },
-    ///     new FillLayer(new Rgba32(10, 20, 60)) { BlendMode = BlendMode.Multiply, Mask = Mask.Gradient(new(0, 1), new(0, 0.3f)) },
+    ///     new FillLayer(new Rgba32(10, 20, 60)) { BlendMode = BmageBlendMode.Multiply, Mask = Mask.Gradient(new(0, 1), new(0, 0.3f)) },
     ///     new ImageLayer { Image = logo, Bounds = new RectangleF(40, 40, 160, 160), Opacity = 0.9f },
     /// ]);
     /// </code>

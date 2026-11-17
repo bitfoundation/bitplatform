@@ -114,14 +114,14 @@ their behalf. Refusing with an explanation is more honest than accepting and hop
 ## Remote URLs
 
 ```csharp
-await loader.LoadAsync(ImageSource.FromUrl("https://example.com/photo.jpg"));
+await loader.LoadAsync(BmageImageSource.FromUrl("https://example.com/photo.jpg"));
 ```
 
 The fetch happens in the browser and is subject to the same-origin policy and CORS. A server that does not permit
 cross-origin reads produces a clear error naming CORS as the likely cause, rather than a tainted canvas.
 
 Only `http`, `https`, `blob` and `data` schemes are accepted; anything else is rejected before the request is made.
-Credentials are not sent unless you opt in with `ImageSource.FromUrl(url, withCredentials: true)`.
+Credentials are not sent unless you opt in with `BmageImageSource.FromUrl(url, withCredentials: true)`.
 
 The download is held to `BitBmageOptions.MaxSourceBytes`, as an upload is. A response declaring more is refused before
 its body is read, and one sending more is cut off at the limit; either way the load fails with an

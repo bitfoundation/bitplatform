@@ -14,9 +14,9 @@ namespace Bit.Bsqlite.Demo.Server.Services;
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the shipped
 /// library - a new member shows up the moment it is written, with the default value it actually has
 /// (read off a freshly constructed instance) instead of one someone remembered to copy into a
-/// document. And every type carries its namespace and its package, because Bsqlite's are spread over
-/// half a dozen namespaces - two of them Microsoft's, where the DI and EF Core entry points live - and
-/// a wrong <c>using</c> is the commonest way generated code fails to compile.
+/// document. And every type carries its namespace and its package: they are all <c>Bit.Bsqlite</c>,
+/// the DI and EF Core entry points included, and showing it is what stops generated code from guessing
+/// a <c>using</c> of its own - the commonest way it fails to compile.
 /// </para>
 /// </summary>
 public static class BsqliteApiCatalog

@@ -14,7 +14,7 @@ var result = await processor.ProcessAsync(
         .Sharpen(0.3f),
     new ImageExportOptions
     {
-        Format      = ImageFormat.WebP,
+        Format      = BmageImageFormat.WebP,
         Quality     = 0.82,
         Metadata    = MetadataPolicy.StripSensitive,
         MaxFileSize = 120 * 1024,
@@ -44,6 +44,7 @@ Bmage's documentation website lives in [`Demo`](https://github.com/bitfoundation
 - [What is in the box](#what-is-in-the-box)
 - [Performance](#performance)
 - [Where it runs](#where-it-runs)
+- [Upgrading](#upgrading)
 - [MCP server (for AI agents)](#mcp-server-for-ai-agents)
 - [Tests](#tests)
 - [Documentation](#documentation)
@@ -149,7 +150,7 @@ faster compiled ahead of time:
             .ExecuteAsync(image);
 
         await Exporter.DownloadAsync(thumb, "thumbnail",
-            new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.85 });
+            new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.85 });
     }
 }
 ```
@@ -243,6 +244,21 @@ a Blazor Hybrid app for Android, iOS, macOS and Windows. Each host is also a min
 platform needs. [Lazy](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/Lazy/)
 stands apart: a Blazor Web App of its own whose browser half downloads `Bit.Bmage.wasm` and `Bit.Bmage.Blazor.wasm`
 only when its editor opens (see [lazy loading](docs/getting-started.md#lazy-loading-bmage-on-webassembly)).
+
+## Upgrading
+
+- **Every Bmage type is in the `Bit.Bmage` namespace.** The types of `Bit.Bmage.Codecs.*`, `Bit.Bmage.Drawing`,
+  `Bit.Bmage.Editing`, `Bit.Bmage.Editor.*`, `Bit.Bmage.Geometry`, `Bit.Bmage.Input`, `Bit.Bmage.Layers`,
+  `Bit.Bmage.Metadata`, `Bit.Bmage.Operations.*`, `Bit.Bmage.Pipeline`, `Bit.Bmage.Text` and the library's other
+  namespaces moved into it, those of `Bit.Bmage.Bink` and `Bit.Bmage.BbScanner` too. Replace every import of them
+  with `using Bit.Bmage;` / `@using Bit.Bmage`; the old ones fail with CS0246.
+- **Types whose names .NET MAUI or Windows Forms also use carry the `Bmage` prefix**, so that `using Bit.Bmage;`
+  next to a Blazor Hybrid app's implicit usings never makes a name ambiguous (CS0104): `ImageSource`, `ImageFormat`,
+  `BlendMode`, `TextAlignment`, `LineCap`, `LineJoin`, `PathBuilder`, `SolidPaint`, `LinearGradientPaint`,
+  `RadialGradientPaint`, `FontFile`, `ResizeMode` and `Orientation` are now `BmageImageSource`, `BmageImageFormat`,
+  `BmageBlendMode`, `BmageTextAlignment`, `BmageLineCap`, `BmageLineJoin`, `BmagePathBuilder`, `BmageSolidPaint`,
+  `BmageLinearGradientPaint`, `BmageRadialGradientPaint`, `BmageFontFile`, `BmageResizeMode` and `BmageOrientation`.
+  Members keep their names (`Layer.BlendMode`, `ImageMetadata.Orientation`, `ImageExportOptions.Format`, ...).
 
 ## MCP server (for AI agents)
 

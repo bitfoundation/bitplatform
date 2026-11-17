@@ -374,7 +374,7 @@
     }
 
     /// <summary>Loads an image from any source.</summary>
-    public Task LoadAsync(ImageSource source) => RunAsync(async () =>
+    public Task LoadAsync(BmageImageSource source) => RunAsync(async () =>
     {
         var image = await Loader.LoadAsync(source);
         await LoadImageAsync(image, takeOwnership: true);
@@ -626,7 +626,7 @@
                     BackgroundColor = _settings.StrokeColor,
                     TextStyle = _settings.ToTextStyle() with
                     {
-                        Alignment = TextAlignment.Center,
+                        Alignment = BmageTextAlignment.Center,
                         Baseline = TextBaseline.Middle,
                         Bold = true,
                         FillColor = Rgba32.White,
@@ -828,7 +828,7 @@
             {
                 StrokeColor = color,
                 FillColor = null,
-                Stroke = new StrokeStyle { Width = _settings.BrushSize, Cap = LineCap.Round, Join = LineJoin.Round },
+                Stroke = new StrokeStyle { Width = _settings.BrushSize, Cap = BmageLineCap.Round, Join = BmageLineJoin.Round },
             },
         };
         await RenderWithPreviewAsync();
@@ -1126,7 +1126,7 @@
             // selection by colour floods a tenth of the pixels that way, which is what keeps it quick on the interpreter.
             var factor = Math.Min(1.0, 640.0 / Math.Max(preview.Width, preview.Height));
             using var small = factor < 1
-                ? new ResizeOperation(Math.Max(1, (int)Math.Round(preview.Width * factor)), Math.Max(1, (int)Math.Round(preview.Height * factor)), ResizeMode.Stretch, ResamplingFilter.Box)
+                ? new ResizeOperation(Math.Max(1, (int)Math.Round(preview.Width * factor)), Math.Max(1, (int)Math.Round(preview.Height * factor)), BmageResizeMode.Stretch, ResamplingFilter.Box)
                     .Apply(preview, new OperationContext(Options.Allocator, Options.Limits).WithMutation(false))
                 : null;
             var source = small ?? preview;
@@ -1531,7 +1531,7 @@
     public async Task ResizeAsync(int width, int height)
     {
         if (_session is null || width <= 0 || height <= 0) return;
-        var resize = new ResizeOperation(width, height, ResizeMode.Stretch);
+        var resize = new ResizeOperation(width, height, BmageResizeMode.Stretch);
         MoveSelectionWith(resize);
         await ApplyAndRenderAsync(d => d.AddOperation(resize, keepOverlaysAttached: true), Strings.Resize);
         FitToWindow();
@@ -1655,7 +1655,7 @@
     /// Loads an image and places it as a layer in the middle of the image, at most six tenths of its size, and selects
     /// it. The session keeps the pixels for as long as its history can refer to them.
     /// </summary>
-    public Task AddImageLayerAsync(ImageSource source) => RunAsync(async () =>
+    public Task AddImageLayerAsync(BmageImageSource source) => RunAsync(async () =>
     {
         if (_session is null) return;
         var image = await Loader.LoadAsync(source);

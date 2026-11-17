@@ -15,7 +15,7 @@ public sealed class ReviewRegressionTests
     {
         using var canvas = ImageCanvas.Create(100, 100);
         canvas.DrawPolyline([new Vector2(10, 50), new Vector2(50, 50), new Vector2(50, 90)], Rgba32.Black,
-            new StrokeStyle { Width = 20, Join = LineJoin.Round });
+            new StrokeStyle { Width = 20, Join = BmageLineJoin.Round });
         // Inside the second segment and the join circle, but not the first segment.
         Assert.AreEqual(255, canvas.Buffer[52, 52].A);
     }
@@ -36,7 +36,7 @@ public sealed class ReviewRegressionTests
         {
             var canvas = ImageCanvas.Create(100, 10);
             canvas.DrawLine(new Vector2(0, 5), new Vector2(100, 5), Rgba32.Black,
-                new StrokeStyle { Width = 4, Cap = LineCap.Butt, DashPattern = [10f, 10f], DashOffset = offset });
+                new StrokeStyle { Width = 4, Cap = BmageLineCap.Butt, DashPattern = [10f, 10f], DashOffset = offset });
             return canvas.Snapshot();
         }
         using var zero = Draw(0);
@@ -48,7 +48,7 @@ public sealed class ReviewRegressionTests
     public void NonFiniteCoordinatesDoNotCrashOrBlankTheRestOfThePath()
     {
         using var canvas = ImageCanvas.Create(100, 100);
-        var path = new PathBuilder()
+        var path = new BmagePathBuilder()
             .AddRectangle(new RectangleF(10, 10, 50, 50))
             .AddPolygon([new Vector2(0, 0), new Vector2(float.NaN, 20), new Vector2(30, float.NaN)])
             .Build();
@@ -112,8 +112,8 @@ public sealed class ReviewRegressionTests
     public void ResizeCropFusionIsNotPlannedPastAutoOrient()
     {
         using var source = TestImages.Gradient(400, 300);
-        source.Metadata = new ImageMetadata(ExifData.FromOrientation(Orientation.Rotate90));
-        var pipeline = ImagePipeline.Create().AutoOrient().Resize(100, 100, ResizeMode.Fit).Crop(0, 0, 50, 100);
+        source.Metadata = new ImageMetadata(ExifData.FromOrientation(BmageOrientation.Rotate90));
+        var pipeline = ImagePipeline.Create().AutoOrient().Resize(100, 100, BmageResizeMode.Fit).Crop(0, 0, 50, 100);
         using var plain = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = false });
         using var optimised = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = true });
         Assert.AreEqual(new Size(50, 100), plain.Size);
@@ -253,7 +253,7 @@ public sealed class ReviewRegressionTests
     public void JpegDecodesNeutralGreyWithoutAGreenCast()
     {
         using var source = ImageBuffer.Create(32, 32, new Rgba32(100, 100, 100));
-        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 1.0 });
+        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 1.0 });
         using var decoded = JpegDecoder.Decode(encoded.Data);
         var pixel = decoded[16, 16];
         Assert.AreEqual(pixel.R, pixel.G);
@@ -305,7 +305,7 @@ public sealed class ReviewRegressionTests
     public void JpegRefusesDimensionsItCannotStore()
     {
         using var wide = ImageBuffer.Create(70_000, 1, limits: ImageLimits.Unrestricted);
-        Assert.ThrowsExactly<ImageEncodeException>(() => JpegEncoder.Encode(wide, new ImageExportOptions { Format = ImageFormat.Jpeg }));
+        Assert.ThrowsExactly<ImageEncodeException>(() => JpegEncoder.Encode(wide, new ImageExportOptions { Format = BmageImageFormat.Jpeg }));
     }
 
     // ---------------------------------------------------------------- text
@@ -313,7 +313,7 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void ALongWordAfterTheFirstIsStillBrokenToFit()
     {
-        var font = FontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
+        var font = BmageFontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
         var rasterizer = new FontTextRasterizer().Register("Test", font);
         var metrics = rasterizer.Measure("AB AAAAAAAAAAAA", new TextStyle { FontFamily = "Test", FontSize = 10, MaxWidth = 40 });
         Assert.IsTrue(metrics.Width <= 40.5f, $"a line is {metrics.Width}px wide, past the 40px limit");

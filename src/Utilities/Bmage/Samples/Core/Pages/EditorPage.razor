@@ -99,7 +99,7 @@
         {
             // WebP where this browser can write it; the editor's managed PNG encoder otherwise.
             var caps = await Capabilities.GetAsync();
-            var format = caps.ChooseEncodableFormat([ImageFormat.WebP, ImageFormat.Png], ImageFormat.Png);
+            var format = caps.ChooseEncodableFormat([BmageImageFormat.WebP, BmageImageFormat.Png], BmageImageFormat.Png);
             await _editor!.ExportAsync(new ImageExportOptions { Format = format, Quality = 0.9 });
         }
         catch (Exception ex)

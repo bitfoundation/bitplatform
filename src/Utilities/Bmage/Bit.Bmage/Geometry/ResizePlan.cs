@@ -4,7 +4,7 @@ namespace Bit.Bmage;
 
 /// <summary>
 /// The result of resolving a resize request: the size of the output canvas, the region of the source
-/// that is sampled and the region of the canvas it is drawn into. Every <see cref="ResizeMode"/>
+/// that is sampled and the region of the canvas it is drawn into. Every <see cref="BmageResizeMode"/>
 /// reduces to this description, which lets a single resampling routine implement all modes.
 /// </summary>
 public readonly record struct ResizePlan(Size CanvasSize, Rectangle SourceRect, Rectangle DestinationRect)
@@ -23,7 +23,7 @@ public readonly record struct ResizePlan(Size CanvasSize, Rectangle SourceRect, 
     /// Resolves a resize request. At least one of <paramref name="width"/> / <paramref name="height"/> must be set; a missing
     /// dimension is derived from the source aspect ratio.
     /// </summary>
-    public static ResizePlan Compute(Size source, int? width, int? height, ResizeMode mode = ResizeMode.Fit, Anchor anchor = Anchor.Center)
+    public static ResizePlan Compute(Size source, int? width, int? height, BmageResizeMode mode = BmageResizeMode.Fit, Anchor anchor = Anchor.Center)
     {
         if (source.Width <= 0 || source.Height <= 0) throw new ArgumentOutOfRangeException(nameof(source), "Source size must be positive.");
         if (width is null && height is null) throw new ArgumentException("At least one of width or height must be specified.");
@@ -37,9 +37,9 @@ public readonly record struct ResizePlan(Size CanvasSize, Rectangle SourceRect, 
         {
             int w = width ?? Math.Max(1, (int)Math.Round(height!.Value * aspect));
             int h = height ?? Math.Max(1, (int)Math.Round(width!.Value / aspect));
-            if (mode == ResizeMode.Max && (w > source.Width || h > source.Height))
+            if (mode == BmageResizeMode.Max && (w > source.Width || h > source.Height))
                 return new ResizePlan(source, full, full);
-            if (mode == ResizeMode.Min && (w < source.Width || h < source.Height))
+            if (mode == BmageResizeMode.Min && (w < source.Width || h < source.Height))
                 return new ResizePlan(source, full, full);
             var s = new Size(w, h);
             return new ResizePlan(s, full, new Rectangle(Point.Empty, s));
@@ -48,19 +48,19 @@ public readonly record struct ResizePlan(Size CanvasSize, Rectangle SourceRect, 
         var target = new Size(width.Value, height.Value);
         switch (mode)
         {
-            case ResizeMode.Stretch:
+            case BmageResizeMode.Stretch:
                 return new ResizePlan(target, full, new Rectangle(Point.Empty, target));
 
-            case ResizeMode.Fit:
-            case ResizeMode.Max:
+            case BmageResizeMode.Fit:
+            case BmageResizeMode.Max:
             {
                 var scale = Math.Min(target.Width / (double)source.Width, target.Height / (double)source.Height);
-                if (mode == ResizeMode.Max && scale >= 1) return new ResizePlan(source, full, full);
+                if (mode == BmageResizeMode.Max && scale >= 1) return new ResizePlan(source, full, full);
                 var s = Scaled(source, scale, target);
                 return new ResizePlan(s, full, new Rectangle(Point.Empty, s));
             }
 
-            case ResizeMode.Min:
+            case BmageResizeMode.Min:
             {
                 var scale = Math.Max(target.Width / (double)source.Width, target.Height / (double)source.Height);
                 if (scale <= 1) return new ResizePlan(source, full, full);
@@ -68,14 +68,14 @@ public readonly record struct ResizePlan(Size CanvasSize, Rectangle SourceRect, 
                 return new ResizePlan(s, full, new Rectangle(Point.Empty, s));
             }
 
-            case ResizeMode.Contain:
+            case BmageResizeMode.Contain:
             {
                 var scale = Math.Min(target.Width / (double)source.Width, target.Height / (double)source.Height);
                 var s = Scaled(source, scale, target);
                 return new ResizePlan(target, full, anchor.Place(s, target));
             }
 
-            case ResizeMode.Cover:
+            case BmageResizeMode.Cover:
             {
                 var scale = Math.Max(target.Width / (double)source.Width, target.Height / (double)source.Height);
                 // Region of the source that maps onto the target.

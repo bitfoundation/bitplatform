@@ -21,7 +21,7 @@ public class ApiCatalogTests
             ("ImageBuffer", "Bit.Bmage", "Bit.Bmage"),
             ("ImageExportOptions", "Bit.Bmage", "Bit.Bmage"),
             ("RedactionAnnotation", "Bit.Bmage", "Bit.Bmage"),
-            ("ImageSource", "Bit.Bmage.Blazor", "Bit.Bmage"),
+            ("BmageImageSource", "Bit.Bmage.Blazor", "Bit.Bmage"),
             ("ImageLoader", "Bit.Bmage.Blazor", "Bit.Bmage"),
             ("ImageExporter", "Bit.Bmage.Blazor", "Bit.Bmage"),
             ("BitBmage", "Bit.Bmage", "Bit.Bmage"),
@@ -42,10 +42,10 @@ public class ApiCatalogTests
     public void ImageSource_FromBrowserFile_IsOneOfItsMembers_AndDocumented()
     {
         // The one way to load an IBrowserFile: it must be found where the README and the XML docs say it is.
-        var details = BmageApiCatalog.GetMemberDetails("ImageSource.FromBrowserFile");
+        var details = BmageApiCatalog.GetMemberDetails("BmageImageSource.FromBrowserFile");
 
-        Assert.IsNotNull(details, "ImageSource.FromBrowserFile is missing from the catalog.");
-        Assert.IsFalse(string.IsNullOrWhiteSpace(details.Members.Single().Summary), "ImageSource.FromBrowserFile has no summary.");
+        Assert.IsNotNull(details, "BmageImageSource.FromBrowserFile is missing from the catalog.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(details.Members.Single().Summary), "BmageImageSource.FromBrowserFile has no summary.");
     }
 
     [TestMethod]
@@ -79,7 +79,7 @@ public class ApiCatalogTests
 
         string? DefaultOf(string member) => options.Members.Single(entry => entry.Name == member).Default;
 
-        Assert.AreEqual("ImageFormat.Png", DefaultOf("Format"));
+        Assert.AreEqual("BmageImageFormat.Png", DefaultOf("Format"));
         Assert.AreEqual("0.85", DefaultOf("Quality"));
         Assert.AreEqual("MetadataPolicy.Remove", DefaultOf("Metadata"));
         Assert.AreEqual("Rgba32.White", DefaultOf("Background"));

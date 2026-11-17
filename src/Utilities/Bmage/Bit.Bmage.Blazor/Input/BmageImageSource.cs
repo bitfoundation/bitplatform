@@ -10,13 +10,13 @@ namespace Bit.Bmage;
 /// <example>
 /// <code>
 /// // From a file input
-/// var source = ImageSource.FromBrowserFile(file);
+/// var source = BmageImageSource.FromBrowserFile(file);
 /// // From a URL (subject to CORS)
-/// var source = ImageSource.FromUrl("https://example.com/photo.jpg");
+/// var source = BmageImageSource.FromUrl("https://example.com/photo.jpg");
 /// using var image = await loader.LoadAsync(source);
 /// </code>
 /// </example>
-public abstract class ImageSource
+public abstract class BmageImageSource
 {
     /// <summary>The original file name, when the source has one.</summary>
     public string? FileName { get; protected init; }
@@ -31,18 +31,18 @@ public abstract class ImageSource
     public abstract ValueTask<PooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default);
 
     /// <summary>Wraps an <see cref="IBrowserFile"/> from an <c>InputFile</c> component or a drop zone.</summary>
-    public static ImageSource FromBrowserFile(IBrowserFile file)
+    public static BmageImageSource FromBrowserFile(IBrowserFile file)
     {
         ArgumentNullException.ThrowIfNull(file);
         return new BrowserFileSource(file);
     }
 
     /// <summary>Wraps raw encoded bytes already in memory.</summary>
-    public static ImageSource FromBytes(ReadOnlyMemory<byte> bytes, string? fileName = null, string? contentType = null)
+    public static BmageImageSource FromBytes(ReadOnlyMemory<byte> bytes, string? fileName = null, string? contentType = null)
         => new MemorySource(bytes, fileName, contentType);
 
     /// <summary>Wraps a stream. The stream is read once and is not disposed by Bmage.</summary>
-    public static ImageSource FromStream(Stream stream, string? fileName = null, string? contentType = null, long? length = null)
+    public static BmageImageSource FromStream(Stream stream, string? fileName = null, string? contentType = null, long? length = null)
     {
         ArgumentNullException.ThrowIfNull(stream);
         return new StreamSource(stream, fileName, contentType, length);
@@ -52,14 +52,14 @@ public abstract class ImageSource
     /// References a remote URL. The browser fetches it, so the server must allow cross-origin reads; otherwise the load
     /// fails with a clear message rather than a tainted canvas.
     /// </summary>
-    public static ImageSource FromUrl(string url, bool withCredentials = false)
+    public static BmageImageSource FromUrl(string url, bool withCredentials = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(url);
         return new UrlSource(url, withCredentials);
     }
 
     /// <summary>Parses a <c>data:</c> URL. Provided for compatibility; prefer the byte or file sources.</summary>
-    public static ImageSource FromDataUrl(string dataUrl)
+    public static BmageImageSource FromDataUrl(string dataUrl)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataUrl);
         const string prefix = "data:";
@@ -83,7 +83,7 @@ public abstract class ImageSource
         return new MemorySource(bytes, null, string.IsNullOrWhiteSpace(contentType) ? null : contentType);
     }
 
-    private sealed class BrowserFileSource : ImageSource
+    private sealed class BrowserFileSource : BmageImageSource
     {
         private readonly IBrowserFile _file;
 
@@ -104,7 +104,7 @@ public abstract class ImageSource
         }
     }
 
-    private sealed class MemorySource : ImageSource
+    private sealed class MemorySource : BmageImageSource
     {
         private readonly ReadOnlyMemory<byte> _bytes;
 
@@ -124,7 +124,7 @@ public abstract class ImageSource
         }
     }
 
-    private sealed class StreamSource : ImageSource
+    private sealed class StreamSource : BmageImageSource
     {
         private readonly Stream _stream;
 
@@ -140,7 +140,7 @@ public abstract class ImageSource
             => await PooledBuffer.ReadAllAsync(_stream, Length is { } l and <= int.MaxValue ? (int)l : 0, maxBytes, cancellationToken).ConfigureAwait(false);
     }
 
-    private sealed class UrlSource : ImageSource
+    private sealed class UrlSource : BmageImageSource
     {
         public UrlSource(string url, bool withCredentials)
         {

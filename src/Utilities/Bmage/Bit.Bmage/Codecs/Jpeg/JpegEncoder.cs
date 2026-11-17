@@ -8,8 +8,8 @@ namespace Bit.Bmage;
 /// </summary>
 public sealed class JpegEncoder : IImageEncoder
 {
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Jpeg];
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.Jpeg];
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     public ValueTask<EncodedImage> EncodeAsync(ImageBuffer image, ImageExportOptions options, CancellationToken cancellationToken = default)
         => new(Encode(image, options, cancellationToken));
@@ -24,7 +24,7 @@ public sealed class JpegEncoder : IImageEncoder
         var bytes = writer.Write();
         var metadata = image.Metadata?.Apply(options.Metadata, image.Width, image.Height);
         if (metadata is { IsEmpty: false }) bytes = JpegContainer.WriteMetadata(bytes, metadata);
-        return new EncodedImage(bytes, ImageFormat.Jpeg, image.Width, image.Height, quality);
+        return new EncodedImage(bytes, BmageImageFormat.Jpeg, image.Width, image.Height, quality);
     }
 }
 

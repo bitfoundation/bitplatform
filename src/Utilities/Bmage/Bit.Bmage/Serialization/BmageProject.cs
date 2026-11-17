@@ -218,7 +218,7 @@ public sealed class BmageProject : IDisposable
     {
         var encoded = PngEncoder.Encode(image, new ImageExportOptions
         {
-            Format = ImageFormat.Png,
+            Format = BmageImageFormat.Png,
             Metadata = metadata,
             PngCompressionLevel = options.PngCompressionLevel,
         }, cancellationToken);

@@ -48,13 +48,13 @@ public sealed class SrgbProfileTests
     {
         using var image = TestImages.Gradient(8, 8);
         var png = PngEncoder.Encode(image).Data;
-        var srgb = PngContainer.WriteMetadata(png, new ImageMetadata(null, Profile("RGB ", Version2Description("sRGB IEC61966-2.1")), default, ImageFormat.Png));
-        var oversized = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, ImageFormat.Png));
+        var srgb = PngContainer.WriteMetadata(png, new ImageMetadata(null, Profile("RGB ", Version2Description("sRGB IEC61966-2.1")), default, BmageImageFormat.Png));
+        var oversized = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, BmageImageFormat.Png));
 
-        Assert.IsFalse(ImageProcessorFactory.HasWideGamutProfile(ImageFormat.Png, png), "no profile");
-        Assert.IsFalse(ImageProcessorFactory.HasWideGamutProfile(ImageFormat.Png, srgb), "an sRGB profile");
+        Assert.IsFalse(ImageProcessorFactory.HasWideGamutProfile(BmageImageFormat.Png, png), "no profile");
+        Assert.IsFalse(ImageProcessorFactory.HasWideGamutProfile(BmageImageFormat.Png, srgb), "an sRGB profile");
         Assert.IsTrue(PngContainer.ReadMetadata(oversized).IccProfile.IsEmpty, "the profile is past the cap");
-        Assert.IsTrue(ImageProcessorFactory.HasWideGamutProfile(ImageFormat.Png, oversized), "a profile too large to read");
+        Assert.IsTrue(ImageProcessorFactory.HasWideGamutProfile(BmageImageFormat.Png, oversized), "a profile too large to read");
     }
 
     /// <summary>A profile holding only its header and the description tag.</summary>

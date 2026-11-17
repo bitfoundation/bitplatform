@@ -190,6 +190,19 @@ public class CodeReviewTests
     }
 
     [TestMethod]
+    public void Stylesheet_AnEditorUsedOnlyFromCode_IsMissedToo()
+    {
+        var review = Review("""
+            <head>
+                <link rel="stylesheet" href="css/app.css" />
+            </head>
+            <DynamicComponent Type="typeof(BmageEditor)" />
+            """);
+
+        Assert.AreEqual(1, Single(review, "editor-stylesheet-missing").Line);
+    }
+
+    [TestMethod]
     public void Stylesheet_TheRightLink_IsFine_AndAWrongPathIsAnError()
     {
         None(Review("<head>\n<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Blazor/bit-bmage-editor.css\" />\n</head>\n<BmageEditor />"), "editor-stylesheet-missing");
@@ -381,15 +394,15 @@ public class CodeReviewTests
     {
         var review = Review("""
             @inject ImageExporter Exporter
-            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Avif });
+            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = BmageImageFormat.Avif });
             """);
 
         Assert.AreEqual(2, Single(review, "format-without-capability-check").Line);
 
         // WebP encodes everywhere: where the browser cannot, the managed encoder does.
         None(Review("@inject ImageExporter Exporter\nvar encoded = await Exporter.EncodeAsync(image, ImageExportOptions.WebP);"), "format-without-capability-check");
-        None(Review("@inject ImageExporter Exporter\nawait Exporter.EncodeWithFallbackAsync(image, [ImageFormat.Avif, ImageFormat.WebP]);"), "format-without-capability-check");
-        None(Review("@inject ImageExporter Exporter\nif (caps.CanEncode(ImageFormat.Avif)) await Exporter.EncodeAsync(image, ImageExportOptions.Avif);"), "format-without-capability-check");
+        None(Review("@inject ImageExporter Exporter\nawait Exporter.EncodeWithFallbackAsync(image, [BmageImageFormat.Avif, BmageImageFormat.WebP]);"), "format-without-capability-check");
+        None(Review("@inject ImageExporter Exporter\nif (caps.CanEncode(BmageImageFormat.Avif)) await Exporter.EncodeAsync(image, ImageExportOptions.Avif);"), "format-without-capability-check");
         None(Review("@inject ImageExporter Exporter\ntry { await Exporter.EncodeAsync(image, ImageExportOptions.Avif); }\ncatch (ImageCapabilityException) { _fallback = true; }"), "format-without-capability-check");
 
         // A sentence about "@inject ImageProcessor" is prose, not a directive.
@@ -402,7 +415,7 @@ public class CodeReviewTests
         var review = Review("""
             app.MapPost("/thumb", async (IFormFile file, ImageProcessor processor) =>
             {
-                var result = await processor.ProcessAsync(bytes, pipeline, new ImageExportOptions { Format = ImageFormat.Avif });
+                var result = await processor.ProcessAsync(bytes, pipeline, new ImageExportOptions { Format = BmageImageFormat.Avif });
             });
             """);
 

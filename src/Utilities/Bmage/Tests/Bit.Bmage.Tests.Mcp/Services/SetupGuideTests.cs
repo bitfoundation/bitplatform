@@ -70,7 +70,7 @@ public class SetupGuideTests
         StringAssert.Contains(guide, "processor.Identify(bytes)");
         StringAssert.Contains(guide, "ImageCapabilityException");
         Assert.IsFalse(guide.Contains("bit-bmage-editor.css", StringComparison.Ordinal), "The headless guide tells a server to link a stylesheet.");
-        Assert.IsFalse(guide.Contains("ImageFormat.Avif", StringComparison.Ordinal), "The headless guide encodes AVIF, which it cannot.");
+        Assert.IsFalse(guide.Contains("BmageImageFormat.Avif", StringComparison.Ordinal), "The headless guide encodes AVIF, which it cannot.");
         StringAssert.Contains(guide, "Lossless = true");
     }
 

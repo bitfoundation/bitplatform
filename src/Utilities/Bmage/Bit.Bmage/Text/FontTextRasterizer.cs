@@ -25,7 +25,7 @@ public sealed class FontTextRasterizer : ITextRasterizer
     private readonly Dictionary<string, FontVariants> _families = new(StringComparer.OrdinalIgnoreCase);
     // The families in the order they were registered: the order a character missing from the style's font is looked for.
     private readonly List<FontVariants> _order = [];
-    private FontFile? _fallback;
+    private BmageFontFile? _fallback;
     // The family registered first, which answers a style that names no registered family with its own bold or italic
     // face - "sans-serif", the default, included. Null once SetFallback has chosen a single font.
     private FontVariants? _fallbackFamily;
@@ -36,9 +36,9 @@ public sealed class FontTextRasterizer : ITextRasterizer
 
     private sealed class FontVariants
     {
-        public FontFile? Regular, Bold, Italic, BoldItalic;
+        public BmageFontFile? Regular, Bold, Italic, BoldItalic;
 
-        public FontFile? Get(bool bold, bool italic) => (bold, italic) switch
+        public BmageFontFile? Get(bool bold, bool italic) => (bold, italic) switch
         {
             (true, true) => BoldItalic ?? Bold ?? Italic ?? Regular,
             (true, false) => Bold ?? Regular ?? BoldItalic,
@@ -46,7 +46,7 @@ public sealed class FontTextRasterizer : ITextRasterizer
             _ => Regular ?? Bold ?? Italic ?? BoldItalic,
         };
 
-        public void Set(FontFile font, bool bold, bool italic)
+        public void Set(BmageFontFile font, bool bold, bool italic)
         {
             if (bold && italic) BoldItalic = font;
             else if (bold) Bold = font;
@@ -60,7 +60,7 @@ public sealed class FontTextRasterizer : ITextRasterizer
     /// faces: bold text in a family that is not registered is drawn with the fallback family's bold face. Characters
     /// a style's font lacks are looked for in the other families, in the order they were registered.
     /// </summary>
-    public FontTextRasterizer Register(string familyName, FontFile font, bool bold = false, bool italic = false)
+    public FontTextRasterizer Register(string familyName, BmageFontFile font, bool bold = false, bool italic = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(familyName);
         ArgumentNullException.ThrowIfNull(font);
@@ -83,14 +83,14 @@ public sealed class FontTextRasterizer : ITextRasterizer
     }
 
     /// <summary>Registers a font using the family name recorded in the font itself.</summary>
-    public FontTextRasterizer Register(FontFile font, bool bold = false, bool italic = false)
+    public FontTextRasterizer Register(BmageFontFile font, bool bold = false, bool italic = false)
     {
         ArgumentNullException.ThrowIfNull(font);
         return Register(font.FamilyName ?? font.FullName ?? "default", font, bold, italic);
     }
 
     /// <summary>Sets the font used, whatever the weight or style, when a requested family is not registered.</summary>
-    public FontTextRasterizer SetFallback(FontFile font)
+    public FontTextRasterizer SetFallback(BmageFontFile font)
     {
         ArgumentNullException.ThrowIfNull(font);
         lock (_sync)
@@ -112,7 +112,7 @@ public sealed class FontTextRasterizer : ITextRasterizer
     /// Resolves the font for a style. The family may be a CSS style comma separated list; the first registered family
     /// wins, otherwise the fallback is used.
     /// </summary>
-    public FontFile? ResolveFont(TextStyle style)
+    public BmageFontFile? ResolveFont(TextStyle style)
     {
         ArgumentNullException.ThrowIfNull(style);
         foreach (var name in style.FontFamily.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
@@ -142,7 +142,7 @@ public sealed class FontTextRasterizer : ITextRasterizer
 
         var layout = GetLayout(text, style, font);
         if (layout.Lines.Count == 0) return null;
-        var builder = new PathBuilder { FlatteningTolerance = 0.15f };
+        var builder = new BmagePathBuilder { FlatteningTolerance = 0.15f };
         var metrics = layout.Metrics;
 
         var originY = origin.Y + style.Baseline switch
@@ -161,8 +161,8 @@ public sealed class FontTextRasterizer : ITextRasterizer
                 var line = layout.Lines[i];
                 var x = origin.X + style.Alignment switch
                 {
-                    TextAlignment.Center => -line.Width / 2,
-                    TextAlignment.Right => -line.Width,
+                    BmageTextAlignment.Center => -line.Width / 2,
+                    BmageTextAlignment.Right => -line.Width,
                     _ => 0f,
                 };
                 var y = originY + i * style.FontSize * style.LineHeight;
@@ -181,7 +181,7 @@ public sealed class FontTextRasterizer : ITextRasterizer
 
     private sealed record LayoutResult(List<ShapedLine> Lines, TextMetrics Metrics);
 
-    private LayoutResult GetLayout(string text, TextStyle style, FontFile font)
+    private LayoutResult GetLayout(string text, TextStyle style, BmageFontFile font)
     {
         var key = new LayoutKey(text, style.FontFamily, style.Bold, style.Italic, style.FontSize, style.MaxWidth, style.LetterSpacing, style.LineHeight);
         lock (_sync)
@@ -195,16 +195,16 @@ public sealed class FontTextRasterizer : ITextRasterizer
     }
 
     /// <summary>The fonts to look for a character in: the style's own, then every registered family's matching face.</summary>
-    private List<FontFile> FallbackChain(FontFile primary, TextStyle style)
+    private List<BmageFontFile> FallbackChain(BmageFontFile primary, TextStyle style)
     {
-        var chain = new List<FontFile> { primary };
+        var chain = new List<BmageFontFile> { primary };
         foreach (var family in _order)
             if (family.Get(style.Bold, style.Italic) is { } face && !chain.Contains(face)) chain.Add(face);
         if (_fallback is { } fallback && !chain.Contains(fallback)) chain.Add(fallback);
         return chain;
     }
 
-    private static LayoutResult Layout(string text, TextStyle style, List<FontFile> fonts)
+    private static LayoutResult Layout(string text, TextStyle style, List<BmageFontFile> fonts)
     {
         var lines = new List<ShapedLine>();
         foreach (var paragraph in SplitLines(text))

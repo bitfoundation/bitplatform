@@ -9,8 +9,8 @@ namespace Bit.Bmage;
 /// </summary>
 public sealed class PngEncoder : IImageEncoder
 {
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Png];
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.Png];
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     public ValueTask<EncodedImage> EncodeAsync(ImageBuffer image, ImageExportOptions options, CancellationToken cancellationToken = default)
         => new(Encode(image, options, cancellationToken));
@@ -77,7 +77,7 @@ public sealed class PngEncoder : IImageEncoder
             }
         }
         PngContainer.WriteChunk(ms, "IEND", default);
-        return new EncodedImage(ms.ToArray(), ImageFormat.Png, width, height);
+        return new EncodedImage(ms.ToArray(), BmageImageFormat.Png, width, height);
     }
 
     private static void WriteMetadata(MemoryStream ms, ImageBuffer image, ImageExportOptions options)
@@ -163,7 +163,7 @@ public sealed class PngEncoder : IImageEncoder
             }
         }
         PngContainer.WriteChunk(ms, "IEND", default);
-        return new EncodedImage(ms.ToArray(), ImageFormat.Png, width, height);
+        return new EncodedImage(ms.ToArray(), BmageImageFormat.Png, width, height);
     }
 
     private static void ChooseFilter(byte[] cur, byte[] prev, int bpp, byte[] best, byte[] candidate)

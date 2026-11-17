@@ -53,7 +53,7 @@ internal static class BuiltInCodecs
         Op<RotateOperation>("rotate",
             (w, o) => w.Write("degrees", o.Degrees).Write("background", o.Background).Write("expandCanvas", o.ExpandCanvas).WriteEnum("sampling", o.Sampling),
             r => new RotateOperation(r.GetDouble("degrees"), r.GetColor("background", default), r.GetBoolean("expandCanvas", true), r.GetEnum("sampling", WarpSampling.Bicubic))),
-        Op<OrientationOperation>("orient", (w, o) => w.WriteEnum("orientation", o.Orientation), r => new OrientationOperation(r.GetEnum("orientation", Orientation.Normal))),
+        Op<OrientationOperation>("orient", (w, o) => w.WriteEnum("orientation", o.Orientation), r => new OrientationOperation(r.GetEnum("orientation", BmageOrientation.Normal))),
         Op<StraightenOperation>("straighten",
             (w, o) => w.Write("degrees", o.Degrees).WriteEnum("sampling", o.Sampling),
             r => new StraightenOperation(r.GetDouble("degrees"), r.GetEnum("sampling", WarpSampling.Bicubic))),
@@ -221,7 +221,7 @@ internal static class BuiltInCodecs
             .WriteEnum("anchor", o.Anchor).Write("background", o.Background);
 
     private static ResizeOperation ReadResize(BmageJsonReader r)
-        => new(r.GetNullableInt32("width"), r.GetNullableInt32("height"), r.GetEnum("mode", ResizeMode.Fit), r.GetEnum("filter", ResamplingFilter.Auto),
+        => new(r.GetNullableInt32("width"), r.GetNullableInt32("height"), r.GetEnum("mode", BmageResizeMode.Fit), r.GetEnum("filter", ResamplingFilter.Auto),
             r.GetEnum("anchor", Anchor.Center), r.GetColor("background", default));
 
     /// <summary>A table's values as base64 of little-endian 32-bit floats: exact, and a third of the size of a number array.</summary>
@@ -455,7 +455,7 @@ internal static class BuiltInCodecs
                 var layer = (Layer)value;
                 w.Write("id", layer.Id);
                 if (layer.Name is not null) w.Write("name", layer.Name);
-                if (layer.BlendMode != BlendMode.SourceOver) w.WriteEnum("blendMode", layer.BlendMode);
+                if (layer.BlendMode != BmageBlendMode.SourceOver) w.WriteEnum("blendMode", layer.BlendMode);
                 if (layer.Opacity != 1) w.Write("opacity", layer.Opacity);
                 if (layer.Mask is not null) w.Write("mask", layer.Mask);
                 if (!layer.IsVisible) w.Write("isVisible", false);
@@ -470,7 +470,7 @@ internal static class BuiltInCodecs
                 {
                     Id = r.GetGuid("id", layer.Id),
                     Name = r.GetString("name", null),
-                    BlendMode = r.GetEnum("blendMode", BlendMode.SourceOver),
+                    BlendMode = r.GetEnum("blendMode", BmageBlendMode.SourceOver),
                     Opacity = r.GetSingle("opacity", 1),
                     Mask = r.GetMask("mask"),
                     IsVisible = r.GetBoolean("isVisible", true),

@@ -10,8 +10,8 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| File picker, drag and drop, paste, bytes, streams, URLs, camera | verified | P1 | `Input/ImageLoader.cs`, `Input/ImageSource.cs`, `Editor/Components/BmageDropZone.razor` | `ScenarioTests`, E2E `EditorTests`, `DemoRegressionTests` (paste) | - |
-| Format sniffing by magic bytes | verified | P0 | `ImageFormat.cs` | `CodecTests` | - |
+| File picker, drag and drop, paste, bytes, streams, URLs, camera | verified | P1 | `Input/ImageLoader.cs`, `Input/BmageImageSource.cs`, `Editor/Components/BmageDropZone.razor` | `ScenarioTests`, E2E `EditorTests`, `DemoRegressionTests` (paste) | - |
+| Format sniffing by magic bytes | verified | P0 | `BmageImageFormat.cs` | `CodecTests` | - |
 | PNG, JPEG, BMP, GIF, WebP managed decode | verified | P1 | `Codecs/*` | `CodecTests`, `WebPCodecTests`, `AdversarialPipelineTests` | GIF/APNG/animated WebP first frame only (by design) |
 | AVIF managed decode | verified | P1 | `Codecs/Avif/*` | `AvifCodecTests` | No colour management; inter-predicted layers and later sequence frames not decoded |
 | WebP, AVIF decode via browser | verified | P1 | `Codecs/BrowserCodecs.cs`, `Scripts/bit-bmage*.ts` | E2E `JsModuleContractTests`, `CapabilityTests` | Depends on browser |
@@ -58,7 +58,7 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | White balance (neutral pick, automatic) | verified | P1 | `WhiteBalanceAdjustment`, `AutoWhiteBalanceOperation`, editor picker | `ColorAdjustmentTests` | Gains on encoded sRGB (documented approximation) |
 | Whites / blacks | verified | P1 | `WhitesBlacksAdjustment` | `ColorAdjustmentTests` (monotonic at every extreme) | - |
 | Colorize | verified | P2 | `ColorizeAdjustment` | `ColorAdjustmentTests` | - |
-| Colour replacement / selective colour | verified | P2 | `HslAdjustment`; `FillLayer` with `FloodMask` and `BlendMode.Color` | `ColorAdjustmentTests`, demo `/retouch` | - |
+| Colour replacement / selective colour | verified | P2 | `HslAdjustment`; `FillLayer` with `FloodMask` and `BmageBlendMode.Color` | `ColorAdjustmentTests`, demo `/retouch` | - |
 | Histogram and clipping view in the editor | verified | P2 | Adjust tab | E2E `TheHistogramFollowsTheImageAndReportsClipping` | Every fourth pixel of every fourth row is counted |
 | ICC colour management | deferred | P3 | - | - | Profiles read and preserved, pixels treated as sRGB |
 | 3D colour lookup tables (`.cube` read and write, tetrahedral) | verified | P2 | `Operations/Adjustments/ColorLookupTable.cs` | `ColorLutTests` (exact for linear maps, domains, malformed files), `SerializationTests` | One-dimensional `.cube` tables refused (a curve is their equivalent) |

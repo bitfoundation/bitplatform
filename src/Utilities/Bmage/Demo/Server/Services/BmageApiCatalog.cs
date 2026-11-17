@@ -491,7 +491,7 @@ public static class BmageApiCatalog
         _ => 7
     };
 
-    /// <summary>The C# spelling of a type: "double?", "string[]", "IReadOnlyList&lt;ImageFormat&gt;".</summary>
+    /// <summary>The C# spelling of a type: "double?", "string[]", "IReadOnlyList&lt;BmageImageFormat&gt;".</summary>
     public static string FriendlyName(Type type)
     {
         if (type.IsByRef) return FriendlyName(type.GetElementType()!);

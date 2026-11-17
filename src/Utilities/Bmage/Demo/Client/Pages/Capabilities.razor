@@ -86,7 +86,7 @@
         {
             <text>
                 On this browser, <code>[Avif, WebP, Jpeg]</code> resolves to
-                <strong>@_capabilities.ChooseEncodableFormat([ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg]).ToString().ToUpperInvariant()</strong>.
+                <strong>@_capabilities.ChooseEncodableFormat([BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg]).ToString().ToUpperInvariant()</strong>.
             </text>
         }
     </p>
@@ -142,9 +142,9 @@
 @code {
     private ImageCapabilities? _capabilities;
 
-    private static readonly ImageFormat[] Formats =
+    private static readonly BmageImageFormat[] Formats =
     [
-        ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Gif, ImageFormat.Bmp,
+        BmageImageFormat.Png, BmageImageFormat.Jpeg, BmageImageFormat.WebP, BmageImageFormat.Avif, BmageImageFormat.Gif, BmageImageFormat.Bmp,
     ];
 
     private const string Snippet = """
@@ -152,7 +152,7 @@
 
         // Never assume: pick the best format this browser can actually write.
         var format = caps.ChooseEncodableFormat(
-            [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg]);
+            [BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg]);
 
         if (!caps.CanRenderCanvas(width, height))
         {

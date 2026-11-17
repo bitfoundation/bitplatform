@@ -12,7 +12,7 @@ public sealed class ProjectTests
     private static ImageDocument RichDocument(ImageBuffer source, ImageBuffer logo, ImageBuffer matte) => ImageDocument.Create(source)
         .AddOperation(new CropOperation(5, 5, 150, 100))
         .AddOperation(new StraightenOperation(3))
-        .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(10, 10, 30, 20), BlendMode = BlendMode.Overlay })
+        .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(10, 10, 30, 20), BlendMode = BmageBlendMode.Overlay })
         .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(80, 40, 15, 10), Opacity = 0.5f })
         .AddLayer(new PaintLayer([new PaintStroke([new(20, 60), new(90, 70)], 6, new Rgba32(200, 30, 30)) { Pressures = [0.4f, 1f] }]))
         .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Hsl(HueBand.Reds, saturation: 0.5f)) { Mask = new BitmapMask(matte) })

@@ -282,10 +282,10 @@ public sealed class AdversarialAnalysisTests
 
     /// <summary>Identify must agree with a real decode about the dimensions.</summary>
     [TestMethod]
-    [DataRow(ImageFormat.Png)]
-    [DataRow(ImageFormat.Jpeg)]
-    [DataRow(ImageFormat.Bmp)]
-    public async Task IdentifyAgreesWithDecode(ImageFormat format)
+    [DataRow(BmageImageFormat.Png)]
+    [DataRow(BmageImageFormat.Jpeg)]
+    [DataRow(BmageImageFormat.Bmp)]
+    public async Task IdentifyAgreesWithDecode(BmageImageFormat format)
     {
         var processor = new ImageProcessor();
         foreach (var (w, h) in new[] { (1, 1), (17, 5), (64, 64), (200, 137) })
@@ -308,7 +308,7 @@ public sealed class AdversarialAnalysisTests
     {
         var processor = new ImageProcessor();
         using var src = Noise(24, 24, 23);
-        foreach (var format in new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp })
+        foreach (var format in new[] { BmageImageFormat.Png, BmageImageFormat.Jpeg, BmageImageFormat.Bmp })
         {
             var encoded = await processor.EncodeAsync(src, new ImageExportOptions { Format = format });
             Assert.AreEqual(format, ImageFormats.Detect(encoded.Data));
@@ -316,9 +316,9 @@ public sealed class AdversarialAnalysisTests
             Assert.AreEqual(format, ImageFormats.Detect(encoded.Data.AsSpan(0, Math.Min(16, encoded.Data.Length))));
         }
 
-        Assert.AreEqual(ImageFormat.Unknown, ImageFormats.Detect([]));
-        Assert.AreEqual(ImageFormat.Unknown, ImageFormats.Detect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]));
-        Assert.AreEqual(ImageFormat.Svg, ImageFormats.Detect("<svg xmlns=\"http://www.w3.org/2000/svg\"/>"u8));
+        Assert.AreEqual(BmageImageFormat.Unknown, ImageFormats.Detect([]));
+        Assert.AreEqual(BmageImageFormat.Unknown, ImageFormats.Detect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]));
+        Assert.AreEqual(BmageImageFormat.Svg, ImageFormats.Detect("<svg xmlns=\"http://www.w3.org/2000/svg\"/>"u8));
     }
 
     /// <summary>SVG is untrusted input and must be refused with an explanation rather than rasterised.</summary>
@@ -327,7 +327,7 @@ public sealed class AdversarialAnalysisTests
     {
         var processor = new ImageProcessor();
         var svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"><rect width=\"10\" height=\"10\"/></svg>"u8.ToArray();
-        Assert.AreEqual(ImageFormat.Svg, ImageFormats.Detect(svg));
+        Assert.AreEqual(BmageImageFormat.Svg, ImageFormats.Detect(svg));
         var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(svg)).Dispose());
         // The refusal docs/security.md quotes, not "no decoder is registered": no registry has one to register.
         Assert.IsInstanceOfType<ImageDecodeException>(ex);

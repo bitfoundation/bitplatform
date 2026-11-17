@@ -18,7 +18,7 @@ public sealed class PipelineTests
     [TestMethod]
     public void ComputesOutputSizeWithoutTouchingPixels()
     {
-        var pipeline = ImagePipeline.Create().Resize(200, 100, ResizeMode.Stretch).Crop(10, 10, 50, 50).Orient(Orientation.Rotate90);
+        var pipeline = ImagePipeline.Create().Resize(200, 100, BmageResizeMode.Stretch).Crop(10, 10, 50, 50).Orient(BmageOrientation.Rotate90);
         Assert.AreEqual(new Size(50, 50), pipeline.GetOutputSize(new Size(1000, 800)));
     }
 
@@ -47,7 +47,7 @@ public sealed class PipelineTests
         using var source = TestImages.Gradient(64, 64);
         var values = new List<double>();
         var progress = new SynchronousProgress(v => values.Add(v));
-        using var result = await ImagePipeline.Create().Resize(32, 32, ResizeMode.Stretch).Grayscale().Blur(1f)
+        using var result = await ImagePipeline.Create().Resize(32, 32, BmageResizeMode.Stretch).Grayscale().Blur(1f)
             .ExecuteAsync(source, new PipelineExecutionOptions { Progress = progress, YieldBetweenOperations = false });
         Assert.IsNotEmpty(values);
         Assert.AreEqual(1.0, values[^1], 0.5e-3);
@@ -63,7 +63,7 @@ public sealed class PipelineTests
         cts.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
         {
-            using var _ = await ImagePipeline.Create().Resize(256, 256, ResizeMode.Stretch).Blur(4f)
+            using var _ = await ImagePipeline.Create().Resize(256, 256, BmageResizeMode.Stretch).Blur(4f)
                 .ExecuteAsync(source, new PipelineExecutionOptions { CancellationToken = cts.Token });
         });
     }
@@ -117,7 +117,7 @@ public sealed class PipelineOptimizerTests
     [TestMethod]
     public void DropsIdentityOperations()
     {
-        var pipeline = ImagePipeline.Create().Brightness(0).Grayscale(0).Resize(100, 100, ResizeMode.Stretch).Contrast(0);
+        var pipeline = ImagePipeline.Create().Brightness(0).Grayscale(0).Resize(100, 100, BmageResizeMode.Stretch).Contrast(0);
         var optimized = pipeline.Optimize(new Size(200, 200));
         Assert.ContainsSingle(optimized);
         Assert.IsExactInstanceOfType<ResizeOperation>(optimized[0]);
@@ -134,9 +134,9 @@ public sealed class PipelineOptimizerTests
     [TestMethod]
     public void MergesConsecutiveOrientations()
     {
-        var optimized = ImagePipeline.Create().Orient(Orientation.Rotate90).Orient(Orientation.Rotate90).Optimize(new Size(50, 50));
+        var optimized = ImagePipeline.Create().Orient(BmageOrientation.Rotate90).Orient(BmageOrientation.Rotate90).Optimize(new Size(50, 50));
         Assert.ContainsSingle(optimized);
-        Assert.AreEqual(Orientation.Rotate180, ((OrientationOperation)optimized[0]).Orientation);
+        Assert.AreEqual(BmageOrientation.Rotate180, ((OrientationOperation)optimized[0]).Orientation);
     }
 
     [TestMethod]
@@ -229,11 +229,11 @@ public sealed class PipelineOptimizerTests
     [
         ["adjust chain", ImagePipeline.Create().Brightness(0.1f).Contrast(0.15f).Saturation(-0.2f).Gamma(1.1f)],
         ["clipping adjust chain", ImagePipeline.Create().Brightness(0.6f).Contrast(0.5f).Exposure(1.5f).Brightness(-0.4f)],
-        ["resize then crop", ImagePipeline.Create().Resize(48, 36, ResizeMode.Stretch).Crop(4, 4, 30, 20)],
+        ["resize then crop", ImagePipeline.Create().Resize(48, 36, BmageResizeMode.Stretch).Crop(4, 4, 30, 20)],
         ["crop chain", ImagePipeline.Create().Crop(5, 5, 60, 50).Crop(2, 2, 30, 30)],
-        ["orient chain", ImagePipeline.Create().Orient(Orientation.Rotate90).FlipHorizontal().Orient(Orientation.Rotate180)],
+        ["orient chain", ImagePipeline.Create().Orient(BmageOrientation.Rotate90).FlipHorizontal().Orient(BmageOrientation.Rotate180)],
         ["identities", ImagePipeline.Create().Brightness(0).Grayscale(0.5f).Contrast(0)],
-        ["mixed", ImagePipeline.Create().AutoOrient().Crop(4, 4, 80, 60).Brightness(0.05f).Contrast(0.05f).Resize(40, 30, ResizeMode.Stretch)],
+        ["mixed", ImagePipeline.Create().AutoOrient().Crop(4, 4, 80, 60).Brightness(0.05f).Contrast(0.05f).Resize(40, 30, BmageResizeMode.Stretch)],
         ["filters", ImagePipeline.Create().Blur(1.5f).Sharpen(0.4f).Vignette(0.3f)],
     ];
 
@@ -246,7 +246,7 @@ public sealed class PipelineOptimizerTests
     public void ResizeThenCropFusesToIdenticalPixels(ResamplingFilter filter)
     {
         using var source = TestImages.Gradient(400, 300);
-        var pipeline = ImagePipeline.Create().Resize(200, 150, ResizeMode.Stretch, filter).Crop(50, 40, 60, 50);
+        var pipeline = ImagePipeline.Create().Resize(200, 150, BmageResizeMode.Stretch, filter).Crop(50, 40, 60, 50);
         using var direct = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = false });
         using var optimized = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = true });
         Assert.AreEqual(direct.Size, optimized.Size);
@@ -256,7 +256,7 @@ public sealed class PipelineOptimizerTests
     [TestMethod]
     public void ResizeThenCropIsActuallyFused()
     {
-        var optimized = ImagePipeline.Create().Resize(200, 150, ResizeMode.Stretch).Crop(50, 40, 60, 50).Optimize(new Size(400, 300));
+        var optimized = ImagePipeline.Create().Resize(200, 150, BmageResizeMode.Stretch).Crop(50, 40, 60, 50).Optimize(new Size(400, 300));
         Assert.ContainsSingle(optimized);
         Assert.IsExactInstanceOfType<ResizeCropOperation>(optimized[0]);
         Assert.AreEqual(new Size(60, 50), optimized.GetOutputSize(new Size(400, 300)));
@@ -266,7 +266,7 @@ public sealed class PipelineOptimizerTests
     public void AFusedResizeAndCropRefusesTheCanvasTheResizeAloneWouldRefuse()
     {
         using var source = TestImages.Gradient(40, 30);
-        var pipeline = ImagePipeline.Create().Resize(20000, 20000, ResizeMode.Stretch).Crop(0, 0, 10, 10);
+        var pipeline = ImagePipeline.Create().Resize(20000, 20000, BmageResizeMode.Stretch).Crop(0, 0, 10, 10);
         Assert.IsExactInstanceOfType<ResizeCropOperation>(pipeline.Optimize(source.Size)[0]);
         Assert.ThrowsExactly<ImageLimitExceededException>(() => pipeline.Execute(source, new PipelineExecutionOptions { Optimize = false }));
         Assert.ThrowsExactly<ImageLimitExceededException>(() => pipeline.Execute(source, new PipelineExecutionOptions { Optimize = true }));
@@ -279,7 +279,7 @@ public sealed class PipelineOptimizerTests
     public void ResizeWithPaddingIsNotFusedWithACrop()
     {
         // Contain letterboxes, so part of the output is background the resampler never writes.
-        var optimized = ImagePipeline.Create().Resize(200, 200, ResizeMode.Contain).Crop(0, 0, 50, 50).Optimize(new Size(400, 200));
+        var optimized = ImagePipeline.Create().Resize(200, 200, BmageResizeMode.Contain).Crop(0, 0, 50, 50).Optimize(new Size(400, 200));
         Assert.AreEqual(2, optimized.Count);
     }
 
@@ -303,8 +303,8 @@ public sealed class ImageProcessorTests
     {
         using var source = TestImages.Gradient(120, 90);
         var input = PngEncoder.Encode(source).Data;
-        var result = await Processor.ProcessAsync(input, ImagePipeline.Create().Resize(60, 45, ResizeMode.Stretch).Grayscale(), ImageExportOptions.Png);
-        Assert.AreEqual(ImageFormat.Png, result.Format);
+        var result = await Processor.ProcessAsync(input, ImagePipeline.Create().Resize(60, 45, BmageResizeMode.Stretch).Grayscale(), ImageExportOptions.Png);
+        Assert.AreEqual(BmageImageFormat.Png, result.Format);
         Assert.AreEqual(60, result.Width);
         Assert.AreEqual(45, result.Height);
         using var decoded = PngDecoder.Decode(result.Data);
@@ -332,7 +332,7 @@ public sealed class ImageProcessorTests
     {
         using var source = TestImages.Gradient(400, 300);
         var target = 6000L;
-        var result = await Processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95, MaxFileSize = target });
+        var result = await Processor.EncodeAsync(source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.95, MaxFileSize = target });
         Assert.IsTrue(result.Length <= target, $"Result was {result.Length} bytes, target {target}");
         Assert.IsTrue(result.Quality < 0.95);
     }
@@ -342,7 +342,7 @@ public sealed class ImageProcessorTests
     {
         using var source = TestImages.Gradient(800, 600);
         var target = 1200L;
-        var result = await Processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9, MaxFileSize = target });
+        var result = await Processor.EncodeAsync(source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.9, MaxFileSize = target });
         Assert.IsTrue(result.Length <= target, $"Result was {result.Length} bytes");
         Assert.IsTrue(result.Width < 800);
     }
@@ -352,7 +352,7 @@ public sealed class ImageProcessorTests
     {
         using var source = TestImages.Gradient(400, 300);
         await Assert.ThrowsExactlyAsync<ImageEncodeException>(async () =>
-            await Processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9, MaxFileSize = 300, MaxFileSizeStrategy = MaxFileSizeStrategy.QualityOnly }));
+            await Processor.EncodeAsync(source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.9, MaxFileSize = 300, MaxFileSizeStrategy = MaxFileSizeStrategy.QualityOnly }));
     }
 
     [TestMethod]
@@ -367,7 +367,7 @@ public sealed class ImageProcessorTests
             new(PngEncoder.Encode(b).Data, "b.png"),
         };
         var updates = new List<BatchProgress>();
-        var result = await Processor.ProcessBatchAsync(items, ImagePipeline.Create().Resize(10, 10, ResizeMode.Stretch),
+        var result = await Processor.ProcessBatchAsync(items, ImagePipeline.Create().Resize(10, 10, BmageResizeMode.Stretch),
             new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Png, Progress = new Progress<BatchProgress>(p => { lock (updates) updates.Add(p); }) });
 
         Assert.AreEqual(3, result.Results.Count);
@@ -392,7 +392,7 @@ public sealed class ImageProcessorTests
         using var cts = new CancellationTokenSource();
         cts.Cancel();
         var stopped = await Assert.ThrowsExactlyAsync<BatchCancelledException>(async () =>
-            await Processor.ProcessBatchAsync(items, ImagePipeline.Create().Resize(32, 32, ResizeMode.Stretch), BatchOptions.Default, cts.Token));
+            await Processor.ProcessBatchAsync(items, ImagePipeline.Create().Resize(32, 32, BmageResizeMode.Stretch), BatchOptions.Default, cts.Token));
         var result = stopped.Result;
         Assert.IsTrue(result.WasCancelled);
         Assert.AreEqual(8, result.CancelledCount);
@@ -407,6 +407,6 @@ public sealed class ImageProcessorTests
         var info = Processor.Identify(data);
         Assert.IsNotNull(info);
         Assert.AreEqual(77, info!.Width);
-        Assert.AreEqual(ImageFormat.Png, info.Format);
+        Assert.AreEqual(BmageImageFormat.Png, info.Format);
     }
 }

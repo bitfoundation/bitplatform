@@ -354,7 +354,7 @@
         """;
 
     private const string HybridSaveSnippet = """
-        var encoded = await Exporter.EncodeWithFallbackAsync(image, [ImageFormat.WebP, ImageFormat.Jpeg]);
+        var encoded = await Exporter.EncodeWithFallbackAsync(image, [BmageImageFormat.WebP, BmageImageFormat.Jpeg]);
 
         var path = Path.Combine(FileSystem.CacheDirectory, "photo" + encoded.Extension);
         await File.WriteAllBytesAsync(path, encoded.Data);

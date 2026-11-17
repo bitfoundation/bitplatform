@@ -22,15 +22,15 @@ public sealed class AdversarialGeometryTests
 
     /// <summary>The affine matrix an orientation reports must agree with the pixels it actually produces.</summary>
     [TestMethod]
-    [DataRow(Orientation.Normal)]
-    [DataRow(Orientation.FlipHorizontal)]
-    [DataRow(Orientation.Rotate180)]
-    [DataRow(Orientation.FlipVertical)]
-    [DataRow(Orientation.Transpose)]
-    [DataRow(Orientation.Rotate90)]
-    [DataRow(Orientation.Transverse)]
-    [DataRow(Orientation.Rotate270)]
-    public void OrientationMatrixAgreesWithPixels(Orientation o)
+    [DataRow(BmageOrientation.Normal)]
+    [DataRow(BmageOrientation.FlipHorizontal)]
+    [DataRow(BmageOrientation.Rotate180)]
+    [DataRow(BmageOrientation.FlipVertical)]
+    [DataRow(BmageOrientation.Transpose)]
+    [DataRow(BmageOrientation.Rotate90)]
+    [DataRow(BmageOrientation.Transverse)]
+    [DataRow(BmageOrientation.Rotate270)]
+    public void OrientationMatrixAgreesWithPixels(BmageOrientation o)
     {
         using var src = Noise(7, 5, 3);
         using var dst = new OrientationOperation(o).Apply(src, OperationContext.Default);
@@ -53,7 +53,7 @@ public sealed class AdversarialGeometryTests
     [TestMethod]
     public void OrientationCompositionMatchesSequentialApplication()
     {
-        var all = Enum.GetValues<Orientation>().Where(o => o != Orientation.Unspecified).ToArray();
+        var all = Enum.GetValues<BmageOrientation>().Where(o => o != BmageOrientation.Unspecified).ToArray();
         foreach (var a in all)
         {
             foreach (var b in all)
@@ -71,7 +71,7 @@ public sealed class AdversarialGeometryTests
     [TestMethod]
     public void OrientationInverseUndoesOrientation()
     {
-        foreach (var o in Enum.GetValues<Orientation>().Where(o => o != Orientation.Unspecified))
+        foreach (var o in Enum.GetValues<BmageOrientation>().Where(o => o != BmageOrientation.Unspecified))
         {
             using var src = Noise(6, 4, 11);
             using var fwd = new OrientationOperation(o).Apply(src, OperationContext.Default);
@@ -83,10 +83,10 @@ public sealed class AdversarialGeometryTests
 
     /// <summary>The in-place mirror path must produce the same pixels as the allocating path.</summary>
     [TestMethod]
-    [DataRow(Orientation.FlipHorizontal)]
-    [DataRow(Orientation.FlipVertical)]
-    [DataRow(Orientation.Rotate180)]
-    public void InPlaceOrientationMatchesAllocatingPath(Orientation o)
+    [DataRow(BmageOrientation.FlipHorizontal)]
+    [DataRow(BmageOrientation.FlipVertical)]
+    [DataRow(BmageOrientation.Rotate180)]
+    public void InPlaceOrientationMatchesAllocatingPath(BmageOrientation o)
     {
         foreach (var (w, h) in new[] { (7, 5), (8, 8), (1, 9), (9, 1), (2, 3), (5000, 2) })
         {
@@ -115,7 +115,7 @@ public sealed class AdversarialGeometryTests
             for (var x = sw / 2; x < sw; x++) row[x] = Rgba32.White;
         }
 
-        using var viaPrescale = new ResizeOperation(dw, dh, ResizeMode.Stretch, ResamplingFilter.Lanczos3)
+        using var viaPrescale = new ResizeOperation(dw, dh, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3)
             .Apply(src, OperationContext.Default);
         using var direct = ResampleWithoutPrescale(src, dw, dh);
 
@@ -131,11 +131,11 @@ public sealed class AdversarialGeometryTests
         {
             var nw = Math.Max(dw, cur.Width / 2);
             var nh = Math.Max(dh, cur.Height / 2);
-            var next = new ResizeOperation(nw, nh, ResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(cur, OperationContext.Default);
+            var next = new ResizeOperation(nw, nh, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(cur, OperationContext.Default);
             cur.Dispose();
             cur = next;
         }
-        var final = new ResizeOperation(dw, dh, ResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(cur, OperationContext.Default);
+        var final = new ResizeOperation(dw, dh, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(cur, OperationContext.Default);
         cur.Dispose();
         return final;
     }
@@ -150,7 +150,7 @@ public sealed class AdversarialGeometryTests
     {
         var colour = new Rgba32(37, 129, 211);
         using var src = ImageBuffer.Create(sw, sh, colour);
-        using var dst = new ResizeOperation(dw, dh, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(src, OperationContext.Default);
+        using var dst = new ResizeOperation(dw, dh, BmageResizeMode.Stretch, ResamplingFilter.Auto).Apply(src, OperationContext.Default);
         foreach (var p in dst.Pixels.ToArray())
         {
             Assert.IsTrue(Math.Abs(p.R - colour.R) <= 1 && Math.Abs(p.G - colour.G) <= 1 && Math.Abs(p.B - colour.B) <= 1 && p.A == 255,
@@ -167,7 +167,7 @@ public sealed class AdversarialGeometryTests
     public void IdentityResizeDoesNotShift(ResamplingFilter filter)
     {
         using var src = Noise(33, 21, 5);
-        using var dst = new ResizeOperation(33, 21, ResizeMode.Stretch, filter).Apply(src, OperationContext.Default);
+        using var dst = new ResizeOperation(33, 21, BmageResizeMode.Stretch, filter).Apply(src, OperationContext.Default);
         var max = TestImages.MaxChannelDifference(src, dst);
         Assert.IsTrue(max <= 1, $"{filter} identity resize changed pixels by {max}");
     }
@@ -203,19 +203,19 @@ public sealed class AdversarialGeometryTests
     public void ExtremeAspectResizeWorks(int w, int h)
     {
         using var src = Noise(64, 48, 29);
-        using var dst = new ResizeOperation(w, h, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(src, OperationContext.Default);
+        using var dst = new ResizeOperation(w, h, BmageResizeMode.Stretch, ResamplingFilter.Auto).Apply(src, OperationContext.Default);
         Assert.AreEqual(new Size(w, h), dst.Size);
     }
 
     /// <summary>Every resize mode must honour its documented contract for every source/target combination.</summary>
     [TestMethod]
-    [DataRow(ResizeMode.Fit)]
-    [DataRow(ResizeMode.Contain)]
-    [DataRow(ResizeMode.Cover)]
-    [DataRow(ResizeMode.Max)]
-    [DataRow(ResizeMode.Min)]
-    [DataRow(ResizeMode.Stretch)]
-    public void ResizeModesHonourTheirContract(ResizeMode mode)
+    [DataRow(BmageResizeMode.Fit)]
+    [DataRow(BmageResizeMode.Contain)]
+    [DataRow(BmageResizeMode.Cover)]
+    [DataRow(BmageResizeMode.Max)]
+    [DataRow(BmageResizeMode.Min)]
+    [DataRow(BmageResizeMode.Stretch)]
+    public void ResizeModesHonourTheirContract(BmageResizeMode mode)
     {
         foreach (var (sw, sh) in new[] { (1, 1), (1, 1000), (1000, 1), (37, 91), (640, 480) })
         {
@@ -234,11 +234,11 @@ public sealed class AdversarialGeometryTests
                 using var dst = op.Apply(src, OperationContext.Default);
                 Assert.IsTrue(dst.Width > 0 && dst.Height > 0);
                 Assert.AreEqual(predicted, dst.Size);
-                if (mode is ResizeMode.Fit or ResizeMode.Max)
+                if (mode is BmageResizeMode.Fit or BmageResizeMode.Max)
                     Assert.IsTrue(dst.Width <= tw && dst.Height <= th, $"{mode} {sw}x{sh} -> {tw}x{th} produced {dst.Size}");
-                if (mode is ResizeMode.Contain or ResizeMode.Cover or ResizeMode.Stretch)
+                if (mode is BmageResizeMode.Contain or BmageResizeMode.Cover or BmageResizeMode.Stretch)
                     Assert.AreEqual(new Size(tw, th), dst.Size);
-                if (mode is ResizeMode.Max)
+                if (mode is BmageResizeMode.Max)
                     Assert.IsTrue(dst.Width <= sw && dst.Height <= sh, $"Max enlarged {sw}x{sh} to {dst.Size}");
             }
         }
@@ -353,7 +353,7 @@ public sealed class AdversarialGeometryTests
     {
         using var src = Noise(16, 16);
         Assert.ThrowsExactly<ImageLimitExceededException>(
-            () => new ResizeOperation(30000, 30000, ResizeMode.Stretch).Apply(src, OperationContext.Default));
+            () => new ResizeOperation(30000, 30000, BmageResizeMode.Stretch).Apply(src, OperationContext.Default));
     }
 
     [TestMethod]

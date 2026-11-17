@@ -136,7 +136,7 @@
 
     private static readonly ImageExportOptions ExportOptions = new()
     {
-        Format = ImageFormat.Png,
+        Format = BmageImageFormat.Png,
         Metadata = MetadataPolicy.Remove,
     };
 
@@ -166,7 +166,7 @@
             Bubble    = new RectangleF(620, 420, 260, 64),
             Target    = new Vector2(700, 330),   // where the leader line points
             Text      = "Total shows 0",
-            TextStyle = new TextStyle { FontSize = 22, Bold = true, Alignment = TextAlignment.Center, Baseline = TextBaseline.Middle },
+            TextStyle = new TextStyle { FontSize = 22, Bold = true, Alignment = BmageTextAlignment.Center, Baseline = TextBaseline.Middle },
         });
         """;
 
@@ -340,7 +340,7 @@
             Bubble = new System.Drawing.RectangleF(w * 0.60f, h * 0.64f, bubbleWidth, fontSize * 2.2f),
             Target = new Vector2(w * 0.70f, h * 0.52f),
             Text = "Wrong total here",
-            TextStyle = new TextStyle { FontSize = fontSize, Bold = true, Alignment = TextAlignment.Center, Baseline = TextBaseline.Middle },
+            TextStyle = new TextStyle { FontSize = fontSize, Bold = true, Alignment = BmageTextAlignment.Center, Baseline = TextBaseline.Middle },
             Style = ShapeStyle.Default with { FillColor = Rgba32.White, Stroke = new StrokeStyle { Width = MathF.Max(2, w / 400f) } },
         }, "Callout");
     }

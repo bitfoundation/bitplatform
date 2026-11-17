@@ -5,15 +5,15 @@ namespace Bit.Bmage;
 /// <summary>Managed GIF decoder (first frame, LZW, interlacing, transparency). Animation frames beyond the first are ignored.</summary>
 public sealed class GifDecoder : IImageDecoder
 {
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Gif];
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.Gif];
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     public ImageInfo? Identify(ReadOnlySpan<byte> data)
     {
-        if (ImageFormats.Detect(data) != ImageFormat.Gif || data.Length < 13) return null;
+        if (ImageFormats.Detect(data) != BmageImageFormat.Gif || data.Length < 13) return null;
         var w = BinaryPrimitives.ReadUInt16LittleEndian(data[6..]);
         var h = BinaryPrimitives.ReadUInt16LittleEndian(data[8..]);
-        return w == 0 || h == 0 ? null : new ImageInfo(w, h, ImageFormat.Gif, HasAlpha: null);
+        return w == 0 || h == 0 ? null : new ImageInfo(w, h, BmageImageFormat.Gif, HasAlpha: null);
     }
 
     /// <summary>
@@ -22,7 +22,7 @@ public sealed class GifDecoder : IImageDecoder
     /// </summary>
     internal static (int Width, int Height)? BrowserCanvasSize(ReadOnlySpan<byte> data)
     {
-        if (ImageFormats.Detect(data) != ImageFormat.Gif || data.Length < 13) return null;
+        if (ImageFormats.Detect(data) != BmageImageFormat.Gif || data.Length < 13) return null;
         int width = BinaryPrimitives.ReadUInt16LittleEndian(data[6..]);
         int height = BinaryPrimitives.ReadUInt16LittleEndian(data[8..]);
         var pos = 13;
@@ -51,7 +51,7 @@ public sealed class GifDecoder : IImageDecoder
         options ??= DecodeOptions.Default;
         allocator ??= PooledPixelAllocator.Shared;
         options.Limits.ValidateEncodedSize(data.Length);
-        if (ImageFormats.Detect(data) != ImageFormat.Gif || data.Length < 13) throw new ImageDecodeException("Not a GIF file.");
+        if (ImageFormats.Detect(data) != BmageImageFormat.Gif || data.Length < 13) throw new ImageDecodeException("Not a GIF file.");
         int width = BinaryPrimitives.ReadUInt16LittleEndian(data[6..]);
         int height = BinaryPrimitives.ReadUInt16LittleEndian(data[8..]);
         if (width == 0 || height == 0) throw new ImageDecodeException("Invalid GIF dimensions.");
@@ -142,7 +142,7 @@ public sealed class GifDecoder : IImageDecoder
                 break; // first frame only
             }
             _ = bgIndex;
-            image.Metadata = new ImageMetadata(sourceFormat: ImageFormat.Gif, fileName: options.FileName);
+            image.Metadata = new ImageMetadata(sourceFormat: BmageImageFormat.Gif, fileName: options.FileName);
             return image;
         }
         catch { image.Dispose(); throw; }

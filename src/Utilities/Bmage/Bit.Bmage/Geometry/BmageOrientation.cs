@@ -7,7 +7,7 @@ namespace Bit.Bmage;
 /// The eight orientations of the dihedral group D4, numbered exactly as EXIF orientation values.
 /// Each value describes how the stored pixels must be transformed to display the image upright.
 /// </summary>
-public enum Orientation
+public enum BmageOrientation
 {
     /// <summary>Unknown / not specified (treated as <see cref="Normal"/>).</summary>
     Unspecified = 0,
@@ -29,41 +29,41 @@ public enum Orientation
     Rotate270 = 8,
 }
 
-/// <summary>Algebra for <see cref="Orientation"/> values.</summary>
+/// <summary>Algebra for <see cref="BmageOrientation"/> values.</summary>
 public static class OrientationMath
 {
     // Composition table: Compose[a][b] = apply a, then b.
     // Represent each orientation as (rotation quarter-turns clockwise, flipX applied first).
-    private static (int Rot, bool Flip) Decompose(Orientation o) => o switch
+    private static (int Rot, bool Flip) Decompose(BmageOrientation o) => o switch
     {
-        Orientation.FlipHorizontal => (0, true),
-        Orientation.Rotate180 => (2, false),
-        Orientation.FlipVertical => (2, true),
-        Orientation.Transpose => (3, true),
-        Orientation.Rotate90 => (1, false),
-        Orientation.Transverse => (1, true),
-        Orientation.Rotate270 => (3, false),
+        BmageOrientation.FlipHorizontal => (0, true),
+        BmageOrientation.Rotate180 => (2, false),
+        BmageOrientation.FlipVertical => (2, true),
+        BmageOrientation.Transpose => (3, true),
+        BmageOrientation.Rotate90 => (1, false),
+        BmageOrientation.Transverse => (1, true),
+        BmageOrientation.Rotate270 => (3, false),
         _ => (0, false),
     };
 
-    private static Orientation Compose(int rot, bool flip)
+    private static BmageOrientation Compose(int rot, bool flip)
     {
         rot = ((rot % 4) + 4) % 4;
         return (rot, flip) switch
         {
-            (0, false) => Orientation.Normal,
-            (0, true) => Orientation.FlipHorizontal,
-            (1, false) => Orientation.Rotate90,
-            (1, true) => Orientation.Transverse,
-            (2, false) => Orientation.Rotate180,
-            (2, true) => Orientation.FlipVertical,
-            (3, false) => Orientation.Rotate270,
-            _ => Orientation.Transpose,
+            (0, false) => BmageOrientation.Normal,
+            (0, true) => BmageOrientation.FlipHorizontal,
+            (1, false) => BmageOrientation.Rotate90,
+            (1, true) => BmageOrientation.Transverse,
+            (2, false) => BmageOrientation.Rotate180,
+            (2, true) => BmageOrientation.FlipVertical,
+            (3, false) => BmageOrientation.Rotate270,
+            _ => BmageOrientation.Transpose,
         };
     }
 
     /// <summary>Returns the orientation equivalent to applying <paramref name="first"/> and then <paramref name="second"/>.</summary>
-    public static Orientation Then(this Orientation first, Orientation second)
+    public static BmageOrientation Then(this BmageOrientation first, BmageOrientation second)
     {
         var (r1, f1) = Decompose(first);
         var (r2, f2) = Decompose(second);
@@ -74,7 +74,7 @@ public static class OrientationMath
     }
 
     /// <summary>Returns the orientation that undoes <paramref name="orientation"/>.</summary>
-    public static Orientation Inverse(this Orientation orientation)
+    public static BmageOrientation Inverse(this BmageOrientation orientation)
     {
         var (r, f) = Decompose(orientation);
         // (F^f R^r)^-1 = R^-r F^f = F^f R^(f ? r : -r)
@@ -82,31 +82,31 @@ public static class OrientationMath
     }
 
     /// <summary>True when the orientation swaps width and height.</summary>
-    public static bool SwapsDimensions(this Orientation orientation)
-        => orientation is Orientation.Transpose or Orientation.Rotate90 or Orientation.Transverse or Orientation.Rotate270;
+    public static bool SwapsDimensions(this BmageOrientation orientation)
+        => orientation is BmageOrientation.Transpose or BmageOrientation.Rotate90 or BmageOrientation.Transverse or BmageOrientation.Rotate270;
 
     /// <summary>Clockwise rotation in degrees expressed by the orientation (ignoring the mirror component).</summary>
-    public static int RotationDegrees(this Orientation orientation) => Decompose(orientation).Rot * 90;
+    public static int RotationDegrees(this BmageOrientation orientation) => Decompose(orientation).Rot * 90;
 
     /// <summary>True when the orientation includes a horizontal mirror.</summary>
-    public static bool IsMirrored(this Orientation orientation) => Decompose(orientation).Flip;
+    public static bool IsMirrored(this BmageOrientation orientation) => Decompose(orientation).Flip;
 
     /// <summary>Creates an orientation from a clockwise rotation (multiple of 90°) and an optional preceding horizontal mirror.</summary>
-    public static Orientation FromRotation(int clockwiseDegrees, bool mirrorFirst = false)
+    public static BmageOrientation FromRotation(int clockwiseDegrees, bool mirrorFirst = false)
     {
         if (clockwiseDegrees % 90 != 0) throw new ArgumentOutOfRangeException(nameof(clockwiseDegrees), "Rotation must be a multiple of 90 degrees.");
         return Compose(clockwiseDegrees / 90, mirrorFirst);
     }
 
     /// <summary>Output size after applying the orientation to an image of the given size.</summary>
-    public static Size Transform(this Orientation orientation, Size size)
+    public static Size Transform(this BmageOrientation orientation, Size size)
         => orientation.SwapsDimensions() ? new Size(size.Height, size.Width) : size;
 
     /// <summary>
     /// A matrix that maps source pixel coordinates to destination pixel coordinates (in continuous units) for an image of
     /// the given size when the orientation is applied.
     /// </summary>
-    public static Matrix3x2 ToMatrix(this Orientation orientation, Size sourceSize)
+    public static Matrix3x2 ToMatrix(this BmageOrientation orientation, Size sourceSize)
     {
         float w = sourceSize.Width, h = sourceSize.Height;
         var (rot, flip) = Decompose(orientation);
@@ -123,7 +123,7 @@ public static class OrientationMath
     }
 
     /// <summary>Maps a point in source coordinates to destination coordinates.</summary>
-    public static PointF Transform(this Orientation orientation, PointF point, Size sourceSize)
+    public static PointF Transform(this BmageOrientation orientation, PointF point, Size sourceSize)
     {
         var v = Vector2.Transform(new Vector2(point.X, point.Y), orientation.ToMatrix(sourceSize));
         return new PointF(v.X, v.Y);

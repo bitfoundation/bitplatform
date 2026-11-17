@@ -232,7 +232,7 @@ public class McpToolTests
         {
             var guide = await McpCall.TextAsync("GetBlazeDbSetupGuide", new() { ["hostingModel"] = model });
 
-            Assert.Contains("`Bit.BlazeDb.Browser`", guide, model);
+            Assert.Contains("all in the one `Bit.BlazeDb` namespace", guide, model);
             Assert.Contains("prerender", guide, model);
         }
 
@@ -241,7 +241,7 @@ public class McpToolTests
             var guide = await McpCall.TextAsync("GetBlazeDbSetupGuide", new() { ["hostingModel"] = model });
 
             Assert.Contains("BlazeDbFileStorage", guide, model);
-            Assert.Contains("`Bit.BlazeDb.Browser` does not apply here", guide, model);
+            Assert.Contains("`BlazeDbIndexedDbStorage`) do not apply here", guide, model);
         }
     }
 

@@ -187,15 +187,15 @@ public sealed class AdversarialMetadataTests
     /// same pixels as applying the orientation by hand, and must reset the stored orientation so it is not applied twice.
     /// </summary>
     [TestMethod]
-    [DataRow(Orientation.Normal)]
-    [DataRow(Orientation.FlipHorizontal)]
-    [DataRow(Orientation.Rotate180)]
-    [DataRow(Orientation.FlipVertical)]
-    [DataRow(Orientation.Transpose)]
-    [DataRow(Orientation.Rotate90)]
-    [DataRow(Orientation.Transverse)]
-    [DataRow(Orientation.Rotate270)]
-    public async Task AutoOrientProducesUprightPixelsForEveryExifOrientation(Orientation orientation)
+    [DataRow(BmageOrientation.Normal)]
+    [DataRow(BmageOrientation.FlipHorizontal)]
+    [DataRow(BmageOrientation.Rotate180)]
+    [DataRow(BmageOrientation.FlipVertical)]
+    [DataRow(BmageOrientation.Transpose)]
+    [DataRow(BmageOrientation.Rotate90)]
+    [DataRow(BmageOrientation.Transverse)]
+    [DataRow(BmageOrientation.Rotate270)]
+    public async Task AutoOrientProducesUprightPixelsForEveryExifOrientation(BmageOrientation orientation)
     {
         var processor = new ImageProcessor();
         using var upright = TestImages.Quadrants(32, 24);
@@ -203,7 +203,7 @@ public sealed class AdversarialMetadataTests
         // Store the image the way a camera would: pixels in sensor order, with the orientation tag saying how to
         // display them. Sensor order is the inverse of the display transform.
         using var stored = new OrientationOperation(orientation.Inverse()).Apply(upright, OperationContext.Default);
-        stored.Metadata = new ImageMetadata(ExifData.FromOrientation(orientation), sourceFormat: ImageFormat.Jpeg);
+        stored.Metadata = new ImageMetadata(ExifData.FromOrientation(orientation), sourceFormat: BmageImageFormat.Jpeg);
 
         var encoded = await processor.EncodeAsync(stored, ImageExportOptions.Jpeg with
         {
@@ -217,7 +217,7 @@ public sealed class AdversarialMetadataTests
         Assert.IsTrue(TestImages.MaxChannelDifference(upright, decoded) < 40,
             $"{orientation}: auto-oriented pixels differ from the upright reference");
         // Applying it again must be a no-op, so the stored orientation has to be reset.
-        Assert.IsTrue(decoded.Metadata?.Orientation is Orientation.Normal or Orientation.Unspecified,
+        Assert.IsTrue(decoded.Metadata?.Orientation is BmageOrientation.Normal or BmageOrientation.Unspecified,
             $"{orientation}: decoded image still reports orientation {decoded.Metadata?.Orientation}, so it would be applied twice");
     }
 
@@ -226,17 +226,17 @@ public sealed class AdversarialMetadataTests
     /// carry that tag through, or the image is silently saved sideways with nothing left to correct it.
     /// </summary>
     [TestMethod]
-    [DataRow(Orientation.Rotate90)]
-    [DataRow(Orientation.Rotate180)]
-    [DataRow(Orientation.Rotate270)]
-    [DataRow(Orientation.FlipHorizontal)]
-    [DataRow(Orientation.Transpose)]
-    public async Task ReEncodingWithoutAutoOrientKeepsTheOrientationTag(Orientation orientation)
+    [DataRow(BmageOrientation.Rotate90)]
+    [DataRow(BmageOrientation.Rotate180)]
+    [DataRow(BmageOrientation.Rotate270)]
+    [DataRow(BmageOrientation.FlipHorizontal)]
+    [DataRow(BmageOrientation.Transpose)]
+    public async Task ReEncodingWithoutAutoOrientKeepsTheOrientationTag(BmageOrientation orientation)
     {
         var processor = new ImageProcessor();
         using var upright = TestImages.Quadrants(32, 24);
         using var stored = new OrientationOperation(orientation.Inverse()).Apply(upright, OperationContext.Default);
-        stored.Metadata = new ImageMetadata(ExifData.FromOrientation(orientation), sourceFormat: ImageFormat.Jpeg);
+        stored.Metadata = new ImageMetadata(ExifData.FromOrientation(orientation), sourceFormat: BmageImageFormat.Jpeg);
 
         var camera = await processor.EncodeAsync(stored, ImageExportOptions.Jpeg with { Quality = 1.0, Metadata = MetadataPolicy.Preserve });
 
@@ -256,7 +256,7 @@ public sealed class AdversarialMetadataTests
     public void AutoOrientIsIdempotent()
     {
         using var src = AdversarialGeometryTests.Noise(20, 14, 3);
-        src.Metadata = new ImageMetadata(ExifData.FromOrientation(Orientation.Rotate90));
+        src.Metadata = new ImageMetadata(ExifData.FromOrientation(BmageOrientation.Rotate90));
         using var once = AutoOrientOperation.Instance.Apply(src, OperationContext.Default);
         using var twice = AutoOrientOperation.Instance.Apply(once, OperationContext.Default);
         Assert.AreEqual(once.Size, twice.Size);
@@ -324,9 +324,9 @@ public sealed class AdversarialMetadataTests
     {
         var processor = new ImageProcessor();
         using var img = AdversarialGeometryTests.Noise(32, 32, 11);
-        img.Metadata = new ImageMetadata(BuildSensitiveExif(), sourceFormat: ImageFormat.Jpeg);
+        img.Metadata = new ImageMetadata(BuildSensitiveExif(), sourceFormat: BmageImageFormat.Jpeg);
 
-        foreach (var format in new[] { ImageFormat.Jpeg, ImageFormat.Png })
+        foreach (var format in new[] { BmageImageFormat.Jpeg, BmageImageFormat.Png })
         {
             var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = format, Metadata = policy });
             var text = System.Text.Encoding.Latin1.GetString(encoded.Data);
@@ -375,8 +375,8 @@ public sealed class AdversarialMetadataTests
         };
         var processor = new ImageProcessor();
         using var img = AdversarialGeometryTests.Noise(32, 32, 19);
-        img.Metadata = new ImageMetadata(exif, sourceFormat: ImageFormat.Jpeg);
-        foreach (var format in new[] { ImageFormat.Jpeg, ImageFormat.Png })
+        img.Metadata = new ImageMetadata(exif, sourceFormat: BmageImageFormat.Jpeg);
+        foreach (var format in new[] { BmageImageFormat.Jpeg, BmageImageFormat.Png })
         {
             var preserved = await processor.EncodeAsync(img, new ImageExportOptions { Format = format, Metadata = MetadataPolicy.Preserve });
             var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = format, Metadata = MetadataPolicy.StripSensitive });
@@ -489,14 +489,14 @@ public sealed class AdversarialMetadataTests
         BinaryPrimitives.WriteUInt16LittleEndian(orientation, ExifTag.Orientation);
         BinaryPrimitives.WriteUInt16LittleEndian(orientation[2..], (ushort)ExifType.Short);
         BinaryPrimitives.WriteUInt32LittleEndian(orientation[4..], 1);
-        BinaryPrimitives.WriteUInt16LittleEndian(orientation[8..], (ushort)Orientation.Rotate90);
+        BinaryPrimitives.WriteUInt16LittleEndian(orientation[8..], (ushort)BmageOrientation.Rotate90);
 
         var exif = ExifData.Parse(tiff);
 
         Assert.IsNotNull(exif);
         Assert.AreEqual(2, exif.Primary.Count);
         Assert.AreEqual(valueBytes + 1, exif.Primary.Get(0x1000)!.Data.Length);
-        Assert.AreEqual(Orientation.Rotate90, exif.Orientation);
+        Assert.AreEqual(BmageOrientation.Rotate90, exif.Orientation);
     }
 
     [TestMethod]
@@ -505,13 +505,13 @@ public sealed class AdversarialMetadataTests
         using var img = AdversarialGeometryTests.Noise(8, 8, 3);
         var png = PngEncoder.Encode(img).Data;
 
-        var bomb = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, ImageFormat.Png));
+        var bomb = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, BmageImageFormat.Png));
         Assert.IsLessThan(64 * 1024, bomb.Length);
         Assert.IsTrue(PngContainer.ReadMetadata(bomb).IccProfile.IsEmpty);
 
         var profile = new byte[1 << 20];
         new Random(5).NextBytes(profile);
-        var real = PngContainer.WriteMetadata(png, new ImageMetadata(null, profile, default, ImageFormat.Png));
+        var real = PngContainer.WriteMetadata(png, new ImageMetadata(null, profile, default, BmageImageFormat.Png));
         CollectionAssert.AreEqual(profile, PngContainer.ReadMetadata(real).IccProfile.ToArray());
     }
 
@@ -524,10 +524,10 @@ public sealed class AdversarialMetadataTests
     {
         using var img = AdversarialGeometryTests.Noise(8, 8, 3);
         var png = PngEncoder.Encode(img).Data;
-        var bomb = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, ImageFormat.Png));
+        var bomb = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, BmageImageFormat.Png));
         var profile = new byte[1024];
         new Random(9).NextBytes(profile);
-        var real = PngContainer.WriteMetadata(png, new ImageMetadata(null, profile, default, ImageFormat.Png));
+        var real = PngContainer.WriteMetadata(png, new ImageMetadata(null, profile, default, BmageImageFormat.Png));
         var bombChunk = PngContainer.EnumerateChunks(bomb).Single(c => c.TypeName == "iCCP");
         var realChunk = PngContainer.EnumerateChunks(real).Single(c => c.TypeName == "iCCP");
 
@@ -575,8 +575,8 @@ public sealed class AdversarialMetadataTests
 
         var processor = new ImageProcessor();
         using var img = AdversarialGeometryTests.Noise(16, 16, 23);
-        img.Metadata = new ImageMetadata(exif, sourceFormat: ImageFormat.Jpeg);
-        var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = ImageFormat.Jpeg, Metadata = MetadataPolicy.StripSensitive });
+        img.Metadata = new ImageMetadata(exif, sourceFormat: BmageImageFormat.Jpeg);
+        var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Metadata = MetadataPolicy.StripSensitive });
         foreach (var secret in new[] { "Owner In Ifd0", "SN-IFD0-123", "Artist In ExifIfd", "Author In ExifIfd" })
             Assert.AreEqual(-1, encoded.Data.AsSpan().IndexOf(System.Text.Encoding.ASCII.GetBytes(secret)), $"kept {secret}");
     }
@@ -586,7 +586,7 @@ public sealed class AdversarialMetadataTests
     {
         var processor = new ImageProcessor();
         using var img = AdversarialGeometryTests.Noise(32, 32, 13);
-        img.Metadata = new ImageMetadata(BuildSensitiveExif(), sourceFormat: ImageFormat.Jpeg);
+        img.Metadata = new ImageMetadata(BuildSensitiveExif(), sourceFormat: BmageImageFormat.Jpeg);
 
         var encoded = await processor.EncodeAsync(img, ImageExportOptions.Jpeg with { Metadata = MetadataPolicy.Preserve });
         using var decoded = await processor.DecodeAsync(encoded.Data);
@@ -608,9 +608,9 @@ public sealed class AdversarialMetadataTests
                     .With(ExifTag.PixelXDimension, ExifValue.FromLong(64))
                     .With(ExifTag.PixelYDimension, ExifValue.FromLong(48)),
                 null, null, default),
-            sourceFormat: ImageFormat.Jpeg);
+            sourceFormat: BmageImageFormat.Jpeg);
 
-        using var resized = new ResizeOperation(32, 24, ResizeMode.Stretch).Apply(img, OperationContext.Default);
+        using var resized = new ResizeOperation(32, 24, BmageResizeMode.Stretch).Apply(img, OperationContext.Default);
         var encoded = await processor.EncodeAsync(resized, ImageExportOptions.Jpeg with { Metadata = MetadataPolicy.Preserve });
         using var decoded = await processor.DecodeAsync(encoded.Data);
 

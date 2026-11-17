@@ -154,7 +154,7 @@ public static class BmageBarcodes
                 var scale = options.MinimumSize / (double)longer;
                 var width = (int)Math.Round(image.Width * scale);
                 var height = (int)Math.Round(image.Height * scale);
-                return ImagePipeline.Create().Add(new ResizeOperation(width, height, ResizeMode.Stretch, ResamplingFilter.Bicubic));
+                return ImagePipeline.Create().Add(new ResizeOperation(width, height, BmageResizeMode.Stretch, ResamplingFilter.Bicubic));
             }
             case BarcodePreprocessing.Sharpen:
                 return ImagePipeline.Create().Sharpen(1.5f, Math.Max(1f, longer / 800f));

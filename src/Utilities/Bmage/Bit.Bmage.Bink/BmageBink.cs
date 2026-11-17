@@ -66,7 +66,7 @@ public static class BmageBink
     public static BinkImageSource ToBinkImageSource(this ImageBuffer image, ImageExportOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(image);
-        var png = PngEncoder.Encode(image, (options ?? ImageExportOptions.Png) with { Format = ImageFormat.Png });
+        var png = PngEncoder.Encode(image, (options ?? ImageExportOptions.Png) with { Format = BmageImageFormat.Png });
         // Base64 grows the bytes by a third, and the URI's prefix adds a few more.
         if ((png.Length + 2) / 3 * 4 + 32 > BinkImageSource.MaxUriLength)
             throw new ArgumentException($"The image encodes to {png.Length} bytes of PNG, more than a Bink image source holds. Resize it first.", nameof(image));

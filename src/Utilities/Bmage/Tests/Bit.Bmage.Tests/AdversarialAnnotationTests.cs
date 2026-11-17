@@ -378,7 +378,7 @@ public sealed class AdversarialAnnotationTests
     {
         using var source = ImageBuffer.Create(120, 90, Rgba32.White);
         var document = ImageDocument.Create(source.Size)
-            .WithPipeline(ImagePipeline.Create().Resize(60, 45, ResizeMode.Stretch))
+            .WithPipeline(ImagePipeline.Create().Resize(60, 45, BmageResizeMode.Stretch))
             .AddAnnotation(new RectangleAnnotation { Rectangle = new RectangleF(5, 5, 20, 20) })
             .AddAnnotation(new StepAnnotation { Center = new Vector2(30, 22), Number = 1 });
 

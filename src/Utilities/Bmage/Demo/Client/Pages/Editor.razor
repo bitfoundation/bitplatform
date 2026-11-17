@@ -388,7 +388,7 @@
 
     private static readonly ImageExportOptions ExportOptions = new()
     {
-        Format = ImageFormat.Png,
+        Format = BmageImageFormat.Png,
         Metadata = MetadataPolicy.StripSensitive,
     };
 
@@ -441,7 +441,7 @@
             }
 
             async Task Save() => await _editor!.DownloadAsync("edited",
-                new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.9 });
+                new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.9 });
 
             async Task AddCallout() => await _editor!.AddAnnotationAsync(new ArrowAnnotation
             {
@@ -572,7 +572,7 @@
         {
             var details = new List<string>();
             if (layer.Name is { } name) details.Add(name);
-            if (layer.BlendMode != BlendMode.SourceOver) details.Add(layer.BlendMode.ToString());
+            if (layer.BlendMode != BmageBlendMode.SourceOver) details.Add(layer.BlendMode.ToString());
             if (layer.Opacity < 1) details.Add($"{layer.Opacity * 100:0}%");
             if (!layer.IsVisible) details.Add("hidden");
             lines.Add($"{indent}{layer.Kind,-10} {string.Join(" · ", details)}".TrimEnd());

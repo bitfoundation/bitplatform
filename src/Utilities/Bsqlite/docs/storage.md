@@ -4,15 +4,15 @@ A storage backend is a `IBsqliteStorageProvider`: a .NET half that declares capa
 
 ## First-party backends
 
-All five ship in the `Bit.Bsqlite` package, each in a namespace of its own. Four serve the browser; the fifth serves Blazor Hybrid apps, where .NET runs natively.
+All five ship in the `Bit.Bsqlite` package and the `Bit.Bsqlite` namespace. Four serve the browser; the fifth serves Blazor Hybrid apps, where .NET runs natively.
 
-| Name | Provider (namespace) | Engine build | Persistent | Notes |
+| Name | Provider | Engine build | Persistent | Notes |
 |---|---|---|---|---|
-| `opfs` | `BsqliteOpfsStorageProvider` (`Bit.Bsqlite`) | Synchronous | Yes | `OPFSCoopSyncVFS`. Fastest. Several connections and tabs, coordinated through Web Locks. No `ATTACH`. Worker-only, no COOP/COEP needed. |
-| `indexeddb` | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite`) | Async-capable | Yes | `IDBBatchAtomicVFS`. Works where OPFS does not (older Safari, some embedded views). Page size fixed at 4096. `cache_size` raised to 8 MiB so batch-atomic commits skip the journal. |
-| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite`) | Async-capable | Yes | 4096-byte pages in the Cache API, committed through a journal. |
-| `in-memory` | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite`) | Synchronous | No | The engine's own memory VFS. Tests, demos, and a declared last resort. |
-| `file-system` | `BsqliteFileSystemStorageProvider` (`Bit.Bsqlite`) | None - the native SQLite the app brings | Yes | Blazor Hybrid only, registered and selected for it automatically. Plain SQLite files in the app's own folder. |
+| `opfs` | `BsqliteOpfsStorageProvider` | Synchronous | Yes | `OPFSCoopSyncVFS`. Fastest. Several connections and tabs, coordinated through Web Locks. No `ATTACH`. Worker-only, no COOP/COEP needed. |
+| `indexeddb` | `BsqliteIndexedDbStorageProvider` | Async-capable | Yes | `IDBBatchAtomicVFS`. Works where OPFS does not (older Safari, some embedded views). Page size fixed at 4096. `cache_size` raised to 8 MiB so batch-atomic commits skip the journal. |
+| `cache-storage` | `BsqliteCacheStorageProvider` | Async-capable | Yes | 4096-byte pages in the Cache API, committed through a journal. |
+| `in-memory` | `BsqliteInMemoryStorageProvider` | Synchronous | No | The engine's own memory VFS. Tests, demos, and a declared last resort. |
+| `file-system` | `BsqliteFileSystemStorageProvider` | None - the native SQLite the app brings | Yes | Blazor Hybrid only, registered and selected for it automatically. Plain SQLite files in the app's own folder. |
 
 The engine build matters: a VFS that suspends to read storage (IndexedDB, Cache Storage) needs the JSPI build where the browser has it (Chrome 137+) and the Asyncify build otherwise. The synchronous build is the smallest and serves OPFS and in-memory. Exactly one is downloaded per session.
 

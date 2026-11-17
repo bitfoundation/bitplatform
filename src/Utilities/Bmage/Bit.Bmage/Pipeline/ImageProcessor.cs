@@ -51,10 +51,10 @@ public class ImageProcessor
         // Turning a photo upright as it is decoded is an operation like any other, on the processor's threads.
         if (options.MaxDegreeOfParallelism is null && MaxDegreeOfParallelism is { } threads) options = options with { MaxDegreeOfParallelism = threads };
         var format = ImageFormats.Detect(data.Span);
-        if (format == ImageFormat.Unknown)
+        if (format == BmageImageFormat.Unknown)
             throw new ImageDecodeException("The data does not look like a supported image format.");
         // No registry has an SVG decoder, so without this the refusal would read as a missing registration.
-        if (format == ImageFormat.Svg)
+        if (format == BmageImageFormat.Svg)
             throw new ImageDecodeException(ImageFormats.SvgRefused);
         var decoder = Codecs.GetDecoder(format)
             ?? throw new ImageCapabilityException($"No decoder is registered for {format}. On WebAssembly, register the browser codecs; otherwise convert the image first.");
@@ -137,7 +137,7 @@ public class ImageProcessor
             scale *= Math.Clamp(Math.Sqrt(ratio) * 0.95, 0.3, 0.95);
             var w = Math.Max(1, (int)Math.Round(image.Width * scale));
             var h = Math.Max(1, (int)Math.Round(image.Height * scale));
-            using var resized = new ResizeOperation(w, h, ResizeMode.Stretch, ResamplingFilter.Lanczos3)
+            using var resized = new ResizeOperation(w, h, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3)
                 .Apply(image, new OperationContext(Allocator, Limits, ct, maxDegreeOfParallelism: MaxDegreeOfParallelism));
             current = await Try(resized, quality).ConfigureAwait(false);
             if (current.Length <= maxBytes) return current;
@@ -263,7 +263,7 @@ public class ImageProcessor
     /// {
     ///     MaxConcurrency = 4,
     ///     MaxMemoryBytes = 512L * 1024 * 1024,
-    ///     ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 },
+    ///     ExportOptions = new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 },
     /// }))
     /// {
     ///     if (result.Output is { } output) await SaveAsync(result.FileName, output.Data);

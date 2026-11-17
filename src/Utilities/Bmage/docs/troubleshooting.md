@@ -56,7 +56,7 @@ EXIF orientation into an exported image whose pixels are already upright; the me
 JPEG has no alpha channel, and browsers composite over black. Set the background explicitly:
 
 ```csharp
-new ImageExportOptions { Format = ImageFormat.Jpeg, Background = Rgba32.White }
+new ImageExportOptions { Format = BmageImageFormat.Jpeg, Background = Rgba32.White }
 ```
 
 ## "This browser cannot encode Avif"
@@ -69,7 +69,7 @@ Working as intended. Browsers silently substitute PNG for formats they cannot wr
 off as what you asked for. Either check first or ask for a fallback chain:
 
 ```csharp
-await exporter.EncodeWithFallbackAsync(image, [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg], options);
+await exporter.EncodeWithFallbackAsync(image, [BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg], options);
 ```
 
 ## "Cannot reach the target size"
@@ -169,8 +169,8 @@ next render once it is registered. The demo site does exactly that:
 ```csharp
 // fonts: the FontTextRasterizer from dependency injection. The first family is what "sans-serif" means; a character it
 // lacks, such as every Persian letter, comes from the next family that has it.
-fonts.Register("Noto Sans", FontFile.Load(await http.GetByteArrayAsync("fonts/NotoSans-Regular.ttf")))
-     .Register("Vazirmatn", FontFile.Load(await http.GetByteArrayAsync("fonts/Vazirmatn-Regular.ttf")));
+fonts.Register("Noto Sans", BmageFontFile.Load(await http.GetByteArrayAsync("fonts/NotoSans-Regular.ttf")))
+     .Register("Vazirmatn", BmageFontFile.Load(await http.GetByteArrayAsync("fonts/Vazirmatn-Regular.ttf")));
 await editor.RefreshAsync();   // redraws text added before the fonts arrived
 ```
 

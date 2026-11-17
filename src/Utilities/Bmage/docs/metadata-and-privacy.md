@@ -83,7 +83,7 @@ image.Metadata = new ImageMetadata(exif);
 
 var encoded = await exporter.EncodeAsync(image, new ImageExportOptions
 {
-    Format = ImageFormat.Jpeg,
+    Format = BmageImageFormat.Jpeg,
     Metadata = MetadataPolicy.Preserve,
 });
 ```

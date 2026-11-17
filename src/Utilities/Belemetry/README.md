@@ -776,6 +776,8 @@ dotnet add package Bit.Belemetry.Hangfire
 ```
 
 ```csharp
+using Bit.Belemetry;   // UseBitBelemetry, on the EF Core options and on Hangfire's configuration
+
 services.AddDbContext<AppDbContext>(options => options
     .UseSqlServer(connectionString)
     .UseBitBelemetry(o =>
@@ -1557,6 +1559,14 @@ console.log(BitBelemetry.getContext());   // { consent, decided, sessionId, pseu
 
 Behavior that changed with the hardening release, and how to get the previous behavior where that is still possible.
 The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvement-Plan.md).
+
+**Namespaces**
+
+- **Every type of every Belemetry package is in the `Bit.Belemetry` namespace.** The `UseBitBelemetry` extensions
+  moved there from `Microsoft.EntityFrameworkCore` (`Bit.Belemetry.EntityFrameworkCore`) and `Hangfire`
+  (`Bit.Belemetry.Hangfire`), and the two packages' other types from `Bit.Belemetry.EntityFrameworkCore` and
+  `Bit.Belemetry.Hangfire`. A file that calls `UseBitBelemetry` and imports only EF Core's or Hangfire's namespace
+  fails with CS1061: add `using Bit.Belemetry;` (or a global using), and drop imports of the two old namespaces.
 
 **Security and privacy**
 

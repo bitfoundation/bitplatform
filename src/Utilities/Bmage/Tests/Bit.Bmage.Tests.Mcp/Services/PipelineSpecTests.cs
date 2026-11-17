@@ -28,16 +28,16 @@ public class PipelineSpecTests
     [TestMethod]
     public void Parse_EnumsNamedArgumentsAndDefaults_BindToTheRealParameters()
     {
-        var result = BmagePipelineSpec.Parse("Cover(512, 512, Anchor.Top).Resize(400, null, mode: ResizeMode.Max, filter: ResamplingFilter.Lanczos3)");
+        var result = BmagePipelineSpec.Parse("Cover(512, 512, Anchor.Top).Resize(400, null, mode: BmageResizeMode.Max, filter: ResamplingFilter.Lanczos3)");
 
         Assert.IsNull(result.Error, result.Error);
 
         var cover = (ResizeOperation)result.Pipeline![0];
-        Assert.AreEqual(ResizeMode.Cover, cover.Mode);
+        Assert.AreEqual(BmageResizeMode.Cover, cover.Mode);
         Assert.AreEqual(Anchor.Top, cover.Anchor);
 
         var resize = (ResizeOperation)result.Pipeline[1];
-        Assert.AreEqual(ResizeMode.Max, resize.Mode);
+        Assert.AreEqual(BmageResizeMode.Max, resize.Mode);
         Assert.AreEqual(ResamplingFilter.Lanczos3, resize.Filter);
         Assert.IsNull(resize.Height);
     }
@@ -50,10 +50,10 @@ public class PipelineSpecTests
             ".CropToAspect(\"16:9\")" +
             ".Pixelate(14, new Rectangle(40, 120, 300, 40))" +
             ".Rotate(12.5, Rgba32.Transparent)" +
-            ".Resize(400, 260, ResizeMode.Contain, background: \"#18181f\")" +
+            ".Resize(400, 260, BmageResizeMode.Contain, background: \"#18181f\")" +
             ".Skew(10, 0, new Rgba32(24, 26, 31))" +
             ".Crop(0, 0, 100, 100)" +
-            ".Orient(Orientation.Rotate90)");
+            ".Orient(BmageOrientation.Rotate90)");
 
         Assert.IsNull(result.Error, result.Error);
         Assert.AreEqual(8, result.Pipeline!.Count);
@@ -98,7 +98,7 @@ public class PipelineSpecTests
     [DataRow("MaxSize(1920, 1920, 3, 4)", "at most")]
     [DataRow("MaxSize(19.5, 1920)", "not a whole number")]
     [DataRow("Cover(10, 10, Anchor.Sideways)", "Anchor has no member 'Sideways'")]
-    [DataRow("Cover(10, 10, ResizeMode.Max)", "is not a Anchor")]
+    [DataRow("Cover(10, 10, BmageResizeMode.Max)", "is not a Anchor")]
     [DataRow("Resize(10, 10, colour: Rgba32.White)", "no parameter called 'colour'")]
     [DataRow("Apply(new Duotone())", "cannot construct")]
     [DataRow("ColorMatrix(matrix)", "cannot construct")]

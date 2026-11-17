@@ -56,7 +56,7 @@ public class RecipeCatalogTests
         var namespaces = BmageApiCatalog.Types.Select(type => type.Namespace).ToHashSet(StringComparer.Ordinal);
 
         // The Bmage-looking names in the code: Image*, Bmage*, *Annotation, *Options, *Exception, Rgba32 and friends.
-        var pattern = new Regex(@"\b(?:Image\w+|Bmage\w+|\w+Annotation|Redaction\w+|Metadata\w+|Exif\w+|Batch\w+|MaxFileSizeStrategy|Resize\w+|Resampling\w+|AspectRatio|Anchor|Rgba32|ShapeStyle|StrokeStyle|TextStyle|TextAlignment|TextBaseline|EditorToolKind|DecodeOptions|DocumentRenderer|FontTextRasterizer|BrowserTextRasterizer|EncodedImage|SmartCrop)\b");
+        var pattern = new Regex(@"\b(?:Image\w+|Bmage\w+|\w+Annotation|Redaction\w+|Metadata\w+|Exif\w+|Batch\w+|MaxFileSizeStrategy|Resize\w+|Resampling\w+|AspectRatio|Anchor|Rgba32|ShapeStyle|StrokeStyle|TextStyle|BmageTextAlignment|TextBaseline|EditorToolKind|DecodeOptions|DocumentRenderer|FontTextRasterizer|BrowserTextRasterizer|EncodedImage|SmartCrop)\b");
 
         foreach (var recipe in BmageRecipeCatalog.All)
         {

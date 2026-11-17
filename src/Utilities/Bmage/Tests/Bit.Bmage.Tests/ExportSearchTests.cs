@@ -36,7 +36,7 @@ public sealed class ExportSearchTests
     private sealed class CountingEncoder : IImageEncoder
     {
         public int Encodes { get; private set; }
-        public IReadOnlyCollection<ImageFormat> Formats { get; } = [ImageFormat.Jpeg];
+        public IReadOnlyCollection<BmageImageFormat> Formats { get; } = [BmageImageFormat.Jpeg];
         public ValueTask<EncodedImage> EncodeAsync(ImageBuffer image, ImageExportOptions options, CancellationToken cancellationToken = default)
         {
             Encodes++;

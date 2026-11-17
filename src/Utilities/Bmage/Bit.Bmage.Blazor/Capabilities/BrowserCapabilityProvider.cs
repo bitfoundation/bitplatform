@@ -61,21 +61,21 @@ public sealed class BrowserCapabilityProvider : IImageCapabilityProvider
 
     private ImageCapabilities Translate(BrowserCapabilityReport report)
     {
-        var decodable = new HashSet<ImageFormat>();
-        var encodable = new HashSet<ImageFormat>();
+        var decodable = new HashSet<BmageImageFormat>();
+        var encodable = new HashSet<BmageImageFormat>();
         // Every browser that runs Blazor decodes these; the probes confirm the rest.
-        decodable.Add(ImageFormat.Png);
-        decodable.Add(ImageFormat.Jpeg);
-        decodable.Add(ImageFormat.Bmp);
+        decodable.Add(BmageImageFormat.Png);
+        decodable.Add(BmageImageFormat.Jpeg);
+        decodable.Add(BmageImageFormat.Bmp);
         foreach (var mime in report.DecodableMimeTypes ?? [])
         {
             var format = ImageFormats.FromMimeType(mime);
-            if (format != ImageFormat.Unknown) decodable.Add(format);
+            if (format != BmageImageFormat.Unknown) decodable.Add(format);
         }
         foreach (var mime in report.EncodableMimeTypes ?? [])
         {
             var format = ImageFormats.FromMimeType(mime);
-            if (format != ImageFormat.Unknown) encodable.Add(format);
+            if (format != BmageImageFormat.Unknown) encodable.Add(format);
         }
         // What the browser lacks, the managed codecs may still cover: AVIF decoding on a browser that cannot read it, BMP
         // encoding, and, where they run on a server, WebP on a browser that cannot write it, such as Safari. In WebAssembly

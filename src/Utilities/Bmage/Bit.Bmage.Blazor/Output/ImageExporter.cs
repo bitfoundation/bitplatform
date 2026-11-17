@@ -31,13 +31,13 @@ public sealed class ImageExporter : IAsyncDisposable
     /// Encodes using the first format this browser actually supports, so a WebP or AVIF request degrades predictably
     /// instead of failing. The chosen format is reported on the result.
     /// </summary>
-    public async ValueTask<EncodedImage> EncodeWithFallbackAsync(ImageBuffer image, IReadOnlyList<ImageFormat> preferredFormats, ImageExportOptions? options = null, CancellationToken cancellationToken = default)
+    public async ValueTask<EncodedImage> EncodeWithFallbackAsync(ImageBuffer image, IReadOnlyList<BmageImageFormat> preferredFormats, ImageExportOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(image);
         ArgumentNullException.ThrowIfNull(preferredFormats);
         if (preferredFormats.Count == 0) throw new ArgumentException("At least one format is required.", nameof(preferredFormats));
         var capabilities = await _capabilities.GetAsync(cancellationToken).ConfigureAwait(false);
-        var format = capabilities.ChooseEncodableFormat(preferredFormats, ImageFormat.Jpeg);
+        var format = capabilities.ChooseEncodableFormat(preferredFormats, BmageImageFormat.Jpeg);
         var effective = (options ?? ImageExportOptions.Png) with { Format = format };
         return await EncodeAsync(image, effective, cancellationToken).ConfigureAwait(false);
     }
@@ -90,7 +90,7 @@ public sealed class ImageExporter : IAsyncDisposable
         catch (JSException ex)
         {
             throw new ImageCapabilityException(
-                encoded.Format == ImageFormat.Png
+                encoded.Format == BmageImageFormat.Png
                     ? $"Writing to the clipboard failed: {ex.Message}"
                     : $"Most browsers only accept PNG on the clipboard, not {encoded.Format}. Encode as PNG first. The browser reported: {ex.Message}", ex);
         }

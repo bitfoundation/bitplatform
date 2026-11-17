@@ -13,22 +13,22 @@ public sealed class LayerTests
     // ------------------------------------------------------------------ blend modes
 
     [TestMethod]
-    [DataRow(BlendMode.Multiply, 255, 128)]
-    [DataRow(BlendMode.Multiply, 0, 0)]
-    [DataRow(BlendMode.Screen, 0, 128)]
-    [DataRow(BlendMode.Screen, 255, 255)]
-    [DataRow(BlendMode.Darken, 200, 128)]
-    [DataRow(BlendMode.Lighten, 200, 200)]
-    [DataRow(BlendMode.Difference, 128, 0)]
-    [DataRow(BlendMode.Difference, 0, 128)]
-    [DataRow(BlendMode.Exclusion, 0, 128)]
-    [DataRow(BlendMode.Add, 100, 228)]
-    [DataRow(BlendMode.Add, 200, 255)]
-    [DataRow(BlendMode.ColorDodge, 0, 128)]
-    [DataRow(BlendMode.ColorBurn, 255, 128)]
-    [DataRow(BlendMode.HardLight, 128, 128)]
-    [DataRow(BlendMode.Overlay, 128, 128)]
-    public void SeparableModesComputeTheirBlendFunction(BlendMode mode, int source, int expected)
+    [DataRow(BmageBlendMode.Multiply, 255, 128)]
+    [DataRow(BmageBlendMode.Multiply, 0, 0)]
+    [DataRow(BmageBlendMode.Screen, 0, 128)]
+    [DataRow(BmageBlendMode.Screen, 255, 255)]
+    [DataRow(BmageBlendMode.Darken, 200, 128)]
+    [DataRow(BmageBlendMode.Lighten, 200, 200)]
+    [DataRow(BmageBlendMode.Difference, 128, 0)]
+    [DataRow(BmageBlendMode.Difference, 0, 128)]
+    [DataRow(BmageBlendMode.Exclusion, 0, 128)]
+    [DataRow(BmageBlendMode.Add, 100, 228)]
+    [DataRow(BmageBlendMode.Add, 200, 255)]
+    [DataRow(BmageBlendMode.ColorDodge, 0, 128)]
+    [DataRow(BmageBlendMode.ColorBurn, 255, 128)]
+    [DataRow(BmageBlendMode.HardLight, 128, 128)]
+    [DataRow(BmageBlendMode.Overlay, 128, 128)]
+    public void SeparableModesComputeTheirBlendFunction(BmageBlendMode mode, int source, int expected)
     {
         var result = Compositor.Blend(new Rgba32(128, 128, 128), new Rgba32((byte)source, (byte)source, (byte)source), mode);
         Assert.IsTrue(Math.Abs(result.R - expected) <= 1, $"{mode} of {source} over 128 gave {result.R}, expected {expected}.");
@@ -39,10 +39,10 @@ public sealed class LayerTests
     public void SoftLightMatchesTheSpecification()
     {
         // Cs <= 0.5: B = Cb - (1 - 2Cs) Cb (1 - Cb); Cs > 0.5 with Cb > 0.25: B = Cb + (2Cs - 1)(sqrt(Cb) - Cb).
-        var darker = Compositor.Blend(new Rgba32(128, 128, 128), new Rgba32(64, 64, 64), BlendMode.SoftLight);
+        var darker = Compositor.Blend(new Rgba32(128, 128, 128), new Rgba32(64, 64, 64), BmageBlendMode.SoftLight);
         var cb = 128 / 255.0; var cs = 64 / 255.0;
         Assert.IsTrue(Math.Abs(darker.R - (cb - (1 - 2 * cs) * cb * (1 - cb)) * 255) <= 1);
-        var lighter = Compositor.Blend(new Rgba32(128, 128, 128), new Rgba32(200, 200, 200), BlendMode.SoftLight);
+        var lighter = Compositor.Blend(new Rgba32(128, 128, 128), new Rgba32(200, 200, 200), BmageBlendMode.SoftLight);
         cs = 200 / 255.0;
         Assert.IsTrue(Math.Abs(lighter.R - (cb + (2 * cs - 1) * (Math.Sqrt(cb) - cb)) * 255) <= 1);
     }
@@ -51,9 +51,9 @@ public sealed class LayerTests
     public void EveryModeShowsTheSourceUnchangedOverTransparency()
     {
         var source = new Rgba32(30, 140, 220, 255);
-        foreach (var mode in Enum.GetValues<BlendMode>())
+        foreach (var mode in Enum.GetValues<BmageBlendMode>())
         {
-            if (mode is BlendMode.Erase) continue;
+            if (mode is BmageBlendMode.Erase) continue;
             Assert.AreEqual(source, Compositor.Blend(Rgba32.Transparent, source, mode), mode.ToString());
         }
     }
@@ -67,7 +67,7 @@ public sealed class LayerTests
             var d = new Rgba32((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256));
             var s = new Rgba32((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256));
             var alpha = (float)random.NextDouble();
-            Assert.AreEqual(Compositor.SourceOver(d, s, alpha), Compositor.Blend(d, s, BlendMode.SourceOver, alpha));
+            Assert.AreEqual(Compositor.SourceOver(d, s, alpha), Compositor.Blend(d, s, BmageBlendMode.SourceOver, alpha));
         }
     }
 
@@ -78,17 +78,17 @@ public sealed class LayerTests
         var red = new Rgba32(220, 30, 30);
 
         // Colour keeps the destination's luminosity and takes the source's hue: a grey becomes a red of the same lightness.
-        var tinted = Compositor.Blend(grey, red, BlendMode.Color);
+        var tinted = Compositor.Blend(grey, red, BmageBlendMode.Color);
         Assert.IsTrue(tinted.R > tinted.G && tinted.R > tinted.B, $"{tinted}");
         Assert.IsTrue(Math.Abs(Lum(tinted) - Lum(grey)) <= 2, $"luminosity {Lum(tinted)} vs {Lum(grey)}");
 
         // Luminosity is the reverse: the red takes the grey's lightness and keeps its hue.
-        var relit = Compositor.Blend(red, grey, BlendMode.Luminosity);
+        var relit = Compositor.Blend(red, grey, BmageBlendMode.Luminosity);
         Assert.IsTrue(Math.Abs(Lum(relit) - Lum(grey)) <= 2);
         Assert.IsTrue(relit.R > relit.G);
 
         // A grey source has no saturation, so Saturation turns any colour grey.
-        var desaturated = Compositor.Blend(red, grey, BlendMode.Saturation);
+        var desaturated = Compositor.Blend(red, grey, BmageBlendMode.Saturation);
         Assert.IsTrue(Math.Abs(desaturated.R - desaturated.G) <= 1 && Math.Abs(desaturated.G - desaturated.B) <= 1, $"{desaturated}");
 
         static double Lum(Rgba32 c) => 0.3 * c.R + 0.59 * c.G + 0.11 * c.B;
@@ -99,9 +99,9 @@ public sealed class LayerTests
     {
         using var canvas = ImageCanvas.Create(4, 4, new Rgba32(100, 100, 100));
         using var stamp = ImageBuffer.Create(2, 2, new Rgba32(200, 200, 200));
-        canvas.DrawImage(stamp, new Vector2(0, 0), BlendMode.Multiply);
+        canvas.DrawImage(stamp, new Vector2(0, 0), BmageBlendMode.Multiply);
 
-        Assert.AreEqual(Compositor.Blend(new Rgba32(100, 100, 100), new Rgba32(200, 200, 200), BlendMode.Multiply), canvas.Buffer[0, 0]);
+        Assert.AreEqual(Compositor.Blend(new Rgba32(100, 100, 100), new Rgba32(200, 200, 200), BmageBlendMode.Multiply), canvas.Buffer[0, 0]);
         Assert.AreEqual(new Rgba32(100, 100, 100), canvas.Buffer[3, 3]);
     }
 
@@ -134,7 +134,7 @@ public sealed class LayerTests
     {
         using var photo = ParallelProcessingTests.Noise(60, 40, seed: 31);
         using var background = ParallelProcessingTests.Noise(100, 80, seed: 32);
-        foreach (var mode in new[] { BlendMode.SourceOver, BlendMode.Multiply, BlendMode.Screen, BlendMode.Color })
+        foreach (var mode in new[] { BmageBlendMode.SourceOver, BmageBlendMode.Multiply, BmageBlendMode.Screen, BmageBlendMode.Color })
         foreach (var rotation in new[] { 0f, 20f })
         {
             var plain = new ImageLayer { Image = photo, Bounds = new RectangleF(15.5f, 10, 70, 50), Rotation = rotation, BlendMode = mode, Opacity = 0.8f };
@@ -150,7 +150,7 @@ public sealed class LayerTests
     public void AFillLayerTintsThroughItsBlendMode()
     {
         using var image = ImageBuffer.Create(8, 8, new Rgba32(200, 200, 200));
-        new FillLayer(new Rgba32(255, 0, 0)) { BlendMode = BlendMode.Multiply }.Composite(image);
+        new FillLayer(new Rgba32(255, 0, 0)) { BlendMode = BmageBlendMode.Multiply }.Composite(image);
 
         Assert.AreEqual(new Rgba32(200, 0, 0), image[3, 3]);
     }
@@ -195,7 +195,7 @@ public sealed class LayerTests
     public void AnEmptyAdjustmentLayerInMultiplyDarkensTheImageByItself()
     {
         using var image = ImageBuffer.Create(4, 4, new Rgba32(128, 128, 128));
-        new AdjustmentLayer(ImagePipeline.Empty) { BlendMode = BlendMode.Multiply }.Composite(image);
+        new AdjustmentLayer(ImagePipeline.Empty) { BlendMode = BmageBlendMode.Multiply }.Composite(image);
 
         Assert.AreEqual(64, image[0, 0].R);
     }
@@ -226,8 +226,8 @@ public sealed class LayerTests
         using var background = ParallelProcessingTests.Noise(1024, 768, seed: 8);
         Layer[] layers =
         [
-            new ImageLayer { Image = photo, Bounds = new RectangleF(100, 80, 700, 520), BlendMode = BlendMode.Overlay, Mask = Mask.Ellipse() with { Feather = 10 } },
-            new FillLayer(new Rgba32(20, 40, 120, 180)) { BlendMode = BlendMode.Color, Mask = Mask.Gradient(new(0, 0), new(0, 1)) },
+            new ImageLayer { Image = photo, Bounds = new RectangleF(100, 80, 700, 520), BlendMode = BmageBlendMode.Overlay, Mask = Mask.Ellipse() with { Feather = 10 } },
+            new FillLayer(new Rgba32(20, 40, 120, 180)) { BlendMode = BmageBlendMode.Color, Mask = Mask.Gradient(new(0, 0), new(0, 1)) },
             new AdjustmentLayer(ImagePipeline.Create().Contrast(0.2f).Vibrance(0.3f)) { Mask = new LuminanceRangeMask(0f, 0.4f) },
         ];
 

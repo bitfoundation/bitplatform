@@ -63,7 +63,7 @@ public sealed record TrimOptions
 /// var pipeline = ImagePipeline.Create();
 /// if (ContentBounds.Find(image, new TrimOptions { Padding = 8 }) is { } content)
 ///     pipeline = pipeline.Crop(content);
-/// using var trimmed = pipeline.Resize(1000, 1000, ResizeMode.Contain, background: Rgba32.White).Execute(image);
+/// using var trimmed = pipeline.Resize(1000, 1000, BmageResizeMode.Contain, background: Rgba32.White).Execute(image);
 /// </code>
 /// </example>
 public static class ContentBounds

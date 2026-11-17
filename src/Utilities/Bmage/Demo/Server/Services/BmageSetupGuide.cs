@@ -235,7 +235,7 @@ public static class BmageSetupGuide
 
                 // WebP where this browser can write it, JPEG where it cannot.
                 var encoded = await Exporter.EncodeWithFallbackAsync(
-                    processed, [ImageFormat.WebP, ImageFormat.Jpeg],
+                    processed, [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
                     new ImageExportOptions { Quality = 0.85 });
 
                 if (_preview is not null) await Exporter.ReleaseObjectUrlAsync(_preview);
@@ -575,7 +575,7 @@ public static class BmageSetupGuide
 
         ```csharp
         // Or: var encoded = await editor.ExportAsync(options);
-        var encoded = await Exporter.EncodeWithFallbackAsync(image, [ImageFormat.WebP, ImageFormat.Jpeg]);
+        var encoded = await Exporter.EncodeWithFallbackAsync(image, [BmageImageFormat.WebP, BmageImageFormat.Jpeg]);
 
         var path = Path.Combine(FileSystem.CacheDirectory, "photo" + encoded.Extension);
         await File.WriteAllBytesAsync(path, encoded.Data);
@@ -671,7 +671,7 @@ public static class BmageSetupGuide
             var thumbnail = await processor.ProcessAsync(
                 bytes,
                 ImagePipeline.Create().AutoOrient().MaxSize(400, 400),
-                new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 });
+                new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 });
 
             return Results.File(thumbnail.Data, thumbnail.MimeType);
         }).DisableAntiforgery();
@@ -695,7 +695,7 @@ public static class BmageSetupGuide
             new BatchOptions
             {
                 MaxConcurrency = Environment.ProcessorCount / 2,
-                ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+                ExportOptions = new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
             });
 
         foreach (var item in result.Succeeded) File.WriteAllBytes(Path.Combine("out", item.FileName!), item.Output!.Data);

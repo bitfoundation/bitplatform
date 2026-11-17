@@ -109,7 +109,7 @@ var warm = new ColorMatrixOperation(
 ```csharp
 public sealed class TiffDecoder : IImageDecoder
 {
-    public IReadOnlyCollection<ImageFormat> Formats => [ImageFormat.Tiff];
+    public IReadOnlyCollection<BmageImageFormat> Formats => [BmageImageFormat.Tiff];
 
     public ImageInfo? Identify(ReadOnlySpan<byte> data) { /* header only */ }
 
@@ -175,7 +175,7 @@ public sealed record MeasurementAnnotation : Annotation
             var middle = (Start + End) / 2;
             canvas.DrawText($"{distance:0.0}", middle, new TextStyle
             {
-                FontSize = 16, FillColor = colour, Alignment = TextAlignment.Center,
+                FontSize = 16, FillColor = colour, Alignment = BmageTextAlignment.Center,
             }, text);
         }
     }
@@ -274,7 +274,7 @@ Useful for measuring, for enforcing a hard budget, or for pointing at native mem
 public sealed class FixedCapabilityProvider : IImageCapabilityProvider
 {
     public ValueTask<ImageCapabilities> GetAsync(CancellationToken cancellationToken = default)
-        => new(ImageCapabilities.Managed with { EncodableFormats = new HashSet<ImageFormat> { ImageFormat.Png } });
+        => new(ImageCapabilities.Managed with { EncodableFormats = new HashSet<BmageImageFormat> { BmageImageFormat.Png } });
 }
 
 builder.Services.AddSingleton<IImageCapabilityProvider, FixedCapabilityProvider>();

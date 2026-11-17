@@ -16,7 +16,7 @@ namespace Bit.Bmage;
 /// <see cref="Luminosity"/> work on the colour as a whole.
 /// </para>
 /// </remarks>
-public enum BlendMode
+public enum BmageBlendMode
 {
     /// <summary>Standard alpha compositing.</summary>
     SourceOver = 0,
@@ -263,31 +263,31 @@ public sealed class ImageCanvas : IDisposable
 
     /// <summary>Draws a straight line.</summary>
     public ImageCanvas DrawLine(Vector2 from, Vector2 to, Rgba32 color, StrokeStyle? style = null)
-        => StrokePath(new PathBuilder().MoveTo(from).LineTo(to).Build(), color, style);
+        => StrokePath(new BmagePathBuilder().MoveTo(from).LineTo(to).Build(), color, style);
 
     /// <summary>Fills a rectangle.</summary>
     public ImageCanvas FillRectangle(RectangleF rect, Rgba32 color)
-        => FillPath(new PathBuilder().AddRectangle(rect).Build(), color);
+        => FillPath(new BmagePathBuilder().AddRectangle(rect).Build(), color);
 
     /// <summary>Outlines a rectangle.</summary>
     public ImageCanvas DrawRectangle(RectangleF rect, Rgba32 color, StrokeStyle? style = null)
-        => StrokePath(new PathBuilder().AddRectangle(rect).Build(), color, style);
+        => StrokePath(new BmagePathBuilder().AddRectangle(rect).Build(), color, style);
 
     /// <summary>Fills a rounded rectangle.</summary>
     public ImageCanvas FillRoundedRectangle(RectangleF rect, float radius, Rgba32 color)
-        => FillPath(new PathBuilder().AddRoundedRectangle(rect, radius).Build(), color);
+        => FillPath(new BmagePathBuilder().AddRoundedRectangle(rect, radius).Build(), color);
 
     /// <summary>Outlines a rounded rectangle.</summary>
     public ImageCanvas DrawRoundedRectangle(RectangleF rect, float radius, Rgba32 color, StrokeStyle? style = null)
-        => StrokePath(new PathBuilder().AddRoundedRectangle(rect, radius).Build(), color, style);
+        => StrokePath(new BmagePathBuilder().AddRoundedRectangle(rect, radius).Build(), color, style);
 
     /// <summary>Fills an ellipse inscribed in the rectangle.</summary>
     public ImageCanvas FillEllipse(RectangleF rect, Rgba32 color)
-        => FillPath(new PathBuilder().AddEllipse(rect).Build(), color);
+        => FillPath(new BmagePathBuilder().AddEllipse(rect).Build(), color);
 
     /// <summary>Outlines an ellipse inscribed in the rectangle.</summary>
     public ImageCanvas DrawEllipse(RectangleF rect, Rgba32 color, StrokeStyle? style = null)
-        => StrokePath(new PathBuilder().AddEllipse(rect).Build(), color, style);
+        => StrokePath(new BmagePathBuilder().AddEllipse(rect).Build(), color, style);
 
     /// <summary>Fills a circle.</summary>
     public ImageCanvas FillCircle(Vector2 center, float radius, Rgba32 color)
@@ -295,11 +295,11 @@ public sealed class ImageCanvas : IDisposable
 
     /// <summary>Fills a polygon.</summary>
     public ImageCanvas FillPolygon(IReadOnlyList<Vector2> points, Rgba32 color, FillRule rule = FillRule.NonZero)
-        => FillPath(new PathBuilder().AddPolygon(points).Build(), color, rule);
+        => FillPath(new BmagePathBuilder().AddPolygon(points).Build(), color, rule);
 
     /// <summary>Draws a polyline.</summary>
     public ImageCanvas DrawPolyline(IReadOnlyList<Vector2> points, Rgba32 color, StrokeStyle? style = null)
-        => StrokePath(new PathBuilder().AddPolyline(points).Build(), color, style);
+        => StrokePath(new BmagePathBuilder().AddPolyline(points).Build(), color, style);
 
     /// <summary>
     /// Draws an arrow from <paramref name="from"/> to <paramref name="to"/>: a shaft plus a filled triangular head
@@ -316,8 +316,8 @@ public sealed class ImageCanvas : IDisposable
         var headWidth = style.Width * headWidthFactor;
         var shaftEnd = to - direction * headLength * 0.85f;
         var normal = new Vector2(-direction.Y, direction.X);
-        StrokePath(new PathBuilder().MoveTo(from).LineTo(shaftEnd).Build(), color, style with { Cap = LineCap.Round });
-        var head = new PathBuilder()
+        StrokePath(new BmagePathBuilder().MoveTo(from).LineTo(shaftEnd).Build(), color, style with { Cap = BmageLineCap.Round });
+        var head = new BmagePathBuilder()
             .MoveTo(to)
             .LineTo(to - direction * headLength + normal * headWidth)
             .LineTo(to - direction * headLength - normal * headWidth)
@@ -329,18 +329,18 @@ public sealed class ImageCanvas : IDisposable
     // ---- Images ----
 
     /// <summary>Draws an image at a position, one canvas pixel per source pixel.</summary>
-    public ImageCanvas DrawImage(ImageBuffer image, Vector2 position, BlendMode blend = BlendMode.SourceOver)
+    public ImageCanvas DrawImage(ImageBuffer image, Vector2 position, BmageBlendMode blend = BmageBlendMode.SourceOver)
     {
         ArgumentNullException.ThrowIfNull(image);
         return DrawImage(image, new RectangleF(position.X, position.Y, image.Width, image.Height), blend);
     }
 
     /// <summary>Draws an image scaled into a destination rectangle.</summary>
-    public ImageCanvas DrawImage(ImageBuffer image, RectangleF destination, BlendMode blend = BlendMode.SourceOver, ResamplingFilter filter = ResamplingFilter.Auto)
+    public ImageCanvas DrawImage(ImageBuffer image, RectangleF destination, BmageBlendMode blend = BmageBlendMode.SourceOver, ResamplingFilter filter = ResamplingFilter.Auto)
         => DrawImage(image, image.Bounds, destination, blend, filter);
 
     /// <summary>Draws part of an image into a destination rectangle.</summary>
-    public ImageCanvas DrawImage(ImageBuffer image, Rectangle source, RectangleF destination, BlendMode blend = BlendMode.SourceOver, ResamplingFilter filter = ResamplingFilter.Auto)
+    public ImageCanvas DrawImage(ImageBuffer image, Rectangle source, RectangleF destination, BmageBlendMode blend = BmageBlendMode.SourceOver, ResamplingFilter filter = ResamplingFilter.Auto)
     {
         ArgumentNullException.ThrowIfNull(image);
         source.Intersect(image.Bounds);
@@ -363,7 +363,7 @@ public sealed class ImageCanvas : IDisposable
         return DrawImageTransformed(image, source, destination, blend, filter);
     }
 
-    private void DrawImageAxisAligned(ImageBuffer image, Rectangle source, Rectangle device, BlendMode blend, ResamplingFilter filter)
+    private void DrawImageAxisAligned(ImageBuffer image, Rectangle source, Rectangle device, BmageBlendMode blend, ResamplingFilter filter)
     {
         var clip = _state.Clip;
         var visible = device;
@@ -410,7 +410,7 @@ public sealed class ImageCanvas : IDisposable
     /// <summary>The context rows are drawn with: one thread when <paramref name="image"/> is the canvas's own pixels.</summary>
     private OperationContext RowContext(ImageBuffer image) => ReferenceEquals(image, _buffer) ? _context.WithParallelism(1) : _context;
 
-    private ImageCanvas DrawImageTransformed(ImageBuffer image, Rectangle source, RectangleF destination, BlendMode blend, ResamplingFilter filter)
+    private ImageCanvas DrawImageTransformed(ImageBuffer image, Rectangle source, RectangleF destination, BmageBlendMode blend, ResamplingFilter filter)
     {
         // General case: build the source→device matrix and inverse-map each device pixel.
         var toDest = Matrix3x2.CreateScale(destination.Width / source.Width, destination.Height / source.Height)
@@ -435,7 +435,7 @@ public sealed class ImageCanvas : IDisposable
         var opacity = _state.Opacity;
         // A copy at partial opacity is drawn over what is there, as a canvas always did: it never punches the image's
         // transparent pixels into the target. A layer that must is composited through Compositor.BlendRow.
-        var over = blend == BlendMode.SourceOver || (blend == BlendMode.Copy && opacity < 1f);
+        var over = blend == BmageBlendMode.SourceOver || (blend == BmageBlendMode.Copy && opacity < 1f);
         var sw = source.Width;
         var sh = source.Height;
         // Every pixel is sampled from the image alone, so the rows split into bands; the work per pixel is a few samples.
@@ -491,20 +491,20 @@ public sealed class ImageCanvas : IDisposable
         return Rgba32.FromScaled(c.X * inv, c.Y * inv, c.Z * inv, c.W);
     }
 
-    private static void Blend(ReadOnlySpan<Rgba32> src, Span<Rgba32> dst, BlendMode mode, float opacity)
+    private static void Blend(ReadOnlySpan<Rgba32> src, Span<Rgba32> dst, BmageBlendMode mode, float opacity)
     {
         switch (mode)
         {
-            case BlendMode.Copy when opacity >= 1f:
+            case BmageBlendMode.Copy when opacity >= 1f:
                 src.CopyTo(dst);
                 break;
-            case BlendMode.Erase:
+            case BmageBlendMode.Erase:
                 for (var i = 0; i < src.Length; i++) dst[i] = Compositor.Erase(dst[i], src[i].A / 255f * opacity);
                 break;
-            case BlendMode.SourceOver:
+            case BmageBlendMode.SourceOver:
             // A copy at partial opacity is drawn over what is there, as a canvas always did: it never punches the
             // image's transparent pixels into the target. A layer that must is composited through Compositor.BlendRow.
-            case BlendMode.Copy:
+            case BmageBlendMode.Copy:
                 for (var i = 0; i < src.Length; i++)
                 {
                     var s = src[i];
@@ -545,8 +545,8 @@ public sealed class ImageCanvas : IDisposable
     public ValueTask<EncodedImage> ExportAsync(ImageExportOptions? options = null, ImageCodecRegistry? codecs = null, CancellationToken cancellationToken = default)
     {
         var registry = codecs ?? ImageCodecRegistry.CreateDefault();
-        var encoder = registry.GetEncoder(options?.Format ?? ImageFormat.Png)
-            ?? throw new ImageCapabilityException($"No encoder is registered for {options?.Format ?? ImageFormat.Png}.");
+        var encoder = registry.GetEncoder(options?.Format ?? BmageImageFormat.Png)
+            ?? throw new ImageCapabilityException($"No encoder is registered for {options?.Format ?? BmageImageFormat.Png}.");
         return encoder.EncodeAsync(_buffer, options ?? ImageExportOptions.Png, cancellationToken);
     }
 
@@ -628,7 +628,7 @@ public sealed record TextStyle
     public StrokeStyle Stroke { get; init; } = StrokeStyle.Default;
 
     /// <summary>Horizontal alignment of each line relative to the drawing position.</summary>
-    public TextAlignment Alignment { get; init; } = TextAlignment.Left;
+    public BmageTextAlignment Alignment { get; init; } = BmageTextAlignment.Left;
 
     /// <summary>Vertical meaning of the drawing position.</summary>
     public TextBaseline Baseline { get; init; } = TextBaseline.Alphabetic;
@@ -653,7 +653,7 @@ public sealed record TextStyle
 }
 
 /// <summary>Horizontal text alignment.</summary>
-public enum TextAlignment { Left = 0, Center, Right }
+public enum BmageTextAlignment { Left = 0, Center, Right }
 
 /// <summary>Which part of the text the drawing position refers to vertically.</summary>
 public enum TextBaseline { Alphabetic = 0, Top, Middle, Bottom }

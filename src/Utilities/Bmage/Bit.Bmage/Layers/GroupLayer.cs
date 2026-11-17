@@ -17,7 +17,7 @@ namespace Bit.Bmage;
 /// </para>
 /// <para>
 /// An <see cref="Isolated"/> group, or one with a <see cref="Layer.BlendMode"/> other than
-/// <see cref="BlendMode.SourceOver"/>, first composites its layers on their own, over transparency, and then blends
+/// <see cref="BmageBlendMode.SourceOver"/>, first composites its layers on their own, over transparency, and then blends
 /// that onto what is beneath with its blend mode, opacity and mask: an adjustment layer inside it edits only the
 /// group's other layers. It costs a buffer the size of the image while it is drawn.
 /// </para>
@@ -68,12 +68,12 @@ public sealed record GroupLayer : Layer
 
     /// <summary>
     /// Whether the group composites its layers on their own before blending them onto what is beneath, rather than
-    /// letting them blend through. A blend mode other than <see cref="BlendMode.SourceOver"/> isolates it too.
+    /// letting them blend through. A blend mode other than <see cref="BmageBlendMode.SourceOver"/> isolates it too.
     /// </summary>
     public bool Isolated { get; init; }
 
     /// <summary>True when the group composites its layers on their own: <see cref="Isolated"/>, or blended other than normally.</summary>
-    public bool IsIsolated => Isolated || BlendMode != BlendMode.SourceOver;
+    public bool IsIsolated => Isolated || BlendMode != BmageBlendMode.SourceOver;
 
     public override string Kind => "Group";
 

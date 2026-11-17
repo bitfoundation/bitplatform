@@ -101,12 +101,12 @@ internal sealed class OpenTypeLayout
     private const ushort RightToLeft = 0x0001, IgnoreBaseGlyphs = 0x0002, IgnoreLigatures = 0x0004, IgnoreMarks = 0x0008, UseMarkFilteringSet = 0x0010;
     private const int MaxNesting = 8;
 
-    private readonly FontFile _font;
+    private readonly BmageFontFile _font;
     private readonly byte[] _gdef, _gsub, _gpos;
     private readonly int _glyphClassDef, _markAttachClassDef, _markGlyphSets;
     private readonly Lookup?[] _gsubLookups, _gposLookups;
 
-    public OpenTypeLayout(FontFile font)
+    public OpenTypeLayout(BmageFontFile font)
     {
         _font = font;
         _gdef = font.GetTable("GDEF").ToArray();

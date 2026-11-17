@@ -20,7 +20,7 @@ Nothing in this library requires a component. The editor is one consumer of the 
 
         return await Exporter.EncodeWithFallbackAsync(
             thumb,
-            [ImageFormat.WebP, ImageFormat.Jpeg],
+            [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
             new ImageExportOptions { Quality = 0.8 });
     }
 }
@@ -63,7 +63,7 @@ app.MapPost("/upload", async (IFormFile file, ImageProcessor processor) =>
     var thumbnail = await processor.ProcessAsync(
         bytes,
         ImagePipeline.Create().AutoOrient().MaxSize(400, 400),
-        new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 });
+        new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 });
 
     return Results.File(thumbnail.Data, thumbnail.MimeType);
 });
@@ -82,13 +82,13 @@ before it allocates a pixel, like the others.
 using var image = await processor.DecodeAsync(bytes);
 
 // The original, losslessly: every pixel kept, the metadata removed.
-var original = await processor.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true });
+var original = await processor.EncodeAsync(image, new ImageExportOptions { Format = BmageImageFormat.WebP, Lossless = true });
 
 // A display copy, lossy; transparency survives, so a circular avatar keeps its corners clear.
 var avatar = await processor.ProcessAsync(
     bytes,
     ImagePipeline.Create().AutoOrient().Cover(256, 256),
-    new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.8 });
+    new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.8 });
 ```
 
 `Quality` works as it does for JPEG, and `MaxFileSize` searches it the same way. With `Lossless`, quality does not
@@ -130,10 +130,10 @@ using var canvas = ImageCanvas.Create(1200, 630, new Rgba32(17, 19, 24));
 canvas.DrawImage(photo, new RectangleF(700, 0, 500, 630));
 
 // Fade the photo into the panel.
-var fade = new LinearGradientPaint(
+var fade = new BmageLinearGradientPaint(
     new Vector2(700, 0), new Vector2(900, 0),
     [(0f, new Rgba32(17, 19, 24, 255)), (1f, new Rgba32(17, 19, 24, 0))]);
-canvas.FillPath(new PathBuilder().AddRectangle(new RectangleF(700, 0, 200, 630)).Build(), fade);
+canvas.FillPath(new BmagePathBuilder().AddRectangle(new RectangleF(700, 0, 200, 630)).Build(), fade);
 
 canvas.FillRoundedRectangle(new RectangleF(60, 60, 160, 40), 20, new Rgba32(37, 99, 235));
 canvas.DrawText("Release notes", new Vector2(60, 200), new TextStyle
@@ -152,15 +152,15 @@ Available on the canvas: `FillPath`, `StrokePath`, `ErasePath`, `DrawLine`, `Dra
 `DrawPolyline`, `DrawArrow`, `DrawImage`, `DrawText`, plus `Save`, `Restore`, `Translate`, `Scale`, `Rotate`, `ClipTo`
 and `ApplyPipeline`.
 
-Paths come from `PathBuilder`: `MoveTo`, `LineTo`, `QuadraticTo`, `CubicTo`, `ArcTo`, `Close`, `AddRectangle`,
+Paths come from `BmagePathBuilder`: `MoveTo`, `LineTo`, `QuadraticTo`, `CubicTo`, `ArcTo`, `Close`, `AddRectangle`,
 `AddRoundedRectangle`, `AddEllipse`, `AddPolygon`, `AddPolyline`. Curves are flattened adaptively.
 
-Fills take a colour or an `IPaint`: `SolidPaint`, `LinearGradientPaint`, `RadialGradientPaint`, or your own.
+Fills take a colour or an `IPaint`: `BmageSolidPaint`, `BmageLinearGradientPaint`, `BmageRadialGradientPaint`, or your own.
 
 ## Text without a browser
 
 ```csharp
-var font = FontFile.Load(await File.ReadAllBytesAsync("Inter-Regular.ttf"));
+var font = BmageFontFile.Load(await File.ReadAllBytesAsync("Inter-Regular.ttf"));
 var rasterizer = new FontTextRasterizer()
     .Register("Inter", font)
     .Register("Inter", boldFont, bold: true);
@@ -181,8 +181,8 @@ cover text mixing the two:
 
 ```csharp
 var rasterizer = new FontTextRasterizer()
-    .Register("Noto Sans", FontFile.Load(await File.ReadAllBytesAsync("NotoSans-Regular.ttf")))
-    .Register("Vazirmatn", FontFile.Load(await File.ReadAllBytesAsync("Vazirmatn-Regular.ttf")));
+    .Register("Noto Sans", BmageFontFile.Load(await File.ReadAllBytesAsync("NotoSans-Regular.ttf")))
+    .Register("Vazirmatn", BmageFontFile.Load(await File.ReadAllBytesAsync("Vazirmatn-Regular.ttf")));
 
 canvas.DrawText("Hello سلام ۱۴۰۵", position, style, rasterizer);
 ```
@@ -282,7 +282,7 @@ app.MapPost("/render/{id}", async (string id, HttpRequest request, ImageProcesso
     if (original.Size != document.SourceSize) return Results.BadRequest("The edit was made for another image.");
 
     using var rendered = new DocumentRenderer(fonts).Render(document, original);
-    var file = await processor.EncodeAsync(rendered, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9 });
+    var file = await processor.EncodeAsync(rendered, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.9 });
     return Results.File(file.Data, file.MimeType);
 });
 ```
@@ -298,7 +298,7 @@ Selective edits, layers and blend modes need no component either:
 using var card = LayerCompositor.Flatten(new Size(1200, 630), Rgba32.White,
 [
     new ImageLayer { Image = photo, Bounds = new RectangleF(0, 0, 1200, 630) },
-    new FillLayer(new Rgba32(10, 20, 60)) { BlendMode = BlendMode.Multiply, Mask = Mask.Gradient(new(0, 1), new(0, 0.3f)) },
+    new FillLayer(new Rgba32(10, 20, 60)) { BlendMode = BmageBlendMode.Multiply, Mask = Mask.Gradient(new(0, 1), new(0, 0.3f)) },
 ]);
 
 using var graded = ImagePipeline.Create()
@@ -314,7 +314,7 @@ See [layers-and-masks.md](layers-and-masks.md).
 var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
 {
     MaxConcurrency = Environment.ProcessorCount / 2,
-    ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+    ExportOptions = new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
 });
 ```
 
@@ -329,7 +329,7 @@ await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, 
 {
     MaxConcurrency = 8,
     MaxMemoryBytes = 1L << 30,   // images start only while their estimated need fits in 1 GB
-    ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+    ExportOptions = new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
 }))
 {
     if (result.Output is { } output) await File.WriteAllBytesAsync(Path.ChangeExtension(result.FileName!, ".out.jpg"), output.Data);

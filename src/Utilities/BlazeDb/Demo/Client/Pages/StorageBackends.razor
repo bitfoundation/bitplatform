@@ -53,36 +53,36 @@
         <div class="bb-scroll">
             <table class="bb-table">
                 <thead>
-                    <tr><th>Type</th><th>Namespace</th><th>Construction</th><th>Where it fits</th></tr>
+                    <tr><th>Type</th><th>Runs on</th><th>Construction</th><th>Where it fits</th></tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td class="bd-strong">BlazeDbOpfsStorage</td>
-                        <td class="bb-mono">Bit.BlazeDb.Browser</td>
+                        <td class="bb-mono">browser</td>
                         <td class="bb-mono">await BlazeDbOpfsStorage.CreateAsync("name")</td>
                         <td>Blazor WebAssembly. Private per-origin files, no user prompt, no quota dialog for reasonable sizes.</td>
                     </tr>
                     <tr>
                         <td class="bd-strong">BlazeDbIndexedDbStorage</td>
-                        <td class="bb-mono">Bit.BlazeDb.Browser</td>
+                        <td class="bb-mono">browser</td>
                         <td class="bb-mono">await BlazeDbIndexedDbStorage.CreateAsync("name")</td>
                         <td>Where OPFS cannot be written from the main thread - Firefox private windows, Safari before 26. The same writer lock and the same read-only pair; <code>IsOpfsAvailableAsync()</code> says which to use. <a href="tabs">See it pick</a>.</td>
                     </tr>
                     <tr>
                         <td class="bd-strong">BlazeDbFileStorage</td>
-                        <td class="bb-mono">Bit.BlazeDb.Storage</td>
+                        <td class="bb-mono">any</td>
                         <td class="bb-mono">new BlazeDbFileStorage(directory)</td>
                         <td>Desktop, server and integration tests. Atomic writes via temp file plus replace; an exclusive lock on the directory for as long as it lives, and <code>OpenReadOnly(directory)</code> for a follower. <a href="hosting">Hosting models</a>.</td>
                     </tr>
                     <tr>
                         <td class="bd-strong">BlazeDbInMemoryStorage</td>
-                        <td class="bb-mono">Bit.BlazeDb.Storage</td>
+                        <td class="bb-mono">any</td>
                         <td class="bb-mono">new BlazeDbInMemoryStorage()</td>
                         <td>Unit tests and the failure injection on the durability page. Exposes <code>FileNames</code>, <code>GetFile</code>/<code>SetFile</code> and <code>Clone()</code>, so you can corrupt bytes deliberately or freeze what a crash would leave behind.</td>
                     </tr>
                     <tr>
                         <td class="bd-strong">BlazeDbEncryptedStorage</td>
-                        <td class="bb-mono">Bit.BlazeDb.Storage</td>
+                        <td class="bb-mono">any</td>
                         <td class="bb-mono">new BlazeDbEncryptedStorage(inner, cipher)</td>
                         <td>A decorator over any of the above: every write sealed into an AES-GCM frame, quota awareness passed through. <a href="encryption">Encryption at rest</a>.</td>
                     </tr>

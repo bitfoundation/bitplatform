@@ -153,7 +153,7 @@ public sealed record PaintStroke
         }
         else
         {
-            var builder = new PathBuilder();
+            var builder = new BmagePathBuilder();
             FreehandAnnotation.AppendSmoothed(builder, _points, closed: false);
             path = [.. builder.Build().Contours.SelectMany(c => c)];
             if (path.Length == 0) path = _points;

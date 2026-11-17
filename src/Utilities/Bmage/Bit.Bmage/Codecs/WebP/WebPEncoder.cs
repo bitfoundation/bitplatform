@@ -8,8 +8,8 @@ namespace Bit.Bmage;
 /// </summary>
 public sealed class WebPEncoder : IImageEncoder
 {
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.WebP];
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.WebP];
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     /// <summary>The largest width or height a lossy WebP can store.</summary>
     public const int MaxDimension = 16383;
@@ -49,7 +49,7 @@ public sealed class WebPEncoder : IImageEncoder
 
         var metadata = image.Metadata?.Apply(options.Metadata, image.Width, image.Height);
         if (metadata is { IsEmpty: false }) bytes = WebPContainer.WriteMetadata(bytes, metadata);
-        return new EncodedImage(bytes, ImageFormat.WebP, image.Width, image.Height, options.Lossless ? null : quality);
+        return new EncodedImage(bytes, BmageImageFormat.WebP, image.Width, image.Height, options.Lossless ? null : quality);
     }
 
     /// <summary>

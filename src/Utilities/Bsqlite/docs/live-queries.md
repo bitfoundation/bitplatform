@@ -5,6 +5,8 @@ A live query re-executes when any table it reads is written, by this tab or anot
 ## With EF Core
 
 ```csharp
+using Bit.Bsqlite;   // AsLiveQuery, BsqliteLiveQuery
+
 await using var live = db.Orders
     .Include(o => o.Customer)
     .Where(o => o.Status == OrderStatus.Open)

@@ -34,14 +34,14 @@ public sealed class DrawingFastPathTests
 
     private static VectorPath RandomPath(Random random)
     {
-        var builder = new PathBuilder();
+        var builder = new BmagePathBuilder();
         switch (random.Next(4))
         {
             case 0: builder.AddRectangle(new RectangleF(random.Next(-10, 60) + 0.3f, random.Next(-10, 50) + 0.7f, random.Next(1, 70) + 0.4f, random.Next(1, 50) + 0.1f)); break;
             case 1: builder.AddEllipse(new RectangleF(random.Next(0, 50), random.Next(0, 40), random.Next(5, 60), random.Next(5, 40))); break;
             case 2:
                 // A thin diagonal stroke, whose bounding box is mostly empty.
-                return Stroker.CreateStrokeOutline(new PathBuilder().MoveTo(random.Next(0, 20), random.Next(0, 10)).LineTo(random.Next(60, 90), random.Next(50, 70)).Build(), new StrokeStyle { Width = 2.5f });
+                return Stroker.CreateStrokeOutline(new BmagePathBuilder().MoveTo(random.Next(0, 20), random.Next(0, 10)).LineTo(random.Next(60, 90), random.Next(50, 70)).Build(), new StrokeStyle { Width = 2.5f });
             default:
                 builder.MoveTo(random.Next(90), random.Next(70));
                 for (var i = 0; i < 6; i++) builder.LineTo(random.Next(-5, 95) + 0.5f, random.Next(-5, 75) + 0.25f);

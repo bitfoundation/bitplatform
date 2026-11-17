@@ -260,7 +260,7 @@
                 // Encode, preferring WebP but falling back where it is unavailable.
                 var encoded = await Exporter.EncodeWithFallbackAsync(
                     processed,
-                    [ImageFormat.WebP, ImageFormat.Jpeg],
+                    [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
                     new ImageExportOptions { Quality = 0.85 });
 
                 _size = encoded.Length;
@@ -282,7 +282,7 @@
             private BmageEditor? _editor;
 
             private Task Save() => _editor!.DownloadAsync("edited",
-                new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.9 });
+                new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.9 });
 
             private void OnExported(EncodedImage image)
             {
@@ -322,7 +322,7 @@
 
             var encoded = await Exporter.EncodeWithFallbackAsync(
                 processed,
-                [ImageFormat.WebP, ImageFormat.Jpeg],
+                [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
                 new ImageExportOptions { Quality = 0.85 });
 
             started.Stop();

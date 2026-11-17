@@ -9,41 +9,41 @@ namespace Bit.Bmage;
 /// </summary>
 public sealed class OrientationOperation : ImageOperation, IGeometricOperation
 {
-    public OrientationOperation(Orientation orientation)
+    public OrientationOperation(BmageOrientation orientation)
     {
-        Orientation = orientation == Orientation.Unspecified ? Orientation.Normal : orientation;
+        Orientation = orientation == BmageOrientation.Unspecified ? BmageOrientation.Normal : orientation;
         if (!Enum.IsDefined(Orientation)) throw new ArgumentOutOfRangeException(nameof(orientation));
     }
 
     /// <summary>Rotate 90° clockwise.</summary>
-    public static OrientationOperation Rotate90 { get; } = new(Orientation.Rotate90);
+    public static OrientationOperation Rotate90 { get; } = new(BmageOrientation.Rotate90);
     /// <summary>Rotate 180°.</summary>
-    public static OrientationOperation Rotate180 { get; } = new(Orientation.Rotate180);
+    public static OrientationOperation Rotate180 { get; } = new(BmageOrientation.Rotate180);
     /// <summary>Rotate 270° clockwise (90° counter-clockwise).</summary>
-    public static OrientationOperation Rotate270 { get; } = new(Orientation.Rotate270);
+    public static OrientationOperation Rotate270 { get; } = new(BmageOrientation.Rotate270);
     /// <summary>Mirror horizontally.</summary>
-    public static OrientationOperation FlipHorizontal { get; } = new(Orientation.FlipHorizontal);
+    public static OrientationOperation FlipHorizontal { get; } = new(BmageOrientation.FlipHorizontal);
     /// <summary>Mirror vertically.</summary>
-    public static OrientationOperation FlipVertical { get; } = new(Orientation.FlipVertical);
+    public static OrientationOperation FlipVertical { get; } = new(BmageOrientation.FlipVertical);
 
     /// <summary>Creates an operation for a clockwise rotation that is a multiple of 90°.</summary>
     public static OrientationOperation FromRotation(int clockwiseDegrees) => new(OrientationMath.FromRotation(clockwiseDegrees));
 
-    public Orientation Orientation { get; }
+    public BmageOrientation Orientation { get; }
 
     public override string Name => Orientation switch
     {
-        Orientation.Rotate90 => "Rotate 90°",
-        Orientation.Rotate180 => "Rotate 180°",
-        Orientation.Rotate270 => "Rotate 270°",
-        Orientation.FlipHorizontal => "Flip horizontal",
-        Orientation.FlipVertical => "Flip vertical",
-        Orientation.Transpose => "Transpose",
-        Orientation.Transverse => "Transverse",
+        BmageOrientation.Rotate90 => "Rotate 90°",
+        BmageOrientation.Rotate180 => "Rotate 180°",
+        BmageOrientation.Rotate270 => "Rotate 270°",
+        BmageOrientation.FlipHorizontal => "Flip horizontal",
+        BmageOrientation.FlipVertical => "Flip vertical",
+        BmageOrientation.Transpose => "Transpose",
+        BmageOrientation.Transverse => "Transverse",
         _ => "Orientation",
     };
 
-    public override bool IsIdentity => Orientation == Orientation.Normal;
+    public override bool IsIdentity => Orientation == BmageOrientation.Normal;
 
     public override Size GetOutputSize(Size inputSize) => Orientation.Transform(inputSize);
 
@@ -55,7 +55,7 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
     public override ImageBuffer Apply(ImageBuffer source, OperationContext context)
     {
         var o = Orientation;
-        if (o == Orientation.Normal) return context.CanMutateSource ? source : source.Clone(context.Allocator);
+        if (o == BmageOrientation.Normal) return context.CanMutateSource ? source : source.Clone(context.Allocator);
 
         int w = source.Width, h = source.Height;
         var outSize = o.Transform(source.Size);
@@ -85,7 +85,7 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
     }
 
     /// <summary>Moves source rows <paramref name="start"/> to <paramref name="end"/> to where the orientation puts them.</summary>
-    private static void Reorient(ImageBuffer source, ImageBuffer output, Orientation o, int start, int end, OperationContext context)
+    private static void Reorient(ImageBuffer source, ImageBuffer output, BmageOrientation o, int start, int end, OperationContext context)
     {
         int w = source.Width, h = source.Height;
         var src = source.Pixels;
@@ -98,36 +98,36 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
             switch (o)
             {
                 // Mirrors copy the row and reverse it in place, which the runtime vectorises.
-                case Orientation.FlipHorizontal:
+                case BmageOrientation.FlipHorizontal:
                 {
                     var d = dst.Slice(y * ow, ow);
                     row.CopyTo(d);
                     d.Reverse();
                     break;
                 }
-                case Orientation.FlipVertical:
+                case BmageOrientation.FlipVertical:
                     row.CopyTo(dst.Slice((h - 1 - y) * ow, ow));
                     break;
-                case Orientation.Rotate180:
+                case BmageOrientation.Rotate180:
                 {
                     var d = dst.Slice((h - 1 - y) * ow, ow);
                     row.CopyTo(d);
                     d.Reverse();
                     break;
                 }
-                case Orientation.Rotate90:
+                case BmageOrientation.Rotate90:
                     // (x,y) -> (h-1-y, x)
                     for (var x = 0; x < w; x++) dst[x * ow + (h - 1 - y)] = row[x];
                     break;
-                case Orientation.Rotate270:
+                case BmageOrientation.Rotate270:
                     // (x,y) -> (y, w-1-x)
                     for (var x = 0; x < w; x++) dst[(w - 1 - x) * ow + y] = row[x];
                     break;
-                case Orientation.Transpose:
+                case BmageOrientation.Transpose:
                     // (x,y) -> (y, x)
                     for (var x = 0; x < w; x++) dst[x * ow + y] = row[x];
                     break;
-                case Orientation.Transverse:
+                case BmageOrientation.Transverse:
                     // (x,y) -> (h-1-y, w-1-x)
                     for (var x = 0; x < w; x++) dst[(w - 1 - x) * ow + (h - 1 - y)] = row[x];
                     break;
@@ -135,16 +135,16 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
         }
     }
 
-    private static void ApplyInPlace(ImageBuffer buffer, Orientation o, OperationContext context)
+    private static void ApplyInPlace(ImageBuffer buffer, BmageOrientation o, OperationContext context)
     {
         int w = buffer.Width, h = buffer.Height;
         var px = buffer.Pixels;
         switch (o)
         {
-            case Orientation.FlipHorizontal:
+            case BmageOrientation.FlipHorizontal:
                 for (var y = 0; y < h; y++) px.Slice(y * w, w).Reverse();
                 break;
-            case Orientation.FlipVertical:
+            case BmageOrientation.FlipVertical:
             {
                 var rented = w <= 4096 ? null : System.Buffers.ArrayPool<Rgba32>.Shared.Rent(w);
                 Span<Rgba32> tmp = rented is null ? stackalloc Rgba32[w] : rented.AsSpan(0, w);
@@ -157,7 +157,7 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
                 if (rented is not null) System.Buffers.ArrayPool<Rgba32>.Shared.Return(rented);
                 break;
             }
-            case Orientation.Rotate180:
+            case BmageOrientation.Rotate180:
                 px.Reverse();
                 break;
         }
@@ -169,7 +169,7 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
 
 /// <summary>
 /// Applies the EXIF orientation recorded in the buffer's metadata so the pixels appear upright, then resets the stored
-/// orientation to <see cref="Orientation.Normal"/>. A no-op when there is no orientation metadata.
+/// orientation to <see cref="BmageOrientation.Normal"/>. A no-op when there is no orientation metadata.
 /// </summary>
 public sealed class AutoOrientOperation : ImageOperation
 {
@@ -179,11 +179,11 @@ public sealed class AutoOrientOperation : ImageOperation
 
     public override ImageBuffer Apply(ImageBuffer source, OperationContext context)
     {
-        var orientation = source.Metadata?.Exif?.Orientation ?? Orientation.Normal;
-        if (orientation is Orientation.Normal or Orientation.Unspecified)
+        var orientation = source.Metadata?.Exif?.Orientation ?? BmageOrientation.Normal;
+        if (orientation is BmageOrientation.Normal or BmageOrientation.Unspecified)
             return context.CanMutateSource ? source : source.Clone(context.Allocator);
         var result = new OrientationOperation(orientation).Apply(source, context);
-        if (result.Metadata is { } md) result.Metadata = md.WithOrientation(Orientation.Normal);
+        if (result.Metadata is { } md) result.Metadata = md.WithOrientation(BmageOrientation.Normal);
         return result;
     }
 }

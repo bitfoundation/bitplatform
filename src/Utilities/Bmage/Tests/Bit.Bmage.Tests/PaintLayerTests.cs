@@ -99,7 +99,7 @@ public sealed class PaintLayerTests
         Assert.AreEqual(new Rgba32(128, 128, 128), image[30, 10], "outside the mask, nothing");
 
         using var multiplied = ImageBuffer.Create(40, 20, new Rgba32(200, 200, 200));
-        new PaintLayer([stroke]) { BlendMode = BlendMode.Multiply }.Composite(multiplied);
+        new PaintLayer([stroke]) { BlendMode = BmageBlendMode.Multiply }.Composite(multiplied);
         Assert.AreEqual(new Rgba32(200, 0, 0), multiplied[10, 10]);
     }
 
@@ -124,7 +124,7 @@ public sealed class PaintLayerTests
         layer.Composite(full);
         using var proxy = ImageBuffer.Create(50, 40, Rgba32.White);
         scaled.Composite(proxy);
-        using var reduced = new ResizeOperation(50, 40, ResizeMode.Stretch).Apply(full, OperationContext.Default);
+        using var reduced = new ResizeOperation(50, 40, BmageResizeMode.Stretch).Apply(full, OperationContext.Default);
         Assert.IsLessThan(12.0, TestImages.MeanChannelDifference(reduced, proxy));
     }
 
@@ -153,7 +153,7 @@ public sealed class PaintLayerTests
         [
             new PaintStroke([new(5, 5), new(40, 30), new(80, 10)], 14, Red) { Pressures = [0.2f, 1f, 0.6f], Hardness = 0.3f, Opacity = 0.7f },
             new PaintStroke([new(20, 0), new(20, 60)], 5, default) { Erase = true, PressureAffectsSize = false, PressureAffectsOpacity = true },
-        ]) { Name = "Sketch", BlendMode = BlendMode.Overlay };
+        ]) { Name = "Sketch", BlendMode = BmageBlendMode.Overlay };
         var json = BmageJson.SerializeObject(layer);
         var back = (PaintLayer)BmageJson.DeserializeObject<Layer>(json);
         Assert.AreEqual(json, BmageJson.SerializeObject(back));

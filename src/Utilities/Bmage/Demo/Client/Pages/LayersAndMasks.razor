@@ -237,7 +237,7 @@
 @code {
     private static readonly string[] EditOptions = ["None", "Graduated sky", "Spotlight", "Lift shadows", "Colour pop"];
     private static readonly string[] LayerOptions = ["None", "Colour wash", "Sunset glow", "Watermark", "Adjustment", "Clipped group"];
-    private static readonly BlendMode[] BlendModes = [.. Enum.GetValues<BlendMode>().Where(m => m is not (BlendMode.Copy or BlendMode.Erase))];
+    private static readonly BmageBlendMode[] BlendModes = [.. Enum.GetValues<BmageBlendMode>().Where(m => m is not (BmageBlendMode.Copy or BmageBlendMode.Erase))];
 
     private static readonly System.Drawing.Size SourceSize = new(900, 600);
     private ImageBuffer? _source;
@@ -246,7 +246,7 @@
     private long _previewVersion;
     private string _edit = "Graduated sky";
     private string _layer = "Colour wash";
-    private BlendMode? _blend;
+    private BmageBlendMode? _blend;
     private int _feather = 12;
     private bool _invert;
     private float _opacity = 0.6f;
@@ -259,12 +259,12 @@
     private bool IsHydrating => RendererInfo.IsInteractive is false;
 
     /// <summary>The blend mode each layer looks best with, until the reader picks another.</summary>
-    private BlendMode EffectiveBlend => _blend ?? _layer switch
+    private BmageBlendMode EffectiveBlend => _blend ?? _layer switch
     {
-        "Colour wash" => BlendMode.Color,
-        "Sunset glow" => BlendMode.Screen,
-        "Watermark" => BlendMode.Overlay,
-        _ => BlendMode.SourceOver,
+        "Colour wash" => BmageBlendMode.Color,
+        "Sunset glow" => BmageBlendMode.Screen,
+        "Watermark" => BmageBlendMode.Overlay,
+        _ => BmageBlendMode.SourceOver,
     };
 
     private Mask? EditMask => _edit switch
@@ -313,7 +313,7 @@
                   {
                       Name = "Badge tint",
                       ClipToLayerBelow = true,
-                      BlendMode = BlendMode.Color,
+                      BlendMode = BmageBlendMode.Color,
                       Mask = Mask.Gradient(new(0, 0.3f), new(0, 0.7f)),
                   },
               ]) { Name = "Clipped group" }
@@ -364,16 +364,16 @@
         var document = ImageDocument.Create(photo)
             .AddOperation(new CropOperation(0, 0, 1600, 900))
             // A logo, blended into the photo.
-            .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(1380, 680, 180, 180), BlendMode = BlendMode.Overlay })
+            .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(1380, 680, 180, 180), BlendMode = BmageBlendMode.Overlay })
             // A warm glow rising from the horizon.
-            .AddLayer(new FillLayer(new Rgba32(255, 120, 40)) { BlendMode = BlendMode.Screen, Opacity = 0.5f, Mask = Mask.Gradient(new(0, 0.75f), new(0, 0.3f)) })
+            .AddLayer(new FillLayer(new Rgba32(255, 120, 40)) { BlendMode = BmageBlendMode.Screen, Opacity = 0.5f, Mask = Mask.Gradient(new(0, 0.75f), new(0, 0.3f)) })
             // More contrast in the shadows only.
             .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Contrast(0.3f)) { Mask = new LuminanceRangeMask(0f, 0.35f) });
 
         using var rendered = new DocumentRenderer().Render(document, photo);
 
         // In the editor, the same through the BmageEditorContext a Toolbar, Panel or Footer receives:
-        await context.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BlendMode.Color, Opacity = 0.4f });
+        await context.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BmageBlendMode.Color, Opacity = 0.4f });
         await context.UpdateLayerAsync(layer with { Opacity = value }, transient: true);   // while a slider is dragged
         """;
 
@@ -401,7 +401,7 @@
         [
             new ImageLayer { Image = lettering, Bounds = titleArea },
             new ImageLayer { Image = woodTexture, Bounds = titleArea, ClipToLayerBelow = true },
-        ]) { Isolated = true, BlendMode = BlendMode.Overlay };
+        ]) { Isolated = true, BlendMode = BmageBlendMode.Overlay };
         """;
 
     private const string JsonSnippet = """
@@ -470,7 +470,7 @@
 
     private void OnBlendChanged(ChangeEventArgs e)
     {
-        if (Enum.TryParse<BlendMode>(e.Value?.ToString(), out var mode))
+        if (Enum.TryParse<BmageBlendMode>(e.Value?.ToString(), out var mode))
         {
             _blend = mode;
             Schedule();

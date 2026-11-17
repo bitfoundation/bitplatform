@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Numerics;
 using System.Text.Json;
-using Bit.Bcrdt.Integrations;
 using Bit.Bink;
 
 namespace Bit.Bcrdt;

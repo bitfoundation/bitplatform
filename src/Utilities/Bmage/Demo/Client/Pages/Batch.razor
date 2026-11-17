@@ -224,7 +224,7 @@
     private int _maxEdge = 1600;
     private int _concurrency = 2;
     private int _budgetMb;
-    private ImageFormat _format = ImageFormat.WebP;
+    private BmageImageFormat _format = BmageImageFormat.WebP;
     private bool _grayscale;
     private bool _stopOnFirstError;
     private bool _running;
@@ -235,9 +235,9 @@
     private ImageCapabilities? _capabilities;
 
     // Until the probe has run, only the current choice is listed (and the list is disabled).
-    private IEnumerable<ImageFormat> AvailableFormats => _capabilities is null
+    private IEnumerable<BmageImageFormat> AvailableFormats => _capabilities is null
         ? [_format]
-        : new[] { ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Jpeg, ImageFormat.Png }.Where(_capabilities.CanEncode);
+        : new[] { BmageImageFormat.WebP, BmageImageFormat.Avif, BmageImageFormat.Jpeg, BmageImageFormat.Png }.Where(_capabilities.CanEncode);
 
     private const string Snippet = """
         var processor = await processorFactory.GetAsync();
@@ -286,7 +286,7 @@
         {
             MaxConcurrency = 4,
             MaxMemoryBytes = 768L * 1024 * 1024,
-            ExportOptions  = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+            ExportOptions  = new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
         }, cancellationToken))
         {
             if (result.Output is { } output) await File.WriteAllBytesAsync(Path.Combine(outputFolder, result.FileName!), output.Data, cancellationToken);
@@ -308,7 +308,7 @@
     {
         if (!firstRender || RendererInfo.IsInteractive is false) return;
         _capabilities = await Capabilities.GetAsync();
-        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([ImageFormat.WebP, ImageFormat.Jpeg]);
+        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([BmageImageFormat.WebP, BmageImageFormat.Jpeg]);
         StateHasChanged();
     }
 
@@ -319,7 +319,7 @@
 
     private void OnFormatChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format)) _format = format;
+        if (e.Value is string value && Enum.TryParse<BmageImageFormat>(value, out var format)) _format = format;
     }
 
     private void OnBudgetChanged(ChangeEventArgs e)

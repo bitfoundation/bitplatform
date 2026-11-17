@@ -27,7 +27,7 @@ public sealed class ImageLoader
     public long MaxSourceBytes { get; set; } = 64L * 1024 * 1024;
 
     /// <summary>Loads an image from any source. The caller owns the returned buffer.</summary>
-    public async ValueTask<ImageBuffer> LoadAsync(ImageSource source, DecodeOptions? options = null, CancellationToken cancellationToken = default)
+    public async ValueTask<ImageBuffer> LoadAsync(BmageImageSource source, DecodeOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);
         var processor = await _processors.GetAsync(cancellationToken).ConfigureAwait(false);
@@ -47,17 +47,17 @@ public sealed class ImageLoader
 
     /// <summary>Loads an image from a file input or drop zone.</summary>
     public ValueTask<ImageBuffer> LoadAsync(IBrowserFile file, DecodeOptions? options = null, CancellationToken cancellationToken = default)
-        => LoadAsync(ImageSource.FromBrowserFile(file), options, cancellationToken);
+        => LoadAsync(BmageImageSource.FromBrowserFile(file), options, cancellationToken);
 
     /// <summary>Loads an image from raw encoded bytes.</summary>
     public ValueTask<ImageBuffer> LoadAsync(ReadOnlyMemory<byte> bytes, DecodeOptions? options = null, CancellationToken cancellationToken = default)
-        => LoadAsync(ImageSource.FromBytes(bytes), options, cancellationToken);
+        => LoadAsync(BmageImageSource.FromBytes(bytes), options, cancellationToken);
 
     /// <summary>
     /// Loads several images, reporting progress and collecting per-file failures instead of aborting on the first bad file.
     /// </summary>
     public async ValueTask<IReadOnlyList<ImageLoadResult>> LoadManyAsync(
-        IEnumerable<ImageSource> sources,
+        IEnumerable<BmageImageSource> sources,
         DecodeOptions? options = null,
         IProgress<(int Completed, int Total)>? progress = null,
         CancellationToken cancellationToken = default)
@@ -172,7 +172,7 @@ public sealed class ImageLoader
                 using (var pasted = await _loader._interop.InvokeForBytesAsync<ClipboardInfo>("takePasted", CancellationToken.None, id).ConfigureAwait(true))
                 {
                     if (!pasted.HasValue || pasted.Bytes.Length == 0) return;
-                    image = await _loader.LoadAsync(ImageSource.FromBytes(pasted.Bytes.Memory, contentType: pasted.Info!.MimeType), _options).ConfigureAwait(true);
+                    image = await _loader.LoadAsync(BmageImageSource.FromBytes(pasted.Bytes.Memory, contentType: pasted.Info!.MimeType), _options).ConfigureAwait(true);
                 }
 
                 await _onImage(image).ConfigureAwait(true);
@@ -243,17 +243,17 @@ public sealed class ImageLoader
 /// <summary>The outcome of loading one image in a batch.</summary>
 public sealed class ImageLoadResult : IDisposable
 {
-    private ImageLoadResult(ImageSource source, ImageBuffer? image, Exception? error)
+    private ImageLoadResult(BmageImageSource source, ImageBuffer? image, Exception? error)
     {
         Source = source;
         Image = image;
         Error = error;
     }
 
-    public static ImageLoadResult Success(ImageSource source, ImageBuffer image) => new(source, image, null);
-    public static ImageLoadResult Failure(ImageSource source, Exception error) => new(source, null, error);
+    public static ImageLoadResult Success(BmageImageSource source, ImageBuffer image) => new(source, image, null);
+    public static ImageLoadResult Failure(BmageImageSource source, Exception error) => new(source, null, error);
 
-    public ImageSource Source { get; }
+    public BmageImageSource Source { get; }
 
     /// <summary>The decoded image, or null when loading failed. Owned by the caller.</summary>
     public ImageBuffer? Image { get; }
@@ -289,12 +289,12 @@ public sealed class ImageProcessorFactory
     /// for AVIF, signals wide gamut or HDR colours without one. The managed decoders read the stored values as sRGB, so
     /// those colours need the browser's colour management.
     /// </summary>
-    internal static bool HasWideGamutProfile(ImageFormat format, ReadOnlyMemory<byte> data)
+    internal static bool HasWideGamutProfile(BmageImageFormat format, ReadOnlyMemory<byte> data)
     {
         try
         {
             ReadOnlyMemory<byte> profile;
-            if (format == ImageFormat.Avif)
+            if (format == BmageImageFormat.Avif)
             {
                 // One parse, in place, for both the colours the file signals and the profile it embeds.
                 if (AvifDecoder.HasNonSrgbColors(data, out profile)) return true;
@@ -303,14 +303,14 @@ public sealed class ImageProcessorFactory
             {
                 var metadata = format switch
                 {
-                    ImageFormat.Jpeg => JpegContainer.ReadMetadata(data.Span),
-                    ImageFormat.Png => PngContainer.ReadMetadata(data.Span),
-                    ImageFormat.WebP => WebPContainer.ReadMetadata(data.Span),
+                    BmageImageFormat.Jpeg => JpegContainer.ReadMetadata(data.Span),
+                    BmageImageFormat.Png => PngContainer.ReadMetadata(data.Span),
+                    BmageImageFormat.WebP => WebPContainer.ReadMetadata(data.Span),
                     _ => null,
                 };
                 profile = metadata?.IccProfile ?? default;
                 // A PNG profile too large or too broken to inflate reads as none, yet it is no sRGB profile either.
-                if (format == ImageFormat.Png && profile.IsEmpty && HasIccChunk(data.Span)) return true;
+                if (format == BmageImageFormat.Png && profile.IsEmpty && HasIccChunk(data.Span)) return true;
             }
             // Anything not recognised as sRGB goes to the browser, which costs bandwidth but never colour.
             return !profile.IsEmpty && !IsSrgbProfile(profile.Span);
@@ -413,7 +413,7 @@ public sealed class ImageProcessorFactory
             var nativeEncodable = capabilities.NativeEncodableFormats ?? capabilities.EncodableFormats;
             if (capabilities.Environment == ImageEnvironment.BrowserWebAssembly)
             {
-                var decodable = nativeDecodable.Where(f => f != ImageFormat.Svg).ToArray();
+                var decodable = nativeDecodable.Where(f => f != BmageImageFormat.Svg).ToArray();
                 var encodable = nativeEncodable.Where(f => !ImageCapabilities.ManagedOnlyEncodableFormats.Contains(f)).ToArray();
                 if (decodable.Length > 0) registry.AddDecoder(new BrowserImageDecoder(_interop, decodable));
                 if (encodable.Length > 0) registry.AddEncoder(new BrowserImageEncoder(_interop, encodable));
@@ -425,7 +425,7 @@ public sealed class ImageProcessorFactory
                 // can, and the browser only what they cannot: a file the managed decoder rejects or that is over the
                 // limits, which the browser scales down to instead, and a photo with a colour profile other than sRGB,
                 // which only the browser converts.
-                var browser = new BrowserImageDecoder(_interop, nativeDecodable.Where(f => f != ImageFormat.Svg));
+                var browser = new BrowserImageDecoder(_interop, nativeDecodable.Where(f => f != BmageImageFormat.Svg));
                 foreach (var format in browser.Formats)
                 {
                     var managed = registry.GetDecoder(format);

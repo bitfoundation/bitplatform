@@ -67,7 +67,7 @@ Setting it up differs from a Web App in three places:
   bytes with the platform's APIs:
 
   ```csharp
-  var encoded = await Exporter.EncodeWithFallbackAsync(image, [ImageFormat.WebP, ImageFormat.Jpeg]);
+  var encoded = await Exporter.EncodeWithFallbackAsync(image, [BmageImageFormat.WebP, BmageImageFormat.Jpeg]);
   var path = Path.Combine(FileSystem.CacheDirectory, "photo" + encoded.Extension);
   await File.WriteAllBytesAsync(path, encoded.Data);
   await Share.Default.RequestAsync(new ShareFileRequest { Title = "Save the image", File = new ShareFile(path) });

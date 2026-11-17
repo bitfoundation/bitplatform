@@ -138,11 +138,11 @@ ImageDocument
 var document = ImageDocument.Create(photo)
     .AddOperation(new CropOperation(0, 0, 1600, 900))
     // A logo, blended into the photo.
-    .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(1380, 680, 180, 180), BlendMode = BlendMode.Overlay })
+    .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(1380, 680, 180, 180), BlendMode = BmageBlendMode.Overlay })
     // A warm glow rising from the horizon.
     .AddLayer(new FillLayer(new Rgba32(255, 120, 40))
     {
-        BlendMode = BlendMode.Screen,
+        BlendMode = BmageBlendMode.Screen,
         Opacity = 0.5f,
         Mask = Mask.Gradient(new(0, 0.75f), new(0, 0.3f)),
     })
@@ -178,7 +178,7 @@ How a group composites:
 | Group | Its layers | An adjustment layer inside it |
 | --- | --- | --- |
 | Pass-through (the default) | blend onto what is beneath the group exactly as they would without it; the group's opacity and mask then fade the result back towards what was there | edits everything beneath it, outside the group too |
-| `Isolated = true`, or a `BlendMode` other than `SourceOver` | composite on their own over transparency, and that image is blended onto what is beneath with the group's mode, opacity and mask | edits only the group's other layers |
+| `Isolated = true`, or a `BmageBlendMode` other than `SourceOver` | composite on their own over transparency, and that image is blended onto what is beneath with the group's mode, opacity and mask | edits only the group's other layers |
 
 An isolated group costs a buffer the size of the image while it is drawn. A mask that reads colours (`FloodMask`, a
 colour range) reads what it is drawn onto, which inside an isolated group is the group's own pixels.
@@ -203,7 +203,7 @@ document = document
 var paint = new PaintLayer()
     .Add(new PaintStroke(points, size: 24, color: new Rgba32(230, 40, 40)) { Hardness = 0.6f, Pressures = penPressures })
     .Add(new PaintStroke(eraserPoints, size: 12, color: default) { Erase = true });
-document = document.AddLayer(paint with { BlendMode = BlendMode.Multiply });
+document = document.AddLayer(paint with { BlendMode = BmageBlendMode.Multiply });
 ```
 
 A stroke is stamped as round dabs along its smoothed path. `Hardness` 1 gives a crisp, anti-aliased edge; lower values
@@ -234,7 +234,7 @@ pipeline and size stay the same.
 using var card = LayerCompositor.Flatten(new Size(1200, 630), Rgba32.White,
 [
     new ImageLayer { Image = photo, Bounds = new RectangleF(0, 0, 1200, 630) },
-    new FillLayer(new Rgba32(10, 20, 60)) { BlendMode = BlendMode.Multiply, Mask = Mask.Gradient(new(0, 1), new(0, 0.3f)) },
+    new FillLayer(new Rgba32(10, 20, 60)) { BlendMode = BmageBlendMode.Multiply, Mask = Mask.Gradient(new(0, 1), new(0, 0.3f)) },
     new ImageLayer { Image = logo, Bounds = new RectangleF(40, 40, 160, 160), Opacity = 0.9f },
 ]);
 ```
@@ -249,7 +249,7 @@ grouping it with the layer below (or moving it into the group below), moving it 
 Custom chrome drives them through the context:
 
 ```csharp
-await editor.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BlendMode.Color, Opacity = 0.4f });
+await editor.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BmageBlendMode.Color, Opacity = 0.4f });
 await editor.UpdateLayerAsync(layer with { Opacity = value }, transient: true);   // while a slider is dragged
 await editor.MoveLayerAsync(layer.Id, 0);                                          // to the bottom
 await editor.RemoveLayerAsync(layer.Id);
@@ -257,7 +257,7 @@ await editor.RemoveLayerAsync(layer.Id);
 
 ## Blend modes
 
-`BlendMode` follows the W3C Compositing and Blending Level 1 specification, the same definitions as CSS
+`BmageBlendMode` follows the W3C Compositing and Blending Level 1 specification, the same definitions as CSS
 `mix-blend-mode` and the canvas `globalCompositeOperation`: the blend function decides the colour where the two
 overlap, weighted by the destination's alpha, and the result is composited source-over. A transparent destination
 therefore shows the source unchanged in every mode.

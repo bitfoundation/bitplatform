@@ -12,13 +12,13 @@ namespace Bit.Bmage;
 /// </summary>
 public sealed class AvifDecoder : IImageDecoder
 {
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Avif];
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.Avif];
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     private static readonly string[] AlphaUrns = ["urn:mpeg:mpegB:cicp:systems:auxiliary:alpha", "urn:mpeg:hevc:2015:auxid:1"];
 
     public ImageInfo? Identify(ReadOnlySpan<byte> data)
-        => ReadSize(data, cropped: true) is { } size ? new ImageInfo(size.Width, size.Height, ImageFormat.Avif, Orientation.Normal, size.HasAlpha) : null;
+        => ReadSize(data, cropped: true) is { } size ? new ImageInfo(size.Width, size.Height, BmageImageFormat.Avif, BmageOrientation.Normal, size.HasAlpha) : null;
 
     /// <summary>
     /// The upright size a decoder allocates for the image: the whole coded image, before its clean aperture crops it to
@@ -31,12 +31,12 @@ public sealed class AvifDecoder : IImageDecoder
     /// How the primary image's irot and imir properties turn it upright, which is what a browser applies to an AVIF; an
     /// Exif orientation in the file does not change it. Normal when the file has none or cannot be read.
     /// </summary>
-    internal static Orientation ContainerOrientation(ReadOnlySpan<byte> data)
-        => ReadSize(data, cropped: true) is { } size ? size.Orientation : Orientation.Normal;
+    internal static BmageOrientation ContainerOrientation(ReadOnlySpan<byte> data)
+        => ReadSize(data, cropped: true) is { } size ? size.Orientation : BmageOrientation.Normal;
 
-    private static (int Width, int Height, bool HasAlpha, Orientation Orientation)? ReadSize(ReadOnlySpan<byte> data, bool cropped)
+    private static (int Width, int Height, bool HasAlpha, BmageOrientation Orientation)? ReadSize(ReadOnlySpan<byte> data, bool cropped)
     {
-        if (ImageFormats.Detect(data) != ImageFormat.Avif) return null;
+        if (ImageFormats.Detect(data) != BmageImageFormat.Avif) return null;
         try
         {
             var file = AvifContainer.ParseHeaders(data);
@@ -45,7 +45,7 @@ public sealed class AvifDecoder : IImageDecoder
             {
                 if (file.TrackAv1C is null) return null;
                 var (trackWidth, trackHeight) = file.TrackSize;
-                return trackWidth > 0 && trackHeight > 0 ? (trackWidth, trackHeight, false, Orientation.Normal) : null;
+                return trackWidth > 0 && trackHeight > 0 ? (trackWidth, trackHeight, false, BmageOrientation.Normal) : null;
             }
             if (file.FindProperty(primary, AvifContainer.Ispe) is not { Length: >= 12 } ispe) return null;
             var p = file.PropertyData(ispe);
@@ -80,7 +80,7 @@ public sealed class AvifDecoder : IImageDecoder
         options ??= DecodeOptions.Default;
         allocator ??= PooledPixelAllocator.Shared;
         options.Limits.ValidateEncodedSize(data.Length);
-        if (ImageFormats.Detect(data.Span) != ImageFormat.Avif) throw new ImageDecodeException("Not an AVIF image.");
+        if (ImageFormats.Detect(data.Span) != BmageImageFormat.Avif) throw new ImageDecodeException("Not an AVIF image.");
         try
         {
             return DecodeCore(data, options, allocator, nearestChroma, cancellationToken);
@@ -97,7 +97,7 @@ public sealed class AvifDecoder : IImageDecoder
         var file = AvifContainer.Parse(data);
         var primary = PrimaryItem(file);
         ImageBuffer image;
-        var orientation = Orientation.Normal;
+        var orientation = BmageOrientation.Normal;
         if (primary is null)
         {
             if (file.FirstTrackSample is not { } sample || file.TrackAv1C is not { } config)
@@ -159,31 +159,31 @@ public sealed class AvifDecoder : IImageDecoder
                 catch (Exception ex) when (ex is ImageException or ArgumentException or IndexOutOfRangeException)
                 {
                     // Malformed metadata must never prevent an image from loading.
-                    metadata = new ImageMetadata(sourceFormat: ImageFormat.Avif, fileName: options.FileName);
+                    metadata = new ImageMetadata(sourceFormat: BmageImageFormat.Avif, fileName: options.FileName);
                 }
             }
             else
             {
-                metadata = new ImageMetadata(sourceFormat: ImageFormat.Avif, fileName: options.FileName);
+                metadata = new ImageMetadata(sourceFormat: BmageImageFormat.Avif, fileName: options.FileName);
             }
             if (options.AutoOrient)
             {
                 // The HEIF transforms define the upright image; an Exif orientation is ignored for AVIF, so record the
                 // result as upright.
-                if (orientation != Orientation.Normal)
+                if (orientation != BmageOrientation.Normal)
                 {
                     var context = new OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism);
                     var oriented = new OrientationOperation(orientation).Apply(image, context);
                     if (!ReferenceEquals(oriented, image)) image.Dispose();
                     image = oriented;
                 }
-                metadata = metadata.WithOrientation(Orientation.Normal);
+                metadata = metadata.WithOrientation(BmageOrientation.Normal);
             }
             else
             {
                 // Leave the pixels as stored and say, the EXIF way, how to show them.
                 metadata = metadata.Exif is null
-                    ? orientation == Orientation.Normal ? metadata : new ImageMetadata(ExifData.FromOrientation(orientation), metadata.IccProfile, metadata.Xmp, ImageFormat.Avif, metadata.FileName)
+                    ? orientation == BmageOrientation.Normal ? metadata : new ImageMetadata(ExifData.FromOrientation(orientation), metadata.IccProfile, metadata.Xmp, BmageImageFormat.Avif, metadata.FileName)
                     : metadata.WithOrientation(orientation);
             }
             image.Metadata = metadata;
@@ -230,7 +230,7 @@ public sealed class AvifDecoder : IImageDecoder
                 }
             }
         }
-        return new ImageMetadata(exif, icc, xmp, ImageFormat.Avif, fileName);
+        return new ImageMetadata(exif, icc, xmp, BmageImageFormat.Avif, fileName);
     }
 
     /// <inheritdoc cref="HasNonSrgbColors(ReadOnlyMemory{byte}, out ReadOnlyMemory{byte})"/>
@@ -498,16 +498,16 @@ public sealed class AvifDecoder : IImageDecoder
     /// The part of the decoded image an item keeps, and how to turn it upright, from its clap, irot and imir properties
     /// in the order listed. Decoding and identifying both go by this, so they agree on the size.
     /// </summary>
-    private static (Rectangle Crop, Orientation Orientation) Transforms(AvifContainer file, HeifItem item, int width, int height)
+    private static (Rectangle Crop, BmageOrientation Orientation) Transforms(AvifContainer file, HeifItem item, int width, int height)
     {
         var crop = new Rectangle(0, 0, width, height);
-        var orientation = Orientation.Normal;
+        var orientation = BmageOrientation.Normal;
         foreach (var property in item.Properties)
         {
             if (property.Type == AvifContainer.Clap)
             {
                 // MIAF puts clap before irot and imir; one listed after them is ignored.
-                if (orientation == Orientation.Normal && CleanAperture(file.PropertyData(property), crop.Width, crop.Height) is { } c)
+                if (orientation == BmageOrientation.Normal && CleanAperture(file.PropertyData(property), crop.Width, crop.Height) is { } c)
                     crop = new Rectangle(crop.X + c.X, crop.Y + c.Y, c.Width, c.Height);
             }
             else if (property.Type == AvifContainer.Irot && property.Length >= 1)
@@ -515,16 +515,16 @@ public sealed class AvifDecoder : IImageDecoder
                 // irot turns anti-clockwise by multiples of 90 degrees.
                 orientation = orientation.Then((file.PropertyData(property)[0] & 3) switch
                 {
-                    1 => Orientation.Rotate270,
-                    2 => Orientation.Rotate180,
-                    3 => Orientation.Rotate90,
-                    _ => Orientation.Normal,
+                    1 => BmageOrientation.Rotate270,
+                    2 => BmageOrientation.Rotate180,
+                    3 => BmageOrientation.Rotate90,
+                    _ => BmageOrientation.Normal,
                 });
             }
             else if (property.Type == AvifContainer.Imir && property.Length >= 1)
             {
                 // Axis (named mode in the 2022 edition of HEIF) 0 exchanges top and bottom, 1 left and right.
-                orientation = orientation.Then((file.PropertyData(property)[0] & 1) == 0 ? Orientation.FlipVertical : Orientation.FlipHorizontal);
+                orientation = orientation.Then((file.PropertyData(property)[0] & 1) == 0 ? BmageOrientation.FlipVertical : BmageOrientation.FlipHorizontal);
             }
         }
         return (crop, orientation);

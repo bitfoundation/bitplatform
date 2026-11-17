@@ -6,12 +6,12 @@ namespace Bit.Bmage;
 /// <summary>Managed PNG decoder supporting all colour types, bit depths 1–16, palettes, tRNS transparency and Adam7 interlacing.</summary>
 public sealed class PngDecoder : IImageDecoder
 {
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Png];
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.Png];
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     public ImageInfo? Identify(ReadOnlySpan<byte> data)
     {
-        if (ImageFormats.Detect(data) != ImageFormat.Png || data.Length < 33) return null;
+        if (ImageFormats.Detect(data) != BmageImageFormat.Png || data.Length < 33) return null;
         var chunks = PngContainer.EnumerateChunks(data);
         if (chunks.Count == 0 || chunks[0].TypeName != "IHDR" || chunks[0].DataLength < 13) return null;
         var ihdr = data.Slice(chunks[0].DataOffset, 13);
@@ -19,18 +19,18 @@ public sealed class PngDecoder : IImageDecoder
         var h = BinaryPrimitives.ReadInt32BigEndian(ihdr[4..]);
         var colorType = ihdr[9];
         var hasAlpha = colorType is 4 or 6 || chunks.Any(c => c.TypeName == "tRNS");
-        var orientation = Orientation.Normal;
+        var orientation = BmageOrientation.Normal;
         foreach (var c in chunks)
         {
             if (c.TypeName == "eXIf")
             {
                 // Only the orientation is wanted, so none of the block, which can run to megabytes, is copied out.
-                if (ExifReader.ReadPrimaryNumber(data.Slice(c.DataOffset, c.DataLength), ExifTag.Orientation) is uint v and >= 1 and <= 8) orientation = (Orientation)v;
+                if (ExifReader.ReadPrimaryNumber(data.Slice(c.DataOffset, c.DataLength), ExifTag.Orientation) is uint v and >= 1 and <= 8) orientation = (BmageOrientation)v;
                 break;
             }
             if (c.TypeName == "IDAT") break;
         }
-        return w <= 0 || h <= 0 ? null : new ImageInfo(w, h, ImageFormat.Png, orientation, hasAlpha);
+        return w <= 0 || h <= 0 ? null : new ImageInfo(w, h, BmageImageFormat.Png, orientation, hasAlpha);
     }
 
     public ValueTask<ImageBuffer> DecodeAsync(ReadOnlyMemory<byte> data, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken = default)
@@ -139,15 +139,15 @@ public sealed class PngDecoder : IImageDecoder
             {
                 var md = PngContainer.ReadMetadata(data, options.FileName);
                 image.Metadata = md;
-                if (options.AutoOrient && md.Orientation is not (Orientation.Normal or Orientation.Unspecified))
+                if (options.AutoOrient && md.Orientation is not (BmageOrientation.Normal or BmageOrientation.Unspecified))
                 {
                     var oriented = new OrientationOperation(md.Orientation).Apply(image, new OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
                     if (!ReferenceEquals(oriented, image)) image.Dispose();
                     image = oriented;
-                    image.Metadata = md.WithOrientation(Orientation.Normal);
+                    image.Metadata = md.WithOrientation(BmageOrientation.Normal);
                 }
             }
-            else image.Metadata = new ImageMetadata(sourceFormat: ImageFormat.Png, fileName: options.FileName);
+            else image.Metadata = new ImageMetadata(sourceFormat: BmageImageFormat.Png, fileName: options.FileName);
             return image;
         }
         catch

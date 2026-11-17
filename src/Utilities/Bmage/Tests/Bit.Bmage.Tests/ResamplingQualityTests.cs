@@ -30,7 +30,7 @@ public sealed class ResamplingQualityTests
             }
         }
 
-        using var result = new ResizeOperation(targetWidth, 16, ResizeMode.Stretch, ResamplingFilter.Auto)
+        using var result = new ResizeOperation(targetWidth, 16, BmageResizeMode.Stretch, ResamplingFilter.Auto)
             .Apply(source, OperationContext.Default);
 
         Assert.AreEqual(targetWidth, result.Width);
@@ -56,7 +56,7 @@ public sealed class ResamplingQualityTests
     {
         var size = 64 * factor;
         using var source = ImageBuffer.Create(size, size, new Rgba32(91, 173, 47));
-        using var result = new ResizeOperation(64, 64, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
+        using var result = new ResizeOperation(64, 64, BmageResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
         for (var y = 0; y < 64; y += 8)
             for (var x = 0; x < 64; x += 8)
             {
@@ -78,7 +78,7 @@ public sealed class ResamplingQualityTests
             var row = source.GetRow(y);
             for (var x = 0; x < 2048; x++) row[x] = ((x + y) & 1) == 0 ? Rgba32.White : Rgba32.Black;
         }
-        using var result = new ResizeOperation(64, 64, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
+        using var result = new ResizeOperation(64, 64, BmageResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
         for (var y = 8; y < 56; y += 8)
             for (var x = 8; x < 56; x += 8)
                 Assert.IsInRange(120, 136, result[x, y].R);
@@ -90,7 +90,7 @@ public sealed class ResamplingQualityTests
     {
         using var source = ImageBuffer.Create(1600, 1600, Rgba32.Transparent);
         source.Fill(new Rectangle(400, 400, 800, 800), new Rgba32(255, 0, 0));
-        using var result = new ResizeOperation(100, 100, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
+        using var result = new ResizeOperation(100, 100, BmageResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
         var centre = result[50, 50];
         Assert.AreEqual(255, centre.A);
         Assert.IsTrue(centre.R > 250 && centre.G < 5 && centre.B < 5, $"Centre lost its colour: {centre}");
@@ -107,7 +107,7 @@ public sealed class ResamplingQualityTests
         using var source = ImageBuffer.Create(3000, 3000, Rgba32.White);
         // A black band covering exactly the left third.
         source.Fill(new Rectangle(0, 0, 1000, 3000), Rgba32.Black);
-        using var result = new ResizeOperation(150, 150, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
+        using var result = new ResizeOperation(150, 150, BmageResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
         // The boundary must land at 1/3 of 150 = 50.
         Assert.IsTrue(result[45, 75].R < 30, "Left of the boundary should still be black");
         Assert.IsTrue(result[55, 75].R > 225, "Right of the boundary should still be white");
@@ -121,7 +121,7 @@ public sealed class ResamplingQualityTests
         for (var y = 0; y < 4; y++)
             for (var x = 0; x < 4; x++)
                 source[x, y] = new Rgba32((byte)(x * 85), (byte)(y * 85), 0);
-        using var result = new ResizeOperation(64, 64, ResizeMode.Stretch, ResamplingFilter.Bicubic).Apply(source, OperationContext.Default);
+        using var result = new ResizeOperation(64, 64, BmageResizeMode.Stretch, ResamplingFilter.Bicubic).Apply(source, OperationContext.Default);
         Assert.AreEqual(64, result.Width);
         // Values must increase left to right without jumps larger than a smooth interpolation would give.
         for (var x = 1; x < 64; x++)
@@ -139,9 +139,9 @@ public sealed class ResamplingQualityTests
     public void OneStepAndTwoStepReductionsAgree()
     {
         using var source = TestImages.Gradient(1600, 1200);
-        using var oneStep = new ResizeOperation(100, 75, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
-        using var half = new ResizeOperation(400, 300, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
-        using var twoStep = new ResizeOperation(100, 75, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(half, OperationContext.Default);
+        using var oneStep = new ResizeOperation(100, 75, BmageResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
+        using var half = new ResizeOperation(400, 300, BmageResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
+        using var twoStep = new ResizeOperation(100, 75, BmageResizeMode.Stretch, ResamplingFilter.Auto).Apply(half, OperationContext.Default);
         Assert.IsTrue(TestImages.MeanChannelDifference(oneStep, twoStep) < 2.0);
     }
 }

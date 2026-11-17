@@ -828,7 +828,7 @@ public sealed class ImageEditSession : IDisposable
             if (scaled.Size == size) return scaled;
             scaled.Dispose();
         }
-        return new ResizeOperation(size.Width, size.Height, ResizeMode.Stretch, ResamplingFilter.Auto)
+        return new ResizeOperation(size.Width, size.Height, BmageResizeMode.Stretch, ResamplingFilter.Auto)
             .Apply(original, new OperationContext(_allocator, _limits, cancellationToken, maxDegreeOfParallelism: _maxDegreeOfParallelism));
     }
 

@@ -75,13 +75,13 @@ public class ResizeBenchmarks
     [Benchmark(Description = "Thumbnail to 200 (auto)")]
     public int Thumbnail()
     {
-        using var result = new ResizeOperation(200, 200, ResizeMode.Fit).Apply(_source, Images.OneThread);
+        using var result = new ResizeOperation(200, 200, BmageResizeMode.Fit).Apply(_source, Images.OneThread);
         return result.Width;
     }
 
     private int Run(ResamplingFilter filter)
     {
-        using var result = new ResizeOperation(1280, 1280, ResizeMode.Fit, filter).Apply(_source, Images.OneThread);
+        using var result = new ResizeOperation(1280, 1280, BmageResizeMode.Fit, filter).Apply(_source, Images.OneThread);
         return result.Width;
     }
 }
@@ -186,7 +186,7 @@ public class PipelineBenchmarks
 
     /// <summary>A resize immediately followed by a crop, which the optimiser fuses into one resample.</summary>
     private static readonly ImagePipeline ResizeThenCrop = ImagePipeline.Create()
-        .Resize(1600, 1200, ResizeMode.Stretch)
+        .Resize(1600, 1200, BmageResizeMode.Stretch)
         .Crop(400, 300, 800, 600);
 
     [Benchmark(Baseline = true, Description = "Upload pipeline (optimised)")]
@@ -236,20 +236,20 @@ public class CodecBenchmarks
     {
         var parts = Size.Split('x');
         _source = Images.Create(int.Parse(parts[0]), int.Parse(parts[1]));
-        _png = PngEncoder.Encode(_source, new ImageExportOptions { Format = ImageFormat.Png, PngCompressionLevel = 6 }).Data;
-        _jpeg = JpegEncoder.Encode(_source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.85 }).Data;
-        _webp = WebPEncoder.Encode(_source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.85 }).Data;
-        _webpLossless = WebPEncoder.Encode(_source, new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true }).Data;
+        _png = PngEncoder.Encode(_source, new ImageExportOptions { Format = BmageImageFormat.Png, PngCompressionLevel = 6 }).Data;
+        _jpeg = JpegEncoder.Encode(_source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.85 }).Data;
+        _webp = WebPEncoder.Encode(_source, new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.85 }).Data;
+        _webpLossless = WebPEncoder.Encode(_source, new ImageExportOptions { Format = BmageImageFormat.WebP, Lossless = true }).Data;
     }
 
     [GlobalCleanup]
     public void Cleanup() => _source.Dispose();
 
     [Benchmark(Description = "PNG encode (level 6)")]
-    public int EncodePng() => PngEncoder.Encode(_source, new ImageExportOptions { Format = ImageFormat.Png, PngCompressionLevel = 6 }).Data.Length;
+    public int EncodePng() => PngEncoder.Encode(_source, new ImageExportOptions { Format = BmageImageFormat.Png, PngCompressionLevel = 6 }).Data.Length;
 
     [Benchmark(Description = "PNG encode (level 1)")]
-    public int EncodePngFast() => PngEncoder.Encode(_source, new ImageExportOptions { Format = ImageFormat.Png, PngCompressionLevel = 1 }).Data.Length;
+    public int EncodePngFast() => PngEncoder.Encode(_source, new ImageExportOptions { Format = BmageImageFormat.Png, PngCompressionLevel = 1 }).Data.Length;
 
     [Benchmark(Description = "PNG decode")]
     public int DecodePng()
@@ -259,7 +259,7 @@ public class CodecBenchmarks
     }
 
     [Benchmark(Baseline = true, Description = "JPEG encode (q85)")]
-    public int EncodeJpeg() => JpegEncoder.Encode(_source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.85 }).Data.Length;
+    public int EncodeJpeg() => JpegEncoder.Encode(_source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.85 }).Data.Length;
 
     [Benchmark(Description = "JPEG decode")]
     public int DecodeJpeg()
@@ -269,10 +269,10 @@ public class CodecBenchmarks
     }
 
     [Benchmark(Description = "WebP encode (q85)")]
-    public int EncodeWebP() => WebPEncoder.Encode(_source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.85 }).Data.Length;
+    public int EncodeWebP() => WebPEncoder.Encode(_source, new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.85 }).Data.Length;
 
     [Benchmark(Description = "WebP encode (lossless)")]
-    public int EncodeWebPLossless() => WebPEncoder.Encode(_source, new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true }).Data.Length;
+    public int EncodeWebPLossless() => WebPEncoder.Encode(_source, new ImageExportOptions { Format = BmageImageFormat.WebP, Lossless = true }).Data.Length;
 
     [Benchmark(Description = "WebP decode")]
     public int DecodeWebP()
@@ -300,7 +300,7 @@ public class DrawingBenchmarks
     public void Setup()
     {
         _canvas = ImageCanvas.Create(1920, 1080, Rgba32.White);
-        var builder = new PathBuilder();
+        var builder = new BmagePathBuilder();
         var rng = new Random(7);
         for (var i = 0; i < 40; i++)
         {
@@ -379,7 +379,7 @@ public class ParallelBenchmarks
         _options = new PipelineExecutionOptions { MaxDegreeOfParallelism = Degree };
         _layers =
         [
-            new FillLayer(new Rgba32(255, 120, 40)) { BlendMode = BlendMode.Screen, Opacity = 0.5f, Mask = Mask.Gradient(new(0, 0.75f), new(0, 0.3f)) },
+            new FillLayer(new Rgba32(255, 120, 40)) { BlendMode = BmageBlendMode.Screen, Opacity = 0.5f, Mask = Mask.Gradient(new(0, 0.75f), new(0, 0.3f)) },
             new AdjustmentLayer(ImagePipeline.Create().Contrast(0.3f).Saturation(0.2f)) { Mask = Mask.Ellipse() with { Feather = 20 } },
         ];
     }
@@ -395,7 +395,7 @@ public class ParallelBenchmarks
     [Benchmark(Description = "Downscale 6000x4000 to 1280 (lanczos3)")]
     public int Downscale()
     {
-        using var r = new ResizeOperation(1280, 1280, ResizeMode.Max, ResamplingFilter.Lanczos3).Apply(_photo, _context);
+        using var r = new ResizeOperation(1280, 1280, BmageResizeMode.Max, ResamplingFilter.Lanczos3).Apply(_photo, _context);
         return r.Width;
     }
 
@@ -470,7 +470,7 @@ public class EditingToolBenchmarks
             strokes.Add(new PaintStroke(points, 24, new Rgba32(200, 40, 40)) { Hardness = 0.6f });
         }
         _paint = new PaintLayer(strokes);
-        _group = new GroupLayer([_paint, new FillLayer(new Rgba32(250, 220, 160)) { BlendMode = BlendMode.Multiply }]) { Isolated = true };
+        _group = new GroupLayer([_paint, new FillLayer(new Rgba32(250, 220, 160)) { BlendMode = BmageBlendMode.Multiply }]) { Isolated = true };
         _clipped = [_paint, new FillLayer(new Rgba32(40, 90, 200)) { ClipToLayerBelow = true }];
     }
 

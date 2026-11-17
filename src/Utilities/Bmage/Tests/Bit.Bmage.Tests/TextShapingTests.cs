@@ -11,10 +11,10 @@ namespace Bit.Bmage.Tests;
 [TestClass]
 public sealed class TextShapingTests
 {
-    private static readonly FontFile Vazirmatn = FontFile.Load(File.ReadAllBytes("Assets/Vazirmatn-Regular.ttf"));
-    private static readonly FontFile Latin = FontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
+    private static readonly BmageFontFile Vazirmatn = BmageFontFile.Load(File.ReadAllBytes("Assets/Vazirmatn-Regular.ttf"));
+    private static readonly BmageFontFile Latin = BmageFontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
 
-    private static ushort[] Shape(string text, FontFile? font = null)
+    private static ushort[] Shape(string text, BmageFontFile? font = null)
     {
         var codePoints = TextShaper.CodePoints(text);
         var buffer = TextShaper.ShapeRun(font ?? Vazirmatn, codePoints, 0, codePoints.Length, UnicodeScript.Arabic, rtl: true);
@@ -151,13 +151,13 @@ public sealed class TextShapingTests
 
     private static (float MinX, float MinY, float MaxX, float MaxY) Bounds(PlacedGlyph glyph)
     {
-        var builder = new PathBuilder();
+        var builder = new BmagePathBuilder();
         glyph.Font.GetGlyphOutline(glyph.Glyph)!.AppendTo(builder, new Vector2(glyph.X, glyph.Y), 100f / glyph.Font.UnitsPerEm);
         var points = builder.Build().Contours.SelectMany(c => c).ToArray();
         return (points.Min(p => p.X), points.Min(p => p.Y), points.Max(p => p.X), points.Max(p => p.Y));
     }
 
-    private static PlacedGlyph[] Line(string text, params FontFile[] fonts)
+    private static PlacedGlyph[] Line(string text, params BmageFontFile[] fonts)
     {
         var codePoints = TextShaper.CodePoints(text);
         var bidi = BidiParagraph.Create(codePoints);

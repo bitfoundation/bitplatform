@@ -1504,11 +1504,17 @@ If the startup initializer cannot resolve its services (typically a lifetime mis
 `ValidateScopes`), it reports through `options.OnError` and lets the app start rather than failing
 `MauiApp.Build()`.
 
+## Upgrading
+
+- **Every Blex type is in the `Bit.Blex` namespace.** The Blazor integration moved there from `Bit.Blex.Blazor`, server
+  state from `Bit.Blex.Query`, the MAUI integration from `Bit.Blex.Maui` and the test harness from `Bit.Blex.Testing`.
+  Replace an import of any of them with `using Bit.Blex;` / `@using Bit.Blex`; the old ones fail with CS0246.
+
 ## Projects
 
 | Project | Description |
 |---|---|
-| `Bit.Blex` | The main package. Core runtime: `BlexStoreBase`, attributes, dispatch, middleware, persistence, entity adapter, undo/redo, the `BlexManager` cross-store manager. Blazor integration under `Blazor/` (namespace `Bit.Blex.Blazor`): `BlexComponentBase`, `<BlexProvider>`, browser-storage persistence, Redux DevTools bridge (TypeScript in `Scripts/`, compiled into `wwwroot/` on build). Packs the generator below under `analyzers/dotnet/cs`. |
+| `Bit.Blex` | The main package. Core runtime: `BlexStoreBase`, attributes, dispatch, middleware, persistence, entity adapter, undo/redo, the `BlexManager` cross-store manager. Blazor integration under `Blazor/` (in the same `Bit.Blex` namespace): `BlexComponentBase`, `<BlexProvider>`, browser-storage persistence, Redux DevTools bridge (TypeScript in `Scripts/`, compiled into `wwwroot/` on build). Packs the generator below under `analyzers/dotnet/cs`. |
 | `Bit.Blex.Generators` | Roslyn incremental source generator (netstandard2.0). Not a package of its own: it ships inside `Bit.Blex`. |
 | `Bit.Blex.Maui` | .NET MAUI integration: `UseBitBlex()` startup initializer, `Preferences`-backed persistence, XAML-bindable stores. |
 | `Bit.Blex.Testing` | Test harness and assertions (`BlexTestHarness`, `BlexActionLog`). |

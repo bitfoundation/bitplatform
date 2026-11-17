@@ -274,7 +274,7 @@
 
         var encoded = await exporter.EncodeAsync(image, new ImageExportOptions
         {
-            Format = ImageFormat.Jpeg,
+            Format = BmageImageFormat.Jpeg,
             Metadata = MetadataPolicy.Preserve,
         });
         """;
@@ -328,7 +328,7 @@
             {
                 var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions
                 {
-                    Format = ImageFormat.Jpeg,
+                    Format = BmageImageFormat.Jpeg,
                     Quality = 0.85,
                     Metadata = Policies[i],
                 });

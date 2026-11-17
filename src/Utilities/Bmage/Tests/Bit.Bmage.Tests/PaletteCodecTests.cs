@@ -119,7 +119,7 @@ public sealed class GifEncoderTests
     {
         using var flat = IndexedPngTests.Flat();
         var encoded = GifEncoder.Encode(flat);
-        Assert.AreEqual(ImageFormat.Gif, ImageFormats.Detect(encoded.Data));
+        Assert.AreEqual(BmageImageFormat.Gif, ImageFormats.Detect(encoded.Data));
         using var decoded = GifDecoder.Decode(encoded.Data);
         // GIF has no partial transparency: the translucent blue (alpha 140) becomes opaque, everything else stays.
         for (var y = 0; y < flat.Height; y++)
@@ -141,7 +141,7 @@ public sealed class GifEncoderTests
     {
         // Noise defeats LZW's dictionary, so the codes widen to twelve bits and the table fills and clears many times.
         using var noise = ParallelProcessingTests.Noise(width, height, seed: width);
-        var options = new ImageExportOptions { Format = ImageFormat.Gif, MaxColors = colours, Dither = false };
+        var options = new ImageExportOptions { Format = BmageImageFormat.Gif, MaxColors = colours, Dither = false };
         var expected = ColorQuantizer.Quantize(noise, colours, dither: false, alphaLevels: 2);
         using var decoded = GifDecoder.Decode(GifEncoder.Encode(noise, options).Data);
         for (var i = 0; i < noise.PixelCount; i++)
@@ -162,7 +162,7 @@ public sealed class GifEncoderTests
         for (var x = 0; x < 16; x++) image[x, 0] = Rgba32.Transparent;
         for (var x = 0; x < 16; x++) image[x, 1] = new Rgba32(235, 235, 235);
         image[8, 8] = Rgba32.Black;
-        var options = new ImageExportOptions { Format = ImageFormat.Gif, MaxColors = 2, Dither = false };
+        var options = new ImageExportOptions { Format = BmageImageFormat.Gif, MaxColors = 2, Dither = false };
         using var decoded = GifDecoder.Decode(GifEncoder.Encode(image, options).Data);
         Assert.AreEqual(255, decoded[8, 8].A, "The black pixel is still opaque.");
         Assert.AreEqual(0, decoded[3, 0].A, "The transparent row is still transparent.");
@@ -185,15 +185,15 @@ public sealed class GifEncoderTests
     {
         var processor = new ImageProcessor();
         using var flat = IndexedPngTests.Flat(64, 64);
-        var gif = await processor.EncodeAsync(flat, new ImageExportOptions { Format = ImageFormat.Gif });
-        Assert.AreEqual(ImageFormat.Gif, gif.Format);
+        var gif = await processor.EncodeAsync(flat, new ImageExportOptions { Format = BmageImageFormat.Gif });
+        Assert.AreEqual(BmageImageFormat.Gif, gif.Format);
         Assert.AreEqual("image/gif", gif.MimeType);
-        var ico = await processor.EncodeAsync(flat, new ImageExportOptions { Format = ImageFormat.Ico });
-        Assert.AreEqual(ImageFormat.Ico, ImageFormats.Detect(ico.Data));
+        var ico = await processor.EncodeAsync(flat, new ImageExportOptions { Format = BmageImageFormat.Ico });
+        Assert.AreEqual(BmageImageFormat.Ico, ImageFormats.Detect(ico.Data));
         Assert.AreEqual(".ico", ico.Extension);
         using var back = await processor.DecodeAsync(ico.Data);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(flat, back));
-        Assert.IsTrue(processor.Codecs.CanEncode(ImageFormat.Gif));
+        Assert.IsTrue(processor.Codecs.CanEncode(BmageImageFormat.Gif));
     }
 
     [TestMethod]
@@ -212,7 +212,7 @@ public sealed class IcoCodecTests
     {
         using var logo = IndexedPngTests.Flat(120, 80);
         var favicon = IcoEncoder.CreateFavicon(logo);
-        Assert.AreEqual(ImageFormat.Ico, ImageFormats.Detect(favicon.Data));
+        Assert.AreEqual(BmageImageFormat.Ico, ImageFormats.Detect(favicon.Data));
         var entries = IcoDecoder.ReadDirectory(favicon.Data);
         CollectionAssert.AreEqual(new[] { 16, 32, 48 }, entries.Select(e => e.Width).ToArray());
         CollectionAssert.AreEqual(new[] { 16, 32, 48 }, entries.Select(e => e.Height).ToArray());
@@ -223,7 +223,7 @@ public sealed class IcoCodecTests
         Assert.AreEqual(new Size(48, 48), decoded.Size);
         // Fitted, not stretched: the 3:2 logo leaves transparent bands above and below.
         Assert.AreEqual(0, decoded[24, 2].A);
-        Assert.AreEqual(ImageFormat.Ico, decoded.Metadata!.SourceFormat);
+        Assert.AreEqual(BmageImageFormat.Ico, decoded.Metadata!.SourceFormat);
     }
 
     [TestMethod]
@@ -244,7 +244,7 @@ public sealed class IcoCodecTests
     {
         // The IImageEncoder path is what a capability check promises: it fits the image rather than refusing it.
         using var photo = ImageBuffer.Create(1024, 512, new Rgba32(10, 20, 30));
-        var encoded = await new IcoEncoder().EncodeAsync(photo, new ImageExportOptions { Format = ImageFormat.Ico });
+        var encoded = await new IcoEncoder().EncodeAsync(photo, new ImageExportOptions { Format = BmageImageFormat.Ico });
         var entry = IcoDecoder.ReadDirectory(encoded.Data)[0];
         Assert.AreEqual(256, entry.Width);
         Assert.AreEqual(128, entry.Height);
@@ -305,7 +305,7 @@ public sealed class IcoCodecTests
     {
         Rgba32[] palette = [new(255, 0, 0), new(0, 0, 255)];
         var data = BitmapIcon(10, 6, 1, (x, _) => [(byte)(x % 2)], (x, y) => x == 0 || y == 0, palette);
-        Assert.AreEqual(ImageFormat.Ico, ImageFormats.Detect(data));
+        Assert.AreEqual(BmageImageFormat.Ico, ImageFormats.Detect(data));
         using var image = IcoDecoder.Decode(data);
         Assert.AreEqual(new Size(10, 6), image.Size);
         Assert.AreEqual(0, image[0, 3].A);
@@ -337,7 +337,7 @@ public sealed class IcoCodecTests
         var good = IcoEncoder.CreateFavicon(IndexedPngTests.Flat(32, 32), [16]).Data;
         var noImages = (byte[])good.Clone();
         noImages[4] = 0;
-        Assert.AreNotEqual(ImageFormat.Ico, ImageFormats.Detect(noImages), "A directory of no images is not an icon.");
+        Assert.AreNotEqual(BmageImageFormat.Ico, ImageFormats.Detect(noImages), "A directory of no images is not an icon.");
 
         var outside = (byte[])good.Clone();
         BinaryPrimitives.WriteInt32LittleEndian(outside.AsSpan(18), good.Length);
@@ -359,14 +359,14 @@ public sealed class IcoCodecTests
     [TestMethod]
     public void TheFormatIsNamedAndDetected()
     {
-        Assert.AreEqual("image/x-icon", ImageFormat.Ico.GetMimeType());
-        Assert.AreEqual(ImageFormat.Ico, ImageFormats.FromMimeType("image/vnd.microsoft.icon"));
-        Assert.AreEqual(ImageFormat.Ico, ImageFormats.FromFileName("favicon.ico"));
-        Assert.IsTrue(ImageFormat.Ico.SupportsAlpha());
+        Assert.AreEqual("image/x-icon", BmageImageFormat.Ico.GetMimeType());
+        Assert.AreEqual(BmageImageFormat.Ico, ImageFormats.FromMimeType("image/vnd.microsoft.icon"));
+        Assert.AreEqual(BmageImageFormat.Ico, ImageFormats.FromFileName("favicon.ico"));
+        Assert.IsTrue(BmageImageFormat.Ico.SupportsAlpha());
         // An AVIF whose first box is 256 bytes long starts with the same four bytes as an icon.
         var avif = new byte[300];
         avif[2] = 1;
         "ftypavif"u8.CopyTo(avif.AsSpan(4));
-        Assert.AreEqual(ImageFormat.Avif, ImageFormats.Detect(avif));
+        Assert.AreEqual(BmageImageFormat.Avif, ImageFormats.Detect(avif));
     }
 }

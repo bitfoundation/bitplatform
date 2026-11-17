@@ -32,14 +32,14 @@ public static class JpegContainer
             else if (seg.Marker == 0xDA) break;
         }
         ReadOnlyMemory<byte> profile = icc.Count == 0 ? default : icc.Values.SelectMany(b => b).ToArray();
-        return new ImageMetadata(exif, profile, xmp, ImageFormat.Jpeg, fileName);
+        return new ImageMetadata(exif, profile, xmp, BmageImageFormat.Jpeg, fileName);
     }
 
     /// <summary>
     /// Reads only the EXIF orientation from a JPEG, stopping at the first SOS marker. Nothing is copied out, so it costs
     /// far less than <see cref="ReadMetadata"/>, which copies the EXIF values, the ICC profile and the XMP.
     /// </summary>
-    public static Orientation ReadOrientation(ReadOnlySpan<byte> jpeg)
+    public static BmageOrientation ReadOrientation(ReadOnlySpan<byte> jpeg)
     {
         foreach (var seg in EnumerateSegments(jpeg))
         {
@@ -47,9 +47,9 @@ public static class JpegContainer
             var payload = jpeg.Slice(seg.PayloadOffset, seg.PayloadLength);
             // The first EXIF segment is the one ReadMetadata keeps.
             if (seg.Marker == 0xE1 && payload.StartsWith(ExifHeader))
-                return ExifReader.ReadPrimaryNumber(payload[6..], ExifTag.Orientation) is uint v and >= 1 and <= 8 ? (Orientation)v : Orientation.Normal;
+                return ExifReader.ReadPrimaryNumber(payload[6..], ExifTag.Orientation) is uint v and >= 1 and <= 8 ? (BmageOrientation)v : BmageOrientation.Normal;
         }
-        return Orientation.Normal;
+        return BmageOrientation.Normal;
     }
 
     /// <summary>
@@ -249,7 +249,7 @@ public static class PngContainer
             }
             else if (c.Type == MakeType("IDAT")) break;
         }
-        return new ImageMetadata(exif, icc, xmp, ImageFormat.Png, fileName);
+        return new ImageMetadata(exif, icc, xmp, BmageImageFormat.Png, fileName);
     }
 
     /// <summary>Returns a copy of the PNG with existing metadata chunks replaced by the given metadata (inserted after IHDR).</summary>
@@ -340,7 +340,7 @@ public static class WebPContainer
                 case "XMP ": if (xmp.IsEmpty) xmp = data.ToArray(); break;
             }
         }
-        return new ImageMetadata(exif, icc, xmp, ImageFormat.WebP, fileName);
+        return new ImageMetadata(exif, icc, xmp, BmageImageFormat.WebP, fileName);
     }
 
     /// <summary>Reads the canvas size from a WebP file (VP8X, VP8 or VP8L header).</summary>

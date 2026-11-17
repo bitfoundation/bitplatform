@@ -693,10 +693,10 @@
     private static readonly Preset[] Presets =
     [
         new("Upload cap", "ImagePipeline.Create()\n    .AutoOrient()\n    .MaxSize(1920, 1920)\n    .Sharpen(0.3f)", "photo", ["jpeg", "png"], 0),
-        new("Avatar under 40 KB", "ImagePipeline.Create()\n    .SmartCrop(AspectRatio.Square)\n    .Resize(512, 512, ResizeMode.Stretch)\n    .Sharpen(0.25f)", "photo", ["jpeg", "webp"], 40),
+        new("Avatar under 40 KB", "ImagePipeline.Create()\n    .SmartCrop(AspectRatio.Square)\n    .Resize(512, 512, BmageResizeMode.Stretch)\n    .Sharpen(0.25f)", "photo", ["jpeg", "webp"], 40),
         new("Adjust, then shrink", "ImagePipeline.Create()\n    .Brightness(0.05f)\n    .Contrast(0.1f)\n    .Vibrance(0.2f)\n    .MaxSize(1280, 1280)", "photo", ["jpeg"], 0),
         new("Screenshot", "ImagePipeline.Create()\n    .MaxSize(1600, 1600)", "screenshot", ["jpeg", "png"], 0),
-        new("Logo with alpha", "ImagePipeline.Create()\n    .Resize(256, 256, ResizeMode.Contain)", "graphic", ["png", "jpeg"], 0),
+        new("Logo with alpha", "ImagePipeline.Create()\n    .Resize(256, 256, BmageResizeMode.Contain)", "graphic", ["png", "jpeg"], 0),
         new("Straighten and frame", "ImagePipeline.Create()\n    .MaxSize(1200, 1200)\n    .Straighten(3)\n    .Pad(40, Rgba32.White)", "photo", ["jpeg", "png"], 0),
         new("Duotone poster", "ImagePipeline.Create()\n    .Cover(1080, 1350)\n    .AutoLevels()\n    .Duotone(new Rgba32(36, 24, 96), new Rgba32(255, 138, 112))", "photo", ["jpeg", "webp"], 0),
     ];
@@ -724,7 +724,7 @@
         var processor = new ImageProcessor();                    // the managed codecs a server has
         var jpeg = await processor.EncodeAsync(output, new ImageExportOptions
         {
-            Format = ImageFormat.Jpeg,
+            Format = BmageImageFormat.Jpeg,
             Quality = 0.8,
             MaxFileSize = budget,                                // the library's own search
         });
@@ -752,7 +752,7 @@
 
                 return await Exporter.EncodeAsync(thumb, new ImageExportOptions
                 {
-                    Format = ImageFormat.WebP,
+                    Format = BmageImageFormat.WebP,
                     Metadata = MetadataPolicy.Preserve,
                 });
             }

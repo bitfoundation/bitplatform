@@ -368,8 +368,9 @@ public static partial class BmageCodeReview
             }
         }
 
-        var usesEditor = text.Contains("<BmageEditor", StringComparison.Ordinal) || text.Contains("<BmageDropZone", StringComparison.Ordinal)
-                      || text.Contains("Bit.Bmage.Editor", StringComparison.Ordinal);
+        // By type name, not by tag: a page may reach the editor only from its code (a reference, a subclass, a
+        // DynamicComponent's type), and every Bmage type is in Bit.Bmage, so no import tells the editor apart.
+        var usesEditor = text.Contains("BmageEditor", StringComparison.Ordinal) || text.Contains("BmageDropZone", StringComparison.Ordinal);
 
         if (usesEditor is false || text.Contains("bit-bmage-editor.css", StringComparison.Ordinal)) return;
 
@@ -621,7 +622,7 @@ public static partial class BmageCodeReview
                           $"{format} throws ImageCapabilityException: \"No encoder is registered for {format} in this environment\".",
                 Fix = "Encode WebP on the server instead: lossy for photos and transparency (Quality), lossless for originals " +
                       "(Lossless = true). If the file must be AVIF, encode it in the browser before upload with " +
-                      "ImageExporter.EncodeWithFallbackAsync([ImageFormat.Avif, ImageFormat.WebP])."
+                      "ImageExporter.EncodeWithFallbackAsync([BmageImageFormat.Avif, BmageImageFormat.WebP])."
             });
 
             return;
@@ -640,7 +641,7 @@ public static partial class BmageCodeReview
             Line = line + 1,
             Message = $"{format} is exported with no capability check and no fallback. Few browsers can encode AVIF, and Bmage " +
                       "refuses the PNG a browser silently substitutes: EncodeAsync throws ImageCapabilityException on the others.",
-            Fix = "Exporter.EncodeWithFallbackAsync(image, [ImageFormat.Avif, ImageFormat.WebP], options) - it picks the first " +
+            Fix = "Exporter.EncodeWithFallbackAsync(image, [BmageImageFormat.Avif, BmageImageFormat.WebP], options) - it picks the first " +
                   "format this browser can really encode and reports it on encoded.Format, JPEG when it can write none. Or check " +
                   "capabilities.CanEncode(format) first."
         });
@@ -984,7 +985,7 @@ public static partial class BmageCodeReview
     private static partial Regex LifecycleRegex();
 
     // The calls that need the JavaScript bridge, and throw without it.
-    [GeneratedRegex(@"\.(?<call>DownloadAsync|SaveAsAsync|CopyToClipboardAsync|CreateObjectUrlAsync|ReleaseObjectUrlAsync|LoadFromClipboardAsync|ListenForPasteAsync|DrawTextAsync|MeasureAsync)\s*\(|(?<call>ImageSource\.FromUrl)\s*\(")]
+    [GeneratedRegex(@"\.(?<call>DownloadAsync|SaveAsAsync|CopyToClipboardAsync|CreateObjectUrlAsync|ReleaseObjectUrlAsync|LoadFromClipboardAsync|ListenForPasteAsync|DrawTextAsync|MeasureAsync)\s*\(|(?<call>BmageImageSource\.FromUrl)\s*\(")]
     private static partial Regex BridgeCallRegex();
 
     // The calls that degrade instead of throwing: they read capabilities, which answer "managed" during prerendering.
@@ -1048,7 +1049,7 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"<RunAOTCompilation>\s*false\s*</RunAOTCompilation>", RegexOptions.IgnoreCase)]
     private static partial Regex AotDisabledRegex();
 
-    [GeneratedRegex(@"\b(?:ImageFormat|ImageExportOptions)\.(?<format>Avif)\b")]
+    [GeneratedRegex(@"\b(?:BmageImageFormat|ImageExportOptions)\.(?<format>Avif)\b")]
     private static partial Regex BrowserFormatRegex();
 
     [GeneratedRegex(@"EncodeWithFallbackAsync|\.CanEncode\s*\(|SupportsWebP|SupportsAvif|ChooseEncodableFormat")]

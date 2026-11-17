@@ -8,12 +8,12 @@ namespace Bit.Bmage;
 /// </summary>
 public sealed class JpegDecoder : IImageDecoder
 {
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Jpeg];
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.Jpeg];
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     public ImageInfo? Identify(ReadOnlySpan<byte> data)
     {
-        if (ImageFormats.Detect(data) != ImageFormat.Jpeg) return null;
+        if (ImageFormats.Detect(data) != BmageImageFormat.Jpeg) return null;
         foreach (var seg in JpegContainer.EnumerateSegments(data))
         {
             if (seg.Marker is 0xC0 or 0xC1 or 0xC2 or 0xC3 or 0xC5 or 0xC6 or 0xC7 or 0xC9 or 0xCA or 0xCB or 0xCD or 0xCE or 0xCF)
@@ -23,7 +23,7 @@ public sealed class JpegDecoder : IImageDecoder
                 var h = BinaryPrimitives.ReadUInt16BigEndian(p[1..]);
                 var w = BinaryPrimitives.ReadUInt16BigEndian(p[3..]);
                 var orientation = JpegContainer.ReadOrientation(data);
-                return w == 0 || h == 0 ? null : new ImageInfo(w, h, ImageFormat.Jpeg, orientation, HasAlpha: false);
+                return w == 0 || h == 0 ? null : new ImageInfo(w, h, BmageImageFormat.Jpeg, orientation, HasAlpha: false);
             }
         }
         return null;
@@ -45,15 +45,15 @@ public sealed class JpegDecoder : IImageDecoder
             {
                 var md = JpegContainer.ReadMetadata(data, options.FileName);
                 image.Metadata = md;
-                if (options.AutoOrient && md.Orientation is not (Orientation.Normal or Orientation.Unspecified))
+                if (options.AutoOrient && md.Orientation is not (BmageOrientation.Normal or BmageOrientation.Unspecified))
                 {
                     var oriented = new OrientationOperation(md.Orientation).Apply(image, new OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
                     if (!ReferenceEquals(oriented, image)) image.Dispose();
                     image = oriented;
-                    image.Metadata = md.WithOrientation(Orientation.Normal);
+                    image.Metadata = md.WithOrientation(BmageOrientation.Normal);
                 }
             }
-            else image.Metadata = new ImageMetadata(sourceFormat: ImageFormat.Jpeg, fileName: options.FileName);
+            else image.Metadata = new ImageMetadata(sourceFormat: BmageImageFormat.Jpeg, fileName: options.FileName);
             return image;
         }
         catch { image.Dispose(); throw; }

@@ -41,7 +41,7 @@ public sealed class OverlayAttachmentTests
         ("half turn", OrientationOperation.FromRotation(180)),
         ("horizontal flip", OrientationOperation.FlipHorizontal),
         ("vertical flip", OrientationOperation.FlipVertical),
-        ("resize, both axes apart", new ResizeOperation(150, 120, ResizeMode.Stretch)),
+        ("resize, both axes apart", new ResizeOperation(150, 120, BmageResizeMode.Stretch)),
         ("canvas margins", CanvasSizeOperation.Margins(15, 5, 0, 20)),
         ("canvas size", new CanvasSizeOperation(260, 90, Anchor.BottomRight)),
         ("straighten", new StraightenOperation(-8)),
@@ -71,7 +71,7 @@ public sealed class OverlayAttachmentTests
             .AddAnnotation(new EllipseAnnotation { Rectangle = box, Rotation = 20 })
             .AddAnnotation(new HighlightAnnotation { Rectangle = box })
             .AddAnnotation(new RedactionAnnotation { Rectangle = box })
-            .AddAnnotation(new TextAnnotation { Text = "x", Position = Marked, MeasuredSize = new SizeF(10, 10), Style = new TextStyle { Alignment = TextAlignment.Center, Baseline = TextBaseline.Middle } })
+            .AddAnnotation(new TextAnnotation { Text = "x", Position = Marked, MeasuredSize = new SizeF(10, 10), Style = new TextStyle { Alignment = BmageTextAlignment.Center, Baseline = TextBaseline.Middle } })
             .AddAnnotation(new StepAnnotation { Center = Marked, Number = 1 })
             .AddAnnotation(new CalloutAnnotation { Bubble = new RectangleF(120, 60, 50, 30), Target = Marked })
             .AddAnnotation(new FreehandAnnotation { Points = [Marked - new Vector2(5, 0), Marked, Marked + new Vector2(5, 3)] })
@@ -173,7 +173,7 @@ public sealed class OverlayAttachmentTests
         Assert.AreSame(document.Layers[3].Mask, cropped.Layers[3].Mask, "a relative mask fits whatever image it is applied to");
 
         // A resize stretching the axes apart maps an upright layer's bounds exactly.
-        var stretched = document.AddOperation(new ResizeOperation(400, 50, ResizeMode.Stretch), keepOverlaysAttached: true);
+        var stretched = document.AddOperation(new ResizeOperation(400, 50, BmageResizeMode.Stretch), keepOverlaysAttached: true);
         Assert.AreEqual(new RectangleF(100, 10, 40, 10), ((ImageLayer)stretched.Layers[0]).Bounds);
     }
 

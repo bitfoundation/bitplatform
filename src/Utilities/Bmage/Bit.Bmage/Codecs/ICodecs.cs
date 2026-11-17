@@ -3,7 +3,7 @@
 namespace Bit.Bmage;
 
 /// <summary>Basic facts about an encoded image obtained without a full decode.</summary>
-public sealed record ImageInfo(int Width, int Height, ImageFormat Format, Orientation Orientation = Orientation.Normal, bool? HasAlpha = null)
+public sealed record ImageInfo(int Width, int Height, BmageImageFormat Format, BmageOrientation Orientation = BmageOrientation.Normal, bool? HasAlpha = null)
 {
     /// <summary>The size as it will be displayed once orientation is applied.</summary>
     public Size DisplaySize => Orientation.Transform(new Size(Width, Height));
@@ -48,13 +48,13 @@ public sealed record DecodeOptions
 /// <summary>Options controlling encoding / export.</summary>
 public sealed record ImageExportOptions
 {
-    public static ImageExportOptions Png { get; } = new() { Format = ImageFormat.Png };
-    public static ImageExportOptions Jpeg { get; } = new() { Format = ImageFormat.Jpeg };
-    public static ImageExportOptions WebP { get; } = new() { Format = ImageFormat.WebP };
-    public static ImageExportOptions Avif { get; } = new() { Format = ImageFormat.Avif };
+    public static ImageExportOptions Png { get; } = new() { Format = BmageImageFormat.Png };
+    public static ImageExportOptions Jpeg { get; } = new() { Format = BmageImageFormat.Jpeg };
+    public static ImageExportOptions WebP { get; } = new() { Format = BmageImageFormat.WebP };
+    public static ImageExportOptions Avif { get; } = new() { Format = BmageImageFormat.Avif };
 
     /// <summary>Target format. Defaults to PNG.</summary>
-    public ImageFormat Format { get; init; } = ImageFormat.Png;
+    public BmageImageFormat Format { get; init; } = BmageImageFormat.Png;
 
     /// <summary>Quality for lossy formats in [0,1]. Ignored by lossless formats. Default 0.85.</summary>
     public double Quality { get; init; } = 0.85;
@@ -68,7 +68,7 @@ public sealed record ImageExportOptions
     public bool Lossless { get; init; }
 
     /// <summary>True when <see cref="Lossless"/> applies, that is, <see cref="Format"/> is one that can encode either way.</summary>
-    internal bool EncodesLosslessly => Lossless && Format == ImageFormat.WebP;
+    internal bool EncodesLosslessly => Lossless && Format == BmageImageFormat.WebP;
 
     /// <summary>Which metadata to keep. Defaults to <see cref="MetadataPolicy.Remove"/> for privacy and size.</summary>
     public MetadataPolicy Metadata { get; init; } = MetadataPolicy.Remove;
@@ -127,7 +127,7 @@ public enum MaxFileSizeStrategy
 /// <summary>The result of encoding an image.</summary>
 public sealed class EncodedImage
 {
-    public EncodedImage(byte[] data, ImageFormat format, int width, int height, double? quality = null)
+    public EncodedImage(byte[] data, BmageImageFormat format, int width, int height, double? quality = null)
     {
         Data = data ?? throw new ArgumentNullException(nameof(data));
         Format = format;
@@ -138,7 +138,7 @@ public sealed class EncodedImage
 
     /// <summary>The encoded bytes.</summary>
     public byte[] Data { get; }
-    public ImageFormat Format { get; }
+    public BmageImageFormat Format { get; }
     public int Width { get; }
     public int Height { get; }
     /// <summary>The quality actually used (may differ from the requested one when a size target was in effect).</summary>
@@ -157,7 +157,7 @@ public sealed class EncodedImage
 public interface IImageDecoder
 {
     /// <summary>The formats this decoder handles.</summary>
-    IReadOnlyCollection<ImageFormat> Formats { get; }
+    IReadOnlyCollection<BmageImageFormat> Formats { get; }
 
     /// <summary>Reads header information without decoding pixels. Returns null if the data is not recognised.</summary>
     ImageInfo? Identify(ReadOnlySpan<byte> data);
@@ -170,7 +170,7 @@ public interface IImageDecoder
 public interface IImageEncoder
 {
     /// <summary>The formats this encoder can produce.</summary>
-    IReadOnlyCollection<ImageFormat> Formats { get; }
+    IReadOnlyCollection<BmageImageFormat> Formats { get; }
 
     /// <summary>Encodes the image. Metadata is written according to the options' policy.</summary>
     ValueTask<EncodedImage> EncodeAsync(ImageBuffer image, ImageExportOptions options, CancellationToken cancellationToken = default);
@@ -223,7 +223,7 @@ public sealed class ImageCodecRegistry
     }
 
     /// <summary>Returns the preferred decoder for the format, or null.</summary>
-    public IImageDecoder? GetDecoder(ImageFormat format)
+    public IImageDecoder? GetDecoder(BmageImageFormat format)
     {
         for (var i = _decoders.Count - 1; i >= 0; i--)
             if (_decoders[i].Formats.Contains(format)) return _decoders[i];
@@ -231,21 +231,21 @@ public sealed class ImageCodecRegistry
     }
 
     /// <summary>Returns the preferred encoder for the format, or null.</summary>
-    public IImageEncoder? GetEncoder(ImageFormat format)
+    public IImageEncoder? GetEncoder(BmageImageFormat format)
     {
         for (var i = _encoders.Count - 1; i >= 0; i--)
             if (_encoders[i].Formats.Contains(format)) return _encoders[i];
         return null;
     }
 
-    public bool CanDecode(ImageFormat format) => GetDecoder(format) is not null;
-    public bool CanEncode(ImageFormat format) => GetEncoder(format) is not null;
+    public bool CanDecode(BmageImageFormat format) => GetDecoder(format) is not null;
+    public bool CanEncode(BmageImageFormat format) => GetEncoder(format) is not null;
 
     /// <summary>Detects the format and reads header information. Returns null when unrecognised.</summary>
     public ImageInfo? Identify(ReadOnlySpan<byte> data)
     {
         var format = ImageFormats.Detect(data);
-        if (format == ImageFormat.Unknown) return null;
+        if (format == BmageImageFormat.Unknown) return null;
         return GetDecoder(format)?.Identify(data);
     }
 }

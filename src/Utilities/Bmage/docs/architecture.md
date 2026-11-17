@@ -103,7 +103,7 @@ coverage per pixel, for the image it applies to, and rescales itself for a proxy
 to no mask, and only over the bounds the mask can reach. Anything else runs whole and is blended back. It is an
 optimiser barrier, which is also where the editor's preview cache splits.
 
-A `Layer` composites onto the pipeline's output through a `BlendMode` (the W3C Compositing and Blending Level 1
+A `Layer` composites onto the pipeline's output through a `BmageBlendMode` (the W3C Compositing and Blending Level 1
 modes), an opacity and an optional mask. The edit session caches the composite separately from the pipeline output, so
 annotation edits never composite the layers again and layer edits never re-run the pipeline.
 

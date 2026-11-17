@@ -20,17 +20,17 @@ public sealed class AdversarialPipelineTests
 
     private static ImagePipeline Build(string name) => name switch
     {
-        "resize+crop" => ImagePipeline.Create().Resize(40, 30, ResizeMode.Stretch).Crop(5, 5, 20, 15),
+        "resize+crop" => ImagePipeline.Create().Resize(40, 30, BmageResizeMode.Stretch).Crop(5, 5, 20, 15),
         "crop+crop" => ImagePipeline.Create().Crop(2, 2, 50, 40).Crop(3, 3, 20, 20),
-        "orient+orient" => ImagePipeline.Create().Orient(Orientation.Rotate90).Orient(Orientation.FlipHorizontal),
-        "fit+cover" => ImagePipeline.Create().Resize(50, 50, ResizeMode.Fit).Resize(20, 20, ResizeMode.Cover),
-        "max+stretch" => ImagePipeline.Create().MaxSize(50, 50).Resize(20, 20, ResizeMode.Stretch),
+        "orient+orient" => ImagePipeline.Create().Orient(BmageOrientation.Rotate90).Orient(BmageOrientation.FlipHorizontal),
+        "fit+cover" => ImagePipeline.Create().Resize(50, 50, BmageResizeMode.Fit).Resize(20, 20, BmageResizeMode.Cover),
+        "max+stretch" => ImagePipeline.Create().MaxSize(50, 50).Resize(20, 20, BmageResizeMode.Stretch),
         "adjust-chain" => ImagePipeline.Create().Brightness(0.1f).Contrast(0.2f).Saturation(-0.3f),
         "gamma+posterize" => ImagePipeline.Create().Gamma(1.4f).Posterize(8).Brightness(0.05f),
         "matrix-chain" => ImagePipeline.Create().Grayscale().Sepia(0.5f).Invert(0.25f),
-        "resize+adjust+crop" => ImagePipeline.Create().Resize(30, 30, ResizeMode.Stretch).Brightness(0.2f).Crop(1, 1, 20, 20),
-        "autoorient+cover+sharpen" => ImagePipeline.Create().AutoOrient().Resize(48, 36, ResizeMode.Cover).Sharpen(),
-        "rotate+crop+flip" => ImagePipeline.Create().Rotate(90).Crop(0, 0, 30, 30).Orient(Orientation.FlipVertical),
+        "resize+adjust+crop" => ImagePipeline.Create().Resize(30, 30, BmageResizeMode.Stretch).Brightness(0.2f).Crop(1, 1, 20, 20),
+        "autoorient+cover+sharpen" => ImagePipeline.Create().AutoOrient().Resize(48, 36, BmageResizeMode.Cover).Sharpen(),
+        "rotate+crop+flip" => ImagePipeline.Create().Rotate(90).Crop(0, 0, 30, 30).Orient(BmageOrientation.FlipVertical),
         "tone-chain" => ImagePipeline.Create().Exposure(0.5f).Vibrance(0.3f).ShadowsHighlights(0.2f, -0.2f),
         "empty" => ImagePipeline.Empty,
         "single" => ImagePipeline.Create().Brightness(0.25f),
@@ -114,7 +114,7 @@ public sealed class AdversarialPipelineTests
         using var src = Noise(64, 48, 23);
         using var full = pipeline.Execute(src, new PipelineExecutionOptions { Optimize = false });
 
-        using var proxy = new ResizeOperation(32, 24, ResizeMode.Stretch).Apply(src, OperationContext.Default);
+        using var proxy = new ResizeOperation(32, 24, BmageResizeMode.Stretch).Apply(src, OperationContext.Default);
         using var preview = pipeline.ForScale(scale).Execute(proxy, new PipelineExecutionOptions { Optimize = false });
 
         var expectedW = Math.Max(1, (int)Math.Round(full.Width * scale));
@@ -203,9 +203,9 @@ public sealed class AdversarialPipelineTests
                 pipeline = rnd.Next(10) switch
                 {
                     0 => pipeline.Crop(rnd.Next(0, 30), rnd.Next(0, 30), rnd.Next(1, 40), rnd.Next(1, 40)),
-                    1 => pipeline.Resize(rnd.Next(1, 80), rnd.Next(1, 80), (ResizeMode)rnd.Next(0, 6)),
+                    1 => pipeline.Resize(rnd.Next(1, 80), rnd.Next(1, 80), (BmageResizeMode)rnd.Next(0, 6)),
                     2 => pipeline.Rotate(rnd.NextDouble() * 720 - 360),
-                    3 => pipeline.Orient((Orientation)rnd.Next(1, 9)),
+                    3 => pipeline.Orient((BmageOrientation)rnd.Next(1, 9)),
                     4 => pipeline.Brightness((float)(rnd.NextDouble() * 2 - 1)),
                     5 => pipeline.Contrast((float)(rnd.NextDouble() * 2 - 1)),
                     6 => pipeline.Gamma((float)(rnd.NextDouble() * 3 + 0.1)),
@@ -436,7 +436,7 @@ public sealed class AdversarialPipelineTests
     {
         using var src = Noise(1200, 900, 59);
         using var cts = new CancellationTokenSource();
-        var pipeline = ImagePipeline.Create().Resize(600, 450, ResizeMode.Stretch, ResamplingFilter.Lanczos3).Blur(6f).Sharpen();
+        var pipeline = ImagePipeline.Create().Resize(600, 450, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3).Blur(6f).Sharpen();
         await cts.CancelAsync();
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
             (await pipeline.ExecuteAsync(src, new PipelineExecutionOptions { CancellationToken = cts.Token })).Dispose());
@@ -456,7 +456,7 @@ public sealed class AdversarialPipelineTests
         await cts.CancelAsync();
         var op = kind switch
         {
-            "resize" => (IImageOperation)new ResizeOperation(700, 550, ResizeMode.Stretch, ResamplingFilter.Lanczos3),
+            "resize" => (IImageOperation)new ResizeOperation(700, 550, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3),
             "blur" => new Bit.Bmage.BlurFilter(10f),
             "rotate" => new RotateOperation(37),
             "median" => new Bit.Bmage.MedianFilter(2),
@@ -513,7 +513,7 @@ public sealed class AdversarialPipelineTests
         var processor = new ImageProcessor();
         using var img = Noise(16, 16, 73);
         await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await processor.EncodeAsync(img, ImageExportOptions.Avif));
-        await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await processor.EncodeAsync(img, new ImageExportOptions { Format = ImageFormat.Tiff }));
+        await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await processor.EncodeAsync(img, new ImageExportOptions { Format = BmageImageFormat.Tiff }));
     }
 
     // ------------------------------------------------------------------ batch
@@ -623,10 +623,10 @@ public sealed class AdversarialPipelineTests
     }
 
     [TestMethod]
-    [DataRow(ImageFormat.Png)]
-    [DataRow(ImageFormat.Jpeg)]
-    [DataRow(ImageFormat.Bmp)]
-    public async Task TruncatedFilesFailCleanly(ImageFormat format)
+    [DataRow(BmageImageFormat.Png)]
+    [DataRow(BmageImageFormat.Jpeg)]
+    [DataRow(BmageImageFormat.Bmp)]
+    public async Task TruncatedFilesFailCleanly(BmageImageFormat format)
     {
         var processor = new ImageProcessor();
         using var img = Noise(48, 48, 83);
@@ -641,10 +641,10 @@ public sealed class AdversarialPipelineTests
     }
 
     [TestMethod]
-    [DataRow(ImageFormat.Png)]
-    [DataRow(ImageFormat.Jpeg)]
-    [DataRow(ImageFormat.Bmp)]
-    public async Task CorruptedFilesFailCleanly(ImageFormat format)
+    [DataRow(BmageImageFormat.Png)]
+    [DataRow(BmageImageFormat.Jpeg)]
+    [DataRow(BmageImageFormat.Bmp)]
+    public async Task CorruptedFilesFailCleanly(BmageImageFormat format)
     {
         var processor = new ImageProcessor();
         using var img = Noise(48, 48, 87);
@@ -662,10 +662,10 @@ public sealed class AdversarialPipelineTests
     }
 
     [TestMethod]
-    [DataRow(ImageFormat.Png)]
-    [DataRow(ImageFormat.Jpeg)]
-    [DataRow(ImageFormat.Bmp)]
-    public async Task EncodeDecodeRoundTripPreservesDimensions(ImageFormat format)
+    [DataRow(BmageImageFormat.Png)]
+    [DataRow(BmageImageFormat.Jpeg)]
+    [DataRow(BmageImageFormat.Bmp)]
+    public async Task EncodeDecodeRoundTripPreservesDimensions(BmageImageFormat format)
     {
         var processor = new ImageProcessor();
         foreach (var (w, h) in new[] { (1, 1), (1, 17), (17, 1), (2, 2), (63, 65), (256, 129) })

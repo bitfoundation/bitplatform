@@ -24,15 +24,15 @@ public sealed class BrowserImageInfo
 public sealed class BrowserImageDecoder : IImageDecoder
 {
     private readonly BrowserImageInterop _interop;
-    private readonly ImageFormat[] _formats;
+    private readonly BmageImageFormat[] _formats;
 
-    public BrowserImageDecoder(BrowserImageInterop interop, IEnumerable<ImageFormat>? formats = null)
+    public BrowserImageDecoder(BrowserImageInterop interop, IEnumerable<BmageImageFormat>? formats = null)
     {
         _interop = interop ?? throw new ArgumentNullException(nameof(interop));
-        _formats = formats?.ToArray() ?? [ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Gif, ImageFormat.Bmp];
+        _formats = formats?.ToArray() ?? [BmageImageFormat.Png, BmageImageFormat.Jpeg, BmageImageFormat.WebP, BmageImageFormat.Avif, BmageImageFormat.Gif, BmageImageFormat.Bmp];
     }
 
-    public IReadOnlyCollection<ImageFormat> Formats => _formats;
+    public IReadOnlyCollection<BmageImageFormat> Formats => _formats;
 
     /// <summary>
     /// Header inspection is done in managed code because it needs no browser round trip. Returns null for formats the
@@ -43,16 +43,16 @@ public sealed class BrowserImageDecoder : IImageDecoder
         var format = ImageFormats.Detect(data);
         return format switch
         {
-            ImageFormat.Png => new PngDecoder().Identify(data),
-            ImageFormat.Jpeg => new JpegDecoder().Identify(data),
-            ImageFormat.Bmp => new BmpDecoder().Identify(data),
-            ImageFormat.Gif => new GifDecoder().Identify(data),
-            ImageFormat.WebP => new WebPDecoder().Identify(data),
-            ImageFormat.Avif => new AvifDecoder().Identify(data),
+            BmageImageFormat.Png => new PngDecoder().Identify(data),
+            BmageImageFormat.Jpeg => new JpegDecoder().Identify(data),
+            BmageImageFormat.Bmp => new BmpDecoder().Identify(data),
+            BmageImageFormat.Gif => new GifDecoder().Identify(data),
+            BmageImageFormat.WebP => new WebPDecoder().Identify(data),
+            BmageImageFormat.Avif => new AvifDecoder().Identify(data),
             // The largest image's size, which the pixel limit is checked against; an icon whose directory is invalid
             // gets none, so a pixel limit refuses it before the browser sees it.
-            ImageFormat.Ico => new IcoDecoder().Identify(data),
-            ImageFormat.Tiff => IdentifyTiff(data),
+            BmageImageFormat.Ico => new IcoDecoder().Identify(data),
+            BmageImageFormat.Tiff => IdentifyTiff(data),
             _ => null,
         };
     }
@@ -63,8 +63,8 @@ public sealed class BrowserImageDecoder : IImageDecoder
         var width = ExifReader.ReadPrimaryNumber(data, ExifTag.ImageWidth);
         var height = ExifReader.ReadPrimaryNumber(data, ExifTag.ImageLength);
         if (width is not (> 0 and <= int.MaxValue) || height is not (> 0 and <= int.MaxValue)) return null;
-        var orientation = ExifReader.ReadPrimaryNumber(data, ExifTag.Orientation) is uint o and >= 1 and <= 8 ? (Orientation)o : Orientation.Normal;
-        return new ImageInfo((int)width.Value, (int)height.Value, ImageFormat.Tiff, orientation);
+        var orientation = ExifReader.ReadPrimaryNumber(data, ExifTag.Orientation) is uint o and >= 1 and <= 8 ? (BmageOrientation)o : BmageOrientation.Normal;
+        return new ImageInfo((int)width.Value, (int)height.Value, BmageImageFormat.Tiff, orientation);
     }
 
     /// <summary>Reads the dimensions using the browser, for a format passed to the constructor that no managed header reader covers.</summary>
@@ -92,9 +92,9 @@ public sealed class BrowserImageDecoder : IImageDecoder
         allocator ??= PooledPixelAllocator.Shared;
         options.Limits.ValidateEncodedSize(data.Length);
         var format = ImageFormats.Detect(data.Span);
-        if (format == ImageFormat.Unknown)
+        if (format == BmageImageFormat.Unknown)
             throw new ImageDecodeException("The data does not look like a supported image format.");
-        if (format == ImageFormat.Svg)
+        if (format == BmageImageFormat.Svg)
             throw new ImageDecodeException(ImageFormats.SvgRefused);
 
         // The browser can decode straight to a smaller bitmap, which is what keeps a 48 megapixel phone photo from
@@ -181,14 +181,14 @@ public sealed class BrowserImageDecoder : IImageDecoder
     /// metadata kept the orientation, and anything that applied it again would turn them twice. The managed decoders
     /// leave the pixels as stored, and this gives the same image.
     /// </summary>
-    private static ImageBuffer AsStored(ImageBuffer decoded, ReadOnlyMemory<byte> data, ImageFormat format, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken)
+    private static ImageBuffer AsStored(ImageBuffer decoded, ReadOnlyMemory<byte> data, BmageImageFormat format, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken)
     {
         if (options.AutoOrient) return decoded;
 
         // The orientation the browser applied, from the file even when its metadata was not asked for.
         var metadata = options.ReadMetadata ? decoded.Metadata : ReadMetadata(data, format, options with { ReadMetadata = true });
-        var orientation = metadata?.Orientation ?? Orientation.Normal;
-        if (orientation == Orientation.Normal) return decoded;
+        var orientation = metadata?.Orientation ?? BmageOrientation.Normal;
+        if (orientation == BmageOrientation.Normal) return decoded;
 
         var context = new OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism);
         var stored = new OrientationOperation(orientation.Inverse()).Apply(decoded, context);
@@ -207,12 +207,12 @@ public sealed class BrowserImageDecoder : IImageDecoder
     /// True when the image passes only because the browser is to decode it smaller: decoded whole, it would be past
     /// four times the limit.
     /// </returns>
-    private static bool CheckDecodedSize(ReadOnlySpan<byte> data, ImageFormat format, ImageInfo? header, DecodeOptions options)
+    private static bool CheckDecodedSize(ReadOnlySpan<byte> data, BmageImageFormat format, ImageInfo? header, DecodeOptions options)
     {
         var decoded = format switch
         {
-            ImageFormat.Gif => GifDecoder.BrowserCanvasSize(data),
-            ImageFormat.Avif => AvifDecoder.UncroppedSize(data),
+            BmageImageFormat.Gif => GifDecoder.BrowserCanvasSize(data),
+            BmageImageFormat.Avif => AvifDecoder.UncroppedSize(data),
             _ => header is { Width: > 0, Height: > 0 } ? (header.DisplaySize.Width, header.DisplaySize.Height) : null,
         };
         if (decoded is not { } size)
@@ -245,41 +245,41 @@ public sealed class BrowserImageDecoder : IImageDecoder
         return Math.Ceiling(size.Width * scale) * Math.Ceiling(size.Height * scale);
     }
 
-    private static ImageDecodeException DecodeFailed(ImageFormat format, JSException ex)
+    private static ImageDecodeException DecodeFailed(BmageImageFormat format, JSException ex)
         => new($"The browser could not decode this {format} image. It may be corrupt, or the format may not be supported here. The browser reported: {ex.Message}", ex);
 
     /// <summary>
     /// Parses metadata from the original file. The browser strips it during decode, and it must survive to the export
     /// step so a caller asking for <see cref="MetadataPolicy.Preserve"/> actually gets their copyright and camera data.
     /// </summary>
-    private static ImageMetadata ReadMetadata(ReadOnlyMemory<byte> data, ImageFormat format, DecodeOptions options)
+    private static ImageMetadata ReadMetadata(ReadOnlyMemory<byte> data, BmageImageFormat format, DecodeOptions options)
     {
         var metadata = ReadFileMetadata(data, format, options);
-        if (format != ImageFormat.Avif || options.AutoOrient) return metadata;
+        if (format != BmageImageFormat.Avif || options.AutoOrient) return metadata;
 
         // The browser turns an AVIF upright by its container's irot and imir, not by an Exif orientation in it, so that
         // is the orientation the pixels are turned back from and the one recorded, the way the managed decoder does.
         var orientation = AvifDecoder.ContainerOrientation(data.Span);
         return metadata.Exif is null
-            ? orientation == Orientation.Normal ? metadata : new ImageMetadata(ExifData.FromOrientation(orientation), metadata.IccProfile, metadata.Xmp, ImageFormat.Avif, metadata.FileName)
+            ? orientation == BmageOrientation.Normal ? metadata : new ImageMetadata(ExifData.FromOrientation(orientation), metadata.IccProfile, metadata.Xmp, BmageImageFormat.Avif, metadata.FileName)
             : metadata.WithOrientation(orientation);
     }
 
-    private static ImageMetadata ReadFileMetadata(ReadOnlyMemory<byte> data, ImageFormat format, DecodeOptions options)
+    private static ImageMetadata ReadFileMetadata(ReadOnlyMemory<byte> data, BmageImageFormat format, DecodeOptions options)
     {
         if (!options.ReadMetadata) return new ImageMetadata(sourceFormat: format, fileName: options.FileName);
         try
         {
             var metadata = format switch
             {
-                ImageFormat.Jpeg => JpegContainer.ReadMetadata(data.Span, options.FileName),
-                ImageFormat.Png => PngContainer.ReadMetadata(data.Span, options.FileName),
-                ImageFormat.WebP => WebPContainer.ReadMetadata(data.Span, options.FileName),
-                ImageFormat.Avif => AvifDecoder.ReadMetadata(data, options.FileName),
+                BmageImageFormat.Jpeg => JpegContainer.ReadMetadata(data.Span, options.FileName),
+                BmageImageFormat.Png => PngContainer.ReadMetadata(data.Span, options.FileName),
+                BmageImageFormat.WebP => WebPContainer.ReadMetadata(data.Span, options.FileName),
+                BmageImageFormat.Avif => AvifDecoder.ReadMetadata(data, options.FileName),
                 _ => new ImageMetadata(sourceFormat: format, fileName: options.FileName),
             };
             // The browser already applied the orientation, so record that the pixels are upright.
-            return options.AutoOrient ? metadata.WithOrientation(Orientation.Normal) : metadata;
+            return options.AutoOrient ? metadata.WithOrientation(BmageOrientation.Normal) : metadata;
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -322,15 +322,15 @@ public sealed class BrowserImageDecoder : IImageDecoder
 public sealed class BrowserImageEncoder : IImageEncoder
 {
     private readonly BrowserImageInterop _interop;
-    private readonly ImageFormat[] _formats;
+    private readonly BmageImageFormat[] _formats;
 
-    public BrowserImageEncoder(BrowserImageInterop interop, IEnumerable<ImageFormat>? formats = null)
+    public BrowserImageEncoder(BrowserImageInterop interop, IEnumerable<BmageImageFormat>? formats = null)
     {
         _interop = interop ?? throw new ArgumentNullException(nameof(interop));
-        _formats = formats?.ToArray() ?? [ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif];
+        _formats = formats?.ToArray() ?? [BmageImageFormat.Png, BmageImageFormat.Jpeg, BmageImageFormat.WebP, BmageImageFormat.Avif];
     }
 
-    public IReadOnlyCollection<ImageFormat> Formats => _formats;
+    public IReadOnlyCollection<BmageImageFormat> Formats => _formats;
 
     public async ValueTask<EncodedImage> EncodeAsync(ImageBuffer image, ImageExportOptions options, CancellationToken cancellationToken = default)
     {
@@ -341,7 +341,7 @@ public sealed class BrowserImageEncoder : IImageEncoder
         // A canvas only writes lossy WebP, so a lossless one, the only lossless choice there is, is the managed encoder's.
         if (options.EncodesLosslessly) return WebPEncoder.Encode(image, options, cancellationToken);
         // Nor does it write an indexed PNG.
-        if (options.Format == ImageFormat.Png && options.MaxColors is not null) return PngEncoder.Encode(image, options, cancellationToken);
+        if (options.Format == BmageImageFormat.Png && options.MaxColors is not null) return PngEncoder.Encode(image, options, cancellationToken);
 
         // Formats without alpha need an explicit backdrop; otherwise browsers composite over black. The browser draws it
         // behind the pixels, which leaves opaque ones untouched, so there is no need to scan for transparency first.
@@ -394,9 +394,9 @@ public sealed class BrowserImageEncoder : IImageEncoder
         {
             return options.Format switch
             {
-                ImageFormat.Jpeg => JpegContainer.WriteMetadata(bytes, metadata),
-                ImageFormat.Png => PngContainer.WriteMetadata(bytes, metadata),
-                ImageFormat.WebP => WebPContainer.WriteMetadata(bytes, metadata),
+                BmageImageFormat.Jpeg => JpegContainer.WriteMetadata(bytes, metadata),
+                BmageImageFormat.Png => PngContainer.WriteMetadata(bytes, metadata),
+                BmageImageFormat.WebP => WebPContainer.WriteMetadata(bytes, metadata),
                 // AVIF metadata boxes are not written by this library; the image is returned without them.
                 _ => bytes,
             };

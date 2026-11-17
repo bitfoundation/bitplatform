@@ -253,22 +253,22 @@ public interface IPaint
 }
 
 /// <summary>A single colour paint.</summary>
-public sealed class SolidPaint : IPaint
+public sealed class BmageSolidPaint : IPaint
 {
-    public SolidPaint(Rgba32 color) => Color = color;
+    public BmageSolidPaint(Rgba32 color) => Color = color;
     public Rgba32 Color { get; }
     public Rgba32 GetColor(int x, int y) => Color;
 }
 
 /// <summary>A linear gradient between two points.</summary>
-public sealed class LinearGradientPaint : IPaint
+public sealed class BmageLinearGradientPaint : IPaint
 {
     private readonly Vector2 _start;
     private readonly Vector2 _axis;
     private readonly float _lengthSquared;
     private readonly (float Offset, Rgba32 Color)[] _stops;
 
-    public LinearGradientPaint(Vector2 start, Vector2 end, IReadOnlyList<(float Offset, Rgba32 Color)> stops)
+    public BmageLinearGradientPaint(Vector2 start, Vector2 end, IReadOnlyList<(float Offset, Rgba32 Color)> stops)
     {
         ArgumentNullException.ThrowIfNull(stops);
         if (stops.Count < 2) throw new ArgumentException("A gradient needs at least two stops.", nameof(stops));
@@ -307,13 +307,13 @@ public sealed class LinearGradientPaint : IPaint
 }
 
 /// <summary>A radial gradient from a centre point out to a radius.</summary>
-public sealed class RadialGradientPaint : IPaint
+public sealed class BmageRadialGradientPaint : IPaint
 {
     private readonly Vector2 _center;
     private readonly float _radius;
     private readonly (float Offset, Rgba32 Color)[] _stops;
 
-    public RadialGradientPaint(Vector2 center, float radius, IReadOnlyList<(float Offset, Rgba32 Color)> stops)
+    public BmageRadialGradientPaint(Vector2 center, float radius, IReadOnlyList<(float Offset, Rgba32 Color)> stops)
     {
         ArgumentNullException.ThrowIfNull(stops);
         if (stops.Count < 2) throw new ArgumentException("A gradient needs at least two stops.", nameof(stops));
@@ -326,7 +326,7 @@ public sealed class RadialGradientPaint : IPaint
     public Rgba32 GetColor(int x, int y)
     {
         var d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), _center) / _radius;
-        return LinearGradientPaint.Sample(_stops, Math.Clamp(d, 0f, 1f));
+        return BmageLinearGradientPaint.Sample(_stops, Math.Clamp(d, 0f, 1f));
     }
 }
 

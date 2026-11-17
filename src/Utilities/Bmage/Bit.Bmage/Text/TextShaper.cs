@@ -4,7 +4,7 @@ using System.Text;
 namespace Bit.Bmage;
 
 /// <summary>A glyph placed on a line: its font, and its origin in pixels from the line's start on the baseline (y down).</summary>
-internal readonly record struct PlacedGlyph(FontFile Font, ushort Glyph, float X, float Y);
+internal readonly record struct PlacedGlyph(BmageFontFile Font, ushort Glyph, float X, float Y);
 
 /// <summary>A shaped line: its glyphs from left to right, its width, and how far its fonts reach above and below the baseline.</summary>
 internal sealed record ShapedLine(PlacedGlyph[] Glyphs, float Width, float Ascent, float Descent);
@@ -55,7 +55,7 @@ internal static class TextShaper
     /// their bidi levels for that line. <paramref name="fonts"/> is the order to look for glyphs in, the style's own
     /// font first.
     /// </summary>
-    public static ShapedLine LayoutLine(IReadOnlyList<FontFile> fonts, int[] codePoints, ReadOnlySpan<byte> levels, int start, int end, float fontSize, float letterSpacing)
+    public static ShapedLine LayoutLine(IReadOnlyList<BmageFontFile> fonts, int[] codePoints, ReadOnlySpan<byte> levels, int start, int end, float fontSize, float letterSpacing)
     {
         var runs = Itemize(fonts, codePoints, levels, start, end);
         var primary = fonts[0];
@@ -117,7 +117,7 @@ internal static class TextShaper
     /// is on its first code point, a mark's on nothing. A wrap measures its candidate lines as sums of these instead of
     /// shaping every candidate on its own, which the breaks it then settles on are shaped as.
     /// </summary>
-    public static float[] MeasureAdvances(IReadOnlyList<FontFile> fonts, int[] codePoints, ReadOnlySpan<byte> levels, int start, int end, float fontSize, float letterSpacing)
+    public static float[] MeasureAdvances(IReadOnlyList<BmageFontFile> fonts, int[] codePoints, ReadOnlySpan<byte> levels, int start, int end, float fontSize, float letterSpacing)
     {
         var advances = new float[codePoints.Length];
         foreach (var run in Itemize(fonts, codePoints, levels, start, end))
@@ -145,18 +145,18 @@ internal static class TextShaper
         return (basePosition.X + (g.AttachDx + g.XOffset) * scale, basePosition.Y - (g.AttachDy + g.YOffset) * scale);
     }
 
-    private readonly record struct Run(int Start, int End, FontFile Font, UnicodeScript Script, byte Level);
+    private readonly record struct Run(int Start, int End, BmageFontFile Font, UnicodeScript Script, byte Level);
 
     /// <summary>Splits a line into runs that share a font, a script and a bidi level.</summary>
-    private static List<Run> Itemize(IReadOnlyList<FontFile> fonts, int[] codePoints, ReadOnlySpan<byte> levels, int start, int end)
+    private static List<Run> Itemize(IReadOnlyList<BmageFontFile> fonts, int[] codePoints, ReadOnlySpan<byte> levels, int start, int end)
     {
         var runs = new List<Run>();
         var count = end - start;
         if (count <= 0) return runs;
-        var chosenFonts = new FontFile[count];
+        var chosenFonts = new BmageFontFile[count];
         var scripts = new UnicodeScript[count];
 
-        FontFile? previous = null;
+        BmageFontFile? previous = null;
         var previousScript = UnicodeScript.Common;
         for (var k = 0; k < count; k++)
         {
@@ -177,7 +177,7 @@ internal static class TextShaper
                     break;
                 }
             }
-            FontFile font;
+            BmageFontFile font;
             if (previous is not null && (IsInvisible(cp) || IsMark(cp) || (inherits && previous.HasGlyph(cp))))
                 font = previous;
             else
@@ -198,7 +198,7 @@ internal static class TextShaper
         return runs;
     }
 
-    private static FontFile? FirstWithGlyph(IReadOnlyList<FontFile> fonts, int codePoint)
+    private static BmageFontFile? FirstWithGlyph(IReadOnlyList<BmageFontFile> fonts, int codePoint)
     {
         foreach (var font in fonts)
             if (font.HasGlyph(codePoint)) return font;
@@ -221,7 +221,7 @@ internal static class TextShaper
     };
 
     /// <summary>Shapes one run in logical order: glyphs, substitutions, then positions in font units.</summary>
-    internal static GlyphBuffer ShapeRun(FontFile font, int[] codePoints, int start, int end, UnicodeScript script, bool rtl)
+    internal static GlyphBuffer ShapeRun(BmageFontFile font, int[] codePoints, int start, int end, UnicodeScript script, bool rtl)
     {
         var layout = font.Layout;
         var buffer = new GlyphBuffer();

@@ -22,7 +22,7 @@ public sealed class RasterizerTests
     {
         using var canvas = ImageCanvas.Create(64, 64);
         // Right triangle whose hypotenuse is the line x + y = 64.
-        var triangle = new PathBuilder().AddPolygon([new Vector2(0, 0), new Vector2(64, 0), new Vector2(0, 64)]).Build();
+        var triangle = new BmagePathBuilder().AddPolygon([new Vector2(0, 0), new Vector2(64, 0), new Vector2(0, 64)]).Build();
         canvas.FillPath(triangle, Rgba32.Black);
         for (var i = 8; i < 56; i++)
         {
@@ -39,7 +39,7 @@ public sealed class RasterizerTests
     public void EvenOddRuleCutsHoles()
     {
         using var canvas = ImageCanvas.Create(64, 64);
-        var builder = new PathBuilder();
+        var builder = new BmagePathBuilder();
         builder.AddRectangle(new RectangleF(8, 8, 48, 48));
         builder.AddRectangle(new RectangleF(20, 20, 24, 24));
         canvas.FillPath(builder.Build(), Rgba32.Black, FillRule.EvenOdd);
@@ -51,7 +51,7 @@ public sealed class RasterizerTests
     public void NonZeroRuleFillsNestedContours()
     {
         using var canvas = ImageCanvas.Create(64, 64);
-        var builder = new PathBuilder();
+        var builder = new BmagePathBuilder();
         builder.AddRectangle(new RectangleF(8, 8, 48, 48));
         builder.AddRectangle(new RectangleF(20, 20, 24, 24));
         canvas.FillPath(builder.Build(), Rgba32.Black, FillRule.NonZero);
@@ -82,8 +82,8 @@ public sealed class RasterizerTests
     public void FillsWithALinearGradient()
     {
         using var canvas = ImageCanvas.Create(64, 8);
-        var paint = new LinearGradientPaint(new Vector2(0, 0), new Vector2(64, 0), [(0f, Rgba32.Black), (1f, Rgba32.White)]);
-        canvas.FillPath(new PathBuilder().AddRectangle(new RectangleF(0, 0, 64, 8)).Build(), paint);
+        var paint = new BmageLinearGradientPaint(new Vector2(0, 0), new Vector2(64, 0), [(0f, Rgba32.Black), (1f, Rgba32.White)]);
+        canvas.FillPath(new BmagePathBuilder().AddRectangle(new RectangleF(0, 0, 64, 8)).Build(), paint);
         Assert.IsTrue(canvas.Buffer[1, 4].R < 20);
         Assert.IsTrue(canvas.Buffer[62, 4].R > 235);
         Assert.IsInRange(110, 145, canvas.Buffer[32, 4].R);
@@ -109,7 +109,7 @@ public sealed class StrokerTests
     public void StrokeWidthIsHonoured()
     {
         using var canvas = ImageCanvas.Create(64, 64);
-        canvas.DrawLine(new Vector2(32, 0), new Vector2(32, 64), Rgba32.Black, new StrokeStyle { Width = 8, Cap = LineCap.Butt });
+        canvas.DrawLine(new Vector2(32, 0), new Vector2(32, 64), Rgba32.Black, new StrokeStyle { Width = 8, Cap = BmageLineCap.Butt });
         var covered = 0;
         for (var x = 0; x < 64; x++) if (canvas.Buffer[x, 32].A > 128) covered++;
         Assert.IsInRange(7, 9, covered);
@@ -119,10 +119,10 @@ public sealed class StrokerTests
     public void RoundCapsExtendBeyondTheEndpoints()
     {
         using var canvas = ImageCanvas.Create(64, 64);
-        canvas.DrawLine(new Vector2(20, 32), new Vector2(44, 32), Rgba32.Black, new StrokeStyle { Width = 10, Cap = LineCap.Round });
+        canvas.DrawLine(new Vector2(20, 32), new Vector2(44, 32), Rgba32.Black, new StrokeStyle { Width = 10, Cap = BmageLineCap.Round });
         Assert.IsTrue(canvas.Buffer[17, 32].A > 100, "Round cap did not extend past the start point");
         using var butt = ImageCanvas.Create(64, 64);
-        butt.DrawLine(new Vector2(20, 32), new Vector2(44, 32), Rgba32.Black, new StrokeStyle { Width = 10, Cap = LineCap.Butt });
+        butt.DrawLine(new Vector2(20, 32), new Vector2(44, 32), Rgba32.Black, new StrokeStyle { Width = 10, Cap = BmageLineCap.Butt });
         Assert.IsTrue(butt.Buffer[17, 32].A < 20, "Butt cap extended past the start point");
     }
 
@@ -130,7 +130,7 @@ public sealed class StrokerTests
     public void DashedLinesLeaveGaps()
     {
         using var canvas = ImageCanvas.Create(100, 16);
-        canvas.DrawLine(new Vector2(0, 8), new Vector2(100, 8), Rgba32.Black, new StrokeStyle { Width = 4, Cap = LineCap.Butt, DashPattern = [10f, 10f] });
+        canvas.DrawLine(new Vector2(0, 8), new Vector2(100, 8), Rgba32.Black, new StrokeStyle { Width = 4, Cap = BmageLineCap.Butt, DashPattern = [10f, 10f] });
         var covered = 0;
         var gaps = 0;
         for (var x = 0; x < 100; x++)
@@ -176,7 +176,7 @@ public sealed class StrokerTests
     [TestMethod]
     public void RejectsNonPositiveStrokeWidth()
     {
-        var path = new PathBuilder().MoveTo(0, 0).LineTo(10, 10).Build();
+        var path = new BmagePathBuilder().MoveTo(0, 0).LineTo(10, 10).Build();
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => Stroker.CreateStrokeOutline(path, new StrokeStyle { Width = 0 }));
     }
 }
@@ -232,7 +232,7 @@ public sealed class CanvasImageTests
     {
         using var canvas = ImageCanvas.Create(16, 16, Rgba32.Black);
         using var mask = ImageBuffer.Create(8, 8, Rgba32.White);
-        canvas.DrawImage(mask, new Vector2(0, 0), BlendMode.Erase);
+        canvas.DrawImage(mask, new Vector2(0, 0), BmageBlendMode.Erase);
         Assert.AreEqual(0, canvas.Buffer[4, 4].A);
         Assert.AreEqual(255, canvas.Buffer[12, 12].A);
     }
@@ -252,7 +252,7 @@ public sealed class CanvasImageTests
     {
         using var buffer = ImageBuffer.Create(32, 32, Rgba32.White);
         using var canvas = ImageCanvas.FromBuffer(buffer);
-        Assert.ThrowsExactly<InvalidOperationException>(() => canvas.ApplyPipeline(ImagePipeline.Create().Resize(16, 16, ResizeMode.Stretch)));
+        Assert.ThrowsExactly<InvalidOperationException>(() => canvas.ApplyPipeline(ImagePipeline.Create().Resize(16, 16, BmageResizeMode.Stretch)));
     }
 }
 

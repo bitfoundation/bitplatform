@@ -17,7 +17,7 @@ public static class SampleImages
         float H(double f) => (float)(height * f);
 
         // Sky, fading from deep blue to a warm horizon.
-        canvas.FillPath(new PathBuilder().AddRectangle(new RectangleF(0, 0, width, height)).Build(), new LinearGradientPaint(
+        canvas.FillPath(new BmagePathBuilder().AddRectangle(new RectangleF(0, 0, width, height)).Build(), new BmageLinearGradientPaint(
             new Vector2(0, 0), new Vector2(0, H(0.62)),
             [(0f, new Rgba32(28, 52, 120)), (0.55f, new Rgba32(226, 128, 102)), (1f, new Rgba32(252, 206, 132))]));
         canvas.FillCircle(new Vector2(W(0.70), H(0.50)), H(0.10), new Rgba32(255, 238, 186));
@@ -35,7 +35,7 @@ public static class SampleImages
         ], new Rgba32(58, 52, 86));
 
         // A lake reflecting the sky, with a glint under the sun.
-        canvas.FillPath(new PathBuilder().AddRectangle(new RectangleF(0, H(0.68), width, H(0.32))).Build(), new LinearGradientPaint(
+        canvas.FillPath(new BmagePathBuilder().AddRectangle(new RectangleF(0, H(0.68), width, H(0.32))).Build(), new BmageLinearGradientPaint(
             new Vector2(0, H(0.68)), new Vector2(0, height),
             [(0f, new Rgba32(236, 160, 120)), (0.4f, new Rgba32(96, 92, 140)), (1f, new Rgba32(24, 36, 70))]));
         for (var i = 0; i < 6; i++)

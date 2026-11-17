@@ -8,7 +8,7 @@ public sealed class PngCodecTests
     {
         using var source = TestImages.Gradient(37, 23);
         var encoded = PngEncoder.Encode(source);
-        Assert.AreEqual(ImageFormat.Png, ImageFormats.Detect(encoded.Data));
+        Assert.AreEqual(BmageImageFormat.Png, ImageFormats.Detect(encoded.Data));
         using var decoded = PngDecoder.Decode(encoded.Data);
         Assert.AreEqual(source.Width, decoded.Width);
         Assert.AreEqual(source.Height, decoded.Height);
@@ -32,7 +32,7 @@ public sealed class PngCodecTests
     public void RoundTripsAtEveryCompressionLevel(int level)
     {
         using var source = TestImages.Gradient(29, 17);
-        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Png, PngCompressionLevel = level });
+        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = BmageImageFormat.Png, PngCompressionLevel = level });
         using var decoded = PngDecoder.Decode(encoded.Data);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, decoded));
     }
@@ -64,7 +64,7 @@ public sealed class PngCodecTests
         using var source = TestImages.Gradient(8, 8);
         var exif = new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Make, ExifValue.FromString("Bmage")));
         source.Metadata = new ImageMetadata(exif);
-        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Png, Metadata = MetadataPolicy.Preserve });
+        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = BmageImageFormat.Png, Metadata = MetadataPolicy.Preserve });
         using var decoded = PngDecoder.Decode(encoded.Data);
         Assert.AreEqual("Bmage", decoded.Metadata?.Exif?.Make);
     }
@@ -119,13 +119,13 @@ public sealed class PngCodecTests
     public void AppliesExifOrientationOnDecode()
     {
         using var source = TestImages.Quadrants(8, 8);
-        source.Metadata = new ImageMetadata(ExifData.FromOrientation(Orientation.Rotate90));
-        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Png, Metadata = MetadataPolicy.Preserve });
+        source.Metadata = new ImageMetadata(ExifData.FromOrientation(BmageOrientation.Rotate90));
+        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = BmageImageFormat.Png, Metadata = MetadataPolicy.Preserve });
 
         // Preserve resets the stored orientation to normal, so re-inject it to simulate a camera file.
-        var reOriented = PngContainer.WriteMetadata(encoded.Data, new ImageMetadata(ExifData.FromOrientation(Orientation.Rotate90)));
+        var reOriented = PngContainer.WriteMetadata(encoded.Data, new ImageMetadata(ExifData.FromOrientation(BmageOrientation.Rotate90)));
         using var decoded = PngDecoder.Decode(reOriented, new DecodeOptions { AutoOrient = true });
-        Assert.AreEqual(Orientation.Normal, decoded.Metadata!.Orientation);
+        Assert.AreEqual(BmageOrientation.Normal, decoded.Metadata!.Orientation);
         // Top-left of the rotated image comes from the bottom-left of the original (blue).
         Assert.AreEqual(new Rgba32(0, 0, 255), decoded[0, 0]);
     }
@@ -170,8 +170,8 @@ public sealed class JpegCodecTests
     public void RoundTripsGradientWithinToleranceAtHighQuality()
     {
         using var source = TestImages.Gradient(64, 48);
-        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95 });
-        Assert.AreEqual(ImageFormat.Jpeg, ImageFormats.Detect(encoded.Data));
+        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.95 });
+        Assert.AreEqual(BmageImageFormat.Jpeg, ImageFormats.Detect(encoded.Data));
         using var decoded = JpegDecoder.Decode(encoded.Data);
         Assert.AreEqual(source.Width, decoded.Width);
         Assert.AreEqual(source.Height, decoded.Height);
@@ -182,7 +182,7 @@ public sealed class JpegCodecTests
     public void DecodesOwnSubsampledOutput()
     {
         using var source = TestImages.Gradient(70, 34);
-        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 });
+        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 });
         using var decoded = JpegDecoder.Decode(encoded.Data);
         Assert.AreEqual(70, decoded.Width);
         Assert.AreEqual(34, decoded.Height);
@@ -193,8 +193,8 @@ public sealed class JpegCodecTests
     public void LowerQualityProducesSmallerFiles()
     {
         using var source = TestImages.Gradient(128, 128);
-        var high = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95 });
-        var low = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.4 });
+        var high = JpegEncoder.Encode(source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.95 });
+        var low = JpegEncoder.Encode(source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.4 });
         Assert.IsTrue(low.Length < high.Length, $"low={low.Length} high={high.Length}");
     }
 
@@ -202,7 +202,7 @@ public sealed class JpegCodecTests
     public void CompositesTransparencyOverBackground()
     {
         using var source = ImageBuffer.Create(16, 16, Rgba32.Transparent);
-        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95, Background = new Rgba32(255, 0, 0) });
+        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.95, Background = new Rgba32(255, 0, 0) });
         using var decoded = JpegDecoder.Decode(encoded.Data);
         var p = decoded[8, 8];
         Assert.IsTrue(p.R > 200 && p.G < 60 && p.B < 60, $"Expected red background, got {p}");
@@ -224,7 +224,7 @@ public sealed class JpegCodecTests
     {
         using var source = TestImages.Gradient(16, 16);
         source.Metadata = new ImageMetadata(new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Model, ExifValue.FromString("Test Model"))));
-        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Metadata = MetadataPolicy.Preserve });
+        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Metadata = MetadataPolicy.Preserve });
         using var decoded = JpegDecoder.Decode(encoded.Data);
         Assert.AreEqual("Test Model", decoded.Metadata?.Exif?.Model);
     }
@@ -351,14 +351,14 @@ public sealed class JpegCodecTests
     {
         using var source = TestImages.Gradient(16, 8);
         var plain = JpegEncoder.Encode(source).Data;
-        foreach (var orientation in new[] { Orientation.Normal, Orientation.Rotate90, Orientation.FlipHorizontal, Orientation.Rotate270 })
+        foreach (var orientation in new[] { BmageOrientation.Normal, BmageOrientation.Rotate90, BmageOrientation.FlipHorizontal, BmageOrientation.Rotate270 })
         {
             var exif = ExifData.FromOrientation(orientation);
             var encoded = JpegContainer.WriteMetadata(plain, new ImageMetadata(exif.WithPrimary(exif.Primary.With(ExifTag.Model, ExifValue.FromString("Cam")))));
             Assert.AreEqual(orientation, JpegContainer.ReadOrientation(encoded), orientation.ToString());
             Assert.AreEqual(JpegContainer.ReadMetadata(encoded).Orientation, JpegContainer.ReadOrientation(encoded), orientation.ToString());
         }
-        Assert.AreEqual(Orientation.Normal, JpegContainer.ReadOrientation(plain));
+        Assert.AreEqual(BmageOrientation.Normal, JpegContainer.ReadOrientation(plain));
     }
 }
 
@@ -366,21 +366,21 @@ public sealed class JpegCodecTests
 public sealed class FormatDetectionTests
 {
     [TestMethod]
-    [DataRow("image/jpeg", ImageFormat.Jpeg)]
-    [DataRow("image/png", ImageFormat.Png)]
-    [DataRow("image/webp", ImageFormat.WebP)]
-    [DataRow("image/avif", ImageFormat.Avif)]
-    [DataRow("image/svg+xml", ImageFormat.Svg)]
-    [DataRow("image/jpeg; charset=binary", ImageFormat.Jpeg)]
-    [DataRow("nonsense", ImageFormat.Unknown)]
-    public void MapsMimeTypes(string mime, ImageFormat expected) => Assert.AreEqual(expected, ImageFormats.FromMimeType(mime));
+    [DataRow("image/jpeg", BmageImageFormat.Jpeg)]
+    [DataRow("image/png", BmageImageFormat.Png)]
+    [DataRow("image/webp", BmageImageFormat.WebP)]
+    [DataRow("image/avif", BmageImageFormat.Avif)]
+    [DataRow("image/svg+xml", BmageImageFormat.Svg)]
+    [DataRow("image/jpeg; charset=binary", BmageImageFormat.Jpeg)]
+    [DataRow("nonsense", BmageImageFormat.Unknown)]
+    public void MapsMimeTypes(string mime, BmageImageFormat expected) => Assert.AreEqual(expected, ImageFormats.FromMimeType(mime));
 
     [TestMethod]
-    [DataRow("photo.JPG", ImageFormat.Jpeg)]
-    [DataRow("a.b.webp", ImageFormat.WebP)]
-    [DataRow(".png", ImageFormat.Png)]
-    [DataRow("noext", ImageFormat.Unknown)]
-    public void MapsFileNames(string name, ImageFormat expected) => Assert.AreEqual(expected, ImageFormats.FromFileName(name));
+    [DataRow("photo.JPG", BmageImageFormat.Jpeg)]
+    [DataRow("a.b.webp", BmageImageFormat.WebP)]
+    [DataRow(".png", BmageImageFormat.Png)]
+    [DataRow("noext", BmageImageFormat.Unknown)]
+    public void MapsFileNames(string name, BmageImageFormat expected) => Assert.AreEqual(expected, ImageFormats.FromFileName(name));
 
     [TestMethod]
     public void DetectsWebPMagic()
@@ -388,7 +388,7 @@ public sealed class FormatDetectionTests
         var data = new byte[16];
         "RIFF"u8.CopyTo(data);
         "WEBP"u8.CopyTo(data.AsSpan(8));
-        Assert.AreEqual(ImageFormat.WebP, ImageFormats.Detect(data));
+        Assert.AreEqual(BmageImageFormat.WebP, ImageFormats.Detect(data));
     }
 
     [TestMethod]
@@ -399,21 +399,21 @@ public sealed class FormatDetectionTests
             0, 0, 0, 0x1C, (byte)'f', (byte)'t', (byte)'y', (byte)'p', (byte)'a', (byte)'v', (byte)'i', (byte)'f',
             0, 0, 0, 0, (byte)'a', (byte)'v', (byte)'i', (byte)'f',
         };
-        Assert.AreEqual(ImageFormat.Avif, ImageFormats.Detect(data));
+        Assert.AreEqual(BmageImageFormat.Avif, ImageFormats.Detect(data));
     }
 
     [TestMethod]
     public void DetectsSvg()
     {
-        Assert.AreEqual(ImageFormat.Svg, ImageFormats.Detect("  <svg xmlns=\"http://www.w3.org/2000/svg\"/>"u8));
-        Assert.AreEqual(ImageFormat.Svg, ImageFormats.Detect("<?xml version=\"1.0\"?><svg/>"u8));
+        Assert.AreEqual(BmageImageFormat.Svg, ImageFormats.Detect("  <svg xmlns=\"http://www.w3.org/2000/svg\"/>"u8));
+        Assert.AreEqual(BmageImageFormat.Svg, ImageFormats.Detect("<?xml version=\"1.0\"?><svg/>"u8));
     }
 
     [TestMethod]
     public void ReturnsUnknownForEmptyOrShortData()
     {
-        Assert.AreEqual(ImageFormat.Unknown, ImageFormats.Detect([]));
-        Assert.AreEqual(ImageFormat.Unknown, ImageFormats.Detect([0x00, 0x01]));
+        Assert.AreEqual(BmageImageFormat.Unknown, ImageFormats.Detect([]));
+        Assert.AreEqual(BmageImageFormat.Unknown, ImageFormats.Detect([0x00, 0x01]));
     }
 }
 

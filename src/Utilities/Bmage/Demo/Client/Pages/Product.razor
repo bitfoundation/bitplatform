@@ -140,7 +140,7 @@
     <p>
         <code>Fit</code> rather than <code>Cover</code>: a product must never be cropped, so it is
         scaled to fit the padded area and centred on an <code>ImageCanvas</code> filled with the
-        catalogue background. (<code>ResizeMode.Contain</code> pads too, but it fits to the full canvas
+        catalogue background. (<code>BmageResizeMode.Contain</code> pads too, but it fits to the full canvas
         first - fine for a letterbox, wrong for a margin.) Each size is a separate run against pixels
         that were decoded once, which is the expensive part.
     </p>
@@ -168,7 +168,7 @@
     private Rgba32 _background = Rgba32.White;
     private int _padding = 6;
     private string _shape = "square";
-    private ImageFormat _format = ImageFormat.WebP;
+    private BmageImageFormat _format = BmageImageFormat.WebP;
     private readonly List<int> _skipped = [];
     private long _sourceBytes;
     private bool _busy;
@@ -185,9 +185,9 @@
     private bool IsHydrating => RendererInfo.IsInteractive is false;
 
     // Until the probe has run, only the current choice is listed (and the list is disabled).
-    private IEnumerable<ImageFormat> AvailableFormats => _capabilities is null
+    private IEnumerable<BmageImageFormat> AvailableFormats => _capabilities is null
         ? [_format]
-        : new[] { ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Jpeg, ImageFormat.Png }.Where(_capabilities.CanEncode);
+        : new[] { BmageImageFormat.WebP, BmageImageFormat.Avif, BmageImageFormat.Jpeg, BmageImageFormat.Png }.Where(_capabilities.CanEncode);
 
     private const string Snippet = """
         // Fit, never Cover: a product must never be cropped. It is scaled to fit the
@@ -197,7 +197,7 @@
             var inner = (int)(size * (1 - padding * 2));
             using var fitted = await ImagePipeline.Create()
                 .AutoOrient()
-                .Resize(inner, inner, ResizeMode.Fit)
+                .Resize(inner, inner, BmageResizeMode.Fit)
                 .Sharpen(0.25f)
                 .ExecuteAsync(decodedOnce);
 
@@ -214,7 +214,7 @@
         // Fit inside the padded area, then grow the canvas to the full size around it.
         var tile = ImagePipeline.Create()
             .AutoOrient()
-            .Resize(inner, inner, ResizeMode.Fit)
+            .Resize(inner, inner, BmageResizeMode.Fit)
             .Sharpen(0.25f)
             .CanvasSize(size, size, Anchor.Center, catalogueBackground);
 
@@ -226,7 +226,7 @@
     {
         if (!firstRender || IsHydrating) return;
         _capabilities = await Capabilities.GetAsync();
-        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([ImageFormat.WebP, ImageFormat.Jpeg]);
+        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([BmageImageFormat.WebP, BmageImageFormat.Jpeg]);
         StateHasChanged();
     }
 
@@ -294,7 +294,7 @@
 
     private void OnFormatChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format))
+        if (e.Value is string value && Enum.TryParse<BmageImageFormat>(value, out var format))
         {
             _format = format;
             _debounce.Schedule(async _ => await Generate());
@@ -352,7 +352,7 @@
                 // product straight back up to the canvas edge and the padding would only survive on one axis.
                 using var fitted = await ImagePipeline.Create()
                     .AutoOrient()
-                    .Resize(innerW, innerH, ResizeMode.Fit)
+                    .Resize(innerW, innerH, BmageResizeMode.Fit)
                     .Sharpen(0.25f)
                     .ExecuteAsync(source);
 

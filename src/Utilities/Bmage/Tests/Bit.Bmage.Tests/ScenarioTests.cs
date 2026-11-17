@@ -11,7 +11,7 @@ namespace Bit.Bmage.Tests;
 public sealed class ScenarioTests
 {
     /// <summary>A synthetic camera photo: gradients, edges and grain, with EXIF orientation and location.</summary>
-    private static ImageBuffer CameraPhoto(int width, int height, Orientation orientation = Orientation.Rotate90)
+    private static ImageBuffer CameraPhoto(int width, int height, BmageOrientation orientation = BmageOrientation.Rotate90)
     {
         var rnd = new Random(20260909);
         var upright = ImageBuffer.Create(width, height);
@@ -46,7 +46,7 @@ public sealed class ScenarioTests
             new ExifDirectory().With(ExifTag.Make, ExifValue.FromString("TestCam")).With(ExifTag.Orientation, ExifValue.FromShort((ushort)orientation)),
             new ExifDirectory().With(ExifTag.BodySerialNumber, ExifValue.FromString("SN-SECRET-1")),
             gps, null, default);
-        stored.Metadata = new ImageMetadata(exif, sourceFormat: ImageFormat.Jpeg);
+        stored.Metadata = new ImageMetadata(exif, sourceFormat: BmageImageFormat.Jpeg);
         return stored;
     }
 
@@ -62,7 +62,7 @@ public sealed class ScenarioTests
         // Auto-orient must have made the portrait photo upright before anything else runs.
         Assert.AreEqual(new Size(1200, 900), decoded.Size);
 
-        var pipeline = ImagePipeline.Create().CropToAspect(AspectRatio.Square).Resize(512, 512, ResizeMode.Stretch);
+        var pipeline = ImagePipeline.Create().CropToAspect(AspectRatio.Square).Resize(512, 512, BmageResizeMode.Stretch);
         var avatar = await processor.EncodeAsync(
             await pipeline.ExecuteAsync(decoded),
             ImageExportOptions.Jpeg with { Quality = 0.9, Metadata = MetadataPolicy.Remove });
@@ -121,7 +121,7 @@ public sealed class ScenarioTests
     public async Task ScenarioC_UploadOptimisation()
     {
         var processor = new ImageProcessor();
-        using var photo = CameraPhoto(3000, 2250, Orientation.Normal);
+        using var photo = CameraPhoto(3000, 2250, BmageOrientation.Normal);
         var original = await processor.EncodeAsync(photo, ImageExportOptions.Jpeg with { Quality = 0.98, Metadata = MetadataPolicy.Preserve });
 
         var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(2000, 2000);
@@ -148,14 +148,14 @@ public sealed class ScenarioTests
         var encoded = new List<byte[]>();
         foreach (var (w, h) in sizes)
         {
-            using var img = CameraPhoto(w, h, Orientation.Normal);
+            using var img = CameraPhoto(w, h, BmageOrientation.Normal);
             encoded.Add((await processor.EncodeAsync(img, ImageExportOptions.Jpeg with { Quality = 0.9 })).Data);
         }
 
         // Contain onto a fixed white canvas: every output identical in size, nothing cropped away.
         var pipeline = ImagePipeline.Create()
             .AutoOrient()
-            .Resize(800, 800, ResizeMode.Contain, ResamplingFilter.Auto, Anchor.Center, Rgba32.White);
+            .Resize(800, 800, BmageResizeMode.Contain, ResamplingFilter.Auto, Anchor.Center, Rgba32.White);
 
         for (var i = 0; i < encoded.Count; i++)
         {
@@ -191,7 +191,7 @@ public sealed class ScenarioTests
     public async Task ScenarioE_BatchProcessing()
     {
         var processor = new ImageProcessor();
-        using var sample = CameraPhoto(800, 600, Orientation.Normal);
+        using var sample = CameraPhoto(800, 600, BmageOrientation.Normal);
         var good = (await processor.EncodeAsync(sample, ImageExportOptions.Jpeg with { Quality = 0.9 })).Data;
 
         var items = new List<BatchItem>();
@@ -228,7 +228,7 @@ public sealed class ScenarioTests
     public async Task ScenarioE_BatchCancellationMidway()
     {
         var processor = new ImageProcessor();
-        using var sample = CameraPhoto(900, 700, Orientation.Normal);
+        using var sample = CameraPhoto(900, 700, BmageOrientation.Normal);
         var good = (await processor.EncodeAsync(sample, ImageExportOptions.Jpeg with { Quality = 0.9 })).Data;
         var items = Enumerable.Range(0, 60).Select(i => new BatchItem(good, $"i{i}")).ToList();
 
@@ -264,7 +264,7 @@ public sealed class ScenarioTests
     public async Task ScenarioF_InteractiveEditThenFullResolutionExport()
     {
         var processor = new ImageProcessor();
-        using var photo = CameraPhoto(2400, 1800, Orientation.Normal);
+        using var photo = CameraPhoto(2400, 1800, BmageOrientation.Normal);
         using var session = new ImageEditSession(photo.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 600 });
 
         Assert.IsTrue(session.UsesProxy);
@@ -300,7 +300,7 @@ public sealed class ScenarioTests
     [TestMethod]
     public async Task ScenarioG_LongEditingSessionStaysConsistent()
     {
-        using var photo = CameraPhoto(1200, 900, Orientation.Normal);
+        using var photo = CameraPhoto(1200, 900, BmageOrientation.Normal);
         using var session = new ImageEditSession(photo.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 400, MaxHistoryDepth = 50 });
 
         var rnd = new Random(7);
@@ -332,7 +332,7 @@ public sealed class ScenarioTests
     [TestMethod]
     public async Task ScenarioH_ResetAndReplaceSource()
     {
-        using var first = CameraPhoto(600, 400, Orientation.Normal);
+        using var first = CameraPhoto(600, 400, BmageOrientation.Normal);
         using var session = new ImageEditSession(first.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 300 });
 
         session.AddOperation(new CropOperation(10, 10, 200, 200));
@@ -342,7 +342,7 @@ public sealed class ScenarioTests
         Assert.AreEqual(new Size(600, 400), session.Document.OutputSize);
         Assert.IsTrue(session.Document.IsEmpty);
 
-        using var second = CameraPhoto(1000, 250, Orientation.Normal);
+        using var second = CameraPhoto(1000, 250, BmageOrientation.Normal);
         session.ReplaceSource(second.Clone());
         Assert.AreEqual(new Size(1000, 250), session.SourceSize);
         Assert.AreEqual(new Size(1000, 250), session.Document.OutputSize);

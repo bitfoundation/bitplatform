@@ -7,9 +7,9 @@
 /// <example>
 /// <code>
 /// var caps = await capabilityProvider.GetAsync();
-/// var format = caps.CanEncode(ImageFormat.Avif) ? ImageFormat.Avif
-///            : caps.CanEncode(ImageFormat.WebP) ? ImageFormat.WebP
-///            : ImageFormat.Jpeg;
+/// var format = caps.CanEncode(BmageImageFormat.Avif) ? BmageImageFormat.Avif
+///            : caps.CanEncode(BmageImageFormat.WebP) ? BmageImageFormat.WebP
+///            : BmageImageFormat.Jpeg;
 /// </code>
 /// </example>
 public sealed record ImageCapabilities
@@ -17,16 +17,16 @@ public sealed record ImageCapabilities
     // Declared before Managed, which static initialisation order makes them ready for.
 
     /// <summary>What the managed decoders read, in any environment.</summary>
-    internal static IReadOnlySet<ImageFormat> ManagedDecodableFormats { get; } = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.Gif, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Ico };
+    internal static IReadOnlySet<BmageImageFormat> ManagedDecodableFormats { get; } = new HashSet<BmageImageFormat> { BmageImageFormat.Png, BmageImageFormat.Jpeg, BmageImageFormat.Bmp, BmageImageFormat.Gif, BmageImageFormat.WebP, BmageImageFormat.Avif, BmageImageFormat.Ico };
 
     /// <summary>What the managed encoders write, in any environment.</summary>
-    internal static IReadOnlySet<ImageFormat> ManagedEncodableFormats { get; } = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.WebP, ImageFormat.Gif, ImageFormat.Ico };
+    internal static IReadOnlySet<BmageImageFormat> ManagedEncodableFormats { get; } = new HashSet<BmageImageFormat> { BmageImageFormat.Png, BmageImageFormat.Jpeg, BmageImageFormat.Bmp, BmageImageFormat.WebP, BmageImageFormat.Gif, BmageImageFormat.Ico };
 
     /// <summary>
     /// The part of <see cref="ManagedEncodableFormats"/> a browser canvas does not write, so the managed
     /// encoders write it in every environment, WebAssembly included, and no browser encoder is registered for it.
     /// </summary>
-    internal static IReadOnlySet<ImageFormat> ManagedOnlyEncodableFormats { get; } = new HashSet<ImageFormat> { ImageFormat.Bmp, ImageFormat.Gif, ImageFormat.Ico };
+    internal static IReadOnlySet<BmageImageFormat> ManagedOnlyEncodableFormats { get; } = new HashSet<BmageImageFormat> { BmageImageFormat.Bmp, BmageImageFormat.Gif, BmageImageFormat.Ico };
 
     /// <summary>Capabilities of plain .NET with only the managed codecs: PNG, JPEG, BMP, WebP, GIF and ICO, and AVIF decoding.</summary>
     public static ImageCapabilities Managed { get; } = new()
@@ -40,14 +40,14 @@ public sealed record ImageCapabilities
     public ImageEnvironment Environment { get; init; } = ImageEnvironment.Unknown;
 
     /// <summary>Formats that can be decoded here.</summary>
-    public IReadOnlySet<ImageFormat> DecodableFormats { get; init; } = new HashSet<ImageFormat>();
+    public IReadOnlySet<BmageImageFormat> DecodableFormats { get; init; } = new HashSet<BmageImageFormat>();
 
     /// <summary>
     /// Formats that can be encoded here. In Blazor WebAssembly a format only the managed encoders write, such as WebP on
     /// Safari, is left out: they would run on the UI thread, many times slower than the browser's own encoders. Encoding
     /// one explicitly still works.
     /// </summary>
-    public IReadOnlySet<ImageFormat> EncodableFormats { get; init; } = new HashSet<ImageFormat>();
+    public IReadOnlySet<BmageImageFormat> EncodableFormats { get; init; } = new HashSet<BmageImageFormat>();
 
     /// <summary>
     /// The part of <see cref="DecodableFormats"/> the browser's own codecs cover, as probed, or null when no browser was
@@ -55,13 +55,13 @@ public sealed record ImageCapabilities
     /// to a browser that cannot. When it is null in a browser, all of <see cref="DecodableFormats"/> is taken as the
     /// browser's, so a provider that wraps another, or builds its result from another's, should carry it over.
     /// </summary>
-    public IReadOnlySet<ImageFormat>? NativeDecodableFormats { get; init; }
+    public IReadOnlySet<BmageImageFormat>? NativeDecodableFormats { get; init; }
 
     /// <summary>
     /// The part of <see cref="EncodableFormats"/> the browser's own codecs cover, as probed, or null. As with
     /// <see cref="NativeDecodableFormats"/>, null in a browser means all of <see cref="EncodableFormats"/>.
     /// </summary>
-    public IReadOnlySet<ImageFormat>? NativeEncodableFormats { get; init; }
+    public IReadOnlySet<BmageImageFormat>? NativeEncodableFormats { get; init; }
 
     /// <summary><c>OffscreenCanvas</c> is available, so rendering can move off the main thread.</summary>
     public bool SupportsOffscreenCanvas { get; init; }
@@ -112,22 +112,22 @@ public sealed record ImageCapabilities
     public long MaxCanvasArea { get; init; } = 16384L * 16384L;
 
     /// <summary>True when the format can be decoded here.</summary>
-    public bool CanDecode(ImageFormat format) => DecodableFormats.Contains(format);
+    public bool CanDecode(BmageImageFormat format) => DecodableFormats.Contains(format);
 
     /// <summary>True when the format can be encoded here.</summary>
-    public bool CanEncode(ImageFormat format) => EncodableFormats.Contains(format);
+    public bool CanEncode(BmageImageFormat format) => EncodableFormats.Contains(format);
 
     /// <summary>WebP encoding is available.</summary>
-    public bool SupportsWebP => CanEncode(ImageFormat.WebP);
+    public bool SupportsWebP => CanEncode(BmageImageFormat.WebP);
 
     /// <summary>AVIF encoding is available.</summary>
-    public bool SupportsAvif => CanEncode(ImageFormat.Avif);
+    public bool SupportsAvif => CanEncode(BmageImageFormat.Avif);
 
     /// <summary>
     /// Picks the first format from <paramref name="preferred"/> that can be encoded here, falling back to
     /// <paramref name="fallback"/>. Returns the fallback even when it is also unsupported, so callers can report clearly.
     /// </summary>
-    public ImageFormat ChooseEncodableFormat(IEnumerable<ImageFormat> preferred, ImageFormat fallback = ImageFormat.Jpeg)
+    public BmageImageFormat ChooseEncodableFormat(IEnumerable<BmageImageFormat> preferred, BmageImageFormat fallback = BmageImageFormat.Jpeg)
     {
         ArgumentNullException.ThrowIfNull(preferred);
         foreach (var format in preferred)

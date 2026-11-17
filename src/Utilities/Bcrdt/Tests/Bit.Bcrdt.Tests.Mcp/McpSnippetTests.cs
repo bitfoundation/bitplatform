@@ -177,7 +177,7 @@ public partial class McpSnippetTests
             {
                 if (components.TryGetValue(tag.Groups["component"].Value, out var component) is false)
                 {
-                    failures.Add($"{source} renders <{tag.Groups["component"].Value}>, which is not a Bit.Bcrdt.Blazor component.");
+                    failures.Add($"{source} renders <{tag.Groups["component"].Value}>, which is not a Bcrdt component.");
                     continue;
                 }
 

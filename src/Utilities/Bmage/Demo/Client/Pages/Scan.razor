@@ -203,7 +203,7 @@
         using var scan = await pipeline.ExecuteAsync(photo);
         var png = await exporter.EncodeAsync(scan, new ImageExportOptions
         {
-            Format    = ImageFormat.Png,
+            Format    = BmageImageFormat.Png,
             MaxColors = 2,                                    // a 1-bit indexed PNG
         });
         """;
@@ -312,7 +312,7 @@
             EncodedImage encoded;
             try
             {
-                encoded = await Exporter.EncodeAsync(result, new ImageExportOptions { Format = ImageFormat.Png, MaxColors = _clean ? 2 : 256 });
+                encoded = await Exporter.EncodeAsync(result, new ImageExportOptions { Format = BmageImageFormat.Png, MaxColors = _clean ? 2 : 256 });
             }
             catch
             {

@@ -199,7 +199,7 @@
     private readonly List<Result> _results = [];
     private readonly List<Failure> _failures = [];
     private int _maxDimension = 1920;
-    private ImageFormat _format = ImageFormat.WebP;
+    private BmageImageFormat _format = BmageImageFormat.WebP;
     private double _quality = 0.82;
     private MetadataPolicy _metadata = MetadataPolicy.Remove;
     private bool _sharpen = true;
@@ -216,9 +216,9 @@
 
     // Until the probe has run, only the current choice is listed (and the list is disabled), so the select never shows
     // one format while the page would use another.
-    private IEnumerable<ImageFormat> AvailableFormats => _capabilities is null
+    private IEnumerable<BmageImageFormat> AvailableFormats => _capabilities is null
         ? [_format]
-        : new[] { ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Jpeg, ImageFormat.Png }.Where(_capabilities.CanEncode);
+        : new[] { BmageImageFormat.WebP, BmageImageFormat.Avif, BmageImageFormat.Jpeg, BmageImageFormat.Png }.Where(_capabilities.CanEncode);
 
     private const string Snippet = """
         // One pipeline, reused for every file. Nothing runs until it is executed.
@@ -238,7 +238,7 @@
 
             var encoded = await exporter.EncodeAsync(processed, new ImageExportOptions
             {
-                Format   = ImageFormat.WebP,             // offered only where the probe found it
+                Format   = BmageImageFormat.WebP,             // offered only where the probe found it
                 Quality  = 0.82,
                 Metadata = MetadataPolicy.Remove,
             });
@@ -255,7 +255,7 @@
             Progress       = progress,
             ExportOptions  = new ImageExportOptions
             {
-                Format   = ImageFormat.WebP,
+                Format   = BmageImageFormat.WebP,
                 Quality  = 0.82,
                 Metadata = MetadataPolicy.Remove,
             },
@@ -266,7 +266,7 @@
     {
         if (!firstRender || RendererInfo.IsInteractive is false) return;
         _capabilities = await Capabilities.GetAsync();
-        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([ImageFormat.WebP, ImageFormat.Jpeg]);
+        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([BmageImageFormat.WebP, BmageImageFormat.Jpeg]);
         StateHasChanged();
     }
 
@@ -283,7 +283,7 @@
 
     private void OnFormatChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format)) _format = format;
+        if (e.Value is string value && Enum.TryParse<BmageImageFormat>(value, out var format)) _format = format;
     }
 
     private void OnMetadataChanged(ChangeEventArgs e)

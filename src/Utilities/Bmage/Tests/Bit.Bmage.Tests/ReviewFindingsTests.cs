@@ -37,7 +37,7 @@ public sealed class ReviewFindingsTests
     {
         using var stamp = ImageBuffer.Create(40, 40, new Rgba32(0, 0, 255));
         using var image = ImageBuffer.Create(100, 100, Rgba32.White);
-        new ImageLayer { Image = stamp, Bounds = new RectangleF(30, 30, 40, 40), Rotation = 45, BlendMode = BlendMode.Copy }.Composite(image);
+        new ImageLayer { Image = stamp, Bounds = new RectangleF(30, 30, 40, 40), Rotation = 45, BlendMode = BmageBlendMode.Copy }.Composite(image);
 
         Assert.AreEqual(new Rgba32(0, 0, 255), image[50, 50]);
         // The corner of the rotated layer's bounding box lies outside the rotated square.
@@ -47,12 +47,12 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public void CopyAtPartialStrengthMovesTowardsTheSource()
     {
-        var mixed = Compositor.Blend(new Rgba32(200, 200, 200, 255), Rgba32.Transparent, BlendMode.Copy, 0.5f);
+        var mixed = Compositor.Blend(new Rgba32(200, 200, 200, 255), Rgba32.Transparent, BmageBlendMode.Copy, 0.5f);
         Assert.IsTrue(mixed.A is >= 126 and <= 129, $"{mixed}");
 
         // A transparent fill through a feathered mask punches a soft hole, not a hard one.
         using var image = ImageBuffer.Create(100, 100, Rgba32.White);
-        new FillLayer(Rgba32.Transparent) { BlendMode = BlendMode.Copy, Mask = Mask.Ellipse() with { Feather = 8 } }.Composite(image);
+        new FillLayer(Rgba32.Transparent) { BlendMode = BmageBlendMode.Copy, Mask = Mask.Ellipse() with { Feather = 8 } }.Composite(image);
         Assert.AreEqual(0, image[50, 50].A);
         Assert.IsTrue(Enumerable.Range(0, 50).Any(x => image[x, 50].A is > 0 and < 255), "The feathered edge left no partly cleared pixels.");
     }
@@ -159,7 +159,7 @@ public sealed class ReviewFindingsTests
         var values = new ConcurrentQueue<double>();
         var progress = new Inline(values.Enqueue);
         // Shrinking 8x runs a box reduction, then the resample: both on several threads.
-        using (new ResizeOperation(200, 150, ResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(source, new OperationContext(progress: progress, maxDegreeOfParallelism: 8))) { }
+        using (new ResizeOperation(200, 150, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(source, new OperationContext(progress: progress, maxDegreeOfParallelism: 8))) { }
 
         var reported = values.ToArray();
         for (var i = 1; i < reported.Length; i++) Assert.IsGreaterThanOrEqualTo(reported[i - 1], reported[i], $"Progress went from {reported[i - 1]} to {reported[i]}.");
@@ -264,7 +264,7 @@ public sealed class ReviewFindingsTests
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
         var loader = new ImageLoader(new ImageProcessorFactory(interop, ManagedCapabilityProvider.Instance), interop, ManagedCapabilityProvider.Instance);
 
-        var error = await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await loader.LoadAsync(ImageSource.FromUrl("https://photos.example/beach.jpg")));
+        var error = await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await loader.LoadAsync(BmageImageSource.FromUrl("https://photos.example/beach.jpg")));
 
         StringAssert.Contains(error.Message, "https://photos.example/beach.jpg");
         StringAssert.Contains(error.Message, "CORS header");
@@ -280,7 +280,7 @@ public sealed class ReviewFindingsTests
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
         var loader = new ImageLoader(new ImageProcessorFactory(interop, ManagedCapabilityProvider.Instance), interop, ManagedCapabilityProvider.Instance) { MaxSourceBytes = 123_456 };
 
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await loader.LoadAsync(ImageSource.FromUrl("https://photos.example/huge.jpg")));
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await loader.LoadAsync(BmageImageSource.FromUrl("https://photos.example/huge.jpg")));
         Assert.AreEqual(123_456L, passed);
     }
 
@@ -295,7 +295,7 @@ public sealed class ReviewFindingsTests
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
         var loader = new ImageLoader(new ImageProcessorFactory(interop, ManagedCapabilityProvider.Instance), interop, ManagedCapabilityProvider.Instance) { MaxSourceBytes = png.Length };
 
-        using var loaded = await loader.LoadAsync(ImageSource.FromUrl("https://photos.example/small.png"));
+        using var loaded = await loader.LoadAsync(BmageImageSource.FromUrl("https://photos.example/small.png"));
 
         Assert.AreEqual(image.Size, loaded.Size);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(image, loaded));
@@ -430,16 +430,16 @@ public sealed class ReviewFindingsTests
     /// upright with the tag still saying to turn them, and anything applying it turned them twice.
     /// </summary>
     [TestMethod]
-    [DataRow(Orientation.Rotate90)]
-    [DataRow(Orientation.Rotate270)]
-    [DataRow(Orientation.FlipHorizontal)]
-    [DataRow(Orientation.Transpose)]
-    public async Task TheBrowserDecoderGivesAnImageAsStoredWhenItIsNotToBeTurnedUpright(Orientation orientation)
+    [DataRow(BmageOrientation.Rotate90)]
+    [DataRow(BmageOrientation.Rotate270)]
+    [DataRow(BmageOrientation.FlipHorizontal)]
+    [DataRow(BmageOrientation.Transpose)]
+    public async Task TheBrowserDecoderGivesAnImageAsStoredWhenItIsNotToBeTurnedUpright(BmageOrientation orientation)
     {
         var processor = new ImageProcessor();
         using var upright = TestImages.Quadrants(32, 24);
         using var stored = new OrientationOperation(orientation.Inverse()).Apply(upright, OperationContext.Default);
-        stored.Metadata = new ImageMetadata(ExifData.FromOrientation(orientation), sourceFormat: ImageFormat.Jpeg);
+        stored.Metadata = new ImageMetadata(ExifData.FromOrientation(orientation), sourceFormat: BmageImageFormat.Jpeg);
         var jpeg = (await processor.EncodeAsync(stored, ImageExportOptions.Jpeg with { Quality = 1.0, Metadata = MetadataPolicy.Preserve })).Data;
 
         var module = new FakeModule(_ => { }, respond: (identifier, _) => identifier == "decode"
@@ -459,7 +459,7 @@ public sealed class ReviewFindingsTests
 
         using var shown = await decoder.DecodeAsync(jpeg, new DecodeOptions { AutoOrient = true }, PooledPixelAllocator.Shared);
         Assert.AreEqual(upright.Size, shown.Size);
-        Assert.AreEqual(Orientation.Normal, shown.Metadata?.Orientation ?? Orientation.Normal);
+        Assert.AreEqual(BmageOrientation.Normal, shown.Metadata?.Orientation ?? BmageOrientation.Normal);
     }
 
     [TestMethod]
@@ -503,7 +503,7 @@ public sealed class ReviewFindingsTests
             threads.Add(Environment.CurrentManagedThreadId);
             values.Enqueue(value);
         });
-        using (new ResizeOperation(900, 700, ResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(source, new OperationContext(progress: progress, maxDegreeOfParallelism: 8))) { }
+        using (new ResizeOperation(900, 700, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(source, new OperationContext(progress: progress, maxDegreeOfParallelism: 8))) { }
 
         Assert.IsTrue(threads.All(thread => thread == caller), "Progress was reported on a thread other than the caller's.");
         Assert.AreEqual(1.0, values.Last(), 1e-9);
@@ -542,7 +542,7 @@ public sealed class ReviewFindingsTests
         using var source = ParallelProcessingTests.Noise(300, 200, seed: 10);
         var document = ImageDocument.Create(source)
             .AddOperation(new BrightnessAdjustment(0.1f))
-            .AddLayer(new FillLayer(new Rgba32(255, 0, 0)) { Mask = Mask.Ellipse(), BlendMode = BlendMode.Multiply })
+            .AddLayer(new FillLayer(new Rgba32(255, 0, 0)) { Mask = Mask.Ellipse(), BlendMode = BmageBlendMode.Multiply })
             .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Saturation(0.3f)));
         var values = new ConcurrentQueue<double>();
 
@@ -577,7 +577,7 @@ public sealed class ReviewFindingsTests
             new RectangleMask(new RectangleF(30.3f, 20.7f, 120, 90)) { CornerRadius = 12, Feather = 3 },
             Mask.Ellipse() with { Feather = 6.5f },
             new PolygonMask([new(10, 10), new(200, 40), new(90, 170)]) { Inverted = true, Feather = 1.2f },
-            new PathMask(new PathBuilder().AddEllipse(new RectangleF(60, 40, 90, 70)).Build()) { Opacity = 0.7f },
+            new PathMask(new BmagePathBuilder().AddEllipse(new RectangleF(60, 40, 90, 70)).Build()) { Opacity = 0.7f },
             new BrushMask([new BrushStroke([new(20, 30), new(120, 90), new(220, 40)], 14)]) { Opacity = 0.6f },
             Mask.Gradient(new(0, 0), new(0.3f, 0.8f)) with { Feather = 2 },
             new RadialGradientMask(new Vector2(120, 90), 70, 40) { Rotation = 30, Feather = 0.5f },

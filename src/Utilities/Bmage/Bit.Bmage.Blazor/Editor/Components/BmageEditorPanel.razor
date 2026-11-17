@@ -337,7 +337,7 @@
                             <label class="bmg-field">
                                 <span class="bmg-field-label">@Context.Strings.BlendMode</span>
                                 <select class="bmg-select" @onchange="OnBlendModeChanged">
-                                    @foreach (var mode in Enum.GetValues<BlendMode>())
+                                    @foreach (var mode in Enum.GetValues<BmageBlendMode>())
                                     {
                                         <option value="@mode" selected="@(selected.BlendMode == mode)">@Context.Strings.FormatBlendMode(mode)</option>
                                     }
@@ -484,7 +484,7 @@
     // The Export tab starts from the editor's ExportOptions, and the reader's choices there win until the host hands
     // in other options.
     private ImageExportOptions? _exportDefaults;
-    private ImageFormat _exportFormat = ImageFormat.Png;
+    private BmageImageFormat _exportFormat = BmageImageFormat.Png;
     private double _exportQuality = 0.85;
     private MetadataPolicy _metadataPolicy = MetadataPolicy.Remove;
 
@@ -547,18 +547,18 @@
     private static bool IsPreset(IImageOperation operation)
         => operation is GrayscaleFilter or SepiaFilter or InvertFilter or PosterizeFilter or ThresholdFilter or AdaptiveThresholdFilter or GradientMapOperation or ChannelMixerAdjustment { IsMonochrome: true };
 
-    private IEnumerable<ImageFormat> AvailableFormats
+    private IEnumerable<BmageImageFormat> AvailableFormats
     {
         get
         {
             var capabilities = Context.Capabilities;
-            var candidates = new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif };
+            var candidates = new[] { BmageImageFormat.Png, BmageImageFormat.Jpeg, BmageImageFormat.WebP, BmageImageFormat.Avif };
             return capabilities is null ? candidates.Take(2) : candidates.Where(capabilities.CanEncode);
         }
     }
 
     /// <summary>The chosen format, or the first one offered when this browser cannot write it: what the list shows.</summary>
-    private ImageFormat ExportFormat => AvailableFormats.Contains(_exportFormat) ? _exportFormat : AvailableFormats.First();
+    private BmageImageFormat ExportFormat => AvailableFormats.Contains(_exportFormat) ? _exportFormat : AvailableFormats.First();
 
     private void OnTabKeyDown(KeyboardEventArgs e, PanelTab current)
     {
@@ -618,7 +618,7 @@
 
     private void OnFormatChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format)) _exportFormat = format;
+        if (e.Value is string value && Enum.TryParse<BmageImageFormat>(value, out var format)) _exportFormat = format;
     }
 
     private void OnMetadataChanged(ChangeEventArgs e)
@@ -842,7 +842,7 @@
     // ---- Layers ----
 
     private Task OnAddImageLayer(InputFileChangeEventArgs e)
-        => Context.AddImageLayerAsync(ImageSource.FromBrowserFile(e.File));
+        => Context.AddImageLayerAsync(BmageImageSource.FromBrowserFile(e.File));
 
     private Task OnOpenProject(InputFileChangeEventArgs e) => Context.OpenProjectAsync(e.File);
 
@@ -909,7 +909,7 @@
         => Context.ActiveLayer is { IsLocked: false } layer ? Context.UpdateLayerAsync(change(layer), transient) : Task.CompletedTask;
 
     private Task OnBlendModeChanged(ChangeEventArgs e)
-        => e.Value is string value && Enum.TryParse<BlendMode>(value, out var mode) ? UpdateActiveLayer(l => l with { BlendMode = mode }, false) : Task.CompletedTask;
+        => e.Value is string value && Enum.TryParse<BmageBlendMode>(value, out var mode) ? UpdateActiveLayer(l => l with { BlendMode = mode }, false) : Task.CompletedTask;
 
     // The rest of the host's options - the background, a size budget - still apply.
     private Task DownloadAsync() => Context.DownloadAsync(DownloadFileName, (_exportDefaults ?? Context.ExportOptions) with

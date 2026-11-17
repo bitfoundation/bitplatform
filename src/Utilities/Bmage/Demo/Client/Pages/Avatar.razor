@@ -228,7 +228,7 @@
         var pipeline = ImagePipeline.Create()
             .AutoOrient()
             .SmartCrop(AspectRatio.Square)     // finds the subject instead of assuming the centre
-            .Resize(size, size, ResizeMode.Stretch)
+            .Resize(size, size, BmageResizeMode.Stretch)
             .Sharpen(amount: 0.25f);
         if (circular) pipeline = pipeline.ApplyMask(Mask.Ellipse());
 
@@ -236,7 +236,7 @@
 
         var encoded = await exporter.EncodeWithFallbackAsync(
             avatar,
-            circular ? [ImageFormat.WebP, ImageFormat.Png] : [ImageFormat.WebP, ImageFormat.Jpeg],
+            circular ? [BmageImageFormat.WebP, BmageImageFormat.Png] : [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
             new ImageExportOptions
             {
                 Quality     = 0.9,
@@ -333,16 +333,16 @@
         {
             // Smart framing picks where to crop; the fixed anchors are there to compare against.
             var pipeline = _smart
-                ? ImagePipeline.Create().AutoOrient().SmartCrop(AspectRatio.Square).Resize(_size, _size, ResizeMode.Stretch).Sharpen(0.25f)
+                ? ImagePipeline.Create().AutoOrient().SmartCrop(AspectRatio.Square).Resize(_size, _size, BmageResizeMode.Stretch).Sharpen(0.25f)
                 : ImagePipeline.Create().AutoOrient().Cover(_size, _size, _anchor).Sharpen(0.25f);
             // The circle goes on the pixels' alpha, so the exported file is genuinely round.
             if (_circular) pipeline = pipeline.ApplyMask(Mask.Ellipse());
 
             next = await pipeline.ExecuteAsync(source);
 
-            var preferred = new[] { ImageFormat.WebP, ImageFormat.Jpeg };
+            var preferred = new[] { BmageImageFormat.WebP, BmageImageFormat.Jpeg };
             // A circular avatar needs transparency, so a lossy opaque format would show the corners.
-            if (_circular) preferred = [ImageFormat.WebP, ImageFormat.Png];
+            if (_circular) preferred = [BmageImageFormat.WebP, BmageImageFormat.Png];
 
             var encoded = await Exporter.EncodeWithFallbackAsync(next, preferred, new ImageExportOptions
             {
@@ -359,7 +359,7 @@
             next = null;
             _resultVersion++;
             _encoded = encoded;
-            _fallbackNotice = _capabilities is { } caps && !caps.CanEncode(ImageFormat.WebP)
+            _fallbackNotice = _capabilities is { } caps && !caps.CanEncode(BmageImageFormat.WebP)
                 ? $"This browser cannot write WebP, so {_encoded.Format.ToString().ToUpperInvariant()} was used instead."
                 : null;
         }

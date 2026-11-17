@@ -136,7 +136,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Drawing without a UI</h3>
     <p>
         <code>ImageCanvas</code> is a complete drawing surface - the last example above was composed
-        with it. Paths come from <code>PathBuilder</code> (lines, quadratic and cubic curves, arcs,
+        with it. Paths come from <code>BmagePathBuilder</code> (lines, quadratic and cubic curves, arcs,
         rounded rectangles, ellipses, polygons, flattened adaptively), and fills take a colour or any
         <code>IPaint</code>: solid, linear and radial gradients, or your own.
     </p>
@@ -220,7 +220,7 @@
             var thumb = await processor.ProcessAsync(
                 bytes,
                 ImagePipeline.Create().AutoOrient().MaxSize(400, 400),
-                new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 });
+                new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 });
 
             return Results.File(thumb.Data, thumb.MimeType);
         });
@@ -232,10 +232,10 @@
         canvas.DrawImage(photo, new RectangleF(700, 0, 500, 630));
 
         // Fade the photo into the panel.
-        var fade = new LinearGradientPaint(
+        var fade = new BmageLinearGradientPaint(
             new Vector2(700, 0), new Vector2(900, 0),
             [(0f, new Rgba32(17, 19, 24, 255)), (1f, new Rgba32(17, 19, 24, 0))]);
-        canvas.FillPath(new PathBuilder().AddRectangle(new RectangleF(700, 0, 200, 630)).Build(), fade);
+        canvas.FillPath(new BmagePathBuilder().AddRectangle(new RectangleF(700, 0, 200, 630)).Build(), fade);
 
         canvas.FillRoundedRectangle(new RectangleF(60, 60, 160, 40), 20, new Rgba32(105, 65, 198));
         canvas.DrawText("Release notes", new Vector2(60, 200), new TextStyle
@@ -250,7 +250,7 @@
         """;
 
     private const string FontSnippet = """
-        var font = FontFile.Load(await File.ReadAllBytesAsync("Inter-Regular.ttf"));
+        var font = BmageFontFile.Load(await File.ReadAllBytesAsync("Inter-Regular.ttf"));
         var rasterizer = new FontTextRasterizer()
             .Register("Inter", font)
             .Register("Inter", boldFont, bold: true);
@@ -390,8 +390,8 @@
 
         await Add(run, "Letterboxed",
             "Contain keeps the whole subject and pads to the exact canvas.",
-            "ImagePipeline.Create()\n    .Resize(400, 260, ResizeMode.Contain,\n            background: new Rgba32(24, 26, 31))",
-            ImagePipeline.Create().Resize(400, 260, ResizeMode.Contain, background: new Rgba32(24, 26, 31)));
+            "ImagePipeline.Create()\n    .Resize(400, 260, BmageResizeMode.Contain,\n            background: new Rgba32(24, 26, 31))",
+            ImagePipeline.Create().Resize(400, 260, BmageResizeMode.Contain, background: new Rgba32(24, 26, 31)));
 
         await Add(run, "Graded",
             "Adjustments compose and fuse into a single pass over the pixels.",
@@ -455,7 +455,7 @@
     {
         try
         {
-            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png });
+            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = BmageImageFormat.Png });
             if (run != _run)
             {
                 image.Dispose();
@@ -485,10 +485,10 @@
             canvas.DrawImage(photo, new System.Drawing.RectangleF(width - 180, 0, 180, height));
 
             // A gradient scrim so the photo blends into the panel rather than butting against it.
-            var fade = new LinearGradientPaint(
+            var fade = new BmageLinearGradientPaint(
                 new Vector2(width - 180, 0), new Vector2(width - 110, 0),
                 [(0f, new Rgba32(17, 19, 24, 255)), (1f, new Rgba32(17, 19, 24, 0))]);
-            canvas.FillPath(new PathBuilder().AddRectangle(new System.Drawing.RectangleF(width - 180, 0, 80, height)).Build(), fade);
+            canvas.FillPath(new BmagePathBuilder().AddRectangle(new System.Drawing.RectangleF(width - 180, 0, 80, height)).Build(), fade);
 
             canvas.FillRoundedRectangle(new System.Drawing.RectangleF(20, 24, 90, 24), 12, new Rgba32(105, 65, 198));
             canvas.DrawLine(new Vector2(20, 76), new Vector2(210, 76), new Rgba32(255, 255, 255, 70), new StrokeStyle { Width = 2 });
@@ -496,7 +496,7 @@
             canvas.DrawEllipse(new System.Drawing.RectangleF(150, 100, 70, 60), new Rgba32(255, 200, 40), new StrokeStyle { Width = 3, DashPattern = [8f, 5f] });
 
             var image = canvas.Snapshot();
-            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png });
+            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = BmageImageFormat.Png });
             if (run != _run)
             {
                 image.Dispose();

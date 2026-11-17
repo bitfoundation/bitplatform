@@ -87,8 +87,9 @@ public static class SiteInfo
 /// </summary>
 public static class DocsCatalog
 {
-    // The page types are named through Pages. on purpose: Editor, Metadata and Capabilities are also
-    // namespaces of the library (Bit.Bmage.Editor, ...), and a bare name would bind to those first.
+    // The page types are named through Pages. on purpose: Editor, Metadata, Capabilities and the like are
+    // common names, and qualified they can never meet a type of the same name in a namespace this file
+    // imports - Bit.Bmage, the whole library since it is one namespace, among them.
     public static readonly DocsSection[] Sections =
     [
         new("Getting started",

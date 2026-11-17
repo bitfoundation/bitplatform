@@ -106,7 +106,7 @@ understanding what it will decide. See [Choosing a data type](#choosing-a-data-t
 
 | Package | Contents |
 |---|---|
-| `Bit.Bcrdt` | The engine: identity, clocks and state vectors, the YATA engine with `BcrdtText`, `BcrdtArray`, `BcrdtMap`, `BcrdtSet`, `BcrdtCounter` and the XML tree (`BcrdtXmlFragment`, `BcrdtXmlElement`, `BcrdtXmlText`), the `BcrdtOrderedCollection` view for lists people reorder together, updates, snapshots and selective undo; presence and awareness; the store abstraction with in-memory, file-system and browser (IndexedDB) stores; the sync protocol and `BcrdtSyncProvider`; `IBcrdtCollaborationService` and `AddBitBcrdtServices`; the text-input and object bindings; the in-memory, WebSocket and `BroadcastChannel` (between browser tabs) client transports; and metrics and traces. And the Blazor components, in the `Bit.Bcrdt.Blazor` namespace: `BcrdtComponentBase`, `BcrdtCollaborationScope`, `BcrdtTextArea`, `BcrdtPresenceView` and `BcrdtSyncStatus`. |
+| `Bit.Bcrdt` | The engine: identity, clocks and state vectors, the YATA engine with `BcrdtText`, `BcrdtArray`, `BcrdtMap`, `BcrdtSet`, `BcrdtCounter` and the XML tree (`BcrdtXmlFragment`, `BcrdtXmlElement`, `BcrdtXmlText`), the `BcrdtOrderedCollection` view for lists people reorder together, updates, snapshots and selective undo; presence and awareness; the store abstraction with in-memory, file-system and browser (IndexedDB) stores; the sync protocol and `BcrdtSyncProvider`; `IBcrdtCollaborationService` and `AddBitBcrdtServices`; the text-input and object bindings; the in-memory, WebSocket and `BroadcastChannel` (between browser tabs) client transports; and metrics and traces. And the Blazor components, in the same `Bit.Bcrdt` namespace: `BcrdtComponentBase`, `BcrdtCollaborationScope`, `BcrdtTextArea`, `BcrdtPresenceView` and `BcrdtSyncStatus`. |
 | `Bit.Bcrdt.SignalR` | The SignalR client transport. No ASP.NET Core server dependency, so it runs in WebAssembly and Hybrid apps. |
 | `Bit.Bcrdt.Server` | The ASP.NET Core relays - `BcrdtHub` for the SignalR transport and `MapBitBcrdtWebSocket` for the WebSocket transport - with per-document read-only or read-write access; `BcrdtDocumentHost`, which keeps a persisted, always-present replica of every document the relays carry; and `BcrdtPresenceCircuitHandler`, which withdraws a Blazor Server user's presence while their browser connection is down. |
 | `Bit.Bcrdt.Testing` | A deterministic, seeded network simulator (loss, duplication, reordering, partitions, offline peers), random operation generators, a convergence harness and an update corrupter for fuzzing. |
@@ -1819,6 +1819,11 @@ What bit Bcrdt does not do, deliberately or not yet:
 
 Changes since the previous release that an application may notice:
 
+- **Every Bcrdt type is in the `Bit.Bcrdt` namespace.** The Blazor components moved there from `Bit.Bcrdt.Blazor`, and
+  the types of the integration packages and the testing kit from `Bit.Bcrdt.Server`, `Bit.Bcrdt.SignalR`,
+  `Bit.Bcrdt.BlazeDb`, `Bit.Bcrdt.Blex`, `Bit.Bcrdt.Bink`, `Bit.Bcrdt.Blow`, `Bit.Bcrdt.Borm`, `Bit.Bcrdt.Butil` and
+  `Bit.Bcrdt.Testing`. Replace an import of any of them with `using Bit.Bcrdt;` / `@using Bit.Bcrdt`; the old ones
+  fail with CS0246.
 - **`BcrdtCounter` is a new collaborative type, wire kind `5`.** A replica that predates it rejects an update carrying
   a counter as malformed rather than misreading it, so upgrade every client of a document before any of them uses one.
 - **Changes waiting for their dependencies are bounded** at 32 MiB per document (`MaxPendingSize`). Set it to zero for
@@ -1839,8 +1844,8 @@ Changes since the previous release that an application may notice:
   `setSelection`, `setValuePreservingSelection`, `focus` and `measureCaret` are gone.
 - **bit Bcrdt traces.** Spans start on the `Bit.Bcrdt` activity source. An application that collects every source, or
   listens to all of them with an `ActivityListener`, now receives them; one that names its sources sees nothing new.
-- **`BcrdtSyncStatus` and `BcrdtSyncStatusSnapshot` are new in `Bit.Bcrdt.Blazor`.** An application with a component or
-  type of either name in a namespace it imports alongside `Bit.Bcrdt.Blazor` must qualify one of them.
+- **`BcrdtSyncStatus` and `BcrdtSyncStatusSnapshot` are new in `Bit.Bcrdt`.** An application with a component or
+  type of either name in a namespace it imports alongside `Bit.Bcrdt` must qualify one of them.
 - **Relays list their connections in `BcrdtRelayConnections`**, which `AddBitBcrdtHub` registers and the WebSocket
   endpoint takes from the container, so a grant can be revoked or narrowed without a document host.
   `IBcrdtHostConnection.Access` of a relay's connection can now drop from read-write to read-only while it is open:

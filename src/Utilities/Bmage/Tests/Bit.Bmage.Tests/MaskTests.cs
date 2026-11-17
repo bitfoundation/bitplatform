@@ -338,7 +338,7 @@ public sealed class MaskTests
         var pipeline = ImagePipeline.Create().Masked(new RectangleMask(new RectangleF(100, 80, 200, 120)) { Feather = 4 }, p => p.Brightness(0.4f));
 
         using var full = pipeline.Execute(source);
-        using var proxySource = new ResizeOperation(200, 150, ResizeMode.Stretch, ResamplingFilter.Box).Apply(source, OperationContext.Default);
+        using var proxySource = new ResizeOperation(200, 150, BmageResizeMode.Stretch, ResamplingFilter.Box).Apply(source, OperationContext.Default);
         using var preview = pipeline.ForScale(0.5).Execute(proxySource);
 
         // The preview is the export at half the size: brightened inside the rectangle, untouched outside it.

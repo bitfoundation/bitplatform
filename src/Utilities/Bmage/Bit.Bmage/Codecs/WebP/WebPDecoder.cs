@@ -9,15 +9,15 @@ namespace Bit.Bmage;
 /// </summary>
 public sealed class WebPDecoder : IImageDecoder
 {
-    private static readonly ImageFormat[] SupportedFormats = [ImageFormat.WebP];
-    public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
+    private static readonly BmageImageFormat[] SupportedFormats = [BmageImageFormat.WebP];
+    public IReadOnlyCollection<BmageImageFormat> Formats => SupportedFormats;
 
     private const int AlphaFlag = 0x10;
     private const int AnimationFlag = 0x02;
 
     public ImageInfo? Identify(ReadOnlySpan<byte> data)
     {
-        if (ImageFormats.Detect(data) != ImageFormat.WebP) return null;
+        if (ImageFormats.Detect(data) != BmageImageFormat.WebP) return null;
         var chunks = WebPContainer.EnumerateChunks(data);
         if (chunks.Count == 0) return null;
         var first = chunks[0];
@@ -40,10 +40,10 @@ public sealed class WebPDecoder : IImageDecoder
             default:
                 return null;
         }
-        var orientation = Orientation.Normal;
+        var orientation = BmageOrientation.Normal;
         foreach (var c in chunks)
-            if (c.FourCc == "EXIF") { orientation = ExifReader.Read(data.Slice(c.DataOffset, c.DataLength))?.Orientation ?? Orientation.Normal; break; }
-        return new ImageInfo(width, height, ImageFormat.WebP, orientation, hasAlpha);
+            if (c.FourCc == "EXIF") { orientation = ExifReader.Read(data.Slice(c.DataOffset, c.DataLength))?.Orientation ?? BmageOrientation.Normal; break; }
+        return new ImageInfo(width, height, BmageImageFormat.WebP, orientation, hasAlpha);
     }
 
     public ValueTask<ImageBuffer> DecodeAsync(ReadOnlyMemory<byte> data, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken = default)
@@ -63,7 +63,7 @@ public sealed class WebPDecoder : IImageDecoder
         allocator ??= PooledPixelAllocator.Shared;
         var data = file.Span;
         options.Limits.ValidateEncodedSize(data.Length);
-        if (ImageFormats.Detect(data) != ImageFormat.WebP) throw new ImageDecodeException("Invalid WebP: missing RIFF/WEBP header.");
+        if (ImageFormats.Detect(data) != BmageImageFormat.WebP) throw new ImageDecodeException("Invalid WebP: missing RIFF/WEBP header.");
         var chunks = WebPContainer.EnumerateChunks(data);
         if (chunks.Count == 0) throw new ImageDecodeException("Invalid WebP: no chunks.");
 
@@ -88,15 +88,15 @@ public sealed class WebPDecoder : IImageDecoder
             {
                 var md = WebPContainer.ReadMetadata(data, options.FileName);
                 image.Metadata = md;
-                if (options.AutoOrient && md.Orientation is not (Orientation.Normal or Orientation.Unspecified))
+                if (options.AutoOrient && md.Orientation is not (BmageOrientation.Normal or BmageOrientation.Unspecified))
                 {
                     var oriented = new OrientationOperation(md.Orientation).Apply(image, new OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
                     if (!ReferenceEquals(oriented, image)) image.Dispose();
                     image = oriented;
-                    image.Metadata = md.WithOrientation(Orientation.Normal);
+                    image.Metadata = md.WithOrientation(BmageOrientation.Normal);
                 }
             }
-            else image.Metadata = new ImageMetadata(sourceFormat: ImageFormat.WebP, fileName: options.FileName);
+            else image.Metadata = new ImageMetadata(sourceFormat: BmageImageFormat.WebP, fileName: options.FileName);
             return image;
         }
         catch

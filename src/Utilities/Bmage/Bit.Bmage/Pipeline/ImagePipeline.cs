@@ -95,22 +95,22 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     public ImagePipeline SmartCrop(AspectRatio ratio, SmartCropOptions? options = null) => Add(new SmartCropOperation(ratio, options));
 
     /// <summary>Resizes the image.</summary>
-    public ImagePipeline Resize(int? width = null, int? height = null, ResizeMode mode = ResizeMode.Fit, ResamplingFilter filter = ResamplingFilter.Auto, Anchor anchor = Anchor.Center, Rgba32 background = default)
+    public ImagePipeline Resize(int? width = null, int? height = null, BmageResizeMode mode = BmageResizeMode.Fit, ResamplingFilter filter = ResamplingFilter.Auto, Anchor anchor = Anchor.Center, Rgba32 background = default)
         => Add(new ResizeOperation(width, height, mode, filter, anchor, background));
 
     /// <summary>Shrinks the image so neither dimension exceeds the given bounds. Never enlarges.</summary>
     public ImagePipeline MaxSize(int maxWidth, int maxHeight, ResamplingFilter filter = ResamplingFilter.Auto)
-        => Add(new ResizeOperation(maxWidth, maxHeight, ResizeMode.Max, filter));
+        => Add(new ResizeOperation(maxWidth, maxHeight, BmageResizeMode.Max, filter));
 
     /// <summary>Scales the image so it covers the target size, cropping the overflow.</summary>
     public ImagePipeline Cover(int width, int height, Anchor anchor = Anchor.Center, ResamplingFilter filter = ResamplingFilter.Auto)
-        => Add(new ResizeOperation(width, height, ResizeMode.Cover, filter, anchor));
+        => Add(new ResizeOperation(width, height, BmageResizeMode.Cover, filter, anchor));
 
     /// <summary>Rotates clockwise by an arbitrary angle.</summary>
     public ImagePipeline Rotate(double degrees, Rgba32 background = default, bool expandCanvas = true) => Add(new RotateOperation(degrees, background, expandCanvas));
 
     /// <summary>Applies one of the eight lossless orientations.</summary>
-    public ImagePipeline Orient(Orientation orientation) => Add(new OrientationOperation(orientation));
+    public ImagePipeline Orient(BmageOrientation orientation) => Add(new OrientationOperation(orientation));
 
     /// <summary>Mirrors horizontally.</summary>
     public ImagePipeline FlipHorizontal() => Add(OrientationOperation.FlipHorizontal);
@@ -600,7 +600,7 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     /// may not be modified, it would copy the whole image just to return it: a 48 MB copy for every upright photo.
     /// </summary>
     private static bool IsUprightAlready(IImageOperation op, ImageBuffer current)
-        => op is AutoOrientOperation && current.Metadata?.Exif?.Orientation is null or Orientation.Normal or Orientation.Unspecified;
+        => op is AutoOrientOperation && current.Metadata?.Exif?.Orientation is null or BmageOrientation.Normal or BmageOrientation.Unspecified;
 
     /// <summary>Maps an operation's own progress into the pipeline's overall progress range.</summary>
     private sealed class StageProgress : IProgress<double>

@@ -10,21 +10,21 @@ public static partial class Compositor
     /// coverage or opacity factor.
     /// </summary>
     /// <remarks>
-    /// <see cref="BlendMode.SourceOver"/> gives exactly <see cref="SourceOver"/>, <see cref="BlendMode.Copy"/> replaces
+    /// <see cref="BmageBlendMode.SourceOver"/> gives exactly <see cref="SourceOver"/>, <see cref="BmageBlendMode.Copy"/> replaces
     /// the destination (moving it towards the source, alpha included, when <paramref name="alpha"/> is below 1), and
-    /// <see cref="BlendMode.Erase"/> removes the source's coverage from the destination. Every other mode is the W3C
+    /// <see cref="BmageBlendMode.Erase"/> removes the source's coverage from the destination. Every other mode is the W3C
     /// blend: <c>Cs' = (1 - ab) Cs + ab B(Cb, Cs)</c>, composited source-over.
     /// </remarks>
-    public static Rgba32 Blend(Rgba32 destination, Rgba32 source, BlendMode mode, float alpha = 1f)
+    public static Rgba32 Blend(Rgba32 destination, Rgba32 source, BmageBlendMode mode, float alpha = 1f)
     {
         switch (mode)
         {
-            case BlendMode.SourceOver:
+            case BmageBlendMode.SourceOver:
                 return SourceOver(destination, source, alpha);
-            case BlendMode.Copy:
+            case BmageBlendMode.Copy:
                 // Replacing at partial strength moves the destination towards the source, transparency included.
                 return alpha >= 1f ? source : MaskedOperation.Mix(destination, source, (int)MathF.Round(Math.Clamp(alpha, 0f, 1f) * 255f));
-            case BlendMode.Erase:
+            case BmageBlendMode.Erase:
                 return Erase(destination, source.A / 255f * alpha);
         }
         var sa = source.A / 255f * Math.Clamp(alpha, 0f, 1f);
@@ -44,7 +44,7 @@ public static partial class Compositor
     /// Blends a row of source pixels into a row of destination pixels, each weighted by <paramref name="opacity"/> and,
     /// when it is not empty, by the matching byte of <paramref name="coverage"/>.
     /// </summary>
-    public static void BlendRow(ReadOnlySpan<Rgba32> source, Span<Rgba32> destination, BlendMode mode, float opacity = 1f, ReadOnlySpan<byte> coverage = default)
+    public static void BlendRow(ReadOnlySpan<Rgba32> source, Span<Rgba32> destination, BmageBlendMode mode, float opacity = 1f, ReadOnlySpan<byte> coverage = default)
     {
         if (destination.Length < source.Length) throw new ArgumentException("The destination row is shorter than the source row.", nameof(destination));
         if (!coverage.IsEmpty && coverage.Length < source.Length) throw new ArgumentException("The coverage row is shorter than the source row.", nameof(coverage));
@@ -52,7 +52,7 @@ public static partial class Compositor
         if (opacity <= 0f) return;
         if (coverage.IsEmpty)
         {
-            if (mode == BlendMode.Copy && opacity >= 1f)
+            if (mode == BmageBlendMode.Copy && opacity >= 1f)
             {
                 source.CopyTo(destination);
                 return;
@@ -60,7 +60,7 @@ public static partial class Compositor
             for (var i = 0; i < source.Length; i++)
             {
                 var s = source[i];
-                if (s.A == 0 && mode != BlendMode.Copy) continue;
+                if (s.A == 0 && mode != BmageBlendMode.Copy) continue;
                 destination[i] = Blend(destination[i], s, mode, opacity);
             }
             return;
@@ -71,30 +71,30 @@ public static partial class Compositor
             var c = coverage[i];
             if (c == 0) continue;
             var s = source[i];
-            if (s.A == 0 && mode != BlendMode.Copy) continue;
+            if (s.A == 0 && mode != BmageBlendMode.Copy) continue;
             destination[i] = Blend(destination[i], s, mode, c == 255 ? opacity : opacity * c * inv);
         }
     }
 
     /// <summary>The blend function <c>B(Cb, Cs)</c> of the W3C specification, on straight colours in [0,1].</summary>
-    internal static Vector3 BlendColor(Vector3 cb, Vector3 cs, BlendMode mode) => mode switch
+    internal static Vector3 BlendColor(Vector3 cb, Vector3 cs, BmageBlendMode mode) => mode switch
     {
-        BlendMode.Multiply => cb * cs,
-        BlendMode.Screen => cb + cs - cb * cs,
-        BlendMode.Overlay => new(HardLight(cs.X, cb.X), HardLight(cs.Y, cb.Y), HardLight(cs.Z, cb.Z)),
-        BlendMode.Darken => Vector3.Min(cb, cs),
-        BlendMode.Lighten => Vector3.Max(cb, cs),
-        BlendMode.ColorDodge => new(ColorDodge(cb.X, cs.X), ColorDodge(cb.Y, cs.Y), ColorDodge(cb.Z, cs.Z)),
-        BlendMode.ColorBurn => new(ColorBurn(cb.X, cs.X), ColorBurn(cb.Y, cs.Y), ColorBurn(cb.Z, cs.Z)),
-        BlendMode.HardLight => new(HardLight(cb.X, cs.X), HardLight(cb.Y, cs.Y), HardLight(cb.Z, cs.Z)),
-        BlendMode.SoftLight => new(SoftLight(cb.X, cs.X), SoftLight(cb.Y, cs.Y), SoftLight(cb.Z, cs.Z)),
-        BlendMode.Difference => Vector3.Abs(cb - cs),
-        BlendMode.Exclusion => cb + cs - 2 * cb * cs,
-        BlendMode.Hue => SetLum(SetSat(cs, Sat(cb)), Lum(cb)),
-        BlendMode.Saturation => SetLum(SetSat(cb, Sat(cs)), Lum(cb)),
-        BlendMode.Color => SetLum(cs, Lum(cb)),
-        BlendMode.Luminosity => SetLum(cb, Lum(cs)),
-        BlendMode.Add => Vector3.Min(cb + cs, Vector3.One),
+        BmageBlendMode.Multiply => cb * cs,
+        BmageBlendMode.Screen => cb + cs - cb * cs,
+        BmageBlendMode.Overlay => new(HardLight(cs.X, cb.X), HardLight(cs.Y, cb.Y), HardLight(cs.Z, cb.Z)),
+        BmageBlendMode.Darken => Vector3.Min(cb, cs),
+        BmageBlendMode.Lighten => Vector3.Max(cb, cs),
+        BmageBlendMode.ColorDodge => new(ColorDodge(cb.X, cs.X), ColorDodge(cb.Y, cs.Y), ColorDodge(cb.Z, cs.Z)),
+        BmageBlendMode.ColorBurn => new(ColorBurn(cb.X, cs.X), ColorBurn(cb.Y, cs.Y), ColorBurn(cb.Z, cs.Z)),
+        BmageBlendMode.HardLight => new(HardLight(cb.X, cs.X), HardLight(cb.Y, cs.Y), HardLight(cb.Z, cs.Z)),
+        BmageBlendMode.SoftLight => new(SoftLight(cb.X, cs.X), SoftLight(cb.Y, cs.Y), SoftLight(cb.Z, cs.Z)),
+        BmageBlendMode.Difference => Vector3.Abs(cb - cs),
+        BmageBlendMode.Exclusion => cb + cs - 2 * cb * cs,
+        BmageBlendMode.Hue => SetLum(SetSat(cs, Sat(cb)), Lum(cb)),
+        BmageBlendMode.Saturation => SetLum(SetSat(cb, Sat(cs)), Lum(cb)),
+        BmageBlendMode.Color => SetLum(cs, Lum(cb)),
+        BmageBlendMode.Luminosity => SetLum(cb, Lum(cs)),
+        BmageBlendMode.Add => Vector3.Min(cb + cs, Vector3.One),
         _ => cs,
     };
 

@@ -1,6 +1,5 @@
 ﻿using System.Buffers;
 using System.Text.Json;
-using Bit.Bcrdt.Integrations;
 using Bit.Blow;
 
 namespace Bit.Bcrdt;

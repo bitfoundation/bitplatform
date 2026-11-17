@@ -264,12 +264,12 @@ public sealed class ExifData
 
     // ---- Typed accessors ----
 
-    public Orientation Orientation
+    public BmageOrientation Orientation
     {
         get
         {
             var v = Primary.Get(ExifTag.Orientation)?.GetInt32();
-            return v is >= 1 and <= 8 ? (Orientation)v : Orientation.Normal;
+            return v is >= 1 and <= 8 ? (BmageOrientation)v : BmageOrientation.Normal;
         }
     }
 
@@ -346,10 +346,10 @@ public sealed class ExifData
     public ExifData WithExif(ExifDirectory exif) => new(Primary, exif, Gps, Interop, Thumbnail);
     public ExifData WithGps(ExifDirectory gps) => new(Primary, Exif, gps, Interop, Thumbnail);
 
-    public ExifData WithOrientation(Orientation orientation)
+    public ExifData WithOrientation(BmageOrientation orientation)
     {
-        if (Orientation == orientation && (orientation != Orientation.Normal || !Primary.Contains(ExifTag.Orientation))) return this;
-        return WithPrimary(Primary.With(ExifTag.Orientation, ExifValue.FromShort((ushort)(orientation == Orientation.Unspecified ? 1 : (int)orientation))));
+        if (Orientation == orientation && (orientation != BmageOrientation.Normal || !Primary.Contains(ExifTag.Orientation))) return this;
+        return WithPrimary(Primary.With(ExifTag.Orientation, ExifValue.FromShort((ushort)(orientation == BmageOrientation.Unspecified ? 1 : (int)orientation))));
     }
 
     public ExifData WithPixelDimensions(int width, int height)
@@ -381,7 +381,7 @@ public sealed class ExifData
         => new(Primary.Without(SensitiveTags), Exif.Without(SensitiveTags), new ExifDirectory(), Interop.Without(SensitiveTags), default);
 
     /// <summary>Creates a minimal EXIF block with the given orientation.</summary>
-    public static ExifData FromOrientation(Orientation orientation) => new ExifData().WithOrientation(orientation);
+    public static ExifData FromOrientation(BmageOrientation orientation) => new ExifData().WithOrientation(orientation);
 
     /// <summary>Parses an EXIF payload (TIFF structure, optionally prefixed with "Exif\0\0"). Returns null when the data is not EXIF.</summary>
     public static ExifData? Parse(ReadOnlySpan<byte> data) => ExifReader.Read(data);

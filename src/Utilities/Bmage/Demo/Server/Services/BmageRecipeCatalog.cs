@@ -54,7 +54,7 @@ public static class BmageRecipeCatalog
                         using var thumb = await Thumbnail.ExecuteAsync(image);
 
                         var encoded = await Exporter.EncodeWithFallbackAsync(
-                            thumb, [ImageFormat.WebP, ImageFormat.Jpeg],
+                            thumb, [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
                             new ImageExportOptions { Quality = 0.8 });
 
                         if (_url is not null) await Exporter.ReleaseObjectUrlAsync(_url);
@@ -104,7 +104,7 @@ public static class BmageRecipeCatalog
                         using var shrunk = await Shrink.ExecuteAsync(image);
 
                         var encoded = await Exporter.EncodeWithFallbackAsync(
-                            shrunk, [ImageFormat.WebP, ImageFormat.Jpeg],
+                            shrunk, [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
                             new ImageExportOptions
                             {
                                 Quality = 0.82,
@@ -147,7 +147,7 @@ public static class BmageRecipeCatalog
                         using var avatar = await ImagePipeline.Create()
                             .AutoOrient()
                             .SmartCrop(AspectRatio.Square)
-                            .Resize(size, size, ResizeMode.Stretch)
+                            .Resize(size, size, BmageResizeMode.Stretch)
                             .Sharpen(0.25f)
                             .ExecuteAsync(source);
 
@@ -158,7 +158,7 @@ public static class BmageRecipeCatalog
                             // A circle needs alpha: JPEG would show the corners, so fall back to PNG instead.
                             return await Exporter.EncodeWithFallbackAsync(
                                 avatar,
-                                circular ? [ImageFormat.WebP, ImageFormat.Png] : [ImageFormat.WebP, ImageFormat.Jpeg],
+                                circular ? [BmageImageFormat.WebP, BmageImageFormat.Png] : [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
                                 new ImageExportOptions
                                 {
                                     Quality = 0.9,
@@ -233,7 +233,7 @@ public static class BmageRecipeCatalog
 
                         return await Exporter.EncodeAsync(image, new ImageExportOptions
                         {
-                            Format = ImageFormat.Jpeg,
+                            Format = BmageImageFormat.Jpeg,
                             Quality = 0.88,
                             // Keeps camera, lens, exposure, dates, copyright and the ICC profile; drops GPS,
                             // serial numbers, owner and artist names, user comments, maker notes, unique ids, the
@@ -270,7 +270,7 @@ public static class BmageRecipeCatalog
                 @code {
                     private static readonly ImageExportOptions ExportOptions = new()
                     {
-                        Format = ImageFormat.Png,              // screenshots are flat colour: PNG
+                        Format = BmageImageFormat.Png,              // screenshots are flat colour: PNG
                         Metadata = MetadataPolicy.Remove,
                     };
 
@@ -358,7 +358,7 @@ public static class BmageRecipeCatalog
 
                     return await processor.EncodeAsync(rendered, new ImageExportOptions
                     {
-                        Format = ImageFormat.Png,
+                        Format = BmageImageFormat.Png,
                         Metadata = MetadataPolicy.Remove,
                     });
                 }
@@ -417,7 +417,7 @@ public static class BmageRecipeCatalog
                             {
                                 MaxConcurrency = 2,          // each worker holds a decoded image
                                 StopOnFirstError = false,    // one bad file must not lose the rest
-                                ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+                                ExportOptions = new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
                                 Progress = new Progress<BatchProgress>(p =>
                                 {
                                     _completed = p.Completed;
@@ -473,7 +473,7 @@ public static class BmageRecipeCatalog
 
                     private readonly ImageExportOptions _export = new()
                     {
-                        Format = ImageFormat.Jpeg,
+                        Format = BmageImageFormat.Jpeg,
                         Quality = 0.9,
                         Metadata = MetadataPolicy.Remove,
                     };
@@ -590,7 +590,7 @@ public static class BmageRecipeCatalog
                         var thumbnail = await processor.ProcessAsync(
                             bytes,
                             ImagePipeline.Create().AutoOrient().MaxSize(400, 400),
-                            new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 },
+                            new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 },
                             cancellationToken: cancellationToken);
 
                         return Results.File(thumbnail.Data, thumbnail.MimeType);
@@ -631,7 +631,7 @@ public static class BmageRecipeCatalog
                     new BatchOptions
                     {
                         MaxConcurrency = Math.Max(1, Environment.ProcessorCount / 2),
-                        ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+                        ExportOptions = new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
                     });
 
                 foreach (var item in result.Succeeded)
@@ -669,7 +669,7 @@ public static class BmageRecipeCatalog
 
                         using var fitted = await ImagePipeline.Create()
                             .AutoOrient()
-                            .Resize(inner, inner, ResizeMode.Fit)
+                            .Resize(inner, inner, BmageResizeMode.Fit)
                             .Sharpen(0.25f)
                             .ExecuteAsync(decodedOnce);
 
@@ -679,17 +679,17 @@ public static class BmageRecipeCatalog
 
                         using var variant = canvas.Snapshot();
                         results.Add(await exporter.EncodeWithFallbackAsync(variant,
-                            [ImageFormat.WebP, ImageFormat.Jpeg], new ImageExportOptions { Quality = 0.85 }));
+                            [BmageImageFormat.WebP, BmageImageFormat.Jpeg], new ImageExportOptions { Quality = 0.85 }));
                     }
 
                     return results;
                 }
 
                 // One call does the same when the padding can be the background colour:
-                // ImagePipeline.Create().Resize(512, 512, ResizeMode.Contain, background: Rgba32.White)
+                // ImagePipeline.Create().Resize(512, 512, BmageResizeMode.Contain, background: Rgba32.White)
                 """,
             Notes = "Decode once and derive every size from the original, rather than shrinking the previous variant: each " +
-                    "resample from already-downscaled pixels loses detail. ResizeMode.Contain pads to the exact canvas in " +
+                    "resample from already-downscaled pixels loses detail. BmageResizeMode.Contain pads to the exact canvas in " +
                     "one step; Cover would crop; Max never enlarges a small source. On a server swap ImageExporter for " +
                     "ImageProcessor.EncodeAsync with JPEG or PNG - WebP is browser-only."
         },
@@ -727,12 +727,12 @@ public static class BmageRecipeCatalog
                                 FontSize = composed.Height * 0.06f,
                                 Bold = true,
                                 FillColor = Rgba32.White,
-                                Alignment = TextAlignment.Center,
+                                Alignment = BmageTextAlignment.Center,
                                 Baseline = TextBaseline.Middle,
                                 MaxWidth = composed.Width * 0.86f,
                             });
 
-                        return await Exporter.EncodeAsync(composed, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.88 });
+                        return await Exporter.EncodeAsync(composed, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.88 });
                     }
                 }
                 """,
@@ -796,9 +796,9 @@ public static class BmageRecipeCatalog
                     private async Task<EncodedImage> ExportAsync(ImageBuffer image)
                     {
                         // Transparent output needs a format with alpha; a JPEG would flatten it onto Background.
-                        IReadOnlyList<ImageFormat> preferred = image.HasTransparency()
-                            ? [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Png]
-                            : [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg];
+                        IReadOnlyList<BmageImageFormat> preferred = image.HasTransparency()
+                            ? [BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Png]
+                            : [BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg];
 
                         // Picks the first format this browser can actually encode; reported on encoded.Format.
                         return await Exporter.EncodeWithFallbackAsync(image, preferred, new ImageExportOptions { Quality = 0.82 });
@@ -827,7 +827,7 @@ public static class BmageRecipeCatalog
                 {
                     var encoded = await exporter.EncodeAsync(image, new ImageExportOptions
                     {
-                        Format = ImageFormat.Jpeg,
+                        Format = BmageImageFormat.Jpeg,
                         Quality = 0.9,                 // where the search starts
                         MaxFileSize = 150 * 1024,
                         MinQuality = 0.5,              // the floor before dimensions start to shrink
@@ -955,18 +955,18 @@ public static class BmageRecipeCatalog
                 using Bit.Bmage;
 
                 var document = ImageDocument.Create(photo)
-                    .AddOperation(new Bit.Bmage.ResizeOperation(1920, 1920, Bit.Bmage.ResizeMode.Max))
+                    .AddOperation(new Bit.Bmage.ResizeOperation(1920, 1920, Bit.Bmage.BmageResizeMode.Max))
                     // Layer coordinates are those of the pipeline's output.
                     .AddLayer(new ImageLayer
                     {
                         Image = logo,                     // not owned: keep it alive while the document is used
                         Bounds = new RectangleF(40, 40, 160, 160),
-                        BlendMode = BlendMode.Overlay,
+                        BlendMode = BmageBlendMode.Overlay,
                         Opacity = 0.85f,
                     })
                     .AddLayer(new FillLayer(new Rgba32(255, 120, 40))
                     {
-                        BlendMode = BlendMode.Screen,
+                        BlendMode = BmageBlendMode.Screen,
                         Opacity = 0.4f,
                         Mask = Mask.Gradient(new Vector2(0, 0.8f), new Vector2(0, 0.3f)),
                     })
@@ -1005,7 +1005,7 @@ public static class BmageRecipeCatalog
                 if (original.Size != document.SourceSize) throw new InvalidOperationException("The edit was made for another image.");
 
                 using var rendered = new DocumentRenderer(fonts).Render(document, original);
-                var file = await processor.EncodeAsync(rendered, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9 });
+                var file = await processor.EncodeAsync(rendered, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.9 });
 
                 // Or reopen the editor where the user left off: await context.RestoreDocumentAsync(document);
                 """,
@@ -1039,7 +1039,7 @@ public static class BmageRecipeCatalog
                 {
                     MaxConcurrency = 4,
                     MaxMemoryBytes = 768L * 1024 * 1024,   // images start only while their estimated need fits
-                    ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+                    ExportOptions = new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
                 }))
                 {
                     if (result.Output is { } output) await File.WriteAllBytesAsync(Path.Combine("out", result.FileName!), output.Data);
@@ -1172,7 +1172,7 @@ public static class BmageRecipeCatalog
                 using var scan = await pipeline.ExecuteAsync(photo);
                 var png = await processor.EncodeAsync(scan, new ImageExportOptions
                 {
-                    Format    = ImageFormat.Png,
+                    Format    = BmageImageFormat.Png,
                     MaxColors = 2,                                     // a 1-bit indexed PNG
                 });
                 """,
@@ -1198,13 +1198,13 @@ public static class BmageRecipeCatalog
                 // At most 64 colours: exact for a logo with fewer, often a third of the full-colour PNG's size.
                 var logo = await processor.EncodeAsync(image, new ImageExportOptions
                 {
-                    Format    = ImageFormat.Png,
+                    Format    = BmageImageFormat.Png,
                     MaxColors = 64,
                     Dither    = false,          // flat artwork; leave it on for gradients and photos
                 });
 
                 // GIF: one frame, 256 colours, one transparent colour.
-                var gif = await processor.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Gif });
+                var gif = await processor.EncodeAsync(image, new ImageExportOptions { Format = BmageImageFormat.Gif });
 
                 // favicon.ico at 16, 32 and 48 pixels, the image fitted on transparency.
                 var favicon = IcoEncoder.CreateFavicon(image);

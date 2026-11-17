@@ -23,7 +23,7 @@ public sealed class LayerGroupTests
     private static Layer[] Mixed(ImageBuffer stamp) =>
     [
         new ImageLayer { Image = stamp, Bounds = new RectangleF(8, 6, 30, 20) },
-        new FillLayer(new Rgba32(20, 160, 90, 200)) { Mask = new EllipseMask(new RectangleF(20, 10, 30, 30)), BlendMode = BlendMode.Multiply },
+        new FillLayer(new Rgba32(20, 160, 90, 200)) { Mask = new EllipseMask(new RectangleF(20, 10, 30, 30)), BlendMode = BmageBlendMode.Multiply },
         new AdjustmentLayer(ImagePipeline.Create().Brightness(0.2f)) { Mask = new RectangleMask(new RectangleF(0, 0, 32, 48)) },
     ];
 
@@ -101,8 +101,8 @@ public sealed class LayerGroupTests
         using var background = ImageBuffer.Create(50, 10, new Rgba32(200, 200, 200));
         var red = new FillLayer(Red) { Mask = new RectangleMask(new RectangleF(0, 0, 25, 10)) };
         var blue = new FillLayer(Blue) { Mask = new RectangleMask(new RectangleF(15, 0, 25, 10)) };
-        using var group = Composite(background, new GroupLayer([red, blue]) { BlendMode = BlendMode.Multiply });
-        using var each = Composite(background, red with { BlendMode = BlendMode.Multiply }, blue with { BlendMode = BlendMode.Multiply });
+        using var group = Composite(background, new GroupLayer([red, blue]) { BlendMode = BmageBlendMode.Multiply });
+        using var each = Composite(background, red with { BlendMode = BmageBlendMode.Multiply }, blue with { BlendMode = BmageBlendMode.Multiply });
 
         // Within the group the blue covers the red, and only the result multiplies what is beneath.
         Assert.AreEqual(new Rgba32(200, 0, 0), group[5, 5]);
@@ -329,7 +329,7 @@ public sealed class LayerGroupTests
         [
             inner,
             new ImageLayer { Image = disc, Bounds = new RectangleF(20, 10, 24, 24) },
-            new FillLayer(Red) { ClipToLayerBelow = true, BlendMode = BlendMode.Multiply },
+            new FillLayer(Red) { ClipToLayerBelow = true, BlendMode = BmageBlendMode.Multiply },
         ]) { Isolated = true, Opacity = 0.8f };
         using var session = new ImageEditSession(source.Clone());
         var renderer = new DocumentRenderer();

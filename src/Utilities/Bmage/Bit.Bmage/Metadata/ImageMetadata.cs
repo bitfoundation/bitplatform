@@ -33,7 +33,7 @@ public sealed class ImageMetadata
 {
     public static ImageMetadata Empty { get; } = new();
 
-    public ImageMetadata(ExifData? exif = null, ReadOnlyMemory<byte> iccProfile = default, ReadOnlyMemory<byte> xmp = default, ImageFormat sourceFormat = ImageFormat.Unknown, string? fileName = null)
+    public ImageMetadata(ExifData? exif = null, ReadOnlyMemory<byte> iccProfile = default, ReadOnlyMemory<byte> xmp = default, BmageImageFormat sourceFormat = BmageImageFormat.Unknown, string? fileName = null)
     {
         Exif = exif;
         IccProfile = iccProfile;
@@ -52,7 +52,7 @@ public sealed class ImageMetadata
     public ReadOnlyMemory<byte> Xmp { get; }
 
     /// <summary>The format the pixels were decoded from.</summary>
-    public ImageFormat SourceFormat { get; }
+    public BmageImageFormat SourceFormat { get; }
 
     /// <summary>The original file name, when known.</summary>
     public string? FileName { get; }
@@ -60,14 +60,14 @@ public sealed class ImageMetadata
     /// <summary>True when no metadata of any kind is present.</summary>
     public bool IsEmpty => Exif is null && IccProfile.IsEmpty && Xmp.IsEmpty;
 
-    /// <summary>The EXIF orientation, or <see cref="Orientation.Normal"/> when not present.</summary>
-    public Orientation Orientation => Exif?.Orientation ?? Orientation.Normal;
+    /// <summary>The EXIF orientation, or <see cref="BmageOrientation.Normal"/> when not present.</summary>
+    public BmageOrientation Orientation => Exif?.Orientation ?? BmageOrientation.Normal;
 
     public ImageMetadata WithExif(ExifData? exif) => new(exif, IccProfile, Xmp, SourceFormat, FileName);
-    public ImageMetadata WithOrientation(Orientation orientation) => Exif is null ? this : WithExif(Exif.WithOrientation(orientation));
+    public ImageMetadata WithOrientation(BmageOrientation orientation) => Exif is null ? this : WithExif(Exif.WithOrientation(orientation));
     public ImageMetadata WithIccProfile(ReadOnlyMemory<byte> icc) => new(Exif, icc, Xmp, SourceFormat, FileName);
     public ImageMetadata WithXmp(ReadOnlyMemory<byte> xmp) => new(Exif, IccProfile, xmp, SourceFormat, FileName);
-    public ImageMetadata WithSourceFormat(ImageFormat format) => new(Exif, IccProfile, Xmp, format, FileName);
+    public ImageMetadata WithSourceFormat(BmageImageFormat format) => new(Exif, IccProfile, Xmp, format, FileName);
     public ImageMetadata WithFileName(string? fileName) => new(Exif, IccProfile, Xmp, SourceFormat, fileName);
 
     /// <summary>
@@ -75,10 +75,10 @@ public sealed class ImageMetadata
     /// EXIF pixel dimensions are updated to match the exported pixels.
     /// </summary>
     /// <remarks>
-    /// The orientation tag is carried through rather than reset, because <see cref="Orientation"/> describes the
+    /// The orientation tag is carried through rather than reset, because <see cref="BmageOrientation"/> describes the
     /// pixels currently in the buffer. Every decode path maintains that invariant: decoding with
     /// <see cref="DecodeOptions.AutoOrient"/> rotates the pixels upright and sets the tag to
-    /// <see cref="Orientation.Normal"/>, so a normal export writes no rotation. Decoding without it leaves
+    /// <see cref="BmageOrientation.Normal"/>, so a normal export writes no rotation. Decoding without it leaves
     /// the pixels in sensor order and the tag describing them, and forcing the tag to normal there would export a
     /// sideways image with nothing left to say so.
     /// </remarks>

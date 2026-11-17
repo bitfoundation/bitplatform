@@ -17,8 +17,8 @@ public sealed record RectangleAnnotation : Annotation
     public override void Render(ImageCanvas canvas, AnnotationRenderContext context)
     {
         var path = CornerRadius > 0
-            ? new PathBuilder().AddRoundedRectangle(Rectangle, CornerRadius).Build()
-            : new PathBuilder().AddRectangle(Rectangle).Build();
+            ? new BmagePathBuilder().AddRoundedRectangle(Rectangle, CornerRadius).Build()
+            : new BmagePathBuilder().AddRectangle(Rectangle).Build();
         if (Style.FillColor is { } fill) canvas.FillPath(path, fill);
         if (Style.StrokeColor is { } stroke) canvas.StrokePath(path, stroke, Style.Stroke);
     }
@@ -54,7 +54,7 @@ public sealed record EllipseAnnotation : Annotation
 
     public override void Render(ImageCanvas canvas, AnnotationRenderContext context)
     {
-        var path = new PathBuilder().AddEllipse(Rectangle).Build();
+        var path = new BmagePathBuilder().AddEllipse(Rectangle).Build();
         if (Style.FillColor is { } fill) canvas.FillPath(path, fill);
         if (Style.StrokeColor is { } stroke) canvas.StrokePath(path, stroke, Style.Stroke);
     }
@@ -169,7 +169,7 @@ public sealed record FreehandAnnotation : Annotation
         init => _points = value?.ToArray() ?? [];
     }
 
-    public ShapeStyle Style { get; init; } = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 4f, Cap = LineCap.Round, Join = LineJoin.Round } };
+    public ShapeStyle Style { get; init; } = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 4f, Cap = BmageLineCap.Round, Join = BmageLineJoin.Round } };
 
     /// <summary>Fill and close the stroke instead of drawing an open line (a lasso highlight).</summary>
     public bool Closed { get; init; }
@@ -199,7 +199,7 @@ public sealed record FreehandAnnotation : Annotation
             if (Style.StrokeColor is { } dot) canvas.FillCircle(_points[0], Style.Stroke.Width / 2, dot);
             return;
         }
-        var builder = new PathBuilder();
+        var builder = new BmagePathBuilder();
         AppendSmoothed(builder, _points, Closed);
         var path = builder.Build();
         if (Closed && Style.FillColor is { } fill) canvas.FillPath(path, fill);
@@ -207,7 +207,7 @@ public sealed record FreehandAnnotation : Annotation
     }
 
     /// <summary>Draws through the points with Catmull-Rom style smoothing so fast strokes do not look polygonal.</summary>
-    internal static void AppendSmoothed(PathBuilder builder, IReadOnlyList<Vector2> points, bool closed)
+    internal static void AppendSmoothed(BmagePathBuilder builder, IReadOnlyList<Vector2> points, bool closed)
     {
         if (points.Count < 3)
         {
@@ -309,7 +309,7 @@ public sealed record PolygonAnnotation : Annotation
     public override void Render(ImageCanvas canvas, AnnotationRenderContext context)
     {
         if (_points.Length < 2) return;
-        var path = new PathBuilder().AddPolygon(_points, Closed).Build();
+        var path = new BmagePathBuilder().AddPolygon(_points, Closed).Build();
         if (Closed && Style.FillColor is { } fill) canvas.FillPath(path, fill);
         if (Style.StrokeColor is { } stroke) canvas.StrokePath(path, stroke, Style.Stroke);
     }
@@ -359,8 +359,8 @@ public sealed record TextAnnotation : Annotation
         var size = MeasuredSize ?? new SizeF(Math.Max(1, Text.Length) * Style.FontSize * 0.55f, Style.FontSize * Style.LineHeight * (1 + Text.Count(c => c == '\n')));
         var x = Style.Alignment switch
         {
-            TextAlignment.Center => Position.X - size.Width / 2,
-            TextAlignment.Right => Position.X - size.Width,
+            BmageTextAlignment.Center => Position.X - size.Width / 2,
+            BmageTextAlignment.Right => Position.X - size.Width,
             _ => Position.X,
         };
         var y = Style.Baseline switch
@@ -393,8 +393,8 @@ public sealed record TextAnnotation : Annotation
     {
         var x = Style.Alignment switch
         {
-            TextAlignment.Center => Position.X - metrics.Width / 2,
-            TextAlignment.Right => Position.X - metrics.Width,
+            BmageTextAlignment.Center => Position.X - metrics.Width / 2,
+            BmageTextAlignment.Right => Position.X - metrics.Width,
             _ => Position.X,
         };
         var y = Style.Baseline switch
@@ -481,7 +481,7 @@ public sealed record RedactionAnnotation : Annotation
         // The filters work on device pixels, so the region the user sees (after the canvas transform, which carries
         // this annotation's rotation) is mapped there first. Rounding outwards means a partly covered pixel is
         // redacted rather than left readable.
-        var outline = new PathBuilder().AddRectangle(area).Build().Transform(canvas.Transform);
+        var outline = new BmagePathBuilder().AddRectangle(area).Build().Transform(canvas.Transform);
         var bounds = outline.Bounds;
         if (!float.IsFinite(bounds.Left) || !float.IsFinite(bounds.Top) || !float.IsFinite(bounds.Right) || !float.IsFinite(bounds.Bottom)) return;
         var device = System.Drawing.Rectangle.FromLTRB(
@@ -557,7 +557,7 @@ public sealed record CalloutAnnotation : Annotation
     /// <summary>Where the leader line points, in image coordinates.</summary>
     public required Vector2 Target { get; init; }
     public string Text { get; init; } = string.Empty;
-    public TextStyle TextStyle { get; init; } = new() { Alignment = TextAlignment.Center, Baseline = TextBaseline.Middle };
+    public TextStyle TextStyle { get; init; } = new() { Alignment = BmageTextAlignment.Center, Baseline = TextBaseline.Middle };
     public ShapeStyle Style { get; init; } = ShapeStyle.Default with { FillColor = Rgba32.White };
     public float CornerRadius { get; init; } = 6f;
 
@@ -579,7 +579,7 @@ public sealed record CalloutAnnotation : Annotation
             direction = Vector2.Normalize(direction);
             var perpendicular = new Vector2(-direction.Y, direction.X) * MathF.Min(Bubble.Width, Bubble.Height) * 0.18f;
             var basePoint = EdgePoint(Bubble, center, direction);
-            var tail = new PathBuilder()
+            var tail = new BmagePathBuilder()
                 .MoveTo(basePoint + perpendicular)
                 .LineTo(Target)
                 .LineTo(basePoint - perpendicular)
@@ -588,7 +588,7 @@ public sealed record CalloutAnnotation : Annotation
             if (Style.FillColor is { } tailFill) canvas.FillPath(tail, tailFill);
             if (Style.StrokeColor is { } tailStroke) canvas.StrokePath(tail, tailStroke, Style.Stroke);
         }
-        var bubble = new PathBuilder().AddRoundedRectangle(Bubble, CornerRadius).Build();
+        var bubble = new BmagePathBuilder().AddRoundedRectangle(Bubble, CornerRadius).Build();
         if (Style.FillColor is { } fill) canvas.FillPath(bubble, fill);
         if (Style.StrokeColor is { } stroke) canvas.StrokePath(bubble, stroke, Style.Stroke);
         if (!string.IsNullOrEmpty(Text) && context.TextRasterizer is { } rasterizer)
@@ -645,7 +645,7 @@ public sealed record StepAnnotation : Annotation
     public float Radius { get; init; } = 18f;
     public Rgba32 BackgroundColor { get; init; } = new(230, 40, 40);
     public Rgba32 ForegroundColor { get; init; } = Rgba32.White;
-    public TextStyle TextStyle { get; init; } = new() { Alignment = TextAlignment.Center, Baseline = TextBaseline.Middle, Bold = true };
+    public TextStyle TextStyle { get; init; } = new() { Alignment = BmageTextAlignment.Center, Baseline = TextBaseline.Middle, Bold = true };
 
     public override string Kind => "Step";
     public override RectangleF GetBounds() => new(Center.X - Radius, Center.Y - Radius, Radius * 2, Radius * 2);
