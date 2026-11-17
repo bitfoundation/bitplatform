@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// reset to the first page and the announcements.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridFilteringE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/filtering";

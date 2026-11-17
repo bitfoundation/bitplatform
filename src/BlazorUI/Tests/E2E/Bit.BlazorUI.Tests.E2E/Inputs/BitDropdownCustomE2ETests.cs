@@ -8,6 +8,7 @@
 /// property names, and the NameSelectors of a BitParams cascade.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownCustomE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/custom";

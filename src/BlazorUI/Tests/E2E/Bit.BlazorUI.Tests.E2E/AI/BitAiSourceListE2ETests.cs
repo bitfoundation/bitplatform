@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// and RTL.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiSourceListE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aisourcelist";

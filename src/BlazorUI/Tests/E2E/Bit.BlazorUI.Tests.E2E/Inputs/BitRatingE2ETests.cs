@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// reduced motion.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitRatingE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/rating";

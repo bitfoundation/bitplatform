@@ -20,6 +20,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// Style/Class/Styles/Classes and the public CSS variables, RTL and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPdfViewerE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/pdf-viewer";

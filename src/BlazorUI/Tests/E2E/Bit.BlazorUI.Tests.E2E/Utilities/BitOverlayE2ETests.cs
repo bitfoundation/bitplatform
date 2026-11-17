@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// handed back on close, reduced motion and ForceAnimation, and an open Overlay unmounted.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitOverlayE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/overlay";

@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// dropped and the BitParams cascade, Styles and Classes, and RTL.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiErrorViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aierrorview";

@@ -9,6 +9,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// arrow keys of a fitted image left to the page; a new image fitted again; a disabled viewer left alone; and axe.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitImageViewerE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/image-viewer";

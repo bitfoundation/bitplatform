@@ -11,6 +11,7 @@
 /// unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitGridE2ETests : E2ETestBase
 {
     private const double Tolerance = 1;

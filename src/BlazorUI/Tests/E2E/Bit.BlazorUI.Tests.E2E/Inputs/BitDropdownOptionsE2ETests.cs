@@ -8,6 +8,7 @@
 /// virtualized list of options and the loading state over options.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownOptionsE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/options";

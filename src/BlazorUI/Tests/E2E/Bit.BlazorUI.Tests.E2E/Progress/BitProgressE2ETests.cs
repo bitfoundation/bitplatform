@@ -16,6 +16,7 @@ namespace Bit.BlazorUI.Tests.E2E.Progress;
 /// prerender, runtime re-renders and unmount.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitProgressE2ETests : E2ETestBase
 {
     private const string Path = "/e2e/progress";

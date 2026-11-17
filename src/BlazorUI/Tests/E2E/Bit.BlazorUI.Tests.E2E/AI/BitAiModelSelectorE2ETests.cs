@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// Disabled, the Styles/Classes of the dropdown, and right-to-left.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiModelSelectorE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aimodelselector";

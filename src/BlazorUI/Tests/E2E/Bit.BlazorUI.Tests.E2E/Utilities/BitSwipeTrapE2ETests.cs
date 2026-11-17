@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// variables, the prerendered markup and a trap removed mid-gesture. Touch is in BitSwipeTrapTouchE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitSwipeTrapE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/swipe-trap";

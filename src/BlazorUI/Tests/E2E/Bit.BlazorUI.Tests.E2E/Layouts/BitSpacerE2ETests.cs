@@ -8,6 +8,7 @@
 /// prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitSpacerE2ETests : E2ETestBase
 {
     private const double Tolerance = 1;

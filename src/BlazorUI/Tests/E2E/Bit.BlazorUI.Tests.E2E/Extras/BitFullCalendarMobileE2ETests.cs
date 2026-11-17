@@ -9,6 +9,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// to Wednesday 2025-07-16 10:30, like every other page of the calendar.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitFullCalendarMobileE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new()

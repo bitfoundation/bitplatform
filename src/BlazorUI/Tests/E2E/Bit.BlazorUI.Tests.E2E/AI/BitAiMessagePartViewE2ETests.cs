@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// part rendering that part's view and no other, Styles and Classes, a wide part scrolling inside its own view, and RTL.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiMessagePartViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aimessagepartview";

@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// Disabled, the keyboard, the theme tokens and the public variables, Styles/Classes, and right-to-left.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiFormE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aiform";

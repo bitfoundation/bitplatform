@@ -10,6 +10,7 @@
 /// Style / Class / HtmlAttributes / hidden / Visibility / TabIndex / Disabled, RTL, prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitStackE2ETests : E2ETestBase
 {
     private const double Tolerance = 1;

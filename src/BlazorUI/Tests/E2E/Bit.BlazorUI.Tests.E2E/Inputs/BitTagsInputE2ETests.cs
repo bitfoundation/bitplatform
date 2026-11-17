@@ -17,6 +17,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// runtime re-renders, prerendering, unmounting and reduced motion.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTagsInputE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/tags-input";

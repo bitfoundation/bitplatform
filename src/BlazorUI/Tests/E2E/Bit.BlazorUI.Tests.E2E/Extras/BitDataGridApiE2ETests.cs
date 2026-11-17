@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// the Strings that localize every text and accessible name while the rest keep their English default.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridApiE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/api";

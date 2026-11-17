@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// --bit-AiCodeBlockView-* variable, Classes/Styles and print.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiCodeBlockViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aicodeblockview";

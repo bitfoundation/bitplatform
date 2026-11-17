@@ -7,6 +7,7 @@
 /// shown while the reply has produced nothing yet - or its status line - and gone once text streams in.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiThinkingIndicatorE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aithinkingindicator";

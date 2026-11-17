@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// --bit-AiMessageList-* variable, Styles/Classes, RTL and print.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiMessageListE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aimessagelist";

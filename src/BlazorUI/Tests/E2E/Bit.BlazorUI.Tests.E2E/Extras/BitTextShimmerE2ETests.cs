@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// re-rendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTextShimmerE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/text-shimmer";

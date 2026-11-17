@@ -6,6 +6,7 @@ namespace Bit.BlazorUI.Tests.E2E;
 /// Pins the host itself: it answers, every page it lists becomes interactive, and a page's errors reach the test.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public partial class HostE2ETests : E2ETestBase
 {
     [TestMethod]

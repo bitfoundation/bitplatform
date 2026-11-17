@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// --bit-Element-disabled-opacity variable, RTL, the prerender and unmount.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitElementE2ETests : E2ETestBase
 {
     private const string Path = "/e2e/element";

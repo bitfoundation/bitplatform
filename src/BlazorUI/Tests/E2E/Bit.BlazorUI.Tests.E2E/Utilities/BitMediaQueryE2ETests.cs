@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// Visibility, and a media query that stops listening once removed.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMediaQueryE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/media-query";

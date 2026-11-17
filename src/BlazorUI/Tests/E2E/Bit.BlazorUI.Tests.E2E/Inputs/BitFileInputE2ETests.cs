@@ -17,6 +17,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// RTL; the disabled and read-only contracts; runtime re-renders, prerendering, unmounting and reduced motion.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitFileInputE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/file-input";

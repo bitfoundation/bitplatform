@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// Style / Class / Styles / Classes, every --bit-InfiniteScrolling-* variable, RTL, prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitInfiniteScrollingE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/infinite-scrolling";

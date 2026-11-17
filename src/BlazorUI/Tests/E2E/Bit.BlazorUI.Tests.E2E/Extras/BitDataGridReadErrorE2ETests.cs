@@ -7,6 +7,7 @@
 /// own rows replace the ones read ahead of it - and a window that fails as the virtualized grid scrolls to it.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridReadErrorE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/read-errors";

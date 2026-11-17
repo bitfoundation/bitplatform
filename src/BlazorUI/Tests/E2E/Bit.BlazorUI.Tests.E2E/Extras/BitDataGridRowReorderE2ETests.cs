@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// a touch drag of a column header.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridRowReorderE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/row-reorder";

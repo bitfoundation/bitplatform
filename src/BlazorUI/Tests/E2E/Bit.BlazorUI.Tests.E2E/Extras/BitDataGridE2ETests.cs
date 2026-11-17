@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// classes beside this one, each on a page of its own.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid";

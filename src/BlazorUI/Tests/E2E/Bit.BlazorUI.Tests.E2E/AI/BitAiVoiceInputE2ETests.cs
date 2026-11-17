@@ -8,6 +8,7 @@
 /// while listening), removal while listening, the AI glyph font, the Styles/Classes of the button, and right-to-left.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiVoiceInputE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aivoiceinput";

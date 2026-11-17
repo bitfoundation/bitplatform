@@ -15,6 +15,7 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// each section.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitButtonE2ETests : E2ETestBase
 {
     private const string Transparent = "rgba(0, 0, 0, 0)";

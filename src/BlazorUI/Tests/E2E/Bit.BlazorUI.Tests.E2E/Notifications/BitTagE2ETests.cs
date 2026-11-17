@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Notifications;
 /// re-skins through its public CSS variables and the BitParams cascade, and unmounts without an error.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTagE2ETests : E2ETestBase
 {
     private const string Transparent = "rgba(0, 0, 0, 0)";

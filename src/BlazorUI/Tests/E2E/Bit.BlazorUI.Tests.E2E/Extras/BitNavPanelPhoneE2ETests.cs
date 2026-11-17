@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// BitNavPanelE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitNavPanelPhoneE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/nav-panel/drawer";

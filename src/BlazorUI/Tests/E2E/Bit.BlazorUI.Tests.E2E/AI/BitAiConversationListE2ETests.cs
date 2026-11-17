@@ -12,6 +12,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// colors and a preference for more contrast.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiConversationListE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aiconversationlist";

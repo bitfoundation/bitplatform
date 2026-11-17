@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitChartE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/chart";

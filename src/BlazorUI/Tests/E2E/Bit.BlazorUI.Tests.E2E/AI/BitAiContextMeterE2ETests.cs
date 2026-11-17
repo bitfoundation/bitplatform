@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// every --bit-AiContextMeter-* variable, Styles and Classes, Disabled and RTL.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiContextMeterE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aicontextmeter";

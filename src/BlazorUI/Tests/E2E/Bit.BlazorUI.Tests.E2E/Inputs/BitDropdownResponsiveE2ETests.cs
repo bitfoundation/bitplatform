@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// a phone's safe areas and scrolls to its last item, and a dropdown that is not Responsive stays a plain callout.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/responsive";

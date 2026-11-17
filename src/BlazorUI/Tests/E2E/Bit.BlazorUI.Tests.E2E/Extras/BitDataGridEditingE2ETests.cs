@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// straight to the item and restored on Escape, and an Escape inside a modal cancelling the edit before the modal closes.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridEditingE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/editing";

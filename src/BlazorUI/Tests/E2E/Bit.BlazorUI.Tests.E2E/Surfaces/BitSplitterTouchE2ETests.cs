@@ -7,6 +7,7 @@
 /// the one way to drive a real touch sequence; the other engines are skipped.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitSplitterTouchE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/splitter";

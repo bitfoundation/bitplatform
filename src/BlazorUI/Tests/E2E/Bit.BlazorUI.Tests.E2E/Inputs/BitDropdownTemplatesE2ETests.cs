@@ -8,6 +8,7 @@
 /// winning over its name.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownTemplatesE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/templates";

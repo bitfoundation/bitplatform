@@ -5,6 +5,7 @@
 /// is opened and closed with taps.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPivotMobileE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/pivot";

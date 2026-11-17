@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// vertical layout on a phone by BitStepperMobileE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitStepperE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/stepper";

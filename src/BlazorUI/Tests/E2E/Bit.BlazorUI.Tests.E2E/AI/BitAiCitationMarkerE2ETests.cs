@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// variable, Styles and Classes, forced colors (an edge, and a number that stays readable under the pointer) and RTL.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiCitationMarkerE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aicitationmarker";

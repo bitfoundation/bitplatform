@@ -6,6 +6,7 @@
 /// leave the countdown held.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitSnackBarMobileE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new()

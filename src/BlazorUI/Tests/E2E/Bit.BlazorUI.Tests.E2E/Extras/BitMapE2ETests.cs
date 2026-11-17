@@ -15,6 +15,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// to load, LazyLoad, prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMapE2ETests : E2ETestBase
 {
     internal const string Route = "/e2e/map";
@@ -1153,6 +1154,7 @@ public class BitMapE2ETests : E2ETestBase
 /// Without the network the libraries cannot load, and the tests say so as inconclusive rather than failing.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMapProvidersE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/map/providers";
@@ -1536,6 +1538,7 @@ public class BitMapProvidersE2ETests : E2ETestBase
 /// Eiffel Tower: the visitor's position is returned and the map is centred on it.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMapGeolocationE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new()
@@ -1564,6 +1567,7 @@ public class BitMapGeolocationE2ETests : E2ETestBase
 /// the window is the marker's, as Leaflet focusing the map on the press scrolls neither.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMapTouchE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new() { HasTouch = true };

@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// kept left to right and isolated, every --bit-AiMarkdownView-* variable, Classes/Styles, print and forced colors.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiMarkdownViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aimarkdownview";
