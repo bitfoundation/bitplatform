@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Bit.Utilities.Mcp;
 
@@ -109,6 +110,15 @@ internal sealed class McpSearch
     private readonly bool _searchAmbientAlone;
 
     /// <summary>
+    /// Finds the nouns that, said of one thing, name what the index is about (<see cref="WithoutAmbientNouns"/>),
+    /// or null when the server named none.
+    /// </summary>
+    private readonly Regex? _ambientNouns;
+
+    /// <summary>Whether an entry called exactly what a query word says is ranked ahead of its namesakes (<see cref="Indexed.IsCalled"/>).</summary>
+    private readonly bool _preferExactNames;
+
+    /// <summary>
     /// The words a caller uses for something the library calls otherwise, by the stem of each form of the
     /// word, and the word the library uses. A query word finds what the library's word finds as well as what it
     /// finds itself: "hotkey" finds every entry about shortcuts.
@@ -126,16 +136,42 @@ internal sealed class McpSearch
     /// whose name is what a caller reaches for first. When it is not, such a query is left with no terms, as one
     /// made of filler words is, and nothing is scored for it.
     /// </param>
+    /// <param name="ambientNouns">
+    /// The nouns, in the singular, that name whatever the index is about when they are said of one thing: to an
+    /// animation library "an item" or "the card" is the one element being animated, which every entry is about.
+    /// Said with an article they are dropped as <paramref name="ambientWords"/> are (<see cref="WithoutAmbientNouns"/>);
+    /// in the plural, or after "each" or "every", they are about a collection and are searched as usual. A noun of
+    /// several words ("list item") may be written with spaces or hyphens.
+    /// </param>
+    /// <param name="preferExactNames">
+    /// Whether an entry called exactly what a query word says ranks ahead of the entries whose name is only the same
+    /// stem: "BmSpring" ahead of "BmSprings". Off by default, as it moves every ranking where a name is typed out.
+    /// </param>
     public McpSearch(Func<IEnumerable<McpSearchEntry>> build, IEnumerable<string> ambientWords, IEnumerable<(string Word, string Means)>? synonyms = null,
-                     bool searchAmbientAlone = true)
+                     bool searchAmbientAlone = true, IEnumerable<string>? ambientNouns = null, bool preferExactNames = false)
     {
         _build = build;
         _entries = new(BuildEntries);
         _shortNames = new(BuildShortNames);
         _names = new(BuildNames);
+        _wholeNames = new(BuildWholeNames);
 
         _ambientWords = new(ambientWords, StringComparer.OrdinalIgnoreCase);
         _searchAmbientAlone = searchAmbientAlone;
+        _preferExactNames = preferExactNames;
+
+        string[] nouns = [.. (ambientNouns ?? [])
+            .Select(noun => noun.Trim())
+            .Where(noun => noun.Length > 0)
+            // The longest first, so "a list item" is taken whole rather than as "a list" followed by "item".
+            .OrderByDescending(noun => noun.Length)
+            .Select(noun => string.Join(@"[\s-]+", noun.Split([' ', '-'], StringSplitOptions.RemoveEmptyEntries).Select(Regex.Escape)))];
+
+        if (nouns.Length > 0)
+        {
+            _ambientNouns = new Regex($@"\b(?:(?:an?|the|this|that|my|your|our)\s+(?:single\s+)?|single\s+)(?:{string.Join('|', nouns)})\b(?!-)",
+                                      RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
 
         // Keyed by the stem of the plural too: a word and its plural do not always share a stem ("alias" and
         // "aliases"), and a caller asks in either.
@@ -165,6 +201,17 @@ internal sealed class McpSearch
         return new(Entries.Select(entry => WithoutTypeParameters(entry.Entry.Name ?? entry.Entry.Title)), StringComparer.Ordinal);
     }
 
+    /// <summary>
+    /// The stems of the names written as one identifier of several words - "itemkey" of ItemKey - which two words
+    /// of a query run together may spell: "the item key" is that member, not one item and a key.
+    /// </summary>
+    private Lazy<HashSet<string>> _wholeNames;
+
+    private HashSet<string> BuildWholeNames()
+    {
+        return new(Entries.Select(entry => entry.WholeNameStem).OfType<string>(), StringComparer.Ordinal);
+    }
+
     /// <summary>The value of a lazy field, which is replaced when its factory throws, so the next read tries again.</summary>
     private static T ValueOf<T>(ref Lazy<T> field, Func<T> factory)
     {
@@ -188,11 +235,16 @@ internal sealed class McpSearch
     /// </summary>
     public McpSearchResult Search(string? query, int limit)
     {
-        var words = Tokenize(query);
+        var words = Tokenize(WithoutAmbientNouns(query));
+
+        // Said with nothing else, "an item" is all there is to search by, and it is searched as it is.
+        if (words.Length == 0 && _ambientNouns is not null) words = Tokenize(query);
 
         if (words.Length == 0) return new McpSearchResult([], [], false, []);
 
-        Term[] terms = [.. words.Select(ToTerm)];
+        var sentenceStarts = SentenceStarts(query!);
+
+        Term[] terms = [.. words.Select(word => ToTerm(word, sentenceStarts.Contains(word)))];
 
         // Every term against every entry, once: how many places a term is found in is its weight, which every
         // entry's score needs before any of them can be worked out. Places, not entries: the rows read through
@@ -238,12 +290,63 @@ internal sealed class McpSearch
     }
 
     /// <summary>A word of the query as it is matched: by its stem, and by its synonym's if it has one.</summary>
-    private Term ToTerm(string word)
+    private Term ToTerm(string word, bool startsSentence)
     {
         var stem = ToStem(word);
 
-        return new Term(_synonyms.TryGetValue(stem.Text, out var means) ? [stem, ToStem(means)] : [stem]);
+        return new Term(word, startsSentence, _synonyms.TryGetValue(stem.Text, out var means) ? [stem, ToStem(means)] : [stem]);
     }
+
+    /// <summary>
+    /// The query without the ambient nouns said of one thing (<see cref="_ambientNouns"/>): "fade a list item in" is
+    /// "fade in", since the one item is the element, and an element is what every entry is about. Not where the noun
+    /// and the word after it spell the name of something here - "the item key" asks for ItemKey - and not where it
+    /// is said of a collection: "items", "each list item" and "one item at a time" stay questions about the list.
+    /// </summary>
+    private string? WithoutAmbientNouns(string? query)
+    {
+        if (_ambientNouns is null || string.IsNullOrWhiteSpace(query)) return query;
+
+        return _ambientNouns.Replace(query, match =>
+        {
+            var next = _nextWord.Match(query, match.Index + match.Length);
+            if (next.Success is false) return " ";
+
+            var last = match.Value.Split([' ', '\t', '\r', '\n', '-'], StringSplitOptions.RemoveEmptyEntries)[^1];
+
+            return ValueOf(ref _wholeNames, BuildWholeNames).Contains(StemOf($"{last}{next.Groups[1].Value}")) ? match.Value : " ";
+        });
+    }
+
+    /// <summary>The word right after a position of the query, past the spaces or hyphen between them.</summary>
+    private static readonly Regex _nextWord = new(@"\G[\s-]*([\p{L}\p{N}]+)", RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// The words of the query that begin a sentence of it, as it is split into words, when it has more than one
+    /// word: a sentence's first word is capitalized whatever it is, so its case says nothing about whether it is a
+    /// name. "Items jump when reordered" is not a request for the member called Items; "Items" alone may be.
+    /// </summary>
+    private static HashSet<string> SentenceStarts(string query)
+    {
+        var starts = new HashSet<string>(StringComparer.Ordinal);
+
+        var normalized = query.Replace('’', '\'');
+        if (normalized.Split(_separators, StringSplitOptions.RemoveEmptyEntries).Length < 2) return starts;
+
+        foreach (var sentence in _sentenceEnd.Split(normalized))
+        {
+            var first = sentence.Split(_separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                .Select(Uncontracted)
+                                .FirstOrDefault(word => word.Length > 0);
+
+            if (first is not null) starts.Add(first);
+        }
+
+        return starts;
+    }
+
+    /// <summary>Where one sentence ends and the next begins: a full stop, question or exclamation mark before a space, or a line break.</summary>
+    private static readonly Regex _sentenceEnd = new(@"(?<=[.!?])\s+|[\r\n]+", RegexOptions.CultureInvariant);
 
     /// <summary>
     /// The weight of a term found in <paramref name="spread"/> places: whole up to <see cref="DistinctiveSpread"/>,
@@ -309,7 +412,7 @@ internal sealed class McpSearch
             .Take(MaxSuggestions)];
     }
 
-    private static Match MatchOf(Indexed entry, Term term)
+    private Match MatchOf(Indexed entry, Term term)
     {
         var isTitleWord = entry.IsNamedBy(term);
 
@@ -317,7 +420,9 @@ internal sealed class McpSearch
         // to count the "Effect" of BlexEffect, and "waits" every "wait" and "waiting". A term that is a whole
         // identifier of the title counts once more than one that only ends one: "PointOperation TryFuse" asks for
         // PointOperation's member, not FusedPointOperation's.
-        return new Match(isTitleWord,
+        // The stem makes "BmSpring" a name of "BmSprings" as much as of "BmSpring"; the name spelled exactly is still the
+        // thing asked for, ahead of its plural namesake, whatever their bodies say.
+        return new Match(isTitleWord, isTitleWord && _preferExactNames && entry.IsCalled(term),
             isTitleWord ? 0 : Count(entry.Entry.Title, term.Stems) + (entry.IsInTitleAsAWhole(term) ? 1 : 0),
             // A list of names, where a word said twice - "load loads loaded", or a type in every overload's
             // signature - is not twice as much the entry's name.
@@ -560,14 +665,16 @@ internal sealed class McpSearch
         string[] terms = [.. query.Replace('’', '\'').Split(_separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(Uncontracted)
             .Where(IsSearchable)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(MaxTerms)];
+            .Distinct(StringComparer.OrdinalIgnoreCase)];
 
-        var meaningful = terms.Where(term => _ambientWords.Contains(term) is false).ToArray();
+        // The ambient words are dropped before the query is cut to MaxTerms, not after: a long description of a
+        // symptom is mostly words like them, and cut first, they would take the places of the words after them -
+        // the type or the feature it is about - only to be dropped themselves.
+        string[] meaningful = [.. terms.Where(term => _ambientWords.Contains(term) is false).Take(MaxTerms)];
 
         if (meaningful.Length > 0) return meaningful;
 
-        return _searchAmbientAlone ? terms : [];
+        return _searchAmbientAlone ? [.. terms.Take(MaxTerms)] : [];
     }
 
     /// <summary>
@@ -609,11 +716,15 @@ internal sealed class McpSearch
             var name = WithoutTypeParameters(entry.Name ?? entry.Title);
             var words = SplitWords(name);
 
+            Name = name;
+            _isOneWord = words.Length < 2;
+
             TitleWords = [.. words, .. SplitWords(entry.Aliases ?? string.Empty)];
 
             // A name written as one identifier is a word of its own as well as its humps: a caller who asks for
             // "ImagePipeline" by name means that type, not every member whose signature mentions it.
-            TitleStems = [.. TitleWords.Select(StemOf), .. words.Length > 1 && name.All(char.IsLetterOrDigit) ? [StemOf(name)] : Array.Empty<string>()];
+            WholeNameStem = words.Length > 1 && name.All(char.IsLetterOrDigit) ? StemOf(name) : null;
+            TitleStems = [.. TitleWords.Select(StemOf), .. WholeNameStem is null ? Array.Empty<string>() : [WholeNameStem]];
 
             // Only a title written as code has identifiers: the words of a heading are prose, and one its Name leaves
             // out ("loading" of "Lazy loading on WebAssembly") is left out on purpose.
@@ -630,6 +741,27 @@ internal sealed class McpSearch
         /// of "FusedPointOperation". Empty for a title written as prose.
         /// </summary>
         public HashSet<string> TitleIdentifiers { get; }
+
+        /// <summary>What the entry is called, without type parameters: "BmotionReorderGroup" of "BmotionReorderGroup&lt;TItem&gt;".</summary>
+        private string Name { get; }
+
+        /// <summary>The stem of a name written as one identifier of several words ("itemkey" of ItemKey), or null.</summary>
+        public string? WholeNameStem { get; }
+
+        /// <summary>
+        /// Whether the term is the entry's name exactly as it is spelled: case aside for a name of several words
+        /// ("staggerChildren"), which no sentence says by accident, and to the letter for a one-word name - "items"
+        /// in a sentence is not a request for the member called Items. Nor is "Items" as the first word of a
+        /// sentence, which is capitalized whatever it is.
+        /// </summary>
+        public bool IsCalled(Term term)
+        {
+            if (_isOneWord is false) return string.Equals(Name, term.Word, StringComparison.OrdinalIgnoreCase);
+
+            return term.StartsSentence is false && string.Equals(Name, term.Word, StringComparison.Ordinal);
+        }
+
+        private readonly bool _isOneWord;
 
         public bool IsInTitleAsAWhole(Term term)
         {
@@ -662,11 +794,14 @@ internal sealed class McpSearch
     /// </summary>
     private readonly record struct Stem(string Text, bool Open);
 
-    /// <summary>A word of the query, by the stems it is matched by: its own, and its synonym's if it has one.</summary>
-    private readonly record struct Term(Stem[] Stems);
+    /// <summary>
+    /// A word of the query as it was written, whether it begins a sentence of it (so its capital says nothing), and
+    /// the stems it is matched by: its own, and its synonym's if it has one.
+    /// </summary>
+    private readonly record struct Term(string Word, bool StartsSentence, Stem[] Stems);
 
     /// <summary>How one term matched one entry.</summary>
-    private readonly record struct Match(bool IsTitleWord, int InTitle, int InBoosted, int InBody)
+    private readonly record struct Match(bool IsTitleWord, bool IsExactName, int InTitle, int InBoosted, int InBody)
     {
         public bool Found => IsTitleWord || InTitle + InBoosted + InBody > 0;
 
@@ -674,7 +809,7 @@ internal sealed class McpSearch
 
         // A term in a name is worth far more than the same term buried in prose: someone asking for
         // "GroupWhenSearching" wants the option, not the paragraphs that happen to mention it.
-        public int Points => (IsTitleWord ? 12 : 0) + InTitle * 3 + InBoosted * 5 + Math.Min(InBody, MaxBodyScore);
+        public int Points => (IsTitleWord ? 12 : 0) + (IsExactName ? 12 : 0) + InTitle * 3 + InBoosted * 5 + Math.Min(InBody, MaxBodyScore);
     }
 }
 

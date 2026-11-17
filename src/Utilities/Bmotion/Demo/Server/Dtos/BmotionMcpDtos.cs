@@ -56,6 +56,13 @@ public record BmotionApiMemberDto
 
     /// <summary>The XML remarks, when the member has any - they carry the caveats.</summary>
     public string? Remarks { get; init; }
+
+    /// <summary>
+    /// The full name of the type that declares the member: a base type's, for a member it inherits. Not part of
+    /// the answer - the search uses it to tell an inherited copy from a different member of the same name.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? DeclaringType { get; init; }
 }
 
 /// <summary>The full reference of one public Bit.Bmotion type.</summary>
