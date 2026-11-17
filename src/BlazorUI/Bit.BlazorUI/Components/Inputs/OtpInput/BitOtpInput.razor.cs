@@ -18,6 +18,8 @@ public partial class BitOtpInput : BitInputBase<string?>
     private string _labelId = default!;
     private string? _lastFilledValue;
     private Regex? _patternRegex;
+    private bool _wasInvalid;
+    private bool _wasLoading;
     private string? _patternSource;
     private string _descriptionId = default!;
     private string?[] _inputIds = [];
@@ -25,6 +27,13 @@ public partial class BitOtpInput : BitInputBase<string?>
     private bool[] _inputFocusStates = [];
     private ElementReference[] _inputRefs = [];
     private DotNetObjectReference<BitOtpInput> _dotnetObj = default!;
+
+    // The completed code that OnFill was raised for last, kept aside while the consumer has put another
+    // value into the inputs. A consumer that hands the very same code back before the user has touched the
+    // inputs (a parent re-rendered by an async ValueChanged with a value that is still behind, then with the
+    // current one) is showing the code that was already reported, so the guard is closed over it again
+    // rather than letting that code raise OnFill (and the AutoSubmit) a second time.
+    private string? _displacedFilledValue;
 
     // The rules that decide which characters the code may hold. They are plain parameters, so they can
     // change at any time, and the characters that are already in the inputs have to follow them.
@@ -627,7 +636,22 @@ public partial class BitOtpInput : BitInputBase<string?>
             {
                 CurrentValueAsString = appliedValue;
             }
+
+            UpdateFillGuardForAppliedValue(appliedValue);
         }
+
+        // The answer to a submitted code has arrived once the busy state is turned off or the rejection is
+        // turned on, and either way the code still in the inputs is the one to try again: the consumer often
+        // leaves it there for the user to correct or to retry, so entering it once more - retyping its last
+        // character, pasting it again - has to raise OnFill again rather than being swallowed by the guard.
+        if ((_wasLoading && Loading is false) || (_wasInvalid is false && Invalid))
+        {
+            _lastFilledValue = null;
+            _displacedFilledValue = null;
+        }
+
+        _wasLoading = Loading;
+        _wasInvalid = Invalid;
 
         base.OnParametersSet();
     }
@@ -742,8 +766,9 @@ public partial class BitOtpInput : BitInputBase<string?>
         // A code of another length is another code, so the completed one that OnFill was raised for last
         // must not keep the callback from firing for the code that fills the resized component.
         _lastFilledValue = null;
+        _displacedFilledValue = null;
 
-        _inputIds = Enumerable.Range(0, _length).Select(i => $"BitOtpInput-{UniqueId}-input-{i}").ToArray();
+        _inputIds =Enumerable.Range(0, _length).Select(i => $"BitOtpInput-{UniqueId}-input-{i}").ToArray();
         _inputRefs = new ElementReference[_length];
         _inputValues = new string?[_length];
         _inputFocusStates = new bool[_length];
@@ -1372,9 +1397,37 @@ public partial class BitOtpInput : BitInputBase<string?>
         await _inputRefs[emptyIndex < 0 ? _length - 1 : emptyIndex].FocusSafelyAsync();
     }
 
+    /// <summary>
+    /// Follows a value that the consumer put into the inputs (a bound value, or a change of the restrictions
+    /// that rewrote the code) with the guard of <see cref="OnFill"/>. Any value other than the completed code
+    /// that OnFill was raised for last - cleared, cut short, or replaced by another complete code - takes that
+    /// code out of the inputs, so entering it again, even whole (an SMS or a browser auto fill, a paste), is
+    /// a new fill. The code is only set aside though: handing the very same code back before the user has
+    /// changed anything shows the code that was already reported, and closes the guard over it again.
+    /// </summary>
+    private void UpdateFillGuardForAppliedValue(string appliedValue)
+    {
+        if (appliedValue == _lastFilledValue) return;
+
+        if (_lastFilledValue is not null)
+        {
+            _displacedFilledValue = _lastFilledValue;
+            _lastFilledValue = null;
+        }
+        else if (_displacedFilledValue is not null && appliedValue == _displacedFilledValue)
+        {
+            _lastFilledValue = _displacedFilledValue;
+            _displacedFilledValue = null;
+        }
+    }
+
     private async Task CallOnFill()
     {
         var value = CurrentValue;
+
+        // Every change that reaches here is the user's (or a Clear of the consumer's), so the code the
+        // consumer took out of the inputs is no longer the one being shown back, whatever it is now.
+        _displacedFilledValue = null;
 
         if (value?.Length != _length)
         {
