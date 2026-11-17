@@ -1,8 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Operations.Transforms;
+namespace Bit.Bmage;
 
 /// <summary>Resizes an image according to a <see cref="ResizeMode"/>.</summary>
 public sealed class ResizeOperation : ImageOperation, IGeometricOperation

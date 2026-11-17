@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Bit.Blex.Query;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>
 /// Optional base component that re-renders automatically when subscribed stores change.

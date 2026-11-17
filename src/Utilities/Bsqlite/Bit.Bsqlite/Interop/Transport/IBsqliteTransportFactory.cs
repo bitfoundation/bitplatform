@@ -1,7 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Storage;
-
-namespace Bit.Bsqlite.Interop;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// Creates the transport that will talk to a chosen storage backend.

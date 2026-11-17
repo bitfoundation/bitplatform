@@ -1,8 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Metadata;
+namespace Bit.Bmage;
 
 /// <summary>TIFF/EXIF field data types.</summary>
 public enum ExifType : ushort

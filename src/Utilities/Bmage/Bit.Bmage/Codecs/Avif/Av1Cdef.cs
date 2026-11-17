@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
-namespace Bit.Bmage.Codecs.Avif;
+namespace Bit.Bmage;
 
 /// <summary>The constrained directional enhancement filter (spec 7.15).</summary>
 internal static class Av1Cdef

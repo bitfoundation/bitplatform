@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Bit.Bmage.Codecs.Avif;
+namespace Bit.Bmage;
 
 /// <summary>Reads the MSB-first bit fields of AV1 headers: the spec's f(n), su(n), ns(n) and uvlc, and leb128 sizes.</summary>
 internal ref struct Av1BitReader

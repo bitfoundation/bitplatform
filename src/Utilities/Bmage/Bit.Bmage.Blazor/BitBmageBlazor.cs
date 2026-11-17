@@ -1,9 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using Bit.Bmage.Capabilities;
-using Bit.Bmage.Input;
-using Bit.Bmage.Interop;
-using Bit.Bmage.Output;
-using Bit.Bmage.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.JSInterop;

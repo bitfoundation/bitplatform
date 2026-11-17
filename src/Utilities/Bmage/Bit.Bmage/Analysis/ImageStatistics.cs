@@ -1,8 +1,6 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Analysis;
+namespace Bit.Bmage;
 
 /// <summary>
 /// A 256-bucket histogram for one channel, with the derived values that adjustments actually need.

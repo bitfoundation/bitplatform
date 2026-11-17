@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Bit.BlazeDb.Querying;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// A composable query plan over a table: a source (full scan, hash-index lookup or ordered

@@ -3,15 +3,6 @@ using System.Drawing;
 using System.IO.Compression;
 using System.Numerics;
 using System.Text;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
-using Bit.Bmage.Serialization;
 
 namespace Bit.Bmage.Tests;
 
@@ -24,7 +15,7 @@ public sealed class ProjectTests
         .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(10, 10, 30, 20), BlendMode = BlendMode.Overlay })
         .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(80, 40, 15, 10), Opacity = 0.5f })
         .AddLayer(new PaintLayer([new PaintStroke([new(20, 60), new(90, 70)], 6, new Rgba32(200, 30, 30)) { Pressures = [0.4f, 1f] }]))
-        .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Hsl(Operations.Adjustments.HueBand.Reds, saturation: 0.5f)) { Mask = new BitmapMask(matte) })
+        .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Hsl(HueBand.Reds, saturation: 0.5f)) { Mask = new BitmapMask(matte) })
         .AddAnnotation(new ImageAnnotation { Image = logo, Rectangle = new RectangleF(100, 70, 20, 12) })
         .AddAnnotation(new ArrowAnnotation { Start = new Vector2(10, 90), End = new Vector2(60, 40) });
 
@@ -116,7 +107,7 @@ public sealed class ProjectTests
 
     private static byte[] Text(string text) => Encoding.UTF8.GetBytes(text);
 
-    private static byte[] Png(int width, int height) => Codecs.Png.PngEncoder.Encode(TestImages.Gradient(width, height)).Data;
+    private static byte[] Png(int width, int height) => PngEncoder.Encode(TestImages.Gradient(width, height)).Data;
 
     private static string Manifest(string original = "images/original.png", string images = "[]", string format = "bmage-project", int version = 1)
         => $$"""{"format":"{{format}}","version":{{version}},"document":"document.json","original":"{{original}}","images":{{images}}}""";
@@ -186,7 +177,7 @@ public sealed class ProjectTests
             var json = BmageJson.Serialize(document, new BmageJsonOptions { ImageReferences = image => $"images/{Array.IndexOf(images, image) + 1}.png" });
             var names = string.Join(",", images.Select((_, i) => $"\"images/{i + 1}.png\""));
             return Zip([("manifest.json", Text(Manifest(images: $"[{names}]"))), ("images/original.png", Png(size, size)), ("document.json", Text(json)),
-                .. images.Select((image, i) => ($"images/{i + 1}.png", Codecs.Png.PngEncoder.Encode(image).Data))]);
+                .. images.Select((image, i) => ($"images/{i + 1}.png", PngEncoder.Encode(image).Data))]);
         }
         finally
         {

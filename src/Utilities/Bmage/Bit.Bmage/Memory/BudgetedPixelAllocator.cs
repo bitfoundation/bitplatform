@@ -1,6 +1,6 @@
 ﻿using System.Buffers;
 
-namespace Bit.Bmage.Memory;
+namespace Bit.Bmage;
 
 /// <summary>
 /// An allocator with a hard ceiling: it hands out memory from another allocator while the bytes it has outstanding

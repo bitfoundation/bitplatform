@@ -8,7 +8,7 @@ dotnet add package Bit.Bcrdt.Blex
 ```
 
 ```csharp
-using Bit.Bcrdt.Blex;
+using Bit.Bcrdt;
 
 public sealed record Board(string Title, IReadOnlyList<string> Cards, long Votes)
 {

@@ -4,7 +4,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
-        <RootNamespace>Bit.Bcrdt.Blex</RootNamespace>
+        <RootNamespace>Bit.Bcrdt</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
         <Description>Collaborative state for bit Bcrdt and bit Blex: a Blex store whose state is an immutable projection of a Bcrdt document subtree, whose actions are tagged Bcrdt transactions, and which dispatches collaborators' changes as actions, so selectors, subscriptions, middleware and DevTools see them.</Description>

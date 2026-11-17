@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Storage.InMemory;
-
-namespace Bit.Bsqlite.Storage.Tests;
+﻿namespace Bit.Bsqlite.Storage.Tests;
 
 /// <summary>
 /// What the in-memory backend promises beyond the contract. The generic rules - round-tripping,

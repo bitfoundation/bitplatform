@@ -1,12 +1,11 @@
 ﻿using System.Linq.Expressions;
-using Bit.BlazeDb.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Storage;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Applies a <c>SaveChanges</c> to the engine. Every entry goes into one BlazeDb transaction, so

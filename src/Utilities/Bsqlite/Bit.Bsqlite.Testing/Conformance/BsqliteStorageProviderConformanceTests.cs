@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Bsqlite.Storage.ConformanceTests;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// The conformance suite every storage backend must pass. Inherit it in your provider's test project

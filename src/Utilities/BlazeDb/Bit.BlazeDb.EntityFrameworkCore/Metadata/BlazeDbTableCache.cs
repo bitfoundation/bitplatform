@@ -1,10 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
-using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Metadata;
+namespace Bit.BlazeDb;
 
 internal sealed class BlazeDbTableCache : IBlazeDbTableCache, IDisposable
 {

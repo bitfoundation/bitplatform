@@ -1,9 +1,4 @@
-﻿using Bit.Bmage.Editing;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
-
-namespace Bit.Bmage.Tests;
+﻿namespace Bit.Bmage.Tests;
 
 /// <summary>
 /// Drafts are what the editor shows while a control is dragged and a full preview is too slow: the same document at
@@ -45,7 +40,7 @@ public sealed class EditSessionDraftTests
         }
         session.Commit("brightness");
         await session.RenderPreviewAsync();
-        await session.RenderDraftAsync(d => d.AddAnnotation(new Annotations.RectangleAnnotation { Rectangle = new System.Drawing.RectangleF(1, 1, 9, 9) }));
+        await session.RenderDraftAsync(d => d.AddAnnotation(new RectangleAnnotation { Rectangle = new System.Drawing.RectangleF(1, 1, 9, 9) }));
 
         // Once for the draft resolution and once for the full one.
         Assert.AreEqual(2, counting.Applied);

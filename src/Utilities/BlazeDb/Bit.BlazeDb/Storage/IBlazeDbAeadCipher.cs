@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazeDb.Storage;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// An authenticated cipher used by <see cref="BlazeDbEncryptedStorage"/>. Kept as an abstraction because

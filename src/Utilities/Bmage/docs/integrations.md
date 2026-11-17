@@ -20,7 +20,7 @@ they are, without a copy and without a canvas. It works in the browser and on a 
 
 ```csharp
 using Bit.BbScanner;          // BbBarcodeResult
-using Bit.Bmage.BbScanner;
+using Bit.Bmage;
 
 using var photo = await loader.LoadAsync(file);
 
@@ -66,7 +66,7 @@ embedded in the Bink document, the one form Bink's managed rasteriser reads back
 same in a browser and on a server.
 
 ```csharp
-using Bit.Bmage.Bink;
+using Bit.Bmage;
 
 using var photo = await loader.LoadAsync(file);
 

@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.Avif;
+﻿namespace Bit.Bmage;
 
 // The inverse transforms (spec 7.13): the 2D process around the generated 1D DCT and ADST butterflies of
 // Av1InverseTransforms, with the 4-point ADST, identity and Walsh-Hadamard transforms written out here.

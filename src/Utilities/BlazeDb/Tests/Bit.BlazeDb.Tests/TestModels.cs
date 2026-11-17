@@ -1,7 +1,4 @@
-﻿using Bit.BlazeDb;
-using Bit.BlazeDb.Serialization;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 /// <summary>
 /// A hand-written descriptor equivalent to what the source generator emits, so engine tests

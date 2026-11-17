@@ -1,7 +1,4 @@
-﻿using Bit.Bsqlite.Storage.ConformanceTests;
-using Bit.Bsqlite.Storage.InMemory;
-
-namespace Bit.Bsqlite.Storage.Tests;
+﻿namespace Bit.Bsqlite.Storage.Tests;
 
 /// <summary>
 /// Runs the conformance kit against the in-memory backend, which is the contract's reference

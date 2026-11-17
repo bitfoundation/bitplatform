@@ -1,10 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Png;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 
@@ -90,8 +84,8 @@ public sealed class PipelineTests
         var pipeline = ImagePipeline.Create().Crop(100, 100, 200, 200).Blur(8f).Pixelate(20);
         var half = pipeline.ForScale(0.5);
         Assert.AreEqual(new Rectangle(50, 50, 100, 100), ((CropOperation)half[0]).Rectangle);
-        Assert.AreEqual(4f, ((Operations.Filters.BlurFilter)half[1]).Radius);
-        Assert.AreEqual(10, ((Operations.Filters.PixelateFilter)half[2]).BlockSize);
+        Assert.AreEqual(4f, ((BlurFilter)half[1]).Radius);
+        Assert.AreEqual(10, ((PixelateFilter)half[2]).BlockSize);
     }
 
     [TestMethod]
@@ -194,8 +188,8 @@ public sealed class PipelineOptimizerTests
     {
         using var source = TestImages.Gradient(64, 64);
         var pipeline = ImagePipeline.Create()
-            .ColorMatrix(Bit.Bmage.Operations.ColorMatrix.Contrast(1f / 3f), "compress")
-            .ColorMatrix(Bit.Bmage.Operations.ColorMatrix.Contrast(3f), "expand");
+            .ColorMatrix(Bit.Bmage.ColorMatrix.Contrast(1f / 3f), "compress")
+            .ColorMatrix(Bit.Bmage.ColorMatrix.Contrast(3f), "expand");
         using var stepwise = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = false });
         using var fused = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = true });
         var stepwiseError = TestImages.MaxChannelDifference(source, stepwise);

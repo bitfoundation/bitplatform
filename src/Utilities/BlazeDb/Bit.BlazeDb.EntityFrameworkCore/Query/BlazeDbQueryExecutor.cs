@@ -1,12 +1,11 @@
 ﻿using System.Collections;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using Bit.BlazeDb.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Runs a LINQ query against the engine.

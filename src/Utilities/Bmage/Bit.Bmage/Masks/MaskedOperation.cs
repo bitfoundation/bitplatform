@@ -2,11 +2,8 @@
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Pipeline;
 
-namespace Bit.Bmage.Masks;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Applies an operation only where a mask covers the image, fading with the mask's coverage: a selective adjustment.

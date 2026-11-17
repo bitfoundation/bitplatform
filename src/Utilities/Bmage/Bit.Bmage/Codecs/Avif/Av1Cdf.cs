@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.Avif;
+﻿namespace Bit.Bmage;
 
 // Generated from the AV1 specification's default CDF tables (section 10). Every CDF of N symbols takes N + 1 entries:
 // the cumulative probabilities out of 32768 and then the adaptation counter, laid out as one array so a tile's

@@ -1,8 +1,7 @@
-﻿using Bit.BlazeDb.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Holds opened engines keyed by store identity so scoped contexts share one in-memory dataset,

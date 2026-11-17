@@ -116,7 +116,7 @@ public class McpToolTests
         // Public only because JavaScript interop can call nothing else.
         var reference = await McpCall.TextAsync("GetBcrdtApi", new() { ["typeName"] = "BcrdtTextArea" });
 
-        var methods = typeof(Bit.Bcrdt.Blazor.BcrdtTextArea).GetMethods()
+        var methods = typeof(Bit.Bcrdt.BcrdtTextArea).GetMethods()
             .Where(method => method.IsDefined(typeof(Microsoft.JSInterop.JSInvokableAttribute), false))
             .Select(method => method.Name)
             .ToArray();
@@ -245,7 +245,7 @@ public class McpToolTests
             Assert.Contains("ABSOLUTE", guide, model);
             Assert.Contains("AddBitBcrdtHub", guide, model);
             Assert.Contains("UseWebSockets", guide, model);
-            Assert.Contains("@using Bit.Bcrdt.Blazor", guide, model);
+            Assert.Contains("@using Bit.Bcrdt", guide, model);
             Assert.Contains("## From the guide", guide, model);
         }
     }

@@ -1,8 +1,8 @@
-﻿using Bit.BlazeDb.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore;
+namespace Bit.BlazeDb;
 
 /// <summary>Maps an entity type onto a specific BlazeDb table.</summary>
 public static class BlazeDbModelBuilderExtensions

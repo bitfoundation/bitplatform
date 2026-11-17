@@ -22,7 +22,7 @@ Trimmable and AOT-compatible (repository-wide `IsAotCompatible`).
 Both an image processing API and an embeddable editor, layered so the editor is optional:
 
 ```
-Editor   (Bit.Bmage.Editor.*)   BmageEditor, toolbar, panel, canvas, tools, strings
+Editor                          BmageEditor, toolbar, panel, canvas, tools, strings
 Browser  (Interop, Codecs, Capabilities, Input, Output)   bit-bmage.js, Web Worker codec pool
 Engine   (everything else)       ImageBuffer, operations, pipelines, masks, layers, drawing, text,
                                  annotations, documents, history, managed PNG/JPEG/BMP/GIF codecs, JSON

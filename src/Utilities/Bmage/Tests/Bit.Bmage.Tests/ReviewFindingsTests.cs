@@ -3,17 +3,6 @@ using System.Drawing;
 using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Interop;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 using Microsoft.JSInterop;
 
 namespace Bit.Bmage.Tests;
@@ -192,7 +181,7 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public void AKernelWhoseSizeOverflowsIsRefused()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => new Operations.Filters.ConvolutionFilter(new float[131073], 65537, 65537));
+        Assert.ThrowsExactly<ArgumentException>(() => new ConvolutionFilter(new float[131073], 65537, 65537));
     }
 
     [TestMethod]
@@ -273,9 +262,9 @@ public sealed class ReviewFindingsTests
         // What fetch reports when a server sends no CORS header: a bare TypeError that names neither cause nor cure.
         var module = new FakeModule(identifier => { if (identifier == "fetchImage") throw new JSException("TypeError: Failed to fetch"); });
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance);
+        var loader = new ImageLoader(new ImageProcessorFactory(interop, ManagedCapabilityProvider.Instance), interop, ManagedCapabilityProvider.Instance);
 
-        var error = await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/beach.jpg")));
+        var error = await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await loader.LoadAsync(ImageSource.FromUrl("https://photos.example/beach.jpg")));
 
         StringAssert.Contains(error.Message, "https://photos.example/beach.jpg");
         StringAssert.Contains(error.Message, "CORS header");
@@ -289,9 +278,9 @@ public sealed class ReviewFindingsTests
         object? passed = null;
         var module = new FakeModule(_ => { }, (identifier, args) => { if (identifier == "fetchImage") passed = args?[2]; });
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance) { MaxSourceBytes = 123_456 };
+        var loader = new ImageLoader(new ImageProcessorFactory(interop, ManagedCapabilityProvider.Instance), interop, ManagedCapabilityProvider.Instance) { MaxSourceBytes = 123_456 };
 
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/huge.jpg")));
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await loader.LoadAsync(ImageSource.FromUrl("https://photos.example/huge.jpg")));
         Assert.AreEqual(123_456L, passed);
     }
 
@@ -299,14 +288,14 @@ public sealed class ReviewFindingsTests
     public async Task AUrlServingNoMoreThanTheSourceLimitIsDecoded()
     {
         using var image = TestImages.Gradient(12, 9);
-        var png = Codecs.Png.PngEncoder.Encode(image).Data;
+        var png = PngEncoder.Encode(image).Data;
         var module = new FakeModule(_ => { }, respond: (identifier, _) => identifier == "fetchImage"
             ? new FakeHandle(new JsonObject { ["mimeType"] = "image/png", ["byteLength"] = png.Length }, png)
             : null);
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance) { MaxSourceBytes = png.Length };
+        var loader = new ImageLoader(new ImageProcessorFactory(interop, ManagedCapabilityProvider.Instance), interop, ManagedCapabilityProvider.Instance) { MaxSourceBytes = png.Length };
 
-        using var loaded = await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/small.png"));
+        using var loaded = await loader.LoadAsync(ImageSource.FromUrl("https://photos.example/small.png"));
 
         Assert.AreEqual(image.Size, loaded.Size);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(image, loaded));
@@ -317,9 +306,9 @@ public sealed class ReviewFindingsTests
     {
         object?[]? passed = null;
         var module = new FakeModule(_ => { }, (identifier, args) => { if (identifier == "renderText") passed = args; },
-            (identifier, _) => identifier == "renderText" ? new FakeHandle(new Text.BrowserTextRasterizer.TextRenderInfo { Width = 20_000, Height = 9_000, TooLarge = true }, []) : null);
+            (identifier, _) => identifier == "renderText" ? new FakeHandle(new BrowserTextRasterizer.TextRenderInfo { Width = 20_000, Height = 9_000, TooLarge = true }, []) : null);
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        using var rasterizer = new Text.BrowserTextRasterizer(interop) { Limits = ImageLimits.Default with { MaxPixels = 1_000_000, MaxWidth = 4_000, MaxHeight = 3_000 } };
+        using var rasterizer = new BrowserTextRasterizer(interop) { Limits = ImageLimits.Default with { MaxPixels = 1_000_000, MaxWidth = 4_000, MaxHeight = 3_000 } };
 
         var error = await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await rasterizer.MeasureAsync("Hello", new TextStyle()));
         StringAssert.Contains(error.Message, "20000x9000");
@@ -334,9 +323,9 @@ public sealed class ReviewFindingsTests
         const int side = 2048; // 16 MB a bitmap, so four fill the cache's 64 MB
         var rendered = new List<string>();
         var module = new FakeModule(_ => { }, (identifier, args) => { if (identifier == "renderText") rendered.Add((string)args![0]!); },
-            (identifier, _) => identifier == "renderText" ? new FakeHandle(new Text.BrowserTextRasterizer.TextRenderInfo { Width = side, Height = side, LineCount = 1 }, new byte[side * side * 4]) : null);
+            (identifier, _) => identifier == "renderText" ? new FakeHandle(new BrowserTextRasterizer.TextRenderInfo { Width = side, Height = side, LineCount = 1 }, new byte[side * side * 4]) : null);
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        using var rasterizer = new Text.BrowserTextRasterizer(interop);
+        using var rasterizer = new BrowserTextRasterizer(interop);
         var style = new TextStyle();
 
         await rasterizer.MeasureAsync("a", style);
@@ -361,7 +350,7 @@ public sealed class ReviewFindingsTests
         var called = new List<string>();
         var module = new FakeModule(called.Add);
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+        var decoder = new BrowserImageDecoder(interop);
 
         // Browsers grow a GIF's canvas to take in a first frame larger than its logical screen of one pixel.
         byte[] gif =
@@ -391,13 +380,13 @@ public sealed class ReviewFindingsTests
     public async Task TheBrowserDecodersSizeCheckAllowsForTheResizeItAsksTheBrowserFor()
     {
         using var small = TestImages.Gradient(8, 8);
-        var png = Codecs.Png.PngEncoder.Encode(small).Data;
+        var png = PngEncoder.Encode(small).Data;
         System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16), 8_000);
         System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20), 6_000);
         var called = new List<string>();
         var module = new FakeModule(called.Add);
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+        var decoder = new BrowserImageDecoder(interop);
         var options = DecodeOptions.Default with { Limits = ImageLimits.Default with { MaxPixels = 8_000_000 } };
 
         await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(png, options, PooledPixelAllocator.Shared));
@@ -416,7 +405,7 @@ public sealed class ReviewFindingsTests
         using var small = TestImages.Gradient(8, 8);
         byte[] Png(int width, int height)
         {
-            var png = Codecs.Png.PngEncoder.Encode(small).Data;
+            var png = PngEncoder.Encode(small).Data;
             System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16), (uint)width);
             System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20), (uint)height);
             return png;
@@ -424,7 +413,7 @@ public sealed class ReviewFindingsTests
         var called = new List<string>();
         var module = new FakeModule(called.Add);
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+        var decoder = new BrowserImageDecoder(interop);
 
         await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(Png(20_000, 20_000), DecodeOptions.Default, PooledPixelAllocator.Shared));
         CollectionAssert.DoesNotContain(called, "decode");
@@ -450,14 +439,14 @@ public sealed class ReviewFindingsTests
         var processor = new ImageProcessor();
         using var upright = TestImages.Quadrants(32, 24);
         using var stored = new OrientationOperation(orientation.Inverse()).Apply(upright, OperationContext.Default);
-        stored.Metadata = new Metadata.ImageMetadata(Metadata.ExifData.FromOrientation(orientation), sourceFormat: ImageFormat.Jpeg);
-        var jpeg = (await processor.EncodeAsync(stored, ImageExportOptions.Jpeg with { Quality = 1.0, Metadata = Metadata.MetadataPolicy.Preserve })).Data;
+        stored.Metadata = new ImageMetadata(ExifData.FromOrientation(orientation), sourceFormat: ImageFormat.Jpeg);
+        var jpeg = (await processor.EncodeAsync(stored, ImageExportOptions.Jpeg with { Quality = 1.0, Metadata = MetadataPolicy.Preserve })).Data;
 
         var module = new FakeModule(_ => { }, respond: (identifier, _) => identifier == "decode"
-            ? new FakeHandle(new Codecs.Browser.BrowserImageInfo { Width = upright.Width, Height = upright.Height }, upright.Bytes.ToArray())
+            ? new FakeHandle(new BrowserImageInfo { Width = upright.Width, Height = upright.Height }, upright.Bytes.ToArray())
             : null);
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+        var decoder = new BrowserImageDecoder(interop);
 
         using var asStored = await decoder.DecodeAsync(jpeg, new DecodeOptions { AutoOrient = false }, PooledPixelAllocator.Shared);
         Assert.AreEqual(stored.Size, asStored.Size);
@@ -478,12 +467,12 @@ public sealed class ReviewFindingsTests
     {
         Mask nested = Mask.All();
         for (var i = 0; i < 20; i++) nested = Mask.Ellipse().Union(nested);
-        var refused = Assert.ThrowsExactly<Serialization.ImageDocumentFormatException>(() => Serialization.BmageJson.DeserializeObject<Mask>(Serialization.BmageJson.SerializeObject(nested)));
+        var refused = Assert.ThrowsExactly<ImageDocumentFormatException>(() => BmageJson.DeserializeObject<Mask>(BmageJson.SerializeObject(nested)));
         Assert.Contains("too deeply", refused.Message);
 
         Mask chain = Mask.All();
         for (var i = 0; i < 100; i++) chain = chain.Union(new EllipseMask(new RectangleF(i * 9, i * 7, 60, 40)));
-        var back = Serialization.BmageJson.DeserializeObject<Mask>(Serialization.BmageJson.SerializeObject(chain));
+        var back = BmageJson.DeserializeObject<Mask>(BmageJson.SerializeObject(chain));
 
         // However long the chain, drawing it holds its own mask and the one being combined in.
         var budget = new BudgetedPixelAllocator(long.MaxValue);
@@ -524,13 +513,13 @@ public sealed class ReviewFindingsTests
     public void ANumberJsonHasNoLiteralForRoundTrips()
     {
         var mask = new RadialGradientMask(new Vector2(float.NaN, 0.5f), float.PositiveInfinity, 0.25f) { Rotation = float.NegativeInfinity, Units = MaskUnits.Relative };
-        var json = Serialization.BmageJson.SerializeObject(mask);
-        var back = (RadialGradientMask)Serialization.BmageJson.DeserializeObject<Mask>(json);
+        var json = BmageJson.SerializeObject(mask);
+        var back = (RadialGradientMask)BmageJson.DeserializeObject<Mask>(json);
 
         Assert.IsTrue(float.IsNaN(back.Center.X));
         Assert.AreEqual(float.PositiveInfinity, back.RadiusX);
         Assert.AreEqual(float.NegativeInfinity, back.Rotation);
-        Assert.AreEqual(json, Serialization.BmageJson.SerializeObject(back));
+        Assert.AreEqual(json, BmageJson.SerializeObject(back));
     }
 
     [TestMethod]
@@ -551,13 +540,13 @@ public sealed class ReviewFindingsTests
     public void RenderingADocumentReportsTheLayersProgressToo()
     {
         using var source = ParallelProcessingTests.Noise(300, 200, seed: 10);
-        var document = Editing.ImageDocument.Create(source)
+        var document = ImageDocument.Create(source)
             .AddOperation(new BrightnessAdjustment(0.1f))
             .AddLayer(new FillLayer(new Rgba32(255, 0, 0)) { Mask = Mask.Ellipse(), BlendMode = BlendMode.Multiply })
             .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Saturation(0.3f)));
         var values = new ConcurrentQueue<double>();
 
-        using (new Editing.DocumentRenderer().Render(document, source, new PipelineExecutionOptions { Progress = new Inline(values.Enqueue) })) { }
+        using (new DocumentRenderer().Render(document, source, new PipelineExecutionOptions { Progress = new Inline(values.Enqueue) })) { }
 
         var reported = values.ToArray();
         // One share for the pipeline's step, one for each layer.
@@ -635,7 +624,7 @@ public sealed class ReviewFindingsTests
         var counter = new Counts();
         var budget = new BudgetedPixelAllocator(long.MaxValue);
         var layer = new ImageLayer { Image = logo, Bounds = new RectangleF(50, 50, 200, 200), Pipeline = ImagePipeline.Create().Apply(counter) };
-        using (var session = new Editing.ImageEditSession(ParallelProcessingTests.Noise(600, 400, seed: 14), new Editing.ImageEditSessionOptions { MaxProxyDimension = 0, Allocator = budget }))
+        using (var session = new ImageEditSession(ParallelProcessingTests.Noise(600, 400, seed: 14), new ImageEditSessionOptions { MaxProxyDimension = 0, Allocator = budget }))
         {
             session.Apply(d => d.AddLayer(layer), "Add");
             await session.RenderPreviewAsync();

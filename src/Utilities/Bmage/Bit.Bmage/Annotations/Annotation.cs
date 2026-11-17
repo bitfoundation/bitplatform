@@ -1,9 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Annotations;
+namespace Bit.Bmage;
 
 /// <summary>
 /// An editable overlay object living in image coordinates. Annotations are never painted into the pixels until export,
@@ -175,7 +173,7 @@ public sealed class AnnotationRenderContext
     public double Scale { get; }
 
     /// <summary>Allocation, limits, threads and cancellation for annotations that run an operation, such as a redaction's blur.</summary>
-    internal Operations.OperationContext Operation { get; init; } = Operations.OperationContext.Default;
+    internal OperationContext Operation { get; init; } = OperationContext.Default;
 }
 
 /// <summary>Shared styling for shape annotations.</summary>

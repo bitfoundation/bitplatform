@@ -1,12 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 

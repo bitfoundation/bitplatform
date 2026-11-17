@@ -1,15 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Bit.Bmage.Capabilities;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Interop;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
 using Microsoft.JSInterop;
 
-namespace Bit.Bmage.Codecs.Browser;
+namespace Bit.Bmage;
 
 /// <summary>Dimensions reported by the browser after decoding.</summary>
 public sealed class BrowserImageInfo
@@ -50,15 +43,15 @@ public sealed class BrowserImageDecoder : IImageDecoder
         var format = ImageFormats.Detect(data);
         return format switch
         {
-            ImageFormat.Png => new Png.PngDecoder().Identify(data),
-            ImageFormat.Jpeg => new Jpeg.JpegDecoder().Identify(data),
-            ImageFormat.Bmp => new Bmp.BmpDecoder().Identify(data),
-            ImageFormat.Gif => new Gif.GifDecoder().Identify(data),
-            ImageFormat.WebP => new WebP.WebPDecoder().Identify(data),
-            ImageFormat.Avif => new Avif.AvifDecoder().Identify(data),
+            ImageFormat.Png => new PngDecoder().Identify(data),
+            ImageFormat.Jpeg => new JpegDecoder().Identify(data),
+            ImageFormat.Bmp => new BmpDecoder().Identify(data),
+            ImageFormat.Gif => new GifDecoder().Identify(data),
+            ImageFormat.WebP => new WebPDecoder().Identify(data),
+            ImageFormat.Avif => new AvifDecoder().Identify(data),
             // The largest image's size, which the pixel limit is checked against; an icon whose directory is invalid
             // gets none, so a pixel limit refuses it before the browser sees it.
-            ImageFormat.Ico => new Ico.IcoDecoder().Identify(data),
+            ImageFormat.Ico => new IcoDecoder().Identify(data),
             ImageFormat.Tiff => IdentifyTiff(data),
             _ => null,
         };
@@ -218,8 +211,8 @@ public sealed class BrowserImageDecoder : IImageDecoder
     {
         var decoded = format switch
         {
-            ImageFormat.Gif => Gif.GifDecoder.BrowserCanvasSize(data),
-            ImageFormat.Avif => Avif.AvifDecoder.UncroppedSize(data),
+            ImageFormat.Gif => GifDecoder.BrowserCanvasSize(data),
+            ImageFormat.Avif => AvifDecoder.UncroppedSize(data),
             _ => header is { Width: > 0, Height: > 0 } ? (header.DisplaySize.Width, header.DisplaySize.Height) : null,
         };
         if (decoded is not { } size)
@@ -266,7 +259,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
 
         // The browser turns an AVIF upright by its container's irot and imir, not by an Exif orientation in it, so that
         // is the orientation the pixels are turned back from and the one recorded, the way the managed decoder does.
-        var orientation = Avif.AvifDecoder.ContainerOrientation(data.Span);
+        var orientation = AvifDecoder.ContainerOrientation(data.Span);
         return metadata.Exif is null
             ? orientation == Orientation.Normal ? metadata : new ImageMetadata(ExifData.FromOrientation(orientation), metadata.IccProfile, metadata.Xmp, ImageFormat.Avif, metadata.FileName)
             : metadata.WithOrientation(orientation);
@@ -282,7 +275,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
                 ImageFormat.Jpeg => JpegContainer.ReadMetadata(data.Span, options.FileName),
                 ImageFormat.Png => PngContainer.ReadMetadata(data.Span, options.FileName),
                 ImageFormat.WebP => WebPContainer.ReadMetadata(data.Span, options.FileName),
-                ImageFormat.Avif => Avif.AvifDecoder.ReadMetadata(data, options.FileName),
+                ImageFormat.Avif => AvifDecoder.ReadMetadata(data, options.FileName),
                 _ => new ImageMetadata(sourceFormat: format, fileName: options.FileName),
             };
             // The browser already applied the orientation, so record that the pixels are upright.
@@ -346,9 +339,9 @@ public sealed class BrowserImageEncoder : IImageEncoder
         if (!_formats.Contains(options.Format))
             throw new ImageCapabilityException($"The browser encoder is not configured for {options.Format}.");
         // A canvas only writes lossy WebP, so a lossless one, the only lossless choice there is, is the managed encoder's.
-        if (options.EncodesLosslessly) return WebP.WebPEncoder.Encode(image, options, cancellationToken);
+        if (options.EncodesLosslessly) return WebPEncoder.Encode(image, options, cancellationToken);
         // Nor does it write an indexed PNG.
-        if (options.Format == ImageFormat.Png && options.MaxColors is not null) return Png.PngEncoder.Encode(image, options, cancellationToken);
+        if (options.Format == ImageFormat.Png && options.MaxColors is not null) return PngEncoder.Encode(image, options, cancellationToken);
 
         // Formats without alpha need an explicit backdrop; otherwise browsers composite over black. The browser draws it
         // behind the pixels, which leaves opaque ones untouched, so there is no need to scan for transparency first.

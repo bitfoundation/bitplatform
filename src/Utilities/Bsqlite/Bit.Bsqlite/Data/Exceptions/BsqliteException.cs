@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// A failure reported by SQLite itself, carrying the result code the engine returned.

@@ -1,8 +1,4 @@
-﻿using Bit.Bsqlite.Storage;
-using Bit.Bsqlite.Storage.ConformanceTests;
-using Bit.Bsqlite.Storage.Opfs;
-
-namespace Bit.Bsqlite.Storage.Tests;
+﻿namespace Bit.Bsqlite.Storage.Tests;
 
 /// <summary>
 /// Runs the contract-layer kit against the OPFS provider. Admin tests skip on desktop because

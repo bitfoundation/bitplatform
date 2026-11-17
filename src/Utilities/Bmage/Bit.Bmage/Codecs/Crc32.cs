@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs;
+﻿namespace Bit.Bmage;
 
 /// <summary>CRC-32 (IEEE 802.3, as used by PNG and zlib).</summary>
 internal static class Crc32

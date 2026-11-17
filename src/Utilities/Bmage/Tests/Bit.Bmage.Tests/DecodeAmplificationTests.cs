@@ -1,7 +1,4 @@
 ﻿using System.Buffers.Binary;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Jpeg;
-using Bit.Bmage.Codecs.WebP;
 
 namespace Bit.Bmage.Tests;
 

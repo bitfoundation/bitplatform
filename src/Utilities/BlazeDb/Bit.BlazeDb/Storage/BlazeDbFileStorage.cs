@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazeDb.Storage;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// File-system storage backend for desktop hosts and integration tests. Atomic writes go

@@ -1,14 +1,12 @@
 ﻿using System.Collections.Concurrent;
 using System.Data;
 using System.Runtime.InteropServices;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Storage;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SQLitePCL;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// An <see cref="IBsqliteTransport"/> that runs the native SQLite engine in the application's own

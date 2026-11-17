@@ -2,9 +2,8 @@
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
-using Bit.Bmage.Memory;
 
-namespace Bit.Bmage.Interop;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Moves pixels and files between .NET and the browser module in the same process, on WebAssembly.

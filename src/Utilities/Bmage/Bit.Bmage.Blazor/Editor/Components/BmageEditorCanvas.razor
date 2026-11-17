@@ -1,6 +1,7 @@
-﻿@using System.Drawing
+﻿@namespace Bit.Bmage
+@using System.Drawing
 @using System.Globalization
-@using Bit.Bmage.Editor.Tools
+@using Bit.Bmage
 @implements IAsyncDisposable
 @implements IHandleEvent
 @inject IServiceProvider Services
@@ -81,7 +82,7 @@
 
 @code {
     // Resolved rather than injected, so the canvas also works when the app never called AddBitBmageServices.
-    private Interop.BrowserImageInterop Interop => field ??= BitBmageBlazor.GetEditorServices(Services).GetRequiredService<Interop.BrowserImageInterop>();
+    private BrowserImageInterop Interop => field ??= BitBmageBlazor.GetEditorServices(Services).GetRequiredService<BrowserImageInterop>();
 
     private readonly string _id = $"bi-{Guid.NewGuid():N}";
     private ElementReference _hostElement;
@@ -221,7 +222,7 @@
         {
             // On WebAssembly the browser module reads the pixels straight out of .NET memory; over a Server circuit, or
             // where it finds the canvas by its id (inside a shadow root, say), they have to be sent.
-            if (!OperatingSystem.IsBrowser() || !await global::Bit.Bmage.Interop.BrowserPixels.PaintAsync(Interop, $"{_id}-canvas", Image))
+            if (!OperatingSystem.IsBrowser() || !await global::Bit.Bmage.BrowserPixels.PaintAsync(Interop, $"{_id}-canvas", Image))
                 await Interop.InvokeVoidAsync("paint", CancellationToken.None, _canvasElement, Image.ToArray(), Image.Width, Image.Height);
             _painted = Image;
             _paintedVersion = Version;

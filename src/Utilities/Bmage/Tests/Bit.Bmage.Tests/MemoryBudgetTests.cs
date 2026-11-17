@@ -1,11 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Drawing;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 

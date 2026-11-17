@@ -1,6 +1,4 @@
-﻿using Bit.Bmage.Memory;
-
-namespace Bit.Bmage.Codecs;
+﻿namespace Bit.Bmage;
 
 /// <summary>
 /// Decodes one format with a preferred decoder, and with a second one for the files the first rejects (corrupt for it,

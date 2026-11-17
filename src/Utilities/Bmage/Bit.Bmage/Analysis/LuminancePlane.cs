@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Bit.Bmage.Analysis;
+namespace Bit.Bmage;
 
 /// <summary>
 /// The luminance of an image, or of a region of it, reduced by a whole factor so its longer side is at most a given

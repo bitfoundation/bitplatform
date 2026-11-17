@@ -4,7 +4,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
-        <RootNamespace>Bit.Bcrdt.Butil</RootNamespace>
+        <RootNamespace>Bit.Bcrdt</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
         <Description>Browser lifecycle integration for bit Bcrdt in Blazor WebAssembly, through bit Butil: documents waiting out a reconnection backoff reconnect the moment the browser is back online or the page is shown again, every open document is flushed to its store when the page is hidden, presence is withdrawn while the page is unloaded or in the back/forward cache, and persistent storage can be requested so the browser does not evict documents kept for offline use.</Description>

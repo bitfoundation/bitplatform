@@ -1,19 +1,6 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using System.Text.Json;
-using Bit.Bmage.Analysis;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
-using Bit.Bmage.Serialization;
 
 namespace Bit.Bmage.Tests;
 

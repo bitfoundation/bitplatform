@@ -1,7 +1,6 @@
-﻿using Bit.Bsqlite.Data;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Bit.Bsqlite.EntityFrameworkCore;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// An <see cref="IRelationalDatabaseCreator"/> whose schema operations are genuinely asynchronous.

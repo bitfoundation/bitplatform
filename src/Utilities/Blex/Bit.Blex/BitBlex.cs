@@ -145,8 +145,8 @@ public static class BitBlex
 
     /// <summary>
     /// Enables automatic persistence for stores marked <c>[BlexStoreAttribute(Persist = true)]</c>. Requires an
-    /// <see cref="IBlexStorage"/> to be registered (for Blazor use <see cref="Blazor.BitBlexBlazor.AddBitBlexLocalStoragePersistence"/>
-    /// or <see cref="Blazor.BitBlexBlazor.AddBitBlexSessionStoragePersistence"/>).
+    /// <see cref="IBlexStorage"/> to be registered (for Blazor use <see cref="BitBlexBlazor.AddBitBlexLocalStoragePersistence"/>
+    /// or <see cref="BitBlexBlazor.AddBitBlexSessionStoragePersistence"/>).
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configure">Configures <see cref="BlexPersistenceOptions"/>.</param>
@@ -177,7 +177,7 @@ public static class BitBlex
     }
 
     /// <summary>
-    /// Registers the server-state cache (<see cref="Query.BlexQueryClient"/>): queries, mutations,
+    /// Registers the server-state cache (<see cref="BlexQueryClient"/>): queries, mutations,
     /// invalidation and the prerender handoff of fetched data.
     /// </summary>
     /// <param name="services">The service collection.</param>
@@ -188,15 +188,15 @@ public static class BitBlex
     /// </param>
     public static IServiceCollection AddBitBlexQueries(
         this IServiceCollection services,
-        Action<Query.BlexQueryClientOptions>? configure = null,
+        Action<BlexQueryClientOptions>? configure = null,
         ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
         ArgumentNullException.ThrowIfNull(services);
-        var options = new Query.BlexQueryClientOptions();
+        var options = new BlexQueryClientOptions();
         configure?.Invoke(options);
         services.Add(new ServiceDescriptor(
-            typeof(Query.BlexQueryClient),
-            sp => new Query.BlexQueryClient(sp.GetService<BlexManager>(), options),
+            typeof(BlexQueryClient),
+            sp => new BlexQueryClient(sp.GetService<BlexManager>(), options),
             lifetime));
         return services;
     }

@@ -23,9 +23,7 @@ Bit.Bsqlite targets .NET 10 and 11, each with the EF Core of the same major vers
 ## Register
 
 ```csharp
-using Bit.Bsqlite.Storage.IndexedDb;
-using Bit.Bsqlite.Storage.InMemory;
-using Bit.Bsqlite.Storage.Opfs;
+using Bit.Bsqlite;
 
 builder.Services.AddBitBsqliteServices(sqlite => sqlite
     .AddStorageProvider<BsqliteOpfsStorageProvider>()
@@ -192,9 +190,7 @@ EF Core and Bsqlite are most of what a WebAssembly app downloads for its databas
 ```csharp
 // AppDatabase.cs: called only from the pages the assemblies are loaded for - and, to register, from the server that
 // prerenders them or a Blazor Hybrid app that shares them, which is why it is public.
-using Bit.Bsqlite.EntityFrameworkCore;
-using Bit.Bsqlite.Storage.IndexedDb;
-using Bit.Bsqlite.Storage.Opfs;
+using Bit.Bsqlite;
 
 public static class AppDatabase
 {

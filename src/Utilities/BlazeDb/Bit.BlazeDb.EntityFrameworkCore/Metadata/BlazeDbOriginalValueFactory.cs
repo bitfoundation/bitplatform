@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore.Update;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Metadata;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Rebuilds an entity as it was when the change tracker last saw it. Rows are live objects, so a

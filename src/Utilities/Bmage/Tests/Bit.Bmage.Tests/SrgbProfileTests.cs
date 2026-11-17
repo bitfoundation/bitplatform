@@ -1,7 +1,5 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
-using Bit.Bmage.Input;
-using Bit.Bmage.Metadata;
 
 namespace Bit.Bmage.Tests;
 
@@ -49,7 +47,7 @@ public sealed class SrgbProfileTests
     public void APngProfileTooLargeToReadStillGoesToTheBrowser()
     {
         using var image = TestImages.Gradient(8, 8);
-        var png = Codecs.Png.PngEncoder.Encode(image).Data;
+        var png = PngEncoder.Encode(image).Data;
         var srgb = PngContainer.WriteMetadata(png, new ImageMetadata(null, Profile("RGB ", Version2Description("sRGB IEC61966-2.1")), default, ImageFormat.Png));
         var oversized = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, ImageFormat.Png));
 

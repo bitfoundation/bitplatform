@@ -1,6 +1,6 @@
 ﻿using Bit.Blow;
 
-namespace Bit.Bcrdt.Blow;
+namespace Bit.Bcrdt;
 
 /// <summary>Settings for a <see cref="BcrdtBlowBinding"/>.</summary>
 public sealed class BcrdtBlowBindingOptions

@@ -45,7 +45,7 @@
 
     <div class="bb-card">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - queries</h2>
-        <p>Namespace <code>Bit.Blex.Query</code>: the server-state cache, kept apart from stores on purpose.</p>
+        <p>The server-state cache, kept apart from stores on purpose.</p>
         <ApiTable Rows="@QueryTypes" MemberHeader="Type" />
     </div>
 
@@ -56,19 +56,19 @@
 
     <div class="bb-card">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - Blazor</h2>
-        <p>Namespace <code>Bit.Blex.Blazor</code>, in the same <code>Bit.Blex</code> package. Everything that touches JavaScript or the Blazor render tree lives here; the rest of Blex never does.</p>
+        <p>In the same <code>Bit.Blex</code> package. Everything that touches JavaScript or the Blazor render tree lives here; the rest of Blex never does.</p>
         <ApiTable Rows="@BlazorTypes" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Bit.Blex.Maui</h2>
-        <p>Namespace <code>Bit.Blex.Maui</code>. A native .NET MAUI app has no <code>&lt;BlexProvider&gt;</code> and no DI scopes, so these register Blex as singletons; a Blazor Hybrid app keeps the scoped core registrations and only takes the preferences storage from here.</p>
+        <p>A native .NET MAUI app has no <code>&lt;BlexProvider&gt;</code> and no DI scopes, so these register Blex as singletons; a Blazor Hybrid app keeps the scoped core registrations and only takes the preferences storage from here.</p>
         <ApiTable Rows="@MauiTypes" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Bit.Blex.Testing</h2>
-        <p>Namespace <code>Bit.Blex.Testing</code>.</p>
+        <p>A separate package, in the same <code>Bit.Blex</code> namespace.</p>
         <ApiTable Rows="@TestingTypes" MemberHeader="Type" />
     </div>
 

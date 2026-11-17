@@ -15,7 +15,7 @@ public class DbContextApiTests
     public void Engine_Settings_Keep_A_Store_Name_Chosen_Before_Them()
     {
         static string? NameOf(DbContextOptions options) =>
-            options.FindExtension<Bit.BlazeDb.EntityFrameworkCore.Infrastructure.BlazeDbOptionsExtension>()!.DatabaseName;
+            options.FindExtension<Bit.BlazeDb.BlazeDbOptionsExtension>()!.DatabaseName;
 
         var named = new DbContextOptionsBuilder<PeopleContext>()
             .UseBlazeDb("shared")
@@ -175,7 +175,7 @@ public class DbContextApiTests
     [TestMethod]
     public void Storage_Instance_Is_The_Store_Identity()
     {
-        var storage = new Bit.BlazeDb.Storage.BlazeDbInMemoryStorage();
+        var storage = new Bit.BlazeDb.BlazeDbInMemoryStorage();
         var options = new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb(storage).Options;
 
         using (var context = new PeopleContext(options))

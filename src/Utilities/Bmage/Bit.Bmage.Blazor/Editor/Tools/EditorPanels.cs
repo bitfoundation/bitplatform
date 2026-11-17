@@ -1,6 +1,6 @@
-﻿namespace Bit.Bmage.Editor.Tools;
+﻿namespace Bit.Bmage;
 
-/// <summary>The tabs of the built-in options panel, for <see cref="Components.BmageEditor.Panels"/>.</summary>
+/// <summary>The tabs of the built-in options panel, for <see cref="BmageEditor.Panels"/>.</summary>
 [Flags]
 public enum EditorPanels
 {

@@ -1,8 +1,7 @@
 ﻿using System.Buffers;
-using Bit.Bmage.Codecs;
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace Bit.Bmage.Input;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Where an image comes from. Covers every practical browser source so developers never have to convert to base64 or

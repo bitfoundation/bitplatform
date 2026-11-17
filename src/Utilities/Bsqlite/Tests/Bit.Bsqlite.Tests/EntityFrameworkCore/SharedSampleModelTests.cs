@@ -1,7 +1,5 @@
 ﻿using Bit.Bsqlite.Demo.Data;
 using Bit.Bsqlite.Demo.Domain;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Testing;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bit.Bsqlite.EntityFrameworkCore.Tests;

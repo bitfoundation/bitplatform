@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazeDb.Storage;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// Implemented by storage backends that can report the origin's remaining allowance - in the

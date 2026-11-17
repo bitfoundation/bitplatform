@@ -412,7 +412,7 @@ public class EditingToolTests : DemoTest
         using (var image = ImageBuffer.Create(400, 300, Rgba32.White))
         {
             image.Fill(new System.Drawing.Rectangle(100, 80, 120, 90), new Rgba32(30, 90, 200));
-            await File.WriteAllBytesAsync(file, Codecs.Png.PngEncoder.Encode(image).Data);
+            await File.WriteAllBytesAsync(file, PngEncoder.Encode(image).Data);
         }
         try
         {

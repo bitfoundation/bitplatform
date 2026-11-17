@@ -1,17 +1,10 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
 using System.Text.Json.Serialization;
-using Bit.Bmage.Capabilities;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Browser;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Pipeline;
-using Bit.Bmage.Interop;
-using Bit.Bmage.Memory;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
-namespace Bit.Bmage.Input;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Loads images from any browser source into an <see cref="ImageBuffer"/>: file inputs, drag and drop, the clipboard,
@@ -304,7 +297,7 @@ public sealed class ImageProcessorFactory
             if (format == ImageFormat.Avif)
             {
                 // One parse, in place, for both the colours the file signals and the profile it embeds.
-                if (Codecs.Avif.AvifDecoder.HasNonSrgbColors(data, out profile)) return true;
+                if (AvifDecoder.HasNonSrgbColors(data, out profile)) return true;
             }
             else
             {

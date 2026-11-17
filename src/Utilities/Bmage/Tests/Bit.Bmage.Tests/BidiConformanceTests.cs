@@ -1,5 +1,4 @@
 using System.Globalization;
-using Bit.Bmage.Text.Unicode;
 
 namespace Bit.Bmage.Tests;
 

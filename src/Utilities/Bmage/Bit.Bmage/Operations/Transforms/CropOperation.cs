@@ -1,8 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Operations.Transforms;
+namespace Bit.Bmage;
 
 /// <summary>
 /// An operation whose effect on coordinates can be described by an affine matrix. Used to keep annotations attached to

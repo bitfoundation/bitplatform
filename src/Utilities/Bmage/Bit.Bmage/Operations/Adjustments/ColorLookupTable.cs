@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Numerics;
 
-namespace Bit.Bmage.Operations.Adjustments;
+namespace Bit.Bmage;
 
 /// <summary>
 /// A three-dimensional colour lookup table: a cube of output colours sampled over every input colour, the form film

@@ -2,9 +2,8 @@
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Operations.Transforms;
+namespace Bit.Bmage;
 
 /// <summary>
 /// High quality separable resampling with premultiplied-alpha filtering. Works on rectangular regions so a single routine

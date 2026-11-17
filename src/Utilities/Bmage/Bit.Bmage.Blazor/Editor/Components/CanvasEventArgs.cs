@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Bit.Bmage.Editor.Components;
+namespace Bit.Bmage;
 
 /// <summary>Which part of the crop rectangle a drag is resizing.</summary>
 public enum CropHandle

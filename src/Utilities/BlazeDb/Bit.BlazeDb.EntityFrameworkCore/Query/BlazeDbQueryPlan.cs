@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
-using Bit.BlazeDb.EntityFrameworkCore.Metadata;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// A translated query in the terms the engine understands: an optional index source, residual

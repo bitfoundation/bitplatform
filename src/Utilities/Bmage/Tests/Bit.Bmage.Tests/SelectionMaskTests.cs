@@ -1,9 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Pipeline;
-using Bit.Bmage.Serialization;
 
 namespace Bit.Bmage.Tests;
 
@@ -236,8 +232,8 @@ public sealed class MorphedMaskTests
         // A masked edit draws only the window it changes; a morphed mask must give that window the whole image's values.
         using var image = ParallelProcessingTests.Noise(80, 60, seed: 6);
         var mask = new EllipseMask(new RectangleF(10, 10, 40, 30)).Expand(6).Union(new RectangleMask(new RectangleF(50, 5, 20, 20)).Border(4));
-        using var whole = ImagePipeline.Create().Masked(mask, new Operations.Adjustments.InvertFilter()).Execute(image);
-        using var reference = new Operations.Adjustments.InvertFilter().Apply(image, OperationContext.Default.WithMutation(false));
+        using var whole = ImagePipeline.Create().Masked(mask, new InvertFilter()).Execute(image);
+        using var reference = new InvertFilter().Apply(image, OperationContext.Default.WithMutation(false));
         using var coverage = mask.Render(image.Size, image);
         for (var y = 0; y < image.Height; y++)
             for (var x = 0; x < image.Width; x++)

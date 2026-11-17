@@ -1,10 +1,6 @@
 ﻿using System.Buffers.Binary;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations.Transforms;
 
-namespace Bit.Bmage.Codecs.Jpeg;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Managed JPEG decoder supporting baseline and progressive Huffman-coded images, 8-bit precision, grayscale / YCbCr / RGB /
@@ -51,7 +47,7 @@ public sealed class JpegDecoder : IImageDecoder
                 image.Metadata = md;
                 if (options.AutoOrient && md.Orientation is not (Orientation.Normal or Orientation.Unspecified))
                 {
-                    var oriented = new OrientationOperation(md.Orientation).Apply(image, new Operations.OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
+                    var oriented = new OrientationOperation(md.Orientation).Apply(image, new OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
                     if (!ReferenceEquals(oriented, image)) image.Dispose();
                     image = oriented;
                     image.Metadata = md.WithOrientation(Orientation.Normal);
@@ -74,7 +70,7 @@ internal static class JpegConstants
     ];
 }
 
-internal sealed class HuffmanTable
+internal sealed class JpegHuffmanTable
 {
     // Fast lookup for codes up to 9 bits: (length << 8) | value, 0 when the code is longer.
     public readonly ushort[] Lookup = new ushort[512];
@@ -83,7 +79,7 @@ internal sealed class HuffmanTable
     public readonly int[] MinCode = new int[17];
     public readonly byte[] Values;
 
-    public HuffmanTable(ReadOnlySpan<byte> bits, ReadOnlySpan<byte> values)
+    public JpegHuffmanTable(ReadOnlySpan<byte> bits, ReadOnlySpan<byte> values)
     {
         Values = values.ToArray();
         var code = 0;
@@ -138,8 +134,8 @@ internal sealed class JpegDecoderCore
     private readonly CancellationToken _ct;
     private int _pos;
     private readonly ushort[][] _qt = new ushort[4][];
-    private readonly HuffmanTable?[] _dc = new HuffmanTable?[4];
-    private readonly HuffmanTable?[] _ac = new HuffmanTable?[4];
+    private readonly JpegHuffmanTable?[] _dc = new JpegHuffmanTable?[4];
+    private readonly JpegHuffmanTable?[] _ac = new JpegHuffmanTable?[4];
     private Component[] _components = [];
     private int _width, _height, _maxH, _maxV, _mcusPerLine, _mcusPerColumn, _restartInterval;
     private bool _progressive, _frameSeen, _planesAllocated, _adobe, _jfif;
@@ -371,7 +367,7 @@ internal sealed class JpegDecoderCore
             foreach (var b in bits) total += b;
             if (total > 256 || p + 17 + total > seg.Length) throw new ImageDecodeException("Invalid Huffman table.");
             var values = seg.Slice(p + 17, total);
-            var table = new HuffmanTable(bits, values);
+            var table = new JpegHuffmanTable(bits, values);
             if (tc == 0) _dc[th] = table; else _ac[th] = table;
             p += 17 + total;
         }
@@ -538,7 +534,7 @@ internal sealed class JpegDecoderCore
         }
     }
 
-    private void DecodeAcFirst(HuffmanTable ac, short[] coeffs, int off, int ss, int se, int al)
+    private void DecodeAcFirst(JpegHuffmanTable ac, short[] coeffs, int off, int ss, int se, int al)
     {
         if (_eobRun > 0) { _eobRun--; return; }
         var k = ss;
@@ -565,7 +561,7 @@ internal sealed class JpegDecoderCore
         }
     }
 
-    private void DecodeAcRefine(HuffmanTable ac, short[] coeffs, int off, int ss, int se, int al)
+    private void DecodeAcRefine(JpegHuffmanTable ac, short[] coeffs, int off, int ss, int se, int al)
     {
         var p1 = 1 << al;
         var m1 = -1 << al;
@@ -667,7 +663,7 @@ internal sealed class JpegDecoderCore
 
     private static int Extend(int v, int t) => v < (1 << (t - 1)) ? v - (1 << t) + 1 : v;
 
-    private int DecodeHuffman(HuffmanTable table)
+    private int DecodeHuffman(JpegHuffmanTable table)
     {
         if (_bitCount < 16) Fill();
         var peek = (int)(_bitBuf >> 23);

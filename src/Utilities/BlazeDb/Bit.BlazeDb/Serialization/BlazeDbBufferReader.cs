@@ -1,7 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
 
-namespace Bit.BlazeDb.Serialization;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Span-based binary reader mirroring <see cref="BlazeDbBufferWriter"/>. A ref struct so rows can be

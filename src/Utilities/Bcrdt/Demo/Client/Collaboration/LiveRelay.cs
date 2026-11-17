@@ -1,5 +1,4 @@
-﻿using Bit.Bcrdt.SignalR;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 
 namespace Bit.Bcrdt.Demo.Client.Collaboration;
 

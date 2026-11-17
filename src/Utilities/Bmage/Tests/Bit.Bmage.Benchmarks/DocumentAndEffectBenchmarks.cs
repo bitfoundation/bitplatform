@@ -1,11 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using Bit.Bmage.Analysis;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Gif;
-using Bit.Bmage.Codecs.Png;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
 using System.Numerics;
 
 namespace Bit.Bmage.Benchmarks;
@@ -53,7 +46,7 @@ public class DocumentAndEffectBenchmarks
                 row[x] = new Rgba32((byte)(p.R * light), (byte)(p.G * light), (byte)(p.B * light));
             }
         }
-        var tilted = new Operations.Transforms.RotateOperation(-3, Rgba32.White, expandCanvas: false).Apply(_page, Images.OneThread.WithMutation(false));
+        var tilted = new RotateOperation(-3, Rgba32.White, expandCanvas: false).Apply(_page, Images.OneThread.WithMutation(false));
         _page.Dispose();
         _page = tilted;
         _lut = ColorLookupTable.Create(33, c => new Vector3(MathF.Sqrt(c.X), c.Y * c.Y, 0.1f + 0.8f * c.Z));

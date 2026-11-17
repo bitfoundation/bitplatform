@@ -2,7 +2,7 @@
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Several commands sent to the worker in one round trip, each with its own parameters.

@@ -3,7 +3,7 @@
 // the script against a newer database instead.
 // </auto-generated>
 
-namespace Bit.Bmage.Text.Unicode;
+namespace Bit.Bmage;
 
 /// <summary>Unicode 16.0.0 character data, as runs of (first code point &lt;&lt; bits) | value.</summary>
 internal static partial class UnicodeTables

@@ -2,12 +2,8 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.CompilerServices;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Filters;
 
-namespace Bit.Bmage.Masks;
+namespace Bit.Bmage;
 
 /// <summary>How two masks combine, value by value.</summary>
 /// <remarks>Soft masks combine as fuzzy sets: a union keeps the larger value, an intersection the smaller one.</remarks>
@@ -197,7 +193,7 @@ public sealed class MaskBuffer : IDisposable
 
     /// <summary>
     /// Softens the mask's edges with a gaussian of the given standard deviation in pixels, as
-    /// <see cref="Operations.Filters.BlurFilter"/> softens an image: three box passes, streamed so the memory is a few
+    /// <see cref="BlurFilter"/> softens an image: three box passes, streamed so the memory is a few
     /// rows rather than a copy of the mask.
     /// </summary>
     public void Feather(float sigma, OperationContext? context = null)

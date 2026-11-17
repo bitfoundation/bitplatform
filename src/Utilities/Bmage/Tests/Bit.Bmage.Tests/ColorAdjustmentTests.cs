@@ -1,7 +1,4 @@
 ﻿using System.Numerics;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 
@@ -198,7 +195,7 @@ public sealed class ColorAdjustmentTests
         var previous = int.MaxValue;
         for (var degrees = 60; degrees <= 120; degrees += 10)
         {
-            var c = Operations.Adjustments.ColorMath.HslToRgb(degrees / 60f, 1, 0.4f);
+            var c = ColorMath.HslToRgb(degrees / 60f, 1, 0.4f);
             var pixel = new Rgba32((byte)Math.Round(c.X * 255), (byte)Math.Round(c.Y * 255), (byte)Math.Round(c.Z * 255));
             var output = Apply(hsl, pixel);
             var gain = output.R + output.G + output.B - (pixel.R + pixel.G + pixel.B);

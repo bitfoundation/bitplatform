@@ -1,6 +1,6 @@
 ﻿using SQLitePCL;
 
-namespace Bit.Bsqlite.EntityFrameworkCore;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// The no-op <c>SQLitePCL.raw</c> provider <see cref="BsqlitePcl"/> installs on WASM, so

@@ -1,8 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Interop;
-using Bit.Bsqlite.Testing;
-
-namespace Bit.Bsqlite.EntityFrameworkCore.Tests;
+﻿namespace Bit.Bsqlite.EntityFrameworkCore.Tests;
 
 /// <summary>
 /// An <see cref="IBsqliteTransport"/> that pushes every parameter through the real wire format

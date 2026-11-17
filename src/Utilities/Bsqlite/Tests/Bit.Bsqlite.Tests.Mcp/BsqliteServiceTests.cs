@@ -84,7 +84,7 @@ public partial class BsqliteServiceTests
     {
         Assert.AreEqual("cache-storage", BsqliteStorageCatalog.Find("CacheStorage")?.Name);
         Assert.AreEqual("in-memory", BsqliteStorageCatalog.Find("InMemory")?.Name);
-        Assert.AreEqual("opfs", BsqliteStorageCatalog.Find("Bit.Bsqlite.Storage.Opfs")?.Name);
+        Assert.AreEqual("opfs", BsqliteStorageCatalog.Find("BsqliteOpfsStorageProvider")?.Name);
         Assert.IsNull(BsqliteStorageCatalog.Find("localstorage"));
         Assert.IsNull(BsqliteStorageCatalog.Instance("acme-encrypted"));
     }

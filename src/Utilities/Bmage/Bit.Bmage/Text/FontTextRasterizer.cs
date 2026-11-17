@@ -1,10 +1,8 @@
 ﻿using System.Globalization;
 using System.Numerics;
 using System.Text;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Text.Unicode;
 
-namespace Bit.Bmage.Text;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Turns text into outlines using fonts loaded by this library. Works anywhere .NET runs, including headless server code,

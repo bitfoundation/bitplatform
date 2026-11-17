@@ -1,8 +1,7 @@
 ﻿using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
-using Bit.BlazeDb.Storage;
 
-namespace Bit.BlazeDb.Browser;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// OPFS (Origin Private File System) storage backend for Blazor WebAssembly. Uses the async

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace Bit.Bcrdt.Blazor;
+namespace Bit.Bcrdt;
 
 /// <summary>
 /// A component base that keeps itself rendered against changing collaborative state.

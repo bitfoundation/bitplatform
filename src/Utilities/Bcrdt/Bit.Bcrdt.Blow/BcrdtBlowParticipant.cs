@@ -1,6 +1,6 @@
 ﻿using Bit.Blow;
 
-namespace Bit.Bcrdt.Blow;
+namespace Bit.Bcrdt;
 
 /// <summary>Another participant in a shared graph, with what they published about it.</summary>
 /// <param name="Collaborator">Who they are, as presence knows them: name, colour, when they were last heard from.</param>

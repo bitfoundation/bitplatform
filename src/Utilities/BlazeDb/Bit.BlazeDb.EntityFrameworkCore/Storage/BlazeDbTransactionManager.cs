@@ -1,9 +1,8 @@
-﻿using Bit.BlazeDb.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Storage;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Maps <c>Database.BeginTransaction</c> onto the engine's single ambient transaction. Saves made

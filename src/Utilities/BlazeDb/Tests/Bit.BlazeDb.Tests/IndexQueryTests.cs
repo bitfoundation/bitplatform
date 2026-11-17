@@ -1,7 +1,4 @@
-﻿using Bit.BlazeDb;
-using Bit.BlazeDb.Querying;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 /// <summary>Exclusive bounds and keyset paging, prefix scans, per-value counts, and query plans.</summary>
 [TestClass]

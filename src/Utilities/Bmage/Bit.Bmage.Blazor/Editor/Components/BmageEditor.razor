@@ -1,10 +1,6 @@
-﻿@using System.Drawing
-@using Bit.Bmage.Analysis
-@using Bit.Bmage.Editor.Tools
-@using Bit.Bmage.Masks
-@using Bit.Bmage.Operations
-@using Bit.Bmage.Operations.Adjustments
-@using Bit.Bmage.Operations.Transforms
+﻿@namespace Bit.Bmage
+@using System.Drawing
+@using Bit.Bmage
 @implements IAsyncDisposable
 @inject IServiceProvider Services
 
@@ -102,7 +98,7 @@
     private ImageLoader Loader => field ??= EditorServices.GetRequiredService<ImageLoader>();
     private ImageExporter Exporter => field ??= EditorServices.GetRequiredService<ImageExporter>();
     private IImageCapabilityProvider Capabilities => field ??= EditorServices.GetRequiredService<IImageCapabilityProvider>();
-    private Bit.Bmage.Text.FontTextRasterizer FontRasterizer => field ??= EditorServices.GetRequiredService<Bit.Bmage.Text.FontTextRasterizer>();
+    private Bit.Bmage.FontTextRasterizer FontRasterizer => field ??= EditorServices.GetRequiredService<Bit.Bmage.FontTextRasterizer>();
     private BitBmageOptions Options => field ??= EditorServices.GetRequiredService<BitBmageOptions>();
 
     private ImageEditSession? _session;
@@ -222,7 +218,7 @@
     [Parameter] public int MaxHistoryDepth { get; set; } = 100;
 
     /// <summary>
-    /// Draws text and step-number annotations. Null uses the <see cref="Bit.Bmage.Text.FontTextRasterizer"/> from
+    /// Draws text and step-number annotations. Null uses the <see cref="Bit.Bmage.FontTextRasterizer"/> from
     /// dependency injection, which renders text once a font has been registered with it.
     /// </summary>
     [Parameter] public ITextRasterizer? TextRasterizer { get; set; }
@@ -398,8 +394,8 @@
 
     [System.Runtime.Versioning.SupportedOSPlatform("browser")]
     private ValueTask<ImageBuffer?> ScaleProxyInBrowserAsync(ImageBuffer source, System.Drawing.Size size, CancellationToken cancellationToken)
-        => Bit.Bmage.Interop.BrowserPixels.ScaleAsync(EditorServices.GetRequiredService<Bit.Bmage.Interop.BrowserImageInterop>(), source, size,
-            Options.Allocator ?? Bit.Bmage.Memory.PooledPixelAllocator.Shared, cancellationToken);
+        => Bit.Bmage.BrowserPixels.ScaleAsync(EditorServices.GetRequiredService<Bit.Bmage.BrowserImageInterop>(), source, size,
+            Options.Allocator ?? Bit.Bmage.PooledPixelAllocator.Shared, cancellationToken);
 
     // ---- Preview rendering ----
 
@@ -1886,8 +1882,8 @@
     {
         if (_session is null) return;
         using var stream = new System.IO.MemoryStream();
-        await Serialization.BmageProject.SaveAsync(stream, _session.Original, _session.Document, new Serialization.BmageProjectOptions { Limits = Options.Limits });
-        var name = fileName.EndsWith(Serialization.BmageProject.FileExtension, StringComparison.OrdinalIgnoreCase) ? fileName : fileName + Serialization.BmageProject.FileExtension;
+        await BmageProject.SaveAsync(stream, _session.Original, _session.Document, new BmageProjectOptions { Limits = Options.Limits });
+        var name = fileName.EndsWith(BmageProject.FileExtension, StringComparison.OrdinalIgnoreCase) ? fileName : fileName + BmageProject.FileExtension;
         await Exporter.DownloadFileAsync(stream.ToArray(), name, "application/zip");
     });
 
@@ -1898,7 +1894,7 @@
     public Task OpenProjectAsync(System.IO.Stream stream) => RunAsync(async () =>
     {
         ArgumentNullException.ThrowIfNull(stream);
-        using var project = await Serialization.BmageProject.LoadAsync(stream, new Serialization.BmageProjectOptions { Limits = Options.Limits, Allocator = Options.Allocator });
+        using var project = await BmageProject.LoadAsync(stream, new BmageProjectOptions { Limits = Options.Limits, Allocator = Options.Allocator });
         var document = project.Document;
         var original = project.DetachOriginal();
         var images = project.DetachImages();
@@ -1984,7 +1980,7 @@
             ImageDecodeException => Strings.UnsupportedFormat,
             ImageCapabilityException c => c.Message,
             ImageEncodeException => Strings.ExportFailed,
-            Serialization.ImageDocumentFormatException => Strings.ProjectFailed,
+            ImageDocumentFormatException => Strings.ProjectFailed,
             _ => Strings.LoadFailed,
         }, isError: true);
     }

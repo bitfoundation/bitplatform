@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.WebP;
+﻿namespace Bit.Bmage;
 
 /// <summary>
 /// Encoder for lossy VP8 key frames. Each macroblock picks between 16x16 and 4x4 luma prediction and among the chroma

@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
 
-namespace Bit.Bmage.Geometry;
+namespace Bit.Bmage;
 
 /// <summary>
 /// An affine transform of the image read as what it does to an object on it: how much it scales the object, how far it

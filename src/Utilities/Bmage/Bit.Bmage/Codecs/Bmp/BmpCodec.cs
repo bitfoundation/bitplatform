@@ -1,8 +1,6 @@
 ﻿using System.Buffers.Binary;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Metadata;
 
-namespace Bit.Bmage.Codecs.Bmp;
+namespace Bit.Bmage;
 
 /// <summary>Managed BMP decoder: uncompressed 1/4/8-bit palette, 16/24/32-bit RGB and BI_BITFIELDS images, top-down or bottom-up.</summary>
 public sealed class BmpDecoder : IImageDecoder

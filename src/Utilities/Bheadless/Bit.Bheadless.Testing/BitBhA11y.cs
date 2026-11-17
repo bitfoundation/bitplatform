@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AngleSharp.Dom;
 
-namespace Bit.Bheadless.Testing;
+namespace Bit.Bheadless;
 
 /// <summary>Severity of an accessibility violation (mirrors axe-core impact levels).</summary>
 public enum BitBhA11yImpact

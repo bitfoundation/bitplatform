@@ -1,5 +1,3 @@
-using Bit.Blex.Testing;
-
 namespace Bit.Blex.Tests;
 
 /// <summary>A store whose actions are transactions: a throw puts every field back.</summary>

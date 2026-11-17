@@ -1,7 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
 
-namespace Bit.Bmage.Codecs.Avif;
+namespace Bit.Bmage;
 
 /// <summary>A property of an item (ISO/IEC 23008-12, the HEIF image file format): its type and payload.</summary>
 internal readonly record struct HeifProperty(uint Type, int Offset, int Length);

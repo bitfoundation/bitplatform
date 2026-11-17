@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.Avif;
+﻿namespace Bit.Bmage;
 
 /// <summary>The deblocking loop filter (spec 7.14), applied in place to the frame's planes.</summary>
 internal static class Av1LoopFilter

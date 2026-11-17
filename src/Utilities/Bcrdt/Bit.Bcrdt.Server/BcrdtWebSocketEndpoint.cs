@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Bit.Bcrdt.Server;
+namespace Bit.Bcrdt;
 
 /// <summary>
 /// Decides whether a request may work on a document, before the socket is accepted.

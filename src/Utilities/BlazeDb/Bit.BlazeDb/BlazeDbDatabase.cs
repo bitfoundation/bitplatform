@@ -1,7 +1,4 @@
-﻿using Bit.BlazeDb.Storage;
-using Bit.BlazeDb.Wal;
-
-namespace Bit.BlazeDb;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// A memory-first database instance. All live data resides in managed memory; reads never touch
@@ -73,7 +70,7 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
             {
                 // A page that is hidden or unloaded right after a commit would otherwise lose it, the
                 // flusher's next tick never coming; see BlazeDbPageLifecycle.
-                Browser.BlazeDbPageLifecycle.Watch(db);
+                BlazeDbPageLifecycle.Watch(db);
             }
         }
         if (!db.IsReadOnly && options.Migrations.Count > 0)

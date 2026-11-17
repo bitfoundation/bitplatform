@@ -1,9 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
 
-namespace Bit.Bmage.Masks;
+namespace Bit.Bmage;
 
 /// <summary>What the coordinates of a geometric mask are measured in.</summary>
 public enum MaskUnits

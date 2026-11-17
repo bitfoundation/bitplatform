@@ -1,9 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Numerics;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Operations;
 
-namespace Bit.Bmage.Layers;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Layers kept together: shown, hidden, faded, masked, moved and reordered as one, the layer group of photo editors.

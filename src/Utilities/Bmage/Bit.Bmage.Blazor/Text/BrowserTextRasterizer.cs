@@ -1,11 +1,9 @@
 ﻿using System.Globalization;
 using System.Numerics;
 using System.Text.Json.Serialization;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Interop;
 using Microsoft.JSInterop;
 
-namespace Bit.Bmage.Text;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Renders text with the browser's own text engine, so system fonts, emoji, right-to-left scripts and complex shaping

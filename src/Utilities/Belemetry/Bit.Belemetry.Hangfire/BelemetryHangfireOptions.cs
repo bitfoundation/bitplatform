@@ -1,6 +1,6 @@
 ﻿using Hangfire.Common;
 
-namespace Bit.Belemetry.Hangfire;
+namespace Bit.Belemetry;
 
 /// <summary>Which jobs get a span, and what it carries.</summary>
 public sealed class BelemetryHangfireOptions

@@ -2,9 +2,8 @@
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.Intrinsics.Wasm;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Operations.Transforms;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Sampling method used by warp operations (arbitrary rotation, skew, perspective).

@@ -2,13 +2,8 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Png;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Metadata;
 
-namespace Bit.Bmage.Serialization;
+namespace Bit.Bmage;
 
 /// <summary>How a <see cref="BmageProject"/> is written and read.</summary>
 public sealed record BmageProjectOptions

@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Drawing;
 
 namespace Bit.Bmage.Samples.Core.Shared;
 

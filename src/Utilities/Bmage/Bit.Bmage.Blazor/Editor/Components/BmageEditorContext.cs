@@ -1,15 +1,6 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Capabilities;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Editor.Localization;
-using Bit.Bmage.Editor.Tools;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Operations;
 
-namespace Bit.Bmage.Editor.Components;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Everything a custom toolbar or panel needs to drive the editor. Handed to the <c>Toolbar</c>, <c>Panel</c> and
@@ -218,16 +209,16 @@ public sealed class BmageEditorContext
     public Task AddPaintLayerAsync() => _editor.AddPaintLayerAsync();
 
     /// <summary>Loads an image and places it as a layer in the middle of the image.</summary>
-    public Task AddImageLayerAsync(Input.ImageSource source) => _editor.AddImageLayerAsync(source);
+    public Task AddImageLayerAsync(ImageSource source) => _editor.AddImageLayerAsync(source);
 
     /// <summary>The pixel selection, in output coordinates, or null when nothing is selected.</summary>
-    public Masks.Mask? Selection => _editor.Selection;
+    public Mask? Selection => _editor.Selection;
 
     /// <summary>True when there is a pixel selection.</summary>
     public bool HasSelection => _editor.Selection is not null;
 
     /// <summary>Sets the pixel selection, or clears it with null.</summary>
-    public void SetSelection(Masks.Mask? selection) => _editor.SetSelection(selection);
+    public void SetSelection(Mask? selection) => _editor.SetSelection(selection);
 
     /// <summary>Selects the whole image.</summary>
     public void SelectAll() => _editor.SelectAll();
@@ -263,7 +254,7 @@ public sealed class BmageEditorContext
     public Task ResizeAsync(int width, int height) => _editor.ResizeAsync(width, height);
 
     /// <summary>Sets the canvas size without scaling the image.</summary>
-    public Task SetCanvasSizeAsync(int width, int height, Geometry.Anchor anchor, Rgba32 background) => _editor.SetCanvasSizeAsync(width, height, anchor, background);
+    public Task SetCanvasSizeAsync(int width, int height, Anchor anchor, Rgba32 background) => _editor.SetCanvasSizeAsync(width, height, anchor, background);
 
     /// <summary>Crops away plain or transparent edges.</summary>
     public Task TrimAsync() => _editor.TrimAsync();
@@ -282,7 +273,7 @@ public sealed class BmageEditorContext
 
     /// <summary>
     /// Replaces the edit with a saved one, such as a document read back with
-    /// <see cref="Serialization.BmageJson.DeserializeDocument"/>, as one undoable step. The document must have been made
+    /// <see cref="BmageJson.DeserializeDocument"/>, as one undoable step. The document must have been made
     /// for an image of the size loaded now.
     /// </summary>
     /// <exception cref="ArgumentException">The document was made for an image of another size.</exception>
@@ -313,7 +304,7 @@ public sealed class BmageEditorContext
     public void FitToWindow() => _editor.FitToWindow();
 
     /// <summary>Loads an image from any source.</summary>
-    public Task LoadAsync(Input.ImageSource source) => _editor.LoadAsync(source);
+    public Task LoadAsync(ImageSource source) => _editor.LoadAsync(source);
 
     /// <summary>Loads the image on the clipboard.</summary>
     public Task PasteAsync() => _editor.PasteAsync();

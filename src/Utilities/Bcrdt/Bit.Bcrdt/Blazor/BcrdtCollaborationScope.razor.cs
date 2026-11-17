@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Blazor;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>
 /// Opens a collaborative document for its content and closes it again: renders <see cref="ChildContent"/> with the

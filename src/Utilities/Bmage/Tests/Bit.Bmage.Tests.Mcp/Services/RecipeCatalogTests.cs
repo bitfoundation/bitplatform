@@ -69,7 +69,7 @@ public class RecipeCatalogTests
                 if (match.Index > 0 && code[match.Index - 1] == '.')
                 {
                     // After a dot a name is a member (options.ImageResolver, ImagePipeline.Empty), unless what comes
-                    // before it is a namespace: Bit.Bmage.Layers.ImageLayer names a type like any other, and so does
+                    // before it is a namespace: Bit.Bmage.ImageLayer names a type like any other, and so does
                     // the namespace it is in.
                     var qualifier = Regex.Match(code[..(match.Index - 1)], @"[\w.]+$").Value;
                     if (qualifier.StartsWith("Bit.Bmage", StringComparison.Ordinal) is false || known.Contains(qualifier[(qualifier.LastIndexOf('.') + 1)..])) continue;

@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Storage;
-
-namespace Bit.Bsqlite;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// The backend chosen for a database, together with enough context to explain the choice.

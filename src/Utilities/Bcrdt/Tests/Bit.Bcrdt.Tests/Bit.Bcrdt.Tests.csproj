@@ -47,7 +47,6 @@
     <ItemGroup>
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
         <Using Include="Bit.Bcrdt" />
-        <Using Include="Bit.Bcrdt.Testing" />
     </ItemGroup>
 
 </Project>

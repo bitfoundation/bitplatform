@@ -1,13 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Bit.Bsqlite;
-using Bit.Bsqlite.Interop;
-using Bit.Bsqlite.Storage;
-using Bit.Bsqlite.Storage.FileSystem;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Bit.Bsqlite;
 
 /// <summary>Collects the choices <c>AddBitBsqliteServices</c> turns into registrations.</summary>
 public sealed class BsqliteBuilder
@@ -120,7 +117,7 @@ public sealed class BsqliteBuilder
     /// <para>
     /// Each database is a keyed service under its name, so with several registered, inject the one
     /// wanted with <c>[FromKeyedServices("cache.db")]</c> and bind a context to it with
-    /// <see cref="Bit.Bsqlite.EntityFrameworkCore.BsqliteDbContextOptions{TContext}.DatabaseName"/>. An unkeyed
+    /// <see cref="Bit.Bsqlite.BsqliteDbContextOptions{TContext}.DatabaseName"/>. An unkeyed
     /// <see cref="BsqliteDatabase"/> resolves to the one registered last, which is the application's
     /// one shared database when there is only one.
     /// </para>

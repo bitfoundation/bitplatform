@@ -3,7 +3,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Puts a row a query returned into the change tracker, with the identity resolution every EF

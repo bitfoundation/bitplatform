@@ -1,6 +1,5 @@
 ﻿using Bit.BbScanner;
 using Bit.BbScanner.TestKit;
-using Bit.Bmage.BbScanner;
 
 namespace Bit.Bmage.Tests.Integrations;
 

@@ -59,17 +59,17 @@ from every project that declares table types: analyzers do not flow transitively
 the engine only through another project, or only through `Bit.BlazeDb.EntityFrameworkCore`, compiles the
 attributes but generates nothing, and `TodoItem.Table` then does not exist.
 
-The browser backends (OPFS, IndexedDB, WebCrypto, tabs) ship in the same package, under the
-`Bit.BlazeDb.Browser` namespace. They are marked `[SupportedOSPlatform("browser")]` - the rest of the
+The browser backends (OPFS, IndexedDB, WebCrypto, tabs) ship in the same package and the same
+`Bit.BlazeDb` namespace. They are marked `[SupportedOSPlatform("browser")]` - the rest of the
 engine is not - so on the server, the desktop or MAUI they are simply left unused.
 
 Add the namespaces you use to `_Imports.razor` or a global using:
 
 ```csharp
 global using Bit.BlazeDb;
-global using Bit.BlazeDb.Browser;   // the browser backends
-global using Bit.BlazeDb.Storage;   // IBlazeDbStorage, the file and in-memory backends, encryption
-global using Bit.BlazeDb.Querying;  // BlazeDbQuery, BlazeDbBound
+global using Bit.BlazeDb;   // the browser backends
+global using Bit.BlazeDb;   // IBlazeDbStorage, the file and in-memory backends, encryption
+global using Bit.BlazeDb;  // BlazeDbQuery, BlazeDbBound
 ```
 
 ## Requirements

@@ -1,7 +1,6 @@
 ﻿@* One participant of the rich text: a plain editor, buttons that format what it last selected, and the result
    drawn from the text's delta. Each panel of the rich-text page is this component, opened by a different user. *@
 @using Bit.Bcrdt
-@using Bit.Bcrdt.Blazor
 @implements IDisposable
 
 <BcrdtCollaborationScope DocumentId="demo-rich-text" User="_me" OnOpened="Opened" Context="document">

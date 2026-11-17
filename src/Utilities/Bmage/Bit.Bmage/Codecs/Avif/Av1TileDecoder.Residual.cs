@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.Avif;
+﻿namespace Bit.Bmage;
 
 // Residual syntax (spec 5.11.34-5.11.39) and reconstruction (7.12).
 internal sealed partial class Av1TileDecoder

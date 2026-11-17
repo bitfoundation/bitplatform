@@ -1,5 +1,4 @@
-﻿using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Bit.BlazeDb.Tests.EntityFrameworkCore;
@@ -218,7 +217,7 @@ public class SaveChangesTests
     [TestMethod]
     public async Task Changes_Survive_A_Reopen()
     {
-        var storage = new Bit.BlazeDb.Storage.BlazeDbInMemoryStorage();
+        var storage = new Bit.BlazeDb.BlazeDbInMemoryStorage();
         var options = new DbContextOptionsBuilder<PeopleContext>()
             .UseBlazeDb(storage, o => o.FlushInterval = TimeSpan.FromHours(1))
             .Options;
@@ -272,7 +271,7 @@ public class SaveChangesTests
     {
         // Nothing else about the note changes, so only comparing the collections by their contents -
         // against a snapshot that is a copy, not the same list - shows the change tracker the edit.
-        var storage = new Bit.BlazeDb.Storage.BlazeDbInMemoryStorage();
+        var storage = new Bit.BlazeDb.BlazeDbInMemoryStorage();
         var options = new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb(storage).Options;
         using (var context = new PeopleContext(options))
         {

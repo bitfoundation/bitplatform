@@ -1,6 +1,4 @@
-﻿using Bit.Bmage.Geometry;
-
-namespace Bit.Bmage.Metadata;
+﻿namespace Bit.Bmage;
 
 /// <summary>Controls which metadata is carried into exported images.</summary>
 public enum MetadataPolicy
@@ -11,7 +9,7 @@ public enum MetadataPolicy
     /// </summary>
     /// <remarks>
     /// This removes the orientation tag along with everything else, so the exported pixels must already be upright.
-    /// They are whenever the image was decoded with <see cref="Codecs.DecodeOptions.AutoOrient"/> left on, which is
+    /// They are whenever the image was decoded with <see cref="DecodeOptions.AutoOrient"/> left on, which is
     /// the default. If you turn it off, rotate the pixels yourself (an <c>AutoOrient</c> pipeline step does it) before
     /// exporting with this policy, or the image will be saved sideways with no tag left to correct it.
     /// </remarks>
@@ -79,8 +77,8 @@ public sealed class ImageMetadata
     /// <remarks>
     /// The orientation tag is carried through rather than reset, because <see cref="Orientation"/> describes the
     /// pixels currently in the buffer. Every decode path maintains that invariant: decoding with
-    /// <see cref="Codecs.DecodeOptions.AutoOrient"/> rotates the pixels upright and sets the tag to
-    /// <see cref="Geometry.Orientation.Normal"/>, so a normal export writes no rotation. Decoding without it leaves
+    /// <see cref="DecodeOptions.AutoOrient"/> rotates the pixels upright and sets the tag to
+    /// <see cref="Orientation.Normal"/>, so a normal export writes no rotation. Decoding without it leaves
     /// the pixels in sensor order and the tag describing them, and forcing the tag to normal there would export a
     /// sideways image with nothing left to say so.
     /// </remarks>

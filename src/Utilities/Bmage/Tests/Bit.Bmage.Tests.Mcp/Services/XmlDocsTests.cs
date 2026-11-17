@@ -18,15 +18,15 @@ public class XmlDocsTests
 
         Assert.IsGreaterThan(500, BmageXmlDocs.Count);
 
-        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.Pipeline.ImagePipeline"), "The engine's documentation is missing.");
-        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.Output.ImageExporter"), "The browser integration's documentation is missing.");
-        Assert.IsNotNull(BmageXmlDocs.GetSummary("P:Bit.Bmage.Editor.Components.BmageEditor.Image"), "The editor's documentation is missing.");
+        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.ImagePipeline"), "The engine's documentation is missing.");
+        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.ImageExporter"), "The browser integration's documentation is missing.");
+        Assert.IsNotNull(BmageXmlDocs.GetSummary("P:Bit.Bmage.BmageEditor.Image"), "The editor's documentation is missing.");
     }
 
     [TestMethod]
     public void Crefs_BecomeShortNames_AndProseIsUnwrapped()
     {
-        var summary = BmageXmlDocs.GetSummary("T:Bit.Bmage.Pipeline.ImagePipeline")!;
+        var summary = BmageXmlDocs.GetSummary("T:Bit.Bmage.ImagePipeline")!;
 
         StringAssert.Contains(summary, "ImagePipeline.ExecuteAsync");
         Assert.IsFalse(summary.Contains("M:", StringComparison.Ordinal), summary);
@@ -50,13 +50,13 @@ public class XmlDocsTests
     [TestMethod]
     public void AnInexactMethodId_StillFindsAnOverload()
     {
-        Assert.IsNotNull(BmageXmlDocs.GetSummary("M:Bit.Bmage.Pipeline.ImagePipeline.Crop"));
+        Assert.IsNotNull(BmageXmlDocs.GetSummary("M:Bit.Bmage.ImagePipeline.Crop"));
     }
 
     [TestMethod]
     public void AnUnknownId_IsNull_NotAnException()
     {
         Assert.IsNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.Teleporter"));
-        Assert.IsNull(BmageXmlDocs.GetRemarks("T:Bit.Bmage.Pipeline.ImagePipeline.Nothing"));
+        Assert.IsNull(BmageXmlDocs.GetRemarks("T:Bit.Bmage.ImagePipeline.Nothing"));
     }
 }

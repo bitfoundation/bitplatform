@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Data;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>How much of the result the caller intends to consume.</summary>
 public enum BsqliteResultKind

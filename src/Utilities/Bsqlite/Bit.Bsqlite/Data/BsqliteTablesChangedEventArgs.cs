@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Data;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>The tables a completed write touched.</summary>
 public sealed class BsqliteTablesChangedEventArgs(IReadOnlyCollection<string> tables) : EventArgs

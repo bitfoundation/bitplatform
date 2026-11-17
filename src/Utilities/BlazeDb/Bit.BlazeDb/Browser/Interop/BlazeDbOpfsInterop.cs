@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 
-namespace Bit.BlazeDb.Browser;
+namespace Bit.BlazeDb;
 
 /// <summary>Generated bindings to the bit-blazedb-opfs.js ES module.</summary>
 [SupportedOSPlatform("browser")]

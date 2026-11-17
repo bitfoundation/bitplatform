@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Bit.BlazeDb.Storage;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Makes changes to a directory's entries durable on Unix-like systems.

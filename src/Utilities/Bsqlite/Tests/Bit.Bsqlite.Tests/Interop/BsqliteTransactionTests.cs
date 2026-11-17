@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Testing;
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 using SQLitePCL;
 
 namespace Bit.Bsqlite.Interop.Tests;

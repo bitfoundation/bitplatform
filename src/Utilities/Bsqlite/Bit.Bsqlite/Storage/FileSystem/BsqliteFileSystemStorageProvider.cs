@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Microsoft.Data.Sqlite;
 
-namespace Bit.Bsqlite.Storage.FileSystem;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Keeps databases as SQLite files on the device, opened in-process by the native SQLite engine the app

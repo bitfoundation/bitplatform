@@ -157,7 +157,7 @@ faster compiled ahead of time:
 ## The full editor
 
 ```razor
-@using Bit.Bmage.Editor.Components
+@using Bit.Bmage
 
 <BmageEditor @ref="editor" />
 <button @onclick="() => editor.DownloadAsync(&quot;edited&quot;)">Save</button>

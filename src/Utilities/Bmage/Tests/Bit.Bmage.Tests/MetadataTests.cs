@@ -1,10 +1,4 @@
-﻿using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Jpeg;
-using Bit.Bmage.Codecs.Png;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Metadata;
-
-namespace Bit.Bmage.Tests;
+﻿namespace Bit.Bmage.Tests;
 
 [TestClass]
 public sealed class ExifTests
@@ -269,8 +263,8 @@ public sealed class OrientationDecodeTests
     {
         // Start from an upright image, store it rotated, and tag it so a decoder should undo the rotation.
         using var upright = TestImages.Quadrants(16, 16);
-        using var stored = new Operations.Transforms.OrientationOperation(orientation.Inverse())
-            .Apply(upright, Operations.OperationContext.Default);
+        using var stored = new OrientationOperation(orientation.Inverse())
+            .Apply(upright, OperationContext.Default);
 
         var png = PngEncoder.Encode(stored).Data;
         var tagged = PngContainer.WriteMetadata(png, new ImageMetadata(ExifData.FromOrientation(orientation)));

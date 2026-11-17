@@ -3,7 +3,7 @@ using Bunit;
 using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
 
-namespace Bit.Bheadless.Testing;
+namespace Bit.Bheadless;
 
 /// <summary>
 /// A bUnit test context prepared for Bheadless components. Derive your test

@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Storage.ConformanceTests;
-
-namespace Bit.Bsqlite.Storage.Tests;
+﻿namespace Bit.Bsqlite.Storage.Tests;
 
 /// <summary>
 /// Tests the conformance kit itself. A suite that only ever runs against a correct provider proves

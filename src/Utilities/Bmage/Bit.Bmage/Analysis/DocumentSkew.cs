@@ -1,11 +1,11 @@
 ﻿using System.Drawing;
 
-namespace Bit.Bmage.Analysis;
+namespace Bit.Bmage;
 
 /// <summary>How far a document's lines are tilted, and how sure the estimate is.</summary>
 /// <param name="Angle">
-/// The clockwise rotation in degrees that levels the lines: pass it to <see cref="Pipeline.ImagePipeline.Straighten"/>
-/// or <see cref="Pipeline.ImagePipeline.Rotate"/> as it is.
+/// The clockwise rotation in degrees that levels the lines: pass it to <see cref="ImagePipeline.Straighten"/>
+/// or <see cref="ImagePipeline.Rotate"/> as it is.
 /// </param>
 /// <param name="Confidence">
 /// How clearly one angle stood out from the others, in [0,1]: about 0.9 for lines of text, and below 0.3 for scattered

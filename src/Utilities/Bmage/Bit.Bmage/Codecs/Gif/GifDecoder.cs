@@ -1,8 +1,6 @@
 ﻿using System.Buffers.Binary;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Metadata;
 
-namespace Bit.Bmage.Codecs.Gif;
+namespace Bit.Bmage;
 
 /// <summary>Managed GIF decoder (first frame, LZW, interlacing, transparency). Animation frames beyond the first are ignored.</summary>
 public sealed class GifDecoder : IImageDecoder

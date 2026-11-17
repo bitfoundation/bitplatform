@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.Avif;
+﻿namespace Bit.Bmage;
 
 /// <summary>A decoded AV1 frame: its planes cropped to the frame size in use, and the colour description to read them by.</summary>
 internal sealed class Av1Image : IDisposable

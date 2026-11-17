@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Bit.Bmage.Drawing;
+namespace Bit.Bmage;
 
 /// <summary>How the ends of an open stroked path are drawn.</summary>
 public enum LineCap

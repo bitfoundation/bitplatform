@@ -1,9 +1,6 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
 
-namespace Bit.Bmage.Pipeline;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Rewrites a pipeline into an equivalent but cheaper one.

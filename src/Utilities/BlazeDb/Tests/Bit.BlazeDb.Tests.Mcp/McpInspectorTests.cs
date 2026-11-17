@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Bit.BlazeDb.Demo.Server.Dtos;
 using Bit.BlazeDb.Demo.Server.Services;
-using Bit.BlazeDb.Serialization;
 using Bit.BlazeDb.Tests.Mcp.Models;
 using ModelContextProtocol.Protocol;
 

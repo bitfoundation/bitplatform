@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Bit.Bmage.Operations;
+namespace Bit.Bmage;
 
 /// <summary>
 /// A 4×5 colour matrix (rows R,G,B,A; columns r,g,b,a,offset) applied to straight-alpha RGBA in [0,1].

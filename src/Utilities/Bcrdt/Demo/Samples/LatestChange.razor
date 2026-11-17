@@ -2,7 +2,6 @@
    describing the change as retain, insert and delete steps - so a view can patch exactly what moved instead of
    re-reading the whole document. Place it inside a BcrdtCollaborationScope, which cascades the open document. *@
 @using Bit.Bcrdt
-@using Bit.Bcrdt.Blazor
 @inherits BcrdtComponentBase
 
 <p>Latest change: @(_latest ?? "nothing yet")</p>

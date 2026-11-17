@@ -1,6 +1,4 @@
-﻿using Bit.Bmage.Layers;
-
-namespace Bit.Bmage.Editing;
+﻿namespace Bit.Bmage;
 
 /// <summary>One entry in the edit history.</summary>
 public sealed record HistoryEntry(ImageDocument Document, string Label, DateTimeOffset Timestamp)

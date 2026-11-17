@@ -1,9 +1,6 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
 
-namespace Bit.Bmage.Analysis;
+namespace Bit.Bmage;
 
 /// <summary>Settings for <see cref="SmartCrop"/>.</summary>
 public sealed record SmartCropOptions

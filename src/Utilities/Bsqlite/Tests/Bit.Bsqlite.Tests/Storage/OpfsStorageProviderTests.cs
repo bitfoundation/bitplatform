@@ -1,7 +1,4 @@
-﻿using Bit.Bsqlite.Storage;
-using Bit.Bsqlite.Storage.Opfs;
-
-namespace Bit.Bsqlite.Storage.Tests;
+﻿namespace Bit.Bsqlite.Storage.Tests;
 
 [TestClass]
 public sealed class OpfsStorageProviderTests

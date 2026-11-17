@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Storage;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// An admin that can read a database's 100-byte SQLite header without reading the rest of it.

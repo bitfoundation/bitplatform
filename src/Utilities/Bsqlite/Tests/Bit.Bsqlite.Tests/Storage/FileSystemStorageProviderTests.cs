@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Interop;
-using Bit.Bsqlite.Storage.FileSystem;
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 
 namespace Bit.Bsqlite.Storage.Tests;
 

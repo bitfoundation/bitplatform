@@ -1,7 +1,4 @@
-﻿using Bit.BlazeDb;
-using Bit.BlazeDb.Serialization;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 [TestClass]
 public class SourceGeneratorTests

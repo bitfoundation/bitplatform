@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.Avif;
+﻿namespace Bit.Bmage;
 
 /// <summary>The reference film grain synthesis process (spec 7.18.3), applied to the output planes.</summary>
 internal static class Av1FilmGrainSynthesis

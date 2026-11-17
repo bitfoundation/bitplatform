@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Butil;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>What <see cref="BcrdtBrowserLifecycle"/> does when the browser reports a change.</summary>
 public sealed class BcrdtBrowserLifecycleOptions

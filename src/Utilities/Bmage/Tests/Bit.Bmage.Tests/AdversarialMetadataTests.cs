@@ -1,11 +1,5 @@
 ﻿using System.Buffers.Binary;
 using System.Drawing;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 
@@ -509,7 +503,7 @@ public sealed class AdversarialMetadataTests
     public void AnIccProfileThatInflatesPastTheCapIsDropped()
     {
         using var img = AdversarialGeometryTests.Noise(8, 8, 3);
-        var png = Codecs.Png.PngEncoder.Encode(img).Data;
+        var png = PngEncoder.Encode(img).Data;
 
         var bomb = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, ImageFormat.Png));
         Assert.IsLessThan(64 * 1024, bomb.Length);
@@ -529,7 +523,7 @@ public sealed class AdversarialMetadataTests
     public void OnlyTheFirstIccProfileIsRead()
     {
         using var img = AdversarialGeometryTests.Noise(8, 8, 3);
-        var png = Codecs.Png.PngEncoder.Encode(img).Data;
+        var png = PngEncoder.Encode(img).Data;
         var bomb = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, ImageFormat.Png));
         var profile = new byte[1024];
         new Random(9).NextBytes(profile);

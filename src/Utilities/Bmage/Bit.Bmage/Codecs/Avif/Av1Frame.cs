@@ -1,6 +1,6 @@
 ﻿using System.Buffers;
 
-namespace Bit.Bmage.Codecs.Avif;
+namespace Bit.Bmage;
 
 /// <summary>One plane of samples, 16 bits each whatever the bit depth, so one code path serves 8, 10 and 12 bits.</summary>
 internal sealed class Av1Plane : IDisposable

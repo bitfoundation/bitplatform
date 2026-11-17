@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
-using Bit.BlazeDb.EntityFrameworkCore.Metadata;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Splits a LINQ query into the part the engine can answer and the part it cannot.

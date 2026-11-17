@@ -1,12 +1,6 @@
 ﻿using System.Buffers.Binary;
-using Bit.Bmage.Codecs.Png;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
 
-namespace Bit.Bmage.Codecs.Ico;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Managed ICO decoder: reads the largest image of an icon file, whether stored as PNG or as a Windows bitmap of 1, 4,

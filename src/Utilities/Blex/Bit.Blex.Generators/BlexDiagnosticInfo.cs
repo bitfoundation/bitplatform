@@ -1,4 +1,4 @@
-﻿namespace Bit.Blex.Generators;
+﻿namespace Bit.Blex;
 
 /// <summary>An equatable, cache-friendly stand-in for a <see cref="Microsoft.CodeAnalysis.Diagnostic"/>.</summary>
 internal sealed record BlexDiagnosticInfo(

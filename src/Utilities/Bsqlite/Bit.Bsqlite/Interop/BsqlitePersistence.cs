@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Asks the browser to keep origin storage out of the LRU eviction bucket.

@@ -1,13 +1,8 @@
 ﻿using System.Buffers;
 using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Operations;
 
-namespace Bit.Bmage.Layers;
+namespace Bit.Bmage;
 
 /// <summary>
 /// One stroke of a <see cref="PaintLayer"/>'s brush: the path the pointer took, the brush it was painted with, and

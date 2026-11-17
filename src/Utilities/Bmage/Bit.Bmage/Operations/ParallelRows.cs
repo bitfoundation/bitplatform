@@ -1,6 +1,6 @@
 ﻿using System.Runtime.ExceptionServices;
 
-namespace Bit.Bmage.Operations;
+namespace Bit.Bmage;
 
 /// <summary>Processes rows <paramref name="start"/> (inclusive) to <paramref name="end"/> (exclusive) of an image.</summary>
 /// <param name="start">The first row of the band.</param>

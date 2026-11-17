@@ -1,7 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Storage;
-
-namespace Bit.Bsqlite.Interop;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// Copies a database from one backend to another without flipping the binding until the copy

@@ -36,7 +36,6 @@
         <Using Include="Bunit" />
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
         <Using Include="Bit.Bheadless" />
-        <Using Include="Bit.Bheadless.Testing" />
     </ItemGroup>
 
 </Project>

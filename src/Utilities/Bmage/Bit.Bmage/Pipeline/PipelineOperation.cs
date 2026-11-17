@@ -1,7 +1,6 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Operations;
 
-namespace Bit.Bmage.Pipeline;
+namespace Bit.Bmage;
 
 /// <summary>
 /// A whole pipeline run as one operation, so it can be nested: inside a masked edit, an adjustment layer, or anywhere a

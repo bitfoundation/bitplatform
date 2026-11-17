@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>Blazor-specific DI helpers for wiring Blex persistence to browser storage.</summary>
 public static class BitBlexBlazor

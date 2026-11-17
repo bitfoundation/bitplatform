@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Bit.Bcrdt.BlazeDb;
+namespace Bit.Bcrdt;
 
 /// <summary>Settings for a <see cref="BcrdtBlazeDbDocumentStore"/>.</summary>
 public sealed class BcrdtBlazeDbDocumentStoreOptions

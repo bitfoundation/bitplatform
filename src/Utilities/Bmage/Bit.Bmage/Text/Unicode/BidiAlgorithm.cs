@@ -1,4 +1,4 @@
-namespace Bit.Bmage.Text.Unicode;
+namespace Bit.Bmage;
 
 /// <summary>
 /// The Unicode Bidirectional Algorithm (UAX #9) for one paragraph: the embedding level of every character, from which

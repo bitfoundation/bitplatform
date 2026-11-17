@@ -8,7 +8,7 @@ namespace Bit.Bmage.Demo.Server.Services;
 /// <summary>
 /// Reads the XML documentation the Bit.Bmage build emits next to its assembly - the engine, the
 /// browser integration and the editor components - and flattens each entry into plain text:
-/// <c>&lt;see cref="T:Bit.Bmage.Pipeline.ImagePipeline"/&gt;</c> becomes <c>ImagePipeline</c>,
+/// <c>&lt;see cref="T:Bit.Bmage.ImagePipeline"/&gt;</c> becomes <c>ImagePipeline</c>,
 /// <c>&lt;c&gt;</c> spans become their content, and paragraphs become blank lines. That text is the
 /// same prose a developer reads in IntelliSense, which makes it the most accurate answer an MCP
 /// client can get about a member - there is no second copy to keep in sync.
@@ -201,7 +201,7 @@ public static partial class BmageXmlDocs
         return string.Join('\n', lines.Select(line => line.Length >= indent ? line[indent..] : line.TrimStart())).Trim('\n').TrimEnd();
     }
 
-    /// <summary>Turns a cref such as "M:Bit.Bmage.Pipeline.ImagePipeline.Cover(...)" into "ImagePipeline.Cover".</summary>
+    /// <summary>Turns a cref such as "M:Bit.Bmage.ImagePipeline.Cover(...)" into "ImagePipeline.Cover".</summary>
     private static string Reference(XElement element)
     {
         var target = element.Attribute("cref")?.Value ?? element.Attribute("langword")?.Value ?? element.Value;

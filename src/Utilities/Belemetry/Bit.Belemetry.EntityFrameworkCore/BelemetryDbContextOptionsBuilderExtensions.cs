@@ -1,6 +1,6 @@
-﻿using Bit.Belemetry.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
-namespace Microsoft.EntityFrameworkCore;
+namespace Bit.Belemetry;
 
 /// <summary>Registration of the Belemetry Entity Framework Core instrumentation.</summary>
 public static class BelemetryDbContextOptionsBuilderExtensions

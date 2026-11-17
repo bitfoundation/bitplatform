@@ -86,11 +86,11 @@ The storage backends, each in its own namespace and each registered with `AddSto
 
 | Backend | Provider (namespace) | Role |
 | --- | --- | --- |
-| `opfs` | `BsqliteOpfsStorageProvider` (`Bit.Bsqlite.Storage.Opfs`) | Persistent, synchronous engine build (the smallest download), several connections |
-| `indexeddb` | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite.Storage.IndexedDb`) | Persistent, JSPI or Asyncify engine build, widest reach |
-| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Persistent, JSPI or Asyncify engine build, pages in the Cache API |
-| `in-memory` | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite.Storage.InMemory`) | Volatile: tests, demos, and a declared last resort |
-| `file-system` | `BsqliteFileSystemStorageProvider` (`Bit.Bsqlite.Storage.FileSystem`) | Blazor Hybrid: plain SQLite files in the app's own folder, registered and selected automatically |
+| `opfs` | `BsqliteOpfsStorageProvider` (`Bit.Bsqlite`) | Persistent, synchronous engine build (the smallest download), several connections |
+| `indexeddb` | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite`) | Persistent, JSPI or Asyncify engine build, widest reach |
+| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite`) | Persistent, JSPI or Asyncify engine build, pages in the Cache API |
+| `in-memory` | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite`) | Volatile: tests, demos, and a declared last resort |
+| `file-system` | `BsqliteFileSystemStorageProvider` (`Bit.Bsqlite`) | Blazor Hybrid: plain SQLite files in the app's own folder, registered and selected automatically |
 
 ## Installation
 
@@ -104,9 +104,7 @@ Register the services in the project that runs on WebAssembly - and, in a Blazor
 in the server project too, so the prerender pass can resolve what the pages inject:
 
 ```csharp
-using Bit.Bsqlite.Storage.IndexedDb;
-using Bit.Bsqlite.Storage.InMemory;
-using Bit.Bsqlite.Storage.Opfs;
+using Bit.Bsqlite;
 
 builder.Services.AddBitBsqliteServices(sqlite => sqlite
     .AddStorageProvider<BsqliteOpfsStorageProvider>()

@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Blazor;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>
 /// Lists the people working on a document - a colour swatch and a name each, with "(you)" after the local

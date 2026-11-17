@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazeDb.Generators;
+﻿namespace Bit.BlazeDb;
 
 internal enum BlazeDbScalarKind
 {

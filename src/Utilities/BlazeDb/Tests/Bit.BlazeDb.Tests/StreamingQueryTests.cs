@@ -1,7 +1,4 @@
-﻿using Bit.BlazeDb;
-using Bit.BlazeDb.Querying;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 [TestClass]
 public class StreamingQueryTests

@@ -1,9 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Nodes;
-using Bit.Blex.Query;
 using Microsoft.AspNetCore.Components;
 
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>
 /// Hands the queries a prerender fetched to the interactive render through Blazor's

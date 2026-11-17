@@ -1,7 +1,6 @@
 ﻿using System.Buffers.Binary;
-using Bit.Bmage.Metadata;
 
-namespace Bit.Bmage.Codecs.WebP;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Managed WebP encoder. Lossy by default (VP8, with a losslessly compressed alpha channel when the image has

@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Storage;
-
-namespace Bit.Bsqlite.Interop;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// How a <see cref="BsqliteWorkerTransport"/> opens a database in the browser.

@@ -43,7 +43,7 @@ public class SwitchTests : BitBhTestContext
 }
 ```
 
-A `.razor` test file inherits the context, marks itself as a test class and keeps only an `@code` block (with `@using Microsoft.VisualStudio.TestTools.UnitTesting`, `Bunit`, `Bit.Bheadless` and `Bit.Bheadless.Testing` in `_Imports.razor`):
+A `.razor` test file inherits the context, marks itself as a test class and keeps only an `@code` block (with `@using Microsoft.VisualStudio.TestTools.UnitTesting`, `Bunit` and `Bit.Bheadless` in `_Imports.razor`):
 
 ```razor
 @* MenuTests.razor *@

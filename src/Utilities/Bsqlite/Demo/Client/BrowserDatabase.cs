@@ -1,9 +1,4 @@
 ﻿using Bit.Bsqlite.Demo.Data;
-using Bit.Bsqlite;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.EntityFrameworkCore;
-using Bit.Bsqlite.Interop;
-using Bit.Bsqlite.Storage;
 
 namespace Bit.Bsqlite.Demo.Client;
 

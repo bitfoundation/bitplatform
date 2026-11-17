@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Bit.Bmage.Codecs.Avif;
+namespace Bit.Bmage;
 
 /// <summary>
 /// The AV1 arithmetic decoder (spec section 8.2). The spec feeds the value one bit at a time; this keeps a 64-bit window

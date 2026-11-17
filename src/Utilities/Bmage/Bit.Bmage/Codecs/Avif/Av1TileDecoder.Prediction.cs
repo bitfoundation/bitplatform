@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.Avif;
+﻿namespace Bit.Bmage;
 
 // Prediction (spec 7.11): intra prediction with its edge filters, chroma from luma, palettes and intra block copy.
 internal sealed partial class Av1TileDecoder

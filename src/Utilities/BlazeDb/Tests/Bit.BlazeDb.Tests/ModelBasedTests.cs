@@ -1,7 +1,4 @@
-﻿using Bit.BlazeDb;
-using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 /// <summary>
 /// Randomized differential testing: long random sequences of writes, transactions, savepoints, bulk

@@ -2,8 +2,6 @@
 using System.Reflection;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Testing;
 using Bit.Bsqlite.Demo.Server.Dtos;
 
 namespace Bit.Bsqlite.Demo.Server.Services;

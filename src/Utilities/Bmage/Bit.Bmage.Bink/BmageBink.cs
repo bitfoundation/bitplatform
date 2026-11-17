@@ -1,12 +1,8 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using Bit.Bink;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Png;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Memory;
 
-namespace Bit.Bmage.Bink;
+namespace Bit.Bmage;
 
 /// <summary>A Bink drawing rendered to pixels, with what the managed rasteriser had to leave out.</summary>
 /// <param name="Image">The pixels. The caller owns them and disposes them.</param>

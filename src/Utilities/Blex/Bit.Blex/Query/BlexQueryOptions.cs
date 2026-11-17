@@ -1,4 +1,4 @@
-namespace Bit.Blex.Query;
+namespace Bit.Blex;
 
 /// <summary>Whether a query has data, has failed, or has neither yet.</summary>
 public enum BlexQueryStatus

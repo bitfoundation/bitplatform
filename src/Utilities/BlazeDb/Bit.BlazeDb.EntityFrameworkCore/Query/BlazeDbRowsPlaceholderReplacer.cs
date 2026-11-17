@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>Replaces the placeholder with a concrete queryable over the plan's rows.</summary>
 internal sealed class BlazeDbRowsPlaceholderReplacer : ExpressionVisitor

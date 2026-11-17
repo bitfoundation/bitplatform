@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Text.Json.Nodes;
 
-namespace Bit.Blex.Query;
+namespace Bit.Blex;
 
 /// <summary>A cached query as <see cref="BlexQueryClient.GetQueries"/> reports it, for inspection and diagnostics.</summary>
 /// <param name="Key">The query's key.</param>

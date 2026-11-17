@@ -1,8 +1,5 @@
 ﻿using System.Drawing;
 using Bit.Bink;
-using Bit.Bmage.Bink;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Layers;
 
 namespace Bit.Bmage.Tests.Integrations;
 

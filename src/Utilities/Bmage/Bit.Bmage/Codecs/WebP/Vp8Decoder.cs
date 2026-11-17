@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace Bit.Bmage.Codecs.WebP;
+namespace Bit.Bmage;
 
 /// <summary>A VP8 key frame's 8-bit Y, U and V planes, chroma at half resolution, padded to whole macroblocks.</summary>
 internal sealed class Vp8Frame

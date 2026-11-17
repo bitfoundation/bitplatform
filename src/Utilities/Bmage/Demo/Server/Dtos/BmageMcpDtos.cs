@@ -29,7 +29,7 @@ public record BmageApiTypeDto
 {
     public required string Name { get; init; }
 
-    /// <summary>The namespace to import, e.g. "Bit.Bmage.Pipeline".</summary>
+    /// <summary>The namespace to import, which is "Bit.Bmage" for every Bmage type.</summary>
     public required string Namespace { get; init; }
 
     /// <summary>The NuGet package that ships it: Bit.Bmage (the engine) or Bit.Bmage.Blazor (the browser integration and the editor components).</summary>

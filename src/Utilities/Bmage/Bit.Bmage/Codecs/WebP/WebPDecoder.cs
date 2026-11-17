@@ -1,11 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Runtime.InteropServices;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations.Transforms;
 
-namespace Bit.Bmage.Codecs.WebP;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Managed WebP decoder: lossy (VP8) with or without an alpha channel, lossless (VP8L), the extended format's metadata,
@@ -94,7 +90,7 @@ public sealed class WebPDecoder : IImageDecoder
                 image.Metadata = md;
                 if (options.AutoOrient && md.Orientation is not (Orientation.Normal or Orientation.Unspecified))
                 {
-                    var oriented = new OrientationOperation(md.Orientation).Apply(image, new Operations.OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
+                    var oriented = new OrientationOperation(md.Orientation).Apply(image, new OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
                     if (!ReferenceEquals(oriented, image)) image.Dispose();
                     image = oriented;
                     image.Metadata = md.WithOrientation(Orientation.Normal);

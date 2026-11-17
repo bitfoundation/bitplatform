@@ -1,9 +1,8 @@
 ﻿using System.Buffers;
 using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Drawing;
+namespace Bit.Bmage;
 
 /// <summary>How overlapping contours combine when filling a path.</summary>
 public enum FillRule

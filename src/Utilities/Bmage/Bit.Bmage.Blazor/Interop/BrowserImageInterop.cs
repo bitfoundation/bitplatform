@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 
-namespace Bit.Bmage.Interop;
+namespace Bit.Bmage;
 
 /// <summary>
 /// The JavaScript boundary in Bmage. Everything the browser does for it (format codecs, the editor's working proxy,

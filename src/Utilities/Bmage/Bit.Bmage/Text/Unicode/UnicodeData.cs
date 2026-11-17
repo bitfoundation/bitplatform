@@ -1,4 +1,4 @@
-namespace Bit.Bmage.Text.Unicode;
+namespace Bit.Bmage;
 
 /// <summary>Bidi_Class (UAX #9), in the order the generated table numbers it.</summary>
 internal enum BidiClass : byte

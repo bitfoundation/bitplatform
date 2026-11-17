@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Bit.Bmage.Analysis;
+namespace Bit.Bmage;
 
 /// <summary>Reads the colour of an image at a point: the eyedropper.</summary>
 public static class ColorSampler

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bit.BlazeDb.Generators;
+namespace Bit.BlazeDb;
 
 /// <summary>An index over a tuple of properties, declared at type level.</summary>
 internal sealed class BlazeDbCompoundIndexModel

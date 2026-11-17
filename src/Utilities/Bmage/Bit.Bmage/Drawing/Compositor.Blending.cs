@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace Bit.Bmage.Drawing;
+namespace Bit.Bmage;
 
 public static partial class Compositor
 {
@@ -23,7 +23,7 @@ public static partial class Compositor
                 return SourceOver(destination, source, alpha);
             case BlendMode.Copy:
                 // Replacing at partial strength moves the destination towards the source, transparency included.
-                return alpha >= 1f ? source : Masks.MaskedOperation.Mix(destination, source, (int)MathF.Round(Math.Clamp(alpha, 0f, 1f) * 255f));
+                return alpha >= 1f ? source : MaskedOperation.Mix(destination, source, (int)MathF.Round(Math.Clamp(alpha, 0f, 1f) * 255f));
             case BlendMode.Erase:
                 return Erase(destination, source.A / 255f * alpha);
         }

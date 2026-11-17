@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Bit.Bmage.Operations;
+namespace Bit.Bmage;
 
 /// <summary>Which colour channels a per-channel operation affects.</summary>
 [Flags]

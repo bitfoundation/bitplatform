@@ -1,6 +1,6 @@
 ﻿using System.Buffers;
 
-namespace Bit.Bmage.Memory;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Supplies backing memory for <see cref="ImageBuffer"/> instances. Implementations may pool memory.

@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Bit.Bmage.Operations.Adjustments;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Builds each output channel from a weighted mix of the input channels, as the channel mixer of photo editors does: swap

@@ -3,7 +3,7 @@ using System.Text.Json;
 using Bit.Bcrdt.Integrations;
 using Bit.Blow;
 
-namespace Bit.Bcrdt.Blow;
+namespace Bit.Bcrdt;
 
 /// <summary>
 /// Keeps a Blow graph - the node and edge lists a <c>BlowCanvas</c> edits - and a collaborative map in step, in both

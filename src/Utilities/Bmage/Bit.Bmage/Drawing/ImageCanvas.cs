@@ -1,12 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
 
-namespace Bit.Bmage.Drawing;
+namespace Bit.Bmage;
 
 /// <summary>How a drawing operation, or a layer, combines with what is already on the canvas.</summary>
 /// <remarks>
@@ -556,7 +551,7 @@ public sealed class ImageCanvas : IDisposable
     }
 
     /// <summary>Runs a pipeline over the canvas contents, replacing them with the result.</summary>
-    public ImageCanvas ApplyPipeline(Pipeline.ImagePipeline pipeline, Pipeline.PipelineExecutionOptions? options = null)
+    public ImageCanvas ApplyPipeline(ImagePipeline pipeline, PipelineExecutionOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(pipeline);
         var result = pipeline.Execute(_buffer, options);

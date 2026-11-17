@@ -1,8 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
-using Bit.Bmage.Codecs;
 
-namespace Bit.Bmage.Metadata;
+namespace Bit.Bmage;
 
 /// <summary>Reads and writes metadata segments (EXIF, ICC, XMP) in JPEG files without touching image data.</summary>
 public static class JpegContainer
@@ -40,7 +39,7 @@ public static class JpegContainer
     /// Reads only the EXIF orientation from a JPEG, stopping at the first SOS marker. Nothing is copied out, so it costs
     /// far less than <see cref="ReadMetadata"/>, which copies the EXIF values, the ICC profile and the XMP.
     /// </summary>
-    public static Geometry.Orientation ReadOrientation(ReadOnlySpan<byte> jpeg)
+    public static Orientation ReadOrientation(ReadOnlySpan<byte> jpeg)
     {
         foreach (var seg in EnumerateSegments(jpeg))
         {
@@ -48,9 +47,9 @@ public static class JpegContainer
             var payload = jpeg.Slice(seg.PayloadOffset, seg.PayloadLength);
             // The first EXIF segment is the one ReadMetadata keeps.
             if (seg.Marker == 0xE1 && payload.StartsWith(ExifHeader))
-                return ExifReader.ReadPrimaryNumber(payload[6..], ExifTag.Orientation) is uint v and >= 1 and <= 8 ? (Geometry.Orientation)v : Geometry.Orientation.Normal;
+                return ExifReader.ReadPrimaryNumber(payload[6..], ExifTag.Orientation) is uint v and >= 1 and <= 8 ? (Orientation)v : Orientation.Normal;
         }
-        return Geometry.Orientation.Normal;
+        return Orientation.Normal;
     }
 
     /// <summary>

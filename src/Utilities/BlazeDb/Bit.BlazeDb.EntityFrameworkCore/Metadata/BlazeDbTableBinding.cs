@@ -1,9 +1,6 @@
-﻿using Bit.BlazeDb.EntityFrameworkCore.Query;
-using Bit.BlazeDb.EntityFrameworkCore.Storage;
-using Bit.BlazeDb.Querying;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Metadata;
+namespace Bit.BlazeDb;
 
 internal sealed class BlazeDbTableBinding<TKey, TRow> : IBlazeDbTableBinding
     where TKey : notnull

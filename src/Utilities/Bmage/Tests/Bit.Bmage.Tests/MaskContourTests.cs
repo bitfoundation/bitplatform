@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Masks;
 
 namespace Bit.Bmage.Tests;
 

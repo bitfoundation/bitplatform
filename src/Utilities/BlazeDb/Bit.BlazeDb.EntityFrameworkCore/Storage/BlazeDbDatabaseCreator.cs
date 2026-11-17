@@ -1,11 +1,8 @@
-﻿using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
-using Bit.BlazeDb.EntityFrameworkCore.Metadata;
-using Bit.BlazeDb.Storage;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Storage;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Opens the engine from the context model (EnsureCreated) and drops the shared store

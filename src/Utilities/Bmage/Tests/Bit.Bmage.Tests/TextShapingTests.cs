@@ -1,7 +1,4 @@
 using System.Numerics;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Text;
-using Bit.Bmage.Text.Unicode;
 
 namespace Bit.Bmage.Tests;
 

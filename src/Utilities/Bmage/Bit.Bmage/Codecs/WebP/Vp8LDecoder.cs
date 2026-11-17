@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Bit.Bmage.Codecs.WebP;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Decoder for the WebP lossless bitstream (RFC 9649 section 3): prefix-coded ARGB with LZ77 back references, a colour
@@ -239,7 +239,7 @@ internal sealed class Vp8LDecoder
         return new PrefixGroup(green, red, blue, alpha, distance);
     }
 
-    private HuffmanTable ReadPrefixCode(int alphabetSize)
+    private Vp8LHuffmanTable ReadPrefixCode(int alphabetSize)
     {
         var lengths = new byte[alphabetSize];
         if (_br.ReadBits(1) != 0)
@@ -261,7 +261,7 @@ internal sealed class Vp8LDecoder
             Span<byte> codeLengthLengths = stackalloc byte[CodeLengthCodes];
             var numCodes = (int)_br.ReadBits(4) + 4;
             for (var i = 0; i < numCodes; i++) codeLengthLengths[CodeLengthCodeOrder[i]] = (byte)_br.ReadBits(3);
-            var lengthCode = HuffmanTable.Build(codeLengthLengths, rootBits: 7)
+            var lengthCode = Vp8LHuffmanTable.Build(codeLengthLengths, rootBits: 7)
                 ?? throw new ImageDecodeException("Invalid WebP lossless code length code.");
 
             var maxSymbol = alphabetSize;
@@ -293,7 +293,7 @@ internal sealed class Vp8LDecoder
             }
             if (_br.IsOverrun) throw new ImageDecodeException("Truncated WebP lossless data.");
         }
-        return HuffmanTable.Build(lengths, rootBits: 8) ?? throw new ImageDecodeException("Invalid WebP lossless prefix code.");
+        return Vp8LHuffmanTable.Build(lengths, rootBits: 8) ?? throw new ImageDecodeException("Invalid WebP lossless prefix code.");
     }
 
     private int ReadPrefixedValue(int prefix)
@@ -495,7 +495,7 @@ internal sealed class Vp8LDecoder
 
     private sealed class PrefixGroup
     {
-        public PrefixGroup(HuffmanTable green, HuffmanTable red, HuffmanTable blue, HuffmanTable alpha, HuffmanTable distance)
+        public PrefixGroup(Vp8LHuffmanTable green, Vp8LHuffmanTable red, Vp8LHuffmanTable blue, Vp8LHuffmanTable alpha, Vp8LHuffmanTable distance)
         {
             Green = green; Red = red; Blue = blue; Alpha = alpha; Distance = distance;
             // When red, blue and alpha each have a single symbol they cost no bits, so a literal is its green value
@@ -507,11 +507,11 @@ internal sealed class Vp8LDecoder
             }
         }
 
-        public HuffmanTable Green { get; }
-        public HuffmanTable Red { get; }
-        public HuffmanTable Blue { get; }
-        public HuffmanTable Alpha { get; }
-        public HuffmanTable Distance { get; }
+        public Vp8LHuffmanTable Green { get; }
+        public Vp8LHuffmanTable Red { get; }
+        public Vp8LHuffmanTable Blue { get; }
+        public Vp8LHuffmanTable Alpha { get; }
+        public Vp8LHuffmanTable Distance { get; }
         public bool IsTrivialLiteral { get; }
         public uint LiteralArb { get; }
     }
@@ -585,7 +585,7 @@ internal sealed class Vp8LBitReader
 /// A canonical prefix code with a two level lookup table: codes up to the root length resolve in one lookup, longer
 /// ones through a second table per root prefix. Bits are read least significant first, so codes are stored reversed.
 /// </summary>
-internal sealed class HuffmanTable
+internal sealed class Vp8LHuffmanTable
 {
     private const int MaxLength = 15;
 
@@ -594,7 +594,7 @@ internal sealed class HuffmanTable
     private readonly int[] _entries;
     private readonly int _rootBits;
 
-    private HuffmanTable(int[] entries, int rootBits, int singleSymbol)
+    private Vp8LHuffmanTable(int[] entries, int rootBits, int singleSymbol)
     {
         _entries = entries;
         _rootBits = rootBits;
@@ -605,7 +605,7 @@ internal sealed class HuffmanTable
     public int SingleSymbol { get; }
 
     /// <summary>Builds the table, or returns null when the lengths do not form a complete prefix code.</summary>
-    public static HuffmanTable? Build(ReadOnlySpan<byte> lengths, int rootBits)
+    public static Vp8LHuffmanTable? Build(ReadOnlySpan<byte> lengths, int rootBits)
     {
         Span<int> count = stackalloc int[MaxLength + 1];
         var symbols = 0;
@@ -618,7 +618,7 @@ internal sealed class HuffmanTable
             last = s;
         }
         if (symbols == 0) return null;
-        if (symbols == 1) return new HuffmanTable([last << 4], 0, last);
+        if (symbols == 1) return new Vp8LHuffmanTable([last << 4], 0, last);
 
         // A complete code fills the code space exactly.
         var space = 0;
@@ -679,7 +679,7 @@ internal sealed class HuffmanTable
                 for (var i = rest; i < 1 << width; i += 1 << subLen) entries[offsets[root] + i] = (s << 4) | subLen;
             }
         }
-        return new HuffmanTable(entries, rootBits, -1);
+        return new Vp8LHuffmanTable(entries, rootBits, -1);
     }
 
     private static int Reverse(int code, int length)

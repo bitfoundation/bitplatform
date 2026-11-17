@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Pulls table names out of SQL so a live query can re-run when any of them change.

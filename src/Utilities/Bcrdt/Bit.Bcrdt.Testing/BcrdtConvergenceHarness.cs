@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 
-namespace Bit.Bcrdt.Testing;
+namespace Bit.Bcrdt;
 
 /// <summary>Raised when replicas that should have converged did not.</summary>
 public sealed class BcrdtConvergenceException(string message) : Exception(message);

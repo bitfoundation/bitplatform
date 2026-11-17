@@ -1,6 +1,4 @@
-﻿using Bit.Bmage.Memory;
-
-namespace Bit.Bmage;
+﻿namespace Bit.Bmage;
 
 /// <summary>Options for the Bmage services.</summary>
 public sealed class BitBmageOptions
@@ -22,7 +20,7 @@ public sealed class BitBmageOptions
 
     /// <summary>
     /// The most threads one operation may spread its rows over, for the processors, loaders and editors these services
-    /// create. Null uses <see cref="Operations.OperationContext.DefaultMaxDegreeOfParallelism"/>, one: a server already
+    /// create. Null uses <see cref="OperationContext.DefaultMaxDegreeOfParallelism"/>, one: a server already
     /// spends its cores on concurrent requests and circuits. Set it to <see cref="Environment.ProcessorCount"/> where one
     /// image at a time should use every core, such as a desktop app, a background job or a WebAssembly app built with
     /// <c>WasmEnableThreads</c>. Pixels are identical whatever the value.

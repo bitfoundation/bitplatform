@@ -1,14 +1,8 @@
 ﻿using System.Collections.Immutable;
 using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Pipeline;
 
-namespace Bit.Bmage.Editing;
+namespace Bit.Bmage;
 
 /// <summary>
 /// The complete, non-destructive description of an edit: the pipeline applied to the pixels plus the annotation overlay.

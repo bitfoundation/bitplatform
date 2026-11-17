@@ -1,9 +1,6 @@
 ﻿using Bit.BbScanner;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
-namespace Bit.Bmage.BbScanner;
+namespace Bit.Bmage;
 
 /// <summary>A way <see cref="BmageBarcodes.Read"/> prepares an image before decoding it again.</summary>
 public enum BarcodePreprocessing

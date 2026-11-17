@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Bit.Bmage.Geometry;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Area predicates for <see cref="Rectangle"/>.

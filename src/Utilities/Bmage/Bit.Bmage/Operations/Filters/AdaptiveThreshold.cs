@@ -1,7 +1,7 @@
 ﻿using System.Buffers;
 using System.Drawing;
 
-namespace Bit.Bmage.Operations.Filters;
+namespace Bit.Bmage;
 
 /// <summary>How <see cref="AdaptiveThresholdFilter"/> sets the level each pixel is compared with.</summary>
 public enum AdaptiveThresholdMethod

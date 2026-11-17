@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Storage;
+namespace Bit.BlazeDb;
 
 /// <summary>Model conventions, minus every relational one.</summary>
 internal sealed class BlazeDbConventionSetBuilder : ProviderConventionSetBuilder

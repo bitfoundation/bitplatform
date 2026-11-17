@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace Bit.Bcrdt.Server;
+namespace Bit.Bcrdt;
 
 /// <summary>A connection a relay carries, as <see cref="BcrdtRelayConnections"/> lists it.</summary>
 /// <remarks>A snapshot: it holds nothing of the document, and does not change when the connection does.</remarks>

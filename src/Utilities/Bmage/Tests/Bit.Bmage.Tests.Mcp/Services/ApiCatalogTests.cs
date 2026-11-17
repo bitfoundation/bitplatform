@@ -17,17 +17,17 @@ public class ApiCatalogTests
 
         foreach (var (name, package, ns) in new[]
         {
-            ("ImagePipeline", "Bit.Bmage", "Bit.Bmage.Pipeline"),
+            ("ImagePipeline", "Bit.Bmage", "Bit.Bmage"),
             ("ImageBuffer", "Bit.Bmage", "Bit.Bmage"),
-            ("ImageExportOptions", "Bit.Bmage", "Bit.Bmage.Codecs"),
-            ("RedactionAnnotation", "Bit.Bmage", "Bit.Bmage.Annotations"),
-            ("ImageSource", "Bit.Bmage.Blazor", "Bit.Bmage.Input"),
-            ("ImageLoader", "Bit.Bmage.Blazor", "Bit.Bmage.Input"),
-            ("ImageExporter", "Bit.Bmage.Blazor", "Bit.Bmage.Output"),
+            ("ImageExportOptions", "Bit.Bmage", "Bit.Bmage"),
+            ("RedactionAnnotation", "Bit.Bmage", "Bit.Bmage"),
+            ("ImageSource", "Bit.Bmage.Blazor", "Bit.Bmage"),
+            ("ImageLoader", "Bit.Bmage.Blazor", "Bit.Bmage"),
+            ("ImageExporter", "Bit.Bmage.Blazor", "Bit.Bmage"),
             ("BitBmage", "Bit.Bmage", "Bit.Bmage"),
             ("BitBmageBlazor", "Bit.Bmage.Blazor", "Bit.Bmage"),
-            ("BmageEditor", "Bit.Bmage.Blazor", "Bit.Bmage.Editor.Components"),
-            ("BmageEditorStrings", "Bit.Bmage.Blazor", "Bit.Bmage.Editor.Localization"),
+            ("BmageEditor", "Bit.Bmage.Blazor", "Bit.Bmage"),
+            ("BmageEditorStrings", "Bit.Bmage.Blazor", "Bit.Bmage"),
         })
         {
             var type = BmageApiCatalog.Types.SingleOrDefault(entry => entry.Name == name);
@@ -151,7 +151,7 @@ public class ApiCatalogTests
     [TestMethod]
     public void Lookup_ByFullNameMemberAndCaseInsensitively()
     {
-        Assert.AreEqual("ImageExporter", BmageApiCatalog.GetTypeDetails("Bit.Bmage.Output.ImageExporter")?.Name);
+        Assert.AreEqual("ImageExporter", BmageApiCatalog.GetTypeDetails("Bit.Bmage.ImageExporter")?.Name);
         Assert.AreEqual("ImageExporter", BmageApiCatalog.GetTypeDetails("imageexporter")?.Name);
         Assert.IsNull(BmageApiCatalog.GetTypeDetails("Teleporter"));
 

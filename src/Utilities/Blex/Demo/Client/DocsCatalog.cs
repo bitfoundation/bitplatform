@@ -104,7 +104,7 @@ public static class DocsCatalog
                 "A complete, reactive, time-travelable counter in three files and about twenty lines.",
                 "quick start counter first store tutorial Subscribe BlexComponentBase",
                 typeof(Pages.QuickStart)),
-            // Pages. here too: Bit.Blex.Maui is a namespace as well.
+            // Pages. here too, to match the other entries.
             new("/maui", ".NET MAUI",
                 "Blazor Hybrid and native XAML apps: UseBitBlex, singleton registrations, binding XAML to stores, Preferences persistence, queries and the UI thread.",
                 "maui xaml blazor hybrid BlazorWebView native mobile android ios windows mac catalyst UseBitBlex AddBitBlexPreferencesPersistence Preferences BlexPreferencesStorage INotifyPropertyChanged PropertyChanged binding singleton ValidateScopes IMauiInitializeService AddBitBlexMauiInitializer Connectivity IBlexDispatcher",
@@ -193,7 +193,7 @@ public static class DocsCatalog
         [
             new("/api", "API reference",
                 "Every public type Blex ships, grouped by assembly and namespace, with the page that explains it.",
-                "api reference types members namespace Bit.Blex.Blazor Bit.Blex.Testing reserved json",
+                "api reference types members namespace Bit.Blex Bit.Blex.Maui Bit.Blex.Testing reserved json",
                 typeof(Pages.ApiReference)),
             new("/mcp", "MCP server",
                 "The Model Context Protocol server this site hosts, so an AI agent works against Blex's real API, docs and generator.",

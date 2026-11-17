@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.Avif;
+﻿namespace Bit.Bmage;
 
 /// <summary>
 /// Decodes the tiles of an intra frame: the block syntax of spec section 5.11 with the CDF selection of 8.3, followed by

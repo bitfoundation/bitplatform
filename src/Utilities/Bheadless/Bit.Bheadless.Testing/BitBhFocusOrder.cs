@@ -1,6 +1,6 @@
 ﻿using AngleSharp.Dom;
 
-namespace Bit.Bheadless.Testing;
+namespace Bit.Bheadless;
 
 /// <summary>One stop of the sequential (Tab) focus order.</summary>
 /// <param name="Element">The focusable element.</param>

@@ -1,6 +1,4 @@
-﻿using Bit.Bmage.Codecs.Png;
-
-namespace Bit.Bmage.Tests.E2E.Infrastructure;
+﻿namespace Bit.Bmage.Tests.E2E.Infrastructure;
 
 /// <summary>The upload every test uses: a deterministic gradient PNG, built with this library's own encoder.</summary>
 public static class SampleImage

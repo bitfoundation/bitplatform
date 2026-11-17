@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Bit.Blex.Query;
+namespace Bit.Blex;
 
 /// <summary>
 /// An observer of one cached query: what a component reads -- the status, the error, whether a fetch is

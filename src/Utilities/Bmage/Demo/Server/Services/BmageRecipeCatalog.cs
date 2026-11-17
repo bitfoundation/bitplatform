@@ -338,12 +338,7 @@ public static class BmageRecipeCatalog
             Code = """
                 using System.Drawing;
                 using System.Numerics;
-                using Bit.Bmage.Annotations;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Drawing;
-                using Bit.Bmage.Editing;
-                using Bit.Bmage.Metadata;
-                using Bit.Bmage.Pipeline;
+                using Bit.Bmage;
 
                 public static async Task<EncodedImage> RedactAsync(ImageProcessor processor, byte[] bytes, RectangleF secret)
                 {
@@ -567,8 +562,6 @@ public static class BmageRecipeCatalog
             SeeAlso = "/hosting",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Pipeline;
 
                 var builder = WebApplication.CreateBuilder(args);
 
@@ -625,8 +618,6 @@ public static class BmageRecipeCatalog
             RunsIn = "Server",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Pipeline;
 
                 var processor = new ImageProcessor();   // the managed codecs, no DI needed
                 Directory.CreateDirectory("out");
@@ -926,8 +917,6 @@ public static class BmageRecipeCatalog
             Code = """
                 using System.Numerics;
                 using Bit.Bmage;
-                using Bit.Bmage.Masks;
-                using Bit.Bmage.Pipeline;
 
                 // Relative units (fractions of the image) make one pipeline fit uploads of any size.
                 var sky = Mask.Gradient(new Vector2(0, 0), new Vector2(0, 0.55f));
@@ -964,14 +953,9 @@ public static class BmageRecipeCatalog
                 using System.Drawing;
                 using System.Numerics;
                 using Bit.Bmage;
-                using Bit.Bmage.Drawing;
-                using Bit.Bmage.Editing;
-                using Bit.Bmage.Layers;
-                using Bit.Bmage.Masks;
-                using Bit.Bmage.Pipeline;
 
                 var document = ImageDocument.Create(photo)
-                    .AddOperation(new Bit.Bmage.Operations.Transforms.ResizeOperation(1920, 1920, Bit.Bmage.Geometry.ResizeMode.Max))
+                    .AddOperation(new Bit.Bmage.ResizeOperation(1920, 1920, Bit.Bmage.ResizeMode.Max))
                     // Layer coordinates are those of the pipeline's output.
                     .AddLayer(new ImageLayer
                     {
@@ -1008,10 +992,6 @@ public static class BmageRecipeCatalog
             SeeAlso = "/layers-and-masks",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Editing;
-                using Bit.Bmage.Pipeline;
-                using Bit.Bmage.Serialization;
 
                 // Browser: the edit is a few kilobytes, whatever the photo's size.
                 var json = BmageJson.Serialize(editor.Document!, new BmageJsonOptions
@@ -1046,8 +1026,6 @@ public static class BmageRecipeCatalog
             SeeAlso = "/batch",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Pipeline;
 
                 var processor = new ImageProcessor();
                 var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(1600, 1600).Sharpen(0.3f);
@@ -1085,9 +1063,6 @@ public static class BmageRecipeCatalog
             SeeAlso = "/retouch",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Analysis;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Pipeline;
 
                 var processor = new ImageProcessor();
                 using var photo = await processor.DecodeAsync(uploadBytes);
@@ -1123,9 +1098,6 @@ public static class BmageRecipeCatalog
             Code = """
                 using System.Drawing;
                 using Bit.Bmage;
-                using Bit.Bmage.Analysis;
-                using Bit.Bmage.Operations.Adjustments;
-                using Bit.Bmage.Pipeline;
 
                 using var photo = await processor.DecodeAsync(uploadBytes);
 
@@ -1156,8 +1128,6 @@ public static class BmageRecipeCatalog
             SeeAlso = "/retouch",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Editing;
-                using Bit.Bmage.Serialization;
 
                 // Save: the original, the document and the images its layers, masks and annotations use, in one ZIP.
                 await using (var file = File.Create("holiday" + BmageProject.FileExtension))
@@ -1187,8 +1157,6 @@ public static class BmageRecipeCatalog
             SeeAlso = "/scan",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Analysis;
-                using Bit.Bmage.Pipeline;
 
                 using var photo = await processor.DecodeAsync(bytes);
 
@@ -1226,8 +1194,6 @@ public static class BmageRecipeCatalog
             SeeAlso = "/formats",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Codecs.Ico;
 
                 // At most 64 colours: exact for a logo with fewer, often a third of the full-colour PNG's size.
                 var logo = await processor.EncodeAsync(image, new ImageExportOptions

@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Numerics;
 
-namespace Bit.Bmage.Operations.Filters;
+namespace Bit.Bmage;
 
 /// <summary>Which way <see cref="RadialBlurFilter"/> streaks the image.</summary>
 public enum RadialBlurMode
@@ -37,7 +37,7 @@ public enum RadialBlurMode
 /// The centre is a fraction of the image's width and height and the streak a fraction of the distance, so the
 /// operation is the same at any resolution and replays on a proxy as it will on the original. It takes two working
 /// copies of the image at 16 bits a channel while it runs, four times the image's own size, which
-/// <see cref="Pipeline.ImagePipeline.EstimateMemory"/> counts; a large image is best blurred at the size it will be shown.
+/// <see cref="ImagePipeline.EstimateMemory"/> counts; a large image is best blurred at the size it will be shown.
 /// </para>
 /// </remarks>
 public sealed class RadialBlurFilter : RegionOperation

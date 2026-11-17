@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Server;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>
 /// What both relays - <see cref="BcrdtHub"/> and the WebSocket endpoint - refuse a join over, and the reason each

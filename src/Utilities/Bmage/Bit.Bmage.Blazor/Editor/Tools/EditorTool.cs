@@ -1,10 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Editing;
 
-namespace Bit.Bmage.Editor.Tools;
+namespace Bit.Bmage;
 
 /// <summary>Which tool is currently active in the editor.</summary>
 public enum EditorToolKind

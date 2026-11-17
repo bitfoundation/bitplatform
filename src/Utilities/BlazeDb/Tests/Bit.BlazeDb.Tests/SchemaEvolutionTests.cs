@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 /// <summary>
 /// A database is opened with whatever tables the current code registers, which need not be every

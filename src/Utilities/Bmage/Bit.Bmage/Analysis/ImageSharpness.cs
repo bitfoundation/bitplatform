@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Bit.Bmage.Analysis;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Measures how much fine detail an image holds, to turn away a blurred or shaken photo at upload, pick the sharpest

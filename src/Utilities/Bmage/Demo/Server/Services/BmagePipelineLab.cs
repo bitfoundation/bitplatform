@@ -2,12 +2,6 @@
 using System.Numerics;
 using System.Diagnostics;
 using System.Globalization;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Pipeline;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
 using Bit.Bmage.Demo.Server.Dtos;
 using Bit.Bmage.Demo.Client.Shared;
 

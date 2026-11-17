@@ -2,7 +2,6 @@
 using System.Text;
 using System.Reflection;
 using Bit.Blex.Demo.Client;
-using Bit.Blex.Generators;
 using Microsoft.CodeAnalysis;
 using System.Text.RegularExpressions;
 

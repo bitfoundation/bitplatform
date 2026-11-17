@@ -1,6 +1,4 @@
 ﻿using System.Runtime.Versioning;
-using Bit.BlazeDb.Browser;
-using Bit.BlazeDb.Storage;
 
 namespace Bit.BlazeDb.Samples.Core.Data;
 

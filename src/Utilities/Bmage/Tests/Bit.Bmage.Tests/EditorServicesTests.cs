@@ -1,6 +1,4 @@
 ﻿using System.Text.Json;
-using Bit.Bmage.Input;
-using Bit.Bmage.Interop;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
@@ -50,7 +48,7 @@ public sealed class EditorServicesTests
         Assert.AreNotSame(app, services);
         Assert.AreSame(app.GetRequiredService<BitBmageOptions>(), services.GetRequiredService<BitBmageOptions>());
         Assert.AreEqual(1234, services.GetRequiredService<ImageLoader>().MaxSourceBytes);
-        Assert.IsInstanceOfType<Capabilities.BrowserCapabilityProvider>(services.GetRequiredService<Capabilities.IImageCapabilityProvider>());
+        Assert.IsInstanceOfType<BrowserCapabilityProvider>(services.GetRequiredService<IImageCapabilityProvider>());
     }
 
     [TestMethod]
@@ -59,39 +57,39 @@ public sealed class EditorServicesTests
         var limits = ImageLimits.Default with { MaxPixels = 2_000_000 };
         await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new NoJSRuntime()).AddBitBmageServices(o => o.Limits = limits).BuildServiceProvider();
 
-        Assert.AreSame(limits, app.GetRequiredService<Text.BrowserTextRasterizer>().Limits);
+        Assert.AreSame(limits, app.GetRequiredService<BrowserTextRasterizer>().Limits);
     }
 
     [TestMethod]
     public async Task OverAServerCircuitTheServersCodecsHandleEveryFormatTheyCan()
     {
         var all = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.Gif, ImageFormat.WebP, ImageFormat.Avif };
-        foreach (var environment in new[] { Capabilities.ImageEnvironment.BrowserServer, Capabilities.ImageEnvironment.BrowserWebAssembly })
+        foreach (var environment in new[] { ImageEnvironment.BrowserServer, ImageEnvironment.BrowserWebAssembly })
         {
-            var capabilities = new Capabilities.ImageCapabilities { Environment = environment, DecodableFormats = all, EncodableFormats = all };
+            var capabilities = new ImageCapabilities { Environment = environment, DecodableFormats = all, EncodableFormats = all };
             await using var interop = new BrowserImageInterop(new NoJSRuntime());
             var processor = await new ImageProcessorFactory(interop, new FixedCapabilities(capabilities)).GetAsync();
             var codecs = processor.Codecs;
 
-            if (environment == Capabilities.ImageEnvironment.BrowserServer)
+            if (environment == ImageEnvironment.BrowserServer)
             {
                 // Pixels a browser codec touches would cross the circuit; the managed decoder goes first and the browser
                 // only gets the files it rejects.
-                Assert.IsInstanceOfType<Codecs.FallbackImageDecoder>(codecs.GetDecoder(ImageFormat.Jpeg));
-                Assert.IsInstanceOfType<Codecs.Png.PngEncoder>(codecs.GetEncoder(ImageFormat.Png));
-                Assert.IsInstanceOfType<Codecs.Jpeg.JpegEncoder>(codecs.GetEncoder(ImageFormat.Jpeg));
-                Assert.IsInstanceOfType<Codecs.FallbackImageDecoder>(codecs.GetDecoder(ImageFormat.WebP));
-                Assert.IsInstanceOfType<Codecs.WebP.WebPEncoder>(codecs.GetEncoder(ImageFormat.WebP));
-                Assert.IsInstanceOfType<Codecs.FallbackImageDecoder>(codecs.GetDecoder(ImageFormat.Avif));
+                Assert.IsInstanceOfType<FallbackImageDecoder>(codecs.GetDecoder(ImageFormat.Jpeg));
+                Assert.IsInstanceOfType<PngEncoder>(codecs.GetEncoder(ImageFormat.Png));
+                Assert.IsInstanceOfType<JpegEncoder>(codecs.GetEncoder(ImageFormat.Jpeg));
+                Assert.IsInstanceOfType<FallbackImageDecoder>(codecs.GetDecoder(ImageFormat.WebP));
+                Assert.IsInstanceOfType<WebPEncoder>(codecs.GetEncoder(ImageFormat.WebP));
+                Assert.IsInstanceOfType<FallbackImageDecoder>(codecs.GetDecoder(ImageFormat.Avif));
                 // Only a browser writes this one.
-                Assert.IsInstanceOfType<Codecs.Browser.BrowserImageEncoder>(codecs.GetEncoder(ImageFormat.Avif));
+                Assert.IsInstanceOfType<BrowserImageEncoder>(codecs.GetEncoder(ImageFormat.Avif));
             }
             else
             {
-                Assert.IsInstanceOfType<Codecs.Browser.BrowserImageDecoder>(codecs.GetDecoder(ImageFormat.Jpeg));
-                Assert.IsInstanceOfType<Codecs.Browser.BrowserImageEncoder>(codecs.GetEncoder(ImageFormat.Jpeg));
-                Assert.IsInstanceOfType<Codecs.Browser.BrowserImageDecoder>(codecs.GetDecoder(ImageFormat.WebP));
-                Assert.IsInstanceOfType<Codecs.Browser.BrowserImageEncoder>(codecs.GetEncoder(ImageFormat.WebP));
+                Assert.IsInstanceOfType<BrowserImageDecoder>(codecs.GetDecoder(ImageFormat.Jpeg));
+                Assert.IsInstanceOfType<BrowserImageEncoder>(codecs.GetEncoder(ImageFormat.Jpeg));
+                Assert.IsInstanceOfType<BrowserImageDecoder>(codecs.GetDecoder(ImageFormat.WebP));
+                Assert.IsInstanceOfType<BrowserImageEncoder>(codecs.GetEncoder(ImageFormat.WebP));
             }
         }
     }
@@ -103,10 +101,10 @@ public sealed class EditorServicesTests
         // managed encoder writes it when asked. In WebAssembly that encoder would hold the UI thread, so the capabilities,
         // built as BrowserCapabilityProvider builds them there, do not offer it, and a fallback choice takes JPEG.
         var probed = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP };
-        var capabilities = new Capabilities.ImageCapabilities
+        var capabilities = new ImageCapabilities
         {
-            Environment = Capabilities.ImageEnvironment.BrowserWebAssembly,
-            DecodableFormats = probed.Union(Capabilities.ImageCapabilities.ManagedDecodableFormats).ToHashSet(),
+            Environment = ImageEnvironment.BrowserWebAssembly,
+            DecodableFormats = probed.Union(ImageCapabilities.ManagedDecodableFormats).ToHashSet(),
             EncodableFormats = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp },
             NativeDecodableFormats = probed,
             NativeEncodableFormats = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg },
@@ -114,15 +112,15 @@ public sealed class EditorServicesTests
         await using var interop = new BrowserImageInterop(new NoJSRuntime());
         var codecs = (await new ImageProcessorFactory(interop, new FixedCapabilities(capabilities)).GetAsync()).Codecs;
 
-        Assert.IsInstanceOfType<Codecs.Browser.BrowserImageDecoder>(codecs.GetDecoder(ImageFormat.WebP));
-        Assert.IsInstanceOfType<Codecs.WebP.WebPEncoder>(codecs.GetEncoder(ImageFormat.WebP));
-        Assert.IsInstanceOfType<Codecs.Gif.GifDecoder>(codecs.GetDecoder(ImageFormat.Gif), "the browser never claimed GIF, so it stays managed");
-        Assert.IsInstanceOfType<Codecs.Avif.AvifDecoder>(codecs.GetDecoder(ImageFormat.Avif), "a browser without AVIF still reads it, through the managed decoder");
+        Assert.IsInstanceOfType<BrowserImageDecoder>(codecs.GetDecoder(ImageFormat.WebP));
+        Assert.IsInstanceOfType<WebPEncoder>(codecs.GetEncoder(ImageFormat.WebP));
+        Assert.IsInstanceOfType<GifDecoder>(codecs.GetDecoder(ImageFormat.Gif), "the browser never claimed GIF, so it stays managed");
+        Assert.IsInstanceOfType<AvifDecoder>(codecs.GetDecoder(ImageFormat.Avif), "a browser without AVIF still reads it, through the managed decoder");
         Assert.IsTrue(capabilities.CanDecode(ImageFormat.Avif));
         Assert.AreEqual(ImageFormat.Jpeg, capabilities.ChooseEncodableFormat([ImageFormat.WebP, ImageFormat.Jpeg]));
 
         // A provider that wraps another carries the browser's own formats over, now that they are public.
-        var wrapped = new Capabilities.ImageCapabilities
+        var wrapped = new ImageCapabilities
         {
             Environment = capabilities.Environment,
             DecodableFormats = capabilities.DecodableFormats,
@@ -131,8 +129,8 @@ public sealed class EditorServicesTests
             NativeEncodableFormats = capabilities.NativeEncodableFormats,
         };
         var wrappedCodecs = (await new ImageProcessorFactory(interop, new FixedCapabilities(wrapped)).GetAsync()).Codecs;
-        Assert.IsInstanceOfType<Codecs.Avif.AvifDecoder>(wrappedCodecs.GetDecoder(ImageFormat.Avif));
-        Assert.IsInstanceOfType<Codecs.WebP.WebPEncoder>(wrappedCodecs.GetEncoder(ImageFormat.WebP));
+        Assert.IsInstanceOfType<AvifDecoder>(wrappedCodecs.GetDecoder(ImageFormat.Avif));
+        Assert.IsInstanceOfType<WebPEncoder>(wrappedCodecs.GetEncoder(ImageFormat.WebP));
     }
 
     [TestMethod]
@@ -149,14 +147,14 @@ public sealed class EditorServicesTests
             """;
         var jsRuntime = new ProbedJSRuntime(report);
         await using var interop = new BrowserImageInterop(jsRuntime);
-        var capabilities = await new Capabilities.BrowserCapabilityProvider(interop, jsRuntime).GetAsync();
+        var capabilities = await new BrowserCapabilityProvider(interop, jsRuntime).GetAsync();
 
         CollectionAssert.AreEquivalent(
             new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Gif },
             capabilities.NativeDecodableFormats!.ToArray());
         CollectionAssert.AreEquivalent(new[] { ImageFormat.Png, ImageFormat.WebP }, capabilities.NativeEncodableFormats!.ToArray());
         // Off WebAssembly the managed codecs join the full sets, never the browser's own.
-        Assert.AreEqual(Capabilities.ImageEnvironment.BrowserServer, capabilities.Environment);
+        Assert.AreEqual(ImageEnvironment.BrowserServer, capabilities.Environment);
         Assert.IsTrue(capabilities.CanEncode(ImageFormat.Jpeg));
         Assert.IsTrue(capabilities.CanEncode(ImageFormat.Bmp));
     }
@@ -166,12 +164,12 @@ public sealed class EditorServicesTests
     {
         var managed = new FakeDecoder("managed");
         var browser = new FakeDecoder("browser");
-        var decoder = new Codecs.FallbackImageDecoder(ImageFormat.Jpeg, managed, browser, data => data.Length == 2);
+        var decoder = new FallbackImageDecoder(ImageFormat.Jpeg, managed, browser, data => data.Length == 2);
 
         async Task<string> DecodeWith(byte[] data, Exception? managedFails = null)
         {
             managed.Fails = managedFails;
-            using var image = await decoder.DecodeAsync(data, new Codecs.DecodeOptions(), Memory.PooledPixelAllocator.Shared);
+            using var image = await decoder.DecodeAsync(data, new DecodeOptions(), PooledPixelAllocator.Shared);
             return image.Metadata!.FileName!;
         }
 
@@ -184,25 +182,25 @@ public sealed class EditorServicesTests
         Assert.AreEqual(3, managed.Calls, "a file sent straight to the browser must not reach the managed decoder");
     }
 
-    private sealed class FakeDecoder(string name) : Codecs.IImageDecoder
+    private sealed class FakeDecoder(string name) : IImageDecoder
     {
         public Exception? Fails { get; set; }
         public int Calls { get; private set; }
         public IReadOnlyCollection<ImageFormat> Formats { get; } = [ImageFormat.Jpeg];
-        public Codecs.ImageInfo? Identify(ReadOnlySpan<byte> data) => null;
-        public ValueTask<ImageBuffer> DecodeAsync(ReadOnlyMemory<byte> data, Codecs.DecodeOptions options, Memory.IPixelAllocator allocator, CancellationToken cancellationToken = default)
+        public ImageInfo? Identify(ReadOnlySpan<byte> data) => null;
+        public ValueTask<ImageBuffer> DecodeAsync(ReadOnlyMemory<byte> data, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken = default)
         {
             Calls++;
             if (Fails is { } failure) throw failure;
             var image = ImageBuffer.Create(1, 1);
-            image.Metadata = new Metadata.ImageMetadata(fileName: name);
+            image.Metadata = new ImageMetadata(fileName: name);
             return ValueTask.FromResult(image);
         }
     }
 
-    private sealed class FixedCapabilities(Capabilities.ImageCapabilities capabilities) : Capabilities.IImageCapabilityProvider
+    private sealed class FixedCapabilities(ImageCapabilities capabilities) : IImageCapabilityProvider
     {
-        public ValueTask<Capabilities.ImageCapabilities> GetAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(capabilities);
+        public ValueTask<ImageCapabilities> GetAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(capabilities);
     }
 
     private sealed class NoJSRuntime : IJSRuntime

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Storage;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Value comparers for the sequence types a row can hold - <c>T[]</c> (<c>byte[]</c> among them),

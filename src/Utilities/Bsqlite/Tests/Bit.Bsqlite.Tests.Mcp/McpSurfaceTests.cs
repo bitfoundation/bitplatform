@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using Bit.Bsqlite.Data;
 using ModelContextProtocol.Client;
 using Bit.Bsqlite.Demo.Server.Services;
 

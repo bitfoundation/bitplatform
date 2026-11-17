@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Borm;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>How a <see cref="BcrdtBormBinding"/> lays a form out in its document, and what it shares.</summary>
 public sealed class BcrdtBormOptions

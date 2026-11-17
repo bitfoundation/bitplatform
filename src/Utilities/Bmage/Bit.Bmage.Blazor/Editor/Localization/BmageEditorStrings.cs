@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Editor.Localization;
+﻿namespace Bit.Bmage;
 
 /// <summary>
 /// Every piece of user-visible text in the editor. Replace the whole object, or individual properties, to translate the
@@ -251,8 +251,8 @@ public sealed record BmageEditorStrings
     public Func<double, double, string> FormatClipping { get; init; } = static (black, white) => $"{black * 100:0.#}% black, {white * 100:0.#}% white";
 
     /// <summary>
-    /// The name of an annotation's or a layer's kind - <see cref="Annotations.Annotation.Kind"/> or
-    /// <see cref="Layers.Layer.Kind"/>, such as "Rectangle" or "Paint" - wherever the panel or the history shows one.
+    /// The name of an annotation's or a layer's kind - <see cref="Annotation.Kind"/> or
+    /// <see cref="Layer.Kind"/>, such as "Rectangle" or "Paint" - wherever the panel or the history shows one.
     /// </summary>
     public Func<string, string> FormatKind { get; init; } = static kind => kind;
 
@@ -263,24 +263,24 @@ public sealed record BmageEditorStrings
     public Func<string, string> FormatEditLayer { get; init; } = static name => $"Edit {name.ToLowerInvariant()}";
 
     /// <summary>The name of a blend mode in the layer panel.</summary>
-    public Func<Drawing.BlendMode, string> FormatBlendMode { get; init; } = static mode => mode switch
+    public Func<BlendMode, string> FormatBlendMode { get; init; } = static mode => mode switch
     {
-        Drawing.BlendMode.SourceOver => "Normal",
-        Drawing.BlendMode.ColorDodge => "Colour dodge",
-        Drawing.BlendMode.ColorBurn => "Colour burn",
-        Drawing.BlendMode.HardLight => "Hard light",
-        Drawing.BlendMode.SoftLight => "Soft light",
-        Drawing.BlendMode.Color => "Colour",
+        global::Bit.Bmage.BlendMode.SourceOver => "Normal",
+        global::Bit.Bmage.BlendMode.ColorDodge => "Colour dodge",
+        global::Bit.Bmage.BlendMode.ColorBurn => "Colour burn",
+        global::Bit.Bmage.BlendMode.HardLight => "Hard light",
+        global::Bit.Bmage.BlendMode.SoftLight => "Soft light",
+        global::Bit.Bmage.BlendMode.Color => "Colour",
         _ => mode.ToString(),
     };
 
     /// <summary>The name of an anchor position in the canvas size controls.</summary>
-    public Func<Geometry.Anchor, string> FormatAnchor { get; init; } = static anchor => anchor switch
+    public Func<Anchor, string> FormatAnchor { get; init; } = static anchor => anchor switch
     {
-        Geometry.Anchor.TopLeft => "Top left",
-        Geometry.Anchor.TopRight => "Top right",
-        Geometry.Anchor.BottomLeft => "Bottom left",
-        Geometry.Anchor.BottomRight => "Bottom right",
+        global::Bit.Bmage.Anchor.TopLeft => "Top left",
+        global::Bit.Bmage.Anchor.TopRight => "Top right",
+        global::Bit.Bmage.Anchor.BottomLeft => "Bottom left",
+        global::Bit.Bmage.Anchor.BottomRight => "Bottom right",
         _ => anchor.ToString(),
     };
 }

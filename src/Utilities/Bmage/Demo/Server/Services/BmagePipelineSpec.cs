@@ -2,9 +2,6 @@
 using System.Drawing;
 using System.Reflection;
 using System.Globalization;
-using Bit.Bmage.Analysis;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Demo.Server.Services;
 

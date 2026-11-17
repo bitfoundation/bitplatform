@@ -1,13 +1,8 @@
 ﻿using System.Buffers.Binary;
 using System.Drawing;
 using System.Text;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
 
-namespace Bit.Bmage.Codecs.Avif;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Managed AVIF decoder: the HEIF container (single images, grids, alpha, premultiplied alpha, clean aperture,

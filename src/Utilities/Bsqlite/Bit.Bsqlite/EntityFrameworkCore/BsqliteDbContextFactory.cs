@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Bit.Bsqlite.Interop;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Bit.Bsqlite.EntityFrameworkCore;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Creates contexts bound to the application's <see cref="BsqliteDatabase"/>, opening it on

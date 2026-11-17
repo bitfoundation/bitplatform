@@ -14,11 +14,9 @@ namespace Bit.Bmage.Demo.Server.Services;
 /// <para>
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the shipped
 /// library - a new pipeline method shows up the moment it is written, with its real parameter list
-/// and defaults instead of ones someone remembered to copy into a document. That matters here
-/// because Bmage's types are spread over a dozen namespaces: an agent that guesses
-/// <c>using Bit.Bmage.Codecs</c> for <c>ImagePipeline</c>, or <c>using Bit.Bmage.Editor</c> for
-/// <c>BmageEditor</c>, writes code that does not compile - so every type carries its namespace
-/// and its package.
+/// and defaults instead of ones someone remembered to copy into a document. Every type is in the one
+/// <c>Bit.Bmage</c> namespace, whichever package ships it, so an agent needs only <c>using Bit.Bmage</c>;
+/// what it has to get right is the package - so every type still carries its namespace and its package.
 /// </para>
 /// </summary>
 public static class BmageApiCatalog
@@ -104,7 +102,7 @@ public static class BmageApiCatalog
 
     /// <summary>
     /// The full reference of one type, or null when no public type goes by that name. Accepts the
-    /// simple name ("ImagePipeline"), the full name ("Bit.Bmage.Pipeline.ImagePipeline") or a
+    /// simple name ("ImagePipeline"), the full name ("Bit.Bmage.ImagePipeline") or a
     /// generic spelling ("Foo&lt;T&gt;").
     /// </summary>
     public static BmageApiTypeDetailsDto? GetTypeDetails(string typeName)

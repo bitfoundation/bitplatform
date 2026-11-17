@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Bit.Bmage.Masks;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Traces the outline of a mask: the closed curves where its coverage crosses half, as an editor draws a selection's

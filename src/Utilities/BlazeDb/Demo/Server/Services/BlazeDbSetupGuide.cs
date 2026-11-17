@@ -265,8 +265,6 @@ public static partial class BlazeDbSetupGuide
 
         ```csharp
         using Bit.BlazeDb;
-        using Bit.BlazeDb.Browser;
-        using Bit.BlazeDb.Storage;
 
         /// <summary>The tab's one database, opened on first use and shared by every page.</summary>
         public sealed class AppDatabase : IAsyncDisposable
@@ -370,7 +368,6 @@ public static partial class BlazeDbSetupGuide
 
         ```csharp
         using Bit.BlazeDb;
-        using Bit.BlazeDb.Storage;
 
         /// <summary>
         /// One database for the process, and one lock around every use of it: the engine's reads take no lock
@@ -442,7 +439,6 @@ public static partial class BlazeDbSetupGuide
 
         ```csharp
         using Bit.BlazeDb;
-        using Bit.BlazeDb.Storage;
 
         public sealed class AppDatabase(BlazeDbFileStorage storage) : IAsyncDisposable
         {
@@ -469,7 +465,6 @@ public static partial class BlazeDbSetupGuide
 
         ```csharp
         using Bit.BlazeDb;
-        using Bit.BlazeDb.Storage;
 
         using var storage = new BlazeDbFileStorage("data");   // exclusive lock on the directory while it lives
         await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }

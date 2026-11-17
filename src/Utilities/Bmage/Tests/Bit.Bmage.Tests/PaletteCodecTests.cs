@@ -1,10 +1,5 @@
 ﻿using System.Buffers.Binary;
 using System.Drawing;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Gif;
-using Bit.Bmage.Codecs.Ico;
-using Bit.Bmage.Codecs.Png;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 
@@ -107,8 +102,8 @@ public sealed class IndexedPngTests
     public void MetadataIsKeptAsThePolicySays()
     {
         using var flat = Flat();
-        flat.Metadata = new Metadata.ImageMetadata(xmp: "<x:xmpmeta xmlns:x='adobe:ns:meta/'/>"u8.ToArray());
-        var kept = PngEncoder.Encode(flat, new ImageExportOptions { MaxColors = 16, Metadata = Metadata.MetadataPolicy.Preserve });
+        flat.Metadata = new ImageMetadata(xmp: "<x:xmpmeta xmlns:x='adobe:ns:meta/'/>"u8.ToArray());
+        var kept = PngEncoder.Encode(flat, new ImageExportOptions { MaxColors = 16, Metadata = MetadataPolicy.Preserve });
         var removed = PngEncoder.Encode(flat, new ImageExportOptions { MaxColors = 16 });
         Assert.IsGreaterThan(removed.Length, kept.Length);
         using var decoded = PngDecoder.Decode(kept.Data);

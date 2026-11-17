@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Bit.Bcrdt.Server;
+namespace Bit.Bcrdt;
 
 /// <summary>
 /// The server half of the SignalR transport: relays protocol messages between the clients working

@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
 
-namespace Bit.Bmage.Geometry;
+namespace Bit.Bmage;
 
 /// <summary>
 /// The eight orientations of the dihedral group D4, numbered exactly as EXIF orientation values.

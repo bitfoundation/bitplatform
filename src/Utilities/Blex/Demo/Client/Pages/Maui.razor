@@ -161,7 +161,7 @@
 
     <div class="bb-card">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> API</h2>
-        <ApiTable Title="BitBlexMaui (namespace Bit.Blex.Maui)" Rows="@ApiRows" MemberHeader="Extension" />
+        <ApiTable Title="BitBlexMaui (namespace Bit.Blex)" Rows="@ApiRows" MemberHeader="Extension" />
         <ApiTable Title="BlexPreferencesStorage" Rows="@StorageRows" />
     </div>
 
@@ -210,7 +210,6 @@
 
     private const string HybridProgram = """
         using Bit.Blex;
-        using Bit.Blex.Blazor;
 
         public static class MauiProgram
         {
@@ -246,7 +245,7 @@
         """;
 
     private const string NativeProgram = """
-        using Bit.Blex.Maui;
+        using Bit.Blex;
 
         public static class MauiProgram
         {

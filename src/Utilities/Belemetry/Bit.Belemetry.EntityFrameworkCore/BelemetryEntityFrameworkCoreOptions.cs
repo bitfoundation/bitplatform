@@ -1,7 +1,7 @@
 ﻿using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Bit.Belemetry.EntityFrameworkCore;
+namespace Bit.Belemetry;
 
 /// <summary>What the Entity Framework Core spans carry, and which commands get one.</summary>
 public sealed class BelemetryEntityFrameworkCoreOptions

@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Bit.BlazeDb.Storage;
 
 namespace Bit.BlazeDb.Demo.Client.Data;
 

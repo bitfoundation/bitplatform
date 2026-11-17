@@ -1,8 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Operations.Transforms;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Changes the canvas around the image without scaling it: grows it, filling the new area with

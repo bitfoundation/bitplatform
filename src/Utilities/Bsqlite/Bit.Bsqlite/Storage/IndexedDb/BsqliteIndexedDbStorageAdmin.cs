@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Bit.Bsqlite.Storage;
 using Microsoft.JSInterop;
 
-namespace Bit.Bsqlite.Storage.IndexedDb;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Database-level operations against the IndexedDB the VFS uses, for diagnostics and migration.
@@ -74,7 +73,7 @@ internal sealed class BsqliteIndexedDbStorageAdmin(IJSRuntime? js) : IBsqliteSto
     /// </summary>
     internal static void ThrowIfPageSizeUnsupported(ReadOnlySpan<byte> contents)
     {
-        var pageSize = Bit.Bsqlite.Interop.BsqliteDatabaseImage.PageSize(contents);
+        var pageSize = Bit.Bsqlite.BsqliteDatabaseImage.PageSize(contents);
         if (pageSize is not (0 or BsqliteIndexedDbStorageProvider.PageSize))
         {
             throw new NotSupportedException(

@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Bit.Bsqlite.EntityFrameworkCore;
-using Bit.Bsqlite.Interop;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Bit.Bsqlite;
 
 /// <summary>Registers EF Core contexts on top of <c>AddBitBsqliteServices</c>.</summary>
 public static partial class BitBsqlite

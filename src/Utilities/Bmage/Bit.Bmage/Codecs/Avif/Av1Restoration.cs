@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.Avif;
+﻿namespace Bit.Bmage;
 
 /// <summary>
 /// Superres upscaling (spec 7.16) and loop restoration (7.17). Restoration runs on regions that lie within one

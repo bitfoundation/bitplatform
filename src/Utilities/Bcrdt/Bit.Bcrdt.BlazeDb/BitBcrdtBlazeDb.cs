@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Bit.Bcrdt.BlazeDb;
+namespace Bit.Bcrdt;
 
 /// <summary>Configures bit Bcrdt to keep its documents in a bit BlazeDb database.</summary>
 public static class BitBcrdtBlazeDb

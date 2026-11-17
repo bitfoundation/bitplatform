@@ -2,7 +2,7 @@
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>A parameter carried to the engine by the transport.</summary>
 public sealed class BsqliteParameter : DbParameter

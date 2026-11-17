@@ -1,12 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Operations.Transforms;
 
-namespace Bit.Bmage.Pipeline;
+namespace Bit.Bmage;
 
 /// <summary>
 /// The headless entry point: decode, run a pipeline, encode. Fully usable without any Blazor component. On WebAssembly
@@ -35,7 +31,7 @@ public class ImageProcessor
 
     /// <summary>
     /// The most threads one operation may spread its rows over, decoding included, or null for
-    /// <see cref="Operations.OperationContext.DefaultMaxDegreeOfParallelism"/>. See
+    /// <see cref="OperationContext.DefaultMaxDegreeOfParallelism"/>. See
     /// <see cref="PipelineExecutionOptions.MaxDegreeOfParallelism"/>. In a batch every image in flight may use this
     /// many, so <see cref="BatchOptions.MaxConcurrency"/> times this is what the batch can occupy.
     /// </summary>
@@ -142,7 +138,7 @@ public class ImageProcessor
             var w = Math.Max(1, (int)Math.Round(image.Width * scale));
             var h = Math.Max(1, (int)Math.Round(image.Height * scale));
             using var resized = new ResizeOperation(w, h, ResizeMode.Stretch, ResamplingFilter.Lanczos3)
-                .Apply(image, new Operations.OperationContext(Allocator, Limits, ct, maxDegreeOfParallelism: MaxDegreeOfParallelism));
+                .Apply(image, new OperationContext(Allocator, Limits, ct, maxDegreeOfParallelism: MaxDegreeOfParallelism));
             current = await Try(resized, quality).ConfigureAwait(false);
             if (current.Length <= maxBytes) return current;
             if (w <= 16 || h <= 16) break;
@@ -605,7 +601,7 @@ public sealed record BatchOptions
     /// </summary>
     /// <remarks>
     /// This schedules by estimate; to enforce a hard ceiling on what is actually allocated, give the processor a
-    /// <see cref="Memory.BudgetedPixelAllocator"/>.
+    /// <see cref="BudgetedPixelAllocator"/>.
     /// </remarks>
     public long? MaxMemoryBytes
     {

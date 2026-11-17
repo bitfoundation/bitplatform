@@ -1,6 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using Bit.BlazeDb.Querying;
-using Bit.BlazeDb.Storage;
 using Bit.BlazeDb.Tests.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;

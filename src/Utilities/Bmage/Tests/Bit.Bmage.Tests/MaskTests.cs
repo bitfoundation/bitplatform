@@ -1,13 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 

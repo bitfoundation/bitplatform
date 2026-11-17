@@ -1,7 +1,7 @@
 ﻿using Bit.Butil;
 using Microsoft.JSInterop;
 
-namespace Bit.Bcrdt.Butil;
+namespace Bit.Bcrdt;
 
 /// <summary>Something the browser reported about the page or the network.</summary>
 internal enum BcrdtBrowserSignal

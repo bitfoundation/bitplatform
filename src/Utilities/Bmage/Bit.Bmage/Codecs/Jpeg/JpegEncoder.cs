@@ -1,7 +1,6 @@
 ﻿using System.Buffers.Binary;
-using Bit.Bmage.Metadata;
 
-namespace Bit.Bmage.Codecs.Jpeg;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Managed baseline JPEG encoder with 4:2:0 or 4:4:4 chroma subsampling, standard Huffman tables and quality-scaled

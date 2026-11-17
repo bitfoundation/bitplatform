@@ -5,7 +5,7 @@ using System.Text.Json;
 using Bit.Bcrdt.Integrations;
 using Bit.Bink;
 
-namespace Bit.Bcrdt.Bink;
+namespace Bit.Bcrdt;
 
 /// <summary>
 /// Keeps a Bink drawing and a collaborative map in step, in both directions, so several people draw on one

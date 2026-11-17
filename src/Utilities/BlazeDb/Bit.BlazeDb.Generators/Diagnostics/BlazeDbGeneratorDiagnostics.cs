@@ -1,8 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Bit.BlazeDb.Generators;
+namespace Bit.BlazeDb;
 
-internal static class BlazeDbDiagnostics
+internal static class BlazeDbGeneratorDiagnostics
 {
     private const string Category = "Bit.BlazeDb.Generators";
 

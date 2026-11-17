@@ -1,14 +1,12 @@
 ﻿using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.EntityFrameworkCore;
-using Bit.Bsqlite.Interop;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore;
 
-namespace Microsoft.EntityFrameworkCore;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Registers the stock SQLite provider against a <see cref="DbConnection"/> Bsqlite owns,

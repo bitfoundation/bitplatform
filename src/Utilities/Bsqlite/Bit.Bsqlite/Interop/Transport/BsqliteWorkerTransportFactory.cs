@@ -1,8 +1,6 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Storage;
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Builds a <see cref="BsqliteWorkerTransport"/> from whatever backend selection chose.

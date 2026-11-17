@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-
-namespace Bit.Bsqlite.Interop.Tests;
+﻿namespace Bit.Bsqlite.Interop.Tests;
 
 [TestClass]
 public sealed class SqliteTableNamesTests

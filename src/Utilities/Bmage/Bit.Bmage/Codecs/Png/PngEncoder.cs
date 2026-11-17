@@ -1,8 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.IO.Compression;
-using Bit.Bmage.Metadata;
 
-namespace Bit.Bmage.Codecs.Png;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Managed PNG encoder producing 8-bit RGB or RGBA images with adaptive per-row filtering, or, when

@@ -4,7 +4,7 @@ using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Bit.Bcrdt.Server;
+namespace Bit.Bcrdt;
 
 /// <summary>One client connection as a <see cref="BcrdtDocumentHost"/> sees it.</summary>
 /// <remarks>

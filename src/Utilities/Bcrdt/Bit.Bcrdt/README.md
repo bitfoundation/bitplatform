@@ -39,7 +39,6 @@ network and page lifecycle in WebAssembly, `Bit.Bcrdt.Butil`.
 
 ```razor
 @using Bit.Bcrdt
-@using Bit.Bcrdt.Blazor
 
 <BcrdtCollaborationScope DocumentId="notes-42" User="_me" Context="document">
     <BcrdtPresenceView Presence="document.Presence" />

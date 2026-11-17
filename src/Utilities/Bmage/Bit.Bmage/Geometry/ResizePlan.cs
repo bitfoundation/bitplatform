@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Bit.Bmage.Geometry;
+namespace Bit.Bmage;
 
 /// <summary>
 /// The result of resolving a resize request: the size of the output canvas, the region of the source

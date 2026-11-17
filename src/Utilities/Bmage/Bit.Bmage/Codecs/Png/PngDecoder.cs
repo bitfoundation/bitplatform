@@ -1,11 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.IO.Compression;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations.Transforms;
 
-namespace Bit.Bmage.Codecs.Png;
+namespace Bit.Bmage;
 
 /// <summary>Managed PNG decoder supporting all colour types, bit depths 1–16, palettes, tRNS transparency and Adam7 interlacing.</summary>
 public sealed class PngDecoder : IImageDecoder
@@ -145,7 +141,7 @@ public sealed class PngDecoder : IImageDecoder
                 image.Metadata = md;
                 if (options.AutoOrient && md.Orientation is not (Orientation.Normal or Orientation.Unspecified))
                 {
-                    var oriented = new OrientationOperation(md.Orientation).Apply(image, new Operations.OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
+                    var oriented = new OrientationOperation(md.Orientation).Apply(image, new OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
                     if (!ReferenceEquals(oriented, image)) image.Dispose();
                     image = oriented;
                     image.Metadata = md.WithOrientation(Orientation.Normal);

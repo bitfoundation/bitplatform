@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Bit.Bmage.Geometry;
+namespace Bit.Bmage;
 
 /// <summary>Controls how an image is fitted into a target size when resizing.</summary>
 public enum ResizeMode

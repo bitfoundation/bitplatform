@@ -1,7 +1,6 @@
 ﻿using Bit.Bcrdt;
 using Bit.Bcrdt.Samples.Lazy.Client;
 using Bit.Bcrdt.Samples.Lazy.Components;
-using Bit.Bcrdt.Server;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 var builder = WebApplication.CreateBuilder(args);

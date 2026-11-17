@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Server;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>
 /// Limits <see cref="BcrdtHub"/> applies to what one connection may ask for.

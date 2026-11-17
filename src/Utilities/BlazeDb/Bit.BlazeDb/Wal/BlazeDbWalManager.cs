@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Security.Cryptography;
-using Bit.BlazeDb.Serialization;
-using Bit.BlazeDb.Storage;
 
-namespace Bit.BlazeDb.Wal;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Owns the durability pipeline: encodes committed operations into WAL records buffered in

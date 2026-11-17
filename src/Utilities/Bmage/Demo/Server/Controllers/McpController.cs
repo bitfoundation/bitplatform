@@ -200,7 +200,7 @@ public class McpController : ControllerBase
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
     [Description("Lists the public types of Bit.Bmage and Bit.Bmage.Blazor - pipelines, operations, codecs, options, metadata, drawing, annotations, editing, the browser services and the editor components - with the namespace to import, the package, its kind and a one-line summary. Narrow it with 'filter' (a namespace, a package, a kind or any part of a name) rather than reading all of it, then pass a name to GetBmageApiDetails.")]
     public BmageApiTypeDto[] GetBmageApiList(
-        [Description("Optional. A namespace ('Bit.Bmage.Annotations', or 'Bit.Bmage.Editor' for every editor namespace), a package ('Bit.Bmage.Blazor'), a kind ('Enum', 'Component', 'Record', 'Exception') or any substring of a type name ('Export'). Omitted, every type is returned.")] string? filter = null)
+        [Description("Optional. A package ('Bit.Bmage' or 'Bit.Bmage.Blazor'), a kind ('Enum', 'Component', 'Record', 'Exception') or any substring of a type name ('Export'). Omitted, every type is returned.")] string? filter = null)
     {
         var types = BmageApiCatalog.TypeSummaries;
 
@@ -233,7 +233,7 @@ public class McpController : ControllerBase
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
     [Description("Gets the full reference of one Bit.Bmage type - or of one member, written 'Type.Member' - read straight out of the shipped assemblies: its namespace and package, constructors, Blazor parameters and properties with their default values, methods with their full parameter lists, enum values, each with its XML documentation. Call it before using a type you are unsure about, e.g. 'ImagePipeline', 'ImageExportOptions', 'ImageLoader', 'ImageExporter', 'BmageEditor', 'MetadataPolicy', 'RedactionAnnotation', or 'ImagePipeline.Cover'. In an image library the defaults (quality 0.85, metadata Remove, PNG level 6) are the behaviour.")]
     public BmageApiDetailsResultDto GetBmageApiDetails(
-        [Description("A type name such as 'ImagePipeline', a full name such as 'Bit.Bmage.Output.ImageExporter', or 'Type.Member' such as 'ImageExportOptions.MaxFileSize'.")] string typeName)
+        [Description("A type name such as 'ImagePipeline', a full name such as 'Bit.Bmage.ImageExporter', or 'Type.Member' such as 'ImageExportOptions.MaxFileSize'.")] string typeName)
     {
         var details = BmageApiCatalog.GetTypeDetails(typeName) ?? BmageApiCatalog.GetMemberDetails(typeName);
 

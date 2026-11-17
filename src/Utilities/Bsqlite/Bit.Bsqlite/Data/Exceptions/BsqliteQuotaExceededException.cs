@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Data;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>The origin is out of storage quota, or SQLite reported <c>SQLITE_FULL</c>.</summary>
 public sealed class BsqliteQuotaExceededException : BsqliteException

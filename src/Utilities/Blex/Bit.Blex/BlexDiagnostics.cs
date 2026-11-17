@@ -223,7 +223,7 @@ public static class BlexDiagnostics
     }
 
     /// <summary>Starts measuring a query fetch; <c>default</c> when nothing listens.</summary>
-    internal static QueryScope StartQuery(Query.BlexQueryKey key)
+    internal static QueryScope StartQuery(BlexQueryKey key)
     {
         if (!ActivitySource.HasListeners() && !QueryFetches.Enabled && !QueryDuration.Enabled)
             return default;
@@ -246,7 +246,7 @@ public static class BlexDiagnostics
     }
 
     /// <summary>A query's first key part as text: the resource it names, without the ids after it.</summary>
-    private static string ResourceOf(Query.BlexQueryKey key)
+    private static string ResourceOf(BlexQueryKey key)
         => key[0] switch
         {
             string text => text,

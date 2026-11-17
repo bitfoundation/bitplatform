@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Remembers sticky bindings in <c>localStorage</c> so they survive a reload.

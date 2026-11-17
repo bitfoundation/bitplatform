@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Bit.BlazeDb.Generators;
+namespace Bit.BlazeDb;
 
 internal sealed class BlazeDbDiagnosticInfo
 {

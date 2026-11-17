@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>Re-runs a query when watched tables are written.</summary>
 public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>

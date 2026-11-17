@@ -1,11 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
 
-namespace Bit.Bmage.Masks;
+namespace Bit.Bmage;
 
 /// <summary>A rectangle, optionally with rounded corners.</summary>
 /// <param name="Rectangle">The covered area, in the mask's <see cref="Mask.Units"/>.</param>

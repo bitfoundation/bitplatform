@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Bit.Bmage.Operations;
+namespace Bit.Bmage;
 
 /// <summary>
 /// A unit of image processing that transforms one <see cref="ImageBuffer"/> into another. Operations are

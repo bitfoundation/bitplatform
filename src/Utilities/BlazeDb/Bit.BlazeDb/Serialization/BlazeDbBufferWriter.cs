@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Text;
 
-namespace Bit.BlazeDb.Serialization;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Growable binary writer used for rows, keys, WAL records and snapshots.

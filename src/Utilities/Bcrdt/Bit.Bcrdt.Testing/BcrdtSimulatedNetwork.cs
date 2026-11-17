@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Testing;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>How badly the simulated network misbehaves.</summary>
 public sealed class BcrdtSimulatedNetworkOptions

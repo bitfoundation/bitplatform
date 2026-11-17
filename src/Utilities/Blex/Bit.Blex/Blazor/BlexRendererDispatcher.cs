@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>A Blazor renderer's <see cref="Dispatcher"/> as the <see cref="IBlexDispatcher"/> a manager keeps to.</summary>
 /// <param name="dispatcher">The renderer's dispatcher.</param>

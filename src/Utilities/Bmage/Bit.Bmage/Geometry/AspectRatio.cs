@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Bit.Bmage.Geometry;
+namespace Bit.Bmage;
 
 /// <summary>An aspect ratio expressed as width : height.</summary>
 public readonly record struct AspectRatio(double Width, double Height)

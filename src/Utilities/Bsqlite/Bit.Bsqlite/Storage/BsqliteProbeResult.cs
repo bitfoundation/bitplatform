@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Storage;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// What a backend discovered about the current browser. Probing happens once per session and the

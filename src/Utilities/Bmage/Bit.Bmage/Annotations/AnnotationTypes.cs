@@ -1,10 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Operations.Filters;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Annotations;
+namespace Bit.Bmage;
 
 /// <summary>A rectangle, optionally with rounded corners.</summary>
 public sealed record RectangleAnnotation : Annotation
@@ -526,12 +523,12 @@ public sealed record RedactionAnnotation : Annotation
         (byte)MathF.Round(from.A + (to.A - from.A) * t));
 
     /// <summary>Pixelates or blurs a region of a buffer in place.</summary>
-    private void Redact(ImageBuffer buffer, System.Drawing.Rectangle region, Operations.OperationContext context)
+    private void Redact(ImageBuffer buffer, System.Drawing.Rectangle region, OperationContext context)
     {
         // The strength comes from a document, or from scaling one, so it can be infinite or not a number at all. It is
         // clamped rather than left to fail the render, and one that is not a number hides as much as the default does.
         var strength = float.IsNaN(Strength) ? DefaultStrength : Math.Clamp(Strength, 1f, MaxStrength);
-        Operations.IImageOperation filter = Mode == RedactionMode.Pixelate
+        IImageOperation filter = Mode == RedactionMode.Pixelate
             ? new PixelateFilter(Math.Max(2, (int)strength), region)
             : new BlurFilter(strength, region);
         filter.Apply(buffer, context.WithProgress(null).WithMutation(true));

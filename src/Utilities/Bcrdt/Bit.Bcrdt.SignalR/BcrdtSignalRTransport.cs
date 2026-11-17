@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 
-namespace Bit.Bcrdt.SignalR;
+namespace Bit.Bcrdt;
 
 /// <summary>Builds the hub connection a <see cref="BcrdtSignalRTransport"/> will run on.</summary>
 /// <remarks>

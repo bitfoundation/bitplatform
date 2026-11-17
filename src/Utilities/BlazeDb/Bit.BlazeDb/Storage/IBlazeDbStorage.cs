@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazeDb.Storage;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// Minimal storage abstraction the engine persists through. Implementations: OPFS (browser),

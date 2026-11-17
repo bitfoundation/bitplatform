@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Storage;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// Operations on databases as whole artifacts, outside any SQL connection: what exists, deleting,

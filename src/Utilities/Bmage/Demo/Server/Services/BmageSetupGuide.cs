@@ -90,11 +90,11 @@ public static class BmageSetupGuide
 
         A browser app installs `Bit.Bmage.Blazor`, which brings the engine, `Bit.Bmage`, along:
 
-        | What you need | Package | Namespace roots |
+        | What you need | Package | Namespace |
         |---|---|---|
-        | The `BmageEditor` / `BmageDropZone` components | `Bit.Bmage.Blazor` | `Bit.Bmage.Editor.Components`, `Bit.Bmage.Editor.Tools` |
-        | Browser codecs, loading and export, your own UI | `Bit.Bmage.Blazor` | `Bit.Bmage`, `Bit.Bmage.Input`, `Bit.Bmage.Output`, `Bit.Bmage.Capabilities`, ... |
-        | The engine: pipelines, codecs, layers, masks, metadata | `Bit.Bmage` | `Bit.Bmage`, `Bit.Bmage.Pipeline`, `Bit.Bmage.Codecs`, `Bit.Bmage.Metadata`, ... |
+        | The `BmageEditor` / `BmageDropZone` components | `Bit.Bmage.Blazor` | `Bit.Bmage` |
+        | Browser codecs, loading and export, your own UI | `Bit.Bmage.Blazor` | `Bit.Bmage` |
+        | The engine: pipelines, codecs, layers, masks, metadata | `Bit.Bmage` | `Bit.Bmage` |
 
         ```bash
         dotnet add package Bit.Bmage.Blazor
@@ -103,20 +103,11 @@ public static class BmageSetupGuide
         Install it in the project that runs in the browser - in a Blazor Web App, the **.Client** project.
         Targets .NET 10 and 11.
 
-        Then add the namespaces to `_Imports.razor` of that project. Bmage's types are spread over several
-        namespaces, and the ones a page normally needs are these:
+        Then add the namespace to `_Imports.razor` of that project. Every Bmage type, in either package, is in
+        the one `Bit.Bmage` namespace:
 
         ```razor
         @using Bit.Bmage
-        @using Bit.Bmage.Input
-        @using Bit.Bmage.Output
-        @using Bit.Bmage.Pipeline
-        @using Bit.Bmage.Codecs
-        @using Bit.Bmage.Capabilities
-        @using Bit.Bmage.Metadata
-        @using Bit.Bmage.Geometry
-        @using Bit.Bmage.Editor.Components
-        @using Bit.Bmage.Editor.Tools
         ```
 
         The browser bridge (`_content/Bit.Bmage.Blazor/bit-bmage.js`) is imported by the library on demand. Do not
@@ -662,8 +653,7 @@ public static class BmageSetupGuide
         ## 3. Process an upload
 
         ```csharp
-        using Bit.Bmage.Codecs;
-        using Bit.Bmage.Pipeline;
+        using Bit.Bmage;
 
         app.MapPost("/thumbnail", async (IFormFile file, ImageProcessor processor) =>
         {
@@ -696,8 +686,6 @@ public static class BmageSetupGuide
 
         ```csharp
         using Bit.Bmage;
-        using Bit.Bmage.Codecs;
-        using Bit.Bmage.Pipeline;
 
         var processor = new ImageProcessor();   // the managed codecs
 

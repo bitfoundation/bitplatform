@@ -1,7 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Interop;
-
-namespace Bit.Bsqlite.Testing;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// An <see cref="IBsqliteTransport"/> that runs SQLite in-process via Microsoft.Data.Sqlite.

@@ -2,15 +2,8 @@
 using System.Collections.Immutable;
 using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Analysis;
-using Bit.Bmage.Masks;
 
-namespace Bit.Bmage.Pipeline;
+namespace Bit.Bmage;
 
 /// <summary>
 /// An immutable, ordered list of operations describing a complete image transformation. Pipelines are values: every
@@ -428,7 +421,7 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     /// <remarks>
     /// The estimate follows the buffers each step holds: the image it receives, the one it produces, and the working
     /// copies the heavier operations take (a mask, a copy of a region for a median or convolution). It is what a
-    /// <see cref="Memory.BudgetedPixelAllocator"/> would see, to within the small rows of scratch operations rent from the
+    /// <see cref="BudgetedPixelAllocator"/> would see, to within the small rows of scratch operations rent from the
     /// shared pool, and it is what <see cref="BatchOptions.MaxMemoryBytes"/> admits images by. An
     /// <see cref="AutoOrient"/> step is taken to cost nothing, since decoders already turn the pixels upright.
     /// </remarks>
@@ -461,15 +454,15 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
 
     /// <summary>
     /// What rendering a mask holds at once: its own byte per pixel, the masks drawing it holds beside that (see
-    /// <see cref="Masks.Mask.MasksHeld"/>), each taken at the image's size, and the largest of its bitmaps' mattes at
+    /// <see cref="Mask.MasksHeld"/>), each taken at the image's size, and the largest of its bitmaps' mattes at
     /// their own size. A mask drawn only over the area an edit reaches holds less.
     /// </summary>
-    private static long MaskBytes(Masks.Mask mask, long pixels) => pixels * (1 + mask.MasksHeld()) + MatteBytes(mask);
+    private static long MaskBytes(Mask mask, long pixels) => pixels * (1 + mask.MasksHeld()) + MatteBytes(mask);
 
-    private static long MatteBytes(Masks.Mask mask) => mask switch
+    private static long MatteBytes(Mask mask) => mask switch
     {
-        Masks.CombinedMask combined => Math.Max(MatteBytes(combined.First), MatteBytes(combined.Second)),
-        Masks.BitmapMask bitmap => (long)bitmap.Image.Width * bitmap.Image.Height,
+        CombinedMask combined => Math.Max(MatteBytes(combined.First), MatteBytes(combined.Second)),
+        BitmapMask bitmap => (long)bitmap.Image.Width * bitmap.Image.Height,
         _ => 0,
     };
 
@@ -480,8 +473,8 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
         return operation switch
         {
             // The rendered mask, and whatever the masked edit itself works with.
-            Masks.MaskedOperation masked => MaskBytes(masked.Mask, pixels) + WorkingBytes(masked.Operation, input),
-            Masks.AlphaMaskOperation alpha => MaskBytes(alpha.Mask, pixels),
+            MaskedOperation masked => MaskBytes(masked.Mask, pixels) + WorkingBytes(masked.Operation, input),
+            AlphaMaskOperation alpha => MaskBytes(alpha.Mask, pixels),
             // Both read a copy of the region they filter.
             MedianFilter or ConvolutionFilter => 4 * pixels,
             // A byte of luminance a pixel.
@@ -631,7 +624,7 @@ public sealed record PipelineExecutionOptions
     public static PipelineExecutionOptions Default { get; } = new();
 
     /// <summary>Allocator for intermediate buffers.</summary>
-    public Memory.IPixelAllocator Allocator { get; init; } = Memory.PooledPixelAllocator.Shared;
+    public IPixelAllocator Allocator { get; init; } = PooledPixelAllocator.Shared;
 
     /// <summary>Limits applied to intermediate and output buffers.</summary>
     public ImageLimits Limits { get; init; } = ImageLimits.Default;

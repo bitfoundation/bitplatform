@@ -1,11 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
-using Bit.Bmage.Serialization;
 
 namespace Bit.Bmage.Tests;
 

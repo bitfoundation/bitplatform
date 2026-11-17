@@ -1,4 +1,4 @@
-namespace Bit.BlazeDb.Bcrdt;
+namespace Bit.BlazeDb;
 
 /// <summary>Registers the table Bit.Bcrdt documents are kept in on a BlazeDb database.</summary>
 public static class BlazeDbBcrdtExtensions

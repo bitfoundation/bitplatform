@@ -1,9 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Interop;
-using Bit.Bsqlite.Storage;
-using Bit.Bsqlite.Storage.InMemory;
-
-namespace Bit.Bsqlite.Interop.Tests;
+﻿namespace Bit.Bsqlite.Interop.Tests;
 
 [TestClass]
 public sealed class StorageMigratorTests

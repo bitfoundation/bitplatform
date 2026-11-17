@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.Avif;
+﻿namespace Bit.Bmage;
 
 // Generated from the constant tables of the AV1 specification (sections 5, 7, 8 and 10), each flattened in row-major
 // order with its spec name and dimensions noted above it.

@@ -1,13 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 
@@ -279,7 +271,7 @@ public sealed class ScenarioTests
         Assert.AreEqual(new Size(600, 450), session.ProxySize);
 
         session.AddOperation(new CropOperation(200, 150, 1600, 1200), "Crop");
-        session.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0.15f), "Brighten");
+        session.AddOperation(new BrightnessAdjustment(0.15f), "Brighten");
         session.AddAnnotation(new RectangleAnnotation { Rectangle = new RectangleF(300, 200, 400, 300) });
 
         var preview = await session.RenderPreviewAsync();
@@ -316,8 +308,8 @@ public sealed class ScenarioTests
         {
             switch (rnd.Next(6))
             {
-                case 0: session.AddOperation(new Operations.Adjustments.BrightnessAdjustment((float)(rnd.NextDouble() * 0.4 - 0.2))); break;
-                case 1: session.AddOperation(new Operations.Adjustments.ContrastAdjustment((float)(rnd.NextDouble() * 0.4 - 0.2))); break;
+                case 0: session.AddOperation(new BrightnessAdjustment((float)(rnd.NextDouble() * 0.4 - 0.2))); break;
+                case 1: session.AddOperation(new ContrastAdjustment((float)(rnd.NextDouble() * 0.4 - 0.2))); break;
                 case 2: session.AddOperation(OrientationOperation.Rotate90); break;
                 case 3: session.AddAnnotation(new StepAnnotation { Center = new Vector2(rnd.Next(100), rnd.Next(100)), Number = i }); break;
                 case 4: session.Undo(); break;

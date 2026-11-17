@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Capabilities;
+﻿namespace Bit.Bmage;
 
 /// <summary>
 /// What the current environment can actually do. Never assume a format or API is available: check here and degrade

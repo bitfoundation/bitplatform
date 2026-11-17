@@ -216,11 +216,11 @@ public class McpSurfaceTests
     public void Resources_EachOne_RendersSomethingReadable()
     {
         StringAssert.StartsWith(McpResources.ApiList(), "# Bit.Bmage public API");
-        StringAssert.Contains(McpResources.ApiList(), "## Bit.Bmage.Pipeline (Bit.Bmage)");
+        StringAssert.Contains(McpResources.ApiList(), "## Bit.Bmage (Bit.Bmage)");
         StringAssert.Contains(McpResources.ApiList(), "**BmageEditor** (Component)");
 
         StringAssert.Contains(McpResources.ApiType("ImagePipeline"), "# ImagePipeline");
-        StringAssert.Contains(McpResources.ApiType("ImagePipeline"), "`using Bit.Bmage.Pipeline;`");
+        StringAssert.Contains(McpResources.ApiType("ImagePipeline"), "`using Bit.Bmage;`");
 
         StringAssert.Contains(McpResources.Guide(), "# Bit.Bmage");
 

@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace Bit.Bmage.Text;
+namespace Bit.Bmage;
 
 /// <summary>One glyph while text is shaped: what it came from, what applies to it, and where it goes.</summary>
 internal struct ShapingGlyph

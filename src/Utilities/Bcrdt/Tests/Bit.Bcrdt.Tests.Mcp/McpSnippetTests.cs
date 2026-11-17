@@ -161,7 +161,7 @@ public partial class McpSnippetTests
     [TestMethod]
     public void Every_component_attribute_the_setup_guides_and_the_readme_write_is_a_parameter()
     {
-        var components = typeof(Bit.Bcrdt.Blazor.BcrdtComponentBase).Assembly.GetExportedTypes()
+        var components = typeof(Bit.Bcrdt.BcrdtComponentBase).Assembly.GetExportedTypes()
             .Where(type => typeof(IComponent).IsAssignableFrom(type))
             .ToDictionary(type => type.Name, StringComparer.Ordinal);
 

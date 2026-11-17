@@ -3,6 +3,7 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
+        <RootNamespace>Bit.BlazeDb</RootNamespace>
         <TargetFramework>netstandard2.0</TargetFramework>
         <!-- Always single-targeted, whatever a build passes down: a publish that narrows every project with
              -p:TargetFrameworks=net11.0 would otherwise retarget an analyzer that only ever runs inside the

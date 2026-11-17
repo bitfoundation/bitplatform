@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.Serialization;
-
-namespace Bit.BlazeDb;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// The log's changes to one table's persisted rows, for a checkpoint rolled forward from the bytes that were committed

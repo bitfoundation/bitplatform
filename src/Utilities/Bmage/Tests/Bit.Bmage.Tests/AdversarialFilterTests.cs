@@ -1,8 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
 
 namespace Bit.Bmage.Tests;
 
@@ -393,7 +389,7 @@ public sealed class AdversarialFilterTests
         Assert.IsTrue(before.AsSpan().SequenceEqual(image.Bytes), "drawing through an empty clip changed pixels");
 
         // Statistics over an empty region must report a clear error, not crash.
-        Assert.ThrowsExactly<ArgumentException>(() => Bit.Bmage.Analysis.ImageStatistics.Measure(image, degenerate));
+        Assert.ThrowsExactly<ArgumentException>(() => Bit.Bmage.ImageStatistics.Measure(image, degenerate));
     }
 
     /// <summary>Scaling a region filter for a proxy must scale the region with it.</summary>

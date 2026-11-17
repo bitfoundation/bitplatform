@@ -1,7 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations.Filters;
-using Bit.Bmage.Operations.Transforms;
 
 namespace Bit.Bmage.Tests.Mcp.Services;
 

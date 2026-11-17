@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Testing;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>What a randomized run is allowed to do.</summary>
 public sealed class BcrdtOperationGeneratorOptions

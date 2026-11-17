@@ -145,7 +145,6 @@ is the host page's base address:
 
 ```csharp
 using Bit.Bcrdt;
-using Bit.Bcrdt.SignalR;
 
 string hubUrl = new Uri(new Uri(builder.HostEnvironment.BaseAddress), "hub/bcrdt").ToString();
 
@@ -172,7 +171,7 @@ dotnet add package Bit.Bcrdt.Server    # in the server project
 ```
 
 ```csharp
-using Bit.Bcrdt.Server;
+using Bit.Bcrdt;
 
 builder.Services.AddBitBcrdtHub();   // AddSignalR, with a receive limit sized for sync messages
 // ...
@@ -204,7 +203,6 @@ Everything after that is `IBcrdtCollaborationService`.
 
 ```razor
 @using Bit.Bcrdt
-@using Bit.Bcrdt.Blazor
 
 <BcrdtCollaborationScope DocumentId="notes-42" User="_me" Context="document">
     <BcrdtPresenceView Presence="document.Presence" />

@@ -3,7 +3,7 @@
 ## The layers
 
 ```
-Bit.Bmage.Blazor   Editor:  components, tools, theming, localisation (Bit.Bmage.Editor.*)
+Bit.Bmage.Blazor   Editor:  components, tools, theming, localisation
                        │
                    Browser: codecs, capabilities, loading, export, one JS module
                        │
@@ -15,7 +15,8 @@ The engine, the `Bit.Bmage` package, has no dependency on Blazor, ASP.NET Core o
 runs. The browser layer, shipped with the editor in `Bit.Bmage.Blazor`, adds the codecs only a browser has, capability
 probing, and the plumbing for files, clipboard, camera and downloads; nothing in the engine calls into it, and the
 package boundary keeps it that way. `Editor` is the user interface, and it is optional in the strong sense that nothing
-below it knows it exists.
+below it knows it exists. All three layers declare their types in the one `Bit.Bmage` namespace: the
+package, not the namespace, is what keeps them apart.
 
 An application that only needs to shrink an upload never pays for the editor: it never links `bit-bmage-editor.css`,
 and a trimmed WebAssembly publish drops the editor's code along with everything else the application does not use.

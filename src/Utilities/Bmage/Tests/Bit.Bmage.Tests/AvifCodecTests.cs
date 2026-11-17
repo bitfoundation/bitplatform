@@ -2,13 +2,6 @@
 using System.Drawing;
 using System.Security.Cryptography;
 using System.Text;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Avif;
-using Bit.Bmage.Codecs.Png;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
 
 namespace Bit.Bmage.Tests;
 
@@ -99,7 +92,7 @@ public sealed class AvifCodecTests
     {
         IImageDecoder decoder = new AvifDecoder();
         CollectionAssert.AreEqual(new[] { ImageFormat.Avif }, decoder.Formats.ToArray());
-        using var decoded = await decoder.DecodeAsync(Asset("photo-420.avif"), DecodeOptions.Default, Memory.PooledPixelAllocator.Shared);
+        using var decoded = await decoder.DecodeAsync(Asset("photo-420.avif"), DecodeOptions.Default, PooledPixelAllocator.Shared);
         Assert.AreEqual(96, decoded.Width);
         Assert.AreEqual(ImageFormat.Avif, decoded.Metadata!.SourceFormat);
     }
@@ -570,7 +563,7 @@ public sealed class AvifCodecTests
         var padded = new byte[asset.Length + 64];
         asset.CopyTo(padded, 32);
         using var expected = AvifDecoder.Decode(asset);
-        using var decoded = await new AvifDecoder().DecodeAsync(padded.AsMemory(32, asset.Length), DecodeOptions.Default, Memory.PooledPixelAllocator.Shared);
+        using var decoded = await new AvifDecoder().DecodeAsync(padded.AsMemory(32, asset.Length), DecodeOptions.Default, PooledPixelAllocator.Shared);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, decoded));
     }
 

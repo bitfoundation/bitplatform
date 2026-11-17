@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Editing;
 
 namespace Bit.Bmage.Tests;
 
@@ -25,7 +24,7 @@ public sealed class EditSessionProxyTests
         });
 
         await session.RenderPreviewAsync();
-        session.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0f));
+        session.AddOperation(new BrightnessAdjustment(0f));
         var preview = await session.RenderPreviewAsync();
 
         CollectionAssert.AreEqual(new[] { new Size(100, 50) }, requests);

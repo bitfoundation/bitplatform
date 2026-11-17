@@ -2,14 +2,8 @@
 using System.Drawing;
 using System.Text;
 using System.Text.Json;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Pipeline;
 
-namespace Bit.Bmage.Serialization;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Converts edits to and from JSON: whole documents, pipelines, and the operations, layers, masks and annotations in

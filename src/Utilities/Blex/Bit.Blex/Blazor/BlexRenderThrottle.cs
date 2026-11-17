@@ -1,4 +1,4 @@
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>
 /// Spaces out the renders store changes ask a component for: the first after a quiet interval renders at once, and

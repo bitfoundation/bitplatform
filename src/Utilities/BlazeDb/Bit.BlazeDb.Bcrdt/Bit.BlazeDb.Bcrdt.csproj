@@ -4,7 +4,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
-        <RootNamespace>Bit.BlazeDb.Bcrdt</RootNamespace>
+        <RootNamespace>Bit.BlazeDb</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
         <Description>Keeps Bit.Bcrdt collaborative documents in a Bit.BlazeDb database: an IBcrdtDocumentStore whose appends are journaled by BlazeDb's write-ahead log and whose compactions are single transactions, so offline edits survive restarts alongside the application's other data, encrypted and backed up with it.</Description>

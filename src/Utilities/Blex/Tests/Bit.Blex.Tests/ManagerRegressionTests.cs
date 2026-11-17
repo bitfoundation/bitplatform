@@ -1,6 +1,4 @@
-﻿using Bit.Blex.Blazor;
-
-namespace Bit.Blex.Tests;
+﻿namespace Bit.Blex.Tests;
 
 [BlexStoreAttribute(Name = "shared")]
 public partial class SharedFailureStore

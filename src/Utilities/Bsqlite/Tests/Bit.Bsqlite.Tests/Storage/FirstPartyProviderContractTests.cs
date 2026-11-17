@@ -1,12 +1,4 @@
-﻿using Bit.Bsqlite;
-using Bit.Bsqlite.Interop;
-using Bit.Bsqlite.Storage.CacheStorage;
-using Bit.Bsqlite.Storage.FileSystem;
-using Bit.Bsqlite.Storage.IndexedDb;
-using Bit.Bsqlite.Storage.InMemory;
-using Bit.Bsqlite.Storage.Opfs;
-
-namespace Bit.Bsqlite.Storage.Tests;
+﻿namespace Bit.Bsqlite.Storage.Tests;
 
 /// <summary>
 /// S8's freeze check: the three first-party providers sit on the same contract without the core

@@ -2,7 +2,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace Bit.Bmage.Operations;
+namespace Bit.Bmage;
 
 /// <summary>
 /// An operation that maps each pixel independently of its neighbours (colour adjustments, curves, matrices).

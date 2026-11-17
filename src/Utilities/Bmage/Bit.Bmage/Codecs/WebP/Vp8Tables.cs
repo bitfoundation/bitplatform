@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.WebP;
+﻿namespace Bit.Bmage;
 
 /// <summary>
 /// The fixed tables of the VP8 key frame format (RFC 6386), shared by the decoder and the encoder. Probabilities are laid

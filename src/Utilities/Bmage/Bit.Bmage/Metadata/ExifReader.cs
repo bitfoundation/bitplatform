@@ -1,6 +1,6 @@
 ﻿using System.Buffers.Binary;
 
-namespace Bit.Bmage.Metadata;
+namespace Bit.Bmage;
 
 /// <summary>Parses TIFF/EXIF structures defensively: bad offsets, loops and oversized counts are ignored rather than thrown.</summary>
 public static class ExifReader

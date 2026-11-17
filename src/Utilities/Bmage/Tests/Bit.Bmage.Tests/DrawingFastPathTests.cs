@@ -1,7 +1,6 @@
 ﻿using System.Buffers;
 using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Drawing;
 
 namespace Bit.Bmage.Tests;
 
@@ -81,7 +80,7 @@ public sealed class DrawingFastPathTests
     /// Computes per-pixel coverage in [0,1] for a path over <paramref name="clip"/> and hands each covered span to
     /// <paramref name="blend"/>. Coverage is never allocated for the whole image, only one row at a time.
     /// </summary>
-    public static void Rasterize(VectorPath path, Rectangle clip, FillRule rule, Bit.Bmage.Drawing.CoverageHandler blend)
+    public static void Rasterize(VectorPath path, Rectangle clip, FillRule rule, Bit.Bmage.CoverageHandler blend)
     {
         ArgumentNullException.ThrowIfNull(path);
         ArgumentNullException.ThrowIfNull(blend);

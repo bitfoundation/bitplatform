@@ -1,14 +1,6 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
-namespace Bit.Bmage.Editing;
+namespace Bit.Bmage;
 
 /// <summary>
 /// An interactive editing session over one image: the original pixels, the current non-destructive document, the undo
@@ -194,7 +186,7 @@ public sealed class ImageEditSession : IDisposable
     }
 
     /// <summary>Adds an annotation and records it.</summary>
-    public void AddAnnotation(Annotations.Annotation annotation, string? label = null)
+    public void AddAnnotation(Annotation annotation, string? label = null)
     {
         ArgumentNullException.ThrowIfNull(annotation);
         Apply(d => d.AddAnnotation(annotation), label ?? $"Add {annotation.Kind.ToLowerInvariant()}");

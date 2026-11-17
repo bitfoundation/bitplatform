@@ -1,5 +1,3 @@
-using Bit.Bmage.Text;
-
 namespace Bit.Bmage.Demo.Client.Shared;
 
 /// <summary>

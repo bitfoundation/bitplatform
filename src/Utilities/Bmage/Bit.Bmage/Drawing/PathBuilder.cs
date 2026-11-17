@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Bit.Bmage.Drawing;
+namespace Bit.Bmage;
 
 /// <summary>
 /// A vector path made of straight and curved segments. Curves are flattened to line segments at construction time using

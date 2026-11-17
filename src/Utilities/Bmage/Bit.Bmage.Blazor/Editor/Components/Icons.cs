@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Editor.Components;
+﻿namespace Bit.Bmage;
 
 /// <summary>
 /// Inline SVG icons for the default toolbar. They inherit <c>currentColor</c> and the surrounding font size, so a host

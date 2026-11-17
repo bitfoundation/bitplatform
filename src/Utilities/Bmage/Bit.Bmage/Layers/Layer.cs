@@ -2,14 +2,8 @@
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
-namespace Bit.Bmage.Layers;
+namespace Bit.Bmage;
 
 /// <summary>
 /// One layer of a composition, blended onto everything beneath it: placed pixels (<see cref="ImageLayer"/>), a colour
@@ -20,7 +14,7 @@ namespace Bit.Bmage.Layers;
 /// </summary>
 /// <remarks>
 /// Coordinates, including the mask's, are those of the image the layer is composited onto: in an
-/// <see cref="Editing.ImageDocument"/>, the output of its pipeline.
+/// <see cref="ImageDocument"/>, the output of its pipeline.
 /// </remarks>
 public abstract record Layer
 {

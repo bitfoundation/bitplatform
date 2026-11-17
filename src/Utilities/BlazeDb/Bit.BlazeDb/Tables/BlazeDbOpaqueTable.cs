@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Bit.BlazeDb.Serialization;
 
 namespace Bit.BlazeDb;
 

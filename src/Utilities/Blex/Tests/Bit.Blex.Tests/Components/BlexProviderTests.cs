@@ -1,4 +1,3 @@
-using Bit.Blex.Blazor;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;

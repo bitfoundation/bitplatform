@@ -1,10 +1,6 @@
-﻿using Bit.Bmage.Capabilities;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Input;
-using Bit.Bmage.Interop;
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
 
-namespace Bit.Bmage.Output;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Gets processed images out of the browser: download, save dialog, clipboard, object URL or plain bytes.
@@ -61,7 +57,7 @@ public sealed class ImageExporter : IAsyncDisposable
         await _interop.InvokeVoidAsync("download", cancellationToken, encoded.Data, name, encoded.MimeType).ConfigureAwait(false);
     }
 
-    /// <summary>Triggers a browser download of any bytes, such as a <see cref="Serialization.BmageProject"/>.</summary>
+    /// <summary>Triggers a browser download of any bytes, such as a <see cref="BmageProject"/>.</summary>
     public async ValueTask DownloadFileAsync(byte[] bytes, string fileName, string mimeType = "application/octet-stream", CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(bytes);

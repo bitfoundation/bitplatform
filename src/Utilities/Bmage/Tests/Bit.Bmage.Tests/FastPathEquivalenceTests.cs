@@ -1,7 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
 
 namespace Bit.Bmage.Tests;
 
@@ -101,12 +98,12 @@ public sealed class FastPathEquivalenceTests
             System.Numerics.Matrix3x2.CreateScale(5f) * System.Numerics.Matrix3x2.CreateRotation(0.2f),
         };
         foreach (var matrix in transforms)
-        foreach (var sampling in new[] { Bit.Bmage.Operations.Transforms.WarpSampling.Bilinear, Bit.Bmage.Operations.Transforms.WarpSampling.Bicubic })
+        foreach (var sampling in new[] { Bit.Bmage.WarpSampling.Bilinear, Bit.Bmage.WarpSampling.Bicubic })
         {
-            var operation = new Bit.Bmage.Operations.Transforms.AffineTransformOperation(matrix, background: background, sampling: sampling);
+            var operation = new Bit.Bmage.AffineTransformOperation(matrix, background: background, sampling: sampling);
             using var actual = operation.Apply(source, OperationContext.Default);
             System.Numerics.Matrix3x2.Invert(operation.GetTransform(source.Size)!.Value, out var inverse);
-            using var expected = ReferenceWarp(source, actual.Size, inverse, sampling == Bit.Bmage.Operations.Transforms.WarpSampling.Bicubic, background);
+            using var expected = ReferenceWarp(source, actual.Size, inverse, sampling == Bit.Bmage.WarpSampling.Bicubic, background);
             AssertSamePixels(expected, actual, $"{matrix}, {sampling}");
         }
     }

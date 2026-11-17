@@ -2,7 +2,7 @@
 using System.Numerics;
 using System.Text;
 
-namespace Bit.Bmage.Text;
+namespace Bit.Bmage;
 
 /// <summary>
 /// A parsed TrueType or OpenType font: character mapping, glyph outlines, horizontal metrics and the OpenType layout
@@ -599,7 +599,7 @@ public sealed class GlyphOutline
     /// Appends the glyph to a path builder, converting quadratic segments and flipping the Y axis so the result is in
     /// screen coordinates.
     /// </summary>
-    public void AppendTo(Drawing.PathBuilder builder, Vector2 origin, float scale)
+    public void AppendTo(PathBuilder builder, Vector2 origin, float scale)
     {
         ArgumentNullException.ThrowIfNull(builder);
         foreach (var contour in Contours)
@@ -633,7 +633,7 @@ public sealed class GlyphOutline
         }
     }
 
-    private static void EmitFrom(Drawing.PathBuilder builder, IReadOnlyList<GlyphPoint> pts, int n, int startIndex, Func<GlyphPoint, Vector2> map, Vector2 startPoint, bool allOffCurve)
+    private static void EmitFrom(PathBuilder builder, IReadOnlyList<GlyphPoint> pts, int n, int startIndex, Func<GlyphPoint, Vector2> map, Vector2 startPoint, bool allOffCurve)
     {
         Vector2? pendingControl = null;
         var count = allOffCurve ? n : n - 1;

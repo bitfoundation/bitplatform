@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Bit.Blex.Query;
+namespace Bit.Blex;
 
 /// <summary>
 /// One key's cached query: its data, its error, whether a fetch is running and who observes it. All

@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Bit.BlazeDb.Generators;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Emits a <c>BlazeDbTableDescriptor</c> (binary row/key serializers, key extractor, index
@@ -55,27 +55,27 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
 
         if (ctx.TargetNode is TypeDeclarationSyntax tds && !tds.Modifiers.Any(SyntaxKind.PartialKeyword))
         {
-            result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbDiagnostics.NotPartial, location, typeName));
+            result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbGeneratorDiagnostics.NotPartial, location, typeName));
             return result;
         }
 
         if (symbol.TypeParameters.Length > 0 || symbol.ContainingType != null)
         {
-            result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbDiagnostics.UnsupportedTypeShape, location, typeName));
+            result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbGeneratorDiagnostics.UnsupportedTypeShape, location, typeName));
             return result;
         }
 
         if (FindReservedName(symbol) is { } reserved)
         {
             result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                BlazeDbDiagnostics.ReservedName, reserved.Locations.FirstOrDefault() ?? location, typeName, reserved.Name));
+                BlazeDbGeneratorDiagnostics.ReservedName, reserved.Locations.FirstOrDefault() ?? location, typeName, reserved.Name));
             return result;
         }
 
         if (FindInheritedProperty(symbol) is { } inherited)
         {
             result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                BlazeDbDiagnostics.InheritedProperties, location, typeName,
+                BlazeDbGeneratorDiagnostics.InheritedProperties, location, typeName,
                 inherited.ContainingType.Name, inherited.Name));
             return result;
         }
@@ -128,7 +128,7 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
         var constructor = ChooseConstructor(symbol, candidates);
         if (constructor is null)
         {
-            result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbDiagnostics.NoParameterlessConstructor, location, typeName));
+            result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbGeneratorDiagnostics.NoParameterlessConstructor, location, typeName));
             return result;
         }
         var boundByConstructor = new HashSet<string>();
@@ -154,7 +154,7 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
                 if (IsAutoProperty(symbol, prop))
                 {
                     result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                        BlazeDbDiagnostics.UnstoredGetOnlyProperty, prop.Locations.FirstOrDefault() ?? location, typeName, prop.Name));
+                        BlazeDbGeneratorDiagnostics.UnstoredGetOnlyProperty, prop.Locations.FirstOrDefault() ?? location, typeName, prop.Name));
                 }
                 continue;
             }
@@ -166,14 +166,14 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
                 // reader does not run - so it is not computed from what is stored. Indexing it without storing it
                 // would find the row today and lose the value on the next open.
                 result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                    BlazeDbDiagnostics.UnstorableIndexedProperty, propLocation, typeName, prop.Name));
+                    BlazeDbGeneratorDiagnostics.UnstorableIndexedProperty, propLocation, typeName, prop.Name));
                 continue;
             }
             var propModel = Categorize(prop.Type);
             if (propModel is null)
             {
                 result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                    BlazeDbDiagnostics.UnsupportedPropertyType, propLocation, typeName, prop.Name, prop.Type.ToDisplayString()));
+                    BlazeDbGeneratorDiagnostics.UnsupportedPropertyType, propLocation, typeName, prop.Name, prop.Type.ToDisplayString()));
                 continue;
             }
 
@@ -190,14 +190,14 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
                 (propModel.Category != BlazeDbPropCategory.Scalar || propModel.Kind == BlazeDbScalarKind.ByteArray || indexOnly))
             {
                 result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                    BlazeDbDiagnostics.UnsupportedKeyType, propLocation, typeName, prop.Name));
+                    BlazeDbGeneratorDiagnostics.UnsupportedKeyType, propLocation, typeName, prop.Name));
                 continue;
             }
 
             if ((indexAttr != null || orderedAttr != null || indexOnly) && !IsIndexable(propModel))
             {
                 result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                    BlazeDbDiagnostics.UnindexableProperty, propLocation, typeName, prop.Name, prop.Type.ToDisplayString()));
+                    BlazeDbGeneratorDiagnostics.UnindexableProperty, propLocation, typeName, prop.Name, prop.Type.ToDisplayString()));
                 continue;
             }
             propModel.HashIndexName = indexAttr is null ? null : GetIndexName(indexAttr) ?? prop.Name;
@@ -221,13 +221,13 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
                     // The number is shifted into a varint tag alongside the wire type, so it has to
                     // fit; and it names a local in the generated reader, so it cannot be negative.
                     result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                        BlazeDbDiagnostics.InvalidFieldNumber, propLocation, typeName, prop.Name, explicitNumber, MaxFieldNumber));
+                        BlazeDbGeneratorDiagnostics.InvalidFieldNumber, propLocation, typeName, prop.Name, explicitNumber, MaxFieldNumber));
                     continue;
                 }
                 if (!usedNumbers.Add(explicitNumber))
                 {
                     result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                        BlazeDbDiagnostics.DuplicateFieldNumber, propLocation, typeName, explicitNumber));
+                        BlazeDbGeneratorDiagnostics.DuplicateFieldNumber, propLocation, typeName, explicitNumber));
                     continue;
                 }
                 propModel.FieldNumber = explicitNumber;
@@ -251,7 +251,7 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
                 if (required && !model.Props.Any(p => !p.IndexOnly && p.Name == member.Name))
                 {
                     result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                        BlazeDbDiagnostics.RequiredMemberNotStored, member.Locations.FirstOrDefault() ?? location, typeName, member.Name));
+                        BlazeDbGeneratorDiagnostics.RequiredMemberNotStored, member.Locations.FirstOrDefault() ?? location, typeName, member.Name));
                     return result;
                 }
             }
@@ -276,7 +276,7 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             // Explicit numbers say the author cares about the wire format; the automatic ones beside
             // them are the ones that will silently shift under it.
             result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                BlazeDbDiagnostics.MixedFieldNumbering, location, typeName, pendingAuto[0].Name, pendingAuto.Count - 1));
+                BlazeDbGeneratorDiagnostics.MixedFieldNumbering, location, typeName, pendingAuto[0].Name, pendingAuto.Count - 1));
         }
 
         var next = 1;
@@ -292,7 +292,7 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
         var keys = model.Props.Where(p => p.IsKey && !p.IndexOnly).ToList();
         if (keys.Count != 1)
         {
-            result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbDiagnostics.MissingOrMultipleKey, location, typeName));
+            result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbGeneratorDiagnostics.MissingOrMultipleKey, location, typeName));
             return result;
         }
         model.Key = keys[0];
@@ -339,14 +339,14 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
                 if (target is null)
                 {
                     result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                        BlazeDbDiagnostics.CompoundIndexPropertyNotFound, location, name!, typeName, propName ?? "<null>"));
+                        BlazeDbGeneratorDiagnostics.CompoundIndexPropertyNotFound, location, name!, typeName, propName ?? "<null>"));
                     resolved = false;
                     break;
                 }
                 if (!IsIndexable(target))
                 {
                     result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                        BlazeDbDiagnostics.UnindexableProperty, location, typeName, target.Name, target.TypeDisplay));
+                        BlazeDbGeneratorDiagnostics.UnindexableProperty, location, typeName, target.Name, target.TypeDisplay));
                     resolved = false;
                     break;
                 }
@@ -355,7 +355,7 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
                     // The index key is a value tuple named after its members, and a tuple cannot
                     // name two elements the same - the generated code would not compile.
                     result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                        BlazeDbDiagnostics.CompoundIndexDuplicateProperty, location, name!, typeName, target.Name));
+                        BlazeDbGeneratorDiagnostics.CompoundIndexDuplicateProperty, location, name!, typeName, target.Name));
                     resolved = false;
                     break;
                 }
@@ -369,7 +369,7 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             if (compound.Props.Count < 2)
             {
                 result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
-                    BlazeDbDiagnostics.CompoundIndexNeedsTwoProperties, location, name!, typeName));
+                    BlazeDbGeneratorDiagnostics.CompoundIndexNeedsTwoProperties, location, name!, typeName));
                 continue;
             }
 
@@ -398,13 +398,13 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             // type's name (CS0542).
             if (!SyntaxFacts.IsValidIdentifier(name) || name == "Indexes")
             {
-                result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbDiagnostics.InvalidIndexName, location, typeName, name));
+                result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbGeneratorDiagnostics.InvalidIndexName, location, typeName, name));
                 valid = false;
                 continue;
             }
             if (!seen.Add(name))
             {
-                result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbDiagnostics.DuplicateIndexName, location, typeName, name));
+                result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbGeneratorDiagnostics.DuplicateIndexName, location, typeName, name));
                 valid = false;
             }
         }

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
-using Bit.Bcrdt.Borm;
 using Bit.Borm;
 
 namespace Bit.Bcrdt.Tests.Integrations;

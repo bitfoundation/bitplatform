@@ -1,21 +1,6 @@
 ﻿using System.Buffers.Binary;
 using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Analysis;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Bmp;
-using Bit.Bmage.Codecs.Jpeg;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
-using Bit.Bmage.Text;
 
 namespace Bit.Bmage.Tests;
 
@@ -301,10 +286,10 @@ public sealed class ReviewRegressionTests
     public void PngChunkLengthsThatWouldOverflowAreIgnored()
     {
         using var source = TestImages.Gradient(8, 8);
-        var png = Codecs.Png.PngEncoder.Encode(source).Data.ToArray();
+        var png = PngEncoder.Encode(source).Data.ToArray();
         // Corrupt the IHDR length to just below int.MaxValue.
         BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(8), 0x7FFFFFF3);
-        var error = Capture.Exception(() => Codecs.Png.PngDecoder.Decode(png));
+        var error = Capture.Exception(() => PngDecoder.Decode(png));
         Assert.IsTrue(error is null or ImageException, $"unexpected {error?.GetType().Name}");
     }
 

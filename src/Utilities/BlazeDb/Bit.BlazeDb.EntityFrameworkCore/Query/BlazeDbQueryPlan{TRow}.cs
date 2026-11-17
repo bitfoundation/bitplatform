@@ -1,9 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
-using Bit.BlazeDb.EntityFrameworkCore.Metadata;
-using Bit.BlazeDb.Querying;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 internal sealed class BlazeDbQueryPlan<TRow> : BlazeDbQueryPlan
 {

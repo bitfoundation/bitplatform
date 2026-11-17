@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.Json.Nodes;
 
-namespace Bit.Bcrdt.Blex;
+namespace Bit.Bcrdt;
 
 /// <summary>
 /// A Blex store whose state is a projection of part of a collaborative document.

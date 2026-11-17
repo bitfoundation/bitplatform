@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Geometry;
 
 namespace Bit.Bmage.Tests;
 
@@ -36,7 +35,7 @@ public sealed class OrientationTests
         }
 
         static ImageBuffer Apply(ImageBuffer src, Orientation o)
-            => new Operations.Transforms.OrientationOperation(o).Apply(src, Operations.OperationContext.Default);
+            => new OrientationOperation(o).Apply(src, OperationContext.Default);
     }
 
     [TestMethod]
@@ -46,7 +45,7 @@ public sealed class OrientationTests
         foreach (var o in Enum.GetValues<Orientation>().Where(v => v != Orientation.Unspecified))
         {
             using var source = TestImages.Gradient(size.Width, size.Height);
-            using var rotated = new Operations.Transforms.OrientationOperation(o).Apply(source, Operations.OperationContext.Default);
+            using var rotated = new OrientationOperation(o).Apply(source, OperationContext.Default);
             for (var y = 0; y < size.Height; y++)
             {
                 for (var x = 0; x < size.Width; x++)

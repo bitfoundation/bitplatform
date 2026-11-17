@@ -1,7 +1,3 @@
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Editor.Localization;
-using Bit.Bmage.Geometry;
-
 namespace Bit.Bmage.Demo.Client.Shared;
 
 /// <summary>

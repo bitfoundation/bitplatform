@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
-namespace Bit.Bmage.Analysis;
+namespace Bit.Bmage;
 
 /// <summary>What counts as background when trimming an image.</summary>
 public enum TrimMode

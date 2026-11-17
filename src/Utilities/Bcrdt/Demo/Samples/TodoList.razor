@@ -1,7 +1,6 @@
 ﻿@* One participant of the collaborative to-do list: a BcrdtArray of BcrdtMaps, each with a title and a done
    flag. Each panel of the list page is this component, opened by a different user. *@
 @using Bit.Bcrdt
-@using Bit.Bcrdt.Blazor
 
 <BcrdtCollaborationScope DocumentId="demo-list" User="_me" Context="document">
     @{

@@ -1,9 +1,4 @@
-﻿using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Jpeg;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Pipeline;
-
-namespace Bit.Bmage.Tests;
+﻿namespace Bit.Bmage.Tests;
 
 /// <summary>
 /// A size budget is met by searching quality, and every attempt is a full encode, which in a browser also means

@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Bit.Bmage.Codecs.WebP;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Encoder for the WebP lossless bitstream. Images with at most 256 colours are coded through a palette, packing several

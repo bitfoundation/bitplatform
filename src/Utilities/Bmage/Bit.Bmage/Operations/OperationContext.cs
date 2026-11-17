@@ -1,6 +1,4 @@
-﻿using Bit.Bmage.Memory;
-
-namespace Bit.Bmage.Operations;
+﻿namespace Bit.Bmage;
 
 /// <summary>
 /// Ambient services and policies passed to an operation while it executes: memory allocation, limits,
@@ -14,8 +12,8 @@ public sealed class OperationContext
     /// <remarks>
     /// <para>
     /// Spreading rows over more threads is opted into, by setting <see cref="BitBmageOptions.MaxDegreeOfParallelism"/>,
-    /// <see cref="Pipeline.ImageProcessor.MaxDegreeOfParallelism"/>,
-    /// <see cref="Pipeline.PipelineExecutionOptions.MaxDegreeOfParallelism"/> or the context's own. A server already
+    /// <see cref="ImageProcessor.MaxDegreeOfParallelism"/>,
+    /// <see cref="PipelineExecutionOptions.MaxDegreeOfParallelism"/> or the context's own. A server already
     /// runs requests, batch items and editor circuits side by side, and every one of them fanning out over every core
     /// would multiply the threads it competes for and hold a thread-pool thread waiting on each run; a desktop app, a
     /// command-line tool or a background job processing one image at a time is where more threads pay.

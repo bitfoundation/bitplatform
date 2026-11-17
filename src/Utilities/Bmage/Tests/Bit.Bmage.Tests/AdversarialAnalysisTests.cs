@@ -1,9 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Analysis;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 

@@ -1,8 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Operations.Transforms;
+namespace Bit.Bmage;
 
 /// <summary>
 /// A resize immediately followed by a crop, executed as a single resample of just the region that survives the crop.

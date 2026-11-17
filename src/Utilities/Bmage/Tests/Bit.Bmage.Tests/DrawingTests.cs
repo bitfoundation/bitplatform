@@ -1,9 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 
@@ -256,7 +252,7 @@ public sealed class CanvasImageTests
     {
         using var buffer = ImageBuffer.Create(32, 32, Rgba32.White);
         using var canvas = ImageCanvas.FromBuffer(buffer);
-        Assert.ThrowsExactly<InvalidOperationException>(() => canvas.ApplyPipeline(ImagePipeline.Create().Resize(16, 16, Geometry.ResizeMode.Stretch)));
+        Assert.ThrowsExactly<InvalidOperationException>(() => canvas.ApplyPipeline(ImagePipeline.Create().Resize(16, 16, ResizeMode.Stretch)));
     }
 }
 
@@ -388,7 +384,7 @@ public sealed class DocumentAndHistoryTests
     public void DocumentsAreImmutable()
     {
         var doc = ImageDocument.Create(new Size(100, 100));
-        var withCrop = doc.AddOperation(new Operations.Transforms.CropOperation(0, 0, 50, 50));
+        var withCrop = doc.AddOperation(new CropOperation(0, 0, 50, 50));
         Assert.IsTrue(doc.IsEmpty);
         Assert.ContainsSingle(withCrop.Pipeline);
         Assert.AreEqual(new Size(50, 50), withCrop.OutputSize);
@@ -455,11 +451,11 @@ public sealed class DocumentAndHistoryTests
     public void ForScaleScalesBothPipelineAndAnnotations()
     {
         var doc = ImageDocument.Create(new Size(1000, 800))
-            .AddOperation(new Operations.Transforms.CropOperation(100, 100, 400, 400))
+            .AddOperation(new CropOperation(100, 100, 400, 400))
             .AddAnnotation(new ArrowAnnotation { Start = new Vector2(200, 200), End = new Vector2(400, 400) });
         var half = doc.ForScale(0.5);
         Assert.AreEqual(new Size(500, 400), half.SourceSize);
-        Assert.AreEqual(new Rectangle(50, 50, 200, 200), ((Operations.Transforms.CropOperation)half.Pipeline[0]).Rectangle);
+        Assert.AreEqual(new Rectangle(50, 50, 200, 200), ((CropOperation)half.Pipeline[0]).Rectangle);
         Assert.AreEqual(new Vector2(100, 100), ((ArrowAnnotation)half.Annotations[0]).Start);
     }
 
@@ -471,7 +467,7 @@ public sealed class DocumentAndHistoryTests
         Assert.IsFalse(history.CanUndo);
         Assert.IsFalse(history.CanRedo);
 
-        history.Push(doc.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0.2f)), "Brightness");
+        history.Push(doc.AddOperation(new BrightnessAdjustment(0.2f)), "Brightness");
         Assert.IsTrue(history.CanUndo);
         Assert.ContainsSingle(history.Current.Pipeline);
 
@@ -487,11 +483,11 @@ public sealed class DocumentAndHistoryTests
     public void EditingAfterUndoDiscardsTheRedoTrail()
     {
         var history = new EditHistory(ImageDocument.Create(new Size(50, 50)));
-        history.Push(history.Current.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0.1f)), "A");
-        history.Push(history.Current.AddOperation(new Operations.Adjustments.ContrastAdjustment(0.1f)), "B");
+        history.Push(history.Current.AddOperation(new BrightnessAdjustment(0.1f)), "A");
+        history.Push(history.Current.AddOperation(new ContrastAdjustment(0.1f)), "B");
         history.Undo();
         Assert.IsTrue(history.CanRedo);
-        history.Push(history.Current.AddOperation(new Operations.Adjustments.SaturationAdjustment(0.1f)), "C");
+        history.Push(history.Current.AddOperation(new SaturationAdjustment(0.1f)), "C");
         Assert.IsFalse(history.CanRedo);
         Assert.AreEqual("C", history.CurrentEntry.Label);
     }
@@ -500,10 +496,10 @@ public sealed class DocumentAndHistoryTests
     public void AmendReplacesTheCurrentEntryInsteadOfGrowingHistory()
     {
         var history = new EditHistory(ImageDocument.Create(new Size(50, 50)));
-        history.Push(history.Current.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0.1f)), "Brightness");
+        history.Push(history.Current.AddOperation(new BrightnessAdjustment(0.1f)), "Brightness");
         var count = history.Entries.Count;
         for (var i = 0; i < 20; i++)
-            history.Amend(ImageDocument.Create(new Size(50, 50)).AddOperation(new Operations.Adjustments.BrightnessAdjustment(i / 100f)));
+            history.Amend(ImageDocument.Create(new Size(50, 50)).AddOperation(new BrightnessAdjustment(i / 100f)));
         Assert.AreEqual(count, history.Entries.Count);
     }
 
@@ -513,7 +509,7 @@ public sealed class DocumentAndHistoryTests
         var original = ImageDocument.Create(new Size(50, 50));
         var history = new EditHistory(original, maxDepth: 5);
         for (var i = 0; i < 20; i++)
-            history.Push(history.Current.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0.01f * (i + 1))), $"Step {i}");
+            history.Push(history.Current.AddOperation(new BrightnessAdjustment(0.01f * (i + 1))), $"Step {i}");
         Assert.AreEqual(5, history.Entries.Count);
         Assert.IsTrue(history.Entries[0].Document.IsEmpty, "The original state was discarded");
     }
@@ -523,7 +519,7 @@ public sealed class DocumentAndHistoryTests
     {
         var history = new EditHistory(ImageDocument.Create(new Size(6000, 4000)), maxDepth: 100);
         for (var i = 0; i < 99; i++)
-            history.Push(history.Current.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0.001f * i)), $"Step {i}");
+            history.Push(history.Current.AddOperation(new BrightnessAdjustment(0.001f * i)), $"Step {i}");
         // 100 undo steps on a 24 megapixel image must not cost anything like 100 copies of the pixels.
         Assert.IsTrue(history.EstimatedMemory < 1_000_000, $"History used {history.EstimatedMemory} bytes");
     }
@@ -532,7 +528,7 @@ public sealed class DocumentAndHistoryTests
     public void ResetReturnsToTheOriginalWithoutLosingRedo()
     {
         var history = new EditHistory(ImageDocument.Create(new Size(50, 50)));
-        history.Push(history.Current.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0.5f)), "Brightness");
+        history.Push(history.Current.AddOperation(new BrightnessAdjustment(0.5f)), "Brightness");
         history.Reset();
         Assert.IsTrue(history.Current.IsEmpty);
         Assert.IsTrue(history.CanRedo);
@@ -543,7 +539,7 @@ public sealed class DocumentAndHistoryTests
     {
         using var source = ImageBuffer.Create(64, 64, Rgba32.White);
         var doc = ImageDocument.Create(source)
-            .AddOperation(new Operations.Adjustments.BrightnessAdjustment(-0.5f))
+            .AddOperation(new BrightnessAdjustment(-0.5f))
             .AddAnnotation(new RectangleAnnotation
             {
                 Rectangle = new RectangleF(8, 8, 20, 20),

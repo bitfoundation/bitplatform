@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Nodes;
-using Bit.Blex.Testing;
 
 namespace Bit.Blex.Tests;
 

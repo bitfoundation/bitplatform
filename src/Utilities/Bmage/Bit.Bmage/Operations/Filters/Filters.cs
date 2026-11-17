@@ -1,9 +1,8 @@
 ﻿using System.Buffers;
 using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Geometry;
 
-namespace Bit.Bmage.Operations.Filters;
+namespace Bit.Bmage;
 
 /// <summary>Base class for operations that optionally act on a sub-region of the image (e.g. redacting part of a screenshot).</summary>
 public abstract class RegionOperation : ImageOperation

@@ -102,8 +102,8 @@ public class QueryTests
         value = 100;
         System.Linq.Expressions.Expression<Func<Person, bool>> second = p => p.Age > value;
 
-        var one = (Func<Person, bool>)Bit.BlazeDb.EntityFrameworkCore.Query.BlazeDbDelegateCache.Compile(first);
-        var two = (Func<Person, bool>)Bit.BlazeDb.EntityFrameworkCore.Query.BlazeDbDelegateCache.Compile(second);
+        var one = (Func<Person, bool>)Bit.BlazeDb.BlazeDbDelegateCache.Compile(first);
+        var two = (Func<Person, bool>)Bit.BlazeDb.BlazeDbDelegateCache.Compile(second);
         var person = new Person { Age = 50 };
 
         // Both lambdas read the same closure, so both see 100 - as the originals would.

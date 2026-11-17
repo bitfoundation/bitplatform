@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs.Avif;
+﻿namespace Bit.Bmage;
 
 /// <summary>The fields of an AV1 sequence header OBU (spec 5.5) that decoding a still image needs.</summary>
 internal sealed class Av1SequenceHeader

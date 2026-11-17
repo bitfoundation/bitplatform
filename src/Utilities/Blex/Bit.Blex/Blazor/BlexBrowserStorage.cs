@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>
 /// <see cref="IBlexStorage"/> backed by the browser's <c>localStorage</c>/<c>sessionStorage</c>

@@ -1,10 +1,8 @@
 ﻿using System.Buffers;
 using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
 
-namespace Bit.Bmage.Masks;
+namespace Bit.Bmage;
 
 /// <summary>
 /// The region of similar colour around one or more points: the magic wand. From each seed it spreads to neighbouring

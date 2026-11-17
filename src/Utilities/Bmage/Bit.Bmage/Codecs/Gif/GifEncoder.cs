@@ -1,6 +1,6 @@
 ﻿using System.Buffers.Binary;
 
-namespace Bit.Bmage.Codecs.Gif;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Managed GIF encoder: one frame, a palette of up to 256 colours (<see cref="ImageExportOptions.MaxColors"/>, chosen

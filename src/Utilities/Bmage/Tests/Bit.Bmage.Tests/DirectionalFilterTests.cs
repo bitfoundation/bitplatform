@@ -1,7 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Filters;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 

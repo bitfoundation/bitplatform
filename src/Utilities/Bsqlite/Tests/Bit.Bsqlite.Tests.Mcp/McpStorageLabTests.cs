@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Storage.Opfs;
-using Bit.Bsqlite.Demo.Server.Dtos;
-using Bit.Bsqlite.Storage.IndexedDb;
+﻿using Bit.Bsqlite.Demo.Server.Dtos;
 
 namespace Bit.Bsqlite.Tests.Mcp;
 

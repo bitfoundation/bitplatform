@@ -1,7 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
-namespace Bit.BlazeDb.Wal;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// CRC-32 (IEEE 802.3, reflected polynomial 0xEDB88320) used to detect torn WAL writes.

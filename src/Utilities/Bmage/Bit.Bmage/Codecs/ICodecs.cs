@@ -1,9 +1,6 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Metadata;
 
-namespace Bit.Bmage.Codecs;
+namespace Bit.Bmage;
 
 /// <summary>Basic facts about an encoded image obtained without a full decode.</summary>
 public sealed record ImageInfo(int Width, int Height, ImageFormat Format, Orientation Orientation = Orientation.Normal, bool? HasAlpha = null)
@@ -38,8 +35,8 @@ public sealed record DecodeOptions
 
     /// <summary>
     /// The most threads the managed decoders may spread the work after decoding over, such as turning a photo upright,
-    /// or null for <see cref="Operations.OperationContext.DefaultMaxDegreeOfParallelism"/>. An
-    /// <see cref="Pipeline.ImageProcessor"/> fills it in from its own <see cref="Pipeline.ImageProcessor.MaxDegreeOfParallelism"/>.
+    /// or null for <see cref="OperationContext.DefaultMaxDegreeOfParallelism"/>. An
+    /// <see cref="ImageProcessor"/> fills it in from its own <see cref="ImageProcessor.MaxDegreeOfParallelism"/>.
     /// </summary>
     public int? MaxDegreeOfParallelism
     {
@@ -192,19 +189,19 @@ public sealed class ImageCodecRegistry
     public static ImageCodecRegistry CreateDefault()
     {
         var r = new ImageCodecRegistry();
-        r.AddDecoder(new Png.PngDecoder());
-        r.AddEncoder(new Png.PngEncoder());
-        r.AddDecoder(new Bmp.BmpDecoder());
-        r.AddEncoder(new Bmp.BmpEncoder());
-        r.AddDecoder(new Jpeg.JpegDecoder());
-        r.AddEncoder(new Jpeg.JpegEncoder());
-        r.AddDecoder(new Gif.GifDecoder());
-        r.AddEncoder(new Gif.GifEncoder());
-        r.AddDecoder(new Ico.IcoDecoder());
-        r.AddEncoder(new Ico.IcoEncoder());
-        r.AddDecoder(new WebP.WebPDecoder());
-        r.AddEncoder(new WebP.WebPEncoder());
-        r.AddDecoder(new Avif.AvifDecoder());
+        r.AddDecoder(new PngDecoder());
+        r.AddEncoder(new PngEncoder());
+        r.AddDecoder(new BmpDecoder());
+        r.AddEncoder(new BmpEncoder());
+        r.AddDecoder(new JpegDecoder());
+        r.AddEncoder(new JpegEncoder());
+        r.AddDecoder(new GifDecoder());
+        r.AddEncoder(new GifEncoder());
+        r.AddDecoder(new IcoDecoder());
+        r.AddEncoder(new IcoEncoder());
+        r.AddDecoder(new WebPDecoder());
+        r.AddEncoder(new WebPEncoder());
+        r.AddDecoder(new AvifDecoder());
         return r;
     }
 

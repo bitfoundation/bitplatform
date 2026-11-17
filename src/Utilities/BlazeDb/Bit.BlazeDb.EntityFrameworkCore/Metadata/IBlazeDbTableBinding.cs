@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.EntityFrameworkCore.Query;
-
-namespace Bit.BlazeDb.EntityFrameworkCore.Metadata;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// The non-generic face of one mapped table, so the provider can work with entity types without
@@ -45,7 +43,7 @@ internal interface IBlazeDbTableBinding
 
     /// <summary>
     /// Has the table record <paramref name="tokens"/>' values for every row it holds and every row it is
-    /// given from now on, as written; see <see cref="Storage.BlazeDbConcurrencyTokens"/>. Does nothing
+    /// given from now on, as written; see <see cref="BlazeDbConcurrencyTokens"/>. Does nothing
     /// when there are no tokens.
     /// </summary>
     void ObserveConcurrencyTokens(Microsoft.EntityFrameworkCore.Metadata.IProperty[] tokens);

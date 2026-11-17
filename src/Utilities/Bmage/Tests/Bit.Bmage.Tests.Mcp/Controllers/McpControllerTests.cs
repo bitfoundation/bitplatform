@@ -120,16 +120,17 @@ public class McpControllerTests
     {
         var all = _controller.GetBmageApiList();
 
-        // No type lives in Bit.Bmage.Editor itself, so it matches as a part of a namespace: every editor namespace.
-        var editor = _controller.GetBmageApiList("Bit.Bmage.Editor");
-        Assert.IsTrue(editor.All(type => type.Namespace.StartsWith("Bit.Bmage.Editor.", StringComparison.Ordinal)));
+        // Every type is in the one Bit.Bmage namespace, so "Editor" matches as a part of a name.
+        var editor = _controller.GetBmageApiList("Editor");
+        Assert.IsTrue(editor.All(type => type.Name.Contains("Editor", StringComparison.OrdinalIgnoreCase)));
         Assert.IsTrue(editor.Any(type => type.Name == "BmageEditor") && editor.Any(type => type.Name == "EditorToolKind"));
+        Assert.IsTrue(all.All(type => type.Namespace == "Bit.Bmage"), "Every Bmage type is in the Bit.Bmage namespace.");
 
         var enums = _controller.GetBmageApiList("enum");
         Assert.IsTrue(enums.All(type => type.Kind == "Enum"));
         Assert.IsTrue(enums.Any(type => type.Name == "MetadataPolicy"));
 
-        var annotations = _controller.GetBmageApiList("Bit.Bmage.Annotations");
+        var annotations = _controller.GetBmageApiList("Annotation");
         Assert.IsTrue(annotations.Any(type => type.Name == "RedactionAnnotation"));
 
         var export = _controller.GetBmageApiList("Export");
@@ -159,7 +160,7 @@ public class McpControllerTests
         var type = _controller.GetBmageApiDetails("ImageExportOptions").Details;
 
         Assert.IsNotNull(type);
-        Assert.AreEqual("Bit.Bmage.Codecs", type.Namespace);
+        Assert.AreEqual("Bit.Bmage", type.Namespace);
         Assert.AreEqual("Bit.Bmage", type.Package);
 
         var member = _controller.GetBmageApiDetails("ImagePipeline.Cover").Details;

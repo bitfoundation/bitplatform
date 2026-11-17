@@ -1,13 +1,8 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using System.Text.Json;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Pipeline;
 
-namespace Bit.Bmage.Serialization;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Writes the properties of one object of a Bmage document. Handed to every codec, built-in or custom, positioned

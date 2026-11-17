@@ -1,8 +1,5 @@
-﻿@using Bit.Bmage.Analysis
-@using Bit.Bmage.Editor.Tools
-@using Bit.Bmage.Operations.Adjustments
-@using Bit.Bmage.Operations.Filters
-@using Bit.Bmage.Operations.Transforms
+﻿@namespace Bit.Bmage
+@using Bit.Bmage
 
 @*
     The default options panel: adjustments, filters, style controls for the active tool, the annotation list and the
@@ -745,7 +742,7 @@
             {
                 var p = row[x];
                 if (p.A == 0) continue;
-                bins[Masks.MaskBuffer.Luma(p)]++;
+                bins[MaskBuffer.Luma(p)]++;
                 total++;
             }
         }
@@ -845,7 +842,7 @@
     // ---- Layers ----
 
     private Task OnAddImageLayer(InputFileChangeEventArgs e)
-        => Context.AddImageLayerAsync(Input.ImageSource.FromBrowserFile(e.File));
+        => Context.AddImageLayerAsync(ImageSource.FromBrowserFile(e.File));
 
     private Task OnOpenProject(InputFileChangeEventArgs e) => Context.OpenProjectAsync(e.File);
 

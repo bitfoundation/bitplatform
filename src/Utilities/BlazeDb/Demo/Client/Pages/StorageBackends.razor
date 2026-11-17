@@ -1,5 +1,5 @@
 ﻿@page "/storage"
-@using Bit.BlazeDb.Browser
+@using Bit.BlazeDb
 @implements IAsyncDisposable
 @inject DemoDbService Db
 
@@ -17,7 +17,7 @@
 
 <Section Title="The interface">
     <div class="bb-flex">
-        <CodeBlock Title="Bit.BlazeDb.Storage.IBlazeDbStorage" Code="@InterfaceSnippet" />
+        <CodeBlock Title="Bit.BlazeDb.IBlazeDbStorage" Code="@InterfaceSnippet" />
         <div class="bb-flex">
             <Panel Title="Contract notes" IconName="info">
                 <dl class="bb-params bd-params-prose">
@@ -597,7 +597,7 @@
         _busy = true;
         try
         {
-            var storage = await Bit.BlazeDb.Browser.BlazeDbOpfsStorage.CreateAsync(DemoDbService.DatabaseName);
+            var storage = await Bit.BlazeDb.BlazeDbOpfsStorage.CreateAsync(DemoDbService.DatabaseName);
             storage.Dispose();
             _lockResult =
                 "The lock was available, so this tab is not the OPFS writer.\n" +
@@ -632,7 +632,7 @@
     }
 
     private const string InterfaceSnippet = """
-        namespace Bit.BlazeDb.Storage;
+        namespace Bit.BlazeDb;
 
         public interface IBlazeDbStorage
         {

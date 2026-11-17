@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-
-namespace Bit.Bsqlite.Interop;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// An opened database: the connection the application uses, the transport that owns the worker,

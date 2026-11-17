@@ -25,7 +25,7 @@ public static class MauiProgram
         // redirecting it to an HTTPS certificate the emulator does not trust (see their Program.cs), and Android
         // allows plain HTTP once the <application> of Platforms/Android/AndroidManifest.xml has
         // android:usesCleartextTraffic="true":
-        //     .UseTransport(new Bit.Bcrdt.SignalR.BcrdtSignalRTransportFactory("http://10.0.2.2:5191/hub/bcrdt"))
+        //     .UseTransport(new Bit.Bcrdt.BcrdtSignalRTransportFactory("http://10.0.2.2:5191/hub/bcrdt"))
         builder.Services.AddCoreServices(collaboration => collaboration
             .UseStore(new BcrdtFileSystemDocumentStore(Path.Combine(FileSystem.AppDataDirectory, "documents"))));
 

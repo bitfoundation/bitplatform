@@ -1,12 +1,4 @@
-﻿using Bit.Bmage.Capabilities;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Png;
-using Bit.Bmage.Codecs.WebP;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Pipeline;
-
-namespace Bit.Bmage.Tests;
+﻿namespace Bit.Bmage.Tests;
 
 [TestClass]
 public sealed class WebPCodecTests
@@ -132,7 +124,7 @@ public sealed class WebPCodecTests
             var padded = new byte[asset.Length + 64];
             asset.CopyTo(padded, 32);
             using var expected = WebPDecoder.Decode(asset);
-            using var decoded = await new WebPDecoder().DecodeAsync(padded.AsMemory(32, asset.Length), DecodeOptions.Default, Memory.PooledPixelAllocator.Shared);
+            using var decoded = await new WebPDecoder().DecodeAsync(padded.AsMemory(32, asset.Length), DecodeOptions.Default, PooledPixelAllocator.Shared);
             Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, decoded), name);
         }
     }

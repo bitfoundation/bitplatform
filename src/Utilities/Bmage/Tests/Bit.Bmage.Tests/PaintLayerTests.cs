@@ -1,12 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Analysis;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Serialization;
 
 namespace Bit.Bmage.Tests;
 
@@ -131,7 +124,7 @@ public sealed class PaintLayerTests
         layer.Composite(full);
         using var proxy = ImageBuffer.Create(50, 40, Rgba32.White);
         scaled.Composite(proxy);
-        using var reduced = new Operations.Transforms.ResizeOperation(50, 40, Geometry.ResizeMode.Stretch).Apply(full, OperationContext.Default);
+        using var reduced = new ResizeOperation(50, 40, ResizeMode.Stretch).Apply(full, OperationContext.Default);
         Assert.IsLessThan(12.0, TestImages.MeanChannelDifference(reduced, proxy));
     }
 

@@ -33,8 +33,8 @@ public static class BmageServerInstructions
         drawing, JSON edits) with no dependency on Blazor - all a server, console app or worker installs.
         Bit.Bmage.Blazor, which brings Bit.Bmage along, is what a browser app installs: the browser integration
         (ImageLoader, ImageExporter, the browser's codecs in Web Workers, AVIF encoding among them, capability probing)
-        and the BmageEditor component (namespace Bit.Bmage.Editor.Components, styled by the opt-in
-        _content/Bit.Bmage.Blazor/bit-bmage-editor.css). Namespaces do not follow the packages: both use Bit.Bmage.*.
+        and the BmageEditor component (styled by the opt-in _content/Bit.Bmage.Blazor/bit-bmage-editor.css). Namespaces
+        do not follow the packages: every type of both is in the one Bit.Bmage namespace.
 
         Every answer here is read out of Bit.Bmage and Bit.Bmage.Blazor {BmageVersion} as loaded in this server - the XML
         documentation of the assemblies, the README and docs/ guides, the demo's sources - or measured by running its

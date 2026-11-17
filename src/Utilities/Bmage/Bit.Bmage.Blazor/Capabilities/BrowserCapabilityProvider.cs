@@ -1,8 +1,7 @@
 ﻿using System.Text.Json.Serialization;
-using Bit.Bmage.Interop;
 using Microsoft.JSInterop;
 
-namespace Bit.Bmage.Capabilities;
+namespace Bit.Bmage;
 
 /// <summary>
 /// Detects what the current browser can do by actually exercising it: encoding a one pixel image in each candidate

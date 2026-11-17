@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Bit.Bmage.Codecs.Avif;
+namespace Bit.Bmage;
 
 // Generated from the butterfly sequences of the AV1 specification (7.13.2): the inverse DCT for 4 to 64 points and
 // the inverse ADST for 8 and 16, unrolled into straight-line code over locals. B is a rotation by cos128/sin128

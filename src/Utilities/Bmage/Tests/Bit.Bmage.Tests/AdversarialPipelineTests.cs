@@ -1,11 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 
@@ -391,9 +384,9 @@ public sealed class AdversarialPipelineTests
     }
 
     /// <summary>Counts rentals against returns so buffer leaks are visible independently of pool retention.</summary>
-    private sealed class CountingAllocator : Bit.Bmage.Memory.IPixelAllocator
+    private sealed class CountingAllocator : Bit.Bmage.IPixelAllocator
     {
-        private readonly Bit.Bmage.Memory.IPixelAllocator _inner = Bit.Bmage.Memory.PooledPixelAllocator.Shared;
+        private readonly Bit.Bmage.IPixelAllocator _inner = Bit.Bmage.PooledPixelAllocator.Shared;
         internal int OutstandingCount;
         public int Rented;
         public int Peak;
@@ -424,7 +417,7 @@ public sealed class AdversarialPipelineTests
     public async Task DisposingASessionMidRenderDoesNotThrow()
     {
         var session = new ImageEditSession(Noise(800, 600, 53), new ImageEditSessionOptions { MaxProxyDimension = 400 });
-        session.AddOperation(new Bit.Bmage.Operations.Filters.BlurFilter(8f));
+        session.AddOperation(new Bit.Bmage.BlurFilter(8f));
         var render = Task.Run(async () =>
         {
             try { await session.RenderPreviewAsync(); }
@@ -464,9 +457,9 @@ public sealed class AdversarialPipelineTests
         var op = kind switch
         {
             "resize" => (IImageOperation)new ResizeOperation(700, 550, ResizeMode.Stretch, ResamplingFilter.Lanczos3),
-            "blur" => new Bit.Bmage.Operations.Filters.BlurFilter(10f),
+            "blur" => new Bit.Bmage.BlurFilter(10f),
             "rotate" => new RotateOperation(37),
-            "median" => new Bit.Bmage.Operations.Filters.MedianFilter(2),
+            "median" => new Bit.Bmage.MedianFilter(2),
             _ => new BrightnessAdjustment(0.2f),
         };
         Assert.Throws<OperationCanceledException>(

@@ -1,7 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Analysis;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
 
 namespace Bit.Bmage.Tests;
 

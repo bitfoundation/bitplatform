@@ -1,7 +1,6 @@
-﻿using Bit.Bsqlite;
-using Bit.Bsqlite.Interop;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Bit.Bsqlite;
 
 /// <summary>Registers bit Bsqlite with dependency injection.</summary>
 /// <remarks>

@@ -2,18 +2,9 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Net.Http.Json;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Interop;
-using Bit.Bsqlite.Storage;
-using Bit.Bsqlite.Testing;
-using Bit.Bsqlite.Storage.Opfs;
 using System.Text.RegularExpressions;
 using Bit.Bsqlite.Demo.Server.Dtos;
-using Bit.Bsqlite.Storage.FileSystem;
-using Bit.Bsqlite.Storage.InMemory;
-using Bit.Bsqlite.Storage.IndexedDb;
 using Bit.Bsqlite.Demo.Server.Services;
-using Bit.Bsqlite.Storage.CacheStorage;
 
 namespace Bit.Bsqlite.Tests.Mcp;
 
@@ -171,10 +162,10 @@ public partial class McpOracleTests
 
         var entryPoints = BsqliteApiCatalog.GetTypeDetails("BitBsqlite")!;
 
-        Assert.AreEqual("Microsoft.Extensions.DependencyInjection", entryPoints.Namespace);
+        Assert.AreEqual("Bit.Bsqlite", entryPoints.Namespace);
         Assert.IsTrue(entryPoints.Members.Any(member => member.Name == "AddBitBsqliteServices"));
         Assert.IsTrue(entryPoints.Members.Any(member => member.Name == "AddBitBsqliteDbContext<TContext>"));
-        Assert.AreEqual("Microsoft.EntityFrameworkCore", BsqliteApiCatalog.GetTypeDetails("BsqliteDbContextOptionsExtensions")!.Namespace);
+        Assert.AreEqual("Bit.Bsqlite", BsqliteApiCatalog.GetTypeDetails("BsqliteDbContextOptionsExtensions")!.Namespace);
     }
 
     [TestMethod]

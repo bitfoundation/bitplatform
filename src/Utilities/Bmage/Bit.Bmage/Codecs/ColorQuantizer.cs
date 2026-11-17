@@ -1,4 +1,4 @@
-﻿namespace Bit.Bmage.Codecs;
+﻿namespace Bit.Bmage;
 
 /// <summary>An image reduced to a palette: one index per pixel into at most 256 colours.</summary>
 /// <param name="Palette">The colours, translucent ones first, then opaque ones.</param>
