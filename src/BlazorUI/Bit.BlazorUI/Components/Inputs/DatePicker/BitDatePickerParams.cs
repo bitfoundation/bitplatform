@@ -407,12 +407,6 @@ public partial class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, 
     public Func<DateTimeOffset, bool>? IsDateDisabled { get; set; }
 
     /// <summary>
-    /// Whether the month picker is shown next to the day picker or hidden.
-    /// It has no effect in the MonthPicker mode, where the month picker is the only view.
-    /// </summary>
-    public bool? IsMonthPickerVisible { get; set; }
-
-    /// <summary>
     /// The text of the DatePicker's label.
     /// </summary>
     public string? Label { get; set; }
@@ -607,6 +601,12 @@ public partial class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, 
     /// Whether the GoToToday button should be shown or not.
     /// </summary>
     public bool? ShowGoToToday { get; set; }
+
+    /// <summary>
+    /// Whether the month picker is shown next to the day picker or hidden.
+    /// It has no effect in the MonthPicker mode, where the month picker is the only view.
+    /// </summary>
+    public bool? ShowMonthPicker { get; set; }
 
     /// <summary>
     /// Show month picker on top of date picker when visible.
@@ -1191,9 +1191,9 @@ public partial class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, 
             bitDatePicker.TakeFromCascade(nameof(IsDateDisabled), IsDateDisabled, static d => d.IsDateDisabled, static (d, v) => d.IsDateDisabled = v);
         }
 
-        if (IsMonthPickerVisible.HasValue)
+        if (ShowMonthPicker.HasValue)
         {
-            bitDatePicker.TakeFromCascade(nameof(IsMonthPickerVisible), IsMonthPickerVisible.Value, static d => d.IsMonthPickerVisible, static (d, v) => d.IsMonthPickerVisible = v);
+            bitDatePicker.TakeFromCascade(nameof(ShowMonthPicker), ShowMonthPicker.Value, static d => d.ShowMonthPicker, static (d, v) => d.ShowMonthPicker = v);
         }
 
         if (Label.HasValue())

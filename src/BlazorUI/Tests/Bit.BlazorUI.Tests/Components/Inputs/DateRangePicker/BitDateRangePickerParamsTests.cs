@@ -202,7 +202,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
             IconTemplate = iconTemplate,
             InvalidErrorMessage = "Cascaded invalid",
             IsDateDisabled = isDateDisabled,
-            IsMonthPickerVisible = false,
+            ShowMonthPicker = false,
             Label = "Cascaded label",
             LabelTemplate = labelTemplate,
             MaxDate = maxDate,
@@ -360,7 +360,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         Assert.AreSame(iconTemplate, instance.IconTemplate);
         Assert.AreEqual("Cascaded invalid", instance.InvalidErrorMessage);
         Assert.AreSame(isDateDisabled, instance.IsDateDisabled);
-        Assert.IsFalse(instance.IsMonthPickerVisible);
+        Assert.IsFalse(instance.ShowMonthPicker);
         Assert.AreEqual("Cascaded label", instance.Label);
         Assert.AreSame(labelTemplate, instance.LabelTemplate);
         Assert.AreEqual(maxDate, instance.MaxDate);
@@ -582,7 +582,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         {
             FixedWeeks = true,
             Standalone = true,
-            IsMonthPickerVisible = false,
+            ShowMonthPicker = false,
             Culture = CultureInfo.GetCultureInfo("en-US"),
         }, builder =>
         {

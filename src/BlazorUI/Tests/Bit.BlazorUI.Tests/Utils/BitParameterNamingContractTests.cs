@@ -26,8 +26,8 @@ public partial class BitParameterNamingContractTests
     {
         ["BitMenuButton"] = ["IsOpen", "IsOpenChanged"],
         ["BitCircularTimePicker"] = ["IsOpen", "IsOpenChanged"],
-        ["BitDatePicker"] = ["IsMonthPickerVisible", "IsOpen", "IsOpenChanged"],
-        ["BitDateRangePicker"] = ["IsMonthPickerVisible", "IsOpen", "IsOpenChanged"],
+        ["BitDatePicker"] = ["IsOpen", "IsOpenChanged"],
+        ["BitDateRangePicker"] = ["IsOpen", "IsOpenChanged"],
         ["BitDropdown"] = ["IsOpen", "IsOpenChanged"],
         ["BitNumberField"] = ["IsInputReadOnly"],
         ["BitTimePicker"] = ["IsOpen", "IsOpenChanged"],

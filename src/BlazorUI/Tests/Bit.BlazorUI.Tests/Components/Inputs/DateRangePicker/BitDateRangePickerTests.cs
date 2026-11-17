@@ -1509,13 +1509,13 @@ public class BitDateRangePickerTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitDateRangePickerIsMonthPickerVisibleTest(bool isMonthPickerVisible)
+    public void BitDateRangePickerShowMonthPickerTest(bool isMonthPickerVisible)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsMonthPickerVisible, isMonthPickerVisible);
+            parameters.Add(p => p.ShowMonthPicker, isMonthPickerVisible);
         });
 
         // The day picker must always stay visible.
@@ -1531,7 +1531,7 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
         });
 
         // Hiding the month picker must not take the day picker or the time picker down with it.

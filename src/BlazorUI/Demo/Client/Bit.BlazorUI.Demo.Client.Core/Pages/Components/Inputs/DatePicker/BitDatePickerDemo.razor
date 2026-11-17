@@ -127,7 +127,7 @@
             <br /><br />
             <BitDatePicker Label="FixedWeeks (always six weeks)" FixedWeeks />
             <br /><br />
-            <BitDatePicker Label="MonthCount (2)" MonthCount="2" IsMonthPickerVisible="false" />
+            <BitDatePicker Label="MonthCount (2)" MonthCount="2" ShowMonthPicker="false" />
             <br /><br />
             <BitDatePicker Label="MonthCount (3) with PagedNavigation"
                            MonthCount="3"
@@ -138,12 +138,12 @@
 
     <DemoExample Title="Month & year pickers" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            Hide the month/year picker with <b>IsMonthPickerVisible</b>, or open it over the day picker from the
+            Hide the month/year picker with <b>ShowMonthPicker</b>, or open it over the day picker from the
             month title with <b>ShowMonthPickerAsOverlay</b> - which a narrow screen turns on by itself.
         </div>
         <br />
         <div class="example-content">
-            <BitDatePicker Label="IsMonthPickerVisible" IsMonthPickerVisible="@isMonthPickerVisible" />
+            <BitDatePicker Label="ShowMonthPicker" ShowMonthPicker="@isMonthPickerVisible" />
             <br />
             <BitToggleButton OnText="MonthPicker visible" OffText="MonthPicker hidden" @bind-Checked="@isMonthPickerVisible" />
             <br /><br /><br />

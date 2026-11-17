@@ -509,13 +509,6 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "IsMonthPickerVisible",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the month picker is shown next to the day picker or hidden. It has no effect in the MonthPicker mode, where the month picker is the only view."
-        },
-        new()
-        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -835,6 +828,13 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the GoToToday button should be shown or not."
+        },
+        new()
+        {
+            Name = "ShowMonthPicker",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the month picker is shown next to the day picker or hidden. It has no effect in the MonthPicker mode, where the month picker is the only view."
         },
         new()
         {

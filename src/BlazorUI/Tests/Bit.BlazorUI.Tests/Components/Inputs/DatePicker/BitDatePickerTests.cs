@@ -1519,11 +1519,11 @@ public class BitDatePickerTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitDatePickerShouldRespectIsMonthPickerVisible(bool isMonthPickerVisible)
+    public void BitDatePickerShouldRespectShowMonthPicker(bool isMonthPickerVisible)
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
-            parameters.Add(p => p.IsMonthPickerVisible, isMonthPickerVisible);
+            parameters.Add(p => p.ShowMonthPicker, isMonthPickerVisible);
         });
 
         Assert.HasCount(isMonthPickerVisible ? 1 : 0, component.FindAll(".bit-dtp-mwp"));
@@ -1536,7 +1536,7 @@ public class BitDatePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.ShowMonthPickerAsOverlay, true);
         });
 
@@ -1549,7 +1549,7 @@ public class BitDatePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
         });
 
         Assert.HasCount(1, component.FindAll(".bit-dtp-gtb"));
@@ -1563,7 +1563,7 @@ public class BitDatePickerTests : BunitTestContext
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.Standalone, true);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.ShowTimePicker, true);
             parameters.Add(p => p.ShowTimePickerAsOverlay, true);
             parameters.Add(p => p.Classes, new BitDatePickerClassStyles { ShowTimePickerButton = "show-time-picker" });
@@ -1583,7 +1583,7 @@ public class BitDatePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.ShowTimePicker, true);
         });
 
@@ -1593,12 +1593,12 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDatePickerMonthPickerModeShouldIgnoreIsMonthPickerVisible()
+    public void BitDatePickerMonthPickerModeShouldIgnoreShowMonthPicker()
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.Mode, BitDatePickerMode.MonthPicker);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
         });
 
         Assert.HasCount(1, component.FindAll(".bit-dtp-mwp"));
@@ -3610,7 +3610,7 @@ public class BitDatePickerTests : BunitTestContext
             {
                 FixedWeeks = true,
                 Standalone = true,
-                IsMonthPickerVisible = false,
+                ShowMonthPicker = false,
                 Culture = CultureInfo.GetCultureInfo("en-US")
             }
         };
@@ -3719,7 +3719,7 @@ public class BitDatePickerTests : BunitTestContext
             ShowSeconds = true,
             TimePickerSecondTitle = "Cascaded second",
             InvalidErrorMessage = "Cascaded invalid",
-            IsMonthPickerVisible = false,
+            ShowMonthPicker = false,
             Label = "Cascaded label text",
             MaxDate = maxDate,
             MinDate = minDate,
@@ -3797,7 +3797,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsTrue(instance.ShowSeconds);
         Assert.AreEqual("Cascaded second", instance.TimePickerSecondTitle);
         Assert.AreEqual("Cascaded invalid", instance.InvalidErrorMessage);
-        Assert.IsFalse(instance.IsMonthPickerVisible);
+        Assert.IsFalse(instance.ShowMonthPicker);
         Assert.AreEqual("Cascaded label text", instance.Label);
         Assert.AreEqual(maxDate, instance.MaxDate);
         Assert.AreEqual(minDate, instance.MinDate);
@@ -3903,7 +3903,7 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.Standalone, true);
             parameters.Add(p => p.MonthCount, monthCount);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
         });
 
@@ -3919,7 +3919,7 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.Standalone, true);
             parameters.Add(p => p.MonthCount, 3);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.Value, GetLocalDate(2026, 11, 15));
         });
@@ -3942,7 +3942,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.Standalone, true);
             parameters.Add(p => p.MonthCount, 2);
             parameters.Add(p => p.ShowOutsideDays, true);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
         });
@@ -3963,7 +3963,7 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.Standalone, true);
             parameters.Add(p => p.MonthCount, 3);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
         });
@@ -3980,7 +3980,7 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.Standalone, true);
             parameters.Add(p => p.MonthCount, 3);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
         });
@@ -4002,7 +4002,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.Standalone, true);
             parameters.Add(p => p.MonthCount, 3);
             parameters.Add(p => p.PagedNavigation, paged);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
         });
@@ -4022,7 +4022,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.Standalone, true);
             parameters.Add(p => p.MonthCount, 2);
             parameters.Add(p => p.PagedNavigation, true);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.MaxDate, GetLocalDate(2026, 3, 15));
             parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
@@ -4051,7 +4051,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.Standalone, true);
             parameters.Add(p => p.MonthCount, 2);
             parameters.Add(p => p.AllowDeselect, true);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.StartingValue, GetLocalDate(2026, 1, 15));
             parameters.Bind(p => p.Value, value, v => value = v);
@@ -4082,7 +4082,7 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.Standalone, true);
             parameters.Add(p => p.MonthCount, 2);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
             parameters.Bind(p => p.Value, value, v => value = v);
         });
@@ -4103,7 +4103,7 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.Standalone, true);
             parameters.Add(p => p.MonthCount, 2);
-            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.Value, GetLocalDate(2026, 1, 31));
         });
