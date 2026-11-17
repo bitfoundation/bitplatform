@@ -1,0 +1,67 @@
+@inherits AppComponentBase
+
+<section>
+    <BitStack Gap="0">
+        <BitStack Horizontal Gap="0.75rem" AutoHeight VerticalAlign="BitAlignment.Center" Class="header-stack">
+            <BitPersona Size="BitPersonaSize.Size40"
+                        ImageUrl="@UserSession.GetProfileImageUrl(AbsoluteServerAddress)"
+                        PrimaryText="@UserSession.DisplayName"
+                        SecondaryText="@(UserSession.Email ?? UserSession.PhoneNumber)" />
+
+            <BitSpacer />
+
+            <BitButton IconOnly
+                       Variant="BitVariant.Text"
+                       Color="BitColor.Tertiary"
+                       IconName="@BitIconName.ChromeClose"
+                       OnClick="() => OnResult?.Invoke(false)"
+                       Title="@Localizer[nameof(AppStrings.Cancel)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.Cancel)]" />
+        </BitStack>
+
+        <BitStack Gap="1.25rem" Padding="1.25rem 1rem" HorizontalAlign="BitAlignment.Center">
+            <BitText Id="unlock-account-title" Typography="BitTypography.Subtitle1" Weight="BitFontWeight.Semibold">
+                @Localizer[nameof(AppStrings.EnterPinTitle)]
+            </BitText>
+
+            @if (isForgotten)
+            {
+                <BitText Typography="BitTypography.Body2" Color="BitColor.Error" Align="BitTextAlign.Center">
+                    @Localizer[nameof(AppStrings.TooManyWrongPins)]
+                </BitText>
+            }
+            else
+            {
+                <PinInput @ref="pinInput"
+                          @bind-Value="pin"
+                          AutoFocus
+                          Invalid="attemptsLeft is not null"
+                          IsLoading="isUnlocking"
+                          Description="@(attemptsLeft is null ? null : Localizer[nameof(AppStrings.WrongPinAttemptsLeft), attemptsLeft])"
+                          OnFill="WrapHandled(async (string? _) => await Unlock())" />
+            }
+
+            <BitStack Horizontal Wrap Gap="0.5rem" AutoHeight VerticalAlign="BitAlignment.Center" Class="actions-stack">
+                <BitButton Variant="@(isForgotten ? BitVariant.Fill : BitVariant.Text)"
+                           Color="@(isForgotten ? BitColor.Primary : BitColor.Tertiary)"
+                           Disabled="isUnlocking"
+                           ButtonType="BitButtonType.Button"
+                           OnClick="() => OnSignInAgain?.Invoke()">
+                    @Localizer[isForgotten ? nameof(AppStrings.SignIn) : nameof(AppStrings.SignInAgainToRemovePin)]
+                </BitButton>
+
+                @if (isForgotten is false)
+                {
+                    <BitSpacer />
+
+                    <BitButton Loading="isUnlocking"
+                               Disabled="CanUnlock is false"
+                               ButtonType="BitButtonType.Button"
+                               OnClick="WrapHandled(Unlock)">
+                        @Localizer[nameof(AppStrings.Confirm)]
+                    </BitButton>
+                }
+            </BitStack>
+        </BitStack>
+    </BitStack>
+</section>

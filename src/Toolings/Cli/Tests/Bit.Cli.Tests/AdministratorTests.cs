@@ -14,6 +14,7 @@ namespace Bit.Cli.Tests;
 public class AdministratorTests
 {
     [TestMethod]
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public async Task TheHelper_Should_RunWhatItIsSent_StreamItsOutput_AndStopOnQuit()
     {
         if (OperatingSystem.IsWindows() is false)
@@ -44,6 +45,7 @@ public class AdministratorTests
     }
 
     [TestMethod]
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public async Task TheHelper_Should_CancelTheRunningCommand_AndTakeTheNextOne()
     {
         if (OperatingSystem.IsWindows() is false)
@@ -148,12 +150,8 @@ public class AdministratorTests
 
         using var host = new TestHost(HostOs.Windows);
         host.Runner.On("dotnet", "--version", 0, "10.0.403");
-        var user = WindowsIdentity.GetCurrent().User!;
-        var security = new PipeSecurity();
-        security.SetOwner(user);
-        security.AddAccessRule(new PipeAccessRule(user, PipeAccessRights.ReadWrite, AccessControlType.Allow));
 
-        var (session, serving) = await ConnectAsync(host, name => NamedPipeServerStreamAcl.Create(name, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, security));
+        var (session, serving) = await ConnectAsync(host, parentId: null);
 
         Assert.IsNotNull(session, "An elevated helper's token is owned by the Administrators group, while bit's pipe is owned by the user who runs bit.");
         Assert.AreEqual(0, (await session.RunAsync(new ProcessSpec { FileName = "dotnet", Arguments = ["--version"] }, CancellationToken.None)).ExitCode);
@@ -163,6 +161,7 @@ public class AdministratorTests
     }
 
     [TestMethod]
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public async Task AHelperThatStopsBeforeItIsReady_Should_NotBeUsed()
     {
         if (OperatingSystem.IsWindows() is false)
@@ -176,6 +175,7 @@ public class AdministratorTests
         Assert.IsNull(session, "Its steps would fail with exit code -1 instead of asking Windows again.");
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     private static async Task<(AdministratorSession Session, Task<int> Serving)> ConnectAsync(TestHost host)
     {
         var (session, serving) = await ConnectAsync(host, parentId: null);
@@ -183,10 +183,11 @@ public class AdministratorTests
         return (session, serving);
     }
 
-    private static async Task<(AdministratorSession? Session, Task<int> Serving)> ConnectAsync(TestHost host, Func<string, NamedPipeServerStream>? create = null, int? parentId = null)
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    private static async Task<(AdministratorSession? Session, Task<int> Serving)> ConnectAsync(TestHost host, int? parentId)
     {
         var name = $"bit-cli-test-{Guid.NewGuid():N}";
-        var pipe = create?.Invoke(name) ?? new NamedPipeServerStream(name, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+        var pipe = CreatePipeOfTheUser(name);
         var serving = AdministratorSession.ServeAsync(host.Services, name, parentId ?? Environment.ProcessId, CancellationToken.None);
         await pipe.WaitForConnectionAsync();
 
@@ -194,5 +195,16 @@ public class AdministratorTests
         await exited.WaitForExitAsync();
 
         return (await AdministratorSession.AttachAsync(host.Services, pipe, exited, CancellationToken.None), serving);
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    private static NamedPipeServerStream CreatePipeOfTheUser(string name)
+    {
+        var user = WindowsIdentity.GetCurrent().User!;
+        var security = new PipeSecurity();
+        security.SetOwner(user);
+        security.AddAccessRule(new PipeAccessRule(user, PipeAccessRights.ReadWrite, AccessControlType.Allow));
+
+        return NamedPipeServerStreamAcl.Create(name, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, security);
     }
 }

@@ -17,7 +17,7 @@
             <div class="bev-stat"><div class="bev-stat-value">@(b.NavigationLoadMs is { } n ? BevFmt.Ms(n) : "n/a")</div><div class="bev-stat-label">page load (DOMContentLoaded @(b.DomContentLoadedMs is { } d ? BevFmt.Ms(d) : "n/a"))</div></div>
             <div class="bev-stat"><div class="bev-stat-value">@(b.ResourceCount?.ToString() ?? "n/a")</div><div class="bev-stat-label">resources loaded</div></div>
             <div class="bev-stat"><div class="bev-stat-value">@b.JsErrorCount</div><div class="bev-stat-label">JS errors</div></div>
-            <div class="bev-stat"><div class="bev-stat-value">@b.JsToDotNetCalls</div><div class="bev-stat-label">JS → .NET calls</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@b.JsToDotNetCalls</div><div class="bev-stat-label">JS → .NET calls@(b.JsToDotNetUnlisted > 0 ? " · " + b.JsToDotNetUnlisted + " counted, not listed" : "")</div></div>
         </div>
         <div class="bev-section">
             @{ var r = b.Responsiveness; }

@@ -273,6 +273,15 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Placement",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "The side of the button the callout opens on when there is room for it there; it falls back to the opposite side when there is not. Top, Bottom, Left and Right are honoured as they are named, Start and End against the reading direction; Center, the two combined values, or none leave the choice to DropDirection.",
+            LinkType = LinkType.Link,
+            Href = "#placement-enum"
+        },
+        new()
+        {
             Name = "Responsive",
             Type = "bool",
             DefaultValue = "false",
@@ -284,15 +293,6 @@ public partial class BitDropMenuDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The id of the element which needs to be scrollable in the content of the callout of the drop menu."
-        },
-        new()
-        {
-            Name = "Placement",
-            Type = "BitPlacement?",
-            DefaultValue = "null",
-            Description = "The side of the button the callout opens on when there is room for it there; it falls back to the opposite side when there is not. Top, Bottom, Left and Right are honoured as they are named, Start and End against the reading direction; Center, the two combined values, or none leave the choice to DropDirection.",
-            LinkType = LinkType.Link,
-            Href = "#placement-enum"
         },
         new()
         {

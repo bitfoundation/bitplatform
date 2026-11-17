@@ -23,7 +23,7 @@ public class PersonalDataExportTests
     /// a source that exports metadata and forgets the blob hands over a description of a photograph.
     /// </summary>
     [TestMethod]
-    public async Task ExportingOwnData_Should_ContainEveryStore_AndTheProfilePicture()
+    public async Task ExportingOwnData_Should_ContainEveryStore_AndTheProfileImage()
     {
         await using var server = await StartServer();
         await using var client = server.CreateAppClient();
@@ -31,7 +31,7 @@ public class PersonalDataExportTests
         var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
         var httpClient = client.HttpClient;
 
-        await UploadProfilePicture(httpClient);
+        await UploadProfileImage(httpClient);
 
         await TestAccountUtils.Elevate(client, email, TestContext.CancellationToken);
 
@@ -56,7 +56,7 @@ public class PersonalDataExportTests
             "The request itself was made from a signed-in session, so at least that one must appear.");
 
         Assert.IsNotNull(archive.GetEntry("files/attachments/UserProfileImageSmall.webp"),
-            "The profile picture was uploaded above and is the person's own data - exporting only its row leaves them with a description of a photograph.");
+            "The profile image was uploaded above and is the person's own data - exporting only its row leaves them with a description of a photograph.");
 
         // Without the extension the subject receives a file that opens in nothing by double-click.
         Assert.IsNotNull(archive.GetEntry("files/attachments/UserProfileImageOriginal.webp"),
@@ -181,7 +181,7 @@ public class PersonalDataExportTests
         return server;
     }
 
-    private async Task UploadProfilePicture(HttpClient httpClient)
+    private async Task UploadProfileImage(HttpClient httpClient)
     {
         var image = TestImageFactory.Solid(TestImageFactory.Red, 512, 512);
 
@@ -190,7 +190,7 @@ public class PersonalDataExportTests
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         form.Add(fileContent, "file", "picture.png"); // The endpoint binds an IFormFile parameter named "file".
 
-        using var response = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfilePicture", form, TestContext.CancellationToken);
+        using var response = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfileImage", form, TestContext.CancellationToken);
         response.EnsureSuccessStatusCode();
     }
 }

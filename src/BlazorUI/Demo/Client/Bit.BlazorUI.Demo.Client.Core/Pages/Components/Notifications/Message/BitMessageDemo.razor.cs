@@ -29,17 +29,17 @@ public partial class BitMessageDemo
         },
         new()
         {
-            Name = "AutoMultiline",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Switches a single-line message to the Multiline layout (wrapped text, actions on their own row) for as long as its content does not fit on one line, instead of cutting it off. Truncate wins where both are set, and MaxLines only caps an explicitly Multiline message.",
-        },
-        new()
-        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
             Description = "Moves the focus to the message as soon as it is rendered. The root is made focusable (tabindex=\"-1\") while no explicit TabIndex is given.",
+        },
+        new()
+        {
+            Name = "AutoMultiline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Switches a single-line message to the Multiline layout (wrapped text, actions on their own row) for as long as its content does not fit on one line, instead of cutting it off. Truncate wins where both are set, and MaxLines only caps an explicitly Multiline message.",
         },
         new()
         {

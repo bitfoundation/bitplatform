@@ -189,14 +189,14 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Default value of the IsToggled parameter in toggle mode.
-    /// </summary>
-    [Parameter] public bool? DefaultIsToggled { get; set; }
-
-    /// <summary>
     /// Default value of the SelectedItem.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
+
+    /// <summary>
+    /// Default value of the Toggled parameter in toggle mode.
+    /// </summary>
+    [Parameter] public bool? DefaultToggled { get; set; }
 
     /// <summary>
     /// Keeps a disabled menu button, and the disabled items of any menu button, focusable: the disabled state is
@@ -216,10 +216,6 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     /// the header button and of the items). It lets a submit or reset command sit outside of its form element.
     /// </summary>
     [Parameter] public string? FormId { get; set; }
-
-    // The form the header and the items are associated with: FormId, or the form attribute the page wrote by hand,
-    // so the two halves of the component can never name different forms.
-    internal string? ResolvedFormId => FormId ?? GetSplattedAttribute("form");
 
     /// <summary>
     /// Expands the menu button width to 100% of the available width.
@@ -264,6 +260,63 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     public bool IconOnly { get; set; }
 
     /// <summary>
+    /// Determines the opening state of the callout.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetIsOpen))]
+    [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
+    public bool IsOpen { get; set; }
+
+    /// <summary>
+    ///  List of items to show in the menu button.
+    /// </summary>
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
+
+    /// <summary>
+    /// The custom template content to render each item.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem?>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// Determines whether the menu button is in the loading state.
+    /// It replaces the default icon of the header button with a spinner and ignores its click.
+    /// In split mode the chevron still opens the menu, so the rest of the commands stay reachable.
+    /// </summary>
+    [Parameter, ResetClassBuilder, TwoWayBound]
+    public bool Loading { get; set; }
+
+    /// <summary>
+    /// The delay in milliseconds before the spinner appears after the menu button enters the loading state,
+    /// which is what keeps a fast operation from flashing one. The click guard of the loading state applies
+    /// immediately regardless of the delay.
+    /// </summary>
+    [Parameter] public int LoadingDelay { get; set; }
+
+    /// <summary>
+    /// The text to show beside the spinner while the menu button is in the loading state, replacing the text of
+    /// the header button. It is also announced by screen readers through a status live region when the loading
+    /// state starts, which is what tells a user who cannot see the spinner that the operation is running.
+    /// </summary>
+    [Parameter] public string? LoadingLabel { get; set; }
+
+    /// <summary>
+    /// The custom template that replaces the spinner and the label of the header button while the menu button
+    /// is in the loading state. The chevron of a split button is kept beside it.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// The tallest the callout grows before its items start to scroll, as a CSS length (e.g. <c>12rem</c>).
+    /// Without one the callout is capped to the room the viewport leaves below or above the button.
+    /// </summary>
+    [Parameter] public string? MaxHeight { get; set; }
+
+    /// <summary>
+    /// Names and selectors of the custom input type properties.
+    /// </summary>
+    [Parameter] public BitMenuButtonNameSelectors<TItem>? NameSelectors { get; set; }
+
+    /// <summary>
     /// Replaces the text the items opening a new tab are announced with, for translating it or for saying it
     /// another way.
     /// </summary>
@@ -306,67 +359,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     [Parameter] public bool NoOverlay { get; set; }
 
     /// <summary>
-    /// Determines whether the menu button is in the loading state.
-    /// It replaces the default icon of the header button with a spinner and ignores its click.
-    /// In split mode the chevron still opens the menu, so the rest of the commands stay reachable.
+    /// The callback that is called when the selected item has changed.
     /// </summary>
-    [Parameter, ResetClassBuilder, TwoWayBound]
-    public bool Loading { get; set; }
-
-    /// <summary>
-    /// Determines the opening state of the callout.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetIsOpen))]
-    [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
-    public bool IsOpen { get; set; }
-
-    /// <summary>
-    /// Determines whether the header button is in the checked/toggled state when Toggle is enabled.
-    /// </summary>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
-    public bool IsToggled { get; set; }
-
-    /// <summary>
-    ///  List of items to show in the menu button.
-    /// </summary>
-    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
-
-    /// <summary>
-    /// The custom template content to render each item.
-    /// </summary>
-    [Parameter] public RenderFragment<TItem?>? ItemTemplate { get; set; }
-
-    /// <summary>
-    /// The delay in milliseconds before the spinner appears after the menu button enters the loading state,
-    /// which is what keeps a fast operation from flashing one. The click guard of the loading state applies
-    /// immediately regardless of the delay.
-    /// </summary>
-    [Parameter] public int LoadingDelay { get; set; }
-
-    /// <summary>
-    /// The text to show beside the spinner while the menu button is in the loading state, replacing the text of
-    /// the header button. It is also announced by screen readers through a status live region when the loading
-    /// state starts, which is what tells a user who cannot see the spinner that the operation is running.
-    /// </summary>
-    [Parameter] public string? LoadingLabel { get; set; }
-
-    /// <summary>
-    /// The custom template that replaces the spinner and the label of the header button while the menu button
-    /// is in the loading state. The chevron of a split button is kept beside it.
-    /// </summary>
-    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
-
-    /// <summary>
-    /// The tallest the callout grows before its items start to scroll, as a CSS length (e.g. <c>12rem</c>).
-    /// Without one the callout is capped to the room the viewport leaves below or above the button.
-    /// </summary>
-    [Parameter] public string? MaxHeight { get; set; }
-
-    /// <summary>
-    /// Names and selectors of the custom input type properties.
-    /// </summary>
-    [Parameter] public BitMenuButtonNameSelectors<TItem>? NameSelectors { get; set; }
+    [Parameter] public EventCallback<TItem> OnChange { get; set; }
 
     /// <summary>
     /// The callback that is called when the header button is clicked, and when an item of the menu is activated
@@ -381,12 +376,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     [Parameter] public EventCallback<TItem?> OnClick { get; set; }
 
     /// <summary>
-    /// The callback that is called when the selected item has changed.
-    /// </summary>
-    [Parameter] public EventCallback<TItem> OnChange { get; set; }
-
-    /// <summary>
-    /// The callback that is called when the IsToggled value changes in toggle mode.
+    /// The callback that is called when the Toggled value changes in toggle mode.
     /// </summary>
     [Parameter] public EventCallback<bool> OnToggleChange { get; set; }
 
@@ -408,6 +398,13 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     [Parameter] public string? RadioIconName { get; set; }
 
     /// <summary>
+    /// Enables re-clicking the header button while the menu button is in the loading state.
+    /// By default its click is ignored while the loading lasts, which is what protects against a double submission.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Reclickable { get; set; }
+
+    /// <summary>
     /// Shows the menu as a sheet that slides up from the bottom edge of the screen on small screens (an action
     /// sheet), instead of the callout under the button.
     /// </summary>
@@ -419,13 +416,6 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     /// belongs to.
     /// </remarks>
     [Parameter] public bool Responsive { get; set; }
-
-    /// <summary>
-    /// Enables re-clicking the header button while the menu button is in the loading state.
-    /// By default its click is ignored while the loading lasts, which is what protects against a double submission.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Reclickable { get; set; }
 
     /// <summary>
     /// Determines the current selected item that acts as the header item.
@@ -458,6 +448,17 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     public bool Sticky { get; set; }
 
     /// <summary>
+    /// If true, stops the propagation of the click event of the menu button to the parent elements.
+    /// Useful when the menu button is placed inside clickable containers like rows or cards.
+    /// </summary>
+    [Parameter] public bool StopPropagation { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the menu button.
+    /// </summary>
+    [Parameter, ResetStyleBuilder] public BitMenuButtonClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// The icon of the chevron a submenu item carries, using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="SubmenuIconName"/> when both are set.
     /// </summary>
@@ -468,17 +469,6 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     /// right-to-left menu, so one icon serves both directions.
     /// </summary>
     [Parameter] public string? SubmenuIconName { get; set; }
-
-    /// <summary>
-    /// If true, stops the propagation of the click event of the menu button to the parent elements.
-    /// Useful when the menu button is placed inside clickable containers like rows or cards.
-    /// </summary>
-    [Parameter] public bool StopPropagation { get; set; }
-
-    /// <summary>
-    /// Custom CSS styles for different parts of the menu button.
-    /// </summary>
-    [Parameter, ResetStyleBuilder] public BitMenuButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The text to show inside the header of menu button.
@@ -497,10 +487,20 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     public bool Toggle { get; set; }
 
     /// <summary>
+    /// Determines whether the header button is in the checked/toggled state when Toggle is enabled.
+    /// </summary>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
+    public bool Toggled { get; set; }
+
+    /// <summary>
     /// The visual variant of the menu button.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
+
+    // The form the header and the items are associated with: FormId, or the form attribute the page wrote by hand,
+    // so the two halves of the component can never name different forms.
+    internal string? ResolvedFormId => FormId ?? GetSplattedAttribute("form");
 
 
 
@@ -656,7 +656,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
 
-        ClassBuilder.Register(() => Toggle && Split && IsToggled ? $"bit-mnb-tgl {Classes?.Toggled}" : string.Empty);
+        ClassBuilder.Register(() => Toggle && Split && Toggled ? $"bit-mnb-tgl {Classes?.Toggled}" : string.Empty);
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -673,7 +673,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         StyleBuilder.Register(() => IsOpen ? Styles?.Opened : string.Empty);
 
-        StyleBuilder.Register(() => Toggle && Split && IsToggled ? Styles?.Toggled : string.Empty);
+        StyleBuilder.Register(() => Toggle && Split && Toggled ? Styles?.Toggled : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -683,14 +683,14 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         _overlayId = $"BitMenuButton-{UniqueId}-overlay";
         _pointId = $"BitMenuButton-{UniqueId}-point";
 
-        // The cascade is read here as well as in OnParametersSet because DefaultIsToggled (and the Split and Toggle
+        // The cascade is read here as well as in OnParametersSet because DefaultToggled (and the Split and Toggle
         // it depends on) is acted on while initializing, which is before OnParametersSet has run for the first time -
         // a cascaded one applied only there would come too late to seed anything.
         CascadingParameters?.UpdateParameters(this);
 
-        if (Split && Toggle && IsToggledHasBeenSet is false && DefaultIsToggled.HasValue)
+        if (Split && Toggle && ToggledHasBeenSet is false && DefaultToggled.HasValue)
         {
-            await AssignIsToggled(DefaultIsToggled.Value);
+            await AssignToggled(DefaultToggled.Value);
         }
 
         if (Sticky && SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
@@ -1446,9 +1446,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         if (Toggle && Split)
         {
-            if (await AssignIsToggled(!IsToggled) is false) return;
+            if (await AssignToggled(!Toggled) is false) return;
 
-            await OnToggleChange.InvokeAsync(IsToggled);
+            await OnToggleChange.InvokeAsync(Toggled);
         }
 
         if (item is not null && GetIsDisabled(item)) return;

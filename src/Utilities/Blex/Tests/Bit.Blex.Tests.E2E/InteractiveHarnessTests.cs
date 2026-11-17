@@ -135,7 +135,12 @@ public abstract class InteractiveHarnessTests : HarnessTest
     {
         await GotoAsync("/");
         await WaitForInteractiveAsync();
+
+        // Clicked as soon as the page takes clicks, which is before persistence has read storage on Blazor Server (a
+        // round trip to the browser): an action dispatched then is an undo step like any other. The history is then
+        // given the stored state, so the undo below waits for that to have happened rather than racing it.
         await IncrementAsync(2);
+        await Expect(Page.Locator("#status")).ToHaveAttributeAsync("data-hydrated", "true");
 
         await Page.Locator("#undo").ClickAsync();
         await ExpectCountAsync(1);

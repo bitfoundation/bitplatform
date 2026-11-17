@@ -131,6 +131,33 @@ public class BelemetryComponentsTests
     }
 
     [TestMethod]
+    [DataRow(BelemetryHostKind.Server, 16 * 1024, """{"relay":true,"unloadDrain":false,"maxRelayBytes":16384}""")]
+    [DataRow(BelemetryHostKind.Server, 0, """{"relay":true,"unloadDrain":false}""")]
+    [DataRow(BelemetryHostKind.Hybrid, 16 * 1024, """{"relay":true,"unloadDrain":false}""")]
+    public async Task Initializer_LimitsRelayMessages_OnlyOnACircuit(BelemetryHostKind host, int maxRelayMessageBytes, string expected)
+    {
+        // A circuit's connection closes on a message over its size limit; a WebView's interop has no such limit.
+        await using var context = CreateContext(o =>
+        {
+            o.Host = host;
+            o.Browser.Transport = BelemetryBrowserTransport.Relay;
+            o.Browser.MaxRelayMessageBytes = maxRelayMessageBytes;
+        });
+        context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var module = context.JSInterop.SetupModule(ModulePath);
+        string? attachOptions = null;
+        module.SetupVoid("attachDotNet", invocation =>
+        {
+            attachOptions = ((JsonElement)invocation.Arguments[1]!).GetRawText();
+            return true;
+        }).SetVoidResult();
+
+        context.Render<BelemetryInitializer>();
+
+        Assert.AreEqual(expected, attachOptions);
+    }
+
+    [TestMethod]
     public async Task Consent_AdoptsWhatTheScriptKept_WhenItRefusesAGrant()
     {
         // Under Global Privacy Control the script never grants Analytics: refusing PageViews leaves its own grant as it

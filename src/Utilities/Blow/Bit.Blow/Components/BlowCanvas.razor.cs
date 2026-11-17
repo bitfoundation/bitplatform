@@ -777,6 +777,22 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     private BlowViewport _viewport = BlowViewport.Identity;
     private BlowDomRect? _paneRect;
+    // The page is scrolling the pane: _paneRect's size still holds, its position on screen may not. Set by OnPaneMoved
+    // as a scroll burst starts and cleared only by the reading JS sends once it stops - a reading taken mid-burst is
+    // out of date as soon as the page scrolls on.
+    private bool _paneRectStale;
+    // Counts the gesture starts converted on a stale rectangle, so the reading taken for one is not applied to another
+    // begun since; see _staleGestureStart.
+    private long _paneReadSeq;
+    // A gesture that began while the rectangle was stale converted its start on that rectangle; the reading of where
+    // the pane was as its press went down moves the start onto the right one. See MarkGestureStart.
+    private (StaleGesture Kind, BlowDomRect Rect, long Seq, double Zoom)? _staleGestureStart;
+    // Advanced as each pointer gesture starts, so a move that waited on a reading of the pane can tell whether the
+    // gesture it was made in is still the one running.
+    private long _gestureId;
+
+    /// <summary>The gesture whose start <see cref="_staleGestureStart"/> converted on a stale rectangle.</summary>
+    private enum StaleGesture { Drag, Pinch, Reconnect }
     private BlowInterop _interop = default!;
 
     // resize observation (pane + node sizes change without any C#-visible event)
@@ -1200,6 +1216,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private bool _pinching;
     private double _pinchStartDistance;
     private BlowViewport _pinchStartViewport;
+    // The point of the flow under the midpoint between the two fingers when the pinch began: it stays under the
+    // midpoint for the rest of the pinch, wherever the pane moves on the page meanwhile.
+    private BlowXYPosition _pinchAnchor;
 
     // connection
     private bool _connecting;
@@ -1258,6 +1277,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public bool IsConnecting => _connecting;
     /// <summary>The live node list, exposed to overlays such as the minimap.</summary>
     public IReadOnlyList<BlowNode> CurrentNodes => Nodes;
+    /// <inheritdoc />
+    bool IBlowContext.IsNodeShown(BlowNode node) => IsShown(node);
     /// <summary>The pane's measured size in screen pixels, or <see cref="BlowDimensions.Empty"/> before the first measurement.</summary>
     public BlowDimensions PaneSize => _paneRect is { } r ? new BlowDimensions(r.Width, r.Height) : BlowDimensions.Empty;
 
@@ -1342,6 +1363,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             _keepFocusInPane = false;
             try { await _interop.KeepFocusAsync(_paneRef); }
             catch (Exception ex) when (IsInteropTeardown(ex)) { }
+        }
+
+        if (_probeConnectionHover)
+        {
+            _probeConnectionHover = false;
+            await ProbeConnectionHoverAsync();
         }
 
         await FlushErrorsAsync();
@@ -1537,12 +1564,21 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// The pane's rectangle, read by the browser in the frame it reports; null to have it read here, at the cost of
     /// another round trip.
     /// </param>
+    /// <param name="pageScrolling">
+    /// True when the page was still scrolling the pane in the frame the rectangle was read in, so the reading goes out
+    /// of date as it scrolls on; false once the scrolling has stopped (see <see cref="OnPaneMoved"/>).
+    /// </param>
     [JSInvokable]
-    public async Task OnResizeObserved(bool measureNodes = true, BlowDomRect? pane = null)
+    public async Task OnResizeObserved(bool measureNodes = true, BlowDomRect? pane = null, bool pageScrolling = false)
     {
         // A pure scroll only refreshes the cached rectangle; nothing rendered depends on it, so there is no need to
         // re-render. A change of size re-renders what is drawn from it.
-        if (pane is not null) AdoptPaneRect(pane);
+        if (pane is not null)
+        {
+            // Read by the browser in the frame it reports.
+            AdoptPaneRect(pane);
+            _paneRectStale = pageScrolling;
+        }
         else await RefreshPaneRectAsync();
 
         // The nodes before the event: a pane that changes size tends to take nodes with it (text that wraps
@@ -1551,6 +1587,15 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         await ReportPaneResizeAsync();
     }
+
+    /// <summary>
+    /// Called from JS as the page starts scrolling the pane, rather than reporting the rectangle on every frame of the
+    /// scroll - a message apiece over a Blazor Server circuit. Until <see cref="OnResizeObserved"/> reports the
+    /// rectangle the scrolling stopped at, whatever converts a pointer's position (a gesture's move, a wheel, a double
+    /// click, <see cref="ScreenToFlowPositionAsync"/>) reads it again first, one reading at a time.
+    /// </summary>
+    [JSInvokable]
+    public void OnPaneMoved() => _paneRectStale = true;
 
     /// <summary>
     /// True for the exceptions that simply mean "the JS side is going away" (circuit dropped,
@@ -1571,6 +1616,16 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     }
 
     /// <summary>
+    /// Brings the pane's rectangle up to date when the page has scrolled it (<see cref="_paneRectStale"/>), before a
+    /// pointer's position is converted on it - and, while a gesture's start is still to be moved onto where the pane
+    /// was as it began (<see cref="MarkGestureStart"/>), waits for that, so no move is converted against a start that
+    /// is not yet. A reading already on its way is shared: the pointer moves of a gesture the page scrolls under then
+    /// cost one round trip at a time, not one each.
+    /// </summary>
+    private Task RefreshStalePaneRectAsync()
+        => !_paneRectStale && _staleGestureStart is null ? Task.CompletedTask : ReadPaneForCheckAsync();
+
+    /// <summary>
     /// Takes a reading of the pane's rectangle, re-rendering what is drawn from its size if that changed. Raising
     /// <see cref="OnPaneResize"/> is left to the resize observer, whichever reading noticed the change first: only the
     /// observer's comes with the nodes re-measured, and only it is sure to come for every resize.
@@ -1582,6 +1637,75 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         if (before is null != rect is null || (before is not null && rect is not null && PaneSizeDiffers(before, rect)))
             RenderOverlay();
+    }
+
+    /// <summary>
+    /// Called as a pointer gesture converts where it starts on the pane's rectangle. When the page has scrolled the
+    /// pane since that rectangle was read, the start is off by however far it had scrolled by the press - not by
+    /// however far it has scrolled by the time a reading gets back, which is the moves' to follow. So the browser is
+    /// asked where the pane was in the press's own event, along with where it is now (shared with the moves that
+    /// follow, <see cref="RefreshStalePaneRectAsync"/>), and when that lands <see cref="RebaseGestureStart"/> moves the
+    /// start by the first and the moves are converted on the second.
+    /// </summary>
+    /// <param name="kind">The gesture starting.</param>
+    /// <param name="pointerId">The pointer whose press started it.</param>
+    private void MarkGestureStart(StaleGesture kind, long pointerId)
+    {
+        if (!_paneRectStale || _paneRect is not { } rect)
+        {
+            _staleGestureStart = null;
+            return;
+        }
+
+        var seq = ++_paneReadSeq;
+        _staleGestureStart = (kind, rect, seq, _viewport.Zoom);
+        _ = SurfaceFailureAsync(_paneCheck = ReadGestureStartAsync(seq, pointerId));
+    }
+
+    /// <summary>The reading <see cref="MarkGestureStart"/> asks for, applied once it lands.</summary>
+    private async Task ReadGestureStartAsync(long seq, long pointerId)
+    {
+        BlowPaneRectsAtPointerDown? rects = null;
+        try { rects = await _interop.PaneRectsAtPointerDownAsync(new BlowElementReferenceLike(_paneRef), pointerId); }
+        catch (Exception ex) when (IsInteropTeardown(ex)) { }
+        finally
+        {
+            // Only for the gesture it was asked for: one begun since has a start, and a reading, of its own.
+            if (_staleGestureStart is { } stale && stale.Seq == seq)
+            {
+                _staleGestureStart = null;
+                // A press the browser did not see (lifted already, its record dropped) falls back on where it is now.
+                if (!_disposed && (rects?.Down ?? rects?.Now) is { } at)
+                    RebaseGestureStart(stale.Kind, (at.Left - stale.Rect.Left) / stale.Zoom, (at.Top - stale.Rect.Top) / stale.Zoom);
+            }
+        }
+
+        if (!_disposed && rects is not null) AdoptPaneRect(rects.Now);
+    }
+
+    /// <summary>
+    /// Moves the start of the running gesture, converted on a stale rectangle, onto the fresh one - by the distance the
+    /// pane turned out to have moved, in flow units at the zoom it was converted at. A gesture that has ended since has
+    /// nothing to move.
+    /// </summary>
+    private void RebaseGestureStart(StaleGesture kind, double dx, double dy)
+    {
+        if (dx == 0 && dy == 0) return;
+
+        switch (kind)
+        {
+            case StaleGesture.Drag when _draggingNodes:
+                _dragStartFlow = new BlowXYPosition(_dragStartFlow.X - dx, _dragStartFlow.Y - dy);
+                break;
+            case StaleGesture.Pinch when _pinching:
+                _pinchAnchor = new BlowXYPosition(_pinchAnchor.X - dx, _pinchAnchor.Y - dy);
+                break;
+            case StaleGesture.Reconnect when _connecting && _reconnectEdge is not null:
+                // Where the line starts out ending, until the pointer first moves it.
+                _connEnd = new BlowXYPosition(_connEnd.X - dx, _connEnd.Y - dy);
+                RenderOverlay();
+                break;
+        }
     }
 
     private static bool PaneSizeDiffers(BlowDomRect a, BlowDomRect b)
@@ -1623,13 +1747,17 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         await handled;
     }
 
-    /// <summary>A reading of the pane's rectangle taken to check a viewport move; see <see cref="ReadPaneForCheckAsync"/>.</summary>
+    /// <summary>
+    /// A reading of the pane's rectangle others may share; see <see cref="ReadPaneForCheckAsync"/> and
+    /// <see cref="MarkGestureStart"/>.
+    /// </summary>
     private Task? _paneCheck;
 
     /// <summary>
-    /// Reads the pane's rectangle for <see cref="MovePaneViewportAsync"/>, sharing a reading already on its way: a
-    /// burst of calls - a <c>SetCenter</c> on every move of a drag, say - then costs one round trip at a time rather
-    /// than one each. A resize later than that reading is still the resize observer's to report.
+    /// Reads the pane's rectangle for <see cref="MovePaneViewportAsync"/> or <see cref="RefreshStalePaneRectAsync"/>,
+    /// sharing a reading already on its way: a burst of calls - a <c>SetCenter</c> on every move of a drag, say, or the
+    /// moves of a gesture the page scrolls under - then costs one round trip at a time rather than one each. A resize
+    /// later than that reading is still the resize observer's to report.
     /// </summary>
     private Task ReadPaneForCheckAsync()
         => _paneCheck is { IsCompleted: false } pending ? pending : _paneCheck = RefreshPaneRectAsync();
@@ -2274,6 +2402,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private bool IsShown(BlowNode node) => !(_nesting.TryGetValue(node.Id, out var placed) ? placed.Hidden : node.Hidden);
 
     /// <summary>
+    /// <see cref="IsShown"/> by the flags as they are now rather than as of the last layout - its own and its
+    /// ancestors', by the rule <see cref="BlowEdgeLayout"/> lays out by - for a check of a few nodes where laying out
+    /// the whole graph would be wasted: a node the app has just hidden is not one to act on before the render.
+    /// </summary>
+    private bool IsShownNow(BlowNode node) => BlowEdgeLayout.IsShown(node, Index.GetValueOrDefault);
+
+    /// <summary>
     /// Where one end of an edge is drawn: at its handle, or - for an end folded into a collapsed node - at that node's
     /// side, since the handle it named is out of sight.
     /// </summary>
@@ -2367,7 +2502,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private void NotifyConnectionChange()
     {
         if (OnConnectionChange.HasDelegate)
-            _ = OnConnectionChange.InvokeAsync(_connecting ? BuildConnectionLineContext() : null);
+            _ = SurfaceFailureAsync(OnConnectionChange.InvokeAsync(_connecting ? BuildConnectionLineContext() : null));
     }
 
     // ---- pane interactions ----
@@ -2394,7 +2529,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _clickedNode = null;
 
         TrackPointer(e);
-        if (TryStartPinch()) return;
+        if (TryStartPinch(e.PointerId)) return;
 
         // A non-primary button can only ever pan (there is nothing to select or connect with it).
         if (e.Button != 0)
@@ -2424,8 +2559,6 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             RenderOverlay();
             return;
         }
-
-        if (!PanButtons.Contains(0)) return;
 
         var multi = IsMultiSelect(e);
 
@@ -2461,6 +2594,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             // round trip can outlast a quick click, and a release handled in that gap would find
             // no box to finish - leaving one that follows the pointer with no button held.
             _selecting = true;
+            _gestureId++;
             _selStart = ScreenToFlow(e);
             _selEnd = _selStart;
             CapturePane(e.PointerId);
@@ -2506,6 +2640,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // a quick click, and a release handled in that gap would find no pan to end - leaving one
         // that follows the pointer with no button held.
         _panning = true;
+        _gestureId++;
         _panStartX = e.ClientX;
         _panStartY = e.ClientY;
         _panStartViewport = _viewport;
@@ -2564,14 +2699,14 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         }
 
         if (_dragPrimary is not null)
-            _ = OnNodeDrag.InvokeAsync(_dragPrimary);
+            _ = SurfaceFailureAsync(OnNodeDrag.InvokeAsync(_dragPrimary));
 
         if (IsSelectionDrag && OnSelectionDrag.HasDelegate)
         {
             // Auto-pan drives this from a remembered pointer position rather than a live event,
             // so the coordinates are carried across on their own rather than a DOM event faked up.
-            _ = OnSelectionDrag.InvokeAsync(new BlowSelectionMouseEvent(
-                DraggedNodes(), new MouseEventArgs { ClientX = clientX, ClientY = clientY }));
+            _ = SurfaceFailureAsync(OnSelectionDrag.InvokeAsync(new BlowSelectionMouseEvent(
+                DraggedNodes(), new MouseEventArgs { ClientX = clientX, ClientY = clientY })));
         }
     }
 
@@ -2610,7 +2745,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         var moving = DragSubtree();
         foreach (var n in Nodes)
         {
-            if (n.Hidden || moving.Contains(n.Id)) continue;
+            if (!IsShown(n) || moving.Contains(n.Id)) continue;
             yield return n.GetRect();
         }
     }
@@ -2716,7 +2851,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // The viewport has stopped where the auto-pan left it: the end of a move, as a pan's end is.
         if (!_autoPanned) return;
         _autoPanned = false;
-        if (!_disposed) _ = RaiseMoveEndAsync();
+        if (!_disposed) _ = SurfaceFailureAsync(RaiseMoveEndAsync());
 
         async Task RaiseMoveEndAsync()
         {
@@ -2749,7 +2884,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
                     last = now;
 
                     var (vx, vy) = _autoPanVector;
-                    if (!_autoPanned) _ = OnMoveStart.InvokeAsync(_viewport);
+                    if (!_autoPanned) _ = SurfaceFailureAsync(OnMoveStart.InvokeAsync(_viewport));
                     _autoPanned = true;
                     _viewport = ClampViewport(_viewport with { X = _viewport.X + vx * frames, Y = _viewport.Y + vy * frames });
 
@@ -2759,7 +2894,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
                     if (_draggingNodes) ApplyNodeDrag(px, py);
                     else if (_connecting) UpdateConnectionEnd(px, py);
 
-                    _ = OnMove.InvokeAsync(_viewport);
+                    _ = SurfaceFailureAsync(OnMove.InvokeAsync(_viewport));
                     if (_draggingNodes) RenderGeometry();
                     else RenderOverlay();
                 });
@@ -2779,10 +2914,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// Promotes a second simultaneous pointer into a pinch gesture, abandoning whatever
     /// single-pointer gesture was in progress. Returns true when a pinch took over.
     /// </summary>
-    private bool TryStartPinch()
+    /// <param name="pointerId">The pointer whose press made it two.</param>
+    private bool TryStartPinch(long pointerId)
     {
         if (!ZoomOnPinch || _activePointers.Count < 2 || _pinching) return false;
 
+        _gestureId++;
         StopViewportAnimation();
 
         // Drop any single-pointer gesture that the first finger had started, exactly the way
@@ -2798,8 +2935,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _pinching = true;
         _pinchStartDistance = PointerDistance();
         _pinchStartViewport = _viewport;
-        _ = SurfaceFailureAsync(RefreshPaneRectAsync());
-        if (!wasPanning) _ = OnMoveStart.InvokeAsync(_viewport);
+        var (midX, midY) = PointerMidpoint();
+        _pinchAnchor = ScreenToFlowPosition(midX, midY);
+        MarkGestureStart(StaleGesture.Pinch, pointerId);
+        if (_staleGestureStart is null) _ = SurfaceFailureAsync(RefreshPaneRectAsync());
+        if (!wasPanning) _ = SurfaceFailureAsync(OnMoveStart.InvokeAsync(_viewport));
         StateHasChanged();
         return true;
     }
@@ -2811,16 +2951,16 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         var scale = PointerDistance() / _pinchStartDistance;
         var newZoom = Math.Clamp(_pinchStartViewport.Zoom * scale, MinZoom, MaxZoom);
 
-        // Anchor the zoom on the midpoint between the two fingers, so the content under the
-        // pinch stays put the way it does in native map/photo gestures.
+        // The point of the flow that was under the midpoint between the two fingers when the pinch began stays under
+        // that midpoint wherever the fingers take it, the way native map/photo gestures behave: spreading them zooms
+        // about it, and moving them together pans. Kept in flow space, so the pane moving on the page mid-pinch does
+        // not move it.
         var (midX, midY) = PointerMidpoint();
         var px = midX - (_paneRect?.Left ?? 0);
         var py = midY - (_paneRect?.Top ?? 0);
-        var flowX = (px - _pinchStartViewport.X) / _pinchStartViewport.Zoom;
-        var flowY = (py - _pinchStartViewport.Y) / _pinchStartViewport.Zoom;
 
-        _viewport = ClampViewport(new BlowViewport(px - flowX * newZoom, py - flowY * newZoom, newZoom));
-        _ = OnMove.InvokeAsync(_viewport);
+        _viewport = ClampViewport(new BlowViewport(px - _pinchAnchor.X * newZoom, py - _pinchAnchor.Y * newZoom, newZoom));
+        _ = SurfaceFailureAsync(OnMove.InvokeAsync(_viewport));
         RenderOverlay();
     }
 
@@ -2912,6 +3052,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         if (_activePointers.ContainsKey(e.PointerId)) TrackPointer(e);
 
+        // The page scrolls under a gesture: positions are converted on the rectangle where the pane is now. A move that
+        // waited for it is dropped if a gesture began meanwhile: it was made in the one before, and would otherwise be
+        // applied to the new one's start - a pan, a pinch or a drag jumping by however far the old pointer had gone.
+        var gesture = _gestureId;
+        await RefreshStalePaneRectAsync();
+        if (gesture != _gestureId) return;
+
         if (_pinching)
         {
             ApplyPinch();
@@ -2929,7 +3076,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
                 X = _panStartViewport.X + dx,
                 Y = _panStartViewport.Y + dy,
             });
-            _ = OnMove.InvokeAsync(_viewport);
+            _ = SurfaceFailureAsync(OnMove.InvokeAsync(_viewport));
             RenderOverlay();
         }
         else if (_draggingNodes)
@@ -3139,8 +3286,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             _selecting = false;
             foreach (var n in Nodes) n.Selected = _preSelected.Contains(NodeKey(n.Id));
             foreach (var ed in Edges) ed.Selected = _preSelected.Contains(EdgeKey(ed.Id));
-            _ = NotifySelectionChangedAsync();
-            _ = OnSelectionEnd.InvokeAsync(e as PointerEventArgs ?? new PointerEventArgs());
+            _ = SurfaceFailureAsync(NotifySelectionChangedAsync());
+            _ = SurfaceFailureAsync(OnSelectionEnd.InvokeAsync(e as PointerEventArgs ?? new PointerEventArgs()));
         }
         _preSelected.Clear();
 
@@ -3166,9 +3313,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             _guides = [];
             _needsMeasure = true;
 
-            if (dragged is not null) _ = OnNodeDragStop.InvokeAsync(dragged);
+            if (dragged is not null) _ = SurfaceFailureAsync(OnNodeDragStop.InvokeAsync(dragged));
             if (draggedSet is not null)
-                _ = OnSelectionDragStop.InvokeAsync(new BlowSelectionMouseEvent(draggedSet, e ?? new MouseEventArgs()));
+                _ = SurfaceFailureAsync(OnSelectionDragStop.InvokeAsync(new BlowSelectionMouseEvent(draggedSet, e ?? new MouseEventArgs())));
         }
 
         if (_resizing)
@@ -3179,7 +3326,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
                 rn.Position = _resizeStartPos;
                 rn.Width = _resizeStartSize.Width;
                 rn.Height = _resizeStartSize.Height;
-                _ = OnNodeResizeEnd.InvokeAsync(rn);
+                _ = SurfaceFailureAsync(OnNodeResizeEnd.InvokeAsync(rn));
             }
             _resizing = false;
             _resizeNode = null;
@@ -3187,8 +3334,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         if (viewportMoved)
         {
-            _ = OnViewportChanged.InvokeAsync(_viewport);
-            _ = OnMoveEnd.InvokeAsync(_viewport);
+            _ = SurfaceFailureAsync(OnViewportChanged.InvokeAsync(_viewport));
+            _ = SurfaceFailureAsync(OnMoveEnd.InvokeAsync(_viewport));
         }
 
         ReleasePane();
@@ -3245,6 +3392,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         await OnPaneScroll.InvokeAsync(e);
         if (_paneRect is null) await RefreshPaneRectAsync();
+        else await RefreshStalePaneRectAsync();
 
         // Pinch (Ctrl/Cmd+wheel) always zooms; otherwise PanOnScroll decides pan vs zoom.
         var zoomGesture = e.CtrlKey || !PanOnScroll;
@@ -3303,7 +3451,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         if (!_wheelActive)
         {
             _wheelActive = true;
-            _ = OnMoveStart.InvokeAsync(_viewport);
+            _ = SurfaceFailureAsync(OnMoveStart.InvokeAsync(_viewport));
         }
 
         _wheelIdleCts?.Cancel();
@@ -3395,6 +3543,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         if (!ZoomOnDoubleClick) return;
         if (_paneRect is null) await RefreshPaneRectAsync();
+        else await RefreshStalePaneRectAsync();
         var px = e.ClientX - (_paneRect?.Left ?? 0);
         var py = e.ClientY - (_paneRect?.Top ?? 0);
         ZoomAtScreenPoint(px, py, e.ShiftKey ? 1 / 1.2 : 1.2);
@@ -3471,7 +3620,10 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         var command = e.CtrlKey || e.MetaKey;
 
         var isDelete = DeleteKeyEnabled && DeleteKeys.Contains(e.Key);
-        var isArrow = !DisableKeyboardA11y && e.Key is "ArrowLeft" or "ArrowRight" or "ArrowUp" or "ArrowDown";
+        // Shift moves by the coarse step; an arrow with Alt, Ctrl or Meta is the browser's or the system's (Alt+Left
+        // goes back, Ctrl+Left moves a word), as the minimap leaves it.
+        var isArrow = !DisableKeyboardA11y && !e.AltKey && !command
+                      && e.Key is "ArrowLeft" or "ArrowRight" or "ArrowUp" or "ArrowDown";
         var isSelectAll = SelectAllKeyEnabled && command && e.Key is "a" or "A";
 
         var clipboard = ClipboardShortcutsEnabled && command
@@ -3592,7 +3744,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // The same test a pointer drag applies, hidden included: a node nobody can see is not one
         // an arrow key should be quietly shifting around.
         var moving = NodesDraggable
-            ? Nodes.Where(n => n.Selected && n.Draggable && !n.Hidden).ToList()
+            ? Nodes.Where(n => n.Selected && n.Draggable && IsShownNow(n)).ToList()
             : [];
         var movingIds = moving.Select(n => n.Id).ToHashSet();
 
@@ -3676,7 +3828,19 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         await OnPaneClick.InvokeAsync(e);
     }
 
-    private Task OnPaneContextMenuHandler(MouseEventArgs e) => OnPaneContextMenu.InvokeAsync(e);
+    /// <summary>
+    /// Raises <see cref="OnPaneContextMenu"/> - except when the right button pans, as React Flow does: the menu would
+    /// otherwise open at the end of every right-button pan.
+    /// </summary>
+    private Task OnPaneContextMenuHandler(MouseEventArgs e)
+        => RightButtonPans ? Task.CompletedTask : OnPaneContextMenu.InvokeAsync(e);
+
+    /// <summary>
+    /// True when a right-button drag pans the pane: the context menu, the browser's and <see cref="OnPaneContextMenu"/>
+    /// alike, which would open as that drag is released, is then held back on the pane, as React Flow does for a
+    /// <c>panOnDrag</c> that lists the right button.
+    /// </summary>
+    private bool RightButtonPans => PanOnDrag && PanButtons.Contains(2);
 
     private Task OnNodeClickHandler(BlowNode node)
     {
@@ -3767,7 +3931,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         if (e.PointerType == "touch")
         {
             TrackPointer(e);
-            if (TryStartPinch()) return;
+            if (TryStartPinch(e.PointerId)) return;
         }
 
         OnPointerPress(node);
@@ -3798,7 +3962,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         if (!node.Selected && !IsMultiSelect(e)) ClearSelection();
         node.Selected = true;
-        _ = NotifySelectionChangedAsync();
+        _ = SurfaceFailureAsync(NotifySelectionChangedAsync());
     }
 
     private void BeginDrag(BlowNode node, PointerEventArgs e)
@@ -3806,11 +3970,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         if (!NodesDraggable || !node.Draggable) return;
 
         _draggingNodes = true;
+        _gestureId++;
         _dragArmed = false;
         _dragPrimary = node;
         _dragStartClientX = e.ClientX;
         _dragStartClientY = e.ClientY;
         _dragStartFlow = ScreenToFlowPosition(e.ClientX, e.ClientY);
+        MarkGestureStart(StaleGesture.Drag, e.PointerId);
         _dragPrimaryStartRect = node.GetRect();
         _guides = [];
         _dragSet.Clear();
@@ -3819,7 +3985,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // Multi-drag only carries the other selected nodes when the grabbed node is itself
         // part of the selection; otherwise only the grabbed node moves.
         var moving = node.Selected
-            ? Nodes.Where(n => n.Selected && n.Draggable && !n.Hidden).ToList()
+            ? Nodes.Where(n => n.Selected && n.Draggable && IsShown(n)).ToList()
             : [];
         if (moving.Count == 0) moving.Add(node);
 
@@ -3834,12 +4000,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         RememberDragOriginals();
 
         CapturePane(e.PointerId);
-        _ = OnNodeDragStart.InvokeAsync(node);
+        _ = SurfaceFailureAsync(OnNodeDragStart.InvokeAsync(node));
 
         // A drag that carries more than one node is a selection being moved, not a node being
         // nudged, and callers usually want to treat it as a single edit.
         if (IsSelectionDrag && OnSelectionDragStart.HasDelegate)
-            _ = OnSelectionDragStart.InvokeAsync(new BlowSelectionMouseEvent(DraggedNodes(), e));
+            _ = SurfaceFailureAsync(OnSelectionDragStart.InvokeAsync(new BlowSelectionMouseEvent(DraggedNodes(), e)));
 
         // Required: the pane's pointer-move handler is only attached while a gesture is
         // running, and a drag begun from a BlowDragHandle doesn't re-render the canvas by itself.
@@ -3886,7 +4052,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         {
             if (!IsMultiSelect(e)) ClearSelection();
             edge.Selected = true;
-            _ = NotifySelectionChangedAsync();
+            _ = SurfaceFailureAsync(NotifySelectionChangedAsync());
         }
         StateHasChanged();
     }
@@ -4137,14 +4303,14 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         }
         if (!OnGraphChanged.HasDelegate) return;
 
-        _ = OnGraphChanged.InvokeAsync(new BlowGraphChange(kind, origin)
+        _ = SurfaceFailureAsync(OnGraphChanged.InvokeAsync(new BlowGraphChange(kind, origin)
         {
             Nodes = nodes ?? [],
             Edges = edges ?? [],
             RemovedNodes = removedNodes ?? [],
             RemovedEdges = removedEdges ?? [],
             Label = label,
-        });
+        }));
     }
 
     /// <summary>
@@ -4216,12 +4382,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private void NotifyHistoryChanged()
     {
         if (_history is null || !OnHistoryChanged.HasDelegate) return;
-        _ = OnHistoryChanged.InvokeAsync(new BlowHistoryState(
+        _ = SurfaceFailureAsync(OnHistoryChanged.InvokeAsync(new BlowHistoryState(
             _history.CanUndo, _history.CanRedo, _history.UndoDepth, _history.RedoDepth)
         {
             UndoLabel = _history.UndoLabel,
             RedoLabel = _history.RedoLabel,
-        });
+        }));
     }
 
     /// <summary>
@@ -4347,8 +4513,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public async Task SelectAllAsync()
     {
         if (!ElementsSelectable) return;
-        foreach (var n in Nodes) n.Selected = n.Selectable && !n.Hidden;
-        ComputeLayout(); // brought up to date: IsEdgeVisible reads the index and the nesting directly
+        ComputeLayout(); // brought up to date: IsShown and IsEdgeVisible read the index and the nesting directly
+        foreach (var n in Nodes) n.Selected = n.Selectable && IsShown(n);
         foreach (var ed in Edges) ed.Selected = ed.Selectable && !ed.Hidden && IsEdgeVisible(ed);
         await NotifySelectionChangedAsync();
         StateHasChanged();
@@ -4362,7 +4528,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         var selectedNodes = new HashSet<string>();
         foreach (var n in Nodes)
         {
-            if (n.Hidden || !n.Selectable) continue;
+            if (!IsShown(n) || !n.Selectable) continue;
             var inside = NodeIntersects(n.GetRect(), rect, partial);
             n.Selected = inside || (_selAdditive && _preSelected.Contains(NodeKey(n.Id)));
             if (n.Selected) selectedNodes.Add(n.Id);
@@ -4567,16 +4733,47 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _connStartClientY = clientY;
 
         _connecting = true;
+        _gestureId++;
         _connectionVersion++;
         _connEndValid = false;
         _connMoved = false;
         _reconnectEdge = null;
         BeginConnectionSession();
         CapturePane(pointerId);
-        _ = OnConnectStart.InvokeAsync(new BlowConnectionStartInfo(nodeId, handleId, handleType));
+        _ = SurfaceFailureAsync(OnConnectStart.InvokeAsync(new BlowConnectionStartInfo(nodeId, handleId, handleType)));
         NotifyConnectionChange();
         _ = SurfaceFailureAsync(RefreshPaneRectAsync());
+
+        // Click-to-connect leaves the pointer free to roam the handles, which report it as it enters them - but only
+        // from the render this one sends, and a pointer already over one by then never enters it.
+        _probeConnectionHover = ConnectOnClick && pointerId >= 0;
         StateHasChanged();
+    }
+
+    /// <summary>Set when the render under way should be followed by <see cref="ProbeConnectionHoverAsync"/>.</summary>
+    private bool _probeConnectionHover;
+
+    /// <summary>
+    /// Asks the browser which handle the pointer is over once the handles listen for it (see <c>BlowHandle</c>), for
+    /// the one it was already over when they started to: it reports to <see cref="SetConnectionHover"/> as an entry
+    /// would have. A handle that has reported since knows better, and a connection that has ended or been replaced
+    /// is left alone.
+    /// </summary>
+    private async Task ProbeConnectionHoverAsync()
+    {
+        var version = _connectionVersion;
+        BlowHandleHit? hit;
+        try { hit = await _interop.HoveredHandleAsync(_paneRef); }
+        catch (Exception ex) when (IsInteropTeardown(ex) || ex is JSException) { return; }
+
+        if (_disposed || !_connecting || _keyboardConnecting || _connectionVersion != version || _connHover is not null) return;
+        if (hit?.NodeId is not { Length: > 0 } nodeId) return;
+
+        var type = hit.HandleType == "target" ? BlowHandleType.Target : BlowHandleType.Source;
+        var handleId = string.IsNullOrEmpty(hit.HandleId) ? null : hit.HandleId;
+        if (IsConnectionSource(nodeId, handleId, type)) return;
+
+        SetConnectionHover(nodeId, handleId, type, true);
     }
 
     /// <summary>
@@ -4615,16 +4812,21 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _connEndClientX = clientX;
         _connEndClientY = clientY;
         _connecting = true;
+        _gestureId++;
         _connectionVersion++;
         _connEndValid = false;
         _connMoved = pointerId is not null; // a reconnect drawn with the pointer is always a drag, never a click-to-connect
         _reconnectEdge = edge;
         BeginConnectionSession();
         if (pointerId is { } id) CapturePane(id);
-        _ = OnReconnectStart.InvokeAsync(new BlowEdgeReconnectStart(edge, movingEnd));
-        _ = OnConnectStart.InvokeAsync(new BlowConnectionStartInfo(node.Id, fixedHandle, fixedType));
+        _ = SurfaceFailureAsync(OnReconnectStart.InvokeAsync(new BlowEdgeReconnectStart(edge, movingEnd)));
+        _ = SurfaceFailureAsync(OnConnectStart.InvokeAsync(new BlowConnectionStartInfo(node.Id, fixedHandle, fixedType)));
         NotifyConnectionChange();
-        _ = SurfaceFailureAsync(RefreshPaneRectAsync());
+
+        // A pointer's end was converted on the rectangle as last read; the keyboard's is the handle's own.
+        if (pointerId is { } downId) MarkGestureStart(StaleGesture.Reconnect, downId);
+        else _staleGestureStart = null;
+        if (_staleGestureStart is null) _ = SurfaceFailureAsync(RefreshPaneRectAsync());
         StateHasChanged();
         return true;
     }
@@ -4827,8 +5029,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             _needsMeasure = true;
             Commit(BlowChangeKind.Reconnected, "reconnect", edges: [re], origin: BlowChangeOrigin.User);
             Announce(AriaLabels.Reconnected(NameOf(re.Source), NameOf(re.Target)));
-            _ = OnReconnect.InvokeAsync(new BlowEdgeReconnect(re, connection));
-            _ = RaiseEdgesChangedAsync();
+            _ = SurfaceFailureAsync(OnReconnect.InvokeAsync(new BlowEdgeReconnect(re, connection)));
+            _ = SurfaceFailureAsync(RaiseEdgesChangedAsync());
             return;
         }
 
@@ -4858,8 +5060,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _edgeIndexDirty = true;
         Commit(BlowChangeKind.Connected, "connect", edges: [edge], origin: BlowChangeOrigin.User);
         Announce(AriaLabels.Connected(NameOf(connection.Source!), NameOf(connection.Target!)));
-        _ = OnConnect.InvokeAsync(connection);
-        _ = RaiseEdgesChangedAsync();
+        _ = SurfaceFailureAsync(OnConnect.InvokeAsync(connection));
+        _ = SurfaceFailureAsync(RaiseEdgesChangedAsync());
         NotifyHandlesConnected(connection);
     }
 
@@ -4879,14 +5081,14 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             && HandleFor(src, BlowHandleType.Source, connection.SourceHandle) is { } sourceReg
             && sourceReg.OnConnect.HasDelegate)
         {
-            _ = sourceReg.OnConnect.InvokeAsync(connection);
+            _ = SurfaceFailureAsync(sourceReg.OnConnect.InvokeAsync(connection));
         }
 
         if (connection.Target is { } tgt
             && HandleFor(tgt, BlowHandleType.Target, connection.TargetHandle) is { } targetReg
             && targetReg.OnConnect.HasDelegate)
         {
-            _ = targetReg.OnConnect.InvokeAsync(connection);
+            _ = SurfaceFailureAsync(targetReg.OnConnect.InvokeAsync(connection));
         }
     }
 
@@ -4920,7 +5122,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         foreach (var n in Nodes)
         {
-            if (n.Hidden || !n.Connectable) continue;
+            if (!IsShown(n) || !n.Connectable) continue;
             foreach (var (_, h) in n.Handles)
             {
                 if (!h.ConnectableEnd) continue;
@@ -5001,15 +5203,15 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         if (end.Reconnected is { } reconnected && OnReconnectEnd.HasDelegate)
         {
             var movingEnd = end.Start.HandleType == BlowHandleType.Source ? BlowHandleType.Target : BlowHandleType.Source;
-            _ = OnReconnectEnd.InvokeAsync(new BlowEdgeReconnectEnd(reconnected, movingEnd, end.Rewired));
+            _ = SurfaceFailureAsync(OnReconnectEnd.InvokeAsync(new BlowEdgeReconnectEnd(reconnected, movingEnd, end.Rewired)));
         }
 
-        _ = OnConnectEnd.InvokeAsync(new BlowConnectEndInfo(end.Start, end.FlowPosition, end.ClientX, end.ClientY, end.Valid)
+        _ = SurfaceFailureAsync(OnConnectEnd.InvokeAsync(new BlowConnectEndInfo(end.Start, end.FlowPosition, end.ClientX, end.ClientY, end.Valid)
         {
             IsDropped = end.Dropped,
             IsReconnect = end.Reconnected is not null,
             Rejection = end.Rejection,
-        });
+        }));
     }
 
     /// <summary>Tells the canvas the pointer has entered or left a handle while connecting.</summary>
@@ -5150,7 +5352,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// which neither starts a drag nor shows itself as connectable when this is false.
     /// </summary>
     public bool CanStartConnection(string nodeId, string? handleId, BlowHandleType handleType)
-        => NodesConnectable && Index.TryGetValue(nodeId, out var node) && node.Connectable && !node.Hidden
+        => NodesConnectable && Index.TryGetValue(nodeId, out var node) && node.Connectable && IsShownNow(node)
            && !IsHandleAtLimit(nodeId, handleId, handleType);
 
     /// <summary>
@@ -5314,8 +5516,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private void ApplyViewport(BlowViewport viewport)
     {
         _viewport = viewport;
-        _ = OnViewportChanged.InvokeAsync(_viewport);
-        _ = OnMove.InvokeAsync(_viewport);
+        _ = SurfaceFailureAsync(OnViewportChanged.InvokeAsync(_viewport));
+        _ = SurfaceFailureAsync(OnMove.InvokeAsync(_viewport));
         RenderOverlay();
     }
 
@@ -5325,6 +5527,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public BlowViewport GetViewport() => _viewport;
 
     /// <summary>Converts a screen-space (client) point to flow coordinates.</summary>
+    /// <remarks>
+    /// Converts on the pane's position on screen as last read. While the page scrolls, and for a moment after, that is
+    /// where the pane was when the scrolling began - the browser reports where it ended up once it stops, not on every
+    /// frame. A point taken just after a scroll - an HTML5 drop at the end of a drag that scrolled the page, say - is
+    /// converted with <see cref="ScreenToFlowPositionAsync"/>, which reads it again first when it has to.
+    /// </remarks>
     public BlowXYPosition ScreenToFlowPosition(double clientX, double clientY)
     {
         var px = clientX - (_paneRect?.Left ?? 0);
@@ -5333,11 +5541,38 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     }
 
     /// <summary>Converts a flow-space point to a screen-space (client) point.</summary>
+    /// <remarks>
+    /// Like <see cref="ScreenToFlowPosition"/>, on the pane's position as last read; see
+    /// <see cref="FlowToScreenPositionAsync"/>.
+    /// </remarks>
     public BlowXYPosition FlowToScreenPosition(BlowXYPosition flow)
     {
         var p = _viewport.FlowToScreen(flow);
         return new BlowXYPosition(p.X + (_paneRect?.Left ?? 0), p.Y + (_paneRect?.Top ?? 0));
     }
+
+    /// <summary>
+    /// Converts a screen-space (client) point to flow coordinates, reading the pane's position on screen again first
+    /// when the page has scrolled it since it was last read; see <see cref="ScreenToFlowPosition"/>.
+    /// </summary>
+    public async Task<BlowXYPosition> ScreenToFlowPositionAsync(double clientX, double clientY)
+    {
+        await EnsurePaneRectCurrentAsync();
+        return ScreenToFlowPosition(clientX, clientY);
+    }
+
+    /// <summary>
+    /// Converts a flow-space point to a screen-space (client) point, reading the pane's position on screen again first
+    /// when the page has scrolled it since it was last read; see <see cref="FlowToScreenPosition"/>.
+    /// </summary>
+    public async Task<BlowXYPosition> FlowToScreenPositionAsync(BlowXYPosition flow)
+    {
+        await EnsurePaneRectCurrentAsync();
+        return FlowToScreenPosition(flow);
+    }
+
+    /// <summary>The pane's rectangle, read when it never was or the page has scrolled it since.</summary>
+    private Task EnsurePaneRectCurrentAsync() => _paneRect is null ? ReadPaneForCheckAsync() : RefreshStalePaneRectAsync();
 
     /// <summary>Sets the absolute zoom level, keeping the pane center stationary.</summary>
     public void ZoomTo(double zoom)
@@ -5457,7 +5692,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // Deleting through the API is an undo step, so adding through it has to be one too:
         // otherwise undoing straight after an "add" would take back whatever came before it.
         Commit(BlowChangeKind.Added, "add", nodes);
-        _ = RaiseNodesChangedAsync();
+        _ = SurfaceFailureAsync(RaiseNodesChangedAsync());
         StateHasChanged();
     }
 
@@ -5468,7 +5703,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         Edges.AddRange(edges);
         _edgeIndexDirty = true;
         Commit(BlowChangeKind.Added, "add", edges: edges);
-        _ = RaiseEdgesChangedAsync();
+        _ = SurfaceFailureAsync(RaiseEdgesChangedAsync());
         StateHasChanged();
     }
 
@@ -5534,8 +5769,16 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         await AfterNodesMovedAsync(moved, "distribute");
     }
 
+    /// <summary>
+    /// The selected nodes the align and distribute helpers may move: none when nodes cannot be dragged, and never one
+    /// out of sight - hidden, or inside a hidden or collapsed node - which a pointer or arrow-key drag leaves alone too.
+    /// </summary>
     private List<BlowNode> SelectedDraggableNodes()
-        => NodesDraggable ? Nodes.Where(n => n.Selected).ToList() : [];
+    {
+        if (!NodesDraggable) return [];
+        ComputeLayout(); // brought up to date: IsShown reads the nesting directly
+        return Nodes.Where(n => n.Selected && IsShown(n)).ToList();
+    }
 
     /// <summary>
     /// Common tail for the imperative move helpers: keep the moved nodes inside whatever
@@ -5868,9 +6111,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public async Task<bool> FocusNodeAsync(string nodeId, bool select = false, double? zoom = null, int durationMs = 0)
     {
         ArgumentNullException.ThrowIfNull(nodeId);
-        if (!Index.TryGetValue(nodeId, out var node) || node.Hidden) return false;
-
         ComputeLayout();
+        if (!Index.TryGetValue(nodeId, out var node) || !IsShown(node)) return false;
+
         if (select) await SelectAsync([node]);
 
         var rect = node.GetRect();
@@ -5921,8 +6164,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     {
         if (!ElementsSelectable) return;
         if (!additive) ClearSelection();
-        foreach (var node in nodes ?? []) if (node.Selectable && !node.Hidden) node.Selected = true;
-        ComputeLayout(); // brought up to date: IsEdgeVisible reads the index and the nesting directly
+        ComputeLayout(); // brought up to date: IsShown and IsEdgeVisible read the index and the nesting directly
+        foreach (var node in nodes ?? []) if (node.Selectable && IsShown(node)) node.Selected = true;
         foreach (var edge in edges ?? []) if (edge.Selectable && !edge.Hidden && IsEdgeVisible(edge)) edge.Selected = true;
         await NotifySelectionChangedAsync();
         StateHasChanged();
@@ -5932,7 +6175,10 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// The nodes matching a search, best matches first; see <see cref="BlowGraphSearch.FindNodes"/>.
     /// </summary>
     public IReadOnlyList<BlowNode> FindNodes(string query, Func<BlowNode, string?>? text = null)
-        => BlowGraphSearch.FindNodes(Nodes.Where(n => !n.Hidden), query, text);
+    {
+        ComputeLayout(); // brought up to date: IsShown reads the nesting directly
+        return BlowGraphSearch.FindNodes(Nodes.Where(n => IsShown(n)), query, text);
+    }
 
     /// <summary>The edges matching a search, best matches first; see <see cref="BlowGraphSearch.FindEdges"/>.</summary>
     public IReadOnlyList<BlowEdge> FindEdges(string query, Func<BlowEdge, string?>? text = null)
@@ -6078,7 +6324,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     {
         ComputeLayout();
 
-        var selected = Nodes.Where(n => n.Selected && !n.Hidden).ToList();
+        var selected = Nodes.Where(n => n.Selected && IsShown(n)).ToList();
         var selectedIds = selected.Select(n => n.Id).ToHashSet();
 
         // Only the outermost selected nodes: a selected child goes along with its selected parent.
@@ -6228,8 +6474,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         ArgumentNullException.ThrowIfNull(layout);
         ComputeLayout();
 
-        var chosen = (nodes ?? (Nodes.Exists(n => n.Selected && !n.Hidden) ? Nodes.Where(n => n.Selected) : Nodes.Where(n => n.ParentId is null)))
-            .Where(n => !n.Hidden)
+        var chosen = (nodes ?? (Nodes.Exists(n => n.Selected && IsShown(n)) ? Nodes.Where(n => n.Selected) : Nodes.Where(n => n.ParentId is null)))
+            .Where(n => IsShown(n))
             .ToList();
         if (chosen.Count == 0) return [];
 
@@ -6407,7 +6653,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         var list = new List<BlowNode>();
         foreach (var n in Nodes)
         {
-            if (n.Hidden) continue;
+            if (!IsShown(n)) continue;
             if (NodeIntersects(n.GetRect(), area, partially)) list.Add(n);
         }
         return list;
@@ -6423,7 +6669,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         var list = new List<BlowNode>();
         foreach (var n in Nodes)
         {
-            if (n.Hidden || ReferenceEquals(n, node)) continue;
+            if (!IsShown(n) || ReferenceEquals(n, node)) continue;
             if (NodeIntersects(n.GetRect(), area, partially)) list.Add(n);
         }
         return list;
@@ -6663,6 +6909,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         if (!Index.TryGetValue(nodeId, out var node)) return;
 
         _resizing = true;
+        _gestureId++;
         _resizeNode = node;
         _resizeDir = direction;
         _resizeStartClientX = clientX;
@@ -6695,7 +6942,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _resizeKeepAspect = options.KeepAspectRatio;
         node.Resizing = true;
         CapturePane(pointerId);
-        _ = OnNodeResizeStart.InvokeAsync(node);
+        _ = SurfaceFailureAsync(OnNodeResizeStart.InvokeAsync(node));
         StateHasChanged();
     }
 
@@ -6750,7 +6997,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         node.Width = w;
         node.Height = h;
         node.Position = ClampNodePosition(node, new BlowXYPosition(x, y));
-        _ = OnNodeResize.InvokeAsync(node);
+        _ = SurfaceFailureAsync(OnNodeResize.InvokeAsync(node));
     }
 
     /// <summary>Pans and zooms so the whole graph fits the pane, with a 10% margin.</summary>
@@ -6784,7 +7031,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         ComputeLayout();
 
         IEnumerable<BlowNode> source = options.Nodes ?? Nodes;
-        var candidates = (options.IncludeHiddenNodes ? source : source.Where(n => !n.Hidden)).ToList();
+        var candidates = (options.IncludeHiddenNodes ? source : source.Where(n => IsShown(n))).ToList();
         if (candidates.Count == 0) return null;
 
         // The options can only narrow the canvas's own zoom range, never widen it.
@@ -6958,17 +7205,20 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>
     /// What a press of the primary button - the mouse's left one, a pen, a finger - on the empty pane starts: the one
     /// decision the press itself (<see cref="OnPanePointerDown"/>), the cursor and the pane's <c>touch-action</c> all
-    /// follow, so none of them can tell a different story. The primary button does nothing on the pane unless it is
-    /// one of <see cref="PanButtons"/>; held, the pan-activation key turns any such drag into a pan, and the selection
-    /// key (or <see cref="SelectionOnDrag"/>) into a selection box.
+    /// follow, so none of them can tell a different story. The selection key (or <see cref="SelectionOnDrag"/>) makes
+    /// it a selection box whichever buttons pan, as React Flow's <c>selectionOnDrag</c> does beside a
+    /// <c>panOnDrag</c> of other buttons; otherwise it pans only when it is one of <see cref="PanButtons"/>, and then
+    /// the pan-activation key, held, turns a selection box back into a pan.
     /// </summary>
     /// <param name="selectionKeyHeld">Whether the press holds the selection key; only a press can tell.</param>
-    private PaneDrag PrimaryPaneDrag(bool selectionKeyHeld = false) =>
-        !PanButtons.Contains(0) ? PaneDrag.None
-        : PanOnDrag && _panKeyHeld ? PaneDrag.Pan
-        : ElementsSelectable && (selectionKeyHeld || SelectionOnDrag) ? PaneDrag.Select
-        : PanOnDrag ? PaneDrag.Pan
-        : PaneDrag.None;
+    private PaneDrag PrimaryPaneDrag(bool selectionKeyHeld = false)
+    {
+        var primaryPans = PanOnDrag && PanButtons.Contains(0);
+        return primaryPans && _panKeyHeld ? PaneDrag.Pan
+            : ElementsSelectable && (selectionKeyHeld || SelectionOnDrag) ? PaneDrag.Select
+            : primaryPans ? PaneDrag.Pan
+            : PaneDrag.None;
+    }
 
     /// <summary>
     /// True when the pane has something to do with the keyboard: the selection to clear, move, delete or select all,

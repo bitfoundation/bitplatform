@@ -10,7 +10,7 @@ namespace Boilerplate.Tests.Features.Attachments;
 /// <list type="bullet">
 /// <item>It used to delete the existing rows and the existing blob <b>before</b> decoding the upload. A file that was
 /// too small, or that could not be decoded, therefore destroyed the picture the user already had while
-/// leaving <c>HasProfilePicture</c> true - so the profile pointed at a blob that no longer existed and no code path
+/// leaving <c>HasProfileImage</c> true - so the profile pointed at a blob that no longer existed and no code path
 /// could restore or clear it.</item>
 /// <item>The first fix for that then went the other way and removed-and-re-added the rows in one
 /// <c>SaveChangesAsync</c>. <c>Attachment</c>'s key is composite - <c>{ Id, Kind }</c> - and <c>GetFilePath</c> is
@@ -30,7 +30,7 @@ public class AttachmentReplacementTests
     /// wearing a green test.
     /// </summary>
     [TestMethod]
-    public async Task ReUploadingAProfilePicture_Should_ReplaceItInPlace()
+    public async Task ReUploadingAProfileImage_Should_ReplaceItInPlace()
     {
         await using var server = await StartServer();
         await using var client = server.CreateAppClient();
@@ -56,17 +56,17 @@ public class AttachmentReplacementTests
         }
         finally
         {
-            await DeleteProfilePicture(httpClient);
+            await DeleteProfileImage(httpClient);
         }
     }
 
     /// <summary>
     /// The rejection path. A 100x100 upload is refused because it is smaller than the 256x256 the small kind needs -
     /// and the picture the user already had must be exactly as it was: same bytes served, still two rows, and
-    /// <c>HasProfilePicture</c> still true.
+    /// <c>HasProfileImage</c> still true.
     /// <para>
-    /// The <c>HasProfilePicture</c> assertion is the one that matters most. It is written server-side after a
-    /// successful upload and cleared only by <c>DeleteUserProfilePicture</c>, so a rejected upload that deleted the
+    /// The <c>HasProfileImage</c> assertion is the one that matters most. It is written server-side after a
+    /// successful upload and cleared only by <c>DeleteUserProfileImage</c>, so a rejected upload that deleted the
     /// rows left the flag true with nothing behind it, and the user could neither see their picture nor delete it.
     /// </para>
     /// </summary>
@@ -97,13 +97,13 @@ public class AttachmentReplacementTests
 
             Assert.AreEqual(2, await CountAttachments(server, userId), "The refused upload must not have removed the existing rows.");
 
-            Assert.IsTrue(await HasProfilePicture(server, userId),
-                "HasProfilePicture must still be true. If a rejected upload can clear the blob while leaving this flag set, " +
+            Assert.IsTrue(await HasProfileImage(server, userId),
+                "HasProfileImage must still be true. If a rejected upload can clear the blob while leaving this flag set, " +
                 "the profile permanently points at something that is not there.");
         }
         finally
         {
-            await DeleteProfilePicture(httpClient);
+            await DeleteProfileImage(httpClient);
         }
     }
 
@@ -142,11 +142,11 @@ public class AttachmentReplacementTests
 
             Assert.AreEqual(2, await CountAttachments(server, userId), "The refused upload must not have removed the existing rows.");
 
-            Assert.IsTrue(await HasProfilePicture(server, userId));
+            Assert.IsTrue(await HasProfileImage(server, userId));
         }
         finally
         {
-            await DeleteProfilePicture(httpClient);
+            await DeleteProfileImage(httpClient);
         }
     }
 
@@ -171,24 +171,24 @@ public class AttachmentReplacementTests
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         form.Add(fileContent, "file", "picture.png"); // The endpoint binds an IFormFile parameter named "file".
 
-        using var response = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfilePicture", form, TestContext.CancellationToken);
+        using var response = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfileImage", form, TestContext.CancellationToken);
         response.EnsureSuccessStatusCode();
     }
 
     private async Task<byte[]> Download(HttpClient httpClient, Guid userId)
     {
-        // attachmentId for a profile picture is the user id; the small kind is the resized WebP.
+        // attachmentId for a profile image is the user id; the small kind is the resized WebP.
         return await httpClient.GetByteArrayAsync(
             $"api/v1/Attachment/GetAttachment/{userId}/{AttachmentKind.UserProfileImageSmall}", TestContext.CancellationToken);
     }
 
-    private async Task DeleteProfilePicture(HttpClient httpClient)
+    private async Task DeleteProfileImage(HttpClient httpClient)
     {
         // Best effort: the per-run account's blobs and rows outlive the run otherwise, and a test that fails early
         // must not take the cleanup down with it.
         try
         {
-            using var _ = await httpClient.DeleteAsync("api/v1/Attachment/DeleteUserProfilePicture", CancellationToken.None);
+            using var _ = await httpClient.DeleteAsync("api/v1/Attachment/DeleteUserProfileImage", CancellationToken.None);
         }
         catch (Exception) { }
     }
@@ -201,12 +201,12 @@ public class AttachmentReplacementTests
         return await dbContext.Attachments.CountAsync(att => att.Id == attachmentId, TestContext.CancellationToken);
     }
 
-    private async Task<bool> HasProfilePicture(AppTestServer server, Guid userId)
+    private async Task<bool> HasProfileImage(AppTestServer server, Guid userId)
     {
         await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        return await dbContext.Set<User>().Where(u => u.Id == userId).Select(u => u.HasProfilePicture).SingleAsync(TestContext.CancellationToken);
+        return await dbContext.Set<User>().Where(u => u.Id == userId).Select(u => u.HasProfileImage).SingleAsync(TestContext.CancellationToken);
     }
 
     public TestContext TestContext { get; set; } = default!;

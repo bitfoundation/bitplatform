@@ -54,13 +54,6 @@ public partial class BitNavPanelDemo
         },
         new()
         {
-            Name = "CollapseAriaLabel",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The default aria-label of the expand/collapse button of an expanded item of the nav.",
-        },
-        new()
-        {
             Name = "CloseAriaLabel",
             Type = "string?",
             DefaultValue = "null",
@@ -79,6 +72,13 @@ public partial class BitNavPanelDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the icon of the close button of the nav panel.",
+        },
+        new()
+        {
+            Name = "CollapseAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The default aria-label of the expand/collapse button of an expanded item of the nav.",
         },
         new()
         {
@@ -149,13 +149,6 @@ public partial class BitNavPanelDemo
         },
         new()
         {
-            Name = "HeaderText",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The title shown beside the logo in the header - typically the name of the app. It is part of the IconNavUrl link and names it, is hidden in the rail, and keeps the built-in buttons of the header.",
-        },
-        new()
-        {
             Name = "HeaderTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
@@ -169,6 +162,13 @@ public partial class BitNavPanelDemo
             Description = "The render mode of the custom HeaderTemplate.",
             LinkType = LinkType.Link,
             Href = "#nav-item-template-render-mode-enum",
+        },
+        new()
+        {
+            Name = "HeaderText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The title shown beside the logo in the header - typically the name of the app. It is part of the IconNavUrl link and names it, is hidden in the rail, and keeps the built-in buttons of the header.",
         },
         new()
         {
@@ -200,13 +200,6 @@ public partial class BitNavPanelDemo
         },
         new()
         {
-            Name = "IndentValue",
-            Type = "int",
-            DefaultValue = "16",
-            Description = "The indentation value in px for each level of depth of child item."
-        },
-        new()
-        {
             Name = "IndentPadding",
             Type = "int",
             DefaultValue = "27",
@@ -221,17 +214,17 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "IndentValue",
+            Type = "int",
+            DefaultValue = "16",
+            Description = "The indentation value in px for each level of depth of child item."
+        },
+        new()
+        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines if the nav panel is open while it is an off-canvas drawer (see DrawerBreakpoint).",
-        },
-        new()
-        {
-           Name = "IsToggled",
-           Type = "bool",
-           DefaultValue = "false",
-           Description = "Determines if the nav panel is in the toggled state.",
         },
         new()
         {
@@ -460,6 +453,13 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "SearchAnnouncementProvider",
+            Type = "Func<int, string?>?",
+            DefaultValue = "null",
+            Description = "Builds the text that the screen reader announces through the live region of the nav panel whenever the search filters the items, in place of the built-in English announcement. The argument is the number of matched items.",
+        },
+        new()
+        {
             Name = "SearchBoxClasses",
             Type = "BitSearchBoxClassStyles?",
             DefaultValue = "null",
@@ -478,13 +478,6 @@ public partial class BitNavPanelDemo
             Type = "BitSearchBoxClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the search box of the nav panel.",
-        },
-        new()
-        {
-            Name = "SearchAnnouncementProvider",
-            Type = "Func<int, string?>?",
-            DefaultValue = "null",
-            Description = "Builds the text that the screen reader announces through the live region of the nav panel whenever the search filters the items, in place of the built-in English announcement. The argument is the number of matched items.",
         },
         new()
         {
@@ -530,17 +523,17 @@ public partial class BitNavPanelDemo
         },
         new()
         {
-            Name = "SingleExpand",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the single-expand mode in the BitNav."
-        },
-        new()
-        {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
             Description = "Renders a close button in the header of the nav panel, on the screens the panel is an off-canvas drawer on. It is the control the toggle button is not: the toggle collapses a permanent panel into a rail, which a drawer that is either open or gone has no state for.",
+        },
+        new()
+        {
+            Name = "SingleExpand",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the single-expand mode in the BitNav."
         },
         new()
         {
@@ -573,6 +566,13 @@ public partial class BitNavPanelDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The aria-label of the toggle button of the nav panel.",
+        },
+        new()
+        {
+            Name = "Toggled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines if the nav panel is in the toggled state.",
         },
         new()
         {

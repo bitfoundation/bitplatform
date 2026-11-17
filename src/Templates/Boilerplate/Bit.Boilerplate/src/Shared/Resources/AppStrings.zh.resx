@@ -1606,8 +1606,8 @@
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>您确定要撤销 {0} 的所有会话吗？已授权的应用会保留。</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>您不能从 SuperAdmin 用户组中移除此用户。</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>您不能从全局管理员用户组中移除此用户。</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>超级管理员权限不可修改。</value>
@@ -1618,11 +1618,11 @@
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>您不能删除自己的用户</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>您不能删除此 SuperAdmin 用户</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>您不能删除此全局管理员用户</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>您无法撤销此超级管理员用户的会话</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>您无法撤销此全局管理员用户的会话</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>您不能删除当前会话</value>
@@ -2191,6 +2191,42 @@
   </data>
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>此设备和服务器报告的应用信息，用于故障排除。</value>
+  </data>
+    <data name="Lock" xml:space="preserve">
+    <value>锁定</value>
+  </data>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>锁定此账户</value>
+  </data>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>首次锁定此账户需要设置 PIN 码。在此设备上返回此账户时需要输入它，且它永远不会离开此设备。</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>新 PIN 码</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>再次输入 PIN 码</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>两次输入的 PIN 码不一致，请重试。</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>输入 PIN 码</value>
+  </data>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>PIN 码错误。剩余尝试次数：{0}。</value>
+  </data>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>PIN 码错误次数过多，此账户已不再保存在此设备上。请重新登录以使用它。</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>重新登录以移除 PIN 码</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>使用字母</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>使用数字</value>
   </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">

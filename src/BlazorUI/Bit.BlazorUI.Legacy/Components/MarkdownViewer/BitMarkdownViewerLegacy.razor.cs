@@ -47,14 +47,14 @@ public partial class BitMarkdownViewerLegacy : BitComponentBase
     public bool NoPrerender { get; set; }
 
     /// <summary>
-    /// A callback that is called before starting to parse the markdown.
-    /// </summary>
-    [Parameter] public EventCallback<string?> OnParsing { get; set; }
-
-    /// <summary>
     /// A callback that is called after parsing the markdown.
     /// </summary>
     [Parameter] public EventCallback<string?> OnParsed { get; set; }
+
+    /// <summary>
+    /// A callback that is called before starting to parse the markdown.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnParsing { get; set; }
 
     /// <summary>
     /// A callback that is called after rendering the parsed markdown.

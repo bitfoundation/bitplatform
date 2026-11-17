@@ -32,7 +32,7 @@ public sealed class SettingsSampleAccount(WorkbenchScenarioState scenarioState, 
         get
         {
             var user = Current();
-            var upload = WorkbenchProfilePictures.LastUpload(user.Id);
+            var upload = WorkbenchProfileImages.LastUpload(user.Id);
 
             if (upload != store.SeenUpload)
             {
@@ -40,7 +40,7 @@ public sealed class SettingsSampleAccount(WorkbenchScenarioState scenarioState, 
                 // stays removed.
                 if (upload is not null)
                 {
-                    user.HasProfilePicture = true;
+                    user.HasProfileImage = true;
                     user.Version = $"{int.Parse(user.Version ?? "0", CultureInfo.InvariantCulture) + 1}";
                 }
 
@@ -124,7 +124,7 @@ public sealed class SettingsSampleAccount(WorkbenchScenarioState scenarioState, 
     /// <summary>The picture is gone, until one is uploaded.</summary>
     public void RemovePicture() => ChangeUser(user =>
     {
-        user.HasProfilePicture = false;
+        user.HasProfileImage = false;
         user.Version = $"{int.Parse(user.Version ?? "0", CultureInfo.InvariantCulture) + 1}";
     });
 
@@ -165,7 +165,7 @@ public sealed class SettingsSampleAccount(WorkbenchScenarioState scenarioState, 
 
         var (user, sessions) = Sample(scenario.User, localizer[WorkbenchDemoUsers.Find(scenario.User).NameKey], DateTimeOffset.UtcNow);
 
-        store.StartOver(shapedFor, user, [.. sessions], twoFactor, FirstKey, twoFactor ? 8 : 0, passkey, WorkbenchProfilePictures.LastUpload(user.Id));
+        store.StartOver(shapedFor, user, [.. sessions], twoFactor, FirstKey, twoFactor ? 8 : 0, passkey, WorkbenchProfileImages.LastUpload(user.Id));
     }
 
     /// <summary>The demo user's profile and the devices and apps they are signed in on, before anything was changed.</summary>
@@ -182,7 +182,7 @@ public sealed class SettingsSampleAccount(WorkbenchScenarioState scenarioState, 
             FullName = fullName,
             BirthDate = new DateTimeOffset(1991, 4, 18, 0, 0, 0, TimeSpan.Zero),
             Gender = Gender.Female,
-            HasProfilePicture = true,
+            HasProfileImage = true,
             Version = "0"
         };
 

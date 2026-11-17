@@ -1,6 +1,6 @@
-﻿using System.Text;
+﻿using Bit.Bmage.Demo.Client;
 using Bit.Bmage.Demo.Server.Dtos;
-using Bit.Bmage.Demo.Client;
+using Bit.Utilities.Mcp;
 
 namespace Bit.Bmage.Demo.Server.Services;
 
@@ -13,292 +13,191 @@ namespace Bit.Bmage.Demo.Server.Services;
 /// "Make an avatar under 100 KB" is a recipe (avatar-crop), a guide section (Quality and size
 /// budgets), an options property (ImageExportOptions.MaxFileSize), a demo page (/avatar) and a tool
 /// that measures it (RunBmagePipeline) all at once. Each hit therefore carries the exact follow-up
-/// call that returns its full text, so one search is enough to know what to ask for next.
+/// call that returns its full text, so one search is enough to know what to ask for next. The
+/// ranking itself is <see cref="McpSearch"/>, shared with the other utilities' MCP servers: it reads
+/// a query word by its stem ("uploaded" finds "upload", "persist" finds "persistence"), only from the
+/// start of a word ("let" is not inside "Balette"), and by how rare it is, so the words a request is
+/// phrased in ("photo") cannot outrank the one it is about ("shrink").
 /// </para>
 /// </summary>
 public static class BmageSearchIndex
 {
-    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted)
-    {
-        /// <summary>
-        /// The title split into words, camel-case humps included, so "MaxFileSize" is found by "file"
-        /// - and so a query word only counts as a title hit when it IS one of those words.
-        /// </summary>
-        public string[] TitleWords { get; } = SplitWords(Title);
-
-        /// <summary>The name without the type that owns it: "Cover" out of "ImagePipeline.Cover".</summary>
-        public string LocalName { get; } = Title[(Title.LastIndexOf('.') + 1)..];
-    }
-
-    private const int MaxTerms = 16;
-
-    // Not readonly: a Lazy that faulted would answer every later search with the same exception.
-    // Replacing it lets the next search build the index again.
-    private static Lazy<Entry[]> _entries = new(Build);
-
-    private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "how", "the", "and", "for", "with", "from", "that", "this", "what", "when", "where", "which",
-        "does", "did", "are", "was", "you", "your", "than", "then", "its", "but", "any", "some",
-        "please", "help", "about", "into", "way", "make", "want", "need", "would", "should", "could",
-        "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto",
-        // Every entry here is about images in Bmage; a query saying so matches everything and ranks nothing.
-        "bmage", "image", "images", "blazor", "picture",
-        // The words a problem is reported in. Left in, they outrank the answer.
-        "not", "why", "use", "using", "can", "will", "wont", "isnt", "doesnt", "instead", "still", "just", "only", "even",
+    /// <summary>
+    /// The words that separate nothing here. Every entry is about images in Bmage, so a query saying so
+    /// matches everything and ranks nothing; and the words a problem is reported in ("why does it NOT
+    /// WORK", "can I USE") outrank the answer when they are left in. They are dropped when the query says
+    /// something else as well, and a query made of nothing else is not searched at all: by them it would
+    /// rank every entry on the strength of a word all of them share. "bit" is not one of them - it is
+    /// the bit depth the guides talk about ("8-bit", "16 bit").
+    /// </summary>
+    private static readonly McpSearch _search = new(Build, ambientWords:
+    [
+        "bmage", "blazor", "image", "images", "picture", "pictures",
+        "not", "use", "using", "can", "will", "wont", "isnt", "doesnt", "instead", "still", "just", "only", "even",
         "work", "works", "working",
-    };
+    ], searchAmbientAlone: false);
 
-    /// <summary>The best matches for a query, each with the call that returns it in full.</summary>
-    public static BmageSearchHitDto[] Search(string? query, int limit)
+    /// <summary>The best matches for a query, each with the call that returns it in full - or, when there are none, why, and what to try instead.</summary>
+    public static BmageSearchResultDto Search(string? query, int limit)
     {
-        var terms = Tokenize(query);
-        if (terms.Length == 0) return [];
+        var result = _search.Search(query, limit);
 
-        var entries = GetEntries();
-
-        return [.. entries
-            .Select(entry => (Entry: entry, Score: Score(entry, terms)))
-            .Where(hit => hit.Score > 0)
-            .OrderByDescending(hit => hit.Score)
-            .ThenBy(hit => hit.Entry.Title, StringComparer.OrdinalIgnoreCase)
-            // An inherited member documented once - TryFuse on every adjustment, say - is one answer,
-            // not eight: left in, the copies push everything else off the page.
-            .DistinctBy(hit => (hit.Entry.Kind, hit.Entry.LocalName, hit.Entry.Body))
-            .Take(Math.Clamp(limit, 1, 50))
-            .Select(hit => new BmageSearchHitDto
+        if (result.Terms.Length == 0)
+        {
+            // Nothing was left to search by, which is a different failure from "searched and found
+            // nothing" - and the fix is on the caller's side, so it has to be said rather than returned
+            // as an empty list the agent would read as "Bmage cannot do this".
+            return new BmageSearchResultDto
             {
-                Kind = hit.Entry.Kind,
-                Title = hit.Entry.Title,
-                Context = hit.Entry.Context,
-                Tool = hit.Entry.Tool,
-                Snippet = Snippet(hit.Entry.Body, terms)
-            })];
-    }
-
-    private static Entry[] GetEntries()
-    {
-        var lazy = _entries;
-
-        try
-        {
-            return lazy.Value;
-        }
-        catch (Exception)
-        {
-            Interlocked.CompareExchange(ref _entries, new Lazy<Entry[]>(Build), lazy);
-
-            throw;
-        }
-    }
-
-    private static int Score(Entry entry, string[] terms)
-    {
-        var score = 0;
-        var matched = 0;
-
-        foreach (var term in terms)
-        {
-            var isTitleWord = Equivalent(entry.LocalName, term)
-                           || entry.TitleWords.Any(word => Equivalent(word, term));
-            var inTitle = isTitleWord ? 0 : Count(entry.Title, term);
-            var inBoosted = Count(entry.Boosted, term);
-            var inBody = Count(entry.Body, term);
-
-            if (isTitleWord is false && inTitle + inBoosted + inBody == 0) continue;
-
-            matched++;
-
-            // A term in a name is worth far more than the same term buried in prose: someone asking
-            // for "MaxFileSize" wants the property, not the paragraphs that mention it.
-            score += (isTitleWord ? 12 : 0) + inTitle * 3 + inBoosted * 5 + Math.Min(inBody, 6);
+                Terms = [],
+                Hits = [],
+                Message = "The query held nothing but filler words, words too short to search by and words true of " +
+                          "everything here ('bmage', 'image'), so there was nothing to rank by. Search for the thing " +
+                          "itself - 'avatar', 'strip gps', 'MaxFileSize' - rather than for a sentence."
+            };
         }
 
-        // Every term matching is the strongest signal a hit is the right one.
-        return matched == 0 ? 0 : score * matched;
-    }
-
-    /// <summary>Same word, plural aside - "crop" has to find "Crops", and "thumbnail" "thumbnails".</summary>
-    private static bool Equivalent(string word, string term)
-    {
-        return string.Equals(word, term, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(word, $"{term}s", StringComparison.OrdinalIgnoreCase)
-            || string.Equals($"{word}s", term, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static int Count(string text, string term)
-    {
-        if (text.Length == 0) return 0;
-
-        var count = 0;
-        var index = text.IndexOf(term, StringComparison.OrdinalIgnoreCase);
-
-        while (index >= 0)
+        if (result.Hits.Length > 0)
         {
-            count++;
-            index = text.IndexOf(term, index + term.Length, StringComparison.OrdinalIgnoreCase);
-        }
-
-        return count;
-    }
-
-    private static string Snippet(string body, string[] terms)
-    {
-        if (body.Length == 0) return string.Empty;
-
-        var index = -1;
-
-        foreach (var term in terms)
-        {
-            index = body.IndexOf(term, StringComparison.OrdinalIgnoreCase);
-            if (index >= 0) break;
-        }
-
-        if (index < 0) index = 0;
-
-        var start = Math.Max(0, index - 80);
-        var length = Math.Min(240, body.Length - start);
-        var snippet = body.Substring(start, length).Replace('\n', ' ').Replace('\r', ' ').Trim();
-
-        return $"{(start > 0 ? "..." : null)}{snippet}{(start + length < body.Length ? "..." : null)}";
-    }
-
-    /// <summary>Splits a name or heading into words, breaking camel-case humps as well as punctuation.</summary>
-    private static string[] SplitWords(string text)
-    {
-        var words = new List<string>();
-        var current = new StringBuilder();
-
-        foreach (var c in text)
-        {
-            if (char.IsLetterOrDigit(c) is false)
+            // No echo of the terms: the caller sent the query one message ago, and what it was reduced to
+            // changes nothing about a hit it can read for itself.
+            return new BmageSearchResultDto
             {
-                if (current.Length > 0) { words.Add(current.ToString()); current.Clear(); }
-                continue;
-            }
-
-            // A capital after a lowercase letter starts a new word ("MaxFileSize" -> max file size),
-            // while a run of capitals stays together ("EXIF", "GPS").
-            if (char.IsUpper(c) && current.Length > 0 && char.IsLower(current[^1]))
-            {
-                words.Add(current.ToString());
-                current.Clear();
-            }
-
-            current.Append(c);
+                Hits = [.. result.Hits.Select(hit => new BmageSearchHitDto
+                {
+                    Kind = hit.Entry.Kind,
+                    Title = hit.Entry.Title,
+                    Context = hit.Entry.Context,
+                    Tool = hit.Entry.Tool,
+                    Snippet = hit.Snippet
+                })],
+                HasMore = result.HasMore
+            };
         }
 
-        if (current.Length > 0) words.Add(current.ToString());
+        // A search that found nothing is where an agent is most likely to conclude Bmage has no such
+        // feature and hand-roll one, so it is told what came closest and where else to look.
+        var words = result.Terms;
 
-        return [.. words];
+        return new BmageSearchResultDto
+        {
+            Terms = words,
+            Hits = [],
+            Message = result.DidYouMean.Length > 0
+                ? $"Nothing matched {string.Join(" + ", words)}. The closest names are listed in didYouMean - " +
+                   "search for one of those, or for a single word out of this query."
+                : $"Nothing matched {string.Join(" + ", words)}. Try one word rather than several, or call " +
+                   "GetBmageRecipes or GetBmageApiList for the index of what there is.",
+            DidYouMean = result.DidYouMean.Length > 0 ? result.DidYouMean : null
+        };
     }
 
-    private static string[] Tokenize(string? query)
+    private static IEnumerable<McpSearchEntry> Build()
     {
-        if (string.IsNullOrWhiteSpace(query)) return [];
-
-        return [.. query.Split(['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'],
-                              StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            // One- and two-letter words match everything and rank nothing - except the few that are
-            // the names of things here.
-            .Where(term => (term.Length > 2 || term.Equals("ui", StringComparison.OrdinalIgnoreCase)) && _stopWords.Contains(term) is false)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            // Every term is counted in every entry's body, so the work is terms x corpus.
-            .Take(MaxTerms)];
-    }
-
-    private static Entry[] Build()
-    {
-        var entries = new List<Entry>(2048);
-
         foreach (var document in BmageSourceCatalog.Documents)
         {
-            entries.Add(new Entry("Guide", document.Title, document.Name,
+            yield return new McpSearchEntry("Guide", document.Title, document.Name,
                 $"GetBmageDocument(name: \"{document.Name}\")", document.Summary ?? string.Empty,
-                $"{document.Name} {string.Join(' ', document.Sections)}"));
+                $"{document.Name} {string.Join(' ', document.Sections)}");
 
             foreach (var (heading, level) in BmageSourceCatalog.GetHeadings(document.Name))
             {
                 var body = BmageSourceCatalog.GetDocumentSection(document.Name, heading) ?? string.Empty;
 
-                entries.Add(new Entry("Guide section", heading, $"{document.Title}{(level == 3 ? " (sub-section)" : null)}",
-                    $"GetBmageDocument(name: \"{document.Name}\", section: \"{heading}\")", body, string.Empty));
+                yield return new McpSearchEntry("Guide section", heading, $"{document.Title}{(level == 3 ? " (sub-section)" : null)}",
+                    $"GetBmageDocument(name: \"{document.Name}\", section: \"{heading}\")", body, string.Empty);
             }
         }
 
         // The setup guides carry the per-host facts - which registration, which containers, which
-        // codecs - where the answer to "works in development, fails at prerender" lives.
+        // codecs - where the answer to "works in development, fails at prerender" lives. Prerendering
+        // is left to their prose, which says it only for the hosts that prerender: named on all six,
+        // it filled the page for every question about it with six copies of one answer.
         foreach (var mode in BmageSetupGuide.RenderModes)
         {
-            entries.Add(new Entry("Setup guide", $"Setup for {mode}", "Hosting model",
+            yield return new McpSearchEntry("Setup guide", $"Setup for {mode}", "Hosting model",
                 $"GetBmageSetupGuide(renderMode: \"{mode}\")", BmageSetupGuide.Get(mode) ?? string.Empty,
-                $"{mode} install register services addbitbmageservices addbitbmageheadlessservices container prerender host program"));
+                $"{mode} install register services addbitbmageservices addbitbmageheadlessservices container host program");
         }
 
         // The tools that answer by running the engine. They are the right response to a class of
         // question - "how big will this be", "is this budget reachable", "does Preserve keep GPS" -
         // that names no type, section or recipe, and so would otherwise match nothing at all.
-        entries.Add(new Entry("Tool", "Measure a pipeline: output size, bytes per format and quality, timings", "Runs the real engine",
+        yield return new McpSearchEntry("Tool", "Measure a pipeline: output size, bytes per format and quality, timings", "Runs the real engine",
             "RunBmagePipeline(pipeline: \"...\")",
             "Runs a pipeline on a generated photo, screenshot or graphic with the managed codecs and reports the output size, " +
             "the encoded bytes for each format and quality, a MaxFileSize search, the optimised operation list and the timings.",
-            "bytes size kb file quality compression jpeg png budget maxfilesize compare formats slow fast timing performance optimiser optimizer measure"));
+            "bytes size kb file quality compression jpeg png budget maxfilesize compare formats slow fast timing performance optimiser optimizer measure");
 
-        entries.Add(new Entry("Tool", "Check what each metadata policy keeps (GPS, serial number, owner)", "Runs the real engine",
+        yield return new McpSearchEntry("Tool", "Check what each metadata policy keeps (GPS, serial number, owner)", "Runs the real engine",
             "CompareBmageMetadataPolicies(format: \"jpeg\")",
             "Encodes a GPS-tagged camera photo under Remove, StripSensitive and Preserve with the real encoder and reads each file back.",
-            "gps location privacy exif metadata strip remove preserve stripsensitive leak serial owner geotag"));
+            "gps location privacy exif metadata strip remove preserve stripsensitive leak serial owner geotag");
 
-        entries.Add(new Entry("Tool", "Review Bmage code for runtime mistakes", "Checks code",
+        yield return new McpSearchEntry("Tool", "Review Bmage code for runtime mistakes", "Checks code",
             "ReviewBmageCode(code: \"...\")",
             "Finds the mistakes that compile cleanly: browser calls during prerendering, undisposed buffers, missing registrations, " +
             "missing stylesheet, AVIF without a fallback or on a server, Preserve leaking GPS.",
-            "review check lint audit bug mistake wrong error"));
+            "review check lint audit bug mistake wrong error");
 
         foreach (var recipe in BmageRecipeCatalog.All)
         {
-            entries.Add(new Entry("Recipe", recipe.Title, $"Copy-pasteable pattern ({recipe.RunsIn})",
+            yield return new McpSearchEntry("Recipe", recipe.Title, $"Copy-pasteable pattern ({recipe.RunsIn})",
                 $"GetBmageRecipe(id: \"{recipe.Id}\")",
-                $"{recipe.Intent}\n{recipe.Notes}", $"{recipe.Id} {recipe.Keywords}"));
+                $"{recipe.Intent}\n{recipe.Notes}", $"{recipe.Id} {recipe.Keywords}");
         }
 
         foreach (var rule in BmageCodeReview.Catalog)
         {
-            entries.Add(new Entry("Review rule", rule.Id, $"{rule.Severity}, from {rule.Source}",
-                "ReviewBmageCode(code: \"...\")", rule.Catches, rule.Id.Replace('-', ' ')));
+            yield return new McpSearchEntry("Review rule", rule.Id, $"{rule.Severity}, from {rule.Source}",
+                "ReviewBmageCode(code: \"...\")", rule.Catches, rule.Id.Replace('-', ' '));
         }
 
         foreach (var type in BmageApiCatalog.Types)
         {
-            entries.Add(new Entry($"API {type.Kind.ToLowerInvariant()}", type.Name, $"{type.Namespace} ({type.Package})",
-                $"GetBmageApiDetails(typeName: \"{type.Name}\")", type.Summary ?? string.Empty, string.Empty));
+            yield return new McpSearchEntry($"API {type.Kind.ToLowerInvariant()}", type.Name, $"{type.Namespace} ({type.Package})",
+                $"GetBmageApiDetails(typeName: \"{type.Name}\")", type.Summary ?? string.Empty, string.Empty);
 
             var details = BmageApiCatalog.GetTypeDetails(type.Name);
             if (details is null) continue;
 
-            foreach (var member in details.Members.Where(member => member.Kind != "Constructor").DistinctBy(member => member.Name))
+            // One entry per member NAME, not per member: the overloads of a method are one thing to
+            // know about, and all are read by the same call anyway. Their documentation is searched as
+            // one body, so a term in any overload finds the member - each sentence once, however many
+            // overloads repeat it.
+            foreach (var overloads in details.Members.Where(member => member.Kind != "Constructor").GroupBy(member => member.Name, StringComparer.Ordinal))
             {
-                entries.Add(new Entry($"API {member.Kind.ToLowerInvariant()}", $"{type.Name}.{member.Name}", type.Name,
-                    $"GetBmageApiDetails(typeName: \"{type.Name}.{member.Name}\")",
-                    $"{member.Summary} {member.Remarks}".Trim(),
-                    $"{member.Type} {member.Signature}".Trim()));
+                var member = overloads.First();
+                var kind = $"API {member.Kind.ToLowerInvariant()}";
+                var body = string.Join(' ', overloads.Select(o => $"{o.Summary} {o.Remarks}".Trim()).Where(text => text.Length > 0).Distinct(StringComparer.Ordinal));
+                var signatures = string.Join(' ', overloads.Select(o => $"{o.Type} {o.Signature}".Trim()).Where(text => text.Length > 0).Distinct(StringComparer.Ordinal));
+
+                // An inherited member documented once - TryFuse on every adjustment, say - is one answer, not
+                // eight: left in, the copies push everything else off the page. They stay indexed on every type,
+                // so the copy a query names its type for ("CurveOperation TryFuse") is the one it finds. An
+                // undocumented member says nothing to tell the copies apart from different members of one name.
+                var sameAs = body.Length > 0 ? $"{kind}\n{member.Name}\n{body}" : null;
+
+                yield return new McpSearchEntry(kind, $"{type.Name}.{member.Name}", type.Name,
+                    $"GetBmageApiDetails(typeName: \"{type.Name}.{member.Name}\")", body, signatures,
+                    Name: member.Name, SameAs: sameAs);
             }
         }
 
+        // The demo pages and their sources are examples, not answers: a page is the whole of a
+        // feature, so it mentions every word a question about any part of it is phrased in.
         foreach (var page in DocsCatalog.AllPages)
         {
-            entries.Add(new Entry("Demo page", page.Title, "Live example",
-                $"GetBmageSourceFile(path: \"{BmageSourceCatalog.SourcePathOf(page)}\")", page.Description, page.Keywords));
+            yield return new McpSearchEntry("Demo page", page.Title, "Live example",
+                $"GetBmageSourceFile(path: \"{BmageSourceCatalog.SourcePathOf(page)}\")", page.Description, page.Keywords, McpSearch.ExampleWeight);
         }
 
         // The site's own shell is not an example of anything an agent would write with Bit.Bmage;
         // a search for "palette" or "header" should not hand it back as one.
         foreach (var file in BmageSourceCatalog.SourceFiles.Where(file => file.Kind != BmageSourceCatalog.SiteChromeKind))
         {
-            entries.Add(new Entry("Source file", file.Path, file.Kind,
-                $"GetBmageSourceFile(path: \"{file.Path}\")", file.Description ?? string.Empty, string.Empty));
+            yield return new McpSearchEntry("Source file", file.Path, file.Kind,
+                $"GetBmageSourceFile(path: \"{file.Path}\")", file.Description ?? string.Empty, string.Empty, McpSearch.ExampleWeight);
         }
-
-        return [.. entries];
     }
 }

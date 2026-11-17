@@ -16,16 +16,16 @@ public class BitDataGridLegacyPropertyColumn<TGridItem, TProp> : BitDataGridLega
     private BitDataGridLegacySort<TGridItem>? _sortBuilder;
 
     /// <summary>
-    /// Defines the value to be displayed in this column's cells.
-    /// </summary>
-    [Parameter, EditorRequired] public Expression<Func<TGridItem, TProp>> Property { get; set; } = default!;
-
-    /// <summary>
     /// Optionally specifies a format string for the value.
     ///
     /// Using this requires the <typeparamref name="TProp"/> type to implement <see cref="IFormattable" />.
     /// </summary>
     [Parameter] public string? Format { get; set; }
+
+    /// <summary>
+    /// Defines the value to be displayed in this column's cells.
+    /// </summary>
+    [Parameter, EditorRequired] public Expression<Func<TGridItem, TProp>> Property { get; set; } = default!;
 
     BitDataGridLegacySort<TGridItem>? IBitDataGridLegacySortBuilderColumn<TGridItem>.SortBuilder => _sortBuilder;
 

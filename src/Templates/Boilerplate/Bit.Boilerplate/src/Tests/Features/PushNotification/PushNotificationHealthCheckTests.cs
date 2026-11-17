@@ -1,6 +1,10 @@
+using System.Buffers.Text;
+using System.Security.Cryptography;
 using AdsPush;
 using AdsPush.Abstraction;
+using AdsPush.Abstraction.Settings;
 using Boilerplate.Server.Api.Features.PushNotification;
+using Boilerplate.Tests.Features.Identity;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Boilerplate.Tests.Features.PushNotification;
@@ -42,6 +46,73 @@ public class PushNotificationHealthCheckTests
         var result = await Check(adsPushSender, AdsPushTarget.Ios);
 
         Assert.AreEqual(HealthStatus.Degraded, result.Status);
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.Gone, "push subscription has unsubscribed or expired.", HealthStatus.Healthy, "FCM accepts the VAPID signature", DisplayName = "Signature accepted")]
+    [DataRow(HttpStatusCode.NotFound, "", HealthStatus.Healthy, "FCM accepts the VAPID signature", DisplayName = "Unknown subscription")]
+    [DataRow(HttpStatusCode.Forbidden, "permission denied: invalid JWT provided", HealthStatus.Degraded, "FCM answered 403 Forbidden: permission denied: invalid JWT provided", DisplayName = "Keys of different pairs")]
+    [DataRow(HttpStatusCode.ServiceUnavailable, "<html>Unavailable</html>", HealthStatus.Degraded, "FCM answered 503 ServiceUnavailable", DisplayName = "Outage")]
+    public async Task WebPushCheck_Should_JudgeFcmsAnswer(HttpStatusCode status, string body, HealthStatus expected, string description)
+    {
+        string? authorization = null;
+        var handler = new ExternalSignInHealthChecksTests.RoutingHandler((request, _) =>
+        {
+            authorization = request.Headers.Authorization?.ToString();
+            return Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body) });
+        });
+
+        var result = await CheckWebPush(handler, "mailto:ops@example.com");
+
+        Assert.AreEqual(expected, result.Status, result.Description);
+        Assert.AreEqual(description, result.Description);
+        Assert.AreEqual("fcm.googleapis.com", handler.Requests.Single().Host);
+        Assert.StartsWith("WebPush ", authorization!, "The push is signed with the VAPID private key.");
+    }
+
+    [TestMethod]
+    public async Task WebPushCheck_Should_SendNothing_WithASubjectThatIsNoAddress()
+    {
+        var handler = new ExternalSignInHealthChecksTests.RoutingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.Gone)));
+
+        var result = await CheckWebPush(handler, "https://");
+
+        Assert.AreEqual(HealthStatus.Degraded, result.Status);
+        Assert.AreEqual("AdsPushVapid is invalid: Subject is not a valid URL or mailto address", result.Description);
+        Assert.IsEmpty(handler.Requests);
+    }
+
+    [TestMethod]
+    public async Task WebPushCheck_Should_ReportDegraded_WhenFcmIsUnreachable()
+    {
+        var handler = new ExternalSignInHealthChecksTests.RoutingHandler((_, _) => throw new HttpRequestException("No route to host"));
+
+        var result = await CheckWebPush(handler, "mailto:ops@example.com");
+
+        Assert.AreEqual(HealthStatus.Degraded, result.Status);
+        Assert.AreEqual("FCM is unreachable", result.Description);
+    }
+
+    private async Task<HealthCheckResult> CheckWebPush(HttpMessageHandler handler, string subject)
+    {
+        using var vapidKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var keyParameters = vapidKey.ExportParameters(includePrivateParameters: true);
+        using var httpClient = new HttpClient(handler);
+
+        var services = new ServiceCollection();
+        services.AddSingleton(new AdsPushSenderBuilder().ConfigureVapid(new AdsPushVapidSettings
+        {
+            PublicKey = Base64Url.EncodeToString([0x04, .. keyParameters.Q.X!, .. keyParameters.Q.Y!]),
+            PrivateKey = Base64Url.EncodeToString(keyParameters.D!),
+            Subject = subject
+        }, httpClient).BuildSender());
+
+        await using var serviceProvider = services.BuildServiceProvider();
+
+        var healthCheck = ActivatorUtilities.CreateInstance<WebPushHealthCheck>(serviceProvider);
+        var registration = new HealthCheckRegistration("webPush", healthCheck, failureStatus: HealthStatus.Degraded, tags: null);
+
+        return await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = registration }, TestContext.CancellationToken);
     }
 
     private async Task<HealthCheckResult> Check(IAdsPushSender adsPushSender, AdsPushTarget target)

@@ -18,6 +18,25 @@ public sealed class WorkerSqliteTransportTests
 
     private CancellationToken Ct => TestContext.CancellationToken;
 
+    /// <summary>
+    /// The browser VFSes read a name as a URL path: 'a#1.db' and its journal were both the file 'a', and the
+    /// first transaction wrote the journal over the database. Refused before anything reaches the worker.
+    /// </summary>
+    [TestMethod]
+    [DataRow("tenant#1.db")]
+    [DataRow("tenant?1.db")]
+    [DataRow("tenant%201.db")]
+    public async Task Open_RefusesANameTheBrowserBackendsCannotKeep(string databaseName)
+    {
+        var js = new ScriptedJsRuntime();
+        await using var transport = new BsqliteWorkerTransport(js, DefaultOptions());
+
+        var error = await Assert.ThrowsExactlyAsync<ArgumentException>(() => transport.OpenAsync(databaseName, Ct));
+
+        Assert.AreEqual("databaseName", error.ParamName);
+        Assert.IsEmpty(js.Calls);
+    }
+
     [TestMethod]
     public async Task Open_ImportsTheHostModule_ThenCreatesAHost_ThenCallsOpen_ThenSubscribes()
     {

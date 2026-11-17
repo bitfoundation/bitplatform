@@ -131,15 +131,6 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
-            Name = "Items",
-            Type = "IEnumerable<TItem>",
-            DefaultValue = "new List<TItem>()",
-            Description = "Sets the data source that populates the items of the list. The values of built-in items of another T than TValue are read as TValue when they are one or convert to one, like those of BitChoiceGroupItem<Guid> items in a ChoiceGroup of Guid?, unless NameSelectors say how the items are read.",
-            LinkType = LinkType.Link,
-            Href = "#choice-group-item"
-        },
-        new()
-        {
             Name = "ItemLabelTemplate",
             Type = "RenderFragment<TItem>?",
             Description = "Used to customize the label for the Item Label content."
@@ -149,6 +140,15 @@ public partial class BitChoiceGroupDemo
             Name = "ItemPrefixTemplate",
             Type = "RenderFragment<TItem>?",
             Description = "Used to add a prefix to each item."
+        },
+        new()
+        {
+            Name = "Items",
+            Type = "IEnumerable<TItem>",
+            DefaultValue = "new List<TItem>()",
+            Description = "Sets the data source that populates the items of the list. The values of built-in items of another T than TValue are read as TValue when they are one or convert to one, like those of BitChoiceGroupItem<Guid> items in a ChoiceGroup of Guid?, unless NameSelectors say how the items are read.",
+            LinkType = LinkType.Link,
+            Href = "#choice-group-item"
         },
         new()
         {

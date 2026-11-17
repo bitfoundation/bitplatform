@@ -127,11 +127,9 @@ jobs:
     - name: Install wasm-tools
       run: cd src && dotnet workload install wasm-tools
 
-    # Every test opens the session the suite shares, which starts the demo before anything else. These tests do not
-    # drive it, so its build output is enough here.
-    - name: Build the demo, publish the lazy loading sample with AOT and build the E2E suite
+    # These tests do not drive the demo, and the suite publishes and starts it only for a test that does: none here.
+    - name: Publish the lazy loading sample with AOT and build the E2E suite
       run: |
-        dotnet build src/Utilities/Bink/Demo/Server/Bit.Bink.Demo.Server.csproj -c Release
         dotnet publish src/Utilities/Bink/Samples/Lazy/Bit.Bink.Samples.Lazy/Bit.Bink.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
         dotnet build src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj -c Release
 

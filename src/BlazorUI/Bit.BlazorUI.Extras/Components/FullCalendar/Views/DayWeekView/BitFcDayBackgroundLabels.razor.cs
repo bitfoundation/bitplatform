@@ -6,13 +6,13 @@ public partial class BitFcDayBackgroundLabels
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
+    /// <summary>The day whose header the labels sit in.</summary>
+    [Parameter] public DateTime Day { get; set; }
+
     /// <summary>
     /// The calendar's background events, passed so a change to them re-renders the labels even when the day did not.
     /// </summary>
     [Parameter] public IReadOnlyList<BitFullCalendarEvent> Events { get; set; } = [];
-
-    /// <summary>The day whose header the labels sit in.</summary>
-    [Parameter] public DateTime Day { get; set; }
 
     private List<BitFullCalendarEvent> _events = [];
 

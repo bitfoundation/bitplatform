@@ -84,7 +84,7 @@ public partial class BitPanelParams : BitComponentBaseParams, IBitComponentParam
     /// <summary>
     /// Reports the panel to assistive technologies as an alert dialog.
     /// </summary>
-    public bool? IsAlert { get; set; }
+    public bool? Alert { get; set; }
 
     /// <summary>
     /// Keeps the content of the panel in the page once it has been opened.
@@ -247,9 +247,9 @@ public partial class BitPanelParams : BitComponentBaseParams, IBitComponentParam
             bitPanel.TakeFromCascade(nameof(FullSize), FullSize.Value, static p => p.FullSize, static (p, v) => p.FullSize = v);
         }
 
-        if (IsAlert.HasValue)
+        if (Alert.HasValue)
         {
-            bitPanel.TakeFromCascade(nameof(IsAlert), IsAlert.Value, static p => p.IsAlert, static (p, v) => p.IsAlert = v);
+            bitPanel.TakeFromCascade(nameof(Alert), Alert.Value, static p => p.Alert, static (p, v) => p.Alert = v);
         }
 
         if (KeepMounted.HasValue)

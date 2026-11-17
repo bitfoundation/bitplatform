@@ -142,7 +142,7 @@ public partial class OAuthController : AppControllerBase, IOAuthController
     }
 
     private Task<bool> IsActiveMember(Guid userId, Guid tenantId, CancellationToken cancellationToken)
-        => DbContext.TenantUsers.AnyAsync(tu => tu.UserId == userId && tu.TenantId == tenantId && tu.AcceptedOn != null && tu.Tenant!.IsActive, cancellationToken);
+        => DbContext.TenantMemberships.AnyAsync(tm => tm.UserId == userId && tm.TenantId == tenantId && tm.AcceptedOn != null && tm.Tenant!.IsActive, cancellationToken);
 
     private async Task<string?> TenantNameOf(Guid? tenantId, CancellationToken cancellationToken)
     {

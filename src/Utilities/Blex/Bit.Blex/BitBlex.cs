@@ -281,7 +281,8 @@ public static class BitBlex
     /// <remarks>
     /// It starts on resolution rather than waiting for <c>&lt;BlexProvider&gt;</c>, because a component
     /// typically resolves it after the stores exist. If that happens before persistence has hydrated
-    /// the store, hydration is a restore, and the history moves its baseline to the hydrated state.
+    /// the store, the stored state is taken into its baseline as it arrives, and into the steps taken
+    /// meanwhile, as it is for the history <c>&lt;BlexProvider&gt;</c> starts.
     /// </remarks>
     public static IServiceCollection AddBitBlexHistory<TStore>(
         this IServiceCollection services,

@@ -25,6 +25,11 @@ public partial class BitNavOption : ComponentBase, IDisposable
 
 
     /// <summary>
+    /// Alternative URLs to be considered when auto mode tries to detect the selected nav option by the current URL.
+    /// </summary>
+    [Parameter] public IEnumerable<string>? AdditionalUrls { get; set; }
+
+    /// <summary>
     /// Aria-current token for active nav option. Must be a valid token value, and defaults to 'page'.
     /// </summary>
     [Parameter] public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.Page;
@@ -56,14 +61,14 @@ public partial class BitNavOption : ComponentBase, IDisposable
     [Parameter] public string? BadgeAriaLabel { get; set; }
 
     /// <summary>
-    /// Custom CSS class for the nav option.
-    /// </summary>
-    [Parameter] public string? Class { get; set; }
-
-    /// <summary>
     /// A list of options to render as children of the current nav option.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Custom CSS class for the nav option.
+    /// </summary>
+    [Parameter] public string? Class { get; set; }
 
     /// <summary>
     /// Aria label of the toggle button when the nav option is expanded and can be collapsed.
@@ -215,11 +220,6 @@ public partial class BitNavOption : ComponentBase, IDisposable
     /// The nav option's link URL.
     /// </summary>
     [Parameter] public string? Url { get; set; }
-
-    /// <summary>
-    /// Alternative URLs to be considered when auto mode tries to detect the selected nav option by the current URL.
-    /// </summary>
-    [Parameter] public IEnumerable<string>? AdditionalUrls { get; set; }
 
 
 

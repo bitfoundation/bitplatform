@@ -19,6 +19,17 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
     [Parameter] public RenderFragment<BitAccordionListOption>? Actions { get; set; }
 
     /// <summary>
+    /// The content (body) of the option that is shown when the option is expanded. The context value provides the option itself.
+    /// </summary>
+    [Parameter] public RenderFragment<BitAccordionListOption>? Body { get; set; }
+
+    /// <summary>
+    /// The default child content of the option. Used for simple inline content without context.
+    /// For templated content with access to the option instance, use <see cref="Body"/> instead.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
     /// The custom CSS classes of the option.
     /// </summary>
     [Parameter] public string? Class { get; set; }
@@ -57,17 +68,6 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
     /// as it is. The context value provides the option itself.
     /// </summary>
     [Parameter] public RenderFragment<BitAccordionListOption>? ExpanderTemplate { get; set; }
-
-    /// <summary>
-    /// The content (body) of the option that is shown when the option is expanded. The context value provides the option itself.
-    /// </summary>
-    [Parameter] public RenderFragment<BitAccordionListOption>? Body { get; set; }
-
-    /// <summary>
-    /// The default child content of the option. Used for simple inline content without context.
-    /// For templated content with access to the option instance, use <see cref="Body"/> instead.
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// The accessible label of the toggle button in the header of the option, for a header whose own content does

@@ -425,7 +425,7 @@
         var cipher = await BlazeDbWebCryptoCipher.CreateAsync(key);      // a non-extractable WebCrypto key
 
         var storage = new BlazeDbEncryptedStorage(
-            await BlazeDbOpfsStorage.CreateAsync("mydb"), cipher, ownsCipher: true);
+            await BlazeDbOpfsStorage.CreateAsync("mydb"), cipher, ownsCipher: true, ownsInner: true);
 
         var db = await BlazeDbDatabase.OpenAsync(
             new BlazeDbDatabaseOptions { Storage = storage }.AddTable(TodoItem.Table));

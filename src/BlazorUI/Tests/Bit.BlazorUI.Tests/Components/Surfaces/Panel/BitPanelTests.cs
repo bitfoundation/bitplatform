@@ -302,7 +302,7 @@ public class BitPanelTests : BunitTestContext
         var com = RenderComponent<BitPanel>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsAlert, true);
+            parameters.Add(p => p.Alert, true);
         });
 
         Assert.AreEqual("alertdialog", com.Find(".bit-pnl-cnt").GetAttribute("role"));
@@ -1030,8 +1030,8 @@ public class BitPanelTests : BunitTestContext
 
         Assert.AreEqual("complementary", com.Find(".bit-pnl-cnt").GetAttribute("role"));
 
-        // It wins over the alert dialog of an IsAlert panel too.
-        com.Render(p => p.Add(x => x.IsAlert, true));
+        // It wins over the alert dialog of an Alert panel too.
+        com.Render(p => p.Add(x => x.Alert, true));
         Assert.AreEqual("complementary", com.Find(".bit-pnl-cnt").GetAttribute("role"));
     }
 

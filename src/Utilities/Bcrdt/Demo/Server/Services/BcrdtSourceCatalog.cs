@@ -24,7 +24,8 @@ public static partial class BcrdtSourceCatalog
     /// <summary>Separates a parent heading from a child one in the key of a heading the README uses twice.</summary>
     public const string KeySeparator = " > ";
 
-    private sealed record Section(BcrdtGuideSectionDto Dto, int Start, int End);
+    /// <param name="OwnEnd">Where the section's own text ends: its first sub-section, or <paramref name="End"/> when it has none.</param>
+    private sealed record Section(BcrdtGuideSectionDto Dto, int Start, int End, int OwnEnd);
 
     private static readonly Assembly _assembly = typeof(BcrdtSourceCatalog).Assembly;
 
@@ -109,6 +110,18 @@ public static partial class BcrdtSourceCatalog
         if (section is null) return null;
 
         return string.Join('\n', _readmeLines.Value[section.Start..section.End]).TrimEnd();
+    }
+
+    /// <summary>
+    /// Every guide section, in reading order, with the README text under its heading up to its first
+    /// sub-section - the text only that section holds, since each of its sub-sections is a section of
+    /// its own. What the search ranks a section by: counted with its sub-sections, a parent holds the
+    /// words of every one of them, and the longest parent - the architecture, the guide for
+    /// contributors - matched every question put in plain words.
+    /// </summary>
+    public static IEnumerable<(BcrdtGuideSectionDto Section, string OwnText)> GuideSectionsWithOwnText()
+    {
+        return _sections.Value.Select(section => (section.Dto, string.Join('\n', _readmeLines.Value[section.Start..section.OwnEnd]).TrimEnd()));
     }
 
     /// <summary>The content of an embedded source file, or null when the path is unknown.</summary>
@@ -209,7 +222,7 @@ public static partial class BcrdtSourceCatalog
                 Level = level,
                 Parent = parent,
                 Lines = end - index
-            }, index, end));
+            }, index, end, i + 1 < headings.Count ? headings[i + 1].Index : end));
         }
 
         return [.. sections];

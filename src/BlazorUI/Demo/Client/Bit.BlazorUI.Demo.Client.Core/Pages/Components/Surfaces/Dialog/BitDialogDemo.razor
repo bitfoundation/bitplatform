@@ -41,8 +41,8 @@
         <DemoExample Title="Buttons" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
                 <b>OkText</b> and <b>CancelText</b> relabel the actions - name what happens rather than "Ok". <b>ShowOkButton</b>,
-                <b>ShowCancelButton</b> and <b>ShowCloseButton</b> remove one each. <b>IsOkButtonEnabled</b> (and
-                <b>IsCancelButtonEnabled</b>) holds a button shut until the answer exists, while every other way out keeps working.
+                <b>ShowCancelButton</b> and <b>ShowCloseButton</b> remove one each. <b>OkButtonDisabled</b> (and
+                <b>CancelButtonDisabled</b>) holds a button shut until the answer exists, while every other way out keeps working.
             </div>
             <br />
             <div class="btn-container">
@@ -65,7 +65,7 @@
                        OkText="Got it" />
 
             <BitDialog @bind-IsOpen="isOpenGated"
-                       IsOkButtonEnabled="agreed"
+                       OkButtonDisabled="agreed is false"
                        Title="Before you continue"
                        OkText="Accept">
                 <div class="dialog-body">
@@ -192,7 +192,7 @@
         <DemoExample Title="Dismiss behavior" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 The overlay and the Escape key both dismiss by default. <b>CloseOnOverlayClick</b> and <b>CloseOnEscape</b> each turn
-                one off; <b>Blocking</b> turns off both and makes the role <b>alertdialog</b> (<b>IsAlert</b> sets the role by hand).
+                one off; <b>Blocking</b> turns off both and makes the role <b>alertdialog</b> (<b>Alert</b> sets the role by hand).
                 <b>Modeless</b> drops the overlay so the page stays usable. A refused gesture shakes the surface - a ring under
                 reduced motion - and raises <b>OnDismissPrevented</b>, so the Dialog can say why.
             </div>
@@ -286,7 +286,7 @@
                 </div>
             </BitDialog>
 
-            <BitDialog IsAlert
+            <BitDialog Alert
                        AutoFocusButton="BitDialogButton.Cancel"
                        @bind-IsOpen="isOpenFocusCancel"
                        ShowCloseButton="false"
@@ -370,24 +370,24 @@
 
         <DemoExample Title="Draggable" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
-                <b>IsDraggable</b> lets the Dialog be moved by its header - or by its whole surface when it has none - within its area,
+                <b>Draggable</b> lets the Dialog be moved by its header - or by its whole surface when it has none - within its area,
                 and puts it back on the next showing. <b>DragElementSelector</b> names a handle of your own; buttons and fields inside
                 it keep working.
             </div>
             <br />
-            <BitToggle Label="IsDraggable" @bind-Value="isDraggable" />
+            <BitToggle Label="Draggable" @bind-Value="isDraggable" />
             <br />
             <div class="btn-container">
                 <BitButton OnClick="@(() => isOpenDraggable = true)">Header handle</BitButton>
                 <BitButton OnClick="@(() => isOpenDragHandle = true)">DragElementSelector</BitButton>
             </div>
 
-            <BitDialog IsDraggable="isDraggable"
+            <BitDialog Draggable="isDraggable"
                        @bind-IsOpen="isOpenDraggable"
                        Title="Draggable dialog"
                        Message="Drag it by its header while the toggle is on." />
 
-            <BitDialog IsDraggable
+            <BitDialog Draggable
                        DragElementSelector=".dialog-title"
                        @bind-IsOpen="isOpenDragHandle"
                        TitleAriaId="dialog-drag-title"
@@ -511,7 +511,7 @@
         <DemoExample Title="Accessibility" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
                 The surface carries <b>role="dialog"</b> and <b>aria-modal="true"</b>. <b>Blocking</b> makes the role
-                <b>alertdialog</b>, <b>IsAlert</b> sets it by hand, and <b>Modeless</b> turns aria-modal to false. The Dialog is named
+                <b>alertdialog</b>, <b>Alert</b> sets it by hand, and <b>Modeless</b> turns aria-modal to false. The Dialog is named
                 by its <b>Title</b>, rendered as an <b>h2</b>, and described by its <b>Subtitle</b> and <b>Message</b>;
                 <b>TitleAriaId</b> and <b>SubtitleAriaId</b> point them at elements of your own instead. A <b>HeaderTemplate</b>
                 replaces the title, so pair it with <b>TitleAriaId</b> or <b>AriaLabel</b>.
@@ -531,7 +531,7 @@
                 <b>CloseButtonTitle</b> ("Close" by default). While <b>OnOk</b> runs, the Ok button keeps its text as its name and
                 reports <b>aria-busy</b> and <b>aria-disabled</b> without being disabled, so the focus stays on it. The overlay is
                 hidden from screen readers, and a closed <b>KeepMounted</b> Dialog is hidden and <b>inert</b>. Under reduced motion
-                a refused dismissal rings the surface instead of shaking it. <b>IsDraggable</b> answers the pointer only: no key
+                a refused dismissal rings the surface instead of shaking it. <b>Draggable</b> answers the pointer only: no key
                 moves the Dialog.
             </div>
             <br />

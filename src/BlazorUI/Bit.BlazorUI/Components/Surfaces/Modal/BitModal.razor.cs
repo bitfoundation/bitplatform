@@ -130,6 +130,16 @@ public partial class BitModal : BitComponentBase
     public bool AbsolutePosition { get; set; }
 
     /// <summary>
+    /// Determines the ARIA role of the Modal (alertdialog/dialog).
+    /// </summary>
+    /// <remarks>
+    /// A <see cref="Blocking"/> Modal that is not <see cref="Modeless"/> announces itself as an
+    /// <c>alertdialog</c> when this is not set, since a surface that refuses to be dismissed by a click
+    /// outside of it is one that is waiting to be answered.
+    /// </remarks>
+    [Parameter] public bool? Alert { get; set; }
+
+    /// <summary>
     /// Whether the Modal should be announced as modal to assistive technologies.
     /// </summary>
     /// <remarks>
@@ -326,16 +336,6 @@ public partial class BitModal : BitComponentBase
     /// <see cref="MaxHeight"/> - or, when that is not set either, by the height of the screen.
     /// </remarks>
     [Parameter] public string? Height { get; set; }
-
-    /// <summary>
-    /// Determines the ARIA role of the Modal (alertdialog/dialog).
-    /// </summary>
-    /// <remarks>
-    /// A <see cref="Blocking"/> Modal that is not <see cref="Modeless"/> announces itself as an
-    /// <c>alertdialog</c> when this is not set, since a surface that refuses to be dismissed by a click
-    /// outside of it is one that is waiting to be answered.
-    /// </remarks>
-    [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
     /// Whether the Modal is displayed.
@@ -1160,7 +1160,7 @@ public partial class BitModal : BitComponentBase
     // else was asked for.
     private string GetRole()
     {
-        return (_params.IsAlert ?? ((_params.Blocking ?? false) && IsModeless is false)) ? "alertdialog" : "dialog";
+        return (_params.Alert ?? ((_params.Blocking ?? false) && IsModeless is false)) ? "alertdialog" : "dialog";
     }
 
     // A dialog needs a name (WCAG 4.1.2), and a Modal whose chrome shows a text title already has one on the screen:
@@ -1725,7 +1725,7 @@ public partial class BitModal : BitComponentBase
             Header = Header ?? p.Header,
             HeaderText = HeaderText ?? p.HeaderText,
             Height = Merge(nameof(Height), Height, p.Height),
-            IsAlert = Merge(nameof(IsAlert), IsAlert, p.IsAlert),
+            Alert = Merge(nameof(Alert), Alert, p.Alert),
             KeepMounted = Merge(nameof(KeepMounted), On(KeepMounted), p.KeepMounted),
             MaxHeight = Merge(nameof(MaxHeight), MaxHeight, p.MaxHeight),
             MaxWidth = Merge(nameof(MaxWidth), MaxWidth, p.MaxWidth),

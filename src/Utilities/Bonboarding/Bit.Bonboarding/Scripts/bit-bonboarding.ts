@@ -291,6 +291,12 @@ export function measure(sessionId: string): StepGeometry {
     }
 
     const geometry = measureSession(session);
+
+    // The user just acted on the target and the step is about to move on - the action is often what took the target
+    // away, a link to another page above all. As the frames do (see scheduleFrame), that is not reported as a loss:
+    // the last frame stands until the advance has been heard, after which the target is measured again.
+    if (!geometry.found && session.advanceTimer && session.lastFrame?.found) return session.lastFrame;
+
     if (!geometry.found && session.spec && wantsTarget(session.spec)) geometry.targetIssue = targetIssueOf(session.spec);
 
     // This reply reports the loss, so the targets go as they do when a frame finds them gone: otherwise the next
@@ -1058,16 +1064,20 @@ function attachKeyboard(session: Session, spec: StepActivation) {
     const listener = (event: KeyboardEvent) => {
         if (session.disposed) return;
 
+        // No card on the page - the host that drew it is gone (navigated away from, say): nothing of the tour is on
+        // screen, and the keys, Tab above all, are the application's.
+        if (session.popover && !session.popover.isConnected) return;
+
         // The page beyond the tour belongs to the application. While it is usable (free or
         // target-only interaction) and focus is out there, Tab, Escape and the arrow keys are left
         // for the application's own forms, menus, dialogs and widgets. The trap in particular must
         // not pull a user who is tabbing through a form on a free step into the popover.
-        if (!ownsKeyboard(session, spec, event.target)) return;
-
         if (event.key === 'Tab') {
-            if (session.trapFocus && session.popover) trapTab(session, spec, event);
+            if (ownsKeyboard(session, spec, event.target, true) && session.trapFocus && session.popover) trapTab(session, spec, event);
             return;
         }
+
+        if (!ownsKeyboard(session, spec, event.target, false)) return;
 
         if (event.key === 'Escape' && spec.closeOnEscape) {
             event.preventDefault();
@@ -1093,10 +1103,11 @@ function attachKeyboard(session: Session, spec: StepActivation) {
 
 /**
  * True when a key press is the tour's to handle: the page is blocked, so nothing else can be
- * focused, or focus is inside the popover (or inside the target of a target-only step, which the
- * focus trap spans as well), or nothing in particular has focus.
+ * focused, or focus is inside the popover, or nothing in particular has focus. Tab is the tour's
+ * inside the target of a target-only step too, which the focus trap spans; the other keys there
+ * are the control's own (a radio group's arrows, a menu's Escape).
  */
-function ownsKeyboard(session: Session, spec: StepActivation, target: EventTarget | null): boolean {
+function ownsKeyboard(session: Session, spec: StepActivation, target: EventTarget | null, tab: boolean): boolean {
     if (spec.interaction === 'blocked') return true;
 
     const node = target as Node | null;
@@ -1104,7 +1115,7 @@ function ownsKeyboard(session: Session, spec: StepActivation, target: EventTarge
 
     if (!!session.popover && session.popover.contains(node)) return true;
 
-    return spec.interaction === 'target' && session.targets.some((element) => element.contains(node));
+    return tab && spec.interaction === 'target' && session.targets.some((element) => element.contains(node));
 }
 
 function isTextEntry(target: EventTarget | null): boolean {
@@ -1197,6 +1208,13 @@ export function restoreFocus(sessionId: string) {
 
     const target = session.previousFocus;
     session.previousFocus = null;
+
+    // Focus the application moved on purpose - into the form the last step had the user open, say - stays where it
+    // is: only focus the tour holds (in its card), or that it left on nothing, goes back.
+    const active = document.activeElement as HTMLElement | null;
+    const tourHasFocus = !active || active === document.body || !active.isConnected
+        || (!!session.popover && session.popover.contains(active));
+    if (!tourHasFocus) return;
 
     if (target && target.isConnected && typeof target.focus === 'function') {
         try {

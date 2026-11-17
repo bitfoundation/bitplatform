@@ -312,7 +312,7 @@ public static partial class BcrdtSetupGuide
 
         The demo below maps its relays open to anyone. Before a document is anything but a demo, decide who may join it -
         the hub consults `AuthorizeAsync` before a client joins a document, and a refusal reaches the client as a final
-        `BcrdtTransportAuthorizationException` rather than a failure to retry:
+        refusal - the provider reports `AuthorizationDenied`, then `Faulted` - rather than a failure to retry:
 
         ### `CollaborationHub.cs` (server project)
 
@@ -565,7 +565,8 @@ public static partial class BcrdtSetupGuide
         // Before the mapping: without it every connection is answered with a flat 400.
         app.UseWebSockets();
 
-        // A refusal is answered with 403, which the client reports as a final BcrdtTransportAuthorizationException.
+        // A refused socket is accepted, sent an Auth message granting nothing, and closed - which a browser hears too -
+        // and the client's provider reports it as a final refusal: AuthorizationDenied, then Faulted.
         // Leave authorize out only for a demo: then anyone may join any document.
         app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}", authorize: (context, documentId) =>
             ValueTask.FromResult(context.User.Identity?.IsAuthenticated == true));

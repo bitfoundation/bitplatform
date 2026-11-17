@@ -349,12 +349,18 @@
         Cell(cut, "gamma.txt").Focus();
         order.SetResult(null);
 
-        cut.WaitForAssertion(() => Assert.AreEqual("0", Cell(cut, "gamma.txt").GetAttribute("tabindex")));
+        // The late handler resumes on the renderer's dispatcher, so the invocations it records are read there too: read
+        // from the test's thread they could be added to while enumerated. Until it has run, the late move is not asked for.
+        cut.WaitForAssertion(() => cut.InvokeAsync(() =>
+        {
+            // The late move was asked for only while the focus is still on the cell the key came from.
+            var request = JSInterop.Invocations.LastOrDefault(i => i.Identifier == "focus.focus");
+            Assert.IsNotNull(request);
+            Assert.AreEqual(Cell(cut, "beta.txt").Id, request.Arguments[0]);
+            Assert.AreEqual(Cell(cut, "alpha.txt").Id, request.Arguments[3]);
+            Assert.AreEqual("0", Cell(cut, "gamma.txt").GetAttribute("tabindex"));
+        }).GetAwaiter().GetResult());
         Assert.AreEqual("gamma.txt", cut.TabSequence().Single().Element.TextContent);
-        // The late move was asked for only while the focus is still on the cell the key came from.
-        var request = JSInterop.Invocations.Last(i => i.Identifier == "focus.focus");
-        Assert.AreEqual(Cell(cut, "beta.txt").Id, request.Arguments[0]);
-        Assert.AreEqual(Cell(cut, "alpha.txt").Id, request.Arguments[3]);
     }
 
     [TestMethod]

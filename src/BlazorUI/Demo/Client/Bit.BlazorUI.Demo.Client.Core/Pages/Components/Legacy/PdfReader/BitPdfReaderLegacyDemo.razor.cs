@@ -43,17 +43,17 @@ public partial class BitPdfReaderLegacyDemo
          },
          new()
          {
-            Name = "OnPdfPageRendered",
-            Type = "EventCallback",
-            DefaultValue = "",
-            Description = "The callback for when the pdf page is done rendering.",
-         },
-         new()
-         {
             Name = "OnPdfLoaded",
             Type = "EventCallback",
             DefaultValue = "",
             Description = "The callback for when the pdf document is done loading and processing.",
+         },
+         new()
+         {
+            Name = "OnPdfPageRendered",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The callback for when the pdf page is done rendering.",
          },
          new()
          {

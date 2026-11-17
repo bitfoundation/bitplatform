@@ -64,8 +64,8 @@
     <div>Month: <span id="my-last-month">@_myLastMonth</span></div>
 </E2ESection>
 
-<E2ESection Id="month-hidden" Title="IsMonthPickerVisible = false">
-    <BitDatePicker Id="dp-nomonth" Culture="_en" Today="_today" IsMonthPickerVisible="false" />
+<E2ESection Id="month-hidden" Title="ShowMonthPicker = false">
+    <BitDatePicker Id="dp-nomonth" Culture="_en" Today="_today" ShowMonthPicker="false" />
 </E2ESection>
 
 <E2ESection Id="month-overlay" Title="ShowMonthPickerAsOverlay">
@@ -172,7 +172,7 @@
     <BitDatePicker Id="dp-noout" ShowOutsideDays="false" Culture="_en" Today="_today" />
     <BitDatePicker Id="dp-fixed" FixedWeeks Culture="_en" Today="_february" />
     <BitDatePicker Id="dp-notfixed" Culture="_en" Today="_february" />
-    <BitDatePicker Id="dp-two" MonthCount="2" IsMonthPickerVisible="false" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-two" MonthCount="2" ShowMonthPicker="false" Culture="_en" Today="_today" />
     <BitDatePicker Id="dp-three"
                    MonthCount="3"
                    PagedNavigation

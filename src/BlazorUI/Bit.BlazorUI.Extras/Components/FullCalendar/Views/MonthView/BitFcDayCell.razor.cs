@@ -9,20 +9,17 @@ public partial class BitFcDayCell
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
-    [Parameter] public BitFullCalendarCell Cell { get; set; } = default!;
-    [Parameter] public List<BitFullCalendarEvent> Events { get; set; } = [];
-    [Parameter] public Dictionary<string, int> EventPositions { get; set; } = new();
-    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
-
-    /// <summary>
-    /// True while this cell owns the month grid's single tab stop. The month view moves it with the
-    /// arrow keys so the grid never puts one stop in the tab order per day.
-    /// </summary>
-    [Parameter] public bool IsRovingCell { get; set; }
-
     /// <summary>DOM id of the cell's roving tab stop - its add button, or the day number of a read-only month - so the
     /// month view can move focus onto it.</summary>
     [Parameter] public string? AddButtonId { get; set; }
+
+    [Parameter] public BitFullCalendarCell Cell { get; set; } = default!;
+
+    [Parameter] public Dictionary<string, int> EventPositions { get; set; } = new();
+
+    [Parameter] public List<BitFullCalendarEvent> Events { get; set; } = [];
+
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
 
     /// <summary>
     /// True for the cell in the grid's trailing column, which drops its column separator. The view
@@ -30,6 +27,12 @@ public partial class BitFcDayCell
     /// week-number rail adds a leading child to every row.
     /// </summary>
     [Parameter] public bool IsLastColumn { get; set; }
+
+    /// <summary>
+    /// True while this cell owns the month grid's single tab stop. The month view moves it with the
+    /// arrow keys so the grid never puts one stop in the tab order per day.
+    /// </summary>
+    [Parameter] public bool IsRovingCell { get; set; }
 
     /// <summary>
     /// True for the first day a week row shows (its leading column, or the first day after the blanked days of a

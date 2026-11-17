@@ -188,9 +188,27 @@ break recorded in `BreakingChanges.md` - never kept beside the new name as an `[
   model of one item of a parent spells its flags with one (`BitDropdownOption.IsDisabled`, `BitPivotItem.IsSelected`,
   `BitNavOption.IsExpanded`), which keeps the per-item setting apart from the component's own; so does a predicate
   asked of one item at a time (`IsDateDisabled`, `IsStickyItem`). The parameters spelled with an `Is` before the rule
-  (`IsOpen` on the overlays and pickers, `IsChecked` and `IsToggled` on the buttons, `IsShown`, ...)
+  (`IsOpen` on the overlays and pickers, `IsDefaultSort` on the legacy grid column, `IsStreaming` on the AI views, ...)
   are listed in `BitParameterNamingContractTests`, which fails on a new one; each is renamed one concept at a time,
   and the rename takes it off the list.
+
+## A component's parameters are in alphabetical order
+
+A component declares its `[Parameter]` properties in one run sorted by name, with case ignored: `Items`, `ItemSize`,
+`ItemsProvider`; `OnChange` before `OnClick`. Templates, callbacks and the callback of a bindable value are sorted with
+the rest, never grouped by kind. Each parameter's doc comment and attributes stay with it.
+
+- **A new parameter goes in at its place, and a renamed one moves to its new place.** A rename that only edits the
+  name in place (`IsLoading` to `Loading`) leaves the run out of order.
+- **Nothing else sits inside the run.** `[CascadingParameter]`s, `[Inject]`s and fields come before it. Any other
+  member comes after it, even one that serves a single parameter: a computed property, a helper, a handler.
+- **A class split over partial files keeps one sorted run per file** (`BitRichTextEditor.Count.cs`,
+  `BitRichTextEditor.Media.cs`). A type declared inside another has a run of its own, and so does the `@code` of a
+  `.razor` file.
+- **The demo page's parameter table is in the same order.** See [Demo pages](#demo-pages).
+
+`BitParameterOrderContractTests` fails on a run out of order, in a component or in a demo page, and names the two
+parameters to swap.
 
 ## Every component has a root class of its own
 
@@ -563,6 +581,10 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
 - **A section only uses what has already been introduced.** A demo page is read from the top down, so
   a section may only use the parameters and the features its own section, or an earlier one, has
   introduced.
+- **The parameter table is sorted by name, like the component's parameters.** A page's `componentParameters`, and
+  `DemoPage`'s shared `_componentBaseParameters`, `_inputBaseParameters` and `_textInputBaseParameters`, list their
+  rows in the order of their `Name`, with case ignored. A new row goes in at its place, and a renamed row moves to its
+  new place. `BitParameterOrderContractTests` fails on a row out of order.
 - **A multi-API component's tabs stay aligned**: same sections, same order, same titles, same data
   (same labels, same number of button groups per section) - only the API differs.
 - **A library-wide enum's table is written once.** `BitColor`, `BitSize`, `BitVariant` and the other

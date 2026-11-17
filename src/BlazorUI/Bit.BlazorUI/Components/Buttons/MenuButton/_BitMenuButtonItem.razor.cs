@@ -22,20 +22,20 @@ public partial class _BitMenuButtonItem<[DynamicallyAccessedMembers(DynamicallyA
 
 
 
-    [Parameter] public TItem Item { get; set; } = default!;
-
-    [Parameter] public BitMenuButton<TItem> MenuButton { get; set; } = default!;
-
     /// <summary>
     /// The nested options of a submenu in the Option API, which render themselves in place inside it.
     /// The Items API has no fragment to render and walks its own child items instead.
     /// </summary>
     [Parameter] public RenderFragment? ChildrenFragment { get; set; }
 
+    [Parameter] public TItem Item { get; set; } = default!;
+
     /// <summary>
     /// The level of the menu the item lives in: zero for the menu the button opens, one more per submenu.
     /// </summary>
     [Parameter] public int Level { get; set; }
+
+    [Parameter] public BitMenuButton<TItem> MenuButton { get; set; } = default!;
 
     /// <summary>
     /// Whether the menu this item is one of reserves the check column on every row. It is decided per menu

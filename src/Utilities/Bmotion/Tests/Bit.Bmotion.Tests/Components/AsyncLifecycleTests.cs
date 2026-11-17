@@ -56,6 +56,29 @@ public class AsyncLifecycleTests
     }
 
     [TestMethod]
+    public async Task OnAnimationComplete_AHandlerThatThrows_ReachesTheRenderer()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
+        ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.Initial, Bm.To(opacity: 0))
+            .Add(p => p.Animate, Bm.To(opacity: 1))
+            .Add(p => p.Transition, Bm.Tween(0.2))
+            .Add(p => p.OnAnimationComplete, EventCallback.Factory.Create<BmProps?>(this, async _ =>
+            {
+                await Task.Yield();
+                throw new InvalidOperationException("OnAnimationComplete failed");
+            }))
+            .Add(p => p.ChildContent, Div));
+
+        await ctx.RunFramesAsync(0, 600);
+
+        var failure = await ctx.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.AreEqual("OnAnimationComplete failed", failure.Message);
+    }
+
+    [TestMethod]
     public async Task AnimateAsync_TokenCancelledAfterTheAnimationSettled_LeavesLaterAnimationsAlone()
     {
         using var ctx = new BmotionTestContext();
@@ -78,6 +101,31 @@ public class AsyncLifecycleTests
         await ctx.RunFramesAsync(616, 1600);
         Assert.AreNotEqual(whenCancelled, State(ctx, "box").StringValues["backgroundColor"]);
         Assert.IsFalse(State(ctx, "box").HasActiveAnimations);
+    }
+
+    [TestMethod]
+    public async Task AnimateAsync_ACancellationQueuedBeforeAReplacement_LeavesTheReplacementAlone()
+    {
+        using var ctx = new BmotionTestContext();
+        var cut = RenderBlack(ctx);
+        using var cts = new CancellationTokenSource();
+        await cut.InvokeAsync(async () =>
+            await cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ffffff"), Bm.Tween(1, ease: BmEase.Linear), cts.Token));
+        await ctx.RunFramesAsync(0, 300);
+
+        await cut.InvokeAsync(() =>
+        {
+            // Cancelled off the renderer's context (CancelAfter's timer): the stop is queued on it, behind this.
+            Task.Run(cts.Cancel).Wait();
+            // Before the queued stop runs, a newer animation takes the property over.
+            _ = cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ff0000"), Bm.Tween(1, ease: BmEase.Linear));
+        });
+        await cut.InvokeAsync(() => { }); // the queued stop has run
+        var whenCancelled = State(ctx, "box").StringValues["backgroundColor"];
+
+        Assert.IsTrue(State(ctx, "box").HasActiveAnimations, "the stop belongs to the animation the newer one replaced");
+        await ctx.RunFramesAsync(316, 1500);
+        Assert.AreNotEqual(whenCancelled, State(ctx, "box").StringValues["backgroundColor"]);
     }
 
     // ── Unmounted while initialising ──────────────────────────────────────────

@@ -60,12 +60,12 @@ public class PrivacySectionUITests : SettingsPageTest
 
         var download = await Page.RunAndWaitForDownloadAsync(() => Press(Privacy.GetByRole(AriaRole.Button, new() { Name = AppStrings.ExportPersonalDataButton, Exact = true })));
 
-        // The server's zip: the data, with the profile picture beside it.
+        // The server's zip: the data, with the profile image beside it.
         using var archive = ZipFile.OpenRead(await download.PathAsync());
         using var data = new StreamReader(archive.GetEntry("data.json")!.Open());
 
         Assert.Contains(WorkbenchDemoUsers.All[0].Email, await data.ReadToEndAsync());
-        Assert.IsNotNull(archive.Entries.FirstOrDefault(entry => entry.FullName.StartsWith("files/attachments/profile-picture", StringComparison.Ordinal)));
+        Assert.IsNotNull(archive.Entries.FirstOrDefault(entry => entry.FullName.StartsWith("files/attachments/profile-image", StringComparison.Ordinal)));
     }
 
     // On the second user, whose picture no test uploads: an upload is the Workbench's, and the first user's (See

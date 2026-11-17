@@ -1,0 +1,28 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+section {
+    min-width: 24rem;
+    max-width: 26rem;
+    max-height: $bit-env-height-available;
+
+    @include lt-sm {
+        min-width: unset;
+        max-width: unset;
+    }
+}
+
+::deep {
+    .header-stack {
+        padding: 1rem;
+        border-block-end: 1px solid $bit-color-border-secondary;
+    }
+
+    .bit-prs {
+        min-width: 0;
+    }
+
+    .actions-stack {
+        width: 100%;
+    }
+}

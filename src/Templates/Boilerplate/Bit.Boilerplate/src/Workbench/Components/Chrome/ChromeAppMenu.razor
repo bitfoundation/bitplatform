@@ -199,6 +199,10 @@
 
                         @if (Shell.IsSignedIn)
                         {
+                            <BitActionButton FullWidth IconName="@BitIconName.Lock" OnClick="Lock">
+                                @AppLocalizer[nameof(AppStrings.Lock)]
+                            </BitActionButton>
+
                             <BitActionButton FullWidth Color="BitColor.Error" IconName="@BitIconName.SignOut" OnClick="AskToSignOut">
                                 @AppLocalizer[nameof(AppStrings.SignOut)]
                             </BitActionButton>

@@ -5,7 +5,7 @@ public partial class _BitMenuButtonItemDemo
     private string? eventsChangedItem;
     private string? eventsClickedItem;
 
-    private bool itemIsToggled;
+    private bool itemToggled;
     private bool itemToggledValue;
 
     private BitMenuButtonItem twoWaySelectedItem = default!;

@@ -69,7 +69,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         {
             // Non Global admins may only see the users of the current tenant that have accepted their invitation.
             var tenantId = User.GetTenantId();
-            query = query.Where(u => u.Tenants.Any(tu => tu.TenantId == tenantId && tu.AcceptedOn != null));
+            query = query.Where(u => u.TenantMemberships.Any(tm => tm.TenantId == tenantId && tm.AcceptedOn != null));
         }
         //#endif
 
@@ -86,7 +86,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         {
             var tenantId = User.GetTenantId();
             query = query.Where(u => u.Roles.Any(r => r.RoleId == roleId && r.Role!.TenantId == tenantId)
-                                     && u.Tenants.Any(tu => tu.TenantId == tenantId && tu.AcceptedOn != null));
+                                     && u.TenantMemberships.Any(tm => tm.TenantId == tenantId && tm.AcceptedOn != null));
         }
         //#endif
 
@@ -302,7 +302,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         {
             var tenantId = User.GetTenantId();
 
-            if (await DbContext.TenantUsers.AnyAsync(tu => tu.UserId == user.Id && tu.TenantId == tenantId && tu.AcceptedOn != null, cancellationToken) is false)
+            if (await DbContext.TenantMemberships.AnyAsync(tm => tm.UserId == user.Id && tm.TenantId == tenantId && tm.AcceptedOn != null, cancellationToken) is false)
                 throw new ResourceNotFoundException().WithData("Reason", "User not found in the current tenant.");
         }
 
@@ -317,7 +317,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
                 var otherGlobalAdminsCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
 
                 if (otherGlobalAdminsCount == 0)
-                    throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
+                    throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllGlobalAdminsErrorMessage)]);
             }
 
             DbContext.UserRoles.Remove(userRole);
@@ -342,7 +342,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
                 var otherGlobalAdminsCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
 
                 if (otherGlobalAdminsCount == 0)
-                    throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
+                    throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllGlobalAdminsErrorMessage)]);
             }
             var result = await userManager.RemoveFromRoleAsync(user, role.Name!);
             if (result.Succeeded is false)
@@ -377,7 +377,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
             if (User.IsInRole(AppRoles.GlobalAdmin) is false)
                 throw new UnauthorizedException();
 
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllGlobalAdminsErrorMessage)]);
         }
 
         await DbContext.UserRoles.Where(ur => ur.RoleId == role.Id).ExecuteDeleteAsync(cancellationToken);

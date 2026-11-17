@@ -13,17 +13,20 @@ public partial class BitFcBackgroundEvents
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
+    /// <summary>True on the event-mode grids, which have no resource rows to tell apart.</summary>
+    [Parameter] public bool AnyResource { get; set; } = true;
+
+    /// <summary>The instant the axis stretch ends at (exclusive).</summary>
+    [Parameter] public DateTime AxisEnd { get; set; }
+
+    /// <summary>The instant the axis stretch starts at.</summary>
+    [Parameter] public DateTime AxisStart { get; set; }
+
     /// <summary>
     /// The calendar's background events (<see cref="BitFullCalendarState.BackgroundEvents"/>). Passed rather than read
     /// off the state so a change to them re-renders the bands even when the axis they are drawn on did not move.
     /// </summary>
     [Parameter] public IReadOnlyList<BitFullCalendarEvent> Events { get; set; } = [];
-
-    /// <summary>The instant the axis stretch starts at.</summary>
-    [Parameter] public DateTime AxisStart { get; set; }
-
-    /// <summary>The instant the axis stretch ends at (exclusive).</summary>
-    [Parameter] public DateTime AxisEnd { get; set; }
 
     /// <summary>True for a timeline row, where time runs along the inline axis.</summary>
     [Parameter] public bool Horizontal { get; set; }
@@ -36,9 +39,6 @@ public partial class BitFcBackgroundEvents
 
     /// <summary>The resource row the stretch belongs to; <c>null</c> for the unassigned row.</summary>
     [Parameter] public string? ResourceId { get; set; }
-
-    /// <summary>True on the event-mode grids, which have no resource rows to tell apart.</summary>
-    [Parameter] public bool AnyResource { get; set; } = true;
 
     private List<Segment> _segments = [];
 

@@ -9,7 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     // Detailed errors: a circuit an exception terminated is what a failing Server test sees, and the browser
     // console line that reports it is the one place the actual cause can be quoted from.
-    .AddInteractiveServerComponents(o => o.DetailedErrors = true)
+    // BmotionHarness:JsCallTimeoutSeconds shortens the circuit's JS interop timeout (a minute by default), so a test
+    // can see what a call that outlasts it does without waiting that minute.
+    .AddInteractiveServerComponents(o =>
+    {
+        o.DetailedErrors = true;
+        if (int.TryParse(builder.Configuration["BmotionHarness:JsCallTimeoutSeconds"], out var seconds) && seconds > 0)
+            o.JSInteropDefaultCallTimeout = TimeSpan.FromSeconds(seconds);
+    })
     .AddInteractiveWebAssemblyComponents();
 
 // The prerender pass and the Server circuits instantiate the pages in this container, so it registers the library

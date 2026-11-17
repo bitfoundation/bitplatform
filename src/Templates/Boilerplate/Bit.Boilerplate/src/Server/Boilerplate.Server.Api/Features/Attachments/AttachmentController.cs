@@ -43,7 +43,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     [HttpPost]
     [RequestSizeLimit(MaxUploadSizeBytes)]
-    public async Task<IActionResult> UploadUserProfilePicture(IFormFile? file, CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadUserProfileImage(IFormFile? file, CancellationToken cancellationToken)
     {
         return await UploadAttachment(
              User.GetUserId(),
@@ -81,7 +81,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     /// <para>
     /// The id is minted here rather than accepted from the client: an attachment id is the whole address of a blob
     /// (See <see cref="GetFilePath(Guid, AttachmentKind)"/>), so a caller-chosen one would let a user overwrite somebody else's attachment -
-    /// their profile picture included - by naming its id.
+    /// their profile image included - by naming its id.
     /// </para>
     /// </summary>
     [HttpPost]
@@ -114,7 +114,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
 
     [HttpDelete]
-    public async Task DeleteUserProfilePicture(CancellationToken cancellationToken)
+    public async Task DeleteUserProfileImage(CancellationToken cancellationToken)
     {
         await DeleteAttachment(User.GetUserId(), [AttachmentKind.UserProfileImageSmall, AttachmentKind.UserProfileImageOriginal], cancellationToken);
     }
@@ -197,7 +197,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             if (attachment.Kind is AttachmentKind.UserProfileImageOriginal)
             {
                 var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
-                user!.HasProfilePicture = false;
+                user!.HasProfileImage = false;
 
                 var result = await userManager.UpdateAsync(user);
                 if (!result.Succeeded)
@@ -424,7 +424,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         if (kinds.Contains(AttachmentKind.UserProfileImageSmall))
         {
             var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
-            user!.HasProfilePicture = true;
+            user!.HasProfileImage = true;
 
             var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded)

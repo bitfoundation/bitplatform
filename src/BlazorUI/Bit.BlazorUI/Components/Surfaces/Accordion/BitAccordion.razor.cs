@@ -48,7 +48,7 @@ public partial class BitAccordion : BitComponentBase
     // scrolls to the match, so the attribute and bit-acd-huf leave together and the stylesheet's own reveal never
     // applies - the panel would grow around the match the way a click opens it, moving the match away again. It is set
     // only as the reveal's own expansion is applied (BeginRevealExpansion), once OnToggling has let it through: an open
-    // the page makes meanwhile - a bound IsExpanded, the ExpandedKey of a list - is an ordinary open, which animates
+    // the page makes meanwhile - a bound Expanded, the ExpandedKey of a list - is an ordinary open, which animates
     // whatever becomes of the reveal. It is let go of once the panel the reveal opened is collapsed again (TrackReveal),
     // so the close and every later open play as usual. _revealOpened says the reveal's expansion has happened: a
     // collapsed state seen before it is the panel still on its way open (a RevealHandler re-rendering the page first).
@@ -102,6 +102,11 @@ public partial class BitAccordion : BitComponentBase
     public BitColorKind? Background { get; set; }
 
     /// <summary>
+    /// Alias for the ChildContent parameter.
+    /// </summary>
+    [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
     /// The color kind of the border of the accordion.
     /// </summary>
     /// <remarks>
@@ -110,11 +115,6 @@ public partial class BitAccordion : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Border { get; set; }
-
-    /// <summary>
-    /// Alias for the ChildContent parameter.
-    /// </summary>
-    [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>
     /// Reports the header as busy while something the page is doing on the accordion's behalf is still
@@ -129,25 +129,31 @@ public partial class BitAccordion : BitComponentBase
     [Parameter] public bool Busy { get; set; }
 
     /// <summary>
+    /// The content of the accordion.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the accordion.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitAccordionClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The content of the accordion.
+    /// Default value for the Expanded parameter.
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    /// <summary>
-    /// Default value for the IsExpanded parameter.
-    /// </summary>
-    [Parameter] public bool? DefaultIsExpanded { get; set; }
+    [Parameter] public bool? DefaultExpanded { get; set; }
 
     /// <summary>
     /// A short description in the header of the accordion.
     /// </summary>
     [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Determines whether the accordion is expanded or collapsed.
+    /// </summary>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
+    public bool Expanded { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to show in place of the expander icon while the accordion is expanded,
@@ -260,7 +266,7 @@ public partial class BitAccordion : BitComponentBase
     /// <br />
     /// The panel has to be in the DOM to be found, so <see cref="LazyContent"/> and <see cref="UnmountOnCollapse"/>
     /// are ignored while it is on. An accordion that cannot expand itself - a disabled or <see cref="ReadOnly"/> one,
-    /// or one whose <see cref="IsExpanded"/> is bound one way - is not offered to find-in-page. A browser that does
+    /// or one whose <see cref="Expanded"/> is bound one way - is not offered to find-in-page. A browser that does
     /// not know the value hides the panel outright, which is what a collapsed panel looks like anyway.
     /// </remarks>
     [Parameter] public bool HiddenUntilFound { get; set; }
@@ -280,12 +286,6 @@ public partial class BitAccordion : BitComponentBase
     /// Gets or sets the name of the icon to display at the start of the header from the built-in Fluent UI icons.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
-
-    /// <summary>
-    /// Determines whether the accordion is expanded or collapsed.
-    /// </summary>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
-    public bool IsExpanded { get; set; }
 
     /// <summary>
     /// Delays the first render of the content of the accordion until it is expanded for the first time.
@@ -325,14 +325,14 @@ public partial class BitAccordion : BitComponentBase
     [Parameter] public bool NoExpanderRotation { get; set; }
 
     /// <summary>
+    /// Callback that is called when the Expanded value has changed.
+    /// </summary>
+    [Parameter] public EventCallback<bool> OnChange { get; set; }
+
+    /// <summary>
     /// Callback that is called when the header is clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-
-    /// <summary>
-    /// Callback that is called when the IsExpanded value has changed.
-    /// </summary>
-    [Parameter] public EventCallback<bool> OnChange { get; set; }
 
     /// <summary>
     /// Callback that is called when the accordion is collapsed.
@@ -355,7 +355,7 @@ public partial class BitAccordion : BitComponentBase
     /// it can also run asynchronous work like loading the content of the panel or asking for a confirmation
     /// first, and nothing else toggles the accordion while it is running.
     /// <br />
-    /// A change that comes from the <see cref="IsExpanded"/> parameter itself is not offered here: the page that
+    /// A change that comes from the <see cref="Expanded"/> parameter itself is not offered here: the page that
     /// hands the accordion its state owns it outright, and there is nothing left for the accordion to refuse.
     /// </remarks>
     [Parameter] public EventCallback<BitAccordionToggleArgs> OnToggling { get; set; }
@@ -441,18 +441,18 @@ public partial class BitAccordion : BitComponentBase
 
     /// <summary>
     /// Expands the accordion. Does nothing if it is already expanded, and reports the change through the
-    /// IsExpanded binding, OnChange and OnExpand.
+    /// Expanded binding, OnChange and OnExpand.
     /// </summary>
     /// <remarks>
     /// A call of its own is not turned away by <see cref="BitComponentBase.Disabled"/> - a disabled
     /// accordion answers no pointer and no key, but the app can still open it to show why it is disabled -
-    /// and a one-way bound <see cref="IsExpanded"/> still owns the state, so nothing happens there either.
+    /// and a one-way bound <see cref="Expanded"/> still owns the state, so nothing happens there either.
     /// </remarks>
     public Task Expand() => SetExpanded(true);
 
     /// <summary>
     /// Collapses the accordion. Does nothing if it is already collapsed, and reports the change through the
-    /// IsExpanded binding, OnChange and OnCollapse.
+    /// Expanded binding, OnChange and OnCollapse.
     /// </summary>
     /// <remarks>
     /// Not turned away by <see cref="BitComponentBase.Disabled"/>; see <see cref="Expand"/>.
@@ -461,12 +461,12 @@ public partial class BitAccordion : BitComponentBase
 
     /// <summary>
     /// Expands the accordion if it is collapsed and collapses it if it is expanded, reporting the change
-    /// through the IsExpanded binding, OnChange and OnExpand/OnCollapse.
+    /// through the Expanded binding, OnChange and OnExpand/OnCollapse.
     /// </summary>
     /// <remarks>
     /// Not turned away by <see cref="BitComponentBase.Disabled"/>; see <see cref="Expand"/>.
     /// </remarks>
-    public Task Toggle() => SetExpanded(IsExpanded is false);
+    public Task Toggle() => SetExpanded(Expanded is false);
 
 
 
@@ -508,7 +508,7 @@ public partial class BitAccordion : BitComponentBase
     // Whether the panel is hidden until found right now. The attribute waits for the end of the close: the render
     // that starts it (the last one rendered expanded, _wasExpanded) and the ones while it plays (_closing) leave the
     // panel to the ordinary collapsed state, whose visibility is held back for the length of the transition.
-    private bool _IsHiddenUntilFound => _IsSearchable && IsExpanded is false && _wasExpanded is false && _closing is false;
+    private bool _IsHiddenUntilFound => _IsSearchable && Expanded is false && _wasExpanded is false && _closing is false;
 
     private Dictionary<string, object>? _ContentAttributes => _IsSearchable
         ? (_beforeMatchAttributes ??= new() { ["onbeforematch"] = EventCallback.Factory.Create(this, HandleOnBeforeMatch) })
@@ -520,14 +520,14 @@ public partial class BitAccordion : BitComponentBase
 
     // A region is not an interactive element, so it earns a tab stop only where it has something the
     // keyboard could not otherwise reach: the scroll of a content that is taller than its MaxHeight.
-    private bool _IsContentFocusable => IsExpanded && MaxHeight.HasValue();
+    private bool _IsContentFocusable => Expanded && MaxHeight.HasValue();
 
     // Whether the focus is inside the panel - on the scrollable region itself or on anything it holds. What
     // reads it is a list of accordions (BitAccordionList): the keys it navigates its headers with are the
     // scroll keys of the panel, so it leaves them alone while the panel is the one holding the focus.
     internal bool IsContentFocused => _contentHasFocus;
 
-    // The owner of the expansion of an accordion whose IsExpanded is bound one way by a list of accordions
+    // The owner of the expansion of an accordion whose Expanded is bound one way by a list of accordions
     // (BitAccordionList): the list answers the header itself, so it is also the one a find-in-page reveal asks to
     // open the panel, and the answer says whether it did. It is internal plumbing between the two components, and a
     // [Parameter] has to be public, so it is a plain property the list item sets as it captures its reference -
@@ -538,14 +538,14 @@ public partial class BitAccordion : BitComponentBase
     // page - a BitAccordionList that owns the expansion - says so through the Busy parameter either.
     private bool _IsBusy => _isToggling || Busy;
 
-    // A one-way bound IsExpanded is owned by the page that hands it over: the accordion cannot move it, so
+    // A one-way bound Expanded is owned by the page that hands it over: the accordion cannot move it, so
     // nothing it would report about a move of its own would be true.
-    private bool _OwnsExpansion => IsExpandedHasBeenSet is false || IsExpandedChanged.HasDelegate;
+    private bool _OwnsExpansion => ExpandedHasBeenSet is false || ExpandedChanged.HasDelegate;
 
     // A searchable panel has to be in the DOM for find-in-page to have anything to find.
     private bool _ShouldRenderContent => _IsSearchable || (UnmountOnCollapse
-                                                            ? IsExpanded
-                                                            : (LazyContent is false || _hasBeenExpanded || IsExpanded));
+                                                            ? Expanded
+                                                            : (LazyContent is false || _hasBeenExpanded || Expanded));
 
 
 
@@ -555,9 +555,9 @@ public partial class BitAccordion : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsExpanded ? "bit-acd-exp" : string.Empty);
+        ClassBuilder.Register(() => Expanded ? "bit-acd-exp" : string.Empty);
 
-        ClassBuilder.Register(() => IsExpanded ? Classes?.Expanded : string.Empty);
+        ClassBuilder.Register(() => Expanded ? Classes?.Expanded : string.Empty);
 
         ClassBuilder.Register(() => NoBorder ? "bit-acd-nbd" : string.Empty);
 
@@ -596,7 +596,7 @@ public partial class BitAccordion : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => IsExpanded ? Styles?.Expanded : string.Empty);
+        StyleBuilder.Register(() => Expanded ? Styles?.Expanded : string.Empty);
 
         // The duration is handed to the stylesheet as the -full token rather than written into the transitions
         // directly, so the stylesheet can still scale it by the shared motion factor and the reduced motion
@@ -610,9 +610,9 @@ public partial class BitAccordion : BitComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        if (IsExpandedHasBeenSet is false && DefaultIsExpanded.HasValue)
+        if (ExpandedHasBeenSet is false && DefaultExpanded.HasValue)
         {
-            await AssignIsExpanded(DefaultIsExpanded.Value);
+            await AssignExpanded(DefaultExpanded.Value);
         }
 
         await base.OnInitializedAsync();
@@ -622,7 +622,7 @@ public partial class BitAccordion : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
-        if (IsExpanded) _hasBeenExpanded = true;
+        if (Expanded) _hasBeenExpanded = true;
 
         TrackReveal();
 
@@ -649,13 +649,13 @@ public partial class BitAccordion : BitComponentBase
     // keyboard. The header that holds the panel is where the reader was, so that is where the focus goes.
     //
     // It is done here, off the render that closed the panel, rather than in the toggle itself, because a
-    // collapse does not have to come from the accordion at all: a bound or a fully controlled IsExpanded is
+    // collapse does not have to come from the accordion at all: a bound or a fully controlled Expanded is
     // driven from the page, and the reader inside the panel loses their place just the same. A click on the
     // header has already moved the focus there itself, and the focusout that comes with it has already
     // cleared the flag below, so this really is about a collapse that came from somewhere else.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_wasExpanded && IsExpanded is false && _contentHasFocus)
+        if (_wasExpanded && Expanded is false && _contentHasFocus)
         {
             _contentHasFocus = false;
 
@@ -663,18 +663,18 @@ public partial class BitAccordion : BitComponentBase
         }
 
         // A real change of state, whoever made it, offers a panel whose reveal was refused to find-in-page again.
-        if (firstRender is false && _wasExpanded != IsExpanded)
+        if (firstRender is false && _wasExpanded != Expanded)
         {
             _revealRefused = false;
         }
 
-        var closed = _wasExpanded && IsExpanded is false;
+        var closed = _wasExpanded && Expanded is false;
 
         TrackReveal();
 
-        _wasExpanded = IsExpanded;
+        _wasExpanded = Expanded;
 
-        if (IsExpanded)
+        if (Expanded)
         {
             _closing = false;
         }
@@ -706,7 +706,7 @@ public partial class BitAccordion : BitComponentBase
         // drives the accordion, and they are not turned away by this.
         if (_IsBusy) return;
 
-        await AssignExpanded(IsExpanded is false, BitAccordionToggleReason.Click);
+        await ChangeExpanded(Expanded is false, BitAccordionToggleReason.Click);
     }
 
     // The public methods are not called from an event handler, so nothing re-renders the component on their
@@ -714,7 +714,7 @@ public partial class BitAccordion : BitComponentBase
     // off the render loop - a timer, a background task - is just as much a call as one from a button.
     private async Task SetExpanded(bool value)
     {
-        if (await AssignExpanded(value, BitAccordionToggleReason.Method) is false) return;
+        if (await ChangeExpanded(value, BitAccordionToggleReason.Method) is false) return;
 
         // A render that carries a state change is never the one the focus bookkeeping is trying to skip -
         // and it is the one the focus return in OnAfterRenderAsync above rides on.
@@ -723,12 +723,12 @@ public partial class BitAccordion : BitComponentBase
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task<bool> AssignExpanded(bool value, BitAccordionToggleReason reason)
+    private async Task<bool> ChangeExpanded(bool value, BitAccordionToggleReason reason)
     {
-        // AssignIsExpanded reports back only whether the assignment was allowed at all (a one-way bound
-        // IsExpanded refuses it), not whether it changed anything, so the state the accordion is already in
+        // AssignExpanded reports back only whether the assignment was allowed at all (a one-way bound
+        // Expanded refuses it), not whether it changed anything, so the state the accordion is already in
         // is caught here - otherwise Expand on an open accordion would report an expansion of its own.
-        if (IsExpanded == value) return false;
+        if (Expanded == value) return false;
 
         // The same refusal, asked ahead of time rather than after the fact: a controlled accordion is not
         // going anywhere, so there is nothing for OnToggling to be given the chance to refuse either.
@@ -760,8 +760,8 @@ public partial class BitAccordion : BitComponentBase
                 if (args.Cancel) return false;
 
                 // The state can have moved on while the callback was awaited - the page can have driven a
-                // bound IsExpanded itself, or disposed the accordion altogether.
-                if (IsDisposed || IsExpanded == value) return false;
+                // bound Expanded itself, or disposed the accordion altogether.
+                if (IsDisposed || Expanded == value) return false;
             }
             finally
             {
@@ -777,15 +777,15 @@ public partial class BitAccordion : BitComponentBase
         // A reveal let through is what opens the panel from here on, so that open - and only that one - is the reveal's.
         if (reason is BitAccordionToggleReason.Reveal) BeginRevealExpansion();
 
-        if (await AssignIsExpanded(value) is false) return false;
+        if (await AssignExpanded(value) is false) return false;
 
-        if (IsExpanded) _hasBeenExpanded = true;
+        if (Expanded) _hasBeenExpanded = true;
 
         TrackReveal();
 
-        await OnChange.InvokeAsync(IsExpanded);
+        await OnChange.InvokeAsync(Expanded);
 
-        if (IsExpanded)
+        if (Expanded)
         {
             await OnExpand.InvokeAsync();
         }
@@ -826,14 +826,14 @@ public partial class BitAccordion : BitComponentBase
         {
             await toggled.Task;
 
-            if (IsDisposed || IsExpanded || _IsSearchable is false) return;
+            if (IsDisposed || Expanded || _IsSearchable is false) return;
         }
 
         var revealed = RevealHandler is not null
                      ? await RevealHandler()
-                     : await AssignExpanded(true, BitAccordionToggleReason.Reveal);
+                     : await ChangeExpanded(true, BitAccordionToggleReason.Reveal);
 
-        if (revealed || IsExpanded || IsDisposed) return;
+        if (revealed || Expanded || IsDisposed) return;
 
         _revealing = false;
         _revealRefused = true;
@@ -858,7 +858,7 @@ public partial class BitAccordion : BitComponentBase
     {
         if (_revealing is false) return;
 
-        if (IsExpanded)
+        if (Expanded)
         {
             _revealOpened = true;
         }
@@ -881,7 +881,7 @@ public partial class BitAccordion : BitComponentBase
         catch (JSException) { }
         catch (TaskCanceledException) { }
 
-        if (version != _closingVersion || IsDisposed || IsExpanded) return;
+        if (version != _closingVersion || IsDisposed || Expanded) return;
 
         _closing = false;
 

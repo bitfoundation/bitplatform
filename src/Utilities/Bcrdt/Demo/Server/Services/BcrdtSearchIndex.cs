@@ -12,16 +12,25 @@ namespace Bit.Bcrdt.Demo.Server.Services;
 /// the full text, so one search is enough to know what to ask for next.
 /// </para>
 /// </summary>
-public static class BcrdtSearchIndex
+public static partial class BcrdtSearchIndex
 {
-    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight)
+    /// <param name="NamesFromBody">
+    /// Whether <paramref name="Boosted"/> holds names taken out of <paramref name="Body"/> - a guide section's
+    /// lead - rather than a signature of the entry's own. A term is then a name of the entry once, however many
+    /// of those names share it: a section that opens on BcrdtText, BcrdtTextArea and BcrdtTextSynchronizer is
+    /// not three times as much about "text". And the mentions those names are in the body are not counted a
+    /// second time as prose.
+    /// </param>
+    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight, bool NamesFromBody = false)
     {
         /// <summary>
         /// The title split into words, camel-case humps included, so "PresenceTimeout" is found by
         /// "presence timeout" - and so a query word only counts as a title hit when it IS one of
-        /// those words, rather than merely appearing inside one ("set" inside "Offset").
+        /// those words, rather than merely appearing inside one ("set" inside "Offset"). Two neighbouring
+        /// humps of one name are a word as well, since that is how they are often written: "textarea" is
+        /// the TextArea of BcrdtTextArea, not a word inside it.
         /// </summary>
-        public string[] TitleWords { get; } = SplitWords(Title);
+        public string[] TitleWords { get; } = [.. SplitWords(Title), .. Compounds(Title)];
     }
 
     private const int MaxTerms = 16;
@@ -76,6 +85,17 @@ public static class BcrdtSearchIndex
         "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto"
     };
 
+    /// <summary>
+    /// The words a question is phrased with that are also the first word of a name: "can" is filler in
+    /// "a field two people can edit", where counted in prose it matches every section that says what the
+    /// library can do - and it is the only word that tells CanUndo, CanRedo and CanMergeWith from Undo, Redo
+    /// and MergeWith. So such a word counts where it is a word of an entry's name, and nowhere else.
+    /// </summary>
+    private static readonly HashSet<string> _nameOnlyWords = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "can", "will", "may", "might", "must"
+    };
+
     public static BcrdtSearchResultDto Search(string? query, int limit)
     {
         var terms = Tokenize(query);
@@ -96,7 +116,7 @@ public static class BcrdtSearchIndex
         }
 
         var ranked = _entries.Value
-            .Select(entry => (Entry: entry, Score: Score(entry, terms)))
+            .Select(entry => Score(entry, terms))
             .Where(hit => hit.Score > 0)
             .OrderByDescending(hit => hit.Score)
             .ThenBy(hit => hit.Entry.Title, StringComparer.OrdinalIgnoreCase)
@@ -109,13 +129,16 @@ public static class BcrdtSearchIndex
 
         var take = Math.Clamp(limit, 1, MaxHits);
 
+        // A snippet starts at a word the entry was ranked by in its text, which a name-only word never is.
+        string[] proseTerms = [.. terms.Where(term => _nameOnlyWords.Contains(term) is false)];
+
         var hits = Cover(ranked, terms, take).Select(hit => new BcrdtSearchHitDto
         {
             Kind = hit.Entry.Kind,
             Title = hit.Entry.Title,
             Context = hit.Entry.Context,
             Tool = hit.Entry.Tool,
-            Snippet = Snippet(hit.Entry.Body, terms)
+            Snippet = Snippet(hit.Entry.Body, proseTerms)
         }).ToArray();
 
         if (hits.Length > 0)
@@ -158,19 +181,26 @@ public static class BcrdtSearchIndex
     /// view. A request usually joins two things - "presence while offline" is presence AND reconnection -
     /// and the one with more material behind it would otherwise fill every place, leaving the
     /// caller to conclude the other has no answer. So for each word that is the name of some entry yet
-    /// names none of the top hits, the best entry it does name takes the place of the lowest-ranked hit
-    /// that is not itself there for that reason. The order stays the ranking's.
+    /// is said by none of the top hits - neither in a name nor in a text - the best entry it does name takes
+    /// the place of the lowest-ranked hit that is not itself there for that reason. A word one of the top
+    /// hits already explains is in view, and swapping any hit for an entry that merely has the word in its
+    /// name loses an answer to gain nothing: "url" would trade a section on the hub's absolute URL for an
+    /// avatar's URL. A name-only word ("can") is never a topic of its own to keep in view. The order stays
+    /// the ranking's.
     /// </summary>
-    private static (Entry Entry, int Score)[] Cover((Entry Entry, int Score)[] ranked, string[] terms, int take)
+    private static Hit[] Cover(Hit[] ranked, string[] terms, int take)
     {
         var top = ranked.Take(take).ToList();
         if (top.Count < take || terms.Length < 2) return [.. top];
 
         var kept = new HashSet<Entry>();
 
-        foreach (var term in terms)
+        for (var i = 0; i < terms.Length; i++)
         {
-            if (top.Any(hit => hit.Entry.TitleWords.Any(word => Equivalent(word, term)))) continue;
+            var term = terms[i];
+            var bit = 1 << i;
+
+            if (_nameOnlyWords.Contains(term) || top.Any(hit => (hit.Matched & bit) != 0)) continue;
 
             var best = ranked.Skip(take).FirstOrDefault(hit => hit.Entry.TitleWords.Any(word => Equivalent(word, term)));
             if (best.Entry is null) continue;
@@ -204,25 +234,45 @@ public static class BcrdtSearchIndex
             .Take(MaxSuggestions)];
     }
 
-    private static int Score(Entry entry, string[] terms)
+    /// <summary>
+    /// An entry with its score, and which of the query's terms it matched - bit <c>i</c> for <c>terms[i]</c>,
+    /// in its name or in its text - so whether a term is in view among the top hits is known without counting it again.
+    /// </summary>
+    private readonly record struct Hit(Entry Entry, int Score, int Matched);
+
+    private static Hit Score(Entry entry, string[] terms)
     {
         var score = 0;
         var matched = 0;
         var named = 0;
+        var mask = 0;
+        var topical = false;
 
-        foreach (var term in terms)
+        for (var i = 0; i < terms.Length; i++)
         {
+            var term = terms[i];
             var isTitleWord = entry.TitleWords.Any(word => Equivalent(word, term));
+            var nameOnly = _nameOnlyWords.Contains(term);
+
+            if (nameOnly && isTitleWord is false) continue;
 
             // Text is counted by the singular, which a plural query word would otherwise never find
             // inside: "transports" has to count the "Transport" of IBcrdtTransport, and "replicas" every "replica".
             var stem = Stem(term);
-            var inTitle = isTitleWord ? 0 : Count(entry.Title, stem);
-            var inBoosted = Count(entry.Boosted, stem);
-            var inBody = Count(entry.Body, stem);
+            var inTitle = isTitleWord || nameOnly ? 0 : Count(entry.Title, stem);
+            var inBoosted = nameOnly ? 0 : Count(entry.Boosted, stem);
+            var inBody = nameOnly ? 0 : Count(entry.Body, stem);
+
+            if (entry.NamesFromBody)
+            {
+                inBody = Math.Max(0, inBody - inBoosted);
+                inBoosted = Math.Min(inBoosted, 1);
+            }
 
             if (isTitleWord is false && inTitle + inBoosted + inBody == 0) continue;
 
+            topical |= nameOnly is false;
+            mask |= 1 << i;
             matched++;
             if (isTitleWord || inTitle + inBoosted > 0) named++;
 
@@ -236,7 +286,11 @@ public static class BcrdtSearchIndex
         // somewhere, and a multiplier fed only by prose hands the longest of them every query phrased in
         // plain words. The weight is what keeps a worked example from outranking the reference that
         // answers the question.
-        return matched == 0 ? 0 : score * (matched + named) * entry.Weight;
+        // A name-only word is not a topic: "can redo" is about redoing, and CanMergeWith is not an answer
+        // to it for sharing the "Can". Only a query of nothing else is searched by it alone.
+        if (topical is false && terms.Any(term => _nameOnlyWords.Contains(term) is false)) return new Hit(entry, 0, 0);
+
+        return new Hit(entry, matched == 0 ? 0 : score * (matched + named) * entry.Weight, mask);
     }
 
     /// <summary>
@@ -366,6 +420,17 @@ public static class BcrdtSearchIndex
         return [.. words];
     }
 
+    /// <summary>Every two neighbouring camel-case humps of one name, joined: "BcrdtTextArea" gives "BcrdtText" and "TextArea".</summary>
+    private static IEnumerable<string> Compounds(string text)
+    {
+        foreach (var name in text.Split(text.Where(c => char.IsLetterOrDigit(c) is false).Distinct().ToArray(), StringSplitOptions.RemoveEmptyEntries))
+        {
+            var humps = SplitWords(name);
+
+            for (var i = 0; i + 1 < humps.Length; i++) yield return humps[i] + humps[i + 1];
+        }
+    }
+
     private static string[] Tokenize(string? query)
     {
         if (string.IsNullOrWhiteSpace(query)) return [];
@@ -388,7 +453,20 @@ public static class BcrdtSearchIndex
     {
         var entries = new List<Entry>(512);
 
-        foreach (var section in BcrdtSourceCatalog.GuideSections)
+        // Every name the API answers to - a type, or a member of one - which is what tells a code span
+        // naming the API from one naming a file ("Program.cs"), a setting or a value.
+        var apiNames = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var type in BcrdtApiCatalog.Types)
+        {
+            apiNames.Add(BareName(type.Name));
+
+            foreach (var member in BcrdtApiCatalog.GetTypeDetails(type.Name)?.Members ?? [])
+            {
+                if (member.Kind != "Constructor") apiNames.Add(BareName(member.Name));
+            }
+        }
+
+        foreach (var (section, ownText) in BcrdtSourceCatalog.GuideSectionsWithOwnText())
         {
             // Two sections of the README are about the README rather than about the library: the
             // table of contents, which names every topic and so matches every query, and the one about
@@ -397,10 +475,8 @@ public static class BcrdtSearchIndex
             // they are only kept out of the ranking.
             if (_metaSections.Contains(section.Key)) continue;
 
-            var body = BcrdtSourceCatalog.GetGuideSection(section.Key) ?? string.Empty;
-
             entries.Add(new Entry("Guide section", section.Heading, section.Parent,
-                $"GetBcrdtGuideSection(heading: \"{section.Key}\")", body, string.Empty));
+                $"GetBcrdtGuideSection(heading: \"{section.Key}\")", ownText, NamesIn(ownText, apiNames), NamesFromBody: true));
         }
 
         foreach (var type in BcrdtApiCatalog.Types)
@@ -458,6 +534,62 @@ public static class BcrdtSearchIndex
 
         return [.. entries];
     }
+
+    /// <summary>
+    /// The API a guide section's opening paragraph names - <c>`BcrdtText`</c>, <c>`BcrdtMap`</c> - which a
+    /// section is named by the way a member is named by its signature. Without them a heading is the only
+    /// name a section has, so a question about a "text field" ranked every member with "Text" in its name
+    /// above the section on binding text inputs to a <c>BcrdtText</c>.
+    /// <para>
+    /// Only the opening paragraph, and only its prose, because that is where a section says what it is
+    /// about; further down it names whatever it touches. A section that lists the packages, or the changes
+    /// since the last release, names half the API in passing - in a table or a list, often from its first
+    /// line or right under it - and would then be named by every question. And only a span the API
+    /// answers to: <c>`Program.cs`</c> or <c>`appsettings.json`</c> in a lead name a file, not the topic.
+    /// </para>
+    /// </summary>
+    private static string NamesIn(string body, HashSet<string> apiNames)
+    {
+        var lines = body.Split('\n')
+            .Skip(1) // the heading
+            .SkipWhile(string.IsNullOrWhiteSpace)
+            .ToArray();
+
+        // A section that opens on a table, a list, a quote, a picture or code says nothing about itself first.
+        if (lines.Length == 0 || NotProseRegex().IsMatch(lines[0])) return string.Empty;
+
+        var lead = string.Join(' ', lines.TakeWhile(line => string.IsNullOrWhiteSpace(line) is false && NotProseRegex().IsMatch(line) is false));
+
+        return string.Join(' ', CodeSpanRegex().Matches(lead)
+            .Select(match => match.Groups["name"].Value)
+            .Where(name => name.Split('.').Any(apiNames.Contains))
+            .Distinct(StringComparer.Ordinal));
+    }
+
+    /// <summary>A type or member name without its type parameters: "BcrdtListBinding&lt;T&gt;" is "BcrdtListBinding".</summary>
+    private static string BareName(string name)
+    {
+        var generic = name.IndexOf('<');
+
+        return generic < 0 ? name : name[..generic];
+    }
+
+    /// <summary>
+    /// An inline code span holding a name rather than code: a type or a member, qualified or not,
+    /// optionally generic or called - <c>`BcrdtText`</c>, <c>`Sync.LastSyncedAt`</c>, <c>`ConnectAsync()`</c>,
+    /// <c>`GetBcrdtCollaborationService(...)`</c>, <c>`BcrdtListBinding&lt;T&gt;`</c>. A span starting lower-case
+    /// is code (<c>`null`</c>) unless it is qualified (<c>`document.Text("body")`</c>), and a fenced block never
+    /// matches because its fence is three backticks. Whether the name is the API's is for the caller to check.
+    /// </summary>
+    [System.Text.RegularExpressions.GeneratedRegex(@"(?<!`)`(?<name>(?:[A-Z]\w*|[a-z]\w*(?=\.))(?:\.\w+)*)(?:<[\w, ]+>)?(?:\([^`]*\))?`(?!`)")]
+    private static partial System.Text.RegularExpressions.Regex CodeSpanRegex();
+
+    /// <summary>
+    /// A Markdown line that is not a line of a paragraph: a table row, a bullet or numbered list item, a
+    /// quote, a heading, HTML, an image, a code fence or an indented code block.
+    /// </summary>
+    [System.Text.RegularExpressions.GeneratedRegex(@"^(?: {4}|\t|\s*(?:[|>#<]|[*+-]\s|\d+[.)]\s|!\[|```|~~~))")]
+    private static partial System.Text.RegularExpressions.Regex NotProseRegex();
 
     /// <summary>
     /// The query without the words that are true of everything here - unless that is all it said,

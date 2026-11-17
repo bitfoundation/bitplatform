@@ -182,11 +182,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
 
     /// <summary>
-    /// Whether the TimePicker allows input a time string directly or not
-    /// </summary>
-    [Parameter] public bool AllowTextInput { get; set; }
-
-    /// <summary>
     /// The hours that can be selected, on top of what <see cref="MinTime"/> and <see cref="MaxTime"/> already allow.
     /// </summary>
     /// <remarks>
@@ -216,6 +211,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// that lands on one fails validation. The bounds are applied after it, so where the two disagree the bounds win.
     /// </remarks>
     [Parameter] public Func<int, bool>? AllowedSeconds { get; set; }
+
+    /// <summary>
+    /// Whether the TimePicker allows input a time string directly or not
+    /// </summary>
+    [Parameter] public bool AllowTextInput { get; set; }
 
     /// <summary>
     /// The text tied to the TimePicker as its accessible description without being shown on the screen,
@@ -267,11 +267,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// Capture and render additional attributes in addition to the main callout's parameters
     /// </summary>
     [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
-
-    // The callout attributes the BitTimePickerParams of this pass cascades, which those of CalloutHtmlAttributes win
-    // over. Held apart from that dictionary, which is the app's own and never written into, and dropped on every pass
-    // so a params object that stops supplying one leaves nothing of it behind.
-    internal Dictionary<string, object>? CascadedCalloutHtmlAttributes { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitTimePicker component.
@@ -409,12 +404,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
-    /// The custom validation error message for a time entered as text that
-    /// <see cref="AllowedHours"/>, <see cref="AllowedMinutes"/> or <see cref="AllowedSeconds"/> rejects.
-    /// </summary>
-    [Parameter] public string? DisallowedTimeErrorMessage { get; set; }
-
-    /// <summary>
     /// Disables every time of day after the current time, exactly as a <see cref="MaxTime"/> of now would.
     /// When both are set, the earlier of the two bounds wins.
     /// </summary>
@@ -430,6 +419,12 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// </summary>
     /// <inheritdoc cref="DisableFuture" path="/remarks"/>
     [Parameter] public bool DisablePast { get; set; }
+
+    /// <summary>
+    /// The custom validation error message for a time entered as text that
+    /// <see cref="AllowedHours"/>, <see cref="AllowedMinutes"/> or <see cref="AllowedSeconds"/> rejects.
+    /// </summary>
+    [Parameter] public string? DisallowedTimeErrorMessage { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the callout.
@@ -822,11 +817,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitTimePicker component.
-    /// </summary>
-    [Parameter, ResetStyleBuilder] public BitTimePickerClassStyles? Styles { get; set; }
-
-    /// <summary>
     /// Whether the BitTimePicker is rendered standalone or with the input component and callout.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -842,6 +832,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// to be stepped there from midnight every time.
     /// </remarks>
     [Parameter] public TimeSpan? StartingValue { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitTimePicker component.
+    /// </summary>
+    [Parameter, ResetStyleBuilder] public BitTimePickerClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The text displayed flush with the end of the field, after the icon. It is not part of the value.
@@ -875,6 +870,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// The format of the time in the time-picker
     /// </summary>
     [Parameter] public string? ValueFormat { get; set; }
+
+    // The callout attributes the BitTimePickerParams of this pass cascades, which those of CalloutHtmlAttributes win
+    // over. Held apart from that dictionary, which is the app's own and never written into, and dropped on every pass
+    // so a params object that stops supplying one leaves nothing of it behind.
+    internal Dictionary<string, object>? CascadedCalloutHtmlAttributes { get; set; }
 
 
 

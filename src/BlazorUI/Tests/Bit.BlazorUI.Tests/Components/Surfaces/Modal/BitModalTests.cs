@@ -18,11 +18,11 @@ public class BitModalTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitModalIsAlertTest(bool? isAlert)
+    public void BitModalAlertTest(bool? isAlert)
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.Add(p => p.IsAlert, isAlert);
+            parameters.Add(p => p.Alert, isAlert);
             parameters.Add(p => p.IsOpen, true);
         });
 
@@ -762,7 +762,7 @@ public class BitModalTests : BunitTestContext
             {
                 AriaLabel = "Cascaded label",
                 FullWidth = true,
-                IsAlert = true,
+                Alert = true,
                 Modeless = true,
             });
             parameters.Add(p => p.IsOpen, true);
@@ -782,10 +782,10 @@ public class BitModalTests : BunitTestContext
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.AddCascadingValue(new BitModalParameters { AriaLabel = "Cascaded label", IsAlert = false });
+            parameters.AddCascadingValue(new BitModalParameters { AriaLabel = "Cascaded label", Alert = false });
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.AriaLabel, "Own label");
-            parameters.Add(p => p.IsAlert, true);
+            parameters.Add(p => p.Alert, true);
         });
 
         var content = com.Find(".bit-mdl-ctn");

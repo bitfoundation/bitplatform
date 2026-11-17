@@ -257,6 +257,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public bool AllowTextInput { get; set; }
 
     /// <summary>
+    /// The text of the button that commits the picked range, rendered while <see cref="AutoApply"/> is off.
+    /// </summary>
+    [Parameter] public string ApplyButtonText { get; set; } = "Apply";
+
+    /// <summary>
     /// Whether every pick is applied to the value as it is made. Turning it off makes the callout a
     /// transaction: it renders a Cancel and an Apply button, and the range the callout was opened on is
     /// put back unless Apply commits the new one. The picks still reach the value while the callout is
@@ -287,11 +292,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
-    /// The text of the button that commits the picked range, rendered while <see cref="AutoApply"/> is off.
-    /// </summary>
-    [Parameter] public string ApplyButtonText { get; set; } = "Apply";
-
-    /// <summary>
     /// Aria label of the DateRangePicker's callout for screen readers.
     /// </summary>
     [Parameter] public string CalloutAriaLabel { get; set; } = "Calendar";
@@ -311,6 +311,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// Capture and render additional html attributes for the DateRangePicker's callout.
     /// </summary>
     [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
+
+    /// <summary>
+    /// The text of the button that discards the picked range, rendered while <see cref="AutoApply"/> is off.
+    /// </summary>
+    [Parameter] public string CancelButtonText { get; set; } = "Cancel";
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitDateRangePicker component.
@@ -343,11 +348,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// The name of the close button's icon from the built-in Fluent UI icon set.
     /// </summary>
     [Parameter] public string? CloseButtonIconName { get; set; }
-
-    /// <summary>
-    /// The text of the button that discards the picked range, rendered while <see cref="AutoApply"/> is off.
-    /// </summary>
-    [Parameter] public string CancelButtonText { get; set; } = "Cancel";
 
     /// <summary>
     /// The title of the close button (tooltip).
@@ -395,20 +395,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
-    /// Disables every day after today, exactly as a <see cref="MaxDate"/> of today would.
-    /// When both are set, the earlier of the two bounds wins.
+    /// The custom validation error message for a typed range that the DateRangePicker does not allow to be
+    /// selected, through <see cref="DisabledDates"/>, <see cref="DisabledDaysOfWeek"/> or
+    /// <see cref="IsDateDisabled"/>.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public bool DisableFuture { get; set; }
-
-    /// <summary>
-    /// Disables every day before today, exactly as a <see cref="MinDate"/> of today would.
-    /// When both are set, the later of the two bounds wins.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public bool DisablePast { get; set; }
+    [Parameter] public string? DisabledDateErrorMessage { get; set; }
 
     /// <summary>
     /// The list of dates that are disabled (not selectable) in the DateRangePicker, in addition to MinDate and MaxDate.
@@ -425,16 +416,99 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public IEnumerable<DayOfWeek>? DisabledDaysOfWeek { get; set; }
 
     /// <summary>
-    /// The custom validation error message for a typed range that the DateRangePicker does not allow to be
-    /// selected, through <see cref="DisabledDates"/>, <see cref="DisabledDaysOfWeek"/> or
-    /// <see cref="IsDateDisabled"/>.
+    /// Disables every day after today, exactly as a <see cref="MaxDate"/> of today would.
+    /// When both are set, the earlier of the two bounds wins.
     /// </summary>
-    [Parameter] public string? DisabledDateErrorMessage { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool DisableFuture { get; set; }
+
+    /// <summary>
+    /// Disables every day before today, exactly as a <see cref="MinDate"/> of today would.
+    /// When both are set, the later of the two bounds wins.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool DisablePast { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the callout.
     /// </summary>
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
+
+    /// <summary>
+    /// The icon to display inside the end time-picker's decrease-hour button.
+    /// Takes precedence over <see cref="EndTimeDecreaseHourIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? EndTimeDecreaseHourIcon { get; set; }
+
+    /// <summary>
+    /// The name of the end time-picker's decrease-hour button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? EndTimeDecreaseHourIconName { get; set; }
+
+    /// <summary>
+    /// The title and the aria-label of the end time-picker's decrease-hour button.
+    /// </summary>
+    [Parameter] public string EndTimeDecreaseHourTitle { get; set; } = "Decrease end hour";
+
+    /// <summary>
+    /// The icon to display inside the end time-picker's decrease-minute button.
+    /// Takes precedence over <see cref="EndTimeDecreaseMinuteIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? EndTimeDecreaseMinuteIcon { get; set; }
+
+    /// <summary>
+    /// The name of the end time-picker's decrease-minute button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? EndTimeDecreaseMinuteIconName { get; set; }
+
+    /// <summary>
+    /// The title and the aria-label of the end time-picker's decrease-minute button.
+    /// </summary>
+    [Parameter] public string EndTimeDecreaseMinuteTitle { get; set; } = "Decrease end minute";
+
+    /// <summary>
+    /// The aria-label of the end time-picker's hour input.
+    /// </summary>
+    [Parameter] public string EndTimeHourInputAriaLabel { get; set; } = "End hour";
+
+    /// <summary>
+    /// The icon to display inside the end time-picker's increase-hour button.
+    /// Takes precedence over <see cref="EndTimeIncreaseHourIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? EndTimeIncreaseHourIcon { get; set; }
+
+    /// <summary>
+    /// The name of the end time-picker's increase-hour button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? EndTimeIncreaseHourIconName { get; set; }
+
+    /// <summary>
+    /// The title and the aria-label of the end time-picker's increase-hour button.
+    /// </summary>
+    [Parameter] public string EndTimeIncreaseHourTitle { get; set; } = "Increase end hour";
+
+    /// <summary>
+    /// The icon to display inside the end time-picker's increase-minute button.
+    /// Takes precedence over <see cref="EndTimeIncreaseMinuteIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? EndTimeIncreaseMinuteIcon { get; set; }
+
+    /// <summary>
+    /// The name of the end time-picker's increase-minute button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? EndTimeIncreaseMinuteIconName { get; set; }
+
+    /// <summary>
+    /// The title and the aria-label of the end time-picker's increase-minute button.
+    /// </summary>
+    [Parameter] public string EndTimeIncreaseMinuteTitle { get; set; } = "Increase end minute";
+
+    /// <summary>
+    /// The aria-label of the end time-picker's minute input.
+    /// </summary>
+    [Parameter] public string EndTimeMinuteInputAriaLabel { get; set; } = "End minute";
 
     /// <summary>
     /// The message shown below the DateRangePicker when its range was rejected by the app itself (a server
@@ -551,6 +625,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
 
     /// <summary>
+    /// Determines if the DateRangePicker has a border.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool HasBorder { get; set; } = true;
+
+    /// <summary>
     /// The icon to display inside the HideTimePicker button.
     /// Takes precedence over <see cref="HideTimePickerIconName"/> when both are set.
     /// </summary>
@@ -565,12 +645,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// The title of the HideTimePicker button (tooltip).
     /// </summary>
     [Parameter] public string HideTimePickerTitle { get; set; } = "Hide time picker";
-
-    /// <summary>
-    /// Determines if the DateRangePicker has a border.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool HasBorder { get; set; } = true;
 
     /// <summary>
     /// Whether the month picker should highlight the current month.
@@ -596,20 +670,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public bool HighlightToday { get; set; } = true;
 
     /// <summary>
-    /// Custom template for the DateRangePicker's icon.
-    /// </summary>
-    [Parameter] public RenderFragment? IconTemplate { get; set; }
-
-    /// <summary>
-    /// Determines the side of the input the DateRangePicker's icon is rendered on (default is the end side).
+    /// The step, in hours, the spin buttons of the time picker move the hour by.
     /// </summary>
     /// <remarks>
-    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here; every
-    /// other placement leaves the icon on the end side. The side follows the reading direction: Start is the
-    /// left of an LTR input and the right of an RTL one.
+    /// A step greater than 1 lays a grid over the day that every hour the buttons produce sits on, starting at
+    /// midnight, so a picker that only accepts times on a three-hour grid can say so. A time entered as text is
+    /// not held to it. Values below 1 are treated as 1.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public BitPlacement IconPlacement { get; set; } = BitPlacement.End;
+    [Parameter] public int HourStep { get; set; } = 1;
 
     /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
@@ -640,6 +708,22 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
+    /// Determines the side of the input the DateRangePicker's icon is rendered on (default is the end side).
+    /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here; every
+    /// other placement leaves the icon on the end side. The side follows the reading direction: Start is the
+    /// left of an LTR input and the right of an RTL one.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitPlacement IconPlacement { get; set; } = BitPlacement.End;
+
+    /// <summary>
+    /// Custom template for the DateRangePicker's icon.
+    /// </summary>
+    [Parameter] public RenderFragment? IconTemplate { get; set; }
+
+    /// <summary>
     /// Marks the DateRangePicker as invalid without an <c>EditContext</c> having said so, giving it the same
     /// look and the same aria-invalid attribute an invalid bound value does. Setting <see cref="ErrorMessage"/>
     /// implies it. It says nothing more to a screen reader unless
@@ -659,13 +743,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public Func<DateTimeOffset, bool>? IsDateDisabled { get; set; }
-
-    /// <summary>
-    /// Whether the month picker is shown or hidden.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public bool IsMonthPickerVisible { get; set; } = true;
 
     /// <summary>
     /// Whether or not the DateRangePicker's callout is open.
@@ -692,11 +769,38 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public DateTimeOffset? MaxDate { get; set; }
 
     /// <summary>
+    /// The longest span the selected range is allowed to cover, in days and times alike.
+    /// </summary>
+    /// <remarks>
+    /// The day grid is bounded by it in whole days, equally far either side of the picked start date, and
+    /// the time picker refuses a time that would push the span past it - so a MaxRange shorter than a day
+    /// leaves the day the range started on as the only one it can end on, with the hours inside that day
+    /// the time picker's to enforce.
+    /// </remarks>
+    [Parameter] public TimeSpan? MaxRange { get; set; }
+
+    /// <summary>
     /// The minimum date allowed for the DateRangePicker.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public DateTimeOffset? MinDate { get; set; }
+
+    /// <summary>
+    /// The minimum number of days that the selected range must span in the DateRangePicker.
+    /// Only the days part of the provided TimeSpan is considered.
+    /// </summary>
+    [Parameter] public TimeSpan? MinRange { get; set; }
+
+    /// <summary>
+    /// The step, in minutes, the spin buttons of the time picker move the minute by.
+    /// </summary>
+    /// <remarks>
+    /// A step greater than 1 lays a grid over the hour that every minute the buttons produce sits on, starting
+    /// at the top of the hour, which is what turns it into a five-minute or quarter-hour picker. A time entered
+    /// as text is not held to it. Values below 1 are treated as 1.
+    /// </remarks>
+    [Parameter] public int MinuteStep { get; set; } = 1;
 
     /// <summary>
     /// Custom template to render the month cells of the DateRangePicker.
@@ -716,12 +820,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// The title of the month picker's toggle (tooltip).
     /// </summary>
     [Parameter] public string MonthPickerToggleTitle { get; set; } = "{0}, change month";
-
-    /// <summary>
-    /// The text rendered in place of a date that has not been picked yet, which is also the token
-    /// accepted back for an open-ended range when <see cref="AllowTextInput"/> is enabled.
-    /// </summary>
-    [Parameter] public string NoDateText { get; set; } = "---";
 
     /// <summary>
     /// The icon to display inside the next-month navigation button.
@@ -757,9 +855,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string? NextYearRangeNavIconName { get; set; }
 
     /// <summary>
-    /// Callback for when the value is cleared using the clear button.
+    /// The text rendered in place of a date that has not been picked yet, which is also the token
+    /// accepted back for an open-ended range when <see cref="AllowTextInput"/> is enabled.
     /// </summary>
-    [Parameter] public EventCallback OnClear { get; set; }
+    [Parameter] public string NoDateText { get; set; } = "---";
 
     /// <summary>
     /// The callback for when the picked range is committed by the Apply button of a picker that does not
@@ -775,28 +874,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public EventCallback OnCancel { get; set; }
 
     /// <summary>
+    /// Callback for when the value is cleared using the clear button.
+    /// </summary>
+    [Parameter] public EventCallback OnClear { get; set; }
+
+    /// <summary>
     /// The callback for clicking on the DateRangePicker's input.
     /// </summary>
     [Parameter] public EventCallback OnClick { get; set; }
-
-    /// <summary>
-    /// The custom validation error message for a range entered as text that breaks the bounds, the
-    /// disabled days, or <see cref="MinRange"/> and <see cref="MaxRange"/>.
-    /// </summary>
-    [Parameter] public string? OutOfRangeErrorMessage { get; set; }
-
-    /// <summary>
-    /// Whether the previous and next navigation buttons move the calendar by all of its rendered months
-    /// instead of one, so consecutive pages of a multi-month calendar never overlap.
-    /// It has no effect when <see cref="MonthCount"/> renders a single month.
-    /// </summary>
-    [Parameter] public bool PagedNavigation { get; set; }
-
-    /// <summary>
-    /// Callback for when the displayed month of the day picker changes.
-    /// The argument is the first day of the newly displayed month.
-    /// </summary>
-    [Parameter] public EventCallback<DateTimeOffset> OnMonthChange { get; set; }
 
     /// <summary>
     /// The callback for when the callout of the DateRangePicker is closed.
@@ -819,6 +904,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public EventCallback OnFocusOut { get; set; }
 
     /// <summary>
+    /// Callback for when the displayed month of the day picker changes.
+    /// The argument is the first day of the newly displayed month.
+    /// </summary>
+    [Parameter] public EventCallback<DateTimeOffset> OnMonthChange { get; set; }
+
+    /// <summary>
     /// The callback for when the callout of the DateRangePicker is opened.
     /// </summary>
     [Parameter] public EventCallback OnOpen { get; set; }
@@ -833,6 +924,19 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// the pick - a range with only its start date set while the second day is still to be chosen.
     /// </summary>
     [Parameter] public EventCallback<BitDateRangePickerValue?> OnSelectDate { get; set; }
+
+    /// <summary>
+    /// The custom validation error message for a range entered as text that breaks the bounds, the
+    /// disabled days, or <see cref="MinRange"/> and <see cref="MaxRange"/>.
+    /// </summary>
+    [Parameter] public string? OutOfRangeErrorMessage { get; set; }
+
+    /// <summary>
+    /// Whether the previous and next navigation buttons move the calendar by all of its rendered months
+    /// instead of one, so consecutive pages of a multi-month calendar never overlap.
+    /// It has no effect when <see cref="MonthCount"/> renders a single month.
+    /// </summary>
+    [Parameter] public bool PagedNavigation { get; set; }
 
     /// <summary>
     /// The placeholder text of the DateRangePicker's input.
@@ -894,6 +998,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string SelectedDateAriaAtomic { get; set; } = "Selected date range {0}";
 
     /// <summary>
+    /// Whether the clear button should be shown or not when the DateRangePicker has a value.
+    /// </summary>
+    [Parameter] public bool ShowClearButton { get; set; }
+
+    /// <summary>
     /// Whether the DateRangePicker's close button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowCloseButton { get; set; }
@@ -904,6 +1013,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public bool ShowGoToToday { get; set; } = true;
 
     /// <summary>
+    /// Whether the month picker is shown or hidden.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool ShowMonthPicker { get; set; } = true;
+
+    /// <summary>
     /// Show month picker on top of date range picker when visible.
     /// </summary>
     [Parameter]
@@ -911,11 +1027,25 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public bool ShowMonthPickerAsOverlay { get; set; }
 
     /// <summary>
+    /// Whether the days of the previous and next months, filling the first and last week rows, should be rendered.
+    /// It has no effect when <see cref="MonthCount"/> renders more than one month, since those days would then
+    /// show up in two grids at once.
+    /// </summary>
+    [Parameter] public bool ShowOutsideDays { get; set; } = true;
+
+    /// <summary>
     /// Whether or not render the time-picker.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public bool ShowTimePicker { get; set; }
+
+    /// <summary>
+    /// Show the time picker as an overlay on top of the date range picker when visible.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool ShowTimePickerAsOverlay { get; set; }
 
     /// <summary>
     /// The icon to display inside the ShowTimePicker button.
@@ -932,13 +1062,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// The title of the ShowTimePicker button (tooltip).
     /// </summary>
     [Parameter] public string ShowTimePickerTitle { get; set; } = "Show time picker";
-
-    /// <summary>
-    /// Whether the days of the previous and next months, filling the first and last week rows, should be rendered.
-    /// It has no effect when <see cref="MonthCount"/> renders more than one month, since those days would then
-    /// show up in two grids at once.
-    /// </summary>
-    [Parameter] public bool ShowOutsideDays { get; set; } = true;
 
     /// <summary>
     /// Shows the messages the cascading EditContext holds for the bound field - the ones of its data annotations, the
@@ -974,64 +1097,18 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public BitSize? Size { get; set; }
 
     /// <summary>
-    /// The title and the aria-label of the start time-picker's increase-hour button.
+    /// Whether the DateRangePicker is rendered standalone or with the input component and callout.
     /// </summary>
-    [Parameter] public string StartTimeIncreaseHourTitle { get; set; } = "Increase start hour";
+    [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool Standalone { get; set; }
 
     /// <summary>
-    /// The title and the aria-label of the start time-picker's decrease-hour button.
+    /// Specifies the date and time of the date and time picker when it is opened without any selected value.
     /// </summary>
-    [Parameter] public string StartTimeDecreaseHourTitle { get; set; } = "Decrease start hour";
-
-    /// <summary>
-    /// The title and the aria-label of the start time-picker's increase-minute button.
-    /// </summary>
-    [Parameter] public string StartTimeIncreaseMinuteTitle { get; set; } = "Increase start minute";
-
-    /// <summary>
-    /// The title and the aria-label of the start time-picker's decrease-minute button.
-    /// </summary>
-    [Parameter] public string StartTimeDecreaseMinuteTitle { get; set; } = "Decrease start minute";
-
-    /// <summary>
-    /// The title and the aria-label of the end time-picker's increase-hour button.
-    /// </summary>
-    [Parameter] public string EndTimeIncreaseHourTitle { get; set; } = "Increase end hour";
-
-    /// <summary>
-    /// The title and the aria-label of the end time-picker's decrease-hour button.
-    /// </summary>
-    [Parameter] public string EndTimeDecreaseHourTitle { get; set; } = "Decrease end hour";
-
-    /// <summary>
-    /// The title and the aria-label of the end time-picker's increase-minute button.
-    /// </summary>
-    [Parameter] public string EndTimeIncreaseMinuteTitle { get; set; } = "Increase end minute";
-
-    /// <summary>
-    /// The title and the aria-label of the end time-picker's decrease-minute button.
-    /// </summary>
-    [Parameter] public string EndTimeDecreaseMinuteTitle { get; set; } = "Decrease end minute";
-
-    /// <summary>
-    /// The aria-label of the start time-picker's hour input.
-    /// </summary>
-    [Parameter] public string StartTimeHourInputAriaLabel { get; set; } = "Start hour";
-
-    /// <summary>
-    /// The aria-label of the start time-picker's minute input.
-    /// </summary>
-    [Parameter] public string StartTimeMinuteInputAriaLabel { get; set; } = "Start minute";
-
-    /// <summary>
-    /// The aria-label of the end time-picker's hour input.
-    /// </summary>
-    [Parameter] public string EndTimeHourInputAriaLabel { get; set; } = "End hour";
-
-    /// <summary>
-    /// The aria-label of the end time-picker's minute input.
-    /// </summary>
-    [Parameter] public string EndTimeMinuteInputAriaLabel { get; set; } = "End minute";
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public BitDateRangePickerValue? StartingValue { get; set; }
 
     /// <summary>
     /// The icon to display inside the start time-picker's decrease-hour button.
@@ -1045,6 +1122,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string? StartTimeDecreaseHourIconName { get; set; }
 
     /// <summary>
+    /// The title and the aria-label of the start time-picker's decrease-hour button.
+    /// </summary>
+    [Parameter] public string StartTimeDecreaseHourTitle { get; set; } = "Decrease start hour";
+
+    /// <summary>
     /// The icon to display inside the start time-picker's decrease-minute button.
     /// Takes precedence over <see cref="StartTimeDecreaseMinuteIconName"/> when both are set.
     /// </summary>
@@ -1054,6 +1136,16 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// The name of the start time-picker's decrease-minute button icon from the built-in Fluent UI icon set.
     /// </summary>
     [Parameter] public string? StartTimeDecreaseMinuteIconName { get; set; }
+
+    /// <summary>
+    /// The title and the aria-label of the start time-picker's decrease-minute button.
+    /// </summary>
+    [Parameter] public string StartTimeDecreaseMinuteTitle { get; set; } = "Decrease start minute";
+
+    /// <summary>
+    /// The aria-label of the start time-picker's hour input.
+    /// </summary>
+    [Parameter] public string StartTimeHourInputAriaLabel { get; set; } = "Start hour";
 
     /// <summary>
     /// The icon to display inside the start time-picker's increase-hour button.
@@ -1067,6 +1159,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string? StartTimeIncreaseHourIconName { get; set; }
 
     /// <summary>
+    /// The title and the aria-label of the start time-picker's increase-hour button.
+    /// </summary>
+    [Parameter] public string StartTimeIncreaseHourTitle { get; set; } = "Increase start hour";
+
+    /// <summary>
     /// The icon to display inside the start time-picker's increase-minute button.
     /// Takes precedence over <see cref="StartTimeIncreaseMinuteIconName"/> when both are set.
     /// </summary>
@@ -1078,101 +1175,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string? StartTimeIncreaseMinuteIconName { get; set; }
 
     /// <summary>
-    /// The icon to display inside the end time-picker's decrease-hour button.
-    /// Takes precedence over <see cref="EndTimeDecreaseHourIconName"/> when both are set.
+    /// The title and the aria-label of the start time-picker's increase-minute button.
     /// </summary>
-    [Parameter] public BitIconInfo? EndTimeDecreaseHourIcon { get; set; }
+    [Parameter] public string StartTimeIncreaseMinuteTitle { get; set; } = "Increase start minute";
 
     /// <summary>
-    /// The name of the end time-picker's decrease-hour button icon from the built-in Fluent UI icon set.
+    /// The aria-label of the start time-picker's minute input.
     /// </summary>
-    [Parameter] public string? EndTimeDecreaseHourIconName { get; set; }
-
-    /// <summary>
-    /// The icon to display inside the end time-picker's decrease-minute button.
-    /// Takes precedence over <see cref="EndTimeDecreaseMinuteIconName"/> when both are set.
-    /// </summary>
-    [Parameter] public BitIconInfo? EndTimeDecreaseMinuteIcon { get; set; }
-
-    /// <summary>
-    /// The name of the end time-picker's decrease-minute button icon from the built-in Fluent UI icon set.
-    /// </summary>
-    [Parameter] public string? EndTimeDecreaseMinuteIconName { get; set; }
-
-    /// <summary>
-    /// The icon to display inside the end time-picker's increase-hour button.
-    /// Takes precedence over <see cref="EndTimeIncreaseHourIconName"/> when both are set.
-    /// </summary>
-    [Parameter] public BitIconInfo? EndTimeIncreaseHourIcon { get; set; }
-
-    /// <summary>
-    /// The name of the end time-picker's increase-hour button icon from the built-in Fluent UI icon set.
-    /// </summary>
-    [Parameter] public string? EndTimeIncreaseHourIconName { get; set; }
-
-    /// <summary>
-    /// The icon to display inside the end time-picker's increase-minute button.
-    /// Takes precedence over <see cref="EndTimeIncreaseMinuteIconName"/> when both are set.
-    /// </summary>
-    [Parameter] public BitIconInfo? EndTimeIncreaseMinuteIcon { get; set; }
-
-    /// <summary>
-    /// The name of the end time-picker's increase-minute button icon from the built-in Fluent UI icon set.
-    /// </summary>
-    [Parameter] public string? EndTimeIncreaseMinuteIconName { get; set; }
-
-    /// <summary>
-    /// The step, in hours, the spin buttons of the time picker move the hour by.
-    /// </summary>
-    /// <remarks>
-    /// A step greater than 1 lays a grid over the day that every hour the buttons produce sits on, starting at
-    /// midnight, so a picker that only accepts times on a three-hour grid can say so. A time entered as text is
-    /// not held to it. Values below 1 are treated as 1.
-    /// </remarks>
-    [Parameter] public int HourStep { get; set; } = 1;
-
-    /// <summary>
-    /// The longest span the selected range is allowed to cover, in days and times alike.
-    /// </summary>
-    /// <remarks>
-    /// The day grid is bounded by it in whole days, equally far either side of the picked start date, and
-    /// the time picker refuses a time that would push the span past it - so a MaxRange shorter than a day
-    /// leaves the day the range started on as the only one it can end on, with the hours inside that day
-    /// the time picker's to enforce.
-    /// </remarks>
-    [Parameter] public TimeSpan? MaxRange { get; set; }
-
-    /// <summary>
-    /// The minimum number of days that the selected range must span in the DateRangePicker.
-    /// Only the days part of the provided TimeSpan is considered.
-    /// </summary>
-    [Parameter] public TimeSpan? MinRange { get; set; }
-
-    /// <summary>
-    /// Whether the clear button should be shown or not when the DateRangePicker has a value.
-    /// </summary>
-    [Parameter] public bool ShowClearButton { get; set; }
-
-    /// <summary>
-    /// Show the time picker as an overlay on top of the date range picker when visible.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public bool ShowTimePickerAsOverlay { get; set; }
-
-    /// <summary>
-    /// Whether the DateRangePicker is rendered standalone or with the input component and callout.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    [CallOnSet(nameof(OnSetParameters))]
-    public bool Standalone { get; set; }
-
-    /// <summary>
-    /// Specifies the date and time of the date and time picker when it is opened without any selected value.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public BitDateRangePickerValue? StartingValue { get; set; }
+    [Parameter] public string StartTimeMinuteInputAriaLabel { get; set; } = "Start minute";
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitDateRangePicker component.
@@ -1238,16 +1248,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// The title of the year range picker's toggle (tooltip).
     /// </summary>
     [Parameter] public string YearRangePickerToggleTitle { get; set; } = "{0} - {1}, change month";
-
-    /// <summary>
-    /// The step, in minutes, the spin buttons of the time picker move the minute by.
-    /// </summary>
-    /// <remarks>
-    /// A step greater than 1 lays a grid over the hour that every minute the buttons produce sits on, starting
-    /// at the top of the hour, which is what turns it into a five-minute or quarter-hour picker. A time entered
-    /// as text is not held to it. Values below 1 are treated as 1.
-    /// </remarks>
-    [Parameter] public int MinuteStep { get; set; } = 1;
 
 
 
@@ -1924,7 +1924,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = IsMonthPickerVisible && notEnoughWidthAvailable;
+            _showMonthPickerAsOverlayInternal = ShowMonthPicker && notEnoughWidthAvailable;
         }
 
         if (_showMonthPickerAsOverlayInternal)
@@ -1944,7 +1944,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (_showMonthPickerAsOverlayInternal is false &&
             _showTimePickerAsOverlayInternal is false &&
-            ShowTimePicker && IsMonthPickerVisible)
+            ShowTimePicker && ShowMonthPicker)
         {
             _showMonthPickerAsOverlayInternal = true;
         }
@@ -2174,7 +2174,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
             if (_showMonthPickerAsOverlayInternal is false &&
                 _showTimePickerAsOverlayInternal is false &&
-                ShowTimePicker && IsMonthPickerVisible)
+                ShowTimePicker && ShowMonthPicker)
             {
                 _showMonthPickerAsOverlayInternal = true;
             }
@@ -3250,7 +3250,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     // BitCalendar.GetMonthTitleId.
     private string? GetMonthTitleId(int monthIndex)
     {
-        if (monthIndex == 0 && IsMonthPickerVisible && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false))) return null;
+        if (monthIndex == 0 && ShowMonthPicker && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false))) return null;
 
         return FormattableString.Invariant($"{_dateRangePickerId}-title-{monthIndex}");
     }
@@ -3454,11 +3454,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             _focusedDate = GetFocusableDay();
             _focusAfterRender = true;
         }
-        else if (ShowMonthPicker() && _showMonthPicker)
+        else if (MonthPickerIsVisible() && _showMonthPicker)
         {
             FocusMonthCell(GetFocusableMonth());
         }
-        else if (ShowMonthPicker())
+        else if (MonthPickerIsVisible())
         {
             FocusYearCell(GetFocusableYear());
         }
@@ -4174,7 +4174,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private bool ShowDayPicker()
     {
-        if (IsMonthPickerVisible is false)
+        if (ShowMonthPicker is false)
         {
             return _showTimePickerAsOverlayInternal is false || _isTimePickerOverlayOnTop is false;
         }
@@ -4204,9 +4204,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
     }
 
-    private bool ShowMonthPicker()
+    private bool MonthPickerIsVisible()
     {
-        if (IsMonthPickerVisible is false) return false;
+        if (ShowMonthPicker is false) return false;
 
         if (ShowTimePicker)
         {
@@ -4417,7 +4417,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _hoveredDate = null;
         _showMonthPicker = true;
         _isMonthPickerOverlayOnTop = false;
-        _showMonthPickerAsOverlayInternal = IsMonthPickerVisible && ShowMonthPickerAsOverlay;
+        _showMonthPickerAsOverlayInternal = ShowMonthPicker && ShowMonthPickerAsOverlay;
         _isTimePickerOverlayOnTop = false;
         _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
     }

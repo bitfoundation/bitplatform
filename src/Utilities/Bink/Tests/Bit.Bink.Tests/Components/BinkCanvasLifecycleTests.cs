@@ -115,6 +115,17 @@ public class BinkCanvasLifecycleTests : BunitContext
     }
 
     [TestMethod]
+    public void The_accessible_description_counts_the_one_element_it_leaves_out_in_the_singular()
+    {
+        // The description lists 25 elements; a 26th is the one left out.
+        var document = new BinkDocument();
+        for (int i = 0; i < 26; i++) document.AddElement(new BinkStroke(Points(i), new BinkPenBrush()));
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p.Add(c => c.Document, document));
+        Assert.Contains("Drawing with 26 elements on 1 layer.", canvas.Markup, StringComparison.Ordinal);
+        Assert.Contains("1 more element not listed.", canvas.Markup, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public async Task Exporting_while_the_document_is_being_edited_does_not_throw()
     {
         IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>();

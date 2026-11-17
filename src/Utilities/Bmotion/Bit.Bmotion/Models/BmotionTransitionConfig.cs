@@ -232,11 +232,12 @@ internal sealed class BmotionTransitionConfig
             case BmotionTransitionType.Spring:
                 if (VisualDuration is { } visual && double.IsFinite(visual)) return Math.Max(visual, 0);
                 // Settling time of a damped oscillator: the envelope decays as e^(-ζω₀t), and
-                // 4/(ζω₀) is where that has fallen to ~2% - the usual "settled" threshold. Both
-                // factors are guarded because a caller can configure a zero/negative spring.
-                double mass = Mass > 0 ? Mass : 1;
-                double omega0 = Math.Sqrt(Math.Max(Stiffness, 1e-6) / mass);
-                double zeta = Damping / (2 * Math.Sqrt(Math.Max(Stiffness, 1e-6) * mass));
+                // 4/(ζω₀) is where that has fallen to ~2% - the usual "settled" threshold. Estimated for
+                // the spring the driver runs (ResolveSpring): one that could never settle runs with the
+                // defaults, and scheduling waits for that one, not for the one configured.
+                var (stiffness, damping, mass, _) = ResolveSpring();
+                double omega0 = Math.Sqrt(stiffness / mass);
+                double zeta = damping / (2 * Math.Sqrt(stiffness * mass));
                 // An overdamped spring creeps in on its slow mode, which decays at ω₀(ζ - √(ζ²-1)) - far slower than
                 // ζω₀ (written as ω₀/(ζ + √(ζ²-1)), which keeps its precision for a large ζ).
                 double decay = zeta > 1 ? omega0 / (zeta + Math.Sqrt((zeta * zeta) - 1)) : zeta * omega0;
@@ -379,6 +380,30 @@ internal sealed class BmotionTransitionConfig
 
     public static BmotionTransitionConfig Inertia(double velocity = 0, double timeConstant = 700)
         => new() { Type = BmotionTransitionType.Inertia, InertiaVelocity = velocity, TimeConstant = timeConstant };
+
+    // Bm.Spring's defaults: what a stiffness or damping that could never settle falls back to.
+    internal const double DefaultSpringStiffness = 100;
+    internal const double DefaultSpringDamping = 10;
+
+    /// <summary>
+    /// The spring this configuration runs as: the mass (one &lt;= 0 falls back to 1), and the stiffness and damping -
+    /// derived from <see cref="Bounce"/> and <see cref="VisualDuration"/> (or <see cref="Duration"/>) when a bounce is
+    /// set. A stiffness &lt;= 0 or a negative damping could never settle (nothing pulls towards the target, or the
+    /// oscillation grows without bound) and falls back to the default; <c>Settles</c> is false then. The one rule the
+    /// spring driver and every estimate of how long a spring plays follow.
+    /// </summary>
+    internal (double Stiffness, double Damping, double Mass, bool Settles) ResolveSpring()
+    {
+        double mass = Mass > 0 ? Mass : 1.0;
+        double k = Stiffness;
+        double d = Damping;
+        if (Bounce is { } bounce) (k, d) = SpringFromBounce(VisualDuration ?? Duration, bounce, mass);
+        bool settles = k > 0 && d >= 0;
+        // A stiffness that falls back takes the default damping with it when the one given is zero: the default
+        // stiffness with no damping would oscillate forever. Zero damping beside a valid stiffness is kept.
+        double damping = d < 0 || (k <= 0 && d == 0) ? DefaultSpringDamping : d;
+        return (k > 0 ? k : DefaultSpringStiffness, damping, mass, settles);
+    }
 
     /// <summary>
     /// Derives <c>(stiffness, damping)</c> from Framer-Motion-compatible <paramref name="bounce"/>

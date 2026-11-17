@@ -61,6 +61,11 @@ component, so what the user reviews is what ships.
 
 ## 2. Build the page
 
+A new page whose data is settled, so its DTOs and its controller's shared interface (`IAppController`) can be
+written, is built in the app from the start: in Client.Core against that interface, and shown here the way section 3
+shows a page the app already has, through a stand-in of the controller. Then the approved design is the page that
+ships, and section 8 has nothing to rebuild. What follows is for a page whose data is still open:
+
 - One folder per page under `src/Workbench/Components/Pages/`: the page, its parts, and a `Data` folder with its own
   models and an in-memory service. The data looks real, varies and comes out the same on every run. The page never calls
   the app's API, its database or its pages, and adds nothing to Client.Core; it uses what the app offers that works
@@ -238,6 +243,9 @@ component, so what the user reviews is what ships.
 
 ## 8. Bring it into the app
 
+A page built in the app from the start (section 2) is already there: build its server side, and its stand-in stays
+as its host here. The rest of this section is for a page of the Workbench's own.
+
 - **Important:** the approval covers how the page looks and behaves, its UI, styles and design, and its text with every
   translation, not its code. Workbench pages are written for the Workbench: they don't inherit `AppPageBase` or
   `AppComponentBase`, they keep their state in bit Blex stores the app may not have, and their data comes from sample
@@ -255,10 +263,10 @@ component, so what the user reviews is what ships.
 ## 9. Show a long task's progress
 
 - A task that takes many steps or needs the user along the way, like a first deployment, a feature through ai-dlc, a
-  port or a rebrand, gets a task of its own on the Progress page (`/progress`), whichever skill runs it, so the user
-  follows it there instead of digging through the chat. Each chat keeps its own, and several run side by side. Run the
+  port or a rebrand, gets one task on the Progress page (`/progress`), however many skills it goes through, so the
+  user follows it there instead of digging through the chat. Each chat keeps its own, and several run side by side. Run the
   Workbench in dev mode first (section 1), and open the task's page in the user's own browser once.
-- Start it with `POST /api/progress` (`title`, `summary`, `steps`, `agent`, `language`), which returns its `id` and its page. From
+- Start it with `POST /api/progress` (`title`, `summary`, `steps`, `agent`), which returns its `id` and its page. From
   then on send only what changed with `PATCH /api/progress/<id>`: a step, note or question with an id the task already
   has changes, a new id adds one, `remove` takes one away, `log` adds a line to its activity, marked with `logKind`
   (`info`, `warning`, `decision`, `success` or `error`) when it is news of that kind, `report` replaces the task's
@@ -271,9 +279,7 @@ component, so what the user reviews is what ships.
   pull request, a dashboard.
 - Details, notes, log lines and the report are Markdown, so a run, an issue or a commit is a link or `code` there rather
   than a bare address; the report also takes headings and tables. Titles, step texts and the summary are plain text.
-- Write the task in the user's language and give it as `language`, like `fa` or `en`: the page then reads it that way,
-  right to left for Persian or Arabic however many English terms it holds, and a text with no letter of that script,
-  like a command, left to right. Digits show as you write them, so keep Latin ones in versions, numbers and code.
+- Write the task in the user's language.
 - Ask on the page rather than in the chat whenever the answer is a choice or a few words: `asks`, each with `id`,
   `question`, `kind` (`text`, `choice`, `choices`, `confirm` or `secret`), `options` for a choice and an optional `detail` and
   `placeholder`. The page plays a sound and counts it in the tab's title, so the user notices it from another window. The

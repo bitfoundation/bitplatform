@@ -360,6 +360,7 @@ interface DecodeOptions {
     sourceWidth?: number;
     sourceHeight?: number;
     maxPixels?: number;
+    /** Whether .NET wants the image upright. The browser decodes it upright either way; see decodeToBitmap. */
     autoOrient?: boolean;
     /**
      * .NET let the image through only because it is decoded smaller: decoded whole, it would be far past the pixel
@@ -372,8 +373,11 @@ interface DecodeOptions {
 async function decodeToBitmap(blob: Blob, options?: DecodeOptions): Promise<ImageBitmap | HTMLImageElement> {
     if (typeof createImageBitmap === 'function') {
         try {
-            // imageOrientation 'from-image' makes the browser honour EXIF orientation for us.
-            const init: ImageBitmapOptions = { imageOrientation: options?.autoOrient === false ? 'none' : 'from-image' };
+            // Always upright: 'from-image' is the only orientation every browser honours. 'none' is not one (Chromium
+            // takes it and orients the image all the same, and the specification has dropped it), and neither the bare
+            // retry nor an <img> below can leave EXIF orientation unapplied. An image asked for as stored
+            // (autoOrient false) is turned back by .NET, which knows the orientation from the file's metadata.
+            const init: ImageBitmapOptions = { imageOrientation: 'from-image' };
             const hint = resizeHint(options);
             if (hint) {
                 Object.assign(init, hint);
@@ -678,6 +682,13 @@ export async function readClipboardImage(maxBytes?: number) {
 let pasteListenerId = 0;
 const pasteListeners = new Map<number, (e: ClipboardEvent) => Promise<void>>();
 
+// Pasted images waiting for .NET to take them, by paste. Over a Blazor Server circuit an argument of a call into .NET
+// is one message, which the circuit refuses past 32 KB by default: a pasted screenshot would end the circuit. So the
+// call carries the paste's number only, and .NET streams the bytes out through takePasted, as it does every other
+// image it reads from the page.
+let pastedId = 0;
+const pasted = new Map<number, ByteResult>();
+
 /**
  * Forwards images pasted anywhere in the document to .NET. A paste event carries its data, so unlike
  * navigator.clipboard.read this needs no permission. Pastes without an image are left for the page to handle.
@@ -694,12 +705,25 @@ export function listenForPaste(dotNetRef: DotNetObject, maxBytes: number) {
             await dotNetRef.invokeMethodAsync('OnPasteRejected', file.size);
             return;
         }
-        const bytes = new Uint8Array(await blobToArrayBuffer(file));
-        await dotNetRef.invokeMethodAsync('OnPaste', bytes, file.type || null);
+        const id = ++pastedId;
+        pasted.set(id, new ByteResult(new Uint8Array(await blobToArrayBuffer(file)), { mimeType: file.type || null }));
+        try {
+            await dotNetRef.invokeMethodAsync('OnPaste', id);
+        } finally {
+            // Taken already, unless the call failed on its way.
+            pasted.delete(id);
+        }
     };
     document.addEventListener('paste', handler);
     pasteListeners.set(id, handler);
     return id;
+}
+
+/** Hands .NET the image of a paste listenForPaste told it about, once; null when it was taken or the page let it go. */
+export function takePasted(id: number): ByteResult | null {
+    const result = pasted.get(id) ?? null;
+    pasted.delete(id);
+    return result;
 }
 
 export function stopListeningForPaste(id: number) {

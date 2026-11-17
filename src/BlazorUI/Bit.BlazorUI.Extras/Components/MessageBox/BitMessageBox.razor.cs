@@ -43,12 +43,6 @@ public partial class BitMessageBox : BitComponentBase
 
 
     /// <summary>
-    /// Enables the loading state of the action button that was pressed for as long as its callback runs,
-    /// which is what keeps a slow answer from being handed in twice.
-    /// </summary>
-    [Parameter] public bool AutoLoading { get; set; }
-
-    /// <summary>
     /// Moves the focus onto the default action button once the message box is rendered.
     /// </summary>
     /// <remarks>
@@ -65,6 +59,12 @@ public partial class BitMessageBox : BitComponentBase
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
+    /// Enables the loading state of the action button that was pressed for as long as its callback runs,
+    /// which is what keeps a slow answer from being handed in twice.
+    /// </summary>
+    [Parameter] public bool AutoLoading { get; set; }
+
+    /// <summary>
     /// The body of the message box.
     /// </summary>
     /// <remarks>
@@ -79,11 +79,6 @@ public partial class BitMessageBox : BitComponentBase
     [Parameter] public RenderFragment? BodyTemplate { get; set; }
 
     /// <summary>
-    /// The set of buttons the message box renders in its footer.
-    /// </summary>
-    [Parameter] public BitMessageBoxButtons Buttons { get; set; }
-
-    /// <summary>
     /// The color of the action buttons of the message box.
     /// </summary>
     /// <remarks>
@@ -94,6 +89,11 @@ public partial class BitMessageBox : BitComponentBase
     /// without a Color; a value set here wins over them.
     /// </remarks>
     [Parameter] public BitColor? ButtonColor { get; set; }
+
+    /// <summary>
+    /// The set of buttons the message box renders in its footer.
+    /// </summary>
+    [Parameter] public BitMessageBoxButtons Buttons { get; set; }
 
     /// <summary>
     /// The text of the Cancel button.

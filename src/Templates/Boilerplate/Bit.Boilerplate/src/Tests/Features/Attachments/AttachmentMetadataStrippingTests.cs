@@ -41,7 +41,7 @@ public class AttachmentMetadataStrippingTests
         }
         finally
         {
-            await DeleteProfilePicture(httpClient);
+            await DeleteProfileImage(httpClient);
         }
     }
 
@@ -74,7 +74,7 @@ public class AttachmentMetadataStrippingTests
         }
         finally
         {
-            await DeleteProfilePicture(httpClient);
+            await DeleteProfileImage(httpClient);
         }
     }
 
@@ -103,7 +103,7 @@ public class AttachmentMetadataStrippingTests
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
         form.Add(fileContent, "file", "picture.jpg"); // The endpoint binds an IFormFile parameter named "file".
 
-        using var response = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfilePicture", form, TestContext.CancellationToken);
+        using var response = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfileImage", form, TestContext.CancellationToken);
         response.EnsureSuccessStatusCode();
     }
 
@@ -112,11 +112,11 @@ public class AttachmentMetadataStrippingTests
         return await httpClient.GetByteArrayAsync($"api/v1/Attachment/GetAttachment/{userId}/{kind}", TestContext.CancellationToken);
     }
 
-    private async Task DeleteProfilePicture(HttpClient httpClient)
+    private async Task DeleteProfileImage(HttpClient httpClient)
     {
         try
         {
-            using var _ = await httpClient.DeleteAsync("api/v1/Attachment/DeleteUserProfilePicture", CancellationToken.None);
+            using var _ = await httpClient.DeleteAsync("api/v1/Attachment/DeleteUserProfileImage", CancellationToken.None);
         }
         catch (Exception) { }
     }

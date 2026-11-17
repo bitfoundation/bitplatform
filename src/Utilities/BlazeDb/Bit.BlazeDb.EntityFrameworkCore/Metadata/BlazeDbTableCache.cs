@@ -35,9 +35,10 @@ internal sealed class BlazeDbTableCache : IBlazeDbTableCache, IDisposable
         {
             // The engine is looked up again once any store has been released: another context's
             // EnsureDeleted disposes the engine this one cached, and queries against a disposed
-            // engine fail in ways that say nothing about why. A changed version costs a dictionary
-            // lookup; an unchanged one costs a compare.
-            if (_database is not null && _version == _cache.Version)
+            // engine fail in ways that say nothing about why. So is one the application disposed
+            // itself, which changes no version: the engine cache counts it as closed and opens the
+            // store again. A changed version costs a dictionary lookup; an unchanged one costs a compare.
+            if (_database is { IsDisposed: false } && _version == _cache.Version)
             {
                 return _database;
             }

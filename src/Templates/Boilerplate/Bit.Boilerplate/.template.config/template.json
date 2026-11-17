@@ -950,6 +950,7 @@
                         "src/Tests/Features/Culture/ResxParityTests.cs",
                         "src/Tests/Features/Culture/SupportedCultureContractTests.cs",
                         "src/Tests/Features/TemplateConfig/BitComponentParameterTests.cs",
+                        "src/Tests/Features/TemplateConfig/BitComponentAttributeTests.cs",
                         "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
                         "src/Tests/Features/Categories/AddOrEditCategoryModalTests.cs",
                         "src/Tests/Features/Ads/AdsServiceTests.cs",
@@ -1006,10 +1007,13 @@
                         "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
                         "src/Tests/Features/Diagnostics/DeploymentConfigurationTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckRulesTests.cs",
+                        "src/Tests/Features/Diagnostics/SentryHealthCheckTests.cs",
+                        "src/Tests/Features/Diagnostics/TelemetryHealthChecksTests.cs",
+                        "src/Tests/Features/Diagnostics/AppInsightsHealthCheckTests.cs",
                         "src/Tests/Features/Diagnostics/DiagnosticTestMessagesTests.cs",
                         "src/Tests/Features/Identity/ExternalSignInHealthChecksTests.cs",
                         "src/Tests/Features/Identity/GoogleRecaptchaHealthCheckTests.cs",
-                        "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
+                        "src/Tests/Features/Attachments/UserProfileImageWebPTests.cs",
                         "src/Tests/Features/Attachments/ImageEditorUITests.cs",
                         "src/Tests/Features/WellKnown/AppleAppSiteAssociationTests.cs",
                         "src/Tests/Features/Theme/ThemeTogglePersistenceUITests.cs",
@@ -1172,6 +1176,20 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Services/CloudflarePurgeResponse.cs",
                         "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/CloudflareHealthCheck.cs"
+                    ]
+                },
+                {
+                    "condition": "(sentry != true)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/SentryHealthCheck.cs",
+                        "src/Tests/Features/Diagnostics/SentryHealthCheckTests.cs"
+                    ]
+                },
+                {
+                    "condition": "(appInsights != true)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/AppInsightsHealthCheck.cs",
+                        "src/Tests/Features/Diagnostics/AppInsightsHealthCheckTests.cs"
                     ]
                 },
                 {

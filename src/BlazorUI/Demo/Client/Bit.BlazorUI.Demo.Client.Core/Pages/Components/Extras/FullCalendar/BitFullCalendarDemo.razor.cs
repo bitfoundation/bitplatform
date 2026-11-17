@@ -272,19 +272,19 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
-            Name = "ResourceTemplate",
-            Type = "RenderFragment<BitFullCalendarResource>?",
+            Name = "Resources",
+            Type = "IReadOnlyList<BitFullCalendarResource>?",
             DefaultValue = "null",
-            Description = "Replaces the title and subtitle in the header cell of a timeline resource row.",
+            Description = "Resources displayed as rows in Timeline mode. Each event's Resource property is matched against the resource Id. The Timeline mode tab is hidden when null or empty.",
             LinkType = LinkType.Link,
             Href = "#resource-class",
         },
         new()
         {
-            Name = "Resources",
-            Type = "IReadOnlyList<BitFullCalendarResource>?",
+            Name = "ResourceTemplate",
+            Type = "RenderFragment<BitFullCalendarResource>?",
             DefaultValue = "null",
-            Description = "Resources displayed as rows in Timeline mode. Each event's Resource property is matched against the resource Id. The Timeline mode tab is hidden when null or empty.",
+            Description = "Replaces the title and subtitle in the header cell of a timeline resource row.",
             LinkType = LinkType.Link,
             Href = "#resource-class",
         },
@@ -317,19 +317,19 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
-            Name = "TimeProvider",
-            Type = "TimeProvider?",
-            DefaultValue = "null",
-            Description = "The clock \"now\" and \"today\" are read from: the today marker, the current-time line, the Today button and the opening date. Defaults to TimeProvider.System, which on Blazor Server is the server's clock - pass one whose LocalTimeZone is the user's, or a fixed one for tests.",
-        },
-        new()
-        {
             Name = "TimelineEventTemplate",
             Type = "RenderFragment<BitFullCalendarEvent>?",
             DefaultValue = "null",
             Description = "Replaces the default event card content inside Timeline mode blocks.",
             LinkType = LinkType.Link,
             Href = "#event-class",
+        },
+        new()
+        {
+            Name = "TimeProvider",
+            Type = "TimeProvider?",
+            DefaultValue = "null",
+            Description = "The clock \"now\" and \"today\" are read from: the today marker, the current-time line, the Today button and the opening date. Defaults to TimeProvider.System, which on Blazor Server is the server's clock - pass one whose LocalTimeZone is the user's, or a fixed one for tests.",
         },
         new()
         {

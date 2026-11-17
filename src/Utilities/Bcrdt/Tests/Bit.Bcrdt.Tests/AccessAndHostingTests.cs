@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using LoopbackHost = Bit.Bcrdt.Tests.SyncRegressionTests.LoopbackHost;
 
@@ -709,6 +710,192 @@ public class AccessAndHostingTests
     }
 
     [TestMethod]
+    public async Task With_a_host_departures_of_clients_nobody_holds_are_not_relayed()
+    {
+        await using var documentHost = new BcrdtDocumentHost();
+        await using LoopbackHost host = await HostedWebSocketAsync(documentHost);
+
+        using ClientWebSocket mallory = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/flood");
+        using ClientWebSocket observer = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/flood");
+
+        // A hundred thousand made-up identifiers announced as gone: relayed, each peer would keep a record of every one.
+        using var forger = new BcrdtAwarenessStore(1);
+        byte[] flood = forger.EncodeUpdate([.. Enumerable.Range(0, 100_000).Select(i => (ulong)(1_000_000 + i))]);
+        await mallory.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(flood), WebSocketMessageType.Binary, true, CancellationToken.None);
+        Assert.IsNull(await RawSocket.ReceiveAsync(observer, QuietPeriod), "the flood must not be relayed");
+
+        // Presence itself still flows.
+        using var presence = new BcrdtAwarenessStore(42);
+        byte[]? update = null;
+        presence.Updated += published => update = published;
+        presence.SetLocalField("name", "Ada");
+        await mallory.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(update!), WebSocketMessageType.Binary, true, CancellationToken.None);
+        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, (await RawSocket.ReceiveAsync(observer, Patience))?.Kind);
+    }
+
+    [TestMethod]
+    public async Task With_a_host_a_departure_of_a_client_nobody_holds_does_not_hold_back_the_others_in_its_message()
+    {
+        await using var documentHost = new BcrdtDocumentHost();
+        await using LoopbackHost host = await HostedWebSocketAsync(documentHost);
+
+        using ClientWebSocket owner = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/timeouts");
+        using ClientWebSocket peer = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/timeouts");
+        using ClientWebSocket observer = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/timeouts");
+
+        using var presence = new BcrdtAwarenessStore(42);
+        byte[]? update = null;
+        presence.Updated += published => update = published;
+        presence.SetLocalField("name", "Ada");
+        await owner.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(update!), WebSocketMessageType.Binary, true, CancellationToken.None);
+        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, (await RawSocket.ReceiveAsync(observer, Patience))?.Kind);
+        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, (await RawSocket.ReceiveAsync(peer, Patience))?.Kind);
+
+        // The peer times out two clients at once: one somebody here holds, and one whose connection already left.
+        byte[] timeouts = BcrdtAwarenessStore.EncodeRemovals([(42UL, 0L), (43UL, 0L)]);
+        await peer.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(timeouts), WebSocketMessageType.Binary, true, CancellationToken.None);
+
+        BcrdtSyncMessage? heard = await RawSocket.ReceiveAsync(observer, Patience);
+        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, heard?.Kind, "the departure of the held client must still go out");
+        CollectionAssert.AreEqual(
+            new[] { (42UL, 0L, false) },
+            BcrdtAwarenessStore.ReadEntries(heard!.Value.Payload).ToArray(),
+            "with the other one left out");
+        Assert.IsNull(await RawSocket.ReceiveAsync(peer, QuietPeriod), "and nothing goes back to the sender");
+        Assert.IsNull(await RawSocket.ReceiveAsync(observer, QuietPeriod), "nor anything twice");
+    }
+
+    [TestMethod]
+    public async Task With_a_host_a_client_published_and_withdrawn_in_one_message_reaches_the_others_withdrawn()
+    {
+        await using var documentHost = new BcrdtDocumentHost();
+        await using LoopbackHost host = await HostedWebSocketAsync(documentHost);
+
+        using ClientWebSocket owner = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/batched");
+        using ClientWebSocket observer = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/batched");
+
+        // Published at clock 1 and withdrawn at clock 2, both in one message: nobody held the client before it arrived.
+        using var presence = new BcrdtAwarenessStore(42);
+        List<byte[]> updates = [];
+        presence.Updated += updates.Add;
+        presence.SetLocalField("name", "Ada");
+        presence.SetLocalState(null);
+        byte[] batched = [2, .. updates[0].AsSpan(1), .. updates[1].AsSpan(1)];
+        CollectionAssert.AreEqual(new[] { (42UL, 1L, true), (42UL, 2L, false) }, BcrdtAwarenessStore.ReadEntries(batched).ToArray());
+
+        await owner.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(batched), WebSocketMessageType.Binary, true, CancellationToken.None);
+
+        BcrdtSyncMessage? heard = await RawSocket.ReceiveAsync(observer, Patience);
+        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, heard?.Kind);
+        CollectionAssert.AreEqual(
+            new[] { (42UL, 1L, true), (42UL, 2L, false) },
+            BcrdtAwarenessStore.ReadEntries(heard!.Value.Payload).ToArray(),
+            "the withdrawal is the sender's own, and must not be left out as the departure of a client nobody holds");
+
+        using var observed = new BcrdtAwarenessStore(99);
+        observed.ApplyUpdate(heard.Value.Payload);
+        Assert.IsNull(observed.GetField(42, "name"), "the client ends up withdrawn");
+    }
+
+    [TestMethod]
+    public void A_policed_awareness_update_declaring_too_many_entries_is_refused_before_they_are_read()
+    {
+        List<(ulong, long)> clients = [.. Enumerable.Range(1, BcrdtAwarenessStore.MaxPolicedEntries).Select(i => ((ulong)i, 0L))];
+        Assert.HasCount(BcrdtAwarenessStore.MaxPolicedEntries, BcrdtAwarenessStore.ReadEntries(BcrdtAwarenessStore.EncodeRemovals(clients)));
+
+        clients.Add(((ulong)clients.Count + 1, 0L));
+        Assert.ThrowsExactly<BcrdtFormatException>(() => BcrdtAwarenessStore.ReadEntries(BcrdtAwarenessStore.EncodeRemovals(clients)));
+    }
+
+    [TestMethod]
+    public async Task The_websocket_keep_alive_hears_a_client_while_the_host_is_busy_with_its_message()
+    {
+        // Generous enough for a loaded CI runner to answer every ping in time, and still a fraction of how long the
+        // host stays busy, so a server that stopped reading meanwhile is given up on several times over.
+        TimeSpan keepAliveTimeout = TimeSpan.FromSeconds(1);
+        TimeSpan busy = 3 * keepAliveTimeout;
+        await using var documentHost = new BcrdtDocumentHost(new BcrdtDocumentHostOptions
+        {
+            ValidateUpdate = async _ =>
+            {
+                await Task.Delay(busy);
+                return true;
+            },
+        });
+        await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket(
+            "/ws/{documentId}",
+            options: new BcrdtWebSocketEndpointOptions
+            {
+                DocumentHost = documentHost,
+                KeepAliveInterval = TimeSpan.FromMilliseconds(200),
+                KeepAliveTimeout = keepAliveTimeout,
+            }));
+
+        using ClientWebSocket client = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/busy");
+
+        // A client answers a ping only while it reads, so it starts reading at once: a ping that arrived before it
+        // sent its message would otherwise go unanswered, and the client be given up through no fault of the server.
+        Assert.IsNull(await RawSocket.ReceiveAsync(client, TimeSpan.Zero));
+
+        using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+        byte[]? change = null;
+        doc.Updated += args => change = args.Update;
+        doc.GetText("body").Insert(0, "slow to validate");
+        await client.SendAsync(BcrdtSyncProtocol.EncodeUpdate(change!), WebSocketMessageType.Binary, true, CancellationToken.None);
+
+        // The client keeps reading, and so answers every ping, for several times the keep-alive timeout while the
+        // host validates; a server that stopped reading meanwhile would never hear the answers and give it up.
+        Assert.IsNull(await RawSocket.ReceiveAsync(client, busy + TimeSpan.FromSeconds(1)));
+        Assert.AreEqual(WebSocketState.Open, client.State, "the server must not have given the client up");
+
+        using var empty = new BcrdtDocument();
+        await client.SendAsync(BcrdtSyncExchange.CreateAnnouncement(empty), WebSocketMessageType.Binary, true, CancellationToken.None);
+        Assert.IsNotNull(await RawSocket.ReceiveAsync(client, Patience), "and still answers it");
+        Assert.AreEqual("slow to validate", await documentHost.ReadAsync("busy", d => d.GetText("body").ToString()));
+    }
+
+    [TestMethod]
+    public async Task Nobody_else_takes_over_the_presence_of_a_tab_that_withdrew_it_and_stayed_connected()
+    {
+        await using var documentHost = new BcrdtDocumentHost(new BcrdtDocumentHostOptions { PresenceTakeoverAfter = TimeSpan.FromMilliseconds(200) });
+        await using LoopbackHost host = await HostedWebSocketAsync(documentHost);
+
+        using ClientWebSocket owner = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/hidden");
+        using ClientWebSocket mallory = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/hidden");
+        using ClientWebSocket observer = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/hidden");
+
+        using var presence = new BcrdtAwarenessStore(42);
+        byte[]? update = null;
+        presence.Updated += published => update = published;
+        presence.SetLocalField("name", "Ada");
+        await owner.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(update!), WebSocketMessageType.Binary, true, CancellationToken.None);
+        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, (await RawSocket.ReceiveAsync(observer, Patience))?.Kind);
+
+        // The tab is hidden: it withdraws its entry and stays connected, quiet, for longer than the takeover period.
+        presence.SetLocalState(null);
+        await owner.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(update!), WebSocketMessageType.Binary, true, CancellationToken.None);
+        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, (await RawSocket.ReceiveAsync(observer, Patience))?.Kind);
+        await Task.Delay(400);
+
+        // Another member of the room, who knows the identity from the presence traffic, publishes under it.
+        using var forger = new BcrdtAwarenessStore(42);
+        byte[]? forged = null;
+        forger.Updated += published => forged = published;
+        for (int i = 0; i < 5; i++) forger.SetLocalField("name", "Mallory");
+        await mallory.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(forged!), WebSocketMessageType.Binary, true, CancellationToken.None);
+        Assert.IsNull(await RawSocket.ReceiveAsync(observer, QuietPeriod), "the identity of a connected, hidden tab is not up for grabs");
+
+        // The tab is shown again, and is heard.
+        presence.SetLocalField("name", "Ada");
+        await owner.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(update!), WebSocketMessageType.Binary, true, CancellationToken.None);
+        BcrdtSyncMessage? heard = await RawSocket.ReceiveAsync(observer, Patience);
+        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, heard?.Kind, "the owner's presence must not be dropped as a forgery");
+        var observed = new BcrdtAwarenessStore(99);
+        observed.ApplyUpdate(heard!.Value.Payload);
+        Assert.AreEqual("Ada", observed.GetField(42, "name"));
+    }
+
+    [TestMethod]
     public async Task One_host_behind_both_relays_carries_changes_between_their_clients()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -741,6 +928,203 @@ public class AccessAndHostingTests
 
         socketDoc.GetText("body").Insert(14, "From WebSocket.");
         await AssertEventuallyAsync(() => signalRDoc.GetText("body").ToString() == "from SignalR. From WebSocket.", "and the SignalR client the other way");
+    }
+
+    [TestMethod]
+    [DataRow("team/notes")]
+    [DataRow("50%2F off/q?x#y")]
+    public async Task A_document_identifier_holding_a_slash_is_one_document_on_both_relays(string documentId)
+    {
+        // The WebSocket client escapes a "/" as %2F, which the server leaves escaped in a path: the relay saw
+        // "team%2Fnotes" where the hub, the host and the application saw "team/notes". An identifier holding the
+        // text %2F itself must stay that text.
+        List<string> authorized = [];
+        await using LoopbackHost host = await LoopbackHost.StartAsync(
+            app =>
+            {
+                app.MapHub<BcrdtHub>("/hub");
+                app.MapBitBcrdtWebSocket(
+                    "/ws/{documentId}",
+                    (_, id) =>
+                    {
+                        lock (authorized) authorized.Add(id);
+                        return ValueTask.FromResult(true);
+                    },
+                    new BcrdtWebSocketEndpointOptions { DocumentHost = app.Services.GetRequiredService<BcrdtDocumentHost>() });
+            },
+            builder =>
+            {
+                builder.Services.AddBitBcrdtHub();
+                builder.Services.AddBitBcrdtDocumentHost();
+            });
+
+        using var socketDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+        using var signalRDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
+        await using IBcrdtTransport socket = new BcrdtWebSocketTransportFactory(host.WebSocketBase + "/ws/{documentId}").Create(documentId);
+        await using var signalR = new BcrdtSignalRTransport(host.BaseUrl + "/hub", documentId);
+        await using BcrdtSyncProvider overSocket = await ProviderAsync(socketDoc, socket);
+        await using BcrdtSyncProvider overSignalR = await ProviderAsync(signalRDoc, signalR);
+        await overSocket.ConnectAsync();
+        await overSignalR.ConnectAsync();
+        await AssertEventuallyAsync(() => overSocket.IsSynced && overSignalR.IsSynced, "both connected");
+
+        socketDoc.GetText("body").Insert(0, "over the socket");
+        await AssertEventuallyAsync(() => signalRDoc.GetText("body").ToString() == "over the socket", "the hub's client should see it");
+
+        lock (authorized) CollectionAssert.AreEqual(new[] { documentId }, authorized);
+        BcrdtDocumentHost documentHost = host.App.Services.GetRequiredService<BcrdtDocumentHost>();
+        CollectionAssert.AreEqual(new[] { documentId }, documentHost.LoadedDocuments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task A_document_identifier_holding_a_slash_is_read_from_its_own_segment_not_one_that_decodes_alike()
+    {
+        // The tenant segment decodes to the same text as the identifier's ("team%2Fnotes"), but stands for the text
+        // itself; the identifier is the segment the route captured, and holds a slash.
+        List<string> authorized = [];
+        await using var documentHost = new BcrdtDocumentHost();
+        await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket(
+            "/{tenant}/ws/{documentId}",
+            (_, id) =>
+            {
+                lock (authorized) authorized.Add(id);
+                return ValueTask.FromResult(true);
+            },
+            new BcrdtWebSocketEndpointOptions { DocumentHost = documentHost }));
+
+        using ClientWebSocket socket = await RawSocket.ConnectAsync(host.WebSocketBase + "/team%252Fnotes/ws/team%2Fnotes");
+
+        lock (authorized) CollectionAssert.AreEqual(new[] { "team/notes" }, authorized);
+        CollectionAssert.AreEqual(new[] { "team/notes" }, documentHost.LoadedDocuments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task A_hub_connection_may_join_only_so_many_documents_with_identifiers_only_so_long()
+    {
+        await using LoopbackHost host = await LoopbackHost.StartAsync(
+            app => app.MapHub<BcrdtHub>("/hub"),
+            builder =>
+            {
+                builder.Services.AddSingleton(new BcrdtHubOptions { MaxDocumentsPerConnection = 3, MaxDocumentIdLength = 10 });
+                builder.Services.AddBitBcrdtHub();
+                builder.Services.AddBitBcrdtDocumentHost();
+            });
+        BcrdtDocumentHost documentHost = host.App.Services.GetRequiredService<BcrdtDocumentHost>();
+
+        async Task<(HubConnection Connection, ConcurrentQueue<BcrdtDocumentAccess> Grants, TaskCompletionSource Closed)> ConnectAsync()
+        {
+            HubConnection connection = new HubConnectionBuilder().WithUrl(host.BaseUrl + "/hub").Build();
+            ConcurrentQueue<BcrdtDocumentAccess> grants = [];
+            TaskCompletionSource closed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            connection.On<byte[]>(BcrdtHub.ReceiveMethod, message =>
+            {
+                BcrdtSyncMessage decoded = BcrdtSyncProtocol.Decode(message);
+                if (decoded.Kind == BcrdtSyncMessageKind.Auth) grants.Enqueue(BcrdtSyncProtocol.DecodeAuthAccess(decoded.Payload).Access);
+            });
+            connection.Closed += _ =>
+            {
+                closed.TrySetResult();
+                return Task.CompletedTask;
+            };
+            await connection.StartAsync();
+            return (connection, grants, closed);
+        }
+
+        // Three documents, and the same one again, are admitted; a fourth is refused and ends the connection - sent rather
+        // than invoked, since the invocation never completes on a connection the hub aborts.
+        var (many, manyGrants, manyClosed) = await ConnectAsync();
+        await using (many)
+        {
+            foreach (string id in new[] { "a", "b", "c", "c" }) await many.InvokeAsync(BcrdtSignalRTransport.JoinMethod, id);
+            CollectionAssert.AreEqual(Enumerable.Repeat(BcrdtDocumentAccess.ReadWrite, 3).ToArray(), manyGrants.ToArray());
+
+            await many.SendAsync(BcrdtSignalRTransport.JoinMethod, "d");
+            await manyClosed.Task.WaitAsync(Patience);
+            Assert.AreEqual(BcrdtDocumentAccess.None, manyGrants.Last());
+        }
+
+        // An identifier past the limit is refused before the host loads anything.
+        var (longId, longGrants, longClosed) = await ConnectAsync();
+        await using (longId)
+        {
+            await longId.SendAsync(BcrdtSignalRTransport.JoinMethod, new string('x', 11));
+            await longClosed.Task.WaitAsync(Patience);
+            CollectionAssert.AreEqual(new[] { BcrdtDocumentAccess.None }, longGrants.ToArray());
+        }
+
+        CollectionAssert.DoesNotContain(documentHost.LoadedDocuments.ToArray(), "d");
+        CollectionAssert.DoesNotContain(documentHost.LoadedDocuments.ToArray(), new string('x', 11));
+    }
+
+    [TestMethod]
+    public async Task Joins_running_side_by_side_cannot_slip_past_the_limit_together()
+    {
+        await using LoopbackHost host = await LoopbackHost.StartAsync(
+            app => app.MapHub<SlowToAuthorizeHub>("/hub"),
+            builder =>
+            {
+                builder.Services.AddSingleton(new BcrdtHubOptions { MaxDocumentsPerConnection = 3 });
+                builder.Services.AddBitBcrdtHub<SlowToAuthorizeHub>()
+                    .AddHubOptions<SlowToAuthorizeHub>(options => options.MaximumParallelInvocationsPerClient = 20);
+                builder.Services.AddBitBcrdtDocumentHost();
+            });
+        BcrdtDocumentHost documentHost = host.App.Services.GetRequiredService<BcrdtDocumentHost>();
+
+        HubConnection connection = new HubConnectionBuilder().WithUrl(host.BaseUrl + "/hub").Build();
+        TaskCompletionSource closed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        connection.Closed += _ =>
+        {
+            closed.TrySetResult();
+            return Task.CompletedTask;
+        };
+
+        await using (connection)
+        {
+            await connection.StartAsync();
+
+            // All sent before any is authorized: each saw no document joined yet, and the limit counted only those.
+            // The server may close the connection before the last are sent; what was sent by then is the test.
+            foreach (int i in Enumerable.Range(0, 20))
+            {
+                try
+                {
+                    await connection.SendAsync(BcrdtSignalRTransport.JoinMethod, $"doc-{i}");
+                }
+                catch (InvalidOperationException)
+                {
+                    break;
+                }
+            }
+
+            await closed.Task.WaitAsync(Patience);
+        }
+
+        await Task.Delay(SlowToAuthorizeHub.Delay * 2);
+        Assert.IsTrue(documentHost.LoadedDocuments.Count <= 3, $"{documentHost.LoadedDocuments.Count} documents loaded for one connection");
+    }
+
+    [TestMethod]
+    public async Task The_websocket_relay_refuses_an_identifier_past_its_limit_before_anything_else()
+    {
+        int authorized = 0;
+        await using var documentHost = new BcrdtDocumentHost();
+        await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket(
+            "/ws/{documentId}",
+            (_, _) =>
+            {
+                Interlocked.Increment(ref authorized);
+                return ValueTask.FromResult(true);
+            },
+            new BcrdtWebSocketEndpointOptions { DocumentHost = documentHost, MaxDocumentIdLength = 10 }));
+
+        using var raw = new ClientWebSocket();
+        await raw.ConnectAsync(new Uri(host.WebSocketBase + "/ws/" + new string('x', 11)), CancellationToken.None);
+        BcrdtSyncMessage? refusal = await RawSocket.ReceiveAsync(raw, Patience);
+        Assert.AreEqual(BcrdtSyncMessageKind.Auth, refusal?.Kind);
+        Assert.AreEqual(BcrdtDocumentAccess.None, BcrdtSyncProtocol.DecodeAuthAccess(refusal!.Value.Payload).Access);
+
+        Assert.AreEqual(0, authorized, "the callback is not consulted");
+        Assert.AreEqual(0, documentHost.LoadedDocuments.Count, "nor anything loaded");
     }
 
     [TestMethod]
@@ -987,6 +1371,18 @@ public class AccessAndHostingTests
         }
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+}
+
+/// <summary>A hub whose authorization takes a while, so joins of one connection overlap.</summary>
+public sealed class SlowToAuthorizeHub : BcrdtHub
+{
+    public static readonly TimeSpan Delay = TimeSpan.FromMilliseconds(300);
+
+    protected override async ValueTask<bool> AuthorizeAsync(string documentId)
+    {
+        await Task.Delay(Delay);
+        return true;
     }
 }
 

@@ -68,14 +68,14 @@ public partial class BitActionButton : BitComponentBase
     [Parameter] public bool AutoLoading { get; set; }
 
     /// <summary>
-    /// The type of the button element; defaults to <c>submit</c> inside an <see cref="EditForm"/> otherwise <c>button</c>.
-    /// </summary>
-    [Parameter] public BitButtonType? ButtonType { get; set; }
-
-    /// <summary>
     /// Alias for <see cref="ChildContent"/>, the custom body of the action button (text and/or any render fragment).
     /// </summary>
     [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
+    /// The type of the button element; defaults to <c>submit</c> inside an <see cref="EditForm"/> otherwise <c>button</c>.
+    /// </summary>
+    [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
     /// The custom body of the action button (text and/or any render fragment).

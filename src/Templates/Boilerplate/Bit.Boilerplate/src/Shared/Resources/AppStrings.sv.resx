@@ -1606,8 +1606,8 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Är du säker på att du vill återkalla alla sessioner för {0}? Auktoriserade applikationer behålls.</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort denna användare från SuperAdmin-användargruppen.</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>Du kan inte ta bort denna användare från användargruppen för globala administratörer.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Superadmin-behörigheter kan inte ändras.</value>
@@ -1618,11 +1618,11 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>Du kan inte ta bort din egen användare</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort denna SuperAdmin-användare</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>Du kan inte ta bort denna globala administratör</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>Du kan inte återkalla sessionerna för den här SuperAdmin-användaren</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>Du kan inte återkalla sessionerna för den här globala administratören</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Du kan inte ta bort din nuvarande session</value>
@@ -2191,6 +2191,42 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Vad den här enheten och servern rapporterar om appen, för felsökning.</value>
+  </data>
+    <data name="Lock" xml:space="preserve">
+    <value>Lås</value>
+  </data>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>Lås det här kontot</value>
+  </data>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>För att låsa det här kontot första gången behövs en PIN-kod. Du anger den för att komma tillbaka till kontot på den här enheten, och den lämnar aldrig enheten.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>Ny PIN-kod</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>Ange PIN-koden igen</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>PIN-koderna stämmer inte överens. Försök igen.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>Ange PIN-koden</value>
+  </data>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>Fel PIN-kod. Försök kvar: {0}.</value>
+  </data>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>För många felaktiga PIN-koder, så kontot sparas inte längre på den här enheten. Logga in igen för att använda det.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>Logga in igen för att ta bort PIN-koden</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>Använd bokstäver</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>Använd siffror</value>
   </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">

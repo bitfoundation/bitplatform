@@ -42,7 +42,7 @@ private bool isOpenBasic;";
            OkText=""Got it"" />
 
 <BitDialog @bind-IsOpen=""isOpenGated""
-           IsOkButtonEnabled=""agreed""
+           OkButtonDisabled=""agreed is false""
            Title=""Before you continue""
            OkText=""Accept"">
     <div class=""dialog-body"">
@@ -335,7 +335,7 @@ private void HandleDismissing(BitDialogDismissArgs args)
     </div>
 </BitDialog>
 
-<BitDialog IsAlert
+<BitDialog Alert
            AutoFocusButton=""BitDialogButton.Cancel""
            @bind-IsOpen=""isOpenFocusCancel""
            ShowCloseButton=""false""
@@ -477,18 +477,18 @@ private bool isOpenAbsolute;";
     }
 </style>
 
-<BitToggle Label=""IsDraggable"" @bind-Value=""isDraggable"" />
+<BitToggle Label=""Draggable"" @bind-Value=""isDraggable"" />
 <div class=""btn-container"">
     <BitButton OnClick=""@(() => isOpenDraggable = true)"">Header handle</BitButton>
     <BitButton OnClick=""@(() => isOpenDragHandle = true)"">DragElementSelector</BitButton>
 </div>
 
-<BitDialog IsDraggable=""isDraggable""
+<BitDialog Draggable=""isDraggable""
            @bind-IsOpen=""isOpenDraggable""
            Title=""Draggable dialog""
            Message=""Drag it by its header while the toggle is on."" />
 
-<BitDialog IsDraggable
+<BitDialog Draggable
            DragElementSelector="".dialog-title""
            @bind-IsOpen=""isOpenDragHandle""
            TitleAriaId=""dialog-drag-title""

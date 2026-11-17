@@ -14,7 +14,7 @@ namespace Bit.Bdnd.Demo.Server.Services;
 /// </summary>
 public static class BdndSearchIndex
 {
-    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight, bool SharesAnswer = false, string? Name = null)
+    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight, bool SharesAnswer = false, string? Name = null, string[]? Aliases = null)
     {
         /// <summary>
         /// The title split into words, camel-case humps included, so "IsOverShallow" is found by
@@ -25,10 +25,26 @@ public static class BdndSearchIndex
         /// counts whole, so "BdndDropTarget" finds the type it names. The words every title carries
         /// ("Bdnd" in each type, "drag" and "drop" in half of them) are left out as single words - a
         /// title word that every title has picks out nothing. <see cref="Name"/>, when given, is what
-        /// the words are read from instead of the title.
+        /// the words are read from instead of the title, and <see cref="Aliases"/> are title words as
+        /// they are, never joined to a neighbour.
         /// </summary>
-        public string[] TitleWords { get; } = TitleWordsOf(Name ?? Title);
+        public string[] TitleWords { get; } = [.. TitleWordsOf(Name ?? Title).Concat(Aliases ?? []).Distinct(StringComparer.OrdinalIgnoreCase)];
+
+        /// <summary>
+        /// Every form the <see cref="TitleWords"/> stem to, worked out once when the index is built
+        /// rather than for every title word of every entry on every query.
+        /// </summary>
+        private readonly HashSet<string> _titleForms = [.. TitleWordsOf(Name ?? Title).Concat(Aliases ?? []).SelectMany(StemForms)];
+
+        /// <summary>Whether the term is one of the words this entry is named by, in whatever form.</summary>
+        public bool IsNamedBy(Term term) => term.Forms.Any(_titleForms.Contains);
     }
+
+    /// <summary>
+    /// A query word with its stems worked out once: <see cref="Stem"/> is what prose is counted by,
+    /// <see cref="Forms"/> every stem it is the same word as (see <see cref="StemForms"/>).
+    /// </summary>
+    private sealed record Term(string Stem, string[] Forms);
 
     private const int MaxTerms = 16;
 
@@ -89,19 +105,51 @@ public static class BdndSearchIndex
 
     private static readonly HashSet<string> _metaSections = new(StringComparer.OrdinalIgnoreCase) { "Documentation", "MCP server" };
 
+    /// <summary>
+    /// What a person calls a thing Bdnd names otherwise - the words other libraries and other
+    /// questions use for it. Each is a title word of the guide section that explains the thing, so
+    /// "grip" finds the section on drag handles and "reorder a list" the one on sortable lists, rather
+    /// than whatever prose happens to say them; and the same table is what a search that found nothing
+    /// lists as the words to try instead.
+    /// </summary>
+    private static readonly Synonym[] _synonyms =
+    [
+        new(["drag source", "useDrag"], "Draggables", "a BdndDraggable"),
+        new(["drop zone", "dropzone", "useDrop"], "Drop targets", "a BdndDropTarget"),
+        new(["ghost", "drag preview"], "Custom drag layers", "a BdndDragLayer"),
+        new(["grip"], "Drag handles", "a BdndDragHandle"),
+        new(["reorder", "rearrange"], "Sortable lists", "a sortable list"),
+        new(["files from the desktop"], "Files", "BdndNativeTypes")
+    ];
+
+    /// <param name="Words">What the thing is called elsewhere: a word, a phrase or an identifier.</param>
+    /// <param name="SectionKey">The key of the guide section that explains it.</param>
+    /// <param name="Means">What it is in Bdnd, as the no-hit message names it.</param>
+    private sealed record Synonym(string[] Words, string SectionKey, string Means);
+
+    /// <summary>
+    /// Words whose -ing or -ed is part of the word rather than an ending, and which the rules of
+    /// <see cref="Stem(string, out string?)"/> would otherwise cut down into the start of unrelated words.
+    /// </summary>
+    private static readonly HashSet<string> _unsuffixed = new(StringComparer.Ordinal)
+    {
+        "during", "embed", "nothing", "something", "anything", "everything"
+    };
+
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
     {
         "how", "the", "and", "for", "with", "from", "that", "this", "what", "when", "where", "which",
         "does", "did", "are", "was", "you", "your", "than", "then", "its", "but", "any", "some",
         "please", "help", "about", "into", "way", "make", "want", "need", "would", "should", "could",
-        "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto"
+        "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto",
+        "them", "they", "their", "these", "those"
     };
 
     public static BdndSearchResultDto Search(string? query, int limit)
     {
-        var terms = Tokenize(query);
+        var words = Tokenize(query);
 
-        if (terms.Length == 0)
+        if (words.Length == 0)
         {
             // Nothing was left to search by, which is a different failure from "searched and found
             // nothing" - and the fix is on the caller's side, so it has to be said rather than
@@ -115,6 +163,8 @@ public static class BdndSearchIndex
                           "'drag layer' - rather than for a sentence."
             };
         }
+
+        Term[] terms = [.. words.Select(word => new Term(Stem(word), StemForms(word)))];
 
         var ranked = _entries.Value
             .Select(entry => (Entry: entry, Score: Score(entry, terms)))
@@ -137,7 +187,7 @@ public static class BdndSearchIndex
             Title = hit.Entry.Title,
             Context = hit.Entry.Context,
             Tool = hit.Entry.Tool,
-            Snippet = Snippet(hit.Entry.Body, terms)
+            Snippet = Snippet(hit.Entry.Body, words)
         }).ToArray();
 
         if (hits.Length > 0)
@@ -155,21 +205,19 @@ public static class BdndSearchIndex
         // A search that found nothing is where an agent is most likely to conclude the library has
         // no such feature and hand-roll one. Whatever came closest is named instead, so the next
         // call is a better query rather than a worse decision.
-        var nearby = Suggest(terms);
+        var nearby = Suggest(words);
 
         return new BdndSearchResultDto
         {
-            Terms = terms,
+            Terms = words,
             Hits = [],
             Message = nearby.Length > 0
-                ? $"Nothing matched {string.Join(" + ", terms)}. The closest names are listed in didYouMean - " +
+                ? $"Nothing matched {string.Join(" + ", words)}. The closest names are listed in didYouMean - " +
                    "search for one of those, or for a single word out of this query."
-                : $"Nothing matched {string.Join(" + ", terms)}. Try one word rather than several, or call " +
+                : $"Nothing matched {string.Join(" + ", words)}. Try one word rather than several, or call " +
                    "GetBdndGuideSection or GetBdndApi with no argument at all for the index of what " +
-                   "there is. A concept Bdnd does not name is often the same idea under another word - " +
-                   "a 'drag source' is a BdndDraggable, a 'drop zone' or 'dropzone' is a BdndDropTarget, a 'ghost' or " +
-                   "'drag preview' is a BdndDragLayer, a 'grip' is a BdndDragHandle, 'reorder' is a sortable list, " +
-                   "'useDrag' and 'useDrop' are BdndDraggable and BdndDropTarget, and 'files from the desktop' are BdndNativeTypes.",
+                   "there is. A concept Bdnd does not name is often the same idea under another word: " +
+                   string.Join(", ", _synonyms.Select(synonym => $"{string.Join(" or ", synonym.Words.Select(word => $"'{word}'"))} is {synonym.Means}")) + ".",
             DidYouMean = nearby.Length > 0 ? nearby : null
         };
     }
@@ -180,9 +228,11 @@ public static class BdndSearchIndex
     /// a drag handle - and the one with more material behind it would otherwise fill every place,
     /// leaving the caller to conclude the other has no answer. So for each word that is the name of
     /// some entry yet names none of the top hits, the best entry it does name takes the place of the
-    /// lowest-ranked hit that is not itself there for that reason. The order stays the ranking's.
+    /// lowest-ranked hit that can be spared: one not itself there for that reason, and not the only
+    /// top hit some query word names - a hit that alone keeps one word in view is not traded for
+    /// another, so a single place keeps the best answer. The order stays the ranking's.
     /// </summary>
-    private static (Entry Entry, int Score)[] Cover((Entry Entry, int Score)[] ranked, string[] terms, int take)
+    private static (Entry Entry, int Score)[] Cover((Entry Entry, int Score)[] ranked, Term[] terms, int take)
     {
         var top = ranked.Take(take).ToList();
         if (top.Count < take || terms.Length < 2) return [.. top];
@@ -191,12 +241,13 @@ public static class BdndSearchIndex
 
         foreach (var term in terms)
         {
-            if (top.Any(hit => hit.Entry.TitleWords.Any(word => Equivalent(word, term)))) continue;
+            if (top.Any(hit => hit.Entry.IsNamedBy(term))) continue;
 
-            var best = ranked.Skip(take).FirstOrDefault(hit => hit.Entry.TitleWords.Any(word => Equivalent(word, term)));
+            var best = ranked.Skip(take).FirstOrDefault(hit => hit.Entry.IsNamedBy(term));
             if (best.Entry is null) continue;
 
-            var replace = top.FindLastIndex(hit => kept.Contains(hit.Entry) is false);
+            var replace = top.FindLastIndex(hit => kept.Contains(hit.Entry) is false
+                                                   && terms.Where(hit.Entry.IsNamedBy).All(named => top.Any(other => other.Entry != hit.Entry && other.Entry.IsNamedBy(named))));
             if (replace < 0) break;
 
             top[replace] = best;
@@ -225,7 +276,7 @@ public static class BdndSearchIndex
             .Take(MaxSuggestions)];
     }
 
-    private static int Score(Entry entry, string[] terms)
+    private static int Score(Entry entry, Term[] terms)
     {
         var score = 0;
         var matched = 0;
@@ -233,11 +284,11 @@ public static class BdndSearchIndex
 
         foreach (var term in terms)
         {
-            var isTitleWord = entry.TitleWords.Any(word => Equivalent(word, term));
+            var isTitleWord = entry.IsNamedBy(term);
 
             // Text is counted by the singular, which a plural query word would otherwise never find
             // inside: "targets" has to count the "Target" of BdndDropTarget, and "files" every "file".
-            var stem = Stem(term);
+            var stem = term.Stem;
             var inTitle = isTitleWord ? 0 : Count(entry.Title, stem);
             var inBoosted = Math.Min(Count(entry.Boosted, stem), MaxBoostedCount);
             var inBody = Count(entry.Body, stem);
@@ -261,30 +312,68 @@ public static class BdndSearchIndex
     }
 
     /// <summary>
-    /// Same word, whatever form it is in - "sort" has to find the section called "Sortable lists",
+    /// Every stem a word is the same word as - "sort" has to find the section called "Sortable lists",
     /// "handle" the one about handles, and nobody phrases a question in the number or tense the
-    /// heading happens to use.
+    /// heading happens to use. Two words are the same when they share one of these.
+    /// <para>
+    /// Besides the stem itself that is the root a doubled consonant came from: "cancelling" is
+    /// "cancel" as well as "cancell", and "diffed" "diff" as well as "dif". Only the inflected word is
+    /// ever cut down to it, so "diff" stays "diff", and both spellings of "cancelled" find "cancel".
+    /// A root that is an ambient word is left out - "dragging" as "drag" would be named by every title
+    /// that says "drags", and so pick out none of them.
+    /// </para>
     /// </summary>
-    private static bool Equivalent(string word, string term)
+    private static string[] StemForms(string word)
     {
-        return string.Equals(word, term, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(Stem(word), Stem(term), StringComparison.OrdinalIgnoreCase);
+        var stem = Stem(word, out var undoubled);
+
+        return undoubled is null || _ambientWords.Contains(undoubled) ? [stem] : [stem, undoubled];
+    }
+
+    private static string Stem(string word) => Stem(word, out _);
+
+    /// <summary>Whether the word is an ambient word with an ending that doubled its consonant: "dragging", "dropped".</summary>
+    private static bool InflectsAmbientWord(string word)
+    {
+        Stem(word, out var undoubled);
+
+        return undoubled is not null && _ambientWords.Contains(undoubled);
     }
 
     /// <summary>
     /// A word without its plural, its -ing or -ed, and a final silent e: "handles", "handling" and
-    /// "handled" are all "handl", "nesting" and "nested" both "nest". Only ever cut where at least three
-    /// letters remain, so "css" or "used" keep the letters that make them a word. Prose is counted by
-    /// the stem too, which as a substring also finds every longer form of it.
+    /// "handled" are all "handl", "nesting" and "nested" both "nest". Only ever cut where at least
+    /// three letters remain, so "css" or "used" keep the letters that make them a word, and never where
+    /// what is left could not be a word of its own: "string" has no vowel without its "ing", and
+    /// "speed" is not "spe" with an "ed". Prose is counted by the stem too, which as a substring also
+    /// finds every longer form of it - and that is why a consonant the ending doubled stays doubled
+    /// here: "dragg" counts dragging, dragged and draggable, while "drag" would count every word of the
+    /// library. The root without it is handed back in <paramref name="undoubled"/>.
     /// </summary>
-    private static string Stem(string word)
+    private static string Stem(string word, out string? undoubled)
     {
+        undoubled = null;
         var stem = word.ToLowerInvariant();
 
         if (stem.Length > 4 && stem.EndsWith('s') && stem.EndsWith("ss", StringComparison.Ordinal) is false) stem = stem[..^1];
-        if (stem.Length > 5 && stem.EndsWith("ing", StringComparison.Ordinal)) stem = stem[..^3];
-        else if (stem.Length > 4 && stem.EndsWith("ed", StringComparison.Ordinal)) stem = stem[..^2];
+
+        if (_unsuffixed.Contains(stem)) return stem;
+
+        var suffixCut = false;
+        if (stem.Length > 5 && stem.EndsWith("ing", StringComparison.Ordinal) && stem.AsSpan(0, stem.Length - 3).IndexOfAny("aeiouy") >= 0)
+        {
+            stem = stem[..^3];
+            suffixCut = true;
+        }
+        else if (stem.Length > 4 && stem.EndsWith("ed", StringComparison.Ordinal) && stem[^3] != 'e')
+        {
+            stem = stem[..^2];
+            suffixCut = true;
+        }
+
         if (stem.Length > 3 && stem.EndsWith('e')) stem = stem[..^1];
+
+        if (suffixCut && stem.Length > 3 && stem[^1] == stem[^2] && "aeiouy".Contains(stem[^1]) is false) undoubled = stem[..^1];
 
         return stem;
     }
@@ -369,6 +458,8 @@ public static class BdndSearchIndex
         var identifiers = title.Split(title.Where(c => char.IsLetterOrDigit(c) is false).Distinct().ToArray(), StringSplitOptions.RemoveEmptyEntries)
                                .Where(identifier => SplitWords(identifier).Length > 2);
 
+        // Ambient by the word itself, not by its stem: "Dropping" and "Native drags" are the one word
+        // that picks those sections out, although "drop" and "drags" are no use in a query.
         return [.. words.Where(word => _ambientWords.Contains(word) is false).Concat(pairs).Concat(identifiers).Distinct(StringComparer.OrdinalIgnoreCase)];
     }
 
@@ -406,8 +497,16 @@ public static class BdndSearchIndex
     {
         if (string.IsNullOrWhiteSpace(query)) return [];
 
-        string[] terms = [.. query.Split(['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'],
-                              StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        var tokens = query.Split(['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'],
+                                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        // "By dragging" and "by dropping" say how a thing is done, and in this library everything is
+        // done that way: "reorder items by dragging them" asks how to reorder. Anywhere else the same
+        // word is the one that picks a section out - "dragging several items", "handle dropping".
+        var manner = tokens.Where((token, index) => index > 0 && string.Equals(tokens[index - 1], "by", StringComparison.OrdinalIgnoreCase) && InflectsAmbientWord(token))
+                           .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        string[] terms = [.. tokens
             // One- and two-letter words ("a", "in", "do") match everything and rank nothing - and
             // the words a question is phrased with do worse than nothing: "how do I drop files FROM
             // the desktop" would otherwise score a section whose heading merely contains "from".
@@ -417,7 +516,7 @@ public static class BdndSearchIndex
             // is phrased in more words than this, while a pasted file as a query would scan for hours.
             .Take(MaxTerms)];
 
-        return DropAmbientWords(terms);
+        return DropAmbientWords(terms, manner);
     }
 
     /// <summary>A type's name as people write it in prose and in a tool call: "BdndDraggable", not "BdndDraggable&lt;TItem&gt;".</summary>
@@ -448,7 +547,8 @@ public static class BdndSearchIndex
             // rather than lose it to every member that happens to carry both words in its name.
             entries.Add(new Entry("Guide section", section.Heading, section.Parent,
                 $"GetBdndGuideSection(heading: \"{section.Key}\")", body, string.Empty, GuideWeight,
-                Name: section.Parent is null ? null : $"{section.Parent} {section.Heading}"));
+                Name: section.Parent is null ? null : $"{section.Parent} {section.Heading}",
+                Aliases: AliasesOf(section.Key)));
         }
 
         foreach (var type in BdndApiCatalog.Types)
@@ -514,13 +614,35 @@ public static class BdndSearchIndex
     }
 
     /// <summary>
-    /// The query without the words that are true of everything here - unless that is all it said,
-    /// in which case they are all it can be searched by.
+    /// The title words <see cref="_synonyms"/> give a guide section: each word of a synonym that would
+    /// be a title word of its own, and a two-word synonym also joined, so "dropzone" finds what "drop
+    /// zone" does and "useDrag" stays whole. Never joined across two synonyms or onto the heading,
+    /// where the pair would be no word at all.
     /// </summary>
-    private static string[] DropAmbientWords(string[] terms)
+    private static string[]? AliasesOf(string sectionKey)
     {
-        // By the stem as well, so "drops" is as ambient as "drop".
-        var meaningful = terms.Where(term => _ambientWords.Contains(term) is false && _ambientWords.Contains(Stem(term)) is false).ToArray();
+        string[] aliases = [.. _synonyms.Where(synonym => string.Equals(synonym.SectionKey, sectionKey, StringComparison.OrdinalIgnoreCase))
+                                        .SelectMany(synonym => synonym.Words)
+                                        .Select(SplitWords)
+                                        .SelectMany(words => words
+                                            // A short word ("use" of "useDrag", "the") is part of the phrase, not a name for the thing.
+                                            .Where(word => word.Length > 3 && _ambientWords.Contains(word) is false && _stopWords.Contains(word) is false)
+                                            .Concat(words.Length == 2 ? [string.Concat(words)] : []))
+                                        .Distinct(StringComparer.OrdinalIgnoreCase)];
+
+        return aliases.Length > 0 ? aliases : null;
+    }
+
+    /// <summary>
+    /// The query without the words that are true of everything here - unless that is all it said,
+    /// in which case they are all it can be searched by. By the stem as well, so "drops" is as ambient
+    /// as "drop" - while "dragging" and "dropped", whose stems keep the doubled consonant, are not:
+    /// they are the word that picks out "Dragging several items" and "Dropping" - except in
+    /// <paramref name="manner"/>, where they only say how the rest is done.
+    /// </summary>
+    private static string[] DropAmbientWords(string[] terms, HashSet<string> manner)
+    {
+        var meaningful = terms.Where(term => _ambientWords.Contains(term) is false && _ambientWords.Contains(Stem(term)) is false && manner.Contains(term) is false).ToArray();
 
         return meaningful.Length > 0 ? meaningful : terms;
     }

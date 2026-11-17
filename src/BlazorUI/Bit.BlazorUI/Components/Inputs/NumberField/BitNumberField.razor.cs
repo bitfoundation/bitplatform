@@ -188,6 +188,42 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter, ResetClassBuilder] public BitNumberFieldClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// Accessible label text for the clear button (for screen reader users), useful for localization.
+    /// Unset or blank, the button is named <see cref="BitStrings.ClearValue"/> ("Clear value" by default), whatever a
+    /// <see cref="ClearButtonTemplate"/> shows in it.
+    /// </summary>
+    [Parameter] public string? ClearButtonAriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to display on the clear button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="ClearButtonIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ClearButtonIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: ClearButtonIcon="BitIconInfo.Bi("x-circle-fill")"
+    /// FontAwesome: ClearButtonIcon="BitIconInfo.Fa("solid xmark")"
+    /// Custom CSS: ClearButtonIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? ClearButtonIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon for the clear button from the built-in Fluent UI icons.
+    /// For external icon libraries, use <see cref="ClearButtonIcon"/> instead. Unset, the button shows Cancel.
+    /// </summary>
+    [Parameter] public string? ClearButtonIconName { get; set; }
+
+    /// <summary>
+    /// A custom template rendered inside the clear button in place of its icon. The button itself - its
+    /// accessible name, its click and Escape handling - stays the same, so only what it looks like changes.
+    /// That name is <see cref="ClearButtonAriaLabel"/>, not the template: a template showing words (a visible
+    /// "Reset") needs ClearButtonAriaLabel to contain them, or a voice-control user saying what they see finds no button.
+    /// </summary>
+    [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
+
+    /// <summary>
     /// The delay in milliseconds before the value starts changing continuously while an
     /// increment/decrement button is held down.
     /// </summary>
@@ -327,11 +363,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     public bool HideInput { get; set; }
 
     /// <summary>
-    /// The aria label of the icon for the benefit of screen readers.
-    /// </summary>
-    [Parameter] public string? IconAriaLabel { get; set; }
-
-    /// <summary>
     /// Gets or sets the icon to display alongside the number field using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
@@ -345,6 +376,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
     /// </example>
     [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// The aria label of the icon for the benefit of screen readers.
+    /// </summary>
+    [Parameter] public string? IconAriaLabel { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the icon to display alongside the number field from the built-in Fluent UI icons.
@@ -395,6 +431,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     public BitInputMode? InputMode { get; set; }
 
     /// <summary>
+    /// Makes only the text input part read-only, preventing typing, while the value can still be
+    /// changed using the increment/decrement buttons, the arrow keys and the mouse wheel
+    /// (unlike ReadOnly, which blocks all of them).
+    /// </summary>
+    [Parameter] public bool InputReadOnly { get; set; }
+
+    /// <summary>
     /// Marks the field as invalid without a message of its own, for a rejection that is already explained
     /// elsewhere (a summary at the top of the form, a message beside a group of fields). It paints the field
     /// and renders aria-invalid exactly as a failing validation does, and says nothing more to a screen reader
@@ -410,11 +453,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public bool InvertMouseWheel { get; set; }
 
     /// <summary>
-    /// Makes only the text input part read-only, preventing typing, while the value can still be
-    /// changed using the increment/decrement buttons, the arrow keys and the mouse wheel
-    /// (unlike ReadOnly, which blocks all of them).
+    /// Descriptive label for the number field, rendered next to it (per LabelPlacement) and read by screen readers.
     /// </summary>
-    [Parameter] public bool IsInputReadOnly { get; set; }
+    [Parameter, ResetClassBuilder]
+    public string? Label { get; set; }
 
     /// <summary>
     /// The position of the label in regards to the field (Top by default).
@@ -425,12 +467,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPlacement? LabelPlacement { get; set; }
-
-    /// <summary>
-    /// Descriptive label for the number field, rendered next to it (per LabelPlacement) and read by screen readers.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public string? Label { get; set; }
 
     /// <summary>
     /// Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
@@ -458,20 +494,20 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
-    /// The minimum value of the number field. Values below it get clamped to it, both when typed and when spinning.
-    /// It is a string to support any numeric type of the field; an unparsable value falls back to the type's MinValue.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetMin))]
-    public string? Min { get; set; }
-
-    /// <summary>
     /// The maximum value of the number field. Values above it get clamped to it, both when typed and when spinning.
     /// It is a string to support any numeric type of the field; an unparsable value falls back to the type's MaxValue.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetMax))]
     public string? Max { get; set; }
+
+    /// <summary>
+    /// The minimum value of the number field. Values below it get clamped to it, both when typed and when spinning.
+    /// It is a string to support any numeric type of the field; an unparsable value falls back to the type's MinValue.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetMin))]
+    public string? Min { get; set; }
 
     /// <summary>
     /// Determines how the increment/decrement buttons render: Compact (stacked at the end of the input),
@@ -504,11 +540,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public bool NoMouseWheel { get; set; }
 
     /// <summary>
-    /// Disables the automatic select-all of the input's text when the field receives focus.
-    /// </summary>
-    [Parameter] public bool NoSelectOnFocus { get; set; }
-
-    /// <summary>
     /// Normalizes non-Latin (e.g. Persian "۱۲۳" or Arabic "١٢٣") decimal digits to their Latin (0-9) equivalents before parsing.
     /// This is culture-agnostic and works for any Unicode decimal digit system, including digits in the supplementary planes
     /// (surrogate pairs). The Arabic decimal separator (U+066B) is mapped to '.', and the Arabic thousands separator (U+066C) is stripped.
@@ -516,6 +547,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// non-Latin constraints (e.g. <c>Min="۱۰"</c>) are parsed consistently with user input.
     /// </summary>
     [Parameter] public bool NormalizeDigits { get; set; }
+
+    /// <summary>
+    /// Disables the automatic select-all of the input's text when the field receives focus.
+    /// </summary>
+    [Parameter] public bool NoSelectOnFocus { get; set; }
 
     /// <summary>
     /// The format of the number in the number field, using the standard or custom .NET numeric format strings
@@ -641,42 +677,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Shows the custom prefix for numeric field.
     /// </summary>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
-
-    /// <summary>
-    /// Gets or sets the icon to display on the clear button using custom CSS classes for external icon libraries.
-    /// Takes precedence over <see cref="ClearButtonIconName"/> when both are set.
-    /// </summary>
-    /// <remarks>
-    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
-    /// For built-in Fluent UI icons, use <see cref="ClearButtonIconName"/> instead.
-    /// </remarks>
-    /// <example>
-    /// Bootstrap: ClearButtonIcon="BitIconInfo.Bi("x-circle-fill")"
-    /// FontAwesome: ClearButtonIcon="BitIconInfo.Fa("solid xmark")"
-    /// Custom CSS: ClearButtonIcon="BitIconInfo.Css("my-icon-class")"
-    /// </example>
-    [Parameter] public BitIconInfo? ClearButtonIcon { get; set; }
-
-    /// <summary>
-    /// Gets or sets the name of the icon for the clear button from the built-in Fluent UI icons.
-    /// For external icon libraries, use <see cref="ClearButtonIcon"/> instead. Unset, the button shows Cancel.
-    /// </summary>
-    [Parameter] public string? ClearButtonIconName { get; set; }
-
-    /// <summary>
-    /// A custom template rendered inside the clear button in place of its icon. The button itself - its
-    /// accessible name, its click and Escape handling - stays the same, so only what it looks like changes.
-    /// That name is <see cref="ClearButtonAriaLabel"/>, not the template: a template showing words (a visible
-    /// "Reset") needs ClearButtonAriaLabel to contain them, or a voice-control user saying what they see finds no button.
-    /// </summary>
-    [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
-
-    /// <summary>
-    /// Accessible label text for the clear button (for screen reader users), useful for localization.
-    /// Unset or blank, the button is named <see cref="BitStrings.ClearValue"/> ("Clear value" by default), whatever a
-    /// <see cref="ClearButtonTemplate"/> shows in it.
-    /// </summary>
-    [Parameter] public string? ClearButtonAriaLabel { get; set; }
 
     /// <summary>
     /// Whether to show the clear button whenever the field is showing something,
@@ -1534,7 +1534,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     // The spinbutton role replaces the native role of the input, and with it the readonly attribute's own
     // mapping into the accessibility tree, so the state is written out - the same reasoning that writes out
-    // aria-required. IsInputReadOnly is deliberately not included: it only stops the text being typed into,
+    // aria-required. InputReadOnly is deliberately not included: it only stops the text being typed into,
     // while the arrows and the buttons go on changing the value, so the widget is not read-only at all.
     private string? AriaReadOnly => ReadOnly ? "true" : GetSplattedInputAttribute("aria-readonly");
 

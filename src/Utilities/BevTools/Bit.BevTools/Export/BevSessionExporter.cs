@@ -226,7 +226,7 @@ public static class BevSessionExporter
             .Append(session.Timeline.Count).Append(" timeline events · ")
             .Append(session.Errors.TotalOccurrences).Append(" error occurrences · ")
             .Append(session.Http.Count).Append(" HTTP requests (").Append(session.Http.FailedCount).Append(" failed) · ")
-            .Append(session.Interop.Count).Append(" JS interop calls · ")
+            .Append(session.Interop.CallCount).Append(" JS interop calls · ")
             .Append(session.Logs.Total).Append(" log entries (").Append(session.Logs.CountOf(Microsoft.Extensions.Logging.LogLevel.Warning)).Append(" warnings)").AppendLine();
         sb.AppendLine();
 
@@ -1153,6 +1153,16 @@ public static class BevSessionExporter
                     w.WriteNumber("durationMs", Round(ms));
                 }
 
+                // A record of the hub's folded calls: durationMs is the longest of them.
+                if (c.CallCount > 1)
+                {
+                    w.WriteNumber("callCount", c.CallCount);
+                    if (c.TotalDurationMs is { } total)
+                    {
+                        w.WriteNumber("totalMs", Round(total));
+                    }
+                }
+
                 w.WriteBoolean("succeeded", c.Succeeded);
                 if (c.Error is not null)
                 {
@@ -1462,6 +1472,7 @@ public static class BevSessionExporter
         w.WriteNumber("reconnectCount", b.ReconnectCount);
         w.WriteNumber("jsErrorCount", b.JsErrorCount);
         w.WriteNumber("jsToDotNetCalls", b.JsToDotNetCalls);
+        w.WriteNumber("jsToDotNetUnlisted", b.JsToDotNetUnlisted);
         if (b.JsHeapUsedMb is { } heap)
         {
             w.WriteNumber("jsHeapUsedMb", Round(heap));

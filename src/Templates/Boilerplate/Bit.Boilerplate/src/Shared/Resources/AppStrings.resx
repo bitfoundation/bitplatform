@@ -1606,8 +1606,8 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Are you sure you want to revoke all sessions of {0}? Authorized applications are kept.</value>
   </data>
-    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>You can't remove this user from the SuperAdmin user group.</value>
+    <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>You can't remove this user from the global admin user group.</value>
   </data>
     <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Super admin permissions may not be modified.</value>
@@ -1618,11 +1618,11 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>You can't remove your own user</value>
   </data>
-    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>You can't remove this SuperAdmin user</value>
+    <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>You can't remove this global admin user</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>You can't revoke the sessions of this SuperAdmin user</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>You can't revoke the sessions of this global admin user</value>
   </data>
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>You can't remove your current session</value>
@@ -1916,7 +1916,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Download your data</value>
   </data>
     <data name="ExportPersonalDataMessage" xml:space="preserve">
-    <value>Get a copy of everything this app holds about you: your account, the devices you are signed in on, your profile picture and the content you created. It arrives as a zip file containing data.json and your files.</value>
+    <value>Get a copy of everything this app holds about you: your account, the devices you are signed in on, your profile image and the content you created. It arrives as a zip file containing data.json and your files.</value>
   </data>
     <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
     <value>Each part of the file also says why it is kept, for how long, who else receives it, and whether deleting your account removes it.</value>
@@ -2191,6 +2191,42 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>What this device and the server report about the app, for troubleshooting.</value>
+  </data>
+    <data name="Lock" xml:space="preserve">
+    <value>Lock</value>
+  </data>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>Lock this account</value>
+  </data>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>Locking this account for the first time needs a PIN. You will enter it to come back to this account on this device, and it never leaves this device.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>New PIN</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>Enter the PIN again</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>The PINs do not match. Try again.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>Enter the PIN</value>
+  </data>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>Wrong PIN. Attempts left: {0}.</value>
+  </data>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>Too many wrong PINs, so this account is no longer kept on this device. Sign in again to use it.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>Sign in again to remove the PIN</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>Use letters</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>Use digits</value>
   </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">

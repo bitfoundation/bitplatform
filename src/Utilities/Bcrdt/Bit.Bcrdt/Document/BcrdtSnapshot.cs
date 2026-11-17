@@ -52,7 +52,9 @@ public sealed class BcrdtSnapshot
     /// after the snapshot is simply absent rather than deleted.
     /// </remarks>
     /// <exception cref="InvalidOperationException">
-    /// The source document reclaims deleted content, so the history the snapshot names no longer exists.
+    /// The source document reclaims deleted content, so the history the snapshot names no longer exists; or it does not
+    /// hold everything the snapshot names yet - a snapshot taken on another replica, say, of content that has not
+    /// reached this one. Check <c>doc.GetStateVector().IsSupersetOf(snapshot.StateVector)</c> first to tell.
     /// </exception>
     public static byte[] EncodeStateAsUpdate(BcrdtDocument doc, BcrdtSnapshot snapshot)
     {
@@ -64,6 +66,13 @@ public sealed class BcrdtSnapshot
             throw new InvalidOperationException(
                 "Snapshots require the source document to retain deleted content. Create it with " +
                 "BcrdtDocumentOptions.GarbageCollect set to false.");
+        }
+
+        if (!doc.GetStateVector().IsSupersetOf(snapshot.StateVector))
+        {
+            throw new InvalidOperationException(
+                "The document does not hold everything the snapshot names yet - it was taken on a replica that had " +
+                "content this one has not received. Sync the document first, or restore the snapshot where it was taken.");
         }
 
         return doc.Transact(transaction =>
@@ -107,6 +116,10 @@ public sealed class BcrdtSnapshot
     }
 
     /// <summary>Builds a new document holding the state the snapshot names.</summary>
+    /// <exception cref="InvalidOperationException">
+    /// The source document reclaims deleted content, or does not hold everything the snapshot names yet (see
+    /// <see cref="EncodeStateAsUpdate"/>).
+    /// </exception>
     public static BcrdtDocument RestoreDocument(BcrdtDocument doc, BcrdtSnapshot snapshot, BcrdtDocumentOptions? options = null)
     {
         byte[] update = EncodeStateAsUpdate(doc, snapshot);

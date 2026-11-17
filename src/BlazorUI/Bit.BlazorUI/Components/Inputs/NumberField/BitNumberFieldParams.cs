@@ -216,15 +216,15 @@ public partial class BitNumberFieldParams : BitComponentBaseParams, IBitComponen
     public BitInputMode? InputMode { get; set; }
 
     /// <summary>
-    /// Reverses the direction of the value change when the user spins the value using the mouse wheel.
-    /// </summary>
-    public bool? InvertMouseWheel { get; set; }
-
-    /// <summary>
     /// Makes only the text input part read-only, preventing typing, while the value can still be
     /// changed using the increment/decrement buttons, the arrow keys and the mouse wheel.
     /// </summary>
-    public bool? IsInputReadOnly { get; set; }
+    public bool? InputReadOnly { get; set; }
+
+    /// <summary>
+    /// Reverses the direction of the value change when the user spins the value using the mouse wheel.
+    /// </summary>
+    public bool? InvertMouseWheel { get; set; }
 
     /// <summary>
     /// The position of the label in regards to the field (Top by default).
@@ -552,14 +552,14 @@ public partial class BitNumberFieldParams : BitComponentBaseParams, IBitComponen
             bitNumberField.TakeFromCascade(nameof(InputMode), InputMode.Value, static n => n.InputMode, static (n, v) => n.InputMode = v);
         }
 
+        if (InputReadOnly.HasValue)
+        {
+            bitNumberField.TakeFromCascade(nameof(InputReadOnly), InputReadOnly.Value, static n => n.InputReadOnly, static (n, v) => n.InputReadOnly = v);
+        }
+
         if (InvertMouseWheel.HasValue)
         {
             bitNumberField.TakeFromCascade(nameof(InvertMouseWheel), InvertMouseWheel.Value, static n => n.InvertMouseWheel, static (n, v) => n.InvertMouseWheel = v);
-        }
-
-        if (IsInputReadOnly.HasValue)
-        {
-            bitNumberField.TakeFromCascade(nameof(IsInputReadOnly), IsInputReadOnly.Value, static n => n.IsInputReadOnly, static (n, v) => n.IsInputReadOnly = v);
         }
 
         if (LabelPlacement.HasValue)

@@ -555,4 +555,41 @@ public class EmissionTests
         Assert.IsEmpty(result.CompileErrors());
         Assert.DoesNotContain("CancelEffects", result.SingleGenerated);
     }
+    [TestMethod]
+    public void AStoreNamedWithAKeyword_Compiles()
+    {
+        // The symbol's name drops the '@' the keyword needs, so the generated "partial class event" did not parse.
+        var result = GeneratorTestHelper.Run(Usings + """
+            namespace App;
+            [BlexStoreAttribute] public partial class @event
+            {
+                [BlexStateAttribute(Comparer = nameof(Same))] private int _count;
+                private static readonly System.Collections.Generic.IEqualityComparer<int> Same = System.Collections.Generic.EqualityComparer<int>.Default;
+                [BlexActionAttribute] private void OnIncrement() => Count++;
+            }
+            """);
+
+        Assert.IsFalse(result.HasGeneratorError);
+        Assert.IsEmpty(result.CompileErrors());
+        Assert.Contains("partial class @event", result.SingleGenerated);
+    }
+
+    [TestMethod]
+    public void AStoreInANamespaceWithAKeyword_IsGenerated()
+    {
+        // The namespace is written with its '@', which a hint name may not contain: AddSource threw, and the whole
+        // generator failed (CS8785), taking every other store in the compilation with it.
+        var result = GeneratorTestHelper.Run(Usings + """
+            namespace App.@class;
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _count;
+                [BlexActionAttribute] private void OnIncrement() => Count++;
+            }
+            """);
+
+        Assert.IsFalse(result.GeneratorDiagnostics.Any(d => d.Id == "CS8785"), string.Join(", ", result.GeneratorDiagnostics));
+        Assert.IsEmpty(result.CompileErrors());
+        Assert.AreEqual("App.class.S.Blex.g.cs", Assert.ContainsSingle(result.GeneratedSources.Keys));
+    }
 }

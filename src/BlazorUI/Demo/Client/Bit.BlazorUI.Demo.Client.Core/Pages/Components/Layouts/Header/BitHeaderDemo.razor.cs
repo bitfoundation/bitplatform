@@ -54,6 +54,13 @@ public partial class BitHeaderDemo
         },
         new()
         {
+            Name = "Elevated",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the BitHeader with a shadow cast downwards, to lift it above the content it overlaps.",
+        },
+        new()
+        {
             Name = "ElevateOffset",
             Type = "int?",
             DefaultValue = "null",
@@ -65,13 +72,6 @@ public partial class BitHeaderDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Keeps the BitHeader flat while the scrolling area sits at its top and lets it cast its shadow only once the content has been scrolled underneath it. It only has an effect on a Fixed or Sticky header, and Elevated takes precedence over it.",
-        },
-        new()
-        {
-            Name = "Elevated",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Renders the BitHeader with a shadow cast downwards, to lift it above the content it overlaps.",
         },
         new()
         {

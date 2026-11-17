@@ -13,17 +13,17 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "AutoApply",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether every pick is applied to the value as it is made. Turning it off makes the callout a transaction: it renders a Cancel and an Apply button and rolls the range back unless Apply commits it. It has no effect on a Standalone picker and it overrides AutoClose.",
-        },
-        new()
-        {
             Name = "ApplyButtonText",
             Type = "string",
             DefaultValue = "Apply",
             Description = "The text of the button that commits the picked range, rendered while AutoApply is off.",
+        },
+        new()
+        {
+            Name = "AutoApply",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether every pick is applied to the value as it is made. Turning it off makes the callout a transaction: it renders a Cancel and an Apply button and rolls the range back unless Apply commits it. It has no effect on a Standalone picker and it overrides AutoClose.",
         },
         new()
         {
@@ -38,13 +38,6 @@ public partial class BitDateRangePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the input of the picker gets the focus as soon as it renders for the first time. A standalone picker carries its value in a hidden input nobody is meant to land on, so it has nothing to place the focus on.",
-        },
-        new()
-        {
-            Name = "CancelButtonText",
-            Type = "string",
-            DefaultValue = "Cancel",
-            Description = "The text of the button that discards the picked range, rendered while AutoApply is off.",
         },
         new()
         {
@@ -73,6 +66,13 @@ public partial class BitDateRangePickerDemo
             Type = "Dictionary<string, object>",
             DefaultValue = "new Dictionary<string, object>()",
             Description = "Capture and render additional html attributes for the DateRangePicker's callout."
+        },
+        new()
+        {
+            Name = "CancelButtonText",
+            Type = "string",
+            DefaultValue = "Cancel",
+            Description = "The text of the button that discards the picked range, rendered while AutoApply is off.",
         },
         new()
         {
@@ -175,17 +175,10 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "DisableFuture",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Disables every day after today, exactly as a MaxDate of today would. When both are set, the earlier of the two bounds wins.",
-        },
-        new()
-        {
-            Name = "DisablePast",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Disables every day before today, exactly as a MinDate of today would. When both are set, the later of the two bounds wins.",
+            Name = "DisabledDateErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for a typed range that lands on a day blocked by DisabledDates, DisabledDaysOfWeek or IsDateDisabled, told apart from a range that merely breaks the bounds.",
         },
         new()
         {
@@ -203,10 +196,17 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "DisabledDateErrorMessage",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The custom validation error message for a typed range that lands on a day blocked by DisabledDates, DisabledDaysOfWeek or IsDateDisabled, told apart from a range that merely breaks the bounds.",
+            Name = "DisableFuture",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables every day after today, exactly as a MaxDate of today would. When both are set, the earlier of the two bounds wins.",
+        },
+        new()
+        {
+            Name = "DisablePast",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables every day before today, exactly as a MinDate of today would. When both are set, the later of the two bounds wins.",
         },
         new()
         {
@@ -446,34 +446,6 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "HighlightCurrentMonth",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the month picker should highlight the current month."
-        },
-        new()
-        {
-            Name = "HighlightToday",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the day picker highlights today's cell. It only affects the paint: the cell still reports itself as the current date to assistive technologies.",
-        },
-        new()
-        {
-            Name = "HighlightedDates",
-            Type = "IEnumerable<DateTimeOffset>?",
-            DefaultValue = "null",
-            Description = "The list of dates that are highlighted (marked) in the day picker of the DateRangePicker."
-        },
-        new()
-        {
-            Name = "HighlightSelectedMonth",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the month picker should highlight the selected month."
-        },
-        new()
-        {
             Name = "HideTimePickerIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -497,6 +469,34 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "HighlightCurrentMonth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the month picker should highlight the current month."
+        },
+        new()
+        {
+            Name = "HighlightedDates",
+            Type = "IEnumerable<DateTimeOffset>?",
+            DefaultValue = "null",
+            Description = "The list of dates that are highlighted (marked) in the day picker of the DateRangePicker."
+        },
+        new()
+        {
+            Name = "HighlightSelectedMonth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the month picker should highlight the selected month."
+        },
+        new()
+        {
+            Name = "HighlightToday",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the day picker highlights today's cell. It only affects the paint: the cell still reports itself as the current date to assistive technologies.",
+        },
+        new()
+        {
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
@@ -513,19 +513,19 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "IconName",
+            Type = "string?",
+            DefaultValue = "CalendarMirrored",
+            Description = "The name of the icon from the built-in Fluent UI icon set. For external icon libraries, use Icon instead."
+        },
+        new()
+        {
             Name = "IconPlacement",
             Type = "BitPlacement",
             DefaultValue = "BitPlacement.End",
             Description = "Determines the side of the input the DateRangePicker's icon is rendered on. Only Start and End are honoured; any other value leaves the icon on the end side. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
-        },
-        new()
-        {
-            Name = "IconName",
-            Type = "string?",
-            DefaultValue = "CalendarMirrored",
-            Description = "The name of the icon from the built-in Fluent UI icon set. For external icon libraries, use Icon instead."
         },
         new()
         {
@@ -554,13 +554,6 @@ public partial class BitDateRangePickerDemo
             Type = "Func<DateTimeOffset, bool>?",
             DefaultValue = "null",
             Description = "Custom function to determine if a specific date is disabled (not selectable) in the DateRangePicker."
-        },
-        new()
-        {
-            Name = "IsMonthPickerVisible",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the month picker is shown or hidden.",
         },
         new()
         {
@@ -766,13 +759,6 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "PagedNavigation",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the previous and next navigation buttons move the calendar by all of its rendered months instead of one, so consecutive pages of a multi-month calendar never overlap. It has no effect when MonthCount renders a single month.",
-        },
-        new()
-        {
             Name = "OnSelectDate",
             Type = "EventCallback<BitDateRangePickerValue?>",
             DefaultValue = "",
@@ -784,6 +770,13 @@ public partial class BitDateRangePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The custom validation error message for a range entered as text that breaks the bounds, the disabled days, or MinRange and MaxRange. Text that does not read as a range at all reports InvalidErrorMessage instead.",
+        },
+        new()
+        {
+            Name = "PagedNavigation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the previous and next navigation buttons move the calendar by all of its rendered months instead of one, so consecutive pages of a multi-month calendar never overlap. It has no effect when MonthCount renders a single month.",
         },
         new()
         {
@@ -893,6 +886,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "ShowMonthPicker",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the month picker is shown or hidden.",
+        },
+        new()
+        {
             Name = "ShowMonthPickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
@@ -904,13 +904,6 @@ public partial class BitDateRangePickerDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the days of the previous and next months, filling the first and last week rows, should be rendered.",
-        },
-        new()
-        {
-            Name = "ShowValidationMessage",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Shows the messages the cascading EditContext holds for the bound field (the InvalidErrorMessage, DisabledDateErrorMessage or OutOfRangeErrorMessage of a typed text among them) under the DateRangePicker, where ErrorMessage goes, so an EditForm needs no ValidationMessage component beside it. The input references them through aria-describedby, so they are read out when it takes the focus; they are not announced as they appear, since a submit validates every field at once. An ErrorMessage or ErrorMessageTemplate of the app's own wins the place while it is set.",
         },
         new()
         {
@@ -951,10 +944,26 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "ShowValidationMessage",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the messages the cascading EditContext holds for the bound field (the InvalidErrorMessage, DisabledDateErrorMessage or OutOfRangeErrorMessage of a typed text among them) under the DateRangePicker, where ErrorMessage goes, so an EditForm needs no ValidationMessage component beside it. The input references them through aria-describedby, so they are read out when it takes the focus; they are not announced as they appear, since a submit validates every field at once. An ErrorMessage or ErrorMessageTemplate of the app's own wins the place while it is set.",
+        },
+        new()
+        {
             Name = "ShowWeekNumbers",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the week number (weeks 1 to 53) should be shown before each week row.",
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "Sets the preset size (Small, Medium, Large) of the field, the calendar cells and the label. The callout takes the size with it. An explicit value wins over the --bit-DateRangePicker-* size variables (input height and font size, label font size, day size and font size); left unset, the DateRangePicker is medium unless they say otherwise.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         },
         new()
         {
@@ -969,15 +978,6 @@ public partial class BitDateRangePickerDemo
             Type = "BitDateRangePickerValue?",
             DefaultValue = "null",
             Description = "Specifies the date and time of the date and time picker when it is opened without any selected value.",
-        },
-        new()
-        {
-            Name = "Size",
-            Type = "BitSize?",
-            DefaultValue = "null",
-            Description = "Sets the preset size (Small, Medium, Large) of the field, the calendar cells and the label. The callout takes the size with it. An explicit value wins over the --bit-DateRangePicker-* size variables (input height and font size, label font size, day size and font size); left unset, the DateRangePicker is medium unless they say otherwise.",
-            LinkType = LinkType.Link,
-            Href = "#size-enum",
         },
         new()
         {

@@ -196,24 +196,24 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     private readonly string example7RazorCode = @"
 <BitMenuButton Text=""Toggle"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle />
 
-<BitMenuButton Text=""DefaultIsToggled"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle DefaultIsToggled=""true"" />
+<BitMenuButton Text=""DefaultToggled"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle DefaultToggled=""true"" />
 
-<BitMenuButton Text=""Fill"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Fill"" DefaultIsToggled=""true"" />
-<BitMenuButton Text=""Outline"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Outline"" DefaultIsToggled=""true"" />
-<BitMenuButton Text=""Text"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Text"" DefaultIsToggled=""true"" />
+<BitMenuButton Text=""Fill"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Fill"" DefaultToggled=""true"" />
+<BitMenuButton Text=""Outline"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Outline"" DefaultToggled=""true"" />
+<BitMenuButton Text=""Text"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Text"" DefaultToggled=""true"" />
 
 <BitMenuButton Text=""Fill"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Fill"" />
 <BitMenuButton Text=""Outline"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Outline"" />
 <BitMenuButton Text=""Text"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Text"" />
 
-<BitMenuButton Text=""Two-way"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle @bind-IsToggled=""customIsToggled"" />
-<BitCheckbox Label=""IsToggled"" @bind-Value=""customIsToggled"" />
+<BitMenuButton Text=""Two-way"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle @bind-Toggled=""customToggled"" />
+<BitCheckbox Label=""Toggled"" @bind-Value=""customToggled"" />
 
 <div>OnToggleChange: @customToggledValue</div>
 <BitMenuButton Text=""OnToggleChange"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle OnToggleChange=""v => customToggledValue = v"" />";
 
     private readonly string example7CsharpCode = @"
-private bool customIsToggled;
+private bool customToggled;
 private bool customToggledValue;
 
 private List<Operation> basicCustoms =

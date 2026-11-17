@@ -54,7 +54,7 @@
                 <b>CloseWith</b> answers the modal, and <b>Result</b> / <b>GetResult&lt;T&gt;</b> complete with that
                 answer. A dismissal answers null (the type's default), so <b>IsDismissed</b> tells "walked away" from
                 "answered with nothing". <b>BitModalContentParameters&lt;T&gt;</b> passes the content's parameters
-                checked by the compiler. For a question, <b>IsAlert</b> announces an alertdialog and <b>AutoFocus</b>
+                checked by the compiler. For a question, <b>Alert</b> announces an alertdialog and <b>AutoFocus</b>
                 starts on the least destructive answer.
             </div>
             <br />
@@ -203,7 +203,7 @@
                 <code>dialog</code> with <code>aria-modal</code>. The service names none of them, so give each one a
                 name: a <b>HeaderText</b> names the modal and is announced as a heading, <b>TitleAriaId</b> (and
                 <b>SubtitleAriaId</b>) points at a title (and a description) of the content's own, and an
-                <b>AriaLabel</b> names a modal that shows no title. <b>IsAlert</b> makes it an <code>alertdialog</code>,
+                <b>AriaLabel</b> names a modal that shows no title. <b>Alert</b> makes it an <code>alertdialog</code>,
                 the default for a <b>Blocking</b> modal, and <b>CloseButtonTitle</b> names the close button
                 (default "Close").
             </div>

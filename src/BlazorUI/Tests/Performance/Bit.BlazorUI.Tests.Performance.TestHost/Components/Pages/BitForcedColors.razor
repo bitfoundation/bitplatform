@@ -63,11 +63,11 @@
 
         case "togglebutton":
             <BitToggleButton Text="Unchecked" IconName="@BitIconName.Microphone" />
-            <BitToggleButton Text="Checked" IconName="@BitIconName.Microphone" DefaultIsChecked="true" />
+            <BitToggleButton Text="Checked" IconName="@BitIconName.Microphone" DefaultChecked="true" />
             <BitToggleButton Text="Outline" Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground" />
             <BitToggleButton Text="Text" Variant="BitVariant.Text" Color="BitColor.SecondaryBackground" />
-            <BitToggleButton Text="Fixed" FixedColor DefaultIsChecked="true" />
-            <BitToggleButton Text="Disabled" Disabled DefaultIsChecked="true" />
+            <BitToggleButton Text="Fixed" FixedColor DefaultChecked="true" />
+            <BitToggleButton Text="Disabled" Disabled DefaultChecked="true" />
             break;
 
         // ---- Inputs ----
@@ -107,7 +107,7 @@
 
         case "dropdown":
             <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_dropdownItems" DefaultValue="@("a")" Label="Single" />
-            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_dropdownItems" MultiSelect DefaultValues="_dropdownValues" Chips MaxChips="1" Label="Chips" />
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_dropdownItems" MultiSelect DefaultValues="_dropdownValues" Chips MaxDisplayedItems="1" Label="Chips" />
             break;
 
         case "dropdown-open":
@@ -131,7 +131,7 @@
 
         case "numberfield":
             <BitNumberField TValue="int" DefaultValue="3" Prefix="$" Suffix="kg" Mode="BitSpinButtonMode.Inline" />
-            <BitNumberField TValue="int" DefaultValue="3" Prefix="$" Suffix="kg" Color="BitColor.PrimaryBackground" />
+            <BitNumberField TValue="int" DefaultValue="3" Prefix="$" Suffix="kg" Accent="BitColor.PrimaryBackground" />
             break;
 
         case "rating":
@@ -161,7 +161,7 @@
 
         case "textfield":
             <BitTextField DefaultValue="text" IconName="@BitIconName.Mail" Prefix="to:" Suffix=".com" />
-            <BitTextField DefaultValue="secret" Type="BitInputType.Password" CanRevealPassword Color="BitColor.PrimaryBackground" IconName="@BitIconName.Lock" Prefix="pw:" />
+            <BitTextField DefaultValue="secret" Type="BitInputType.Password" CanRevealPassword Accent="BitColor.PrimaryBackground" IconName="@BitIconName.Lock" Prefix="pw:" />
             break;
 
         case "timepicker":
@@ -369,7 +369,7 @@
             break;
 
         case "dialog-ok-off":
-            <BitDialog DefaultIsOpen Title="Dialog" ShowOkButton ShowCancelButton IsOkButtonEnabled="false" AutoFocus="false">Body</BitDialog>
+            <BitDialog DefaultIsOpen Title="Dialog" ShowOkButton ShowCancelButton OkButtonDisabled AutoFocus="false">Body</BitDialog>
             break;
 
         case "dialog-busy":
@@ -388,7 +388,7 @@
 
         case "tooltip":
             <div style="padding: 60px;">
-                <BitTooltip Text="Tooltip text" DefaultIsShown="true"><span>Anchor</span></BitTooltip>
+                <BitTooltip Text="Tooltip text" DefaultShown="true"><span>Anchor</span></BitTooltip>
             </div>
             break;
 

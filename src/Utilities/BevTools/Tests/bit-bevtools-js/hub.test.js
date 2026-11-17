@@ -254,6 +254,34 @@ describe('responsiveness', () => {
 
     const element = (tagName, id, inBevTools = false) => ({ nodeType: 1, tagName, id, className: '', closest: selector => (inBevTools && selector === '.bev-root' ? {} : null) });
 
+    it('splits a responsiveness report that would not fit in one circuit message', async () => {
+        // A Blazor Server circuit closes its connection on a message over 32 KB: a janky stretch filled both buffers.
+        installPage();
+        const fake = fakeObservers(['long-animation-frame', 'event', 'longtask']);
+        try {
+            const hub = await loadHub();
+            const server = runtime(1);
+            hub.attach(server, { platform: 'Server' });
+            const frames = fake.observers.find(o => o.options.type === 'long-animation-frame');
+            const long = 'x'.repeat(400);
+            const script = n => ({ invoker: long + n, invokerType: 'event-listener', sourceURL: 'https://app.example/' + long + '.js', sourceFunctionName: long, duration: 40 });
+            const now = performance.now();
+            frames.emit(Array.from({ length: 100 }, (_, i) => ({ startTime: now - 1000 + i, duration: 120, blockingDuration: 70, scripts: [script(1), script(2), script(3)] })));
+            hub.flushResponsiveness();
+
+            const reports = server.reported('ReportResponsiveness');
+            expect(reports.length, 'more than one report').toBeGreaterThan(1);
+            reports.forEach(([, reportedFrames, interactions, part, parts], index) => {
+                expect(Buffer.byteLength(JSON.stringify([reportedFrames, interactions]))).toBeLessThanOrEqual(16 * 1024);
+                expect([part, parts], 'numbered parts of one report, which .NET reads together').toEqual([index, reports.length]);
+            });
+            expect(reports.flatMap(r => r[1]), 'every frame is reported once').toHaveLength(100);
+            hub.detach();
+        } finally {
+            fake.restore();
+        }
+    });
+
     it('reports long animation frames and interactions with ages, each interaction across its entries, and none of BevTools\' own', async () => {
         installPage();
         const fake = fakeObservers(['long-animation-frame', 'event', 'longtask']);
@@ -378,6 +406,28 @@ describe('responsiveness', () => {
             fake.restore();
         }
     });
+
+    it('reports an interaction whose element has an id too long for a report, its target clipped', async () => {
+        installPage();
+        const fake = fakeObservers(['event']);
+        try {
+            const hub = await loadHub();
+            const server = runtime(1);
+            hub.attach(server, { platform: 'Server' });
+            const events = fake.observers.find(o => o.options.type === 'event');
+            const now = performance.now();
+            events.emit([{ interactionId: 3, name: 'click', startTime: now - 100, duration: 80, processingStart: now - 99, processingEnd: now - 30, target: element('BUTTON', 'x'.repeat(20 * 1024)) }]);
+            hub.flushResponsiveness();
+
+            const interactions = server.reported('ReportResponsiveness').flatMap(r => r[2]);
+            expect(interactions.map(i => i.interactionId)).toEqual([3]);
+            expect(interactions[0].target.length).toBeLessThanOrEqual(200);
+            expect(interactions[0].target.startsWith('<button#xxx')).toBe(true);
+            hub.detach();
+        } finally {
+            fake.restore();
+        }
+    });
 });
 
 describe('several runtimes on one page', () => {
@@ -459,6 +509,39 @@ describe('browser failures', () => {
         hub.detach();
     });
 
+    it('shortens an error in another script until it fits a circuit message', async () => {
+        // Clipped in UTF-16 units, 4,000 CJK characters are 12 KB of UTF-8: a message, a stack and a source make 36 KB.
+        const { win } = installPage();
+        const hub = await loadHub();
+        const ref = runtime(1);
+        hub.attach(ref, { platform: 'Server' });
+
+        const error = new Error('\u4e2d'.repeat(4000));
+        error.stack = '\u6587'.repeat(4000);
+        win.dispatch('error', { error, message: error.message, filename: 'https://app.example/' + '\u5b57'.repeat(4000), lineno: 1, colno: 1 });
+
+        const [report] = ref.reported('OnJsError').map(c => c[1]);
+        expect(Buffer.byteLength(JSON.stringify(report))).toBeLessThanOrEqual(16 * 1024);
+        expect(report.message.length).toBeGreaterThan(1000);
+        expect(report.stack.length).toBeGreaterThan(1000);
+        hub.detach();
+    });
+
+    it('refuses a protocol request too large for a circuit message, and sends it to a WebAssembly runtime', async () => {
+        installPage();
+        const hub = await loadHub();
+        const server = runtime(1, { set: { ok: true } });
+        const wasm = runtime(2, { set: { ok: true } });
+        const { targetId: serverId } = hub.attach(server, { platform: 'Server' });
+        const { targetId: wasmId } = hub.attach(wasm, { platform: 'WebAssembly' });
+        const value = 'v'.repeat(20 * 1024);
+
+        await expect(window.__BIT_BEVTOOLS__.request(serverId, 'set', { value })).rejects.toThrow('larger than 16 KB');
+        expect(server.reported('Protocol'), 'never sent: the circuit would close').toHaveLength(0);
+        expect(await window.__BIT_BEVTOOLS__.request(wasmId, 'set', { value })).toEqual({ ok: true });
+        hub.detach();
+    });
+
     it('never cuts a surrogate pair in half nor sends a lone surrogate, which .NET cannot read', async () => {
         const { win } = installPage();
         const hub = await loadHub();
@@ -498,6 +581,8 @@ describe('reconnects', () => {
     // "show" and "retrying" happen while the connection is down, when a circuit cannot be called: they once never
     // arrived, so the panel showed only "hide" and counted no reconnect.
     it('tells a circuit the states of its dropped connection once it is back, in order and with their age', async () => {
+        // Fake timers fake Date too: a real 20 ms timeout can end 19 ms later by Date.now(), which made the age flaky.
+        vi.useFakeTimers();
         installPage();
         const hub = await loadHub();
         const ref = runtime(1);
@@ -511,7 +596,7 @@ describe('reconnects', () => {
         expect(ref.reported('OnReconnectState')).toEqual([]);
 
         new globalThis.window.WebSocket('wss://app.example/_blazor?id=abc');
-        await new Promise(r => setTimeout(r, 20));
+        await vi.advanceTimersByTimeAsync(20);
         globalThis.document.dispatch('components-reconnect-state-changed', { detail: { state: 'hide' } });
 
         const states = ref.reported('OnReconnectState');
@@ -581,6 +666,68 @@ describe('WebSocket traffic', () => {
         vi.advanceTimersByTime(2100);
         expect(ref.reported('ReportTraffic'), 'nothing new: no report').toHaveLength(1);
         hub.detach();
+    });
+
+    it('sends a traffic snapshot larger than a circuit message in numbered parts, every socket in it, and bounds message kinds', async () => {
+        vi.useFakeTimers();
+        try {
+            installPage();
+            const hub = await loadHub();
+            const ref = runtime(5);
+            hub.attach(ref, { platform: 'Server' });
+            new window.WebSocket('wss://app.example/_blazor?id=circuit');
+            const hubs = [];
+            for (let i = 0; i < 40; i++) {
+                const socket = new window.WebSocket(`wss://app.example/hub${i}?id=${i}&q=${'p'.repeat(600)}`);
+                // Distinct within the 80 characters a kind's name keeps, so each is a kind of its own.
+                for (let k = 0; k < 40; k++) socket.receive(`{"type":1,"target":"${k}-${'\u4e2d'.repeat(200)}","arguments":[]}\x1e`);
+                hubs.push(socket);
+            }
+            hubs[0].close(1006, 'gone');
+
+            const messages = hub.traffic()[1].messages;
+            const kinds = Object.keys(messages);
+            expect(kinds.length, 'the kinds of one socket are bounded').toBe(31);
+            expect(kinds.every(kind => kind.length <= 82), 'and their names clipped').toBe(true);
+            expect(messages['\u2190 (other)']?.count, 'the kinds past the bound counted together').toBe(10);
+            vi.advanceTimersByTime(2100);
+            const reports = ref.reported('ReportTraffic');
+            expect(reports.length, 'more than one part').toBeGreaterThan(1);
+            reports.forEach(([, sockets, part, parts], index) => {
+                expect(Buffer.byteLength(JSON.stringify(sockets))).toBeLessThanOrEqual(16 * 1024);
+                expect([part, parts]).toEqual([index, reports.length]);
+            });
+            const reported = reports.flatMap(r => r[1]);
+            expect(reported.map(s => s.id), 'no socket left out, none twice').toEqual(hub.traffic().map(s => s.id));
+            expect(reported.find(s => s.closeCode === 1006), 'a socket that closed is reported closed').toBeTruthy();
+            hub.detach();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('keeps a socket whose handshake names an oversized protocol in the report, the name clipped', async () => {
+        vi.useFakeTimers();
+        try {
+            installPage();
+            const hub = await loadHub();
+            const ref = runtime(5);
+            hub.attach(ref, { platform: 'Server' });
+            const socket = new window.WebSocket('wss://app.example/chathub?id=abc');
+
+            socket.send(`{"protocol":"${'p'.repeat(20 * 1024)}","version":1}\x1e`);
+            socket.receive('{"type":1,"target":"ReceiveMessage","arguments":[]}\x1e');
+
+            const [stats] = hub.traffic();
+            expect(stats.protocol.length).toBeLessThanOrEqual(80);
+            expect(stats.messages['← ReceiveMessage'].count, 'the records after it still read').toBe(1);
+            vi.advanceTimersByTime(2100);
+            const reported = ref.reported('ReportTraffic').flatMap(r => r[1]);
+            expect(reported.map(s => s.id), 'the socket is reported').toEqual([stats.id]);
+            hub.detach();
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it("counts the circuit's calls into BevTools' own module, and their replies, as BevTools' own", async () => {

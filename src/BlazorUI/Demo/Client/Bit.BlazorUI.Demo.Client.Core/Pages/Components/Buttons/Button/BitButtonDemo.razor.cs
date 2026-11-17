@@ -269,17 +269,17 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "SecondaryText",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The text of the secondary section of the button.",
-        },
-        new()
-        {
             Name = "SecondaryTemplate",
             Type = "RenderFragment?",
             DefaultValue = "",
             Description = "The custom template for the secondary section of the button.",
+        },
+        new()
+        {
+            Name = "SecondaryText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the secondary section of the button.",
         },
         new()
         {

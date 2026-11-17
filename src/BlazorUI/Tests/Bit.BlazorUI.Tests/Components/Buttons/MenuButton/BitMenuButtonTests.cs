@@ -274,7 +274,7 @@ public class BitMenuButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMenuButtonToggleShouldSetIsToggledOnClick()
+    public void BitMenuButtonToggleShouldSetToggledOnClick()
     {
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
@@ -296,14 +296,14 @@ public class BitMenuButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMenuButtonToggleShouldRespectDefaultIsToggled()
+    public void BitMenuButtonToggleShouldRespectDefaultToggled()
     {
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Split, true);
             parameters.Add(p => p.Toggle, true);
-            parameters.Add(p => p.DefaultIsToggled, true);
+            parameters.Add(p => p.DefaultToggled, true);
         });
 
         var bitMenuButton = com.Find(".bit-mnb");
@@ -1646,7 +1646,7 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Split, true);
             parameters.Add(p => p.Toggle, true);
-            parameters.Add(p => p.DefaultIsToggled, true);
+            parameters.Add(p => p.DefaultToggled, true);
             parameters.Add(p => p.Style, "--bit-MenuButton-callout-background:red");
             parameters.Add(p => p.Styles, new BitMenuButtonClassStyles { Toggled = "--bit-MenuButton-background:green" });
         });

@@ -57,17 +57,17 @@ public partial class BitVirtualizeDemo
          },
          new()
          {
-            Name = "Gap",
-            Type = "float",
-            DefaultValue = "0",
-            Description = "The space in pixels between consecutive items along the scroll axis, and between the lanes of a grid.",
-         },
-         new()
-         {
             Name = "FooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template to render after the last item, inside the scroll container (for example, a loading indicator at the end of an infinite list).",
+         },
+         new()
+         {
+            Name = "Gap",
+            Type = "float",
+            DefaultValue = "0",
+            Description = "The space in pixels between consecutive items along the scroll axis, and between the lanes of a grid.",
          },
          new()
          {
@@ -108,13 +108,6 @@ public partial class BitVirtualizeDemo
          },
          new()
          {
-            Name = "Items",
-            Type = "ICollection<TItem>?",
-            DefaultValue = "null",
-            Description = "The in-memory collection of items to virtualize. Mutually exclusive with ItemsProvider.",
-         },
-         new()
-         {
             Name = "ItemAttributes",
             Type = "Func<TItem, IReadOnlyDictionary<string, object>?>?",
             DefaultValue = "null",
@@ -133,6 +126,13 @@ public partial class BitVirtualizeDemo
             Type = "string?",
             DefaultValue = "listitem",
             Description = "The ARIA role of each item element.",
+         },
+         new()
+         {
+            Name = "Items",
+            Type = "ICollection<TItem>?",
+            DefaultValue = "null",
+            Description = "The in-memory collection of items to virtualize. Mutually exclusive with ItemsProvider.",
          },
          new()
          {

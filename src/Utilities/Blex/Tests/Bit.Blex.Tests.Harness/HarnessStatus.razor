@@ -1,7 +1,12 @@
-﻿@* data-interactive only flips after the first interactive render, so a test can wait for it before
-   driving anything that needs event handlers. *@
+﻿@implements IDisposable
+@inject BlexStatePersistor Persistor
+
+@* data-interactive only flips after the first interactive render, so a test can wait for it before
+   driving anything that needs event handlers. data-hydrated flips once persistence has read storage:
+   the page takes clicks before that (on Blazor Server the read is a round trip to the browser). *@
 <p id="status"
    data-interactive="@(_interactive ? "true" : "false")"
+   data-hydrated="@(Persistor.HasHydrated ? "true" : "false")"
    data-renderer="@RendererName"
    data-platform="@HarnessRuntime.Platform">
     @RendererName | @(_interactive ? "interactive" : "static") | @HarnessRuntime.Platform
@@ -12,6 +17,10 @@
 
     private string RendererName => RendererInfo.Name;
 
+    protected override void OnInitialized() => Persistor.Hydrated += OnHydrated;
+
+    private void OnHydrated() => _ = InvokeAsync(StateHasChanged);
+
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender is false) return;
@@ -19,4 +28,6 @@
         _interactive = true;
         StateHasChanged();
     }
+
+    public void Dispose() => Persistor.Hydrated -= OnHydrated;
 }

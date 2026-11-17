@@ -26,5 +26,11 @@
 /// The words a caller uses for it without it using them: someone who wants to "encrypt the database" is asking for
 /// "Encryption at rest". They count as its name, so they rank it where its name would.
 /// </param>
+/// <param name="SameAs">
+/// A key the entry shares with the entries that say the same thing under another title: an inherited member
+/// documented once, indexed on every type that has it. They are one hit, the best-ranked of them for each query,
+/// so a query naming one of the types finds its copy while the others stay off the page.
+/// </param>
 internal sealed record McpSearchEntry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted,
-                                      int Weight = McpSearch.ReferenceWeight, string? Name = null, string? Aliases = null);
+                                      int Weight = McpSearch.ReferenceWeight, string? Name = null, string? Aliases = null,
+                                      string? SameAs = null);

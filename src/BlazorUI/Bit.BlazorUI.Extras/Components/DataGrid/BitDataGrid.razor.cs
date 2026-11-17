@@ -19,10 +19,309 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 {
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
+    /// <summary>
+    /// The params object a <see cref="BitParams"/> ancestor shares with every BitDataGrid below it, whose values apply
+    /// wherever the grid does not set the parameter itself.
+    /// </summary>
+    [CascadingParameter(Name = BitDataGridParams.ParamName)]
+    public BitDataGridParams? CascadingParameters { get; set; }
+
+    /// <summary>The icon of the Add row button, from an external icon library. Takes precedence over
+    /// <see cref="AddRowIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? AddRowIcon { get; set; }
+
+    /// <summary>The name of the icon of the Add row button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.CirclePlus</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? AddRowIconName { get; set; }
+
+    /// <summary>
+    /// Whether clicking a sorted header a third time returns the column to its unsorted state.
+    /// Default: <c>true</c> (ascending → descending → unsorted). Set <c>false</c> to cycle between
+    /// ascending and descending only, which is what a grid whose rows are meaningless in their source
+    /// order wants - the equivalent of dropping <c>null</c> from AG Grid's <c>sortingOrder</c>.
+    /// Overridable per column with <c>BitDataGridColumn.AllowUnsorted</c>.
+    /// </summary>
+    [Parameter] public bool AllowUnsorted { get; set; } = true;
+
+    /// <summary>The id of the element that describes the grid - a caption, or how its keyboard works - read after its name.</summary>
+    [Parameter] public string? AriaDescribedBy { get; set; }
+
+    /// <summary>
+    /// The id of the element - a visible heading, say - that names the grid, in place of <see cref="BitComponentBase.AriaLabel"/>.
+    /// It lands on the element that carries the grid role, where a name is read, rather than on the root.
+    /// </summary>
+    [Parameter] public string? AriaLabelledBy { get; set; }
+
+    /// <summary>Draws the outer border and the lines between columns; the lines between rows are always drawn. Default: true.</summary>
+    [Parameter, ResetClassBuilder] public bool Bordered { get; set; } = true;
+
+    /// <summary>
+    /// Enables keyboard cell navigation. Cells become focusable via a roving tabindex and
+    /// respond to arrow keys, <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>PageUp</kbd>/<kbd>PageDown</kbd>
+    /// (and <kbd>Ctrl</kbd> variants). <kbd>Enter</kbd>/<kbd>F2</kbd> begins editing an editable
+    /// cell and <kbd>Esc</kbd> cancels. Mirrors react-data-grid's Cell Navigation. No JavaScript
+    /// is used - focus is driven by Blazor's built-in <c>FocusAsync</c>. Always on for an editable grid
+    /// whose <see cref="EditMode"/> is <see cref="BitDataGridEditMode.Cell"/>, and for Single <see cref="SelectionMode"/>.
+    /// Without it the grid is announced as a table (<c>role="table"</c>, its cells <c>cell</c>), since none of its
+    /// cells can take the focus, unless it is a tree (<c>treegrid</c>).
+    /// </summary>
+    [Parameter] public bool CellNavigation { get; set; }
+
+    /// <summary>Column definitions and other declarative children.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Async children provider for a <b>lazily-loaded</b> tree grid: children are fetched (e.g. from a
+    /// backend) the first time a node is expanded and cached for later toggles. Pair it with
+    /// <see cref="HasChildrenSelector"/> so unloaded nodes know whether to render an expand toggle.
+    /// Mutually exclusive with <see cref="ChildrenSelector"/>.
+    /// <para>The grid cannot tell it to stop: <see cref="OnLoadChildren"/> loads the same way and also hands over a
+    /// token the grid cancels once it no longer needs the children.</para>
+    /// </summary>
+    [Parameter] public Func<TItem, Task<IEnumerable<TItem>?>>? ChildrenProvider { get; set; }
+
+    /// <summary>
+    /// Optional child selector that turns the grid into a hierarchical <b>tree grid</b>.
+    /// Return the direct children of an item, or <c>null</c>/empty for a leaf. When set,
+    /// the bound <see cref="Items"/> are treated as the root nodes and rows render with
+    /// expand/collapse toggles and indentation. Mirrors react-data-grid's Tree View.
+    /// </summary>
+    [Parameter] public Func<TItem, IEnumerable<TItem>?>? ChildrenSelector { get; set; }
+
+    /// <summary>Custom CSS classes for the different parts of the grid.</summary>
+    [Parameter, ResetClassBuilder] public BitDataGridClassStyles? Classes { get; set; }
+
+    /// <summary>The icon of the Clear filters button, from an external icon library. Takes precedence over
+    /// <see cref="ClearFiltersIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? ClearFiltersIcon { get; set; }
+
+    /// <summary>The name of the icon of the Clear filters button, from the Fluent UI icon set of the
+    /// <c>Bit.BlazorUI.Icons</c> nuget package (e.g. <c>BitIconName.FilterSolid</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? ClearFiltersIconName { get; set; }
+
+    /// <summary>
+    /// Enables copying the grid's data to the system clipboard with <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>C</kbd>
+    /// while a cell is focused (requires <see cref="CellNavigation"/>), and through
+    /// <see cref="CopyToClipboardAsync(TItem)"/> from code. The selected rows are copied when there is a
+    /// selection, otherwise the focused row; the payload is tab-separated text with a header line, so
+    /// it pastes straight into Excel or Google Sheets as columns. Mirrors AG Grid's and
+    /// react-data-grid's clipboard copy.
+    /// </summary>
+    [Parameter] public bool ClipboardCopy { get; set; }
+
+    /// <summary>The icon of the Columns button, which opens the column chooser, from an external icon library. Takes
+    /// precedence over <see cref="ColumnChooserIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? ColumnChooserIcon { get; set; }
+
+    /// <summary>The name of the icon of the Columns button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.TripleColumn</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? ColumnChooserIconName { get; set; }
+
+    /// <summary>Alias of <see cref="ChildContent"/>, letting column definitions read declaratively as
+    /// <c>&lt;Columns&gt;...&lt;/Columns&gt;</c>. Both fragments are rendered when both are set.</summary>
+    [Parameter] public RenderFragment? Columns { get; set; }
+
+    /// <summary>The icon of the CSV export button, from an external icon library. Takes precedence over
+    /// <see cref="CsvExportIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? CsvExportIcon { get; set; }
+
+    /// <summary>The name of the icon of the CSV export button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.Download</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? CsvExportIconName { get; set; }
+
+    /// <summary>Content rendered under a row while it is expanded - a form, a chart, a nested grid - with a toggle
+    /// column to open it (see <see cref="ShowDetailToggle"/>).</summary>
+    [Parameter] public RenderFragment<TItem>? DetailTemplate { get; set; }
+
+    // -------------------------------------------------------------- Editing
+    /// <summary>Lets the rows be edited inline, in editors that follow each column's data type, and adds the command
+    /// column. Edits are buffered and written to the row only once saved. Overridable per column.</summary>
+    [Parameter] public bool Editable { get; set; }
+
+    /// <summary>
+    /// How much of a row an inline edit opens: the whole row with Save/Cancel (<see cref="BitDataGridEditMode.Row"/>,
+    /// the default), or one cell at a time, spreadsheet-style (<see cref="BitDataGridEditMode.Cell"/>) - opened by
+    /// Enter, F2 or a double-click and committed by Enter, by Tab (which opens the next editable cell) or by moving
+    /// the focus out of it, each commit raising
+    /// <see cref="OnRowSave"/>. Cell mode makes the cells keyboard-navigable (<see cref="CellNavigation"/>).
+    /// </summary>
+    [Parameter] public BitDataGridEditMode EditMode { get; set; }
+
+    // ------------------------------------------------------------ Templates
+    /// <summary>Custom content shown in place of the rows when there are none.</summary>
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>The icon of the Excel export button, from an external icon library. Takes precedence over
+    /// <see cref="ExcelExportIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? ExcelExportIcon { get; set; }
+
+    /// <summary>The name of the icon of the Excel export button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.ExcelLogo</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? ExcelExportIconName { get; set; }
+
+    /// <summary>When true, Excel exports (the toolbar button as well as
+    /// <see cref="ToExcelAsync"/>/<see cref="ExportExcelAsync"/>) also carry the grid's current
+    /// visual theme: the rendered header/row colors, striped alternating rows, border color and
+    /// bold/italic fonts are sampled from the live DOM (so the active theme - including dark mode -
+    /// is what lands in the workbook) and baked into the file's style sheet. Falls back to the
+    /// plain bold-header styling when JS is unavailable (prerendering, disconnected circuit).</summary>
+    [Parameter] public bool ExcelExportStyled { get; set; }
+
+    /// <summary>
+    /// Expands (and collapses) a row's detail content when the row itself is clicked, so the toggle
+    /// button is no longer the only way in. Combines with <see cref="SelectionMode"/>: a click both
+    /// selects the row and toggles its detail. Clicks inside the reorder/detail/select/command cells and on a
+    /// control in a cell (see <see cref="OnRowClick"/>) are excluded, since those own their own interaction.
+    /// </summary>
+    [Parameter] public bool ExpandDetailOnRowClick { get; set; }
+
+    /// <summary>
+    /// Rows whose detail content is expanded, as a two-way bindable list. Binding it takes control of
+    /// the expanded state (the grid then only reports changes back through it), which is what lets a
+    /// parent expand or collapse details declaratively. Leave it unset to let the grid keep the state
+    /// itself and use <see cref="ExpandDetailAsync"/>/<see cref="CollapseDetailAsync"/> instead.
+    /// </summary>
+    [Parameter] public IReadOnlyList<TItem>? ExpandedDetailItems { get; set; }
+
+    /// <summary>Raised with the new set of expanded rows whenever a detail row is expanded or collapsed.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<TItem>> ExpandedDetailItemsChanged { get; set; }
+
+    /// <summary>
+    /// Base name (without extension) of the downloaded export files, so a grid can name its own
+    /// downloads instead of the generic default. <c>"orders"</c> produces <c>orders.csv</c> and
+    /// <c>orders.xlsx</c>. Defaults to <c>"export"</c>.
+    /// </summary>
+    [Parameter] public string? ExportFileName { get; set; }
+
+    /// <summary>Renders the filter row under the headers, with an editor that follows each column's data type.
+    /// Overridable per column.</summary>
+    [Parameter] public bool Filterable { get; set; }
+
+    /// <summary>
+    /// How long (in milliseconds) a text or number filter box waits after the last keystroke before it
+    /// applies, so the grid filters as the user types. Default: 300. <c>0</c> applies each keystroke;
+    /// a negative value applies only on Enter or when the box loses focus. Date, boolean and enum
+    /// editors apply on every change regardless.
+    /// </summary>
+    [Parameter] public int FilterDebounce { get; set; } = 300;
+
+    /// <summary>
+    /// Shows a compact operator dropdown next to each text/number/date filter editor so users can pick
+    /// the comparison (contains/starts with/=/≠/&gt;/≥/&lt;/≤ …) instead of the fixed default
+    /// (Contains for text, Equals otherwise). Overridable per column.
+    /// </summary>
+    [Parameter] public bool FilterOperators { get; set; }
+
+    /// <summary>Adds a group-by toggle to the headers; grouping by several columns nests the groups. Client-side data
+    /// only. Overridable per column.</summary>
+    [Parameter] public bool Groupable { get; set; }
+
+    /// <summary>
+    /// Groups start collapsed instead of expanded, so a grouped grid opens as a compact list of
+    /// group headers the user drills into. Flipped at runtime by
+    /// <see cref="ExpandAllGroupsAsync"/>/<see cref="CollapseAllGroupsAsync"/>.
+    /// </summary>
+    [Parameter] public bool GroupsInitiallyCollapsed { get; set; }
+
+    /// <summary>
+    /// Tells whether a node can have children before they are loaded, so the expand toggle renders on
+    /// unloaded lazy nodes. Only used with <see cref="ChildrenProvider"/> or <see cref="OnLoadChildren"/>; when
+    /// omitted, a node shows a toggle only after its children have been loaded (i.e. never for the initial render),
+    /// so providing it is strongly recommended.
+    /// </summary>
+    [Parameter] public Func<TItem, bool>? HasChildrenSelector { get; set; }
+
+    // ------------------------------------------------------------ Appearance
+    /// <summary>Height of the scroll viewport, e.g. "480px". Required for virtualization.</summary>
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>Highlights the row under the pointer. Default: true.</summary>
+    [Parameter, ResetClassBuilder] public bool Hoverable { get; set; } = true;
+
+    /// <summary>
+    /// Optional predicate that returns <c>true</c> when a given row may not be selected.
+    /// Mirrors react-data-grid's <c>isRowSelectionDisabled</c>; such rows are skipped by
+    /// select-all and render a disabled checkbox.
+    /// </summary>
+    [Parameter] public Func<TItem, bool>? IsRowSelectionDisabled { get; set; }
+
     // ---------------------------------------------------------------- Data
     /// <summary>The rows. A plain collection is sorted, filtered and paged in memory; an <see cref="IQueryable{T}"/>
     /// (an EF Core <c>DbSet</c>, say) has them translated into an expression the provider runs at the source.</summary>
     [Parameter] public IEnumerable<TItem>? Items { get; set; }
+
+    /// <summary>Optional key selector used for selection/edit identity. Defaults to reference equality.</summary>
+    [Parameter] public Func<TItem, object>? KeyField { get; set; }
+
+    /// <summary>
+    /// Replaces the grid body with a loading row (<see cref="LoadingTemplate"/>, or a spinner and the
+    /// localized loading text) while data is being fetched, and marks the grid <c>aria-busy</c>. The
+    /// rows are hidden for as long as it is set rather than dimmed behind an overlay.
+    /// <para>A server grid (<see cref="OnRead"/>) needs it for none of that: it marks itself <c>aria-busy</c> while it
+    /// reads, and shows the loading row while it has no rows yet. Rows already on screen stay up while it reads the
+    /// next ones, unless this is set.</para>
+    /// </summary>
+    [Parameter] public bool Loading { get; set; }
+
+    /// <summary>Custom content rendered in place of the built-in spinner while <see cref="Loading"/>
+    /// is true, and while a server grid (<see cref="OnRead"/>) with no rows yet reads its first ones.</summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>Number of rows fetched per batch in infinite-scrolling mode. Default: 50.</summary>
+    [Parameter] public int LoadMoreBatchSize { get; set; } = 50;
+
+    /// <summary>Lets Ctrl/Cmd or Shift+click add a column to the sort instead of replacing it. Default: true.</summary>
+    [Parameter] public bool MultiSort { get; set; } = true;
+
+    /// <summary>Builds the blank row that the toolbar's Add button (and <see cref="AddNewRowAsync"/>) opens for editing.</summary>
+    [Parameter] public Func<TItem>? NewItemFactory { get; set; }
+
+    /// <summary>Raised when a data cell is clicked, unless the click is on a control in it (see <see cref="OnRowClick"/>).</summary>
+    [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellClick { get; set; }
+
+    /// <summary>Raised when a data cell is right-clicked. Useful for custom context menus: the browser's own menu is
+    /// suppressed while it is set. A right-click on a control in the cell (see <see cref="OnRowClick"/>) raises nothing
+    /// and keeps the browser's menu - a link's "open in a new tab", a field's "paste".</summary>
+    [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellContextMenu { get; set; }
+
+    /// <summary>Raised when a data cell is double-clicked, unless the double-click is on a control in it, which opens no
+    /// editor either (see <see cref="OnRowClick"/>).</summary>
+    [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellDoubleClick { get; set; }
+
+    /// <summary>Raised when a single row's detail content is expanded or collapsed.</summary>
+    [Parameter] public EventCallback<BitDataGridDetailEventArgs<TItem>> OnDetailToggle { get; set; }
+
+    /// <summary>Raised with the new filter descriptors whenever the filtering changes.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<BitDataGridFilterDescriptor>> OnFilterChange { get; set; }
+
+    /// <summary>Raised with the new group descriptors whenever the grouping changes.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<BitDataGridGroupDescriptor>> OnGroupChange { get; set; }
+
+    /// <summary>
+    /// The <see cref="ChildrenProvider"/> that can be cancelled: it loads a node's children the same way, and is called
+    /// with a <see cref="BitDataGridChildrenRequest{TItem}"/> carrying the node and a <see cref="CancellationToken"/>.
+    /// The grid cancels that token once it no longer needs the children - a new <see cref="Items"/> reference replaced
+    /// the hierarchy, or the grid was disposed - and then ignores the <see cref="OperationCanceledException"/> the fetch
+    /// throws. Set only one of <see cref="ChildrenSelector"/>, <see cref="ChildrenProvider"/> and this.
+    /// </summary>
+    [Parameter] public Func<BitDataGridChildrenRequest<TItem>, Task<IEnumerable<TItem>?>>? OnLoadChildren { get; set; }
+
+    /// <summary>
+    /// Infinite-scrolling data callback. When set, the grid loads rows in batches and appends the
+    /// next batch automatically as the user scrolls to the end of the viewport - with no paging UI
+    /// and no knowledge of the total row count. Each call receives a <see cref="BitDataGridReadRequest"/>
+    /// whose <c>Skip</c> is the number of rows already loaded and whose <c>Take</c> is
+    /// <see cref="LoadMoreBatchSize"/>. The grid stops requesting more once a batch returns fewer rows
+    /// than requested (signalling the end of the data). Exports are the one exception to the batch
+    /// shape: they issue a request with <c>Skip = 0</c> and <c>Take = null</c> ("all rows") so the
+    /// exported file covers the full matching set, not just the batches already scrolled into view.
+    /// Mirrors react-data-grid's Infinite Scrolling.
+    /// Requires a fixed <see cref="Height"/>. The returned <c>TotalCount</c> is ignored in this mode.
+    /// </summary>
+    [Parameter] public Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>? OnLoadMore { get; set; }
+
+    /// <summary>Raised with the new 1-based page number whenever the page or the page size changes.</summary>
+    [Parameter] public EventCallback<int> OnPageChange { get; set; }
 
     /// <summary>Server-side data callback. When set, the grid delegates sort/filter/page to the caller.</summary>
     [Parameter] public Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>? OnRead { get; set; }
@@ -39,362 +338,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </remarks>
     [Parameter] public EventCallback<Exception> OnReadError { get; set; }
 
-    /// <summary>
-    /// Infinite-scrolling data callback. When set, the grid loads rows in batches and appends the
-    /// next batch automatically as the user scrolls to the end of the viewport - with no paging UI
-    /// and no knowledge of the total row count. Each call receives a <see cref="BitDataGridReadRequest"/>
-    /// whose <c>Skip</c> is the number of rows already loaded and whose <c>Take</c> is
-    /// <see cref="LoadMoreBatchSize"/>. The grid stops requesting more once a batch returns fewer rows
-    /// than requested (signalling the end of the data). Exports are the one exception to the batch
-    /// shape: they issue a request with <c>Skip = 0</c> and <c>Take = null</c> ("all rows") so the
-    /// exported file covers the full matching set, not just the batches already scrolled into view.
-    /// Mirrors react-data-grid's Infinite Scrolling.
-    /// Requires a fixed <see cref="Height"/>. The returned <c>TotalCount</c> is ignored in this mode.
-    /// </summary>
-    [Parameter] public Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>? OnLoadMore { get; set; }
-
-    /// <summary>Number of rows fetched per batch in infinite-scrolling mode. Default: 50.</summary>
-    [Parameter] public int LoadMoreBatchSize { get; set; } = 50;
-
-    /// <summary>
-    /// Renders a quick-search box in the toolbar that filters rows across <b>every</b> searchable
-    /// column at once (the grid-wide counterpart of the per-column filter row). Matching is
-    /// case-insensitive and runs against each column's formatted display text, so what the user sees
-    /// is what they can search for. In server and infinite-scrolling modes the term is forwarded as
-    /// <see cref="BitDataGridReadRequest.Search"/>; in queryable mode it is translated into an OR of
-    /// <c>Contains</c> predicates over the string-typed columns so the provider runs it at the source.
-    /// Mirrors MUI X's Quick Filter and AG Grid's Quick Filter.
-    /// </summary>
-    [Parameter] public bool ShowSearchBox { get; set; }
-
-    /// <summary>The quick-search term, as a two-way bindable value. Setting it applies the search
-    /// exactly as typing into the search box would; the search box itself is only rendered when
-    /// <see cref="ShowSearchBox"/> is set, so this can also drive an external search field.</summary>
-    [Parameter] public string? SearchText { get; set; }
-
-    /// <summary>Raised whenever the quick-search term changes.</summary>
-    [Parameter] public EventCallback<string?> SearchTextChanged { get; set; }
-
-    /// <summary>
-    /// How long (in milliseconds) the search box waits after the last keystroke before applying the
-    /// term, so a grid searches as the user types without re-querying on every character. Default:
-    /// 300. Set <c>0</c> to apply each keystroke immediately - sensible for a small in-memory grid,
-    /// but a busy one against <see cref="OnRead"/> or an <see cref="IQueryable{T}"/> provider issues
-    /// one request per character. Mirrors MUI X's <c>debounceMs</c> on its quick filter.
-    /// </summary>
-    [Parameter] public int SearchDebounce { get; set; } = 300;
-
-    /// <summary>Column definitions and other declarative children.</summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    /// <summary>Alias of <see cref="ChildContent"/>, letting column definitions read declaratively as
-    /// <c>&lt;Columns&gt;...&lt;/Columns&gt;</c>. Both fragments are rendered when both are set.</summary>
-    [Parameter] public RenderFragment? Columns { get; set; }
-
-    /// <summary>
-    /// Replaces the grid body with a loading row (<see cref="LoadingTemplate"/>, or a spinner and the
-    /// localized loading text) while data is being fetched, and marks the grid <c>aria-busy</c>. The
-    /// rows are hidden for as long as it is set rather than dimmed behind an overlay.
-    /// <para>A server grid (<see cref="OnRead"/>) needs it for none of that: it marks itself <c>aria-busy</c> while it
-    /// reads, and shows the loading row while it has no rows yet. Rows already on screen stay up while it reads the
-    /// next ones, unless this is set.</para>
-    /// </summary>
-    [Parameter] public bool Loading { get; set; }
-
-    /// <summary>Optional key selector used for selection/edit identity. Defaults to reference equality.</summary>
-    [Parameter] public Func<TItem, object>? KeyField { get; set; }
-
-    /// <summary>
-    /// Optional child selector that turns the grid into a hierarchical <b>tree grid</b>.
-    /// Return the direct children of an item, or <c>null</c>/empty for a leaf. When set,
-    /// the bound <see cref="Items"/> are treated as the root nodes and rows render with
-    /// expand/collapse toggles and indentation. Mirrors react-data-grid's Tree View.
-    /// </summary>
-    [Parameter] public Func<TItem, IEnumerable<TItem>?>? ChildrenSelector { get; set; }
-
-    /// <summary>When tree mode is active, controls whether nodes start expanded. Default: collapsed.
-    /// Ignored in lazy mode (<see cref="ChildrenProvider"/> or <see cref="OnLoadChildren"/>), where children aren't
-    /// known up front.</summary>
-    [Parameter] public bool TreeInitiallyExpanded { get; set; }
-
-    /// <summary>
-    /// Async children provider for a <b>lazily-loaded</b> tree grid: children are fetched (e.g. from a
-    /// backend) the first time a node is expanded and cached for later toggles. Pair it with
-    /// <see cref="HasChildrenSelector"/> so unloaded nodes know whether to render an expand toggle.
-    /// Mutually exclusive with <see cref="ChildrenSelector"/>.
-    /// <para>The grid cannot tell it to stop: <see cref="OnLoadChildren"/> loads the same way and also hands over a
-    /// token the grid cancels once it no longer needs the children.</para>
-    /// </summary>
-    [Parameter] public Func<TItem, Task<IEnumerable<TItem>?>>? ChildrenProvider { get; set; }
-
-    /// <summary>
-    /// The <see cref="ChildrenProvider"/> that can be cancelled: it loads a node's children the same way, and is called
-    /// with a <see cref="BitDataGridChildrenRequest{TItem}"/> carrying the node and a <see cref="CancellationToken"/>.
-    /// The grid cancels that token once it no longer needs the children - a new <see cref="Items"/> reference replaced
-    /// the hierarchy, or the grid was disposed - and then ignores the <see cref="OperationCanceledException"/> the fetch
-    /// throws. Set only one of <see cref="ChildrenSelector"/>, <see cref="ChildrenProvider"/> and this.
-    /// </summary>
-    [Parameter] public Func<BitDataGridChildrenRequest<TItem>, Task<IEnumerable<TItem>?>>? OnLoadChildren { get; set; }
-
-    /// <summary>
-    /// Tells whether a node can have children before they are loaded, so the expand toggle renders on
-    /// unloaded lazy nodes. Only used with <see cref="ChildrenProvider"/> or <see cref="OnLoadChildren"/>; when
-    /// omitted, a node shows a toggle only after its children have been loaded (i.e. never for the initial render),
-    /// so providing it is strongly recommended.
-    /// </summary>
-    [Parameter] public Func<TItem, bool>? HasChildrenSelector { get; set; }
-
-    // ------------------------------------------------------------ Appearance
-    /// <summary>Height of the scroll viewport, e.g. "480px". Required for virtualization.</summary>
-    [Parameter] public string? Height { get; set; }
-
-    /// <summary>Custom CSS classes for the different parts of the grid.</summary>
-    [Parameter, ResetClassBuilder] public BitDataGridClassStyles? Classes { get; set; }
-
-    /// <summary>Custom CSS styles for the different parts of the grid.</summary>
-    [Parameter, ResetStyleBuilder] public BitDataGridClassStyles? Styles { get; set; }
-
-    /// <summary>Shades every other row. Default: true.</summary>
-    [Parameter, ResetClassBuilder] public bool Striped { get; set; } = true;
-
-    /// <summary>Highlights the row under the pointer. Default: true.</summary>
-    [Parameter, ResetClassBuilder] public bool Hoverable { get; set; } = true;
-
-    /// <summary>Draws the outer border and the lines between columns; the lines between rows are always drawn. Default: true.</summary>
-    [Parameter, ResetClassBuilder] public bool Bordered { get; set; } = true;
-
-    /// <summary>Renders the header rows (column titles, header groups and the filter row). Default: true.</summary>
-    [Parameter] public bool ShowHeader { get; set; } = true;
-
-    /// <summary>
-    /// The id of the element - a visible heading, say - that names the grid, in place of <see cref="BitComponentBase.AriaLabel"/>.
-    /// It lands on the element that carries the grid role, where a name is read, rather than on the root.
-    /// </summary>
-    [Parameter] public string? AriaLabelledBy { get; set; }
-
-    /// <summary>The id of the element that describes the grid - a caption, or how its keyboard works - read after its name.</summary>
-    [Parameter] public string? AriaDescribedBy { get; set; }
-
-    /// <summary>
-    /// Renders a narrow leading column numbering the rows, the line-number gutter every desktop grid
-    /// offers (AG Grid's row numbers, Syncfusion's row-index column). The number is the row's position
-    /// in the whole dataset, so it keeps counting across pages, scrolled virtual windows and
-    /// infinite-scroll batches rather than restarting at each page. It is chrome, not data: exports and
-    /// clipboard copies never carry it.
-    /// </summary>
-    [Parameter] public bool ShowRowNumbers { get; set; }
-
-    /// <summary>
-    /// Gives every data cell a native tooltip carrying its full text, so a value the column is too
-    /// narrow to show stays readable on hover. Overridable per column with
-    /// <c>BitDataGridColumn.ShowTooltip</c>; only cells rendering the column's own value get one
-    /// (a <c>Template</c> owns its markup, and its tooltip with it).
-    /// </summary>
-    [Parameter] public bool ShowCellTooltips { get; set; }
-
-    /// <summary>
-    /// Lets long cell values wrap onto several lines instead of being clipped to one, with each row
-    /// growing to fit its tallest cell - the "auto wrap / auto row height" every professional grid
-    /// offers (AG Grid's <c>wrapText</c> + <c>autoHeight</c>, Syncfusion's AutoWrap). Column headers
-    /// wrap too, so a long title no longer ellipsises. Overridable per column with
-    /// <c>BitDataGridColumn.WrapText</c>. Not compatible with <see cref="Virtualize"/>, which requires
-    /// every row to be exactly <see cref="RowHeight"/> tall.
-    /// </summary>
-    [Parameter] public bool WrapCellText { get; set; }
-
-    /// <summary>Renders the footer row with the columns' aggregates (see <c>BitDataGridColumn.Aggregate</c>).</summary>
-    [Parameter] public bool ShowFooter { get; set; }
-
-    /// <summary>
-    /// The params object a <see cref="BitParams"/> ancestor shares with every BitDataGrid below it, whose values apply
-    /// wherever the grid does not set the parameter itself.
-    /// </summary>
-    [CascadingParameter(Name = BitDataGridParams.ParamName)]
-    public BitDataGridParams? CascadingParameters { get; set; }
-
-    // -------------------------------------------------------- Feature toggles
-    /// <summary>Lets a header click sort by its column. Overridable per column. Default: true.</summary>
-    [Parameter] public bool Sortable { get; set; } = true;
-
-    /// <summary>Lets Ctrl/Cmd or Shift+click add a column to the sort instead of replacing it. Default: true.</summary>
-    [Parameter] public bool MultiSort { get; set; } = true;
-
-    /// <summary>
-    /// Whether clicking a sorted header a third time returns the column to its unsorted state.
-    /// Default: <c>true</c> (ascending → descending → unsorted). Set <c>false</c> to cycle between
-    /// ascending and descending only, which is what a grid whose rows are meaningless in their source
-    /// order wants - the equivalent of dropping <c>null</c> from AG Grid's <c>sortingOrder</c>.
-    /// Overridable per column with <c>BitDataGridColumn.AllowUnsorted</c>.
-    /// </summary>
-    [Parameter] public bool AllowUnsorted { get; set; } = true;
-
-    /// <summary>Renders the filter row under the headers, with an editor that follows each column's data type.
-    /// Overridable per column.</summary>
-    [Parameter] public bool Filterable { get; set; }
-
-    /// <summary>
-    /// Shows a compact operator dropdown next to each text/number/date filter editor so users can pick
-    /// the comparison (contains/starts with/=/≠/&gt;/≥/&lt;/≤ …) instead of the fixed default
-    /// (Contains for text, Equals otherwise). Overridable per column.
-    /// </summary>
-    [Parameter] public bool FilterOperators { get; set; }
-
-    /// <summary>
-    /// How long (in milliseconds) a text or number filter box waits after the last keystroke before it
-    /// applies, so the grid filters as the user types. Default: 300. <c>0</c> applies each keystroke;
-    /// a negative value applies only on Enter or when the box loses focus. Date, boolean and enum
-    /// editors apply on every change regardless.
-    /// </summary>
-    [Parameter] public int FilterDebounce { get; set; } = 300;
-    /// <summary>Lets the columns be resized: drag the edge of a header, double-click it to fit the content, or focus it
-    /// - it is a separator - and use Left/Right (Shift for bigger steps), Home/End for MinWidth/MaxWidth and Enter to fit.</summary>
-    [Parameter] public bool Resizable { get; set; }
-
-    /// <summary>Lets the columns be reordered: drag a header (mouse, touch or pen), press Ctrl+Left/Right on anything
-    /// focused in it, or use the move buttons of the column chooser (<see cref="ShowColumnChooser"/>).</summary>
-    [Parameter] public bool Reorderable { get; set; }
-
-    /// <summary>Adds a group-by toggle to the headers; grouping by several columns nests the groups. Client-side data
-    /// only. Overridable per column.</summary>
-    [Parameter] public bool Groupable { get; set; }
-
-    /// <summary>
-    /// Groups start collapsed instead of expanded, so a grouped grid opens as a compact list of
-    /// group headers the user drills into. Flipped at runtime by
-    /// <see cref="ExpandAllGroupsAsync"/>/<see cref="CollapseAllGroupsAsync"/>.
-    /// </summary>
-    [Parameter] public bool GroupsInitiallyCollapsed { get; set; }
-
-    /// <summary>Renders the toolbar, which hosts the Clear filters button while a filter is on. The other toolbar
-    /// features (search, export, the column chooser, Add, ToolbarTemplate) show it on their own, and a bar with nothing
-    /// in it takes no room.</summary>
-    [Parameter] public bool ShowToolbar { get; set; }
-
-    /// <summary>Renders the toolbar button that opens the column chooser, which shows, hides and - with Reorderable -
-    /// moves the columns.</summary>
-    [Parameter] public bool ShowColumnChooser { get; set; }
-
-    /// <summary>Renders the toolbar button that exports every matching row to CSV.</summary>
-    [Parameter] public bool ShowCsvExport { get; set; }
-
-    /// <summary>Renders an Excel (.xlsx) export button in the toolbar. The export is generated
-    /// in-process with no external dependency; in server mode it covers all matching rows.</summary>
-    [Parameter] public bool ShowExcelExport { get; set; }
-
-    /// <summary>Renders the toolbar's buttons - Add row, Clear filters, the CSV and Excel exports and Columns - as icons
-    /// alone, for a compact toolbar. Each button's text (<see cref="Strings"/>) stays its accessible name and is shown in a
-    /// tooltip on hover, on keyboard focus and on a touch. A button given no icon of its own draws a built-in one, from a
-    /// font the package ships: Add, ClearFilter, TextDocument, ExcelDocument and ColumnOptions.</summary>
-    /// <remarks>Each button takes its icon from a pair of parameters - <c>XIcon</c> for an external icon library (a
-    /// ligature set like Material Icons included), <c>XIconName</c> for the Fluent UI icon set of the
-    /// <c>Bit.BlazorUI.Icons</c> nuget package - shown beside the text, or in place of it in this mode. A name is drawn by
-    /// that package's stylesheet, so the app links it, and is written as a literal (a <c>BitIconName</c> constant) for a
-    /// trimmed publish to keep its glyph; a button left without either keeps its built-in glyph, which needs
-    /// neither.</remarks>
-    [Parameter] public bool ToolbarIconOnly { get; set; }
-
-    /// <summary>The icon of the Add row button, from an external icon library. Takes precedence over
-    /// <see cref="AddRowIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
-    [Parameter] public BitIconInfo? AddRowIcon { get; set; }
-
-    /// <summary>The name of the icon of the Add row button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
-    /// nuget package (e.g. <c>BitIconName.CirclePlus</c>). See <see cref="ToolbarIconOnly"/>.</summary>
-    [Parameter] public string? AddRowIconName { get; set; }
-
-    /// <summary>The icon of the Clear filters button, from an external icon library. Takes precedence over
-    /// <see cref="ClearFiltersIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
-    [Parameter] public BitIconInfo? ClearFiltersIcon { get; set; }
-
-    /// <summary>The name of the icon of the Clear filters button, from the Fluent UI icon set of the
-    /// <c>Bit.BlazorUI.Icons</c> nuget package (e.g. <c>BitIconName.FilterSolid</c>). See <see cref="ToolbarIconOnly"/>.</summary>
-    [Parameter] public string? ClearFiltersIconName { get; set; }
-
-    /// <summary>The icon of the Columns button, which opens the column chooser, from an external icon library. Takes
-    /// precedence over <see cref="ColumnChooserIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
-    [Parameter] public BitIconInfo? ColumnChooserIcon { get; set; }
-
-    /// <summary>The name of the icon of the Columns button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
-    /// nuget package (e.g. <c>BitIconName.TripleColumn</c>). See <see cref="ToolbarIconOnly"/>.</summary>
-    [Parameter] public string? ColumnChooserIconName { get; set; }
-
-    /// <summary>The icon of the CSV export button, from an external icon library. Takes precedence over
-    /// <see cref="CsvExportIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
-    [Parameter] public BitIconInfo? CsvExportIcon { get; set; }
-
-    /// <summary>The name of the icon of the CSV export button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
-    /// nuget package (e.g. <c>BitIconName.Download</c>). See <see cref="ToolbarIconOnly"/>.</summary>
-    [Parameter] public string? CsvExportIconName { get; set; }
-
-    /// <summary>The icon of the Excel export button, from an external icon library. Takes precedence over
-    /// <see cref="ExcelExportIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
-    [Parameter] public BitIconInfo? ExcelExportIcon { get; set; }
-
-    /// <summary>The name of the icon of the Excel export button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
-    /// nuget package (e.g. <c>BitIconName.ExcelLogo</c>). See <see cref="ToolbarIconOnly"/>.</summary>
-    [Parameter] public string? ExcelExportIconName { get; set; }
-
-    /// <summary>
-    /// Base name (without extension) of the downloaded export files, so a grid can name its own
-    /// downloads instead of the generic default. <c>"orders"</c> produces <c>orders.csv</c> and
-    /// <c>orders.xlsx</c>. Defaults to <c>"export"</c>.
-    /// </summary>
-    [Parameter] public string? ExportFileName { get; set; }
-
-    /// <summary>When true, Excel exports (the toolbar button as well as
-    /// <see cref="ToExcelAsync"/>/<see cref="ExportExcelAsync"/>) also carry the grid's current
-    /// visual theme: the rendered header/row colors, striped alternating rows, border color and
-    /// bold/italic fonts are sampled from the live DOM (so the active theme - including dark mode -
-    /// is what lands in the workbook) and baked into the file's style sheet. Falls back to the
-    /// plain bold-header styling when JS is unavailable (prerendering, disconnected circuit).</summary>
-    [Parameter] public bool ExcelExportStyled { get; set; }
-
-    /// <summary>
-    /// Enables keyboard cell navigation. Cells become focusable via a roving tabindex and
-    /// respond to arrow keys, <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>PageUp</kbd>/<kbd>PageDown</kbd>
-    /// (and <kbd>Ctrl</kbd> variants). <kbd>Enter</kbd>/<kbd>F2</kbd> begins editing an editable
-    /// cell and <kbd>Esc</kbd> cancels. Mirrors react-data-grid's Cell Navigation. No JavaScript
-    /// is used - focus is driven by Blazor's built-in <c>FocusAsync</c>. Always on for an editable grid
-    /// whose <see cref="EditMode"/> is <see cref="BitDataGridEditMode.Cell"/>, and for Single <see cref="SelectionMode"/>.
-    /// Without it the grid is announced as a table (<c>role="table"</c>, its cells <c>cell</c>), since none of its
-    /// cells can take the focus, unless it is a tree (<c>treegrid</c>).
-    /// </summary>
-    [Parameter] public bool CellNavigation { get; set; }
-
-    /// <summary>
-    /// Enables copying the grid's data to the system clipboard with <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>C</kbd>
-    /// while a cell is focused (requires <see cref="CellNavigation"/>), and through
-    /// <see cref="CopyToClipboardAsync(TItem)"/> from code. The selected rows are copied when there is a
-    /// selection, otherwise the focused row; the payload is tab-separated text with a header line, so
-    /// it pastes straight into Excel or Google Sheets as columns. Mirrors AG Grid's and
-    /// react-data-grid's clipboard copy.
-    /// </summary>
-    [Parameter] public bool ClipboardCopy { get; set; }
-
-    /// <summary>
-    /// Enables drag-and-drop row reordering using native HTML drag-and-drop (no JS interop).
-    /// Provide <see cref="OnRowReorder"/> to persist the new order.
-    /// </summary>
-    [Parameter] public bool RowReorderable { get; set; }
-
-    /// <summary>
-    /// Raised when a row is dropped onto another row during reordering. The grid reorders the
-    /// bound <see cref="Items"/> list in place when it is a mutable <see cref="IList{T}"/>;
-    /// use this callback to persist or override the change.
-    /// </summary>
-    [Parameter] public EventCallback<BitDataGridRowReorderEventArgs<TItem>> OnRowReorder { get; set; }
-
-    // ------------------------------------------------------------- Selection
-    /// <summary>How rows are selected: not at all, by a row click (Single; a click on a control in a cell selects
-    /// nothing, see <see cref="OnRowClick"/>), or by a checkbox column with a select-all box (Multiple). Single makes the cells keyboard-navigable (<see cref="CellNavigation"/>), so Space can select the
-    /// focused row.</summary>
-    [Parameter] public BitSelectionMode SelectionMode { get; set; } = BitSelectionMode.None;
-
-    /// <summary>The selected rows, as a two-way bindable list. Tracked by <see cref="KeyField"/>, so a selection
-    /// survives a refresh that hands the grid new instances of the same rows.</summary>
-    [Parameter] public IReadOnlyList<TItem>? SelectedItems { get; set; }
-
-    /// <summary>Raised with the new selection whenever it changes.</summary>
-    [Parameter] public EventCallback<IReadOnlyList<TItem>> SelectedItemsChanged { get; set; }
+    /// <summary>Raised with the row once an edit is cancelled and its values are restored.</summary>
+    [Parameter] public EventCallback<TItem> OnRowCancel { get; set; }
 
     /// <summary>
     /// Raised when a row is clicked. A click on a control in one of its cells is the control's, not the row's: a
@@ -406,6 +351,12 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </summary>
     [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
 
+    /// <summary>Raised with the blank row <see cref="NewItemFactory"/> built, as it opens for editing.</summary>
+    [Parameter] public EventCallback<TItem> OnRowCreate { get; set; }
+
+    /// <summary>Raised with the row that its Delete button (or the Delete key) removes; take it out of the data here.</summary>
+    [Parameter] public EventCallback<TItem> OnRowDelete { get; set; }
+
     /// <summary>
     /// Raised when a row is double-clicked - the row-level counterpart of
     /// <see cref="OnCellDoubleClick"/>, and the usual hook for "open this record" or for starting an
@@ -414,144 +365,20 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </summary>
     [Parameter] public EventCallback<TItem> OnRowDoubleClick { get; set; }
 
-    /// <summary>Raised when a data cell is clicked, unless the click is on a control in it (see <see cref="OnRowClick"/>).</summary>
-    [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellClick { get; set; }
-
-    /// <summary>Raised when a data cell is double-clicked, unless the double-click is on a control in it, which opens no
-    /// editor either (see <see cref="OnRowClick"/>).</summary>
-    [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellDoubleClick { get; set; }
-
-    /// <summary>Raised when a data cell is right-clicked. Useful for custom context menus: the browser's own menu is
-    /// suppressed while it is set. A right-click on a control in the cell (see <see cref="OnRowClick"/>) raises nothing
-    /// and keeps the browser's menu - a link's "open in a new tab", a field's "paste".</summary>
-    [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellContextMenu { get; set; }
-
     /// <summary>
-    /// Optional predicate that returns <c>true</c> when a given row may not be selected.
-    /// Mirrors react-data-grid's <c>isRowSelectionDisabled</c>; such rows are skipped by
-    /// select-all and render a disabled checkbox.
+    /// Raised when a row is dropped onto another row during reordering. The grid reorders the
+    /// bound <see cref="Items"/> list in place when it is a mutable <see cref="IList{T}"/>;
+    /// use this callback to persist or override the change.
     /// </summary>
-    [Parameter] public Func<TItem, bool>? IsRowSelectionDisabled { get; set; }
-
-    // --------------------------------------------------------------- Paging
-    /// <summary>Splits the rows into pages and renders the pager. Ignored while grouping, in tree mode and with
-    /// <see cref="OnLoadMore"/>, which show every row they hold.</summary>
-    [Parameter] public bool Pageable { get; set; }
-
-    /// <summary>The number of rows per page. Default: 20.</summary>
-    [Parameter] public int PageSize { get; set; } = 20;
-
-    /// <summary>The page sizes the pager's dropdown offers; the <see cref="PageSize"/> in effect is added when it is not among them.</summary>
-    [Parameter] public int[] PageSizeOptions { get; set; } = { 10, 20, 50, 100 };
-
-    /// <summary>Where the pager renders: below the rows (the default), above them, or both.</summary>
-    [Parameter] public BitPlacement PagerPlacement { get; set; } = BitPlacement.Bottom;
-
-    // --------------------------------------------------------- Virtualization
-    /// <summary>
-    /// Renders only the rows in (and near) the viewport. Requires a fixed <see cref="Height"/> and a
-    /// uniform <see cref="RowHeight"/>. In client mode the current view is virtualized in memory; in
-    /// server mode (<see cref="OnRead"/>) with paging disabled, row windows are fetched on demand
-    /// through <see cref="OnRead"/> as the user scrolls, so arbitrarily large remote datasets can be
-    /// browsed without a pager. A grouped view is virtualized as well: its group rows are rows like the others,
-    /// <see cref="RowHeight"/> tall, with their title, count and aggregates kept on one line.
-    /// <para>
-    /// Because the scroll math assumes every row is exactly <see cref="RowHeight"/> tall, anything that
-    /// makes a row taller breaks it: <see cref="RowHeightSelector"/> and <see cref="WrapCellText"/> are
-    /// ignored while this is on, and an expanded <see cref="DetailTemplate"/> row is not accounted for -
-    /// pair master-detail with paging rather than with virtualization.
-    /// </para>
-    /// </summary>
-    [Parameter] public bool Virtualize { get; set; }
-
-    /// <summary>The minimum height of a row in pixels - with <see cref="Virtualize"/>, the exact height of every row. Default: 36.</summary>
-    [Parameter] public float RowHeight { get; set; } = 36f;
-
-    /// <summary>
-    /// Renders only the columns in (and near) the horizontal viewport, replacing scrolled-out runs
-    /// with spacer cells - for grids with very many columns. Column x-positions are computed from
-    /// pixel widths, so give columns explicit px <c>Width</c>s (non-px widths fall back to their
-    /// resize default). Not applied while column header groups or per-row <c>ColSpan</c>s are used
-    /// (both can span across the skipped runs); keyboard cell navigation can only reach rendered
-    /// columns while this is active.
-    /// </summary>
-    [Parameter] public bool VirtualizeColumns { get; set; }
-
-    /// <summary>
-    /// Optional per-row height selector (in pixels). Mirrors react-data-grid's functional
-    /// <c>rowHeight</c>. Ignored while <see cref="Virtualize"/> is enabled, which requires a
-    /// uniform <see cref="RowHeight"/>.
-    /// </summary>
-    [Parameter] public Func<TItem, float>? RowHeightSelector { get; set; }
-
-    // -------------------------------------------------------------- Editing
-    /// <summary>Lets the rows be edited inline, in editors that follow each column's data type, and adds the command
-    /// column. Edits are buffered and written to the row only once saved. Overridable per column.</summary>
-    [Parameter] public bool Editable { get; set; }
-
-    /// <summary>
-    /// How much of a row an inline edit opens: the whole row with Save/Cancel (<see cref="BitDataGridEditMode.Row"/>,
-    /// the default), or one cell at a time, spreadsheet-style (<see cref="BitDataGridEditMode.Cell"/>) - opened by
-    /// Enter, F2 or a double-click and committed by Enter, by Tab (which opens the next editable cell) or by moving
-    /// the focus out of it, each commit raising
-    /// <see cref="OnRowSave"/>. Cell mode makes the cells keyboard-navigable (<see cref="CellNavigation"/>).
-    /// </summary>
-    [Parameter] public BitDataGridEditMode EditMode { get; set; }
-    /// <summary>Builds the blank row that the toolbar's Add button (and <see cref="AddNewRowAsync"/>) opens for editing.</summary>
-    [Parameter] public Func<TItem>? NewItemFactory { get; set; }
+    [Parameter] public EventCallback<BitDataGridRowReorderEventArgs<TItem>> OnRowReorder { get; set; }
 
     /// <summary>Raised with the row once an edit is saved and its values are written to it.</summary>
     [Parameter] public EventCallback<TItem> OnRowSave { get; set; }
-
-    /// <summary>Raised with the row once an edit is cancelled and its values are restored.</summary>
-    [Parameter] public EventCallback<TItem> OnRowCancel { get; set; }
-
-    /// <summary>Raised with the row that its Delete button (or the Delete key) removes; take it out of the data here.</summary>
-    [Parameter] public EventCallback<TItem> OnRowDelete { get; set; }
-
-    /// <summary>Raised with the blank row <see cref="NewItemFactory"/> built, as it opens for editing.</summary>
-    [Parameter] public EventCallback<TItem> OnRowCreate { get; set; }
-
-    // ------------------------------------------------------------ Templates
-    /// <summary>Custom content shown in place of the rows when there are none.</summary>
-    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
-
-    /// <summary>Custom content rendered in place of the built-in spinner while <see cref="Loading"/>
-    /// is true, and while a server grid (<see cref="OnRead"/>) with no rows yet reads its first ones.</summary>
-    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
-
-    /// <summary>Custom content at the start of the toolbar, before the built-in controls.</summary>
-    [Parameter] public RenderFragment? ToolbarTemplate { get; set; }
-
-    /// <summary>Content rendered under a row while it is expanded - a form, a chart, a nested grid - with a toggle
-    /// column to open it (see <see cref="ShowDetailToggle"/>).</summary>
-    [Parameter] public RenderFragment<TItem>? DetailTemplate { get; set; }
-
-    // ----------------------------------------------------- Row appearance
-    /// <summary>
-    /// Optional per-row CSS class selector, appended to the row's own classes - the conditional
-    /// row styling every professional grid offers (AG Grid's <c>rowClassRules</c>, MUI X's
-    /// <c>getRowClassName</c>). Return <c>null</c> for no extra class.
-    /// </summary>
-    [Parameter] public Func<TItem, string?>? RowClass { get; set; }
-
-    /// <summary>Optional per-row inline style selector, appended to the row's layout style.
-    /// Return <c>null</c> for no extra style.</summary>
-    [Parameter] public Func<TItem, string?>? RowStyle { get; set; }
 
     // --------------------------------------------------------- View events
     /// <summary>Raised with the new sort descriptors whenever the sorting changes (by header click or
     /// through the programmatic API). Useful for persisting the view alongside <see cref="GetState"/>.</summary>
     [Parameter] public EventCallback<IReadOnlyList<BitDataGridSortDescriptor>> OnSortChange { get; set; }
-
-    /// <summary>Raised with the new filter descriptors whenever the filtering changes.</summary>
-    [Parameter] public EventCallback<IReadOnlyList<BitDataGridFilterDescriptor>> OnFilterChange { get; set; }
-
-    /// <summary>Raised with the new group descriptors whenever the grouping changes.</summary>
-    [Parameter] public EventCallback<IReadOnlyList<BitDataGridGroupDescriptor>> OnGroupChange { get; set; }
-
-    /// <summary>Raised with the new 1-based page number whenever the page or the page size changes.</summary>
-    [Parameter] public EventCallback<int> OnPageChange { get; set; }
 
     /// <summary>
     /// Raised with a fresh <see cref="GetState"/> snapshot once the grid has re-rendered after anything that snapshot
@@ -576,6 +403,101 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </summary>
     [Parameter] public EventCallback<IReadOnlyList<TItem>> OnViewChange { get; set; }
 
+    // --------------------------------------------------------------- Paging
+    /// <summary>Splits the rows into pages and renders the pager. Ignored while grouping, in tree mode and with
+    /// <see cref="OnLoadMore"/>, which show every row they hold.</summary>
+    [Parameter] public bool Pageable { get; set; }
+
+    /// <summary>Where the pager renders: below the rows (the default), above them, or both.</summary>
+    [Parameter] public BitPlacement PagerPlacement { get; set; } = BitPlacement.Bottom;
+
+    /// <summary>The number of rows per page. Default: 20.</summary>
+    [Parameter] public int PageSize { get; set; } = 20;
+
+    /// <summary>The page sizes the pager's dropdown offers; the <see cref="PageSize"/> in effect is added when it is not among them.</summary>
+    [Parameter] public int[] PageSizeOptions { get; set; } = { 10, 20, 50, 100 };
+
+    /// <summary>Lets the columns be reordered: drag a header (mouse, touch or pen), press Ctrl+Left/Right on anything
+    /// focused in it, or use the move buttons of the column chooser (<see cref="ShowColumnChooser"/>).</summary>
+    [Parameter] public bool Reorderable { get; set; }
+
+    /// <summary>Lets the columns be resized: drag the edge of a header, double-click it to fit the content, or focus it
+    /// - it is a separator - and use Left/Right (Shift for bigger steps), Home/End for MinWidth/MaxWidth and Enter to fit.</summary>
+    [Parameter] public bool Resizable { get; set; }
+
+    // ----------------------------------------------------- Row appearance
+    /// <summary>
+    /// Optional per-row CSS class selector, appended to the row's own classes - the conditional
+    /// row styling every professional grid offers (AG Grid's <c>rowClassRules</c>, MUI X's
+    /// <c>getRowClassName</c>). Return <c>null</c> for no extra class.
+    /// </summary>
+    [Parameter] public Func<TItem, string?>? RowClass { get; set; }
+
+    /// <summary>The minimum height of a row in pixels - with <see cref="Virtualize"/>, the exact height of every row. Default: 36.</summary>
+    [Parameter] public float RowHeight { get; set; } = 36f;
+
+    /// <summary>
+    /// Optional per-row height selector (in pixels). Mirrors react-data-grid's functional
+    /// <c>rowHeight</c>. Ignored while <see cref="Virtualize"/> is enabled, which requires a
+    /// uniform <see cref="RowHeight"/>.
+    /// </summary>
+    [Parameter] public Func<TItem, float>? RowHeightSelector { get; set; }
+
+    /// <summary>
+    /// Enables drag-and-drop row reordering using native HTML drag-and-drop (no JS interop).
+    /// Provide <see cref="OnRowReorder"/> to persist the new order.
+    /// </summary>
+    [Parameter] public bool RowReorderable { get; set; }
+
+    /// <summary>Optional per-row inline style selector, appended to the row's layout style.
+    /// Return <c>null</c> for no extra style.</summary>
+    [Parameter] public Func<TItem, string?>? RowStyle { get; set; }
+
+    /// <summary>
+    /// How long (in milliseconds) the search box waits after the last keystroke before applying the
+    /// term, so a grid searches as the user types without re-querying on every character. Default:
+    /// 300. Set <c>0</c> to apply each keystroke immediately - sensible for a small in-memory grid,
+    /// but a busy one against <see cref="OnRead"/> or an <see cref="IQueryable{T}"/> provider issues
+    /// one request per character. Mirrors MUI X's <c>debounceMs</c> on its quick filter.
+    /// </summary>
+    [Parameter] public int SearchDebounce { get; set; } = 300;
+
+    /// <summary>The quick-search term, as a two-way bindable value. Setting it applies the search
+    /// exactly as typing into the search box would; the search box itself is only rendered when
+    /// <see cref="ShowSearchBox"/> is set, so this can also drive an external search field.</summary>
+    [Parameter] public string? SearchText { get; set; }
+
+    /// <summary>Raised whenever the quick-search term changes.</summary>
+    [Parameter] public EventCallback<string?> SearchTextChanged { get; set; }
+
+    /// <summary>The selected rows, as a two-way bindable list. Tracked by <see cref="KeyField"/>, so a selection
+    /// survives a refresh that hands the grid new instances of the same rows.</summary>
+    [Parameter] public IReadOnlyList<TItem>? SelectedItems { get; set; }
+
+    /// <summary>Raised with the new selection whenever it changes.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<TItem>> SelectedItemsChanged { get; set; }
+
+    // ------------------------------------------------------------- Selection
+    /// <summary>How rows are selected: not at all, by a row click (Single; a click on a control in a cell selects
+    /// nothing, see <see cref="OnRowClick"/>), or by a checkbox column with a select-all box (Multiple). Single makes the cells keyboard-navigable (<see cref="CellNavigation"/>), so Space can select the
+    /// focused row.</summary>
+    [Parameter] public BitSelectionMode SelectionMode { get; set; } = BitSelectionMode.None;
+
+    /// <summary>
+    /// Gives every data cell a native tooltip carrying its full text, so a value the column is too
+    /// narrow to show stays readable on hover. Overridable per column with
+    /// <c>BitDataGridColumn.ShowTooltip</c>; only cells rendering the column's own value get one
+    /// (a <c>Template</c> owns its markup, and its tooltip with it).
+    /// </summary>
+    [Parameter] public bool ShowCellTooltips { get; set; }
+
+    /// <summary>Renders the toolbar button that opens the column chooser, which shows, hides and - with Reorderable -
+    /// moves the columns.</summary>
+    [Parameter] public bool ShowColumnChooser { get; set; }
+
+    /// <summary>Renders the toolbar button that exports every matching row to CSV.</summary>
+    [Parameter] public bool ShowCsvExport { get; set; }
+
     // -------------------------------------------------------- Master detail
     /// <summary>
     /// Renders the expand/collapse toggle column on the inline-start edge of every row while a
@@ -586,32 +508,112 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </summary>
     [Parameter] public bool ShowDetailToggle { get; set; } = true;
 
-    /// <summary>
-    /// Expands (and collapses) a row's detail content when the row itself is clicked, so the toggle
-    /// button is no longer the only way in. Combines with <see cref="SelectionMode"/>: a click both
-    /// selects the row and toggles its detail. Clicks inside the reorder/detail/select/command cells and on a
-    /// control in a cell (see <see cref="OnRowClick"/>) are excluded, since those own their own interaction.
-    /// </summary>
-    [Parameter] public bool ExpandDetailOnRowClick { get; set; }
+    /// <summary>Renders an Excel (.xlsx) export button in the toolbar. The export is generated
+    /// in-process with no external dependency; in server mode it covers all matching rows.</summary>
+    [Parameter] public bool ShowExcelExport { get; set; }
+
+    /// <summary>Renders the footer row with the columns' aggregates (see <c>BitDataGridColumn.Aggregate</c>).</summary>
+    [Parameter] public bool ShowFooter { get; set; }
+
+    /// <summary>Renders the header rows (column titles, header groups and the filter row). Default: true.</summary>
+    [Parameter] public bool ShowHeader { get; set; } = true;
 
     /// <summary>
-    /// Rows whose detail content is expanded, as a two-way bindable list. Binding it takes control of
-    /// the expanded state (the grid then only reports changes back through it), which is what lets a
-    /// parent expand or collapse details declaratively. Leave it unset to let the grid keep the state
-    /// itself and use <see cref="ExpandDetailAsync"/>/<see cref="CollapseDetailAsync"/> instead.
+    /// Renders a narrow leading column numbering the rows, the line-number gutter every desktop grid
+    /// offers (AG Grid's row numbers, Syncfusion's row-index column). The number is the row's position
+    /// in the whole dataset, so it keeps counting across pages, scrolled virtual windows and
+    /// infinite-scroll batches rather than restarting at each page. It is chrome, not data: exports and
+    /// clipboard copies never carry it.
     /// </summary>
-    [Parameter] public IReadOnlyList<TItem>? ExpandedDetailItems { get; set; }
+    [Parameter] public bool ShowRowNumbers { get; set; }
 
-    /// <summary>Raised with the new set of expanded rows whenever a detail row is expanded or collapsed.</summary>
-    [Parameter] public EventCallback<IReadOnlyList<TItem>> ExpandedDetailItemsChanged { get; set; }
+    /// <summary>
+    /// Renders a quick-search box in the toolbar that filters rows across <b>every</b> searchable
+    /// column at once (the grid-wide counterpart of the per-column filter row). Matching is
+    /// case-insensitive and runs against each column's formatted display text, so what the user sees
+    /// is what they can search for. In server and infinite-scrolling modes the term is forwarded as
+    /// <see cref="BitDataGridReadRequest.Search"/>; in queryable mode it is translated into an OR of
+    /// <c>Contains</c> predicates over the string-typed columns so the provider runs it at the source.
+    /// Mirrors MUI X's Quick Filter and AG Grid's Quick Filter.
+    /// </summary>
+    [Parameter] public bool ShowSearchBox { get; set; }
 
-    /// <summary>Raised when a single row's detail content is expanded or collapsed.</summary>
-    [Parameter] public EventCallback<BitDataGridDetailEventArgs<TItem>> OnDetailToggle { get; set; }
+    /// <summary>Renders the toolbar, which hosts the Clear filters button while a filter is on. The other toolbar
+    /// features (search, export, the column chooser, Add, ToolbarTemplate) show it on their own, and a bar with nothing
+    /// in it takes no room.</summary>
+    [Parameter] public bool ShowToolbar { get; set; }
+
+    // -------------------------------------------------------- Feature toggles
+    /// <summary>Lets a header click sort by its column. Overridable per column. Default: true.</summary>
+    [Parameter] public bool Sortable { get; set; } = true;
 
     // ---------------------------------------------------------- Localization
     /// <summary>All user-visible strings rendered by the grid. Assign a customized
     /// <see cref="BitDataGridStrings"/> to localize the UI; defaults to English.</summary>
     [Parameter] public BitDataGridStrings Strings { get; set; } = new();
+
+    /// <summary>Shades every other row. Default: true.</summary>
+    [Parameter, ResetClassBuilder] public bool Striped { get; set; } = true;
+
+    /// <summary>Custom CSS styles for the different parts of the grid.</summary>
+    [Parameter, ResetStyleBuilder] public BitDataGridClassStyles? Styles { get; set; }
+
+    /// <summary>Renders the toolbar's buttons - Add row, Clear filters, the CSV and Excel exports and Columns - as icons
+    /// alone, for a compact toolbar. Each button's text (<see cref="Strings"/>) stays its accessible name and is shown in a
+    /// tooltip on hover, on keyboard focus and on a touch. A button given no icon of its own draws a built-in one, from a
+    /// font the package ships: Add, ClearFilter, TextDocument, ExcelDocument and ColumnOptions.</summary>
+    /// <remarks>Each button takes its icon from a pair of parameters - <c>XIcon</c> for an external icon library (a
+    /// ligature set like Material Icons included), <c>XIconName</c> for the Fluent UI icon set of the
+    /// <c>Bit.BlazorUI.Icons</c> nuget package - shown beside the text, or in place of it in this mode. A name is drawn by
+    /// that package's stylesheet, so the app links it, and is written as a literal (a <c>BitIconName</c> constant) for a
+    /// trimmed publish to keep its glyph; a button left without either keeps its built-in glyph, which needs
+    /// neither.</remarks>
+    [Parameter] public bool ToolbarIconOnly { get; set; }
+
+    /// <summary>Custom content at the start of the toolbar, before the built-in controls.</summary>
+    [Parameter] public RenderFragment? ToolbarTemplate { get; set; }
+
+    /// <summary>When tree mode is active, controls whether nodes start expanded. Default: collapsed.
+    /// Ignored in lazy mode (<see cref="ChildrenProvider"/> or <see cref="OnLoadChildren"/>), where children aren't
+    /// known up front.</summary>
+    [Parameter] public bool TreeInitiallyExpanded { get; set; }
+
+    // --------------------------------------------------------- Virtualization
+    /// <summary>
+    /// Renders only the rows in (and near) the viewport. Requires a fixed <see cref="Height"/> and a
+    /// uniform <see cref="RowHeight"/>. In client mode the current view is virtualized in memory; in
+    /// server mode (<see cref="OnRead"/>) with paging disabled, row windows are fetched on demand
+    /// through <see cref="OnRead"/> as the user scrolls, so arbitrarily large remote datasets can be
+    /// browsed without a pager. A grouped view is virtualized as well: its group rows are rows like the others,
+    /// <see cref="RowHeight"/> tall, with their title, count and aggregates kept on one line.
+    /// <para>
+    /// Because the scroll math assumes every row is exactly <see cref="RowHeight"/> tall, anything that
+    /// makes a row taller breaks it: <see cref="RowHeightSelector"/> and <see cref="WrapCellText"/> are
+    /// ignored while this is on, and an expanded <see cref="DetailTemplate"/> row is not accounted for -
+    /// pair master-detail with paging rather than with virtualization.
+    /// </para>
+    /// </summary>
+    [Parameter] public bool Virtualize { get; set; }
+
+    /// <summary>
+    /// Renders only the columns in (and near) the horizontal viewport, replacing scrolled-out runs
+    /// with spacer cells - for grids with very many columns. Column x-positions are computed from
+    /// pixel widths, so give columns explicit px <c>Width</c>s (non-px widths fall back to their
+    /// resize default). Not applied while column header groups or per-row <c>ColSpan</c>s are used
+    /// (both can span across the skipped runs); keyboard cell navigation can only reach rendered
+    /// columns while this is active.
+    /// </summary>
+    [Parameter] public bool VirtualizeColumns { get; set; }
+
+    /// <summary>
+    /// Lets long cell values wrap onto several lines instead of being clipped to one, with each row
+    /// growing to fit its tallest cell - the "auto wrap / auto row height" every professional grid
+    /// offers (AG Grid's <c>wrapText</c> + <c>autoHeight</c>, Syncfusion's AutoWrap). Column headers
+    /// wrap too, so a long title no longer ellipsises. Overridable per column with
+    /// <c>BitDataGridColumn.WrapText</c>. Not compatible with <see cref="Virtualize"/>, which requires
+    /// every row to be exactly <see cref="RowHeight"/> tall.
+    /// </summary>
+    [Parameter] public bool WrapCellText { get; set; }
 
     // ---------------------------------------------------------------- State
     private readonly List<BitDataGridColumn<TItem>> _columns = new();

@@ -91,17 +91,17 @@ public partial class BitAiPromptInputDemo
         },
         new()
         {
-            Name = "MaxAttachmentSize",
-            Type = "long",
-            DefaultValue = "10 * 1024 * 1024",
-            Description = "The largest file the composer stages, in bytes (10 MB by default, DefaultMaxAttachmentSize). Checked in the browser before a pasted or dropped file is read, so an oversized file costs nothing to turn away. The files within it are streamed rather than sent in one message, so it is not tied to the SignalR message size of Blazor Server.",
-        },
-        new()
-        {
             Name = "MaxAttachments",
             Type = "int",
             DefaultValue = "20",
             Description = "The most files that can be staged at once (DefaultMaxAttachments). A file past it is turned away as TooMany.",
+        },
+        new()
+        {
+            Name = "MaxAttachmentSize",
+            Type = "long",
+            DefaultValue = "10 * 1024 * 1024",
+            Description = "The largest file the composer stages, in bytes (10 MB by default, DefaultMaxAttachmentSize). Checked in the browser before a pasted or dropped file is read, so an oversized file costs nothing to turn away. The files within it are streamed rather than sent in one message, so it is not tied to the SignalR message size of Blazor Server.",
         },
         new()
         {

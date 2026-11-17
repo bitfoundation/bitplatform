@@ -137,7 +137,7 @@
                 <tr><td>Bearer tokens</td><td><code>Bearer [token]</code></td><td><code>Bearer</code> followed by a token, case-insensitive</td></tr>
                 <tr><td>JSON Web Tokens</td><td><code>[jwt]</code></td><td>Three base64url segments starting with <code>eyJ</code></td></tr>
                 <tr><td>E-mail addresses</td><td><code>[email]</code></td><td><code>name&#64;domain.tld</code></td></tr>
-                <tr><td>Payment card numbers</td><td><code>[card]</code></td><td>13 to 19 digits, optionally grouped with spaces or dashes, and only when the Luhn checksum holds - so order numbers and timestamps survive</td></tr>
+                <tr><td>Payment card numbers</td><td><code>[card]</code></td><td>13 to 19 digits, optionally grouped with spaces or dashes, and only when the Luhn checksum holds and the run neither starts with 0 nor repeats one digit - so order numbers, timestamps and all-zero ids survive</td></tr>
                 <tr><td>IPv4 addresses</td><td><code>[ip]</code></td><td>Except after <code>Version=</code>, so .NET assembly versions in stack traces stay readable; except in a value whose key is named like a version (<code>AppVersion</code>, <code>app.version</code>, <code>build_version</code>), where the other patterns still apply; and except the host of a URL and <code>server.address</code> - <code>http://10.0.0.5:5000/api</code> stays readable in a dependency, because it names the server that was called, not the user</td></tr>
             </tbody>
         </table>

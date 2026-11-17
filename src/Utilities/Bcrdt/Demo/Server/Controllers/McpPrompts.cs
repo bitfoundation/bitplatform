@@ -79,7 +79,7 @@ public static class McpPrompts
                it is the decision that matters most. In a `BcrdtMap` a key written concurrently keeps one value and the
                other is lost; a `BcrdtText` keeps both edits; a `BcrdtArray` keeps both insertions (but `Move` and `Replace`
                are delete-then-insert); a `BcrdtSet` add wins over a concurrent remove when it adds an element the adder
-               did not hold; a `BcrdtCounter` sums every concurrent increment, where a number written back into a map
+               did not hold and its entry is the one kept (concurrent adds of one element keep one entry); a `BcrdtCounter` sums every concurrent increment, where a number written back into a map
                key keeps only one. Prose goes in a nested `BcrdtText` created once, before people edit it - two replicas
                that each create one at the same key keep only one.
             4. Write the concurrent edits you are worried about as operations and run them through `InspectBcrdtMerge`. It

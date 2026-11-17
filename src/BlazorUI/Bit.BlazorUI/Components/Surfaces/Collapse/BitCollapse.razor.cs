@@ -192,18 +192,6 @@ public partial class BitCollapse : BitComponentBase
     [Parameter, ResetClassBuilder] public BitCollapseClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The duration of the collapse transition in ms, for a section that closes at a different pace than it
-    /// opens.
-    /// </summary>
-    /// <remarks>
-    /// It overrides <see cref="Duration"/> while the collapse is closing and leaves the opening alone, which
-    /// is what a section that opens deliberately and gets out of the way quickly wants. Leaving it unset
-    /// keeps whatever <see cref="Duration"/> asks for. Negative values are clamped away.
-    /// </remarks>
-    [Parameter, ResetStyleBuilder]
-    public int? CollapseDuration { get; set; }
-
-    /// <summary>
     /// The size the collapse keeps while it is collapsed, as any CSS length, which leaves a peek of the
     /// content on the page instead of closing it all the way.
     /// </summary>
@@ -223,6 +211,18 @@ public partial class BitCollapse : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? CollapsedSize { get; set; }
+
+    /// <summary>
+    /// The duration of the collapse transition in ms, for a section that closes at a different pace than it
+    /// opens.
+    /// </summary>
+    /// <remarks>
+    /// It overrides <see cref="Duration"/> while the collapse is closing and leaves the opening alone, which
+    /// is what a section that opens deliberately and gets out of the way quickly wants. Leaving it unset
+    /// keeps whatever <see cref="Duration"/> asks for. Negative values are clamped away.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public int? CollapseDuration { get; set; }
 
     /// <summary>
     /// The default value of the Expanded parameter, for a collapse that is left to manage its own state.
@@ -391,17 +391,6 @@ public partial class BitCollapse : BitComponentBase
     public bool NoAnimation { get; set; }
 
     /// <summary>
-    /// Removes the fade of the content, leaving the size on its own to open and close the collapse.
-    /// <br />
-    /// The default value is <strong>false</strong>.
-    /// </summary>
-    /// <remarks>
-    /// A collapse that keeps a <see cref="CollapsedSize"/> never fades either way: the peek has to stay readable.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool NoFade { get; set; }
-
-    /// <summary>
     /// Stops clipping the content once the collapse has finished opening, so anything that reaches past the
     /// edges of the section - a focus ring, a shadow, a menu that drops out of a control inside it - is drawn
     /// in full instead of being cut off.
@@ -415,6 +404,17 @@ public partial class BitCollapse : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool NoClip { get; set; }
+
+    /// <summary>
+    /// Removes the fade of the content, leaving the size on its own to open and close the collapse.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A collapse that keeps a <see cref="CollapsedSize"/> never fades either way: the peek has to stay readable.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool NoFade { get; set; }
 
     /// <summary>
     /// Removes the padding the collapse puts around its content.

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Text.Json;
 using Microsoft.JSInterop;
 
 namespace Bit.Belemetry;
@@ -93,7 +94,9 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
 
             _callbacks = DotNetObjectReference.Create(new BelemetryJsCallbacks(this));
             var relay = _settings.BrowserTransport == BelemetryBrowserTransport.Relay;
-            using var attachOptions = JsonDocument.Parse($"{{\"relay\":{(relay ? "true" : "false")},\"unloadDrain\":{(UnloadDrain ? "true" : "false")}}}");
+            // A circuit's connection closes on a message over its size limit: on a server the script relays in parts.
+            var maxRelayBytes = relay && _settings.IsServer ? Math.Max(0, _settings.Options.Browser.MaxRelayMessageBytes) : 0;
+            using var attachOptions = JsonDocument.Parse($"{{\"relay\":{(relay ? "true" : "false")},\"unloadDrain\":{(UnloadDrain ? "true" : "false")}{(maxRelayBytes > 0 ? ",\"maxRelayBytes\":" + maxRelayBytes.ToString(CultureInfo.InvariantCulture) : "")}}}");
             await module.InvokeVoidAsync("attachDotNet", _callbacks, attachOptions.RootElement);
 
             _module = module;

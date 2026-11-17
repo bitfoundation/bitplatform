@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// press-and-hold, HideInput, Min/Max clamping and NoClamp, Step, PageStep, Precision and SnapToStep, every numeric
 /// type, the label positions, description, error and loading, the variants, icon and affixes, the clear button and its
 /// Escape (inside a BitDialog too), NumberFormat and Culture in en-US, de-DE and fa-IR, Immediate, DebounceTime and
-/// ThrottleTime with real typing, ReadOnly and IsInputReadOnly, the mouse wheel, NormalizeDigits, the events, the public
+/// ThrottleTime with real typing, ReadOnly and InputReadOnly, the mouse wheel, NormalizeDigits, the events, the public
 /// methods, EditForm validation, the spinbutton accessibility, the BitParams cascade, Background, Border, Accent and
 /// Size, external icons, Style/Class/Styles/Classes and the public CSS variables, RTL, reduced motion, prerendering
 /// and unmounting. The touch behaviour is in <see cref="BitNumberFieldTouchE2ETests"/>.
@@ -1249,7 +1249,7 @@ public class BitNumberFieldE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsInputReadOnly_BlocksOnlyTheTyping()
+    public async Task InputReadOnly_BlocksOnlyTheTyping()
     {
         await OpenAsync(Url);
 

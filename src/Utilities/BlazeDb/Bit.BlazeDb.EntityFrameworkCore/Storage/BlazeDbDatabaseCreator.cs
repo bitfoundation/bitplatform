@@ -88,14 +88,17 @@ internal sealed class BlazeDbDatabaseCreator : IDatabaseCreator
         }
 
         var storage = extension.Storage;
-        await _cache.ReleaseAsync(extension.StoreKey).ConfigureAwait(false);
+        // The delete runs inside the release, before the store can be opened again: made after it,
+        // a context that asked for the store in between would open a new engine on the storage and
+        // then lose everything it wrote when the files went from under it.
+        await _cache.ReleaseAsync(
+            extension.StoreKey,
+            storage is null
+                ? null
+                // The engine knows what it wrote; deleting only the manifest would leave a log the next
+                // open replays, bringing the deleted rows straight back.
+                : () => BlazeDbDatabase.DeleteAsync(storage, cancellationToken)).ConfigureAwait(false);
         _tables.Reset();
-        if (storage is not null)
-        {
-            // The engine knows what it wrote; deleting only the manifest would leave a log the next
-            // open replays, bringing the deleted rows straight back.
-            await BlazeDbDatabase.DeleteAsync(storage, cancellationToken).ConfigureAwait(false);
-        }
         return true;
     }
 

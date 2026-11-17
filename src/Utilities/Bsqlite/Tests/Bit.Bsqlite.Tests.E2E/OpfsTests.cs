@@ -106,6 +106,39 @@ public sealed class OpfsTests : BsqliteTest
     // OPFS admin
     // ---------------------------------------------------------------------------------------------
 
+    /// <summary>
+    /// A migration reads the header before it exports the database, so a database the target cannot keep is
+    /// refused without being read out whole.
+    /// </summary>
+    [TestMethod]
+    public async Task Admin_read_header_returns_the_first_100_bytes_or_null()
+    {
+        await SkipUnlessOpfsAsync(Page);
+        await OpenHostAsync(Page);
+        var name = UniqueName("opfs-header");
+
+        var outcome = await Page.EvaluateAsync<JsonElement>(
+            """
+            async name => {
+              const image = await globalThis.host.export();
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-opfs-admin.js');
+              await admin.importDatabase(name, image);
+              try {
+                const header = await admin.readHeader(name);
+                return {
+                  matches: header.length === 100 && header.every((b, i) => b === image[i]),
+                  missing: await admin.readHeader(name + '-missing'),
+                };
+              } finally {
+                await admin.deleteDatabase(name);
+              }
+            }
+            """, name);
+
+        Assert.IsTrue(outcome.GetProperty("matches").GetBoolean());
+        Assert.AreEqual(JsonValueKind.Null, outcome.GetProperty("missing").ValueKind);
+    }
+
     [TestMethod]
     public async Task Admin_import_export_list_and_delete()
     {

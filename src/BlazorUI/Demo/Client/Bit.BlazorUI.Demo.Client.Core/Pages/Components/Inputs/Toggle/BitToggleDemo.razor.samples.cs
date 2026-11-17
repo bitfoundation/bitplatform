@@ -117,7 +117,7 @@ private async Task SaveTheToggle(bool value)
 
     private readonly string example7RazorCode = @"
 <BitToggle Label=""Read-only toggle"" ReadOnly @bind-Value=""readOnlyValue"" Text=""Locked"" />
-<BitToggleButton @bind-IsChecked=""readOnlyValue"" Text=""Change it from here"" />
+<BitToggleButton @bind-Checked=""readOnlyValue"" Text=""Change it from here"" />
 
 
 <BitToggle Label=""I accept the terms"" Required />";
@@ -128,10 +128,10 @@ private bool readOnlyValue;";
 <BitToggle Label=""Always on"" Value=""true"" />
 
 <BitToggle Label=""One-way"" Value=""oneWayValue"" />
-<BitToggleButton @bind-IsChecked=""oneWayValue"" OnText=""On"" OffText=""Off"" />
+<BitToggleButton @bind-Checked=""oneWayValue"" OnText=""On"" OffText=""Off"" />
 
 <BitToggle Label=""Two-way"" @bind-Value=""twoWayValue"" />
-<BitToggleButton @bind-IsChecked=""twoWayValue"" OnText=""On"" OffText=""Off"" />
+<BitToggleButton @bind-Checked=""twoWayValue"" OnText=""On"" OffText=""Off"" />
 
 
 <BitButton OnClick=""() => methodToggleRef.ToggleAsync()"">Flip it</BitButton>

@@ -36,11 +36,11 @@
     </BitDialog>
 </E2ESection>
 
-<E2ESection Id="buttons" Title="Buttons: labels, Show*Button, Is*ButtonEnabled, no header">
+<E2ESection Id="buttons" Title="Buttons: labels, Show*Button, *ButtonDisabled, no header">
     <button id="btn-labels-open" @onclick="() => _labelsOpen = true">Labels</button>
     <button id="btn-single-open" @onclick="() => _singleOpen = true">Single action</button>
     <button id="btn-nook-open" @onclick="() => _noOkOpen = true">No Ok</button>
-    <button id="btn-gated-open" @onclick="() => { _agreed = false; _cancelEnabled = true; _gatedOpen = true; }">Gated</button>
+    <button id="btn-gated-open" @onclick="() => { _agreed = false; _cancelDisabled = false; _gatedOpen = true; }">Gated</button>
     <button id="btn-noheader-open" @onclick="() => _noHeaderOpen = true">No header</button>
     <span id="gated-open">@_gatedOpen</span>
 
@@ -53,10 +53,10 @@
     <BitDialog Id="nook-dialog" @bind-IsOpen="_noOkOpen" ShowOkButton="false" Title="Changes" CancelText="Back"
                Message="Only a Cancel here." />
 
-    <BitDialog Id="gated-dialog" @bind-IsOpen="_gatedOpen" IsOkButtonEnabled="_agreed" IsCancelButtonEnabled="_cancelEnabled"
+    <BitDialog Id="gated-dialog" @bind-IsOpen="_gatedOpen" OkButtonDisabled="_agreed is false" CancelButtonDisabled="_cancelDisabled"
                Title="Before you continue" OkText="Accept">
         <label><input id="gated-agree" type="checkbox" checked="@_agreed" @onchange="e => _agreed = (bool)e.Value!" /> I agree</label>
-        <button id="gated-toggle-cancel" @onclick="() => _cancelEnabled = !_cancelEnabled">Toggle cancel</button>
+        <button id="gated-toggle-cancel" @onclick="() => _cancelDisabled = !_cancelDisabled">Toggle cancel</button>
     </BitDialog>
 
     <BitDialog Id="noheader-dialog" @bind-IsOpen="_noHeaderOpen" ShowCloseButton="false"
@@ -123,13 +123,13 @@
     </BitDialog>
 </E2ESection>
 
-<E2ESection Id="dismiss" Title="Dismiss behavior: Blocking, CloseOnOverlayClick, CloseOnEscape, Modeless, IsAlert, NoDismissPreventedAnimation">
+<E2ESection Id="dismiss" Title="Dismiss behavior: Blocking, CloseOnOverlayClick, CloseOnEscape, Modeless, Alert, NoDismissPreventedAnimation">
     <button id="btn-blocking-open" @onclick="() => _blockingOpen = true">Blocking</button>
     <button id="btn-nooverlay-open" @onclick="() => _noOverlayOpen = true">No overlay click</button>
     <button id="btn-noescape-open" @onclick="() => _noEscapeOpen = true">No Escape</button>
     <button id="btn-modeless-open" @onclick="() => _modelessOpen = true">Modeless</button>
-    <button id="btn-notalert-open" @onclick="() => _notAlertOpen = true">Blocking, IsAlert false</button>
-    <button id="btn-alert-open" @onclick="() => _alertOpen = true">IsAlert</button>
+    <button id="btn-notalert-open" @onclick="() => _notAlertOpen = true">Blocking, Alert false</button>
+    <button id="btn-alert-open" @onclick="() => _alertOpen = true">Alert</button>
     <button id="btn-noanim-open" @onclick="() => _noAnimOpen = true">No animation</button>
     <button id="btn-forceanim-open" @onclick="() => _forceAnimOpen = true">ForceAnimation</button>
     <button id="behind-button" @onclick="() => _behindClicks++">Behind</button>
@@ -153,11 +153,11 @@
     <BitDialog Id="modeless-dialog" Modeless @bind-IsOpen="_modelessOpen" Position="BitPosition.BottomRight" Title="Modeless"
                Message="The page behind is still usable." />
 
-    <BitDialog Id="notalert-dialog" Blocking IsAlert="false" @bind-IsOpen="_notAlertOpen" Title="Blocking dialog" Message="Not an alert." />
+    <BitDialog Id="notalert-dialog" Blocking Alert="false" @bind-IsOpen="_notAlertOpen" Title="Blocking dialog" Message="Not an alert." />
 
     <BitDialog Id="forceanim-dialog" Blocking ForceAnimation @bind-IsOpen="_forceAnimOpen" Title="Forced animation" Message="Shakes under reduced motion too." />
 
-    <BitDialog Id="alert-dialog" IsAlert="true" @bind-IsOpen="_alertOpen" Title="Alert" Message="An alert dialog." />
+    <BitDialog Id="alert-dialog" Alert="true" @bind-IsOpen="_alertOpen" Title="Alert" Message="An alert dialog." />
 
     <BitDialog Id="noanim-dialog" Blocking NoDismissPreventedAnimation @bind-IsOpen="_noAnimOpen" Title="No shake"
                Message="Refused without a shake." OnDismissPrevented="r => _prevented.Add(r.ToString())" />
@@ -266,12 +266,12 @@
     <span id="drag-open">@_dragOpen</span>
     <span id="handle-open">@_handleOpen</span>
 
-    <BitDialog Id="drag-dialog" IsDraggable="_dragOn" @bind-IsOpen="_dragOpen" Title="Draggable dialog" Message="Drag it by its header.">
-        <button id="drag-toggle" @onclick="() => _dragOn = !_dragOn">Toggle IsDraggable</button>
+    <BitDialog Id="drag-dialog" Draggable="_dragOn" @bind-IsOpen="_dragOpen" Title="Draggable dialog" Message="Drag it by its header.">
+        <button id="drag-toggle" @onclick="() => _dragOn = !_dragOn">Toggle Draggable</button>
         <span id="drag-on">@_dragOn</span>
     </BitDialog>
 
-    <BitDialog Id="handle-dialog" IsDraggable DragElementSelector=".drag-handle" @bind-IsOpen="_handleOpen" TitleAriaId="handle-title"
+    <BitDialog Id="handle-dialog" Draggable DragElementSelector=".drag-handle" @bind-IsOpen="_handleOpen" TitleAriaId="handle-title"
                ShowCloseButton="false" ShowOkButton="false" ShowCancelButton="false">
         <div class="drag-handle" id="handle-bar" style="padding: 12px; background: #eee;">
             <span id="handle-title">Drag me by this bar</span>
@@ -280,7 +280,7 @@
         <div id="handle-body" style="padding: 24px;">The bar above is the handle.</div>
     </BitDialog>
 
-    <BitDialog Id="draghead-dialog" IsDraggable @bind-IsOpen="_dragHeadOpen" ShowCloseButton="false" ShowOkButton="false"
+    <BitDialog Id="draghead-dialog" Draggable @bind-IsOpen="_dragHeadOpen" ShowCloseButton="false" ShowOkButton="false"
                ShowCancelButton="false" Message="No header: the whole surface is the handle." />
 </E2ESection>
 
@@ -372,7 +372,7 @@
 
         @* Names the Ok button, which it disables, under a link that is the first focusable element. *@
         <BitDialog Id="casc-locked-dialog" @bind-IsOpen="_cascLockedOpen" AutoFocusButton="BitDialogButton.Ok"
-                   IsOkButtonEnabled="false" Title="This file is locked">
+                   OkButtonDisabled Title="This file is locked">
             <a id="casc-locked-help" href="#">Who locked it?</a>
         </BitDialog>
     </BitParams>
@@ -524,7 +524,7 @@
     private bool _noOkOpen;
     private bool _gatedOpen;
     private bool _agreed;
-    private bool _cancelEnabled = true;
+    private bool _cancelDisabled;
     private bool _noHeaderOpen;
 
     private bool _subtitleOpen;

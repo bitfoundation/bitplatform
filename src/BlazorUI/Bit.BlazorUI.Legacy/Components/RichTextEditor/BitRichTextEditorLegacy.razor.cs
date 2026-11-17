@@ -42,14 +42,14 @@ public partial class BitRichTextEditorLegacy : BitComponentBase
     [Parameter] public EventCallback<string> OnEditorReady { get; set; }
 
     /// <summary>
-    /// Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment.
-    /// </summary>
-    [Parameter] public EventCallback OnQuillReady { get; set; }
-
-    /// <summary>
     /// Callback for when the scripts of the provided Quill Modules are loaded and their api are ready to use.
     /// </summary>
     [Parameter] public EventCallback OnQuillModulesReady { get; set; }
+
+    /// <summary>
+    /// Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment.
+    /// </summary>
+    [Parameter] public EventCallback OnQuillReady { get; set; }
 
     /// <summary>
     /// The placeholder value of the editor.

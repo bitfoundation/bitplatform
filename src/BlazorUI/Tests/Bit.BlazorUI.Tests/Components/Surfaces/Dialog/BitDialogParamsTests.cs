@@ -31,9 +31,9 @@ public class BitDialogParamsTests : BunitTestContext
         nameof(BitDialog.DragElementSelector),
         nameof(BitDialog.FooterTemplate),
         nameof(BitDialog.HeaderTemplate),
-        nameof(BitDialog.IsAlert),
-        nameof(BitDialog.IsCancelButtonEnabled),
-        nameof(BitDialog.IsOkButtonEnabled),
+        nameof(BitDialog.Alert),
+        nameof(BitDialog.CancelButtonDisabled),
+        nameof(BitDialog.OkButtonDisabled),
         nameof(BitDialog.IsOpen),
         nameof(BitDialog.Message),
         nameof(BitDialog.OnCancel),
@@ -332,9 +332,9 @@ public class BitDialogParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitDialogButton.Close, nameof(BitDialog.ShowCloseButton))]
-    [DataRow(BitDialogButton.Ok, nameof(BitDialog.IsOkButtonEnabled))]
-    public void BitDialogOwnAutoFocusButtonThatCannotTakeTheFocusShouldFallBackOnACascadedOne(BitDialogButton own, string turnedOff)
+    [DataRow(BitDialogButton.Close, nameof(BitDialog.ShowCloseButton), false)]
+    [DataRow(BitDialogButton.Ok, nameof(BitDialog.OkButtonDisabled), true)]
+    public void BitDialogOwnAutoFocusButtonThatCannotTakeTheFocusShouldFallBackOnACascadedOne(BitDialogButton own, string turnedOff, bool value)
     {
         // The dialog's own button is passed over where it is hidden or disabled, and the order goes on from there: the
         // safe button the app names for every dialog still comes before the first focusable element.
@@ -343,7 +343,7 @@ public class BitDialogParamsTests : BunitTestContext
         var component = RenderWithParams(@params, RenderDialog(builder =>
         {
             builder.AddAttribute(10, nameof(BitDialog.AutoFocusButton), own);
-            builder.AddAttribute(11, turnedOff, false);
+            builder.AddAttribute(11, turnedOff, value);
         }));
 
         Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
@@ -518,9 +518,9 @@ public class BitDialogParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDialogCascadedIsDraggableShouldRegisterTheDragHandlers()
+    public void BitDialogCascadedDraggableShouldRegisterTheDragHandlers()
     {
-        var component = RenderWithParams(new BitDialogParams { IsDraggable = true }, RenderDialog());
+        var component = RenderWithParams(new BitDialogParams { Draggable = true }, RenderDialog());
 
         var containerId = component.Find(".bit-dlg-ctn").GetAttribute("id");
         var setup = Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"];

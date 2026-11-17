@@ -83,14 +83,19 @@ public partial class BitLink : BitComponentBase
     [Parameter] public bool AllowDisabledFocus { get; set; }
 
     /// <summary>
-    /// Gives the link the focus as soon as it is rendered, through the <c>autofocus</c> attribute.
+    /// Reports the link as the current item of the set it belongs to, through the <c>aria-current</c> attribute.
     /// </summary>
     /// <remarks>
-    /// The browser honors this once per document, on the first element that asks for it, so only the one
-    /// element a page opens on should carry it. Being taken somewhere unasked is a jump the reader did not
-    /// make, so reserve it for a destination that is the point of the page.
+    /// A menu draws the link to the page already open differently from the rest, and a color is all that says
+    /// so - which is nothing at all to a reader who is not looking at it. This is the same statement made in a
+    /// way a screen reader announces: <see cref="BitNavAriaCurrent.Page"/> in a navigation menu,
+    /// <see cref="BitNavAriaCurrent.Step"/> in a wizard, <see cref="BitNavAriaCurrent.Location"/> in a
+    /// breadcrumb. Only one link of a set is ever the current one, and it is drawn underlined at rest.
+    /// <br />
+    /// With a <see cref="Match"/> set, the URL decides whether the link is the current one and this only says
+    /// which kind of current it is (<see cref="BitNavAriaCurrent.Page"/> when not set).
     /// </remarks>
-    [Parameter] public bool AutoFocus { get; set; }
+    [Parameter] public BitNavAriaCurrent? AriaCurrent { get; set; }
 
     /// <summary>
     /// A longer description of the link for the benefit of screen readers, rendered as visually hidden text the
@@ -105,19 +110,14 @@ public partial class BitLink : BitComponentBase
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// Reports the link as the current item of the set it belongs to, through the <c>aria-current</c> attribute.
+    /// Gives the link the focus as soon as it is rendered, through the <c>autofocus</c> attribute.
     /// </summary>
     /// <remarks>
-    /// A menu draws the link to the page already open differently from the rest, and a color is all that says
-    /// so - which is nothing at all to a reader who is not looking at it. This is the same statement made in a
-    /// way a screen reader announces: <see cref="BitNavAriaCurrent.Page"/> in a navigation menu,
-    /// <see cref="BitNavAriaCurrent.Step"/> in a wizard, <see cref="BitNavAriaCurrent.Location"/> in a
-    /// breadcrumb. Only one link of a set is ever the current one, and it is drawn underlined at rest.
-    /// <br />
-    /// With a <see cref="Match"/> set, the URL decides whether the link is the current one and this only says
-    /// which kind of current it is (<see cref="BitNavAriaCurrent.Page"/> when not set).
+    /// The browser honors this once per document, on the first element that asks for it, so only the one
+    /// element a page opens on should carry it. Being taken somewhere unasked is a jump the reader did not
+    /// make, so reserve it for a destination that is the point of the page.
     /// </remarks>
-    [Parameter] public BitNavAriaCurrent? AriaCurrent { get; set; }
+    [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
     /// The content of the link, can be any custom tag or a text.

@@ -373,7 +373,7 @@ public sealed class BinkNodeEditTool : BinkToolBase
         _active = -1;
         context.Selection.Set(element.Id);
         context.InvalidateOverlay();
-        context.Announce($"Editing the points of a {element.TypeName.ToLowerInvariant()}: {GetNodes(element).Count} points. Tab moves between them.");
+        context.Announce($"Editing the points of a {element.TypeName.ToLowerInvariant()}: {BinkCount.Of(GetNodes(element).Count, "point")}. Tab moves between them.");
     }
 
     private static int NearestNode(BinkElement element, Vector2 point, float reach)

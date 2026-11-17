@@ -284,6 +284,33 @@ public class BbScannerNativeCameraTests : BunitContext
         Assert.AreEqual(0, _page.Last("start")[6], "A page behind a WebView needs no watchdog.");
     }
 
+    [TestMethod]
+    public void A_frame_in_hand_is_decoded_in_the_region_it_was_grabbed_with()
+    {
+        // The frame is decoded on a thread of its own: a region given meanwhile is the next frame's, and the one in hand
+        // keeps the region it started with rather than one torn between the old and the new.
+        var scans = new List<string>();
+        var scanner = Render<BbScanner>(parameters => parameters
+            .Add(p => p.Formats, BbBarcodeFormat.QrCode)
+            .Add(p => p.Region, BbScanRegion.CenteredSquare(0.7))
+            .Add(p => p.OnScan, r => { lock (scans) { scans.Add(r.Text); } }));
+        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+
+        // Reset before the gate is in place, so the signal waited for is that of a read held at the gate.
+        using var gate = new ManualResetEventSlim();
+        _camera.Reading.Reset();
+        _camera.ReadGate = gate;
+        _camera.Scene = SceneWithQrCode("REGION");
+        Assert.IsTrue(_camera.Reading.Wait(Wait), "A frame is read.");
+
+        // A corner the symbol, in the middle of the frame, is nowhere near.
+        scanner.Render(parameters => parameters.Add(p => p.Region, new BbScanRegion(0, 0, 0.2, 0.2)));
+
+        _camera.ReadGate = null;
+        gate.Set();
+        WaitUntil(() => { lock (scans) { CollectionAssert.AreEqual(new[] { "REGION" }, scans); } });
+    }
+
     private static void WaitUntil(Action assertion)
     {
         var deadline = DateTime.UtcNow + Wait;

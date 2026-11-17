@@ -22,10 +22,53 @@ public sealed class BdndInterop : IAsyncDisposable
 
     private readonly IJSRuntime _js;
     private Task<IJSObjectReference>? _module;
+    private int _dragCallsInFlight;
 
     public BdndInterop(IJSRuntime js) => _js = js;
 
     internal static string SourceType(string handlerId) => SourceTypePrefix + handlerId;
+
+    /// <summary>
+    /// Whether a JS call failed in a way its caller lets be: the module threw, the circuit's connection is gone, the
+    /// call timed out (an answer lost with the connection), or the JS object it was made on is released already.
+    /// </summary>
+    internal static bool IsLostCall(Exception exception) =>
+        exception is JSException or JSDisconnectedException or OperationCanceledException or ObjectDisposedException;
+
+    /// <summary>
+    /// Whether a call of the module's drag queue is being handled, by any draggable or drop target of this scope (one
+    /// interop per circuit). The module asks when the answer of one is slow to come: a call no longer handled had its
+    /// answer lost with the circuit's connection, and the queue goes on without it.
+    /// </summary>
+    internal bool IsHandlingDragCall => Volatile.Read(ref _dragCallsInFlight) > 0;
+
+    /// <summary>Runs a call of the module's drag queue, counted by <see cref="IsHandlingDragCall"/> while it runs.</summary>
+    internal async Task TrackDragCallAsync(Func<Task> call)
+    {
+        Interlocked.Increment(ref _dragCallsInFlight);
+        try
+        {
+            await call();
+        }
+        finally
+        {
+            Interlocked.Decrement(ref _dragCallsInFlight);
+        }
+    }
+
+    /// <inheritdoc cref="TrackDragCallAsync(Func{Task})"/>
+    internal async Task<T> TrackDragCallAsync<T>(Func<Task<T>> call)
+    {
+        Interlocked.Increment(ref _dragCallsInFlight);
+        try
+        {
+            return await call();
+        }
+        finally
+        {
+            Interlocked.Decrement(ref _dragCallsInFlight);
+        }
+    }
 
     /// <summary>
     /// Reads an element's bounding client rectangle, e.g. to compare the pointer against a hovered

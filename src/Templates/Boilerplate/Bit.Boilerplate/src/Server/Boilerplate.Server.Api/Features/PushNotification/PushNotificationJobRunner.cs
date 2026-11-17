@@ -54,7 +54,7 @@ public partial class PushNotificationJobRunner
 
                 if (string.IsNullOrWhiteSpace(pageUrl) is false)
                 {
-                    pageUrl = $"{pageUrl}{(pageUrl.Contains('?') ? '&' : '?')}{DeviceAccountDto.QueryParameter}={account.Id}";
+                    pageUrl = $"{pageUrl}{(pageUrl.Contains('?') ? '&' : '?')}{DeviceUserSessionDto.QueryParameter}={account.Id}";
                 }
             }
 

@@ -70,6 +70,86 @@ public class BelemetryPrivacyTests
     }
 
     [TestMethod]
+    public void AnAllZeroId_IsNoCardNumber()
+    {
+        // ASP.NET Core's logging scope gives every request without a parent "ParentId": "0000000000000000", which passes
+        // the Luhn checksum.
+        var privacy = Create();
+        Assert.AreEqual("0000000000000000", privacy.Scrub("0000000000000000"));
+        Assert.AreEqual("8888888888888888 0412345678901233", privacy.Scrub("8888888888888888 0412345678901233"), "One repeated digit, or a leading 0.");
+        Assert.AreEqual("[card]", privacy.Scrub("4111111111111111"));
+        Assert.IsTrue(BelemetryPrivacy.IsLuhnValid("0000000000000000"));
+        Assert.IsFalse(BelemetryPrivacy.IsCardNumber("0000000000000000"));
+        Assert.IsTrue(BelemetryPrivacy.IsLuhnValid("8888888888888888") && BelemetryPrivacy.IsLuhnValid("0412345678901233"), "Both pass the checksum.");
+
+        var log = Records.Log("Request starting");
+        log.Attributes.Set("ParentId", "0000000000000000");
+        privacy.Apply(log);
+        Assert.AreEqual("0000000000000000", log.Attributes["ParentId"]);
+    }
+
+    [TestMethod]
+    public void RedactsTheUrlsInALogBody_AndTheQueryStringAndUriOfFrameworkLogs()
+    {
+        // ASP.NET Core's request logs and HttpClient's carry the query string the span's url.query redacts.
+        var privacy = Create();
+        var log = Records.Log("Request starting HTTP/1.1 GET http://localhost:5000/orders?token=abc&page=2&sessionId=7 - - -");
+        log.Attributes.Set("QueryString", "?token=abc&page=2").Set("Uri", "https://api.test/v1?api_key=k&q=1").Set("Path", "/orders");
+
+        privacy.Apply(log);
+
+        Assert.AreEqual("Request starting HTTP/1.1 GET http://localhost:5000/orders?token=REDACTED&page=2&sessionId=7 - - -", log.Body);
+        Assert.AreEqual("?token=REDACTED&page=2", log.Attributes["QueryString"]);
+        Assert.AreEqual("https://api.test/v1?api_key=REDACTED&q=1", log.Attributes["Uri"]);
+        Assert.AreEqual("/orders", log.Attributes["Path"]);
+
+        var stripped = Records.Log("GET https://x.test/a?token=abc");
+        stripped.Attributes.Set("QueryString", "?token=abc");
+        Create(o => o.StripQueryString = true).Apply(stripped);
+        Assert.AreEqual("GET https://x.test/a", stripped.Body);
+        Assert.IsFalse(stripped.Attributes.Contains("QueryString"));
+    }
+
+    [TestMethod]
+    public void CleansALogBodyInOnePass_KeepingTheHostOfItsUrls()
+    {
+        // A URL in a body keeps its host, as a URL attribute does; the text around it is scrubbed. Matches the script.
+        var privacy = Create();
+        var log = Records.Log("GET http://10.0.0.5:5000/api/10.1.2.3?token=x&email=a@b.io from 10.0.0.9, then http://10.0.0.6/health");
+
+        privacy.Apply(log);
+
+        Assert.AreEqual("GET http://10.0.0.5:5000/api/[ip]?token=REDACTED&email=REDACTED from [ip], then http://10.0.0.6/health", log.Body);
+
+        const string clean = "Request finished in 3 ms - https://x.test/a";
+        Assert.AreSame(clean, privacy.CleanBody(clean), "Nothing changed: the same instance.");
+    }
+
+    [TestMethod]
+    public void CleansEachUrlOfALogBody_CommaSeparated_WithApostrophes_OrRelative()
+    {
+        // The same cases as the script's tests.
+        var privacy = Create();
+
+        Assert.AreEqual("GET https://a.test/x?page=1,https://b.test/y?token=REDACTED", privacy.CleanBody("GET https://a.test/x?page=1,https://b.test/y?token=2"),
+                        "A comma before another URL ends the first: the second's query is redacted on its own.");
+        Assert.AreEqual("ids https://a.test/x?ids=1,2&token=REDACTED", privacy.CleanBody("ids https://a.test/x?ids=1,2&token=3"), "A comma in a query is part of it.");
+
+        Assert.AreEqual("Fetched https://x.test/books/O'Reilly?token=REDACTED&page=2", privacy.CleanBody("Fetched https://x.test/books/O'Reilly?token=abc&page=2"),
+                        "An apostrophe inside a URL does not end it.");
+        Assert.AreEqual("Fetched https://x.test/books/O'Reilly", Create(o => o.StripQueryString = true).CleanBody("Fetched https://x.test/books/O'Reilly?token=abc"));
+        Assert.AreEqual("url 'https://x.test/a?token=REDACTED' and 'https://x.test/b?code=REDACTED'", privacy.CleanBody("url 'https://x.test/a?token=1' and 'https://x.test/b?code=2'"),
+                        "An apostrophe that opened a URL ends it.");
+
+        Assert.AreEqual("Redirecting to /callback?code=REDACTED&state=1", privacy.CleanBody("Redirecting to /callback?code=abc&state=1"));
+        Assert.AreEqual("GET https://x.test/a?token=REDACTED then /b?api_key=REDACTED&page=2 path=/c?secret=REDACTED",
+                        privacy.CleanBody("GET https://x.test/a?token=1 then /b?api_key=k&page=2 path=/c?secret=s"));
+
+        const string question = "Are you sure? and/or?x=1 1/2?";
+        Assert.AreSame(question, privacy.CleanBody(question), "No path: a question mark alone, or a slash inside a word.");
+    }
+
+    [TestMethod]
     public void AppliesToSpansAndLogs()
     {
         var privacy = Create(o => o.BlockedAttributes.Add("secret.attr"));

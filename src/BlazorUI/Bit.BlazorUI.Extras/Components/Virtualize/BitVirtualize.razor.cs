@@ -172,15 +172,15 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [Parameter] public float EstimatedItemSize { get; set; } = 50f;
 
     /// <summary>
-    /// The space in pixels between consecutive items along the scroll axis, and between the lanes of a grid.
-    /// </summary>
-    [Parameter] public float Gap { get; set; }
-
-    /// <summary>
     /// The custom template to render after the last item, inside the scroll container
     /// (for example, a loading indicator at the end of an infinite list).
     /// </summary>
     [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    /// <summary>
+    /// The space in pixels between consecutive items along the scroll axis, and between the lanes of a grid.
+    /// </summary>
+    [Parameter] public float Gap { get; set; }
 
     /// <summary>
     /// The custom template to render before the first item, inside the scroll container.
@@ -213,11 +213,6 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [Parameter] public Func<TItem, bool>? IsStickyItem { get; set; }
 
     /// <summary>
-    /// The in-memory collection of items to virtualize. Mutually exclusive with ItemsProvider.
-    /// </summary>
-    [Parameter] public ICollection<TItem>? Items { get; set; }
-
-    /// <summary>
     /// A function that returns extra HTML attributes for the element of an item, which is the one that takes the
     /// keyboard focus: an aria-selected, aria-labelledby or aria-describedby for assistive technologies, a class or a
     /// style for the whole slot of the item. A role or an aria attribute it returns overrides the default one, while a
@@ -237,6 +232,11 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// The ARIA role of each item element.
     /// </summary>
     [Parameter] public string? ItemRole { get; set; } = "listitem";
+
+    /// <summary>
+    /// The in-memory collection of items to virtualize. Mutually exclusive with ItemsProvider.
+    /// </summary>
+    [Parameter] public ICollection<TItem>? Items { get; set; }
 
     /// <summary>
     /// The size in pixels of each item (each row of items with Lanes) along the scroll axis when the Dynamic mode is off.
@@ -262,16 +262,16 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [Parameter] public int Lanes { get; set; } = 1;
 
     /// <summary>
+    /// The custom template to render until the component has performed its first load.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
     /// The smallest size in pixels of a lane across the scroll axis, which makes the grid responsive: the list has as many
     /// lanes as fit in its width (its height in horizontal mode), at least one. Takes precedence over Lanes once the list
     /// has been measured.
     /// </summary>
     [Parameter] public float? MinLaneSize { get; set; }
-
-    /// <summary>
-    /// The custom template to render until the component has performed its first load.
-    /// </summary>
-    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
     /// The callback to be called when the viewport arrives at the end of the list (true) or leaves it (false), for example

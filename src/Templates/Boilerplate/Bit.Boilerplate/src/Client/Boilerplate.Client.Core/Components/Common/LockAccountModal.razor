@@ -1,0 +1,37 @@
+@inherits AppComponentBase
+
+<section>
+    <BitStack Gap="0">
+        <BitStack Horizontal Gap="0.75rem" AutoHeight VerticalAlign="BitAlignment.Center" Class="header-stack">
+            <BitIcon IconName="@BitIconName.Lock" Color="BitColor.SecondaryForeground" />
+
+            <BitText Id="lock-account-title" Typography="BitTypography.Subtitle1" Weight="BitFontWeight.Semibold">
+                @Localizer[nameof(AppStrings.LockAccountTitle)]
+            </BitText>
+
+            <BitSpacer />
+
+            <BitButton IconOnly
+                       Variant="BitVariant.Text"
+                       Color="BitColor.Tertiary"
+                       IconName="@BitIconName.ChromeClose"
+                       OnClick="() => OnResult?.Invoke(null)"
+                       Title="@Localizer[nameof(AppStrings.Cancel)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.Cancel)]" />
+        </BitStack>
+
+        <BitStack Gap="1.25rem" Padding="1.25rem 1rem" HorizontalAlign="BitAlignment.Center">
+            <BitText Typography="BitTypography.Body2" Align="BitTextAlign.Center">
+                @Localizer[nameof(AppStrings.LockNeedsPin)]
+            </BitText>
+
+            <PinInput @ref="pinInput"
+                      @bind-Value="pin"
+                      AutoFocus
+                      Invalid="isMismatch"
+                      Label="@Localizer[firstPin is null ? nameof(AppStrings.NewPin) : nameof(AppStrings.RepeatPin)]"
+                      Description="@(isMismatch ? Localizer[nameof(AppStrings.PinsDoNotMatch)] : null)"
+                      OnFill="WrapHandled(async (string? value) => await OnPinFill(value))" />
+        </BitStack>
+    </BitStack>
+</section>

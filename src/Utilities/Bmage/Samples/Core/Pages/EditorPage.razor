@@ -1,5 +1,7 @@
 ﻿@page "/editor"
+@implements IAsyncDisposable
 @inject IImageCapabilityProvider Capabilities
+@inject ImageLoader Loader
 
 <PageTitle>Editor · Bmage samples</PageTitle>
 
@@ -7,8 +9,9 @@
 
 <p>
     <code>BmageEditor</code>, whole: drop or open an image on it, or load the sample scene, then crop, adjust, filter,
-    draw, annotate, undo and export. Under Interactive Server and in the MAUI app it works too, with its previews
-    crossing to the browser over JS interop.
+    draw, annotate, undo and export, or paste an image into the page (<code>ImageLoader.ListenForPasteAsync</code>).
+    Under Interactive Server and in the MAUI app it works too, with its previews crossing to the browser over JS
+    interop.
     The host links <code>_content/Bit.Bmage.Blazor/bit-bmage-editor.css</code>, the one thing the editor asks of it.
 </p>
 
@@ -20,6 +23,11 @@
         Export
     </button>
 </div>
+
+@if (_pasted is not null)
+{
+    <p id="editor-pasted">Pasted @_pasted.</p>
+}
 
 @if (_exported is not null)
 {
@@ -37,14 +45,44 @@
 
 @code {
     private BmageEditor? _editor;
+    private IAsyncDisposable? _paste;
+    private string? _pasted;
     private bool _loaded;
     private EncodedImage? _exported;
     private string? _error;
+    private bool _disposed;
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender is false) return;
+
         // The buttons wait for the editor reference, which only exists after the first render.
-        if (firstRender) StateHasChanged();
+        StateHasChanged();
+
+        // Ctrl+V anywhere on the page opens the pasted image in the editor.
+        var paste = await Loader.ListenForPasteAsync(async image =>
+        {
+            // The image is ours; a paste that lands after the page has gone has nowhere to show it.
+            if (_disposed)
+            {
+                image.Dispose();
+                return;
+            }
+            _error = null;
+            _pasted = $"{image.Width} × {image.Height}";
+            await _editor!.LoadImageAsync(image);
+            if (!_disposed) StateHasChanged();
+        }, ex =>
+        {
+            if (_disposed) return Task.CompletedTask;
+            _error = $"Paste failed: {ex.Message}";
+            StateHasChanged();
+            return Task.CompletedTask;
+        });
+
+        // The page may have gone while the listener was being set up, and its DisposeAsync found nothing to stop.
+        if (_disposed) await paste.DisposeAsync();
+        else _paste = paste;
     }
 
     private async Task LoadSampleAsync()
@@ -75,4 +113,10 @@
     private void OnExported(EncodedImage image) => _exported = image;
 
     private void OnError(Exception ex) => _error = ex.Message;
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_paste is not null) await _paste.DisposeAsync();
+    }
 }

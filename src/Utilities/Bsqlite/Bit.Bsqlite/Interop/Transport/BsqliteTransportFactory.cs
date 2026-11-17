@@ -28,7 +28,7 @@ internal sealed class BsqliteTransportFactory(
     BsqliteWorkerTransportDefaults defaults,
     BsqliteHostKind host,
     ILogger<BsqliteTransportFactory>? logger = null,
-    ILogger<BsqliteNativeTransport>? nativeTransportLogger = null) : IBsqliteTransportFactory
+    ILogger<BsqliteNativeTransport>? nativeTransportLogger = null) : IBsqliteTransportFactory, IBsqliteOpenLock, IAsyncDisposable
 {
     private readonly ILogger _logger = logger ?? NullLogger<BsqliteTransportFactory>.Instance;
     private IBsqliteTransportFactory? _workerTransports;
@@ -70,4 +70,42 @@ internal sealed class BsqliteTransportFactory(
 
         return (_workerTransports ??= workerTransports()).Create(provider);
     }
+
+    /// <summary>
+    /// The worker factory's lock for a database on a browser backend, where the tabs - or the web views of a
+    /// Blazor Hybrid app - that open it have to take turns; none for one that is a file of this process.
+    /// </summary>
+    /// <remarks>
+    /// In the browser every backend is a browser one, so the lock is taken without asking which. Elsewhere it is
+    /// taken only for a database bound to one: a Blazor Hybrid app's, kept in its web view before, that the open
+    /// may move to the device. One bound to a device backend, or to none, opens on the device - selection serves
+    /// a browser backend there only for data it already holds - so its open neither waits on the web view nor
+    /// needs its <c>IJSRuntime</c> to be ready.
+    /// </remarks>
+    public async Task<IAsyncDisposable?> AcquireOpenLockAsync(
+        string databaseName,
+        Func<CancellationToken, ValueTask<IBsqliteStorageProvider?>> boundProvider,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(boundProvider);
+
+        if (host is not BsqliteHostKind.Browser
+            && (await boundProvider(cancellationToken).ConfigureAwait(false) is not { } bound || !RunsInWorker(bound)))
+        {
+            return null;
+        }
+
+        return (_workerTransports ??= workerTransports()) is IBsqliteOpenLock locks
+            ? await locks.AcquireOpenLockAsync(databaseName, boundProvider, cancellationToken).ConfigureAwait(false)
+            : null;
+    }
+
+    /// <summary>Whether <see cref="Create"/> opens <paramref name="provider"/>'s databases in the worker.</summary>
+    private bool RunsInWorker(IBsqliteStorageProvider provider) =>
+        (host is BsqliteHostKind.Browser || !BsqliteStorageProviderResolver.RunsNatively(provider))
+        && BsqliteStorageProviderResolver.RunsInBrowser(provider);
+
+    /// <summary>Releases what the worker factory holds - the host module its locks are taken through - if it was built.</summary>
+    public ValueTask DisposeAsync() =>
+        _workerTransports is IAsyncDisposable disposable ? disposable.DisposeAsync() : ValueTask.CompletedTask;
 }

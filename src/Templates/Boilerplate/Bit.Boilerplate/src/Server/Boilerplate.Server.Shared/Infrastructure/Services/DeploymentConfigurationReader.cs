@@ -46,7 +46,7 @@ public static class DeploymentConfigurationReader
             PrerenderEnabled = rendering.GetValue<bool>("PrerenderEnabled"),
 
             //#if (sentry == true)
-            SentryConfigured = string.IsNullOrWhiteSpace(configuration["Logging:Sentry:Dsn"]) is false,
+            SentryConfigured = string.IsNullOrWhiteSpace(configuration["Sentry:Dsn"]) is false,
             //#endif
             //#if (appInsights == true)
             AzureMonitorConfigured = string.IsNullOrWhiteSpace(configuration["ApplicationInsights:ConnectionString"]) is false,

@@ -46,7 +46,7 @@ public partial class AppDbContext
 
     //#if (multitenant == true)
     public DbSet<Tenant> Tenants { get; set; } = default!;
-    public DbSet<TenantUser> TenantUsers { get; set; } = default!;
+    public DbSet<TenantMembership> TenantMemberships { get; set; } = default!;
     //#endif
 
     //#if (sample == true || offlineDb == true)

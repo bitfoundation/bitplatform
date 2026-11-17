@@ -19,7 +19,7 @@ public partial class SettingsStore
     [BlexState] private string _authenticatorKey = "";
     [BlexState] private int _recoveryCodesLeft;
     [BlexState] private bool _hasPasskey;
-    /// <summary>The id of the uploaded picture the account shows last (See WorkbenchProfilePictures.LastUpload), so it notices a new one.</summary>
+    /// <summary>The id of the uploaded picture the account shows last (See WorkbenchProfileImages.LastUpload), so it notices a new one.</summary>
     [BlexState] private string? _seenUpload;
 
     [BlexAction]

@@ -18,6 +18,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IAuthorizationService authorizationService = default!;
     [AutoInject] private ElevatedAccessService elevatedAccessService = default!;
+    [AutoInject] private AccountPinCipher pinCipher = default!;
 
     public void OnInit()
     {
@@ -73,7 +74,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         var newUserId = GetUserId(response.AccessToken);
 
-        if (newUserId is not null && await TakeAccount(newUserId.Value) is { } earlierSignIn)
+        if (newUserId is not null && await TakeUserSession(newUserId.Value) is { } earlierSignIn)
         {
             await RevokeQuietly(earlierSignIn.RefreshToken);
         }
@@ -94,8 +95,10 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         if (GetUserId(await storageService.GetItem("access_token")) is Guid activeUserId && activeUserId != newUserId)
         {
-            await KeepActiveAccount();
+            await KeepActiveUserSession();
         }
+
+        await storageService.RemoveItem("pin_lock");
 
         await StoreTokens(response, rememberMe);
     }
@@ -257,7 +260,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                     }
                     else if (exp is UnauthorizedException)
                     {
-                        await ForgetAccount(refreshToken);
+                        await ForgetUserSession(refreshToken);
                     }
 
                     currentTsc.TrySetResult(null);
@@ -357,25 +360,27 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     private async Task ClearTokens(bool activateNextAccount = true)
     {
-        var nextAccount = activateNextAccount ? (await GetOtherAccounts()).FirstOrDefault() : null;
+        var nextUserSession = activateNextAccount ? (await GetOtherUserSessions()).FirstOrDefault(userSession => userSession.HasPin is false) : null;
 
-        if (nextAccount is null)
+        await storageService.RemoveItem("pin_lock");
+
+        if (nextUserSession is null)
         {
             await storageService.RemoveItem("refresh_token");
             await storageService.RemoveItem("access_token");
         }
         else
         {
-            var (_, persistent) = await FindAccount(nextAccount.User.Id);
+            var (_, persistent) = await FindUserSession(nextUserSession.UserId);
 
-            await RemoveAccount(nextAccount.User.Id);
+            await RemoveUserSession(nextUserSession.UserId);
 
-            await WriteActiveTokens(nextAccount.AccessToken, nextAccount.RefreshToken, persistent);
+            await WriteActiveTokens(nextUserSession.AccessToken, nextUserSession.RefreshToken, persistent);
 
-            activeAccountProfile = nextAccount.User;
+            activeAccountProfile = nextUserSession;
         }
 
-        await NotifyActiveAccountChanged(softRestartOnSwitch: nextAccount is not null);
+        await NotifyActiveAccountChanged(softRestartOnSwitch: nextUserSession is not null);
     }
 
     private async Task<bool> IsCurrentSession(string? accessToken)

@@ -243,7 +243,7 @@ document.Text(<span class="s">"notes"</span>).Observe((change, transaction) =&gt
                 <tr><td class="bb-table-key">BcrdtText</td><td>Both edits survive, each author's run stays contiguous</td><td>Anything a person types into at length</td><td><a href="text">Collaborative text</a>, <a href="rich-text">Rich text</a></td></tr>
                 <tr><td class="bb-table-key">BcrdtArray</td><td>Both insertions survive, in a stable order</td><td>Lists, ordered collections</td><td><a href="list">Collaborative list</a></td></tr>
                 <tr><td class="bb-table-key">BcrdtMap</td><td><strong>One value wins</strong>, deterministically but arbitrarily</td><td>Fields where a later value legitimately replaces an earlier one</td><td><a href="form">Collaborative form</a></td></tr>
-                <tr><td class="bb-table-key">BcrdtSet</td><td>An add wins over a concurrent remove - if it added something (re-adding a present element is a no-op)</td><td>Tags, membership, flags</td><td><a href="form">Collaborative form</a></td></tr>
+                <tr><td class="bb-table-key">BcrdtSet</td><td>An add wins over a concurrent remove - if it added something (re-adding a present element is a no-op) and its entry is the one kept (concurrent adds of one element keep one entry)</td><td>Tags, membership, flags</td><td><a href="form">Collaborative form</a></td></tr>
             </tbody>
         </table>
     </div>

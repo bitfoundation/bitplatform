@@ -1060,11 +1060,18 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         }
     }
 
-    /// <summary>Warns, once, when route discovery found no route at all (<see cref="BelemetrySettings.TakeNoPageRoutesWarning"/>).</summary>
+    /// <summary>
+    /// Warns, once, when route discovery found no route at all, or could not read an assembly's references and may have
+    /// missed the pages of the libraries it references (<see cref="BelemetrySettings.TakeNoPageRoutesWarning"/>).
+    /// </summary>
     internal void WarnIfNoPageRoutes()
     {
         if (Settings.TakeNoPageRoutesWarning() is false) return;
-        LogDiagnostic(null, "No @page routes were found (Browser.DiscoverPageRoutes), so page views are named after their paths with the ids replaced " +
+        var someFound = Settings.PageRoutesIncomplete;
+        LogDiagnostic(null, (someFound
+                                ? "Some @page routes may be missing (Browser.DiscoverPageRoutes): the references of an assembly could not be read (NativeAOT keeps no metadata of them), " +
+                                  "so the component libraries it references were not searched, and their page views are named after their paths with the ids replaced "
+                                : "No @page routes were found (Browser.DiscoverPageRoutes), so page views are named after their paths with the ids replaced ") +
                             "(url.template /orders/{n}, not /orders/{id:int}). List the router's assemblies in Browser.PageRouteAssemblies, or the routes in Browser.PageRoutes.",
                       LogLevel.Warning);
     }

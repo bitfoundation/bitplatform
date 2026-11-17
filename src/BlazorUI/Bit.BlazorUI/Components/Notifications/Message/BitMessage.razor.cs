@@ -141,6 +141,18 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public TimeSpan? AutoDismissTime { get; set; }
 
     /// <summary>
+    /// Moves the focus to the message as soon as it is rendered.
+    /// </summary>
+    /// <remarks>
+    /// A message that reports the outcome of something the reader just did is worth being taken to, but moving
+    /// the focus is also an interruption: reserve it for the messages that have to be acted upon, and leave the
+    /// rest to be announced by the live region. The root is made focusable
+    /// (<c>tabindex="-1"</c>) while no explicit <see cref="BitComponentBase.TabIndex"/> is given, so the focus has
+    /// somewhere to land.
+    /// </remarks>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
     /// Switches a single-line message to the <see cref="Multiline"/> layout for as long as its content does not fit
     /// on one line, instead of cutting it off with an ellipsis.
     /// </summary>
@@ -154,18 +166,6 @@ public partial class BitMessage : BitComponentBase
     /// that is <see cref="Multiline"/> of its own.
     /// </remarks>
     [Parameter] public bool AutoMultiline { get; set; }
-
-    /// <summary>
-    /// Moves the focus to the message as soon as it is rendered.
-    /// </summary>
-    /// <remarks>
-    /// A message that reports the outcome of something the reader just did is worth being taken to, but moving
-    /// the focus is also an interruption: reserve it for the messages that have to be acted upon, and leave the
-    /// rest to be announced by the live region. The root is made focusable
-    /// (<c>tabindex="-1"</c>) while no explicit <see cref="BitComponentBase.TabIndex"/> is given, so the focus has
-    /// somewhere to land.
-    /// </remarks>
-    [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
     /// The content of message.

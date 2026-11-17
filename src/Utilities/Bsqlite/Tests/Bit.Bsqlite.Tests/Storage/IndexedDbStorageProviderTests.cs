@@ -8,6 +8,34 @@ public sealed class IndexedDbStorageProviderTests
 {
     public TestContext TestContext { get; set; } = null!;
 
+    /// <summary>
+    /// The VFS keeps 4096-byte blocks, so a database of other pages, imported as such blocks, turned up
+    /// malformed after its first write. Restore and migration onto this backend now refuse it up front;
+    /// the import refuses it before anything reaches the browser.
+    /// </summary>
+    [TestMethod]
+    [DataRow(512)]
+    [DataRow(1024)]
+    [DataRow(8192)]
+    [DataRow(65536)]
+    public async Task Import_RefusesADatabaseWhosePagesAreNot4096Bytes(int pageSize)
+    {
+        var admin = new BsqliteIndexedDbStorageProvider().Admin;
+
+        var error = await Assert.ThrowsExactlyAsync<NotSupportedException>(
+            async () => await admin.ImportAsync("app.db", SqliteImages.Valid(pageSize: pageSize), TestContext.CancellationToken));
+
+        StringAssert.Contains(error.Message, $"{pageSize}-byte pages");
+    }
+
+    [TestMethod]
+    public void Import_TakesA4096BytePageDatabase_AndBytesThatAreNoDatabase()
+    {
+        BsqliteIndexedDbStorageAdmin.ThrowIfPageSizeUnsupported(SqliteImages.Valid(pageSize: 4096));
+        BsqliteIndexedDbStorageAdmin.ThrowIfPageSizeUnsupported([]);
+        BsqliteIndexedDbStorageAdmin.ThrowIfPageSizeUnsupported([1, 2, 3]);
+    }
+
     [TestMethod]
     public void Name_IsTheStickyBindingKey()
     {

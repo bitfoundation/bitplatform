@@ -9,12 +9,6 @@ public partial class BitRichTextEditor
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
     /// <summary>
-    /// Identifies the bound model field, enabling <c>EditForm</c> validation. Set automatically
-    /// when using <c>@bind-Value</c> on a model property.
-    /// </summary>
-    [Parameter] public Expression<Func<string?>>? ValueExpression { get; set; }
-
-    /// <summary>
     /// Shows the messages the cascading EditContext holds for the bound field - the ones of its data annotations or
     /// those of any other validator of the form - under the editor, where <see cref="ErrorMessage"/> goes, so an
     /// <c>EditForm</c> needs no <c>ValidationMessage</c> component beside it. The editing surface (and the source view
@@ -29,6 +23,12 @@ public partial class BitRichTextEditor
     /// shows none.
     /// </remarks>
     [Parameter] public bool ShowValidationMessage { get; set; }
+
+    /// <summary>
+    /// Identifies the bound model field, enabling <c>EditForm</c> validation. Set automatically
+    /// when using <c>@bind-Value</c> on a model property.
+    /// </summary>
+    [Parameter] public Expression<Func<string?>>? ValueExpression { get; set; }
 
     private FieldIdentifier _fieldIdentifier;
     private bool _hasField;

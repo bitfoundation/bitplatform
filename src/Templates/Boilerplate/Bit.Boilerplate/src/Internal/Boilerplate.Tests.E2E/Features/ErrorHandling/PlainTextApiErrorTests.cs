@@ -78,6 +78,6 @@ public class PlainTextApiErrorTests
         file.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         form.Add(file, "file", "e2e-too-small.png"); // The endpoint binds an IFormFile parameter named "file".
 
-        using var response = await apiClient.HttpClient.PostAsync("api/v1/Attachment/UploadUserProfilePicture", form, TestContext.CancellationToken);
+        using var response = await apiClient.HttpClient.PostAsync("api/v1/Attachment/UploadUserProfileImage", form, TestContext.CancellationToken);
     }
 }

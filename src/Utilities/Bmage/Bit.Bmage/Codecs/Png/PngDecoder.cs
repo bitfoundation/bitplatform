@@ -105,7 +105,9 @@ public sealed class PngDecoder : IImageDecoder
             }
             if (read < raw.Length) throw new ImageDecodeException("Truncated PNG image data.");
         }
-        catch (InvalidDataException ex)
+        // zlib reports some damage - a stream that asks for a preset dictionary, which PNG never has - as a ZLibException,
+        // an IOException rather than an InvalidDataException.
+        catch (Exception ex) when (ex is InvalidDataException or IOException)
         {
             throw new ImageDecodeException("Corrupt PNG image data.", ex);
         }

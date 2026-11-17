@@ -147,25 +147,6 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public bool AutoSelectFirstMatch { get; set; }
 
     /// <summary>
-    /// Removes the already selected items from the callout, which suits a multi select dropdown whose
-    /// selection is visible as chips and whose list is therefore only about what is left to pick.
-    /// A group header left naming nothing, and a divider left without items on one of its sides, are
-    /// removed along with them.
-    /// It has no effect when the items come from an <see cref="ItemsProvider"/>, which hands over the
-    /// window it was asked for and is the only place that can leave the selected items out of it.
-    /// </summary>
-    [Parameter] public bool HideSelectedItems { get; set; }
-
-    /// <summary>
-    /// Highlights the part of the item text that matched the current search text in the callout.
-    /// Only applies to the default item rendering, not to a custom <see cref="ItemTemplate"/>.
-    /// The highlighted part is found by the built-in algorithm (<see cref="SearchMode"/> and
-    /// <see cref="SearchIgnoreDiacritics"/>), so a custom <see cref="SearchFunction"/> that matches by
-    /// some other rule can produce items with nothing to highlight.
-    /// </summary>
-    [Parameter] public bool HighlightSearch { get; set; }
-
-    /// <summary>
     /// Custom template to render as a footer in the callout.
     /// </summary>
     [Parameter] public RenderFragment? CalloutFooterTemplate { get; set; }
@@ -243,6 +224,35 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter, ResetClassBuilder] public BitDropdownClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The accessible name (and the tooltip) of the clear button of the dropdown.
+    /// Defaults to the English message.
+    /// </summary>
+    [Parameter] public string? ClearButtonAriaLabel { get; set; }
+
+    /// <summary>
+    /// The icon of the clear button of the dropdown.
+    /// Takes precedence over <see cref="ClearButtonIconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ClearButtonIconName"/> instead.
+    /// </summary>
+    [Parameter] public BitIconInfo? ClearButtonIcon { get; set; }
+
+    /// <summary>
+    /// The icon name of the clear button of the dropdown from the Fluent UI icon set.
+    /// For external icon libraries, use <see cref="ClearButtonIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? ClearButtonIconName { get; set; }
+
+    /// <summary>
+    /// Makes the Escape key take back the whole selection once there is nothing left for it to dismiss:
+    /// the first press closes the callout (and, in the ComboBox mode, drops the text that was typed into
+    /// it), and only a press with the callout already closed and nothing typed clears what is selected.
+    /// It reports itself through <see cref="OnClear"/> exactly as the clear button does, and it is
+    /// refused in the same places that button is - a read-only dropdown, a one-way binding.
+    /// </summary>
+    [Parameter] public bool ClearOnEscape { get; set; }
+
+    /// <summary>
     /// Determines whether picking an item in the callout closes it. It defaults to the behavior each
     /// mode expects: a single select dropdown closes, because the pick is the whole interaction, while
     /// a multi select one stays open so the next item can be picked right away. Set it explicitly to
@@ -260,35 +270,6 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
-
-    /// <summary>
-    /// The accessible name (and the tooltip) of the clear button of the dropdown.
-    /// Defaults to the English message.
-    /// </summary>
-    [Parameter] public string? ClearButtonAriaLabel { get; set; }
-
-    /// <summary>
-    /// Makes the Escape key take back the whole selection once there is nothing left for it to dismiss:
-    /// the first press closes the callout (and, in the ComboBox mode, drops the text that was typed into
-    /// it), and only a press with the callout already closed and nothing typed clears what is selected.
-    /// It reports itself through <see cref="OnClear"/> exactly as the clear button does, and it is
-    /// refused in the same places that button is - a read-only dropdown, a one-way binding.
-    /// </summary>
-    [Parameter] public bool ClearOnEscape { get; set; }
-
-    /// <summary>
-    /// The icon of the clear button of the dropdown.
-    /// Takes precedence over <see cref="ClearButtonIconName"/> when both are set.
-    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
-    /// For built-in Fluent UI icons, use <see cref="ClearButtonIconName"/> instead.
-    /// </summary>
-    [Parameter] public BitIconInfo? ClearButtonIcon { get; set; }
-
-    /// <summary>
-    /// The icon name of the clear button of the dropdown from the Fluent UI icon set.
-    /// For external icon libraries, use <see cref="ClearButtonIcon"/> instead.
-    /// </summary>
-    [Parameter] public string? ClearButtonIconName { get; set; }
 
     /// <summary>
     /// Activates the ComboBox feature in BitDropDown component.
@@ -451,9 +432,23 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
 
     /// <summary>
-    /// The initial items that will be used to set selected items when using an ItemProvider.
+    /// Removes the already selected items from the callout, which suits a multi select dropdown whose
+    /// selection is visible as chips and whose list is therefore only about what is left to pick.
+    /// A group header left naming nothing, and a divider left without items on one of its sides, are
+    /// removed along with them.
+    /// It has no effect when the items come from an <see cref="ItemsProvider"/>, which hands over the
+    /// window it was asked for and is the only place that can leave the selected items out of it.
     /// </summary>
-    [Parameter] public IEnumerable<TItem>? InitialSelectedItems { get; set; }
+    [Parameter] public bool HideSelectedItems { get; set; }
+
+    /// <summary>
+    /// Highlights the part of the item text that matched the current search text in the callout.
+    /// Only applies to the default item rendering, not to a custom <see cref="ItemTemplate"/>.
+    /// The highlighted part is found by the built-in algorithm (<see cref="SearchMode"/> and
+    /// <see cref="SearchIgnoreDiacritics"/>), so a custom <see cref="SearchFunction"/> that matches by
+    /// some other rule can produce items with nothing to highlight.
+    /// </summary>
+    [Parameter] public bool HighlightSearch { get; set; }
 
     /// <summary>
     /// Searches the items as the user types in the search box (based on the 'oninput' HTML event)
@@ -464,6 +459,11 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public bool Immediate { get; set; }
 
     /// <summary>
+    /// The initial items that will be used to set selected items when using an ItemProvider.
+    /// </summary>
+    [Parameter] public IEnumerable<TItem>? InitialSelectedItems { get; set; }
+
+    /// <summary>
     /// Marks the dropdown as invalid without an <c>EditContext</c> having said so, which is what a
     /// rejection the app decided on its own (a server response, a rule spanning two fields) needs. It
     /// gives the dropdown the same look and the same aria-invalid attribute an invalid bound value does.
@@ -472,12 +472,6 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Invalid { get; set; }
-
-    /// <summary>
-    /// Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched.
-    /// The dropdown stays interactive, so the user can still open the callout and see the loading state.
-    /// </summary>
-    [Parameter] public bool Loading { get; set; }
 
     /// <summary>
     /// Determines the opening state of the callout. (two-way bound)
@@ -542,6 +536,12 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
+    /// Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched.
+    /// The dropdown stays interactive, so the user can still open the callout and see the loading state.
+    /// </summary>
+    [Parameter] public bool Loading { get; set; }
+
+    /// <summary>
     /// The custom template to render in the callout in place of the items while <see cref="Loading"/> is enabled.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
@@ -550,6 +550,13 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// The text to render in the callout in place of the items while <see cref="Loading"/> is enabled.
     /// </summary>
     [Parameter] public string? LoadingText { get; set; }
+
+    /// <summary>
+    /// The maximum number of selected items rendered in the dropdown itself. Beyond it, the chips display
+    /// collapses the extra ones into an overflow indicator and the text display switches to a summary.
+    /// Zero or null renders every selected item.
+    /// </summary>
+    [Parameter] public int? MaxDisplayedItems { get; set; }
 
     /// <summary>
     /// The maximum height of the scrollable item list of the callout in pixels, which is what keeps a
@@ -573,13 +580,6 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// notice on their own. Defaults to the English message.
     /// </summary>
     [Parameter] public string? MaxSelectedItemsText { get; set; }
-
-    /// <summary>
-    /// The maximum number of selected items rendered in the dropdown itself. Beyond it, the chips display
-    /// collapses the extra ones into an overflow indicator and the text display switches to a summary.
-    /// Zero or null renders every selected item.
-    /// </summary>
-    [Parameter] public int? MaxDisplayedItems { get; set; }
 
     /// <summary>
     /// The number of characters the search text must reach before the items get filtered.
@@ -608,12 +608,6 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public string MultiSelectDelimiter { get; set; } = ", ";
 
     /// <summary>
-    /// The composite format of the overflow indicator that stands for the selected items beyond
-    /// <see cref="MaxDisplayedItems"/> in the chips display, for example "+{0}".
-    /// </summary>
-    [Parameter] public string? OverflowTextFormat { get; set; }
-
-    /// <summary>
     /// Names and selectors of the custom input type properties.
     /// </summary>
     [Parameter] public BitDropdownNameSelectors<TItem, TValue>? NameSelectors { get; set; }
@@ -631,6 +625,12 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
 
     /// <summary>
+    /// The text to render in the callout when the current search matched none of the items. Default:
+    /// <see cref="BitStrings.NoResultsFound"/>.
+    /// </summary>
+    [Parameter] public string? NoResultsText { get; set; }
+
+    /// <summary>
     /// Stops the arrow keys at the ends of the item list instead of letting them wrap around from the
     /// last item to the first one and back, which suits a long list where the wrap is more likely to
     /// read as the focus having been lost than as a deliberate jump. The type-ahead still wraps, since
@@ -639,12 +639,6 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// the list and the focus stops at them either way.
     /// </summary>
     [Parameter] public bool NoWrapNavigation { get; set; }
-
-    /// <summary>
-    /// The text to render in the callout when the current search matched none of the items. Default:
-    /// <see cref="BitStrings.NoResultsFound"/>.
-    /// </summary>
-    [Parameter] public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The callback that is called when the selection gets cleared by the clear button.
@@ -722,6 +716,12 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
+    /// The composite format of the overflow indicator that stands for the selected items beyond
+    /// <see cref="MaxDisplayedItems"/> in the chips display, for example "+{0}".
+    /// </summary>
+    [Parameter] public string? OverflowTextFormat { get; set; }
 
     /// <summary>
     /// Determines how many additional items are rendered before and after the visible region.
@@ -957,6 +957,11 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public int ThrottleTime { get; set; }
 
     /// <summary>
+    /// The title to show when the mouse hovers over the dropdown.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>
     /// The characters that split the text typed (or pasted) into the multi select ComboBox input into
     /// separate terms, each committed as its own selection exactly as typing it and pressing Enter
     /// would: a term naming an existing item selects it, and with <see cref="Dynamic"/> enabled a term
@@ -964,11 +969,6 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// instead of one literal term.
     /// </summary>
     [Parameter] public char[]? TokenSeparators { get; set; }
-
-    /// <summary>
-    /// The title to show when the mouse hovers over the dropdown.
-    /// </summary>
-    [Parameter] public string? Title { get; set; }
 
     /// <summary>
     /// Removes the default background color from the root element.

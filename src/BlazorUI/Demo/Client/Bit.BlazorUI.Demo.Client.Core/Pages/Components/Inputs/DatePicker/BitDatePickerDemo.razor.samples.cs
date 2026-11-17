@@ -79,7 +79,7 @@ private readonly DateTimeOffset[] highlightedDates =
 
 <BitDatePicker Label=""FixedWeeks (always six weeks)"" FixedWeeks />
 
-<BitDatePicker Label=""MonthCount (2)"" MonthCount=""2"" IsMonthPickerVisible=""false"" />
+<BitDatePicker Label=""MonthCount (2)"" MonthCount=""2"" ShowMonthPicker=""false"" />
 
 <BitDatePicker Label=""MonthCount (3) with PagedNavigation""
                MonthCount=""3""
@@ -87,11 +87,11 @@ private readonly DateTimeOffset[] highlightedDates =
                ShowMonthPickerAsOverlay />";
 
     private readonly string example6RazorCode = @"
-<BitDatePicker Label=""IsMonthPickerVisible"" IsMonthPickerVisible=""@isMonthPickerVisible"" />
-<BitToggleButton OnText=""MonthPicker visible"" OffText=""MonthPicker hidden"" @bind-IsChecked=""@isMonthPickerVisible"" />
+<BitDatePicker Label=""ShowMonthPicker"" ShowMonthPicker=""@isMonthPickerVisible"" />
+<BitToggleButton OnText=""MonthPicker visible"" OffText=""MonthPicker hidden"" @bind-Checked=""@isMonthPickerVisible"" />
 
 <BitDatePicker Label=""ShowMonthPickerAsOverlay"" ShowMonthPickerAsOverlay=""@showMonthPickerAsOverlay"" />
-<BitToggleButton OnText=""Position overlay"" OffText=""Position besides"" @bind-IsChecked=""@showMonthPickerAsOverlay"" />";
+<BitToggleButton OnText=""Position overlay"" OffText=""Position besides"" @bind-Checked=""@showMonthPickerAsOverlay"" />";
     private readonly string example6CsharpCode = @"
 private bool isMonthPickerVisible = true;
 private bool showMonthPickerAsOverlay;";

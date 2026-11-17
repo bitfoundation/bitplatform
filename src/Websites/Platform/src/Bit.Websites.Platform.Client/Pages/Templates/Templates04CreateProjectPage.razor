@@ -271,7 +271,7 @@
                 <div class="nav-forward">
                     @if (CurrentStep < LastStep)
                     {
-                        <BitButton IconName="ChevronRight" IconPosition="BitIconPosition.End" OnClick="() => GoToStep(CurrentStep + 1)">@(CurrentStep == LastStep - 1 ? "Show me how to get it" : "Next")</BitButton>
+                        <BitButton IconName="ChevronRight" IconPlacement="BitPlacement.End" OnClick="() => GoToStep(CurrentStep + 1)">@(CurrentStep == LastStep - 1 ? "Show me how to get it" : "Next")</BitButton>
                     }
                     else
                     {

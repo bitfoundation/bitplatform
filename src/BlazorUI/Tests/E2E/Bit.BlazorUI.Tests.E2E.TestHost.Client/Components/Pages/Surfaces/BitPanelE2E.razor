@@ -129,9 +129,9 @@
     </BitPanel>
 </E2ESection>
 
-<E2ESection Id="a11y" Title="Accessibility: TitleAriaId, SubtitleAriaId, IsAlert, Role, focus">
+<E2ESection Id="a11y" Title="Accessibility: TitleAriaId, SubtitleAriaId, Alert, Role, focus">
     <button id="btn-a11y-open" @onclick="() => { _isAlert = false; _a11yOpen = true; }">TitleAriaId</button>
-    <button id="btn-alert-open" @onclick="() => { _isAlert = true; _a11yOpen = true; }">IsAlert</button>
+    <button id="btn-alert-open" @onclick="() => { _isAlert = true; _a11yOpen = true; }">Alert</button>
     <button id="btn-role-open" @onclick="() => _roleOpen = true">Role complementary</button>
     <button id="btn-nofocus-open" @onclick="() => _noFocusOpen = true">NoAutoFocus</button>
     <button id="btn-notrap-open" @onclick="() => _noTrapOpen = true">NoFocusTrap and NoRestoreFocus</button>
@@ -140,7 +140,7 @@
     <span id="a11y-open">@_a11yOpen</span>
     <span id="notrap-open">@_noTrapOpen</span>
 
-    <BitPanel Id="a11y-panel" @bind-IsOpen="_a11yOpen" TitleAriaId="pnl-a11y-title" SubtitleAriaId="pnl-a11y-subtitle" IsAlert="_isAlert">
+    <BitPanel Id="a11y-panel" @bind-IsOpen="_a11yOpen" TitleAriaId="pnl-a11y-title" SubtitleAriaId="pnl-a11y-subtitle" Alert="_isAlert">
         <div style="padding: 24px;">
             <h3 id="pnl-a11y-title">Session timeout</h3>
             <p id="pnl-a11y-subtitle">You will be signed out in a minute.</p>

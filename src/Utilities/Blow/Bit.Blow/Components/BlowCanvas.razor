@@ -42,6 +42,7 @@
          @ondblclick="OnPaneDoubleClick"
          @ondblclick:stopPropagation="IsNested"
          @oncontextmenu="OnPaneContextMenuHandler"
+         @oncontextmenu:preventDefault="RightButtonPans"
          @oncontextmenu:stopPropagation="IsNested"
          @onmousemove="PaneMouseMoveHandler"
          @onmouseenter="OnPaneMouseEnter"

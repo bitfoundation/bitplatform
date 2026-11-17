@@ -24,19 +24,19 @@ public partial class BitAccordionListDemo
         },
         new()
         {
+            Name = "BodyTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "The custom template to render the body (content) of each item. Used when an item does not provide its own body.",
+        },
+        new()
+        {
             Name = "Border",
             Type = "BitColorKind?",
             DefaultValue = "null",
             Description = "The color kind of the border of all the accordion items. An explicit value wins over --bit-Accordion-border-color and, in a Joined list, over --bit-AccordionList-divider-color; left unset, the items take the default border color unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
-        },
-        new()
-        {
-            Name = "BodyTemplate",
-            Type = "RenderFragment<TItem>?",
-            DefaultValue = "null",
-            Description = "The custom template to render the body (content) of each item. Used when an item does not provide its own body.",
         },
         new()
         {
@@ -74,6 +74,20 @@ public partial class BitAccordionListDemo
             Type = "IEnumerable<string>?",
             DefaultValue = "null",
             Description = "The default expanded keys in multiple-expand mode (used when ExpandedKeys is not set).",
+        },
+        new()
+        {
+            Name = "EmptyTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content to render in place of the items when the list has none. A list built from Options or ChildContent only knows it is empty once its options have had their turn to register, so its empty content takes the render after the first; a list built from Items shows it right away.",
+        },
+        new()
+        {
+            Name = "EmptyText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text to render in place of the items when the list has none and no EmptyTemplate is given. Defaults to BitStrings.NoItemsFound (\"No items found\").",
         },
         new()
         {
@@ -142,20 +156,6 @@ public partial class BitAccordionListDemo
         },
         new()
         {
-            Name = "EmptyTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "The custom content to render in place of the items when the list has none. A list built from Options or ChildContent only knows it is empty once its options have had their turn to register, so its empty content takes the render after the first; a list built from Items shows it right away.",
-        },
-        new()
-        {
-            Name = "EmptyText",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The text to render in place of the items when the list has none and no EmptyTemplate is given. Defaults to BitStrings.NoItemsFound (\"No items found\").",
-        },
-        new()
-        {
             Name = "Gap",
             Type = "int?",
             DefaultValue = "null",
@@ -214,17 +214,17 @@ public partial class BitAccordionListDemo
         },
         new()
         {
-            Name = "MaxHeight",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The maximum height of the content of every item (any CSS length), beyond which the content scrolls inside the item instead of growing it.",
-        },
-        new()
-        {
             Name = "MaxExpanded",
             Type = "int?",
             DefaultValue = "null",
             Description = "The greatest number of items that can be expanded at the same time in multiple-expand mode. Expanding one more closes the panel that has been open the longest, so nothing is ever turned away. A value below 1 is no limit at all, the cap applies to ExpandAll and to the default and bound keys as well, and it means nothing outside of Multiple.",
+        },
+        new()
+        {
+            Name = "MaxHeight",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The maximum height of the content of every item (any CSS length), beyond which the content scrolls inside the item instead of growing it.",
         },
         new()
         {

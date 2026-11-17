@@ -9,20 +9,22 @@ public partial class BitFcTimelineEventBlock
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
 
     [Parameter] public BitFullCalendarEvent Event { get; set; } = default!;
-    [Parameter] public EventCallback<BitFullCalendarEvent> OnSelected { get; set; }
+
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
-
-    /// <summary>Pixels per minute on the timeline axis (e.g. 96/60 for hour columns, 56/1440 for day columns).</summary>
-    [Parameter] public double PixelsPerMinute { get; set; }
-
-    /// <summary>Snap interval in minutes used while resizing. Hour timelines snap to 30 min, day timelines snap to a full day.</summary>
-    [Parameter] public int SnapMinutes { get; set; } = 30;
 
     /// <summary>Minimum length the event can be resized to (minutes). Defaults to <see cref="SnapMinutes"/>.</summary>
     [Parameter] public int? MinDurationMinutes { get; set; }
 
+    [Parameter] public EventCallback<BitFullCalendarEvent> OnSelected { get; set; }
+
+    /// <summary>Pixels per minute on the timeline axis (e.g. 96/60 for hour columns, 56/1440 for day columns).</summary>
+    [Parameter] public double PixelsPerMinute { get; set; }
+
     /// <summary>When true, the resize preview shows the date instead of the time-of-day (used by month timeline).</summary>
     [Parameter] public bool PreviewAsDate { get; set; }
+
+    /// <summary>Snap interval in minutes used while resizing. Hour timelines snap to 30 min, day timelines snap to a full day.</summary>
+    [Parameter] public int SnapMinutes { get; set; } = 30;
 
     private readonly string _instanceId = Guid.NewGuid().ToString("N");
     private DotNetObjectReference<BitFcTimelineEventBlock>? _dotNetRef;

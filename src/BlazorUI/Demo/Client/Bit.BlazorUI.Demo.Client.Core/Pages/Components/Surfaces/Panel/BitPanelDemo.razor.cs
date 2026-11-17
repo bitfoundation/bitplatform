@@ -13,6 +13,13 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "Alert",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reports the panel as an alertdialog instead of a dialog, for urgent content the user has to deal with.",
+        },
+        new()
+        {
             Name = "AutoToggleScroll",
             Type = "bool",
             DefaultValue = "false",
@@ -110,13 +117,6 @@ public partial class BitPanelDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "A plain-text header, rendered as a level-2 heading. Header takes precedence over it.",
-        },
-        new()
-        {
-            Name = "IsAlert",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Reports the panel as an alertdialog instead of a dialog, for urgent content the user has to deal with.",
         },
         new()
         {
@@ -222,9 +222,9 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "OnSwipeStart",
+            Name = "OnSwipeEnd",
             Type = "EventCallback<decimal>",
-            Description = "Fires when a swipe starts on the panel, with the start coordinate along its axis.",
+            Description = "Fires when a swipe ends, with the distance along the panel's axis.",
         },
         new()
         {
@@ -234,9 +234,9 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "OnSwipeEnd",
+            Name = "OnSwipeStart",
             Type = "EventCallback<decimal>",
-            Description = "Fires when a swipe ends, with the distance along the panel's axis.",
+            Description = "Fires when a swipe starts on the panel, with the start coordinate along its axis.",
         },
         new()
         {
@@ -632,7 +632,7 @@ public partial class BitPanelDemo
     private bool a11yNoAutoFocus;
     private bool a11yNoFocusTrap;
     private bool a11yNoRestoreFocus;
-    private bool a11yIsAlert;
+    private bool a11yAlert;
     private bool isA11yPanelOpen;
 
     private string scrollMode = "Lock";

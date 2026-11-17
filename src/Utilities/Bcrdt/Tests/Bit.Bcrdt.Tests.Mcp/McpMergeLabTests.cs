@@ -153,6 +153,44 @@ public class McpMergeLabTests
     }
 
     [TestMethod]
+    public async Task Concurrent_adds_of_one_element_keep_one_entry_which_a_remove_can_take_out()
+    {
+        // A and B both add the element while apart; B then removes the entry it holds. The two adds are one key written
+        // twice and keep one entry - B's here - so B's remove takes the element out everywhere, A's add unseen.
+        var report = await InspectAsync("""
+            A: set tags add "urgent"
+            B: set tags add "urgent"
+            B: set tags remove "urgent"
+            """);
+
+        Assert.IsTrue(report.Converged);
+        Assert.AreEqual("[]", report.Merged!["tags"]!.ToJsonString());
+        Assert.AreEqual("the remove wins", report.Decisions!.Single().Outcome);
+        Assert.Contains("keep one entry", report.Decisions!.Single().Detail);
+    }
+
+    [TestMethod]
+    public async Task An_element_of_a_nested_set_replaced_through_its_map_key_is_lost_with_the_key_not_to_a_remove()
+    {
+        // A removes the element and B adds it again (a no-op) inside the set, while C writes over the key holding the
+        // set: the element is gone because the whole set is, whatever the remove and the add did.
+        var report = await InspectAsync("""
+            base: set board/tags add "urgent"
+            A: set board/tags remove "urgent"
+            B: set board/tags add "urgent"
+            C: map board set tags "none"
+            """);
+
+        Assert.IsTrue(report.Converged);
+        Assert.AreEqual("\"none\"", report.Merged!["board"]!["tags"]!.ToJsonString());
+
+        var decision = report.Decisions!.Single(decision => decision.Target == "set 'board/tags'");
+        Assert.AreEqual("an element is lost with its map key", decision.Outcome);
+        Assert.Contains("replaced through its map key", decision.Detail);
+        Assert.DoesNotContain("no-op", decision.Detail);
+    }
+
+    [TestMethod]
     public async Task Two_concurrent_moves_of_one_element_leave_two_copies()
     {
         var report = await InspectAsync("""

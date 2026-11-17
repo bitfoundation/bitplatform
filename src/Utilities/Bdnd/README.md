@@ -604,9 +604,12 @@ because `dragover` fires continuously and, on Blazor Server, each one is a messa
 not leave it: its `OnDrop` (or the source's `OnEnd`, for a cancel) tells the end. Both run for mouse, touch and
 keyboard drags alike; for native drags (files, text), follow `IsOver` in the state.
 
-Nested targets are entered outside in and left inside out. Between two neighbouring targets, a native mouse drag may
-enter the next one before it leaves the previous one - the browser reports them in that order - so code that tracks
-the hovered targets should keep a set (add on enter, remove on leave) rather than a single "current" target.
+Nested targets entered or left at the same moment get their `OnEnter` (or `OnLeave`) in no set order: a mouse or
+touch drag enters the innermost first, as the browser reports it, while a keyboard drag notifies them in the order
+they were rendered. Between two neighbouring targets, a native mouse drag may also enter the next one before it leaves
+the previous one - the browser reports them in that order. Code that tracks the hovered targets should keep a set (add
+on enter, remove on leave) rather than a single "current" target, and read `IsOver` or `IsOverShallow` in the state
+for which of them is innermost.
 
 ### Disabling a target
 
@@ -1179,7 +1182,7 @@ A keyboard drag is the manager's like any other. The targets it moves onto repor
 targets) and `IsOverShallow`, their `OnHover` runs with the pointer at the middle of the target, the drop runs the
 `OnDrop` chain innermost first, and the source's `OnEnd` gets `DidDrop` and the drop result. Only targets the
 item can be dropped on are visited - their type matches and `CanDropPredicate` agrees - and only the ones on
-screen (not hidden, not inside an `inert` region such as the page behind a modal dialog). The item's own targets
+screen (not hidden, not inside an `inert` region, and not behind an open modal `<dialog>`). The item's own targets
 are skipped: those inside the dragged source (an item is never offered itself, nor a tree node its own subtree),
 and one around it that holds no other target (a target wrapping each draggable, or a column holding just this
 card) - the item is already there. A target around it that holds others, such as the list it is in or an
@@ -1305,7 +1308,9 @@ private static readonly BdndAnnouncements _texts = new() { CountItems = BdndAnno
 ```
 
 The live region and the instructions are elements the module adds to the end of the `body` - one region per
-document, one hidden element per distinct instruction text - so a provider's own markup is unchanged. Mouse drags
+document, one hidden element per distinct instruction text - so a provider's own markup is unchanged. While a modal
+`<dialog>` is open, the `body`'s region is inert and screen readers do not read it: a keyboard drag that starts in the
+dialog adds a second region at the end of the dialog, and the announcements go to both. Mouse drags
 are not announced: a screen reader user drags with the keyboard.
 
 ### A non-drag alternative
@@ -1547,6 +1552,12 @@ event is being dispatched. The script module covers exactly that gap:
    move lands on (document order, among the targets .NET says can take the item), keeps the focus on the dragged
    item, and owns the live region screen readers hear.
 
+The queue waits for each call's answer, however long .NET takes: an `OnDrop` that saves something, or an `OnHover`
+that loads what it expands, holds up the calls after it, so they reach .NET in order and the drag goes on. On Blazor
+Server an answer can be lost with the circuit's connection. When one is slow to come, the module asks .NET, through
+the drag's source, whether it is still handling a call of the queue. When .NET is not, or does not answer, the module
+gives up that drag and ends it in .NET too, so the drags after it are not held up.
+
 There are no native events in a keyboard or pointer drag, so the manager walks the target chain itself: a target and its
 enclosing targets of the same provider, innermost first - the order nested components put their host elements in,
 and so the order native events bubble in.
@@ -1705,7 +1716,8 @@ do:
 - Space and Enter on a focused host (or handle) start a keyboard drag: their default action is prevented and their
   `keyup` does not reach the page. Hosts with a `Tag` that is interactive by itself (`a`, `button`, `input`,
   `select`, `textarea`, `summary`) are left alone.
-- The module adds a live region and a hidden instructions element at the end of `body`.
+- The module adds a live region and a hidden instructions element at the end of `body` (and a live region at the end
+  of an open modal `<dialog>` a keyboard drag starts in).
 - Drop target hosts carry `data-bit-bdnd-can-drop`, `data-bit-bdnd-over` and `data-bit-bdnd-over-shallow` while a
   drag is in progress, and dragged hosts `data-bit-bdnd-dragging`.
 

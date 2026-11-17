@@ -226,6 +226,23 @@ public class BmotionInteropTests
     }
 
     [TestMethod]
+    public async Task PlayWaapiAnimation_OptsOutOfTheDefaultCallTimeout()
+    {
+        var (ctx, module, interop) = Create();
+        await using var _ = ctx;
+        module.Setup<bool>("playWaapiAnimation", _ => true).SetResult(true);
+
+        await interop.PlayWaapiAnimationAsync("box", 3, Array.Empty<object>(), new Dictionary<string, object?>());
+
+        // The call lasts as long as the animation: without a token of its own it would be cut off after the runtime's
+        // default timeout (a minute on Blazor Server), however long the animation still had to run.
+        var call = module.VerifyInvoke("playWaapiAnimation");
+        Assert.AreEqual(CancellationToken.None, call.CancellationToken);
+        Assert.AreEqual("box", call.Arguments[0]);
+        Assert.AreEqual(3, call.Arguments[1]);
+    }
+
+    [TestMethod]
     public async Task PlayLayoutCrossfade_SendsTheFlipInPlayLayoutCrossfadesParameterOrder()
     {
         var (ctx, module, interop) = Create();

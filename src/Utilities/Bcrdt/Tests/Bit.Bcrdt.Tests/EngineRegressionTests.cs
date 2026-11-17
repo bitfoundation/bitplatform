@@ -804,4 +804,62 @@ public class EngineRegressionTests
             () => detached.ApplyDelta([BcrdtDeltaOperation.Retain(5, Attrs(("bold", true)))]));
         Assert.AreEqual(0, detached.Count);
     }
+
+    // ---------------------------------------------------------------- out-of-order delivery
+
+    // A types "a"; B, having seen it, appends "b"; A, having seen that, appends "c" and then "d". B's block needs A's
+    // first; A's second needs B's; A's third needs A's second. Returns the four updates in the order they were made.
+    private static (BcrdtDocument Source, byte[] A0, byte[] B0, byte[] A1, byte[] A2) ChainAcrossTwoAuthors(ulong clientA, ulong clientB)
+    {
+        BcrdtDocument a = Doc(clientA);
+        using BcrdtDocument b = Doc(clientB);
+        List<byte[]> fromA = [];
+        List<byte[]> fromB = [];
+        a.Updated += e => { if (e.Transaction.Local) fromA.Add(e.Update); };
+        b.Updated += e => { if (e.Transaction.Local) fromB.Add(e.Update); };
+
+        a.GetText("t").Insert(0, "a");
+        b.ApplyUpdate(fromA[0]);
+        b.GetText("t").Insert(1, "b");
+        a.ApplyUpdate(fromB[0]);
+        a.GetText("t").Insert(2, "c");
+        a.GetText("t").Insert(3, "d");
+
+        return (a, fromA[0], fromB[0], fromA[1], fromA[2]);
+    }
+
+    [TestMethod]
+    [DataRow(1UL, 2UL)]
+    [DataRow(2UL, 1UL)]
+    public void Blocks_held_back_behind_an_out_of_order_block_are_released_once_their_dependency_arrives(ulong clientA, ulong clientB)
+    {
+        (BcrdtDocument source, byte[] a0, byte[] b0, byte[] a1, byte[] a2) = ChainAcrossTwoAuthors(clientA, clientB);
+        using (source)
+        {
+            // B's block, and A's last, which arrives before the A block it continues.
+            using BcrdtDocument merged = Doc(99);
+            merged.ApplyUpdate(BcrdtUpdateOperations.Merge(b0, a2));
+            merged.ApplyUpdate(BcrdtUpdateOperations.Merge(a0, a1));
+            Assert.AreEqual("abcd", merged.GetText("t").ToString());
+            Assert.IsFalse(merged.HasPendingUpdates);
+
+            // The same four updates one at a time.
+            using BcrdtDocument separate = Doc(98);
+            foreach (byte[] update in new[] { b0, a2, a0, a1 }) separate.ApplyUpdate(update);
+            Assert.AreEqual("abcd", separate.GetText("t").ToString());
+            Assert.IsFalse(separate.HasPendingUpdates);
+
+            // A relay that heard only B's block and A's last hands them on with its state; A's live updates then arrive
+            // in order.
+            using BcrdtDocument relay = Doc(50);
+            relay.ApplyUpdate(b0);
+            relay.ApplyUpdate(a2);
+            using BcrdtDocument late = Doc(96);
+            late.ApplyUpdate(relay.EncodeStateAsUpdate(late.GetStateVector()));
+            late.ApplyUpdate(a0);
+            late.ApplyUpdate(a1);
+            Assert.AreEqual("abcd", late.GetText("t").ToString());
+            Assert.IsFalse(late.HasPendingUpdates);
+        }
+    }
 }

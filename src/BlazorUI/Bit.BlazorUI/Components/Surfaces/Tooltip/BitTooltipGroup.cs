@@ -25,6 +25,16 @@ public class BitTooltipGroup : ComponentBase
 
 
     /// <summary>
+    /// Lets more than one tooltip of the group be on the screen at a time.
+    /// </summary>
+    /// <remarks>
+    /// A group shows one tooltip at a time by default, which is what a row of controls with a tooltip
+    /// each needs: the pointer passing along it leaves one surface behind rather than a trail of them.
+    /// Turn it on where the tooltips are meant to be read side by side.
+    /// </remarks>
+    [Parameter] public bool AllowMultiple { get; set; }
+
+    /// <summary>
     /// The tooltips the group is around.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -34,16 +44,6 @@ public class BitTooltipGroup : ComponentBase
     /// its own.
     /// </summary>
     [Parameter] public int? HideDelay { get; set; }
-
-    /// <summary>
-    /// Lets more than one tooltip of the group be on the screen at a time.
-    /// </summary>
-    /// <remarks>
-    /// A group shows one tooltip at a time by default, which is what a row of controls with a tooltip
-    /// each needs: the pointer passing along it leaves one surface behind rather than a trail of them.
-    /// Turn it on where the tooltips are meant to be read side by side.
-    /// </remarks>
-    [Parameter] public bool AllowMultiple { get; set; }
 
     /// <summary>
     /// The delay in milliseconds before showing, for every tooltip in the group that does not set one of
@@ -88,7 +88,7 @@ public class BitTooltipGroup : ComponentBase
         // from it to the next control of the row, before its own hide delay has run out and started the window.
         foreach (var member in _members)
         {
-            if (ReferenceEquals(member, tooltip) is false && member.IsShown) return true;
+            if (ReferenceEquals(member, tooltip) is false && member.Shown) return true;
         }
 
         if (_lastHiddenAt == 0) return false;

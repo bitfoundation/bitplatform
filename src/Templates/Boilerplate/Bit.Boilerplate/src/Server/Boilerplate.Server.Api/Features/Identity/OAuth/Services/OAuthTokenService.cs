@@ -215,7 +215,7 @@ public partial class OAuthTokenService(AppDbContext dbContext,
         if (tenantId is null)
             return;
 
-        if (await dbContext.TenantUsers.AnyAsync(tu => tu.UserId == userId && tu.TenantId == tenantId && tu.AcceptedOn != null && tu.Tenant!.IsActive, cancellationToken) is false)
+        if (await dbContext.TenantMemberships.AnyAsync(tm => tm.UserId == userId && tm.TenantId == tenantId && tm.AcceptedOn != null && tm.Tenant!.IsActive, cancellationToken) is false)
             throw new BadRequestException().WithData("Reason", "invalid_grant").WithData("Description", "The user is no longer an active member of the team the approval was given in.");
     }
     //#endif

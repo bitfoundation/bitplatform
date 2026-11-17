@@ -152,7 +152,7 @@
                 </tr>
                 <tr>
                     <td class="bb-table-key">BcrdtSet</td>
-                    <td>Equal values are one member; an add wins over a concurrent remove - if the add created a member.</td>
+                    <td>Equal values are one member; an add wins over a concurrent remove - if the add created a member, and that member is the one kept when the same value was added concurrently elsewhere.</td>
                     <td>A member is keyed by its value, and a removal deletes the member it observed rather than the value for ever.</td>
                 </tr>
             </tbody>

@@ -66,9 +66,14 @@ public interface IBonboardingService
     IBonboardingTourSession? FindSession(string tourId);
 
     /// <summary>True when the tour was run to the end at some point.</summary>
+    /// <remarks>
+    /// A record of an older <see cref="BonboardingTourDefinition.Version"/> counts as not completed only for a tour
+    /// that is registered or running: for any other, the service has no definition to tell the current version by.
+    /// </remarks>
     Task<bool> IsCompletedAsync(string tourId, CancellationToken cancellationToken = default);
 
     /// <summary>True when the tour was completed, skipped or closed, so it should not auto-start.</summary>
+    /// <remarks>The same as <see cref="IsCompletedAsync"/> as to a record of an older version.</remarks>
     Task<bool> IsClosedAsync(string tourId, CancellationToken cancellationToken = default);
 
     /// <summary>Reads the persisted record for a tour.</summary>

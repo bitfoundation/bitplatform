@@ -64,16 +64,6 @@ public partial class BitSwipeTrap : BitComponentBase
     [Parameter] public bool KeyboardTrigger { get; set; }
 
     /// <summary>
-    /// The event callback for when the swipe action starts on the container of the swipe trap.
-    /// </summary>
-    [Parameter] public EventCallback<BitSwipeTrapEventArgs> OnStart { get; set; }
-
-    /// <summary>
-    /// The event callback for when the swipe action moves on the container of the swipe trap.
-    /// </summary>
-    [Parameter] public EventCallback<BitSwipeTrapEventArgs> OnMove { get; set; }
-
-    /// <summary>
     /// The event callback for when the swipe action ends on the container of the swipe trap.
     /// </summary>
     /// <remarks>
@@ -82,6 +72,16 @@ public partial class BitSwipeTrap : BitComponentBase
     /// triggers nothing.
     /// </remarks>
     [Parameter] public EventCallback<BitSwipeTrapEventArgs> OnEnd { get; set; }
+
+    /// <summary>
+    /// The event callback for when the swipe action moves on the container of the swipe trap.
+    /// </summary>
+    [Parameter] public EventCallback<BitSwipeTrapEventArgs> OnMove { get; set; }
+
+    /// <summary>
+    /// The event callback for when the swipe action starts on the container of the swipe trap.
+    /// </summary>
+    [Parameter] public EventCallback<BitSwipeTrapEventArgs> OnStart { get; set; }
 
     /// <summary>
     /// The event callback for when the swipe action triggers based on the Trigger or TriggerVelocity constraints.

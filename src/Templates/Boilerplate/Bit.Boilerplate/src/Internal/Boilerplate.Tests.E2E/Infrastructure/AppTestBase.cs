@@ -453,7 +453,7 @@ public abstract class AppTestBase : AppPageTest
         }
 
         await dbContext.UserSessions.IgnoreQueryFilters().Where(session => userIds.Contains(session.UserId)).ExecuteDeleteAsync(CancellationToken.None);
-        await dbContext.TenantUsers.IgnoreQueryFilters().Where(membership => userIds.Contains(membership.UserId)).ExecuteDeleteAsync(CancellationToken.None);
+        await dbContext.TenantMemberships.IgnoreQueryFilters().Where(membership => userIds.Contains(membership.UserId)).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.UserRoles.IgnoreQueryFilters().Where(role => userIds.Contains(role.UserId)).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.UserTokens.IgnoreQueryFilters().Where(token => userIds.Contains(token.UserId)).ExecuteDeleteAsync(CancellationToken.None);
         await dbContext.WebAuthnCredential.IgnoreQueryFilters().Where(credential => userIds.Contains(credential.UserId)).ExecuteDeleteAsync(CancellationToken.None);

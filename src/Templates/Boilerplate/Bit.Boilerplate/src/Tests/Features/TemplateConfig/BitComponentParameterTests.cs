@@ -53,11 +53,11 @@ public class BitComponentParameterTests
     /// </summary>
     private static IEnumerable<(string Component, string WrongName, string RealName)> KnownWrongParameters =>
     [
-        ("BitBasicList", "EnableVirtualization", "Virtualize"),
-        ("BitSearchBox", "Accent", "Background"),
-        ("BitColorPicker", "ChildContent", "Label"),
-        ("BitCarousel", "GoLeftAriaLabel", "NextAriaLabel"),
-        ("BitCarousel", "GoRightAriaLabel", "PrevAriaLabel"),
+        (nameof(Bit.BlazorUI.BitBasicList<object>), "EnableVirtualization", nameof(Bit.BlazorUI.BitBasicList<object>.Virtualize)),
+        (nameof(Bit.BlazorUI.BitSearchBox), "Accent", nameof(Bit.BlazorUI.BitSearchBox.Background)),
+        (nameof(Bit.BlazorUI.BitColorPicker), "ChildContent", nameof(Bit.BlazorUI.BitColorPicker.Label)),
+        (nameof(Bit.BlazorUI.BitCarousel), "GoLeftAriaLabel", nameof(Bit.BlazorUI.BitCarousel.NextAriaLabel)),
+        (nameof(Bit.BlazorUI.BitCarousel), "GoRightAriaLabel", nameof(Bit.BlazorUI.BitCarousel.PrevAriaLabel)),
     ];
 
     [TestMethod]
@@ -118,7 +118,7 @@ public class BitComponentParameterTests
     /// True when the type - or any base up the chain - declares a public <c>[Parameter]</c> or
     /// <c>[CascadingParameter]</c> with this name.
     /// </summary>
-    private static bool HasParameter(Type componentType, string name)
+    internal static bool HasParameter(Type componentType, string name)
     {
         var property = componentType.GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
 
@@ -147,7 +147,7 @@ public class BitComponentParameterTests
                         .FirstOrDefault(t => t.Name.Split('`')[0] == name);
     }
 
-    private static IEnumerable<string> EnumerateRazorFiles(string root)
+    internal static IEnumerable<string> EnumerateRazorFiles(string root)
     {
         return Directory.EnumerateFiles(Path.Combine(root, "src"), "*.razor", SearchOption.AllDirectories)
                         .Where(f => f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") is false)
@@ -158,7 +158,7 @@ public class BitComponentParameterTests
     /// Walks up from the test assembly to the directory that owns <c>.template.config/template.json</c>, the same
     /// anchor <c>SourceNameLeakTests</c> and <c>TemplateConfigurationTests</c> use.
     /// </summary>
-    private static string GetTemplateRoot()
+    internal static string GetTemplateRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
 

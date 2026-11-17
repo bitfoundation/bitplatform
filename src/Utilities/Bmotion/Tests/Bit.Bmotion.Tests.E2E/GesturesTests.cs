@@ -72,6 +72,29 @@ public sealed class GesturesTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task Tap_OnAnElementThatTakesNoFocus_IsReachableFromTheKeyboard()
+    {
+        // A <div> with no tabindex from the page: Enter could never reach it unless it is made focusable.
+        await ExpectEventAsync("armed:plain-tap");
+        Assert.AreEqual("0", await Page.Locator("#plain-tap").GetAttributeAsync("tabindex"));
+
+        await Page.Locator("#plain-tap").FocusAsync();
+        await Page.Keyboard.PressAsync("Enter");
+
+        await ExpectEventAsync("plain-tap");
+    }
+
+    [TestMethod]
+    public async Task Tap_ThatOnlyAnimatesOrWrapsAControl_AddsNoTabStop()
+    {
+        // WhileTap alone has nothing for the keyboard to do; a wrapper's button is what the keyboard reaches.
+        await ExpectEventAsync("armed:visual-tap");
+        await ExpectEventAsync("armed:button-tap");
+        Assert.IsNull(await Page.Locator("#visual-tap").GetAttributeAsync("tabindex"));
+        Assert.IsNull(await Page.Locator("#button-tap").GetAttributeAsync("tabindex"));
+    }
+
+    [TestMethod]
     public async Task Tap_HeldOnTheKeyboardThenBlurred_IsCancelled()
     {
         await ExpectEventAsync("armed:tap");

@@ -233,9 +233,26 @@ public partial class BitPdfViewer : BitComponentBase
 
 
     /// <summary>
-    /// The document to display.
+    /// Whether a pdf dropped onto the viewer opens in it. The dropped file goes
+    /// through the same path as the toolbar's open-file button, so
+    /// <see cref="OnFileOpened"/> and <see cref="MaxOpenFileSize"/> apply to it too.
+    /// Default is <c>false</c>.
     /// </summary>
-    [Parameter] public BitPdfSource? Source { get; set; }
+    [Parameter] public bool AllowDropFile { get; set; }
+
+    /// <summary>
+    /// Offloads document parsing and page rendering to a background thread instead of
+    /// running them on the UI thread, so scrolling and navigation stay responsive
+    /// while a complex page is being rendered. This only has an effect when the
+    /// runtime actually provides a spare thread - Blazor Server, or a Blazor
+    /// WebAssembly app built with multi-threading enabled
+    /// (<c>&lt;WasmEnableThreads&gt;true&lt;/WasmEnableThreads&gt;</c>). On the default
+    /// single-threaded WebAssembly runtime it is a safe no-op: the work still runs on
+    /// the one available thread (renders are serialized, so results stay correct).
+    /// Default is <c>false</c>. Seekable stream sources always perform server
+    /// parsing, page/thumbnail builds, search and print work off the circuit.
+    /// </summary>
+    [Parameter] public bool BackgroundRendering { get; set; }
 
     /// <summary>
     /// Custom CSS classes for the different parts of the viewer.
@@ -244,56 +261,20 @@ public partial class BitPdfViewer : BitComponentBase
     public BitPdfViewerClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for the different parts of the viewer.
+    /// The focused page (1-based), two-way bindable. Reading it gives the page the
+    /// reader is on; assigning it navigates there.
+    /// <br />
+    /// Bound one way (without <c>CurrentPageChanged</c>) the page becomes the host's
+    /// to control: the viewer then reports scroll and toolbar navigation through
+    /// <see cref="OnPageChanged"/> but does not move the value itself.
     /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public BitPdfViewerClassStyles? Styles { get; set; }
+    [Parameter, TwoWayBound] public int CurrentPage { get; set; } = 1;
 
     /// <summary>
-    /// The texts of the viewer UI. Defaults to English; assign a
-    /// <see cref="BitPdfViewerTexts"/> with the properties you want to override
-    /// to localize the toolbar, the sidebars and the status messages.
+    /// What dragging on the document surface does: select text (the default) or pan
+    /// the document, as the hand tool of a desktop viewer does.
     /// </summary>
-    [Parameter] public BitPdfViewerTexts? Texts { get; set; }
-
-    /// <summary>
-    /// The CSS height of the viewer container. When not set, the viewer height is
-    /// responsive: capped at 780px and shrinking to fit the viewport on small screens.
-    /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public string? Height { get; set; }
-
-    /// <summary>
-    /// The CSS width of the viewer container. When not set, the viewer fills the
-    /// width its host gives it.
-    /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public string? Width { get; set; }
-
-    /// <summary>
-    /// Whether the toolbar is shown.
-    /// </summary>
-    [Parameter] public bool ShowToolbar { get; set; } = true;
-
-    /// <summary>
-    /// Which controls the toolbar offers. Combine the flags to build a reduced
-    /// toolbar (e.g. navigation and zoom only). Default is
-    /// <see cref="BitPdfToolbarItems.All"/>.
-    /// </summary>
-    [Parameter] public BitPdfToolbarItems ToolbarItems { get; set; } = BitPdfToolbarItems.All;
-
-    /// <summary>
-    /// Custom content rendered at the start of the toolbar, before the built-in controls - an app's own
-    /// actions (share, annotate, sign) beside the viewer's. The context is the viewer itself, so the content
-    /// can drive it through its public API.
-    /// </summary>
-    [Parameter] public RenderFragment<BitPdfViewer>? ToolbarStartTemplate { get; set; }
-
-    /// <summary>
-    /// Custom content rendered at the end of the toolbar, after the built-in controls. The context is the
-    /// viewer itself, so the content can drive it through its public API.
-    /// </summary>
-    [Parameter] public RenderFragment<BitPdfViewer>? ToolbarEndTemplate { get; set; }
+    [Parameter] public BitPdfCursorTool CursorTool { get; set; } = BitPdfCursorTool.Select;
 
     /// <summary>
     /// The side panel open when a document first loads. Default is
@@ -309,11 +290,35 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
+    /// Whether the viewer handles keyboard shortcuts while it has focus:
+    /// page navigation (<c>n</c>/<c>j</c>, <c>p</c>/<c>k</c>, Home/End), zoom
+    /// (<c>Ctrl +</c>, <c>Ctrl -</c>, <c>Ctrl 0</c>), rotation (<c>r</c>,
+    /// <c>Shift+r</c>), find (<c>Ctrl+F</c>, <c>Ctrl+G</c>, <c>Shift+Ctrl+G</c>),
+    /// print (<c>Ctrl+P</c>), download (<c>Ctrl+S</c>), presentation mode (<c>Ctrl+Alt+P</c>)
+    /// and the sidebar (<c>F4</c>). Find, print and download follow <see cref="ToolbarItems"/>: leaving
+    /// their control out of the toolbar leaves their shortcut out too.
+    /// Default is <c>true</c>.
+    /// </summary>
+    [Parameter] public bool EnableKeyboardShortcuts { get; set; } = true;
+
+    /// <summary>
     /// Custom content shown in place of the pages when a document fails to load, with the same message
     /// <see cref="OnError"/> receives. It is announced to assistive technology as an alert, as the default
     /// message is.
     /// </summary>
     [Parameter] public RenderFragment<string>? ErrorTemplate { get; set; }
+
+    /// <summary>
+    /// The CSS height of the viewer container. When not set, the viewer height is
+    /// responsive: capped at 780px and shrinking to fit the viewport on small screens.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? Height { get; set; }
+
+    /// <summary>
+    /// The initial zoom behavior.
+    /// </summary>
+    [Parameter] public BitPdfZoomMode InitialZoomMode { get; set; } = BitPdfZoomMode.FitWidth;
 
     /// <summary>
     /// Custom content shown in place of the pages while a document is being fetched and parsed, before its first page
@@ -322,74 +327,12 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
-    /// The focused page (1-based), two-way bindable. Reading it gives the page the
-    /// reader is on; assigning it navigates there.
-    /// <br />
-    /// Bound one way (without <c>CurrentPageChanged</c>) the page becomes the host's
-    /// to control: the viewer then reports scroll and toolbar navigation through
-    /// <see cref="OnPageChanged"/> but does not move the value itself.
+    /// The largest file the toolbar's open-file button - and a drop, when
+    /// <see cref="AllowDropFile"/> allows one - accepts, in bytes. Default is
+    /// <c>64</c> MB; the whole file is read into memory, and on Blazor Server it also
+    /// travels the circuit.
     /// </summary>
-    [Parameter, TwoWayBound] public int CurrentPage { get; set; } = 1;
-
-    /// <summary>
-    /// The zoom factor (1 means 100%), two-way bindable. Assigning it switches the
-    /// viewer to <see cref="BitPdfZoomMode.Custom"/> and clamps the value to
-    /// <see cref="MinZoom"/>..<see cref="MaxZoom"/>.
-    /// </summary>
-    [Parameter, TwoWayBound] public double Zoom { get; set; } = 1;
-
-    /// <summary>
-    /// The rotation applied to every page, in degrees, two-way bindable. Assigned
-    /// values are normalized to the nearest quarter turn (0, 90, 180 or 270).
-    /// </summary>
-    [Parameter, TwoWayBound] public int Rotation { get; set; }
-
-    /// <summary>
-    /// The initial zoom behavior.
-    /// </summary>
-    [Parameter] public BitPdfZoomMode InitialZoomMode { get; set; } = BitPdfZoomMode.FitWidth;
-
-    /// <summary>
-    /// How the pages are laid out on the scrollable surface: stacked vertically
-    /// (the default), side by side on one horizontally scrolling row, wrapped into
-    /// rows that fill the width, or one page (or spread) at a time.
-    /// </summary>
-    [Parameter] public BitPdfScrollMode ScrollMode { get; set; } = BitPdfScrollMode.Vertical;
-
-    /// <summary>
-    /// How pages are paired into spreads, the way a printed book falls open.
-    /// Default is <see cref="BitPdfSpreadMode.None"/>.
-    /// </summary>
-    [Parameter] public BitPdfSpreadMode SpreadMode { get; set; } = BitPdfSpreadMode.None;
-
-    /// <summary>
-    /// What dragging on the document surface does: select text (the default) or pan
-    /// the document, as the hand tool of a desktop viewer does.
-    /// </summary>
-    [Parameter] public BitPdfCursorTool CursorTool { get; set; } = BitPdfCursorTool.Select;
-
-    /// <summary>
-    /// The smallest zoom factor the viewer allows (1 means 100%). Default is <c>0.1</c>.
-    /// </summary>
-    [Parameter] public double MinZoom { get; set; } = 0.1;
-
-    /// <summary>
-    /// The largest zoom factor the viewer allows (1 means 100%). Default is <c>8</c>.
-    /// </summary>
-    [Parameter] public double MaxZoom { get; set; } = 8;
-
-    /// <summary>
-    /// The multiplier applied by <see cref="ZoomIn"/> and <see cref="ZoomOut"/>
-    /// (and by the toolbar's zoom buttons). Default is <c>1.2</c>, i.e. 20% a step.
-    /// </summary>
-    [Parameter] public double ZoomStep { get; set; } = 1.2;
-
-    /// <summary>
-    /// The explicit zoom factors the toolbar's zoom dropdown offers (1 means 100%).
-    /// Values outside <see cref="MinZoom"/>..<see cref="MaxZoom"/> are dropped.
-    /// Defaults to 50%, 75%, 100%, 125%, 150%, 200%, 300% and 400%.
-    /// </summary>
-    [Parameter] public IEnumerable<double>? ZoomPresets { get; set; }
+    [Parameter] public long MaxOpenFileSize { get; set; } = 64L * 1024 * 1024;
 
     /// <summary>
     /// How many pages stay materialized in the DOM at once. Pages outside the window
@@ -409,47 +352,14 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public int MaxRenderedThumbnailCount { get; set; } = 40;
 
     /// <summary>
-    /// Whether the viewer handles keyboard shortcuts while it has focus:
-    /// page navigation (<c>n</c>/<c>j</c>, <c>p</c>/<c>k</c>, Home/End), zoom
-    /// (<c>Ctrl +</c>, <c>Ctrl -</c>, <c>Ctrl 0</c>), rotation (<c>r</c>,
-    /// <c>Shift+r</c>), find (<c>Ctrl+F</c>, <c>Ctrl+G</c>, <c>Shift+Ctrl+G</c>),
-    /// print (<c>Ctrl+P</c>), download (<c>Ctrl+S</c>), presentation mode (<c>Ctrl+Alt+P</c>)
-    /// and the sidebar (<c>F4</c>). Find, print and download follow <see cref="ToolbarItems"/>: leaving
-    /// their control out of the toolbar leaves their shortcut out too.
-    /// Default is <c>true</c>.
+    /// The largest zoom factor the viewer allows (1 means 100%). Default is <c>8</c>.
     /// </summary>
-    [Parameter] public bool EnableKeyboardShortcuts { get; set; } = true;
+    [Parameter] public double MaxZoom { get; set; } = 8;
 
     /// <summary>
-    /// How painted text is emitted. <see cref="BitPdfTextCoalescing.Compact"/> merges
-    /// same-line, same-style runs into one span per visual line - far fewer DOM
-    /// nodes on per-glyph PDFs, with small intra-line position drift (explicit
-    /// kerning between runs is approximated). Rotated text always stays exact.
-    /// Default is <see cref="BitPdfTextCoalescing.Exact"/>.
+    /// The smallest zoom factor the viewer allows (1 means 100%). Default is <c>0.1</c>.
     /// </summary>
-    [Parameter] public BitPdfTextCoalescing TextCoalescing { get; set; } = BitPdfTextCoalescing.Exact;
-
-    /// <summary>
-    /// How page content is painted. <see cref="BitPdfRenderMode.Canvas"/> replays a
-    /// display list onto a per-page <c>&lt;canvas&gt;</c> (far fewer DOM nodes;
-    /// selection/search/links stay DOM), while <see cref="BitPdfRenderMode.Html"/>
-    /// (the default) renders prerenderable positioned DOM.
-    /// </summary>
-    [Parameter] public BitPdfRenderMode RenderMode { get; set; } = BitPdfRenderMode.Html;
-
-    /// <summary>
-    /// Offloads document parsing and page rendering to a background thread instead of
-    /// running them on the UI thread, so scrolling and navigation stay responsive
-    /// while a complex page is being rendered. This only has an effect when the
-    /// runtime actually provides a spare thread - Blazor Server, or a Blazor
-    /// WebAssembly app built with multi-threading enabled
-    /// (<c>&lt;WasmEnableThreads&gt;true&lt;/WasmEnableThreads&gt;</c>). On the default
-    /// single-threaded WebAssembly runtime it is a safe no-op: the work still runs on
-    /// the one available thread (renders are serialized, so results stay correct).
-    /// Default is <c>false</c>. Seekable stream sources always perform server
-    /// parsing, page/thumbnail builds, search and print work off the circuit.
-    /// </summary>
-    [Parameter] public bool BackgroundRendering { get; set; }
+    [Parameter] public double MinZoom { get; set; } = 0.1;
 
     /// <summary>
     /// The callback for when a document has finished loading.
@@ -460,23 +370,15 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public EventCallback OnDocumentLoaded { get; set; }
 
     /// <summary>
-    /// The callback for when a page has been rendered into the document surface,
-    /// with its 1-based page number. Lazy rendering means this is raised as the
-    /// reader reaches a page, not once per page up front.
-    /// </summary>
-    [Parameter] public EventCallback<int> OnPageRendered { get; set; }
-
-    /// <summary>
     /// The callback raised before the document is downloaded - from the toolbar, the <c>Ctrl+S</c> shortcut or
     /// <see cref="Download"/> - to rename the file or cancel the download.
     /// </summary>
     [Parameter] public EventCallback<BitPdfDownloadArgs> OnDownloading { get; set; }
 
     /// <summary>
-    /// The callback raised before the document is printed - from the toolbar, the <c>Ctrl+P</c> shortcut or one of
-    /// the Print methods - with the page range, to cancel the print.
+    /// The callback for when loading or rendering fails, with the error message.
     /// </summary>
-    [Parameter] public EventCallback<BitPdfPrintArgs> OnPrinting { get; set; }
+    [Parameter] public EventCallback<string> OnError { get; set; }
 
     /// <summary>
     /// The callback for when the reader picks a file with the toolbar's open-file
@@ -491,10 +393,33 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
 
     /// <summary>
-    /// The callback for when the zoom factor changes (1 means 100%), whatever
-    /// caused it: the toolbar, a fit mode, Ctrl+wheel or the public API.
+    /// The callback for when a page has been rendered into the document surface,
+    /// with its 1-based page number. Lazy rendering means this is raised as the
+    /// reader reaches a page, not once per page up front.
     /// </summary>
-    [Parameter] public EventCallback<double> OnZoomChanged { get; set; }
+    [Parameter] public EventCallback<int> OnPageRendered { get; set; }
+
+    /// <summary>
+    /// Invoked when an encrypted document needs a password. Return the password to
+    /// retry, or <c>null</c>/empty to cancel. When unset, the viewer's own password
+    /// dialog asks instead (see <see cref="ShowPasswordPrompt"/>).
+    /// </summary>
+    [Parameter] public Func<Task<string?>>? OnPasswordRequested { get; set; }
+
+    /// <summary>
+    /// The callback raised before the document is printed - from the toolbar, the <c>Ctrl+P</c> shortcut or one of
+    /// the Print methods - with the page range, to cancel the print.
+    /// </summary>
+    [Parameter] public EventCallback<BitPdfPrintArgs> OnPrinting { get; set; }
+
+    /// <summary>
+    /// The callback for the download progress of a URL source, as a fraction from
+    /// <c>0</c> to <c>1</c>. Only raised when the server declares a content length;
+    /// a chunked response has no total to report against.
+    /// </summary>
+    /// <remarks>Range mode uses an indeterminate loading bar and raises this event only
+    /// when falling back to the existing full download.</remarks>
+    [Parameter] public EventCallback<double> OnProgress { get; set; }
 
     /// <summary>
     /// The callback for when the page rotation changes, with the new angle in
@@ -508,31 +433,24 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public EventCallback<BitPdfSidebar> OnSidebarChanged { get; set; }
 
     /// <summary>
-    /// The callback for the download progress of a URL source, as a fraction from
-    /// <c>0</c> to <c>1</c>. Only raised when the server declares a content length;
-    /// a chunked response has no total to report against.
-    /// </summary>
-    /// <remarks>Range mode uses an indeterminate loading bar and raises this event only
-    /// when falling back to the existing full download.</remarks>
-    [Parameter] public EventCallback<double> OnProgress { get; set; }
-
-    /// <summary>
-    /// The callback for when loading or rendering fails, with the error message.
-    /// </summary>
-    [Parameter] public EventCallback<string> OnError { get; set; }
-
-    /// <summary>
     /// The callback raised after a document loads with any non-fatal diagnostics (e.g. the
     /// file was damaged and its cross-reference table had to be rebuilt).
     /// </summary>
     [Parameter] public EventCallback<IReadOnlyList<string>> OnWarnings { get; set; }
 
     /// <summary>
-    /// Invoked when an encrypted document needs a password. Return the password to
-    /// retry, or <c>null</c>/empty to cancel. When unset, the viewer's own password
-    /// dialog asks instead (see <see cref="ShowPasswordPrompt"/>).
+    /// The callback for when the zoom factor changes (1 means 100%), whatever
+    /// caused it: the toolbar, a fit mode, Ctrl+wheel or the public API.
     /// </summary>
-    [Parameter] public Func<Task<string?>>? OnPasswordRequested { get; set; }
+    [Parameter] public EventCallback<double> OnZoomChanged { get; set; }
+
+    /// <summary>
+    /// How page content is painted. <see cref="BitPdfRenderMode.Canvas"/> replays a
+    /// display list onto a per-page <c>&lt;canvas&gt;</c> (far fewer DOM nodes;
+    /// selection/search/links stay DOM), while <see cref="BitPdfRenderMode.Html"/>
+    /// (the default) renders prerenderable positioned DOM.
+    /// </summary>
+    [Parameter] public BitPdfRenderMode RenderMode { get; set; } = BitPdfRenderMode.Html;
 
     /// <summary>
     /// Whether the document's own user access permissions are enforced. With it set,
@@ -545,20 +463,17 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public bool RespectPermissions { get; set; }
 
     /// <summary>
-    /// Whether a pdf dropped onto the viewer opens in it. The dropped file goes
-    /// through the same path as the toolbar's open-file button, so
-    /// <see cref="OnFileOpened"/> and <see cref="MaxOpenFileSize"/> apply to it too.
-    /// Default is <c>false</c>.
+    /// The rotation applied to every page, in degrees, two-way bindable. Assigned
+    /// values are normalized to the nearest quarter turn (0, 90, 180 or 270).
     /// </summary>
-    [Parameter] public bool AllowDropFile { get; set; }
+    [Parameter, TwoWayBound] public int Rotation { get; set; }
 
     /// <summary>
-    /// The largest file the toolbar's open-file button - and a drop, when
-    /// <see cref="AllowDropFile"/> allows one - accepts, in bytes. Default is
-    /// <c>64</c> MB; the whole file is read into memory, and on Blazor Server it also
-    /// travels the circuit.
+    /// How the pages are laid out on the scrollable surface: stacked vertically
+    /// (the default), side by side on one horizontally scrolling row, wrapped into
+    /// rows that fill the width, or one page (or spread) at a time.
     /// </summary>
-    [Parameter] public long MaxOpenFileSize { get; set; } = 64L * 1024 * 1024;
+    [Parameter] public BitPdfScrollMode ScrollMode { get; set; } = BitPdfScrollMode.Vertical;
 
     /// <summary>
     /// Whether the viewer asks for the password of an encrypted document with a
@@ -567,6 +482,91 @@ public partial class BitPdfViewer : BitComponentBase
     /// surface through <see cref="OnError"/> instead. Default is <c>true</c>.
     /// </summary>
     [Parameter] public bool ShowPasswordPrompt { get; set; } = true;
+
+    /// <summary>
+    /// Whether the toolbar is shown.
+    /// </summary>
+    [Parameter] public bool ShowToolbar { get; set; } = true;
+
+    /// <summary>
+    /// The document to display.
+    /// </summary>
+    [Parameter] public BitPdfSource? Source { get; set; }
+
+    /// <summary>
+    /// How pages are paired into spreads, the way a printed book falls open.
+    /// Default is <see cref="BitPdfSpreadMode.None"/>.
+    /// </summary>
+    [Parameter] public BitPdfSpreadMode SpreadMode { get; set; } = BitPdfSpreadMode.None;
+
+    /// <summary>
+    /// Custom CSS styles for the different parts of the viewer.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitPdfViewerClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// How painted text is emitted. <see cref="BitPdfTextCoalescing.Compact"/> merges
+    /// same-line, same-style runs into one span per visual line - far fewer DOM
+    /// nodes on per-glyph PDFs, with small intra-line position drift (explicit
+    /// kerning between runs is approximated). Rotated text always stays exact.
+    /// Default is <see cref="BitPdfTextCoalescing.Exact"/>.
+    /// </summary>
+    [Parameter] public BitPdfTextCoalescing TextCoalescing { get; set; } = BitPdfTextCoalescing.Exact;
+
+    /// <summary>
+    /// The texts of the viewer UI. Defaults to English; assign a
+    /// <see cref="BitPdfViewerTexts"/> with the properties you want to override
+    /// to localize the toolbar, the sidebars and the status messages.
+    /// </summary>
+    [Parameter] public BitPdfViewerTexts? Texts { get; set; }
+
+    /// <summary>
+    /// Custom content rendered at the end of the toolbar, after the built-in controls. The context is the
+    /// viewer itself, so the content can drive it through its public API.
+    /// </summary>
+    [Parameter] public RenderFragment<BitPdfViewer>? ToolbarEndTemplate { get; set; }
+
+    /// <summary>
+    /// Which controls the toolbar offers. Combine the flags to build a reduced
+    /// toolbar (e.g. navigation and zoom only). Default is
+    /// <see cref="BitPdfToolbarItems.All"/>.
+    /// </summary>
+    [Parameter] public BitPdfToolbarItems ToolbarItems { get; set; } = BitPdfToolbarItems.All;
+
+    /// <summary>
+    /// Custom content rendered at the start of the toolbar, before the built-in controls - an app's own
+    /// actions (share, annotate, sign) beside the viewer's. The context is the viewer itself, so the content
+    /// can drive it through its public API.
+    /// </summary>
+    [Parameter] public RenderFragment<BitPdfViewer>? ToolbarStartTemplate { get; set; }
+
+    /// <summary>
+    /// The CSS width of the viewer container. When not set, the viewer fills the
+    /// width its host gives it.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? Width { get; set; }
+
+    /// <summary>
+    /// The zoom factor (1 means 100%), two-way bindable. Assigning it switches the
+    /// viewer to <see cref="BitPdfZoomMode.Custom"/> and clamps the value to
+    /// <see cref="MinZoom"/>..<see cref="MaxZoom"/>.
+    /// </summary>
+    [Parameter, TwoWayBound] public double Zoom { get; set; } = 1;
+
+    /// <summary>
+    /// The explicit zoom factors the toolbar's zoom dropdown offers (1 means 100%).
+    /// Values outside <see cref="MinZoom"/>..<see cref="MaxZoom"/> are dropped.
+    /// Defaults to 50%, 75%, 100%, 125%, 150%, 200%, 300% and 400%.
+    /// </summary>
+    [Parameter] public IEnumerable<double>? ZoomPresets { get; set; }
+
+    /// <summary>
+    /// The multiplier applied by <see cref="ZoomIn"/> and <see cref="ZoomOut"/>
+    /// (and by the toolbar's zoom buttons). Default is <c>1.2</c>, i.e. 20% a step.
+    /// </summary>
+    [Parameter] public double ZoomStep { get; set; } = 1.2;
 
 
 

@@ -445,8 +445,10 @@ function _ensureReducedMotionListener(): void {
     _reducedMotionMql = matchMedia('(prefers-reduced-motion: reduce)');
     _reducedMotionListener = (e: MediaQueryListEvent) => {
         for (const ref of _reducedMotionRefs.values()) {
-            try { ref.invokeMethodAsync('OnReducedMotionChanged', e.matches); }
-            catch { /* a disposed/faulted engine ref must not break the others */ }
+            // A disposed/faulted engine ref must not break the others - nor leave an unhandled rejection behind, which
+            // is how a call to a disposed reference fails.
+            try { ref.invokeMethodAsync('OnReducedMotionChanged', e.matches).catch(() => { }); }
+            catch { /* thrown synchronously by some runtimes */ }
         }
     };
     // addEventListener is the modern API; addListener is the deprecated Safari fallback.
@@ -474,6 +476,50 @@ export function unwatchReducedMotion(key: string): void {
 //
 
 const _eventCleanup = new Map<string, Array<(unregistering: boolean) => void>>(); // elementId  Array<cleanup>
+
+// The tabindex the bridge gives an element so Enter and Space can reach it, shared by what needs it (a tap, a
+// reorder item's keys): added by the first that claims it - only where neither the element nor the app made the
+// element focusable - and removed when the last lets it go. A part claiming it again (listeners re-attached on new
+// settings) changes nothing, so a focused element is not blurred by its tabindex going and coming back.
+const _focusOwners = new WeakMap<Element, Set<string>>();
+
+function _claimFocusable(el: HTMLElement, owner: string): void {
+    const owners = _focusOwners.get(el);
+    if (owners) { owners.add(owner); return; }
+    if (el.hasAttribute('tabindex') || el.tabIndex >= 0) return; // focusable already, or the app's choice
+    el.setAttribute('tabindex', '0');
+    _focusOwners.set(el, new Set([owner]));
+}
+
+function _releaseFocusable(el: HTMLElement, owner: string): void {
+    const owners = _focusOwners.get(el);
+    if (!owners?.delete(owner) || owners.size > 0) return;
+    _focusOwners.delete(el);
+    if (el.getAttribute('tabindex') === '0') el.removeAttribute('tabindex');
+}
+
+// Whether the element holds a control of its own that takes focus (a native button or link it wraps): the keyboard
+// reaches that control, so the wrapper needs no tab stop - nor a second one beside it. Only one the keyboard can
+// reach counts: not a disabled control, a hidden input, or one that isn't rendered, inert or invisible.
+function _hasFocusableDescendant(el: HTMLElement): boolean {
+    const candidates = el.querySelectorAll<HTMLElement>('a[href], button, input, select, textarea, summary, iframe, [contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"])');
+    for (const c of candidates) {
+        if (_keyboardReachable(c, el)) return true;
+    }
+    return false;
+}
+
+function _keyboardReachable(c: HTMLElement, within: HTMLElement): boolean {
+    if (c.matches(':disabled')) return false;
+    if (c instanceof HTMLInputElement && c.type === 'hidden') return false;
+    if (c.hasAttribute('tabindex') && c.tabIndex < 0) return false;
+    // Inert inside the wrapper: the wrapper's own inertness (an exit) passes, and goes, with the wrapper.
+    const inert = c.closest('[inert]');
+    if (inert && inert !== within && within.contains(inert)) return false;
+    if (c.getClientRects().length === 0) return false; // display: none, or not rendered at all
+    const visibility = getComputedStyle(c).visibility;
+    return visibility !== 'hidden' && visibility !== 'collapse';
+}
 
 export function registerElement(elementId: string): boolean {
     const el = document.getElementById(elementId);
@@ -549,6 +595,14 @@ export function unregisterElement(elementId: string): void {
     _detachFromObservers(el, elementId);
     _vpRefs.delete(elementId);
     _popped.delete(elementId);
+    // A FLIP still playing ends with its element - without its callback, which would reach the .NET object the
+    // component disposed as it went.
+    const flip = _flips.get(elementId);
+    if (flip) {
+        flip.anim.onfinish = null;
+        flip.anim.oncancel = null;
+        try { flip.anim.cancel(); } catch { /* detached element */ }
+    }
     _flips.delete(elementId);
     _interruptedAt.delete(elementId);
 }
@@ -577,6 +631,8 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
     _runCleanup(elementId);
     const cleanups: Array<(unregistering: boolean) => void> = [];
     _eventCleanup.set(elementId, cleanups);
+    // A tap no longer listened for gives back the tabindex it was given (see the tap block below).
+    if (!events.tap) _releaseFocusable(el, 'tap');
 
     // gesturePropagation:false stops this element's bubbling pointer gestures from also reaching
     // gesture-enabled ancestors - the tap/pan counterpart of dragPropagation. Only pointerdown
@@ -649,13 +705,22 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
             dotnetRef.invokeMethodAsync('OnPointerCancel');
         };
 
+        // Enter and Space reach only an element that can take focus. An element with something to do on a tap (an
+        // OnTap/OnTapStart handler: tapFocusable) that takes no focus of its own (a div), has no tabindex from the
+        // app (tabindex="-1" opts out) and wraps no control the keyboard reaches instead is given one, as motion.dev's
+        // press() does; a tap that only animates (WhileTap) or only reports a cancel adds no tab stop.
+        if (events.tapFocusable && !_hasFocusableDescendant(el)) _claimFocusable(el, 'tap');
+        else _releaseFocusable(el, 'tap');
+
         el.addEventListener('pointerdown', onDown);
         window.addEventListener('pointerup',     onUp);
         window.addEventListener('pointercancel', onCancel);
         el.addEventListener('keydown', onKeyDown);
         el.addEventListener('keyup',   onKeyUp);
         el.addEventListener('blur',    onBlur);
-        cleanups.push(() => {
+        cleanups.push((unregistering: boolean) => {
+            // Kept across a re-attach (the next attach claims or releases it); gone with the element's registration.
+            if (unregistering) _releaseFocusable(el, 'tap');
             el.removeEventListener('pointerdown', onDown);
             window.removeEventListener('pointerup',     onUp);
             window.removeEventListener('pointercancel', onCancel);
@@ -781,19 +846,21 @@ function _attachDrag(
     // callback rides in the same frame, after the position, so a handler always reads the position
     // it was raised for.
     const asyncMode      = !!opts.dragAsync;
+    // Only when .NET has an OnDrag handler to raise.
+    const moveEvents     = opts.dragMoveEvents !== false;
     let pendingX = 0, pendingY = 0, reportFrame: number | null = null;
     // The last position sent this drag: once that call completes .NET has it, and every transform it writes after
     // follows from it.
     let lastSent: Promise<unknown> | null = null;
     const sendPendingMove = () => {
         lastSent = dotnetRef.invokeMethodAsync('SetDragPosition', pendingX, pendingY);
-        dotnetRef.invokeMethodAsync('OnDragMove');
+        if (moveEvents) dotnetRef.invokeMethodAsync('OnDragMove');
     };
     const reportMove = (x: number, y: number) => {
         if (!asyncMode) {
             // Synchronously, so ComputeFrame picks the position up this frame.
             dotnetRef.invokeMethod('SetDragPosition', x, y);
-            dotnetRef.invokeMethodAsync('OnDragMove');
+            if (moveEvents) dotnetRef.invokeMethodAsync('OnDragMove');
             return;
         }
         pendingX = x; pendingY = y;
@@ -835,8 +902,9 @@ function _attachDrag(
     const begin = (pointerId: number, clientX: number, clientY: number, time?: number) => {
         // A compositor (WAAPI) animation may own the transform; commit its current values inline
         // and cancel it so the drag takes over seamlessly. C# resolves its own state from the
-        // mirrored plan inside GetCurrentXY below.
-        _cancelWaapiForElement(elementId, true);
+        // mirrored plan inside GetCurrentXY below. Only those: a fade or a scroll-linked animation
+        // on the same element is none of the drag's business, and plays on.
+        _cancelWaapiForElement(elementId, true, true);
         // So does a layout (FLIP) animation in flight - a reordered row grabbed as it slides into its new place:
         // settled where it is heading, it stops projecting the old layout over the drag.
         const flip = _flips.get(elementId);
@@ -1198,10 +1266,9 @@ export function popLayout(elementId: string, curX: number, curY: number): void {
 
 // ── Keyboard reordering (BmotionReorderGroup) ───────────────────────────────
 
-/** An item's keyboard reordering: whether it is held, whether it was made focusable for it, and its listeners. */
+/** An item's keyboard reordering: whether it is held, and its listeners. */
 interface BmReorderKeys {
     held: boolean;
-    madeFocusable: boolean;
     unlisten(): void;
 }
 
@@ -1219,8 +1286,8 @@ export function attachReorderKeys(elementId: string, dotnetRef: DotNet.DotNetObj
     if (!el) return;
     const previous = _reorderKeys.get(el);
     previous?.unlisten();
-    const madeFocusable = previous ? previous.madeFocusable : !el.hasAttribute('tabindex') && el.tabIndex < 0;
-    if (madeFocusable && !previous) el.setAttribute('tabindex', '0');
+    // Shared with a tap on the same item (see _claimFocusable): whichever let go last takes the tabindex away.
+    _claimFocusable(el, 'reorder');
 
     // Along the list; in a grid left and right move a cell, and up and down a row.
     const back = axis === 'y' ? 'ArrowUp' : 'ArrowLeft';
@@ -1262,7 +1329,6 @@ export function attachReorderKeys(elementId: string, dotnetRef: DotNet.DotNetObj
     };
     const keys: BmReorderKeys = {
         held: previous?.held ?? false,
-        madeFocusable,
         unlisten: () => {
             el.removeEventListener('keydown', onKeyDown);
             el.removeEventListener('focusout', onFocusOut);
@@ -1280,7 +1346,7 @@ export function detachReorderKeys(elementId: string): void {
     if (!el || !keys) return;
     keys.unlisten();
     _reorderKeys.delete(el);
-    if (keys.madeFocusable) el.removeAttribute('tabindex');
+    _releaseFocusable(el, 'reorder');
 }
 
 /** Moves focus to the element without scrolling it into view. */
@@ -1662,12 +1728,24 @@ export function cancelWaapiAnimation(elementId: string, token: string, commit: b
     _cancelNoting(anim); // rejects anim.finished → cleanup runs in playWaapiAnimation's handler
 }
 
-function _cancelWaapiForElement(elementId: string, commit: boolean): void {
+function _cancelWaapiForElement(elementId: string, commit: boolean, onlyTransform = false): void {
     const map = _waapiAnims.get(elementId);
     if (!map) return;
     for (const anim of [...map.values()]) {
+        if (onlyTransform && !_animatesTransform(anim)) continue;
         if (commit) { try { commitStylesChecked(anim); } catch { } }
         _cancelNoting(anim);
+    }
+}
+
+// Whether an offloaded animation moves the element's transform - all of it one CSS property, as the engine's
+// mirrored plans treat it - which is what a drag takes over.
+function _animatesTransform(anim: Animation): boolean {
+    try {
+        const frames = (anim.effect as KeyframeEffect | null)?.getKeyframes() ?? [];
+        return frames.some(f => 'transform' in f || 'translate' in f || 'rotate' in f || 'scale' in f);
+    } catch {
+        return true;
     }
 }
 
@@ -2030,6 +2108,21 @@ export function getBoundingRect(elementId: string, options?: { trackScroll?: boo
     return _withoutLayoutHold(el, () => _measure(el, options));
 }
 
+/**
+ * The element's box where the layout places it: its rect with the translation it shows backed out - its transform,
+ * an animation of it in flight included, and a drag shown ahead of .NET - read in the same measurement, so the two
+ * describe the same moment (a reorder group measuring items that may still be moving).
+ */
+export function getLayoutBox(elementId: string): BmMeasured | null {
+    const el = document.getElementById(elementId);
+    if (!el) return null;
+    return _withoutLayoutHold(el, () => {
+        const m = _measure(el);
+        const t = _shownTranslation(el);
+        return { x: m.x - t.x, y: m.y - t.y, width: m.width, height: m.height, top: m.top - t.y, left: m.left - t.x };
+    });
+}
+
 type BmMeasured = { x: number; y: number; width: number; height: number; top: number; left: number };
 
 function _measure(el: HTMLElement, options?: { trackScroll?: boolean; fixedRoot?: boolean }): BmMeasured {
@@ -2247,7 +2340,8 @@ export function playWaapiFlip(
         ended = true;
         if (_flips.get(elementId)?.anim === anim) _flips.delete(elementId);
         settle();
-        dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted');
+        // The component can be gone by the time the animation ends (or its circuit with it): an expected end.
+        dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted').catch(() => { });
     };
     anim.onfinish = end;
     anim.oncancel = end;

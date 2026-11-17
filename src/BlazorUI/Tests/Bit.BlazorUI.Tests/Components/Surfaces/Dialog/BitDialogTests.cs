@@ -488,7 +488,7 @@ public class BitDialogTests : BunitTestContext
     [DataRow(null)]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitDialogRoleRespectsIsAlertAndBlocking(bool? isAlert)
+    public void BitDialogRoleRespectsAlertAndBlocking(bool? isAlert)
     {
         var component = RenderComponent<BitDialog>(parameters =>
         {
@@ -498,7 +498,7 @@ public class BitDialogTests : BunitTestContext
 
             if (isAlert.HasValue)
             {
-                parameters.Add(p => p.IsAlert, isAlert);
+                parameters.Add(p => p.Alert, isAlert);
             }
         });
 
@@ -1359,7 +1359,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsOkButtonEnabled, false);
+            parameters.Add(p => p.OkButtonDisabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-dlg-okb").HasAttribute("disabled"));
@@ -1376,7 +1376,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsCancelButtonEnabled, false);
+            parameters.Add(p => p.CancelButtonDisabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-dlg-cnb").HasAttribute("disabled"));
@@ -1393,7 +1393,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsOkButtonEnabled, false);
+            parameters.Add(p => p.OkButtonDisabled, true);
             parameters.Add(p => p.OnOk, () => okCount++);
         });
 
@@ -1416,7 +1416,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsCancelButtonEnabled, false);
+            parameters.Add(p => p.CancelButtonDisabled, true);
             parameters.Add(p => p.OnCancel, () => cancelCount++);
         });
 
@@ -1436,7 +1436,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsOkButtonEnabled, false);
+            parameters.Add(p => p.OkButtonDisabled, true);
         });
 
         PressEscape(component);
@@ -1453,13 +1453,13 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsOkButtonEnabled, false);
+            parameters.Add(p => p.OkButtonDisabled, true);
         });
 
         component.Render(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsOkButtonEnabled, true);
+            parameters.Add(p => p.OkButtonDisabled, false);
         });
 
         Assert.IsFalse(component.Find(".bit-dlg-okb").HasAttribute("disabled"));
@@ -1963,8 +1963,8 @@ public class BitDialogTests : BunitTestContext
         RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsOkButtonEnabled, false);
-            parameters.Add(p => p.IsCancelButtonEnabled, false);
+            parameters.Add(p => p.OkButtonDisabled, true);
+            parameters.Add(p => p.CancelButtonDisabled, true);
             parameters.Add(p => p.AutoFocusButton, button);
         });
 
@@ -1997,7 +1997,7 @@ public class BitDialogTests : BunitTestContext
         RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsOkButtonEnabled, false);
+            parameters.Add(p => p.OkButtonDisabled, true);
             parameters.Add(p => p.AutoFocusButton, BitDialogButton.Cancel);
         });
 
@@ -2159,7 +2159,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
@@ -2167,7 +2167,7 @@ public class BitDialogTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsOpen, false);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
@@ -2175,7 +2175,7 @@ public class BitDialogTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
@@ -2400,7 +2400,7 @@ public class BitDialogTests : BunitTestContext
         RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
         });
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.DragDrop.setup");
@@ -2443,7 +2443,7 @@ public class BitDialogTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
         });
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.DragDrop.setup");
@@ -2455,13 +2455,13 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
         });
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, false);
+            parameters.Add(p => p.Draggable, false);
         });
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.DragDrop.remove");
@@ -2474,14 +2474,14 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.DragElementSelector, ".first-handle");
         });
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.DragElementSelector, ".second-handle");
         });
 
@@ -2501,14 +2501,14 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.Title, "Draggable");
         });
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.Title, "Draggable");
             parameters.Add(p => p.Message, "A render that changed nothing the handle depends on.");
         });
@@ -2523,7 +2523,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.ShowCloseButton, false);
         });
 
@@ -2533,7 +2533,7 @@ public class BitDialogTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.ShowCloseButton, false);
             parameters.Add(p => p.Title, "Now it has a title bar");
         });
@@ -2600,7 +2600,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.Title, "Draggable");
         });
 
@@ -2617,7 +2617,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.ShowCloseButton, false);
         });
 
@@ -2636,7 +2636,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.DragElementSelector, ".my-handle");
         });
 
@@ -2661,14 +2661,14 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.DragElementSelector, ".my-handle");
         });
 
         component.Render(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
             parameters.Add(p => p.DragElementSelector, ".another-handle");
         });
 
@@ -3258,7 +3258,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Draggable, true);
         });
 
         var containerId = component.Find(".bit-dlg-ctn").GetAttribute("id");

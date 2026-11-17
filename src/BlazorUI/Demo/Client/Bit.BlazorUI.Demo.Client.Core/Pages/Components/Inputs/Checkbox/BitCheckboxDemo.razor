@@ -187,12 +187,12 @@
         <br />
         <div class="example-box">
             <BitCheckbox Label="One-way" Value="oneWayValue" />
-            <BitToggleButton @bind-IsChecked="oneWayValue" Text="Toggle" />
+            <BitToggleButton @bind-Checked="oneWayValue" Text="Toggle" />
         </div>
         <br />
         <div class="example-box">
             <BitCheckbox Label="Two-way controlled checkbox" @bind-Value="twoWayValue" />
-            <BitToggleButton @bind-IsChecked="twoWayValue" Text="Toggle" />
+            <BitToggleButton @bind-Checked="twoWayValue" Text="Toggle" />
         </div>
         <br /><br /><br /><br />
         <div><b>Indeterminate</b>:</div><br />
@@ -200,12 +200,12 @@
         <br />
         <div class="example-box">
             <BitCheckbox Label="One-way indeterminate" Indeterminate="oneWayIndeterminate" />
-            <BitToggleButton @bind-IsChecked="oneWayIndeterminate" Text="Toggle" />
+            <BitToggleButton @bind-Checked="oneWayIndeterminate" Text="Toggle" />
         </div>
         <br />
         <div class="example-box">
             <BitCheckbox Label="Two-way indeterminate" @bind-Indeterminate="twoWayIndeterminate" />
-            <BitToggleButton @bind-IsChecked="twoWayIndeterminate" Text="Toggle" />
+            <BitToggleButton @bind-Checked="twoWayIndeterminate" Text="Toggle" />
         </div>
     </DemoExample>
 
@@ -298,7 +298,7 @@
         </div><br />
         <div class="example-box">
             <BitCheckbox Label="Read-only checkbox" ReadOnly @bind-Value="readOnlyValue" />
-            <BitToggleButton @bind-IsChecked="readOnlyValue" Text="Change it from here" />
+            <BitToggleButton @bind-Checked="readOnlyValue" Text="Change it from here" />
         </div>
         <br /><br /><br />
         <div>

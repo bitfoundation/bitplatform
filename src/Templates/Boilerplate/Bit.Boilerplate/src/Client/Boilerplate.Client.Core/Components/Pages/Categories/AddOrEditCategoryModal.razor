@@ -6,7 +6,7 @@
 }
 
 <BitModal @bind-IsOpen="isOpen"
-          IsAlert="false" TitleAriaId="category-modal-title"
+          Alert="false" TitleAriaId="category-modal-title"
           Blocking="isChanged" NoDismissOnEscape="isChanged"
           Draggable DragElementSelector=".header-stack">
     <section>
@@ -53,7 +53,7 @@
                                             AriaLabel="@Localizer[nameof(AppStrings.PresetColors)]" />
 
                             <BitStack Horizontal>
-                                <BitToggleButton @bind-IsChecked="isColorPickerOpen"
+                                <BitToggleButton @bind-Checked="isColorPickerOpen"
                                                  Variant="BitVariant.Outline"
                                                  AriaMode="BitToggleButtonAriaMode.Expanded"
                                                  AriaControls="category-color-picker">
@@ -75,7 +75,7 @@
                                 @Localizer[nameof(AppStrings.Cancel)]
                             </BitButton>
 
-                            <BitButton IsLoading=isSaving ButtonType="BitButtonType.Submit">
+                            <BitButton Loading=isSaving ButtonType="BitButtonType.Submit">
                                 @Localizer[nameof(AppStrings.Save)]
                             </BitButton>
                         </BitStack>

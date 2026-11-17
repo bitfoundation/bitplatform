@@ -55,9 +55,11 @@ internal static class BlazeDbSourceEmitter
 
     public static string Emit(BlazeDbTableModel model)
     {
+        // A type named with a keyword (@event) is declared and referred to escaped, as its properties are.
+        var typeName = Identifier(model.TypeName);
         var self = model.Namespace is null
-            ? "global::" + model.TypeName
-            : "global::" + model.Namespace + "." + model.TypeName;
+            ? "global::" + typeName
+            : "global::" + model.Namespace + "." + typeName;
         var key = model.Key!;
         var keyType = key.ScalarTypeDisplay;
         var indent = model.Namespace is null ? "" : "    ";
@@ -72,7 +74,7 @@ internal static class BlazeDbSourceEmitter
             sb.AppendLine("{");
         }
 
-        sb.AppendLine($"{indent}partial {model.TypeKeyword} {model.TypeName}");
+        sb.AppendLine($"{indent}partial {model.TypeKeyword} {typeName}");
         sb.AppendLine($"{indent}{{");
 
         // The descriptor and the index definitions are fields of a nested holder class, and the type and its Indexes

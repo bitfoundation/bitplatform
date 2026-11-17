@@ -6,19 +6,19 @@ public partial class BitNotificationCenterDemo
     [
         new()
         {
-            Name = "ClearAllText",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The text of the button that forgets every notification of the history (BitSnackBarService.ClearHistory). Defaults to \"Clear all\".",
-        },
-        new()
-        {
             Name = "Classes",
             Type = "BitNotificationCenterClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for the different parts of the notification center.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "ClearAllText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the button that forgets every notification of the history (BitSnackBarService.ClearHistory). Defaults to \"Clear all\".",
         },
         new()
         {

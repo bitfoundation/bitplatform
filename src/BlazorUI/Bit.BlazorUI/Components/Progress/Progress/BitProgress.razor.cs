@@ -133,13 +133,6 @@ public partial class BitProgress : BitComponentBase
     [Parameter] public int? Diameter { get; set; }
 
     /// <summary>
-    /// How thick the indicator is drawn, in pixels: the height of a horizontal bar, the width of a
-    /// <see cref="Vertical"/> one and the stroke of the ring. When not set it follows the <see cref="Size"/>,
-    /// which is what keeps a page of indicators in step with each other and with the theme.
-    /// </summary>
-    [Parameter] public int? Thickness { get; set; }
-
-    /// <summary>
     /// Cuts a gap of this many degrees out of the bottom of the circular progress, which turns the ring
     /// into a gauge. Between 0 (a closed ring, the default) and 295; a value of 180 leaves a half circle.
     /// Has no effect on the linear progress.
@@ -183,12 +176,6 @@ public partial class BitProgress : BitComponentBase
     [Parameter] public string? Length { get; set; }
 
     /// <summary>
-    /// The lowest value of the range the <see cref="Value"/> is read against. It has no effect while
-    /// <see cref="Value"/> is null, in which case <see cref="Percent"/> is already a percentage.
-    /// </summary>
-    [Parameter] public double Min { get; set; }
-
-    /// <summary>
     /// The highest value of the range the <see cref="Value"/> is read against. It has no effect while
     /// <see cref="Value"/> is null, in which case <see cref="Percent"/> is already a percentage.
     /// </summary>
@@ -203,6 +190,12 @@ public partial class BitProgress : BitComponentBase
     /// <see cref="Indeterminate"/> indicator stays a progress bar, since a meter always has a value.
     /// </summary>
     [Parameter] public bool Meter { get; set; }
+
+    /// <summary>
+    /// The lowest value of the range the <see cref="Value"/> is read against. It has no effect while
+    /// <see cref="Value"/> is null, in which case <see cref="Percent"/> is already a percentage.
+    /// </summary>
+    [Parameter] public double Min { get; set; }
 
     /// <summary>
     /// Percentage of the operation's completeness, numerically between 0 and 100.
@@ -257,17 +250,17 @@ public partial class BitProgress : BitComponentBase
     public bool Rounded { get; set; }
 
     /// <summary>
+    /// The gap between two <see cref="Segments"/>, in pixels.
+    /// </summary>
+    [Parameter] public int SegmentGap { get; set; } = 4;
+
+    /// <summary>
     /// Cuts the linear bar into this many equal segments, for an operation made of a known number of
     /// discrete steps. The bar still fills continuously - the segments are how far apart the steps are
     /// drawn, not how the value is rounded. Has no effect on the circular progress.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public int? Segments { get; set; }
-
-    /// <summary>
-    /// The gap between two <see cref="Segments"/>, in pixels.
-    /// </summary>
-    [Parameter] public int SegmentGap { get; set; } = 4;
 
     /// <summary>
     /// The corners of the linear track and bar, and the stroke cap of the ring.
@@ -325,10 +318,24 @@ public partial class BitProgress : BitComponentBase
     [Parameter, ResetStyleBuilder] public BitProgressClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// How thick the indicator is drawn, in pixels: the height of a horizontal bar, the width of a
+    /// <see cref="Vertical"/> one and the stroke of the ring. When not set it follows the <see cref="Size"/>,
+    /// which is what keeps a page of indicators in step with each other and with the theme.
+    /// </summary>
+    [Parameter] public int? Thickness { get; set; }
+
+    /// <summary>
     /// The color of the unfilled part of the indicator, as any CSS color: the track behind the bar, the ring
     /// behind the stroke, and the two ends the indeterminate sweep fades into.
     /// </summary>
     [Parameter] public string? TrackColor { get; set; }
+
+    /// <summary>
+    /// The completeness of the operation expressed in its own unit, read against <see cref="Min"/> and
+    /// <see cref="Max"/>. When set, it takes the place of <see cref="Percent"/> and is what the screen
+    /// reader is given, so an operation counted in files or in bytes is announced in files or in bytes.
+    /// </summary>
+    [Parameter] public double? Value { get; set; }
 
     /// <summary>
     /// Stands the linear bar on its end, filling it from the bottom up - or from the top down when it
@@ -337,13 +344,6 @@ public partial class BitProgress : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Vertical { get; set; }
-
-    /// <summary>
-    /// The completeness of the operation expressed in its own unit, read against <see cref="Min"/> and
-    /// <see cref="Max"/>. When set, it takes the place of <see cref="Percent"/> and is what the screen
-    /// reader is given, so an operation counted in files or in bytes is announced in files or in bytes.
-    /// </summary>
-    [Parameter] public double? Value { get; set; }
 
 
     protected override string RootElementClass => "bit-prb";

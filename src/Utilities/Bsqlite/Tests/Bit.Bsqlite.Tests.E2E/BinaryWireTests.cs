@@ -68,6 +68,51 @@ public sealed class BinaryWireTests : BsqliteTest
         Assert.AreEqual(JsonValueKind.Null, v[4].ValueKind);
     }
 
+    /// <summary>
+    /// Text is bound and read by its byte count, as Microsoft.Data.Sqlite does: bound with -1 and read as a C
+    /// string, 'a\0b' was stored, and read back, as 'a'.
+    /// </summary>
+    [TestMethod]
+    public async Task Text_with_an_embedded_nul_survives_the_round_trip()
+    {
+        await OpenAsync();
+        await ExecAsync(Page, "CREATE TABLE t (v TEXT)");
+        await ExecAsync(Page, "INSERT INTO t VALUES (@v)", new WireParameter("@v", "a\0b"));
+
+        var result = await QueryAsync(Page, "SELECT v, length(CAST(v AS BLOB)), hex(v) FROM t");
+
+        var row = result.Rows[0];
+        Assert.AreEqual("a\0b", row[0].GetString());
+        Assert.AreEqual(3, row[1].GetInt32());
+        Assert.AreEqual("610062", row[2].GetString());
+    }
+
+    /// <summary>
+    /// Text was decoded with a TextDecoder that drops a leading byte order mark, so a value SQL built to start with
+    /// U+FEFF came back without it - from the binary reply (<c>ResultWriter.row</c>) and the tagged one
+    /// (<c>encodeRow</c>) alike.
+    /// </summary>
+    [TestMethod]
+    public async Task Text_with_a_leading_byte_order_mark_keeps_it()
+    {
+        await OpenAsync();
+
+        var values = await Page.EvaluateAsync<string[]>(
+            """
+            async () => {
+              const { encodeBatchBinary, decodeReplyBinary } = globalThis.BitBsqlite.host;
+              const sql = "SELECT char(65279) || 'a'";
+              const [binary] = decodeReplyBinary(await globalThis.host.executeBinary(encodeBatchBinary([
+                { commandText: sql, resultKind: 'reader', parameters: [] },
+              ])));
+              const [tagged] = await globalThis.host.execute([{ commandText: sql, resultKind: 'reader' }]);
+              return [binary.rows[0].v[0], tagged.rows[0].v[0]];
+            }
+            """);
+
+        CollectionAssert.AreEqual(new[] { "\uFEFFa", "\uFEFFa" }, values);
+    }
+
     [TestMethod]
     public async Task A_failure_is_a_reply_not_a_rejection()
     {

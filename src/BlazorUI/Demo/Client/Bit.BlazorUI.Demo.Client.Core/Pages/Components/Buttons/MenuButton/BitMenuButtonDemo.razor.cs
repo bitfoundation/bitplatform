@@ -139,10 +139,10 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "DefaultIsToggled",
+            Name = "DefaultToggled",
             Type = "bool?",
             DefaultValue = "null",
-            Description = "Default value of the IsToggled parameter in toggle mode.",
+            Description = "Default value of the Toggled parameter in toggle mode.",
         },
         new()
         {
@@ -210,13 +210,6 @@ public partial class BitMenuButtonDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines the opening state of the callout.",
-        },
-        new()
-        {
-            Name = "IsToggled",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines whether the header button is in the toggled state when Toggle is enabled.",
         },
         new()
         {
@@ -308,21 +301,21 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "OnClick",
-            Type = "EventCallback<TItem?>",
-            Description = "The callback that is called when the header button is clicked, with the selected item in Sticky mode and null otherwise, and when an item of the menu is activated outside of Sticky mode, with that item."
-        },
-        new()
-        {
             Name = "OnChange",
             Type = "EventCallback<TItem>",
             Description = "The callback that is called when the selected item has changed."
         },
         new()
         {
+            Name = "OnClick",
+            Type = "EventCallback<TItem?>",
+            Description = "The callback that is called when the header button is clicked, with the selected item in Sticky mode and null otherwise, and when an item of the menu is activated outside of Sticky mode, with that item."
+        },
+        new()
+        {
             Name = "OnToggleChange",
             Type = "EventCallback<bool>",
-            Description = "The callback that is called when the IsToggled value changes in toggle mode.",
+            Description = "The callback that is called when the Toggled value changes in toggle mode.",
         },
         new()
         {
@@ -439,6 +432,13 @@ public partial class BitMenuButtonDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, enables toggle behavior on the header button in Split mode.",
+        },
+        new()
+        {
+            Name = "Toggled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the header button is in the toggled state when Toggle is enabled.",
         },
         new()
         {

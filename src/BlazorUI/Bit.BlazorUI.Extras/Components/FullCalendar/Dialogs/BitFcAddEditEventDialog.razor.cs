@@ -13,13 +13,13 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
 
+    private bool _pressStartedOnOverlay;
+
     /// <summary>
-    /// The event being edited, or <c>null</c> to add one. A recurring occurrence
-    /// (<see cref="BitFullCalendarEvent.IsOccurrence"/>) is edited on its own: saving skips its date in
-    /// the series and adds a one-off event with the edited fields in its place. To edit the whole
-    /// series, pass the series master instead.
+    /// Length of the draft event in minutes. Supplied when the user selected a range on the time
+    /// grid; without it a new event lasts one slot.
     /// </summary>
-    [Parameter] public BitFullCalendarEvent? ExistingEvent { get; set; }
+    [Parameter] public int? DurationMinutes { get; set; }
 
     /// <summary>
     /// With an occurrence in <see cref="ExistingEvent"/>, edits it and every later occurrence of its series: the form
@@ -28,21 +28,25 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     /// </summary>
     [Parameter] public bool EditFollowing { get; set; }
 
-    [Parameter] public DateTime? StartDate { get; set; }
-    [Parameter] public int? StartHour { get; set; }
-    [Parameter] public int? StartMinute { get; set; }
-
     /// <summary>
-    /// Length of the draft event in minutes. Supplied when the user selected a range on the time
-    /// grid; without it a new event lasts one slot.
+    /// The event being edited, or <c>null</c> to add one. A recurring occurrence
+    /// (<see cref="BitFullCalendarEvent.IsOccurrence"/>) is edited on its own: saving skips its date in
+    /// the series and adds a one-off event with the edited fields in its place. To edit the whole
+    /// series, pass the series master instead.
     /// </summary>
-    [Parameter] public int? DurationMinutes { get; set; }
+    [Parameter] public BitFullCalendarEvent? ExistingEvent { get; set; }
 
-    [Parameter] public string? Resource { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private bool _pressStartedOnOverlay;
+    [Parameter] public EventCallback OnSaved { get; set; }
 
+    [Parameter] public string? Resource { get; set; }
+
+    [Parameter] public DateTime? StartDate { get; set; }
+
+    [Parameter] public int? StartHour { get; set; }
+
+    [Parameter] public int? StartMinute { get; set; }
     private async Task OnOverlayClick()
     {
         var close = _pressStartedOnOverlay;
@@ -50,7 +54,6 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         if (close)
             await OnClose.InvokeAsync();
     }
-    [Parameter] public EventCallback OnSaved { get; set; }
 
     // Per-instance unique ids so multiple open dialogs don't collide on element ids, which would
     // break label-to-control association and the dialog's aria-labelledby reference.

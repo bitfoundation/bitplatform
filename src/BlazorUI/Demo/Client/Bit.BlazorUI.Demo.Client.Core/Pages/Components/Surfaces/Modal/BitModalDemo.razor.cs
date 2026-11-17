@@ -13,6 +13,13 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "Alert",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Renders the Modal as an alertdialog instead of a dialog. When not set, a Blocking Modal that is not Modeless is an alertdialog.",
+        },
+        new()
+        {
             Name = "AriaModal",
             Type = "bool",
             DefaultValue = "true",
@@ -163,13 +170,6 @@ public partial class BitModalDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The CSS height of the Modal (any CSS length). Wins over FullHeight; capped by MaxHeight or the screen.",
-        },
-        new()
-        {
-            Name = "IsAlert",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Renders the Modal as an alertdialog instead of a dialog. When not set, a Blocking Modal that is not Modeless is an alertdialog.",
         },
         new()
         {

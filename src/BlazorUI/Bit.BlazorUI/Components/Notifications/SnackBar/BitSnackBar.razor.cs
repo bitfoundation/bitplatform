@@ -385,6 +385,15 @@ public partial class BitSnackBar : BitComponentBase
     [Parameter] public bool PreventDuplicates { get; set; }
 
     /// <summary>
+    /// Draws the countdown progress bar depleting from full to empty instead of filling from empty to full.
+    /// </summary>
+    /// <remarks>
+    /// A depleting bar reads as the time the notification has left, a filling one as how far it has got through
+    /// its lifetime. Both are in wide use; pick the one that matches the other timers of the app.
+    /// </remarks>
+    [Parameter] public bool ReverseProgress { get; set; }
+
+    /// <summary>
     /// A custom ARIA role for every snack bar item, overriding the one its color implies.
     /// </summary>
     /// <remarks>
@@ -399,13 +408,18 @@ public partial class BitSnackBar : BitComponentBase
     [Parameter] public string? Role { get; set; }
 
     /// <summary>
-    /// Draws the countdown progress bar depleting from full to empty instead of filling from empty to full.
+    /// Makes this snack bar the one <see cref="BitSnackBarService"/> shows its notifications through.
     /// </summary>
     /// <remarks>
-    /// A depleting bar reads as the time the notification has left, a filling one as how far it has got through
-    /// its lifetime. Both are in wide use; pick the one that matches the other timers of the app.
+    /// Mark the one host in the layout, and every part of the app can raise a notification by injecting the
+    /// service instead of being handed this snack bar's reference. The service needs the bit BlazorUI services to be
+    /// registered (<c>AddBitBlazorUIServices</c>). While several hosts are marked, the one rendered most recently
+    /// takes the notifications.
+    /// <br />
+    /// What a service host shows - through the service or through its own <c>Show</c> and <c>Track</c> - is recorded
+    /// in <see cref="BitSnackBarService.History"/> once <see cref="BitSnackBarService.HistoryLimit"/> is set.
     /// </remarks>
-    [Parameter] public bool ReverseProgress { get; set; }
+    [Parameter] public bool ServiceHost { get; set; }
 
     /// <summary>
     /// Renders a leading icon in each snack bar item, chosen from its color unless one is provided.
@@ -426,23 +440,18 @@ public partial class BitSnackBar : BitComponentBase
     [Parameter] public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Makes this snack bar the one <see cref="BitSnackBarService"/> shows its notifications through.
-    /// </summary>
-    /// <remarks>
-    /// Mark the one host in the layout, and every part of the app can raise a notification by injecting the
-    /// service instead of being handed this snack bar's reference. The service needs the bit BlazorUI services to be
-    /// registered (<c>AddBitBlazorUIServices</c>). While several hosts are marked, the one rendered most recently
-    /// takes the notifications.
-    /// <br />
-    /// What a service host shows - through the service or through its own <c>Show</c> and <c>Track</c> - is recorded
-    /// in <see cref="BitSnackBarService.History"/> once <see cref="BitSnackBarService.HistoryLimit"/> is set.
-    /// </remarks>
-    [Parameter] public bool ServiceHost { get; set; }
-
-    /// <summary>
     /// Custom CSS styles for different parts of the snack bar.
     /// </summary>
     [Parameter, ResetStyleBuilder] public BitSnackBarClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// How far a snack bar item has to be dragged before it is dismissed, in pixels (default is 50).
+    /// </summary>
+    /// <remarks>
+    /// Only in effect while <see cref="SwipeToDismiss"/> is enabled. A drag that stops short of this springs the
+    /// item back where it was.
+    /// </remarks>
+    [Parameter] public int SwipeThreshold { get; set; } = 50;
 
     /// <summary>
     /// Lets a snack bar item be dragged out of the way with the pointer, in either inline direction.
@@ -453,15 +462,6 @@ public partial class BitSnackBar : BitComponentBase
     /// It needs the bit BlazorUI script to be on the page.
     /// </remarks>
     [Parameter] public bool SwipeToDismiss { get; set; }
-
-    /// <summary>
-    /// How far a snack bar item has to be dragged before it is dismissed, in pixels (default is 50).
-    /// </summary>
-    /// <remarks>
-    /// Only in effect while <see cref="SwipeToDismiss"/> is enabled. A drag that stops short of this springs the
-    /// item back where it was.
-    /// </remarks>
-    [Parameter] public int SwipeThreshold { get; set; } = 50;
 
     /// <summary>
     /// Used to fully customize how a snack bar item is rendered, taking the place of its header, body and actions.

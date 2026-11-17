@@ -268,6 +268,26 @@ public partial class BitFlag : BitComponentBase
     [Parameter] public string? Alt { get; set; }
 
     /// <summary>
+    /// The aspect ratio of the frame of the flag, as any CSS aspect-ratio value (e.g. "4/3" or "1").
+    /// </summary>
+    /// <remarks>
+    /// The packaged images are square and the frame is square with them, which is the shape a flag has
+    /// in a list beside anything else. A set of the page's own pointed at with <see cref="Src"/> is
+    /// usually drawn in the proportions of the flags themselves - 4:3 and 3:2 are what the vector sets
+    /// of the world ship - and this is what gives them a frame of that shape: the height is the one
+    /// that stays and the width follows from the ratio, or the other way round where a
+    /// <see cref="Width"/> is what was given. It pairs with <see cref="Fit"/>, which decides what the
+    /// image does inside a frame that is not its own shape.
+    /// <br />
+    /// A packaged flag, or one of an <see cref="ImageSet"/>, fills the frame instead: it is cropped to the
+    /// middle of the flag in the proportions of the frame - "1" draws a square flag - rather than the
+    /// square image around it, empty edges included, being scaled to cover it. A <see cref="Fit"/> other
+    /// than Cover places the image as it asks instead.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? AspectRatio { get; set; }
+
+    /// <summary>
     /// Names the flag to assistive technologies with the full name of the country it resolved to.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -294,26 +314,6 @@ public partial class BitFlag : BitComponentBase
     [Parameter] public bool AutoTitle { get; set; }
 
     /// <summary>
-    /// The aspect ratio of the frame of the flag, as any CSS aspect-ratio value (e.g. "4/3" or "1").
-    /// </summary>
-    /// <remarks>
-    /// The packaged images are square and the frame is square with them, which is the shape a flag has
-    /// in a list beside anything else. A set of the page's own pointed at with <see cref="Src"/> is
-    /// usually drawn in the proportions of the flags themselves - 4:3 and 3:2 are what the vector sets
-    /// of the world ship - and this is what gives them a frame of that shape: the height is the one
-    /// that stays and the width follows from the ratio, or the other way round where a
-    /// <see cref="Width"/> is what was given. It pairs with <see cref="Fit"/>, which decides what the
-    /// image does inside a frame that is not its own shape.
-    /// <br />
-    /// A packaged flag, or one of an <see cref="ImageSet"/>, fills the frame instead: it is cropped to the
-    /// middle of the flag in the proportions of the frame - "1" draws a square flag - rather than the
-    /// square image around it, empty edges included, being scaled to cover it. A <see cref="Fit"/> other
-    /// than Cover places the image as it asks instead.
-    /// </remarks>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
-    public string? AspectRatio { get; set; }
-
-    /// <summary>
     /// Draws a hairline border around the flag.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -327,12 +327,6 @@ public partial class BitFlag : BitComponentBase
     public bool Bordered { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the flag.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitFlagClassStyles? Classes { get; set; }
-
-    /// <summary>
     /// Clips the flag into a circle.
     /// </summary>
     /// <remarks>
@@ -341,6 +335,12 @@ public partial class BitFlag : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Circular { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the flag.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitFlagClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The dialing code of the country.

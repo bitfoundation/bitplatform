@@ -1054,8 +1054,10 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         await Expect(Button("mde-disabled", "find")).ToBeDisabledAsync();
         await Expect(Button("mde-disabled", "heading")).ToBeDisabledAsync();
 
-        // A disabled editor runs none of the page's activation handlers, but keeps the hover one.
-        await root.Locator(".bit-mde-sbr").ClickAsync();
+        // A disabled editor runs none of the page's activation handlers, but keeps the hover one. Its status bar is a
+        // group that says it is disabled, which Playwright waits on before a click, so the click is forced.
+        await Expect(root.Locator(".bit-mde-sbr")).ToHaveAttributeAsync("aria-disabled", "true");
+        await root.Locator(".bit-mde-sbr").ClickAsync(new() { Force = true });
         await root.Locator(".bit-mde-lbl").ClickAsync(new() { Force = true });
         await root.DispatchEventAsync("click");
         await root.Locator(".bit-mde-sbr").HoverAsync();

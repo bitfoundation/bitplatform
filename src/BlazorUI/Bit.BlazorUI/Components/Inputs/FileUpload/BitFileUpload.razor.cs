@@ -150,6 +150,22 @@ public partial class BitFileUpload : BitInputBase<string?>
     [Parameter] public bool Append { get; set; }
 
     /// <summary>
+    /// Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB.
+    /// </summary>
+    [Parameter] public bool AutoChunkSize { get; set; }
+
+    /// <summary>
+    /// Whether the file list and the upload state are cleared right before the file dialog opens, so that
+    /// every browse starts from a clean slate - the list empties even if the dialog is then cancelled.
+    /// </summary>
+    /// <remarks>
+    /// The reset is the one <see cref="Reset"/> does: a bound value follows the emptied list, but the EditContext is not
+    /// told, so a required field does not turn invalid while the dialog is open. The selection the dialog delivers is
+    /// validated as usual.
+    /// </remarks>
+    [Parameter] public bool AutoReset { get; set; }
+
+    /// <summary>
     /// The number of times a failed upload of a file gets retried automatically before it is reported as failed.
     /// In the chunked mode each retry resumes from the last successfully uploaded chunk.
     /// Set to 0 (the default) to disable the automatic retries.
@@ -172,26 +188,26 @@ public partial class BitFileUpload : BitInputBase<string?>
     [Parameter] public Func<BitFileInfo, int, TimeSpan?>? AutoRetryDelayProvider { get; set; }
 
     /// <summary>
-    /// Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB.
-    /// </summary>
-    [Parameter] public bool AutoChunkSize { get; set; }
-
-    /// <summary>
-    /// Whether the file list and the upload state are cleared right before the file dialog opens, so that
-    /// every browse starts from a clean slate - the list empties even if the dialog is then cancelled.
-    /// </summary>
-    /// <remarks>
-    /// The reset is the one <see cref="Reset"/> does: a bound value follows the emptied list, but the EditContext is not
-    /// told, so a required field does not turn invalid while the dialog is open. The selection the dialog delivers is
-    /// validated as usual.
-    /// </remarks>
-    [Parameter] public bool AutoReset { get; set; }
-
-    /// <summary>
     /// Whether the selected files start uploading the moment they are selected, skipping the per-file
     /// upload button entirely, for the cases where the selection itself expresses the intent to upload.
     /// </summary>
     [Parameter] public bool AutoUpload { get; set; }
+
+    /// <summary>
+    /// The text of the "Cancel all" button of the batch actions (see <see cref="ShowBatchActions"/>).
+    /// </summary>
+    [Parameter] public string CancelAllText { get; set; } = "Cancel all";
+
+    /// <summary>
+    /// The tooltip of the cancel upload button, which is also used as the prefix of its accessible label
+    /// (e.g., "Cancel report.pdf"). Defaults to "Cancel".
+    /// </summary>
+    [Parameter] public string? CancelButtonTitle { get; set; }
+
+    /// <summary>
+    /// The message shown for canceled file uploads.
+    /// </summary>
+    [Parameter] public string CanceledUploadMessage { get; set; } = "File upload canceled";
 
     /// <summary>
     /// Gets or sets the icon to use for the cancel upload button using custom CSS classes for external icon libraries.
@@ -214,22 +230,6 @@ public partial class BitFileUpload : BitInputBase<string?>
     /// For external icon libraries, use <see cref="CancelIcon"/> instead.
     /// </remarks>
     [Parameter] public string? CancelIconName { get; set; }
-
-    /// <summary>
-    /// The tooltip of the cancel upload button, which is also used as the prefix of its accessible label
-    /// (e.g., "Cancel report.pdf"). Defaults to "Cancel".
-    /// </summary>
-    [Parameter] public string? CancelButtonTitle { get; set; }
-
-    /// <summary>
-    /// The text of the "Cancel all" button of the batch actions (see <see cref="ShowBatchActions"/>).
-    /// </summary>
-    [Parameter] public string CancelAllText { get; set; } = "Cancel all";
-
-    /// <summary>
-    /// The message shown for canceled file uploads.
-    /// </summary>
-    [Parameter] public string CanceledUploadMessage { get; set; } = "File upload canceled";
 
     /// <summary>
     /// The capture behavior of the file input on devices with a camera or microphone,
@@ -329,6 +329,13 @@ public partial class BitFileUpload : BitInputBase<string?>
     [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
 
     /// <summary>
+    /// The accessible name of the file list, so that a screen reader user landing on it is told what the list
+    /// they are in holds instead of only how many items it has. Set it to an empty string to leave the list
+    /// unnamed. The default value is "Selected files".
+    /// </summary>
+    [Parameter] public string FileListAriaLabel { get; set; } = "Selected files";
+
+    /// <summary>
     /// Custom formatter of the file size shown under the name of each file item.
     /// Receives the size of the file in bytes and returns the text to display,
     /// which is the place to localize the units or to switch between the binary and the decimal bases.
@@ -341,13 +348,6 @@ public partial class BitFileUpload : BitInputBase<string?>
     /// Return an error message to reject the file so it will not be uploaded, or null to accept it.
     /// </summary>
     [Parameter] public Func<BitFileInfo, string?>? FileValidator { get; set; }
-
-    /// <summary>
-    /// The accessible name of the file list, so that a screen reader user landing on it is told what the list
-    /// they are in holds instead of only how many items it has. Set it to an empty string to leave the list
-    /// unnamed. The default value is "Selected files".
-    /// </summary>
-    [Parameter] public string FileListAriaLabel { get; set; } = "Selected files";
 
     /// <summary>
     /// Custom Razor template rendering each item of the file list in place of the built-in one, receiving
@@ -513,14 +513,6 @@ public partial class BitFileUpload : BitInputBase<string?>
     [Parameter] public EventCallback<BitFileInfo> OnRemoveFailed { get; set; }
 
     /// <summary>
-    /// Callback for when a file upload is about to start, invoked before the request that carries its
-    /// first byte and therefore once per run of the file rather than once per chunk. It is the place to
-    /// attach the <see cref="BitFileInfo.HttpHeaders"/> and the <see cref="BitFileInfo.FormFields"/>
-    /// that belong to this one file, both of which are read again for every request it makes.
-    /// </summary>
-    [Parameter] public EventCallback<BitFileInfo> OnUploading { get; set; }
-
-    /// <summary>
     /// Callback for when a file has been uploaded successfully, with the body of the server response of
     /// its last request on its <see cref="BitFileInfo.Message"/>.
     /// </summary>
@@ -531,6 +523,20 @@ public partial class BitFileUpload : BitInputBase<string?>
     /// all been spent - with the body of the failed response on its <see cref="BitFileInfo.Message"/>.
     /// </summary>
     [Parameter] public EventCallback<BitFileInfo> OnUploadFailed { get; set; }
+
+    /// <summary>
+    /// Callback for when a file upload is about to start, invoked before the request that carries its
+    /// first byte and therefore once per run of the file rather than once per chunk. It is the place to
+    /// attach the <see cref="BitFileInfo.HttpHeaders"/> and the <see cref="BitFileInfo.FormFields"/>
+    /// that belong to this one file, both of which are read again for every request it makes.
+    /// </summary>
+    [Parameter] public EventCallback<BitFileInfo> OnUploading { get; set; }
+
+    /// <summary>
+    /// The tooltip of the pause upload button, which is also used as the prefix of its accessible label
+    /// (e.g., "Pause report.pdf"). Defaults to "Pause".
+    /// </summary>
+    [Parameter] public string? PauseButtonTitle { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to use for the pause upload button using custom CSS classes for external icon libraries.
@@ -553,12 +559,6 @@ public partial class BitFileUpload : BitInputBase<string?>
     /// For external icon libraries, use <see cref="PauseIcon"/> instead.
     /// </remarks>
     [Parameter] public string? PauseIconName { get; set; }
-
-    /// <summary>
-    /// The tooltip of the pause upload button, which is also used as the prefix of its accessible label
-    /// (e.g., "Pause report.pdf"). Defaults to "Pause".
-    /// </summary>
-    [Parameter] public string? PauseButtonTitle { get; set; }
 
     /// <summary>
     /// The status message shown for the files of <see cref="PreloadedFiles"/>, which are already on the
@@ -598,6 +598,12 @@ public partial class BitFileUpload : BitInputBase<string?>
     [Parameter] public bool ReadImageDimensions { get; set; }
 
     /// <summary>
+    /// The tooltip of the remove file button, which is also used as the prefix of its accessible label
+    /// (e.g., "Remove report.pdf"). Defaults to "Remove".
+    /// </summary>
+    [Parameter] public string? RemoveButtonTitle { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon to use for the remove file button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="RemoveIconName"/> when both are set.
     /// Defaults to the built-in Delete icon when neither is set.
@@ -618,12 +624,6 @@ public partial class BitFileUpload : BitInputBase<string?>
     /// For external icon libraries, use <see cref="RemoveIcon"/> instead.
     /// </remarks>
     [Parameter] public string? RemoveIconName { get; set; }
-
-    /// <summary>
-    /// The tooltip of the remove file button, which is also used as the prefix of its accessible label
-    /// (e.g., "Remove report.pdf"). Defaults to "Remove".
-    /// </summary>
-    [Parameter] public string? RemoveButtonTitle { get; set; }
 
     /// <summary>
     /// Custom HTTP headers attached to the remove request.
@@ -660,6 +660,12 @@ public partial class BitFileUpload : BitInputBase<string?>
     [Parameter] public string? RemoveUrl { get; set; }
 
     /// <summary>
+    /// The tooltip of the retry button of a failed or canceled file, which is also used as the prefix of its
+    /// accessible label (e.g., "Retry report.pdf"). Defaults to "Retry".
+    /// </summary>
+    [Parameter] public string? RetryButtonTitle { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon to use for the retry button of a failed or canceled file using custom CSS classes
     /// for external icon libraries. Takes precedence over <see cref="RetryIconName"/> when both are set.
     /// Defaults to the built-in Refresh icon when neither is set.
@@ -680,12 +686,6 @@ public partial class BitFileUpload : BitInputBase<string?>
     /// For external icon libraries, use <see cref="RetryIcon"/> instead.
     /// </remarks>
     [Parameter] public string? RetryIconName { get; set; }
-
-    /// <summary>
-    /// The tooltip of the retry button of a failed or canceled file, which is also used as the prefix of its
-    /// accessible label (e.g., "Retry report.pdf"). Defaults to "Retry".
-    /// </summary>
-    [Parameter] public string? RetryButtonTitle { get; set; }
 
     /// <summary>
     /// Decides whether a failed upload is worth retrying automatically, receiving the file and the HTTP status
@@ -755,6 +755,17 @@ public partial class BitFileUpload : BitInputBase<string?>
     [Parameter] public string UploadAllText { get; set; } = "Upload all";
 
     /// <summary>
+    /// The tooltip of the upload button, which is also used as the prefix of its accessible label
+    /// (e.g., "Upload report.pdf"). Defaults to "Upload".
+    /// </summary>
+    [Parameter] public string? UploadButtonTitle { get; set; }
+
+    /// <summary>
+    /// The name of the form field carrying the file content in the upload request. Defaults to "file".
+    /// </summary>
+    [Parameter] public string? UploadFormFieldName { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon to use for the upload button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="UploadIconName"/> when both are set.
     /// Defaults to the built-in Play icon when neither is set.
@@ -775,17 +786,6 @@ public partial class BitFileUpload : BitInputBase<string?>
     /// For external icon libraries, use <see cref="UploadIcon"/> instead.
     /// </remarks>
     [Parameter] public string? UploadIconName { get; set; }
-
-    /// <summary>
-    /// The tooltip of the upload button, which is also used as the prefix of its accessible label
-    /// (e.g., "Upload report.pdf"). Defaults to "Upload".
-    /// </summary>
-    [Parameter] public string? UploadButtonTitle { get; set; }
-
-    /// <summary>
-    /// The name of the form field carrying the file content in the upload request. Defaults to "file".
-    /// </summary>
-    [Parameter] public string? UploadFormFieldName { get; set; }
 
     /// <summary>
     /// Additional multipart form fields sent alongside the content of every file in its upload requests,

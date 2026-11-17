@@ -112,7 +112,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
 
         // An ACCEPTED tenant membership is what makes a tenant get selected at her sign-in; without it her token carries
         // no tenant, so the group's tenant-scoped feature claims would never reach it (See IdentityController.GetTenantId).
-        await dbContext.TenantUsers.AddAsync(new()
+        await dbContext.TenantMemberships.AddAsync(new()
         {
             TenantId = TenantConfiguration.FallbackTenantId,
             UserId = member.Id,

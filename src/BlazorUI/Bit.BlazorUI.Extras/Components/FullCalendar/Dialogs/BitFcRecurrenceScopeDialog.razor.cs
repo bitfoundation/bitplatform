@@ -15,8 +15,7 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
-    /// <summary>The question being asked, such as "Delete recurring event".</summary>
-    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnCancel { get; set; }
 
     /// <summary>Raised with <c>true</c> when the whole series was chosen, <c>false</c> for this occurrence only.</summary>
     [Parameter] public EventCallback<bool> OnConfirm { get; set; }
@@ -27,7 +26,8 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     /// </summary>
     [Parameter] public EventCallback OnConfirmFollowing { get; set; }
 
-    [Parameter] public EventCallback OnCancel { get; set; }
+    /// <summary>The question being asked, such as "Delete recurring event".</summary>
+    [Parameter] public string Title { get; set; } = string.Empty;
 
     private readonly string _titleId = $"bfc-scope-title-{Guid.NewGuid():N}";
     private readonly string _groupName = $"bfc-scope-{Guid.NewGuid():N}";

@@ -60,8 +60,8 @@ public class BitMediaQueryTests : BunitTestContext
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
             parameters.Add(p => p.Query, "(max-width: 600px)");
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
-            parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.NotMatchedTemplate, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
         Assert.AreEqual(0, component.FindAll(".matched").Count);
@@ -75,13 +75,13 @@ public class BitMediaQueryTests : BunitTestContext
         {
             parameters.Add(p => p.Query, "(max-width: 600px)");
             parameters.Add(p => p.DefaultMatched, true);
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
-            parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.NotMatchedTemplate, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
         Assert.AreEqual(1, component.FindAll(".matched").Count);
         Assert.AreEqual(0, component.FindAll(".notmatched").Count);
-        Assert.IsTrue(component.Instance.IsMatched);
+        Assert.IsTrue(component.Instance.Matched);
     }
 
     [TestMethod]
@@ -93,12 +93,12 @@ public class BitMediaQueryTests : BunitTestContext
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
             parameters.Add(p => p.ScreenQuery, BitScreenQuery.LtMd);
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
-            parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.NotMatchedTemplate, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
         Assert.AreEqual(1, component.FindAll(".matched").Count);
-        Assert.IsTrue(component.Instance.IsMatched);
+        Assert.IsTrue(component.Instance.Matched);
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.MediaQuery.matchNow");
         Assert.IsNull(invocation.Arguments[0]);
@@ -114,12 +114,12 @@ public class BitMediaQueryTests : BunitTestContext
         {
             parameters.Add(p => p.Query, "@media (max-width: 600px)");
             parameters.Add(p => p.DefaultMatched, true);
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
-            parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.NotMatchedTemplate, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
         Assert.AreEqual(1, component.FindAll(".notmatched").Count);
-        Assert.IsFalse(component.Instance.IsMatched);
+        Assert.IsFalse(component.Instance.Matched);
 
         // The custom query is asked as setup asks it: normalized, and ahead of any ScreenQuery.
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.MediaQuery.matchNow");
@@ -136,7 +136,7 @@ public class BitMediaQueryTests : BunitTestContext
         {
             parameters.Add(p => p.ScreenQuery, BitScreenQuery.LtMd);
             parameters.Add(p => p.DefaultMatched, true);
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
         });
 
         Assert.AreEqual(1, component.FindAll(".matched").Count);
@@ -162,7 +162,7 @@ public class BitMediaQueryTests : BunitTestContext
         RenderComponent<BitMediaQuery>(parameters =>
         {
             parameters.Add(p => p.ScreenQuery, BitScreenQuery.LtMd);
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
         });
 
         Context.JSInterop.VerifyNotInvoke("BitBlazorUI.MediaQuery.matchNow");
@@ -174,8 +174,8 @@ public class BitMediaQueryTests : BunitTestContext
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
             parameters.Add(p => p.Query, "(max-width: 600px)");
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
-            parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.NotMatchedTemplate, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(true).AsTask()).GetAwaiter().GetResult();
@@ -211,7 +211,7 @@ public class BitMediaQueryTests : BunitTestContext
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
             parameters.Add(p => p.Query, "(max-width: 600px)");
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
             parameters.AddChildContent("<div class=\"child\">Child</div>");
         });
 
@@ -229,7 +229,7 @@ public class BitMediaQueryTests : BunitTestContext
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
             parameters.Add(p => p.Query, "(max-width: 600px)");
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
         });
 
         Assert.AreEqual(0, component.FindAll(".matched").Count);
@@ -267,8 +267,8 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.Query, "(max-width: 600px)");
             parameters.Add(p => p.Template, (RenderFragment<bool>)(_ => builder =>
                 builder.AddMarkupContent(0, "<div class=\"tpl\">Template</div>")));
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
-            parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.NotMatchedTemplate, Markup("<div class=\"notmatched\">NotMatched</div>"));
             parameters.AddChildContent("<div class=\"child\">Child</div>");
         });
 
@@ -398,7 +398,7 @@ public class BitMediaQueryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMediaQueryShouldExposeIsMatchedState()
+    public void BitMediaQueryShouldExposeMatchedState()
     {
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
@@ -406,11 +406,11 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.AddChildContent("<span>content</span>");
         });
 
-        Assert.IsFalse(component.Instance.IsMatched);
+        Assert.IsFalse(component.Instance.Matched);
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(true).AsTask()).GetAwaiter().GetResult();
 
-        Assert.IsTrue(component.Instance.IsMatched);
+        Assert.IsTrue(component.Instance.Matched);
     }
 
     [TestMethod]
@@ -420,7 +420,7 @@ public class BitMediaQueryTests : BunitTestContext
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
             parameters.Add(p => p.Query, "(max-width: 600px)");
-            parameters.Bind(p => p.IsMatched, bound, v => bound = v);
+            parameters.Bind(p => p.Matched, bound, v => bound = v);
             parameters.AddChildContent("<span>content</span>");
         });
 
@@ -438,9 +438,9 @@ public class BitMediaQueryTests : BunitTestContext
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
             parameters.Add(p => p.Query, "(max-width: 600px)");
-            parameters.Bind(p => p.IsMatched, bound, v => bound = v);
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
-            parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
+            parameters.Bind(p => p.Matched, bound, v => bound = v);
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.NotMatchedTemplate, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
         Assert.AreEqual(1, component.FindAll(".matched").Count);
@@ -450,35 +450,35 @@ public class BitMediaQueryTests : BunitTestContext
     [TestMethod]
     public void BitMediaQueryShouldLetTheBindingWinOverDefaultMatched()
     {
-        // A bound IsMatched hands its own initial value over, so DefaultMatched has nothing to seed.
+        // A bound Matched hands its own initial value over, so DefaultMatched has nothing to seed.
         var bound = false;
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
             parameters.Add(p => p.Query, "(max-width: 600px)");
             parameters.Add(p => p.DefaultMatched, true);
-            parameters.Bind(p => p.IsMatched, bound, v => bound = v);
+            parameters.Bind(p => p.Matched, bound, v => bound = v);
             parameters.AddChildContent("<span>content</span>");
         });
 
-        Assert.IsFalse(component.Instance.IsMatched);
+        Assert.IsFalse(component.Instance.Matched);
         Assert.IsFalse(bound);
     }
 
     [TestMethod]
-    public void BitMediaQueryShouldNotMoveAOneWayBoundIsMatched()
+    public void BitMediaQueryShouldNotMoveAOneWayBoundMatched()
     {
         // Without a Changed callback beside it the value belongs to the page that hands it over,
         // which is the same ownership rule every two-way bound parameter of the library follows.
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
             parameters.Add(p => p.Query, "(max-width: 600px)");
-            parameters.Add(p => p.IsMatched, false);
+            parameters.Add(p => p.Matched, false);
             parameters.AddChildContent("<span>content</span>");
         });
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(true).AsTask()).GetAwaiter().GetResult();
 
-        Assert.IsFalse(component.Instance.IsMatched);
+        Assert.IsFalse(component.Instance.Matched);
     }
 
 
@@ -1111,8 +1111,8 @@ public class BitMediaQueryTests : BunitTestContext
         {
             parameters.Add(p => p.Query, "(max-width: 600px)");
             parameters.Add(p => p.NoWrapper, true);
-            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
-            parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.NotMatchedTemplate, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
         Assert.AreEqual(0, component.FindAll(".bit-mdq").Count);
@@ -1207,7 +1207,7 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.Query, "(max-width: 600px)");
             parameters.Add(p => p.NoWrapper, true);
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
-            parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
+            parameters.Add(p => p.NotMatchedTemplate, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
         Assert.AreEqual(string.Empty, component.Markup.Trim());
@@ -1235,8 +1235,8 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.ScreenQuery, BitScreenQuery.Md);
             parameters.Add(p => p.Element, "span");
             parameters.Add(p => p.Id, "inline-mdq");
-            parameters.Add(p => p.Matched, Markup("<b class=\"matched\">Matched</b>"));
-            parameters.Add(p => p.NotMatched, Markup("<b class=\"notmatched\">NotMatched</b>"));
+            parameters.Add(p => p.MatchedTemplate, Markup("<b class=\"matched\">Matched</b>"));
+            parameters.Add(p => p.NotMatchedTemplate, Markup("<b class=\"notmatched\">NotMatched</b>"));
         });
 
         var root = component.Find(".bit-mdq");

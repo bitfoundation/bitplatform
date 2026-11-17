@@ -87,7 +87,7 @@ public partial class BitTooltip : BitComponentBase
 
     // A tooltip whose shown state is handed to it and never handed back cannot be driven by anything
     // that happens on the page: the page owns it, and the triggers below leave it alone.
-    private bool IsControlledExternally => IsShownHasBeenSet && IsShownChanged.HasDelegate is false;
+    private bool IsControlledExternally => ShownHasBeenSet && ShownChanged.HasDelegate is false;
 
     // The one attribute the relationship comes down to, which the markup declares on the root element and
     // the anchor inside it is given a copy of. An empty one is a tooltip that declares nothing.
@@ -169,9 +169,9 @@ public partial class BitTooltip : BitComponentBase
     [Parameter, ResetClassBuilder] public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Default value of the IsShown.
+    /// Default value of the Shown parameter.
     /// </summary>
-    [Parameter] public bool? DefaultIsShown { get; set; }
+    [Parameter] public bool? DefaultShown { get; set; }
 
     /// <summary>
     /// Expands the tooltip's own element to 100% of the available width, so that the anchor inside it
@@ -226,12 +226,6 @@ public partial class BitTooltip : BitComponentBase
     /// never does.
     /// </remarks>
     [Parameter, ResetClassBuilder] public bool Interactive { get; set; } = true;
-
-    /// <summary>
-    /// The visibility state of the tooltip.
-    /// </summary>
-    [Parameter, TwoWayBound]
-    public bool IsShown { get; set; }
 
     /// <summary>
     /// Holds the content of the tooltip out of the DOM until the tooltip is first shown, and keeps it
@@ -302,6 +296,18 @@ public partial class BitTooltip : BitComponentBase
     [Parameter] public EventCallback<bool> OnToggle { get; set; }
 
     /// <summary>
+    /// The side of the anchor the tooltip is placed on (default is above it).
+    /// </summary>
+    /// <remarks>
+    /// Start and End follow the reading direction - Start is the left of the anchor in an LTR tooltip and the
+    /// right of it in an RTL one - which is what a tooltip that reads as part of its anchor wants. Left and
+    /// Right stay on the same side of the screen in either direction, for a tooltip aimed at the edge of a
+    /// fixed layout. Center and the two combined values name no side of the anchor and leave the tooltip above it.
+    /// </remarks>
+    [Parameter]
+    public BitPlacement Placement { get; set; } = BitPlacement.Top;
+
+    /// <summary>
     /// What the tooltip is to the anchor it belongs to: the description of a control that has a name of
     /// its own, the name of one that has none, or nothing at all.
     /// </summary>
@@ -326,6 +332,12 @@ public partial class BitTooltip : BitComponentBase
     [Parameter] public int ShowDelay { get; set; } = 0;
 
     /// <summary>
+    /// The visibility state of the tooltip.
+    /// </summary>
+    [Parameter, TwoWayBound]
+    public bool Shown { get; set; }
+
+    /// <summary>
     /// Turns the anchor into a toggle for the tooltip, which is shown by a press of it and taken away by
     /// the next one.
     /// </summary>
@@ -348,18 +360,6 @@ public partial class BitTooltip : BitComponentBase
     /// Determines shows tooltip on hover.
     /// </summary>
     [Parameter] public bool ShowOnHover { get; set; } = true;
-
-    /// <summary>
-    /// The side of the anchor the tooltip is placed on (default is above it).
-    /// </summary>
-    /// <remarks>
-    /// Start and End follow the reading direction - Start is the left of the anchor in an LTR tooltip and the
-    /// right of it in an RTL one - which is what a tooltip that reads as part of its anchor wants. Left and
-    /// Right stay on the same side of the screen in either direction, for a tooltip aimed at the edge of a
-    /// fixed layout. Center and the two combined values name no side of the anchor and leave the tooltip above it.
-    /// </remarks>
-    [Parameter]
-    public BitPlacement Placement { get; set; } = BitPlacement.Top;
 
     /// <summary>
     /// The size of the tooltip, which sets the size of its text and the padding around it.
@@ -437,7 +437,7 @@ public partial class BitTooltip : BitComponentBase
 
         CancelPendingDelays();
 
-        await SetIsShown(true);
+        await SetShown(true);
     }
 
     /// <summary>
@@ -447,13 +447,13 @@ public partial class BitTooltip : BitComponentBase
     {
         CancelPendingDelays();
 
-        await SetIsShown(false);
+        await SetShown(false);
     }
 
     /// <summary>
     /// Toggles the tooltip to show/hide it.
     /// </summary>
-    public Task Toggle() => IsShown ? Hide() : Show();
+    public Task Toggle() => Shown ? Hide() : Show();
 
 
 
@@ -497,12 +497,12 @@ public partial class BitTooltip : BitComponentBase
 
         Group?.Register(this);
 
-        if (IsShownHasBeenSet is false && DefaultIsShown.HasValue)
+        if (ShownHasBeenSet is false && DefaultShown.HasValue)
         {
-            await AssignIsShown(DefaultIsShown.Value);
+            await AssignShown(DefaultShown.Value);
         }
 
-        _contentRendered = LazyRender is false || IsShown;
+        _contentRendered = LazyRender is false || Shown;
 
         await base.OnInitializedAsync();
     }
@@ -521,15 +521,15 @@ public partial class BitTooltip : BitComponentBase
             _isFocusFromPointer = false;
             _isShownByClick = false;
 
-            if (IsShown)
+            if (Shown)
             {
                 CancelPendingDelays();
 
-                await SetIsShown(false);
+                await SetShown(false);
             }
         }
 
-        if (IsShown)
+        if (Shown)
         {
             _contentRendered = true;
         }
@@ -587,7 +587,7 @@ public partial class BitTooltip : BitComponentBase
     {
         if (IsDisposing) return;
         if (IsControlledExternally) return;
-        if (_isShownByClick is false || IsShown is false) return;
+        if (_isShownByClick is false || Shown is false) return;
 
         _isPointerOver = false;
 
@@ -648,7 +648,7 @@ public partial class BitTooltip : BitComponentBase
             if (owned is false || IsDisposed || Disabled) return;
         }
 
-        await SetIsShown(true);
+        await SetShown(true);
     }
 
     private async Task HideAfterDelay(int delay)
@@ -676,7 +676,7 @@ public partial class BitTooltip : BitComponentBase
             if (owned is false || IsDisposed) return;
         }
 
-        await SetIsShown(false);
+        await SetShown(false);
     }
 
     private void CancelPendingDelays()
@@ -692,11 +692,11 @@ public partial class BitTooltip : BitComponentBase
         hideTokenSource?.Dispose();
     }
 
-    private async Task SetIsShown(bool value)
+    private async Task SetShown(bool value)
     {
-        if (IsShown == value) return;
+        if (Shown == value) return;
 
-        if (await AssignIsShown(value) is false) return;
+        if (await AssignShown(value) is false) return;
 
         if (value)
         {
@@ -754,7 +754,7 @@ public partial class BitTooltip : BitComponentBase
             // with it: there is nothing on the screen to hide again, and the tap that ended it is a tap
             // like any other - the up it ends with is not the one that has to be kept from undoing a
             // tooltip nothing put on the screen.
-            if (IsShown is false) return;
+            if (Shown is false) return;
 
             _isShownByTouch = true;
 
@@ -800,7 +800,7 @@ public partial class BitTooltip : BitComponentBase
         // due is a tap that only meant to press the anchor, and the show still waiting on it goes with it.
         if (IsTouch(e))
         {
-            if (IsShown is false) CancelPendingDelays();
+            if (Shown is false) CancelPendingDelays();
 
             return;
         }
@@ -829,7 +829,7 @@ public partial class BitTooltip : BitComponentBase
         if (IsControlledExternally) return;
 
         var wasHeldByFocus = IsHeldByFocus;
-        var wasShownByClick = _isShownByClick && IsShown;
+        var wasShownByClick = _isShownByClick && Shown;
 
         _isFocusWithin = false;
         _isFocusFromPointer = false;
@@ -893,7 +893,7 @@ public partial class BitTooltip : BitComponentBase
 
         if (ShowOnClick)
         {
-            if (IsShown)
+            if (Shown)
             {
                 await HideAfterDelay(0);
             }
@@ -947,7 +947,7 @@ public partial class BitTooltip : BitComponentBase
 
         if (ShowOnClick)
         {
-            if (IsShown)
+            if (Shown)
             {
                 _isShownByClick = false;
 
@@ -964,7 +964,7 @@ public partial class BitTooltip : BitComponentBase
         }
 
         if (HideOnClick is false) return;
-        if (IsShown is false) return;
+        if (Shown is false) return;
 
         // As with the pointer, what showed the tooltip is given up along with it, so that nothing puts it
         // back until the anchor is left and reached again.
@@ -978,7 +978,7 @@ public partial class BitTooltip : BitComponentBase
     {
         if (IsControlledExternally) return;
         if (NoDismissOnEscape) return;
-        if (IsShown is false) return;
+        if (Shown is false) return;
 
         // The dismissal has to outlive the pointer and the focus that are still on the anchor, or the
         // tooltip would be back the moment anything asked the triggers again.
@@ -1004,7 +1004,7 @@ public partial class BitTooltip : BitComponentBase
     internal async Task HideFromGroup()
     {
         if (IsControlledExternally) return;
-        if (IsShown is false) return;
+        if (Shown is false) return;
 
         _isPointerOver = false;
         _isFocusWithin = false;
@@ -1050,7 +1050,7 @@ public partial class BitTooltip : BitComponentBase
     // in: the one it was given, or the page's when it was given none.
     private string GetTooltipClasses()
     {
-        var visibility = IsShown ? "bit-ttp-vis " : string.Empty;
+        var visibility = Shown ? "bit-ttp-vis " : string.Empty;
 
         // Center and the two combined values name no side of the anchor, so they leave the tooltip where an
         // unset Placement would put it.

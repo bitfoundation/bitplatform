@@ -223,7 +223,8 @@ public sealed partial class BonboardingBeacon : ComponentBase, IAsyncDisposable
 
                 closed = record?.IsClosed == true;
             }
-            catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
+            // Any failure, a custom store's included: this runs after a render, where an exception ends the circuit.
+            catch (Exception ex)
             {
                 Logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingBeacon could not read whether {Key} was closed.", key);
             }

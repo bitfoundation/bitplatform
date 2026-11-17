@@ -160,7 +160,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>] [-AllLibraries]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. `-AllLibraries` lists every bit library's tools, as the website's chat does; without it BlazorUI's and Butil's are the only library tools listed. |
 | `devcontainer [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Keep]` | Creates a project with `bit new`, for the template's default .NET or the one `-Framework` names, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
 | `aspire [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
-| `agents [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Scenario <ids>] [-Model <models>] [-Long] [-Keep]` | Creates a project with `bit new` as users get it and hands each scenario of `agent-scenarios.json` to a headless Claude Code that sees nothing but a copy of that project, then checks which skills it read, which tools it called and which files it changed after each turn. Keeps the transcripts and final messages. |
+| `agents [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Scenario <ids>] [-Model <models>] [-Effort <level>] [-Long] [-Keep]` | Creates a project with `bit new` as users get it and hands each scenario of `agent-scenarios.json` to a headless Claude Code that sees nothing but a copy of that project, then checks which skills it read, which tools it called and which files it changed after each turn. Keeps the transcripts and final messages. |
 
 ## 1. The CI run
 
@@ -330,7 +330,9 @@ servers migrate only in Development, so a change to the database model - even on
 migration - reaches the database the Boilerplate demos share only by hand. Until it does, every sign-in and token
 refresh of those demos fails with a 500 whose Application log line names the missing column or table. Check the
 CD's commit for migration changes since the last one; applying them to that database changes the machine, so ask
-first.
+first. A rename breaks the demos that still run the old build, so apply it in two steps: before the CD, rename and
+keep the old name working (a view for a table, a second column a trigger keeps in sync for a column), and once every
+Boilerplate demo runs the new build, drop what kept the old name.
 
 **Nor are the demos' settings.** The CD leaves out the template's `appsettings.json`, so each Boilerplate backend runs
 on the server-owned one in its `C:\inetpub\<site>`. When the template renames or reshapes a section there, the demos
@@ -354,7 +356,8 @@ where the helper finds it. It is a Google Play image, so after a cold boot it up
 own; note the version (`adb shell dumpsys webviewupdate`) in the report, since a jump explains Android failures that no
 code change does. An APK signed with another key than the installed app, or older than it, goes in only
 after uninstalling the app, which drops its data, and so does one the AVD has no room for next to the old copy: its
-system app updates fill it up over time. The helper does both on its own.
+system app updates fill it up over time. The helper does both on its own, and when even that leaves no room, it
+uninstalls the Play updates of the Google apps the suite never opens, such as YouTube, Maps and Photos.
 
 **Windows.** `windows`. The apps are Velopack installs in `%LocalAppData%\<AppId>`: the Boilerplate's
 `AdminPanel.Client.Windows`, `SalesModule.Client.Windows` and `TodoSample.Client.Windows`. The nav-panel version
@@ -691,6 +694,11 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
   this machine's own Claude setup reaches it, in auto permission mode with Aspire and `git push` denied, and a budget
   per turn. Nothing tells it that it is being tested. Its memory already holds the user's role, as a returning user's
   does, except in `trivial-edit`, which watches the role question of AGENTS.md section 6.
+- A turn ends when the agent has answered. An agent that answers and then waits for the user on the Workbench's
+  Progress page, as its skill tells it to, would hold the turn open for ever, since the scripted user answers in the
+  chat and can't click there. So the helper ends the turn a minute after the agent's answer, when a real user's reply
+  in the chat would arrive, and sends the scripted reply as the next turn. A turn's final message is its first
+  answer.
 - `design-chat` then hands its folder to a new session with no memory of the first, which has to pick the product
   decisions up from `specs/`, as the team's other tools and the next session would. A scripted user answers that
   session's questions too, so it can get as far as its plan.
@@ -710,6 +718,9 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
   its questions are answered, Opus asks first. `-Long` also lets `crud-feature` build the whole feature after the
   approval, which takes up to an hour. The two baselines run only when named: the same requests in the same project
   with every agent instruction removed, to show what the instructions add.
+- `-Effort low`, `medium`, `high`, `xhigh` or `max` sets the effort every agent runs at. Without it they run at Claude
+  Code's default for their model, which a transcript doesn't record, so say which effort a comparison between models
+  used. Each scenario's `result.json` and the summary table show the effort that was asked for, `default` when none was.
 - The Bit packages are as for `devcontainer`. A library packed on this machine is not a stand-in for a prerelease:
   `Bit.BlazorES2019` gets its scripts from building aspnetcore in the prerelease workflow, and a local pack has none,
   so every page renders blank.

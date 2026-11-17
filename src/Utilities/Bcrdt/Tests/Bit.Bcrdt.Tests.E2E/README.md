@@ -15,8 +15,8 @@ real browser:
   that use them;
 - the demo pages, which compose the library with real application code, never run.
 
-This suite boots the demo (`Bit.Bcrdt.Demo.Server`, which prerenders the pages and runs them on WebAssembly) and
-drives it with Playwright, in Chromium by default and in Firefox or WebKit on request (`BCRDT_E2E_BROWSER`): each
+This suite publishes the demo (`Bit.Bcrdt.Demo.Server`, which prerenders the pages and runs them on WebAssembly) the
+way `cd.bcrdt.demo.yml` publishes it, boots the publish, and drives it with Playwright, in Chromium by default and in Firefox or WebKit on request (`BCRDT_E2E_BROWSER`): each
 engine has its own text input, focus and IndexedDB behavior, so the suite is meant to pass in all three. It asserts
 **effects**, not markup: what each replica's editor holds, what its connection badge and presence list say, the raw
 state each replica projects as JSON under the panels, and which relay a tab opened its socket to. One suite drives the
@@ -55,14 +55,14 @@ every later edit unapplied, and the test would otherwise time out pointing at th
 From `src/Utilities/Bcrdt` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's build output and the lazy loading sample's publish output: build and publish them
-# first, in the configuration the tests run in.
-dotnet build Demo/Server/Bit.Bcrdt.Demo.Server.csproj
+# The suite publishes the demo itself, as cd.bcrdt.demo.yml does (Release), into bin/<configuration>/net11.0/demo, unless
+# BCRDT_E2E_DEMO_DIR names a publish folder already made; it runs the lazy loading sample's publish output, so publish
+# that first, in the configuration the tests run in.
 dotnet publish Samples/Lazy/Bit.Bcrdt.Samples.Lazy/Bit.Bcrdt.Samples.Lazy.csproj -c Debug
 dotnet build Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browsers Playwright drives.
-pwsh Tests/Bit.Bcrdt.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium firefox webkit
+pwsh Tests/Bit.Bcrdt.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium firefox webkit
 
 cd Tests/Bit.Bcrdt.Tests.E2E && dotnet test
 
@@ -81,23 +81,26 @@ than the build-and-unit pipeline in `ci.bcrdt.yml`, which runs the build, the un
 and the pack:
 
 ```bash
-dotnet build src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o demo -p:InvariantGlobalization=true
 dotnet publish src/Utilities/Bcrdt/Samples/Lazy/Bit.Bcrdt.Samples.Lazy/Bit.Bcrdt.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
 # chromium, firefox or webkit
-pwsh src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps $BROWSER
-cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E && BCRDT_E2E_BROWSER=$BROWSER dotnet test -c Release --no-build --report-trx --report-trx-filename bcrdt-e2e-$BROWSER.trx
+pwsh src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps $BROWSER
+cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E && BCRDT_E2E_DEMO_DIR=$GITHUB_WORKSPACE/demo BCRDT_E2E_BROWSER=$BROWSER dotnet test -c Release --no-build --report-trx --report-trx-filename bcrdt-e2e-$BROWSER.trx
 ```
 
 Without PowerShell 7, the browsers can be installed with Windows PowerShell
-(`powershell -ExecutionPolicy Bypass -File bin/Debug/net10.0/playwright.ps1 install chromium`) or with the Node.js
+(`powershell -ExecutionPolicy Bypass -File bin/Debug/net11.0/playwright.ps1 install chromium`) or with the Node.js
 runtime Playwright ships:
-`bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.
+`bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.
 
-The suite starts the demo server itself (`dotnet Bit.Bcrdt.Demo.Server.dll --urls http://127.0.0.1:<free port>`,
-in the Development environment so the build output finds its static web assets), waits until it answers, shares it
-between all tests and stops it when the run ends. Rebuilding the demo while a run is in progress changes the
-fingerprinted assets under the running server and fails the pages that boot afterwards, so rebuild between runs.
+The suite publishes the demo the way `cd.bcrdt.demo.yml` does - in Release, trimmed, into `demo` next to its own
+binaries - unless `BCRDT_E2E_DEMO_DIR` names a publish folder already made, then starts it from that folder
+(`dotnet Bit.Bcrdt.Demo.Server.dll --urls http://127.0.0.1:<free port>`, in the Production environment, as the site
+runs), waits until it answers, shares it between all tests and stops it when the run ends. A publish rather than a
+build output, because only a publish trims the WebAssembly client: an interop payload the trimmer breaks works in every
+build and fails only there (`src/CLAUDE.md`). The publish takes a few minutes; point `BCRDT_E2E_DEMO_DIR` at it to skip
+it on the next run, and publish again whenever the demo or the library changes.
 Each test gets a browser context of its own - its own WebAssembly instance, and with it its own in-memory network
 and replica stores, so nothing one test typed is there when the next one opens a page - and each live test opens a
 room no other test uses. The tests run one at a time: most of them race an edit in one replica against its arrival
@@ -126,7 +129,8 @@ build server (`CI=true`) the same tests **fail** instead, so a suite that never 
 
 | Variable | Effect |
 |---|---|
-| `BCRDT_E2E_CONFIGURATION` | Build configuration of the demo server to boot; defaults to the test assembly's own. |
+| `BCRDT_E2E_DEMO_DIR` | A publish folder of `Bit.Bcrdt.Demo.Server` to boot instead of publishing the demo first. |
+| `BCRDT_E2E_CONFIGURATION` | Configuration the lazy loading sample was published in; defaults to the test assembly's own. |
 | `BCRDT_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of booting one. |
 | `BCRDT_E2E_BROWSER` | The engine to drive: `chromium` (the default), `firefox` or `webkit`. |
 | `BCRDT_E2E_CHANNEL` / `BCRDT_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`, Chromium only) or a specific binary of the engine `BCRDT_E2E_BROWSER` names. Without either, the browser Playwright installed is used; for Chromium, falling back to an installed Chrome, then Edge. |

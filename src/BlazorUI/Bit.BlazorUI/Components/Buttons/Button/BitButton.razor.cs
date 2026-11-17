@@ -328,16 +328,16 @@ public partial class BitButton : BitComponentBase
     public bool Rounded { get; set; }
 
     /// <summary>
-    /// The text of the secondary section of the button.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public string? SecondaryText { get; set; }
-
-    /// <summary>
     /// The custom template for the secondary section of the button.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public RenderFragment? SecondaryTemplate { get; set; }
+
+    /// <summary>
+    /// The text of the secondary section of the button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public string? SecondaryText { get; set; }
 
     /// <summary>
     /// Sets the preset size for typography and padding of the button.

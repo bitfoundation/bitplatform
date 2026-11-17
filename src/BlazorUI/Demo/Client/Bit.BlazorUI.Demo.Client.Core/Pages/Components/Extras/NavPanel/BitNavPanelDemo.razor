@@ -44,7 +44,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="basicIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="basicIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div style="width:222px">
                 <BitNavPanel @bind-IsOpen="basicIsOpen" Items="basicNavItems" />
@@ -62,21 +62,21 @@
                 <div>
                     <div>FitWidth</div>
                     <div class="open-btn">
-                        <BitToggleButton @bind-IsChecked="fitWidthIsOpen" OnText="Close" OffText="Open" />
+                        <BitToggleButton @bind-Checked="fitWidthIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="fitWidthIsOpen" Items="fitWidthNavItems" FitWidth />
                 </div>
                 <div style="width:260px">
                     <div>FullWidth</div>
                     <div class="open-btn">
-                        <BitToggleButton @bind-IsChecked="fullWidthIsOpen" OnText="Close" OffText="Open" />
+                        <BitToggleButton @bind-Checked="fullWidthIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="fullWidthIsOpen" Items="fullWidthNavItems" FullWidth />
                 </div>
                 <div>
                     <div>Width / ToggledWidth</div>
                     <div class="open-btn">
-                        <BitToggleButton @bind-IsChecked="widthIsOpen" OnText="Close" OffText="Open" />
+                        <BitToggleButton @bind-Checked="widthIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="widthIsOpen" Items="widthNavItems" Width="200" ToggledWidth="72" />
                 </div>
@@ -88,21 +88,21 @@
                 <b>ExpandOnHover</b> widens the rail back to the full panel while the pointer is over it or the
                 keyboard is inside it, so the item names stay reachable without a mouse. <b>NoToggle</b> removes the
                 rail mode altogether; <b>HideToggle</b> only hides the button, for a panel toggled from elsewhere
-                (<b>IsToggled</b> or <b>Toggle</b>). <b>ToggleAriaLabel</b> renames the button.
+                (<b>Toggled</b> or <b>Toggle</b>). <b>ToggleAriaLabel</b> renames the button.
             </div>
             <br />
             <div class="example-content">
                 <div style="width:222px">
                     <div>ExpandOnHover</div>
                     <div class="open-btn">
-                        <BitToggleButton @bind-IsChecked="expandOnHoverIsOpen" OnText="Close" OffText="Open" />
+                        <BitToggleButton @bind-Checked="expandOnHoverIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="expandOnHoverIsOpen" Items="expandOnHoverNavItems" ExpandOnHover />
                 </div>
                 <div style="width:222px">
                     <div>NoToggle</div>
                     <div class="open-btn">
-                        <BitToggleButton @bind-IsChecked="noToggleIsOpen" OnText="Close" OffText="Open" />
+                        <BitToggleButton @bind-Checked="noToggleIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="noToggleIsOpen" Items="noToggleNavItems" NoToggle />
                 </div>
@@ -121,7 +121,7 @@
                 <div style="width:222px">
                     <div>Logo</div>
                     <div class="open-btn">
-                        <BitToggleButton @bind-IsChecked="iconUrlIsOpen" OnText="Close" OffText="Open" />
+                        <BitToggleButton @bind-Checked="iconUrlIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="iconUrlIsOpen"
                                  Items="iconUrlNavItems"
@@ -132,7 +132,7 @@
                 <div style="width:222px">
                     <div>Logo and title</div>
                     <div class="open-btn">
-                        <BitToggleButton @bind-IsChecked="headerTextIsOpen" OnText="Close" OffText="Open" />
+                        <BitToggleButton @bind-Checked="headerTextIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="headerTextIsOpen"
                                  Items="headerTextNavItems"
@@ -154,7 +154,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="searchIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="searchIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div class="example-content">
                 <BitTextField Label="Search text" @bind-Value="searchText" Immediate />
@@ -182,7 +182,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="selectionIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="selectionIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div class="example-content">
                 <div>Selected item: <b>@selectedItem?.Text</b></div>
@@ -206,7 +206,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="singleExpandIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="singleExpandIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div style="width:222px">
                 <BitNavPanel @bind-IsOpen="singleExpandIsOpen" Items="singleExpandNavItems" SingleExpand />
@@ -220,7 +220,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="customIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="customIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div style="width:222px">
                 <BitNavPanel @bind-IsOpen="customIsOpen"
@@ -244,7 +244,7 @@
                 <div style="width:222px">
                     <div>Modal, at the end edge</div>
                     <div class="open-btn">
-                        <BitToggleButton @bind-IsChecked="drawerIsOpen" OnText="Close" OffText="Open" />
+                        <BitToggleButton @bind-Checked="drawerIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="drawerIsOpen"
                                  Items="drawerNavItems"
@@ -255,13 +255,13 @@
                 <div style="width:222px">
                     <div>Non-modal</div>
                     <div class="open-btn">
-                        <BitToggleButton @bind-IsChecked="behaviorIsOpen" OnText="Close" OffText="Open" />
+                        <BitToggleButton @bind-Checked="behaviorIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="behaviorIsOpen" Items="behaviorNavItems" NoOverlay NoAutoClose NoSwipe />
                 </div>
                 <div style="width:222px">
                     <div>A drawer on every screen</div>
-                    <BitToggleButton @bind-IsChecked="alwaysDrawerIsOpen" OnText="Close" OffText="Open" />
+                    <BitToggleButton @bind-Checked="alwaysDrawerIsOpen" OnText="Close" OffText="Open" />
                     <BitNavPanel @bind-IsOpen="alwaysDrawerIsOpen"
                                  Items="alwaysDrawerNavItems"
                                  ShowCloseButton
@@ -279,7 +279,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="templateIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="templateIsOpen" OnText="Close" OffText="Open" />
             </div>
             <BitNavPanel @bind-IsOpen="templateIsOpen" Items="templateNavItems" FitWidth NoToggle>
                 <Header>
@@ -306,7 +306,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="eventIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="eventIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div>
                 Clicked item: @onItemClick?.Text
@@ -330,7 +330,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="publicApiIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="publicApiIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div class="example-content">
                 <BitButton OnClick="() => navPanelRef.Toggle()">Toggle</BitButton>
@@ -354,7 +354,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="groupedIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="groupedIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div style="width:240px">
                 <BitNavPanel @bind-IsOpen="groupedIsOpen"
@@ -372,7 +372,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="stickyIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="stickyIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div style="width:240px">
                 <BitNavPanel @bind-IsOpen="stickyIsOpen"
@@ -400,14 +400,14 @@
                     <div style="width:222px">
                         <div>Cascaded</div>
                         <div class="open-btn">
-                            <BitToggleButton @bind-IsChecked="cascadeIsOpen" OnText="Close" OffText="Open" />
+                            <BitToggleButton @bind-Checked="cascadeIsOpen" OnText="Close" OffText="Open" />
                         </div>
                         <BitNavPanel @bind-IsOpen="cascadeIsOpen" Items="cascadeNavItems" />
                     </div>
                     <div style="width:222px">
                         <div>Own placeholder, cascaded rest</div>
                         <div class="open-btn">
-                            <BitToggleButton @bind-IsChecked="cascadeOwnIsOpen" OnText="Close" OffText="Open" />
+                            <BitToggleButton @bind-Checked="cascadeOwnIsOpen" OnText="Close" OffText="Open" />
                         </div>
                         <BitNavPanel @bind-IsOpen="cascadeOwnIsOpen" Items="cascadeOwnNavItems" SearchBoxPlaceholder="Its own placeholder" />
                     </div>
@@ -451,7 +451,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="a11yIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="a11yIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div style="width:222px">
                 <BitNavPanel @bind-IsOpen="a11yIsOpen"
@@ -469,7 +469,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="colorIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="colorIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div style="width:222px">
                 <BitNavPanel @bind-IsOpen="colorIsOpen" Items="colorNavItems" Color="BitColor.Secondary" Accent="BitColor.SecondaryBackground" />
@@ -485,7 +485,7 @@
             <br />
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="externalIconIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="externalIconIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div style="width:222px">
                 <BitNavPanel @bind-IsOpen="externalIconIsOpen"
@@ -501,7 +501,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="sizeIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="sizeIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div class="example-content">
                 <div style="width:180px">
@@ -532,7 +532,7 @@
                 <div style="width:222px">
                     <div>Styles &amp; Classes</div>
                     <div class="open-btn">
-                        <BitToggleButton @bind-IsChecked="classStyleIsOpen" OnText="Close" OffText="Open" />
+                        <BitToggleButton @bind-Checked="classStyleIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="classStyleIsOpen"
                                  Items="classStyleNavItems"
@@ -549,7 +549,7 @@
                 <div style="width:222px">
                     <div>CSS variables</div>
                     <div class="open-btn">
-                        <BitToggleButton @bind-IsChecked="cssVariablesIsOpen" OnText="Close" OffText="Open" />
+                        <BitToggleButton @bind-Checked="cssVariablesIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="cssVariablesIsOpen"
                                  Items="cssVariablesNavItems"
@@ -571,7 +571,7 @@
             </div>
             <br />
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="rtlIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-Checked="rtlIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div dir="rtl">
                 <div style="width:222px">

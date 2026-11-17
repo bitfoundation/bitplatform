@@ -35,6 +35,16 @@ public partial class McpSearchTests
         ("OnDrop", "BdndDropTarget.OnDrop"),
         ("undo a move", "Moves you can check, apply and undo"),
         ("move several selected items", "Moves you can check, apply and undo"),
+        ("dragging several selected items at once", "Dragging several items"),
+        ("dragging", "Dragging several items"),
+        ("feedback while dragging", "Feedback while dragging"),
+        ("dropping", "Dropping"),
+        ("handle dropping on a target", "Dropping"),
+        ("drags", "Allowing and forbidding drags"),
+        ("cancel a drag", "Lazy items and cancelling a drag"),
+        ("ghost image", "Custom drag layers"),
+        ("grip", "Drag handles"),
+        ("dropzone", "Drop targets"),
         ("prevent dropping a node into its own children", "Trees"),
         ("bortable or bdnd", "Bdnd and the other bit utilities"),
         ("change the keyboard shortcuts", "Choosing the keys"),
@@ -64,13 +74,46 @@ public partial class McpSearchTests
     {
         // Among the first hits is not enough for the questions the guide has a section of that very
         // name for: the explanation has to come before the members and pages that mention it.
-        foreach (var (query, expected) in new[] { ("sortable list", "Sortable lists"), ("custom drag preview", "Custom drag layers"), ("drag handle", "Drag handles"), ("nested drop targets", "Nested drop targets"), ("drop result", "Drop results") })
+        foreach (var (query, expected) in new[] { ("sortable list", "Sortable lists"), ("reorder a list by dragging its items", "Sortable lists"), ("reorder items by dragging them", "Sortable lists"),("custom drag preview", "Custom drag layers"), ("drag handle", "Drag handles"), ("nested drop targets", "Nested drop targets"), ("drop result", "Drop results") })
         {
             var result = await McpCall.StructuredAsync<BdndSearchResultDto>("SearchBdnd", new() { ["query"] = query, ["limit"] = 3 });
 
             Assert.AreEqual(expected, result.Hits[0].Title, query);
             Assert.AreEqual("Guide section", result.Hits[0].Kind, query);
         }
+    }
+
+    [TestMethod]
+    public async Task A_query_joining_two_things_keeps_both_in_view()
+    {
+        // The thing with more material behind it would otherwise fill every place, and the caller
+        // would conclude the other has no answer.
+        foreach (var (query, first, second) in new[]
+                 {
+                     ("sortable list with handles", "Sortable lists", "Drag handles"),
+                     ("sortable list with a drag layer", "Sortable lists", "Custom drag layers"),
+                     ("drag handle in a tree", "Drag handles", "Trees"),
+                     ("custom drag preview for files", "Custom drag layers", "Files")
+                 })
+        {
+            var result = await McpCall.StructuredAsync<BdndSearchResultDto>("SearchBdnd", new() { ["query"] = query, ["limit"] = 2 });
+            var titles = result.Hits.Select(hit => hit.Title).ToArray();
+
+            CollectionAssert.Contains(titles, first, $"{query}: {string.Join(" | ", titles)}");
+            CollectionAssert.Contains(titles, second, $"{query}: {string.Join(" | ", titles)}");
+        }
+    }
+
+    [TestMethod]
+    public async Task A_single_hit_is_the_best_answer_rather_than_one_kept_for_another_word()
+    {
+        // With one place there is nothing to make room in: the hit that answers the question stays,
+        // instead of giving way to the best entry named by a word it is not named by ("items").
+        var result = await McpCall.StructuredAsync<BdndSearchResultDto>("SearchBdnd", new() { ["query"] = "reorder a list by dragging its items", ["limit"] = 1 });
+
+        Assert.HasCount(1, result.Hits);
+        Assert.AreEqual("Sortable lists", result.Hits[0].Title);
+        Assert.AreEqual("Guide section", result.Hits[0].Kind);
     }
 
     [TestMethod]

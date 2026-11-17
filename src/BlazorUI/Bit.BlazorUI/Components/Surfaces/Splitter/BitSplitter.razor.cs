@@ -47,22 +47,6 @@ public partial class BitSplitter : BitComponentBase
     public BitSplitterClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The icon of the collapse button while the panel that folds is open, using <see cref="BitIconInfo"/>
-    /// for external icon library support. Takes precedence over <see cref="CollapseIconName"/> when both are set.
-    /// </summary>
-    [Parameter] public BitIconInfo? CollapseIcon { get; set; }
-
-    /// <summary>
-    /// The name of the built-in Fluent UI icon shown on the collapse button while the panel that folds is
-    /// open. Ignored when <see cref="CollapseIcon"/> is also set.
-    /// </summary>
-    /// <remarks>
-    /// The default is a chevron pointing at the panel that is about to be folded away, which follows the
-    /// orientation of the splitter and the writing direction of the page.
-    /// </remarks>
-    [Parameter] public string? CollapseIconName { get; set; }
-
-    /// <summary>
     /// Whether the panel that folds - the first one, or the second where <see cref="CollapseSecondPanel"/>
     /// says so - is currently collapsed. It can be bound, so a collapse the user carries out on the gutter
     /// is reported back to the page.
@@ -87,14 +71,20 @@ public partial class BitSplitter : BitComponentBase
     public int CollapsedSize { get; set; }
 
     /// <summary>
-    /// Lets a panel be collapsed - the first one, or the second where <see cref="CollapseSecondPanel"/> says
-    /// so: pressing Enter on the gutter folds it away and opens it again, so does Ctrl with an arrow key and
-    /// the control <see cref="ShowCollapseButton"/> draws, dragging the gutter close enough to that panel's
-    /// own edge of the splitter snaps it shut, and <see cref="Collapse"/> / <see cref="Expand"/> /
-    /// <see cref="ToggleCollapse"/> do the same from code.
+    /// The icon of the collapse button while the panel that folds is open, using <see cref="BitIconInfo"/>
+    /// for external icon library support. Takes precedence over <see cref="CollapseIconName"/> when both are set.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Collapsible { get; set; }
+    [Parameter] public BitIconInfo? CollapseIcon { get; set; }
+
+    /// <summary>
+    /// The name of the built-in Fluent UI icon shown on the collapse button while the panel that folds is
+    /// open. Ignored when <see cref="CollapseIcon"/> is also set.
+    /// </summary>
+    /// <remarks>
+    /// The default is a chevron pointing at the panel that is about to be folded away, which follows the
+    /// orientation of the splitter and the writing direction of the page.
+    /// </remarks>
+    [Parameter] public string? CollapseIconName { get; set; }
 
     /// <summary>
     /// Folds the second panel away rather than the first one, which is what an inspector, a properties
@@ -109,6 +99,16 @@ public partial class BitSplitter : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool CollapseSecondPanel { get; set; }
+
+    /// <summary>
+    /// Lets a panel be collapsed - the first one, or the second where <see cref="CollapseSecondPanel"/> says
+    /// so: pressing Enter on the gutter folds it away and opens it again, so does Ctrl with an arrow key and
+    /// the control <see cref="ShowCollapseButton"/> draws, dragging the gutter close enough to that panel's
+    /// own edge of the splitter snaps it shut, and <see cref="Collapse"/> / <see cref="Expand"/> /
+    /// <see cref="ToggleCollapse"/> do the same from code.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Collapsible { get; set; }
 
     /// <summary>
     /// The share of the splitter, as a percentage between 0 and 100, the first panel starts at.
@@ -156,17 +156,6 @@ public partial class BitSplitter : BitComponentBase
     [Parameter] public RenderFragment? FirstPanel { get; set; }
 
     /// <summary>
-    /// The initial size of the first panel in pixels.
-    /// </summary>
-    /// <remarks>
-    /// It is what the panel starts at; from the first drag on, the split is held as a percentage in
-    /// <see cref="Percent"/>, which takes precedence over this and over <see cref="SecondPanelSize"/>.
-    /// <see cref="ResetSize"/> gives this parameter the layout back.
-    /// </remarks>
-    [Parameter, ResetStyleBuilder]
-    public int? FirstPanelSize { get; set; }
-
-    /// <summary>
     /// The max size of first panel in pixels.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -177,6 +166,17 @@ public partial class BitSplitter : BitComponentBase
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public int? FirstPanelMinSize { get; set; }
+
+    /// <summary>
+    /// The initial size of the first panel in pixels.
+    /// </summary>
+    /// <remarks>
+    /// It is what the panel starts at; from the first drag on, the split is held as a percentage in
+    /// <see cref="Percent"/>, which takes precedence over this and over <see cref="SecondPanelSize"/>.
+    /// <see cref="ResetSize"/> gives this parameter the layout back.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public int? FirstPanelSize { get; set; }
 
     /// <summary>
     /// The smallest strip, in pixels, a pointer has to land in to take hold of the gutter.
@@ -327,25 +327,6 @@ public partial class BitSplitter : BitComponentBase
     [Parameter] public EventCallback<double> OnResizeStart { get; set; }
 
     /// <summary>
-    /// The key the splitter remembers its position under, so that a reader who has moved the gutter finds
-    /// it where they left it the next time the page is opened. Leaving it unset remembers nothing.
-    /// </summary>
-    /// <remarks>
-    /// Both the position and whether the first panel was folded away are kept, in the browser's local
-    /// storage unless <see cref="PersistInSessionStorage"/> asks for the session instead. What is restored
-    /// is offered to the component the way a drag is: a splitter whose <see cref="Percent"/> the page holds
-    /// one way keeps what the page gave it. The key has to be unique to the splitter within the origin -
-    /// two splitters sharing one key share one position.
-    /// </remarks>
-    [Parameter] public string? PersistKey { get; set; }
-
-    /// <summary>
-    /// Keeps what <see cref="PersistKey"/> remembers in the browser's session storage rather than its local
-    /// storage, so the position lasts as long as the tab and no longer.
-    /// </summary>
-    [Parameter] public bool PersistInSessionStorage { get; set; }
-
-    /// <summary>
     /// The share of the splitter the first panel takes up, as a percentage between 0 and 100.
     /// </summary>
     /// <remarks>
@@ -357,6 +338,25 @@ public partial class BitSplitter : BitComponentBase
     /// </remarks>
     [Parameter, ResetStyleBuilder, TwoWayBound]
     public double? Percent { get; set; }
+
+    /// <summary>
+    /// Keeps what <see cref="PersistKey"/> remembers in the browser's session storage rather than its local
+    /// storage, so the position lasts as long as the tab and no longer.
+    /// </summary>
+    [Parameter] public bool PersistInSessionStorage { get; set; }
+
+    /// <summary>
+    /// The key the splitter remembers its position under, so that a reader who has moved the gutter finds
+    /// it where they left it the next time the page is opened. Leaving it unset remembers nothing.
+    /// </summary>
+    /// <remarks>
+    /// Both the position and whether the first panel was folded away are kept, in the browser's local
+    /// storage unless <see cref="PersistInSessionStorage"/> asks for the session instead. What is restored
+    /// is offered to the component the way a drag is: a splitter whose <see cref="Percent"/> the page holds
+    /// one way keeps what the page gave it. The key has to be unique to the splitter within the origin -
+    /// two splitters sharing one key share one position.
+    /// </remarks>
+    [Parameter] public string? PersistKey { get; set; }
 
     /// <summary>
     /// Keeps the splitter as it is: the gutter is still shown and still looks like itself, but it cannot be
@@ -375,15 +375,6 @@ public partial class BitSplitter : BitComponentBase
     [Parameter] public RenderFragment? SecondPanel { get; set; }
 
     /// <summary>
-    /// The initial size of the second panel in pixels.
-    /// </summary>
-    /// <remarks>
-    /// Ignored while <see cref="Percent"/> has a value, which is the case from the first drag on.
-    /// </remarks>
-    [Parameter, ResetStyleBuilder]
-    public int? SecondPanelSize { get; set; }
-
-    /// <summary>
     /// The max size of second panel in pixels.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -394,6 +385,15 @@ public partial class BitSplitter : BitComponentBase
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public int? SecondPanelMinSize { get; set; }
+
+    /// <summary>
+    /// The initial size of the second panel in pixels.
+    /// </summary>
+    /// <remarks>
+    /// Ignored while <see cref="Percent"/> has a value, which is the case from the first drag on.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public int? SecondPanelSize { get; set; }
 
     /// <summary>
     /// Draws a control on the gutter that folds the collapsible panel away and brings it back, so that a

@@ -23,7 +23,7 @@ public partial class BitMediaQueryDemo
             Name = "DefaultMatched",
             Type = "bool",
             DefaultValue = "false",
-            Description = "The matched state to render with until the browser answers the query, to avoid a flash of the wrong content while prerendering. Ignored when IsMatched is bound, and in a WebAssembly app whose script is in the page, which asks the browser synchronously before the first render.",
+            Description = "The matched state to render with until the browser answers the query, to avoid a flash of the wrong content while prerendering. Ignored when Matched is bound, and in a WebAssembly app whose script is in the page, which asks the browser synchronously before the first render.",
         },
         new()
         {
@@ -34,21 +34,21 @@ public partial class BitMediaQueryDemo
         },
         new()
         {
-            Name = "IsMatched",
+            Name = "Matched",
             Type = "bool",
             DefaultValue = "false",
             Description = "The current matched state of the query. An output: the browser owns it, so bind it rather than setting it one way, which freezes it; seed it with DefaultMatched. (two-way bound)",
         },
         new()
         {
-            Name = "Matched",
+            Name = "MatchedTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content to be rendered if the provided query is matched (an alias for ChildContent).",
         },
         new()
         {
-            Name = "NotMatched",
+            Name = "NotMatchedTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content to be rendered if the provided query is not matched.",
@@ -88,7 +88,7 @@ public partial class BitMediaQueryDemo
             Name = "Template",
             Type = "RenderFragment<bool>?",
             DefaultValue = "null",
-            Description = "The content for both states, receiving the matched state. It is updated rather than rebuilt when the query flips, so the state inside it survives. Takes precedence over Matched, ChildContent and NotMatched.",
+            Description = "The content for both states, receiving the matched state. It is updated rather than rebuilt when the query flips, so the state inside it survives. Takes precedence over MatchedTemplate, ChildContent and NotMatchedTemplate.",
         },
     ];
 

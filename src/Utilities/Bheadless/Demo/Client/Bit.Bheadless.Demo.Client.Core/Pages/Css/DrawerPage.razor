@@ -27,7 +27,7 @@
                 <BitBhDrawerHandle class="drawer-handle" />
                 <BitBhDrawerTitle class="drawer-title">Recent activity</BitBhDrawerTitle>
                 <BitBhDrawerDescription class="drawer-description">Swipe down or press Escape to close.</BitBhDrawerDescription>
-                <ul class="drawer-body">
+                <ul class="drawer-body" tabindex="0" aria-label="Recent activity">
                     @for (var i = 1; i <= 20; i++)
                     {
                         <li>Event @i</li>
@@ -177,7 +177,7 @@
         <BitBhDrawerHandle class="drawer-handle" />
         <BitBhDrawerTitle class="drawer-title">Recent activity</BitBhDrawerTitle>
         <BitBhDrawerDescription class="drawer-description">Swipe down or press Escape to close.</BitBhDrawerDescription>
-        <ul class="drawer-body">
+        <ul class="drawer-body" tabindex="0" aria-label="Recent activity">
             @for (var i = 1; i <= 20; i++)
             {
                 <li>Event @i</li>

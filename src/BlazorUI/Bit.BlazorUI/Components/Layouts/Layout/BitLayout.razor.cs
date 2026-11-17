@@ -242,20 +242,6 @@ public partial class BitLayout : BitComponentBase
     [Parameter] public RenderFragment? Main { get; set; }
 
     /// <summary>
-    /// Renders the main section as a plain element instead of the main landmark, for a BitLayout nested inside another one.
-    /// </summary>
-    /// <remarks>
-    /// A page may hold only one main landmark, so an inner layout - a workspace inside the content of the page, a
-    /// settings area with a nav panel of its own - would otherwise claim a second one. The section keeps its id, its
-    /// classes and its place as the target of the <see cref="SkipLink"/>, and only stops being a landmark.
-    /// <br />
-    /// The other sections need nothing of the sort: a <c>header</c> or a <c>footer</c> stops being a banner or a
-    /// contentinfo on its own once it sits inside the content of another one, and a page may hold any number of
-    /// navigation and complementary landmarks.
-    /// </remarks>
-    [Parameter] public bool Nested { get; set; }
-
-    /// <summary>
     /// The content of the nav panel section.
     /// </summary>
     /// <remarks>
@@ -291,6 +277,20 @@ public partial class BitLayout : BitComponentBase
     /// content, so the width is applied to the panel itself.
     /// </remarks>
     [Parameter] public int NavPanelWidth { get; set; }
+
+    /// <summary>
+    /// Renders the main section as a plain element instead of the main landmark, for a BitLayout nested inside another one.
+    /// </summary>
+    /// <remarks>
+    /// A page may hold only one main landmark, so an inner layout - a workspace inside the content of the page, a
+    /// settings area with a nav panel of its own - would otherwise claim a second one. The section keeps its id, its
+    /// classes and its place as the target of the <see cref="SkipLink"/>, and only stops being a landmark.
+    /// <br />
+    /// The other sections need nothing of the sort: a <c>header</c> or a <c>footer</c> stops being a banner or a
+    /// contentinfo on its own once it sits inside the content of another one, and a page may hold any number of
+    /// navigation and complementary landmarks.
+    /// </remarks>
+    [Parameter] public bool Nested { get; set; }
 
     /// <summary>
     /// Gets or sets the padding around the content of the main section.

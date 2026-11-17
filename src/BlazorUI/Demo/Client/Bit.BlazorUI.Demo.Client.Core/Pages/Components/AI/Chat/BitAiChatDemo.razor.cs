@@ -144,6 +144,13 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "KeepReadingAloud",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Goes on reading each reply that finishes after the one a reading was started on, until the reading is stopped. Only used when AllowReadAloud is on.",
+        },
+        new()
+        {
             Name = "ListFooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -155,13 +162,6 @@ public partial class BitAiChatDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content at the top of the scroll area, above the first message. Past BitAiUiOptions.VirtualizeThreshold messages it is drawn once the reader has scrolled up to the first message, along with it.",
-        },
-        new()
-        {
-            Name = "KeepReadingAloud",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Goes on reading each reply that finishes after the one a reading was started on, until the reading is stopped. Only used when AllowReadAloud is on.",
         },
         new()
         {

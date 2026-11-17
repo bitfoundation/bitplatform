@@ -26,7 +26,7 @@
             <div>
                 Whatever is inside the tooltip is its anchor; <b>Text</b> is what it says. It is shown on hover and on focus.
                 <b>Disabled</b> turns the tooltip off, not the anchor, and a disabled anchor still gets its tooltip.
-                <b>DefaultIsShown</b> starts it shown.
+                <b>DefaultShown</b> starts it shown.
             </div>
             <br />
             <div class="tooltips-container row spaced">
@@ -42,8 +42,8 @@
                     <BitButton Variant="BitVariant.Outline" Disabled>Disabled anchor</BitButton>
                 </BitTooltip>
 
-                <BitTooltip Text="Shown to begin with" DefaultIsShown="true">
-                    <BitButton Variant="BitVariant.Outline">DefaultIsShown</BitButton>
+                <BitTooltip Text="Shown to begin with" DefaultShown="true">
+                    <BitButton Variant="BitVariant.Outline">DefaultShown</BitButton>
                 </BitTooltip>
             </div>
         </DemoExample>
@@ -57,7 +57,7 @@
             <div class="position-grid" style="padding-inline:5rem">
                 @foreach (var placement in tooltipPlacements)
                 {
-                    <BitTooltip DefaultIsShown="true" Text="@placement.Text"
+                    <BitTooltip DefaultShown="true" Text="@placement.Text"
                                 Placement="placement.Placement" Alignment="placement.Alignment">
                         <BitButton Variant="BitVariant.Outline" Style="width: 100%;">@placement.Text</BitButton>
                     </BitTooltip>
@@ -148,29 +148,29 @@
             </div>
             <br />
             <div class="tooltips-container row spaced">
-                <BitTooltip DefaultIsShown="true" Text="Default">
+                <BitTooltip DefaultShown="true" Text="Default">
                     <BitButton Variant="BitVariant.Outline">Default</BitButton>
                 </BitTooltip>
 
-                <BitTooltip DefaultIsShown="true" Text="No arrow" HideArrow>
+                <BitTooltip DefaultShown="true" Text="No arrow" HideArrow>
                     <BitButton Variant="BitVariant.Outline">HideArrow</BitButton>
                 </BitTooltip>
 
-                <BitTooltip DefaultIsShown="true" Text="A bigger arrow" ArrowSize="18">
+                <BitTooltip DefaultShown="true" Text="A bigger arrow" ArrowSize="18">
                     <BitButton Variant="BitVariant.Outline">ArrowSize</BitButton>
                 </BitTooltip>
 
-                <BitTooltip DefaultIsShown="true" Text="Held further off" Offset="24">
+                <BitTooltip DefaultShown="true" Text="Held further off" Offset="24">
                     <BitButton Variant="BitVariant.Outline">Offset</BitButton>
                 </BitTooltip>
             </div>
             <div class="tooltips-container row" style="padding-block:0 6rem; column-gap:14rem">
-                <BitTooltip DefaultIsShown="true" Placement="BitPlacement.Bottom" MaxWidth="10rem"
+                <BitTooltip DefaultShown="true" Placement="BitPlacement.Bottom" MaxWidth="10rem"
                             Text="A narrow tooltip wraps its text sooner.">
                     <BitButton Variant="BitVariant.Outline">MaxWidth="10rem"</BitButton>
                 </BitTooltip>
 
-                <BitTooltip DefaultIsShown="true" Placement="BitPlacement.Bottom"
+                <BitTooltip DefaultShown="true" Placement="BitPlacement.Bottom"
                             Text="The default cap keeps a long line from running on across the whole screen.">
                     <BitButton Variant="BitVariant.Outline">Default max width</BitButton>
                 </BitTooltip>
@@ -273,20 +273,20 @@
 
         <DemoExample Title="Binding & methods" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
-                <b>@("@bind-IsShown")</b> keeps the state in your field while the triggers still work. <b>IsShown</b> without the binding
+                <b>@("@bind-Shown")</b> keeps the state in your field while the triggers still work. <b>Shown</b> without the binding
                 makes the state yours alone. <b>Show</b>, <b>Hide</b> and <b>Toggle</b> act at once, ignoring triggers and delays.
             </div>
             <br />
             <div class="tooltips-container">
-                <BitToggle @bind-Value="isShown" Label="IsShown" />
+                <BitToggle @bind-Value="isShown" Label="Shown" />
                 <div class="tooltips-container row">
                     <BitButton Variant="BitVariant.Outline" OnClick="@(() => tooltipRef?.Show())">Show</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="@(() => tooltipRef?.Hide())">Hide</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="@(() => tooltipRef?.Toggle())">Toggle</BitButton>
                 </div>
                 <div class="tooltips-container row" style="padding-block:1rem 4rem">
-                    <BitTooltip @bind-IsShown="isShown" Text="Bound to the toggle" Placement="BitPlacement.Bottom">
-                        <BitButton Variant="BitVariant.Outline">@("@bind-IsShown")</BitButton>
+                    <BitTooltip @bind-Shown="isShown" Text="Bound to the toggle" Placement="BitPlacement.Bottom">
+                        <BitButton Variant="BitVariant.Outline">@("@bind-Shown")</BitButton>
                     </BitTooltip>
 
                     <BitTooltip @ref="tooltipRef" Text="Driven from the buttons above" Placement="BitPlacement.Bottom">
@@ -349,7 +349,7 @@
             <div class="color-grid">
                 @foreach (var color in Enum.GetValues<BitColor>())
                 {
-                    <BitTooltip DefaultIsShown="true" Color="color" Text="@color.ToString()" Placement="BitPlacement.Bottom">
+                    <BitTooltip DefaultShown="true" Color="color" Text="@color.ToString()" Placement="BitPlacement.Bottom">
                         <BitButton Variant="BitVariant.Outline" Style="width: 100%;">@color</BitButton>
                     </BitTooltip>
                 }
@@ -362,15 +362,15 @@
             </div>
             <br />
             <div class="tooltips-container row spaced">
-                <BitTooltip DefaultIsShown="true" Size="BitSize.Small" Text="Small" Placement="BitPlacement.Bottom">
+                <BitTooltip DefaultShown="true" Size="BitSize.Small" Text="Small" Placement="BitPlacement.Bottom">
                     <BitButton Variant="BitVariant.Outline">Small</BitButton>
                 </BitTooltip>
 
-                <BitTooltip DefaultIsShown="true" Size="BitSize.Medium" Text="Medium" Placement="BitPlacement.Bottom">
+                <BitTooltip DefaultShown="true" Size="BitSize.Medium" Text="Medium" Placement="BitPlacement.Bottom">
                     <BitButton Variant="BitVariant.Outline">Medium</BitButton>
                 </BitTooltip>
 
-                <BitTooltip DefaultIsShown="true" Size="BitSize.Large" Text="Large" Placement="BitPlacement.Bottom">
+                <BitTooltip DefaultShown="true" Size="BitSize.Large" Text="Large" Placement="BitPlacement.Bottom">
                     <BitButton Variant="BitVariant.Outline">Large</BitButton>
                 </BitTooltip>
             </div>
@@ -383,11 +383,11 @@
             </div>
             <br />
             <div class="tooltips-container row spaced">
-                <BitTooltip DefaultIsShown="true" Text="Styles" Styles="@(new() { Tooltip = "box-shadow: aqua 0 0 0.5rem;" })">
+                <BitTooltip DefaultShown="true" Text="Styles" Styles="@(new() { Tooltip = "box-shadow: aqua 0 0 0.5rem;" })">
                     <BitButton Variant="BitVariant.Outline">Styles</BitButton>
                 </BitTooltip>
 
-                <BitTooltip DefaultIsShown="true" Text="Classes" Classes="@(new() { Tooltip = "custom-tooltip", Arrow = "custom-arrow" })">
+                <BitTooltip DefaultShown="true" Text="Classes" Classes="@(new() { Tooltip = "custom-tooltip", Arrow = "custom-arrow" })">
                     <BitButton Variant="BitVariant.Outline">Classes</BitButton>
                 </BitTooltip>
 
@@ -406,15 +406,15 @@
             </div>
             <div class="tooltips-container row spaced"
                  style="--bit-Tooltip-background: var(--bit-clr-fg-pri); --bit-Tooltip-color: var(--bit-clr-bg-pri); --bit-Tooltip-radius: 999px; --bit-Tooltip-padding: 0.25rem 0.75rem; --bit-Tooltip-offset: 12px;">
-                <BitTooltip DefaultIsShown="true" Text="Inverted pill">
+                <BitTooltip DefaultShown="true" Text="Inverted pill">
                     <BitButton Variant="BitVariant.Outline">From the ancestor</BitButton>
                 </BitTooltip>
 
-                <BitTooltip DefaultIsShown="true" Text="My Color wins" Color="BitColor.Success">
+                <BitTooltip DefaultShown="true" Text="My Color wins" Color="BitColor.Success">
                     <BitButton Variant="BitVariant.Outline">Color parameter</BitButton>
                 </BitTooltip>
 
-                <BitTooltip DefaultIsShown="true" Text="A tooltip with a longer text, set on its own Style"
+                <BitTooltip DefaultShown="true" Text="A tooltip with a longer text, set on its own Style"
                             Style="--bit-Tooltip-max-width: 9rem; --bit-Tooltip-font-size: 0.8125rem; --bit-Tooltip-text-align: center;">
                     <BitButton Variant="BitVariant.Outline">Own Style</BitButton>
                 </BitTooltip>
@@ -432,20 +432,20 @@
                     <BitButton Variant="BitVariant.Outline">نشانگر ماوس را روی من بیاورید</BitButton>
                 </BitTooltip>
 
-                <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Placement="BitPlacement.Left" Text="سمت چپ لنگر">
+                <BitTooltip Dir="BitDir.Rtl" DefaultShown="true" Placement="BitPlacement.Left" Text="سمت چپ لنگر">
                     <BitButton Variant="BitVariant.Outline">Left</BitButton>
                 </BitTooltip>
 
-                <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Placement="BitPlacement.Start" Text="سمت شروعِ لنگر">
+                <BitTooltip Dir="BitDir.Rtl" DefaultShown="true" Placement="BitPlacement.Start" Text="سمت شروعِ لنگر">
                     <BitButton Variant="BitVariant.Outline">Start</BitButton>
                 </BitTooltip>
             </div>
             <div class="tooltips-container row spaced" style="padding-inline:7rem; column-gap:8rem">
-                <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Alignment="BitPlacement.Left" Text="ترازِ لبهٔ چپ">
+                <BitTooltip Dir="BitDir.Rtl" DefaultShown="true" Alignment="BitPlacement.Left" Text="ترازِ لبهٔ چپ">
                     <BitButton Variant="BitVariant.Outline">Alignment Left</BitButton>
                 </BitTooltip>
 
-                <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Alignment="BitPlacement.Start" Text="ترازِ لبهٔ شروع">
+                <BitTooltip Dir="BitDir.Rtl" DefaultShown="true" Alignment="BitPlacement.Start" Text="ترازِ لبهٔ شروع">
                     <BitButton Variant="BitVariant.Outline">Alignment Start</BitButton>
                 </BitTooltip>
             </div>

@@ -15,8 +15,14 @@ public sealed class ChildProcess : IAsyncDisposable
 
     private readonly Process _process;
     private readonly ConcurrentQueue<string> _output = new();
+    private readonly TaskCompletionSource _exited = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    private ChildProcess(Process process) => _process = process;
+    private ChildProcess(Process process)
+    {
+        _process = process;
+        _process.EnableRaisingEvents = true;
+        _process.Exited += (_, _) => _exited.TrySetResult();
+    }
 
     public bool HasExited => _process.HasExited;
 
@@ -47,6 +53,37 @@ public sealed class ChildProcess : IAsyncDisposable
         child._process.BeginOutputReadLine();
         child._process.BeginErrorReadLine();
         return child;
+    }
+
+    /// <summary>Runs a command to its end, and throws with its last output lines when it fails or outlives <paramref name="timeout"/>.</summary>
+    /// <remarks>
+    /// The end is the process's own exit, not the end of its output: <see cref="Process.WaitForExitAsync"/> also waits
+    /// for every redirected pipe to close, and a grandchild that inherited them (a build server the command left
+    /// running, say) holds them open after the command is gone. What it writes after that is only waited for briefly.
+    /// </remarks>
+    public static async Task RunToCompletionAsync(string fileName, IEnumerable<string> arguments, string workingDirectory, TimeSpan timeout,
+        IDictionary<string, string>? environment = null)
+    {
+        await using var child = Start(fileName, arguments, workingDirectory, environment);
+        using var cts = new CancellationTokenSource(timeout);
+
+        try
+        {
+            await child._exited.Task.WaitAsync(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            throw new TimeoutException($"{fileName} {string.Join(' ', arguments)} did not finish within {timeout}.{Environment.NewLine}{child.RecentOutput}");
+        }
+
+        using (var drain = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+        {
+            try { await child._process.WaitForExitAsync(drain.Token); }
+            catch (OperationCanceledException) { /* a pipe some grandchild still holds: the last lines are already kept */ }
+        }
+
+        if (child._process.ExitCode != 0)
+            throw new InvalidOperationException($"{fileName} {string.Join(' ', arguments)} exited with {child._process.ExitCode}.{Environment.NewLine}{child.RecentOutput}");
     }
 
     /// <summary>Polls <paramref name="url"/> until it answers with a success status.</summary>

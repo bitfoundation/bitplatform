@@ -172,7 +172,7 @@ public class BitModalParameters
     /// <summary>
     /// Determines the ARIA role of the Modal (alertdialog/dialog).
     /// </summary>
-    public bool? IsAlert { get; set; }
+    public bool? Alert { get; set; }
 
     /// <summary>
     /// Keeps the Modal in the page while it is closed instead of building it again the next time it opens. <c>null</c> means not set (defaults to <c>false</c>).
@@ -360,7 +360,7 @@ public class BitModalParameters
             Header = params1.Header ?? params2.Header,
             HeaderText = params1.HeaderText ?? params2.HeaderText,
             Height = params1.Height ?? params2.Height,
-            IsAlert = params1.IsAlert ?? params2.IsAlert,
+            Alert = params1.Alert ?? params2.Alert,
             KeepMounted = params1.KeepMounted ?? params2.KeepMounted,
             MaxHeight = params1.MaxHeight ?? params2.MaxHeight,
             MaxWidth = params1.MaxWidth ?? params2.MaxWidth,

@@ -66,20 +66,6 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "DisableFuture",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Disables every day after today, exactly as a MaxDate of now would. When both are set, the earlier of the two bounds wins. Today stays selectable, and a time picker on screen is held to the hours of it up to this very minute.",
-        },
-        new()
-        {
-            Name = "DisablePast",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Disables every day before today, exactly as a MinDate of now would. When both are set, the later of the two bounds wins. Today stays selectable, and a time picker on screen is held to the hours of it from this very minute on.",
-        },
-        new()
-        {
             Name = "DisabledDates",
             Type = "IEnumerable<DateTimeOffset>?",
             DefaultValue = "null",
@@ -94,12 +80,17 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "Events",
-            Type = "IEnumerable<BitCalendarEvent>?",
-            DefaultValue = "null",
-            Description = "The list of events to display on calendar days. Days with events show an indicator dot that reveals a tooltip on hover and a details dialog on click. The events of a day are ordered the way an agenda of it is: the all-day ones first, then the rest by the time they start at.",
-            Href = "#calendar-event",
-            LinkType = LinkType.Link
+            Name = "DisableFuture",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables every day after today, exactly as a MaxDate of now would. When both are set, the earlier of the two bounds wins. Today stays selectable, and a time picker on screen is held to the hours of it up to this very minute.",
+        },
+        new()
+        {
+            Name = "DisablePast",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables every day before today, exactly as a MinDate of now would. When both are set, the later of the two bounds wins. Today stays selectable, and a time picker on screen is held to the hours of it from this very minute on.",
         },
         new()
         {
@@ -107,6 +98,15 @@ public partial class BitCalendarDemo
             Type = "string",
             DefaultValue = "Close",
             Description = "The title (tooltip) and the accessible name of the close button of the event details dialog."
+        },
+        new()
+        {
+            Name = "Events",
+            Type = "IEnumerable<BitCalendarEvent>?",
+            DefaultValue = "null",
+            Description = "The list of events to display on calendar days. Days with events show an indicator dot that reveals a tooltip on hover and a details dialog on click. The events of a day are ordered the way an agenda of it is: the all-day ones first, then the rest by the time they start at.",
+            Href = "#calendar-event",
+            LinkType = LinkType.Link
         },
         new()
         {
@@ -179,31 +179,6 @@ public partial class BitCalendarDemo
             Type = "string",
             DefaultValue = "Go to next year {0}",
             Description = "The title of the Go to next year button (tooltip)."
-        },
-        new()
-        {
-            Name = "NowButtonIcon",
-            Type = "BitIconInfo?",
-            DefaultValue = "null",
-            Description = "Gets or sets the icon to display in the now button using custom CSS classes for external icon libraries. Takes precedence over NowButtonIconName when both are set.",
-            LinkType = LinkType.Link,
-            Href = "#bit-icon-info"
-        },
-        new()
-        {
-            Name = "NowButtonIconName",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Gets or sets the name of the icon to display in the now button from the built-in Fluent UI icons.",
-            LinkType = LinkType.Link,
-            Href = "https://blazorui.bitplatform.dev/iconography"
-        },
-        new()
-        {
-            Name = "NowButtonTitle",
-            Type = "string",
-            DefaultValue = "Go to now",
-            Description = "The title of the now button (tooltip)."
         },
         new()
         {
@@ -430,6 +405,31 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "NowButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the now button using custom CSS classes for external icon libraries. Takes precedence over NowButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "NowButtonIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the now button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "NowButtonTitle",
+            Type = "string",
+            DefaultValue = "Go to now",
+            Description = "The title of the now button (tooltip)."
+        },
+        new()
+        {
             Name = "OnMonthChange",
             Type = "EventCallback<DateTimeOffset>",
             Description = "Callback for when the displayed month of the day picker changes. The argument is the first day of the newly displayed month."
@@ -517,13 +517,6 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "ShowNowButton",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the now button should be shown or not."
-        },
-        new()
-        {
             Name = "ShowGoToToday",
             Type = "bool",
             DefaultValue = "true",
@@ -542,6 +535,13 @@ public partial class BitCalendarDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Show month picker on top of date picker when visible."
+        },
+        new()
+        {
+            Name = "ShowNowButton",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the now button should be shown or not."
         },
         new()
         {
@@ -650,6 +650,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "TimePickerDecreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Decrease hour",
+            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-hour button."
+        },
+        new()
+        {
             Name = "TimePickerDecreaseMinuteIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -665,6 +672,20 @@ public partial class BitCalendarDemo
             Description = "Gets or sets the name of the icon to display in the decrease-minute button from the built-in Fluent UI icons.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseMinuteTitle",
+            Type = "string",
+            DefaultValue = "Decrease minute",
+            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-minute button."
+        },
+        new()
+        {
+            Name = "TimePickerHourTitle",
+            Type = "string",
+            DefaultValue = "Hour",
+            Description = "The title (tooltip) and the accessible name of the time-picker's hour input."
         },
         new()
         {
@@ -686,6 +707,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "TimePickerIncreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Increase hour",
+            Description = "The title (tooltip) and the accessible name of the time-picker's increase-hour button."
+        },
+        new()
+        {
             Name = "TimePickerIncreaseMinuteIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -701,34 +729,6 @@ public partial class BitCalendarDemo
             Description = "Gets or sets the name of the icon to display in the increase-minute button from the built-in Fluent UI icons.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography"
-        },
-        new()
-        {
-            Name = "TimePickerDecreaseHourTitle",
-            Type = "string",
-            DefaultValue = "Decrease hour",
-            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-hour button."
-        },
-        new()
-        {
-            Name = "TimePickerDecreaseMinuteTitle",
-            Type = "string",
-            DefaultValue = "Decrease minute",
-            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-minute button."
-        },
-        new()
-        {
-            Name = "TimePickerHourTitle",
-            Type = "string",
-            DefaultValue = "Hour",
-            Description = "The title (tooltip) and the accessible name of the time-picker's hour input."
-        },
-        new()
-        {
-            Name = "TimePickerIncreaseHourTitle",
-            Type = "string",
-            DefaultValue = "Increase hour",
-            Description = "The title (tooltip) and the accessible name of the time-picker's increase-hour button."
         },
         new()
         {

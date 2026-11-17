@@ -351,7 +351,7 @@ public partial class PushSubscriptionOwnershipTests
             var pushAboutTheFirstAccount = sentPushes.Single(push => push.Payload.Detail.Text == "For the first account");
 
             Assert.Contains(firstEmail, pushAboutTheFirstAccount.Payload.Title.Text, "A push about one of the device's accounts has to say which one it is about.");
-            Assert.AreEqual($"{PageUrls.Settings}?{DeviceAccountDto.QueryParameter}={firstUserId}", pushAboutTheFirstAccount.Payload.Parameters["pageUrl"].ToString(),
+            Assert.AreEqual($"{PageUrls.Settings}?{DeviceUserSessionDto.QueryParameter}={firstUserId}", pushAboutTheFirstAccount.Payload.Parameters["pageUrl"].ToString(),
                 "Opening a push about one of the device's accounts has to open the app with that account.");
         }
         finally

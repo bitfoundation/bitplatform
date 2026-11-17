@@ -27,7 +27,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         {
             // Non Global admins may only see the users of the current tenant that have accepted their invitation.
             var tenantId = User.GetTenantId();
-            return userManager.Users.Where(u => u.Tenants.Any(tu => tu.TenantId == tenantId && tu.AcceptedOn != null)).Project();
+            return userManager.Users.Where(u => u.TenantMemberships.Any(tm => tm.TenantId == tenantId && tm.AcceptedOn != null)).Project();
         }
         //#endif
         return userManager.Users.Project();
@@ -45,7 +45,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
 
         if (currentTenantId is not null)
         {
-            usersQuery = usersQuery.Where(u => u.Tenants.Any(tu => tu.TenantId == currentTenantId && tu.AcceptedOn != null));
+            usersQuery = usersQuery.Where(u => u.TenantMemberships.Any(tm => tm.TenantId == currentTenantId && tm.AcceptedOn != null));
         }
 
         // The session predicate has to be tenant scoped too, otherwise a tenant admin's "online users" count includes
@@ -76,7 +76,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         {
             var tenantId = User.GetTenantId();
             query = query.Where(us => us.TenantId == tenantId &&
-                                      us.User!.Tenants.Any(tu => tu.TenantId == tenantId && tu.AcceptedOn != null));
+                                      us.User!.TenantMemberships.Any(tm => tm.TenantId == tenantId && tm.AcceptedOn != null));
         }
         //#endif
 
@@ -101,7 +101,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         // UserSession rows for the current tenant, so moving the check after it would re-open the denial of
         // service the guard exists to prevent. Only the message differs - the caller pressed Delete, not Revoke.
         await EnsureCallerCanRevokeSessionsOf(userId, cancellationToken,
-                                              Localizer[nameof(AppStrings.UserCantRemoveSuperAdminErrorMessage)]);
+                                              Localizer[nameof(AppStrings.UserCantRemoveGlobalAdminErrorMessage)]);
 
         //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
@@ -216,7 +216,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
             return;
 
         if (await DbContext.UserRoles.AnyAsync(ur => ur.UserId == targetUserId && ur.Role!.Name == AppRoles.GlobalAdmin, cancellationToken))
-            throw new BadRequestException(errorMessage ?? Localizer[nameof(AppStrings.UserCantRevokeSuperAdminSessionsErrorMessage)]);
+            throw new BadRequestException(errorMessage ?? Localizer[nameof(AppStrings.UserCantRevokeGlobalAdminSessionsErrorMessage)]);
     }
 
     //#if (multitenant == true)
@@ -230,16 +230,16 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
 
         var tenantId = User.GetTenantId();
 
-        if (await DbContext.TenantUsers.AnyAsync(tu => tu.UserId == userId && tu.TenantId == tenantId && tu.AcceptedOn != null, cancellationToken) is false)
+        if (await DbContext.TenantMemberships.AnyAsync(tm => tm.UserId == userId && tm.TenantId == tenantId && tm.AcceptedOn != null, cancellationToken) is false)
             throw new ResourceNotFoundException().WithData("Reason", "Non Global admins may only manage the users of the current tenant that have accepted their invitation.");
     }
 
     /// <summary>
-    /// Removes the user from the current tenant (instead of deleting her account) by deleting her TenantUser record
+    /// Removes the user from the current tenant (instead of deleting her account) by deleting her TenantMembership record
     /// alongside her tenant scoped roles/claims, and revokes the sessions she has signed into the current tenant so
     /// her already-issued access token can't retain that tenant's access/roles until it expires (mirrors
     /// TenantManagementController.KickOutTenantUsers); sessions signed into her other tenants are left intact. Unlike
-    /// leaving, the user can't re-join afterwards unless she gets invited again, because the TenantUser record no longer exists.
+    /// leaving, the user can't re-join afterwards unless she gets invited again, because the TenantMembership record no longer exists.
     /// </summary>
     private async Task RemoveUserFromCurrentTenant(Guid userId, CancellationToken cancellationToken)
     {
@@ -256,7 +256,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         {
             await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            await DbContext.TenantUsers.Where(tu => tu.UserId == userId && tu.TenantId == tenantId).ExecuteDeleteAsync(cancellationToken);
+            await DbContext.TenantMemberships.Where(tm => tm.UserId == userId && tm.TenantId == tenantId).ExecuteDeleteAsync(cancellationToken);
             await DbContext.UserRoles.Where(ur => ur.UserId == userId && ur.TenantId == tenantId).ExecuteDeleteAsync(cancellationToken);
             await DbContext.UserClaims.Where(uc => uc.UserId == userId && uc.TenantId == tenantId).ExecuteDeleteAsync(cancellationToken);
             await DbContext.UserSessions.Where(us => us.UserId == userId && us.TenantId == tenantId).ExecuteDeleteAsync(cancellationToken);

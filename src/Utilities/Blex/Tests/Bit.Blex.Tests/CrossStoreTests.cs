@@ -99,23 +99,27 @@ public class CrossStoreTests
     [TestMethod]
     public async Task SubscribeAsync_RunsAsyncReactor()
     {
-        var manager = new BlexManager();
-        var counter = new CounterStore();
-        var data = new DataStore();
-        manager.Register(counter);
-        manager.Register(data);
-
-        var tcs = new TaskCompletionSource();
-        using var sub = manager.SubscribeAsync(async _ =>
+        using var context = new SingleThreadContext();
+        await context.RunAsync(async () =>
         {
-            await data.Load("reacted");
-            tcs.TrySetResult();
+            var manager = new BlexManager();
+            var counter = new CounterStore();
+            var data = new DataStore();
+            manager.Register(counter);
+            manager.Register(data);
+
+            var tcs = new TaskCompletionSource();
+            using var sub = manager.SubscribeAsync(async _ =>
+            {
+                await data.Load("reacted");
+                tcs.TrySetResult();
+            }, action => action.Store == counter);
+
+            counter.Increment();
+            await tcs.Task;
+
+            Assert.AreEqual("reacted", data.Value);
         });
-
-        counter.Increment();
-        await tcs.Task;
-
-        Assert.AreEqual("reacted", data.Value);
     }
 
     [TestMethod]

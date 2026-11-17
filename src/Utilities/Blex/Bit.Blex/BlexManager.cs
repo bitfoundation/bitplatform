@@ -1819,6 +1819,47 @@ public sealed class BlexManager
     /// </summary>
     public event Action<IBlexStore>? StoreRestored;
 
+    // The store persistence is applying its stored state to for the first time, and the state keys that state set (see
+    // ApplyStoredState); null outside that apply.
+    private (IBlexStore Store, IReadOnlyCollection<string> Keys)? _storedStateArriving;
+
+    /// <summary>
+    /// Applies the state persistence read for <paramref name="store"/> the first time it read it: the state the store
+    /// would have held all along, had storage answered at once. <paramref name="keys"/> are the state keys it set -- not
+    /// a field kept out of storage, nor one a merge hook kept the live value of. A <see cref="StoreRestored"/> handler
+    /// tells it from any other restore with <see cref="IsStoredStateArriving"/>: undo/redo takes it into its baseline
+    /// rather than treating it as a move away from the steps it holds.
+    /// </summary>
+    internal void ApplyStoredState(BlexStoreBase store, JsonObject state, IReadOnlyCollection<string> keys)
+    {
+        var outer = _storedStateArriving;
+        _storedStateArriving = (store, keys);
+        try
+        {
+            store.ApplyRestoredState(state);
+        }
+        finally
+        {
+            _storedStateArriving = outer;
+        }
+    }
+
+    /// <summary>
+    /// Whether the restore of <paramref name="store"/> being announced is its stored state arriving (see
+    /// <see cref="ApplyStoredState"/>), with the state keys that state set.
+    /// </summary>
+    internal bool IsStoredStateArriving(IBlexStore store, out IReadOnlyCollection<string> keys)
+    {
+        if (_storedStateArriving is { } arriving && ReferenceEquals(arriving.Store, store))
+        {
+            keys = arriving.Keys;
+            return true;
+        }
+
+        keys = [];
+        return false;
+    }
+
     /// <summary>Pins in-flight snapshots before a single store's state is restored.</summary>
     internal void PrepareForRestore()
     {

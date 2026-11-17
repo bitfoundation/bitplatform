@@ -198,7 +198,7 @@
         <DemoExample Title="Accessibility" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 The panel is a <b>dialog</b> named by its header, <b>AriaLabel</b> or <b>TitleAriaId</b>, and described
-                by <b>SubtitleAriaId</b>. <b>IsAlert</b> makes it an alertdialog, and <b>Role</b> replaces the role -
+                by <b>SubtitleAriaId</b>. <b>Alert</b> makes it an alertdialog, and <b>Role</b> replaces the role -
                 a <b>Modeless</b> side panel reads better as <b>complementary</b>.
             </div>
             <br />
@@ -212,7 +212,7 @@
                 <BitToggle @bind-Value="a11yNoAutoFocus" Label="NoAutoFocus" />
                 <BitToggle @bind-Value="a11yNoFocusTrap" Label="NoFocusTrap" />
                 <BitToggle @bind-Value="a11yNoRestoreFocus" Label="NoRestoreFocus" />
-                <BitToggle @bind-Value="a11yIsAlert" Label="IsAlert" />
+                <BitToggle @bind-Value="a11yAlert" Label="Alert" />
             </div>
             <br />
             <BitButton OnClick="() => isA11yPanelOpen = true">Open panel</BitButton>
@@ -220,7 +220,7 @@
             <BitPanel @bind-IsOpen="isA11yPanelOpen"
                       TitleAriaId="panel-a11y-title"
                       SubtitleAriaId="panel-a11y-subtitle"
-                      IsAlert="a11yIsAlert"
+                      Alert="a11yAlert"
                       NoAutoFocus="a11yNoAutoFocus"
                       NoFocusTrap="a11yNoFocusTrap"
                       NoRestoreFocus="a11yNoRestoreFocus">

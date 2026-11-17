@@ -1606,8 +1606,8 @@
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>क्या आप निश्चित हैं कि आप {0} के सभी सत्र रद्द करना चाहते हैं? अधिकृत एप्लिकेशन बने रहेंगे।</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>आप इस उपयोगकर्ता को SuperAdmin उपयोगकर्ता समूह से हटा नहीं सकते।</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>आप इस उपयोगकर्ता को ग्लोबल एडमिन उपयोगकर्ता समूह से हटा नहीं सकते।</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>सुपर प्रशासक अनुमतियां संशोधित नहीं की जा सकतीं।</value>
@@ -1618,11 +1618,11 @@
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>आप अपना खुद का उपयोगकर्ता हटा नहीं सकते</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>आप इस SuperAdmin उपयोगकर्ता को हटा नहीं सकते</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>आप इस ग्लोबल एडमिन उपयोगकर्ता को हटा नहीं सकते</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>आप इस SuperAdmin उपयोगकर्ता के सत्र रद्द नहीं कर सकते</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>आप इस ग्लोबल एडमिन उपयोगकर्ता के सत्र रद्द नहीं कर सकते</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>आप अपना वर्तमान सत्र हटा नहीं सकते</value>
@@ -2191,6 +2191,42 @@
   </data>
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>समस्या निवारण के लिए, यह डिवाइस और सर्वर ऐप के बारे में क्या बताते हैं।</value>
+  </data>
+    <data name="Lock" xml:space="preserve">
+    <value>लॉक करें</value>
+  </data>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>इस खाते को लॉक करें</value>
+  </data>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>इस खाते को पहली बार लॉक करने के लिए एक PIN चाहिए। इस डिवाइस पर इस खाते में लौटने के लिए आप इसे दर्ज करेंगे, और यह कभी इस डिवाइस से बाहर नहीं जाता।</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>नया PIN</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>PIN फिर से दर्ज करें</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>PIN मेल नहीं खाते। फिर से कोशिश करें।</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>PIN दर्ज करें</value>
+  </data>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>गलत PIN। शेष प्रयास: {0}।</value>
+  </data>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>बहुत बार गलत PIN डाला गया, इसलिए यह खाता अब इस डिवाइस पर नहीं रखा गया है। इसे इस्तेमाल करने के लिए फिर से साइन इन करें।</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>PIN हटाने के लिए फिर से साइन इन करें</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>अक्षरों का उपयोग करें</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>अंकों का उपयोग करें</value>
   </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">

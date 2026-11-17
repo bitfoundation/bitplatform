@@ -24,8 +24,8 @@ public class BitTooltipParamsTests : BunitTestContext
     private static readonly string[] _notCascaded =
     [
         nameof(BitTooltip.CascadingParameters),
-        nameof(BitTooltip.DefaultIsShown),
-        nameof(BitTooltip.IsShown),
+        nameof(BitTooltip.DefaultShown),
+        nameof(BitTooltip.Shown),
         nameof(BitTooltip.Text),
     ];
 

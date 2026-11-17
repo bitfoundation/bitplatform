@@ -25,7 +25,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Meziantou.Framework.Win32.Jobs" Version="4.0.8" />
+        <PackageReference Include="Meziantou.Framework.Win32.Jobs" Version="4.0.9" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.11.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.15" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.15" />
@@ -33,7 +33,7 @@
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.11.0" />
         <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.4.0" />
         <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="11.0.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="11.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
         <PackageReference Include="Riok.Mapperly" Version="4.3.1" />

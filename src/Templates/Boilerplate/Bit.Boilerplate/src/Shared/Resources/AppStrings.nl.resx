@@ -1606,8 +1606,8 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Weet je zeker dat je alle sessies van {0} wilt intrekken? Geautoriseerde applicaties blijven behouden.</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>Je kunt deze gebruiker niet verwijderen uit de SuperAdmin-gebruikersgroep.</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>Je kunt deze gebruiker niet verwijderen uit de gebruikersgroep van globale beheerders.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Superadmin-rechten mogen niet worden gewijzigd.</value>
@@ -1618,11 +1618,11 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>Je kunt je eigen gebruiker niet verwijderen</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>Je kunt deze SuperAdmin-gebruiker niet verwijderen</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>Je kunt deze globale beheerder niet verwijderen</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>U kunt de sessies van deze SuperAdmin-gebruiker niet intrekken</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>U kunt de sessies van deze globale beheerder niet intrekken</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Je kunt je huidige sessie niet verwijderen</value>
@@ -2191,6 +2191,42 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>Wat dit apparaat en de server over de app melden, voor het oplossen van problemen.</value>
+  </data>
+    <data name="Lock" xml:space="preserve">
+    <value>Vergrendelen</value>
+  </data>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>Dit account vergrendelen</value>
+  </data>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>Om dit account voor het eerst te vergrendelen is een pincode nodig. Je voert die in om op dit apparaat naar dit account terug te gaan, en hij verlaat dit apparaat nooit.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>Nieuwe pincode</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>Voer de pincode opnieuw in</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>De pincodes komen niet overeen. Probeer het opnieuw.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>Voer de pincode in</value>
+  </data>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>Onjuiste pincode. Resterende pogingen: {0}.</value>
+  </data>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>Te vaak een onjuiste pincode, daarom wordt dit account niet meer op dit apparaat bewaard. Meld je opnieuw aan om het te gebruiken.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>Meld je opnieuw aan om de pincode te verwijderen</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>Letters gebruiken</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>Cijfers gebruiken</value>
   </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">

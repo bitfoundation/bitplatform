@@ -43,6 +43,29 @@
         <div id="pan" class="box" style="touch-action: none"></div>
     </Bmotion>
     <Readout @ref="_panOffset" Id="pan-offset" />
+
+    @* A tappable element that takes no focus of its own and has no tabindex from the page. *@
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileTap="Bm.To(scale: 0.5)"
+             Transition="Bm.Tween(0.1)"
+             OnAnimationStart='_ => Log("armed:plain-tap")'
+             OnTap='() => Log("plain-tap")'>
+        <div id="plain-tap" class="box"></div>
+    </Bmotion>
+
+    @* A tap that only animates, and a tappable wrapper around a native button: neither is given a tab stop. *@
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileTap="Bm.To(scale: 0.5)"
+             Transition="Bm.Tween(0.1)"
+             OnAnimationStart='_ => Log("armed:visual-tap")'>
+        <div id="visual-tap" class="box"></div>
+    </Bmotion>
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             Transition="Bm.Tween(0.1)"
+             OnAnimationStart='_ => Log("armed:button-tap")'
+             OnTap='() => Log("button-tap")'>
+        <div id="button-tap" class="box"><button type="button">Buy</button></div>
+    </Bmotion>
 </section>
 
 <h2>Propagation</h2>

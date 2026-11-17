@@ -61,8 +61,7 @@
 
     @if (EventTemplate != null)
     {
-        @* A segment that is not the lead is hidden from assistive technology, so it has no name to hold details for. *@
-        <BitFcEventTemplateHost Template="EventTemplate" Event="Event" InstanceId="@_instanceId" Details="@(IsLead ? badgeAriaLabel : null)" />
+        <BitFcEventTemplateHost Template="EventTemplate" Event="Event" />
     }
     else
     {
@@ -94,3 +93,10 @@
         }
     }
 </div>
+
+@if (IsLead && templated)
+{
+    @* The details the name ends with sit beside the surface, hidden, never inside it (BitFcEventTemplateHost). A segment
+       that is not the lead is hidden from assistive technology, so it has no name to hold details for. *@
+    <span id="@BitFcEventTemplateHost.DetailsId(_instanceId)" hidden>@badgeAriaLabel</span>
+}

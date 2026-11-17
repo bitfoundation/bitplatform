@@ -55,7 +55,7 @@
                         <BitStack Gap="0.5rem">
                             @tenantFields(newTenant)
                             <BitStack Horizontal FitHeight>
-                                <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit">
+                                <BitButton Loading="isSaving" ButtonType="BitButtonType.Submit">
                                     @Localizer[nameof(AppStrings.Save)]
                                 </BitButton>
                             </BitStack>
@@ -86,7 +86,7 @@
                                                Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                                 <ValidationMessage For="() => inviteRequest.PhoneNumber" />
                                 <BitStack Horizontal FitHeight>
-                                    <BitButton IsLoading="isInviting" ButtonType="BitButtonType.Submit">
+                                    <BitButton Loading="isInviting" ButtonType="BitButtonType.Submit">
                                         @Localizer[nameof(AppStrings.Invite)]
                                     </BitButton>
                                 </BitStack>
@@ -103,7 +103,7 @@
                             <BitStack Gap="0.5rem">
                                 @tenantFields(editingTenant)
                                 <BitStack Horizontal FitHeight>
-                                    <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit">
+                                    <BitButton Loading="isSaving" ButtonType="BitButtonType.Submit">
                                         @Localizer[nameof(AppStrings.Save)]
                                     </BitButton>
                                 </BitStack>
@@ -180,7 +180,7 @@
                                     <BitButton Color="BitColor.Error"
                                                Variant="BitVariant.Text"
                                                IconName="@BitIconName.Leave"
-                                               IsLoading="leavingTenantId == tenant.Id"
+                                               Loading="leavingTenantId == tenant.Id"
                                                OnClick="WrapHandled(() => ConfirmLeaveTenant(tenant))">
                                         @Localizer[IsDecliningInvitation(tenant) ? nameof(AppStrings.DeclineInvitation) : nameof(AppStrings.LeaveTenant)]
                                     </BitButton>

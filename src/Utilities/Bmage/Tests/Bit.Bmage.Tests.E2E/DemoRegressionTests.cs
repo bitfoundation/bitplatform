@@ -18,6 +18,32 @@ public class DemoRegressionTests : DemoTest
         return page;
     }
 
+    /// <summary>
+    /// A drop zone takes up to MaxFiles files (100 by default, the Optimize page's) and leaves out the rest: Blazor's
+    /// GetMultipleFiles threw when handed more, an unhandled exception that ended the page - or a Server circuit.
+    /// </summary>
+    [TestMethod]
+    public async Task ADropZoneGivenMoreFilesThanItTakesKeepsTheFirstOnes()
+    {
+        var page = await OpenAsync("optimize");
+        var errors = CollectErrors(page);
+
+        // A pixel each, so that optimizing a hundred of them takes no time.
+        var pixel = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+        var files = Enumerable.Range(0, 101)
+            .Select(i => new FilePayload { Name = $"image-{i:000}.png", MimeType = "image/png", Buffer = pixel })
+            .ToArray();
+        await page.SetInputFilesAsync(".bmg-dropzone-input", files);
+
+        // The count grows as files finish, so it is read once the run is over.
+        var count = page.Locator(".results-stats .bb-stat-value").First;
+        await count.WaitForAsync(new LocatorWaitForOptions { Timeout = 120_000 });
+        await page.WaitForSelectorAsync(".optimize-progress", new PageWaitForSelectorOptions { State = WaitForSelectorState.Detached, Timeout = 120_000 });
+        Assert.AreEqual("100", (await count.InnerTextAsync()).Trim());
+        Assert.IsFalse(await page.Locator("#blazor-error-ui").IsVisibleAsync());
+        Assert.IsEmpty(errors, string.Join(" | ", errors));
+    }
+
     private static async Task DragAsync(IPage page, float x0, float y0, float x1, float y1)
     {
         await page.Mouse.MoveAsync(x0, y0);

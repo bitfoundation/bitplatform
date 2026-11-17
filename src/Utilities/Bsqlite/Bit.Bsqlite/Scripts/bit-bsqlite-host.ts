@@ -107,6 +107,60 @@ export function createHost(workerUrl?: string | null): SqliteHost {
     return new SqliteHost(workerUrl ?? DEFAULT_WORKER_URL);
 }
 
+// Locks taken with acquireOpenLock, by the id the caller chose.
+const openLocks = new Map<number, HeldLock>();
+
+/**
+ * Waits for the Web Lock `name` and holds it until `releaseOpenLock(id)` or until the tab goes away - with no
+ * worker, unlike `SqliteHost.acquireLock`, since it is taken before a database is opened: it keeps two tabs
+ * from resolving, migrating and opening one database at the same time, where both would copy it to the new
+ * backend and one tab's import could land over the other's.
+ */
+export function acquireOpenLock(name: string, id: number): Promise<void> {
+    const locks = globalThis.navigator?.locks;
+    if (!locks) {
+        // The VFSes coordinate tabs through the same API, so without it there is nothing to coordinate with.
+        return Promise.resolve();
+    }
+
+    const held: HeldLock = { abort: new AbortController(), release: null };
+    openLocks.set(id, held);
+
+    return new Promise<void>((granted, failed) => {
+        locks.request(name, { signal: held.abort.signal }, () => new Promise<void>(release => {
+            if (openLocks.get(id) !== held) {
+                // Released while still queued, and granted before the abort landed.
+                release();
+                return;
+            }
+
+            held.release = release;
+            granted();
+        })).catch(error => {
+            if (openLocks.get(id) === held) {
+                openLocks.delete(id);
+            }
+
+            failed(error);
+        });
+    });
+}
+
+/** Releases a lock taken with `acquireOpenLock`, or withdraws a request still waiting for one. */
+export function releaseOpenLock(id: number): void {
+    const held = openLocks.get(id);
+    if (!held) {
+        return;
+    }
+
+    openLocks.delete(id);
+    if (held.release) {
+        held.release();
+    } else {
+        held.abort.abort();
+    }
+}
+
 /**
  * Forwards committed writes to a .NET object, which is how a live query re-runs - for this tab's
  * own writes and for another tab's alike.

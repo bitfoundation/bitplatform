@@ -253,16 +253,6 @@ public partial class BitColorPicker : BitInputBase<string?>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Callback for when the color changed, carrying it in every notation along with its alpha. It fires on
-    /// every step of a drag.
-    /// </summary>
-    /// <remarks>
-    /// The base <see cref="BitInputBase{TValue}.OnChange"/> reports the same moves with the value alone; this one
-    /// also reports a move of the alpha that the value's notation has no room for.
-    /// </remarks>
-    [Parameter] public EventCallback<BitColorChangeEventArgs> OnColorChange { get; set; }
-
-    /// <summary>
     /// Callback for when the user finishes changing the value: the drag ends, the slider is released, a
     /// text field is committed, or a preset is picked.
     /// </summary>
@@ -271,6 +261,16 @@ public partial class BitColorPicker : BitInputBase<string?>
     /// since <see cref="OnColorChange"/> fires for every frame of a drag while this one fires once at the end of it.
     /// </remarks>
     [Parameter] public EventCallback<BitColorChangeEventArgs> OnChangeEnd { get; set; }
+
+    /// <summary>
+    /// Callback for when the color changed, carrying it in every notation along with its alpha. It fires on
+    /// every step of a drag.
+    /// </summary>
+    /// <remarks>
+    /// The base <see cref="BitInputBase{TValue}.OnChange"/> reports the same moves with the value alone; this one
+    /// also reports a move of the alpha that the value's notation has no room for.
+    /// </remarks>
+    [Parameter] public EventCallback<BitColorChangeEventArgs> OnColorChange { get; set; }
 
     /// <summary>
     /// The colors offered as a row of one-click swatches under the picker, in any of the notations the

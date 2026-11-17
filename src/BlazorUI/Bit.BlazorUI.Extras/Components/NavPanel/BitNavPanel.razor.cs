@@ -147,11 +147,6 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter, ResetClassBuilder] public BitNavPanelClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The default aria-label of the expand/collapse button of an expanded item of the nav.
-    /// </summary>
-    [Parameter] public string? CollapseAriaLabel { get; set; }
-
-    /// <summary>
     /// The aria-label and the tooltip of the close button of the nav panel.
     /// </summary>
     [Parameter] public string? CloseAriaLabel { get; set; }
@@ -166,6 +161,11 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// The name of the icon of the close button of the nav panel.
     /// </summary>
     [Parameter] public string? CloseIconName { get; set; }
+
+    /// <summary>
+    /// The default aria-label of the expand/collapse button of an expanded item of the nav.
+    /// </summary>
+    [Parameter] public string? CollapseAriaLabel { get; set; }
 
     /// <summary>
     /// The general color of the nav.
@@ -231,13 +231,6 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
-    /// The title shown beside the logo in the header of the nav panel - typically the name of the app. It is
-    /// part of the link of <see cref="IconNavUrl"/> and names it, and it is hidden in the rail together with the
-    /// logo. Unlike <see cref="Header"/>, it keeps the built-in buttons of the header.
-    /// </summary>
-    [Parameter] public string? HeaderText { get; set; }
-
-    /// <summary>
     /// Used to customize how nav content inside the group header is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
@@ -246,6 +239,13 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// The render mode of the custom HeaderTemplate of the nav.
     /// </summary>
     [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; }
+
+    /// <summary>
+    /// The title shown beside the logo in the header of the nav panel - typically the name of the app. It is
+    /// part of the link of <see cref="IconNavUrl"/> and names it, and it is hidden in the rail together with the
+    /// logo. Unlike <see cref="Header"/>, it keeps the built-in buttons of the header.
+    /// </summary>
+    [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
     /// Removes the toggle button.
@@ -293,10 +293,17 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// Determines if the nav panel is in the toggled state.
+    /// A collection of items to display in the nav panel.
     /// </summary>
-    [Parameter, TwoWayBound]
-    public bool IsToggled { get; set; }
+    [Parameter, CallOnSet(nameof(OnItemsSet))]
+    public IList<TItem> Items { get; set; } = [];
+
+    /// <summary>
+    /// Used to render custom content at the end of every item, after its text and ahead of its badge, while the item
+    /// keeps its default content. The SuffixTemplate of an item takes precedence over it, and the toggled panel, which
+    /// is down to the icons of its items, keeps their badges alone.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemSuffixTemplate { get; set; }
 
     /// <summary>
     /// Used to customize how content inside each item is rendered.
@@ -307,19 +314,6 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// The render mode of the custom ItemTemplate.
     /// </summary>
     [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; }
-
-    /// <summary>
-    /// Used to render custom content at the end of every item, after its text and ahead of its badge, while the item
-    /// keeps its default content. The SuffixTemplate of an item takes precedence over it, and the toggled panel, which
-    /// is down to the icons of its items, keeps their badges alone.
-    /// </summary>
-    [Parameter] public RenderFragment<TItem>? ItemSuffixTemplate { get; set; }
-
-    /// <summary>
-    /// A collection of items to display in the nav panel.
-    /// </summary>
-    [Parameter, CallOnSet(nameof(OnItemsSet))]
-    public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -490,6 +484,13 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public bool ReversedChevron { get; set; }
 
     /// <summary>
+    /// Builds the text that the screen reader announces through the live region of the nav panel whenever the
+    /// search filters the items, in place of the built-in English announcement. The argument is the number of
+    /// items the search matched. Returning null or an empty string announces nothing.
+    /// </summary>
+    [Parameter] public Func<int, string?>? SearchAnnouncementProvider { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the search box of the nav panel.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? SearchBoxClasses { get; set; }
@@ -503,13 +504,6 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// Custom CSS styles for different parts of the search box of the nav panel.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? SearchBoxStyles { get; set; }
-
-    /// <summary>
-    /// Builds the text that the screen reader announces through the live region of the nav panel whenever the
-    /// search filters the items, in place of the built-in English announcement. The argument is the number of
-    /// items the search matched. Returning null or an empty string announces nothing.
-    /// </summary>
-    [Parameter] public Func<int, string?>? SearchAnnouncementProvider { get; set; }
 
     /// <summary>
     /// The debounce time in milliseconds of the search box of the nav panel.
@@ -547,17 +541,17 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     public TItem? SelectedItem { get; set; }
 
     /// <summary>
-    /// Enables the single-expand mode in the BitNav.
-    /// </summary>
-    [Parameter] public bool SingleExpand { get; set; }
-
-    /// <summary>
     /// Renders a close button in the header of the nav panel, on the screens the panel is an off-canvas
     /// drawer on. It is the control the toggle button is not there: the toggle collapses a permanent panel
     /// into a rail, which a drawer that is either open or gone has no state for, and a drawer that is only
     /// dismissed by its overlay, the Escape key or a swipe offers a touch user nothing to aim at.
     /// </summary>
     [Parameter] public bool ShowCloseButton { get; set; }
+
+    /// <summary>
+    /// Enables the single-expand mode in the BitNav.
+    /// </summary>
+    [Parameter] public bool SingleExpand { get; set; }
 
     /// <summary>
     /// The size of the nav items.
@@ -582,6 +576,18 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public string? ToggleAriaLabel { get; set; }
 
     /// <summary>
+    /// Determines if the nav panel is in the toggled state.
+    /// </summary>
+    [Parameter, TwoWayBound]
+    public bool Toggled { get; set; }
+
+    /// <summary>
+    /// The width of the nav panel in px in its toggled (rail) state.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public int ToggledWidth { get; set; }
+
+    /// <summary>
     /// The icon of the toggle button of the nav panel.
     /// Takes precedence over <see cref="ToggleIconName"/> when both are set.
     /// </summary>
@@ -591,12 +597,6 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// The name of the icon of the toggle button of the nav panel.
     /// </summary>
     [Parameter] public string? ToggleIconName { get; set; }
-
-    /// <summary>
-    /// The width of the nav panel in px in its toggled (rail) state.
-    /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public int ToggledWidth { get; set; }
 
     /// <summary>
     /// The top CSS property value of the root element of the nav panel in px.
@@ -702,7 +702,7 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
         // The state the markup renders rather than the parameter behind it: a rail that is currently expanded
         // over its neighbours (ExpandOnHover) already shows the search box, and un-toggling it for good is not
         // what asking for the focus asked for.
-        if (_IsToggled)
+        if (_Toggled)
         {
             await ToggleForSearch();
             return;
@@ -970,7 +970,7 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     // to be holding it already whatever happens next.
     private async Task FocusOnOpen()
     {
-        if (AutoFocus && NoSearchBox is false && _IsToggled is false && _searchBoxRef is not null)
+        if (AutoFocus && NoSearchBox is false && _Toggled is false && _searchBoxRef is not null)
         {
             await _searchBoxRef.FocusAsync();
             return;
@@ -1142,9 +1142,9 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     {
         if (NoToggle) return;
 
-        if (await AssignIsToggled(!IsToggled) is false) return;
+        if (await AssignToggled(!Toggled) is false) return;
 
-        if (IsToggled)
+        if (Toggled)
         {
             // The pointer that clicked the toggle button is still over the panel, and the focus is still on
             // the button itself - which is inside it - so a rail that expands on either of them would open
@@ -1162,7 +1162,7 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     private async Task ToggleForSearch()
     {
-        if (await AssignIsToggled(false) is false) return;
+        if (await AssignToggled(false) is false) return;
 
         _focusSearchBoxPending = true;
     }
@@ -1351,9 +1351,9 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     }
 
     // A rail that expands on hover renders everything the open panel does while the pointer is over it - or
-    // while the keyboard is inside it - so this, rather than IsToggled, is the rail state everything reads: the
+    // while the keyboard is inside it - so this, rather than Toggled, is the rail state everything reads: the
     // markup that lays the panel out, and the two focus moves that go to what that markup put on screen.
-    private bool _IsToggled => (NoToggle is false) && IsToggled && (ExpandOnHover is false || (_isHovered is false && _isFocused is false));
+    private bool _Toggled => (NoToggle is false) && Toggled && (ExpandOnHover is false || (_isHovered is false && _isFocused is false));
 
     // Which edge the drawer is docked to, and so which way the swipe that closes it goes. The placement is
     // expressed in the text direction, so the End of a right-to-left layout is the left of the screen; every

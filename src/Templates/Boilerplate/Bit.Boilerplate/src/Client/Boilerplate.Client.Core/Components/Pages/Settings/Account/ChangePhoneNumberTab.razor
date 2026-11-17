@@ -18,7 +18,7 @@
                                    Placeholder="@Localizer[nameof(AppStrings.NewPhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => sendModel.PhoneNumber)" />
 
-                    <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                    <BitButton Loading="isWaiting" ButtonType="BitButtonType.Submit">
                         @Localizer[nameof(AppStrings.Submit)]
                     </BitButton>
 
@@ -53,13 +53,13 @@
                     <ValidationMessage For="@(() => changeModel.PhoneNumber)" />
 
                     <BitOtpInput @bind-Value="changeModel.Token"
-                                 IsLoading="isWaiting"
+                                 Loading="isWaiting"
                                  AutoFocus
                                  OnFill="WrapHandled(ChangePhoneNumber)"
                                  Label="@Localizer[nameof(AppStrings.PhoneToken)]" />
                     <ValidationMessage For="@(() => changeModel.Token)" />
 
-                    <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                    <BitButton Loading="isWaiting" ButtonType="BitButtonType.Submit">
                         @Localizer[nameof(AppStrings.PhoneTokenConfirmButtonText)]
                     </BitButton>
 
@@ -80,7 +80,7 @@
                     @Localizer[nameof(AppStrings.NotReceivedPhoneMessage)]
                 </BitText>
 
-                <BitButton IsLoading="isWaiting"
+                <BitButton Loading="isWaiting"
                            ButtonType="BitButtonType.Button"
                            Variant="BitVariant.Outline"
                            OnClick="WrapHandled(SendToken)">

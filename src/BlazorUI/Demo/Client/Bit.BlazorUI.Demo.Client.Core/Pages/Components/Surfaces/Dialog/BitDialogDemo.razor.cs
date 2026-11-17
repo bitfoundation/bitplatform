@@ -13,6 +13,13 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "Alert",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless."
+        },
+        new()
+        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "true",
@@ -43,10 +50,24 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "Blocking",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents the Dialog from being dismissed by a click on the overlay or by the Escape key, leaving its buttons as the only way out."
+        },
+        new()
+        {
             Name = "Body",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Alias for child content."
+        },
+        new()
+        {
+            Name = "CancelButtonDisabled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables the Cancel button of the Dialog. Unlike Disabled, which turns the whole Dialog off, this leaves every other way out of the Dialog working."
         },
         new()
         {
@@ -135,6 +156,13 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "Draggable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the Dialog can be dragged around."
+        },
+        new()
+        {
             Name = "FooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -174,48 +202,6 @@ public partial class BitDialogDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The CSS height of the Dialog surface. A Dialog is as tall as its content by default, and FullHeight and FullSize take precedence over this."
-        },
-        new()
-        {
-            Name = "IsAlert",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless."
-        },
-        new()
-        {
-            Name = "Blocking",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Prevents the Dialog from being dismissed by a click on the overlay or by the Escape key, leaving its buttons as the only way out."
-        },
-        new()
-        {
-            Name = "IsCancelButtonEnabled",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the Cancel button of the Dialog can be pressed. Unlike Disabled, which turns the whole Dialog off, this leaves every other way out of the Dialog working."
-        },
-        new()
-        {
-            Name = "IsDraggable",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the Dialog can be dragged around."
-        },
-        new()
-        {
-            Name = "Modeless",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). If true, Blocking is ignored, there will be no overlay, and the focus is not trapped - though the Dialog still takes it when it opens unless AutoFocus is turned off."
-        },
-        new()
-        {
-            Name = "IsOkButtonEnabled",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the Ok button of the Dialog can be pressed. This is what holds the answer shut until the content of the Dialog provides it - a consent to tick, a name to type - without turning the rest of the Dialog off the way Disabled would."
         },
         new()
         {
@@ -275,10 +261,24 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "Modeless",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). If true, Blocking is ignored, there will be no overlay, and the focus is not trapped - though the Dialog still takes it when it opens unless AutoFocus is turned off."
+        },
+        new()
+        {
             Name = "NoDismissPreventedAnimation",
             Type = "bool",
             DefaultValue = "false",
             Description = "Turns off the shake the Dialog plays when a dismissal is refused. OnDismissPrevented is raised either way."
+        },
+        new()
+        {
+            Name = "OkButtonDisabled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables the Ok button of the Dialog. This is what holds the answer shut until the content of the Dialog provides it - a consent to tick, a name to type - without turning the rest of the Dialog off the way Disabled would."
         },
         new()
         {
@@ -328,13 +328,6 @@ public partial class BitDialogDemo
         },
         new()
         {
-            Name = "OnOverlayClick",
-            Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "null",
-            Description = "A callback function for when the overlay of the Dialog is clicked, whether or not the click goes on to dismiss the Dialog."
-        },
-        new()
-        {
             Name = "OnOk",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "null",
@@ -346,6 +339,13 @@ public partial class BitDialogDemo
             Type = "EventCallback",
             DefaultValue = "null",
             Description = "A callback function for when the Dialog is opened."
+        },
+        new()
+        {
+            Name = "OnOverlayClick",
+            Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "null",
+            Description = "A callback function for when the overlay of the Dialog is clicked, whether or not the click goes on to dismiss the Dialog."
         },
         new()
         {

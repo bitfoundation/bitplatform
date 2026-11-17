@@ -212,6 +212,78 @@ public sealed class NativeTransportTests
         Assert.Contains("in the browser", error.Message);
     }
 
+    /// <summary>
+    /// A Blazor Hybrid app's database still on a browser backend runs in the web view's worker, where another web
+    /// view may be moving it to the device at the same time - so its open takes the lock the browser takes.
+    /// </summary>
+    [TestMethod]
+    public async Task DatabaseBoundToABrowserBackend_TakesTheOpenLock_InBlazorHybrid()
+    {
+        var workers = new LockingWorkers();
+        var factory = new BsqliteTransportFactory(() => workers, new(), BsqliteHostKind.BlazorHybrid);
+        var browser = new FakeStorageProvider("browser-backend");
+
+        await using var held = await factory.AcquireOpenLockAsync("app.db", _ => ValueTask.FromResult<IBsqliteStorageProvider?>(browser), Ct);
+
+        Assert.IsNotNull(held);
+        AssertSequence.Equal(["app.db"], workers.Locked);
+    }
+
+    /// <summary>
+    /// A database on the device, or a new one - which goes there - has nothing in the web view to take turns with,
+    /// and its open never builds the worker factory, so it does not wait for the web view's <c>IJSRuntime</c>.
+    /// </summary>
+    [TestMethod]
+    public async Task DatabaseOnTheDevice_TakesNoOpenLock_InBlazorHybrid()
+    {
+        var built = false;
+        var factory = new BsqliteTransportFactory(() => { built = true; return new LockingWorkers(); }, new(), BsqliteHostKind.BlazorHybrid);
+        var device = new BsqliteFileSystemStorageProvider(new() { RootDirectory = _root.Path });
+        var everywhere = new EverywhereProvider(_root.Path);
+
+        Assert.IsNull(await factory.AcquireOpenLockAsync("app.db", _ => ValueTask.FromResult<IBsqliteStorageProvider?>(device), Ct));
+        Assert.IsNull(await factory.AcquireOpenLockAsync("app.db", _ => ValueTask.FromResult<IBsqliteStorageProvider?>(everywhere), Ct));
+        Assert.IsNull(await factory.AcquireOpenLockAsync("app.db", _ => default, Ct));
+        Assert.IsFalse(built);
+    }
+
+    /// <summary>In the browser every backend is a browser one, so the lock is taken without reading the binding.</summary>
+    [TestMethod]
+    public async Task EveryOpen_TakesTheOpenLock_InTheBrowser()
+    {
+        var workers = new LockingWorkers();
+        var factory = new BsqliteTransportFactory(() => workers, new(), BsqliteHostKind.Browser);
+        var asked = false;
+
+        await using var held = await factory.AcquireOpenLockAsync("app.db", _ => { asked = true; return default; }, Ct);
+
+        Assert.IsNotNull(held);
+        Assert.IsFalse(asked);
+        AssertSequence.Equal(["app.db"], workers.Locked);
+    }
+
+    /// <summary>A worker factory that records the open locks taken through it.</summary>
+    private sealed class LockingWorkers : IBsqliteTransportFactory, IBsqliteOpenLock
+    {
+        public List<string> Locked { get; } = [];
+
+        public IBsqliteTransport Create(IBsqliteStorageProvider provider) => throw new NotSupportedException();
+
+        public Task<IAsyncDisposable?> AcquireOpenLockAsync(
+            string databaseName,
+            Func<CancellationToken, ValueTask<IBsqliteStorageProvider?>> boundProvider,
+            CancellationToken cancellationToken)
+        {
+            Locked.Add(databaseName);
+            return Task.FromResult<IAsyncDisposable?>(new Released());
+        }
+
+        private sealed class Released : IAsyncDisposable
+        {
+            public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        }
+    }
+
     /// <summary>Holds its batch at the first statement until told to go on.</summary>
     private sealed class BlockingTransport(
         ManualResetEventSlim entered,

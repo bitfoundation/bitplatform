@@ -41,19 +41,19 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "Body",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias for ChildContent, the custom body of the action button (text and/or any render fragment).",
+        },
+        new()
+        {
             Name = "ButtonType",
             Type = "BitButtonType",
             DefaultValue = "null",
             Description = "The type of the button element; defaults to submit inside an EditForm otherwise button.",
             LinkType = LinkType.Link,
             Href = "#button-type-enum",
-        },
-        new()
-        {
-            Name = "Body",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Alias for ChildContent, the custom body of the action button (text and/or any render fragment).",
         },
         new()
         {

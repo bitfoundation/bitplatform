@@ -26,16 +26,6 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     [Parameter] public string? Description { get; set; }
 
     /// <summary>
-    /// Id attribute of the BitChoiceGroup option.
-    /// </summary>
-    [Parameter] public string? Id { get; set; }
-
-    /// <summary>
-    /// Whether the BitChoiceGroup option is disabled.
-    /// </summary>
-    [Parameter] public bool IsDisabled { get; set; }
-
-    /// <summary>
     /// The icon to show as content of the BitChoiceGroup option.
     /// Takes precedence over <see cref="IconName"/> when both are set.
     /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
@@ -54,9 +44,9 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// The image address to show as the content of the BitChoiceGroup option.
+    /// Id attribute of the BitChoiceGroup option.
     /// </summary>
-    [Parameter] public string? ImageSrc { get; set; }
+    [Parameter] public string? Id { get; set; }
 
     /// <summary>
     /// The alt attribute for the image of the BitChoiceGroup option.
@@ -67,6 +57,16 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     /// Provides Width and Height for the image of the BitChoiceGroup option.
     /// </summary>
     [Parameter] public BitImageSize? ImageSize { get; set; }
+
+    /// <summary>
+    /// The image address to show as the content of the BitChoiceGroup option.
+    /// </summary>
+    [Parameter] public string? ImageSrc { get; set; }
+
+    /// <summary>
+    /// Whether the BitChoiceGroup option is disabled.
+    /// </summary>
+    [Parameter] public bool IsDisabled { get; set; }
 
     /// <summary>
     /// The text to show as a prefix for the BitChoiceGroup option.

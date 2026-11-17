@@ -64,6 +64,12 @@ public interface IBlowContext
     /// <summary>The canvas's live node list, for overlays that draw from it (minimap, devtools).</summary>
     IReadOnlyList<BlowNode> CurrentNodes { get; }
 
+    /// <summary>
+    /// Whether a node is drawn: neither it nor any node it is nested in is hidden. Overlays that draw or hit-test the
+    /// nodes (the minimap) skip the ones this says are not, as the canvas does.
+    /// </summary>
+    bool IsNodeShown(BlowNode node) => !node.Hidden;
+
     /// <summary>Current size of the pane (the flow's outer container) in screen pixels.</summary>
     BlowDimensions PaneSize { get; }
 

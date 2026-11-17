@@ -93,6 +93,12 @@ public partial class BitAiMessageList : BitAiComponentBase
     [Parameter] public bool HideSystemMessages { get; set; } = true;
 
     /// <summary>
+    /// The buttons of the app appended to the actions of each message, given the message (see
+    /// <see cref="BitAiChatMessage.MessageActionsTemplate"/>). Not used by a <see cref="MessageTemplate"/>.
+    /// </summary>
+    [Parameter] public RenderFragment<BitAiMessage>? MessageActionsTemplate { get; set; }
+
+    /// <summary>
     /// The template that replaces the built-in rendering of a message.
     /// </summary>
     /// <remarks>
@@ -101,12 +107,6 @@ public partial class BitAiMessageList : BitAiComponentBase
     /// showing the text of a reply follows it as it streams.
     /// </remarks>
     [Parameter] public RenderFragment<BitAiMessage>? MessageTemplate { get; set; }
-
-    /// <summary>
-    /// The buttons of the app appended to the actions of each message, given the message (see
-    /// <see cref="BitAiChatMessage.MessageActionsTemplate"/>). Not used by a <see cref="MessageTemplate"/>.
-    /// </summary>
-    [Parameter] public RenderFragment<BitAiMessage>? MessageActionsTemplate { get; set; }
 
     /// <summary>
     /// The callback for when the user activates a citation.

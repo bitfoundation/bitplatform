@@ -155,6 +155,42 @@ public class SamplesBrowserTests
         await AssertNoErrorsAsync(page, errors);
     }
 
+    [TestMethod]
+    [DataRow(SampleHosts.Server)]
+    [DataRow(SampleHosts.Wasm)]
+    [DataRow(SampleHosts.Auto)]
+    public async Task A_pasted_image_far_past_a_circuit_message_opens_in_the_editor(string sample)
+    {
+        var (page, errors) = await OpenAsync(sample, "editor");
+
+        // A 600 x 600 PNG of noise, a few hundred kilobytes: over a circuit, an image passed as the argument of the call
+        // into .NET was one message, which the circuit refuses past 32 KB by default - and ends.
+        var size = await page.EvaluateAsync<int>("""
+            async () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 600;
+                canvas.height = 600;
+                const context = canvas.getContext('2d');
+                const pixels = context.createImageData(600, 600);
+                for (let i = 0; i < pixels.data.length; i++) pixels.data[i] = (i % 4 === 3) ? 255 : (Math.random() * 256) | 0;
+                context.putImageData(pixels, 0, 0);
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                const data = new DataTransfer();
+                data.items.add(new File([blob], 'pasted.png', { type: 'image/png' }));
+                document.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+                return blob.size;
+            }
+            """);
+        Assert.IsGreaterThan(32 * 1024, size);
+
+        await Expect(page.Locator("#editor-pasted")).ToHaveTextAsync("Pasted 600 × 600.", new() { Timeout = 60_000 });
+
+        // The circuit is still there: the editor answers.
+        await page.ClickAsync("#editor-export");
+        await Expect(page.Locator("#editor-exported")).ToContainTextAsync(new Regex("^Exported 600 × 600 (WebP|Png),"), new() { Timeout = 60_000 });
+        await AssertNoErrorsAsync(page, errors);
+    }
+
     /// <summary>Opens a route of a sample in a browser context of its own and waits for it to become interactive.</summary>
     private async Task<(IPage Page, List<string> Errors)> OpenAsync(string sample, string route)
     {

@@ -121,7 +121,8 @@ internal static class BmotionSpringAnalyzer
 
         // The physics the driver resolved (bounce/duration derivation, mass fallback) - the spring that actually runs.
         double k = driver.Stiffness, d = driver.Damping, m = driver.Mass;
-        if (k <= 0 || d < 0)
+        // A spring that could never settle runs with the driver's defaults instead: it is not the one asked about.
+        if (!driver.Settles)
             throw new ArgumentException("A spring is analysed with a positive stiffness and a non-negative damping.", nameof(spring));
 
         double distance = to - from;

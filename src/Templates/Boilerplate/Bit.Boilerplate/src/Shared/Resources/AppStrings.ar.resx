@@ -1606,8 +1606,8 @@
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>هل أنت متأكد من إلغاء جميع جلسات {0}؟ تبقى التطبيقات المصرّح لها.</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>لا يمكنك إزالة هذا المستخدم من مجموعة SuperAdmin.</value>
+  <data name="UserCantUnassignAllGlobalAdminsErrorMessage" xml:space="preserve">
+    <value>لا يمكنك إزالة هذا المستخدم من مجموعة المسؤولين العامين.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>لا يمكن تعديل صلاحيات المشرف الفائق.</value>
@@ -1618,11 +1618,11 @@
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة مستخدمك الخاص</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>لا يمكنك إزالة مستخدم SuperAdmin هذا</value>
+  <data name="UserCantRemoveGlobalAdminErrorMessage" xml:space="preserve">
+    <value>لا يمكنك إزالة هذا المستخدم المسؤول العام</value>
   </data>
-  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
-    <value>لا يمكنك إنهاء جلسات هذا المستخدم المسؤول</value>
+  <data name="UserCantRevokeGlobalAdminSessionsErrorMessage" xml:space="preserve">
+    <value>لا يمكنك إنهاء جلسات هذا المستخدم المسؤول العام</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة جلساتك الحالية</value>
@@ -2191,6 +2191,42 @@
   </data>
     <data name="DiagnosticPageDescription" xml:space="preserve">
     <value>ما يُبلغ عنه هذا الجهاز والخادم بشأن التطبيق، لاستكشاف الأخطاء وإصلاحها.</value>
+  </data>
+    <data name="Lock" xml:space="preserve">
+    <value>قفل</value>
+  </data>
+    <data name="LockAccountTitle" xml:space="preserve">
+    <value>قفل هذا الحساب</value>
+  </data>
+    <data name="LockNeedsPin" xml:space="preserve">
+    <value>قفل هذا الحساب لأول مرة يحتاج إلى رمز PIN. ستدخله للعودة إلى هذا الحساب على هذا الجهاز، ولا يغادر هذا الجهاز أبدًا.</value>
+  </data>
+    <data name="NewPin" xml:space="preserve">
+    <value>رمز PIN جديد</value>
+  </data>
+    <data name="RepeatPin" xml:space="preserve">
+    <value>أدخل رمز PIN مرة أخرى</value>
+  </data>
+    <data name="PinsDoNotMatch" xml:space="preserve">
+    <value>رمزا PIN غير متطابقين. حاول مرة أخرى.</value>
+  </data>
+    <data name="EnterPinTitle" xml:space="preserve">
+    <value>أدخل رمز PIN</value>
+  </data>
+    <data name="WrongPinAttemptsLeft" xml:space="preserve">
+    <value>رمز PIN غير صحيح. المحاولات المتبقية: {0}.</value>
+  </data>
+    <data name="TooManyWrongPins" xml:space="preserve">
+    <value>أُدخل رمز PIN غير صحيح مرات كثيرة، لذا لم يعد هذا الحساب محفوظًا على هذا الجهاز. سجّل الدخول مرة أخرى لاستخدامه.</value>
+  </data>
+    <data name="SignInAgainToRemovePin" xml:space="preserve">
+    <value>سجّل الدخول مرة أخرى لإزالة رمز PIN</value>
+  </data>
+    <data name="PinUseLetters" xml:space="preserve">
+    <value>استخدام الأحرف</value>
+  </data>
+    <data name="PinUseDigits" xml:space="preserve">
+    <value>استخدام الأرقام</value>
   </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">

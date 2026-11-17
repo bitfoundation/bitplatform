@@ -27,6 +27,13 @@ interface BevJsCallEntry {
     ageMs?: number;
     /** Made while a requestAnimationFrame callback ran: what tells a per-frame loop from a burst of events or a timer. */
     frame?: boolean;
+    /**
+     * How many calls the entry stands for, when a report window held more than it keeps one by one: calls alike in
+     * everything else the entry says (see foldKey). durationMs is then the longest of them, totalMs their sum, and at
+     * the time of the first.
+     */
+    count?: number;
+    totalMs?: number;
 }
 
 interface BevStorageEntry {
@@ -64,6 +71,10 @@ interface BevTarget extends BevTargetInfo {
     ref: any;
     moduleObjectId: number | null;
     jsToDotNetBatch: BevJsCallEntry[];
+    /** The calls of the report window past MAX_JS_CALLS_PER_REPORT, one entry per kind of call (foldKey). */
+    jsToDotNetFolded: Map<string, BevJsCallEntry>;
+    /** The calls of the report window past MAX_FOLDED_ENTRIES kinds of call: counted only. */
+    jsToDotNetUnlisted: number;
     flushTimer: ReturnType<typeof setTimeout> | null;
     /** Reconnect states that arrived while the circuit was down, delivered in order once it is back. */
     pendingReconnectStates: any[][];
@@ -315,18 +326,94 @@ function targetForDispatcher(dispatcher: any): BevTarget | null {
     return match || (count === 1 ? only : null);
 }
 
+// Everything the hub reports travels on the runtime's own connection, and a Blazor Server circuit closes that
+// connection on a message over HubOptions.MaximumReceiveMessageSize (32 KB by default). Every report is therefore sent
+// in runs of at most MAX_REPORT_BYTES (the margin covers the hub protocol's envelope, and the second escaping of the
+// arguments when that protocol is JSON), and every item of a report is bounded where it is made - the text in it is
+// clipped - so that no single item comes near the limit.
+export const MAX_REPORT_BYTES = 16 * 1024;
+const MAX_JS_CALLS_PER_REPORT = 200;
+const MAX_FOLDED_ENTRIES = 100;
+const MAX_IDENTIFIER_LENGTH = 200;
+const MAX_ERROR_LENGTH = 300;
+const encoder = typeof TextEncoder === "function" ? new TextEncoder() : null;
+
+/** The UTF-8 size of a value as JSON, the way it crosses to .NET. */
+function jsonBytes(value: any) {
+    const json = JSON.stringify(value) ?? "";
+    return encoder ? encoder.encode(json).length : json.length * 3;
+}
+
+/**
+ * Consecutive runs of items, each at most maxBytes as a JSON array. An item larger than maxBytes on its own is left
+ * out: sent, it would close the circuit, and with it every report after it. The clipping where items are made keeps
+ * each one far under the limit, so this is a last guard, not a way items are lost.
+ */
+export function splitBySize<T>(items: T[], maxBytes = MAX_REPORT_BYTES): T[][] {
+    const runs: T[][] = [];
+    let run: T[] = [];
+    let size = 2;
+    for (const item of items) {
+        const bytes = jsonBytes(item) + 1;
+        if (bytes + 2 > maxBytes) continue;
+        if (run.length > 0 && size + bytes > maxBytes) {
+            runs.push(run);
+            run = [];
+            size = 2;
+        }
+        run.push(item);
+        size += bytes;
+    }
+    if (run.length > 0) runs.push(run);
+    return runs;
+}
+
+/**
+ * What the calls one folded entry stands for have in common: everything an entry says but its duration and its error
+ * message. Their second (the bridge groups calls by it), whether they were made from an animation frame (what tells a
+ * per-frame loop), how they were made, and whether they failed: a folded entry is never part failure, part success.
+ */
+function foldKey(entry: BevJsCallEntry) {
+    return entry.identifier + "\n" + Math.floor(entry.at / 1000) + "\n" + (entry.frame ? 1 : 0) + (entry.sync ? 1 : 0) + (entry.error !== undefined ? 1 : 0) + "\n" + entry.args;
+}
+
+function foldJsToDotNet(target: BevTarget, entry: BevJsCallEntry) {
+    const key = foldKey(entry);
+    const folded = target.jsToDotNetFolded.get(key);
+    if (folded) {
+        folded.count = (folded.count || 1) + 1;
+        folded.totalMs = (folded.totalMs || 0) + (entry.durationMs || 0);
+        folded.durationMs = Math.max(folded.durationMs || 0, entry.durationMs || 0);
+        return;
+    }
+    if (target.jsToDotNetFolded.size >= MAX_FOLDED_ENTRIES) {
+        // More kinds of call in one window than an entry each can be sent for (calls on hundreds of objects, whose
+        // identifiers name the object): counted, never named after something they are not.
+        target.jsToDotNetUnlisted++;
+        return;
+    }
+    target.jsToDotNetFolded.set(key, { ...entry, count: 1, totalMs: entry.durationMs || 0 });
+}
+
 function queueJsToDotNet(target: BevTarget | null, entry: BevJsCallEntry, generation: number) {
     if (!target || generation !== hubGeneration || !targets.has(target.id)) return;
-    target.jsToDotNetBatch.push(entry);
+    entry.identifier = clip(entry.identifier, MAX_IDENTIFIER_LENGTH);
+    if (entry.error) entry.error = clip(entry.error, MAX_ERROR_LENGTH);
+    if (target.jsToDotNetBatch.length < MAX_JS_CALLS_PER_REPORT) target.jsToDotNetBatch.push(entry);
+    else foldJsToDotNet(target, entry);
     if (target.flushTimer) return;
     target.flushTimer = setTimeout(() => {
         target.flushTimer = null;
         if (target.jsToDotNetBatch.length === 0) return;
-        const batch = target.jsToDotNetBatch;
+        const batch = target.jsToDotNetBatch.concat(Array.from(target.jsToDotNetFolded.values()));
+        const unlisted = target.jsToDotNetUnlisted;
         target.jsToDotNetBatch = [];
+        target.jsToDotNetFolded.clear();
+        target.jsToDotNetUnlisted = 0;
         const sent = Date.now();
         for (const entry of batch) entry.ageMs = Math.max(0, sent - entry.at);
-        invoke(target, "ReportJsToDotNet", batch);
+        for (const run of splitBySize(batch)) invoke(target, "ReportJsToDotNet", run);
+        if (unlisted > 0) invoke(target, "ReportUnlistedJsToDotNet", unlisted);
     }, 500);
 }
 
@@ -453,6 +540,8 @@ function unwrapDotNet() {
 
 const RECORD_SEPARATOR = "\x1e";
 const LARGE_MESSAGE = 64 * 1024;
+const MAX_MESSAGE_KINDS = 30;
+const MAX_MESSAGE_KIND_LENGTH = 80;
 const sockets = new Map<any, BevSocketStats>();
 // The listeners each tracked socket was given, removed when it stops being tracked: a socket outliving a detach (the
 // circuit itself) would otherwise keep decoding every frame for a session that is gone.
@@ -614,7 +703,7 @@ function socketStats(socket: any, observedFromOpen: boolean): BevSocketStats {
         const url = String(socket.url || "");
         s = {
             id: ++nextSocketId,
-            url: redactUrl(url),
+            url: clip(redactUrl(url), 500),
             kind: classify(url),
             protocol: null,
             openedAt: observedFromOpen ? Date.now() : null,
@@ -681,7 +770,12 @@ function noteMessage(s: BevSocketStats, direction: string, kind: string, bytes: 
     // Only application traffic counts as a change worth reporting: BevTools' own reports travel on the same circuit,
     // and counting them as news would make every report schedule the next one.
     trafficVersion++;
-    add(s.messages[direction + " " + kind] ||= stat(), bytes);
+    // Message kinds are the application's hub method names: a fixed number per socket, each clipped, the rest counted
+    // together - what keeps one socket's stats far under a report's size.
+    kind = clip(kind, MAX_MESSAGE_KIND_LENGTH);
+    let key = direction + " " + kind;
+    if (!s.messages[key] && Object.keys(s.messages).length >= MAX_MESSAGE_KINDS) key = direction + " (other)";
+    add(s.messages[key] ||= stat(), bytes);
     if (bytes >= LARGE_MESSAGE) {
         s.largest.push({ direction, kind, bytes, at: Date.now() });
         s.largest.sort((a, b) => b.bytes - a.bytes);
@@ -715,7 +809,8 @@ function decodeText(s: BevSocketStats, direction: string, text: string) {
         if (!record) continue;
         if (s.protocol === null && record.indexOf('"protocol"') >= 0) {
             const m = /"protocol"\s*:\s*"([^"]+)"/.exec(record);
-            s.protocol = m ? m[1] : null;
+            // Bounded like a message kind: the page chooses it, and one socket's stats must fit a report.
+            s.protocol = m ? clip(m[1], MAX_MESSAGE_KIND_LENGTH) : null;
             noteMessage(s, direction, "handshake", record.length);
             continue;
         }
@@ -1050,11 +1145,23 @@ export function traffic(): BevSocketStats[] {
     return Array.from(sockets.values()).map(s => ({ ...s, messages: { ...s.messages }, largest: s.largest.slice() }));
 }
 
+/**
+ * The traffic snapshot in runs that each fit a circuit message. The snapshot replaces the one .NET holds, and .NET
+ * reads a socket it has not seen as one that opened and a socket's change to closed as its close, so no socket may be
+ * left out of one report and back in the next: every socket goes, in as many parts as it takes, and .NET puts the parts
+ * back together before reading them. One socket's stats are bounded (its URL, close reason and message kinds are
+ * clipped, its kinds and largest messages counted), so each fits a part.
+ */
+export function trafficParts(snapshot: BevSocketStats[], maxBytes = MAX_REPORT_BYTES): BevSocketStats[][] {
+    const parts = splitBySize(snapshot, maxBytes);
+    return parts.length > 0 ? parts : [[]];
+}
+
 function reportTraffic() {
     if (reportedTrafficVersion === trafficVersion || targets.size === 0) return;
     reportedTrafficVersion = trafficVersion;
-    const snapshot = traffic();
-    broadcast("ReportTraffic", snapshot);
+    const parts = trafficParts(traffic());
+    parts.forEach((part, index) => broadcast("ReportTraffic", part, index, parts.length));
     notify({ type: "traffic" });
 }
 
@@ -1153,7 +1260,8 @@ function onEventTimings(entries: PerformanceEntryList) {
         }
         const processing = e.processingEnd - e.processingStart;
         const name = clip(String(e.name || ""), 40);
-        const target = element && element.tagName ? describeElement(element) : null;
+        // An element id is the page's to choose; unbounded, it could make the interaction too large to report.
+        const target = element && element.tagName ? clip(describeElement(element), MAX_IDENTIFIER_LENGTH) : null;
         const known = pendingInteractions.get(id);
         if (!known) {
             if (pendingInteractions.size >= MAX_PENDING) continue;
@@ -1215,7 +1323,13 @@ export function flushResponsiveness() {
     }));
     pendingFrames = [];
     pendingInteractions.clear();
-    broadcast("ReportResponsiveness", frames, interactions);
+    // A janky stretch can fill both buffers with frames that each name three scripts: then sent in parts, one kind at a
+    // time, which .NET puts back together and reads as one report - the ages are all from this moment, and its matching
+    // of frames to what the app was doing must see each part's neighbours.
+    const parts: [BevLongFrame[], BevInteraction[]][] = jsonBytes([frames, interactions]) <= MAX_REPORT_BYTES
+        ? [[frames, interactions]]
+        : [...splitBySize(frames).map(run => [run, []] as [BevLongFrame[], BevInteraction[]]), ...splitBySize(interactions).map(run => [[], run] as [BevLongFrame[], BevInteraction[]])];
+    parts.forEach(([f, i], index) => broadcast("ReportResponsiveness", f, i, index, parts.length));
     notify({ type: "responsiveness" });
 }
 
@@ -1247,6 +1361,23 @@ function clip(value: string, max: number) {
     return /[\uD800-\uDFFF]/.test(cut) ? cut.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDFFF]/g, s => s.length === 2 ? s : "\uFFFD") : cut;
 }
 
+/**
+ * An error the page raised, within one circuit message. Its texts are clipped to what .NET accepts in UTF-16 code units,
+ * which page text in other scripts (3 bytes a unit in UTF-8) or full of escaped control characters can still take past
+ * the limit: then its longest text is cut in half, the stack first, until it fits.
+ */
+function reportJsError(payload: { message: string; source: string | null; stack: string | null; type: string }) {
+    const fields = ["stack", "message", "source"] as const;
+    while (jsonBytes(payload) > MAX_REPORT_BYTES) {
+        let longest: typeof fields[number] = fields[0];
+        for (const field of fields) if ((payload[field] || "").length > (payload[longest] || "").length) longest = field;
+        const text = payload[longest] || "";
+        if (text.length < 16) break;
+        payload[longest] = clip(text, Math.floor(text.length / 2)) + "…";
+    }
+    broadcast("OnJsError", payload);
+}
+
 function installPageListeners() {
     on(window, "error", (e: ErrorEvent) => {
         const element = e.target as any;
@@ -1254,7 +1385,7 @@ function installPageListeners() {
             // A <script>, <link>, <img> that failed to load: with Blazor typically a _framework file, a stylesheet of a
             // component library, or a module import. Errors from elements do not bubble, hence the capture listener.
             const url = element.src || element.href || "";
-            broadcast("OnJsError", {
+            reportJsError({
                 message: clip("Failed to load <" + String(element.tagName).toLowerCase() + "> " + redactUrl(String(url)), 4000),
                 source: clip(redactUrl(String(url)), 4000) || null,
                 stack: null,
@@ -1264,7 +1395,7 @@ function installPageListeners() {
         }
         const err = e.error;
         if (isConnectionDown(err)) return;
-        broadcast("OnJsError", {
+        reportJsError({
             message: clip(String(e.message || (err && err.message) || "Unknown error"), 4000),
             source: e.filename ? clip(redactUrl(e.filename) + ":" + e.lineno + ":" + e.colno, 4000) : null,
             stack: err && err.stack ? clip(String(err.stack), 4000) : null,
@@ -1274,7 +1405,7 @@ function installPageListeners() {
     on(window, "unhandledrejection", (e: PromiseRejectionEvent) => {
         const reason = e.reason;
         if (isConnectionDown(reason)) return;
-        broadcast("OnJsError", {
+        reportJsError({
             message: clip(String(reason && reason.message ? reason.message : reason), 4000),
             source: null,
             stack: reason && reason.stack ? clip(String(reason.stack), 4000) : null,
@@ -1283,7 +1414,7 @@ function installPageListeners() {
     });
     on(document, "securitypolicyviolation", (e: SecurityPolicyViolationEvent) => {
         // Blazor WebAssembly needs 'wasm-unsafe-eval' in script-src; a policy without it stops the runtime here.
-        broadcast("OnJsError", {
+        reportJsError({
             message: clip("Content Security Policy blocked " + (e.blockedURI ? redactUrl(e.blockedURI) : "an inline resource") + " (" + (e.effectiveDirective || e.violatedDirective) + ")", 4000),
             source: e.sourceFile ? clip(redactUrl(e.sourceFile) + ":" + e.lineNumber + ":" + e.columnNumber, 4000) : null,
             stack: null,
@@ -1341,7 +1472,7 @@ function installPageListeners() {
     // Blazor Web Apps update the page without a reload ("enhanced navigation"); the browser has no other trace of it.
     const blazor = (window as any).Blazor;
     if (blazor && typeof blazor.addEventListener === "function") {
-        enhancedLoadHandler = () => broadcast("OnBrowserEvent", "enhancedload", redactUrl(location.pathname + location.search));
+        enhancedLoadHandler = () => broadcast("OnBrowserEvent", "enhancedload", clip(redactUrl(location.pathname + location.search), 2000));
         try { blazor.addEventListener("enhancedload", enhancedLoadHandler); } catch { enhancedLoadHandler = null; }
     }
 }
@@ -2041,6 +2172,8 @@ export function attach(ref: any, options: BevAttachOptions | null) {
         label: options && options.label || (options && options.platform) || "Blazor",
         attachedAt: Date.now(),
         jsToDotNetBatch: [],
+        jsToDotNetFolded: new Map(),
+        jsToDotNetUnlisted: 0,
         flushTimer: null,
         pendingReconnectStates: [],
         trackResponsiveness: !options || options.trackResponsiveness !== false,
@@ -2069,6 +2202,8 @@ export function detach(targetId?: string) {
         if (t.flushTimer) clearTimeout(t.flushTimer);
         // Never retain calls across panel/circuit lifetimes: a later attach belongs to a different BevTools session.
         t.jsToDotNetBatch = [];
+        t.jsToDotNetFolded.clear();
+        t.jsToDotNetUnlisted = 0;
         targets.delete(id);
     }
 
@@ -2143,12 +2278,18 @@ export async function request(targetId: string, method: string, params?: any): P
     const t = targets.get(targetId);
     if (!t) throw new Error("No BevTools runtime " + targetId + " on this page.");
     if (unreachable(t)) throw new Error("The circuit of " + t.label + " is disconnected: it cannot answer until it reconnects.");
+    const args = params === undefined ? null : JSON.stringify(params);
+    // A circuit closes its connection on a message over its limit (32 KB by default), which would end the app's session
+    // too: a request that large is refused here rather than sent.
+    if (t.platform === "Server" && jsonBytes([method, args]) > MAX_REPORT_BYTES) {
+        throw new Error("The request is larger than " + MAX_REPORT_BYTES / 1024 + " KB, more than a circuit message safely carries.");
+    }
     let timer: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<never>((_, reject) => {
         timer = setTimeout(() => reject(new Error(t.label + " did not answer within " + REQUEST_TIMEOUT_MS / 1000 + " s.")), REQUEST_TIMEOUT_MS);
     });
     try {
-        const json = await Promise.race([t.ref.invokeMethodAsync("Protocol", method, params === undefined ? null : JSON.stringify(params)), timeout]);
+        const json = await Promise.race([t.ref.invokeMethodAsync("Protocol", method, args), timeout]);
         return typeof json === "string" ? JSON.parse(json) : json;
     } finally {
         clearTimeout(timer);

@@ -40,6 +40,12 @@ public partial class BitChart : BitComponentBase
     /// </summary>
     [Parameter] public string? Description { get; set; }
 
+    /// <summary>Custom content shown in place of the plot when there is nothing to draw, which takes the place of <see cref="EmptyText"/>.</summary>
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>Message shown in place of the plot when there is nothing to draw. Default: <see cref="BitStrings.NoItemsFound"/>.</summary>
+    [Parameter] public string? EmptyText { get; set; }
+
     /// <summary>Render a visually-hidden data table for screen readers (default true).</summary>
     [Parameter] public bool GenerateTable { get; set; } = true;
 
@@ -86,19 +92,6 @@ public partial class BitChart : BitComponentBase
         + "the up and down arrow keys to move between series, Home and End for the first and last value, "
         + "Enter to select, and Escape to leave.";
 
-    /// <summary>Custom content shown in place of the plot when there is nothing to draw, which takes the place of <see cref="EmptyText"/>.</summary>
-    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
-
-    /// <summary>
-    /// The sentence added to the <see cref="NavigationHint"/> while zoom is enabled, telling a keyboard user that the
-    /// plus and minus keys zoom and 0 resets it - the keyboard's way to everything the wheel, the drag and the pinch
-    /// do. Set it to null or an empty string to leave it out.
-    /// </summary>
-    [Parameter] public string? ZoomHint { get; set; } = "Press plus or minus to zoom, and 0 to reset the zoom.";
-
-    /// <summary>Message shown in place of the plot when there is nothing to draw. Default: <see cref="BitStrings.NoItemsFound"/>.</summary>
-    [Parameter] public string? EmptyText { get; set; }
-
     /// <summary>Raised when a data element is clicked: (datasetIndex, dataIndex).</summary>
     [Parameter] public EventCallback<(int DatasetIndex, int DataIndex)> OnElementClick { get; set; }
 
@@ -138,6 +131,13 @@ public partial class BitChart : BitComponentBase
     /// <summary>CSS width of the chart container.</summary>
     [Parameter, ResetStyleBuilder]
     public string Width { get; set; } = "100%";
+
+    /// <summary>
+    /// The sentence added to the <see cref="NavigationHint"/> while zoom is enabled, telling a keyboard user that the
+    /// plus and minus keys zoom and 0 resets it - the keyboard's way to everything the wheel, the drag and the pinch
+    /// do. Set it to null or an empty string to leave it out.
+    /// </summary>
+    [Parameter] public string? ZoomHint { get; set; } = "Press plus or minus to zoom, and 0 to reset the zoom.";
 
     private readonly BitChartRenderState _state = new();
     private BitChartConfig _config = new();

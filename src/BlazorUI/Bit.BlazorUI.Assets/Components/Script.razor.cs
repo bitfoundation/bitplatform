@@ -5,8 +5,6 @@ public partial class Script
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; } = default!;
 
-    [Parameter] public string? Src { get; set; }
-
     /// <summary>
     /// Appends the content hash of the file to the Src, so that a changed file is never served from the browser cache.
     /// The hash is read from the web root of the ASP.NET Core host, so it is only computed where that host is part of the
@@ -17,6 +15,8 @@ public partial class Script
     [Parameter] public bool AppendVersion { get; set; } = true;
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public string? Src { get; set; }
 
 
 
