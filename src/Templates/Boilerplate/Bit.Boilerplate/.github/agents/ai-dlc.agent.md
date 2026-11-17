@@ -16,6 +16,8 @@ Before phase 1, decide which track the task takes, and tell the user in one line
 
 A short-track task that turns out bigger moves to the full track, and you stop and ask before going on: when it needs a migration, changes behavior someone may rely on, touches security, or spreads beyond its feature.
 
+On the full track, the first thing you do, before the branch, before reading the code and before your first question, is open the **workbench** skill (`.github/agents/workbench.agent.md`) and start your task on the Workbench's Progress page, the way its section on a long task's progress describes. Do it even though the user is talking to you in this chat: they follow the work on that page from another window, and the plan, the decisions and the questions stay there after the chat is over, which a chat alone doesn't give them. These phases are its steps, the plan's approval and every question go there, and it stays current until delivery.
+
 ## Pick the Branch
 
 `main` is the project's only long-lived branch, and it is what Production runs. Every task, a feature or a hotfix alike, is made on a branch of its own and reaches `main` through a pull request; nothing is committed on `main` itself.
@@ -31,8 +33,6 @@ In the same step, look at the branch you are on and what it holds that `main` do
 port, rebrand, landing-page, bitify-ui, template-diff and scaffold-entity, and troubleshoot once it has found a cause, run inside this lifecycle. Each one says where it runs in it and adds what its kind of work needs; everything else is this file's: the branch and worktree, the Progress task, the specs and the plan, the tests, the review, the commits and the pull request. A skill that calls another for part of its work, as a port calls rebrand and landing-page, starts no second task: the other's steps become tasks of its plan, on its branches and its Progress task, in its pull requests. template-diff is the one exception: its change always gets a branch and a pull request of its own off `main`, so it is reviewed and merged as one change with nothing else mixed in, and the work that needs it starts its branch from that one until it is merged.
 
 ## Workflow Phases
-
-On the full track, and for any other work that takes many steps, start a task of your own on the Workbench's Progress page before you begin, the way `AGENTS.md` section 6 and section 9 of the **workbench** skill (`.github/agents/workbench.agent.md`) describe: these phases, or the sections of the skill the work follows, are its steps, the plan's approval and every question go there, and it stays current until delivery.
 
 ### 1. Requirements Elaboration
 - In the same step as your first reads, check whether the project is on the newest bit platform release - see **Staying on the Newest bit Platform** below. It runs alongside this phase and never holds it up
