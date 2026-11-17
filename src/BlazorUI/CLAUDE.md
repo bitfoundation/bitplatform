@@ -190,7 +190,8 @@ break recorded in `BreakingChanges.md` - never kept beside the new name as an `[
   asked of one item at a time (`IsDateDisabled`, `IsStickyItem`). The parameters spelled with an `Is` before the rule
   (`IsOpen` on the overlays and pickers, `IsDefaultSort` on the legacy grid column, ...)
   are listed in `BitParameterNamingContractTests`, which fails on a new one; each is renamed one concept at a time,
-  and the rename takes it off the list.
+  and the rename takes it off the list. The outliers of `Bit.BlazorUI.Legacy` stay listed: that package is not
+  changed any more.
 
 ## A component's parameters are in alphabetical order
 

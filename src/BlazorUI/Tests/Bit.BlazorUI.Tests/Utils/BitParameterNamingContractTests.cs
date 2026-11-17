@@ -16,6 +16,7 @@ namespace Bit.BlazorUI.Tests.Utils;
 /// <remarks>
 /// The parameters that predate the rule are listed in <see cref="_outliers"/>. They are renamed one concept at a time,
 /// each break recorded in BreakingChanges.md, and a rename takes its entries off the list; nothing new joins it.
+/// The outliers of Bit.BlazorUI.Legacy are the exception: that package is not changed any more, so they stay listed.
 /// </remarks>
 [TestClass]
 public partial class BitParameterNamingContractTests
@@ -43,6 +44,7 @@ public partial class BitParameterNamingContractTests
         ["BitPhoneInput"] = ["IsOpen", "IsOpenChanged"],
         ["BitPopConfirm"] = ["IsOpen", "IsOpenChanged"],
         ["BitTimeZonePicker"] = ["IsOpen", "IsOpenChanged"],
+        // Bit.BlazorUI.Legacy is not changed any more: these two stay.
         ["BitChartLegacy"] = ["IsDateAdapterRequired"],
         ["BitDataGridLegacyColumnBase"] = ["IsDefaultSort"],
     };
