@@ -199,6 +199,41 @@ test('a section\'s centered text steps aside for the bar\'s center icons', () =>
     assert.equal(text.x - 'Hold'.length * CHAR / 2, icon.x + icon.width + gap);
 });
 
+test('a section\'s centered text steps aside to the side left in view', () => {
+    const engine = makeSceneEngine([longBar({
+        height: 20,
+        icons: [{ source: 'center.png', position: 'center' }],
+        sections: [{ text: 'A' }]
+    })]);
+    scrollTo(engine, 1000);
+    const node = barNode(engine);
+    const gap = engine.config.barLabelGap;
+    const icon = node.icons.find(i => i.source === 'center.png');
+    const text = label(node, 'A');
+
+    // Both would be pinned at the left edge. The side before the icon is the
+    // nearer one, but under the resource column, so the text goes after it.
+    assert.equal(icon.x, 150 + gap);
+    assert.equal(text.x - CHAR / 2, icon.x + icon.width + gap);
+});
+
+test('a section\'s pinned centered icon stays clear of the section\'s end text', () => {
+    const engine = makeSceneEngine([longBar({
+        height: 20,
+        sections: [{ icon: 'a.png', iconPosition: 'center', text: 'Go', textPosition: 'end' }]
+    })]);
+    // The bar ends at x 180: the end text covers x 163-177.
+    scrollTo(engine, 1850);
+    const node = barNode(engine);
+    const gap = engine.config.barLabelGap;
+    const [icon] = node.icons;
+    const text = label(node, 'Go');
+
+    assert.equal(text.align, 'right');
+    assert.equal(text.x, 180 - gap);
+    assert.equal(icon.x + icon.width, text.x - 'Go'.length * CHAR - gap);
+});
+
 test('a section\'s centered text with no room beside the center icons is left out', () => {
     // Bar 10h-11h: x 550-590, room for the 16px icon but not the text beside it.
     const engine = makeSceneEngine([longBar({

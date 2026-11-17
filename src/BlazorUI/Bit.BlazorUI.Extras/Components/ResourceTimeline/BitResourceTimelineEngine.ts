@@ -3836,10 +3836,13 @@
 
         // Moves the sections' centered groups that stickyBarLabels placed on the
         // bar's center line (see _buildSectionContent) off the bar's center icon
-        // group, spanning [left, right]: to the nearer side of it that still lies
-        // within the section's room, or, when neither does, out of the scene, so
-        // the two never draw over each other.
+        // group, spanning [left, right]: to a side of it that still lies within
+        // the section's room - the one left in the bars area when only one of
+        // them is, else the nearer one - or, when neither does, out of the scene,
+        // so the two never draw over each other.
         private _avoidStickySections(node: any, left: number, right: number, gap: number): void {
+            const viewLo = this.config.resourceAxisWidth;
+            const viewHi = this._viewportW;
             for (const group of this._stickySections) {
                 const half = group.width / 2;
                 if (!(group.center - half < right && group.center + half > left)) continue;
@@ -3849,7 +3852,13 @@
                 const fitsAfter = after + half <= group.hi;
                 let to: number | null = null;
                 if (fitsBefore && fitsAfter) {
-                    to = Math.abs(before - group.center) <= Math.abs(after - group.center) ? before : after;
+                    const seenBefore = before - half >= viewLo && before + half <= viewHi;
+                    const seenAfter = after - half >= viewLo && after + half <= viewHi;
+                    if (seenBefore !== seenAfter) {
+                        to = seenBefore ? before : after;
+                    } else {
+                        to = Math.abs(before - group.center) <= Math.abs(after - group.center) ? before : after;
+                    }
                 } else if (fitsBefore) {
                     to = before;
                 } else if (fitsAfter) {
@@ -3987,11 +3996,21 @@
                 }
                 icon = null;
             }
+            // Text at an edge narrows only the room the centered group slides in
+            // (and steps aside within) with stickyBarLabels; where it is drawn
+            // still centered, the room is the one it has always been checked by.
+            let slideLo = lo;
+            let slideHi = hi;
             let centerText = text;
             if (text && textPos !== 'center') {
                 if (textWidth <= hi - lo) {
-                    if (textPos === 'end') placeText(hi, 'right');
-                    else placeText(lo, 'left');
+                    if (textPos === 'end') {
+                        placeText(hi, 'right');
+                        slideHi = hi - textWidth - gap;
+                    } else {
+                        placeText(lo, 'left');
+                        slideLo = lo + textWidth + gap;
+                    }
                 }
                 centerText = null;
             }
@@ -4003,9 +4022,9 @@
             // so the bar's center icons, placed later on the same line, can move
             // it out of their way (see _avoidStickySections).
             const sticky = this.config.stickyBarLabels;
-            const at = (width: number) => sticky ? this._stickyCenter(centerX, width, lo, hi) : centerX;
+            const at = (width: number) => sticky ? this._stickyCenter(centerX, width, slideLo, slideHi) : centerX;
             const note = (placedIcon: any, placedText: any, width: number, center: number) => {
-                if (sticky) this._stickySections.push({ icon: placedIcon, text: placedText, width, center, lo, hi });
+                if (sticky) this._stickySections.push({ icon: placedIcon, text: placedText, width, center, lo: slideLo, hi: slideHi });
             };
             if (icon && centerText && fits(icon.width + gap + textWidth)) {
                 const width = icon.width + gap + textWidth;
