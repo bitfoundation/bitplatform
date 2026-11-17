@@ -25,7 +25,7 @@
                             var position = ev.IsSingleDay ? "none"
                                 : ev.StartDate.Date == d.Date ? "first"
                                 : evEndInclusive == d.Date ? "last" : "middle";
-                            <BitFcMonthEventBadge @key="ev" Event="ev" CellDate="d" Position="@position" IsLead="seen.Add(ev)" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
+                            <BitFcMonthEventBadge @key="ev" Event="ev" CellDate="d" Position="@position" Lead="seen.Add(ev)" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
                         }
                         else
                         {

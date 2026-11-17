@@ -5,6 +5,20 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitFcDayCell`'s `IsLastColumn` and `IsRovingCell` are `LastColumn` and `TabStop` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+`BitFcDayCell` is the day cell `BitFullCalendar`'s month view renders for itself, public only because Razor needs it to
+be. A component's own setting is spelled without an `Is`: `IsLastColumn` drops its `Is`, and `IsRovingCell`, set on
+the one cell that holds the month grid's roving tab stop, is named for what it does:
+
+| Before | After |
+|---|---|
+| `<BitFcDayCell IsLastColumn="@last" />` | `<BitFcDayCell LastColumn="@last" />` |
+| `<BitFcDayCell IsRovingCell="@roving" />` | `<BitFcDayCell TabStop="@roving" />` |
+
+`BitFullCalendar` sets both itself, so an app that only uses `BitFullCalendar` has nothing to change. What the calendar
+renders is unchanged.
+
 ### `BitNumberField`'s `IsInputReadOnly` is `InputReadOnly` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own setting is spelled without an `Is`, and the number field's switch that stops the typing but

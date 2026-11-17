@@ -38,8 +38,6 @@ public partial class BitParameterNamingContractTests
         ["BitOverlay"] = ["IsOpen", "IsOpenChanged", "DefaultIsOpen"],
         ["BitContextMenu"] = ["IsOpen", "IsOpenChanged"],
         ["BitCountryPicker"] = ["IsOpen", "IsOpenChanged"],
-        ["BitFcDayCell"] = ["IsRovingCell", "IsLastColumn", "IsRowStart"],
-        ["BitFcMonthEventBadge"] = ["IsLead"],
         ["BitNavPanel"] = ["IsOpen", "IsOpenChanged"],
         ["BitNotificationCenter"] = ["IsOpen", "IsOpenChanged"],
         ["BitPhoneInput"] = ["IsOpen", "IsOpenChanged"],

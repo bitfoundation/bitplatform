@@ -64,12 +64,12 @@
             }
             <BitFcDayCell @key="cell.Date"
                           Cell="cell"
-                          IsLastColumn="@(i % columnCount == columnCount - 1)"
-                          IsRowStart="@(i % columnCount == 0 || (State.ShowNonCurrentDates is false && cells[i - 1].CurrentMonth is false))"
+                          LastColumn="@(i % columnCount == columnCount - 1)"
+                          RowStart="@(i % columnCount == 0 || (State.ShowNonCurrentDates is false && cells[i - 1].CurrentMonth is false))"
                           Events="allEvents"
                           EventPositions="eventPositions"
                           EventTemplate="EventTemplate"
-                          IsRovingCell="@(RovingDate == cell.Date.Date)"
+                          TabStop="@(RovingDate == cell.Date.Date)"
                           AddButtonId="@CellButtonId(cell.Date)"
                           OnCellKeyDown="OnCellKeyDown" />
         }
