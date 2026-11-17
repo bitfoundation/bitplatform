@@ -327,7 +327,7 @@
     <DemoExample Title="Input behavior" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             <b>Immediate</b> commits per keystroke (with <b>DebounceTime</b>/<b>ThrottleTime</b>). <b>ReadOnly</b> blocks every
-            change; <b>IsInputReadOnly</b> blocks only typing. Shift + wheel spins a focused field (<b>InvertMouseWheel</b>,
+            change; <b>InputReadOnly</b> blocks only typing. Shift + wheel spins a focused field (<b>InvertMouseWheel</b>,
             <b>NoMouseWheel</b>). <b>EnterKeyHint</b> labels the enter key of a virtual keyboard.
         </div>
         <br />
@@ -343,7 +343,7 @@
             <br />
             <BitNumberField Label="ReadOnly" ReadOnly Mode="BitSpinButtonMode.Compact" @bind-Value="readOnlyValue" />
             <br />
-            <BitNumberField Label="IsInputReadOnly" IsInputReadOnly Mode="BitSpinButtonMode.Compact" @bind-Value="inputReadOnlyValue" />
+            <BitNumberField Label="InputReadOnly" InputReadOnly Mode="BitSpinButtonMode.Compact" @bind-Value="inputReadOnlyValue" />
             <br />
             <BitToggle @bind-Value="invertMouseWheel" Text="Invert Mouse Wheel" />
             <br />

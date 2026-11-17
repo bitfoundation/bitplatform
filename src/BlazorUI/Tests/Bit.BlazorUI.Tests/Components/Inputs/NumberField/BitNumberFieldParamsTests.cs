@@ -258,7 +258,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
             IncrementIconName = "Up",
             DecrementIconName = "Down",
             HideInput = false,
-            IsInputReadOnly = true,
+            InputReadOnly = true,
             LoadingAriaLabel = "Cascaded loading",
         }, builder => builder.AddAttribute(1, nameof(BitNumberField<int?>.DefaultValue), (int?)3));
 
@@ -460,7 +460,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
             IncrementTitle = "One more",
             InputMode = BitInputMode.Text,
             InvertMouseWheel = true,
-            IsInputReadOnly = true,
+            InputReadOnly = true,
             LabelPlacement = BitPlacement.End,
             LoadingAriaLabel = "Cascaded loading",
             Max = "90",
@@ -527,7 +527,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
         Assert.AreEqual("One more", instance.IncrementTitle);
         Assert.AreEqual(BitInputMode.Text, instance.InputMode);
         Assert.IsTrue(instance.InvertMouseWheel);
-        Assert.IsTrue(instance.IsInputReadOnly);
+        Assert.IsTrue(instance.InputReadOnly);
         Assert.AreEqual(BitPlacement.End, instance.LabelPlacement);
         Assert.AreEqual("Cascaded loading", instance.LoadingAriaLabel);
         Assert.AreEqual("90", instance.Max);
