@@ -10,8 +10,8 @@ namespace Bit.BlazorUI;
 /// to one of them: the content (<see cref="BitDialog.Title"/>, <see cref="BitDialog.Subtitle"/>,
 /// <see cref="BitDialog.Message"/>, <see cref="BitDialog.Body"/>, <see cref="BitDialog.ChildContent"/>,
 /// <see cref="BitDialog.HeaderTemplate"/> and <see cref="BitDialog.FooterTemplate"/>), the state
-/// (<see cref="BitDialog.IsOpen"/>, <see cref="BitDialog.DefaultIsOpen"/>, <see cref="BitDialog.IsOkButtonEnabled"/>
-/// and <see cref="BitDialog.IsCancelButtonEnabled"/>), the callbacks, and what points at elements of one dialog
+/// (<see cref="BitDialog.IsOpen"/>, <see cref="BitDialog.DefaultIsOpen"/>, <see cref="BitDialog.OkButtonDisabled"/>
+/// and <see cref="BitDialog.CancelButtonDisabled"/>), the callbacks, and what points at elements of one dialog
 /// or one page (<see cref="BitDialog.AutoFocusSelector"/>, <see cref="BitDialog.DragElementSelector"/>,
 /// <see cref="BitDialog.ScrollerElement"/>, <see cref="BitDialog.TitleAriaId"/>,
 /// <see cref="BitDialog.SubtitleAriaId"/> and <see cref="BitDialog.Alert"/>) are left off, since they are the
@@ -134,7 +134,7 @@ public partial class BitDialogParams : BitComponentBaseParams, IBitComponentPara
     /// <summary>
     /// Lets the dialog be dragged around by its header.
     /// </summary>
-    public bool? IsDraggable { get; set; }
+    public bool? Draggable { get; set; }
 
     /// <summary>
     /// Renders the dialog without an overlay, leaving the page behind it usable.
@@ -326,9 +326,9 @@ public partial class BitDialogParams : BitComponentBaseParams, IBitComponentPara
             bitDialog.TakeFromCascade(nameof(Blocking), Blocking.Value, static d => d.Blocking, static (d, v) => d.Blocking = v);
         }
 
-        if (IsDraggable.HasValue)
+        if (Draggable.HasValue)
         {
-            bitDialog.TakeFromCascade(nameof(IsDraggable), IsDraggable.Value, static d => d.IsDraggable, static (d, v) => d.IsDraggable = v);
+            bitDialog.TakeFromCascade(nameof(Draggable), Draggable.Value, static d => d.Draggable, static (d, v) => d.Draggable = v);
         }
 
         if (Modeless.HasValue)

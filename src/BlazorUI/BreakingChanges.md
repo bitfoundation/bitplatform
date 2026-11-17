@@ -5,6 +5,24 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitDialog`'s `IsDraggable` is `Draggable`, and its `IsOkButtonEnabled` and `IsCancelButtonEnabled` are `OkButtonDisabled` and `CancelButtonDisabled` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own setting is spelled without an `Is` (`Disabled`, `Blocking`, `Alert`), and three of the dialog's
+were still spelled with one. `IsDraggable` is renamed, with its counterpart on `BitDialogParams`; `Draggable` is the
+name `BitModal` already gives the same setting. The two button flags turn around to say what they do, the way
+`Disabled` does: they are off by default and disable their button when set, so **the value you pass is inverted**:
+
+| Before | After |
+|---|---|
+| `<BitDialog IsDraggable />` | `<BitDialog Draggable />` |
+| `<BitDialog IsOkButtonEnabled="agreed" />` | `<BitDialog OkButtonDisabled="agreed is false" />` |
+| `<BitDialog IsCancelButtonEnabled="false" />` | `<BitDialog CancelButtonDisabled />` |
+| `new BitDialogParams { IsDraggable = true }` | `new BitDialogParams { Draggable = true }` |
+
+An `IsOkButtonEnabled` or `IsCancelButtonEnabled` left on a `BitDialog` still builds and is ignored, so the button it
+was disabling is enabled again; search for both names when upgrading. An HTML `draggable` attribute written on a
+`BitDialog` now sets `Draggable`, as it already does on `BitModal`, instead of being rendered on the dialog's element.
+
 ### `IsAlert` is `Alert` on `BitDialog`, `BitModal` and `BitPanel` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own setting is spelled without an `Is` (`Disabled`, `Blocking`, `Modeless`), and the flag that makes

@@ -64,6 +64,13 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "CancelButtonDisabled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables the Cancel button of the Dialog. Unlike Disabled, which turns the whole Dialog off, this leaves every other way out of the Dialog working."
+        },
+        new()
+        {
             Name = "CancelText",
             Type = "string?",
             DefaultValue = "Cancel",
@@ -149,6 +156,13 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "Draggable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the Dialog can be dragged around."
+        },
+        new()
+        {
             Name = "FooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -188,27 +202,6 @@ public partial class BitDialogDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The CSS height of the Dialog surface. A Dialog is as tall as its content by default, and FullHeight and FullSize take precedence over this."
-        },
-        new()
-        {
-            Name = "IsCancelButtonEnabled",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the Cancel button of the Dialog can be pressed. Unlike Disabled, which turns the whole Dialog off, this leaves every other way out of the Dialog working."
-        },
-        new()
-        {
-            Name = "IsDraggable",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the Dialog can be dragged around."
-        },
-        new()
-        {
-            Name = "IsOkButtonEnabled",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the Ok button of the Dialog can be pressed. This is what holds the answer shut until the content of the Dialog provides it - a consent to tick, a name to type - without turning the rest of the Dialog off the way Disabled would."
         },
         new()
         {
@@ -279,6 +272,13 @@ public partial class BitDialogDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Turns off the shake the Dialog plays when a dismissal is refused. OnDismissPrevented is raised either way."
+        },
+        new()
+        {
+            Name = "OkButtonDisabled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables the Ok button of the Dialog. This is what holds the answer shut until the content of the Dialog provides it - a consent to tick, a name to type - without turning the rest of the Dialog off the way Disabled would."
         },
         new()
         {

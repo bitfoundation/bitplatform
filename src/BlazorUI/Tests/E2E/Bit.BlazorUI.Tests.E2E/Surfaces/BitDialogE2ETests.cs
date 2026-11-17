@@ -297,7 +297,7 @@ public class BitDialogE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task Buttons_IsOkButtonEnabledFalse_HoldsOkShutUntilTheAnswerExists()
+    public async Task Buttons_OkButtonDisabled_HoldsOkShutUntilTheAnswerExists()
     {
         await OpenAsync(PagePath);
         await OpenDialogAsync("btn-gated-open", "gated-dialog");
@@ -317,7 +317,7 @@ public class BitDialogE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task Buttons_IsCancelButtonEnabledFalse_DisablesCancelAndLeavesTheOtherWaysOut()
+    public async Task Buttons_CancelButtonDisabled_DisablesCancelAndLeavesTheOtherWaysOut()
     {
         await OpenAsync(PagePath);
         await OpenDialogAsync("btn-gated-open", "gated-dialog");
@@ -971,7 +971,7 @@ public class BitDialogE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsDraggable_HeaderDraggedWithTheMouse_MovesTheSurface()
+    public async Task Draggable_HeaderDraggedWithTheMouse_MovesTheSurface()
     {
         await OpenAsync(PagePath);
         await OpenDialogAsync("btn-drag-open", "drag-dialog");
@@ -989,7 +989,7 @@ public class BitDialogE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsDraggable_TurnedOffWhileOpen_StopsTheDrag()
+    public async Task Draggable_TurnedOffWhileOpen_StopsTheDrag()
     {
         await OpenAsync(PagePath);
         await OpenDialogAsync("btn-drag-open", "drag-dialog");
@@ -1010,7 +1010,7 @@ public class BitDialogE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsDraggable_DraggedPastTheEdge_StaysInsideItsArea()
+    public async Task Draggable_DraggedPastTheEdge_StaysInsideItsArea()
     {
         await OpenAsync(PagePath);
         await OpenDialogAsync("btn-drag-open", "drag-dialog");
@@ -1024,7 +1024,7 @@ public class BitDialogE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsDraggable_ShownAgain_ComesBackWhereItWasLaidOut()
+    public async Task Draggable_ShownAgain_ComesBackWhereItWasLaidOut()
     {
         await OpenAsync(PagePath);
         await OpenDialogAsync("btn-drag-open", "drag-dialog");
@@ -1069,7 +1069,7 @@ public class BitDialogE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task IsDraggable_WithoutAHeader_TheWholeSurfaceIsTheHandle()
+    public async Task Draggable_WithoutAHeader_TheWholeSurfaceIsTheHandle()
     {
         await OpenAsync(PagePath);
         await OpenDialogAsync("btn-draghead-open", "draghead-dialog");

@@ -34,7 +34,7 @@ public partial class BitParameterNamingContractTests
         ["BitDropMenu"] = ["IsOpen", "IsOpenChanged", "DefaultIsOpen"],
         ["_BitNavBarChild"] = ["IsLink"],
         ["BitCallout"] = ["IsOpen", "IsOpenChanged", "DefaultIsOpen"],
-        ["BitDialog"] = ["IsCancelButtonEnabled", "IsDraggable", "IsOkButtonEnabled", "IsOpen", "IsOpenChanged", "DefaultIsOpen"],
+        ["BitDialog"] = ["IsOpen", "IsOpenChanged", "DefaultIsOpen"],
         ["BitModal"] = ["IsOpen", "IsOpenChanged", "DefaultIsOpen"],
         ["BitPanel"] = ["IsOpen", "IsOpenChanged"],
         ["BitOverlay"] = ["IsOpen", "IsOpenChanged", "DefaultIsOpen"],
