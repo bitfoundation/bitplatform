@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Tests.E2E;
+﻿using System.Threading;
+
+namespace Bit.BlazorUI.Tests.E2E;
 
 /// <summary>
 /// Pins the host itself: it answers, every page it lists becomes interactive, and a page's errors reach the test.
@@ -46,18 +48,24 @@ public partial class HostE2ETests : E2ETestBase
         // The requests a navigation cut off: issued by the page on screen and failed once the navigation away from it had
         // started. WebKit reports the fetches among them in words it also uses for a real failure (see
         // IsCutOffByLeaving), so only a failure of one of these - read off the browser's own record of the request, never
-        // off how the host's address happens to be spelled - is taken for one cut off.
+        // off how the host's address happens to be spelled - is taken for one cut off. A navigation is counted as started
+        // by the test, as it sets off (BeginLeavingAsync), as well as by the browser's request for the next page: WebKit
+        // stops the loads of the page being left before it reports that request, so a failure it reports first would
+        // otherwise be taken for one the page saw while still on screen.
         var navigations = 0;
         var issuedDuring = new Dictionary<IRequest, int>();
         var cutOff = new HashSet<string>(StringComparer.Ordinal);
         Page.Request += (_, request) =>
         {
-            if (request.IsNavigationRequest && request.Frame == Page.MainFrame) navigations++;
-            else issuedDuring[request] = navigations;
+            if (request.IsNavigationRequest && request.Frame == Page.MainFrame) Interlocked.Increment(ref navigations);
+            else issuedDuring[request] = Volatile.Read(ref navigations);
         };
         Page.RequestFailed += (_, request) =>
         {
-            if (issuedDuring.Remove(request, out var issued) && issued < navigations) cutOff.Add(NormalizeUrl(request.Url));
+            if (issuedDuring.Remove(request, out var issued) && issued < Volatile.Read(ref navigations))
+            {
+                lock (cutOff) cutOff.Add(NormalizeUrl(request.Url));
+            }
         };
         Page.RequestFinished += (_, request) => issuedDuring.Remove(request);
         Page.FrameNavigated += (_, frame) =>
@@ -66,32 +74,49 @@ public partial class HostE2ETests : E2ETestBase
         };
 
         var failures = new List<string>();
-        var previous = "/";
         // Where the errors already read end: what a page raises after its own check is read once it has been left.
         (int Console, int Page) checkedTo = (ConsoleErrors.Count, PageErrors.Count);
 
-        // Read off the page on screen right before it is left, so a connection it lost at any point of its stay counts.
-        async Task CheckConnectionAsync(string page)
+        // Moves on to the next navigation once every event the page raised so far is in (the answer to an evaluation comes
+        // after them), so a request that failed while the page was still on screen is not taken for one cut off.
+        async Task BeginLeavingAsync()
         {
-            if (await HasLostItsConnectionAsync()) failures.Add($"{page}: lost its connection to the server");
+            try
+            {
+                await Page.EvaluateAsync("() => 0");
+            }
+            catch (PlaywrightException) { }
+
+            Interlocked.Increment(ref navigations);
         }
 
         // What the page just left raised from the end of its own check until the next page committed.
-        void CheckLeaving(string page)
+        string? CheckLeaving(string page)
         {
             var commit = atCommit;
-            var leaving = ConsoleErrors.Skip(checkedTo.Console).Take(commit.Console - checkedTo.Console)
+            List<string> leaving;
+            lock (cutOff)
+            {
+                leaving = ConsoleErrors.Skip(checkedTo.Console).Take(commit.Console - checkedTo.Console)
                                        .Concat(PageErrors.Skip(checkedTo.Page).Take(commit.Page - checkedTo.Page))
                                        .Where(error => IsTheConnectionGone(error) is false && IsCutOffByLeaving(error, cutOff) is false)
                                        .ToList();
-            if (leaving.Count > 0) failures.Add($"{page}: raised an error while it was left ({leaving[0].Split('\n')[0]})");
+            }
 
             checkedTo = (Math.Max(checkedTo.Console, commit.Console), Math.Max(checkedTo.Page, commit.Page));
+
+            return leaving.Count > 0 ? $"{page}: raised an error while it was left ({leaving[0].Split('\n')[0]})" : null;
         }
 
-        foreach (var route in routes)
+        // Takes the page on screen to the route and reads what that page did itself: whether it became ready, whether its
+        // circuit is alive, what it raised up to its check, and - read right before it is left - whether it lost its
+        // connection at any point of its stay. What the page it left raised on the way out is that page's, handed back
+        // apart.
+        async Task<(List<string> Own, string? Leaving)> VisitAsync(string route, string left)
         {
-            await CheckConnectionAsync(previous);
+            var own = new List<string>();
+
+            await BeginLeavingAsync();
 
             try
             {
@@ -99,32 +124,53 @@ public partial class HostE2ETests : E2ETestBase
             }
             catch (Exception ex)
             {
-                failures.Add($"{route}: never became ready ({ex.Message.Split(Environment.NewLine)[0]})");
-                CheckLeaving(previous);
-                previous = route;
-                continue;
+                own.Add($"{route}: never became ready ({ex.Message.Split(Environment.NewLine)[0]})");
+                return (own, CheckLeaving(left));
             }
 
-            CheckLeaving(previous);
+            var leaving = CheckLeaving(left);
 
-            if (await IsCircuitDeadAsync()) failures.Add($"{route}: the circuit died");
+            if (await IsCircuitDeadAsync()) own.Add($"{route}: the circuit died");
 
             (int Console, int Page) now = (ConsoleErrors.Count, PageErrors.Count);
             var raised = ConsoleErrors.Skip(atCommit.Console).Take(now.Console - atCommit.Console)
                                       .Concat(PageErrors.Skip(atCommit.Page).Take(now.Page - atCommit.Page))
                                       .Where(error => IsTheConnectionGone(error) is false)
                                       .ToList();
-            if (raised.Count > 0) failures.Add($"{route}: raised an error ({raised[0].Split('\n')[0]})");
+            if (raised.Count > 0) own.Add($"{route}: raised an error ({raised[0].Split('\n')[0]})");
 
             checkedTo = now;
+
+            if (await HasLostItsConnectionAsync()) own.Add($"{route}: lost its connection to the server");
+
+            return (own, leaving);
+        }
+
+        var previous = "/";
+        foreach (var route in routes)
+        {
+            var (own, leaving) = await VisitAsync(route, previous);
+            if (leaving is not null) failures.Add(leaving);
+
+            // A page whose own visit failed is visited once more, and only fails the test if it fails again: one page after
+            // another for a quarter of an hour on a loaded runner, beside the test classes running with it, now and then a
+            // navigation is aborted on the way or a circuit drops (Firefox), which says nothing about the page - and a page
+            // that fails on its own does so on the second visit too. What the failed visit raised as it was left goes with
+            // it; the second visit is left like any other.
+            if (own.Count > 0)
+            {
+                (own, _) = await VisitAsync(route, route);
+            }
+
+            failures.AddRange(own);
             previous = route;
         }
 
         // The last page is left as well, so what it raises after its own check - and while it is left - is read like
         // every other page's.
-        await CheckConnectionAsync(previous);
+        await BeginLeavingAsync();
         await OpenAsync("/");
-        CheckLeaving(previous);
+        if (CheckLeaving(previous) is { } last) failures.Add(last);
 
         Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
     }

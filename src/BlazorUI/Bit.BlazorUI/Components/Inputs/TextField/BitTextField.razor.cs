@@ -35,12 +35,6 @@ public partial class BitTextField : BitTextInputBase<string?>
     private DotNetObjectReference<BitTextField>? _dotnetObj;
     private string? _inputMode;
     private bool _trimOnParse;
-    // How many of the field's own commits are running, and the value the latest of them wrote into the Value - what the
-    // binding hands back while they run (see HandleOnStringValueChangeAsync). _catchOwnWrite is up only while a commit
-    // starts, which is when it writes the Value (see TrackOwnWrite).
-    private int _ownCommitsRunning;
-    private string? _lastOwnWrite;
-    private bool _catchOwnWrite;
     private bool _isPasswordRevealed;
     private BitInputType? _elementType;
     private string _inputId = string.Empty;
@@ -906,8 +900,6 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         SetDefaultValue();
 
-        OnValueChanged += TrackOwnWrite;
-
         await base.OnInitializedAsync();
     }
 
@@ -929,11 +921,11 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
 
         // A value that moved without the field moving it - the page emptying it after a send, say - is what the
-        // input shows from then on, whatever had been typed into it before. The value the latest of the field's own
-        // commits wrote, handed back by the binding while the commits run, is left to the commit to settle (see
-        // HandleOnStringValueChangeAsync); any other value is the page's, even one an earlier commit wrote (a binding
-        // refusing the latest one and putting the earlier one back).
-        if (_ownCommitsRunning == 0 || string.Equals(Value, _lastOwnWrite, StringComparison.Ordinal) is false)
+        // input shows from then on, whatever had been typed into it before - but for the value the latest of the field's
+        // own commits wrote, handed back by the binding while the commits run, which is left to the commit to settle
+        // (see IsOwnCommitEcho): a field that commits something other than the text typed (a mask lays it out) must not
+        // take that for the page moving the value.
+        if (IsOwnCommitEcho is false)
         {
             ReleaseTypedTextIfMoved(Value);
         }
@@ -1200,48 +1192,13 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
     {
-        // The value this commit writes, which the binding hands straight back through OnParametersSet while the commit
-        // is still running. A field that commits something other than the text typed (a mask lays it out) must not take
-        // that for the page moving the value: letting go of the typed text there would render the committed value into
-        // the input, a round trip behind the typing on a server circuit, over the keys typed since.
-        // The commit writes the Value as it starts, before it first awaits, which is all the catch is up for: the value
-        // is the one the commit itself parsed, read off the Value rather than parsed a second time here. A commit that
-        // writes nothing new leaves the Value it found as its own.
-        _ownCommitsRunning++;
-        _lastOwnWrite = Value;
-        _catchOwnWrite = true;
-        Task commit;
-        try
-        {
-            commit = base.HandleOnStringValueChangeAsync(e);
-        }
-        finally
-        {
-            _catchOwnWrite = false;
-        }
-
-        try
-        {
-            await commit;
-        }
-        finally
-        {
-            _ownCommitsRunning--;
-        }
+        // The value the commit writes is handed straight back by the binding while it runs, which OnParametersSet leaves
+        // to this to settle (see IsOwnCommitEcho).
+        await base.HandleOnStringValueChangeAsync(e);
 
         // Once the value holds the typed text the input shows the value again; until then the value this commit
         // ended up with is the field's own doing, not a change from the page (see OnParametersSet).
         SettleTypedText(Value, CurrentValueAsString);
-    }
-
-    // The first write of the Value while a commit starts is that commit's own; anything after it - the page answering
-    // the commit's ValueChanged with another value in the same pass - is not.
-    private void TrackOwnWrite(object? sender, EventArgs e)
-    {
-        if (_catchOwnWrite is false) return;
-
-        _catchOwnWrite = false;
-        _lastOwnWrite = Value;
     }
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)

@@ -629,14 +629,22 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         // reading: the time it sampled the last move at, taken as the release reaches the document, against the window
         // it decides by, timed once its own release handler has run - never sooner than it timed it, so a release read
         // as in time is one the pane took for a flick. It also notes where the pane stood then (the glide starts on the
-        // next frame). A gesture let go of too late to be a flick, which rightly does not glide, is made again.
+        // next frame). A gesture let go of too late to be a flick, which rightly does not glide, is made again. So is one
+        // whose moves reached the pane too slowly to be one: the speed is the pane's reading of the moves as they arrived,
+        // and a loaded runner can spread the few moves of the drag out until it is under the pane's flick speed.
         await pane.EvaluateAsync(@"el => {
             const instance = Object.values(BitBlazorUI.ScrollablePane._panes).find(p => p._element === el);
             if (!instance) throw new Error('The pane is not set up.');
             const flickWindow = instance.constructor._flickWindow;
+            const flickSpeed = instance.constructor._flickSpeed;
             if (typeof flickWindow !== 'number') throw new Error('The pane names no flick window.');
-            const flick = window.__e2eFlick = { at: -1, gap: -1, left: -1, window: flickWindow };
-            document.addEventListener('pointerup', () => flick.at = instance._drag?.at ?? -1, { capture: true });
+            if (typeof flickSpeed !== 'number') throw new Error('The pane names no flick speed.');
+            const flick = window.__e2eFlick = { at: -1, gap: -1, left: -1, speed: -1, window: flickWindow, minSpeed: flickSpeed };
+            document.addEventListener('pointerup', () => {
+                const drag = instance._drag;
+                flick.at = drag?.at ?? -1;
+                flick.speed = drag ? Math.hypot(drag.vx, drag.vy) : -1;
+            }, { capture: true });
             window.addEventListener('pointerup', () => {
                 if (flick.at < 0) return;
                 flick.gap = performance.now() - flick.at;
@@ -644,30 +652,38 @@ public class BitScrollablePaneE2ETests : E2ETestBase
             });
         }");
 
-        var lateReleases = new List<double>();
+        var missed = new List<string>();
         for (var attempt = 0; attempt < 5; attempt++)
         {
-            await pane.EvaluateAsync("el => { el.scrollLeft = 0; window.__e2eFlick.at = -1; window.__e2eFlick.gap = -1; }");
+            await pane.EvaluateAsync("el => { el.scrollLeft = 0; Object.assign(window.__e2eFlick, { at: -1, gap: -1, speed: -1 }); }");
             await Page.Mouse.MoveAsync((float)(box.X + box.Width - 20), (float)(box.Y + 20));
             await Page.Mouse.DownAsync();
             await Page.Mouse.MoveAsync((float)(box.X + box.Width - 220), (float)(box.Y + 20), new() { Steps = 3 });
             await Page.Mouse.UpAsync();
 
-            var release = await Page.EvaluateAsync<double[]>("() => [window.__e2eFlick.gap, window.__e2eFlick.left, window.__e2eFlick.window]");
+            var release = await Page.EvaluateAsync<double[]>(
+                "() => [window.__e2eFlick.gap, window.__e2eFlick.left, window.__e2eFlick.window, window.__e2eFlick.speed, window.__e2eFlick.minSpeed]");
             Assert.IsTrue(release[0] >= 0, "The pane heard no drag released.");
 
             if (release[0] > release[2])
             {
-                lateReleases.Add(release[0]);
+                missed.Add($"released {release[0]:0}ms after the last move");
+                continue;
+            }
+
+            if (release[3] < release[4])
+            {
+                missed.Add($"moved at {release[3]:0.###}px/ms");
                 continue;
             }
 
             await PollAsync(() => pane.EvaluateAsync<double>("el => el.scrollLeft"), left => left > release[1] + 20,
-                            $"the flick released {release[0]:0.#}ms after the last move the pane sampled, inside its {release[2]:0}ms window, did not glide on");
+                            $"the flick released {release[0]:0.#}ms after the last move the pane sampled, inside its {release[2]:0}ms window, at {release[3]:0.###}px/ms, did not glide on");
             return;
         }
 
-        Assert.Fail($"Every release came too late after the last move the pane sampled to be a flick ({string.Join(", ", lateReleases.Select(gap => $"{gap:0}ms"))}).");
+        Assert.Fail($"No drag reached the pane as a flick, within its {await Page.EvaluateAsync<double>("() => window.__e2eFlick.window"):0}ms window and over its "
+                    + $"{await Page.EvaluateAsync<double>("() => window.__e2eFlick.minSpeed"):0.###}px/ms speed: {string.Join("; ", missed)}.");
     }
 
     [TestMethod]

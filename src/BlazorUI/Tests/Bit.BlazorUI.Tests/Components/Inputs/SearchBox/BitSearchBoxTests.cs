@@ -583,6 +583,66 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSearchBoxRendersTheTypedTextWhileAThrottleHoldsItBack()
+    {
+        // The first keystroke a throttle lets through commits at once, and the render of that commit reaches the element
+        // a round trip behind the typing on a server circuit: carrying the older value, it would write the text of that
+        // keystroke back over the keys typed since, and the next key would go onto the shorter text.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ThrottleTime, 10_000);
+        });
+
+        component.Find(".bit-srb-inp").Input("a");
+        component.WaitForAssertion(() => Assert.AreEqual("a", component.Instance.Value));
+
+        component.Find(".bit-srb-inp").Input("ab");
+        component.Find(".bit-srb-inp").Input("abc");
+        component.Render();
+
+        Assert.AreEqual("a", component.Instance.Value);
+        Assert.AreEqual("abc", component.Find(".bit-srb-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxRendersTheTypedTextUntilTheValueHoldsIt()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Value, "a");
+            parameters.Add(p => p.ValueChanged, (string? _) => { });
+        });
+
+        component.Find(".bit-srb-inp").Input("abc");
+        component.Render();
+
+        Assert.AreEqual("a", component.Instance.Value);
+        Assert.AreEqual("abc", component.Find(".bit-srb-inp").GetAttribute("value"));
+
+        component.Find(".bit-srb-inp").Change("abc");
+
+        Assert.AreEqual("abc", component.Instance.Value);
+        Assert.AreEqual("abc", component.Find(".bit-srb-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShowsAValueThePageSetsOverTheTypedText()
+    {
+        // The page emptying the field after a search, say: what it set is what the field shows, whatever was typed.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Value, "a");
+            parameters.Add(p => p.ValueChanged, (string? _) => { });
+        });
+
+        component.Find(".bit-srb-inp").Input("abc");
+        component.Render(parameters => parameters.Add(p => p.Value, "zzz"));
+
+        Assert.AreEqual("zzz", component.Find(".bit-srb-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
     public void BitSearchBoxClearButtonShouldDisappearAfterClearingTheUncommittedText()
     {
         var component = RenderComponent<BitSearchBox>();

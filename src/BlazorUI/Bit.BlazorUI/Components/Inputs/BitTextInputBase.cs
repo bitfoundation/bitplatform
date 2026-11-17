@@ -21,6 +21,20 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     private string? _typedText;
     private string? _typedTextBase;
 
+    // How many commits of the element's text are running, and the value the latest of them wrote into the Value - what
+    // the binding hands back while they run (see IsOwnCommitEcho). _catchOwnWrite is up only while a commit starts, which
+    // is when it writes the Value (see TrackOwnWrite).
+    private int _ownCommitsRunning;
+    private TValue? _lastOwnWrite;
+    private bool _catchOwnWrite;
+
+
+
+    protected BitTextInputBase()
+    {
+        OnValueChanged += TrackOwnWrite;
+    }
+
 
     /// <summary>
     /// Specifies the value of the autocomplete attribute of the input component.
@@ -130,8 +144,52 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
         var reportSettledValue = PrepareStringValueCommit();
 
-        await SetCurrentValueAsStringAsync(e.Value?.ToString(), bypass: false, reportSettledValue);
+        // The value this commit writes is handed straight back by the binding, through OnParametersSet, while the commit
+        // is still running (see IsOwnCommitEcho). The commit writes the Value as it starts, before it first awaits,
+        // which is all the catch is up for: the value is the one the commit itself parsed, read off the Value rather
+        // than parsed a second time here. A commit that writes nothing new leaves the Value it found as its own.
+        _ownCommitsRunning++;
+        _lastOwnWrite = Value;
+        _catchOwnWrite = true;
+        Task commit;
+        try
+        {
+            commit = SetCurrentValueAsStringAsync(e.Value?.ToString(), bypass: false, reportSettledValue);
+        }
+        finally
+        {
+            _catchOwnWrite = false;
+        }
+
+        try
+        {
+            await commit;
+        }
+        finally
+        {
+            _ownCommitsRunning--;
+        }
     }
+
+    // The first write of the Value while a commit starts is that commit's own; anything after it - the page answering
+    // the commit's ValueChanged with another value in the same pass - is not.
+    private void TrackOwnWrite(object? sender, EventArgs e)
+    {
+        if (_catchOwnWrite is false) return;
+
+        _catchOwnWrite = false;
+        _lastOwnWrite = Value;
+    }
+
+    /// <summary>
+    /// Whether the Value is the one the latest commit of the element's text wrote, handed back by the binding while the
+    /// commits run. A component holding the typed text leaves that value to the commit to settle
+    /// (<see cref="SettleTypedText"/>) rather than taking it for the page moving the value: letting go of the typed text
+    /// there would render the committed value into the input, a round trip behind the typing on a server circuit, over
+    /// the keys typed since. Any other value is the page's, even one an earlier commit wrote (a binding refusing the
+    /// latest one and putting the earlier one back).
+    /// </summary>
+    private protected bool IsOwnCommitEcho => _ownCommitsRunning > 0 && EqualityComparer<TValue?>.Default.Equals(Value, _lastOwnWrite);
 
     /// <summary>
     /// Handler for the OnInput event, with an optional delay to avoid to raise the <see cref="BitInputBase{TValue}.ValueChanged"/> event too often.
