@@ -88,7 +88,7 @@
                                            Color="BitColor.Error"
                                            Variant="BitVariant.Text"
                                            IconName="@BitIconName.Delete"
-                                           IsLoading="@revokingSessionIds.Contains(session.Id)"
+                                           Loading="@revokingSessionIds.Contains(session.Id)"
                                            Title="@Localizer[nameof(AppStrings.RevokeSessionTitle)]"
                                            AriaLabel="@Localizer[nameof(AppStrings.RevokeSessionTitle)]"
                                            OnClick="WrapHandled(() => RevokeSession(session))" />
@@ -127,7 +127,7 @@
                                        Color="BitColor.Error"
                                        Variant="BitVariant.Text"
                                        IconName="@BitIconName.PlugDisconnected"
-                                       IsLoading="@revokingSessionIds.Contains(session.Id)"
+                                       Loading="@revokingSessionIds.Contains(session.Id)"
                                        Title="@Localizer[nameof(AppStrings.OAuthClientRevokeAccess)]"
                                        AriaLabel="@Localizer[nameof(AppStrings.OAuthClientRevokeAccess)]"
                                        OnClick="WrapHandled(() => AskToRevokeApplication(session))" />

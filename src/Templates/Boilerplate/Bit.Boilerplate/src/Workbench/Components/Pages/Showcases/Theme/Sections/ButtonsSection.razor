@@ -47,7 +47,7 @@
                 <BitButton Variant="variant" IconName="@BitIconName.Save" Disabled>@SaveText</BitButton>
             </StateSample>
             <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateLoading)">
-                <BitButton Variant="variant" IconName="@BitIconName.Save" IsLoading>@SaveText</BitButton>
+                <BitButton Variant="variant" IconName="@BitIconName.Save" Loading>@SaveText</BitButton>
             </StateSample>
         </ComponentStates>
     }
@@ -114,7 +114,7 @@
             <BitToggleButton IconName="@BitIconName.FavoriteStar" Text="@FavoriteText" />
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateOn)">
-            <BitToggleButton IconName="@BitIconName.FavoriteStarFill" Text="@FavoriteText" DefaultIsChecked="true" />
+            <BitToggleButton IconName="@BitIconName.FavoriteStarFill" Text="@FavoriteText" DefaultChecked="true" />
         </StateSample>
         @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Skip(1))
         {
@@ -126,7 +126,7 @@
             <BitToggleButton IconName="@BitIconName.FavoriteStar" Text="@FavoriteText" Disabled />
         </StateSample>
         <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeButtonsOnOutline)]">
-            <BitToggleButton IconName="@BitIconName.Microphone" Text="@Localizer[nameof(WorkbenchStrings.ThemeButtonsMute)]" Variant="BitVariant.Outline" DefaultIsChecked="true" />
+            <BitToggleButton IconName="@BitIconName.Microphone" Text="@Localizer[nameof(WorkbenchStrings.ThemeButtonsMute)]" Variant="BitVariant.Outline" DefaultChecked="true" />
         </StateSample>
     </ComponentStates>
 </ThemeSection>

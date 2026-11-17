@@ -18,7 +18,7 @@
 <section>
     <BitStack Gap="1rem">
         <BitStack Horizontal AutoHeight HorizontalAlign="BitAlignment.End">
-            <BitToggleButton @bind-IsChecked="isEditing"
+            <BitToggleButton @bind-Checked="isEditing"
                              Variant="BitVariant.Text"
                              Text="@Localizer[nameof(AppStrings.Edit)]"
                              OnIconName="@BitIconName.CheckMark"
@@ -42,8 +42,8 @@
                                    Title="@Localizer[nameof(AppStrings.Resize)]"
                                    OnClick="() => Resize(widget)" />
                         <BitToggleButton Variant="BitVariant.Text"
-                                         @bind-IsChecked="widget.Hidden"
-                                         @bind-IsChecked:after="SaveWidgets"
+                                         @bind-Checked="widget.Hidden"
+                                         @bind-Checked:after="SaveWidgets"
                                          Title="@Localizer[nameof(AppStrings.Hide)]"
                                          OnIconName="@BitIconName.Hide3"
                                          OffIconName="@BitIconName.View" />

@@ -27,7 +27,7 @@
                 <BitButton Size="BitSize.Small"
                            Variant="@(IsEditing ? BitVariant.Fill : BitVariant.Outline)"
                            IconName="@(IsEditing ? BitIconName.Accept : BitIconName.Edit)"
-                           IsLoading="isSaving"
+                           Loading="isSaving"
                            OnClick="ToggleEditing">@Localizer[IsEditing ? nameof(WorkbenchStrings.PosDone) : nameof(WorkbenchStrings.PosCustomize)]</BitButton>
             </div>
         </div>
