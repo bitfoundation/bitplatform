@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.OData.Query;
+
 namespace Boilerplate.Tests.Features.OpenApi;
 
 /// <summary>
@@ -72,6 +75,67 @@ public partial class OpenApiParameterContractTests
 
         Assert.IsEmpty(offenders,
             $"{offenders.Count} of the document's operations on {templatedPathCount} templated path(s) publish no path parameter:{Environment.NewLine}{string.Join(Environment.NewLine, offenders.Take(20))}");
+    }
+
+    /// <summary>
+    /// An action that takes <c>ODataQueryOptions</c>, such as <c>GetTenants</c>, reads <c>$filter</c>, <c>$top</c> and the rest
+    /// from the query string. The document used to describe the parameter itself instead, as an object holding
+    /// <c>HttpContext</c>, the EDM model and about a hundred types they reach, which no client sends, and listed none of the
+    /// query options a client does send.
+    /// </summary>
+    [TestMethod]
+    public async Task AnActionThatTakesODataQueryOptions_Should_PublishItsQueryOptionsRatherThanTheType()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build().Start(TestContext.CancellationToken);
+
+        // The actions are found by their parameters, as the document no longer names the type.
+        string[] actions = [.. server.ApiApp.Services.GetRequiredService<IApiDescriptionGroupCollectionProvider>().ApiDescriptionGroups.Items
+            .SelectMany(group => group.Items)
+            .Where(description => description.ActionDescriptor.Parameters.Any(parameter => parameter.ParameterType.IsAssignableTo(typeof(ODataQueryOptions))))
+            .Select(description => $"/{description.RelativePath}")
+            .Distinct()];
+
+        if (actions.Length is 0)
+            Assert.Inconclusive("No action of this configuration takes ODataQueryOptions.");
+
+        using var httpClient = server.CreateRawHttpClient();
+
+        using var json = JsonDocument.Parse(await httpClient.GetStringAsync("openapi/v1.json", TestContext.CancellationToken));
+
+        var paths = json.RootElement.GetProperty("paths");
+        List<string> offenders = [];
+
+        foreach (var action in actions)
+        {
+            if (paths.TryGetProperty(action, out var path) is false)
+            {
+                offenders.Add($"{action} is not in the document");
+                continue;
+            }
+
+            foreach (var operation in path.EnumerateObject())
+            {
+                string?[] names = operation.Value.TryGetProperty("parameters", out var parameters)
+                    ? [.. parameters.EnumerateArray().Select(parameter => parameter.TryGetProperty("name", out var name) ? name.GetString() : null)]
+                    : [];
+
+                var missing = new[] { "$filter", "$orderby", "$top", "$skip" }.Except(names).ToArray();
+
+                if (missing.Length is not 0)
+                {
+                    offenders.Add($"{operation.Name.ToUpperInvariant()} {action} lists no {string.Join(", ", missing)}");
+                }
+            }
+        }
+
+        string[] frameworkSchemas = [.. json.RootElement.GetProperty("components").GetProperty("schemas").EnumerateObject()
+            .Select(schema => schema.Name)
+            .Where(name => name.StartsWith("ODataQueryOptions", StringComparison.Ordinal) || name is "HttpContext" or "IEdmModel")];
+
+        Assert.IsEmpty(offenders, string.Join(Environment.NewLine, offenders));
+        Assert.IsEmpty(frameworkSchemas, $"The document describes {string.Join(", ", frameworkSchemas)}.");
     }
 
     [GeneratedRegex(@"\{(?<name>[^}]+)\}")]
