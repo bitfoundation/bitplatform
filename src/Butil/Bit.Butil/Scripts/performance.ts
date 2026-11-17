@@ -28,6 +28,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // performanceVitals, so that module can depend on this one and not the other way around.
     const _stopHooks: (() => void)[] = [];
 
+    // A read too large for one interop message, held here while .NET collects the rest of it page by
+    // page - see page(). Keyed by the token handed back with the first page. A caller that stops
+    // asking (its circuit ended mid-read) leaves its read behind, so only the most recent few are kept.
+    const _pendingReads = new Map<string, { entries: any[], offset: number }>();
+    const MAX_PENDING_READS = 32;
+    let _nextReadId = 0;
+
+    const _utf8 = new TextEncoder();
+
     // The performance timeline: marks, measures, entries and observers. The Web Vitals accumulator
     // is performanceVitals - it runs observers for the life of the document and carries the CLS
     // session-window and INP percentile logic, none of which a page that only measures its own
@@ -45,17 +54,32 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         clearMarks(name?: string) { performance.clearMarks(name ?? undefined); },
         clearMeasures(name?: string) { performance.clearMeasures(name ?? undefined); },
         clearResourceTimings() { performance.clearResourceTimings(); },
-        getEntries(name?: string, type?: string) {
+        // maxBytes is the most one reply may carry, or 0 for no limit - see page().
+        getEntries(name?: string, type?: string, maxBytes?: number) {
             // An observer-only type would come back empty from the timeline whatever it was asked -
             // answer it from this module's own records instead.
-            if (type && OBSERVER_ONLY_TYPES.indexOf(type) >= 0) return retainedEntries(type, name);
+            if (type && OBSERVER_ONLY_TYPES.indexOf(type) >= 0) return page(retainedEntries(type, name), maxBytes);
 
             let entries: PerformanceEntry[];
             if (name) entries = performance.getEntriesByName(name, type ?? undefined);
             else if (type) entries = performance.getEntriesByType(type);
             else entries = performance.getEntries();
             // toJSON exists on entries; map to plain objects so dotnet can deserialize.
-            return entries.map(e => (e as any).toJSON ? (e as any).toJSON() : e);
+            return page(entries.map(e => (e as any).toJSON ? (e as any).toJSON() : e), maxBytes);
+        },
+        // The next page of a read getEntries() could not answer in one. An unknown token - a read
+        // evicted from _pendingReads - ends the read rather than failing it.
+        nextEntries(token: string, maxBytes?: number) {
+            const pending = _pendingReads.get(token);
+            if (!pending) return { entries: [], next: null };
+
+            const count = fitting(pending.entries, pending.offset, maxBytes);
+            const entries = pending.entries.slice(pending.offset, pending.offset + count);
+            pending.offset += count;
+            if (pending.offset < pending.entries.length) return { entries, next: token };
+
+            _pendingReads.delete(token);
+            return { entries, next: null };
         },
         memory() {
             const m = (performance as any).memory;
@@ -66,11 +90,19 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 usedJsHeapSize: m.usedJSHeapSize ?? null
             };
         },
-        observe(dotNetRef: any, listenerId: string, entryTypes: string[], buffered: boolean) {
+        observe(dotNetRef: any, listenerId: string, entryTypes: string[], buffered: boolean, maxBytes?: number) {
             if (!('PerformanceObserver' in window) || !entryTypes?.length) return;
             const observer = new PerformanceObserver(list => {
                 const payload = list.getEntries().map(e => (e as any).toJSON ? (e as any).toJSON() : e);
-                butil.utils.dispatch(dotNetRef, 'InvokePerformanceObserver', listenerId, payload);
+                // A buffered registration reports everything the engine already held in one call - a
+                // full resource buffer is a couple of hundred KB - so the report goes over in batches
+                // that each fit one interop message, the same budget getEntries() pages by.
+                for (let offset = 0; offset < payload.length;) {
+                    const count = fitting(payload, offset, maxBytes);
+                    const batch = offset === 0 && count === payload.length ? payload : payload.slice(offset, offset + count);
+                    butil.utils.dispatch(dotNetRef, 'InvokePerformanceObserver', listenerId, batch);
+                    offset += count;
+                }
             });
             try {
                 // observe() with a "type" + "buffered" can only handle one entry type at a time;
@@ -106,6 +138,34 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         observeVital,
         onStopRetained(hook: () => void) { _stopHooks.push(hook); }
     };
+
+    // How many entries from offset on fit in maxBytes of JSON - at least one, since a single entry
+    // cannot be split, and all of them when there is no limit. The limit exists because on Blazor
+    // Server every reply and every callback is one SignalR message, and the hub closes the
+    // connection on a message over its receive limit (32 KB by default) instead of failing the call.
+    function fitting(entries: any[], offset: number, maxBytes?: number) {
+        const remaining = entries.length - offset;
+        if (!maxBytes || remaining <= 1) return remaining;
+
+        let bytes = 0;
+        for (let i = offset; i < entries.length; i++) {
+            bytes += _utf8.encode(JSON.stringify(entries[i])).length + 1;
+            if (bytes > maxBytes) return Math.max(1, i - offset);
+        }
+        return remaining;
+    }
+
+    // The first page of a read, and the token for the rest when there is more than one.
+    function page(entries: any[], maxBytes?: number) {
+        const count = fitting(entries, 0, maxBytes);
+        if (count >= entries.length) return { entries, next: null };
+
+        const token = String(++_nextReadId);
+        _pendingReads.set(token, { entries, offset: count });
+        // Map iterates in insertion order, so the first key is the oldest read.
+        if (_pendingReads.size > MAX_PENDING_READS) _pendingReads.delete(_pendingReads.keys().next().value!);
+        return { entries: entries.slice(0, count), next: token };
+    }
 
     function supportsEntryType(type: string) {
         // Read the constructor off window rather than as a bare identifier: optional chaining does

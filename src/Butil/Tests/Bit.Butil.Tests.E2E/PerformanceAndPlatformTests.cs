@@ -39,6 +39,15 @@ public class PerformanceAndPlatformTests : ButilObserversPageTest
     }
 
     [TestMethod]
+    public async Task Entries_Larger_Than_One_Interop_Message_Arrive_Whole()
+    {
+        // Off WebAssembly a read or an observer report is one SignalR (or webview) message, and a
+        // Blazor Server hub closes the connection on one over 32 KB. The page makes ~60 KB of marks,
+        // then checks the paged read and the batched buffered report each deliver all of them in order.
+        await ClickAndExpectAsync("perf-paged", "perf:paged:True/True");
+    }
+
+    [TestMethod]
     public async Task WebVitals_Reports_Ttfb_Without_Any_Interaction()
     {
         // LCP, CLS and INP all depend on what the page did and what the user did; TTFB comes from
