@@ -31,7 +31,7 @@ public class BitDialogParamsTests : BunitTestContext
         nameof(BitDialog.DragElementSelector),
         nameof(BitDialog.FooterTemplate),
         nameof(BitDialog.HeaderTemplate),
-        nameof(BitDialog.IsAlert),
+        nameof(BitDialog.Alert),
         nameof(BitDialog.IsCancelButtonEnabled),
         nameof(BitDialog.IsOkButtonEnabled),
         nameof(BitDialog.IsOpen),

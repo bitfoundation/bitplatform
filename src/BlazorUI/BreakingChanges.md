@@ -5,6 +5,23 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `IsAlert` is `Alert` on `BitDialog`, `BitModal` and `BitPanel` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own setting is spelled without an `Is` (`Disabled`, `Blocking`, `Modeless`), and the flag that makes
+the three surfaces an `alertdialog` was still spelled with one. The `[Parameter]` is renamed on the three components,
+with its counterparts on `BitModalParams` and `BitPanelParams` and on the option classes their services take,
+`BitModalParameters` and `BitPanelParameters`:
+
+| Before | After |
+|---|---|
+| `<BitDialog IsAlert="true" />` | `<BitDialog Alert="true" />` |
+| `<BitModal IsAlert="false" />` | `<BitModal Alert="false" />` |
+| `<BitPanel IsAlert />` | `<BitPanel Alert />` |
+| `new BitModalParameters { IsAlert = true }` | `new BitModalParameters { Alert = true }` |
+| `new BitPanelParams { IsAlert = true }` | `new BitPanelParams { Alert = true }` |
+
+The role each of them renders is unchanged (`alertdialog` or `dialog`).
+
 ### `BitMediaQuery`'s `IsMatched` is `Matched`, and its `Matched` and `NotMatched` are `MatchedTemplate` and `NotMatchedTemplate` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own state is spelled without an `Is` (`Disabled`, `Checked`, `Expanded`), but the media query's

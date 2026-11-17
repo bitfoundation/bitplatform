@@ -426,7 +426,7 @@
                 automatically and is announced as a heading. A <b>Header</b> template holds more than a title, so it
                 names nothing by itself: point <b>TitleAriaId</b> (and <b>SubtitleAriaId</b>) at your own title and
                 description, inside a template or anywhere in the content, or give it an
-                <b>AriaLabel</b>. <b>IsAlert</b> makes it an <code>alertdialog</code> - the default for a
+                <b>AriaLabel</b>. <b>Alert</b> makes it an <code>alertdialog</code> - the default for a
                 <b>Blocking</b> Modal - for the interruptions that must be acknowledged. <b>CloseButtonTitle</b>
                 names the close button (default "Close") for localization.
             </div>
@@ -446,7 +446,7 @@
                     <BitButton OnClick="() => isOpenLabelled = false">Accept</BitButton>
                 </div>
             </BitModal>
-            <BitModal @bind-IsOpen="isOpenAlert" IsAlert Blocking AriaLabel="Delete the project">
+            <BitModal @bind-IsOpen="isOpenAlert" Alert Blocking AriaLabel="Delete the project">
                 <div class="modal-content">
                     <BitText Typography="BitTypography.H6">Delete the project?</BitText>
                     <BitText>This cannot be undone.</BitText>
@@ -553,7 +553,7 @@
                         <BitButton Variant="BitVariant.Outline" Color="BitColor.Error" OnClick="() => isOpenInner = true">Delete</BitButton>
                     </BitStack>
 
-                    <BitModal @bind-IsOpen="isOpenInner" IsAlert Blocking AriaLabel="Confirm the deletion">
+                    <BitModal @bind-IsOpen="isOpenInner" Alert Blocking AriaLabel="Confirm the deletion">
                         <div class="modal-content">
                             <BitText Typography="BitTypography.H6">Delete this project?</BitText>
                             <BitText>Escape closes this one and leaves the settings open.</BitText>

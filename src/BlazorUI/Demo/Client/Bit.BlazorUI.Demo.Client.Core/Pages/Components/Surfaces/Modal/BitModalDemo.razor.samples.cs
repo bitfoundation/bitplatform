@@ -513,7 +513,7 @@ private bool isOpenDragHandle;";
         <BitButton OnClick=""() => isOpenLabelled = false"">Accept</BitButton>
     </div>
 </BitModal>
-<BitModal @bind-IsOpen=""isOpenAlert"" IsAlert Blocking AriaLabel=""Delete the project"">
+<BitModal @bind-IsOpen=""isOpenAlert"" Alert Blocking AriaLabel=""Delete the project"">
     <div class=""modal-content"">
         <BitText Typography=""BitTypography.H6"">Delete the project?</BitText>
         <BitText>This cannot be undone.</BitText>
@@ -679,7 +679,7 @@ private BitModal refModal = default!;";
             <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.Error"" OnClick=""() => isOpenInner = true"">Delete</BitButton>
         </BitStack>
 
-        <BitModal @bind-IsOpen=""isOpenInner"" IsAlert Blocking AriaLabel=""Confirm the deletion"">
+        <BitModal @bind-IsOpen=""isOpenInner"" Alert Blocking AriaLabel=""Confirm the deletion"">
             <div class=""modal-content"">
                 <BitText Typography=""BitTypography.H6"">Delete this project?</BitText>
                 <BitText>Escape closes this one and leaves the settings open.</BitText>

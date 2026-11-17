@@ -188,7 +188,7 @@ break recorded in `BreakingChanges.md` - never kept beside the new name as an `[
   model of one item of a parent spells its flags with one (`BitDropdownOption.IsDisabled`, `BitPivotItem.IsSelected`,
   `BitNavOption.IsExpanded`), which keeps the per-item setting apart from the component's own; so does a predicate
   asked of one item at a time (`IsDateDisabled`, `IsStickyItem`). The parameters spelled with an `Is` before the rule
-  (`IsOpen` on the overlays and pickers, `IsAlert` on the dialogs, `IsInputReadOnly` on the number field, ...)
+  (`IsOpen` on the overlays and pickers, `IsInputReadOnly` on the number field, `IsDraggable` on the dialog, ...)
   are listed in `BitParameterNamingContractTests`, which fails on a new one; each is renamed one concept at a time,
   and the rename takes it off the list.
 

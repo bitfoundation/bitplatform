@@ -100,7 +100,7 @@ public class BitModalParamsTests : BunitTestContext
         var component = RenderComponent<CascadingValue<BitModalParams>>(parameters =>
         {
             parameters.Add(p => p.Name, BitModalParams.ParamName);
-            parameters.Add(p => p.Value, new BitModalParams { Blocking = true, IsAlert = false });
+            parameters.Add(p => p.Value, new BitModalParams { Blocking = true, Alert = false });
             parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
             {
                 builder.OpenComponent<BitModal>(0);
@@ -112,7 +112,7 @@ public class BitModalParamsTests : BunitTestContext
 
         component.Find(".bit-mdl-ovl").Click();
 
-        // A cascaded Blocking keeps the Modal open on an overlay click, and a cascaded IsAlert = false keeps the plain
+        // A cascaded Blocking keeps the Modal open on an overlay click, and a cascaded Alert = false keeps the plain
         // dialog role a blocking Modal would otherwise swap for alertdialog.
         Assert.IsTrue(isOpen);
         Assert.AreEqual("dialog", component.Find(".bit-mdl-ctn").GetAttribute("role"));

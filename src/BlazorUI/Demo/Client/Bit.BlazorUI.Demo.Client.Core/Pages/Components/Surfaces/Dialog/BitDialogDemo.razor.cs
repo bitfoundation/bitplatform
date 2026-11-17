@@ -13,6 +13,13 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "Alert",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless."
+        },
+        new()
+        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "true",
@@ -181,13 +188,6 @@ public partial class BitDialogDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The CSS height of the Dialog surface. A Dialog is as tall as its content by default, and FullHeight and FullSize take precedence over this."
-        },
-        new()
-        {
-            Name = "IsAlert",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless."
         },
         new()
         {

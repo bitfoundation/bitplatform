@@ -274,7 +274,7 @@ public class BitPanelParamsTests : BunitTestContext
             ShowCloseButton = true,
             CloseIconName = "ChromeClose",
             FullSize = true,
-            IsAlert = true,
+            Alert = true,
             KeepMounted = true,
         }, builder =>
         {

@@ -335,7 +335,7 @@ private void HandleDismissing(BitDialogDismissArgs args)
     </div>
 </BitDialog>
 
-<BitDialog IsAlert
+<BitDialog Alert
            AutoFocusButton=""BitDialogButton.Cancel""
            @bind-IsOpen=""isOpenFocusCancel""
            ShowCloseButton=""false""

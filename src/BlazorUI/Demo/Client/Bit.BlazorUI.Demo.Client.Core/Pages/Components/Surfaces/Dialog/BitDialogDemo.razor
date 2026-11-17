@@ -192,7 +192,7 @@
         <DemoExample Title="Dismiss behavior" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 The overlay and the Escape key both dismiss by default. <b>CloseOnOverlayClick</b> and <b>CloseOnEscape</b> each turn
-                one off; <b>Blocking</b> turns off both and makes the role <b>alertdialog</b> (<b>IsAlert</b> sets the role by hand).
+                one off; <b>Blocking</b> turns off both and makes the role <b>alertdialog</b> (<b>Alert</b> sets the role by hand).
                 <b>Modeless</b> drops the overlay so the page stays usable. A refused gesture shakes the surface - a ring under
                 reduced motion - and raises <b>OnDismissPrevented</b>, so the Dialog can say why.
             </div>
@@ -286,7 +286,7 @@
                 </div>
             </BitDialog>
 
-            <BitDialog IsAlert
+            <BitDialog Alert
                        AutoFocusButton="BitDialogButton.Cancel"
                        @bind-IsOpen="isOpenFocusCancel"
                        ShowCloseButton="false"
@@ -511,7 +511,7 @@
         <DemoExample Title="Accessibility" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
                 The surface carries <b>role="dialog"</b> and <b>aria-modal="true"</b>. <b>Blocking</b> makes the role
-                <b>alertdialog</b>, <b>IsAlert</b> sets it by hand, and <b>Modeless</b> turns aria-modal to false. The Dialog is named
+                <b>alertdialog</b>, <b>Alert</b> sets it by hand, and <b>Modeless</b> turns aria-modal to false. The Dialog is named
                 by its <b>Title</b>, rendered as an <b>h2</b>, and described by its <b>Subtitle</b> and <b>Message</b>;
                 <b>TitleAriaId</b> and <b>SubtitleAriaId</b> point them at elements of your own instead. A <b>HeaderTemplate</b>
                 replaces the title, so pair it with <b>TitleAriaId</b> or <b>AriaLabel</b>.

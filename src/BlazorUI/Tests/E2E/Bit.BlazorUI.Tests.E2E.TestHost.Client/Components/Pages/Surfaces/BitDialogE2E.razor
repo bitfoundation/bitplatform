@@ -123,13 +123,13 @@
     </BitDialog>
 </E2ESection>
 
-<E2ESection Id="dismiss" Title="Dismiss behavior: Blocking, CloseOnOverlayClick, CloseOnEscape, Modeless, IsAlert, NoDismissPreventedAnimation">
+<E2ESection Id="dismiss" Title="Dismiss behavior: Blocking, CloseOnOverlayClick, CloseOnEscape, Modeless, Alert, NoDismissPreventedAnimation">
     <button id="btn-blocking-open" @onclick="() => _blockingOpen = true">Blocking</button>
     <button id="btn-nooverlay-open" @onclick="() => _noOverlayOpen = true">No overlay click</button>
     <button id="btn-noescape-open" @onclick="() => _noEscapeOpen = true">No Escape</button>
     <button id="btn-modeless-open" @onclick="() => _modelessOpen = true">Modeless</button>
-    <button id="btn-notalert-open" @onclick="() => _notAlertOpen = true">Blocking, IsAlert false</button>
-    <button id="btn-alert-open" @onclick="() => _alertOpen = true">IsAlert</button>
+    <button id="btn-notalert-open" @onclick="() => _notAlertOpen = true">Blocking, Alert false</button>
+    <button id="btn-alert-open" @onclick="() => _alertOpen = true">Alert</button>
     <button id="btn-noanim-open" @onclick="() => _noAnimOpen = true">No animation</button>
     <button id="btn-forceanim-open" @onclick="() => _forceAnimOpen = true">ForceAnimation</button>
     <button id="behind-button" @onclick="() => _behindClicks++">Behind</button>
@@ -153,11 +153,11 @@
     <BitDialog Id="modeless-dialog" Modeless @bind-IsOpen="_modelessOpen" Position="BitPosition.BottomRight" Title="Modeless"
                Message="The page behind is still usable." />
 
-    <BitDialog Id="notalert-dialog" Blocking IsAlert="false" @bind-IsOpen="_notAlertOpen" Title="Blocking dialog" Message="Not an alert." />
+    <BitDialog Id="notalert-dialog" Blocking Alert="false" @bind-IsOpen="_notAlertOpen" Title="Blocking dialog" Message="Not an alert." />
 
     <BitDialog Id="forceanim-dialog" Blocking ForceAnimation @bind-IsOpen="_forceAnimOpen" Title="Forced animation" Message="Shakes under reduced motion too." />
 
-    <BitDialog Id="alert-dialog" IsAlert="true" @bind-IsOpen="_alertOpen" Title="Alert" Message="An alert dialog." />
+    <BitDialog Id="alert-dialog" Alert="true" @bind-IsOpen="_alertOpen" Title="Alert" Message="An alert dialog." />
 
     <BitDialog Id="noanim-dialog" Blocking NoDismissPreventedAnimation @bind-IsOpen="_noAnimOpen" Title="No shake"
                Message="Refused without a shake." OnDismissPrevented="r => _prevented.Add(r.ToString())" />
