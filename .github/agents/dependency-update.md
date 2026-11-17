@@ -153,6 +153,11 @@ the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinni
 `GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0. So do the `Xamarin.AndroidX.Camera.*`
 packages of `Bit.BbScanner.Maui`: 1.6.x's `Camera.View` pulls Fragment 1.9.0, so they stay on the newest 1.5.x.
 
+**MSTest in the Boilerplate is held at 4.5.2.** With 4.5.3, the Workbench job of CI Templates E2E fails on every
+run: after a code is resent on the Account page's phone or email step, Go back doesn't bring the first step back on a
+phone surface. The cause isn't known yet. The rest of the repo moves on; move the Boilerplate's MSTest once the
+Workbench job passes with the newer one.
+
 **EF Core in the Boilerplate follows its PostgreSQL provider.** A preview of
 `Npgsql.EntityFrameworkCore.PostgreSQL` asks for one exact EF Core version, and a provider built for another
 one fails at runtime ("Method not found"). So the Boilerplate's EF Core stays on the version the newest Npgsql
