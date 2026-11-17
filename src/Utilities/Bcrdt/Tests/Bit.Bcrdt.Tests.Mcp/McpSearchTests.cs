@@ -42,7 +42,9 @@ public partial class McpSearchTests
         ("presence timeout", "PresenceTimeout"),
         ("render coalescing", "BcrdtComponentBase"),
         ("a text field two people can edit at once without losing either's words", "Binding to inputs"),
-        ("a text field two people can edit at once without losing either's words", "BcrdtTextArea"),
+        ("two users typing in the same textarea", "BcrdtTextArea"),
+        ("can undo", "CanUndo"),
+        ("can redo", "CanRedo"),
     ];
 
     [TestMethod]
@@ -127,6 +129,36 @@ public partial class McpSearchTests
             Assert.IsFalse(result.Hits.Any(hit => hit.Kind == "Guide section" && hit.Title is "Packages" or "Projects" or "Upgrading"),
                 $"'{query}' ranked a list of the API: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
         }
+    }
+
+    /// <summary>
+    /// A query word one of the first hits already says - in its text, if not in its name - is in view, so
+    /// no hit gives its place to an entry that merely has the word in its name: the sections on the hub's
+    /// absolute URL explain "url", and an avatar's URL answers nothing about a SignalR hub.
+    /// </summary>
+    [TestMethod]
+    public async Task A_word_the_first_hits_explain_does_not_pull_in_a_name_that_merely_has_it()
+    {
+        foreach (var limit in new[] { 6, 8, 10 })
+        {
+            var result = await McpCall.StructuredAsync<BcrdtSearchResultDto>("SearchBcrdt", new() { ["query"] = "signalr hub absolute url", ["limit"] = limit });
+
+            Assert.IsFalse(result.Hits.Any(hit => hit.Title.Contains("AvatarUrl", StringComparison.Ordinal)),
+                $"limit {limit}: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+        }
+    }
+
+    /// <summary>
+    /// "can" is filler in a question and the first word of CanUndo, CanRedo and CanMergeWith: it names
+    /// those, and does not put an entry among the hits on its own.
+    /// </summary>
+    [TestMethod]
+    public async Task A_word_that_only_names_does_not_rank_an_entry_by_itself()
+    {
+        var result = await McpCall.StructuredAsync<BcrdtSearchResultDto>("SearchBcrdt", new() { ["query"] = "can redo", ["limit"] = 10 });
+
+        Assert.AreEqual("BcrdtUndoManager.CanRedo", result.Hits[0].Title, string.Join(" | ", result.Hits.Select(hit => hit.Title)));
+        Assert.IsFalse(result.Hits.Any(hit => hit.Title.EndsWith(".CanMergeWith", StringComparison.Ordinal)), string.Join(" | ", result.Hits.Select(hit => hit.Title)));
     }
 
     [TestMethod]

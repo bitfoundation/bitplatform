@@ -113,17 +113,15 @@ public static partial class BcrdtSourceCatalog
     }
 
     /// <summary>
-    /// The README text under a heading up to its first sub-section - the text only this section holds,
-    /// since each of its sub-sections is a section of its own. What the search ranks a section by:
-    /// counted with its sub-sections, a parent holds the words of every one of them, and the longest
-    /// parent - the architecture, the guide for contributors - matched every question put in plain words.
+    /// Every guide section, in reading order, with the README text under its heading up to its first
+    /// sub-section - the text only that section holds, since each of its sub-sections is a section of
+    /// its own. What the search ranks a section by: counted with its sub-sections, a parent holds the
+    /// words of every one of them, and the longest parent - the architecture, the guide for
+    /// contributors - matched every question put in plain words.
     /// </summary>
-    public static string? GetGuideSectionOwnText(string heading)
+    public static IEnumerable<(BcrdtGuideSectionDto Section, string OwnText)> GuideSectionsWithOwnText()
     {
-        var section = FindSection(heading);
-        if (section is null) return null;
-
-        return string.Join('\n', _readmeLines.Value[section.Start..section.OwnEnd]).TrimEnd();
+        return _sections.Value.Select(section => (section.Dto, string.Join('\n', _readmeLines.Value[section.Start..section.OwnEnd]).TrimEnd()));
     }
 
     /// <summary>The content of an embedded source file, or null when the path is unknown.</summary>
@@ -224,7 +222,7 @@ public static partial class BcrdtSourceCatalog
                 Level = level,
                 Parent = parent,
                 Lines = end - index
-            }, index, end, i + 1 < headings.Count ? Math.Min(end, headings[i + 1].Index) : end));
+            }, index, end, i + 1 < headings.Count ? headings[i + 1].Index : end));
         }
 
         return [.. sections];

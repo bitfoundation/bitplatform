@@ -433,10 +433,9 @@ await collaboration.CloseAsync("board-7");
 
 ## Binding to inputs
 
-A text field - an HTML `<input>` or `<textarea>` - reports its **entire new value**, not the change the user made.
-Writing that value straight into a `BcrdtText` would delete every character and reinsert it - discarding every
-concurrent edit, so two people typing into one field at once would lose each other's words, moving every remote cursor
-to the start, and sending an update the size of the document for one keystroke.
+An HTML input reports its **entire new value**, not the change the user made. Writing that value straight into a
+`BcrdtText` would delete every character and reinsert it - discarding every concurrent edit, moving every remote
+cursor to the start, and sending an update the size of the document for one keystroke.
 
 `BcrdtTextSynchronizer` recovers the real edit:
 
