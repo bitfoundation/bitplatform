@@ -35,6 +35,16 @@ public partial class McpSearchTests
         ("OnDrop", "BdndDropTarget.OnDrop"),
         ("undo a move", "Moves you can check, apply and undo"),
         ("move several selected items", "Moves you can check, apply and undo"),
+        ("dragging several selected items at once", "Dragging several items"),
+        ("dragging", "Dragging several items"),
+        ("feedback while dragging", "Feedback while dragging"),
+        ("dropping", "Dropping"),
+        ("handle dropping on a target", "Dropping"),
+        ("drags", "Allowing and forbidding drags"),
+        ("cancel a drag", "Lazy items and cancelling a drag"),
+        ("ghost image", "Custom drag layers"),
+        ("grip", "Drag handles"),
+        ("dropzone", "Drop targets"),
         ("prevent dropping a node into its own children", "Trees"),
         ("bortable or bdnd", "Bdnd and the other bit utilities"),
         ("change the keyboard shortcuts", "Choosing the keys"),
@@ -64,7 +74,7 @@ public partial class McpSearchTests
     {
         // Among the first hits is not enough for the questions the guide has a section of that very
         // name for: the explanation has to come before the members and pages that mention it.
-        foreach (var (query, expected) in new[] { ("sortable list", "Sortable lists"), ("custom drag preview", "Custom drag layers"), ("drag handle", "Drag handles"), ("nested drop targets", "Nested drop targets"), ("drop result", "Drop results") })
+        foreach (var (query, expected) in new[] { ("sortable list", "Sortable lists"), ("reorder a list by dragging its items", "Sortable lists"), ("reorder items by dragging them", "Sortable lists"),("custom drag preview", "Custom drag layers"), ("drag handle", "Drag handles"), ("nested drop targets", "Nested drop targets"), ("drop result", "Drop results") })
         {
             var result = await McpCall.StructuredAsync<BdndSearchResultDto>("SearchBdnd", new() { ["query"] = query, ["limit"] = 3 });
 
