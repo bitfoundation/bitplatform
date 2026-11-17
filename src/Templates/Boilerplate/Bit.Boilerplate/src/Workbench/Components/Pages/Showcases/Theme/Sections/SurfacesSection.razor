@@ -8,7 +8,7 @@
             </BitAccordion>
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
-            <BitAccordion Title="@ProfileTitle" DefaultIsExpanded="true">
+            <BitAccordion Title="@ProfileTitle" DefaultExpanded="true">
                 <BitText Typography="BitTypography.Body2">@SampleText</BitText>
             </BitAccordion>
         </StateSample>
@@ -178,7 +178,7 @@
     <ComponentStates Name="BitTooltip">
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)">
             <div class="tooltip-stage">
-                <BitTooltip Text="@Localizer[nameof(WorkbenchStrings.ThemeTooltipText)]" IsShown>
+                <BitTooltip Text="@Localizer[nameof(WorkbenchStrings.ThemeTooltipText)]" Shown>
                     <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Info" IconOnly AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeTooltipText)]" />
                 </BitTooltip>
             </div>

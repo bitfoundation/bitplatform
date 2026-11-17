@@ -424,6 +424,16 @@ function Install-AndroidApps {
                     Invoke-Adb uninstall $apk.Package | Out-Null
                     $output = Invoke-Adb install $apk.Path
                 }
+
+                if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE|not enough space') {
+                    Write-Host "  $($Matches[0]) even then: uninstalling the Play updates of the Google apps the suite never opens."
+
+                    foreach ($unused in 'com.google.android.youtube', 'com.google.android.apps.youtube.music', 'com.google.android.apps.maps', 'com.google.android.apps.photos', 'com.google.android.apps.docs', 'com.google.android.gm', 'com.google.android.calendar', 'com.google.android.googlequicksearchbox', 'com.google.android.tts') {
+                        Invoke-Adb shell cmd package uninstall-system-updates $unused | Out-Null
+                    }
+
+                    $output = Invoke-Adb install $apk.Path
+                }
             }
             finally {
                 Invoke-Adb shell settings delete global sys_storage_threshold_max_bytes | Out-Null
@@ -603,7 +613,10 @@ function Get-CdpOwner([int] $port) {
 
     if ($listener) {
         $webView = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
-        (Get-Process -Id $webView.ParentProcessId -ErrorAction SilentlyContinue).ProcessName
+
+        if ($webView) {
+            (Get-Process -Id $webView.ParentProcessId -ErrorAction SilentlyContinue).ProcessName
+        }
     }
 }
 
@@ -634,11 +647,20 @@ function Update-WindowsApps {
         $name = [IO.Path]::GetFileNameWithoutExtension($app.Exe)
         $deadline = (Get-Date).AddMinutes(10)
         $tapped = $false
+        $reopened = $false
 
         while (-not (Test-Version (Get-ProductVersion $app.Exe)) -and (Get-Date) -lt $deadline) {
             $owner = Get-CdpOwner 9222
+            $downloaded = Get-Item (Join-Path $app.Root "packages\$($app.Id)-$script:expectedVersion-full.nupkg") -ErrorAction SilentlyContinue
 
-            if (-not $tapped -and $owner -like '*.Client.Windows' -and $owner -ne $name) {
+            if (-not $reopened -and $downloaded -and $downloaded.LastWriteTime -lt (Get-Date).AddMinutes(-1)) {
+                Write-Host "  its release has waited downloaded for a minute without being applied, which the app's next start does. Opening it again."
+                Stop-WindowsApps
+                Start-Process $app.Exe -WindowStyle Minimized
+                $tapped = $true
+                $reopened = $true
+            }
+            elseif (-not $tapped -and $owner -like '*.Client.Windows' -and $owner -ne $name) {
                 Write-Host "  $owner restarted into its update and holds the debugging port. Closing it and opening $($app.Id) again."
                 Stop-WindowsApps
                 Start-Process $app.Exe -WindowStyle Minimized

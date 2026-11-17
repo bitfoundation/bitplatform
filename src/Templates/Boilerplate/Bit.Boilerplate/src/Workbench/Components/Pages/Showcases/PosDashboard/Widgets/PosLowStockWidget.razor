@@ -31,7 +31,7 @@
                     }
                     else
                     {
-                        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IsLoading="ordering.Contains(item.NameKey)" OnClick="() => Reorder(item)">@Localizer[nameof(WorkbenchStrings.PosReorder)]</BitButton>
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" Loading="ordering.Contains(item.NameKey)" OnClick="() => Reorder(item)">@Localizer[nameof(WorkbenchStrings.PosReorder)]</BitButton>
                     }
                 </li>
             }

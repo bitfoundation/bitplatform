@@ -2,7 +2,7 @@
 
 <ThemeSection Id="motion" Title="@Localizer[nameof(WorkbenchStrings.ThemeMotion)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeMotionHowLongTheThemeS)]">
     <div class="row">
-        <BitToggleButton IconName="@BitIconName.Play" OnIconName="@BitIconName.Previous" OnText="@Localizer[nameof(WorkbenchStrings.TourBack)]" OffText="@Localizer[nameof(WorkbenchStrings.ThemeMotionPlay)]" @bind-IsChecked="isPlayed" />
+        <BitToggleButton IconName="@BitIconName.Play" OnIconName="@BitIconName.Previous" OnText="@Localizer[nameof(WorkbenchStrings.TourBack)]" OffText="@Localizer[nameof(WorkbenchStrings.ThemeMotionPlay)]" @bind-Checked="isPlayed" />
     </div>
 
     <div class="motions @(isPlayed ? "played" : null)">
@@ -29,7 +29,7 @@
             <TokenLabel Name="--bit-mot-easing-spinner" Value="@Values.GetValueOrDefault("--bit-mot-easing-spinner")" />
         </div>
         <div class="row">
-            <BitButton IsLoading LoadingLabel="@Localizer[nameof(WorkbenchStrings.ThemeMotionSaving)]">@AppLocalizer[nameof(AppStrings.Save)]</BitButton>
+            <BitButton Loading LoadingLabel="@Localizer[nameof(WorkbenchStrings.ThemeMotionSaving)]">@AppLocalizer[nameof(AppStrings.Save)]</BitButton>
         </div>
     </div>
 

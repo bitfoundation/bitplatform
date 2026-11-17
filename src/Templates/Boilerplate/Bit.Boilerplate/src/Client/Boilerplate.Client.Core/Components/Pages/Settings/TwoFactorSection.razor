@@ -50,7 +50,7 @@
                     <br />
                     <div>
                         <BitOtpInput @bind-Value="verificationCode"
-                                     IsLoading="isWaiting"
+                                     Loading="isWaiting"
                                      AutoFocus
                                      OnFill="WrapHandled(EnableTwoFactorAuth)"
                                      Label="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodeLabel)]" />

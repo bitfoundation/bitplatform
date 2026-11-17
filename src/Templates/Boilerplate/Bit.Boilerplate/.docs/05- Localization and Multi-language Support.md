@@ -263,7 +263,7 @@ Here's an actual example from the project (`src/Client/Boilerplate.Client.Core/C
         <BitLabel For="catColorInput">@Localizer[nameof(AppStrings.Color)]</BitLabel>
         <ValidationMessage For="() => category.Color" />
         
-        <BitButton IsLoading=isSaving ButtonType="BitButtonType.Submit">
+        <BitButton Loading=isSaving ButtonType="BitButtonType.Submit">
             @Localizer[nameof(AppStrings.Save)]
         </BitButton>
     </BitStack>
