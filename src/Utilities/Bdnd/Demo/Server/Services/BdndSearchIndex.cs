@@ -228,7 +228,9 @@ public static class BdndSearchIndex
     /// a drag handle - and the one with more material behind it would otherwise fill every place,
     /// leaving the caller to conclude the other has no answer. So for each word that is the name of
     /// some entry yet names none of the top hits, the best entry it does name takes the place of the
-    /// lowest-ranked hit that is not itself there for that reason. The order stays the ranking's.
+    /// lowest-ranked hit that can be spared: one not itself there for that reason, and not the only
+    /// top hit some query word names - a hit that alone keeps one word in view is not traded for
+    /// another, so a single place keeps the best answer. The order stays the ranking's.
     /// </summary>
     private static (Entry Entry, int Score)[] Cover((Entry Entry, int Score)[] ranked, Term[] terms, int take)
     {
@@ -244,7 +246,8 @@ public static class BdndSearchIndex
             var best = ranked.Skip(take).FirstOrDefault(hit => hit.Entry.IsNamedBy(term));
             if (best.Entry is null) continue;
 
-            var replace = top.FindLastIndex(hit => kept.Contains(hit.Entry) is false);
+            var replace = top.FindLastIndex(hit => kept.Contains(hit.Entry) is false
+                                                   && terms.Where(hit.Entry.IsNamedBy).All(named => top.Any(other => other.Entry != hit.Entry && other.Entry.IsNamedBy(named))));
             if (replace < 0) break;
 
             top[replace] = best;
