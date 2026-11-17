@@ -488,7 +488,7 @@ public class BitDialogTests : BunitTestContext
     [DataRow(null)]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitDialogRoleRespectsIsAlertAndBlocking(bool? isAlert)
+    public void BitDialogRoleRespectsAlertAndBlocking(bool? isAlert)
     {
         var component = RenderComponent<BitDialog>(parameters =>
         {
@@ -498,7 +498,7 @@ public class BitDialogTests : BunitTestContext
 
             if (isAlert.HasValue)
             {
-                parameters.Add(p => p.IsAlert, isAlert);
+                parameters.Add(p => p.Alert, isAlert);
             }
         });
 

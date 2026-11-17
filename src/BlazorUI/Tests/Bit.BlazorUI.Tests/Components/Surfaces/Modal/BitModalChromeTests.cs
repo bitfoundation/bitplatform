@@ -69,7 +69,7 @@ public class BitModalChromeTests : BunitTestContext
     public void BitModalBlockingShouldAnnounceItselfAsAnAlertDialog()
     {
         // A surface that refuses to be dismissed by a click outside of it is one waiting to be answered,
-        // which is what the alertdialog role says - unless IsAlert was asked for explicitly.
+        // which is what the alertdialog role says - unless Alert was asked for explicitly.
         var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
@@ -91,7 +91,7 @@ public class BitModalChromeTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Blocking, true);
-            parameters.Add(p => p.IsAlert, false);
+            parameters.Add(p => p.Alert, false);
         });
 
         Assert.AreEqual("dialog", explicitlyNot.Find(".bit-mdl-ctn").Attributes["role"]?.Value);

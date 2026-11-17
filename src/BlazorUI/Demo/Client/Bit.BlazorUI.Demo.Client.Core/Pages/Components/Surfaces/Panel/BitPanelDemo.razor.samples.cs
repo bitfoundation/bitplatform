@@ -193,14 +193,14 @@ private void HandleOnDismissing(BitPanelDismissArgs args)
 <BitToggle @bind-Value=""a11yNoAutoFocus"" Label=""NoAutoFocus"" />
 <BitToggle @bind-Value=""a11yNoFocusTrap"" Label=""NoFocusTrap"" />
 <BitToggle @bind-Value=""a11yNoRestoreFocus"" Label=""NoRestoreFocus"" />
-<BitToggle @bind-Value=""a11yIsAlert"" Label=""IsAlert"" />
+<BitToggle @bind-Value=""a11yAlert"" Label=""Alert"" />
 
 <BitButton OnClick=""() => isA11yPanelOpen = true"">Open panel</BitButton>
 
 <BitPanel @bind-IsOpen=""isA11yPanelOpen""
           TitleAriaId=""panel-a11y-title""
           SubtitleAriaId=""panel-a11y-subtitle""
-          IsAlert=""a11yIsAlert""
+          Alert=""a11yAlert""
           NoAutoFocus=""a11yNoAutoFocus""
           NoFocusTrap=""a11yNoFocusTrap""
           NoRestoreFocus=""a11yNoRestoreFocus"">
@@ -216,7 +216,7 @@ private void HandleOnDismissing(BitPanelDismissArgs args)
 private bool a11yNoAutoFocus;
 private bool a11yNoFocusTrap;
 private bool a11yNoRestoreFocus;
-private bool a11yIsAlert;
+private bool a11yAlert;
 private bool isA11yPanelOpen;";
 
     private readonly string example7RazorCode = @"

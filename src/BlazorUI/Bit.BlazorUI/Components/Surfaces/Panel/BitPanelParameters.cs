@@ -113,7 +113,7 @@ public class BitPanelParameters
     /// <summary>
     /// Reports the panel as an alertdialog instead of a dialog.
     /// </summary>
-    public bool? IsAlert { get; set; }
+    public bool? Alert { get; set; }
 
     /// <summary>
     /// Darkens the page behind the panel with its overlay.
@@ -283,7 +283,7 @@ public class BitPanelParameters
             GrabberAriaLabelFormat = params1.GrabberAriaLabelFormat ?? params2.GrabberAriaLabelFormat,
             Header = params1.Header ?? params2.Header,
             HeaderText = params1.HeaderText ?? params2.HeaderText,
-            IsAlert = params1.IsAlert ?? params2.IsAlert,
+            Alert = params1.Alert ?? params2.Alert,
             ModeFull = params1.ModeFull ?? params2.ModeFull,
             Modeless = params1.Modeless ?? params2.Modeless,
             NoAutoFocus = params1.NoAutoFocus ?? params2.NoAutoFocus,

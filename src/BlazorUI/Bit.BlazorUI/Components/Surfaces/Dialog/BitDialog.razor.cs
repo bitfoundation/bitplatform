@@ -105,6 +105,11 @@ public partial class BitDialog : BitComponentBase
     public bool AbsolutePosition { get; set; }
 
     /// <summary>
+    /// Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.
+    /// </summary>
+    [Parameter] public bool? Alert { get; set; }
+
+    /// <summary>
     /// Moves the focus into the Dialog when it opens, onto the first focusable element it holds,
     /// falling back to the Dialog itself when it holds none.
     /// <br />
@@ -339,11 +344,6 @@ public partial class BitDialog : BitComponentBase
     /// unless it is set to something else.
     /// </remarks>
     [Parameter] public string? Height { get; set; }
-
-    /// <summary>
-    /// Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.
-    /// </summary>
-    [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
     /// Whether the Cancel button of the Dialog can be pressed.
@@ -1383,7 +1383,7 @@ public partial class BitDialog : BitComponentBase
         _ => null
     };
 
-    private string GetRole() => (IsAlert ?? (Blocking && Modeless is false)) ? "alertdialog" : "dialog";
+    private string GetRole() => (Alert ?? (Blocking && Modeless is false)) ? "alertdialog" : "dialog";
 
     private string GetAriaModal() => (Modeless is false).ToString().ToLowerInvariant();
 

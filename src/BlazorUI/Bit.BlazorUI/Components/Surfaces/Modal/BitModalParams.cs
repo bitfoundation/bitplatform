@@ -112,7 +112,7 @@ public partial class BitModalParams : BitComponentBaseParams, IBitComponentParam
     /// <summary>
     /// Determines the ARIA role of the Modal (alertdialog/dialog).
     /// </summary>
-    public bool? IsAlert { get; set; }
+    public bool? Alert { get; set; }
 
     /// <summary>
     /// Keeps the Modal in the page while it is closed instead of building it again the next time it opens.
@@ -285,9 +285,9 @@ public partial class BitModalParams : BitComponentBaseParams, IBitComponentParam
             bitModal.TakeFromCascade(nameof(Height), Height, static m => m.Height, static (m, v) => m.Height = v);
         }
 
-        if (IsAlert.HasValue)
+        if (Alert.HasValue)
         {
-            bitModal.TakeFromCascade(nameof(IsAlert), IsAlert.Value, static m => m.IsAlert, static (m, v) => m.IsAlert = v);
+            bitModal.TakeFromCascade(nameof(Alert), Alert.Value, static m => m.Alert, static (m, v) => m.Alert = v);
         }
 
         if (KeepMounted.HasValue)
