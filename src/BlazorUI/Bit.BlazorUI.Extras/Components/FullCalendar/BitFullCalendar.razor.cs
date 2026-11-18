@@ -2,6 +2,11 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// An event calendar and scheduler: day, week, month, year, agenda and resource timeline views of
+/// <see cref="BitFullCalendarEvent"/>s, with recurring events, built-in add/edit/details dialogs, and events dragged,
+/// resized and edited by pointer and keyboard.
+/// </summary>
 public partial class BitFullCalendar : BitComponentBase
 {
     /// <summary>

@@ -5,8 +5,14 @@
 /// </summary>
 public enum BitFullCalendarChangeKind
 {
+    /// <summary>A new event: one saved in the add dialog, or an occurrence of a recurring event that became an event of
+    /// its own.</summary>
     Add,
+
+    /// <summary>An existing event changed: edited in its dialog, moved or resized.</summary>
     Edit,
+
+    /// <summary>An event was deleted.</summary>
     Delete
 }
 
@@ -17,8 +23,13 @@ public enum BitFullCalendarChangeKind
 /// </summary>
 public enum BitFullCalendarChangeSource
 {
+    /// <summary>The add/edit dialog or the details dialog.</summary>
     Dialog,
+
+    /// <summary>The event was moved: dragged, or moved from the keyboard.</summary>
     Drag,
+
+    /// <summary>The event was resized: by its edge, or from the keyboard.</summary>
     Resize
 }
 
