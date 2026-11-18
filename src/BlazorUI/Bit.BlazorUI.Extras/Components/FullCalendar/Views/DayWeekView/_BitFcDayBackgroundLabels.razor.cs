@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcDayBackgroundLabels
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+    [CascadingParameter] internal BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
     /// <summary>The day whose header the labels sit in.</summary>

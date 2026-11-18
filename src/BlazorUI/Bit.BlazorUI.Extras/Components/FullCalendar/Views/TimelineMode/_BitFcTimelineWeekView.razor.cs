@@ -10,7 +10,7 @@ public partial class _BitFcTimelineWeekView
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
+    [CascadingParameter] internal BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
     [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
 
