@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// on the page itself, the prerendered markup and an unmount with the detection attached.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitStickyE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/sticky";

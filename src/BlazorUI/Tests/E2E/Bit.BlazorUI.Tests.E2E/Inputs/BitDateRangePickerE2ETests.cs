@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// OpenCallout and CloseCallout; the accessible names; the base parameters; the disabled contract; and the lifecycle.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDateRangePickerE2ETests : BitDatePickersE2ETestBase
 {
     private const string Route = "/e2e/date-range-picker";

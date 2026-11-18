@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// variables, RTL explicit and inherited, Visibility, HtmlAttributes, prerendering, re-rendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAccordionE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/accordion";

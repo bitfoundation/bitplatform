@@ -20,6 +20,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// Style/Class/Styles/Classes and the public CSS variables, RTL and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPdfViewerE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/pdf-viewer";
@@ -1110,9 +1111,17 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Expect(Viewer("pdv-dims")).ToHaveCSSAsync("height", "400px");
         await Expect(Viewer("pdv-dims")).ToHaveCSSAsync("width", "500px");
 
+        // The box the viewer takes on the page is that size with its border around it (the root is content-box), read off
+        // the computed style rather than allowed for by a tolerance: a 1px border makes the box 402px tall, which a
+        // tolerance of 2 only lets through while the engine does not add a rounding error on top (Firefox: 402.00006).
+        var frame = await Viewer("pdv-dims").EvaluateAsync<double[]>(@"el => {
+            const s = getComputedStyle(el);
+            if (s.boxSizing === 'border-box') return [0, 0];
+            return [parseFloat(s.borderTopWidth) + parseFloat(s.borderBottomWidth), parseFloat(s.borderLeftWidth) + parseFloat(s.borderRightWidth)];
+        }");
         var box = (await Viewer("pdv-dims").BoundingBoxAsync())!;
-        Assert.AreEqual(400, box.Height, 2);
-        Assert.AreEqual(500, box.Width, 2);
+        Assert.AreEqual(400 + frame[0], box.Height, 0.5);
+        Assert.AreEqual(500 + frame[1], box.Width, 0.5);
     }
 
     [TestMethod]

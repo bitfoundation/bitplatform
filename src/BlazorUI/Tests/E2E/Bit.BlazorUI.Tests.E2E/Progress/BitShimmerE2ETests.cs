@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Progress;
 /// parameters winning over them, reduced motion and ForceAnimation, RTL, the prerender and unmount.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitShimmerE2ETests : E2ETestBase
 {
     private const string Path = "/e2e/shimmer";

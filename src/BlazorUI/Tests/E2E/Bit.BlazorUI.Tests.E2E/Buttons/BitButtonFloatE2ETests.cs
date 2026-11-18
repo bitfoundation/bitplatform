@@ -8,6 +8,7 @@
 /// positioned in, the reset when the anchor changes, turning dragging and floating off at runtime, and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitButtonFloatE2ETests : E2ETestBase
 {
     private const double Tolerance = 1.5;

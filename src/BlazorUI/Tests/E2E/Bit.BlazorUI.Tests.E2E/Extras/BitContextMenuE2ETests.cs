@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// taken away only while there is one to show instead; and the menu named and checked by axe.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitContextMenuE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/context-menu";

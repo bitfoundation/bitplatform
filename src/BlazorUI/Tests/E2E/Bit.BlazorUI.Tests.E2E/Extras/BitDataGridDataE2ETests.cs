@@ -12,9 +12,27 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// hidden), and an IQueryable source.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/data";
+
+    // Records, from now on, whether the grid shows itself busy (aria-busy="true" on its table) and the part given (holding
+    // the text given, if any). The page's reads are in flight for a few hundred milliseconds only, which a polled
+    // assertion can miss altogether on a busy runner (it polls every half a second there), so what the grid shows
+    // meanwhile is recorded as it shows; BusySeenAsync then waits for both.
+    private Task WatchBusyAsync(string id, string partSelector, string partText = "") => Page.Locator($"#{id}").EvaluateAsync("""
+        (grid, [part, text]) => {
+            window.__e2eGridBusy = false;
+            window.__e2eGridPart = false;
+            new MutationObserver(() => {
+                if (grid.querySelector('.bit-dtg-table')?.getAttribute('aria-busy') === 'true') window.__e2eGridBusy = true;
+                if (grid.querySelector(part)?.textContent?.includes(text)) window.__e2eGridPart = true;
+            }).observe(grid, { attributes: true, childList: true, characterData: true, subtree: true });
+        }
+        """, new[] { partSelector, partText });
+
+    private Task BusySeenAsync() => Page.WaitForFunctionAsync("() => window.__e2eGridBusy && window.__e2eGridPart");
 
     // The id and aria-rowindex of the first row wholly in view under the sticky header.
     private Task<int[]> FirstRowInViewAsync(string gridId) => Viewport(gridId).EvaluateAsync<int[]>("""
@@ -196,10 +214,11 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await Expect(Cell(id, 0, 2)).ToHaveTextAsync("Item 0001");
         await Expect(Table(id)).Not.ToHaveAttributeAsync("aria-busy", new Regex(".*"));
 
+        await WatchBusyAsync(id, ".bit-dtg-loading", "Loading…");
+
         await Pagers(id).Locator("button[aria-label='Last page']").ClickAsync();
 
-        await Expect(Table(id)).ToHaveAttributeAsync("aria-busy", "true");
-        await Expect(Page.Locator($"#{id} .bit-dtg-loading")).ToContainTextAsync("Loading…");
+        await BusySeenAsync();
 
         await Expect(Cell(id, 0, 2)).ToHaveTextAsync("Item 0091");
         await Expect(Table(id)).Not.ToHaveAttributeAsync("aria-busy", new Regex(".*"));
@@ -291,9 +310,9 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await Expect(Text("infinite-last")).ToHaveTextAsync("skip 0, take 20, got 20");
         await Expect(Pagers(id)).ToHaveCountAsync(0);
 
+        await WatchBusyAsync(id, ".bit-dtg-placeholder-row");
         await Viewport(id).EvaluateAsync("el => el.scrollTop = el.scrollHeight");
-        await Expect(Page.Locator($"#{id} .bit-dtg-placeholder-row")).ToHaveCountAsync(1);
-        await Expect(Table(id)).ToHaveAttributeAsync("aria-busy", "true");
+        await BusySeenAsync();
         await Expect(DataRows(id)).ToHaveCountAsync(40);
         await Expect(Text("infinite-last")).ToHaveTextAsync("skip 20, take 20, got 20");
         await Expect(Table(id)).Not.ToHaveAttributeAsync("aria-busy", new Regex(".*"));

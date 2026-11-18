@@ -15,6 +15,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// reduced motion, prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitOtpInputE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/otp-input";

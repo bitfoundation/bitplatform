@@ -385,6 +385,33 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitSearchBoxTrimShouldShowTheTrimmedValueOnceTheChangeCommitsIt(bool immediate)
+    {
+        string? value = null;
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Trim, true);
+            parameters.Add(p => p.Immediate, immediate);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        input.Input("  bit  ");
+
+        // While typing, the input keeps the text typed, whitespace included.
+        Assert.AreEqual("  bit  ", component.Find(".bit-srb-inp").GetAttribute("value"));
+
+        component.Find(".bit-srb-inp").Change("  bit  ");
+
+        Assert.AreEqual("bit", value);
+        Assert.AreEqual("bit", component.Find(".bit-srb-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
     public void BitSearchBoxWithoutTrimShouldKeepTheWhiteSpaces()
     {
         string? value = null;
@@ -580,6 +607,66 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.AreEqual(0, component.FindAll(".bit-srb-cbt").Count);
         Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-hvl"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxRendersTheTypedTextWhileAThrottleHoldsItBack()
+    {
+        // The first keystroke a throttle lets through commits at once, and the render of that commit reaches the element
+        // a round trip behind the typing on a server circuit: carrying the older value, it would write the text of that
+        // keystroke back over the keys typed since, and the next key would go onto the shorter text.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ThrottleTime, 10_000);
+        });
+
+        component.Find(".bit-srb-inp").Input("a");
+        component.WaitForAssertion(() => Assert.AreEqual("a", component.Instance.Value));
+
+        component.Find(".bit-srb-inp").Input("ab");
+        component.Find(".bit-srb-inp").Input("abc");
+        component.Render();
+
+        Assert.AreEqual("a", component.Instance.Value);
+        Assert.AreEqual("abc", component.Find(".bit-srb-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxRendersTheTypedTextUntilTheValueHoldsIt()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Value, "a");
+            parameters.Add(p => p.ValueChanged, (string? _) => { });
+        });
+
+        component.Find(".bit-srb-inp").Input("abc");
+        component.Render();
+
+        Assert.AreEqual("a", component.Instance.Value);
+        Assert.AreEqual("abc", component.Find(".bit-srb-inp").GetAttribute("value"));
+
+        component.Find(".bit-srb-inp").Change("abc");
+
+        Assert.AreEqual("abc", component.Instance.Value);
+        Assert.AreEqual("abc", component.Find(".bit-srb-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShowsAValueThePageSetsOverTheTypedText()
+    {
+        // The page emptying the field after a search, say: what it set is what the field shows, whatever was typed.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Value, "a");
+            parameters.Add(p => p.ValueChanged, (string? _) => { });
+        });
+
+        component.Find(".bit-srb-inp").Input("abc");
+        component.Render(parameters => parameters.Add(p => p.Value, "zzz"));
+
+        Assert.AreEqual("zzz", component.Find(".bit-srb-inp").GetAttribute("value"));
     }
 
     [TestMethod]
@@ -4463,7 +4550,9 @@ public class BitSearchBoxTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, clear.Invocations);
+        // The disposal is dispatched to the renderer, which may still be busy with the input's debounced work, so
+        // the teardown does not necessarily reach the clear before DisposeComponentsAsync returns.
+        component.WaitForAssertion(() => Assert.HasCount(1, clear.Invocations));
         Assert.AreSame(searchBox, reference.Value);
 
         clear.SetVoidResult();

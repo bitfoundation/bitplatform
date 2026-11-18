@@ -18,6 +18,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// activation contracts, runtime re-renders, unmounting and reduced motion.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCalendarE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/calendar";

@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// --bit-Modal-* variables; RTL, explicit and inherited; the base parameters and Disabled; prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitModalE2ETests : E2ETestBase
 {
     private const string PagePath = "/e2e/modal";

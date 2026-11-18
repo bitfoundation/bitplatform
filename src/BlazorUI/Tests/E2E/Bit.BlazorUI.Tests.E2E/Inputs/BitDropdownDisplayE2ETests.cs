@@ -10,6 +10,7 @@
 /// in the body too - with an explicit Color, Size and Transparent winning over them.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownDisplayE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/display";

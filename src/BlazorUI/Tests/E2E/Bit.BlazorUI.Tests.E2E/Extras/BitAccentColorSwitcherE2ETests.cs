@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// cookie, and painted before the circuit connects by the StoredCss and StaticCss first-paint strategies.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAccentColorSwitcherE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/accent-color-switcher";

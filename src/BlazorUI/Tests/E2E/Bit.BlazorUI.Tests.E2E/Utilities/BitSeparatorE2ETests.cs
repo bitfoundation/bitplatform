@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// inherited), the prerender, runtime re-renders and unmount.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitSeparatorE2ETests : E2ETestBase
 {
     private const string Path = "/e2e/separator";

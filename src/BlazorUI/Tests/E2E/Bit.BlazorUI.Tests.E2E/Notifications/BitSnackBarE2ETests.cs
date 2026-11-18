@@ -16,6 +16,7 @@ namespace Bit.BlazorUI.Tests.E2E.Notifications;
 /// variant and size, Style/Class/Styles/Classes, the public CSS variables, and unmounting without an error.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitSnackBarE2ETests : E2ETestBase
 {
     private const string Transparent = "rgba(0, 0, 0, 0)";

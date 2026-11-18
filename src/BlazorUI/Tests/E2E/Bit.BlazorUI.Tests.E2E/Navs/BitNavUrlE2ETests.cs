@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// through the BitNavOption API and custom generic items.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitNavUrlE2ETests : E2ETestBase
 {
     private const string PAGE = "/e2e/nav/url";

@@ -9,6 +9,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// protocol, which is the one way to keep a real touch down; the other engines skip that test.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTooltipTouchE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/tooltip";

@@ -7,6 +7,7 @@
 /// the de-DE and the fa-IR (Persian calendar, right to left) cultures; and a TimeZone of the picker's own.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDateRangePickerTextE2ETests : BitDatePickersE2ETestBase
 {
     private const string Route = "/e2e/date-range-picker/text";

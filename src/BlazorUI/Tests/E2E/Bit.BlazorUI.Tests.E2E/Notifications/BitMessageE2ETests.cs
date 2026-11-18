@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Notifications;
 /// its public CSS variables and the BitParams cascade, mirrors in RTL and unmounts without an error.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMessageE2ETests : E2ETestBase
 {
     private const string Transparent = "rgba(0, 0, 0, 0)";

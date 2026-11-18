@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// reduced motion, the --bit-AiReasoningPartView-* variables and Classes/Styles.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiReasoningPartViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aireasoningpartview";

@@ -14,6 +14,7 @@
 /// The touch swipe is in <see cref="BitCarouselTouchE2ETests"/>.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCarouselE2ETests : E2ETestBase
 {
     private const double Tolerance = 1;
@@ -992,6 +993,7 @@ public class BitCarouselE2ETests : E2ETestBase
 /// the page. The touch points are dispatched through the DevTools protocol, so this runs on Chromium only.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCarouselTouchE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new()

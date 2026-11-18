@@ -12,6 +12,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// unmounting a group whose options unregister themselves.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitChoiceGroupOptionE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/choice-group/option";

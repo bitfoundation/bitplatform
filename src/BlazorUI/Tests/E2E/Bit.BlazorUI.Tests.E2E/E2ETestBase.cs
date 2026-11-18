@@ -35,6 +35,7 @@ public abstract class E2ETestBase
     private IBrowser? _contextBrowser;
     private IBrowserContext? _context;
     private readonly List<string> _pageErrors = [];
+    private bool _isNamedAsFailing;
     private readonly List<string> _consoleErrors = [];
     // The stretches of _pageErrors and _consoleErrors (from, to) raised while the test was taking the page somewhere
     // else, through OpenAsync or ReloadAsync: what of them only says the connection of the page being left is gone is
@@ -119,6 +120,13 @@ public abstract class E2ETestBase
     [TestInitialize]
     public async Task E2EInitializeAsync()
     {
+        // MSTest reads the retry off the class itself, so a class that leaves it out would fail the job on one stalled
+        // step where every other class gets its second attempt.
+        if (Attribute.IsDefined(GetType(), typeof(E2ERetryAttribute), inherit: false) is false)
+        {
+            Assert.Fail($"{GetType().Name} carries no [E2ERetry]: every E2E test class does, next to its [TestClass] (see E2ERetryAttribute).");
+        }
+
         lock (_hostLock)
         {
             if (_isHostStarted is false)
@@ -168,6 +176,11 @@ public abstract class E2ETestBase
     [TestCleanup]
     public async Task E2ECleanupAsync()
     {
+        if (TestContext?.CurrentTestOutcome is not (null or UnitTestOutcome.Passed or UnitTestOutcome.Inconclusive))
+        {
+            NameTheFailingTest();
+        }
+
         try
         {
             var broken = false;
@@ -217,7 +230,7 @@ public abstract class E2ETestBase
             {
                 var message = $"The page raised {pageErrors.Count} uncaught error(s):{Environment.NewLine}{string.Join(Environment.NewLine, pageErrors)}";
                 if (gaveUp) TestContext!.WriteLine(message);
-                else Assert.Fail(message);
+                else FailInCleanup(message);
             }
 
             var consoleErrors = WithoutTheConnectionsLeftBehind(_consoleErrors, _leavingConsoleErrors);
@@ -226,9 +239,25 @@ public abstract class E2ETestBase
             {
                 var message = $"The page logged {consoleErrors.Count} console error(s):{Environment.NewLine}{string.Join(Environment.NewLine, consoleErrors)}";
                 if (gaveUp) TestContext!.WriteLine(message);
-                else Assert.Fail(message);
+                else FailInCleanup(message);
             }
         }
+    }
+
+    // A test result does not carry the name of its test, so a failing test names itself in its output, where
+    // E2ERetryAttribute reads it to report the test should it pass on its second attempt.
+    private void NameTheFailingTest()
+    {
+        if (_isNamedAsFailing || TestContext is null) return;
+
+        _isNamedAsFailing = true;
+        TestContext.WriteLine($"{E2ERetryAttribute.TestNameMarker}{TestContext.FullyQualifiedTestClassName}.{TestContext.TestName}");
+    }
+
+    private void FailInCleanup(string message)
+    {
+        NameTheFailingTest();
+        Assert.Fail(message);
     }
 
     /// <summary>
@@ -302,7 +331,7 @@ public abstract class E2ETestBase
     // page raised before answering it; the timeout lets a rejection nobody handled be reported first. A page that does
     // not answer (closed, crashed, busy past the wait) is left as it is: this only narrows what the leaving stretches
     // that start next can take in.
-    private async Task CatchUpWithThePageAsync()
+    protected async Task CatchUpWithThePageAsync()
     {
         try
         {

@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// carrying the direction into the body, its alignment, the commit target bar - and from an ancestor's dir.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownStyleE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/style";

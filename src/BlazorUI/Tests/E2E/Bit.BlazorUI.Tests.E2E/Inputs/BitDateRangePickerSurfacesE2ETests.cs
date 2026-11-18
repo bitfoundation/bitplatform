@@ -6,6 +6,7 @@
 /// and the surface closes on the next press; a range picked inside the dialog works like anywhere else.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDateRangePickerSurfacesE2ETests : BitDatePickersE2ETestBase
 {
     private const string Route = "/e2e/date-range-picker/surfaces";

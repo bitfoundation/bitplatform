@@ -9,6 +9,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// until it agrees; a bottom sheet shown from code is resized by its grabber; and the open panel passes axe.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPanelServiceE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/panel-service";

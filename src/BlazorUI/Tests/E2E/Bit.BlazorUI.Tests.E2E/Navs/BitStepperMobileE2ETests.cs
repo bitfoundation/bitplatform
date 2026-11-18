@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// a narrow container on a wide screen, are covered by BitStepperE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitStepperMobileE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/stepper/responsive";

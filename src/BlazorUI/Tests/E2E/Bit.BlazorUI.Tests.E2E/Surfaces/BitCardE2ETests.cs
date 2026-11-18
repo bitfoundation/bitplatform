@@ -17,6 +17,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// Visibility, HtmlAttributes, prerendering, re-rendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCardE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/card";

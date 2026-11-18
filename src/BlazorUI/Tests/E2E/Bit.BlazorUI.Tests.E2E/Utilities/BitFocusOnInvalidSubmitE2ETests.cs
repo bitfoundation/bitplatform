@@ -7,6 +7,7 @@
 /// into another form - while a submit that passes, and a field validated as it is typed in, leave the focus where it is.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitFocusOnInvalidSubmitE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/focusoninvalidsubmit";

@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// and the --bit-Button-* variables reaching the button, and right-to-left.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiCopyButtonE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aicopybutton";

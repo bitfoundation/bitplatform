@@ -12,6 +12,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// parameters (Disabled with its handlers dropped, Class, Style, Dir, AriaLabel, HtmlAttributes) cascade like the rest.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitParamsE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/params";

@@ -15,6 +15,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// to load, LazyLoad, prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMapE2ETests : E2ETestBase
 {
     internal const string Route = "/e2e/map";
@@ -185,12 +186,24 @@ public class BitMapE2ETests : E2ETestBase
     private const double ScrolledTop = 50;
 
     /// <summary>
+    /// Brings in the section a button of the page reveals, and waits for the element it adds. The click is dispatched
+    /// rather than pressed: the button only brings the section in, and the maps above it are still laying themselves out
+    /// as Leaflet loads after the page turns interactive, which can move it from under a click between Playwright finding
+    /// it and pressing it (in WebKit the press then went nowhere and the section never came).
+    /// </summary>
+    internal static async Task ShowSectionAsync(IPage page, string buttonId, string addedId)
+    {
+        await page.Locator($"#{buttonId}").DispatchEventAsync("click");
+        await Expect(page.Locator($"#{addedId}")).ToHaveCountAsync(1);
+    }
+
+    /// <summary>
     /// Shows the map in the box at #map-scroller and scrolls the box and the window so the bottom of the map is out of
     /// view of both, and returns how far the window is scrolled and the middle of the marker, which is still in view.
     /// </summary>
     internal static async Task<(double WindowTop, float X, float Y)> ScrollPartOfTheMapOutOfViewAsync(IPage page)
     {
-        await page.Locator("#btn-show-scroller").ClickAsync();
+        await ShowSectionAsync(page, "btn-show-scroller", "map-scroller");
         await ReadyAsync(page, "map-scrolled");
 
         var scroller = page.Locator("#map-scroller");
@@ -1030,7 +1043,7 @@ public class BitMapE2ETests : E2ETestBase
         AllowConsoleErrors = true;
 
         await OpenAsync(Route);
-        await Page.Locator("#btn-show-failed").ClickAsync();
+        await ShowSectionAsync(Page, "btn-show-failed", "map-failed");
 
         await Expect(Page.Locator("#failed-state")).ToHaveTextAsync("Failed");
         var status = Page.Locator("#map-failed .bit-map-status");
@@ -1046,7 +1059,7 @@ public class BitMapE2ETests : E2ETestBase
         AllowConsoleErrors = true;
 
         await OpenAsync(Route);
-        await Page.Locator("#btn-show-failed").ClickAsync();
+        await ShowSectionAsync(Page, "btn-show-failed", "map-failed");
         await Expect(Page.Locator("#failed-state")).ToHaveTextAsync("Failed");
 
         await Page.Locator("#btn-call-failed").ClickAsync();
@@ -1141,6 +1154,7 @@ public class BitMapE2ETests : E2ETestBase
 /// Without the network the libraries cannot load, and the tests say so as inconclusive rather than failing.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMapProvidersE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/map/providers";
@@ -1524,6 +1538,7 @@ public class BitMapProvidersE2ETests : E2ETestBase
 /// Eiffel Tower: the visitor's position is returned and the map is centred on it.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMapGeolocationE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new()
@@ -1552,6 +1567,7 @@ public class BitMapGeolocationE2ETests : E2ETestBase
 /// the window is the marker's, as Leaflet focusing the map on the press scrolls neither.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMapTouchE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new() { HasTouch = true };

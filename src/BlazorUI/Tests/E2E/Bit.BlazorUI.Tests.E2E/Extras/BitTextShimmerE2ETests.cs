@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// re-rendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTextShimmerE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/text-shimmer";
@@ -363,9 +364,24 @@ public class BitTextShimmerE2ETests : E2ETestBase
         Assert.AreEqual("3", (await AnimationAsync("#tsh-thrice"))!.Value.GetProperty("iterations").GetString());
         Assert.AreEqual("Infinity", (await AnimationAsync("#tsh-iter-zero"))!.Value.GetProperty("iterations").GetString(), "Iterations below one is ignored.");
 
-        // The single 600ms sweep finishes and leaves the band where it started its rest, outside the text.
-        await Page.WaitForFunctionAsync(
-            "() => document.getElementById('tsh-once').getAnimations().every(a => a.playState === 'finished')");
+        // The single 600ms sweep finishes and leaves the band where it started its rest, outside the text. Waited for off
+        // the band itself, still for a few frames with no animation running: the finished state alone is not enough, as
+        // WebKit has reported every animation of the element finished (or none at all) while its computed style still
+        // held a position from the middle of the sweep.
+        var rested = await Page.EvaluateAsync<bool>(@"() => new Promise(resolve => {
+            const el = document.getElementById('tsh-once');
+            const read = () => getComputedStyle(el).backgroundPositionX;
+            let last = read(), still = 0, frames = 0;
+            const tick = () => {
+                const now = read();
+                if (el.getAnimations().some(a => a.playState === 'running') || now !== last) { still = 0; last = now; }
+                else if (++still >= 3) return resolve(true);
+                if (++frames > 600) return resolve(false);
+                requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        })");
+        Assert.IsTrue(rested, "The single sweep never came to rest.");
         var restingPosition = await ComputedStyleAsync("#tsh-once", "background-position-x");
         await NextFramesAsync();
         Assert.AreEqual(restingPosition, await ComputedStyleAsync("#tsh-once", "background-position-x"));

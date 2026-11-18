@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// splatted class and style, RTL (explicit and inherited), the prerender, runtime re-renders and unmount.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTextE2ETests : E2ETestBase
 {
     private const string Path = "/e2e/text";

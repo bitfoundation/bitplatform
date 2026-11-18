@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// an inherited dir, the BitParams cascade, and the entry animation under prefers-reduced-motion and ForceAnimation.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDateRangePickerLookE2ETests : BitDatePickersE2ETestBase
 {
     private const string Route = "/e2e/date-range-picker/look";

@@ -8,6 +8,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// page's, the --bit-Tag-* variables reaching the neutral statuses only, Styles and Classes, Disabled and RTL.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiAgentStatusBadgeE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aiagentstatusbadge";

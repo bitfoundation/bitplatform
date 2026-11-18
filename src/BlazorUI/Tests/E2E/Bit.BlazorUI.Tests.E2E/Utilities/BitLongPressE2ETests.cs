@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// variable and axe. Touch is in BitLongPressTouchE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitLongPressE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/long-press";

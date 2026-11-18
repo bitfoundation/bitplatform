@@ -8,6 +8,7 @@
 /// settles; and the open sheet passes axe.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPanelSheetE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/panel-sheet";

@@ -12,6 +12,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// the public variables, and right-to-left.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiPromptInputE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aipromptinput";

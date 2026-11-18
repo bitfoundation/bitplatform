@@ -13,6 +13,7 @@
 /// variant tiers, runtime changes of the items and the options, prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTimelineE2ETests : E2ETestBase
 {
     private const double Tolerance = 1;

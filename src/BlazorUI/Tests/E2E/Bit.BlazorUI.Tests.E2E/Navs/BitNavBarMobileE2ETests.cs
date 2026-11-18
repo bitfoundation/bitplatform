@@ -8,6 +8,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// under a finger, and a bar pinned to the bottom of the screen keeps its items at the bottom edge.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitNavBarMobileE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new()

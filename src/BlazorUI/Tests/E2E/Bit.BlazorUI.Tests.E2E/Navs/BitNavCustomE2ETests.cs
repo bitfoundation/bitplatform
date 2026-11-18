@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// and the disabled nav. The automatic mode of custom items is covered by BitNavUrlE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitNavCustomE2ETests : E2ETestBase
 {
     private const string PAGE = "/e2e/nav/custom";

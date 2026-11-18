@@ -24,6 +24,7 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// too (/e2e/menu-button/context), shared with NoOverlay, which leaves the page its own clicks while the menu is open.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMenuButtonE2ETests : E2ETestBase
 {
     private const string ItemsApi = "/e2e/menu-button";

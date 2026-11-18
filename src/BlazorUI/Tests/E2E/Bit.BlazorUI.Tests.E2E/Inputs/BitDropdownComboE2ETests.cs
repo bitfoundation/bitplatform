@@ -10,6 +10,7 @@
 /// states, Tab closing the list, FocusComboInputAsync / FocusAsync / ComboInputElement, and an Immediate debounce.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownComboE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/combo";

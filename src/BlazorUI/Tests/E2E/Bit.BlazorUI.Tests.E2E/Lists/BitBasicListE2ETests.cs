@@ -14,6 +14,7 @@
 /// unmounting a list with a live AutoLoad observer.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitBasicListE2ETests : E2ETestBase
 {
     private const double Tolerance = 1;

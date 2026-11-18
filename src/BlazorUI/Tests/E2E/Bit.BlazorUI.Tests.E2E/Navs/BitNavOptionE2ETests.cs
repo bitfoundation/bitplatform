@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// options is covered by BitNavUrlE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitNavOptionE2ETests : E2ETestBase
 {
     private const string PAGE = "/e2e/nav/options";

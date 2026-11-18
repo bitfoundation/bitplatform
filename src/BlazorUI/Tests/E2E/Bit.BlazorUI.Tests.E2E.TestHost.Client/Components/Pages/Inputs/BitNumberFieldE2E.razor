@@ -335,7 +335,7 @@
 @* ---------- Events ---------- *@
 
 <E2ESection Id="events" Title="Events">
-    <BitNumberField Id="nf-ev-spin" Label="Spin events" Mode="BitSpinButtonMode.Compact"
+    <BitNumberField Id="nf-ev-spin" Label="Spin events" Mode="BitSpinButtonMode.Compact" ContinuousSpinDelay="60000"
                     OnIncrement="(int v) => { _incrementCount++; _lastSpin = v; }"
                     OnDecrement="(int v) => { _decrementCount++; _lastSpin = v; }" />
     <span id="increment-count">@_incrementCount</span>

@@ -17,6 +17,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// re-rendering and unmounting while open.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCalloutE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/callout";

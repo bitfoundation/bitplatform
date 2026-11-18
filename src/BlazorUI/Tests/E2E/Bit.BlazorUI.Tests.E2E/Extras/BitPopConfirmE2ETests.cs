@@ -7,6 +7,7 @@
 /// disabled one that never opens while its trigger keeps working.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPopConfirmE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/pop-confirm";

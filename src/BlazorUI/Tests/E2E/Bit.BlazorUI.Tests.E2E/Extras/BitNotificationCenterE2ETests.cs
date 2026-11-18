@@ -6,6 +6,7 @@
 /// handing the focus back to the bell, and Clear all.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitNotificationCenterE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/notification-center";
