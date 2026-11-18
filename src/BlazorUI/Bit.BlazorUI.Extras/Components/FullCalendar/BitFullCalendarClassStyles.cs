@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Defines per-part CSS class/style values for <see cref="BitFullCalendar"/>.
+/// </summary>
 public class BitFullCalendarClassStyles
 {
     /// <summary>

@@ -391,11 +391,11 @@ public partial class BitFullCalendarDemo
         {
             Id = "badge-variant-enum",
             Name = "BitFullCalendarBadgeVariant",
-            Description = "Badge display style in the month view.",
+            Description = "How an event's color is drawn on the month badges and the day, week and timeline blocks.",
             Items =
             [
-                new() { Name = "Colored", Description = "Colored badge.", Value = "0" },
-                new() { Name = "Dot", Description = "Colored dot bullet.", Value = "1" },
+                new() { Name = "Colored", Description = "The event is filled with its color.", Value = "0" },
+                new() { Name = "Dot", Description = "The event is drawn on the calendar's neutral surface, with a dot of its color.", Value = "1" },
             ]
         },
         new()
@@ -439,9 +439,9 @@ public partial class BitFullCalendarDemo
             Description = "Identifies where a calendar event change originated from in the UI.",
             Items =
             [
-                new() { Name = "Dialog", Description = "From the add/edit dialog.", Value = "0" },
-                new() { Name = "Drag", Description = "From a drag-and-drop move.", Value = "1" },
-                new() { Name = "Resize", Description = "From resizing an event block.", Value = "2" },
+                new() { Name = "Dialog", Description = "From the add/edit dialog or the details dialog.", Value = "0" },
+                new() { Name = "Drag", Description = "From a move: a drag, or the keyboard.", Value = "1" },
+                new() { Name = "Resize", Description = "From a resize: an event's edge, or the keyboard.", Value = "2" },
             ]
         },
         new()
@@ -614,7 +614,7 @@ public partial class BitFullCalendarDemo
             Parameters =
             [
                 new() { Name = "Use24HourFormat", Type = "bool", DefaultValue = "true", Description = "Uses 24-hour time format instead of 12-hour (AM/PM)." },
-                new() { Name = "BadgeVariant", Type = "BitFullCalendarBadgeVariant", DefaultValue = "BitFullCalendarBadgeVariant.Colored", Description = "Badge display style in the month view.", LinkType = LinkType.Link, Href = "#badge-variant-enum" },
+                new() { Name = "BadgeVariant", Type = "BitFullCalendarBadgeVariant", DefaultValue = "BitFullCalendarBadgeVariant.Colored", Description = "How an event's color is drawn on the month badges and the day, week and timeline blocks.", LinkType = LinkType.Link, Href = "#badge-variant-enum" },
                 new() { Name = "StartOfDayHour", Type = "int", DefaultValue = "8", Description = "Hour the day/week time grid scrolls to on first render. Clamped into the VisibleStartHour/VisibleEndHour window." },
                 new() { Name = "VisibleStartHour", Type = "int", DefaultValue = "0", Description = "First hour rendered by the day, week, and timeline day/week time grids (0–23). Equivalent to slotMinTime in other calendar libraries." },
                 new() { Name = "VisibleEndHour", Type = "int", DefaultValue = "24", Description = "Exclusive last hour rendered by the day, week, and timeline day/week time grids (1–24). Equivalent to slotMaxTime. A value at or below VisibleStartHour is corrected to one hour past it." },
