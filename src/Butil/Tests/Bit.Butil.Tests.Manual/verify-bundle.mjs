@@ -68,6 +68,7 @@ function createSandbox() {
     sandbox.URL = { createObjectURL: () => '', revokeObjectURL: noop };
     sandbox.Blob = function () { };
     sandbox.Response = function () { };
+    sandbox.TextEncoder = function () { };
     sandbox.console = console;
     sandbox.localStorage = {};
     sandbox.sessionStorage = {};
