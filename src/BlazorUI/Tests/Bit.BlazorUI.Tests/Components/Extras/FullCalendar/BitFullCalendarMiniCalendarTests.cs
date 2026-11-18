@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Components.Extras.FullCalendar;
 
 /// <summary>
-/// Covers <see cref="BitFcMiniCalendar"/>, the month grid in the sidebar of the day view, through the calendar that
+/// Covers <see cref="_BitFcMiniCalendar"/>, the month grid in the sidebar of the day view, through the calendar that
 /// renders it: its title, headers and day buttons, browsing the months without moving the selected date, picking a
 /// day, following a date changed elsewhere, the date bounds and the roving tab stop the keys walk.
 /// </summary>

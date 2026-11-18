@@ -29,7 +29,7 @@
 //
 //   // bit-trim: always              kept in every trimmed bundle
 //   // bit-trim: owners BitNav ...    kept whenever an app can use one of these types; a name ending in * stands for every
-//                                    type starting with it (BitFc* - the parts of a component family). A stylesheet is
+//                                    type starting with it (_BitFc* - the parts of a component family). A stylesheet is
 //                                    kept for the component of its own file name unless it says otherwise.
 //   // bit-trim: markup data-x ...    kept whenever the code an app can run - its own and the library's it reaches - or
 //                                    the .html and .js of its projects hold one of these texts: for a script that acts on

@@ -269,9 +269,9 @@ public sealed class BitAssetTrimmingContractTests
     [TestMethod]
     public void AnOwnerEndingInAStarShouldStandForEveryTypeStartingWithIt()
     {
-        var names = new HashSet<string>(["BitFcDayView", "BitButton"], StringComparer.Ordinal);
+        var names = new HashSet<string>(["_BitFcDayView", "BitButton"], StringComparer.Ordinal);
 
-        Assert.IsTrue(AssetSelection.IsPresent("BitFc*", names));
+        Assert.IsTrue(AssetSelection.IsPresent("_BitFc*", names));
         Assert.IsTrue(AssetSelection.IsPresent("BitButton", names));
         Assert.IsFalse(AssetSelection.IsPresent("BitFullCalendar", names));
         Assert.IsFalse(AssetSelection.IsPresent("BitBut", names), "A name without the star matches whole names only.");

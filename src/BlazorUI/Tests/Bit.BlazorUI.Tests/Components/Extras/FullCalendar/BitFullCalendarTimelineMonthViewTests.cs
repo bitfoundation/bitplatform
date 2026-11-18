@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Components.Extras.FullCalendar;
 
 /// <summary>
-/// Covers <see cref="BitFcTimelineMonthView"/> through the calendar that renders it (the Timeline mode's Month view):
+/// Covers <see cref="_BitFcTimelineMonthView"/> through the calendar that renders it (the Timeline mode's Month view):
 /// the day axis, one lane area per resource plus the unassigned row, how events are laned and placed on the day
 /// columns, the day cells as add targets and as one roving tab stop, and the day-precision moves by pointer and key.
 /// </summary>

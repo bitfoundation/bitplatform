@@ -1,7 +1,7 @@
 ﻿/* BitFullCalendar */
 
-// bit-trim: owners BitFullCalendar BitFc*
-// The views, dialogs and blocks the calendar is drawn with are components of their own (BitFc*), rendered by it and
+// bit-trim: owners BitFullCalendar _BitFc*
+// The views, dialogs and blocks the calendar is drawn with are components of their own (_BitFc*), rendered by it and
 // styled here: any of them an app can reach keeps this stylesheet, as the calendar itself does.
 
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
@@ -1240,7 +1240,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-year-month-title {
-    /* Rendered as a real <button> in BitFcYearView for native keyboard activation, so
+    /* Rendered as a real <button> in _BitFcYearView for native keyboard activation, so
        strip the browser-default button chrome (border, background, padding, appearance, font and
        alignment) while keeping the title's own typography and cursor. */
     appearance: none;

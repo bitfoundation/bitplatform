@@ -375,7 +375,7 @@ public partial class BitFullCalendar : BitComponentBase
 
     private BitFullCalendarChangeNotifier _changeNotifier = default!;
     private BitFullCalendarColorScheme _colorScheme = new(null);
-    private BitFcToast? _toast;
+    private _BitFcToast? _toast;
     private bool _rootSetUp;
     private bool _readAutoDirection;
     private SettingsSnapshot? _appliedSettings;
