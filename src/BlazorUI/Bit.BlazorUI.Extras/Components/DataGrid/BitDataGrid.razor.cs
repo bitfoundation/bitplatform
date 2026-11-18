@@ -3582,7 +3582,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         => IsEditing(item) && (!IsCellEditMode || _editColumnId == column.Id);
 
     // Whether an Escape on a navigable cell cancels an edit, the one rule the cells' keyboard handling
-    // (BitDataGridCell.HandleKeyDown, HandleCellKeyDownAsync) and their Escape claim both go by: the open cell
+    // (_BitDataGridCell.HandleKeyDown, HandleCellKeyDownAsync) and their Escape claim both go by: the open cell
     // cancels its own edit, and any other cell the one that is open, so the key is the grid's while an edit is.
     internal bool CancelsEditOnEscape => _editItem is not null;
 
@@ -4719,7 +4719,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 return;
             case "Delete":
                 // Keyboard parity with the command column's Delete button, gated the same way
-                // (Editable). An editing row's cells never route here (see BitDataGridCell), so
+                // (Editable). An editing row's cells never route here (see _BitDataGridCell), so
                 // Delete inside an editor keeps deleting text instead of the row.
                 if (!Editable) { handled = false; break; }
                 await DeleteRowAsync(item);
@@ -4736,7 +4736,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         row = Math.Clamp(row, 0, rows.Count - 1);
         col = Math.Clamp(col, 0, colCount - 1);
         // The target row may span columns; snap focus to the actually-rendered cell so it always
-        // lands on a real BitDataGridCell with tabindex=0 instead of a spanned-away column index.
+        // lands on a real _BitDataGridCell with tabindex=0 instead of a spanned-away column index.
         col = SnapToRenderedColumn(rows[row], col, colDir);
         // While column virtualization is active only the ColumnSlots window exists in the DOM, so the
         // target must additionally snap to a rendered slot or focus would land on a spacer-collapsed

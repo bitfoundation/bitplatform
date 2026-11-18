@@ -88,10 +88,10 @@
         var cellStyle = AppendStyle(AppendStyle(Grid.FrozenStyle(column) + (span > 1 ? $"grid-column:span {span};" : ""), Grid.Styles?.Cell),
                                     column.CellStyleSelector?.Invoke(Item));
 
-        <BitDataGridCell TItem="TItem" Grid="Grid" Item="Item" Column="column" ColIndex="colIndex" ColSpan="span"
+        <_BitDataGridCell TItem="TItem" Grid="Grid" Item="Item" Column="column" ColIndex="colIndex" ColSpan="span"
                             CssClass="@CellClass(column)" Style="@cellStyle" Title="@CellTitle(column)">
             @CellContent(column, colIndex)
-        </BitDataGridCell>
+        </_BitDataGridCell>
     }
 
     @if (Grid.HasCommandColumn)
@@ -208,7 +208,7 @@
             }
             else
             {
-                <BitDataGridCellEditor TItem="TItem" Grid="Grid" Column="column" Item="Item" />
+                <_BitDataGridCellEditor TItem="TItem" Grid="Grid" Column="column" Item="Item" />
             }
         }
         else if (column.Template is not null)
