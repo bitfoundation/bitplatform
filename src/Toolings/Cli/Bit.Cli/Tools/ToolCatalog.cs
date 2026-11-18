@@ -826,15 +826,36 @@ public static partial class ToolCatalog
             string[] version = wanted is null ? [] : ["--version", wanted];
             var aspire = outdated ? context.Runner.FindExecutable("aspire") : null;
             var dotnetTools = Path.Combine(context.Environment.HomeDirectory, ".dotnet", "tools");
+            var dotnetTool = new ProcessSpec { FileName = "dotnet", Arguments = ["tool", outdated ? "update" : "install", "--global", "Aspire.Cli", .. version], Timeout = TimeSpan.FromMinutes(10) };
 
             return new ToolAction
             {
                 ToolId = Id,
                 Title = outdated ? $"Update the Aspire CLI to {wanted}" : wanted is null ? "Install the Aspire CLI" : $"Install the Aspire CLI {wanted}",
-                Commands = [aspire is not null && string.Equals(Path.GetDirectoryName(aspire), dotnetTools, StringComparison.OrdinalIgnoreCase) is false
+                Commands = [outdated is false ? NativeInstaller(context, wanted)
+                    : aspire is not null && string.Equals(Path.GetDirectoryName(aspire), dotnetTools, StringComparison.OrdinalIgnoreCase) is false
                     ? new ProcessSpec { FileName = aspire, Arguments = ["update", "--self", "--channel", "stable"], Timeout = TimeSpan.FromMinutes(10) }
-                    : new ProcessSpec { FileName = "dotnet", Arguments = ["tool", outdated ? "update" : "install", "--global", "Aspire.Cli", .. version], Timeout = TimeSpan.FromMinutes(10) }]
+                    : dotnetTool],
+                Fallback = outdated ? [] : [dotnetTool]
             };
+        }
+
+        private static ProcessSpec NativeInstaller(ToolContext context, string? version)
+        {
+            var installPath = Path.Combine(context.Environment.HomeDirectory, ".aspire", "bin");
+
+            if (context.Environment.IsWindows)
+            {
+                var script = "$installer = Join-Path ([IO.Path]::GetTempPath()) ('aspire-install-' + [guid]::NewGuid().ToString('N') + '.ps1'); " +
+                    "Invoke-WebRequest -UseBasicParsing -Uri 'https://aspire.dev/install.ps1' -OutFile $installer -ErrorAction Stop; " +
+                    $"& $installer -InstallPath '{installPath.Replace("'", "''", StringComparison.Ordinal)}'{(version is null ? "" : $" -Version '{version}'")}; if (-not $?) {{ exit 1 }}; exit $LASTEXITCODE";
+
+                return new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script], Environment = new Dictionary<string, string?> { ["PSModulePath"] = null }, Timeout = TimeSpan.FromMinutes(10) };
+            }
+
+            var shell = $"set -e; installer=\"$(mktemp -d)/aspire-install.sh\"; curl -fsSL -o \"$installer\" https://aspire.dev/install.sh; bash \"$installer\" --install-path '{installPath.Replace("'", "'\\''", StringComparison.Ordinal)}'{(version is null ? "" : $" --version '{version}'")}";
+
+            return new ProcessSpec { FileName = "/bin/sh", Arguments = ["-c", shell], Timeout = TimeSpan.FromMinutes(10) };
         }
 
         private static Version Normalize(Version version) => new(version.Major, version.Minor, Math.Max(version.Build, 0));

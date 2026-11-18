@@ -117,28 +117,52 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
     private async Task RunActionAsync(ToolAction action, bool useSudo, CancellationToken cancellationToken, Func<CancellationToken, Task<ToolStatus>>? detect = null, AdministratorSession? administrator = null)
     {
-        var interactive = action.Interactive || action.Commands.Any(c => c.Interactive);
+        var interactive = action.Interactive || action.Commands.Concat(action.Fallback).Any(c => c.Interactive);
+
+        bool Succeeded(ProcessResult? result) => result is not null && action.SuccessExitCodes.Contains(result.ExitCode) && result.NotFound is false && result.TimedOut is false;
 
         await steps.RunAsync(action.ToolId, action.Title, async (progress, ct) =>
         {
-            ProcessResult? last = null;
-
-            foreach (var command in action.Commands)
+            async Task<ProcessResult?> RunCommandsAsync(IReadOnlyList<ProcessSpec> commands)
             {
-                var spec = command with { Interactive = interactive, OnOutputLine = progress };
+                ProcessResult? result = null;
 
-                if (useSudo)
+                foreach (var command in commands)
                 {
-                    spec = spec.WithSudo(cli.Runner);
+                    var spec = command with { Interactive = interactive, OnOutputLine = progress };
+
+                    if (useSudo)
+                    {
+                        spec = spec.WithSudo(cli.Runner);
+                    }
+
+                    result = administrator is null ? await cli.Runner.RunAsync(spec, ct) : await administrator.RunAsync(spec, ct);
+
+                    if (Succeeded(result) is false)
+                        break;
                 }
 
-                last = administrator is null ? await cli.Runner.RunAsync(spec, ct) : await administrator.RunAsync(spec, ct);
-
-                if (action.SuccessExitCodes.Contains(last.ExitCode) is false || last.NotFound || last.TimedOut)
-                    break;
+                return result;
             }
 
-            var succeeded = last is not null && action.SuccessExitCodes.Contains(last.ExitCode) && last.NotFound is false && last.TimedOut is false;
+            var commands = action.Commands;
+            var last = await RunCommandsAsync(commands);
+            ToolStatus? beforeFallback = null;
+
+            if (Succeeded(last) is false && action.Fallback.Count > 0)
+            {
+                RefreshPath();
+                beforeFallback = detect is null ? null : await detect(ct);
+
+                if (beforeFallback is not { IsSatisfied: true })
+                {
+                    commands = action.Fallback;
+                    last = await RunCommandsAsync(commands);
+                    beforeFallback = null;
+                }
+            }
+
+            var succeeded = Succeeded(last);
             var done = DoneTitle(action.Title);
 
             if (succeeded && action.PathProbe is { } probe && (await cli.Runner.RunAsync(probe, ct)) is { Succeeded: true } probed
@@ -190,11 +214,11 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             {
                 RefreshPath();
 
-                if (await detect(ct) is { IsSatisfied: true } installedAnyway)
+                if ((beforeFallback ?? await detect(ct)) is { IsSatisfied: true } installedAnyway)
                     return StepResult.Succeeded(done, installedAnyway.Version);
             }
 
-            var failed = StepResult.FromProcess(last ?? new ProcessResult { ExitCode = -1 }, done, $"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", string.Join(" && ", action.Commands.Select(c => (useSudo ? "sudo " : "") + c.ShellCommandLine(cli.Environment.Os))));
+            var failed = StepResult.FromProcess(last ?? new ProcessResult { ExitCode = -1 }, done, $"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", string.Join(" && ", commands.Select(c => (useSudo ? "sudo " : "") + c.ShellCommandLine(cli.Environment.Os))));
             return action.Optional ? failed with { Status = StepStatus.Warning } : failed;
         }, cancellationToken, needsTerminal: interactive);
     }
@@ -579,6 +603,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             directories.AddRange(["/opt/homebrew/bin", "/usr/local/bin"]);
         }
 
+        directories.Add(Path.Combine(cli.Environment.HomeDirectory, ".aspire", "bin"));
         directories.Add(Path.Combine(cli.Environment.HomeDirectory, ".dotnet", "tools"));
         cli.Environment.PrependToPath(directories);
         cli.Environment.PrependToPath(firstOnPath, moveToFront: true);
