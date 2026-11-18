@@ -85,10 +85,10 @@ jobs:
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
 
-      # bit setup leaves the Aspire CLI out in CI, so it is installed here, at the version of the app host's Aspire.Hosting.AppHost.
+      # bit setup leaves the Aspire CLI out in CI, so it is installed here, at the version of the app host's Aspire SDK.
       - name: Install the Aspire CLI
         run: |
-          version="$(grep -oE 'Include="Aspire\.Hosting\.AppHost" Version="[^"]+"' src/Directory.Packages.props | grep -oE '[0-9][^"]*')"
+          version="$(grep -oE 'Aspire\.AppHost\.Sdk/[^"]+' src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj | cut -d/ -f2)"
           dotnet tool install Aspire.Cli --version "$version" --tool-path "$RUNNER_TEMP/aspire-cli"
           echo "$RUNNER_TEMP/aspire-cli" >> "$GITHUB_PATH"
 

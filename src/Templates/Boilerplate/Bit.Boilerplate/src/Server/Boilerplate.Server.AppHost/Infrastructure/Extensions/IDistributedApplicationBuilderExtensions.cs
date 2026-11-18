@@ -2,7 +2,6 @@
 //#if (filesStorage == "AzureBlobStorage")
 using Aspire.Hosting.Azure;
 //#endif
-using Aspire.Hosting.Dotnet;
 using Boilerplate.Server.AppHost.Infrastructure.Services;
 
 namespace Aspire.Hosting;
@@ -243,10 +242,10 @@ public static class IDistributedApplicationBuilderExtensions
         /// public ip). Opt-in: does nothing unless the <c>cloudflare-tunnel-*</c> parameters are set (see appsettings.Development.json).
         /// </summary>
         public void AddCloudflareTunnels(
-            IResourceBuilder<DotnetProjectResource> serverWebProject,
-            IResourceBuilder<DotnetProjectResource> landingPageProject
+            IResourceBuilder<ProjectResource> serverWebProject,
+            IResourceBuilder<ProjectResource> landingPageProject
             //#if (api == "Standalone")
-            , IResourceBuilder<DotnetProjectResource> serverApiProject
+            , IResourceBuilder<ProjectResource> serverApiProject
             //#endif
             )
         {
@@ -306,7 +305,7 @@ public static class IDistributedApplicationBuilderExtensions
             if (builder.ExecutionContext.IsRunMode is false)
                 return builder;
 
-            foreach (var project in builder.Resources.OfType<DotnetProjectResource>().ToArray())
+            foreach (var project in builder.Resources.OfType<ProjectResource>().ToArray())
             {
                 foreach (var wildcard in project.Annotations.OfType<EndpointAnnotation>().Where(endpoint => endpoint.TargetHost is "*").ToArray())
                     project.Annotations.Remove(wildcard);
