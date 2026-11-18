@@ -996,7 +996,11 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         }
     }
 
-    public async Task<StepResult> OpenIdeAsync(string ide, Action<string> progress, CancellationToken cancellationToken)
+    /// <summary>
+    /// Opens the project in an IDE. VS Code skips its Workspace Trust prompt for the folder bit trusted itself; a folder left
+    /// untrusted, such as with bit setup --no-trust, keeps VS Code's own checks.
+    /// </summary>
+    public async Task<StepResult> OpenIdeAsync(string ide, Action<string> progress, CancellationToken cancellationToken, bool isTrusted = true)
     {
         var found = IdeLocator.Find(ide, cli.Environment, Runner);
 
@@ -1008,7 +1012,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             IdeLocator.VsCode => new ProcessSpec
             {
                 FileName = found.Executable,
-                Arguments = ["--disable-workspace-trust", project.Directory, Path.Combine(project.Directory, "README.md")]
+                Arguments = isTrusted
+                    ? ["--disable-workspace-trust", project.Directory, Path.Combine(project.Directory, "README.md")]
+                    : [project.Directory, Path.Combine(project.Directory, "README.md")]
             },
             IdeLocator.VisualStudio => new ProcessSpec { FileName = found.Executable, Arguments = [File.Exists(project.Solution) ? project.Solution : project.WebSolutionFilter] },
             _ => new ProcessSpec { FileName = found.Executable, Arguments = [File.Exists(project.Solution) ? project.Solution : project.Directory] }
@@ -1047,7 +1053,13 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (cli.HasTerminal is false || Runner.FindExecutable("gh") is null)
             return false;
 
-        return (await Gh(["auth", "status"], cancellationToken)).Succeeded is false;
+        return await IsSignedInToGitHubAsync(cancellationToken) is false;
+    }
+
+    /// <summary>Signed in to github.com itself: a sign-in to a GitHub Enterprise host alone doesn't count.</summary>
+    private async Task<bool> IsSignedInToGitHubAsync(CancellationToken cancellationToken)
+    {
+        return Runner.FindExecutable("gh") is not null && (await Gh(["auth", "status", "--hostname", "github.com"], cancellationToken)).Succeeded;
     }
 
     public Task<StepResult> GitHubSignInAsync(Action<string> progress, CancellationToken cancellationToken) => GitHubSignInAsync("bit goes on without the GitHub repo", progress, cancellationToken);
@@ -1189,12 +1201,14 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     /// <summary>
     /// Clones the project bit setup was given the address of into its folder. On github.com it first tries without git's
-    /// prompts, which is all a public repository, or one git already has a sign-in for, needs; then it signs in with the
-    /// GitHub CLI in the browser and tries again, as git over HTTPS can't sign in to GitHub on its own on every OS. On any
-    /// other host, and over SSH, git keeps the terminal, so it or its credential manager can ask.
+    /// prompts, which is all a public repository, or one git already has a sign-in for, needs. Only when GitHub refused it
+    /// does it get git a sign-in: the GitHub CLI's, when it is signed in already and git just doesn't use it yet, or a new one
+    /// in the browser, as git over HTTPS can't sign in to GitHub on its own on every OS; then it tries again. On any other
+    /// host, and over SSH, git keeps the terminal, so it or its credential manager can ask.
     /// </summary>
     public async Task<StepResult> CloneAsync(RepositoryAddress repository, Action<string> progress, CancellationToken cancellationToken)
     {
+        const string askForAccess = "If it's private, ask its owner to give your GitHub account access, then run this again.";
         var title = $"Couldn't clone {repository.Name}";
         var again = $"bit setup {repository.Url}";
         var parent = Path.GetDirectoryName(project.Directory)!;
@@ -1221,14 +1235,20 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (first.Succeeded)
             return Cloned(repository);
 
-        if (await CanSignInToGitHubAsync(cancellationToken) is false)
-        {
-            var signedIn = Runner.FindExecutable("gh") is not null && (await Gh(["auth", "status"], cancellationToken)).Succeeded;
+        // A failure a sign-in can't fix, such as the network or a certificate, is reported as it is
+        if (NoAccessRegex().IsMatch(first.Output) is false)
+            return CloneFailed(repository, first, title, again, hint: null);
 
-            return signedIn
-                ? CloneFailed(repository, first, title, again, "If it's private, ask its owner to give your GitHub account access, then run this again.")
-                : CloneFailed(repository, first, title, $"gh auth login --web && gh auth setup-git && {again}", "If it's private, sign in to GitHub first.");
+        if (await IsSignedInToGitHubAsync(cancellationToken))
+        {
+            await Gh(["auth", "setup-git", "--hostname", "github.com"], cancellationToken);
+            var withGh = await CloneAsync(repository, prompts: false, progress, cancellationToken);
+
+            return withGh.Succeeded ? Cloned(repository) : CloneFailed(repository, withGh, title, again, askForAccess);
         }
+
+        if (await CanSignInToGitHubAsync(cancellationToken) is false)
+            return CloneFailed(repository, first, title, $"gh auth login --web && gh auth setup-git && {again}", "If it's private, sign in to GitHub first.");
 
         var signIn = await GitHubSignInAsync("bit can't clone a private repository without it", progress, cancellationToken);
 
@@ -1237,9 +1257,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
         var second = await CloneAsync(repository, prompts: false, progress, cancellationToken);
 
-        return second.Succeeded
-            ? Cloned(repository)
-            : CloneFailed(repository, second, title, again, "If it's private, ask its owner to give your GitHub account access, then run this again.");
+        return second.Succeeded ? Cloned(repository) : CloneFailed(repository, second, title, again, askForAccess);
     }
 
     private Task<ProcessResult> CloneAsync(RepositoryAddress repository, bool prompts, Action<string> progress, CancellationToken cancellationToken)
@@ -1267,14 +1285,27 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private StepResult Cloned(RepositoryAddress repository) => StepResult.Succeeded($"Cloned {repository.Name}", ProjectLocation.ForDisplay(cli.Environment.CurrentDirectory, project.Directory));
 
-    private static StepResult CloneFailed(RepositoryAddress repository, ProcessResult result, string title, string followUp, string? hint)
+    private StepResult CloneFailed(RepositoryAddress repository, ProcessResult result, string title, string followUp, string? hint)
     {
         var failed = StepResult.FromProcess(result, "", title, followUp);
+
+        // git copied the repository but couldn't check its files out: the folder is a clone already, so bit setup would find
+        // it and stop at its missing solution; git's own recovery, then the setup, finishes it
+        if (CheckoutFailedRegex().IsMatch(result.Output))
+            return failed with
+            {
+                Detail = "git copied it but couldn't check its files out",
+                FollowUp = $"cd {ProcessSpec.Quote(project.Directory)} && git restore --source=HEAD :/ && bit setup",
+                ResultCode = "clone.checkout-failed"
+            };
 
         return NoAccessRegex().IsMatch(result.Output)
             ? failed with { Detail = $"{repository.Host} didn't let this computer read {repository.Path}", Hint = hint ?? failed.Hint, ResultCode = "clone.no-access" }
             : failed;
     }
+
+    [GeneratedRegex(@"checkout failed", RegexOptions.IgnoreCase)]
+    private static partial Regex CheckoutFailedRegex();
 
     [GeneratedRegex(@"Repository not found|Authentication failed|could not read Username|terminal prompts disabled|Permission denied|returned error: 40[134]", RegexOptions.IgnoreCase)]
     private static partial Regex NoAccessRegex();

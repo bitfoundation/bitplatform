@@ -44,7 +44,7 @@ public sealed partial record RepositoryAddress
         var trimmed = value.Trim().TrimEnd('/');
 
         if (HttpsRegex().Match(trimmed) is { Success: true } https)
-            return Create(trimmed, https.Groups["host"].Value, https.Groups["path"].Value, isHttps: true);
+            return Create(trimmed, WithoutDefaultPort(https.Groups["host"].Value), https.Groups["path"].Value, isHttps: true);
 
         if (SshRegex().Match(trimmed) is { Success: true } ssh)
             return Create(trimmed, ssh.Groups["host"].Value, ssh.Groups["path"].Value, isHttps: false);
@@ -54,11 +54,17 @@ public sealed partial record RepositoryAddress
 
     /// <summary>
     /// Whether another address, such as a clone's origin, points to this repository: over HTTPS or SSH, with or without
-    /// .git, a user name or a trailing slash, and in any case.
+    /// .git, a user name, HTTPS's own port or a trailing slash. The host is compared in any case, and the path too on
+    /// github.com, which doesn't tell names apart by case; another server may. A value that isn't a network address, such as
+    /// a local path git would read as one, is never the same.
     /// </summary>
     public bool IsSameAs(string? other)
     {
-        return other is not null && string.Equals(Comparable(other), $"{Host}/{Path}", StringComparison.OrdinalIgnoreCase);
+        if (other is null || Comparable(other) is not var (host, path))
+            return false;
+
+        return string.Equals(host, Host, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(path, Path, Host.Equals("github.com", StringComparison.OrdinalIgnoreCase) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
     }
 
     private static RepositoryAddress? Create(string url, string host, string path, bool isHttps)
@@ -72,10 +78,13 @@ public sealed partial record RepositoryAddress
         return path.Split('/').Any(part => part is "" or "." or "..") ? null : new RepositoryAddress(url, host, path, isHttps);
     }
 
-    private static string Comparable(string address)
+    private static string WithoutDefaultPort(string host) => host.EndsWith(":443", StringComparison.Ordinal) ? host[..^":443".Length] : host;
+
+    private static (string Host, string Path)? Comparable(string address)
     {
         var value = address.Trim().TrimEnd('/');
         var scheme = value.IndexOf("://", StringComparison.Ordinal);
+        var isHttps = value.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
 
         if (scheme >= 0)
         {
@@ -86,13 +95,29 @@ public sealed partial record RepositoryAddress
             var colon = value.IndexOf(':', StringComparison.Ordinal);
             value = $"{value[..colon]}/{value[(colon + 1)..]}";
         }
+        else
+        {
+            return null;
+        }
 
         if (value.IndexOf('@', StringComparison.Ordinal) is var at and >= 0 && at < value.IndexOf('/', StringComparison.Ordinal))
         {
             value = value[(at + 1)..];
         }
 
-        return value.EndsWith(".git", StringComparison.OrdinalIgnoreCase) ? value[..^".git".Length] : value;
+        if (value.EndsWith(".git", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value[..^".git".Length];
+        }
+
+        var slash = value.IndexOf('/', StringComparison.Ordinal);
+
+        if (slash <= 0)
+            return null;
+
+        var host = value[..slash];
+
+        return (isHttps ? WithoutDefaultPort(host) : host, value[(slash + 1)..]);
     }
 
     [GeneratedRegex(@"^https://(?<host>[A-Za-z0-9.-]+(:[0-9]{1,5})?)/(?<path>[A-Za-z0-9._~-]+(/[A-Za-z0-9._~-]+)+)$")]

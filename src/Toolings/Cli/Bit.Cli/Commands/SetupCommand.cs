@@ -42,7 +42,8 @@ public static class SetupCommand
             var argument = parseResult.GetValue(pathArgument);
             RepositoryAddress? repository = null;
 
-            if (RepositoryAddress.LooksLikeOne(argument))
+            // A folder that exists stays a folder, even one whose name looks like git@host:path, as a Linux folder's can
+            if (RepositoryAddress.LooksLikeOne(argument) && Directory.Exists(Path.GetFullPath(argument!, cli.Environment.CurrentDirectory)) is false)
             {
                 repository = RepositoryAddress.Parse(argument);
 
@@ -66,6 +67,9 @@ public static class SetupCommand
 
                 if (Directory.Exists(directory) && Directory.EnumerateFileSystemEntries(directory).Any())
                 {
+                    if (cli.Runner.FindExecutable("git") is null)
+                        return cli.UsageError("clone-check-needs-git", $"{directory} already exists, and bit needs git to tell whether it's a clone of {repository.Url}. Install git from https://git-scm.com/downloads and run this again, or move the folder away.");
+
                     if (await IsCloneOfAsync(cli, directory, repository, cancellationToken) is false)
                         return cli.UsageError("folder-not-empty", $"{directory} already exists and isn't a clone of {repository.Url}. Move it away, or run bit setup from another folder.");
 
@@ -126,7 +130,7 @@ public static class SetupCommand
 
                 if (name is null)
                 {
-                    return cli.UsageError("not-a-project", $"{repository.Url} is cloned in {directory}, but it isn't a bit Boilerplate project (no *.Web.slnf or *.slnx at its root).");
+                    return cli.UsageError("not-a-project", $"{repository.Url} is cloned in {directory}, but it isn't a bit Boilerplate project (no *.Web.slnf or *.slnx at its root). If git couldn't check its files out, finish that first: cd {ProcessSpec.Quote(directory)} && git restore --source=HEAD :/ && bit setup");
                 }
             }
 
@@ -208,7 +212,7 @@ public static class SetupCommand
 
                 if (ide is not IdeLocator.None)
                 {
-                    await NewWorkflow.RunProjectStepAsync(steps, context, "open", "Opening the IDE", (progress, ct) => projectSteps.OpenIdeAsync(ide, progress, ct), cancellationToken);
+                    await NewWorkflow.RunProjectStepAsync(steps, context, "open", "Opening the IDE", (progress, ct) => projectSteps.OpenIdeAsync(ide, progress, ct, isTrusted: parseResult.GetValue(noTrust) is false), cancellationToken);
                 }
             }
             catch (OperationCanceledException) when (projectSteps.Running is not null || projectSteps.Workbench is not null || projectSteps.LandingPage is not null)
@@ -264,19 +268,28 @@ public static class SetupCommand
         }
     }
 
-    /// <summary>Whether a folder is already a clone of the repository, so bit setup sets it up instead of cloning it again.</summary>
+    /// <summary>
+    /// Whether a folder is a clone of the repository itself, so bit setup sets it up instead of cloning it again: the root of
+    /// its own git working tree, not a folder inside another one, whose origin as stored, before any insteadOf rewrite git
+    /// applies when it reads it back, is the same repository.
+    /// </summary>
     private static async Task<bool> IsCloneOfAsync(CliServices cli, string directory, RepositoryAddress repository, CancellationToken cancellationToken)
     {
-        if (cli.Runner.FindExecutable("git") is null)
+        var root = await Git(["rev-parse", "--show-toplevel"]);
+
+        if (root.Succeeded is false || string.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(root.Output.Trim())), Path.TrimEndingDirectorySeparator(directory), cli.Environment.IsLinux ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase) is false)
             return false;
 
-        var origin = await cli.Runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["remote", "get-url", "origin"], WorkingDirectory = directory, Timeout = TimeSpan.FromSeconds(30) }, cancellationToken);
+        var origin = await Git(["config", "--get", "remote.origin.url"]);
         return origin.Succeeded && repository.IsSameAs(origin.Output.Trim());
+
+        Task<ProcessResult> Git(string[] arguments) => cli.Runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = arguments, WorkingDirectory = directory, Timeout = TimeSpan.FromSeconds(30) }, cancellationToken);
     }
 
+    /// <summary>VS Code when it's installed, but none in CI or in a dev container or Codespace, which opens the folder itself.</summary>
     private static string DefaultIde(CliServices cli, IReadOnlyList<ToolCheck> tools)
     {
-        if (cli.Environment.IsCI)
+        if (cli.Environment.IsCI || cli.Environment.GetVariable("DEVCONTAINER") is "true" || cli.Environment.GetVariable("CODESPACES") is "true")
             return IdeLocator.None;
 
         return IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null || tools.Any(t => t.Tool.Id is "vscode")

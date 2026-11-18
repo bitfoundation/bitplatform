@@ -12,6 +12,7 @@ public class RepositoryAddressTests
     [DataRow("https://gitlab.com/contoso/apps/Contoso.Shop", "gitlab.com", "contoso/apps/Contoso.Shop", "Contoso.Shop", false)]
     [DataRow("https://dev.azure.com/contoso/Shop/_git/Contoso", "dev.azure.com", "contoso/Shop/_git/Contoso", "Contoso", false)]
     [DataRow("https://git.contoso.com:8443/team/Contoso", "git.contoso.com:8443", "team/Contoso", "Contoso", false)]
+    [DataRow("https://github.com:443/contoso/Contoso", "github.com", "contoso/Contoso", "Contoso", true)]
     [DataRow("git@github.com:contoso/Contoso.git", "github.com", "contoso/Contoso", "Contoso", false)]
     public void AnAddress_Should_GiveItsHostPathAndFolderName(string address, string host, string path, string name, bool signsInWithGitHubCli)
     {
@@ -59,9 +60,22 @@ public class RepositoryAddressTests
     [DataRow("https://github.com/Contoso/contoso/")]
     [DataRow("git@github.com:contoso/Contoso.git")]
     [DataRow("https://someone@github.com/contoso/Contoso")]
+    [DataRow("https://github.com:443/contoso/Contoso")]
     public void ACloneOfTheSameRepository_Should_BeRecognizedWhateverTheFormOfItsOrigin(string origin)
     {
         Assert.IsTrue(RepositoryAddress.Parse("https://github.com/contoso/Contoso")!.IsSameAs(origin));
+    }
+
+    // Outside github.com a server may tell team/Shop from team/shop, and a value without a host is a local path to git
+    [TestMethod]
+    [DataRow("https://GIT.contoso.com/team/Shop.git", true)]
+    [DataRow("git@git.contoso.com:team/Shop.git", true)]
+    [DataRow("https://git.contoso.com/team/shop", false)]
+    [DataRow("git.contoso.com/team/Shop.git", false)]
+    [DataRow("/srv/git.contoso.com/team/Shop", false)]
+    public void AnOriginOnAnotherServer_Should_MatchOnlyWithTheSamePathAndAHost(string origin, bool isSame)
+    {
+        Assert.AreEqual(isSame, RepositoryAddress.Parse("https://git.contoso.com/team/Shop")!.IsSameAs(origin));
     }
 
     [TestMethod]
