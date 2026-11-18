@@ -1,4 +1,4 @@
-using Bit.Bcrdt.Server;
+using Bit.Bcrdt;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;

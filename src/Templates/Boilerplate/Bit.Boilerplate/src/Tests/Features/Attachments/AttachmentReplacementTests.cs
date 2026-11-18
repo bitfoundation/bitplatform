@@ -159,7 +159,7 @@ public class AttachmentReplacementTests
     }
 
     /// <summary>A solid-colour PNG, so two uploads differ in content in a way the served WebP cannot hide.</summary>
-    private static byte[] SolidImage(Rgba32 color, int size = 512)
+    private static byte[] SolidImage(BmageRgba32 color, int size = 512)
     {
         return TestImageFactory.Solid(color, size, size);
     }

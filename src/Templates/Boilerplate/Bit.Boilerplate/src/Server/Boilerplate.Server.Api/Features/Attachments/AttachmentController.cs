@@ -1,8 +1,5 @@
 //+:cnd:noEmit
 using Bit.Bmage;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Pipeline;
 using FluentStorage.Storage;
 using System.Diagnostics.Metrics;
 using Boilerplate.Server.Api.Features.Identity;
@@ -18,7 +15,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 {
     [AutoInject] private IStore blobStorage = default!;
     [AutoInject] private UserManager<User> userManager = default!;
-    [AutoInject] private ImageProcessor imageProcessor = default!;
+    [AutoInject] private BmageImageProcessor imageProcessor = default!;
 
     //#if (signalR == true)
     [AutoInject] private IServiceProvider serviceProvider = default!;
@@ -36,7 +33,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     /// <summary>The largest upload every endpoint here accepts; the Dev MCP reports this value rather than a copy of it.</summary>
     public const int MaxUploadSizeBytes = 11 * 1024 * 1024;
 
-    public static readonly ImageFormat[] AllowedImageFormats = [ImageFormat.Jpeg, ImageFormat.Png, ImageFormat.WebP, ImageFormat.Gif, ImageFormat.Avif, ImageFormat.Bmp];
+    public static readonly BmageImageFormat[] AllowedImageFormats = [BmageImageFormat.Jpeg, BmageImageFormat.Png, BmageImageFormat.WebP, BmageImageFormat.Gif, BmageImageFormat.Avif, BmageImageFormat.Bmp];
 
     // For open telemetry metrics
     private static readonly Histogram<double> updateResizeDurationHistogram = Meter.Current.CreateHistogram<double>("attachment.resize_duration", "ms", "Elapsed time to resize and persist an uploaded image");
@@ -233,20 +230,20 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             return BadRequest(Localizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
 
         // The decode turns a sideways phone photo upright; Bmage's limits bound what an untrusted upload can cost.
-        ImageBuffer decodedImage;
+        BmageImageBuffer decodedImage;
         try
         {
             decodedImage = await imageProcessor.DecodeAsync(uploadedBytes, cancellationToken: cancellationToken);
         }
-        catch (ImageException)
+        catch (BmageImageException)
         {
             return BadRequest(Localizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
         }
-        using ImageBuffer sourceImage = decodedImage;
+        using BmageImageBuffer sourceImage = decodedImage;
 
         // Only the ICC profile is kept: EXIF carries GPS and the camera serial, and a wide-gamut photo looks washed out without the profile.
         var storedMetadata = sourceImage.Metadata is { IccProfile.IsEmpty: false } uploadedMetadata
-            ? ImageMetadata.Empty.WithIccProfile(uploadedMetadata.IccProfile)
+            ? BmageImageMetadata.Empty.WithIccProfile(uploadedMetadata.IccProfile)
             : null;
 
         string? altText = null; // AI-generated alt text, when the analysis agent is configured.
@@ -287,16 +284,16 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 return BadRequest(Localizer[nameof(AppStrings.ImageTooSmall), imageResizeContext.Width, imageResizeContext.Height, sourceImage.Width, sourceImage.Height].ToString());
 
             using var resizedImage = imageResizeContext.NeedsResize
-                ? await imageProcessor.ProcessAsync(sourceImage, ImagePipeline.Create().MaxSize((int)imageResizeContext.Width, (int)imageResizeContext.Height), cancellationToken: cancellationToken)
+                ? await imageProcessor.ProcessAsync(sourceImage, BmageImagePipeline.Create().MaxSize((int)imageResizeContext.Width, (int)imageResizeContext.Height), cancellationToken: cancellationToken)
                 : null;
             var storedImage = resizedImage ?? sourceImage;
             storedImage.Metadata = storedMetadata;
 
-            var storedBytes = (await imageProcessor.EncodeAsync(storedImage, new ImageExportOptions
+            var storedBytes = (await imageProcessor.EncodeAsync(storedImage, new BmageImageExportOptions
             {
-                Format = ImageFormat.WebP,
+                Format = BmageImageFormat.WebP,
                 Lossless = imageResizeContext.NeedsResize is false,
-                Metadata = MetadataPolicy.Preserve,
+                Metadata = BmageMetadataPolicy.Preserve,
             }, cancellationToken)).Data;
 
             updateResizeDurationHistogram.Record(stopwatch.Elapsed.TotalMilliseconds, new KeyValuePair<string, object?>("kind", kind.ToString()));

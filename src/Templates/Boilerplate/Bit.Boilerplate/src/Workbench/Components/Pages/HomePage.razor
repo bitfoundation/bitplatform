@@ -113,7 +113,7 @@
                 }
                 @foreach (var task in reviewSession.IsOpen || reviewSession.CanSeeTasks is false ? reviewSession.ShownTasks.OrderByDescending(t => t.NeedsYouCount > 0).ThenBy(t => t.IsFinished).ThenByDescending(t => t.UpdatedAt).Take(3) : [])
                 {
-                    <Bmotion @key="task.Id" Preset="BmPresets.Reveal(distance: 24)">
+                    <Bmotion @key="task.Id" Preset="BmotionPresets.Reveal(distance: 24)">
                         <div class="agents-card"><ProgressTaskCard ProgressTask="task" /></div>
                     </Bmotion>
                 }
@@ -129,7 +129,7 @@
         <div class="reasons">
             @foreach (var reason in reasons)
             {
-                <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -4)">
+                <Bmotion Preset="BmotionPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -4)">
                     <article class="reason">
                         <span class="reason-icon"><BitIcon IconName="@reason.IconName" /></span>
                         <h3>@Localizer[reason.TitleKey]</h3>
@@ -149,7 +149,7 @@
             {
                 var step = steps[i];
                 var stepNumber = i + 1;
-                <Bmotion Preset="BmPresets.Reveal(distance: 24)">
+                <Bmotion Preset="BmotionPresets.Reveal(distance: 24)">
                     <li class="step">
                         <span class="step-number">@stepNumber.ToString(CultureInfo.CurrentCulture)</span>
                         <h3>@Localizer[step.TitleKey]</h3>
@@ -173,7 +173,7 @@
                     <h3 class="catalog-group-title">@Localizer[group.Key]</h3>
                     @foreach (var entry in group)
                     {
-                        <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -6)">
+                        <Bmotion Preset="BmotionPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -6)">
                             <a class="page-card" href="@WorkbenchUrls.Workbench(entry.Key)">
                                 <span class="thumbnail">
                                     <img class="light-only" data-thumbnail="@($"api/thumbnails/{entry.Key}")" alt="" />
@@ -231,7 +231,7 @@
     </section>
 
     <section class="section">
-        <Bmotion Preset="BmPresets.Reveal(distance: 24)">
+        <Bmotion Preset="BmotionPresets.Reveal(distance: 24)">
             <div class="cta">
                 <div class="cta-text">
                     <h2>@Localizer[nameof(WorkbenchStrings.HomeCtaTitle)]</h2>

@@ -108,7 +108,7 @@ public partial class HomePage
     }
 
     /// <summary>The hero's entrance animation, staggered by the element's place.</summary>
-    private static BmTransition Enter(int index) => Bm.Spring(stiffness: 120, damping: 20).WithDelay(index * 0.07);
+    private static BmotionTransition Enter(int index) => Bm.Spring(stiffness: 120, damping: 20).WithDelay(index * 0.07);
 
     /// <summary>Copies the sample agent prompt and shows a check mark on the button for a moment.</summary>
     private async Task CopyPrompt()

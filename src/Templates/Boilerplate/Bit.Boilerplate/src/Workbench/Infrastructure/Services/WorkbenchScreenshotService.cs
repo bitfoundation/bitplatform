@@ -1,4 +1,4 @@
-using Bit.Bmage.Codecs.Png;
+using Bit.Bmage;
 using Microsoft.Playwright;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.WebUtilities;
@@ -312,7 +312,7 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
     /// <summary>Writes the PNG again without an alpha channel, which the App Store does not accept in screenshots.</summary>
     private static byte[] RemoveAlphaChannel(byte[] png)
     {
-        using var image = PngDecoder.Decode(png);
+        using var image = BmagePngDecoder.Decode(png);
 
         // The encoder keeps the channel while any pixel is see-through, like an edge row of a scaled view, so those go over white.
         foreach (ref var pixel in image.Pixels)
@@ -324,7 +324,7 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
             pixel = new((byte)((pixel.R * pixel.A + 255 * cover) / 255), (byte)((pixel.G * pixel.A + 255 * cover) / 255), (byte)((pixel.B * pixel.A + 255 * cover) / 255));
         }
 
-        return PngEncoder.Encode(image).Data;
+        return BmagePngEncoder.Encode(image).Data;
     }
 
     /// <summary>Starts the shared browser on first use: Playwright's Chromium, otherwise Microsoft Edge or Google Chrome.</summary>

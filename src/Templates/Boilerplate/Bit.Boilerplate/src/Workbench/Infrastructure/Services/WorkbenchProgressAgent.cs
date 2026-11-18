@@ -1,4 +1,4 @@
-using Bit.Bcrdt.Server;
+using Bit.Bcrdt;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 

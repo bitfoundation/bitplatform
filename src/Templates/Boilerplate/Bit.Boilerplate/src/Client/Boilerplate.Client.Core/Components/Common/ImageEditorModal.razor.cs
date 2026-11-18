@@ -1,9 +1,4 @@
 using Bit.Bmage;
-using Bit.Bmage.Input;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Editor.Tools;
-using Bit.Bmage.Editor.Components;
 
 namespace Boilerplate.Client.Core.Components.Common;
 
@@ -38,7 +33,7 @@ public partial class ImageEditorModal
 
         if (editor is null) return;
 
-        await editor.LoadAsync(ImageSource.FromUrl(ImageUrl));
+        await editor.LoadAsync(BmageImageSource.FromUrl(ImageUrl));
 
         if (editor.Session is null)
         {
@@ -47,16 +42,16 @@ public partial class ImageEditorModal
             return;
         }
 
-        editor.SetTool(EditorToolKind.Crop);
+        editor.SetTool(BmageEditorToolKind.Crop);
         editor.SetCropAspect(CropAspect);
         StateHasChanged();
     }
 
-    private AspectRatio? CropAspect => CropAspectRatio is double ratio ? AspectRatio.FromValue(ratio) : null;
+    private BmageAspectRatio? CropAspect => CropAspectRatio is double ratio ? BmageAspectRatio.FromValue(ratio) : null;
 
     private void StartCrop(BmageEditorContext context)
     {
-        context.SetTool(EditorToolKind.Crop);
+        context.SetTool(BmageEditorToolKind.Crop);
         context.SetCropAspect(CropAspect);
     }
 
@@ -69,7 +64,7 @@ public partial class ImageEditorModal
 
         try
         {
-            if (editor.Tool is EditorToolKind.Crop)
+            if (editor.Tool is BmageEditorToolKind.Crop)
             {
                 await editor.ApplyCropAsync();
             }
@@ -81,9 +76,9 @@ public partial class ImageEditorModal
                 return;
             }
 
-            var format = editor.BrowserCapabilities?.ChooseEncodableFormat([ImageFormat.WebP]) ?? ImageFormat.Jpeg;
+            var format = editor.BrowserCapabilities?.ChooseEncodableFormat([BmageImageFormat.WebP]) ?? BmageImageFormat.Jpeg;
 
-            var image = await editor.ExportAsync(new ImageExportOptions { Format = format, Quality = 1, MaxFileSize = MaxFileSize, MaxFileSizeStrategy = MaxFileSizeStrategy.QualityOnly });
+            var image = await editor.ExportAsync(new BmageImageExportOptions { Format = format, Quality = 1, MaxFileSize = MaxFileSize, MaxFileSizeStrategy = BmageMaxFileSizeStrategy.QualityOnly });
 
             if (image is null) return;
 

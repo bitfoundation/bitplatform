@@ -1,5 +1,4 @@
-@using Bit.Bmage.Editor.Components
-@using Bit.Bmage.Editor.Tools
+@using Bit.Bmage
 @inherits AppComponentBase
 
 <link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
@@ -50,7 +49,7 @@
                                        ButtonType="BitButtonType.Button"
                                        IconName="@BitIconName.Crop"
                                        Disabled="@(context.HasImage is false || context.IsBusy)"
-                                       Variant="@(context.Tool is EditorToolKind.Crop ? BitVariant.Fill : BitVariant.Text)"
+                                       Variant="@(context.Tool is BmageEditorToolKind.Crop ? BitVariant.Fill : BitVariant.Text)"
                                        OnClick="() => StartCrop(context)"
                                        Title="@Localizer[nameof(AppStrings.Crop)]"
                                        AriaLabel="@Localizer[nameof(AppStrings.Crop)]" />
@@ -87,7 +86,7 @@
                                        Title="@Localizer[nameof(AppStrings.Redo)]"
                                        AriaLabel="@Localizer[nameof(AppStrings.Redo)]" />
 
-                            @if (context.Tool is EditorToolKind.Crop)
+                            @if (context.Tool is BmageEditorToolKind.Crop)
                             {
                                 <BitButton Size="BitSize.Small"
                                            Variant="BitVariant.Outline"
@@ -108,7 +107,7 @@
                 {
                     <BitText Typography="BitTypography.Body2" Color="BitColor.Error" role="alert">@errorMessage</BitText>
                 }
-                else if (editor?.Tool is EditorToolKind.Crop)
+                else if (editor?.Tool is BmageEditorToolKind.Crop)
                 {
                     <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.ImageEditorCropHint)]</BitText>
                 }

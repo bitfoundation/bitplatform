@@ -1,5 +1,4 @@
 using Bit.Bmage;
-using Bit.Bmage.Pipeline;
 using System.Net.Http.Headers;
 using Boilerplate.Shared.Features.Attachments;
 using Boilerplate.Server.Api.Features.Attachments;
@@ -22,7 +21,7 @@ public class UploadFormatAllowListTests
         {
             foreach (var format in AttachmentController.AllowedImageFormats)
             {
-                var image = format is ImageFormat.Avif or ImageFormat.Gif
+                var image = format is BmageImageFormat.Avif or BmageImageFormat.Gif
                     ? TestImageFactory.Asset($"teal-512.{format.ToString().ToLowerInvariant()}")
                     : TestImageFactory.Solid(TestImageFactory.Teal, 512, 512, format);
 
@@ -30,7 +29,7 @@ public class UploadFormatAllowListTests
 
                 var original = TestImageFactory.Identify(await Download(httpClient, userId, AttachmentKind.UserProfileImageOriginal));
 
-                Assert.AreEqual(ImageFormat.WebP, original.Format, $"A {format} upload must be accepted and its original stored as WebP.");
+                Assert.AreEqual(BmageImageFormat.WebP, original.Format, $"A {format} upload must be accepted and its original stored as WebP.");
                 Assert.AreEqual((512, 512), (original.Width, original.Height), $"The original of a {format} upload must keep its full size.");
             }
         }
@@ -75,18 +74,18 @@ public class UploadFormatAllowListTests
     {
         using var services = new ServiceCollection().AddBitBmageHeadlessServices().BuildServiceProvider();
         using var scope = services.CreateScope();
-        var imageProcessor = scope.ServiceProvider.GetRequiredService<ImageProcessor>();
+        var imageProcessor = scope.ServiceProvider.GetRequiredService<BmageImageProcessor>();
 
         foreach (var (format, bytes) in OtherFormats())
         {
-            Assert.IsFalse(AttachmentController.AllowedImageFormats.Contains(imageProcessor.Identify(bytes)?.Format ?? ImageFormat.Unknown),
+            Assert.IsFalse(AttachmentController.AllowedImageFormats.Contains(imageProcessor.Identify(bytes)?.Format ?? BmageImageFormat.Unknown),
                 $"{format} was identified as an allowed format, so UploadAttachment would hand it to a decoder.");
         }
 
         var identified = imageProcessor.Identify(TestImageFactory.Solid(TestImageFactory.Teal, 16, 16));
 
         Assert.IsNotNull(identified);
-        Assert.AreEqual(ImageFormat.Png, identified.Format);
+        Assert.AreEqual(BmageImageFormat.Png, identified.Format);
     }
 
     private static IEnumerable<(string Format, byte[] Bytes)> OtherFormats()
