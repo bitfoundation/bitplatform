@@ -19,7 +19,7 @@
         <!-- The plain Playwright package rather than Microsoft.Playwright.MSTest: that one is built against
              MSTest 2, whose attributes MSTest 4 can no longer load, so not a single test was discovered.
              E2ETestBase owns the browser and the page instead of inheriting them from PageTest. -->
-        <PackageReference Include="Microsoft.Playwright" Version="1.64.1" />
+        <PackageReference Include="Microsoft.Playwright" Version="1.65.0" />
         <!-- axe-core, the engine accessibility audits use, and its Playwright runner: E2EAxe.cs. The version the
              utilities' E2E projects (src/Utilities/*/Tests/*E2E*) run. -->
         <PackageReference Include="Deque.AxeCore.Playwright" Version="4.14.0" />
