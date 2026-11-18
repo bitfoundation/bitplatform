@@ -698,7 +698,8 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
   Progress page, as its skill tells it to, would hold the turn open for ever, since the scripted user answers in the
   chat and can't click there. So the helper ends the turn a minute after the agent's answer, when a real user's reply
   in the chat would arrive, and sends the scripted reply as the next turn. A turn's final message is its first
-  answer.
+  answer. A resumed session first closes the background tasks the last turn left with an empty result of its own,
+  marked as a task notification: that one is not the agent's answer.
 - `design-chat` then hands its folder to a new session with no memory of the first, which has to pick the product
   decisions up from `specs/`, as the team's other tools and the next session would. A scripted user answers that
   session's questions too, so it can get as far as its plan.

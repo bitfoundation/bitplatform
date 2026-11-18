@@ -1676,7 +1676,10 @@ function Read-AgentTranscript([string] $log) {
             }
         }
         elseif ($event.type -eq 'result') {
-            $final ??= $event.result
+            if ($event.origin.kind -ne 'task-notification') {
+                $final ??= $event.result
+            }
+
             $cost = $event.total_cost_usd
         }
     }
@@ -1748,7 +1751,9 @@ function Test-AgentAnswered([string] $log) {
 
         foreach ($line in $lines) {
             try {
-                if (($line | ConvertFrom-Json -Depth 64).type -eq 'result') {
+                $event = $line | ConvertFrom-Json -Depth 64
+
+                if ($event.type -eq 'result' -and $event.origin.kind -ne 'task-notification') {
                     return $true
                 }
             }
