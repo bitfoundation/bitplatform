@@ -203,7 +203,7 @@ public class NewWorkflowTests
         Assert.AreEqual("0", clone.Environment!["GIT_TERMINAL_PROMPT"], "Nobody could answer git's prompt for a password here, so it fails rather than waits.");
         AssertInOrder(host, ["clone", "build src/Workbench/Contoso.Workbench.csproj", "restore Contoso.Web.slnf", "build Contoso.Web.slnf", "--disable-workspace-trust"]);
         StringAssert.Contains(host.FlatOutput, "Cloned Contoso");
-        StringAssert.Contains(host.FlatOutput, "Trusted for Claude Code");
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("Trusted for (VS Code · )?Claude Code"));
         StringAssert.Contains(host.FlatOutput, "Opened");
         StringAssert.Contains(host.FlatOutput, "Contoso is ready");
 
