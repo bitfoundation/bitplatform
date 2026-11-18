@@ -119,6 +119,11 @@ public class BitMarkupParameterNamesContractTests
         Assert.IsFalse(IsParameterCandidate("@bind-Value"));
         Assert.IsFalse(IsParameterCandidate("title"));
         Assert.IsFalse(IsParameterCandidate("Context"));
+
+        Assert.IsTrue(IsComponentName("BitButton"));
+        Assert.IsTrue(IsComponentName("_BitDataGridRow"));
+        Assert.IsFalse(IsComponentName("Bitter"));
+        Assert.IsFalse(IsComponentName("_Item"));
     }
 
     private static bool IsParameterCandidate(string attribute) =>
@@ -240,8 +245,9 @@ public class BitMarkupParameterNamesContractTests
         }
     }
 
+    // A part a component renders for itself is spelled with a leading underscore (_BitNavBarChild, _BitDataGridRow).
     private static bool IsComponentName(string name) =>
-        name.Length > 3 && name.StartsWith("Bit", StringComparison.Ordinal) && char.IsUpper(name[3]);
+        name.TrimStart('_') is var bare && bare.Length > 3 && bare.StartsWith("Bit", StringComparison.Ordinal) && char.IsUpper(bare[3]);
 
     private static int SkipValue(string source, int i)
     {

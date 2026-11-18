@@ -5,6 +5,23 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitDataGridRow`, `BitDataGridCell` and `BitDataGridCellEditor` are `_BitDataGridRow`, `_BitDataGridCell` and `_BitDataGridCellEditor` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+These are the row, the cell and the built-in cell editor `BitDataGrid` renders for itself. They take the grid itself
+as a parameter and work on its own row, focus and edit state, so they cannot be used on their own, and they were
+public only because a Razor component cannot be anything else. They now carry the leading underscore of the library's
+other parts (`_BitNavBarChild`, `_BitDropdownItem`) and are hidden from IntelliSense.
+
+| Before | After |
+|---|---|
+| `BitDataGridRow<TItem>` | `_BitDataGridRow<TItem>` |
+| `BitDataGridCell<TItem>` | `_BitDataGridCell<TItem>` |
+| `BitDataGridCellEditor<TItem>` | `_BitDataGridCellEditor<TItem>` |
+
+An app that only uses `BitDataGrid` has nothing to change, and what the grid renders is unchanged. A column's own
+editor is still written with its `EditTemplate`. `BitDataGridCellEventArgs` and `BitDataGridRowReorderEventArgs`, the
+payloads of the grid's callbacks, keep their names.
+
 ### `IsStreaming` is `Streaming` on `BitAiCodeBlockView` and `BitAiStreamingMarkdown`, and `BitAiChatMessage`'s `IsLatest` is `Latest` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own state is spelled without an `Is`, and three parameters of `Bit.BlazorUI.AI` were still spelled with

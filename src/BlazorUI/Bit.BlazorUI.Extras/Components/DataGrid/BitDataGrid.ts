@@ -621,7 +621,7 @@
     // focus can still leave the grid and editors keep receiving characters.
     // Space is grid-owned too: it toggles the focused row's selection, so its page-scroll default must
     // be cancelled exactly like the arrow keys'.
-    // Escape is not among them: the cell claims it (data-bit-esc, see BitDataGridCell and
+    // Escape is not among them: the cell claims it (data-bit-esc, see _BitDataGridCell and
     // Utils.claimEscape) exactly while an edit is open for it to cancel, which is what prevents its
     // default then. Preventing it here as well would take every Escape pressed on a cell away from a
     // dialog the grid sits in, the ones the grid does nothing with included.
@@ -632,7 +632,7 @@
     // Keys that should stay with a self-managed control nested inside a cell. Escape is intentionally
     // excluded so it keeps bubbling to the grid as the universal "cancel edit" affordance, while the
     // navigation keys, Enter (commit), F2 (enter edit) and Space are kept with the embedded control.
-    // Space matters because a row acting as its own detail toggle (see BitDataGridRow) handles it on
+    // Space matters because a row acting as its own detail toggle (see _BitDataGridRow) handles it on
     // the row element: letting it bubble would type-and-toggle in an editor input, and would toggle a
     // second time on top of the click a nested button synthesizes from Space.
     const nestedControlKeys = new Set([
@@ -840,7 +840,7 @@
             // before the cell-target branch below, which only matches when the cell itself is focused.
             // The grid's own editors (.bit-dtg-editor) are the exception: their Enter commits and their other
             // keys are ignored by the editing cell, so they bubble on to it. So is a row's reorder handle for
-            // ArrowUp/ArrowDown: they are its own keys, handled by its @onkeydown (BitDataGridRow's
+            // ArrowUp/ArrowDown: they are its own keys, handled by its @onkeydown (_BitDataGridRow's
             // HandleReorderKeyDown), which stopping them here would never reach; their scrolling default is
             // cancelled by the reorder guard above, and the row's own handler takes only Enter/Space.
             const ownerCell = target.closest('.bit-dtg-cell') as HTMLElement | null;
@@ -877,7 +877,7 @@
             }
 
             // The row itself is the detail toggle when the toggle column is hidden and cell navigation
-            // is off (see BitDataGridRow): it is focusable and activates on Enter/Space like a button,
+            // is off (see _BitDataGridRow): it is focusable and activates on Enter/Space like a button,
             // so Space must not also scroll the page. Enter has no default worth cancelling on a div.
             if (e.key === ' ' && target.classList?.contains('bit-dtg-row') && target.hasAttribute('tabindex')) {
                 e.preventDefault();
@@ -887,7 +887,7 @@
             // While inline-editing the focus sits on the editor input inside the row, so the edit
             // lifecycle keys (Enter commits, Escape cancels) are grid-owned. Enter's native action is
             // cancelled here, leaving caret movement and typing to the input. Escape's is not: the
-            // editing cell claims it (data-bit-esc, see BitDataGridCell and Utils.claimEscape) whenever
+            // editing cell claims it (data-bit-esc, see _BitDataGridCell and Utils.claimEscape) whenever
             // its handler cancels the edit, with or without cell navigation, which prevents the default
             // then - and an Escape with a modifier cancels nothing, and goes on to a dialog the grid sits in.
             if (e.key === 'Enter' &&
