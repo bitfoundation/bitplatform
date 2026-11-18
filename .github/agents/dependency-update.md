@@ -163,6 +163,12 @@ rest of ASP.NET Core moves on. A NU1608 on Npgsql in a restore means this was mi
 floor in the band the Boilerplate uses can't go above that version either: one that raises the offline database's
 Sqlite above it fails the project's restore with NU1605.
 
+**The Boilerplate's Aspire stays on 13.** Aspire 17 builds every project it starts itself, in MSBuild's multithreaded
+mode on .NET 11, and the WebAssembly SDK's `ReadWasmProps` task can't run in that mode, so the web app never comes up
+under `aspire start` or a `dotnet run` of the app host. Aspire 13 builds that way only when the dashboard rebuilds a
+project. Move once a new project's web app starts under the newer major, checked with `aspire start` and test-platform's
+`aspire` stage, since CI doesn't build through Aspire; the `CommunityToolkit.Aspire.*` packages move with it.
+
 **Linux runners are on `ubuntu-26.04`** in the GitHub workflows. It
 defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11
 RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in`). .NET for Android 10 accepts up
@@ -189,10 +195,8 @@ A `Condition="..."` attribute sits between `PackageVersion` and `Include` on man
 `Directory.Packages.props` lines — a naive `Include="X" Version="Y"` regex silently drops ~60
 packages, including everything Aspire, FusionCache, and Agents.AI.
 
-The Boilerplate's `CommunityToolkit.Aspire.*` packages stay on the major `Aspire.Hosting.*` is on, whatever newer major
-the feed has: the newest stable of that major, or its newest beta while it has none. The Aspire dashboard image that `aspire publish` puts in the
-Docker Compose project (`aspire/dashboard` in `DockerComposePublishingExtensions.cs`) takes Aspire's major and minor
-once MCR has that tag, which can be days after the release.
+The Boilerplate AppHost's `<Project Sdk="Aspire.AppHost.Sdk/<version>">` is a NuGet pin the grep
+doesn't see. Keep it equal to the `Aspire.Hosting.*` packages; it stayed two patches behind them once.
 
 NuGet audit warnings (NU1902/NU1903) on a transitive package whose DLL the shared framework also
 carries, such as `System.Security.Cryptography.Pkcs` in `Microsoft.AspNetCore.App`, are noise: the
