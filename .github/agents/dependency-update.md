@@ -189,8 +189,8 @@ A `Condition="..."` attribute sits between `PackageVersion` and `Include` on man
 `Directory.Packages.props` lines — a naive `Include="X" Version="Y"` regex silently drops ~60
 packages, including everything Aspire, FusionCache, and Agents.AI.
 
-The Boilerplate's `CommunityToolkit.Aspire.*` packages follow Aspire's major: while the toolkit has only betas for the
-major `Aspire.Hosting.*` is on, they take its newest beta. The Aspire dashboard image that `aspire publish` puts in the
+The Boilerplate's `CommunityToolkit.Aspire.*` packages stay on the major `Aspire.Hosting.*` is on, whatever newer major
+the feed has: the newest stable of that major, or its newest beta while it has none. The Aspire dashboard image that `aspire publish` puts in the
 Docker Compose project (`aspire/dashboard` in `DockerComposePublishingExtensions.cs`) takes Aspire's major and minor
 once MCR has that tag, which can be days after the release.
 
