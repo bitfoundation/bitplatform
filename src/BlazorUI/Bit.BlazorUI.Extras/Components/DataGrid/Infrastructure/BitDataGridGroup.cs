@@ -9,6 +9,9 @@ public sealed class BitDataGridGroup<TItem>
 {
     /// <summary>The identifier of the column whose values define this group.</summary>
     public required string ColumnId { get; init; }
+
+    /// <summary>The value of the column that every row of this group shares, as the column reads it (not formatted);
+    /// <c>null</c> for the rows without one. <see cref="KeyText"/> is the text it is shown with.</summary>
     public required object? Key { get; init; }
 
     /// <summary>The display text for this group's key as it was when the view was built. The group header row writes
@@ -36,6 +39,8 @@ public sealed class BitDataGridGroup<TItem>
     /// <summary>Aggregate values computed for this group (e.g. column sums or averages).</summary>
     public IReadOnlyList<BitDataGridAggregateResult> Aggregates { get; init; } = Array.Empty<BitDataGridAggregateResult>();
 
+    /// <summary>True when this group is grouped further, so its rows are in <see cref="SubGroups"/> rather than in
+    /// <see cref="Items"/>.</summary>
     public bool HasSubGroups => SubGroups.Count > 0;
 
     /// <summary>Total number of leaf rows in this group (including all nested subgroups).</summary>

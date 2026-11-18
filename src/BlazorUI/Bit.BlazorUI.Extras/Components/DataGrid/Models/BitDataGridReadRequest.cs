@@ -14,8 +14,11 @@ public sealed class BitDataGridReadRequest
     /// <summary>Maximum number of items to return. <c>null</c> means "all".</summary>
     public int? Take { get; init; }
 
+    /// <summary>The active sorts, primary first. Empty when the rows are not sorted.</summary>
     public IReadOnlyList<BitDataGridSortDescriptor> Sorts { get; init; } = Array.Empty<BitDataGridSortDescriptor>();
 
+    /// <summary>The active column filters; a row has to match every one of them. Empty when no column is
+    /// filtered.</summary>
     public IReadOnlyList<BitDataGridFilterDescriptor> Filters { get; init; } = Array.Empty<BitDataGridFilterDescriptor>();
 
     /// <summary>
@@ -46,5 +49,7 @@ public sealed class BitDataGridReadRequest
     /// </summary>
     public IReadOnlyList<BitDataGridAggregateDescriptor> Aggregates { get; init; } = Array.Empty<BitDataGridAggregateDescriptor>();
 
+    /// <summary>Cancelled when the grid no longer needs this read: a newer read replaces it (after a sort, a filter, a
+    /// search or a page change, for instance), or the grid is disposed. Pass it on to the data source, so the work stops.</summary>
     public CancellationToken CancellationToken { get; init; }
 }

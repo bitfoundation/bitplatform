@@ -7,7 +7,11 @@
 /// <typeparam name="TItem">The row item type.</typeparam>
 public sealed class BitDataGridRowReorderEventArgs<TItem>
 {
+    /// <summary>The item of the row that was moved.</summary>
     public required TItem DraggedItem { get; init; }
+
+    /// <summary>The item of the row it was dropped on, whose place it takes: the moved row ends up where this one was,
+    /// and this row and the ones between the two move one place toward where the moved row came from.</summary>
     public required TItem TargetItem { get; init; }
 
     /// <summary>

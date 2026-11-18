@@ -7,6 +7,13 @@
 /// <typeparam name="TItem">The row item type.</typeparam>
 public sealed class BitDataGridReadResult<TItem>
 {
+    /// <summary>Creates the result of a read.</summary>
+    /// <param name="items">The rows of the requested page or batch.</param>
+    /// <param name="totalCount">The number of rows that match the request on every page (see <see cref="TotalCount"/>),
+    /// or <c>0</c> for an <c>OnLoadMore</c> batch that does not know it.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="items"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="totalCount"/> is negative, or it is positive and
+    /// smaller than the number of <paramref name="items"/>.</exception>
     public BitDataGridReadResult(IReadOnlyList<TItem> items, int totalCount)
     {
         ArgumentNullException.ThrowIfNull(items);
