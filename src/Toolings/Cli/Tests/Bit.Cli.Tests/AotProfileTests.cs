@@ -265,6 +265,112 @@ public class AotProfileTests
         Assert.IsEmpty(GenericInstanceMethods(Converter(missing, Number), Converter(Text, new AotProfileClass(Tests, "Bit.Cli.Tests.Missing"))));
     }
 
+    [TestMethod]
+    public void TheCallersOfAMethodPassingAnInlineArrayByValue_Should_BeListed_SinceTheInterpreterCannotCallItCompiled()
+    {
+        var methods = GapCallerMethods([])
+            .Where(m => m.Class.Name == "Bit.Cli.Tests.ProfileInlineArraySamples")
+            .ToDictionary(m => m.Name, m => m.Signature);
+
+        // A call, a call returning one and a delegate made of one; not a call passing it by reference, which passes a
+        // pointer, nor the methods passing it themselves, whose callers compiled call them directly.
+        CollectionAssert.AreEquivalent(new[] { "CallsTake", "CallsMake", "PointsAtTake" }, methods.Keys.ToList());
+        Assert.AreEqual("int()", methods["CallsTake"]);
+        Assert.AreEqual("System.Func`2<Bit.Cli.Tests.ProfileInlineArrayHolder, int>()", methods["PointsAtTake"]);
+    }
+
+    [TestMethod]
+    public void TheCallersOfAnUnsafeAccessor_Should_BeListed_SinceTheInterpreterCannotCallItCompiled()
+    {
+        // As System.Text.Json's source generator sets an init-only property: a method the runtime writes, for whose
+        // signature the AOT compiler makes no wrapper.
+        var methods = GapCallerMethods([])
+            .Where(m => m.Class.Name == "Bit.Cli.Tests.ProfileUnsafeAccessorSamples")
+            .Select(m => m.Name)
+            .ToList();
+
+        CollectionAssert.AreEquivalent(new[] { "SetsAmount", "PointsAtSetAmount" }, methods);
+    }
+
+    [TestMethod]
+    public void AGenericMethodCallingOne_Should_BeListedForTheInstantiationsTheProfileHasOfItsClasssGenericMethods()
+    {
+        // As IndexOfAnyAsciiSearcher.ComputeUniqueLowNibbleState<T> is for char once ComputeAsciiState<char> ran.
+        var samples = new AotProfileClass(Tests, "Bit.Cli.Tests.ProfileInlineArraySamples");
+        var sibling = new AotProfileMethod(samples, "Sibling", 1, "char(char)", [new AotProfileClass(CoreLib, "System.Char")]);
+
+        var methods = GapCallerMethods([sibling]).Where(m => m.Name == "GenericCaller").ToList();
+
+        var method = methods.Single();
+        Assert.AreEqual("int(char)", method.Signature);
+        Assert.AreEqual("[Bit.Cli.Tests]Bit.Cli.Tests.ProfileInlineArraySamples::GenericCaller<[System.Private.CoreLib]System.Char>(int(char))", method.Key);
+
+        // With no instantiation of a generic method of its class in the profile, nothing says which ones the app makes.
+        Assert.IsFalse(GapCallerMethods([]).Any(m => m.Name == "GenericCaller"));
+    }
+
+    [TestMethod]
+    public void AMethodOfAGenericTypeCallingOne_Should_BeListedForEachInstantiationTheAppRan()
+    {
+        var ofText = new AotProfileClass(Tests, "Bit.Cli.Tests.ProfileInlineArrayCallerOf`1", [Text]);
+
+        var signatures = GapCallerMethods([new AotProfileMethod(ofText, ".ctor", 0, "void()")])
+            .Where(m => m.Class.Name == "Bit.Cli.Tests.ProfileInlineArrayCallerOf`1")
+            .ToDictionary(m => m.Class.Key, m => m.Signature);
+
+        Assert.HasCount(2, signatures);
+        Assert.AreEqual("int(T)", signatures["[Bit.Cli.Tests]Bit.Cli.Tests.ProfileInlineArrayCallerOf`1"]);
+        Assert.AreEqual("int(string)", signatures[ofText.Key]);
+    }
+
+    [TestMethod]
+    public void TheBuildersOfACharSearchValuesState_Should_BeListed()
+    {
+        // The app's own case: a SearchValues of chars made where the profile run never went builds its state in
+        // ComputeUniqueLowNibbleState<char>, which passes the AsciiState (a Vector128 and a BitVector256 over an
+        // InlineArray8<uint>) on by value: left on the interpreter, that call stops the app.
+        var searcher = new AotProfileClass(CoreLib, "System.Buffers.IndexOfAnyAsciiSearcher");
+        var ran = new AotProfileMethod(searcher, "ComputeAsciiState", 2, "void(System.ReadOnlySpan`1<char>,System.Buffers.IndexOfAnyAsciiSearcher/AsciiState&)", [new AotProfileClass(CoreLib, "System.Char")]);
+
+        using var assemblies = new AppAssemblies([typeof(object).Assembly.Location]);
+        var methods = InterpreterCallGaps.Callers(assemblies, [ran]);
+
+        Assert.IsTrue(methods.Any(m => m.Key == "[System.Private.CoreLib]System.Buffers.IndexOfAnyAsciiSearcher::ComputeUniqueLowNibbleState<[System.Private.CoreLib]System.Char>(void(System.ReadOnlySpan`1<char>,System.Buffers.IndexOfAnyAsciiSearcher/AsciiState&))"),
+            string.Join(Environment.NewLine, methods.Where(m => m.Class.Name.Contains("IndexOfAny", StringComparison.Ordinal)).Select(m => m.Key)));
+    }
+
+    [TestMethod]
+    public void TheCallsOfABody_Should_BeReadPastEveryKindOfOperand()
+    {
+        // A switch, a long constant and a string before the calls: each operand skipped by its own size.
+        using var assemblies = new AppAssemblies([typeof(ProfileInlineArraySamples).Assembly.Location]);
+        var metadata = assemblies.Images.Single();
+        var handle = metadata.MethodDefinitions.Single(h => metadata.GetString(metadata.GetMethodDefinition(h).Name) == nameof(OperandsThenCalls));
+        var targets = InterpreterCallGaps.CallTargets(assemblies.Body(metadata, metadata.GetMethodDefinition(handle))!);
+
+        CollectionAssert.AreEqual(new[] { "CallsNothing", "Take" }, targets.Select(t => MethodName(metadata, t)).Where(n => n is "CallsNothing" or "Take").ToList());
+    }
+
+    private static int OperandsThenCalls(int value, string text)
+    {
+        var total = value switch { 0 => 10L, 1 => 20L, 2 => long.MaxValue, _ => 3 };
+        total += text.Length + "operand".Length + Environment.ProcessorCount;
+        return (int)total + ProfileInlineArraySamples.CallsNothing(value) + ProfileInlineArraySamples.Take(default);
+    }
+
+    private static string MethodName(System.Reflection.Metadata.MetadataReader metadata, System.Reflection.Metadata.EntityHandle handle) => handle.Kind switch
+    {
+        System.Reflection.Metadata.HandleKind.MethodDefinition => metadata.GetString(metadata.GetMethodDefinition((System.Reflection.Metadata.MethodDefinitionHandle)handle).Name),
+        System.Reflection.Metadata.HandleKind.MemberReference => metadata.GetString(metadata.GetMemberReference((System.Reflection.Metadata.MemberReferenceHandle)handle).Name),
+        _ => ""
+    };
+
+    private static IReadOnlyList<AotProfileMethod> GapCallerMethods(IReadOnlyList<AotProfileMethod> profiled)
+    {
+        using var assemblies = new AppAssemblies([typeof(ProfileInlineArraySamples).Assembly.Location, typeof(object).Assembly.Location]);
+        return InterpreterCallGaps.Callers(assemblies, profiled);
+    }
+
     private static readonly AotProfileImage Tests = new("Bit.Cli.Tests", "");
     private static readonly AotProfileClass Text = new(CoreLib, "System.String");
     private static readonly AotProfileClass Number = new(CoreLib, "System.Int32");
@@ -1133,6 +1239,69 @@ public static class ProfileSamples
 
         public void Log(Guid value, int a, int b, int c, int d, int e, int f, int g, int h) { }
     }
+}
+
+/// <summary>An inline array like System.Private.CoreLib's <c>InlineArray8&lt;uint&gt;</c>, held the way <c>BitVector256</c> holds that.</summary>
+[System.Runtime.CompilerServices.InlineArray(4)]
+public struct ProfileInlineArray
+{
+    private int element;
+}
+
+public struct ProfileInlineArrayHolder
+{
+    public ProfileInlineArray Values;
+}
+
+/// <summary>Methods passing an inline array by value, and their callers, like <c>IndexOfAnyAsciiSearcher</c>'s <c>AsciiState</c> and its builders.</summary>
+public static class ProfileInlineArraySamples
+{
+    public static int Take(ProfileInlineArrayHolder holder) => holder.Values[0];
+
+    public static ProfileInlineArrayHolder Make() => default;
+
+    public static int TakeByRef(ref ProfileInlineArrayHolder holder) => holder.Values[0];
+
+    public static int CallsTake() => Take(default);
+
+    public static int CallsMake() => Make().Values[1];
+
+    public static int CallsTakeByRef()
+    {
+        var holder = default(ProfileInlineArrayHolder);
+        return TakeByRef(ref holder);
+    }
+
+    public static Func<ProfileInlineArrayHolder, int> PointsAtTake() => Take;
+
+    public static int CallsNothing(int value) => value + 1;
+
+    public static int GenericCaller<T>(T value) => Take(default) + value!.GetHashCode();
+
+    public static T Sibling<T>(T value) => value;
+}
+
+public sealed class ProfileUsageHolder
+{
+    public decimal? Amount { get; init; }
+}
+
+/// <summary>Shaped like the setters System.Text.Json's source generator writes for init-only properties.</summary>
+public static class ProfileUnsafeAccessorSamples
+{
+    [System.Runtime.CompilerServices.UnsafeAccessor(System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = "set_Amount")]
+    public static extern void SetAmount(ProfileUsageHolder holder, decimal? amount);
+
+    public static void SetsAmount(ProfileUsageHolder holder) => SetAmount(holder, 1m);
+
+    public static Action<ProfileUsageHolder, decimal?> PointsAtSetAmount() => SetAmount;
+
+    public static decimal? ReadsAmount(ProfileUsageHolder holder) => holder.Amount;
+}
+
+public sealed class ProfileInlineArrayCallerOf<T>
+{
+    public int CallsTake(T value) => ProfileInlineArraySamples.Take(default) + value!.GetHashCode();
 }
 
 /// <summary>Shaped like System.Text.Json's dictionary converters: a virtual method that takes a type parameter by <c>in</c>.</summary>

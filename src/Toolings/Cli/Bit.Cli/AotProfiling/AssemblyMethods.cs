@@ -48,7 +48,7 @@ public static class AssemblyMethods
 
     /// <inheritdoc cref="Read(string, bool, IEnumerable{AotProfileClass}?)"/>
     public static IReadOnlyList<AotProfileMethod> Read(MetadataReader metadata, bool unmanagedCallersOnly, IEnumerable<AotProfileClass>? instantiated = null)
-        => Read(metadata, (method, _) => unmanagedCallersOnly is false || method.GetCustomAttributes().Any(a => AttributeName(metadata, a) == "UnmanagedCallersOnlyAttribute"), instantiated);
+        => Read(metadata, (_, method, _) => unmanagedCallersOnly is false || method.GetCustomAttributes().Any(a => AttributeName(metadata, a) == "UnmanagedCallersOnlyAttribute"), instantiated);
 
     /// <summary>
     /// The methods with more than <see cref="MaxInterpreterEntryArguments"/> parameters, not counting <c>this</c>. Left
@@ -78,9 +78,14 @@ public static class AssemblyMethods
 
     /// <inheritdoc cref="ReadWide(string, IEnumerable{AotProfileClass}?)"/>
     public static IReadOnlyList<AotProfileMethod> ReadWide(MetadataReader metadata, IEnumerable<AotProfileClass>? instantiated = null)
-        => Read(metadata, (_, parameterCount) => parameterCount > MaxInterpreterEntryArguments, instantiated);
+        => Read(metadata, (_, _, parameterCount) => parameterCount > MaxInterpreterEntryArguments, instantiated);
 
-    private static List<AotProfileMethod> Read(MetadataReader metadata, Func<MethodDefinition, int, bool> keep, IEnumerable<AotProfileClass>? instantiated)
+    /// <summary>
+    /// The methods of the assembly <paramref name="keep"/> picks that have a body and are not generic themselves, listed as
+    /// <see cref="Read(string, bool, IEnumerable{AotProfileClass}?)"/> lists them: one of a generic type for its
+    /// definition and once more for each instantiation of the type in <paramref name="instantiated"/>.
+    /// </summary>
+    internal static List<AotProfileMethod> Read(MetadataReader metadata, Func<MethodDefinitionHandle, MethodDefinition, int, bool> keep, IEnumerable<AotProfileClass>? instantiated)
     {
         var image = new AotProfileImage(AssemblyName(metadata), Mvid(metadata));
         var methods = new List<AotProfileMethod>();
@@ -108,7 +113,7 @@ public static class AssemblyMethods
                     continue;
 
                 // The count from the signature's header, so only a method that is kept has its signature decoded.
-                if (ParameterCount(metadata, method) is not { } parameterCount || keep(method, parameterCount) is false)
+                if (ParameterCount(metadata, method) is not { } parameterCount || keep(methodHandle, method, parameterCount) is false)
                     continue;
 
                 owners ??= [(new AotProfileClass(image, typeName), null),
@@ -149,7 +154,7 @@ public static class AssemblyMethods
     }
 
     /// <summary>A type argument the way Mono prints it in a signature: <c>int</c> for <c>System.Int32</c>.</summary>
-    private static string TypeText(AotProfileClass type)
+    internal static string TypeText(AotProfileClass type)
     {
         var name = type.Image.Name == CoreLib && type.Arguments is null && SignatureFormatter.PrimitiveNames.TryGetValue(type.Name, out var keyword) ? keyword : type.Name;
         return type.Arguments is { Count: > 0 } arguments ? $"{name}<{string.Join(", ", arguments.Select(TypeText))}>" : name;
@@ -255,11 +260,12 @@ public static class AssemblyMethods
         return $"{metadata.GetString(declaring.Namespace)}.{metadata.GetString(declaring.Name)}/{metadata.GetString(metadata.GetTypeDefinition(handle).Name)}";
     }
 
-    private static AotProfileMethod ProfileMethod(AotProfileClass owner, MetadataReader metadata, TypeDefinition type, MethodDefinition method, IReadOnlyList<string>? typeArguments)
+    /// <param name="methodArguments">For an instance of a generic method, the classes its type parameters stand for: its signature is inflated with them, as Mono's profiler writes it.</param>
+    internal static AotProfileMethod ProfileMethod(AotProfileClass owner, MetadataReader metadata, TypeDefinition type, MethodDefinition method, IReadOnlyList<string>? typeArguments, IReadOnlyList<AotProfileClass>? methodArguments = null)
     {
-        var signature = method.DecodeSignature(new SignatureFormatter(metadata, type, method, typeArguments), null);
+        var signature = method.DecodeSignature(new SignatureFormatter(metadata, type, method, typeArguments, methodArguments?.Select(TypeText).ToList()), null);
         return new AotProfileMethod(owner, metadata.GetString(method.Name), signature.ParameterTypes.Length,
-            $"{signature.ReturnType.Text}({string.Join(",", signature.ParameterTypes.Select(p => p.Text))})");
+            $"{signature.ReturnType.Text}({string.Join(",", signature.ParameterTypes.Select(p => p.Text))})", methodArguments);
     }
 
     private static IEnumerable<AotProfileImage> Images(AotProfileClass type)
@@ -333,7 +339,7 @@ public static class AssemblyMethods
         return baseName is "System.ValueType" or "System.Enum" && type.Name != "System.Enum";
     }
 
-    private static string AttributeName(MetadataReader metadata, CustomAttributeHandle handle)
+    internal static string AttributeName(MetadataReader metadata, CustomAttributeHandle handle)
     {
         var constructor = metadata.GetCustomAttribute(handle).Constructor;
 
@@ -352,6 +358,7 @@ public sealed class AppAssemblies : IDisposable
 {
     private readonly List<PEReader> readers = [];
     private readonly Dictionary<string, MetadataReader> images = new(StringComparer.Ordinal);
+    private readonly Dictionary<MetadataReader, PEReader> files = [];
     // Built for an image the first time a class of it is looked up: most of the app's images never are.
     private readonly Dictionary<string, Dictionary<string, TypeDefinitionHandle>> classes = new(StringComparer.Ordinal);
 
@@ -364,8 +371,8 @@ public sealed class AppAssemblies : IDisposable
                 var pe = new PEReader(File.OpenRead(path));
                 readers.Add(pe);
 
-                if (pe.HasMetadata && pe.GetMetadataReader() is { IsAssembly: true } metadata)
-                    images.TryAdd(AssemblyMethods.AssemblyName(metadata), metadata);
+                if (pe.HasMetadata && pe.GetMetadataReader() is { IsAssembly: true } metadata && images.TryAdd(AssemblyMethods.AssemblyName(metadata), metadata))
+                    files[metadata] = pe;
             }
         }
         catch
@@ -380,6 +387,22 @@ public sealed class AppAssemblies : IDisposable
     public MetadataReader this[string name] => images[name];
 
     public AotProfileImage? Image(string name) => images.TryGetValue(name, out var metadata) ? new(name, AssemblyMethods.Mvid(metadata)) : null;
+
+    /// <summary>The IL of a method of one of these images, or null for one without a body or one this can't read.</summary>
+    public MethodBodyBlock? Body(MetadataReader metadata, MethodDefinition method)
+    {
+        if (method.RelativeVirtualAddress == 0 || files.TryGetValue(metadata, out var pe) is false)
+            return null;
+
+        try
+        {
+            return pe.GetMethodBody(method.RelativeVirtualAddress);
+        }
+        catch (BadImageFormatException)
+        {
+            return null;
+        }
+    }
 
     public bool TryGetType(string image, string name, [NotNullWhen(true)] out MetadataReader? metadata, out TypeDefinitionHandle handle)
     {
@@ -498,7 +521,8 @@ public sealed record SignatureType(string Core, string Modifiers = "", bool ByRe
 }
 
 /// <param name="typeArguments">The names the type's generic parameters stand for, in a signature of an instance of it; null keeps the parameters' own names.</param>
-public sealed class SignatureFormatter(MetadataReader metadata, TypeDefinition type, MethodDefinition method, IReadOnlyList<string>? typeArguments = null) : ISignatureTypeProvider<SignatureType, object?>
+/// <param name="methodArguments">The names the method's generic parameters stand for, in a signature of an instance of it; null keeps the parameters' own names.</param>
+public sealed class SignatureFormatter(MetadataReader metadata, TypeDefinition type, MethodDefinition method, IReadOnlyList<string>? typeArguments = null, IReadOnlyList<string>? methodArguments = null) : ISignatureTypeProvider<SignatureType, object?>
 {
     /// <summary>The primitive types: their full names, and the names Mono writes them by in a signature.</summary>
     private static readonly IReadOnlyDictionary<PrimitiveTypeCode, (string FullName, string MonoName)> Primitives = new Dictionary<PrimitiveTypeCode, (string, string)>
@@ -552,7 +576,7 @@ public sealed class SignatureFormatter(MetadataReader metadata, TypeDefinition t
         => new(typeArguments?[index] ?? metadata.GetString(metadata.GetGenericParameter(type.GetGenericParameters()[index]).Name));
 
     public SignatureType GetGenericMethodParameter(object? genericContext, int index)
-        => new(metadata.GetString(metadata.GetGenericParameter(method.GetGenericParameters()[index]).Name));
+        => new(methodArguments?[index] ?? metadata.GetString(metadata.GetGenericParameter(method.GetGenericParameters()[index]).Name));
 
     public SignatureType GetFunctionPointerType(MethodSignature<SignatureType> signature) => new("*()");
 
