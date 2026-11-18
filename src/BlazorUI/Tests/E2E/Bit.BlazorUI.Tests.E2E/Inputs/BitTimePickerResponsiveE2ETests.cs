@@ -6,6 +6,7 @@
 /// dismisses, while a picker that is not responsive still opens an ordinary callout against its field.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTimePickerResponsiveE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/time-picker";

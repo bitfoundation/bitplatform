@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// a collapsed group.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridGroupingE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/grouping";

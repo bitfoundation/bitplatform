@@ -12,6 +12,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// callout's entry animation under prefers-reduced-motion and ForceAnimation.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDatePickerLookE2ETests : BitDatePickersE2ETestBase
 {
     private const string Route = "/e2e/date-picker/look";

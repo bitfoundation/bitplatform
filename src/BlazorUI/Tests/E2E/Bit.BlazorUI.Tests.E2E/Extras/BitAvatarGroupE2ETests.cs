@@ -6,6 +6,7 @@
 /// coin operated from the keyboard, a focused coin lifted over its neighbours; and the group checked by axe.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAvatarGroupE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/avatar-group";

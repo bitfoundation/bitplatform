@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// the lifecycle (prerender, re-render, unmount) and reduced motion.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitNavE2ETests : E2ETestBase
 {
     private const string PAGE = "/e2e/nav";

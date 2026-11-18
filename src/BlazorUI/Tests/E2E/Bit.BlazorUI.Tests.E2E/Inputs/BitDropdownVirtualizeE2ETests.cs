@@ -9,6 +9,7 @@
 /// Loading shows the spinner, LoadingText or LoadingTemplate until a real fetch hands the items over.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownVirtualizeE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/virtualize";

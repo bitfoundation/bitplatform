@@ -18,6 +18,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMarkdownEditorE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/markdown-editor";

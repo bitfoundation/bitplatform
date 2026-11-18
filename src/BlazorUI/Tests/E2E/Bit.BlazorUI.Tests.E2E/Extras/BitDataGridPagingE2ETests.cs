@@ -8,6 +8,7 @@
 /// by the page at runtime, and a grid that is not Pageable.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridPagingE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/paging";

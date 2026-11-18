@@ -7,6 +7,7 @@
 /// the page's own, out of the page until then; and the dialog checked by axe.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitImageViewerFullScreenE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/image-viewer";

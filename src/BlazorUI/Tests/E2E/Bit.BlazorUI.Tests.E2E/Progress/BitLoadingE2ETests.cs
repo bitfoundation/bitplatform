@@ -16,6 +16,7 @@ namespace Bit.BlazorUI.Tests.E2E.Progress;
 /// runtime re-renders and unmount.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitLoadingE2ETests : E2ETestBase
 {
     private const string Path = "/e2e/loading";

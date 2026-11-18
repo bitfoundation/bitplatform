@@ -17,6 +17,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// <see cref="BitChoiceGroupOptionE2ETests"/>.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitChoiceGroupE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/choice-group";

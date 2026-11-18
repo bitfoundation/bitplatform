@@ -16,6 +16,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// unmount.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPivotE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/pivot";

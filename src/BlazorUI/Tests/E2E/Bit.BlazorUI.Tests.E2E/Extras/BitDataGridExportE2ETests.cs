@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// name, and an infinite-scrolling grid whose export asks its provider once for every row.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridExportE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/export";

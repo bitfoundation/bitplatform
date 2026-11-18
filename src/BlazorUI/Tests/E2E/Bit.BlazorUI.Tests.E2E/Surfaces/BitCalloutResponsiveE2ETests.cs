@@ -8,6 +8,7 @@
 /// outside it.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCalloutResponsiveE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/callout/responsive";

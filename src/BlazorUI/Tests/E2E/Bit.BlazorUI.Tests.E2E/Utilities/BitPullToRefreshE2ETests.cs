@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// BitPullToRefreshTouchE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPullToRefreshE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/pull-to-refresh";

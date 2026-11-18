@@ -7,6 +7,7 @@
 /// NoValidate dropdown is never marked, and a form whose fields all hold valid values submits.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownValidationE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/validation";

@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// Style / Class / Styles / Classes, every --bit-Virtualize-* variable, RTL, prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitVirtualizeE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/virtualize";

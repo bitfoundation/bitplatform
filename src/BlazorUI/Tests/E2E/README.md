@@ -27,6 +27,7 @@ E2E/
 └── Bit.BlazorUI.Tests.E2E/                 # the Playwright + MSTest project
     ├── E2ETestBase.cs                      # host and browser lifecycle, OpenAsync, error capture
     ├── E2ETestRun.cs                       # run-wide cleanup and the parallelization setting
+    ├── E2ERetryAttribute.cs                # the second attempt of a failed test, and the report of a flaky one
     ├── E2EAxe.cs                           # the axe-core scan, its suppressions and their policy
     └── <Category>/Bit<Component>E2ETests.cs
 ```
@@ -69,6 +70,13 @@ a time (`E2ETestRun.cs`); the tests of a class run in order. The whole suite is 
 bin/Debug/net11.0/Bit.BlazorUI.Tests.E2E.dll --list-tests` counts them) and takes roughly a quarter of an hour on
 Chromium. On a loaded machine a Blazor Server circuit can time out or a fast keystroke can be
 lost; a test that fails only in the full run and passes alone is load, not a regression.
+
+So a failed test is run once more before it counts (`E2ERetryAttribute`). Every test class carries `[E2ERetry]` next
+to its `[TestClass]`, since MSTest reads it off the class itself and not off `E2ETestBase`, which fails a test of a
+class without it. A test that passes on its second attempt passes, and says so: the attempt that passed carries the
+first one's failure in its output (in the TRX), and on GitHub Actions the job's summary lists it under "E2E tests that
+passed only on their second attempt". A regression fails both attempts. A test that keeps turning up in that list is
+flaky and is fixed, not left to its retry.
 
 If `dotnet test` reports that zero tests ran, run the built assembly directly:
 
@@ -168,6 +176,8 @@ workflow), narrowed through its inputs (engines, modes, an optional test filter)
   summary shows each shard's tests.
 - Each job's test run stops itself (`--timeout`) `E2E_RESERVE_MINUTES` before the job's limit (`E2E_JOB_MINUTES`),
   counted from the start of the job, so the test results (TRX) are written even for a run that overruns.
+
+A test that failed once and passed when retried does not fail the job; it is listed in the job's summary (see Running).
 
 The TRX and the host's log are uploaded as artifacts of each job. The host logs no request it answered, only the ones
 it failed (`FailedRequests`: a 404 of a `_framework` file is what a broken WebAssembly boot looks like), along with

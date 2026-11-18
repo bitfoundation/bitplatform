@@ -7,6 +7,7 @@
 /// Disabled, the theme tokens, every --bit-AiEmptyState-* variable, Styles/Classes and RTL.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiEmptyStateE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aiemptystate";

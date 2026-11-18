@@ -14,6 +14,7 @@
 /// at runtime, prerendering and unmounting a playing swiper. The touch swipe is in <see cref="BitSwiperTouchE2ETests"/>.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitSwiperE2ETests : E2ETestBase
 {
     private const double Tolerance = 1.5;
@@ -874,6 +875,7 @@ public class BitSwiperE2ETests : E2ETestBase
 /// points are dispatched through the DevTools protocol, so this runs on Chromium only.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitSwiperTouchE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new()

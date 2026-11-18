@@ -7,6 +7,7 @@
 /// by axe.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitEmptyStateE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/empty-state";

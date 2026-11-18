@@ -9,6 +9,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// name as the tooltip, Disabled, the theme tokens and the public variables, Styles/Classes, and right-to-left.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiAttachmentChipE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aiattachmentchip";

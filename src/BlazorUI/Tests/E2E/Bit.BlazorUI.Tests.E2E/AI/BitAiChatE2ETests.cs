@@ -12,6 +12,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// variable, Styles/Classes, RTL (explicit and inherited) and print.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiChatE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aichat";

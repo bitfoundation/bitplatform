@@ -854,6 +854,14 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             _ => "search"
         };
 
+        // A value that moved without the field moving it - the page emptying it after a search, say - is what the input
+        // shows from then on, whatever had been typed into it before; but for the value the field's own commit wrote,
+        // handed back by the binding while the commit runs, which the commit settles (see IsOwnCommitEcho).
+        if (IsOwnCommitEcho is false)
+        {
+            ReleaseTypedTextIfMoved(Value);
+        }
+
         base.OnParametersSet();
     }
 
@@ -1032,6 +1040,24 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         ClassBuilder.Reset();
     }
 
+    // What the value attribute of the input is rendered with: the text typed into it while the value has not caught up
+    // with that text - Immediate off, a debounce or a throttle still running, a binding that refuses it - and the value
+    // itself otherwise (see TypedText).
+    private string? ElementValue => TypedText ?? CurrentValue;
+
+    // The input event is bound rather than only handled for what the binding does before the handler runs: the renderer
+    // writes the text the event carries into the value attribute of the last render, so the render that follows finds no
+    // difference and leaves the element alone. With a plain handler, the render of a commit - a round trip behind the
+    // typing on a server circuit, the first keystroke a throttle lets through at once - wrote the text it was raised
+    // for back into the element, which by then holds the keys typed since, and the next key went onto the shorter text.
+    private async Task HandleOnElementInput(string? text)
+    {
+        // What the input holds from here on, as far as a render knows (see ElementValue).
+        RecordTypedText(text, Value);
+
+        await HandleOnStringValueInputAsync(new ChangeEventArgs { Value = text });
+    }
+
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
     {
         if (Disabled || ReadOnly) return;
@@ -1067,6 +1093,36 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         {
             _isCommittingTypedText = false;
         }
+
+        // Once the value holds the typed text the input shows the value again; until then the value this commit ended up
+        // with is the field's own doing, not a change from the page (see OnParametersSet).
+        SettleTypedText(Value, CurrentValueAsString);
+    }
+
+    // The change event commits the text it carries for good, so once the value holds what that text parses to (Trim
+    // taking its whitespace off) the input shows the value - what was committed - rather than the text typed, which
+    // SettleTypedText keeps holding for the input events still to come. Only the text this change carried is let go of:
+    // an input event raised while the commit ran holds a newer text, which stays, and a value that refused the text (a
+    // value bound one way) keeps it on screen as every other commit does.
+    private async Task HandleOnChange(ChangeEventArgs e)
+    {
+        if (Disabled || ReadOnly) return;
+
+        var text = e.Value?.ToString() ?? string.Empty;
+
+        await HandleOnStringValueChangeAsync(e);
+
+        if (TypedText is not { } typed || string.Equals(typed, text, StringComparison.Ordinal) is false) return;
+
+        TryParseValueFromString(text, out var parsed, out _);
+
+        if (string.Equals(parsed ?? string.Empty, CurrentValueAsString ?? string.Empty, StringComparison.Ordinal) is false) return;
+
+        ReleaseTypedText();
+
+        _lastTypedLength = CurrentValueAsString?.Length ?? 0;
+
+        SetInputHasValue(CurrentValueAsString);
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
@@ -1319,10 +1375,16 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
             _autoFilled = false;
 
+            // The text the input shows is the one a render keeps there from now on (an inline completion is in no input
+            // event), until the value settles on it.
+            RecordTypedText(inputValue, Value);
+
             if (inputValue != CurrentValueAsString)
             {
                 await SetCurrentValueAsStringAsync(inputValue);
             }
+
+            SettleTypedText(Value, CurrentValueAsString);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1448,6 +1510,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         _autoFilled = false;
         _pendingAutoFill = null;
         _lastTypedLength = value?.Length ?? 0;
+
+        // The text written here is what the input holds, so a render keeps it there - over the text typed before it, and
+        // even where the value refused it (a value bound one way) - until the value moves (see ElementValue).
+        RecordTypedText(value ?? string.Empty, Value);
 
         SetInputHasValue(value);
 

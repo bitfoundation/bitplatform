@@ -116,8 +116,8 @@ public partial class BitFullCalendarE2ETests
 
         await details.GetByRole(AriaRole.Button, new() { Name = "Delete" }).ClickAsync();
         await Expect(ScopeDialog).ToBeVisibleAsync();
-        // the focus moved into the prompt
-        Assert.IsTrue(await ScopeDialog.EvaluateAsync<bool>("d => d.contains(document.activeElement)"));
+        // the focus moves into the prompt - once it is open, a round trip after it shows
+        await Page.WaitForFunctionAsync("d => d.contains(document.activeElement)", await ScopeDialog.ElementHandleAsync());
         await PressEscapeAsync();
         await Expect(ScopeDialog).ToHaveCountAsync(0);
         await Expect(details).ToBeVisibleAsync();

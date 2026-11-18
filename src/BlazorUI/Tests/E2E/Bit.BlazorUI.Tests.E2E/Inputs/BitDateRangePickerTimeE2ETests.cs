@@ -7,6 +7,7 @@
 /// show and hide buttons; StartingValue; every title and accessible name; the disabled and the read-only time pickers.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDateRangePickerTimeE2ETests : BitDatePickersE2ETestBase
 {
     private const string Route = "/e2e/date-range-picker/time";

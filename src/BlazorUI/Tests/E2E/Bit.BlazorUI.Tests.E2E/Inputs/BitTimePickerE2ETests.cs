@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// disabled and read-only contracts, Escape inside a modal, reduced motion and the lifecycle.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTimePickerE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/time-picker";

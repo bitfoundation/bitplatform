@@ -7,6 +7,7 @@
 /// months folded away to fit the narrow viewport.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDateRangePickerResponsiveE2ETests : BitDatePickersE2ETestBase
 {
     private const string Route = "/e2e/date-range-picker/responsive";

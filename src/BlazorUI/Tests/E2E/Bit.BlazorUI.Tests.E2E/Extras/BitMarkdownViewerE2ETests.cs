@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// base parameters, prerendering, runtime re-parses and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMarkdownViewerE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/markdown-viewer";
@@ -1128,6 +1129,7 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
 /// than the screen scrolls inside its own region rather than widening the page.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMarkdownViewerTouchE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new()

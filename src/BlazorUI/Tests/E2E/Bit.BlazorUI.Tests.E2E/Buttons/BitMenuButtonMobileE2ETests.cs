@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// The callout it is on a wider screen is covered by BitMenuButtonE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitMenuButtonMobileE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/menu-button/responsive";

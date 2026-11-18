@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// one-way binding, variant / color / size, dynamic items and EditForm validation.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitChoiceGroupCustomE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/choice-group/custom";

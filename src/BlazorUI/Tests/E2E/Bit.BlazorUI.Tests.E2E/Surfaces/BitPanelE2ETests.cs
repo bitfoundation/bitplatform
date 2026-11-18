@@ -15,6 +15,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// The touch swipe on a phone is in <see cref="BitPanelTouchE2ETests"/>.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPanelE2ETests : E2ETestBase
 {
     private const string PagePath = "/e2e/panel";

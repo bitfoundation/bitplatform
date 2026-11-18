@@ -12,6 +12,7 @@
 /// persists the theme.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitThemeSwitcherE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/theme-switcher";

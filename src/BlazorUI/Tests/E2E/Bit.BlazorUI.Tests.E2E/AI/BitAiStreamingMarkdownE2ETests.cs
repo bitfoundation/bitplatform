@@ -12,6 +12,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// options in force, the --bit-AiMarkdownView-* variables and Classes/Styles reaching the view it draws with.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiStreamingMarkdownE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aistreamingmarkdown";

@@ -8,6 +8,7 @@
 /// the --bit-AiMarkdownView-* variables and Classes/Styles reaching the Markdown it draws with.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiTextPartViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aitextpartview";

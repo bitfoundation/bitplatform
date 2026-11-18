@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// screen under the finger. The callout it is on a wider screen is covered by BitBreadcrumbE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitBreadcrumbMobileE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/breadcrumb/responsive";

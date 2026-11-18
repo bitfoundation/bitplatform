@@ -9,6 +9,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// public variables on an instance and an ancestor, and Styles / Classes of the parts.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiDataTableE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aidatatable";

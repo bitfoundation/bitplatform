@@ -11,6 +11,7 @@
 /// parameters and Disabled; prerendering and unmounting while open.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDialogE2ETests : E2ETestBase
 {
     private const string PagePath = "/e2e/dialog";

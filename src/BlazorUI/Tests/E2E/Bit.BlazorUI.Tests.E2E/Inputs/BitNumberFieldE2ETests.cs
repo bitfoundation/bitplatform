@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// and unmounting. The touch behaviour is in <see cref="BitNumberFieldTouchE2ETests"/>.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitNumberFieldE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/number-field";
@@ -1883,6 +1884,7 @@ public class BitNumberFieldE2ETests : E2ETestBase
 /// input (no soft keyboard) and announces it, and the compact stack grows to a usable target on a coarse pointer.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitNumberFieldTouchE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new()

@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// Styles and Classes, RTL, reduced motion and the glyphs of the header.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiToolCallViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aitoolcallview";

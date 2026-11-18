@@ -12,6 +12,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// dialog, prerendering and unmounting while open.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCountryPickerE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/country-picker";

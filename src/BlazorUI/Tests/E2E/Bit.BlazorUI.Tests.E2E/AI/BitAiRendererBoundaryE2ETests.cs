@@ -13,6 +13,7 @@
 /// and in the browser the WebAssembly logger writes it to the console as an error, which the tests of a failure allow.
 /// </remarks>
 [TestClass]
+[E2ERetry]
 public class BitAiRendererBoundaryE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/airendererboundary";

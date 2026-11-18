@@ -32,7 +32,9 @@
             clearPadding: () => void,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
-            frame: { handle: number }
+            frame: { handle: number },
+            // The frame the boxes are watched again in, once the scroller or the scrollport moved (see setup).
+            reobserve: { handle: number }
         }>();
 
         // The scroll padding of a box is shared ground: two stickies of the same scrollport (a header and
@@ -169,6 +171,11 @@
             // whenever the layout moves, and the scroll listener follows it. The scrollport is
             // re-resolved with it, since a stylesheet can give an ancestor an overflow it did not have.
             const layoutHandler = () => {
+                // An element taken out of the document - one a render replaced, its component not having set the new
+                // one up yet - is in no scroller and pinned within nothing: there is nothing to follow until it is
+                // set up again (or disposed), and resolving its scroller now would move every watch to the window.
+                if (!element.isConnected) return;
+
                 const next = Stickies.scrollSource(element);
                 const nextScope = Stickies.stickyParent(element);
 
@@ -185,7 +192,7 @@
 
                     scope.current = nextScope;
 
-                    observe();
+                    scheduleObserve();
                 }
 
                 applyPadding();
@@ -240,6 +247,23 @@
                 observeBox(scope.current);
             };
 
+            // The boxes are watched again in a frame of their own rather than right away, since the layout handler
+            // runs from the resize observer: a box observed from inside its callback is owed a first notification, and
+            // the root element - shallower than any box the callback was delivered for - is one the browser can only
+            // deliver in the next frame, which it reports as a "ResizeObserver loop completed with undelivered
+            // notifications" error (WebKit as an uncaught one).
+            const reobserve = { handle: 0 };
+
+            const scheduleObserve = () => {
+                if (reobserve.handle) return;
+
+                reobserve.handle = requestAnimationFrame(() => {
+                    reobserve.handle = 0;
+
+                    observe();
+                });
+            };
+
             // Content that grows or shrinks on its own (a list that loads more rows, an expanding
             // panel) moves the geometry without any scroll event to announce it.
             if (typeof ResizeObserver !== 'undefined') {
@@ -269,7 +293,7 @@
                 mutations.observe(element, { attributes: true, attributeFilter: ['class', 'style', 'dir'] });
             }
 
-            Stickies._entries.set(id, { scrollHandler, layoutHandler, target, scope, observer, mutations, clearPadding, frame });
+            Stickies._entries.set(id, { scrollHandler, layoutHandler, target, scope, observer, mutations, clearPadding, frame, reobserve });
 
             applyPadding();
 
@@ -304,6 +328,13 @@
                 cancelAnimationFrame(entry.frame.handle);
 
                 entry.frame.handle = 0;
+            }
+
+            // A watch scheduled by the last layout change would observe the boxes again after the disconnect above.
+            if (entry.reobserve.handle) {
+                cancelAnimationFrame(entry.reobserve.handle);
+
+                entry.reobserve.handle = 0;
             }
 
             Stickies._entries.delete(id);

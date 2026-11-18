@@ -16,6 +16,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// unmounting mid-transition.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCollapseE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/collapse";

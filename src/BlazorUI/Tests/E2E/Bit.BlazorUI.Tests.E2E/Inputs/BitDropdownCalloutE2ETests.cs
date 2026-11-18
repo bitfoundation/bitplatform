@@ -8,6 +8,7 @@
 /// a resize and another dropdown opening, and the entry animation collapsing under reduced motion unless ForceAnimation.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownCalloutE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/callout";

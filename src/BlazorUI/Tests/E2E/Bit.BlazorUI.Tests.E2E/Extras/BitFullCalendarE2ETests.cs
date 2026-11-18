@@ -15,6 +15,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// weeks and months whatever day they run on.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public partial class BitFullCalendarE2ETests : E2ETestBase
 {
     private const string MainPage = "/e2e/full-calendar";

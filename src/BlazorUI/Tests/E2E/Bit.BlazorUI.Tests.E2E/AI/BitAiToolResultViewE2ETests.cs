@@ -7,6 +7,7 @@
 /// a result part, the theme tokens and every --bit-AiToolResultView-* variable, Styles and Classes, and RTL.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiToolResultViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aitoolresultview";

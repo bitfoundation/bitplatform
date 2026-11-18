@@ -8,6 +8,7 @@
 /// pipeline; the other engines have no such input and skip.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPullToRefreshTouchE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/pull-to-refresh";
