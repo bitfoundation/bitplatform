@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Boilerplate.WorkbenchTests.Features.Progress;
 
-/// <summary>The Progress page in a browser, with the guide a first visit gets put away.</summary>
+/// <summary>The Progress page in a browser, once it has started.</summary>
 public abstract class ProgressPageTest : WorkbenchPageTest
 {
     protected WorkbenchProgressAgent Agent => Server.Services.GetRequiredService<WorkbenchProgressAgent>();
@@ -19,15 +19,11 @@ public abstract class ProgressPageTest : WorkbenchPageTest
         await Page.GotoAsync(new Uri(Server.Address, path).ToString());
         await WaitUntilInteractive();
 
-        await Press(GuideSkip(culture));
-        await Expect(GuideSkip(culture)).ToBeHiddenAsync();
+        // The page says so once it has opened the review document and the state the browser kept.
+        await Expect(Page.Locator(".progress-page")).ToHaveAttributeAsync("data-guide", "none");
     }
 
-    protected ILocator GuideSkip(string? culture = null) => Page.GetByRole(AriaRole.Button, new()
-    {
-        Name = culture is null ? WorkbenchStrings.TourSkip : WorkbenchStrings.ResourceManager.GetString(nameof(WorkbenchStrings.TourSkip), CultureInfo.GetCultureInfo(culture)),
-        Exact = true
-    });
+    protected ILocator GuideSkip => Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true });
 
     protected ILocator Ask(string id) => Page.Locator($"[data-ask-id='{id}']");
 }
@@ -167,15 +163,16 @@ public class ProgressUITests : ProgressPageTest
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
-    public async Task TheGuide_Should_ShowOnceAndStayAwayAfterAReload(WorkbenchSurface surface)
+    public async Task TheGuide_Should_StartOnlyFromTheHelpButton(WorkbenchSurface surface)
     {
+        // A first visit, as on a Workbench that runs on another port: the browser has kept nothing for it.
         await OpenProgress("progress");
 
-        await Page.ReloadAsync();
+        await Expect(GuideSkip).ToHaveCountAsync(0);
 
-        // The page says what its guide came to once it has asked for it, a moment after it is interactive.
-        await Expect(Page.Locator(".progress-page")).ToHaveAttributeAsync("data-guide", "seen");
-        await Expect(GuideSkip()).ToBeHiddenAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
+
+        await Expect(GuideSkip).ToBeVisibleAsync();
     }
 
     [TestMethod, WithAnAgent]
