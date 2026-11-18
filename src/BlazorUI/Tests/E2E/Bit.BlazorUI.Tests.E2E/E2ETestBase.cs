@@ -331,7 +331,7 @@ public abstract class E2ETestBase
     // page raised before answering it; the timeout lets a rejection nobody handled be reported first. A page that does
     // not answer (closed, crashed, busy past the wait) is left as it is: this only narrows what the leaving stretches
     // that start next can take in.
-    private async Task CatchUpWithThePageAsync()
+    protected async Task CatchUpWithThePageAsync()
     {
         try
         {

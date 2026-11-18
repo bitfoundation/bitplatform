@@ -1099,6 +1099,32 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         SettleTypedText(Value, CurrentValueAsString);
     }
 
+    // The change event commits the text it carries for good, so once the value holds what that text parses to (Trim
+    // taking its whitespace off) the input shows the value - what was committed - rather than the text typed, which
+    // SettleTypedText keeps holding for the input events still to come. Only the text this change carried is let go of:
+    // an input event raised while the commit ran holds a newer text, which stays, and a value that refused the text (a
+    // value bound one way) keeps it on screen as every other commit does.
+    private async Task HandleOnChange(ChangeEventArgs e)
+    {
+        if (Disabled || ReadOnly) return;
+
+        var text = e.Value?.ToString() ?? string.Empty;
+
+        await HandleOnStringValueChangeAsync(e);
+
+        if (TypedText is not { } typed || string.Equals(typed, text, StringComparison.Ordinal) is false) return;
+
+        TryParseValueFromString(text, out var parsed, out _);
+
+        if (string.Equals(parsed ?? string.Empty, CurrentValueAsString ?? string.Empty, StringComparison.Ordinal) is false) return;
+
+        ReleaseTypedText();
+
+        _lastTypedLength = CurrentValueAsString?.Length ?? 0;
+
+        SetInputHasValue(CurrentValueAsString);
+    }
+
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         ClassBuilder.Reset();

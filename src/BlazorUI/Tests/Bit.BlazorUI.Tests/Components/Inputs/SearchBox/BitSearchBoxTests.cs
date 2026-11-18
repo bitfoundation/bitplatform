@@ -385,6 +385,33 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitSearchBoxTrimShouldShowTheTrimmedValueOnceTheChangeCommitsIt(bool immediate)
+    {
+        string? value = null;
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Trim, true);
+            parameters.Add(p => p.Immediate, immediate);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        input.Input("  bit  ");
+
+        // While typing, the input keeps the text typed, whitespace included.
+        Assert.AreEqual("  bit  ", component.Find(".bit-srb-inp").GetAttribute("value"));
+
+        component.Find(".bit-srb-inp").Change("  bit  ");
+
+        Assert.AreEqual("bit", value);
+        Assert.AreEqual("bit", component.Find(".bit-srb-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
     public void BitSearchBoxWithoutTrimShouldKeepTheWhiteSpaces()
     {
         string? value = null;

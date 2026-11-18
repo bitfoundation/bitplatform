@@ -69,9 +69,16 @@ public partial class HostE2ETests : E2ETestBase
             }
         };
         Page.RequestFinished += (_, request) => issuedDuring.Remove(request);
+        // How many times a page committed in the main frame, which tells a visit whose page committed before it failed from
+        // one whose navigation never got that far (see the retry below).
+        var commits = 0;
         Page.FrameNavigated += (_, frame) =>
         {
-            if (frame.ParentFrame is null) atCommit = (ConsoleErrors.Count, PageErrors.Count);
+            if (frame.ParentFrame is null)
+            {
+                atCommit = (ConsoleErrors.Count, PageErrors.Count);
+                Interlocked.Increment(ref commits);
+            }
         };
 
         var failures = new List<string>();
@@ -79,14 +86,11 @@ public partial class HostE2ETests : E2ETestBase
         (int Console, int Page) checkedTo = (ConsoleErrors.Count, PageErrors.Count);
 
         // Moves on to the next navigation once every event the page raised so far is in (the answer to an evaluation comes
-        // after them), so a request that failed while the page was still on screen is not taken for one cut off.
+        // after them), so a request that failed while the page was still on screen is not taken for one cut off. A page
+        // that does not answer in time is left as it is (see CatchUpWithThePageAsync), so the walk never hangs on it.
         async Task BeginLeavingAsync()
         {
-            try
-            {
-                await Page.EvaluateAsync("() => 0");
-            }
-            catch (PlaywrightException) { }
+            await CatchUpWithThePageAsync();
 
             Interlocked.Increment(ref navigations);
         }
@@ -112,12 +116,14 @@ public partial class HostE2ETests : E2ETestBase
         // Takes the page on screen to the route and reads what that page did itself: whether it became ready, whether its
         // circuit is alive, what it raised up to its check, and - read right before it is left - whether it lost its
         // connection at any point of its stay. What the page it left raised on the way out is that page's, handed back
-        // apart.
-        async Task<(List<string> Own, string? Leaving)> VisitAsync(string route, string left)
+        // apart, with whether the route's page committed at all.
+        async Task<(List<string> Own, string? Leaving, bool Committed)> VisitAsync(string route, string left)
         {
             var own = new List<string>();
 
             await BeginLeavingAsync();
+
+            var commitsBefore = Volatile.Read(ref commits);
 
             try
             {
@@ -126,7 +132,7 @@ public partial class HostE2ETests : E2ETestBase
             catch (Exception ex)
             {
                 own.Add($"{route}: never became ready ({ex.Message.Split(Environment.NewLine)[0]})");
-                return (own, CheckLeaving(left));
+                return (own, CheckLeaving(left), Volatile.Read(ref commits) > commitsBefore);
             }
 
             var leaving = CheckLeaving(left);
@@ -144,23 +150,25 @@ public partial class HostE2ETests : E2ETestBase
 
             if (await HasLostItsConnectionAsync()) own.Add($"{route}: lost its connection to the server");
 
-            return (own, leaving);
+            return (own, leaving, true);
         }
 
         var previous = "/";
         foreach (var route in routes)
         {
-            var (own, leaving) = await VisitAsync(route, previous);
+            var (own, leaving, committed) = await VisitAsync(route, previous);
             if (leaving is not null) failures.Add(leaving);
 
             // A page whose own visit failed is visited once more, and only fails the test if it fails again: one page after
             // another for a quarter of an hour on a loaded runner, beside the test classes running with it, now and then a
             // navigation is aborted on the way or a circuit drops (Firefox), which says nothing about the page - and a page
             // that fails on its own does so on the second visit too. What the failed visit raised as it was left goes with
-            // it; the second visit is left like any other.
+            // it; the second visit is left like any other. A failed visit whose page never committed left the previous page
+            // on screen, so what the second visit reads as it leaves is still that page's, and is checked as such.
             if (own.Count > 0)
             {
-                (own, _) = await VisitAsync(route, route);
+                (own, var retryLeaving, _) = await VisitAsync(route, committed ? route : previous);
+                if (committed is false && retryLeaving is not null) failures.Add(retryLeaving);
             }
 
             failures.AddRange(own);
