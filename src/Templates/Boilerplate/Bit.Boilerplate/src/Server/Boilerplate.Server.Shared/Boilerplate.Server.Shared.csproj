@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net11.0</TargetFramework>
+        <Features Condition=" '$(framework)' != 'net10.0' ">$(Features);runtime-async=on</Features>
         <IsAspireSharedProject Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' ">true</IsAspireSharedProject>
     </PropertyGroup>
 
