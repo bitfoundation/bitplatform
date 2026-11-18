@@ -697,9 +697,12 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
 - A turn ends when the agent has answered. An agent that answers and then waits for the user on the Workbench's
   Progress page, as its skill tells it to, would hold the turn open for ever, since the scripted user answers in the
   chat and can't click there. So the helper ends the turn a minute after the agent's answer, when a real user's reply
-  in the chat would arrive, and sends the scripted reply as the next turn. A turn's final message is its first
-  answer. A resumed session first closes the background tasks the last turn left with an empty result of its own,
-  marked as a task notification: that one is not the agent's answer.
+  in the chat would arrive, and sends the scripted reply as the next turn. An agent often ends its turn to wait for
+  a test run, a build or a subagent it started in the background, and Claude Code wakes it up when that ends, so the
+  helper waits for those, up to ten minutes, and counts the minute from the agent's last answer. The app's servers
+  and its waits on the Progress page never end: they don't count, and an answer one of them wakes the agent up for
+  doesn't start the minute again. A turn's final message is every answer it gave, in order. A resumed session first
+  closes the background tasks the last turn left with an empty result of its own, which is not an answer.
 - `design-chat` then hands its folder to a new session with no memory of the first, which has to pick the product
   decisions up from `specs/`, as the team's other tools and the next session would. A scripted user answers that
   session's questions too, so it can get as far as its plan.

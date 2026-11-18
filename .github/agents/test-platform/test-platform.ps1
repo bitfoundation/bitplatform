@@ -1648,7 +1648,8 @@ function ConvertTo-CallInput($value) {
 function Read-AgentTranscript([string] $log) {
     $calls = [Collections.Generic.List[object]]::new()
     $texts = [Collections.Generic.List[string]]::new()
-    $session = $final = $cost = $null
+    $answers = [Collections.Generic.List[string]]::new()
+    $session = $cost = $null
 
     foreach ($line in Get-Content $log -Encoding utf8) {
         if (-not $line.StartsWith('{')) {
@@ -1676,14 +1677,15 @@ function Read-AgentTranscript([string] $log) {
             }
         }
         elseif ($event.type -eq 'result') {
-            if ($event.origin.kind -ne 'task-notification') {
-                $final ??= $event.result
+            if ($event.num_turns -gt 0 -and $event.result) {
+                $answers.Add($event.result)
             }
 
             $cost = $event.total_cost_usd
         }
     }
 
+    $final = $answers.Count ? $answers -join "`n`n" : $null
     [pscustomobject]@{ Session = $session; Cost = $cost; Final = $final; Texts = @($texts); Calls = $calls }
 }
 
@@ -1718,14 +1720,14 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
         $process = [Diagnostics.Process]::Start($start)
         $process.StandardInput.Close()
         $copies = @($process.StandardOutput.BaseStream.CopyToAsync($output), $process.StandardError.BaseStream.CopyToAsync($errors))
-        $answeredAt = $null
+        $answeredAt = $idleAt = $null
 
         while (-not $process.WaitForExit(5000)) {
-            if (-not $answeredAt -and (Test-AgentAnswered $log)) {
-                $answeredAt = Get-Date
-            }
+            $state = Get-AgentTurnState $log
+            $idleAt = $state -eq 'working' ? $null : ($idleAt ?? (Get-Date))
+            $answeredAt = $state -eq 'answered' ? ($answeredAt ?? (Get-Date)) : $null
 
-            if ($answeredAt -and ((Get-Date) - $answeredAt).TotalSeconds -gt 60) {
+            if (($answeredAt -and ((Get-Date) - $answeredAt).TotalSeconds -gt 60) -or ($idleAt -and ((Get-Date) - $idleAt).TotalMinutes -gt 10)) {
                 taskkill /PID $process.Id /T /F 2>&1 | Out-Null
                 break
             }
@@ -1743,25 +1745,54 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
     Read-AgentTranscript $log
 }
 
-function Test-AgentAnswered([string] $log) {
+function Get-AgentTurnState([string] $log) {
     $stream = [IO.File]::Open($log, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
 
     try {
-        $lines = (New-Object IO.StreamReader $stream).ReadToEnd() -split "`n" | Where-Object { $_.StartsWith('{') -and $_.Contains('"type":"result"') }
+        $lines = (New-Object IO.StreamReader $stream).ReadToEnd() -split "`n" | Where-Object {
+            $_.StartsWith('{') -and ($_.Contains('"type":"result"') -or $_.Contains('"subtype":"task_') -or
+                $_.Contains('"subtype":"background_tasks_changed"') -or ($_.Contains('"type":"assistant"') -and $_.Contains('"parent_tool_use_id":null')))
+        }
+
+        $endless = 'dotnet (watch|run)|/api/progress/'
+        $commands = @{}
+        $tasks = @{}
+        $running = @()
+        $answered = $false
+        $woken = $null
 
         foreach ($line in $lines) {
             try {
                 $event = $line | ConvertFrom-Json -Depth 64
-
-                if ($event.type -eq 'result' -and $event.origin.kind -ne 'task-notification') {
-                    return $true
-                }
             }
             catch {
+                continue
+            }
+
+            if ($event.type -eq 'assistant') {
+                $answered = $answered -and $woken -and $tasks[$woken] -match $endless
+                $event.message.content | Where-Object type -eq 'tool_use' | ForEach-Object { $commands[$_.id] = "$($_.input.command)" }
+            }
+            elseif ($event.type -eq 'result') {
+                if ($event.num_turns -gt 0) {
+                    $answered = $true
+                    $woken = $null
+                }
+            }
+            elseif ($event.subtype -eq 'task_started') {
+                $tasks[$event.task_id] = $commands[$event.tool_use_id]
+            }
+            elseif ($event.subtype -eq 'task_notification') {
+                $woken = $event.task_id
+            }
+            elseif ($event.subtype -eq 'background_tasks_changed') {
+                $running = @($event.tasks | ForEach-Object task_id)
             }
         }
 
-        $false
+        $awaited = $running | Where-Object { $tasks.ContainsKey($_) -and $tasks[$_] -notmatch $endless }
+
+        if (-not $answered) { 'working' } elseif ($awaited) { 'waiting' } else { 'answered' }
     }
     finally {
         $stream.Dispose()
