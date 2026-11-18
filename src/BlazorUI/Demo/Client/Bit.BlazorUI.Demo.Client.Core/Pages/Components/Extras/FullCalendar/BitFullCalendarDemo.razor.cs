@@ -391,11 +391,11 @@ public partial class BitFullCalendarDemo
         {
             Id = "badge-variant-enum",
             Name = "BitFullCalendarBadgeVariant",
-            Description = "Badge display style in the month view.",
+            Description = "How an event's color is drawn on the month badges and the day, week and timeline blocks.",
             Items =
             [
-                new() { Name = "Colored", Description = "Colored badge.", Value = "0" },
-                new() { Name = "Dot", Description = "Colored dot bullet.", Value = "1" },
+                new() { Name = "Colored", Description = "The event is filled with its color.", Value = "0" },
+                new() { Name = "Dot", Description = "The event is drawn on the calendar's neutral surface, with a dot of its color.", Value = "1" },
             ]
         },
         new()
@@ -439,9 +439,9 @@ public partial class BitFullCalendarDemo
             Description = "Identifies where a calendar event change originated from in the UI.",
             Items =
             [
-                new() { Name = "Dialog", Description = "From the add/edit dialog.", Value = "0" },
-                new() { Name = "Drag", Description = "From a drag-and-drop move.", Value = "1" },
-                new() { Name = "Resize", Description = "From resizing an event block.", Value = "2" },
+                new() { Name = "Dialog", Description = "From the add/edit dialog or the details dialog.", Value = "0" },
+                new() { Name = "Drag", Description = "From a move: a drag, or the keyboard.", Value = "1" },
+                new() { Name = "Resize", Description = "From a resize: an event's edge, or the keyboard.", Value = "2" },
             ]
         },
         new()
@@ -518,7 +518,7 @@ public partial class BitFullCalendarDemo
                 new() { Name = "Description", Type = "string", DefaultValue = "string.Empty", Description = "Event description shown in the details and add/edit dialogs." },
                 new() { Name = "StartDate", Type = "DateTime", DefaultValue = "", Description = "Start date and time of the event." },
                 new() { Name = "EndDate", Type = "DateTime", DefaultValue = "", Description = "End date and time of the event." },
-                new() { Name = "Color", Type = "string", DefaultValue = "BitFullCalendarColorScheme.FallbackColorId", Description = "Id of a BitFullCalendarColorOption from the configured palette, or - when no option matches - a CSS color of its own (a hex or a color function such as rgb(), hsl(), oklch(), var()). Anything else is drawn in --bit-FullCalendar-event-color.", LinkType = LinkType.Link, Href = "#color-option-class" },
+                new() { Name = "Color", Type = "string", DefaultValue = "\"blue\"", Description = "Id of a BitFullCalendarColorOption from the configured palette, or - when no option matches - a CSS color of its own (a hex or a color function such as rgb(), hsl(), oklch(), var()). Anything else is drawn in --bit-FullCalendar-event-color.", LinkType = LinkType.Link, Href = "#color-option-class" },
                 new() { Name = "Attendees", Type = "List<BitFullCalendarAttendee>", DefaultValue = "[]", Description = "People attending the event.", LinkType = LinkType.Link, Href = "#attendee-class" },
                 new() { Name = "Resource", Type = "string?", DefaultValue = "null", Description = "Optional resource identifier linking this event to a BitFullCalendarResource. Used by the timeline view to place the event on the matching resource row. null or empty means the event is unassigned.", LinkType = LinkType.Link, Href = "#resource-class" },
                 new() { Name = "IsAllDay", Type = "bool", DefaultValue = "false", Description = "Marks the event as lasting the whole day (or span of days) rather than a time range. It renders in the all-day row above the day and week time grids and its badge shows no clock time." },
@@ -614,7 +614,7 @@ public partial class BitFullCalendarDemo
             Parameters =
             [
                 new() { Name = "Use24HourFormat", Type = "bool", DefaultValue = "true", Description = "Uses 24-hour time format instead of 12-hour (AM/PM)." },
-                new() { Name = "BadgeVariant", Type = "BitFullCalendarBadgeVariant", DefaultValue = "BitFullCalendarBadgeVariant.Colored", Description = "Badge display style in the month view.", LinkType = LinkType.Link, Href = "#badge-variant-enum" },
+                new() { Name = "BadgeVariant", Type = "BitFullCalendarBadgeVariant", DefaultValue = "BitFullCalendarBadgeVariant.Colored", Description = "How an event's color is drawn on the month badges and the day, week and timeline blocks.", LinkType = LinkType.Link, Href = "#badge-variant-enum" },
                 new() { Name = "StartOfDayHour", Type = "int", DefaultValue = "8", Description = "Hour the day/week time grid scrolls to on first render. Clamped into the VisibleStartHour/VisibleEndHour window." },
                 new() { Name = "VisibleStartHour", Type = "int", DefaultValue = "0", Description = "First hour rendered by the day, week, and timeline day/week time grids (0–23). Equivalent to slotMinTime in other calendar libraries." },
                 new() { Name = "VisibleEndHour", Type = "int", DefaultValue = "24", Description = "Exclusive last hour rendered by the day, week, and timeline day/week time grids (1–24). Equivalent to slotMaxTime. A value at or below VisibleStartHour is corrected to one hour past it." },
@@ -703,17 +703,21 @@ public partial class BitFullCalendarDemo
                 new() { Name = "ModeTabsAriaLabel", Type = "string", DefaultValue = "\"Modes\"", Description = "Accessible name of the mode tab strip." },
                 new() { Name = "TodayButton", Type = "string", DefaultValue = "\"Today\"", Description = "Label for the today navigation button." },
                 new() { Name = "AddEventButton", Type = "string", DefaultValue = "\"Add Event\"", Description = "Label for the add event button." },
-                new() { Name = "AddEventHoverHint", Type = "string", DefaultValue = "\"Add event\"", Description = "Tooltip shown when hovering the add event affordance." },
+                new() { Name = "AddEventHoverHint", Type = "string", DefaultValue = "\"Add event\"", Description = "Hint a slot or month cell shows under the pointer or focus." },
                 new() { Name = "PreviousButtonTitle", Type = "string", DefaultValue = "\"Previous\"", Description = "Title for the previous navigation button." },
                 new() { Name = "NextButtonTitle", Type = "string", DefaultValue = "\"Next\"", Description = "Title for the next navigation button." },
-                new() { Name = "PreviousMonthAriaLabel", Type = "string", DefaultValue = "\"Previous month\"", Description = "Aria label for the mini calendar previous month navigation button." },
-                new() { Name = "NextMonthAriaLabel", Type = "string", DefaultValue = "\"Next month\"", Description = "Aria label for the mini calendar next month navigation button." },
+                new() { Name = "PreviousMonthAriaLabel", Type = "string", DefaultValue = "\"Previous month\"", Description = "Aria label for the previous month button of the mini calendar and the dialog's date pickers." },
+                new() { Name = "NextMonthAriaLabel", Type = "string", DefaultValue = "\"Next month\"", Description = "Aria label for the next month button of the mini calendar and the dialog's date pickers." },
+                new() { Name = "PickerHourAriaLabel", Type = "string", DefaultValue = "\"Hour\"", Description = "Aria label for the hour field of the dialog's time pickers." },
+                new() { Name = "PickerMinuteAriaLabel", Type = "string", DefaultValue = "\"Minute\"", Description = "Aria label for the minute field of the dialog's time pickers." },
+                new() { Name = "PickerMeridiemAriaLabel", Type = "string", DefaultValue = "\"AM/PM\"", Description = "Aria label for the AM/PM field of the dialog's time pickers." },
+                new() { Name = "PickerSelectedDayAriaLabel", Type = "string", DefaultValue = "\"selected\"", Description = "Added to the aria label of the selected day of a date picker." },
                 new() { Name = "SettingsButtonTitle", Type = "string", DefaultValue = "\"Settings\"", Description = "Title for the settings gear button." },
                 new() { Name = "FilterByColorAriaLabel", Type = "string", DefaultValue = "\"Filter events by color\"", Description = "Aria label for the color filter dropdown." },
                 new() { Name = "FilterByPersonAriaLabel", Type = "string", DefaultValue = "\"Filter events by person in current view\"", Description = "Aria label for the attendee filter dropdown." },
                 new() { Name = "AllColorsOption", Type = "string", DefaultValue = "\"All colors\"", Description = "Option text for clearing the color filter." },
                 new() { Name = "AllPeopleOption", Type = "string", DefaultValue = "\"All people\"", Description = "Option text for clearing the attendee filter." },
-                new() { Name = "UnnamedAttendee", Type = "string", DefaultValue = "\"(Unnamed)\"", Description = "Fallback text for an attendee with no name." },
+                new() { Name = "UnnamedAttendee", Type = "string", DefaultValue = "\"(Unnamed)\"", Description = "Not shown: the filter skips an attendee with no name and no Id." },
                 new() { Name = "CalendarSettingsLabel", Type = "string", DefaultValue = "\"Calendar settings\"", Description = "Heading for the settings panel." },
                 new() { Name = "DotBadgeLabel", Type = "string", DefaultValue = "\"Dot badge\"", Description = "Label for the dot badge setting toggle." },
                 new() { Name = "TwentyFourHourFormatLabel", Type = "string", DefaultValue = "\"24-hour format\"", Description = "Label for the 24-hour format setting toggle." },
@@ -732,7 +736,7 @@ public partial class BitFullCalendarDemo
                 new() { Name = "HappeningNowTitle", Type = "string", DefaultValue = "\"Happening now\"", Description = "Title for the happening-now indicator." },
                 new() { Name = "NoAppointmentsNow", Type = "string", DefaultValue = "\"No appointments at the moment\"", Description = "Text shown when there are no current appointments." },
                 new() { Name = "SearchEventsPlaceholder", Type = "string", DefaultValue = "\"Search events...\"", Description = "Placeholder for the agenda search box." },
-                new() { Name = "NoEventsFound", Type = "string", DefaultValue = "\"No events found.\"", Description = "Text shown when a search returns no events." },
+                new() { Name = "NoEventsFound", Type = "string", DefaultValue = "\"No events found.\"", Description = "Text shown when the agenda has no event to list." },
                 new() { Name = "EventListTitleFormat", Type = "string", DefaultValue = "\"Events on {0}\"", Description = "Format template for the event list dialog title; {0} is the formatted date." },
                 new() { Name = "EventListCountFormat", Type = "string", DefaultValue = "\"{0} event(s)\"", Description = "Format template for the event count in the event list dialog; {0} is the count." },
                 new() { Name = "MoreEventsFormat", Type = "string", DefaultValue = "\"+{0} more\"", Description = "Format template for the \"+N more\" affordance in month cells; {0} is the hidden-event count." },
@@ -769,7 +773,7 @@ public partial class BitFullCalendarDemo
                 new() { Name = "WeekNumberFormat", Type = "string", DefaultValue = "\"W{0}\"", Description = "Format template of the week-number cell; {0} is the ISO-8601 week number." },
                 new() { Name = "WeekNumberAriaLabelFormat", Type = "string", DefaultValue = "\"Week {0}\"", Description = "Accessible name of a week-number cell; {0} is the ISO-8601 week number." },
                 new() { Name = "EventOverlapMessage", Type = "string", DefaultValue = "\"This time range is already taken on that resource.\"", Description = "Notice shown when a move, resize, or save is refused because it would overlap another event." },
-                new() { Name = "OutOfRangeMessage", Type = "string", DefaultValue = "\"That date is outside the allowed range.\"", Description = "Notice shown when a move or resize is refused because it falls outside the allowed date range." },
+                new() { Name = "OutOfRangeMessage", Type = "string", DefaultValue = "\"That date is outside the allowed range.\"", Description = "Notice shown when a move, resize, or save is refused because it falls outside the allowed date range." },
                 new() { Name = "OutsideBusinessHoursMessage", Type = "string", DefaultValue = "\"That time is outside business hours.\"", Description = "Notice shown when a move, resize, or save is refused because it falls outside the business hours." },
                 new() { Name = "BlockedMessage", Type = "string", DefaultValue = "\"That time is unavailable.\"", Description = "Notice shown when a move, resize, or save is refused because it overlaps a blocking event." },
                 new() { Name = "HighlightBusinessHoursLabel", Type = "string", DefaultValue = "\"Highlight business hours\"", Description = "Label for the business-hours toggle in the settings panel." },
@@ -847,7 +851,7 @@ public partial class BitFullCalendarDemo
             Name = "State",
             Type = "BitFullCalendarState",
             DefaultValue = "",
-            Description = "The live state: the active view, mode and date, the resolved settings and the event projections the views render from. Read it; drive the calendar through the parameters and the methods below.",
+            Description = "The live state: the active view, mode and date, the resolved settings and the event projections the views render from. Read it, and set its color and attendee filters; drive everything else through the parameters, Settings and the methods below.",
         },
         new()
         {

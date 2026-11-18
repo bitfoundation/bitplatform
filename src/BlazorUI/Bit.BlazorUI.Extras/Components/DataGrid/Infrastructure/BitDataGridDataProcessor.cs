@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Client-side data pipeline: filtering, multi-sorting, grouping and aggregation.
 /// </summary>
-public static class BitDataGridDataProcessor
+internal static class BitDataGridDataProcessor
 {
     public static IReadOnlyList<TItem> Filter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IEnumerable<TItem> source,

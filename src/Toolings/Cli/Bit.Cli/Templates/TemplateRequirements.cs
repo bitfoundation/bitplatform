@@ -1,7 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Linq;
 using Bit.Cli.Tools;
 
 namespace Bit.Cli.Templates;
@@ -10,17 +8,17 @@ public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspir
 {
     private const string PackageJsonEntry = "Bit.Boilerplate/src/Client/Boilerplate.Client.Core/package.json";
 
-    private const string PackagesPropsEntry = "Bit.Boilerplate/src/Directory.Packages.props";
+    private const string AppHostEntry = "Bit.Boilerplate/src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj";
 
     private const string GlobalJsonEntry = "Bit.Boilerplate/global.json";
 
-    public static TemplateRequirements Embedded { get; } = FromTemplate(ReadResource("Bit.Cli.package.json"), ReadResource("Bit.Cli.Directory.Packages.props"), ReadResource("Bit.Cli.global.json"));
+    public static TemplateRequirements Embedded { get; } = FromTemplate(ReadResource("Bit.Cli.package.json"), ReadResource("Bit.Cli.AppHost.csproj"), ReadResource("Bit.Cli.global.json"));
 
     public static TemplateRequirements FromPackage(string packagePath)
     {
         return FromTemplate(
             TemplateSource.ReadEntry(packagePath, PackageJsonEntry),
-            TemplateSource.ReadEntry(packagePath, PackagesPropsEntry),
+            TemplateSource.ReadEntry(packagePath, AppHostEntry),
             TemplateSource.ReadEntry(packagePath, GlobalJsonEntry));
     }
 
@@ -29,16 +27,16 @@ public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspir
         return GlobalJson is null ? this : this with { Sdk = SdkRequirement.FromGlobalJson(selection.Manifest.ApplySwitches(GlobalJson, selection)) ?? Sdk };
     }
 
-    private static TemplateRequirements FromTemplate(string? packageJson, string? packagesProps, string? globalJson)
+    private static TemplateRequirements FromTemplate(string? packageJson, string? appHostProject, string? globalJson)
     {
-        return new(ParseNodeMajor(packageJson), ParseAspire(packagesProps), SdkRequirement.FromGlobalJson(globalJson), globalJson);
+        return new(ParseNodeMajor(packageJson), ParseAspire(appHostProject), SdkRequirement.FromGlobalJson(globalJson), globalJson);
     }
 
     public static TemplateRequirements FromProject(string directory, string name)
     {
         return new(
             ParseNodeMajor(ReadFile(Path.Combine(directory, "src", "Client", $"{name}.Client.Core", "package.json"))),
-            ParseAspire(ReadFile(Path.Combine(directory, "src", "Directory.Packages.props"))),
+            ParseAspire(ReadFile(Path.Combine(directory, "src", "Server", $"{name}.Server.AppHost", $"{name}.Server.AppHost.csproj"))),
             SdkRequirement.FromGlobalJson(ReadFile(Path.Combine(directory, "global.json"))));
     }
 
@@ -62,22 +60,11 @@ public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspir
         }
     }
 
-    public static Version? ParseAspire(string? packagesProps)
+    public static Version? ParseAspire(string? appHostProject)
     {
-        if (packagesProps is null)
-            return null;
-
-        try
-        {
-            return XDocument.Parse(packagesProps).Descendants()
-                .Where(e => e.Name.LocalName == "PackageVersion" && string.Equals((string?)e.Attribute("Include"), "Aspire.Hosting.AppHost", StringComparison.OrdinalIgnoreCase))
-                .Select(e => Version.TryParse((string?)e.Attribute("Version"), out var version) ? version : null)
-                .FirstOrDefault(v => v is not null);
-        }
-        catch (XmlException)
-        {
-            return null;
-        }
+        return appHostProject is not null && AspireSdkRegex().Match(appHostProject) is { Success: true } match && Version.TryParse(match.Groups["version"].Value, out var version)
+            ? version
+            : null;
     }
 
     private static string? ReadResource(string name)
@@ -105,4 +92,7 @@ public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspir
 
     [GeneratedRegex(@"(?<major>\d+)")]
     private static partial Regex NodeMajorRegex();
+
+    [GeneratedRegex(@"Aspire\.AppHost\.Sdk/(?<version>\d+\.\d+\.\d+)")]
+    private static partial Regex AspireSdkRegex();
 }

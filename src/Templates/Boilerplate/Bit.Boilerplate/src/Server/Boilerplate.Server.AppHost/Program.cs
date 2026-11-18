@@ -43,7 +43,7 @@ var keycloak = builder.ExecutionContext.IsRunMode ? builder.AddKeycloak() : null
 var embedding = builder.ExecutionContext.IsRunMode ? builder.AddTextEmbeddingsInference() : null;
 //#endif
 
-var serverWebProject = builder.AddDotnetProject("serverweb", "../Boilerplate.Server.Web/Boilerplate.Server.Web.csproj")
+var serverWebProject = builder.AddProject("serverweb", "../Boilerplate.Server.Web/Boilerplate.Server.Web.csproj")
     .WithExternalHttpEndpoints();
 
 // Adding health checks endpoints to applications in non-development environments has security implications.
@@ -53,7 +53,7 @@ if (builder.Environment.IsDevelopment())
     serverWebProject.WithHttpHealthCheck("/alive");
 }
 
-var landingPageProject = builder.AddDotnetProject("landingpage", "../../LandingPage/Boilerplate.LandingPage.Server/Boilerplate.LandingPage.Server.csproj")
+var landingPageProject = builder.AddProject("landingpage", "../../LandingPage/Boilerplate.LandingPage.Server/Boilerplate.LandingPage.Server.csproj")
     .WithExternalHttpEndpoints();
 
 if (builder.ExecutionContext.IsRunMode)
@@ -68,7 +68,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 //#if (api == "Standalone")
-var serverApiProject = builder.AddDotnetProject("serverapi", "../Boilerplate.Server.Api/Boilerplate.Server.Api.csproj")
+var serverApiProject = builder.AddProject("serverapi", "../Boilerplate.Server.Api/Boilerplate.Server.Api.csproj")
     .WithExternalHttpEndpoints();
 
 // Adding health checks endpoints to applications in non-development environments has security implications.
@@ -174,7 +174,7 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
 {
     // Blazor WebAssembly Standalone project. Its dev server listens on its launch profile's address itself, not on a port
     // Aspire gives it, so that endpoint has no proxy in front of it, which would hold the same port.
-    builder.AddDotnetProject("clientwebwasm", "../../Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj")
+    builder.AddProject("clientwebwasm", "../../Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj")
         .WithEndpoint("http", endpoint => endpoint.IsProxied = false)
         .WithExplicitStart();
 
@@ -199,7 +199,7 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     if (OperatingSystem.IsWindows())
     {
         // Blazor Hybrid Windows project.
-        builder.AddDotnetProject("clientwindows", "../../Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj")
+        builder.AddProject("clientwindows", "../../Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj")
             .WithExplicitStart();
     }
 

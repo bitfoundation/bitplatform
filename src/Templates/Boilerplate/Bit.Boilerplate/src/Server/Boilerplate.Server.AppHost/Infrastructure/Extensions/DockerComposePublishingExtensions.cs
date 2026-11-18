@@ -2,7 +2,6 @@
 using Aspire.Hosting.Docker;
 using Aspire.Hosting.Docker.Resources.ComposeNodes;
 using Aspire.Hosting.Docker.Resources.ServiceNodes;
-using Aspire.Hosting.Dotnet;
 
 namespace Aspire.Hosting;
 
@@ -25,10 +24,10 @@ public static class DockerComposePublishingExtensions
         /// </summary>
         public void ConfigureDockerComposePublishing(
             IResourceBuilder<DockerComposeEnvironmentResource> compose,
-            IResourceBuilder<DotnetProjectResource> serverWebProject,
-            IResourceBuilder<DotnetProjectResource> landingPageProject
+            IResourceBuilder<ProjectResource> serverWebProject,
+            IResourceBuilder<ProjectResource> landingPageProject
             //#if (api == "Standalone")
-            , IResourceBuilder<DotnetProjectResource> serverApiProject
+            , IResourceBuilder<ProjectResource> serverApiProject
             //#endif
             )
         {
@@ -51,7 +50,7 @@ public static class DockerComposePublishingExtensions
             apiProject = serverApiProject;
             //#endif
 
-            List<IResourceBuilder<DotnetProjectResource>> projects = [serverWebProject, landingPageProject];
+            List<IResourceBuilder<ProjectResource>> projects = [serverWebProject, landingPageProject];
             //#if (api == "Standalone")
             projects.Add(serverApiProject);
             //#endif

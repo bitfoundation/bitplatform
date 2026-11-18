@@ -5,7 +5,7 @@
 /// parameter (or the built-in <see cref="BitFullCalendarColorOption.Defaults"/> palette when
 /// none was supplied). Events reference a color through <see cref="BitFullCalendarColorOption.Id"/>.
 /// </summary>
-public sealed class BitFullCalendarColorScheme
+internal sealed class BitFullCalendarColorScheme
 {
     /// <summary>
     /// Preferred id for events with no explicit color, used only when the configured palette actually

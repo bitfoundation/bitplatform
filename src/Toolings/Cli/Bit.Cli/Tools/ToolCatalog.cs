@@ -29,9 +29,10 @@ public static partial class ToolCatalog
 
     public static Tool? Find(string id) => All.FirstOrDefault(t => string.Equals(t.Id, id, StringComparison.OrdinalIgnoreCase));
 
-    public static async Task<IReadOnlyList<ToolCheck>> CheckAsync(ToolContext context, CancellationToken cancellationToken)
+    /// <summary>Checks the tools that apply to what the context needs, or only the ones <paramref name="only"/> names.</summary>
+    public static async Task<IReadOnlyList<ToolCheck>> CheckAsync(ToolContext context, CancellationToken cancellationToken, IReadOnlyCollection<string>? only = null)
     {
-        var applicable = All.Where(t => t.AppliesTo(context) && (context.Environment.IsCI is false || t.AppliesInCi(context))).ToArray();
+        var applicable = All.Where(t => t.AppliesTo(context) && (context.Environment.IsCI is false || t.AppliesInCi(context)) && (only is null || only.Contains(t.Id, StringComparer.OrdinalIgnoreCase))).ToArray();
         var statuses = await Task.WhenAll(applicable.Select(async tool =>
         {
             try
@@ -310,7 +311,7 @@ public static partial class ToolCatalog
 
         public override string Name => "Git";
 
-        public override string Why(ToolContext context) => "version control, and the main branch of the new project";
+        public override string Why(ToolContext context) => context.Needs.ClonesProject ? "clones the project" : "version control, and the main branch of the new project";
 
         public override bool IsNeeded(ToolContext context) => true;
 
@@ -336,9 +337,11 @@ public static partial class ToolCatalog
 
         public override string Name => "GitHub CLI";
 
-        public override bool AppliesTo(ToolContext context) => context.Needs.GitHubRepo;
+        public override bool AppliesTo(ToolContext context) => context.Needs.GitHubRepo || context.Needs.CloneFromGitHub;
 
-        public override string Why(ToolContext context) => "creates the project's private GitHub repository and pushes main to it";
+        public override string Why(ToolContext context) => context.Needs.GitHubRepo
+            ? "creates the project's private GitHub repository and pushes main to it"
+            : "signs in to GitHub, so a private repository can be cloned";
 
         public override bool IsNeeded(ToolContext context) => true;
 

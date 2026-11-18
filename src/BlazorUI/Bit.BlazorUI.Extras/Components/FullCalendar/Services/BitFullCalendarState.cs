@@ -2,6 +2,13 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// What a <see cref="BitFullCalendar"/> is showing (<see cref="BitFullCalendar.State"/>): the active view, mode and
+/// date, the settings in force and the events each view draws, and the answers to the calendar's own questions
+/// (<see cref="ValidateRange"/>, <see cref="CanEdit"/>, <see cref="IsBusinessTime"/>, ...). An app reads it, and
+/// sets its color and attendee filters; the calendar changes everything else as its parameters, its
+/// <see cref="BitFullCalendar.Settings"/> and the user change, and raises <see cref="OnStateChanged"/> each time.
+/// </summary>
 public class BitFullCalendarState
 {
     /// <summary>Every view the calendar offers, in the order the tab strip renders them.</summary>
@@ -56,13 +63,18 @@ public class BitFullCalendarState
     // on screen, so adding an event on the third of three days does not slide the view to start there.
     private DateTime _daySpanStart;
 
-    public BitFullCalendarState()
+    internal BitFullCalendarState()
     {
         // The state opens on the today of its own clock, read once: DateTime.Today is another clock than the one
         // SetTimeProvider compares the selected date with, and two reads can fall on either side of a midnight.
         _selectedDate = _daySpanStart = Today;
     }
 
+    /// <summary>
+    /// The selected date: the day the day view shows, and the date the week, month and year views are laid out
+    /// around. Always inside <see cref="MinDate"/> and <see cref="MaxDate"/>; set it with
+    /// <see cref="BitFullCalendar.GoToDate"/>.
+    /// </summary>
     public DateTime SelectedDate
     {
         get => _selectedDate;
@@ -108,7 +120,7 @@ public class BitFullCalendarState
             _daySpanStart = _selectedDate.Date;
     }
 
-    public void SetWeekDayCount(int? weekDayCount)
+    internal void SetWeekDayCount(int? weekDayCount)
     {
         var next = BitFullCalendarHelpers.NormalizeWeekDayCount(weekDayCount);
         if (WeekDayCount == next)
@@ -119,8 +131,17 @@ public class BitFullCalendarState
         UpdateUI();
         NotifyDateRangeChanged();
     }
+
+    /// <summary>The active view; changed with <see cref="BitFullCalendar.ChangeView"/>.</summary>
     public BitFullCalendarView View { get; private set; } = BitFullCalendarView.Month;
+
+    /// <summary>The active mode, events or timeline; changed with <see cref="BitFullCalendar.ChangeMode"/>.</summary>
     public BitFullCalendarMode Mode { get; private set; } = BitFullCalendarMode.Event;
+
+    /// <summary>
+    /// The color ids (<see cref="BitFullCalendarColorOption"/> ids) the color filter keeps, or none when events of
+    /// every color are shown. Set with <see cref="SetColorFilter"/> and <see cref="FilterByColor"/>.
+    /// </summary>
     public IReadOnlyList<string> SelectedColors => _selectedColors;
 
     /// <summary>
@@ -148,17 +169,37 @@ public class BitFullCalendarState
     /// </summary>
     public bool IsTimelineModeAvailable => _resources.Count > 0 && _views.Any(_timelineViews.Contains);
 
-    /// <summary>When set, only events that include this attendee (by <see cref="BitFullCalendarHelpers.AttendeeFilterKey"/>) are shown.</summary>
+    /// <summary>
+    /// When set, only events that include this attendee are shown. The key is <c>"id:"</c> and the attendee's
+    /// <see cref="BitFullCalendarAttendee.Id"/>, or, for an attendee without one, <c>"name:"</c> and its
+    /// <see cref="BitFullCalendarAttendee.FullName"/> in lower case.
+    /// </summary>
     public string? SelectedAttendeeKey { get; private set; }
+
+    /// <summary>Whether times are written in the 24-hour format (<see cref="BitFullCalendarSettings.Use24HourFormat"/>).</summary>
     public bool Use24HourFormat { get; private set; } = true;
+
+    /// <summary>How an event's color is drawn (<see cref="BitFullCalendarSettings.BadgeVariant"/>).</summary>
     public BitFullCalendarBadgeVariant BadgeVariant { get; private set; } = BitFullCalendarBadgeVariant.Colored;
+
+    /// <summary>
+    /// The hour the day and week time grids scroll to (<see cref="BitFullCalendarSettings.StartOfDayHour"/>), within
+    /// <see cref="VisibleStartHour"/> and <see cref="VisibleEndHour"/>.
+    /// </summary>
     public int StartOfDayHour { get; private set; } = 8;
+
+    /// <summary>How the agenda view groups its events (<see cref="BitFullCalendarSettings.AgendaModeGroupBy"/>).</summary>
     public BitFullCalendarAgendaGroupBy AgendaModeGroupBy { get; private set; } = BitFullCalendarAgendaGroupBy.Date;
+
+    /// <summary>
+    /// How overlapping events are laid out in the day and week views (<see cref="BitFullCalendarSettings.EventLayout"/>).
+    /// </summary>
     public BitFullCalendarEventLayout EventLayout { get; private set; } = BitFullCalendarEventLayout.Overlap;
+
     /// <summary>Whether the mini calendar is rendered in the day view sidebar.</summary>
     public bool ShowDayViewCalendar { get; private set; } = true;
     /// <summary>Incremented when <see cref="GoToToday"/> is invoked in agenda view so the list can scroll to today.</summary>
-    public ulong AgendaScrollToTodayNonce { get; private set; }
+    internal ulong AgendaScrollToTodayNonce { get; private set; }
 
     /// <summary>First hour rendered by the day/week time grids (inclusive).</summary>
     public int VisibleStartHour { get; private set; }
@@ -239,6 +280,11 @@ public class BitFullCalendarState
     /// <summary>Latest date the calendar can navigate to, or <c>null</c> for no upper bound.</summary>
     public DateTime? MaxDate { get; private set; }
 
+    /// <summary>
+    /// The culture the calendar writes its dates and times in, and takes its calendar system and first day of the week
+    /// from: the one <see cref="BitFullCalendar.CultureName"/> names, else <see cref="BitFullCalendar.Culture"/>, else
+    /// <see cref="CultureInfo.CurrentUICulture"/>.
+    /// </summary>
     public CultureInfo Culture { get; private set; } = CultureInfo.CurrentUICulture;
 
     /// <summary>
@@ -262,7 +308,7 @@ public class BitFullCalendarState
     /// Sets the explicit layout direction of the calendar; <c>null</c> follows the writing direction of the culture,
     /// and <see cref="BitDir.Auto"/> the content, as the browser resolves it (see <see cref="SetAutoDirection"/>).
     /// </summary>
-    public void SetDirection(BitDir? dir)
+    internal void SetDirection(BitDir? dir)
     {
         if (_dir == dir)
             return;
@@ -292,7 +338,14 @@ public class BitFullCalendarState
 
     // Drag state. The setter is private so all drag mutations go through StartDrag/EndDrag,
     // which keeps the OnStateChanged notification consistent.
+
+    /// <summary>
+    /// The event being dragged with the pointer, from the moment its drag starts until it is dropped or the drag ends;
+    /// <c>null</c> otherwise, and while an event is moved from the keyboard.
+    /// </summary>
     public BitFullCalendarEvent? DraggedEvent { get; private set; }
+
+    /// <summary>Whether an event is being dragged with the pointer (<see cref="DraggedEvent"/> is set).</summary>
     public bool IsDragging => DraggedEvent != null;
 
     /// <summary>The events the views render: expanded for recurrence, then filtered.</summary>
@@ -316,12 +369,25 @@ public class BitFullCalendarState
     /// so a filtered-out event still blocks its slot.
     /// </summary>
     public IReadOnlyList<BitFullCalendarEvent> ExpandedEvents => _expandedEvents;
+
+    /// <summary>The resources the calendar was given (<see cref="BitFullCalendar.Resources"/>): the rows of the timeline.</summary>
     public IReadOnlyList<BitFullCalendarResource> Resources => _resources;
 
+    /// <summary>
+    /// Raised after anything in the state changes: the view, the mode, the date, a setting, the events, the
+    /// resources, a filter or a drag. The changes the calendar makes together, such as applying its parameters, raise
+    /// it once. An app that subscribes unsubscribes when it is done, since the calendar keeps the handler.
+    /// </summary>
     public event Action? OnStateChanged;
+
+    /// <summary>
+    /// Raised when the range of dates the active view covers changes, or the view does, with that range and view. A
+    /// new date inside the range already shown raises nothing, and nor does the first range: the calendar reports that
+    /// one itself, through <see cref="BitFullCalendar.OnDateChange"/>, which also reports every later one.
+    /// </summary>
     public event Action<BitFullCalendarDateChangeEventArgs>? OnDateRangeChanged;
 
-    public void Initialize(List<BitFullCalendarEvent> events, CultureInfo? culture = null)
+    internal void Initialize(List<BitFullCalendarEvent> events, CultureInfo? culture = null)
     {
         _allEvents = [.. events];
         NormalizeEventIds();
@@ -355,14 +421,14 @@ public class BitFullCalendarState
             NotifyDateRangeChanged();
     }
 
-    public void SetCulture(CultureInfo culture)
+    internal void SetCulture(CultureInfo culture)
     {
         Culture = culture;
         UpdateUI();
         NotifyDateRangeChanged();
     }
 
-    public void SetSelectedDate(DateTime date)
+    internal void SetSelectedDate(DateTime date)
     {
         SelectedDate = ClampToAllowedRange(date);
         UpdateUI();
@@ -391,7 +457,7 @@ public class BitFullCalendarState
     /// Restricts the dates the calendar can navigate to. Either bound may be <c>null</c>. A window
     /// whose bounds are inverted is ignored, and the active date is pulled into the new window.
     /// </summary>
-    public void SetDateBounds(DateTime? minDate, DateTime? maxDate)
+    internal void SetDateBounds(DateTime? minDate, DateTime? maxDate)
     {
         // An inverted window would make every date invalid, so it is refused outright rather than
         // leaving the calendar unable to render anything.
@@ -439,7 +505,7 @@ public class BitFullCalendarState
                && (MaxDate is not { } max || start.Date <= max.Date);
     }
 
-    public void SetView(BitFullCalendarView view)
+    internal void SetView(BitFullCalendarView view)
     {
         var clamped = ClampView(view, Mode);
         if (clamped == View)
@@ -454,7 +520,7 @@ public class BitFullCalendarState
     /// Switches between Event and Timeline modes. When entering Timeline mode the active view
     /// is clamped to Day / Week / Month (Year and Agenda are not supported in timeline mode).
     /// </summary>
-    public void SetMode(BitFullCalendarMode mode)
+    internal void SetMode(BitFullCalendarMode mode)
     {
         // Timeline mode requires at least one resource and one allowed view it can lay out. Refuse
         // to enter it otherwise so the state never lands in an unsupported configuration.
@@ -506,7 +572,7 @@ public class BitFullCalendarState
     /// Turns the presentation-only mode on or off. A drag that is still in flight is dropped so a
     /// pending gesture cannot commit a change after the calendar has become read-only.
     /// </summary>
-    public void SetReadOnly(bool value)
+    internal void SetReadOnly(bool value)
     {
         if (ReadOnly == value)
             return;
@@ -523,7 +589,7 @@ public class BitFullCalendarState
     /// short-circuits when the supplied list matches the current one. A <c>null</c> or empty list
     /// restores every built-in view; unknown and repeated entries are dropped.
     /// </summary>
-    public void SyncViews(IReadOnlyList<BitFullCalendarView>? views)
+    internal void SyncViews(IReadOnlyList<BitFullCalendarView>? views)
     {
         var next = NormalizeViews(views);
         if (ViewsMatch(next))
@@ -580,7 +646,7 @@ public class BitFullCalendarState
         return true;
     }
 
-    public void SetUse24HourFormat(bool value)
+    internal void SetUse24HourFormat(bool value)
     {
         if (Use24HourFormat == value)
             return;
@@ -588,13 +654,13 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void ToggleTimeFormat()
+    internal void ToggleTimeFormat()
     {
         Use24HourFormat = !Use24HourFormat;
         NotifyStateChanged();
     }
 
-    public void SetBadgeVariant(BitFullCalendarBadgeVariant variant)
+    internal void SetBadgeVariant(BitFullCalendarBadgeVariant variant)
     {
         if (BadgeVariant == variant)
             return;
@@ -602,7 +668,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetStartOfDayHour(int hour)
+    internal void SetStartOfDayHour(int hour)
     {
         // The scroll anchor only means something inside the rendered window, so it is pinned to it
         // rather than to a fixed 0-16 band that a narrowed window may not even contain.
@@ -614,11 +680,11 @@ public class BitFullCalendarState
     }
 
     /// <summary>
-    /// Sets the hour window the day/week time grids render. The window is normalized (see
-    /// <see cref="BitFullCalendarHelpers.NormalizeVisibleHours"/>) and the scroll anchor is pulled
-    /// back inside it.
+    /// Sets the hour window the day/week time grids render. The start is clamped to 0-23 and the end
+    /// to 1-24, an end not after the start becomes the hour after it, and the scroll anchor is pulled
+    /// back inside the window.
     /// </summary>
-    public void SetVisibleHours(int startHour, int endHour)
+    internal void SetVisibleHours(int startHour, int endHour)
     {
         var (start, end) = BitFullCalendarHelpers.NormalizeVisibleHours(startHour, endHour);
         if (VisibleStartHour == start && VisibleEndHour == end)
@@ -630,7 +696,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetSlotDurationMinutes(int minutes)
+    internal void SetSlotDurationMinutes(int minutes)
     {
         var normalized = new BitFullCalendarSettings { SlotDurationMinutes = minutes }.SlotDurationMinutes;
         if (SlotDurationMinutes == normalized)
@@ -641,7 +707,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetHiddenDays(IReadOnlyList<DayOfWeek>? hiddenDays)
+    internal void SetHiddenDays(IReadOnlyList<DayOfWeek>? hiddenDays)
     {
         var next = BitFullCalendarHelpers.NormalizeHiddenDays(hiddenDays).OrderBy(d => (int)d).ToList();
         if (HiddenDays.Count == next.Count && HiddenDays.All(next.Contains))
@@ -653,7 +719,7 @@ public class BitFullCalendarState
         NotifyDateRangeChanged();
     }
 
-    public void SetFirstDayOfWeek(DayOfWeek? firstDayOfWeek)
+    internal void SetFirstDayOfWeek(DayOfWeek? firstDayOfWeek)
     {
         var next = firstDayOfWeek is { } day && Enum.IsDefined(day) ? day : (DayOfWeek?)null;
         if (FirstDayOfWeekOverride == next)
@@ -666,7 +732,7 @@ public class BitFullCalendarState
         NotifyDateRangeChanged();
     }
 
-    public void SetShowWeekNumbers(bool value)
+    internal void SetShowWeekNumbers(bool value)
     {
         if (ShowWeekNumbers == value)
             return;
@@ -674,13 +740,13 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void ToggleShowWeekNumbers()
+    internal void ToggleShowWeekNumbers()
     {
         ShowWeekNumbers = !ShowWeekNumbers;
         NotifyStateChanged();
     }
 
-    public void SetShowCurrentTimeIndicator(bool value)
+    internal void SetShowCurrentTimeIndicator(bool value)
     {
         if (ShowCurrentTimeIndicator == value)
             return;
@@ -688,13 +754,13 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void ToggleShowCurrentTimeIndicator()
+    internal void ToggleShowCurrentTimeIndicator()
     {
         ShowCurrentTimeIndicator = !ShowCurrentTimeIndicator;
         NotifyStateChanged();
     }
 
-    public void SetMaxEventsPerDayCell(int value)
+    internal void SetMaxEventsPerDayCell(int value)
     {
         var clamped = Math.Clamp(value, 1, 10);
         if (MaxEventsPerDayCell == clamped)
@@ -703,7 +769,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetRequireEventDescription(bool value)
+    internal void SetRequireEventDescription(bool value)
     {
         if (RequireEventDescription == value)
             return;
@@ -711,7 +777,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetAllowEventOverlap(bool value)
+    internal void SetAllowEventOverlap(bool value)
     {
         if (AllowEventOverlap == value)
             return;
@@ -750,7 +816,7 @@ public class BitFullCalendarState
     public bool CanResize(BitFullCalendarEvent ev) => CanEdit(ev) && AllowResize;
 
     /// <summary>Applies the five edit permissions of <see cref="BitFullCalendarSettings"/> at once.</summary>
-    public void SetEditPermissions(bool add, bool edit, bool delete, bool drag, bool resize)
+    internal void SetEditPermissions(bool add, bool edit, bool delete, bool drag, bool resize)
     {
         if ((AllowAdd, AllowEdit, AllowDelete, AllowDrag, AllowResize) == (add, edit, delete, drag, resize))
             return;
@@ -762,7 +828,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetAllowRangeSelection(bool value)
+    internal void SetAllowRangeSelection(bool value)
     {
         if (AllowRangeSelection == value)
             return;
@@ -770,7 +836,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetBusinessDays(IReadOnlyList<DayOfWeek>? businessDays)
+    internal void SetBusinessDays(IReadOnlyList<DayOfWeek>? businessDays)
     {
         var next = BitFullCalendarHelpers.NormalizeBusinessDays(businessDays);
         if (BusinessDays.Count == next.Count && BusinessDays.All(next.Contains))
@@ -780,7 +846,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetBusinessHours(int startHour, int endHour)
+    internal void SetBusinessHours(int startHour, int endHour)
     {
         var (start, end) = BitFullCalendarHelpers.NormalizeBusinessHours(startHour, endHour);
         if (BusinessStartHour == start && BusinessEndHour == end)
@@ -791,7 +857,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetHighlightBusinessHours(bool value)
+    internal void SetHighlightBusinessHours(bool value)
     {
         if (HighlightBusinessHours == value)
             return;
@@ -799,13 +865,13 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void ToggleHighlightBusinessHours()
+    internal void ToggleHighlightBusinessHours()
     {
         HighlightBusinessHours = !HighlightBusinessHours;
         NotifyStateChanged();
     }
 
-    public void SetRestrictToBusinessHours(bool value)
+    internal void SetRestrictToBusinessHours(bool value)
     {
         if (RestrictToBusinessHours == value)
             return;
@@ -813,7 +879,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetFixedWeekCount(bool value)
+    internal void SetFixedWeekCount(bool value)
     {
         if (FixedWeekCount == value)
             return;
@@ -821,7 +887,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetShowNonCurrentDates(bool value)
+    internal void SetShowNonCurrentDates(bool value)
     {
         if (ShowNonCurrentDates == value)
             return;
@@ -829,7 +895,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetNavLinks(bool value)
+    internal void SetNavLinks(bool value)
     {
         if (NavLinks == value)
             return;
@@ -1018,6 +1084,17 @@ public class BitFullCalendarState
         return BitFullCalendarHelpers.ExpandRecurrences(_allEvents, start, lastDay);
     }
 
+    /// <summary>
+    /// Whether an event may take a time range without overlapping another event on the same resource. Always
+    /// <c>true</c> while <see cref="AllowEventOverlap"/> is on. Background events, the event itself and the other
+    /// occurrences of its series are not counted. <see cref="ValidateRange"/> asks this along with the other rules.
+    /// </summary>
+    /// <param name="eventId">The id of the event being placed, so its own place is not counted against it.</param>
+    /// <param name="start">The start of the range.</param>
+    /// <param name="end">The end of the range.</param>
+    /// <param name="resourceId">The resource the event would be on, or <c>null</c> for none; two events with no
+    /// resource share one.</param>
+    /// <returns><c>true</c> when nothing on that resource overlaps the range.</returns>
     public bool IsRangeAvailable(string eventId, DateTime start, DateTime end, string? resourceId)
     {
         if (AllowEventOverlap)
@@ -1044,14 +1121,14 @@ public class BitFullCalendarState
         return true;
     }
 
-    public void SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy groupBy)
+    internal void SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy groupBy)
     {
         if (AgendaModeGroupBy == groupBy)
             return;
         AgendaModeGroupBy = groupBy;
         NotifyStateChanged();
     }
-    public void SetEventLayout(BitFullCalendarEventLayout layout)
+    internal void SetEventLayout(BitFullCalendarEventLayout layout)
     {
         if (EventLayout == layout)
             return;
@@ -1059,7 +1136,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void SetShowDayViewCalendar(bool value)
+    internal void SetShowDayViewCalendar(bool value)
     {
         if (ShowDayViewCalendar == value)
             return;
@@ -1067,20 +1144,20 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void ToggleShowDayViewCalendar()
+    internal void ToggleShowDayViewCalendar()
     {
         ShowDayViewCalendar = !ShowDayViewCalendar;
         NotifyStateChanged();
     }
 
-    public void ToggleEventLayout()
+    internal void ToggleEventLayout()
     {
         EventLayout = EventLayout == BitFullCalendarEventLayout.Overlap
             ? BitFullCalendarEventLayout.Stack
             : BitFullCalendarEventLayout.Overlap;
         NotifyStateChanged();
     }
-    public void NavigatePrevious()
+    internal void NavigatePrevious()
     {
         if (CanNavigatePrevious is false)
             return;
@@ -1090,7 +1167,7 @@ public class BitFullCalendarState
         NotifyDateRangeChanged();
     }
 
-    public void NavigateNext()
+    internal void NavigateNext()
     {
         if (CanNavigateNext is false)
             return;
@@ -1109,7 +1186,7 @@ public class BitFullCalendarState
         SelectedDate = ClampToAllowedRange(target);
     }
 
-    public void GoToToday()
+    internal void GoToToday()
     {
         SelectedDate = ClampToAllowedRange(Today);
         if (View == BitFullCalendarView.Agenda)
@@ -1123,7 +1200,7 @@ public class BitFullCalendarState
     /// Safe to call from <c>OnParametersSet</c> - it short-circuits when the list hasn't changed,
     /// preventing infinite re-render loops.
     /// </summary>
-    public void SyncEvents(List<BitFullCalendarEvent> events)
+    internal void SyncEvents(List<BitFullCalendarEvent> events)
     {
         if (EventsMatch(events))
         {
@@ -1147,7 +1224,7 @@ public class BitFullCalendarState
     /// Replaces the resource list shown by the resource timeline view. Safe to call from
     /// <c>OnParametersSet</c> - it short-circuits when the supplied list matches the current one.
     /// </summary>
-    public void SyncResources(IReadOnlyList<BitFullCalendarResource>? resources)
+    internal void SyncResources(IReadOnlyList<BitFullCalendarResource>? resources)
     {
         var next = resources is null ? new List<BitFullCalendarResource>() : [.. resources];
         if (ResourcesMatch(next))
@@ -1215,14 +1292,14 @@ public class BitFullCalendarState
         return true;
     }
 
-    public void AddEvent(BitFullCalendarEvent ev)
+    internal void AddEvent(BitFullCalendarEvent ev)
     {
         _allEvents.Add(ev);
         NormalizeEventIds();
         UpdateUI();
     }
 
-    public void UpdateEvent(BitFullCalendarEvent ev)
+    internal void UpdateEvent(BitFullCalendarEvent ev)
     {
         var idx = _allEvents.FindIndex(e => e.Id == ev.Id);
         if (idx >= 0) _allEvents[idx] = ev;
@@ -1244,12 +1321,17 @@ public class BitFullCalendarState
         AddEvent(ev);
     }
 
-    public void RemoveEvent(string eventId)
+    internal void RemoveEvent(string eventId)
     {
         _allEvents.RemoveAll(e => e.Id == eventId);
         UpdateUI();
     }
 
+    /// <summary>
+    /// Adds a color to the colors the color filter keeps, or takes it out when it is already there (ignoring case). A
+    /// blank id does nothing.
+    /// </summary>
+    /// <param name="colorId">The id of a <see cref="BitFullCalendarColorOption"/>.</param>
     public void FilterByColor(string colorId)
     {
         if (string.IsNullOrWhiteSpace(colorId))
@@ -1264,6 +1346,12 @@ public class BitFullCalendarState
         UpdateUI();
     }
 
+    /// <summary>
+    /// Shows only the events of one color, as the header's color filter does, or the events of every color for a
+    /// <c>null</c> or blank id. An event matches by the color option it is drawn in, so one left at the default color
+    /// matches the palette's fallback color.
+    /// </summary>
+    /// <param name="colorId">The id of a <see cref="BitFullCalendarColorOption"/>, or <c>null</c>.</param>
     public void SetColorFilter(string? colorId)
     {
         _selectedColors.Clear();
@@ -1273,13 +1361,20 @@ public class BitFullCalendarState
         UpdateUI();
     }
 
+    /// <summary>
+    /// Shows only the events an attendee takes part in, as the header's attendee filter does, or every event for a
+    /// <c>null</c> or blank key. The filter is dropped whenever no event in view has that attendee, including at once
+    /// for a key no event there has.
+    /// </summary>
+    /// <param name="attendeeKey">A key of <see cref="GetAttendeesInCurrentView"/>, in the form
+    /// <see cref="SelectedAttendeeKey"/> describes, or <c>null</c>.</param>
     public void SetAttendeeFilter(string? attendeeKey)
     {
         SelectedAttendeeKey = string.IsNullOrWhiteSpace(attendeeKey) ? null : attendeeKey.Trim();
         UpdateUI();
     }
 
-    public void UpdateUI()
+    internal void UpdateUI()
     {
         ApplyFilters();
         NotifyStateChanged();
@@ -1312,6 +1407,7 @@ public class BitFullCalendarState
             .ToList();
     }
 
+    /// <summary>Clears the color and the attendee filter, so every event is shown.</summary>
     public void ClearFilter()
     {
         _selectedColors.Clear();
@@ -1401,7 +1497,7 @@ public class BitFullCalendarState
     }
 
     // Drag-and-drop helpers
-    public void StartDrag(BitFullCalendarEvent ev)
+    internal void StartDrag(BitFullCalendarEvent ev)
     {
         // Single choke point for every drag entry point: a read-only calendar - or a single event
         // locked with BitFullCalendarEvent.IsReadOnly - never enters the dragging state, so the drop
@@ -1413,7 +1509,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void EndDrag()
+    internal void EndDrag()
     {
         if (DraggedEvent == null)
             return;
@@ -1422,7 +1518,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public BitFullCalendarChangeRefusal HandleDrop(DateTime targetDate, int? hour = null, int? minute = null)
+    internal BitFullCalendarChangeRefusal HandleDrop(DateTime targetDate, int? hour = null, int? minute = null)
         => HandleDrop(targetDate, hour, minute, resourceId: null, applyResource: false);
 
     /// <summary>
@@ -1432,7 +1528,7 @@ public class BitFullCalendarState
     /// <c>null</c> together with <paramref name="applyResource"/> = <c>true</c> to clear the
     /// resource (drop on the unassigned row).
     /// </summary>
-    public BitFullCalendarChangeRefusal HandleDrop(DateTime targetDate, int? hour, int? minute, string? resourceId, bool applyResource)
+    internal BitFullCalendarChangeRefusal HandleDrop(DateTime targetDate, int? hour, int? minute, string? resourceId, bool applyResource)
     {
         if (DraggedEvent is not { } dragged) return BitFullCalendarChangeRefusal.None;
 
@@ -1609,7 +1705,7 @@ public class BitFullCalendarState
     /// lands on the very same range stays silent. The component calls this after raising the initial
     /// range itself on first render, which does not travel through <see cref="OnDateRangeChanged"/>.
     /// </summary>
-    public void MarkCurrentRangeReported()
+    internal void MarkCurrentRangeReported()
     {
         var (start, end) = GetVisibleRange();
         _lastReportedRange = (start, end, View);

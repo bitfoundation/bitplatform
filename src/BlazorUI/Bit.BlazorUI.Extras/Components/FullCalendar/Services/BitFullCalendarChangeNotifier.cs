@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// Dispatches calendar event change notifications to the component consumer.
 /// Also provides wrappers for mutation paths that need pre/post snapshots.
 /// </summary>
-public sealed class BitFullCalendarChangeNotifier
+internal sealed class BitFullCalendarChangeNotifier
 {
     private readonly BitFullCalendarState _state;
     private readonly Func<BitFullCalendarChangeEventArgs, Task> _dispatch;

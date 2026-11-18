@@ -33,8 +33,8 @@ public class BitFullCalendarEvent
 
     /// <summary>
     /// Identifier of the color (matches a <see cref="BitFullCalendarColorOption.Id"/> from the
-    /// calendar's configured palette). Defaults to <see cref="BitFullCalendarColorScheme.FallbackColorId"/>
-    /// so that out-of-the-box rendering keeps working with the built-in palette.
+    /// calendar's configured palette). Defaults to <c>"blue"</c>, a color of the built-in palette, so that
+    /// out-of-the-box rendering keeps working with it.
     /// <para>
     /// A value no option matches can be a CSS color of its own - a hex (<c>"#e91e63"</c>) or a color function
     /// (<c>"rgb(...)"</c>, <c>"hsl(...)"</c>, <c>"oklch(...)"</c>, <c>"var(...)"</c>) - for colors that come with the

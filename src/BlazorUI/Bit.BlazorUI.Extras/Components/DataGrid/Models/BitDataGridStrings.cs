@@ -94,9 +94,16 @@ public class BitDataGridStrings
     /// <summary>Accessible name of the header of the detail toggle column.</summary>
     public string DetailsColumnHeaderLabel { get; set; } = "Details";
 
+    /// <summary>Command column button that starts editing the row.</summary>
     public string EditText { get; set; } = "Edit";
+
+    /// <summary>Command column button that deletes the row.</summary>
     public string DeleteText { get; set; } = "Delete";
+
+    /// <summary>Command column button that saves the row being edited.</summary>
     public string SaveText { get; set; } = "Save";
+
+    /// <summary>Command column button that drops the changes to the row being edited.</summary>
     public string CancelText { get; set; } = "Cancel";
 
     /// <summary>Accessible label of the select-all checkbox.</summary>
@@ -120,26 +127,57 @@ public class BitDataGridStrings
     /// <summary>Accessible label of a column's filter-operator dropdown. {0} = column title.</summary>
     public string FilterOperatorLabel { get; set; } = "Filter operator for {0}";
 
-    /// <summary>Filter operator option texts.</summary>
+    /// <summary>The <c>Contains</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpContains { get; set; } = "Contains";
+
+    /// <summary>The <c>DoesNotContain</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpDoesNotContain { get; set; } = "Doesn't contain";
+
+    /// <summary>The <c>StartsWith</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpStartsWith { get; set; } = "Starts with";
+
+    /// <summary>The <c>EndsWith</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpEndsWith { get; set; } = "Ends with";
+
+    /// <summary>The <c>Equals</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpEquals { get; set; } = "=";
+
+    /// <summary>The <c>NotEquals</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpNotEquals { get; set; } = "≠";
+
+    /// <summary>The <c>GreaterThan</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpGreaterThan { get; set; } = ">";
+
+    /// <summary>The <c>GreaterThanOrEqual</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpGreaterThanOrEqual { get; set; } = "≥";
+
+    /// <summary>The <c>LessThan</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpLessThan { get; set; } = "<";
+
+    /// <summary>The <c>LessThanOrEqual</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpLessThanOrEqual { get; set; } = "≤";
+
+    /// <summary>The <c>IsEmpty</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpIsEmpty { get; set; } = "Is blank";
+
+    /// <summary>The <c>IsNotEmpty</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpIsNotEmpty { get; set; } = "Is not blank";
+
+    /// <summary>The <c>In</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpIn { get; set; } = "Is any of";
+
+    /// <summary>The <c>NotIn</c> option of a column's filter-operator dropdown.</summary>
     public string FilterOpNotIn { get; set; } = "Is none of";
 
     /// <summary>Placeholder of the filter input while an "is any of" / "is none of" operator is selected.</summary>
     public string FilterListPlaceholder { get; set; } = "a, b, c…";
 
+    /// <summary>The <c>true</c> option of a boolean column's filter and editor, unless the column's <c>ValueText</c>
+    /// writes one of its own.</summary>
     public string BooleanTrueText { get; set; } = "True";
+
+    /// <summary>The <c>false</c> option of a boolean column's filter and editor, unless the column's <c>ValueText</c>
+    /// writes one of its own.</summary>
     public string BooleanFalseText { get; set; } = "False";
 
     /// <summary>Group-by header button label. {0} = column title.</summary>
@@ -166,9 +204,16 @@ public class BitDataGridStrings
     /// <summary>Accessible label of the page-size select.</summary>
     public string RowsPerPageLabel { get; set; } = "Rows per page";
 
+    /// <summary>Accessible label of the pager button that goes to the first page.</summary>
     public string FirstPageLabel { get; set; } = "First page";
+
+    /// <summary>Accessible label of the pager button that goes to the previous page.</summary>
     public string PreviousPageLabel { get; set; } = "Previous page";
+
+    /// <summary>Accessible label of the pager button that goes to the next page.</summary>
     public string NextPageLabel { get; set; } = "Next page";
+
+    /// <summary>Accessible label of the pager button that goes to the last page.</summary>
     public string LastPageLabel { get; set; } = "Last page";
 
     /// <summary>Shown after the last batch in infinite-scrolling mode.</summary>
@@ -189,13 +234,27 @@ public class BitDataGridStrings
     /// <summary>Error shown when an edited value can't be converted to the column's type. {0} = column title.</summary>
     public string InvalidValueError { get; set; } = "Invalid value for {0}.";
 
-    /// <summary>Screen-reader announcements pushed to the grid's aria-live region. {0} = column title
-    /// (or page number for <see cref="AnnouncementPage"/>).</summary>
+    // The Announcement* texts are what the grid tells screen readers through its aria-live region.
+
+    /// <summary>Announced when a column is sorted ascending. {0} = column title.</summary>
     public string AnnouncementSortedAscending { get; set; } = "Sorted by {0}, ascending";
+
+    /// <summary>Announced when a column is sorted descending. {0} = column title.</summary>
     public string AnnouncementSortedDescending { get; set; } = "Sorted by {0}, descending";
+
+    /// <summary>Announced when a column's sort is removed. {0} = column title.</summary>
     public string AnnouncementSortCleared { get; set; } = "Sorting by {0} removed";
+
+    /// <summary>Announced when a column's filter is applied, with the number of rows it leaves
+    /// (<see cref="AnnouncementResultsFormat"/>) unless the grid is a tree or scrolls infinitely. {0} = column
+    /// title.</summary>
     public string AnnouncementFiltered { get; set; } = "Filter applied on {0}";
+
+    /// <summary>Announced when a column's filter is cleared, with the number of rows there are then
+    /// (<see cref="AnnouncementResultsFormat"/>) unless the grid is a tree or scrolls infinitely. {0} = column
+    /// title.</summary>
     public string AnnouncementFilterCleared { get; set; } = "Filter on {0} cleared";
+
     /// <summary>Announced when every column filter is cleared at once (the toolbar's Clear filters
     /// button, or ClearFiltersAsync).</summary>
     public string AnnouncementFiltersCleared { get; set; } = "All filters cleared";
@@ -213,6 +272,8 @@ public class BitDataGridStrings
     public string AnnouncementRowDeleted { get; set; } = "Row deleted";
     /// <summary>{0} = the search term.</summary>
     public string AnnouncementSearched { get; set; } = "Searching for {0}";
+
+    /// <summary>Announced when the quick search is cleared.</summary>
     public string AnnouncementSearchCleared { get; set; } = "Search cleared";
 
     /// <summary>A filter or search announcement with the number of rows it leaves. {0} = the announcement, {1} = row count.</summary>
@@ -226,10 +287,18 @@ public class BitDataGridStrings
     /// <summary>Announced after a column is moved from the keyboard or the column chooser. {0} = column title, {1} = its new 1-based position, {2} = the number of columns.</summary>
     public string AnnouncementColumnMoved { get; set; } = "{0} moved to position {1} of {2}";
 
-    /// <summary>Footer aggregate labels. {0} = the formatted aggregate value.</summary>
+    /// <summary>Footer label of a column's sum. {0} = the formatted value.</summary>
     public string AggregateSumFormat { get; set; } = "Σ {0}";
+
+    /// <summary>Footer label of a column's average. {0} = the formatted value.</summary>
     public string AggregateAverageFormat { get; set; } = "avg {0}";
+
+    /// <summary>Footer label of a column's count. {0} = the formatted value.</summary>
     public string AggregateCountFormat { get; set; } = "count {0}";
+
+    /// <summary>Footer label of a column's minimum. {0} = the formatted value.</summary>
     public string AggregateMinFormat { get; set; } = "min {0}";
+
+    /// <summary>Footer label of a column's maximum. {0} = the formatted value.</summary>
     public string AggregateMaxFormat { get; set; } = "max {0}";
 }

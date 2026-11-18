@@ -106,6 +106,17 @@ source ~/.bashrc</CodeBox>
 
     <section class="section-card">
         <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>On another computer, or a teammate's</BitText>
+            Give <code>bit setup</code> your project's repository: it clones it, signing in to GitHub in the browser for a private one,
+            and gets it ready the way <code>bit new</code> did on the computer that created it.
+            <CodeBox>bit setup https://github.com/contoso/Contoso</CodeBox>
+            On a computer without .NET or bit CLI yet, <a href="https://bitfabric.co/setup" target="_blank">bitfabric.co/setup</a> gives one line that installs both and runs it.
+        </div>
+    </section>
+    <br />
+
+    <section class="section-card">
+        <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>Check a machine</BitText>
             After cloning a project, or on a new machine, run this in the project folder to see what's missing, along with the machine's memory, virtualization and drive, and add <code>--fix</code> to install it:
             <CodeBox>bit doctor</CodeBox>

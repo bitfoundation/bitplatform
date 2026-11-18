@@ -13,7 +13,7 @@ public partial class _BitFcAgendaEvents
 
     private readonly string _resultsId = $"bit-bfc-agenda-results-{Guid.NewGuid():N}";
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+    [CascadingParameter] internal BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
 
     private string _search = "";

@@ -11,8 +11,8 @@ public partial class _BitFcTimelineEventBlock
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
+    [CascadingParameter] internal BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+    [CascadingParameter] internal BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
 
     [Parameter] public BitFullCalendarEvent Event { get; set; } = default!;
 

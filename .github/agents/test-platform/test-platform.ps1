@@ -1648,7 +1648,8 @@ function ConvertTo-CallInput($value) {
 function Read-AgentTranscript([string] $log) {
     $calls = [Collections.Generic.List[object]]::new()
     $texts = [Collections.Generic.List[string]]::new()
-    $session = $final = $cost = $null
+    $answers = [Collections.Generic.List[string]]::new()
+    $session = $cost = $null
 
     foreach ($line in Get-Content $log -Encoding utf8) {
         if (-not $line.StartsWith('{')) {
@@ -1676,11 +1677,15 @@ function Read-AgentTranscript([string] $log) {
             }
         }
         elseif ($event.type -eq 'result') {
-            $final ??= $event.result
+            if ($event.num_turns -gt 0 -and $event.result) {
+                $answers.Add($event.result)
+            }
+
             $cost = $event.total_cost_usd
         }
     }
 
+    $final = $answers.Count ? $answers -join "`n`n" : $null
     [pscustomobject]@{ Session = $session; Cost = $cost; Final = $final; Texts = @($texts); Calls = $calls }
 }
 
@@ -1715,14 +1720,21 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
         $process = [Diagnostics.Process]::Start($start)
         $process.StandardInput.Close()
         $copies = @($process.StandardOutput.BaseStream.CopyToAsync($output), $process.StandardError.BaseStream.CopyToAsync($errors))
-        $answeredAt = $null
+        $answers = 0
+        $answeredAt = $waitingAt = $null
 
         while (-not $process.WaitForExit(5000)) {
-            if (-not $answeredAt -and (Test-AgentAnswered $log)) {
-                $answeredAt = Get-Date
+            $turn = Get-AgentTurnState $log
+
+            if ($turn.Answers -ne $answers) {
+                $answers = $turn.Answers
+                $answeredAt = $null
             }
 
-            if ($answeredAt -and ((Get-Date) - $answeredAt).TotalSeconds -gt 60) {
+            $waitingAt = $turn.State -eq 'waiting' ? ($waitingAt ?? (Get-Date)) : $null
+            $answeredAt = $turn.State -eq 'answered' ? ($answeredAt ?? (Get-Date)) : $null
+
+            if (($answeredAt -and ((Get-Date) - $answeredAt).TotalSeconds -gt 60) -or ($waitingAt -and ((Get-Date) - $waitingAt).TotalMinutes -gt 10)) {
                 taskkill /PID $process.Id /T /F 2>&1 | Out-Null
                 break
             }
@@ -1740,27 +1752,77 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
     Read-AgentTranscript $log
 }
 
-function Test-AgentAnswered([string] $log) {
+function Get-AgentTurnState([string] $log) {
     $stream = [IO.File]::Open($log, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
 
     try {
-        $lines = (New-Object IO.StreamReader $stream).ReadToEnd() -split "`n" | Where-Object { $_.StartsWith('{') -and $_.Contains('"type":"result"') }
+        $lines = (New-Object IO.StreamReader $stream).ReadToEnd() -split "`n" | Where-Object {
+            $_.StartsWith('{') -and ($_.Contains('"type":"result"') -or $_.Contains('"subtype":"task_started"') -or
+                $_.Contains('"subtype":"task_notification"') -or ($_.Contains('"type":"assistant"') -and $_.Contains('"parent_tool_use_id":null')))
+        }
+
+        $commands = @{}
+        $endless = @{}
+        $ended = [Collections.Generic.HashSet[string]]::new()
+        $woken = [Collections.Generic.List[string]]::new()
+        $answered = $aside = $false
+        $answers = 0
 
         foreach ($line in $lines) {
             try {
-                if (($line | ConvertFrom-Json -Depth 64).type -eq 'result') {
-                    return $true
-                }
+                $event = $line | ConvertFrom-Json -Depth 64
             }
             catch {
+                continue
+            }
+
+            if ($event.type -eq 'assistant') {
+                $aside = $answered -and $woken.Count -gt 0 -and -not ($woken | Where-Object { -not $endless[$_] })
+
+                if (-not $aside) {
+                    $answered = $false
+                    $woken.Clear()
+                }
+
+                $event.message.content | Where-Object type -eq 'tool_use' | ForEach-Object { $commands[$_.id] = "$($_.input.command)" }
+            }
+            elseif ($event.type -eq 'result') {
+                if ($event.num_turns -gt 0) {
+                    $answers += $aside ? 0 : 1
+                    $answered = $true
+                    $aside = $false
+                    $woken.Clear()
+                }
+            }
+            elseif (-not $event.task_id) {
+                continue
+            }
+            elseif ($event.subtype -eq 'task_started') {
+                $endless[$event.task_id] = Test-EndlessCommand ($event.tool_use_id ? $commands[$event.tool_use_id] : $null)
+            }
+            else {
+                $ended.Add($event.task_id) | Out-Null
+
+                if ($answered) {
+                    $woken.Add($event.task_id)
+                }
             }
         }
 
-        $false
+        $awaited = $endless.Keys | Where-Object { -not $endless[$_] -and -not $ended.Contains($_) }
+        $pending = $woken | Where-Object { $endless.ContainsKey($_) -and -not $endless[$_] }
+        $state = if (-not $answered) { 'working' } elseif ($awaited -or $pending) { 'waiting' } else { 'answered' }
+
+        [pscustomobject]@{ State = $state; Answers = $answers }
     }
     finally {
         $stream.Dispose()
     }
+}
+
+function Test-EndlessCommand([string] $command) {
+    $command -match '/api/progress/' -or $command -match '\bdotnet watch\b' -or
+        ($command -match '\bdotnet run\b' -and $command -match 'Server\.Web|LandingPage\.Server|Workbench|AppHost|--urls')
 }
 
 function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
