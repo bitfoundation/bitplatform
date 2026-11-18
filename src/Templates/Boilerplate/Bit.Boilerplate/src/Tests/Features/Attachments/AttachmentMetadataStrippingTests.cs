@@ -1,6 +1,4 @@
 using Bit.Bmage;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Metadata;
 using System.Net.Http.Headers;
 using Boilerplate.Shared.Features.Attachments;
 
@@ -60,7 +58,7 @@ public class AttachmentMetadataStrippingTests
 
         var uploaded = TestImageFactory.Asset("sideways-600x300.jpg");
 
-        Assert.AreEqual(Orientation.Rotate90, TestImageFactory.Identify(uploaded).Orientation, "The fixture must actually be sideways, otherwise this test passes without checking anything.");
+        Assert.AreEqual(BmageOrientation.Rotate90, TestImageFactory.Identify(uploaded).Orientation, "The fixture must actually be sideways, otherwise this test passes without checking anything.");
 
         try
         {
@@ -89,11 +87,11 @@ public class AttachmentMetadataStrippingTests
     /// <summary>512px so it clears the 256px floor the small kind enforces, as a JPEG because that is what a camera produces.</summary>
     private static byte[] JpegWithExif()
     {
-        var exif = new ExifData(
-            primary: new ExifDirectory().With(ExifTag.Software, ExifValue.FromString("boilerplate-test")),
-            gps: new ExifDirectory().With(ExifTag.GpsLatitudeRef, ExifValue.FromString("N")));
+        var exif = new BmageExifData(
+            primary: new BmageExifDirectory().With(BmageExifTag.Software, BmageExifValue.FromString("boilerplate-test")),
+            gps: new BmageExifDirectory().With(BmageExifTag.GpsLatitudeRef, BmageExifValue.FromString("N")));
 
-        return TestImageFactory.Solid(TestImageFactory.Teal, 512, 512, ImageFormat.Jpeg, new ImageMetadata(exif));
+        return TestImageFactory.Solid(TestImageFactory.Teal, 512, 512, BmageImageFormat.Jpeg, new BmageImageMetadata(exif));
     }
 
     private async Task Upload(HttpClient httpClient, byte[] imageBytes)

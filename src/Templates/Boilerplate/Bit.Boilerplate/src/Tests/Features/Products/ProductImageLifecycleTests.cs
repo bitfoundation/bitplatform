@@ -231,7 +231,7 @@ public partial class ProductImageLifecycleTests
     }
 
     /// <summary>A solid-colour PNG at least 512x512, which is the minimum the medium kind's resize accepts.</summary>
-    private static byte[] SolidImage(Rgba32 color, int size = 512)
+    private static byte[] SolidImage(BmageRgba32 color, int size = 512)
     {
         return TestImageFactory.Solid(color, size, size);
     }

@@ -1,7 +1,7 @@
 @inherits WorkbenchComponentBase
 
 @* Each card fades and slides in as it appears; prerendered cards show at rest, before the page is interactive. *@
-<Bmotion Prerender="BmPrerenderMode.Final" Initial="Bm.To(opacity: 0, y: 14)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Bm.Spring(stiffness: 260, damping: 26)">
+<Bmotion Prerender="BmotionPrerenderMode.Final" Initial="Bm.To(opacity: 0, y: 14)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Bm.Spring(stiffness: 260, damping: 26)">
     <section class="widget @(Dashboard.IsEditing ? "editing" : null)" aria-label="@Localizer[Definition.TitleKey]">
         <header class="widget-header">
             @if (Dashboard.IsEditing)

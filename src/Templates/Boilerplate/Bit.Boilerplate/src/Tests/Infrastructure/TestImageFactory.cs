@@ -1,25 +1,22 @@
 using Bit.Bmage;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Pipeline;
 
 namespace Boilerplate.Tests.Infrastructure;
 
 public static class TestImageFactory
 {
-    public static readonly Rgba32 Red = new(255, 0, 0);
-    public static readonly Rgba32 Green = new(0, 128, 0);
-    public static readonly Rgba32 Blue = new(0, 0, 255);
-    public static readonly Rgba32 Teal = new(0, 128, 128);
+    public static readonly BmageRgba32 Red = new(255, 0, 0);
+    public static readonly BmageRgba32 Green = new(0, 128, 0);
+    public static readonly BmageRgba32 Blue = new(0, 0, 255);
+    public static readonly BmageRgba32 Teal = new(0, 128, 128);
 
-    private static readonly ImageProcessor processor = new();
+    private static readonly BmageImageProcessor processor = new();
 
-    public static byte[] Solid(Rgba32 color, int width, int height, ImageFormat format = ImageFormat.Png, ImageMetadata? metadata = null)
+    public static byte[] Solid(BmageRgba32 color, int width, int height, BmageImageFormat format = BmageImageFormat.Png, BmageImageMetadata? metadata = null)
     {
-        using var image = ImageBuffer.Create(width, height, color);
+        using var image = BmageImageBuffer.Create(width, height, color);
         image.Metadata = metadata;
 
-        return processor.EncodeAsync(image, new ImageExportOptions { Format = format, Metadata = MetadataPolicy.Preserve }).AsTask().GetAwaiter().GetResult().Data;
+        return processor.EncodeAsync(image, new BmageImageExportOptions { Format = format, Metadata = BmageMetadataPolicy.Preserve }).AsTask().GetAwaiter().GetResult().Data;
     }
 
     public static byte[] Asset(string name)
@@ -31,14 +28,14 @@ public static class TestImageFactory
         return bytes.ToArray();
     }
 
-    public static ImageInfo Identify(byte[] bytes)
+    public static BmageImageInfo Identify(byte[] bytes)
     {
         return processor.Identify(bytes) ?? throw new InvalidOperationException("The bytes are not an image.");
     }
 
-    public static async Task<ImageMetadata?> ReadMetadata(byte[] bytes)
+    public static async Task<BmageImageMetadata?> ReadMetadata(byte[] bytes)
     {
-        using var image = await processor.DecodeAsync(bytes, new DecodeOptions { AutoOrient = false });
+        using var image = await processor.DecodeAsync(bytes, new BmageDecodeOptions { AutoOrient = false });
         return image.Metadata;
     }
 }

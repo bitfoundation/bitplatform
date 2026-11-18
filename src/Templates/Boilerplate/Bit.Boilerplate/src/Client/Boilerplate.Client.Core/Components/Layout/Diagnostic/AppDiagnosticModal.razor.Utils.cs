@@ -2,7 +2,7 @@
 using System.Text;
 using Bit.BevTools;
 //#if (offlineDb == true)
-using Bit.Bsqlite.EntityFrameworkCore;
+using Bit.Bsqlite;
 //#endif
 
 namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
