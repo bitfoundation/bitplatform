@@ -60,7 +60,7 @@ public class ActivityAttributionTests : BunitContext
         Assert.DoesNotContain("?.?", uiEvent.Title, StringComparison.Ordinal);
         Assert.IsNotNull(uiEvent.DurationMs);
         Assert.AreEqual("completed", uiEvent.Detail);
-        Assert.IsTrue(ActivityObserver.HandleEventActivitiesObserved);
+        Assert.IsTrue(BevToolsActivityObserver.HandleEventActivitiesObserved);
     }
 
     [TestMethod]
@@ -71,7 +71,7 @@ public class ActivityAttributionTests : BunitContext
 
         var record = Session.Components.All.Single(r => r.Type == typeof(ClickableComponent));
         var render = record.LastRender!;
-        Assert.AreEqual(BevRenderCause.UiEvent, render.Cause);
+        Assert.AreEqual(BevToolsRenderCause.UiEvent, render.Cause);
 
         var uiEvent = Session.Timeline.Snapshot().Single(e => e.Kind == BevToolsEventKind.UiEvent);
         Assert.AreEqual(uiEvent.Id, render.TriggerEventId);
@@ -95,7 +95,7 @@ public class ActivityAttributionTests : BunitContext
         Render<ClickableComponent>();
 
         var batch = Session.Timeline.Snapshot().First(e => e.Kind == BevToolsEventKind.RenderBatch);
-        Assert.IsTrue(ActivityObserver.BatchMetricsObserved, "aspnetcore.components.render_diff.* must be observed");
+        Assert.IsTrue(BevToolsActivityObserver.BatchMetricsObserved, "aspnetcore.components.render_diff.* must be observed");
         Assert.Contains("ms diffing", batch.Detail!);
         Assert.Contains("DOM edits", batch.Detail!);
     }
@@ -105,7 +105,7 @@ public class ActivityAttributionTests : BunitContext
     {
         Render<ClickableComponent>();
 
-        Assert.IsTrue(ActivityObserver.LifecycleMetricsObserved);
+        Assert.IsTrue(BevToolsActivityObserver.LifecycleMetricsObserved);
         Assert.IsTrue(Session.TypeMetrics.TryGetValue(typeof(ClickableComponent).FullName!, out var metrics));
         Assert.IsTrue(metrics!.ParameterUpdates > 0);
     }
@@ -118,13 +118,13 @@ public class ActivityAttributionTests : BunitContext
         var (session, scope) = TestHelpers.CreateSession();
         using (scope)
         using (session.UseAmbient())
-        using (var meter = new System.Diagnostics.Metrics.Meter(ActivityObserver.MeterName))
+        using (var meter = new System.Diagnostics.Metrics.Meter(BevToolsActivityObserver.MeterName))
         {
             var histogram = meter.CreateHistogram<double>("aspnetcore.components.update_parameters.duration");
-            histogram.Record(0.002, new KeyValuePair<string, object?>(ActivityObserver.ComponentTypeTag, "Shop.Pages.Index"));
-            histogram.Record(0.004, new KeyValuePair<string, object?>(ActivityObserver.ComponentTypeTag, "Shop.Admin.Index"));
-            histogram.Record(0.004, new KeyValuePair<string, object?>(ActivityObserver.ComponentTypeTag, "Shop.Admin.Index, Shop, Version=1.0.0.0"));
-            histogram.Record(0.001, new KeyValuePair<string, object?>(ActivityObserver.ComponentTypeTag, "Shop.Grid`1[[Shop.Product, Shop, Version=1.0.0.0]]"));
+            histogram.Record(0.002, new KeyValuePair<string, object?>(BevToolsActivityObserver.ComponentTypeTag, "Shop.Pages.Index"));
+            histogram.Record(0.004, new KeyValuePair<string, object?>(BevToolsActivityObserver.ComponentTypeTag, "Shop.Admin.Index"));
+            histogram.Record(0.004, new KeyValuePair<string, object?>(BevToolsActivityObserver.ComponentTypeTag, "Shop.Admin.Index, Shop, Version=1.0.0.0"));
+            histogram.Record(0.001, new KeyValuePair<string, object?>(BevToolsActivityObserver.ComponentTypeTag, "Shop.Grid`1[[Shop.Product, Shop, Version=1.0.0.0]]"));
 
             Assert.AreEqual(1, session.TypeMetrics["Shop.Pages.Index"].ParameterUpdates);
             Assert.AreEqual(2, session.TypeMetrics["Shop.Admin.Index"].ParameterUpdates);

@@ -226,5 +226,3 @@ public class BitBhAlertDialog : BitBhComponentBase, IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 }
-
-internal enum BitBhAlertDialogPart { Title, Description, Overlay, Cancel }

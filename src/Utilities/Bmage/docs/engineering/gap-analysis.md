@@ -22,9 +22,9 @@ Trimmable and AOT-compatible (repository-wide `IsAotCompatible`).
 Both an image processing API and an embeddable editor, layered so the editor is optional:
 
 ```
-Editor   (Bit.Bmage.Editor.*)   BmageEditor, toolbar, panel, canvas, tools, strings
+Editor                          BmageEditor, toolbar, panel, canvas, tools, strings
 Browser  (Interop, Codecs, Capabilities, Input, Output)   bit-bmage.js, Web Worker codec pool
-Engine   (everything else)       ImageBuffer, operations, pipelines, masks, layers, drawing, text,
+Engine   (everything else)       BmageImageBuffer, operations, pipelines, masks, layers, drawing, text,
                                  annotations, documents, history, managed PNG/JPEG/BMP/GIF codecs, JSON
 ```
 
@@ -36,15 +36,15 @@ keeps that architecture; section 6 explains why a Canvas or WebGL engine was not
 
 ### Image lifecycle as implemented
 
-1. **Import** - `ImageLoader` (`IBrowserFile`, bytes, streams, data/blob/http URLs, clipboard, paste listener, camera)
-   sniffs magic bytes, never the extension, and decodes through `ImageProcessor`: managed PNG/JPEG/BMP/GIF first,
-   browser codecs (in a worker pool) for WebP, AVIF and anything the managed decoders reject. `ImageLimits` and
+1. **Import** - `BmageImageLoader` (`IBrowserFile`, bytes, streams, data/blob/http URLs, clipboard, paste listener, camera)
+   sniffs magic bytes, never the extension, and decodes through `BmageImageProcessor`: managed PNG/JPEG/BMP/GIF first,
+   browser codecs (in a worker pool) for WebP, AVIF and anything the managed decoders reject. `BmageImageLimits` and
    `MaxSourceBytes` are checked before allocation. EXIF is read; `AutoOrient` applies the orientation.
-2. **Edit** - `ImageEditSession` owns the original, a display-sized proxy, and an `EditHistory` of immutable
-   `ImageDocument` values (pipeline + layers + annotations). Previews render on the proxy, serialised and cancellable,
+2. **Edit** - `BmageImageEditSession` owns the original, a display-sized proxy, and a `BmageEditHistory` of immutable
+   `BmageImageDocument` values (pipeline + layers + annotations). Previews render on the proxy, serialised and cancellable,
    with staged caches split at optimiser barriers.
-3. **Render** - `DocumentRenderer`: pipeline, then layers through W3C blend modes and masks, then annotations.
-4. **Export** - `ImageExporter` / `ImageProcessor.EncodeAsync`: PNG, JPEG, BMP managed; WebP and AVIF through the
+3. **Render** - `BmageDocumentRenderer`: pipeline, then layers through W3C blend modes and masks, then annotations.
+4. **Export** - `BmageImageExporter` / `BmageImageProcessor.EncodeAsync`: PNG, JPEG, BMP managed; WebP and AVIF through the
    browser with verified (not assumed) format support; `MaxFileSize` search; metadata policy (`Remove`,
    `StripSensitive`, `Preserve`).
 5. **Dispose** - buffers are pooled and returned on `Dispose`; the session releases buffers only when no render reads
@@ -105,7 +105,7 @@ in section 6.
 | 3 | Motion blur, high-pass | P1/P2 | - | 3 |
 | 4 | Magic wand (flood) mask, mask expand/contract/border, uniform background removal | P2 | - | 4 |
 | 5 | Paint layer: raster brush with hardness, pressure, eraser; bucket fill; eyedropper | P2 | 4 (flood for bucket) | 5 |
-| 6 | Layer duplicate; editor layer controls (opacity, blend, order, add image); history size counts layers | P2 | - | 6 |
+| 6 | BmageLayer duplicate; editor layer controls (opacity, blend, order, add image); history size counts layers | P2 | - | 6 |
 | 7 | Editor: compare, transform panel (straighten, resize, canvas, trim), histogram, new adjustments and filters, new tools | P1/P2 | 1-6 | 7 |
 | 8 | Self-contained project file (`.bmage` zip) with validation and limits; editor save/open | P2 | - | 8 |
 | 9 | Cross-browser E2E: Firefox and WebKit through `BMAGE_E2E_BROWSER` | P0 (verification) | - | 9 |
@@ -119,8 +119,8 @@ Deferred with rationale (see the matrix for each):
   Poisson/patch-match reconstruction; shipping a poor one is worse than none.
 - **Layer groups and clipping masks** (P3): deferred in the first round, then built in the next (section 11).
 - **Layer effects (shadow, glow, outline)** (P3): achievable with masks and blur; worth a design of its own.
-- **Halftone** (P3): niche; expressible as a custom `PointOperation` today.
-- **AI background removal / segmentation** (P3): the `BitmapMask` extension point exists; no model is bundled (size,
+- **Halftone** (P3): niche; expressible as a custom `BmagePointOperation` today.
+- **AI background removal / segmentation** (P3): the `BmageBitmapMask` extension point exists; no model is bundled (size,
   licensing, network). Uniform-background removal ships in batch 4 instead.
 - **ICC colour management** (P3): profiles are read and preserved but pixels are treated as sRGB; documented honestly.
 - **Animated GIF/APNG/WebP editing** (P3): first frame only, documented.
@@ -140,10 +140,10 @@ exceeds the frame budget on target hardware.
 
 **New features follow the existing shape**: every edit is an immutable operation, mask, layer or annotation with
 `GetOutputSize`, `ForScale`, `IsIdentity`, a JSON codec and a pipeline builder method. Content-dependent sizes (trim)
-are expressed as an analysis step that yields a concrete `CropOperation`, because `IImageOperation.GetOutputSize` must
+are expressed as an analysis step that yields a concrete `BmageCropOperation`, because `IBmageImageOperation.GetOutputSize` must
 not need pixels: documents, memory estimates and annotation placement all rely on it.
 
-**Painting** is a layer of vector brush strokes (`PaintLayer`), not a mutable bitmap: undo stays KB-sized and strokes
+**Painting** is a layer of vector brush strokes (`BmagePaintLayer`), not a mutable bitmap: undo stays KB-sized and strokes
 rescale for the proxy.
 
 **Project files** are a ZIP of the JSON document and PNG images (`System.IO.Compression`, already in the BCL and
@@ -178,9 +178,9 @@ passed in 6 minutes 48 seconds. The full log is in the coverage matrix.
 Every requirement in section 5 except the deferred ones has been implemented and verified; the coverage matrix names
 the evidence for each. Defects found along the way and fixed:
 
-- **Annotations did not follow geometric edits.** `architecture.md` said `IGeometricOperation` kept annotations
+- **Annotations did not follow geometric edits.** `architecture.md` said `IBmageGeometricOperation` kept annotations
   attached to the content, but nothing used it: crop or turn the image in the editor and an arrow pointed elsewhere.
-  Overlays now move with the image (`ImageDocument.WithPipeline(pipeline, keepOverlaysAttached: true)`).
+  Overlays now move with the image (`BmageImageDocument.WithPipeline(pipeline, keepOverlaysAttached: true)`).
 - **Placed text could not be edited** in the built-in editor, which always wrote the placeholder "Text".
 - **The MCP surface test failed** once two guides passed the 15,000 character read limit, because the tool's and the
   resource's truncation notices differ by design.
@@ -198,7 +198,7 @@ An independent review of the editor, selection and project batch found, and this
   and decodes to 256 MB, deflate compressing such data about a thousandfold. Images are now decoded only when the document uses them, against
   `BmageProjectOptions.MaxTotalPixels`, and the archive's files are counted before .NET builds its directory.
 - **Some malformed projects escaped as the wrong exception** (invalid manifest JSON, a non-numeric version, a damaged
-  archive); all are `ImageDocumentFormatException` now.
+  archive); all are `BmageImageDocumentFormatException` now.
 - **Undo left the selection where the undone edit had moved it**, so a selection made before a turn covered other
   pixels once the turn was undone. Undo, redo, the history panel and reset now carry it through the change in
   geometry.
@@ -230,8 +230,8 @@ the first measurement showed them several times a reference adjustment's cost, w
 
 ## 11. The next round: groups, WebAssembly, and what section 10 left open
 
-- **Layer groups and clipping** (deferred in section 5) are built: `GroupLayer`, pass-through by default and isolated on
-  request or by a blend mode, nested at most ten deep; `Layer.ClipToLayerBelow`, which draws a base and the layers clipped
+- **Layer groups and clipping** (deferred in section 5) are built: `BmageGroupLayer`, pass-through by default and isolated on
+  request or by a blend mode, nested at most ten deep; `BmageLayer.ClipToLayerBelow`, which draws a base and the layers clipped
   to it together and limits them to its transparency; the document's layer edits reach into groups, with
   `GroupLayers`, `Ungroup`, `MoveLayerIntoGroup` and `MoveLayerOutOfGroup`; the JSON format and projects carry both; the
   editor's Layers tab lists a group's layers under it and groups, ungroups, moves and clips from the selected layer.
@@ -263,22 +263,22 @@ failures being the tests' expectation of the README's old title, which a pending
 
 | Requirement | Class | Decision |
 | --- | --- | --- |
-| Image model with explicit ownership, pooling, disposal | Implemented | `ImageBuffer`, `IPixelAllocator`, budgets |
+| Image model with explicit ownership, pooling, disposal | Implemented | `BmageImageBuffer`, `IBmagePixelAllocator`, budgets |
 | Pixel formats beyond RGBA32 (BGRA, RGB24, grey, high bit depth) as image types | Not applicable | One working format keeps every operation, proxy and parallel path exact; decoders convert on the way in (AVIF 10/12-bit, 16-bit PNG), integrations convert at the edge (BbScanner reads RGBA directly) |
 | Colour profiles | Incomplete | Read and preserved, pixels treated as sRGB (deferred in section 5, unchanged) |
 | Loading from files, streams, bytes, URLs, data URLs, clipboard, camera; sniffing; limits; cancellation | Implemented | - |
 | JPEG, PNG, WebP, GIF, BMP, AVIF decode | Implemented | - |
-| GIF encode | Missing | **Built**: `GifEncoder`, median cut palette, dithering, one transparent index |
-| ICO | Missing | **Built**: `IcoDecoder` (PNG and 1/4/8/24/32-bit bitmap entries with masks), `IcoEncoder`, `CreateFavicon` |
-| Indexed (palette) PNG | Missing | **Built**: `ImageExportOptions.MaxColors` and `Dither`, 1/2/4/8-bit packing, exact for few-colour images |
+| GIF encode | Missing | **Built**: `BmageGifEncoder`, median cut palette, dithering, one transparent index |
+| ICO | Missing | **Built**: `BmageIcoDecoder` (PNG and 1/4/8/24/32-bit bitmap entries with masks), `BmageIcoEncoder`, `CreateFavicon` |
+| Indexed (palette) PNG | Missing | **Built**: `BmageImageExportOptions.MaxColors` and `Dither`, 1/2/4/8-bit packing, exact for few-colour images |
 | TIFF, HEIF/HEIC decode | Missing | Deferred: HEIF needs an HEVC decoder (patent-encumbered, large); TIFF's variety (compressions, planar, tiles, CMYK) is a codec project of its own; both reach Bmage through the browser decoder where the platform has one (Safari) |
 | SVG | Not applicable | Refused by design (section 5) |
 | Animated WebP/GIF/APNG editing | Not applicable | First frame, documented (section 5) |
 | Progressive JPEG export | Missing | Deferred: baseline JPEG is what every decoder reads; the gain is perceived loading on slow links, which WebP and AVIF serve better |
-| Codec capability declaration | Implemented | `ImageCapabilities`, probed |
+| Codec capability declaration | Implemented | `BmageImageCapabilities`, probed |
 | Fluent processing API, geometry, resampling, colour, compositing, blend modes | Implemented | - |
-| Radial (zoom, spin) blur | Missing | **Built**: `RadialBlurFilter` |
-| Colour lookup tables | Missing | **Built**: `ColorLookupTable` (`.cube` read and write, tetrahedral interpolation), `ColorLutAdjustment` |
+| Radial (zoom, spin) blur | Missing | **Built**: `BmageRadialBlurFilter` |
+| Colour lookup tables | Missing | **Built**: `BmageColorLookupTable` (`.cube` read and write, tetrahedral interpolation), `BmageColorLutAdjustment` |
 | Halftone, glow, bloom, layer effects | Missing | Deferred as in section 5: expressible with masks, blur and blend modes; no use case asked for them over the ones built |
 | Batch processing with concurrency, budgets, partial failures | Implemented | - |
 | Presets and serialisation | Implemented | JSON for every operation, including the new ones (the LUT as base64 floats, checked before decoding) |
@@ -287,12 +287,12 @@ failures being the tests' expectation of the README's old title, which a pending
 
 | Requirement | Class | Decision |
 | --- | --- | --- |
-| Histograms, dominant colours, transparency, brightness and contrast statistics | Implemented | `ImageStatistics` |
-| Blur detection, quality metrics | Missing | **Built**: `ImageSharpness` (variance of the Laplacian at a fixed analysis size) |
-| Orientation detection, deskew | Missing | **Built**: `DocumentSkew` (projection profiles, windowed so image borders do not vote for level) |
-| Thresholding for scans and codes | Incomplete (global only) | **Built**: `AdaptiveThresholdFilter` (Sauvola and mean, sliding sums, cost independent of the radius) |
+| Histograms, dominant colours, transparency, brightness and contrast statistics | Implemented | `BmageImageStatistics` |
+| Blur detection, quality metrics | Missing | **Built**: `BmageImageSharpness` (variance of the Laplacian at a fixed analysis size) |
+| Orientation detection, deskew | Missing | **Built**: `BmageDocumentSkew` (projection profiles, windowed so image borders do not vote for level) |
+| Thresholding for scans and codes | Incomplete (global only) | **Built**: `BmageAdaptiveThresholdFilter` (Sauvola and mean, sliding sums, cost independent of the radius) |
 | Smart cropping | Implemented | Saliency based; face detection not applicable without a model |
-| Background removal providers, AI restoration, upscaling | Not applicable | No model bundled (section 5); the `BitmapMask` extension point stays the seam |
+| Background removal providers, AI restoration, upscaling | Not applicable | No model bundled (section 5); the `BmageBitmapMask` extension point stays the seam |
 | Metadata policies, GPS stripped by default | Implemented | - |
 | IPTC read and edit | Missing | Deferred: XMP carries the same fields in every format Bmage writes and is preserved |
 | Security: signatures, decompression bombs, limits, safe malformed metadata | Implemented | The ICO directory is checked entry by entry against the file before any read |
@@ -302,7 +302,7 @@ failures being the tests' expectation of the README's old title, which a pending
 | Requirement | Class | Decision |
 | --- | --- | --- |
 | Workspace, tools, text, history, compare, layers, projects | Implemented | Sections 5 to 11 |
-| Hide tools, restrict panels | Missing | **Built**: `BmageEditor.Tools` (in toolbar order) and `Panels` (`EditorPanels` flags) |
+| Hide tools, restrict panels | Missing | **Built**: `BmageEditor.Tools` (in toolbar order) and `Panels` (`BmageEditorPanels` flags) |
 | Cropper | Incomplete (only the full editor) | **Built** as the editor reduced: `Tools`, `Panels.None` and `BeginCrop(aspect)`, which places the largest frame and can be applied from the keyboard; a separate component would duplicate the canvas, gestures and history for no gain in payload, since Blazor loads the assembly either way |
 | Viewer, gallery, comparison slider, upload, batch editor components | Not applicable as separate components | The editor's compare and zoom, `BmageDropZone` and the batch API cover them; each would be a thin, opinionated layout better written by the app |
 | Clone stamp, healing | Missing | Deferred as in section 5 |
@@ -314,7 +314,7 @@ failures being the tests' expectation of the README's old title, which a pending
 | Requirement | Class | Decision |
 | --- | --- | --- |
 | BbScanner preprocessing | Missing | **Built**: `Bit.Bmage.BbScanner`, decoding Bmage pixels with no copy and retrying a photo sharpened, then enlarged. A measurement over softened, small and unevenly lit QR and Code 128 symbols kept only these two: adaptive thresholding rescued nothing (BbScanner binarises locally already) and enlarging with sharpening read nothing either alone did not |
-| Bink annotation round trip | Missing | **Built**: `Bit.Bmage.Bink`, an image as a locked Bink layer, the drawing back as pixels, as a flattened image or as a Bmage `ImageLayer` |
+| Bink annotation round trip | Missing | **Built**: `Bit.Bmage.Bink`, an image as a locked Bink layer, the drawing back as pixels, as a flattened image or as a Bmage `BmageImageLayer` |
 | Borm image field | Not applicable as a package | Borm's renderer registry hosts a `BmageEditor` configured as a cropper; documented in `docs/integrations.md` |
 | Blex, BlazeDb, Bsqlite, Bcrdt, Bdnd, Bortable, Bmotion | Not applicable as packages | Bmage already exposes plain data (JSON documents, `.bmage` projects, layer order) these store, sync or move; a package per pair would add surface without behaviour |
 | Butil browser infrastructure | Not applicable | Bmage's browser bridge is image specific (worker codecs, bitmaps); nothing in it duplicates a Butil abstraction an app would share |

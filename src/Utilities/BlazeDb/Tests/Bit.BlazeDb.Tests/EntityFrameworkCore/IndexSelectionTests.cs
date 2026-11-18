@@ -1,6 +1,4 @@
 ﻿using System.Linq.Expressions;
-using Bit.BlazeDb.EntityFrameworkCore.Metadata;
-using Bit.BlazeDb.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bit.BlazeDb.Tests.EntityFrameworkCore;

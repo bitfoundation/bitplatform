@@ -1,4 +1,4 @@
-﻿namespace Bit.Blex.Generators;
+﻿namespace Bit.Blex;
 
 /// <summary>
 /// Location captured as plain values so pipeline outputs stay equatable (a raw

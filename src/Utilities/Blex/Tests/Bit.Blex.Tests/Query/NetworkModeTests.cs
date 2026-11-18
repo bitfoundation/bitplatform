@@ -1,4 +1,3 @@
-using Bit.Blex.Query;
 using static Bit.Blex.Tests.Query.QueryTest;
 
 namespace Bit.Blex.Tests.Query;
@@ -163,7 +162,7 @@ public class NetworkModeTests
     public async Task A_watcher_that_goes_away_does_not_leave_the_cache_offline()
     {
         var (client, _, _) = Client();
-        var watcher = new Bit.Blex.Blazor.BlexQueryFocusWatcher(new FakeJsRuntime(), client, new BlexManager());
+        var watcher = new Bit.Blex.BlexQueryFocusWatcher(new FakeJsRuntime(), client, new BlexManager());
         await watcher.StartAsync(reportOffline: true);
         watcher.OnOffline();
         Assert.IsFalse(client.IsOnline);

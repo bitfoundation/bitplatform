@@ -1,11 +1,11 @@
 ﻿@page "/retouch"
 @using System.Drawing
 @implements IDisposable
-@inject ImageExporter Exporter
+@inject BmageImageExporter Exporter
 
 @* A product shot made ready for a catalogue: levelled, colour corrected, its backdrop removed and trimmed
    away, its label recoloured with the magic wand and a stroke painted by hand - every step an editable value
-   in one ImageDocument, saved and reopened as a project file with everything still editable. *@
+   in one BmageImageDocument, saved and reopened as a project file with everything still editable. *@
 
 <PageTitle>Retouching and selections · Bmage</PageTitle>
 
@@ -146,10 +146,10 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Colour from a sample, edges from the content</h3>
     <p>
-        Two measurements turn into edits. <code>ColorSampler.Sample</code> is the eyedropper: it averages a
+        Two measurements turn into edits. <code>BmageColorSampler.Sample</code> is the eyedropper: it averages a
         few pixels around a point so sensor noise does not decide the colour, and
         <code>WhiteBalance</code> scales the channels so that colour becomes neutral - or
-        <code>AutoWhiteBalance</code> finds the neutral itself. <code>ContentBounds.Find</code> measures
+        <code>AutoWhiteBalance</code> finds the neutral itself. <code>BmageContentBounds.Find</code> measures
         the transparent or uniform border around the subject, and a <code>Crop</code> to what it returns
         is the trim. The editor's Adjust tab has the same picker, and its Transform tab the trim.
     </p>
@@ -159,8 +159,8 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Selections that read the image</h3>
     <p>
-        A <code>FloodMask</code> is the magic wand: from each seed it spreads to the neighbouring pixels within a
-        tolerance of the seed's colour, with an anti-aliased edge. A <code>MorphedMask</code> grows, shrinks or
+        A <code>BmageFloodMask</code> is the magic wand: from each seed it spreads to the neighbouring pixels within a
+        tolerance of the seed's colour, with an anti-aliased edge. A <code>BmageMorphedMask</code> grows, shrinks or
         outlines any mask by an exact distance. Both are values like every other mask, so they rescale for the
         editor's proxy and replay at full resolution.
     </p>
@@ -170,7 +170,7 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Painting is strokes, not pixels</h3>
     <p>
-        A <code>PaintLayer</code> keeps every stroke - its points, pen pressures, size, hardness and colour - and
+        A <code>BmagePaintLayer</code> keeps every stroke - its points, pen pressures, size, hardness and colour - and
         stamps them when it is composited. An erasing stroke takes the layer's own paint away and never the image
         below, and twenty strokes of history cost kilobytes.
     </p>
@@ -198,10 +198,10 @@
     // A point on the backdrop, away from the mug, which the eyedropper reads: it should be neutral, and is warm.
     private static readonly System.Drawing.Point BackdropPoint = new(40, 40);
     // Background kept around the product when trimming, so it is not cut off at its edge.
-    private static readonly TrimOptions Trim = new() { Padding = 16 };
+    private static readonly BmageTrimOptions Trim = new() { Padding = 16 };
 
-    private ImageBuffer? _source;
-    private ImageBuffer? _preview;
+    private BmageImageBuffer? _source;
+    private BmageImageBuffer? _preview;
     private long _previewVersion;
     private double _straighten = 4;
     private string _balance = "Automatic";
@@ -221,47 +221,47 @@
     private int _run;
     // A document read back from a project file, shown instead of the controls' until a control changes, and the
     // images it refers to, kept for as long as it is shown.
-    private ImageDocument? _opened;
-    private IReadOnlyList<ImageBuffer> _openedImages = [];
+    private BmageImageDocument? _opened;
+    private IReadOnlyList<BmageImageBuffer> _openedImages = [];
     // The render in flight, which may still be reading images a change lets go of: those are released once it is done.
     private Task _rendering = Task.CompletedTask;
     private readonly Debouncer _debounce = new(120);
 
     private bool IsHydrating => RendererInfo.IsInteractive is false;
 
-    private ImageDocument Document => _opened ?? Build(_trim ? _trimBounds : null);
+    private BmageImageDocument Document => _opened ?? Build(_trim ? _trimBounds : null);
 
     /// <summary>The eyedropper's reading of the backdrop, which the picked white balance neutralises.</summary>
-    private Rgba32? PickedNeutral => _source is { IsDisposed: false } source ? ColorSampler.Sample(source, BackdropPoint, radius: 4) : null;
+    private BmageRgba32? PickedNeutral => _source is { IsDisposed: false } source ? BmageColorSampler.Sample(source, BackdropPoint, radius: 4) : null;
 
     /// <param name="trimTo">The rectangle a trim measured on the untrimmed render, or null for none.</param>
-    private ImageDocument Build(Rectangle? trimTo)
+    private BmageImageDocument Build(Rectangle? trimTo)
     {
-        var pipeline = ImagePipeline.Create();
+        var pipeline = BmageImagePipeline.Create();
         if (_balance == "Automatic") pipeline = pipeline.AutoWhiteBalance(0.9f);
         else if (_balance == PickedBalance && PickedNeutral is { } neutral) pipeline = pipeline.WhiteBalance(neutral);
         if (_removeBackground) pipeline = pipeline.RemoveBackground(_tolerance, feather: 0.8f);
-        var document = ImageDocument.Create(SourceSize).WithPipeline(pipeline);
+        var document = BmageImageDocument.Create(SourceSize).WithPipeline(pipeline);
         if (_label != "Original")
         {
-            var color = _label == "Teal" ? new Rgba32(20, 170, 160) : new Rgba32(130, 70, 200);
-            document = document.AddLayer(new FillLayer(color)
+            var color = _label == "Teal" ? new BmageRgba32(20, 170, 160) : new BmageRgba32(130, 70, 200);
+            document = document.AddLayer(new BmageFillLayer(color)
             {
                 Name = "Label colour",
-                BlendMode = BlendMode.Color,
-                Mask = new FloodMask([LabelSeed]) { Tolerance = 0.2f }.Expand(1),
+                BlendMode = BmageBlendMode.Color,
+                Mask = new BmageFloodMask([LabelSeed]) { Tolerance = 0.2f }.Expand(1),
             });
         }
         if (_paint)
         {
             var points = Enumerable.Range(0, 40).Select(i => new Vector2(300 + i * 7.5f, 520 + 18 * MathF.Sin(i / 4f))).ToArray();
             var pressures = points.Select((_, i) => 0.3f + 0.7f * MathF.Sin(MathF.PI * i / (points.Length - 1))).ToArray();
-            document = document.AddLayer(new PaintLayer([new PaintStroke(points, 14, new Rgba32(230, 120, 40)) { Hardness = _hardness, Pressures = pressures }]) { Name = "Flourish" });
+            document = document.AddLayer(new BmagePaintLayer([new BmagePaintStroke(points, 14, new BmageRgba32(230, 120, 40)) { Hardness = _hardness, Pressures = pressures }]) { Name = "Flourish" });
         }
         // Straightened last, with the overlays carried along: the flourish and the label colour stay where they were painted.
-        if (_straighten != 0) document = document.AddOperation(new StraightenOperation(_straighten), keepOverlaysAttached: true);
+        if (_straighten != 0) document = document.AddOperation(new BmageStraightenOperation(_straighten), keepOverlaysAttached: true);
         // The trim crops to what ContentBounds measured on the render without it, the overlays again carried along.
-        return trimTo is { } bounds ? document.AddOperation(new CropOperation(bounds), keepOverlaysAttached: true) : document;
+        return trimTo is { } bounds ? document.AddOperation(new BmageCropOperation(bounds), keepOverlaysAttached: true) : document;
     }
 
     private const string SelectionSnippet = """
@@ -269,38 +269,38 @@
         pipeline.RemoveBackground(tolerance: 0.12f);
 
         // Recolour one region: the wand from a point inside it, grown a pixel to take its anti-aliased edge.
-        document = document.AddLayer(new FillLayer(new Rgba32(20, 170, 160))
+        document = document.AddLayer(new BmageFillLayer(new BmageRgba32(20, 170, 160))
         {
-            BlendMode = BlendMode.Color,
-            Mask = new FloodMask([new(450, 360)]) { Tolerance = 0.2f }.Expand(1),
+            BlendMode = BmageBlendMode.Color,
+            Mask = new BmageFloodMask([new(450, 360)]) { Tolerance = 0.2f }.Expand(1),
         });
 
         // Select by colour anywhere, contract the selection, outline it.
-        var reds = new FloodMask([seed]) { Contiguous = false }.Contract(2);
+        var reds = new BmageFloodMask([seed]) { Contiguous = false }.Contract(2);
         var outline = reds.Border(6);
         """;
 
     private const string MeasureSnippet = """
         // White balance from a colour that should be grey: a 9 × 9 average around a point on the backdrop.
-        var neutral = ColorSampler.Sample(photo, new Point(40, 40), radius: 4);
+        var neutral = BmageColorSampler.Sample(photo, new Point(40, 40), radius: 4);
         pipeline = pipeline.WhiteBalance(neutral);           // or .AutoWhiteBalance(0.9f)
 
         // Trim: render, measure the border, crop to the content - keeping layers and paint where they were.
-        using var untrimmed = await new DocumentRenderer().RenderAsync(document, photo);
-        if (ContentBounds.Find(untrimmed, new TrimOptions { Padding = 16 }) is { } content)
-            document = document.AddOperation(new CropOperation(content), keepOverlaysAttached: true);
+        using var untrimmed = await new BmageDocumentRenderer().RenderAsync(document, photo);
+        if (BmageContentBounds.Find(untrimmed, new BmageTrimOptions { Padding = 16 }) is { } content)
+            document = document.AddOperation(new BmageCropOperation(content), keepOverlaysAttached: true);
 
         // A trim is a measurement and then a crop, because an operation's output size must be known without the pixels.
         """;
 
     private const string PaintSnippet = """
-        var layer = new PaintLayer()
-            .Add(new PaintStroke(points, size: 14, color: new Rgba32(230, 120, 40)) { Hardness = 0.6f, Pressures = penPressures })
-            .Add(new PaintStroke(eraserPoints, size: 8, color: default) { Erase = true });
+        var layer = new BmagePaintLayer()
+            .Add(new BmagePaintStroke(points, size: 14, color: new BmageRgba32(230, 120, 40)) { Hardness = 0.6f, Pressures = penPressures })
+            .Add(new BmagePaintStroke(eraserPoints, size: 8, color: default) { Erase = true });
         document = document.AddLayer(layer);
 
         // Straighten the photo afterwards and the paint stays where it was painted.
-        document = document.AddOperation(new StraightenOperation(4), keepOverlaysAttached: true);
+        document = document.AddOperation(new BmageStraightenOperation(4), keepOverlaysAttached: true);
         """;
 
     private const string ProjectSnippet = """
@@ -308,7 +308,7 @@
         await BmageProject.SaveAsync(file, original, document);
 
         using var project = await BmageProject.LoadAsync(File.OpenRead("product.bmage"));
-        using var rendered = new DocumentRenderer().Render(project.Document, project.Original);
+        using var rendered = new BmageDocumentRenderer().Render(project.Document, project.Original);
 
         // In the editor: Export > Save project, and Open project - or from code:
         await editor.SaveProjectAsync("product");
@@ -328,20 +328,20 @@
     /// A mug on an off-white backdrop with a coloured label, turned a few degrees and lit warm: something to
     /// straighten, colour correct, cut out and recolour.
     /// </summary>
-    private static ImageBuffer DrawProductShot()
+    private static BmageImageBuffer DrawProductShot()
     {
-        using var canvas = ImageCanvas.Create(SourceSize.Width, SourceSize.Height);
-        canvas.FillRectangle(new RectangleF(0, 0, SourceSize.Width, SourceSize.Height), new Rgba32(246, 245, 241));
+        using var canvas = BmageImageCanvas.Create(SourceSize.Width, SourceSize.Height);
+        canvas.FillRectangle(new RectangleF(0, 0, SourceSize.Width, SourceSize.Height), new BmageRgba32(246, 245, 241));
         canvas.Save();
         canvas.Rotate(-4, new Vector2(450, 330));
         // The handle, then the body over it, then the label on the body.
-        canvas.DrawEllipse(new RectangleF(560, 230, 150, 190), new Rgba32(48, 88, 150), new StrokeStyle { Width = 30 });
-        canvas.FillRoundedRectangle(new RectangleF(300, 160, 300, 360), 28, new Rgba32(52, 96, 160));
-        canvas.FillRoundedRectangle(new RectangleF(340, 300, 220, 120), 12, new Rgba32(200, 60, 60));
+        canvas.DrawEllipse(new RectangleF(560, 230, 150, 190), new BmageRgba32(48, 88, 150), new BmageStrokeStyle { Width = 30 });
+        canvas.FillRoundedRectangle(new RectangleF(300, 160, 300, 360), 28, new BmageRgba32(52, 96, 160));
+        canvas.FillRoundedRectangle(new RectangleF(340, 300, 220, 120), 12, new BmageRgba32(200, 60, 60));
         canvas.Restore();
         using var shot = canvas.Snapshot();
         // A warm cast, as from tungsten light.
-        return new ChannelMixerAdjustment(new(1.04f, 0, 0), new(0, 0.97f, 0), new(0, 0, 0.84f)).Apply(shot, OperationContext.Default.WithMutation(false));
+        return new BmageChannelMixerAdjustment(new(1.04f, 0, 0), new(0, 0.97f, 0), new(0, 0, 0.84f)).Apply(shot, BmageOperationContext.Default.WithMutation(false));
     }
 
     private void Set(Action change)
@@ -368,11 +368,11 @@
     }
 
     /// <summary>Disposes images once the render in flight, which may still be reading them, has finished.</summary>
-    private void Release(params ImageBuffer[] images)
+    private void Release(params BmageImageBuffer[] images)
     {
         if (images.Length > 0) _ = DisposeAfterAsync(_rendering, images);
 
-        static async Task DisposeAfterAsync(Task rendering, ImageBuffer[] images)
+        static async Task DisposeAfterAsync(Task rendering, BmageImageBuffer[] images)
         {
             try
             {
@@ -442,17 +442,17 @@
 
     /// <summary>
     /// Renders the document shown. With the trim on, that is two renders: one without it, which
-    /// <see cref="ContentBounds"/> measures, and one cropped to what it found - the order the editor's Trim button
+    /// <see cref="BmageContentBounds"/> measures, and one cropped to what it found - the order the editor's Trim button
     /// follows too.
     /// </summary>
-    private async Task<ImageBuffer> RenderAsync(ImageBuffer source, int run)
+    private async Task<BmageImageBuffer> RenderAsync(BmageImageBuffer source, int run)
     {
-        var renderer = new DocumentRenderer();
+        var renderer = new BmageDocumentRenderer();
         if (_opened is not null || !_trim) return await renderer.RenderAsync(Document, source);
 
         Rectangle? bounds;
         using (var untrimmed = await renderer.RenderAsync(Build(trimTo: null), source))
-            bounds = ContentBounds.Find(untrimmed, Trim);
+            bounds = BmageContentBounds.Find(untrimmed, Trim);
         if (run == _run) _trimBounds = bounds;
         return await renderer.RenderAsync(Build(bounds), source);
     }

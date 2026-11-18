@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.Serialization;
-
-namespace Bit.BlazeDb.Storage;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// Storage backend keeping "files" in memory. Useful for tests (including crash simulation:

@@ -13,12 +13,12 @@ public sealed class JsToDotNetTests : IDisposable
 {
     private readonly BevToolsSession _session;
     private readonly IServiceScope _scope;
-    private readonly BevJsBridge _bridge;
+    private readonly BevToolsJsBridge _bridge;
 
     public JsToDotNetTests()
     {
         (_session, _scope) = TestHelpers.CreateSession(services: s => s.AddSingleton<IJSRuntime>(new TrackingTestJSRuntime()));
-        _bridge = new BevJsBridge(_session, () => { });
+        _bridge = new BevToolsJsBridge(_session, () => { });
     }
 
     public void Dispose() => _scope.Dispose();
@@ -34,9 +34,9 @@ public sealed class JsToDotNetTests : IDisposable
         catch (JSException)
         {
         }
-        foreach (DictionaryEntry entry in BevJSObjectReferences.Table(_session)!)
+        foreach (DictionaryEntry entry in BevToolsJSObjectReferences.Table(_session)!)
         {
-            if (ReferenceEquals(BevJSObjectReferences.Target(entry.Value), target))
+            if (ReferenceEquals(BevToolsJSObjectReferences.Target(entry.Value), target))
             {
                 return (long)entry.Key;
             }
@@ -49,11 +49,11 @@ public sealed class JsToDotNetTests : IDisposable
     /// <paramref name="count"/> calls of <paramref name="identifier"/>, <paramref name="intervalMs"/> apart, within one
     /// second two seconds ago; made from requestAnimationFrame callbacks when <paramref name="frame"/> is.
     /// </summary>
-    private static BevJsCallEntry[] Calls(string identifier, int count, int intervalMs, double durationMs = 0.5, bool frame = false)
+    private static BevToolsJsCallEntry[] Calls(string identifier, int count, int intervalMs, double durationMs = 0.5, bool frame = false)
     {
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var second = (now / 1000 - 2) * 1000;
-        return Enumerable.Range(0, count).Select(i => new BevJsCallEntry
+        return Enumerable.Range(0, count).Select(i => new BevToolsJsCallEntry
         {
             Identifier = identifier,
             At = second + i * intervalMs,
@@ -72,7 +72,7 @@ public sealed class JsToDotNetTests : IDisposable
 
         _bridge.ReportJsToDotNet(Calls("object#" + id + ".ComputeFrame", 60, 16, frame: true));
 
-        var records = _session.Interop.Snapshot().Where(r => r.Direction == BevJsInteropDirection.JsToDotNet).ToList();
+        var records = _session.Interop.Snapshot().Where(r => r.Direction == BevToolsJsInteropDirection.JsToDotNet).ToList();
         Assert.HasCount(60, records);
         Assert.IsTrue(records.All(r => r.Identifier == "FrameLoop.ComputeFrame"), records[0].Identifier);
 
@@ -85,7 +85,7 @@ public sealed class JsToDotNetTests : IDisposable
         _session.Diagnostics.Evaluate(force: true);
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", _session.Diagnostics.Findings).Diagnostic;
         Assert.AreEqual("← .NET FrameLoop.ComputeFrame runs every animation frame (60 calls in 1 s)", finding.Title);
-        Assert.AreEqual(BevDiagnosticSeverity.Info, finding.Severity, "30 ms of calls in a second is what a running animation costs");
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Info, finding.Severity, "30 ms of calls in a second is what a running animation costs");
         StringAssert.Contains(finding.Evidence, "Called on a FrameLoop, which is not a component.");
         StringAssert.Contains(finding.Evidence, "Each call was made from a requestAnimationFrame callback, one per frame, every 16 ms");
         StringAssert.Contains(finding.Evidence, "The calls took 30 ms of that second");
@@ -100,7 +100,7 @@ public sealed class JsToDotNetTests : IDisposable
 
         _session.Diagnostics.Evaluate(force: true);
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", _session.Diagnostics.Findings).Diagnostic;
-        Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Severity);
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Warning, finding.Severity);
     }
 
     [TestMethod]
@@ -111,7 +111,7 @@ public sealed class JsToDotNetTests : IDisposable
         _session.Diagnostics.Evaluate(force: true);
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", _session.Diagnostics.Findings).Diagnostic;
         Assert.AreEqual("← .NET App.OnScroll called 60 times in 1 s", finding.Title);
-        Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Severity);
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Warning, finding.Severity);
         StringAssert.StartsWith(finding.Evidence, "Origin not attributable to a component. The calls took 30 ms");
     }
 
@@ -125,7 +125,7 @@ public sealed class JsToDotNetTests : IDisposable
         _session.Diagnostics.Evaluate(force: true);
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", _session.Diagnostics.Findings).Diagnostic;
         Assert.AreEqual("← .NET App.OnScroll called 60 times in 1 s", finding.Title);
-        Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Severity);
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Warning, finding.Severity);
         StringAssert.Contains(finding.Suggestion, "Throttle or debounce the JavaScript");
     }
 

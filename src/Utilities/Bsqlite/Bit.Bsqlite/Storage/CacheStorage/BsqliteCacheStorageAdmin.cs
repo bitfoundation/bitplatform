@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Bit.Bsqlite.Storage;
 using Microsoft.JSInterop;
 
-namespace Bit.Bsqlite.Storage.CacheStorage;
+namespace Bit.Bsqlite;
 
 internal sealed class BsqliteCacheStorageAdmin(IJSRuntime? js) : IBsqliteStorageAdmin, IBsqliteStorageHeaderReader
 {

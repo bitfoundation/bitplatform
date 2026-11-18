@@ -1,10 +1,9 @@
-﻿using Bit.Blex.Query;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>
 /// Root component that wires every registered <see cref="IBlexStore"/> into the <see cref="BlexManager"/>

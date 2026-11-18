@@ -4,7 +4,7 @@ namespace Bit.BbScanner.Tests;
 
 /// <summary>
 /// Replays element strings that BWIPP's GS1 syntax checker judged - a valid value and its mutations for every AI the
-/// parser knows - against <see cref="BbGs1ElementString"/>. See <c>generate-gs1-cases.mjs</c> next to the data.
+/// parser knows - against <see cref="BbScannerGs1ElementString"/>. See <c>generate-gs1-cases.mjs</c> next to the data.
 /// </summary>
 /// <remarks>
 /// The parser's table and checks were written from the GS1 General Specifications by the same hand as its other
@@ -59,7 +59,7 @@ public class Gs1ReferenceTests
         foreach (var c in File.Value.Cases.Where(c => c.Valid))
         {
             var text = $"({c.Ai}){c.Value}";
-            if (!BbGs1ElementString.TryParse(text, out var parsed))
+            if (!BbScannerGs1ElementString.TryParse(text, out var parsed))
             {
                 failures.Add($"{text}: {Error(text)}");
             }
@@ -86,7 +86,7 @@ public class Gs1ReferenceTests
             }
 
             var text = $"({c.Ai}){c.Value}";
-            if (BbGs1ElementString.TryParse(text, out _))
+            if (BbScannerGs1ElementString.TryParse(text, out _))
             {
                 failures.Add($"{text}: BWIPP says {c.Error}");
             }
@@ -100,7 +100,7 @@ public class Gs1ReferenceTests
     {
         try
         {
-            BbGs1ElementString.Parse(text);
+            BbScannerGs1ElementString.Parse(text);
             return "parsed";
         }
         catch (FormatException exception)

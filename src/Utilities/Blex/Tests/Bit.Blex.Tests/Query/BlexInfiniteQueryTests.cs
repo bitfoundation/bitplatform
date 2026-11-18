@@ -1,4 +1,3 @@
-using Bit.Blex.Query;
 using static Bit.Blex.Tests.Query.QueryTest;
 
 namespace Bit.Blex.Tests.Query;

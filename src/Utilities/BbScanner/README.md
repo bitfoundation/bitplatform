@@ -8,12 +8,12 @@ Reed-Solomon correction and bit stream parsing - is managed code you can step in
 model: WebAssembly, Server, Auto and Hybrid (MAUI, WPF and Windows Forms).
 
 ```razor
-<BbScanner Formats="BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13"
-           Region="BbScanRegion.CenteredSquare(0.7)"
+<BbScanner Formats="BbScannerBarcodeFormat.QrCode | BbScannerBarcodeFormat.Ean13"
+           Region="BbScannerScanRegion.CenteredSquare(0.7)"
            OnScan="HandleScan" />
 
 @code {
-    private void HandleScan(BbBarcodeResult result)
+    private void HandleScan(BbScannerBarcodeResult result)
         => Console.WriteLine($"{result.Format}: {result.Text}");
 }
 ```
@@ -53,7 +53,7 @@ browser, on a server or in a native app.
   a scan.
 - **Resilient**: a camera the phone ends when the page goes into the background is reopened when it comes back,
   and the camera can be released whenever the page is hidden.
-- **A decoder that runs anywhere .NET runs**: `BbBarcodeDecoder` has no dependency on Blazor, JavaScript or a
+- **A decoder that runs anywhere .NET runs**: `BbScannerBarcodeDecoder` has no dependency on Blazor, JavaScript or a
   camera.
 
 ## Quick start
@@ -76,7 +76,7 @@ Put a scanner on an interactive page - any render mode, or a standalone WebAssem
 <p>@_last?.Text</p>
 
 @code {
-    private BbBarcodeResult? _last;
+    private BbScannerBarcodeResult? _last;
 }
 ```
 
@@ -106,7 +106,7 @@ in-browser decoder benchmark, customisation and error handling.
 pages (the live camera, still images, and the decoder reading every symbology in-process), hosted unchanged under
 [Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
 Android, iOS, macOS and Windows), so each [hosting model](#hosting-models) can be seen doing the same things: the
-camera, still images, and `BbBarcodeDecoder` in-process. [Lazy](Samples/Lazy/) stands apart: a Blazor Web App of its
+camera, still images, and `BbScannerBarcodeDecoder` in-process. [Lazy](Samples/Lazy/) stands apart: a Blazor Web App of its
 own whose browser half downloads `Bit.BbScanner.wasm` only when its scanner page opens (see
 [lazy loading](#lazy-loading-on-webassembly)).
 
@@ -127,16 +127,16 @@ WebGL: scale + luminance shader  |
             the searched region  |        |
             as luminance, in     |        |
             30 KB slices         |        |
-                                 |        +- BbPixelConverter       luminance as is; RGBA -> luminance, optional subsample
-                                 |        +- BbHybridBinarizer      8x8 adaptive blocks, noise floor   (matrix codes)
-                                 |        |  BbAdaptiveRowBinarizer per-segment thresholds            (linear codes)
-                                 |        +- BbDarkRegionFinder     connected ink, for symbols with no finder
+                                 |        +- BbScannerPixelConverter       luminance as is; RGBA -> luminance, optional subsample
+                                 |        +- BbScannerHybridBinarizer      8x8 adaptive blocks, noise floor   (matrix codes)
+                                 |        |  BbScannerAdaptiveRowBinarizer per-segment thresholds            (linear codes)
+                                 |        +- BbScannerDarkRegionFinder     connected ink, for symbols with no finder
                                  |        +- Detectors              finder patterns, bullseyes, edge fitting, line sweep
-                                 |        +- BbGridSampler          perspective transform + sampling
-                                 |        +- BbReedSolomonDecoder   GF(2^4) to GF(2^12), and GF(929)
+                                 |        +- BbScannerGridSampler          perspective transform + sampling
+                                 |        +- BbScannerReedSolomonDecoder   GF(2^4) to GF(2^12), and GF(929)
                                  |        +- Bit stream parsers per symbology
                                  |                 |
-                                 |                 +--> BbBarcodeResult
+                                 |                 +--> BbScannerBarcodeResult
 ```
 
 Everything ships in one package, `Bit.BbScanner`, under one namespace, `Bit.BbScanner`. The component is `BbScanner`;
@@ -146,7 +146,7 @@ every other public type is prefixed `Bb`.
 | --- | --- |
 | The component | `BbScanner`: parameters, rendering, the camera lifecycle, the frame loop, overlays. |
 | The bridges | One JavaScript module - opening the camera and copying frames - reached through `[JSImport]` on WebAssembly and through `IJSRuntime` everywhere else. |
-| The pipeline | `BbBarcodeDecoder`: frame budget, scratch state, duplicate suppression, diagnostics. |
+| The pipeline | `BbScannerBarcodeDecoder`: frame budget, scratch state, duplicate suppression, diagnostics. |
 | Imaging | Luminance planes, bit planes and binarizers. |
 | Decoding | One reader per symbology, plus the shared algorithms (Reed-Solomon, grid sampling, perspective). |
 
@@ -170,7 +170,7 @@ guides, the stylesheet and the demo's pages at once, and points each hit at the 
 `GetBbScannerApi` one public type with its members, real defaults and documentation, `GetBbScannerFormats` the
 symbologies with the options that steer each one, and `GetBbScannerSourceFile` one of the demo's working pages; each
 returns its index when called without a key. `InspectBbScannerSymbol` renders a symbol, decodes it with the
-library's own decoder and returns the `BbBarcodeResult` it produced. Every tool is read-only.
+library's own decoder and returns the `BbScannerBarcodeResult` it produced. Every tool is read-only.
 
 ## Documentation
 
@@ -217,8 +217,8 @@ camera: it adds `Bit.BbScanner.Maui`, calls `builder.UseBbScanner()` and wraps i
 @page "/scan"
 @rendermode InteractiveWebAssembly
 
-<BbScanner Formats="BbBarcodeFormat.QrCode"
-           Region="BbScanRegion.CenteredSquare(0.7)"
+<BbScanner Formats="BbScannerBarcodeFormat.QrCode"
+           Region="BbScannerScanRegion.CenteredSquare(0.7)"
            OnScan="HandleScan"
            OnError="HandleError" />
 
@@ -230,7 +230,7 @@ camera: it adds `Bit.BbScanner.Maui`, calls `builder.UseBbScanner()` and wraps i
 @code {
     private BbScannerException? _error;
 
-    private void HandleScan(BbBarcodeResult result)
+    private void HandleScan(BbScannerBarcodeResult result)
     {
         _error = null;
         Console.WriteLine($"{result.Format}: {result.Text}");
@@ -274,7 +274,7 @@ Narrow `Formats` to the symbologies you need - it is the single most effective s
 | GS1 DataBar Limited | Supported | A GTIN-14 starting with 0 or 1, reported as DataBar's is. The modulo 89 check character is verified and every read confirmed on a second scan line; the symbol has no finder pattern, so a candidate has to show its guards, its single-module elements, the five modules of light after it and each character's width before anything is rounded. The linear part of a GS1 Composite symbol is not read |
 | GS1 DataBar Expanded | Supported | Expanded and Expanded Stacked, every encodation method: the compressed forms for a GTIN with a weight, a price or a date, and the general purpose field in its numeric, alphanumeric and ISO/IEC 646 modes. Reported as the GS1 element string, with a group separator after every element that is not of a predefined length but the last, and `Metadata.IsGs1` set. The modulo 211 checksum, the character count the check character carries, the finder pattern sequence and the data are verified to the last bit and the padding; a stacked symbol's rows, and a long one turned off the lines, are put together from the lines that read them - only along characters some line read one after the other, so that two labels with the same GTIN are not mixed. Confirmed on a second scan line. The linear part of a GS1 Composite symbol is not read |
 
-`BbBarcodeFormat` is a flags enum, so a set of symbologies is one value: `BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13`.
+`BbScannerBarcodeFormat` is a flags enum, so a set of symbologies is one value: `BbScannerBarcodeFormat.QrCode | BbScannerBarcodeFormat.Ean13`.
 `AllLinear`, `AllMatrix` and `All` are the composites. The default is `Common` - QR Code, Data Matrix, Code 128,
 Code 39, EAN, UPC and ITF, the symbologies on most products, tickets and labels; PDF417, MicroPDF417, Aztec, MaxiCode,
 Micro QR, Codabar, Code 93 and the GS1 DataBar family are asked for by name, or with `All`. Only the readers of the requested
@@ -287,20 +287,20 @@ against a misread between similar linear symbologies.
 
 | Parameter | Type | Default | Purpose |
 | --- | --- | --- | --- |
-| `Formats` | `BbBarcodeFormat` | `Common` | Symbologies to look for. A flags enum. |
-| `Region` | `BbScanRegion` | `Full` | Normalized sub-rectangle of the frame to search. |
+| `Formats` | `BbScannerBarcodeFormat` | `Common` | Symbologies to look for. A flags enum. |
+| `Region` | `BbScannerScanRegion` | `Full` | Normalized sub-rectangle of the frame to search. |
 | `Options` | `BbScannerOptions?` | `null` | Advanced tuning, applied under `Formats` and `Region`. |
 | `TargetFrameRate` | `int` | `15` | Frames a second to decode. |
 | `RequestedWidth` / `RequestedHeight` | `int` | `1280` / `720` | Camera constraints, requested as *ideal*, so the browser negotiates the nearest mode rather than failing. |
 | `MaxProcessingSize` | `int` | `640` | Longest edge of the image the decoder sees; the browser scales frames down to it. |
-| `Facing` | `BbCameraFacing` | `Rear` | Preferred camera when no device id is given. |
+| `Facing` | `BbScannerCameraFacing` | `Rear` | Preferred camera when no device id is given. |
 | `DeviceId` | `string?` | `null` | A specific camera to open. Changing it while running switches cameras. |
 | `AutoStart` | `bool` | `true` | Open the camera as soon as the component is ready. |
 | `DuplicateSuppressionWindow` | `TimeSpan?` | `null` (2 s) | How long an identical value stays suppressed. When set it overrides `Options`; when not, `Options` decides, else 2 s. `Timeout.InfiniteTimeSpan` reports each value once for as long as the camera stays open. |
 | `MaxSymbolsPerFrame` | `int` | `1` | The most symbols read from one frame or image; more reads every code in view, each reported and outlined on its own. |
-| `AfterScan` | `BbAfterScan` | `Continue` | What happens after a reported scan: keep scanning, `Pause` (camera stays open) or `Stop` (camera released). |
-| `AcceptResult` | `Func<BbBarcodeResult, bool>?` | `null` | Decides which results are reported; one it turns down is ignored as if it were not there. |
-| `Feedback` | `BbScanFeedback` | `None` | `Vibrate`, `Beep` or both on every reported scan, where the browser allows it. |
+| `AfterScan` | `BbScannerAfterScan` | `Continue` | What happens after a reported scan: keep scanning, `Pause` (camera stays open) or `Stop` (camera released). |
+| `AcceptResult` | `Func<BbScannerBarcodeResult, bool>?` | `null` | Decides which results are reported; one it turns down is ignored as if it were not there. |
+| `Feedback` | `BbScannerScanFeedback` | `None` | `Vibrate`, `Beep` or both on every reported scan, where the browser allows it. |
 | `ReleaseCameraWhenHidden` | `bool` | `false` | Close the camera while the page is hidden and reopen it when the page is shown again. |
 | `Texts` | `BbScannerTexts?` | `null` (English) | Every label, status, notice, error message and announcement, for another language. |
 | `ShowControls`, `ShowStatusBar`, `ShowReticle`, `ShowMask`, `HighlightResults` | `bool` | `true` | Built-in chrome. |
@@ -320,11 +320,11 @@ Any other attribute - `id`, `style`, `data-*`, a `class` of your own - is applie
 
 | Event | Payload | Raised when |
 | --- | --- | --- |
-| `OnScan` | `BbBarcodeResult` | A symbol is decoded and passes duplicate suppression. |
+| `OnScan` | `BbScannerBarcodeResult` | A symbol is decoded and passes duplicate suppression. |
 | `OnError` | `BbScannerException` | The camera cannot start, or is lost while running. |
 | `OnStatusChanged` | `BbScannerStatus` | The lifecycle state changes. |
-| `OnCameraChanged` | `BbCameraInfo` | A camera opens, with what was negotiated. |
-| `OnDiagnostics` | `BbScanDiagnostics` | At most twice a second, with frame timings. |
+| `OnCameraChanged` | `BbScannerCameraInfo` | A camera opens, with what was negotiated. |
+| `OnDiagnostics` | `BbScannerScanDiagnostics` | At most twice a second, with frame timings. |
 
 An exception thrown by one of these handlers is routed to the renderer, exactly as Blazor treats an exception from
 an `@onclick` handler, rather than being swallowed or killing the frame loop.
@@ -340,19 +340,19 @@ Task              SwitchCameraAsync(string deviceId)
 Task<bool>        SetTorchAsync(bool on)
 Task<bool>        SetZoomAsync(double zoom)
 Task              OpenFilePickerAsync()
-Task<IReadOnlyList<BbCameraDevice>> GetCamerasAsync()
-Task<BbCameraPermission>             GetCameraPermissionAsync()
+Task<IReadOnlyList<BbScannerCameraDevice>> GetCamerasAsync()
+Task<BbScannerCameraPermission>             GetCameraPermissionAsync()
 void              ResetDuplicateFilter()
-BbBarcodeResult?  DecodeImage(ReadOnlySpan<byte> pixels, int width, int height, BbPixelFormat format)
-IReadOnlyList<BbBarcodeResult>        DecodeAllInImage(ReadOnlySpan<byte> pixels, int width, int height, BbPixelFormat format, int maxSymbols = 16)
-Task<IReadOnlyList<BbBarcodeResult>>  ScanImageAsync(Stream image, int maxSymbols = 16, CancellationToken cancellationToken = default)
-Task<IReadOnlyList<BbBarcodeResult>>  ScanImageAsync(ReadOnlyMemory<byte> image, string? contentType = null, int maxSymbols = 16, CancellationToken cancellationToken = default)
-Task<IReadOnlyList<BbBarcodeResult>>  ScanCurrentFrameAsync(int maxSymbols = 16)
+BbScannerBarcodeResult?  DecodeImage(ReadOnlySpan<byte> pixels, int width, int height, BbScannerPixelFormat format)
+IReadOnlyList<BbScannerBarcodeResult>        DecodeAllInImage(ReadOnlySpan<byte> pixels, int width, int height, BbScannerPixelFormat format, int maxSymbols = 16)
+Task<IReadOnlyList<BbScannerBarcodeResult>>  ScanImageAsync(Stream image, int maxSymbols = 16, CancellationToken cancellationToken = default)
+Task<IReadOnlyList<BbScannerBarcodeResult>>  ScanImageAsync(ReadOnlyMemory<byte> image, string? contentType = null, int maxSymbols = 16, CancellationToken cancellationToken = default)
+Task<IReadOnlyList<BbScannerBarcodeResult>>  ScanCurrentFrameAsync(int maxSymbols = 16)
 
 BbScannerStatus                Status
-BbCameraInfo?                  Camera
-IReadOnlyList<BbCameraDevice>  Cameras
-BbScanDiagnostics              Diagnostics
+BbScannerCameraInfo?                  Camera
+IReadOnlyList<BbScannerCameraDevice>  Cameras
+BbScannerScanDiagnostics              Diagnostics
 long                           FramesDecoded
 long                           FramesWithSymbol
 bool                           IsTorchOn
@@ -368,18 +368,18 @@ the camera indicator lit. `Pause` keeps the camera open and stops decoding, so `
 ### Results
 
 ```csharp
-public sealed class BbBarcodeResult
+public sealed class BbScannerBarcodeResult
 {
     public string Text { get; }                            // decoded value
     public ReadOnlyMemory<byte> RawBytes { get; }          // payload before character set interpretation
-    public BbBarcodeFormat Format { get; }
+    public BbScannerBarcodeFormat Format { get; }
     public DateTimeOffset Timestamp { get; }
-    public IReadOnlyList<BbScanPoint> Corners { get; }     // in frame pixel coordinates
-    public BbScanRect BoundingBox { get; }
+    public IReadOnlyList<BbScannerScanPoint> Corners { get; }     // in frame pixel coordinates
+    public BbScannerScanRect BoundingBox { get; }
     public int FrameWidth { get; }
     public int FrameHeight { get; }
-    public BbBarcodeResultMetadata? Metadata { get; }      // version, EC level, corrections, ECI, GS1, structured append
-    public bool TryGetGs1(out BbGs1ElementString? elements); // see GS1 element strings below
+    public BbScannerBarcodeResultMetadata? Metadata { get; }      // version, EC level, corrections, ECI, GS1, structured append
+    public bool TryGetGs1(out BbScannerGs1ElementString? elements); // see GS1 element strings below
 }
 ```
 
@@ -415,7 +415,7 @@ Each element has its `ApplicationIdentifier`, its `Value`, the GS1 data `Title` 
 `NET WEIGHT (kg)`), and for a measure, an amount or a price its `DecimalPlaces` and `CurrencyCode`. `TryGetDate`
 reads the dates - production, packaging, best before, expiry, delivery, harvest, birth - with a day of `00` taken as
 the month's last day and a two digit year placed in its century the way the GS1 General Specifications place it.
-`BbGs1ElementString.TryParse` and `Parse` take an element string from anywhere else - a keyboard wedge scanner, a
+`BbScannerGs1ElementString.TryParse` and `Parse` take an element string from anywhere else - a keyboard wedge scanner, a
 database - in the encoded form, after a symbology identifier such as `]C1` or `]d2` or not, or in the bracketed
 form printed under a symbol.
 
@@ -440,17 +440,17 @@ QR Code or Data Matrix symbols, or the segments of a Macro PDF417 (or Macro Micr
 `Metadata`: `StructuredAppendIndex` as its specification numbers it (from 0 for QR Code and PDF417, from 1 for Data
 Matrix), `StructuredAppendCount`, `StructuredAppendIsLast`, and what the sequence shares - QR Code's parity byte or
 Data Matrix's file identification in `StructuredAppendParity`, the Macro PDF417 file ID in `StructuredAppendFileId`.
-`BbStructuredAppendAssembler` puts the message back together in whatever order the symbols are scanned:
+`BbScannerStructuredAppendAssembler` puts the message back together in whatever order the symbols are scanned:
 
 ```csharp
-private readonly BbStructuredAppendAssembler _assembler = new();
+private readonly BbScannerStructuredAppendAssembler _assembler = new();
 
-private void HandleScan(BbBarcodeResult result)
+private void HandleScan(BbScannerBarcodeResult result)
 {
     switch (_assembler.Add(result, out var message))
     {
-        case BbStructuredAppendStatus.NotStructuredAppend: Use(result.Text); break;
-        case BbStructuredAppendStatus.Completed: Use(message!.Text); break;
+        case BbScannerStructuredAppendStatus.NotStructuredAppend: Use(result.Text); break;
+        case BbScannerStructuredAppendStatus.Completed: Use(message!.Text); break;
         default: _progress = _assembler.Pending; break;    // e.g. "2 of 3 read, missing 1"
     }
 }
@@ -473,7 +473,7 @@ interpreted; their symbols are reported one by one.
 ### Scan region
 
 `Region` restricts every stage of the pipeline to part of the frame, in normalized coordinates that do not depend
-on the resolution the camera negotiated. `BbScanRegion.CenteredSquare(0.7)` - a centred square covering 70 % of
+on the resolution the camera negotiated. `BbScannerScanRegion.CenteredSquare(0.7)` - a centred square covering 70 % of
 the shorter edge - is the usual choice for an aiming interface; `ShowMask` dims everything outside it and the
 reticle frames it. The square stays square in pixels on any camera: it carries `KeepSquare`, and is fitted to each
 frame's aspect ratio (`ForFrame`), so on a 1280×720 camera it searches 504×504 pixels. Restricting the region
@@ -582,7 +582,7 @@ camera. `AcceptResult` filters before any of that happens: a result it turns dow
 announced, and does not count as a scan, so a page that expects a ticket number can ignore every other code in view.
 
 ```razor
-<BbScanner AfterScan="BbAfterScan.Stop"
+<BbScanner AfterScan="BbScannerAfterScan.Stop"
            AcceptResult="@(r => r.Text.StartsWith("TICKET-", StringComparison.Ordinal))"
            OnScan="CheckIn" />
 ```
@@ -594,7 +594,7 @@ Options that fail `Validate` are reported as a fault before the camera is opened
 `Status` moves through `Idle`, `Starting`, `Scanning`, `Paused`, `Stopped` and `Faulted`; `OnStatusChanged` reports
 each change, and the root element carries it as `data-status`.
 
-`Feedback` adds a short vibration (`BbScanFeedback.Vibrate`), a short tone (`Beep`) or both to every reported scan -
+`Feedback` adds a short vibration (`BbScannerScanFeedback.Vibrate`), a short tone (`Beep`) or both to every reported scan -
 once per frame, however many symbols it reported. The tone is synthesised with the Web Audio API, so nothing is
 downloaded. Both are best effort: browsers only let a page make a sound after the user has interacted with it, so a
 scanner that starts on its own can be silent until the first tap, and Safari does not vibrate at all. The outline and
@@ -607,7 +607,7 @@ open camera and the current zoom without extra plumbing. `MessageTemplate` rende
 `ControlsContent` appends controls to the built-in bar, and `ChildContent` is drawn on top of the viewfinder.
 
 ```razor
-<BbScanner Region="BbScanRegion.CenteredSquare(0.72)">
+<BbScanner Region="BbScannerScanRegion.CenteredSquare(0.72)">
     <Overlay Context="scanner">
         <div class="crosshair">@(scanner.Status == BbScannerStatus.Scanning ? "Aim at a barcode" : null)</div>
     </Overlay>
@@ -693,13 +693,13 @@ The pipeline has no dependency on Blazor, JavaScript or a camera. It runs anywhe
 uploads, a desktop or MAUI application decoding frames from the platform's camera API, a unit test.
 
 ```csharp
-using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
 {
-    Formats = BbBarcodeFormat.QrCode | BbBarcodeFormat.DataMatrix,
+    Formats = BbScannerBarcodeFormat.QrCode | BbScannerBarcodeFormat.DataMatrix,
     DuplicateSuppressionWindow = TimeSpan.Zero,
 });
 
-var result = decoder.Decode(rgbaPixels, width, height, BbPixelFormat.Rgba32);
+var result = decoder.Decode(rgbaPixels, width, height, BbScannerPixelFormat.Rgba32);
 if (result is not null)
 {
     Console.WriteLine($"{result.Format}: {result.Text}");
@@ -710,13 +710,13 @@ if (result is not null)
 `DecodeAll` returns every symbol in the frame instead of the first, up to a limit:
 
 ```csharp
-foreach (var label in decoder.DecodeAll(rgbaPixels, width, height, BbPixelFormat.Rgba32, maxSymbols: 16))
+foreach (var label in decoder.DecodeAll(rgbaPixels, width, height, BbScannerPixelFormat.Rgba32, maxSymbols: 16))
 {
     Console.WriteLine($"{label.Format} at {label.BoundingBox}: {label.Text}");
 }
 ```
 
-`Decode` and `DecodeAll` accept `Rgba32`, `Bgra32`, `Rgb24` and `Gray8` pixels, or a `BbLuminanceView` over a grayscale buffer.
+`Decode` and `DecodeAll` accept `Rgba32`, `Bgra32`, `Rgb24` and `Gray8` pixels, or a `BbScannerLuminanceView` over a grayscale buffer.
 Rows padded to an alignment - a 24 bit `System.Drawing` bitmap's rows are a multiple of four bytes, WPF's
 `BackBufferStride`, SkiaSharp's `RowBytes`, a camera plane's row stride - or a window into a larger image are read in
 place, without copying the padding out, through the overloads that take the stride between rows:
@@ -724,7 +724,7 @@ place, without copying the padding out, through the overloads that take the stri
 ```csharp
 var data = bitmap.LockBits(rectangle, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);   // B, G, R in memory
 var pixels = new ReadOnlySpan<byte>((void*)data.Scan0, (data.Stride * (data.Height - 1)) + (data.Width * 3));
-var result = decoder.Decode(pixels, data.Width, data.Height, data.Stride, BbPixelFormat.Rgb24);
+var result = decoder.Decode(pixels, data.Width, data.Height, data.Stride, BbScannerPixelFormat.Rgb24);
 ```
 
 There is no `Bgr24`: a BGR bitmap passed as `Rgb24` only has the luminance weights of red and blue swapped, which
@@ -813,7 +813,7 @@ stylesheet at startup without waiting for the assembly, and the component import
 it renders.
 
 - Only the pages loaded after the assembly may use BbScanner's types. A page in the app's own assembly can hold a
-  `<BbScanner>` and a `BbBarcodeResult` field, since the router loads the assembly before rendering it; a layout, a
+  `<BbScanner>` and a `BbScannerBarcodeResult` field, since the router loads the assembly before rendering it; a layout, a
   component on every page or `Program.cs` cannot.
 - Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to
   download later, and lazy loading an AOT-compiled assembly can fail at startup. Since an app that scans with the
@@ -840,7 +840,7 @@ under Blazor Server, and later ones in the browser, with nothing on the page cha
 The component runs on the circuit and reaches the page's JavaScript through `IJSRuntime`. On every tick of the frame
 loop it asks the page, in one call, what changed and whether a new frame is in; when one is, the page reads it, cuts
 it down to the luminance of the [scan region](#scan-region) - a byte a pixel - and the server reads that back in
-slices of 30 KB, several at once, and decodes it. A 640x360 frame searched through `BbScanRegion.CenteredSquare(0.7)`
+slices of 30 KB, several at once, and decodes it. A 640x360 frame searched through `BbScannerScanRegion.CenteredSquare(0.7)`
 is about 63 KB, where the RGBA frame would be 900 KB; the whole frame, searched in full, is 230 KB. A slice fits in one
 message, so the circuit's 32 KB limit on a message from the page (`HubOptions.MaximumReceiveMessageSize`) does not need
 raising, and each is an ordinary call with a timeout of its own, so one lost to a reconnecting circuit is simply asked
@@ -929,7 +929,7 @@ frame's searched region over its message channel, the way a Server page sends it
 since nothing crosses a network. WebView2 asks the user for the camera itself. A WebView that exposes no camera API to
 the page is reported as `NotSupported`, like a browser that has none.
 
-Any host can supply its own camera the same way `Bit.BbScanner.Maui` does: register an `IBbCameraSource`, whose
+Any host can supply its own camera the same way `Bit.BbScanner.Maui` does: register an `IBbScannerCameraSource`, whose
 sessions hand over luminance frames and draw their own preview where the scanner says its video element is.
 
 ## Errors and permissions
@@ -1147,7 +1147,7 @@ runs on the interpreter, where a frame costs a hundred times more.
 Under Blazor Server, and in a BlazorWebView without a camera of the platform's own, the decoder runs on .NET proper,
 at the speeds measured below, and the cost that is new is getting the frame there. The page does what it can to make that small before it sends anything: the
 GPU scales the frame and converts it to luminance, and the page cuts out the searched region, so a 640x360 frame is
-230 KB searched in full and about 63 KB through `BbScanRegion.CenteredSquare(0.7)`. A tick is one call to ask what
+230 KB searched in full and about 63 KB through `BbScannerScanRegion.CenteredSquare(0.7)`. A tick is one call to ask what
 changed and whether a frame is in, and the frame's slices when there is one; the loop asks for the next only
 once the last is decoded, so a frame never waits in a queue, and a slow connection lowers the frame rate instead of
 the freshness of what is decoded.
@@ -1237,7 +1237,7 @@ listens. The benchmark suite is in `Tests/Bit.BbScanner.Benchmarks`.
 
 - **One component, three ways to a camera.** The component reaches the camera through a bridge chosen for where it
   runs: `[JSImport]` on WebAssembly, `IJSRuntime` under Blazor Server and in a plain BlazorWebView, and an
-  `IBbCameraSource` - the device's own camera - where the app registered one. Everything above the bridge - the frame
+  `IBbScannerCameraSource` - the device's own camera - where the app registered one. Everything above the bridge - the frame
   loop, the lifecycle, the rendering - is one code path.
 - **One copy per frame on WebAssembly.** `[JSImport]` with a `JSType.MemoryView` parameter hands JavaScript a view
   straight onto the managed buffer. No JSON, no base64, no intermediate array.
@@ -1264,10 +1264,10 @@ listens. The benchmark suite is in `Tests/Bit.BbScanner.Benchmarks`.
 
 ### Building blocks
 
-The readers and binarizers are public building blocks rather than plug-ins: each implements `IBbRowDecoder` (one
-binarized scan line in, a symbol out), `IBbMatrixDecoder` (a binarized image in) or `IBbBinarizer`, and can be
-driven directly by a pipeline of your own - `new BbQrCodeReader().Decode(bits, BbMatrixDecodeOptions.Thorough)`.
-`BbBarcodeDecoder` composes the built-in ones from `Formats` and does not accept others: the frame budget, the
+The readers and binarizers are public building blocks rather than plug-ins: each implements `IBbScannerRowDecoder` (one
+binarized scan line in, a symbol out), `IBbScannerMatrixDecoder` (a binarized image in) or `IBbScannerBinarizer`, and can be
+driven directly by a pipeline of your own - `new BbScannerQrCodeReader().Decode(bits, BbScannerMatrixDecodeOptions.Thorough)`.
+`BbScannerBarcodeDecoder` composes the built-in ones from `Formats` and does not accept others: the frame budget, the
 scan-line geometry and the misread guards it applies are tuned to the symbologies it knows.
 
 ## PDF417 status
@@ -1279,10 +1279,10 @@ control block.
 **The symbol character table.** It maps the 2 787 legal seventeen-module patterns to codeword values, and it is
 specification data from ISO/IEC 15438 rather than a rule: of the 10 480 patterns that satisfy every structural
 constraint, the three usable clusters hold 1 484, 1 002 and 1 002 members, and the specification lists which 929 of
-each are used. The library ships that list as `BbPdf417SymbolTable.Specification`, reproduced from BWIPP (Barcode
+each are used. The library ships that list as `BbScannerPdf417SymbolTable.Specification`, reproduced from BWIPP (Barcode
 Writer in Pure PostScript, MIT licensed) and checked entry for entry against the independent table in ZXing's
 encoder; the tests check every entry against the structural rules again and read symbols BWIPP wrote.
-`BbPdf417SymbolTable.Register` remains for an application that needs a table of its own; `BbBarcodeDecoder` leaves
+`BbScannerPdf417SymbolTable.Register` remains for an application that needs a table of its own; `BbScannerBarcodeDecoder` leaves
 PDF417 off while the registered table does not report `IsSpecificationTable`, rather than misread with it.
 
 **Orientation.** A PDF417 row is three modules tall and often more than a hundred wide, so reading along rows of

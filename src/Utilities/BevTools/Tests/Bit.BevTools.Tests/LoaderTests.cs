@@ -22,7 +22,7 @@ public class LoaderTests : BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true, Visibility = "visible" });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true, Visibility = "visible" });
         module.Setup<string?>("loadPrefs", _ => true).SetResult("""{"open":false}""");
     }
 
@@ -64,8 +64,8 @@ public class LoaderTests : BunitContext
         session.Components.Refresh(force: true);
         var late = session.Components.All.Single(r => r.Type == typeof(ChildComponent) && r.Parent?.Type == typeof(LoaderHost));
         Assert.AreEqual(1, late.RenderCount);
-        Assert.AreEqual(BevRenderCause.Initial, late.LastRender!.Cause);
-        Assert.AreEqual(BevCapabilityStatus.Available, session.Capabilities.Single(c => c.Name == "Component instances").Status);
+        Assert.AreEqual(BevToolsRenderCause.Initial, late.LastRender!.Cause);
+        Assert.AreEqual(BevToolsCapabilityStatus.Available, session.Capabilities.Single(c => c.Name == "Component instances").Status);
 
         // The loader's panel host lives in another assembly, but in BevTools' namespace: it is BevTools, not the app.
         Assert.IsTrue(session.Components.All.Where(r => r.Type == typeof(BevToolsLoaderPanel)).All(r => r.IsBevTools));
@@ -84,7 +84,7 @@ public class LoaderTests : BunitContext
         var session = cut.Instance.Session;
         Assert.IsNotNull(session.Registry.ServiceGraph);
         Assert.IsTrue(session.Registry.ServiceGraph.Services.Any(s => s.ServiceType == typeof(LoaderTestService)));
-        Assert.AreEqual(BevCapabilityStatus.Available, session.Capabilities.Single(c => c.Area == "DI" && c.Name.StartsWith("Registrations", StringComparison.Ordinal)).Status);
+        Assert.AreEqual(BevToolsCapabilityStatus.Available, session.Capabilities.Single(c => c.Area == "DI" && c.Name.StartsWith("Registrations", StringComparison.Ordinal)).Status);
     }
 
     [TestMethod]
@@ -105,7 +105,7 @@ public class LoaderTests : BunitContext
         }
 
         Assert.AreEqual(2, transport.Calls);
-        Assert.AreEqual(BevHttpClientAttachment.InPipeline, session.Attachment!.HttpClient, "a pipeline that already records must not be wrapped a second time");
+        Assert.AreEqual(BevToolsHttpClientAttachment.InPipeline, session.Attachment!.HttpClient, "a pipeline that already records must not be wrapped a second time");
         Assert.AreEqual(1, session.Http.Count);
         Assert.AreEqual(1, session.Http.FailedCount);
     }
@@ -126,7 +126,7 @@ public class LoaderTests : BunitContext
         }
 
         Assert.AreEqual(1, session.Http.Count);
-        Assert.AreEqual(BevCapabilityStatus.Partial, session.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Status);
+        Assert.AreEqual(BevToolsCapabilityStatus.Partial, session.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Status);
     }
 
     [TestMethod]
@@ -146,7 +146,7 @@ public class LoaderTests : BunitContext
             await client.GetAsync("items");
         }
 
-        Assert.AreEqual(BevHttpClientAttachment.InPipeline, session.Attachment!.HttpClient, "the factory's pipeline records through the loader's hook already");
+        Assert.AreEqual(BevToolsHttpClientAttachment.InPipeline, session.Attachment!.HttpClient, "the factory's pipeline records through the loader's hook already");
         Assert.AreEqual(1, session.Http.Count);
     }
 
@@ -168,7 +168,7 @@ public class LoaderTests : BunitContext
         Assert.IsTrue(loader.CanOpen);
         Assert.IsTrue(await loader.OpenAsync(), loader.Problem);
 
-        var session = RuntimeAttachment.Resolve(scope.ServiceProvider)!;
+        var session = BevToolsRuntimeAttacher.Resolve(scope.ServiceProvider)!;
         Assert.IsTrue(session.IsEnabled);
         Assert.IsTrue(session.IsAttachedAtRuntime);
     }
@@ -185,8 +185,8 @@ public class LoaderTests : BunitContext
 
         await first.ServiceProvider.GetRequiredService<BevToolsLoader>().OpenAsync();
         await second.ServiceProvider.GetRequiredService<BevToolsLoader>().OpenAsync();
-        var one = RuntimeAttachment.Resolve(first.ServiceProvider)!;
-        var other = RuntimeAttachment.Resolve(second.ServiceProvider)!;
+        var one = BevToolsRuntimeAttacher.Resolve(first.ServiceProvider)!;
+        var other = BevToolsRuntimeAttacher.Resolve(second.ServiceProvider)!;
 
         Assert.AreNotSame(one, other);
         Assert.AreSame(one.Registry, other.Registry);
@@ -206,7 +206,7 @@ public class LoaderTests : BunitContext
 
         Assert.IsTrue(session.Attachment!.FactoryClientsHooked);
         Assert.IsTrue(session.Registry.ServiceGraph!.Services.Any(s => s.ServiceType == typeof(LoaderTestService)));
-        Assert.AreEqual(BevCapabilityStatus.Available, session.Capabilities.Single(c => c.Area == "DI" && c.Name.StartsWith("Registrations", StringComparison.Ordinal)).Status);
+        Assert.AreEqual(BevToolsCapabilityStatus.Available, session.Capabilities.Single(c => c.Area == "DI" && c.Name.StartsWith("Registrations", StringComparison.Ordinal)).Status);
         StringAssert.Contains(session.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Explanation, "IHttpClientFactory clients go through the handlers Bit.BevTools.Loader added");
         session.Dispose();
     }
@@ -255,7 +255,7 @@ public class LoaderTests : BunitContext
 
         var session = BitBevTools.Attach(scope.ServiceProvider);
 
-        Assert.AreEqual(BevHttpClientAttachment.Transient, session.Attachment!.HttpClient);
+        Assert.AreEqual(BevToolsHttpClientAttachment.Transient, session.Attachment!.HttpClient);
         StringAssert.Contains(session.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Explanation, "BevToolsHttpHookHandler");
         session.Dispose();
     }
@@ -343,9 +343,9 @@ public class LoaderTests : BunitContext
             o.RegisterAtStartup = true;
             o.Authorize = async _ =>
             {
-                resolved.Add(SessionResolver.Resolve());
+                resolved.Add(BevToolsSessionResolver.Resolve());
                 await authorization.Task;
-                resolved.Add(SessionResolver.Resolve());
+                resolved.Add(BevToolsSessionResolver.Resolve());
                 return true;
             };
         });
@@ -403,7 +403,7 @@ public class LoaderTests : BunitContext
         using (var scope = provider.CreateScope())
         {
             Assert.IsTrue(await scope.ServiceProvider.GetRequiredService<BevToolsLoader>().OpenAsync());
-            session = RuntimeAttachment.Resolve(scope.ServiceProvider)!;
+            session = BevToolsRuntimeAttacher.Resolve(scope.ServiceProvider)!;
             Assert.IsFalse(session.IsDisposed);
         }
 
@@ -423,7 +423,7 @@ public class LoaderTests : BunitContext
         Assert.IsFalse(loader.CanOpen);
         Assert.IsFalse(await loader.OpenAsync());
         StringAssert.Contains(loader.Problem, "AllowInMultiUserHost");
-        Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
+        Assert.IsNull(BevToolsRuntimeAttacher.Resolve(scope.ServiceProvider));
     }
 
     [TestMethod]
@@ -447,7 +447,7 @@ public class LoaderTests : BunitContext
 
         Assert.IsTrue(loader.CanOpen);
         Assert.IsTrue(await loader.OpenAsync());
-        Assert.IsTrue(RuntimeAttachment.Resolve(scope.ServiceProvider)!.IsEnabled);
+        Assert.IsTrue(BevToolsRuntimeAttacher.Resolve(scope.ServiceProvider)!.IsEnabled);
     }
 
     [TestMethod]
@@ -466,7 +466,7 @@ public class LoaderTests : BunitContext
         Assert.IsFalse(loader.CanOpen);
         Assert.IsFalse(await loader.OpenAsync());
         StringAssert.Contains(loader.Problem, "Authorize");
-        Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
+        Assert.IsNull(BevToolsRuntimeAttacher.Resolve(scope.ServiceProvider));
     }
 
     [TestMethod]
@@ -496,7 +496,7 @@ public class LoaderTests : BunitContext
         StringAssert.Contains(loader.Problem, throws ? "threw InvalidOperationException" : "did not accept");
         Assert.IsFalse(loader.Problem!.Contains("no user", StringComparison.Ordinal), "the refused user is not shown what the callback threw");
         Assert.AreEqual(2, asked, "asked again on open, never answered from a cache");
-        Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
+        Assert.IsNull(BevToolsRuntimeAttacher.Resolve(scope.ServiceProvider));
     }
 
     /// <summary>
@@ -591,11 +591,11 @@ public class LoaderTests : BunitContext
         using var scope = provider.CreateScope();
 
         Assert.IsTrue(await scope.ServiceProvider.GetRequiredService<BevToolsLoader>().OpenAsync());
-        var session = RuntimeAttachment.Resolve(scope.ServiceProvider)!;
+        var session = BevToolsRuntimeAttacher.Resolve(scope.ServiceProvider)!;
 
-        Assert.AreEqual(BevValueAccess.None, session.ValueAccess);
+        Assert.AreEqual(BevToolsValueAccess.None, session.ValueAccess);
         var node = session.Inspector.Describe("Customer", new { Name = "Ada" });
-        Assert.AreEqual(BevRedactor.HiddenValue, node.Display);
+        Assert.AreEqual(BevToolsRedactor.HiddenValue, node.Display);
         Assert.IsFalse(node.IsExpandable);
     }
 
@@ -765,7 +765,7 @@ public class LoaderHost : ComponentBase
 
     [Inject] public IServiceProvider Services { get; set; } = default!;
 
-    public BevToolsSession Session => RuntimeAttachment.Resolve(Services)!;
+    public BevToolsSession Session => BevToolsRuntimeAttacher.Resolve(Services)!;
 
     private bool _lateChild;
 

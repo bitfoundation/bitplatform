@@ -2,7 +2,7 @@
 using System.Data.Common;
 using System.Globalization;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>A transaction driven by explicit BEGIN/COMMIT/ROLLBACK statements on the transport.</summary>
 /// <remarks>

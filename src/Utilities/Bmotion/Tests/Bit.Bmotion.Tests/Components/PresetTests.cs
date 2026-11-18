@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 namespace Bit.Bmotion.Tests.Components;
 
 /// <summary>
-/// <see cref="BmPreset"/>s: a preset supplies the targets, viewport and transition an element doesn't set itself,
+/// <see cref="BmotionPreset"/>s: a preset supplies the targets, viewport and transition an element doesn't set itself,
 /// anything set on the element wins, presets compose with <c>+</c> property by property, and every built-in one is
 /// something the engine plays.
 /// </summary>
@@ -31,7 +31,7 @@ public class PresetTests
         using var ctx = new BmotionTestContext();
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Preset, BmPresets.Fade(duration: 0.4))
+            .Add(p => p.Preset, BmotionPresets.Fade(duration: 0.4))
             .Add(p => p.ChildContent, Div));
 
         StringAssert.Contains(cut.Find("div").GetAttribute("style"), "opacity:0", "rendered at the preset's Initial");
@@ -45,7 +45,7 @@ public class PresetTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Preset, BmPresets.Fade(duration: 0.4))
+            .Add(p => p.Preset, BmotionPresets.Fade(duration: 0.4))
             .Add(p => p.Animate, Bm.To(opacity: 0.5))
             .Add(p => p.Transition, Bm.Tween(0.1))
             .Add(p => p.ChildContent, Div));
@@ -57,7 +57,7 @@ public class PresetTests
     [TestMethod]
     public async Task TheElementsTransition_WinsOverTheTimingAPresetsExitCarries()
     {
-        foreach (var (transition, duration) in new (BmTransition?, double)[] { (null, 150), (Bm.Tween(0.5), 500) })
+        foreach (var (transition, duration) in new (BmotionTransition?, double)[] { (null, 150), (Bm.Tween(0.5), 500) })
         {
             using var ctx = new BmotionTestContext();
             var cut = ctx.Render<BmotionAnimatePresence>(ps => ps
@@ -66,7 +66,7 @@ public class PresetTests
                 {
                     b.OpenComponent<Bmotion>(0);
                     b.AddComponentParameter(1, nameof(Bmotion.Id), "box");
-                    b.AddComponentParameter(2, nameof(Bmotion.Preset), BmPresets.Pop());
+                    b.AddComponentParameter(2, nameof(Bmotion.Preset), BmotionPresets.Pop());
                     b.AddComponentParameter(3, nameof(Bmotion.Transition), transition);
                     b.AddComponentParameter(4, nameof(Bmotion.ChildContent), Div);
                     b.CloseComponent();
@@ -83,7 +83,7 @@ public class PresetTests
     [TestMethod]
     public void AToast_LeavesTheWayItCame()
     {
-        var toast = BmPresets.Toast(BmEdge.Right, distance: 30);
+        var toast = BmotionPresets.Toast(BmotionEdge.Right, distance: 30);
 
         Assert.AreEqual(30, toast.Exit!.X!.Last);
         Assert.AreEqual(toast.Initial!.Y!.Last, toast.Exit.Y!.Last);
@@ -95,7 +95,7 @@ public class PresetTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Preset, BmPresets.HoverLift(lift: 6))
+            .Add(p => p.Preset, BmotionPresets.HoverLift(lift: 6))
             .Add(p => p.ChildContent, Div));
 
         var flags = (IReadOnlyDictionary<string, object?>)ctx.Interop.ArgsOf("attachEventListeners").Last()[1]!;
@@ -113,10 +113,10 @@ public class PresetTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Preset, BmPresets.Reveal(amount: 0.5))
+            .Add(p => p.Preset, BmotionPresets.Reveal(amount: 0.5))
             .Add(p => p.ChildContent, Div));
 
-        var options = (BmViewport)ctx.Interop.ArgsOf("observeViewport").Last()[1]!;
+        var options = (BmotionViewport)ctx.Interop.ArgsOf("observeViewport").Last()[1]!;
         Assert.IsTrue(options.Once);
         Assert.AreEqual("0.5", options.Amount);
     }
@@ -124,11 +124,11 @@ public class PresetTests
     [TestMethod]
     public void Presets_ComposeTargetByTarget_AndTheRightHandTransitionWins()
     {
-        var combined = BmPresets.Fade(duration: 0.2) + BmPresets.Scale(from: 0.8) with { Transition = Bm.Spring() };
+        var combined = BmotionPresets.Fade(duration: 0.2) + BmotionPresets.Scale(from: 0.8) with { Transition = Bm.Spring() };
 
         Assert.AreEqual(0, combined.Initial!.Opacity!.Last);
         Assert.AreEqual(0.8, combined.Initial.Scale!.Last, "the fade fades and the scale scales");
-        Assert.IsInstanceOfType<BmSpring>(combined.Transition);
+        Assert.IsInstanceOfType<BmotionSpring>(combined.Transition);
     }
 
     [TestMethod]
@@ -150,37 +150,37 @@ public class PresetTests
     [TestMethod]
     public void Merge_CoversEveryProperty()
     {
-        // A property added to BmProps but forgotten in Merge would silently vanish from composed presets.
-        var full = new BmProps();
-        foreach (var property in typeof(BmProps).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanWrite))
+        // A property added to BmotionProps but forgotten in Merge would silently vanish from composed presets.
+        var full = new BmotionProps();
+        foreach (var property in typeof(BmotionProps).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanWrite))
             property.SetValue(full, SampleOf(property.PropertyType));
 
-        var merged = BmProps.Merge(new BmProps(), full)!;
+        var merged = BmotionProps.Merge(new BmotionProps(), full)!;
 
-        foreach (var property in typeof(BmProps).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanWrite))
-            Assert.IsNotNull(property.GetValue(merged), $"BmProps.Merge drops {property.Name}");
+        foreach (var property in typeof(BmotionProps).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanWrite))
+            Assert.IsNotNull(property.GetValue(merged), $"BmotionProps.Merge drops {property.Name}");
     }
 
     private static object SampleOf(Type type)
     {
-        if (type == typeof(BmKeyframes)) return (BmKeyframes)1.0;
-        if (type == typeof(BmStringKeyframes)) return (BmStringKeyframes)"1px";
+        if (type == typeof(BmotionKeyframes)) return (BmotionKeyframes)1.0;
+        if (type == typeof(BmotionStringKeyframes)) return (BmotionStringKeyframes)"1px";
         if (type == typeof(double?)) return 0.5;
         if (type == typeof(Dictionary<string, string>)) return new Dictionary<string, string> { ["--a"] = "1" };
-        if (type == typeof(Dictionary<string, BmStringKeyframes>)) return new Dictionary<string, BmStringKeyframes> { ["gap"] = "1px" };
-        if (type == typeof(BmTransition)) return Bm.Tween(0.1);
+        if (type == typeof(Dictionary<string, BmotionStringKeyframes>)) return new Dictionary<string, BmotionStringKeyframes> { ["gap"] = "1px" };
+        if (type == typeof(BmotionTransition)) return Bm.Tween(0.1);
         throw new AssertFailedException($"Add a sample for {type.Name} to Merge_CoversEveryProperty.");
     }
 
     // Every factory with its defaults: each must render and start without the engine rejecting anything.
     public static IEnumerable<object[]> BuiltIns()
-        => typeof(BmPresets).GetMethods(BindingFlags.Public | BindingFlags.Static)
-            .Where(m => m.ReturnType == typeof(BmPreset))
-            .Select(m => new object[] { m.Name, (BmPreset)m.Invoke(null, m.GetParameters().Select(p => p.DefaultValue).ToArray())! });
+        => typeof(BmotionPresets).GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(m => m.ReturnType == typeof(BmotionPreset))
+            .Select(m => new object[] { m.Name, (BmotionPreset)m.Invoke(null, m.GetParameters().Select(p => p.DefaultValue).ToArray())! });
 
     [TestMethod]
     [DynamicData(nameof(BuiltIns))]
-    public async Task EveryBuiltInPreset_RendersAndPlays(string name, BmPreset preset)
+    public async Task EveryBuiltInPreset_RendersAndPlays(string name, BmotionPreset preset)
     {
         foreach (var server in new[] { false, true })
         {

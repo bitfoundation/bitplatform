@@ -1,7 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
-using Bit.Blex.Blazor;
-using Bit.Blex.Testing;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;

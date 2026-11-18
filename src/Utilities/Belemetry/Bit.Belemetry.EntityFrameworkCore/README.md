@@ -7,6 +7,8 @@ conventions (`db.system.name`, `db.namespace`, `server.address`, `server.port`, 
 collects by default, and show up in Application Insights as database dependencies.
 
 ```csharp
+using Bit.Belemetry;   // UseBitBelemetry
+
 services.AddDbContext<AppDbContext>(options => options
     .UseSqlServer(connectionString)
     .UseBitBelemetry(o =>

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// The provider emits no log events of its own - there is no command to log, no connection to

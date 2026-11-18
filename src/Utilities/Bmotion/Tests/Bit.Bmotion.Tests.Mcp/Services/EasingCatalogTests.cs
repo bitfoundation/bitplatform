@@ -15,7 +15,7 @@ public class EasingCatalogTests
     {
         var catalog = await BmotionEasingCatalog.GetAsync();
 
-        CollectionAssert.AreEquivalent(Enum.GetNames<BmEase>(), catalog.Select(easing => easing.Name).ToArray());
+        CollectionAssert.AreEquivalent(Enum.GetNames<BmotionEase>(), catalog.Select(easing => easing.Name).ToArray());
         Assert.AreEqual(catalog.Length, catalog.Select(easing => easing.Name).Distinct().Count());
     }
 
@@ -24,16 +24,16 @@ public class EasingCatalogTests
     {
         foreach (var easing in await BmotionEasingCatalog.GetAsync())
         {
-            Assert.AreEqual(11, easing.Curve.Length, $"BmEase.{easing.Name} was sampled at {easing.Curve.Length} points.");
+            Assert.AreEqual(11, easing.Curve.Length, $"BmotionEase.{easing.Name} was sampled at {easing.Curve.Length} points.");
             Assert.AreEqual(easing.Curve.Length, easing.Sparkline.Length,
-                            $"BmEase.{easing.Name}'s sparkline does not match its curve.");
-            Assert.AreNotEqual(string.Empty, easing.Feel.Trim(), $"BmEase.{easing.Name} has no guidance.");
+                            $"BmotionEase.{easing.Name}'s sparkline does not match its curve.");
+            Assert.AreNotEqual(string.Empty, easing.Feel.Trim(), $"BmotionEase.{easing.Name} has no guidance.");
             Assert.AreNotEqual(string.Empty, easing.Family.Trim());
             Assert.AreNotEqual(string.Empty, easing.Direction.Trim());
 
             foreach (var value in easing.Curve)
             {
-                Assert.IsTrue(double.IsFinite(value), $"BmEase.{easing.Name} sampled a non-finite value.");
+                Assert.IsTrue(double.IsFinite(value), $"BmotionEase.{easing.Name} sampled a non-finite value.");
             }
         }
     }
@@ -43,8 +43,8 @@ public class EasingCatalogTests
     {
         foreach (var easing in await BmotionEasingCatalog.GetAsync())
         {
-            Assert.AreEqual(0, easing.Curve[0], 0.02, $"BmEase.{easing.Name} does not start at rest.");
-            Assert.AreEqual(1, easing.Curve[^1], 0.02, $"BmEase.{easing.Name} does not arrive at the target.");
+            Assert.AreEqual(0, easing.Curve[0], 0.02, $"BmotionEase.{easing.Name} does not start at rest.");
+            Assert.AreEqual(1, easing.Curve[^1], 0.02, $"BmotionEase.{easing.Name} does not arrive at the target.");
         }
     }
 
@@ -60,7 +60,7 @@ public class EasingCatalogTests
             var leavesRange = easing.Curve.Any(value => value < -0.001 || value > 1.001);
 
             Assert.AreEqual(leavesRange, easing.Overshoots,
-                            $"BmEase.{easing.Name}: Overshoots={easing.Overshoots} but the curve " +
+                            $"BmotionEase.{easing.Name}: Overshoots={easing.Overshoots} but the curve " +
                             $"[{string.Join(", ", easing.Curve)}] says {leavesRange}.");
         }
     }
@@ -81,7 +81,7 @@ public class EasingCatalogTests
         var easing = (await BmotionEasingCatalog.GetAsync()).Single(entry => entry.Name == name);
 
         Assert.IsTrue(easing.Overshoots,
-                      $"BmEase.{name} is not flagged, so it reads as safe on a drawer. " +
+                      $"BmotionEase.{name} is not flagged, so it reads as safe on a drawer. " +
                       $"Curve: [{string.Join(", ", easing.Curve)}]");
     }
 
@@ -97,7 +97,7 @@ public class EasingCatalogTests
     {
         var easing = (await BmotionEasingCatalog.GetAsync()).Single(entry => entry.Name == name);
 
-        Assert.IsFalse(easing.Overshoots, $"BmEase.{name} was flagged as overshooting, which rules it out needlessly.");
+        Assert.IsFalse(easing.Overshoots, $"BmotionEase.{name} was flagged as overshooting, which rules it out needlessly.");
     }
 
     [TestMethod]

@@ -2,21 +2,6 @@
 
 namespace Bit.Bink;
 
-/// <summary>What a node of an element edited by <see cref="BinkNodeEditTool"/> is.</summary>
-public enum BinkNodeKind : byte
-{
-    /// <summary>A point the outline passes through: a polygon's corner, a line's end, a path's anchor.</summary>
-    Anchor = 0,
-
-    /// <summary>A Bézier control point of a path, which the curve bends toward without passing through.</summary>
-    Control = 1,
-}
-
-/// <summary>A node of an element, in the element's local coordinates.</summary>
-/// <param name="Position">Where the node is, in local coordinates; the element's transform maps it into the document.</param>
-/// <param name="Kind">An anchor or a control point.</param>
-public readonly record struct BinkNode(Vector2 Position, BinkNodeKind Kind);
-
 /// <summary>
 /// Edits the points of an outline: the corners of a polygon or polyline, the ends of a line, and the anchors and
 /// Bézier control points of a path. Click an element to edit it, drag a node to move it; moving a path's anchor

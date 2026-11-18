@@ -14,11 +14,9 @@ namespace Bit.Bmage.Demo.Server.Services;
 /// <para>
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the shipped
 /// library - a new pipeline method shows up the moment it is written, with its real parameter list
-/// and defaults instead of ones someone remembered to copy into a document. That matters here
-/// because Bmage's types are spread over a dozen namespaces: an agent that guesses
-/// <c>using Bit.Bmage.Codecs</c> for <c>ImagePipeline</c>, or <c>using Bit.Bmage.Editor</c> for
-/// <c>BmageEditor</c>, writes code that does not compile - so every type carries its namespace
-/// and its package.
+/// and defaults instead of ones someone remembered to copy into a document. Every type is in the one
+/// <c>Bit.Bmage</c> namespace, whichever package ships it, so an agent needs only <c>using Bit.Bmage</c>;
+/// what it has to get right is the package - so every type still carries its namespace and its package.
 /// </para>
 /// </summary>
 public static class BmageApiCatalog
@@ -104,7 +102,7 @@ public static class BmageApiCatalog
 
     /// <summary>
     /// The full reference of one type, or null when no public type goes by that name. Accepts the
-    /// simple name ("ImagePipeline"), the full name ("Bit.Bmage.Pipeline.ImagePipeline") or a
+    /// simple name ("BmageImagePipeline"), the full name ("Bit.Bmage.BmageImagePipeline") or a
     /// generic spelling ("Foo&lt;T&gt;").
     /// </summary>
     public static BmageApiTypeDetailsDto? GetTypeDetails(string typeName)
@@ -118,7 +116,7 @@ public static class BmageApiCatalog
     }
 
     /// <summary>
-    /// One member of a type, written "Type.Member" - "ImagePipeline.Cover", "ImageExportOptions.Quality".
+    /// One member of a type, written "Type.Member" - "BmageImagePipeline.Cover", "BmageImageExportOptions.Quality".
     /// Every overload of a method comes back. Null when the type or the member does not exist.
     /// </summary>
     public static BmageApiTypeDetailsDto? GetMemberDetails(string qualifiedName)
@@ -364,8 +362,8 @@ public static class BmageApiCatalog
         if (property.GetMethod is null || property.GetMethod.IsPublic is false) return null;
         if (property.GetMethod.IsStatic is false && instance is null) return null;
 
-        // A static property of the type's own type is a preset (ImageExportOptions.Png, Rgba32.White,
-        // AspectRatio.Square), and printing it as "new ImageExportOptions()" would say nothing.
+        // A static property of the type's own type is a preset (BmageImageExportOptions.Png, BmageRgba32.White,
+        // BmageAspectRatio.Square), and printing it as "new BmageImageExportOptions()" would say nothing.
         if (property.GetMethod.IsStatic && property.PropertyType == property.DeclaringType) return null;
 
         try
@@ -401,7 +399,7 @@ public static class BmageApiCatalog
         string text => $"\"{text}\"",
         bool flag => flag ? "true" : "false",
         Enum enumValue => $"{enumValue.GetType().Name}.{enumValue}",
-        Rgba32 color => color == Rgba32.White ? "Rgba32.White" : color == Rgba32.Black ? "Rgba32.Black" : color == Rgba32.Transparent ? "Rgba32.Transparent" : $"Rgba32.ParseHex(\"{color.ToHex()}\")",
+        BmageRgba32 color => color == BmageRgba32.White ? "BmageRgba32.White" : color == BmageRgba32.Black ? "BmageRgba32.Black" : color == BmageRgba32.Transparent ? "BmageRgba32.Transparent" : $"BmageRgba32.ParseHex(\"{color.ToHex()}\")",
         float single => single.ToString("0.###", CultureInfo.InvariantCulture),
         double number => number.ToString("0.###", CultureInfo.InvariantCulture),
         IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
@@ -446,7 +444,7 @@ public static class BmageApiCatalog
     }
 
     /// <summary>
-    /// A parameter's default as C# would print it. A defaulted struct (Rgba32 background = default)
+    /// A parameter's default as C# would print it. A defaulted struct (BmageRgba32 background = default)
     /// reads as "default", which is what the source says, rather than as transparent black.
     /// </summary>
     private static string FormatDefault(ParameterInfo parameter)
@@ -493,7 +491,7 @@ public static class BmageApiCatalog
         _ => 7
     };
 
-    /// <summary>The C# spelling of a type: "double?", "string[]", "IReadOnlyList&lt;ImageFormat&gt;".</summary>
+    /// <summary>The C# spelling of a type: "double?", "string[]", "IReadOnlyList&lt;BmageImageFormat&gt;".</summary>
     public static string FriendlyName(Type type)
     {
         if (type.IsByRef) return FriendlyName(type.GetElementType()!);

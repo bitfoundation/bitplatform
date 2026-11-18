@@ -1,13 +1,6 @@
 ﻿using System.Text;
 using System.Reflection;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Storage;
-using Bit.Bsqlite.Storage.Opfs;
 using Bit.Bsqlite.Demo.Server.Dtos;
-using Bit.Bsqlite.Storage.InMemory;
-using Bit.Bsqlite.Storage.IndexedDb;
-using Bit.Bsqlite.Storage.CacheStorage;
-using Bit.Bsqlite.Storage.FileSystem;
 
 namespace Bit.Bsqlite.Demo.Server.Services;
 
@@ -66,7 +59,7 @@ public static class BsqliteStorageCatalog
     public static IBsqliteStorageProvider? Instance(string? name)
         => _instances.Value.FirstOrDefault(provider => string.Equals(provider.Name, name?.Trim(), StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>One backend by its name ("opfs"), its type name ("BsqliteOpfsStorageProvider") or its namespace, or null.</summary>
+    /// <summary>One backend by its name ("opfs") or its type name ("BsqliteOpfsStorageProvider"), or null.</summary>
     public static BsqliteStorageProviderDto? Find(string? key)
     {
         if (string.IsNullOrWhiteSpace(key)) return null;
@@ -76,7 +69,6 @@ public static class BsqliteStorageCatalog
 
         return Providers.FirstOrDefault(provider => string.Equals(provider.Name, text, StringComparison.OrdinalIgnoreCase))
             ?? Providers.FirstOrDefault(provider => string.Equals(provider.TypeName, text, StringComparison.OrdinalIgnoreCase))
-            ?? Providers.FirstOrDefault(provider => string.Equals(provider.Namespace, text, StringComparison.OrdinalIgnoreCase))
             // "IndexedDB", "Cache Storage", "inmemory": the backend as a person spells it.
             ?? Providers.FirstOrDefault(provider => Squash(provider.Name) == squashed)
             ?? Providers.FirstOrDefault(provider => Squash(provider.TypeName) == $"bsqlite{squashed}storageprovider");

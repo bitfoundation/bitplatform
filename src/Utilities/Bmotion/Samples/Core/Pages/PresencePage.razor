@@ -15,7 +15,7 @@
     <h2>A dialog</h2>
     <p>
         <code>BmotionAnimatePresence</code> follows <code>IsPresent</code>. The backdrop fades
-        (<code>BmPresets.Fade()</code>) and the dialog rises into place (<code>BmPresets.Modal()</code>); closing it plays
+        (<code>BmotionPresets.Fade()</code>) and the dialog rises into place (<code>BmotionPresets.Modal()</code>); closing it plays
         both exits, then removes them and raises <code>OnExitComplete</code>. <kbd>Escape</kbd> closes it too.
     </p>
 
@@ -47,7 +47,7 @@
     <p>
         <code>BmotionPresenceGroup</code> does the same for a list, by key: add an item and it enters, remove it and it
         exits. In <code>PopLayout</code> mode a leaving toast steps out of the flow at once, and the others, laid out
-        with <code>Layout="BmLayout.Position"</code>, slide up into its place. Each one dismisses itself after
+        with <code>Layout="BmotionLayout.Position"</code>, slide up into its place. Each one dismisses itself after
         @(ToastLifetime.TotalSeconds) seconds.
     </p>
 
@@ -57,8 +57,8 @@
     </div>
 
     <div class="toast-stack" aria-live="polite">
-        <BmotionPresenceGroup Items="_toasts" ItemKey="@(t => t.Id)" Mode="BmPresenceMode.PopLayout" Context="toast">
-            <Bmotion Preset="ToastPreset" Layout="BmLayout.Position">
+        <BmotionPresenceGroup Items="_toasts" ItemKey="@(t => t.Id)" Mode="BmotionPresenceMode.PopLayout" Context="toast">
+            <Bmotion Preset="ToastPreset" Layout="BmotionLayout.Position">
                 <div class="toast" role="status">
                     <span>@toast.Text</span>
                     <button type="button" class="dismiss" aria-label="Dismiss: @toast.Text" @onclick="() => Dismiss(toast)">✕</button>
@@ -81,7 +81,7 @@
             <Bmotion Initial="Bm.To(opacity: 0, x: 48 * _direction)"
                      Animate="Bm.To(opacity: 1, x: 0)"
                      Exit="Bm.To(opacity: 0, x: -48 * _direction)"
-                     Transition="Bm.Tween(0.25, BmEase.InOut)">
+                     Transition="Bm.Tween(0.25, BmotionEase.InOut)">
                 <div class="step" id="step">
                     <strong>Step @(step + 1) of @Steps.Length</strong>
                     <span>@Steps[step]</span>

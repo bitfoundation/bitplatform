@@ -1,7 +1,6 @@
 ﻿using System.Buffers.Binary;
-using Bit.Bsqlite.Data;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Checks a SQLite file image before it is written over a database, and prepares it for a web backend.

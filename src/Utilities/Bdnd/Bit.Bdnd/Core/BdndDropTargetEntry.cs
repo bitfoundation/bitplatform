@@ -32,26 +32,3 @@ internal sealed class BdndDropTargetEntry
     /// <summary>The native type matched by the native (OS) drag hovering the target, or null.</summary>
     public string? NativeItemType { get; set; }
 }
-
-/// <summary>What the source of the drag in progress does when the manager has to end that drag itself.</summary>
-internal interface IBdndDragSourceHandler
-{
-    /// <summary>
-    /// Ends drag <paramref name="dragId"/> at once, as a cancel: <c>OnEnd</c>'s synchronous part runs and the drag
-    /// state is cleared before this returns; the task is the rest of <c>OnEnd</c>.
-    /// </summary>
-    Task AbortAsync(long dragId);
-}
-
-/// <summary>
-/// What a drop target does when a drag that has no native events of its own - a keyboard drag - hovers it or is
-/// dropped on it: the same as its managed <c>dragover</c> and <c>drop</c> handlers do for a native drag.
-/// </summary>
-internal interface IBdndDropTargetHandler
-{
-    /// <summary>Runs <c>OnHover</c> if the item's type is accepted.</summary>
-    Task HoverAsync(BdndXYCoord? pointer);
-
-    /// <summary>Runs <c>OnDrop</c> and records the drop if the target can take the item.</summary>
-    Task DropAsync(BdndXYCoord? pointer);
-}

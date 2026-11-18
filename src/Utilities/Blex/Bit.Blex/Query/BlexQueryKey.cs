@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Bit.Blex.Query;
+namespace Bit.Blex;
 
 /// <summary>
 /// Identifies a query in the <see cref="BlexQueryClient"/> cache: an ordered list of parts, from the

@@ -1,6 +1,6 @@
 ﻿@page "/getting-started"
 @implements IAsyncDisposable
-@inject ImageExporter Exporter
+@inject BmageImageExporter Exporter
 
 @* The first page of the docs: the package, how to register it, the one stylesheet, and the first
    image - with that first-image snippet runnable right here against the generated sample, so the
@@ -47,9 +47,9 @@
     </p>
     <CodeSnippet Code="@RegisterSnippet" Language="C#" Expanded="true" />
     <p>
-        This registers <code>ImageLoader</code>, <code>ImageExporter</code>,
-        <code>IImageCapabilityProvider</code> and <code>ImageProcessorFactory</code>. It does not
-        register <code>ImageProcessor</code> itself: in a browser the processor can only be built once
+        This registers <code>BmageImageLoader</code>, <code>BmageImageExporter</code>,
+        <code>IBmageImageCapabilityProvider</code> and <code>BmageImageProcessorFactory</code>. It does not
+        register <code>BmageImageProcessor</code> itself: in a browser the processor can only be built once
         the browser's codec support has been probed, which is asynchronous - so you ask the factory
         for one when you need the lower-level API.
     </p>
@@ -131,11 +131,11 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Two things that are easy to miss</h3>
     <p>
-        <strong>Dispose your images.</strong> An <code>ImageBuffer</code> holds pooled memory: a 4000
+        <strong>Dispose your images.</strong> An <code>BmageImageBuffer</code> holds pooled memory: a 4000
         &times; 3000 image is 48 MB. <code>using</code> returns it to the pool immediately instead of
         waiting for a collection. Buffers you receive from <code>LoadAsync</code>,
         <code>ExecuteAsync</code> and <code>RenderFullAsync</code> are yours to dispose; buffers exposed
-        as properties, such as <code>ImageEditSession.Preview</code>, are not.
+        as properties, such as <code>BmageImageEditSession.Preview</code>, are not.
     </p>
     <p>
         <strong>Prefer object URLs to data URLs.</strong> <code>CreateObjectUrlAsync</code> hands the
@@ -167,7 +167,7 @@
     </p>
     <CodeSnippet Code="@WhenSnippet" Language="C#" Expanded="true" />
     <p>
-        <code>IImageCapabilityProvider.GetAsync</code> is deliberately forgiving here: with no browser
+        <code>IBmageImageCapabilityProvider.GetAsync</code> is deliberately forgiving here: with no browser
         reachable it returns the managed capability set with <code>Environment</code> set to
         <code>Prerendering</code> rather than throwing, so a prerendered page still renders something
         sensible and detects properly once interactive. Every page on this site is prerendered that way.
@@ -176,7 +176,7 @@
 
 @code {
     private string? _preview;
-    private EncodedImage? _encoded;
+    private BmageEncodedImage? _encoded;
     private int _width;
     private int _height;
     private TimeSpan _elapsed;
@@ -194,7 +194,7 @@
         builder.Services.AddBitBmageServices(options =>
         {
             // Refuse anything larger than this before decoding, to protect against decompression bombs.
-            options.Limits = ImageLimits.Default with { MaxPixels = 40_000_000 };
+            options.Limits = BmageImageLimits.Default with { MaxPixels = 40_000_000 };
 
             // Largest upload accepted from a file input.
             options.MaxSourceBytes = 32 * 1024 * 1024;
@@ -213,7 +213,7 @@
         """;
 
     private const string FactorySnippet = """
-        @inject ImageProcessorFactory ProcessorFactory
+        @inject BmageImageProcessorFactory ProcessorFactory
 
         @code {
             // Inside an event handler or OnAfterRenderAsync, never during prerendering.
@@ -231,8 +231,8 @@
 
     private const string FirstImageSnippet = """
         @page "/upload"
-        @inject ImageLoader Loader
-        @inject ImageExporter Exporter
+        @inject BmageImageLoader Loader
+        @inject BmageImageExporter Exporter
 
         <InputFile OnChange="OnChange" accept="image/*" />
 
@@ -252,7 +252,7 @@
                 using var image = await Loader.LoadAsync(e.File);
 
                 // Process on the decoded pixels.
-                using var processed = await ImagePipeline.Create()
+                using var processed = await BmageImagePipeline.Create()
                     .MaxSize(800, 800)
                     .Sharpen(0.3f)
                     .ExecuteAsync(image);
@@ -260,8 +260,8 @@
                 // Encode, preferring WebP but falling back where it is unavailable.
                 var encoded = await Exporter.EncodeWithFallbackAsync(
                     processed,
-                    [ImageFormat.WebP, ImageFormat.Jpeg],
-                    new ImageExportOptions { Quality = 0.85 });
+                    [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
+                    new BmageImageExportOptions { Quality = 0.85 });
 
                 _size = encoded.Length;
                 _preview = await Exporter.CreateObjectUrlAsync(encoded);
@@ -282,9 +282,9 @@
             private BmageEditor? _editor;
 
             private Task Save() => _editor!.DownloadAsync("edited",
-                new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.9 });
+                new BmageImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.9 });
 
-            private void OnExported(EncodedImage image)
+            private void OnExported(BmageEncodedImage image)
             {
                 // Also called when the user exports from the editor's own panel.
             }
@@ -315,15 +315,15 @@
             // The scene stands in for LoadAsync(e.File): the rest is the snippet, line for line.
             using var image = SampleImages.Landscape();
 
-            using var processed = await ImagePipeline.Create()
+            using var processed = await BmageImagePipeline.Create()
                 .MaxSize(800, 800)
                 .Sharpen(0.3f)
                 .ExecuteAsync(image);
 
             var encoded = await Exporter.EncodeWithFallbackAsync(
                 processed,
-                [ImageFormat.WebP, ImageFormat.Jpeg],
-                new ImageExportOptions { Quality = 0.85 });
+                [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
+                new BmageImageExportOptions { Quality = 0.85 });
 
             started.Stop();
 

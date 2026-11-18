@@ -9,9 +9,9 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
     private readonly Func<double, double>[] _eases;
     private readonly int _repeat;
     private readonly bool _isInfinite;
-    private readonly BmRepeatType _repeatType;
+    private readonly BmotionRepeatType _repeatType;
     private readonly double _repeatDelayMs;
-    private readonly BmColorSpace _colorSpace;
+    private readonly BmotionColorSpace _colorSpace;
     private readonly Action<string> _apply;
 
     private double _startTime = double.NaN; // NaN = not started: a start can be negative (a negative delay near clock 0)
@@ -74,7 +74,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
             : Enumerable.Range(0, n).Select(i => (double)i / (n - 1)).ToArray();
         // Per-segment easing: config.Eases maps entry i onto the segment frames[i] → frames[i+1]
         // (last entry repeating when shorter); otherwise every segment shares the single easing.
-        _eases = BmEaseFunctions.GetSegmentEases(config, n - 1);
+        _eases = BmotionEaseFunctions.GetSegmentEases(config, n - 1);
 
         // Parse each frame's color once up-front; Tick() then only interpolates pre-parsed
         // channels instead of running the color regex on every frame (~60 fps).
@@ -119,7 +119,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
                 // Reverse plays the frames backwards repeatedly (1→0, 1→0, …): reverse once on the
                 // first repeat, then keep that order so each subsequent cycle replays in reverse
                 // rather than toggling back to forward.
-                if (_repeatType == BmRepeatType.Mirror)
+                if (_repeatType == BmotionRepeatType.Mirror)
                 {
                     Array.Reverse(_curFrames);
                     Array.Reverse(_curChannels);
@@ -127,7 +127,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
                     // Keep each segment paired with its easing when the frame order flips.
                     Array.Reverse(_eases);
                 }
-                else if (_repeatType == BmRepeatType.Reverse && !_reversed)
+                else if (_repeatType == BmotionRepeatType.Reverse && !_reversed)
                 {
                     Array.Reverse(_curFrames);
                     Array.Reverse(_curChannels);
@@ -153,12 +153,12 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         //  • Reverse plays forward once then replays reversed for every later pass, so it ends on
         //    the last frame only when there are no repeats, otherwise on the first frame.
         // Infinite repeats have no natural end, so fall through to the last frame.
-        if (!_isInfinite && _repeatType == BmRepeatType.Mirror)
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Mirror)
         {
             _apply((_repeat + 1) % 2 == 0 ? _frames[0] : _frames[^1]);
             return;
         }
-        if (!_isInfinite && _repeatType == BmRepeatType.Reverse)
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Reverse)
         {
             _apply(_repeat == 0 ? _frames[^1] : _frames[0]);
             return;

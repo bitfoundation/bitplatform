@@ -1,4 +1,4 @@
-﻿using Bit.Blex.Maui;
+﻿using Bit.Blex;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

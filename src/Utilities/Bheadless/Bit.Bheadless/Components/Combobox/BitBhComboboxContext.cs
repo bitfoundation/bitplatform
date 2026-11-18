@@ -109,29 +109,3 @@ public sealed class BitBhComboboxContext<TValue> : IBitBhCloseContext
 
     internal Task SelectAsync(TValue value) => Combobox.SelectAsync(value);
 }
-
-/// <summary>Render-fragment context exposed by <see cref="BitBhComboboxButton{TValue}"/>.</summary>
-public sealed record BitBhComboboxButtonRenderContext<TValue>
-{
-    /// <summary>Whether the options panel is open.</summary>
-    public required bool IsOpen { get; init; }
-
-    /// <summary>Whether the combobox is disabled.</summary>
-    public required bool Disabled { get; init; }
-}
-
-/// <summary>Render-fragment context exposed by <see cref="BitBhComboboxOption{TValue}"/>.</summary>
-public sealed record BitBhComboboxOptionRenderContext<TValue>
-{
-    /// <summary>The option's value.</summary>
-    public required TValue Value { get; init; }
-
-    /// <summary>Whether this option is selected.</summary>
-    public required bool IsSelected { get; init; }
-
-    /// <summary>Whether this option is highlighted.</summary>
-    public required bool IsActive { get; init; }
-
-    /// <summary>Whether this option is disabled.</summary>
-    public required bool Disabled { get; init; }
-}

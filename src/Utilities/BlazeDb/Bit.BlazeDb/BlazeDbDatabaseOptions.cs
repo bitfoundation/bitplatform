@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// Settings for <see cref="BlazeDbDatabase.OpenAsync"/>. Tables must be added with

@@ -2,8 +2,8 @@
 
 public partial class ScrollPage
 {
-    private static readonly BmPreset RevealFromLeft = BmPresets.Reveal(from: BmEdge.Left);
-    private static readonly BmPreset RevealFromRight = BmPresets.Reveal(from: BmEdge.Right);
+    private static readonly BmotionPreset RevealFromLeft = BmotionPresets.Reveal(from: BmotionEdge.Left);
+    private static readonly BmotionPreset RevealFromRight = BmotionPresets.Reveal(from: BmotionEdge.Right);
 
     private static readonly string[] Reveals =
     [

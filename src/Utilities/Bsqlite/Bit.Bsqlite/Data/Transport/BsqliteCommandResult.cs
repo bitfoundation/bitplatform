@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Data;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>The outcome of one <see cref="BsqliteCommandRequest"/>.</summary>
 public sealed record BsqliteCommandResult

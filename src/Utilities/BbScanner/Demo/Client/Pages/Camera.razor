@@ -93,9 +93,9 @@
                     <label class="bb-field">
                         <span>Preferred facing</span>
                         <select id="facing" value="@_facing" @onchange="OnFacingChanged">
-                            <option value="@BbCameraFacing.Rear">Rear</option>
-                            <option value="@BbCameraFacing.Front">Front</option>
-                            <option value="@BbCameraFacing.Any">Any</option>
+                            <option value="@BbScannerCameraFacing.Rear">Rear</option>
+                            <option value="@BbScannerCameraFacing.Front">Front</option>
+                            <option value="@BbScannerCameraFacing.Any">Any</option>
                         </select>
                         <small>
                             <code>Facing</code> picks a camera when no <code>DeviceId</code> is set: <code>Rear</code>
@@ -109,7 +109,7 @@
                 <section class="scan-panel">
                     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Negotiated track</h3>
                     <p class="bb-card-desc">
-                        The <code>BbCameraInfo</code> that <code>OnCameraChanged</code> delivers each time a camera
+                        The <code>BbScannerCameraInfo</code> that <code>OnCameraChanged</code> delivers each time a camera
                         opens, also readable as the scanner's <code>Camera</code> property: what the browser actually
                         negotiated, which may differ from <code>RequestedWidth</code> and <code>RequestedHeight</code>.
                     </p>
@@ -226,11 +226,11 @@
 
 <span class="k">@@code</span> {
     <span class="k">private</span> BbScanner _scanner = <span class="k">default</span>!;
-    <span class="k">private</span> IReadOnlyList&lt;BbCameraDevice&gt; _cameras = [];
+    <span class="k">private</span> IReadOnlyList&lt;BbScannerCameraDevice&gt; _cameras = [];
     <span class="k">private string</span>? _deviceId;
     <span class="k">private bool</span> _canTorch;   <span class="c">// offer a torch button of your own only when there is a torch</span>
 
-    <span class="k">private async</span> Task OnCameraChanged(BbCameraInfo camera)
+    <span class="k">private async</span> Task OnCameraChanged(BbScannerCameraInfo camera)
     {
         _canTorch = camera.SupportsTorch;
         _cameras = <span class="k">await</span> _scanner.GetCamerasAsync();
@@ -240,12 +240,12 @@
 
 @code {
     private BbScanner? _scanner;
-    private IReadOnlyList<BbCameraDevice> _cameras = [];
-    private BbCameraInfo? _camera;
-    private BbBarcodeResult? _last;
+    private IReadOnlyList<BbScannerCameraDevice> _cameras = [];
+    private BbScannerCameraInfo? _camera;
+    private BbScannerBarcodeResult? _last;
     private BbScannerException? _error;
-    private BbCameraFacing _facing = BbCameraFacing.Rear;
-    private IReadOnlyList<BbBarcodeResult>? _captured;
+    private BbScannerCameraFacing _facing = BbScannerCameraFacing.Rear;
+    private IReadOnlyList<BbScannerBarcodeResult>? _captured;
 
     // A frame exists only while the track runs; the camera info outlives a restart that is still Starting.
     private bool CanScanFrame => _scanner?.Status is BbScannerStatus.Scanning or BbScannerStatus.Paused;
@@ -296,13 +296,13 @@
 
     private void OnFacingChanged(ChangeEventArgs args)
     {
-        if (Enum.TryParse<BbCameraFacing>(args.Value?.ToString(), out var facing))
+        if (Enum.TryParse<BbScannerCameraFacing>(args.Value?.ToString(), out var facing))
         {
             _facing = facing;
         }
     }
 
-    private async Task OnCameraChanged(BbCameraInfo camera)
+    private async Task OnCameraChanged(BbScannerCameraInfo camera)
     {
         _camera = camera;
         _error = null;

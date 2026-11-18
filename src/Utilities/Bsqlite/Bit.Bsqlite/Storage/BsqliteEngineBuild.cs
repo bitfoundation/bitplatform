@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Storage;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// The SQLite/WASM build a storage backend needs, because a VFS whose reads are asynchronous cannot

@@ -15,7 +15,7 @@ modules to the project, as BlazeDb's own README explains.
 Register the store's table where the database is opened, next to the application's own:
 
 ```csharp
-using Bit.Bcrdt.BlazeDb;
+using Bit.Bcrdt;
 
 BlazeDbDatabase database = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
 {

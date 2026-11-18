@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Bit.Bcrdt.Butil;
+namespace Bit.Bcrdt;
 
 /// <summary>Configures bit Bcrdt to follow the browser's page and network lifecycle, through Bit.Butil.</summary>
 public static class BitBcrdtButil

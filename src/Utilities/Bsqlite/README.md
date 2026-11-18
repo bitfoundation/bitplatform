@@ -82,15 +82,17 @@ apart: a Blazor Web App of its own whose browser half downloads Bit.Bsqlite and 
 | `Bit.Bsqlite` | `AddBitBsqliteServices`, `AddBitBsqliteDbContext`, `UseBitBsqlite(connection)`, ADO.NET and live queries, the worker transport, storage selection and migration, the storage provider contract, the storage backends, the browser assets (engine, worker, host, VFSes) under `_content/Bit.Bsqlite`, and the native transport Blazor Hybrid apps run on - the native SQLite engine itself comes from the SQLitePCLRaw bundle the app adds (`SQLitePCLRaw.bundle_e_sqlite3`) |
 | `Bit.Bsqlite.Testing` | An in-process transport for browser-free unit tests, plus the MSTest conformance kit every storage provider must pass |
 
-The storage backends, each in its own namespace and each registered with `AddStorageProvider<T>()`:
+The storage backends, each registered with `AddStorageProvider<T>()`. Like every other Bsqlite type - the
+`AddBitBsqliteServices`, `UseBitBsqlite` and `AsLiveQuery` extensions included - they are in the one `Bit.Bsqlite`
+namespace:
 
-| Backend | Provider (namespace) | Role |
+| Backend | Provider | Role |
 | --- | --- | --- |
-| `opfs` | `BsqliteOpfsStorageProvider` (`Bit.Bsqlite.Storage.Opfs`) | Persistent, synchronous engine build (the smallest download), several connections |
-| `indexeddb` | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite.Storage.IndexedDb`) | Persistent, JSPI or Asyncify engine build, widest reach |
-| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Persistent, JSPI or Asyncify engine build, pages in the Cache API |
-| `in-memory` | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite.Storage.InMemory`) | Volatile: tests, demos, and a declared last resort |
-| `file-system` | `BsqliteFileSystemStorageProvider` (`Bit.Bsqlite.Storage.FileSystem`) | Blazor Hybrid: plain SQLite files in the app's own folder, registered and selected automatically |
+| `opfs` | `BsqliteOpfsStorageProvider` | Persistent, synchronous engine build (the smallest download), several connections |
+| `indexeddb` | `BsqliteIndexedDbStorageProvider` | Persistent, JSPI or Asyncify engine build, widest reach |
+| `cache-storage` | `BsqliteCacheStorageProvider` | Persistent, JSPI or Asyncify engine build, pages in the Cache API |
+| `in-memory` | `BsqliteInMemoryStorageProvider` | Volatile: tests, demos, and a declared last resort |
+| `file-system` | `BsqliteFileSystemStorageProvider` | Blazor Hybrid: plain SQLite files in the app's own folder, registered and selected automatically |
 
 ## Installation
 
@@ -104,9 +106,7 @@ Register the services in the project that runs on WebAssembly - and, in a Blazor
 in the server project too, so the prerender pass can resolve what the pages inject:
 
 ```csharp
-using Bit.Bsqlite.Storage.IndexedDb;
-using Bit.Bsqlite.Storage.InMemory;
-using Bit.Bsqlite.Storage.Opfs;
+using Bit.Bsqlite;
 
 builder.Services.AddBitBsqliteServices(sqlite => sqlite
     .AddStorageProvider<BsqliteOpfsStorageProvider>()
@@ -152,6 +152,8 @@ commits, so a rolled-back write is never shown and a multi-statement `SaveChange
 statement.
 
 ```csharp
+using Bit.Bsqlite;   // AsLiveQuery
+
 await using var live = ctx.Orders.Where(o => o.Open).AsLiveQuery();
 live.Changed += (_, rows) => InvokeAsync(StateHasChanged);
 ```
@@ -208,6 +210,15 @@ Hybrid app sharing the pages, which registers with `AppDatabase.Register(builder
 container, once it has checked that what the method registers is there. Which assemblies to mark, the router's code, and the rules the rest of the app keeps - no public `DbContext` or migration in an assembly
 the router reads, nothing of EF Core's in `Program.cs`, the database asked for only once a page is interactive, no AOT - are in the *Getting started* guide's
 [Lazy loading on WebAssembly](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md#lazy-loading-on-webassembly).
+
+## Upgrading
+
+- **Every Bsqlite type is in the `Bit.Bsqlite` namespace.** `AddBitBsqliteServices`, `AddBitBsqliteDbContext` and
+  the other service registrations moved there from `Microsoft.Extensions.DependencyInjection`; `UseBitBsqlite`,
+  `AsLiveQuery` and the other EF Core extensions from `Microsoft.EntityFrameworkCore`; and the types of
+  `Bit.Bsqlite.Data`, `Bit.Bsqlite.EntityFrameworkCore`, `Bit.Bsqlite.Interop`, `Bit.Bsqlite.Storage.*` and
+  `Bit.Bsqlite.Testing` into `Bit.Bsqlite`. A file that calls one of the extensions and imports only the Microsoft
+  namespace fails with CS1061: add `using Bit.Bsqlite;` (or a global using), and drop imports of the old namespaces.
 
 ## What this release does not claim
 

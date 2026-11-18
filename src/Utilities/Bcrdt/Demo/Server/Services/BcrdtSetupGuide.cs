@@ -278,7 +278,7 @@ public static partial class BcrdtSetupGuide
            `builder.Services.AddBitBcrdtDocumentHost(...)` to keep every document on the server as well. The hub picks
            the host up from the container; the WebSocket mapping does not, so pass it in `options: new() { DocumentHost =
            app.Services.GetRequiredService<BcrdtDocumentHost>() }`.
-        5. Add `@using Bit.Bcrdt` and `@using Bit.Bcrdt.Blazor` to `_Imports.razor`.
+        5. Add `@using Bit.Bcrdt` to `_Imports.razor`.
         6. Open a document with `<BcrdtCollaborationScope DocumentId="..." User="...">`, which opens it, cascades it and
            releases it - and waits until the page is interactive by itself - or with
            `IBcrdtCollaborationService.OpenAsync` paired with `CloseAsync`, and then only once the component
@@ -317,7 +317,7 @@ public static partial class BcrdtSetupGuide
         ### `CollaborationHub.cs` (server project)
 
         ```csharp
-        using Bit.Bcrdt.Server;
+        using Bit.Bcrdt;
 
         public sealed class CollaborationHub : BcrdtHub
         {
@@ -337,7 +337,6 @@ public static partial class BcrdtSetupGuide
 
         ```csharp
         using Bit.Bcrdt;
-        using Bit.Bcrdt.SignalR;
         using Microsoft.AspNetCore.Components.Web;
         using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -360,7 +359,6 @@ public static partial class BcrdtSetupGuide
 
         ```csharp
         using Bit.Bcrdt;
-        using Bit.Bcrdt.Server;
 
         var builder = WebApplication.CreateBuilder(args);
 
@@ -392,7 +390,6 @@ public static partial class BcrdtSetupGuide
 
         ```razor
         @using Bit.Bcrdt
-        @using Bit.Bcrdt.Blazor
         ```
 
         ### `Pages/Notes.razor`
@@ -426,7 +423,6 @@ public static partial class BcrdtSetupGuide
 
         ```csharp
         using Bit.Bcrdt;
-        using Bit.Bcrdt.Server;
 
         var builder = WebApplication.CreateBuilder(args);
 
@@ -483,7 +479,6 @@ public static partial class BcrdtSetupGuide
 
         ```razor
         @using Bit.Bcrdt
-        @using Bit.Bcrdt.Blazor
         ```
 
         Behind a load balancer the circuits of one document are in different processes. Keep the same wiring, but map the
@@ -498,7 +493,6 @@ public static partial class BcrdtSetupGuide
 
         ```csharp
         using Bit.Bcrdt;
-        using Bit.Bcrdt.SignalR;
 
         public static class MauiProgram
         {
@@ -526,7 +520,6 @@ public static partial class BcrdtSetupGuide
 
         ```razor
         @using Bit.Bcrdt
-        @using Bit.Bcrdt.Blazor
         ```
 
         The pages are the ones a WebAssembly app would write - `GetBcrdtSetupGuide(hostingModel: "standalone-wasm")` has one -
@@ -556,7 +549,7 @@ public static partial class BcrdtSetupGuide
         ### `Program.cs` of the server (with `Bit.Bcrdt.Server`)
 
         ```csharp
-        using Bit.Bcrdt.Server;
+        using Bit.Bcrdt;
 
         var builder = WebApplication.CreateBuilder(args);
 

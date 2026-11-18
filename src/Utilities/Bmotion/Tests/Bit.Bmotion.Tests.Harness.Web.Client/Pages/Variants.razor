@@ -28,7 +28,7 @@
 
 <h2>From last</h2>
 <Bmotion Variants="_list" InitialState="hidden" State="@Label"
-         Transition="Bm.Tween(0.2, childStagger: Bm.Stagger(0.25, from: BmStaggerFrom.Last))">
+         Transition="Bm.Tween(0.2, childStagger: Bm.Stagger(0.25, from: BmotionStaggerFrom.Last))">
     <div class="row">
         @for (var i = 0; i < 3; i++)
         {
@@ -43,7 +43,7 @@
 
 <h2>Before children</h2>
 <Bmotion Variants="_list" InitialState="hidden" State="@Label"
-         Transition="Bm.Tween(0.5, when: BmWhen.BeforeChildren)"
+         Transition="Bm.Tween(0.5, when: BmotionWhen.BeforeChildren)"
          OnAnimationComplete='_ => Log($"before-parent:{Label}")'>
     <div id="before" class="row">
         <Bmotion Variants="_item" Transition="Bm.Tween(0.1)"
@@ -55,7 +55,7 @@
 
 <h2>After children</h2>
 <Bmotion Variants="_list" InitialState="hidden" State="@Label"
-         Transition="Bm.Tween(0.1, when: BmWhen.AfterChildren)"
+         Transition="Bm.Tween(0.1, when: BmotionWhen.AfterChildren)"
          OnAnimationComplete='_ => Log($"after-parent:{Label}")'>
     <div id="after" class="row">
         <Bmotion Variants="_item" Transition="Bm.Tween(0.5)"
@@ -86,19 +86,19 @@
 
     private string Label => _open ? "visible" : "hidden";
 
-    private readonly BmVariants _list = new()
+    private readonly BmotionVariants _list = new()
     {
         ["hidden"] = Bm.To(opacity: 0.5),
         ["visible"] = Bm.To(opacity: 1),
     };
 
-    private readonly BmVariants _item = new()
+    private readonly BmotionVariants _item = new()
     {
         ["hidden"] = Bm.To(opacity: 0, x: -30),
         ["visible"] = Bm.To(opacity: 1, x: 0),
     };
 
-    private readonly BmVariants _dynamic = new BmVariants()
+    private readonly BmotionVariants _dynamic = new BmotionVariants()
         .Add("hidden", Bm.To(x: 0))
         .Add("visible", custom => Bm.To(x: 10 * (int)custom!));
 }

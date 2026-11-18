@@ -4,7 +4,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
-        <RootNamespace>Bit.Bcrdt.BlazeDb</RootNamespace>
+        <RootNamespace>Bit.Bcrdt</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
         <Description>A bit Bcrdt document store on top of bit BlazeDb, so an application already on BlazeDb keeps its collaborative documents in the same database - persisted to OPFS or IndexedDB in Blazor WebAssembly, or to files on the server, the desktop and MAUI - with atomic compaction and no separate storage to manage.</Description>

@@ -4,7 +4,7 @@ namespace Bit.Bmotion.Tests.Models;
 
 /// <summary>
 /// Tests for the standalone value utilities on <see cref="Bm"/> (clamp / wrap / mix / range
-/// mapping / velocity) and the non-clamping range map on <see cref="BmValue{T}"/>.
+/// mapping / velocity) and the non-clamping range map on <see cref="BmotionValue{T}"/>.
 /// </summary>
 [TestClass]
 public class ValueUtilityTests

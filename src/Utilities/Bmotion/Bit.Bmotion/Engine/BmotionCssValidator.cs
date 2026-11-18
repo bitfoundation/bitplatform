@@ -9,7 +9,7 @@ namespace Bit.Bmotion;
 /// <c>style</c> (colors, dimensions, box-shadow, filter, the free-form <c>Css</c> entries, CSS custom properties): their
 /// values, and the property names a free-form entry or a custom property brings. It is a defence-in-depth guard for
 /// apps that bind <b>untrusted</b> input to these props; it is intentionally strict and off by default (see
-/// <see cref="BmCssSafeMode"/>).
+/// <see cref="BmotionCssSafeMode"/>).
 /// </summary>
 internal static class BmotionCssValidator
 {
@@ -85,7 +85,7 @@ internal static class BmotionCssValidator
     }
 
     /// <summary>
-    /// Applies CSS safe mode (<see cref="BitBmotionOptions.CssSafeMode"/>) to every string-valued CSS declaration
+    /// Applies CSS safe mode (<see cref="BmotionOptions.CssSafeMode"/>) to every string-valued CSS declaration
     /// <paramref name="props"/> carries - its name and its value: nothing when it is Off, a warning per rejected
     /// declaration (which is still written) when Warn, an exception for the first rejected one when Throw.
     /// <para>
@@ -94,21 +94,21 @@ internal static class BmotionCssValidator
     /// </para>
     /// </summary>
     /// <param name="props">The target to check.</param>
-    /// <param name="mode">The policy: <see cref="BitBmotionOptions.CssSafeMode"/>.</param>
+    /// <param name="mode">The policy: <see cref="BmotionOptions.CssSafeMode"/>.</param>
     /// <param name="logger">Where Warn reports; <c>null</c> reports nowhere.</param>
     /// <param name="target">What the warning names: the element's id, or the selector that picks the elements.</param>
     /// <param name="warned">
     /// The rejections already reported for this target, so a declaration checked again on every render is reported
     /// once rather than once per check; <c>null</c> reports every rejection.
     /// </param>
-    public static void Enforce(BmProps props, BmCssSafeMode mode, ILogger? logger, string? target, BmotionCssWarnings? warned = null)
+    public static void Enforce(BmotionProps props, BmotionCssSafeMode mode, ILogger? logger, string? target, BmotionCssWarnings? warned = null)
     {
-        if (mode == BmCssSafeMode.Off) return;
+        if (mode == BmotionCssSafeMode.Off) return;
         foreach (var (prop, value) in props.EnumerateCssDeclarations())
         {
             var rejected = !IsSafeName(prop) ? "property name" : !IsSafe(value) ? "value" : null;
             if (rejected is null) continue;
-            if (mode == BmCssSafeMode.Throw)
+            if (mode == BmotionCssSafeMode.Throw)
                 throw new InvalidOperationException(
                     $"Bit.Bmotion CSS safe mode rejected the {rejected} of '{Quote(prop)}': \"{Quote(value)}\". " +
                     "It contains characters/sequences that could break out of the inline style or load a URL.");

@@ -1,46 +1,5 @@
 ﻿namespace Bit.Blow;
 
-/// <summary>Which edges a traversal follows from a node.</summary>
-public enum BlowTraversalDirection
-{
-    /// <summary>Along edges leaving the node, towards its targets.</summary>
-    Outgoing,
-
-    /// <summary>Against edges arriving at the node, towards its sources.</summary>
-    Incoming,
-
-    /// <summary>Along every edge attached to the node, ignoring direction.</summary>
-    Both,
-}
-
-/// <summary>
-/// The result of <see cref="BlowGraphAlgorithms.TopologicalSort(BlowGraphIndex)"/>: the nodes that could be put
-/// in dependency order, and those that could not because they are on a cycle or downstream of one.
-/// </summary>
-/// <param name="Order">Every node after all the nodes with an edge into it. Ties keep the original node order.</param>
-/// <param name="Unordered">The nodes left over because a cycle blocks them, in original node order.</param>
-public sealed record BlowTopologicalOrder(IReadOnlyList<BlowNode> Order, IReadOnlyList<BlowNode> Unordered)
-{
-    /// <summary>True when every node could be ordered, which is when the graph has no cycle.</summary>
-    public bool IsAcyclic => Unordered.Count == 0;
-}
-
-/// <summary>Counts that describe a graph's shape at a glance.</summary>
-/// <param name="NodeCount">Nodes in the graph.</param>
-/// <param name="EdgeCount">Edges between nodes in the graph (dangling edges are counted separately).</param>
-/// <param name="RootCount">Nodes with no incoming edge.</param>
-/// <param name="LeafCount">Nodes with no outgoing edge.</param>
-/// <param name="IsolatedCount">Nodes with no edge at all.</param>
-/// <param name="ComponentCount">Separate pieces the graph falls into, ignoring edge direction.</param>
-/// <param name="SelfLoopCount">Edges from a node to itself.</param>
-/// <param name="MaxInDegree">The most incoming edges any one node has.</param>
-/// <param name="MaxOutDegree">The most outgoing edges any one node has.</param>
-/// <param name="IsAcyclic">True when the graph has no directed cycle (self-loops included).</param>
-/// <param name="DanglingEdgeCount">Edges naming a node that is not in the graph.</param>
-public sealed record BlowGraphStatistics(
-    int NodeCount, int EdgeCount, int RootCount, int LeafCount, int IsolatedCount, int ComponentCount,
-    int SelfLoopCount, int MaxInDegree, int MaxOutDegree, bool IsAcyclic, int DanglingEdgeCount);
-
 /// <summary>
 /// The graph questions flow applications keep asking: what runs first, is there a cycle, what depends on this
 /// node, can this reach that, which parts are disconnected, what is the shortest route. All of them run without a

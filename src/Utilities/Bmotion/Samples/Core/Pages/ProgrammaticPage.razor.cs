@@ -8,21 +8,21 @@ public partial class ProgrammaticPage
     // Two shapes with the same commands - a move and four cubic curves - so every point has one to travel to.
     private const string BlobAPath = "M100 30 C140 30 170 60 170 100 C170 140 140 170 100 170 C60 170 30 140 30 100 C30 60 60 30 100 30";
     private const string BlobBPath = "M100 50 C130 20 180 70 150 100 C180 130 130 180 100 150 C70 180 20 130 50 100 C20 70 70 20 100 50";
-    private static readonly BmProps BlobA = Bm.To(d: BlobAPath);
-    private static readonly BmProps BlobB = Bm.To(d: BlobBPath);
+    private static readonly BmotionProps BlobA = Bm.To(d: BlobAPath);
+    private static readonly BmotionProps BlobB = Bm.To(d: BlobBPath);
 
-    private BmAnimationControls? _controls;
+    private BmotionAnimationControls? _controls;
     private CancellationTokenSource? _run;
     private bool _starting;
     private Task? _watched;
     private int _scrub;
     private string _seekLabel = "";
 
-    private BmAnimationControls? _sequence;
+    private BmotionAnimationControls? _sequence;
     private CancellationTokenSource? _sequenceRun;
 
     // One value for every press, so a press while it is still counting replaces that animation instead of racing it.
-    private readonly BmValue<double> _count = Bm.Value(0.0);
+    private readonly BmotionValue<double> _count = Bm.Value(0.0);
     private bool _counted;
     private bool _morphed;
 
@@ -56,7 +56,7 @@ public partial class ProgrammaticPage
         var controls = await Motion.AnimateAsync(
             ".prog-dot",
             Bm.To(y: [0, -48, 0], scale: [1, 1.3, 1]),
-            Bm.Tween(2.4, BmEase.InOut),
+            Bm.Tween(2.4, BmotionEase.InOut),
             stagger: Bm.Stagger(0.12),
             cancellationToken: token);
 
@@ -82,7 +82,7 @@ public partial class ProgrammaticPage
         if (_controls is null || int.TryParse(e.Value?.ToString(), out var value) is false) return Task.CompletedTask;
 
         _scrub = value;
-        if (_controls.State is BmPlaybackState.Running) _controls.Pause();
+        if (_controls.State is BmotionPlaybackState.Running) _controls.Pause();
         _controls.Seek(value / 1000.0 * _controls.Duration);
         _seekLabel = $"{_controls.Time.ToString("0.00", CultureInfo.InvariantCulture)} s of {_controls.Duration.ToString("0.00", CultureInfo.InvariantCulture)} s";
         return WatchAsync(_controls);
@@ -91,7 +91,7 @@ public partial class ProgrammaticPage
     // Waits for the animation to end, so the event that started the wait renders its final state. Play after it
     // finished and a seek after it ended take hold of it again, with a new end to wait for; one already waited on
     // is left to the handler waiting on it.
-    private async Task WatchAsync(BmAnimationControls controls)
+    private async Task WatchAsync(BmotionAnimationControls controls)
     {
         var done = controls.WhenCompleteAsync();
         if (ReferenceEquals(done, _watched)) return;
@@ -102,8 +102,8 @@ public partial class ProgrammaticPage
 
     private async Task PlaySequenceAsync()
     {
-        var sequence = new BmSequence()
-            .Add("#seq-box", Bm.To(x: 120), Bm.Tween(0.5, BmEase.InOut))
+        var sequence = new BmotionSequence()
+            .Add("#seq-box", Bm.To(x: 120), Bm.Tween(0.5, BmotionEase.InOut))
             .Add("#seq-box", Bm.To(rotate: 180), Bm.Tween(0.4), at: "-0.2")
             .Label("burst")
             .Add(".seq-dot", Bm.To(scale: [1, 1.8, 1]), Bm.Spring(stiffness: 400, damping: 16), at: "burst")
@@ -124,7 +124,7 @@ public partial class ProgrammaticPage
     {
         _counted = _counted is false;
 
-        return Motion.AnimateAsync(_count, _counted ? 2_450 : 0, Bm.Tween(1.4, BmEase.InOut));
+        return Motion.AnimateAsync(_count, _counted ? 2_450 : 0, Bm.Tween(1.4, BmotionEase.InOut));
     }
 
     // Cancels what the last press started and hands out the token for the next one.

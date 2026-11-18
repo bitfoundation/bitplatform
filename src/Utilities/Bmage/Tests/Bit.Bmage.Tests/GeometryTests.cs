@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Geometry;
 
 namespace Bit.Bmage.Tests;
 
@@ -9,11 +8,11 @@ public sealed class OrientationTests
     [TestMethod]
     public void EveryOrientationComposedWithItsInverseIsNormal()
     {
-        foreach (Orientation o in Enum.GetValues<Orientation>())
+        foreach (BmageOrientation o in Enum.GetValues<BmageOrientation>())
         {
-            if (o == Orientation.Unspecified) continue;
-            Assert.AreEqual(Orientation.Normal, o.Then(o.Inverse()));
-            Assert.AreEqual(Orientation.Normal, o.Inverse().Then(o));
+            if (o == BmageOrientation.Unspecified) continue;
+            Assert.AreEqual(BmageOrientation.Normal, o.Then(o.Inverse()));
+            Assert.AreEqual(BmageOrientation.Normal, o.Inverse().Then(o));
         }
     }
 
@@ -21,7 +20,7 @@ public sealed class OrientationTests
     public void CompositionMatchesPixelTransformForAllPairs()
     {
         // The algebraic composition must agree with actually applying both transforms to pixels.
-        var values = Enum.GetValues<Orientation>().Where(o => o != Orientation.Unspecified).ToArray();
+        var values = Enum.GetValues<BmageOrientation>().Where(o => o != BmageOrientation.Unspecified).ToArray();
         foreach (var a in values)
         {
             foreach (var b in values)
@@ -35,18 +34,18 @@ public sealed class OrientationTests
             }
         }
 
-        static ImageBuffer Apply(ImageBuffer src, Orientation o)
-            => new Operations.Transforms.OrientationOperation(o).Apply(src, Operations.OperationContext.Default);
+        static BmageImageBuffer Apply(BmageImageBuffer src, BmageOrientation o)
+            => new BmageOrientationOperation(o).Apply(src, BmageOperationContext.Default);
     }
 
     [TestMethod]
     public void MatrixAgreesWithPixelMapping()
     {
         var size = new Size(7, 5);
-        foreach (var o in Enum.GetValues<Orientation>().Where(v => v != Orientation.Unspecified))
+        foreach (var o in Enum.GetValues<BmageOrientation>().Where(v => v != BmageOrientation.Unspecified))
         {
             using var source = TestImages.Gradient(size.Width, size.Height);
-            using var rotated = new Operations.Transforms.OrientationOperation(o).Apply(source, Operations.OperationContext.Default);
+            using var rotated = new BmageOrientationOperation(o).Apply(source, BmageOperationContext.Default);
             for (var y = 0; y < size.Height; y++)
             {
                 for (var x = 0; x < size.Width; x++)
@@ -64,22 +63,22 @@ public sealed class OrientationTests
     }
 
     [TestMethod]
-    [DataRow(Orientation.Rotate90, true)]
-    [DataRow(Orientation.Rotate270, true)]
-    [DataRow(Orientation.Transpose, true)]
-    [DataRow(Orientation.Transverse, true)]
-    [DataRow(Orientation.Normal, false)]
-    [DataRow(Orientation.Rotate180, false)]
-    [DataRow(Orientation.FlipHorizontal, false)]
-    public void ReportsDimensionSwaps(Orientation o, bool swaps) => Assert.AreEqual(swaps, o.SwapsDimensions());
+    [DataRow(BmageOrientation.Rotate90, true)]
+    [DataRow(BmageOrientation.Rotate270, true)]
+    [DataRow(BmageOrientation.Transpose, true)]
+    [DataRow(BmageOrientation.Transverse, true)]
+    [DataRow(BmageOrientation.Normal, false)]
+    [DataRow(BmageOrientation.Rotate180, false)]
+    [DataRow(BmageOrientation.FlipHorizontal, false)]
+    public void ReportsDimensionSwaps(BmageOrientation o, bool swaps) => Assert.AreEqual(swaps, o.SwapsDimensions());
 
     [TestMethod]
     public void FromRotationRoundTrips()
     {
-        Assert.AreEqual(Orientation.Rotate90, OrientationMath.FromRotation(90));
-        Assert.AreEqual(Orientation.Rotate180, OrientationMath.FromRotation(180));
-        Assert.AreEqual(Orientation.Rotate270, OrientationMath.FromRotation(-90));
-        Assert.AreEqual(Orientation.Normal, OrientationMath.FromRotation(360));
+        Assert.AreEqual(BmageOrientation.Rotate90, BmageOrientationMath.FromRotation(90));
+        Assert.AreEqual(BmageOrientation.Rotate180, BmageOrientationMath.FromRotation(180));
+        Assert.AreEqual(BmageOrientation.Rotate270, BmageOrientationMath.FromRotation(-90));
+        Assert.AreEqual(BmageOrientation.Normal, BmageOrientationMath.FromRotation(360));
     }
 }
 
@@ -91,14 +90,14 @@ public sealed class ResizePlanTests
     [TestMethod]
     public void FitKeepsAspectRatioInsideBounds()
     {
-        var plan = ResizePlan.Compute(Landscape, 400, 400, ResizeMode.Fit);
+        var plan = BmageResizePlan.Compute(Landscape, 400, 400, BmageResizeMode.Fit);
         Assert.AreEqual(new Size(400, 200), plan.CanvasSize);
     }
 
     [TestMethod]
     public void ContainPadsToExactTarget()
     {
-        var plan = ResizePlan.Compute(Landscape, 400, 400, ResizeMode.Contain);
+        var plan = BmageResizePlan.Compute(Landscape, 400, 400, BmageResizeMode.Contain);
         Assert.AreEqual(new Size(400, 400), plan.CanvasSize);
         Assert.AreEqual(new Rectangle(0, 100, 400, 200), plan.DestinationRect);
     }
@@ -106,7 +105,7 @@ public sealed class ResizePlanTests
     [TestMethod]
     public void CoverCropsSourceToExactTarget()
     {
-        var plan = ResizePlan.Compute(Landscape, 400, 400, ResizeMode.Cover);
+        var plan = BmageResizePlan.Compute(Landscape, 400, 400, BmageResizeMode.Cover);
         Assert.AreEqual(new Size(400, 400), plan.CanvasSize);
         Assert.AreEqual(new Rectangle(0, 0, 400, 400), plan.DestinationRect);
         Assert.AreEqual(500, plan.SourceRect.Width);
@@ -117,48 +116,48 @@ public sealed class ResizePlanTests
     [TestMethod]
     public void MaxNeverEnlarges()
     {
-        var plan = ResizePlan.Compute(new Size(100, 50), 400, 400, ResizeMode.Max);
+        var plan = BmageResizePlan.Compute(new Size(100, 50), 400, 400, BmageResizeMode.Max);
         Assert.AreEqual(new Size(100, 50), plan.CanvasSize);
     }
 
     [TestMethod]
     public void MinNeverShrinks()
     {
-        var plan = ResizePlan.Compute(new Size(100, 50), 20, 20, ResizeMode.Min);
+        var plan = BmageResizePlan.Compute(new Size(100, 50), 20, 20, BmageResizeMode.Min);
         Assert.AreEqual(new Size(100, 50), plan.CanvasSize);
     }
 
     [TestMethod]
     public void SingleDimensionDerivesTheOtherProportionally()
     {
-        var plan = ResizePlan.Compute(Landscape, 250, null);
+        var plan = BmageResizePlan.Compute(Landscape, 250, null);
         Assert.AreEqual(new Size(250, 125), plan.CanvasSize);
-        plan = ResizePlan.Compute(Landscape, null, 125);
+        plan = BmageResizePlan.Compute(Landscape, null, 125);
         Assert.AreEqual(new Size(250, 125), plan.CanvasSize);
     }
 
     [TestMethod]
     public void StretchIgnoresAspectRatio()
     {
-        var plan = ResizePlan.Compute(Landscape, 300, 300, ResizeMode.Stretch);
+        var plan = BmageResizePlan.Compute(Landscape, 300, 300, BmageResizeMode.Stretch);
         Assert.AreEqual(new Size(300, 300), plan.CanvasSize);
     }
 
     [TestMethod]
     public void CoverRespectsAnchor()
     {
-        var top = ResizePlan.Compute(Landscape, 400, 400, ResizeMode.Cover, Anchor.Left);
+        var top = BmageResizePlan.Compute(Landscape, 400, 400, BmageResizeMode.Cover, BmageAnchor.Left);
         Assert.AreEqual(0, top.SourceRect.X);
-        var right = ResizePlan.Compute(Landscape, 400, 400, ResizeMode.Cover, Anchor.Right);
+        var right = BmageResizePlan.Compute(Landscape, 400, 400, BmageResizeMode.Cover, BmageAnchor.Right);
         Assert.AreEqual(500, right.SourceRect.X);
     }
 
     [TestMethod]
     public void RejectsInvalidArguments()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => ResizePlan.Compute(Landscape, null, null));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => ResizePlan.Compute(Landscape, 0, 10));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => ResizePlan.Compute(new Size(0, 10), 10, 10));
+        Assert.ThrowsExactly<ArgumentException>(() => BmageResizePlan.Compute(Landscape, null, null));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BmageResizePlan.Compute(Landscape, 0, 10));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BmageResizePlan.Compute(new Size(0, 10), 10, 10));
     }
 }
 
@@ -168,7 +167,7 @@ public sealed class AspectRatioTests
     [TestMethod]
     public void FitsLargestRectangleInsideBounds()
     {
-        var r = AspectRatio.Ratio16x9.FitInside(new Rectangle(0, 0, 100, 100));
+        var r = BmageAspectRatio.Ratio16x9.FitInside(new Rectangle(0, 0, 100, 100));
         Assert.AreEqual(100, r.Width);
         Assert.AreEqual(56, r.Height);
         Assert.AreEqual(22, r.Y); // centred
@@ -177,7 +176,7 @@ public sealed class AspectRatioTests
     [TestMethod]
     public void SquareInsideWideBoundsIsLimitedByHeight()
     {
-        var r = AspectRatio.Square.FitInside(new Rectangle(0, 0, 200, 50));
+        var r = BmageAspectRatio.Square.FitInside(new Rectangle(0, 0, 200, 50));
         Assert.AreEqual(new Size(50, 50), r.Size);
         Assert.AreEqual(75, r.X);
     }
@@ -185,7 +184,7 @@ public sealed class AspectRatioTests
     [TestMethod]
     public void AnchorPositionsTheResult()
     {
-        var r = AspectRatio.Square.FitInside(new Rectangle(0, 0, 200, 50), Anchor.TopLeft);
+        var r = BmageAspectRatio.Square.FitInside(new Rectangle(0, 0, 200, 50), BmageAnchor.TopLeft);
         Assert.AreEqual(new Point(0, 0), r.Location);
     }
 }
@@ -194,14 +193,14 @@ public sealed class AspectRatioTests
 public sealed class AnchorTests
 {
     [TestMethod]
-    [DataRow(Anchor.TopLeft, 0, 0)]
-    [DataRow(Anchor.TopRight, 8, 0)]
-    [DataRow(Anchor.BottomLeft, 0, 6)]
-    [DataRow(Anchor.BottomRight, 8, 6)]
-    [DataRow(Anchor.Center, 4, 3)]
-    [DataRow(Anchor.Top, 4, 0)]
-    [DataRow(Anchor.Left, 0, 3)]
-    public void PlacesContentInsideArea(Anchor anchor, int expectedX, int expectedY)
+    [DataRow(BmageAnchor.TopLeft, 0, 0)]
+    [DataRow(BmageAnchor.TopRight, 8, 0)]
+    [DataRow(BmageAnchor.BottomLeft, 0, 6)]
+    [DataRow(BmageAnchor.BottomRight, 8, 6)]
+    [DataRow(BmageAnchor.Center, 4, 3)]
+    [DataRow(BmageAnchor.Top, 4, 0)]
+    [DataRow(BmageAnchor.Left, 0, 3)]
+    public void PlacesContentInsideArea(BmageAnchor anchor, int expectedX, int expectedY)
     {
         var r = anchor.Place(new Size(2, 4), new Size(10, 10));
         Assert.AreEqual(new Point(expectedX, expectedY), r.Location);

@@ -2,43 +2,6 @@
 
 namespace Bit.Bink;
 
-/// <summary>Path drawing verbs. The number of coordinates consumed by each verb is given by <see cref="BinkPathGeometry.CoordinateCount"/>.</summary>
-public enum BinkPathVerb : byte
-{
-    /// <summary>Starts a new sub-path (2 coordinates).</summary>
-    MoveTo = 0,
-    /// <summary>Straight line (2 coordinates).</summary>
-    LineTo = 1,
-    /// <summary>Quadratic Bézier: control point then end point (4 coordinates).</summary>
-    QuadTo = 2,
-    /// <summary>Cubic Bézier: two control points then end point (6 coordinates).</summary>
-    CubicTo = 3,
-    /// <summary>Closes the current sub-path (0 coordinates).</summary>
-    Close = 4,
-}
-
-/// <summary>Fill rule used when a path self-intersects.</summary>
-public enum BinkFillRule : byte
-{
-    /// <summary>Non-zero winding: self-overlapping regions of a freehand outline stay solid.</summary>
-    NonZero = 0,
-    /// <summary>Even-odd: overlapping regions alternate between filled and empty.</summary>
-    EvenOdd = 1,
-}
-
-/// <summary>
-/// A path an element built, together with the inputs it was built from. Elements are records, so a <c>with</c>
-/// expression copies the cache into an instance whose inputs may differ; checking the key keeps that copy from
-/// drawing the original's path. Key and path live in one immutable object so a reader can never see a new key
-/// paired with an old path.
-/// </summary>
-internal sealed class BinkCachedPath<TKey>(TKey key, BinkPathGeometry path)
-{
-    public BinkPathGeometry Path { get; } = path;
-
-    public bool Matches(in TKey candidate) => EqualityComparer<TKey>.Default.Equals(key, candidate);
-}
-
 /// <summary>
 /// An immutable vector path made of <see cref="BinkPathVerb"/>s and packed float coordinates.
 /// Paths are produced by <see cref="BinkPathBuilder"/> and consumed by every renderer (canvas, SVG, raster).

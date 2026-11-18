@@ -36,11 +36,11 @@ public class SessionExporterTests : BunitContext
         Session.Components.MarkBaseline();
         Session.Diagnostics.Evaluate(force: true);
 
-        var json = BevSessionExporter.ToJson(Session);
+        var json = BevToolsSessionExporter.ToJson(Session);
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
 
-        Assert.AreEqual(BevSessionExporter.Format, root.GetProperty("format").GetString());
+        Assert.AreEqual(BevToolsSessionExporter.Format, root.GetProperty("format").GetString());
         Assert.AreEqual(Session.Id, root.GetProperty("session").GetProperty("id").GetInt64());
         Assert.IsTrue(root.GetProperty("session").GetProperty("capturing").GetBoolean());
         Assert.IsTrue(root.GetProperty("capabilities").GetArrayLength() > 10);
@@ -84,8 +84,8 @@ public class SessionExporterTests : BunitContext
         Session.State.Attach(state, "test");
         state.Increment();
 
-        var json = BevSessionExporter.ToJson(Session);
-        var report = BevSessionExporter.ToMarkdownReport(Session);
+        var json = BevToolsSessionExporter.ToJson(Session);
+        var report = BevToolsSessionExporter.ToMarkdownReport(Session);
 
         foreach (var text in new[] { json, report })
         {
@@ -95,14 +95,14 @@ public class SessionExporterTests : BunitContext
             Assert.DoesNotContain("p@ss-plain", text, StringComparison.Ordinal);
         }
 
-        Assert.Contains(BevRedactor.RedactedValue, json, StringComparison.Ordinal);
+        Assert.Contains(BevToolsRedactor.RedactedValue, json, StringComparison.Ordinal);
     }
 
     [TestMethod]
     public void Options_trim_the_largest_sections()
     {
         Render<ParentComponent>();
-        var json = BevSessionExporter.ToJson(Session, new BevSessionExportOptions { IncludeTimeline = false, Indented = false });
+        var json = BevToolsSessionExporter.ToJson(Session, new BevToolsSessionExportOptions { IncludeTimeline = false, Indented = false });
         using var document = JsonDocument.Parse(json);
 
         Assert.IsFalse(document.RootElement.TryGetProperty("timeline", out _));
@@ -117,7 +117,7 @@ public class SessionExporterTests : BunitContext
         Session.Errors.Record(new InvalidOperationException("boom in report"), "render", component: Session.Components.All.First(c => c.Type == typeof(ParentComponent)));
         Session.PauseCapture();
 
-        var report = BevSessionExporter.ToMarkdownReport(Session, timelineTail: 5);
+        var report = BevToolsSessionExporter.ToMarkdownReport(Session, timelineTail: 5);
 
         Assert.StartsWith("# BevTools report", report, StringComparison.Ordinal);
         Assert.Contains("capture paused", report, StringComparison.Ordinal);
@@ -147,14 +147,14 @@ public class SessionExporterTests : BunitContext
             },
         });
 
-        var json = BevSessionExporter.ToJson(Session);
+        var json = BevToolsSessionExporter.ToJson(Session);
 
         Assert.DoesNotContain("hunter2", json, StringComparison.Ordinal);
         Assert.DoesNotContain("opaque-123", json, StringComparison.Ordinal);
         using var document = JsonDocument.Parse(json);
         var data = document.RootElement.GetProperty("timeline").EnumerateArray().Single(e => e.GetProperty("title").GetString() == "login").GetProperty("data");
         Assert.AreEqual("LoginAttempt", data.GetProperty("attempt").GetString());
-        Assert.AreEqual(BevRedactor.RedactedValue, data.GetProperty("sessionToken").GetString());
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, data.GetProperty("sessionToken").GetString());
         Assert.AreEqual("ada", data.GetProperty("user").GetString());
     }
 

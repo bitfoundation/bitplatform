@@ -57,7 +57,7 @@ internal abstract class BbScannerBridge : IAsyncDisposable
     /// <paramref name="inWebView"/>; or, there, the platform's own camera when <paramref name="cameraSource"/> supplies
     /// one.
     /// </summary>
-    public static BbScannerBridge Create(IJSRuntime jsRuntime, IBbCameraSource? cameraSource, bool inWebView)
+    public static BbScannerBridge Create(IJSRuntime jsRuntime, IBbScannerCameraSource? cameraSource, bool inWebView)
     {
         if (OperatingSystem.IsBrowser())
         {
@@ -92,10 +92,10 @@ internal abstract class BbScannerBridge : IAsyncDisposable
     /// <summary>The camera permission's state as the Permissions API reports it, or an empty string.</summary>
     public abstract ValueTask<string> QueryCameraPermissionAsync();
 
-    /// <summary>The video inputs, as the JSON of a <see cref="BbCameraDevice"/> array.</summary>
+    /// <summary>The video inputs, as the JSON of a <see cref="BbScannerCameraDevice"/> array.</summary>
     public abstract ValueTask<string> ListCamerasAsync();
 
-    /// <summary>Opens a camera into the video element; returns the JSON of a <see cref="BbCameraInfo"/>.</summary>
+    /// <summary>Opens a camera into the video element; returns the JSON of a <see cref="BbScannerCameraInfo"/>.</summary>
     public abstract ValueTask<string> StartAsync(string sessionId, string videoElementId, string? deviceId, int requestedWidth, int requestedHeight, string? facingMode);
 
     /// <summary>Sets the size frames are read at.</summary>
@@ -116,7 +116,7 @@ internal abstract class BbScannerBridge : IAsyncDisposable
     /// </summary>
     public abstract ValueTask<int> GrabFrameAsync(string sessionId, byte[] buffer, (int X, int Y, int Width, int Height) region);
 
-    /// <summary>The open camera, as the JSON of a <see cref="BbCameraInfo"/>, or an empty string.</summary>
+    /// <summary>The open camera, as the JSON of a <see cref="BbScannerCameraInfo"/>, or an empty string.</summary>
     public abstract ValueTask<string> DescribeAsync(string sessionId);
 
     /// <summary>The rendered size of the video element, packed as <c>(width &lt;&lt; 16) | height</c>.</summary>
@@ -134,7 +134,7 @@ internal abstract class BbScannerBridge : IAsyncDisposable
     /// <summary>Closes the camera and forgets the session.</summary>
     public abstract ValueTask DisposeSessionAsync(string sessionId);
 
-    /// <summary>Vibrates, beeps or both; the kinds are the values of <see cref="BbScanFeedback"/>.</summary>
+    /// <summary>Vibrates, beeps or both; the kinds are the values of <see cref="BbScannerScanFeedback"/>.</summary>
     public abstract ValueTask FeedbackAsync(int kinds);
 
     /// <summary>Makes the root element a drop target for images, and its pick buttons open the file input.</summary>
@@ -156,7 +156,7 @@ internal abstract class BbScannerBridge : IAsyncDisposable
     /// Reads an image prepared under <paramref name="requestId"/> into managed memory and releases it, or returns
     /// <see langword="null"/> when it is gone or short.
     /// </summary>
-    public abstract ValueTask<(byte[] Pixels, BbPixelFormat Format)?> ReadPreparedAsync(string sessionId, int requestId, int width, int height);
+    public abstract ValueTask<(byte[] Pixels, BbScannerPixelFormat Format)?> ReadPreparedAsync(string sessionId, int requestId, int width, int height);
 
     /// <summary>Forgets an image prepared under <paramref name="requestId"/> without reading it.</summary>
     public abstract ValueTask ReleasePreparedAsync(string sessionId, int requestId);

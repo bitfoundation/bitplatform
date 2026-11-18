@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Bit.BlazeDb.Generators;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// What the generator produces for one table type - the source text and the diagnostics - in a form the incremental

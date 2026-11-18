@@ -54,7 +54,7 @@ internal sealed class HeadlessBmotionInterop : IBmotionInterop
 
     /// <summary>
     /// Whether the browser is pretended to support <c>oklab()</c> colours. A colour transition in
-    /// <see cref="BmColorSpace.Oklab"/> plays as a timeline only where it does - the browser then
+    /// <see cref="BmotionColorSpace.Oklab"/> plays as a timeline only where it does - the browser then
     /// mixes it in OKLab itself - and is recorded elsewhere. Every current browser does, so this is
     /// on unless a simulation asks otherwise.
     /// </summary>
@@ -134,7 +134,7 @@ internal sealed class HeadlessBmotionInterop : IBmotionInterop
     public ValueTask ObserveViewportAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, bool once) where T : class
         => ValueTask.CompletedTask;
 
-    public ValueTask ObserveViewportWithOptionsAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, BmViewport options) where T : class
+    public ValueTask ObserveViewportWithOptionsAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, BmotionViewport options) where T : class
         => ValueTask.CompletedTask;
 
     public ValueTask UnobserveViewportAsync(string elementId) => ValueTask.CompletedTask;

@@ -6,17 +6,17 @@ public partial class HomePage
 
     // The transition on the container staggers the tiles under it. Going, the container fades only once the last tile
     // has left: fading with them, it would hide the cascade while most of it is still to come.
-    private static readonly BmTransition ShowTiles = Bm.Tween(0.3, staggerChildren: 0.07);
-    private static readonly BmTransition HideTiles = Bm.Tween(0.3, staggerChildren: 0.07, when: BmWhen.AfterChildren);
+    private static readonly BmotionTransition ShowTiles = Bm.Tween(0.3, staggerChildren: 0.07);
+    private static readonly BmotionTransition HideTiles = Bm.Tween(0.3, staggerChildren: 0.07, when: BmotionWhen.AfterChildren);
 
     // The container's own fade.
-    private readonly BmVariants _list = new()
+    private readonly BmotionVariants _list = new()
     {
         ["hidden"] = Bm.To(opacity: 0),
         ["visible"] = Bm.To(opacity: 1),
     };
 
-    private readonly BmVariants _tile = new()
+    private readonly BmotionVariants _tile = new()
     {
         ["hidden"] = Bm.To(opacity: 0, y: 16),
         ["visible"] = Bm.To(opacity: 1, y: 0, transition: Bm.Spring(bounce: 0.3, duration: 0.5)),

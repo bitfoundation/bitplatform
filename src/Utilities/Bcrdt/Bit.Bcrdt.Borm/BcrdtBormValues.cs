@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Globalization;
 
-namespace Bit.Bcrdt.Borm;
+namespace Bit.Bcrdt;
 
 /// <summary>Moves a form's values onto the collaborative value model and back.</summary>
 /// <remarks>

@@ -1,7 +1,7 @@
 ﻿@page "/formats"
 @implements IDisposable
-@inject ImageExporter Exporter
-@inject IImageCapabilityProvider Capabilities
+@inject BmageImageExporter Exporter
+@inject IBmageImageCapabilityProvider Capabilities
 
 @* What decodes and encodes where, and how to choose. The live part encodes one image in every format
    this browser offers and reports the sizes side by side - and, for a format the probe says it
@@ -145,7 +145,7 @@
     <p>
         <code>MaxFileSize</code> bisects on quality first, down to <code>MinQuality</code>, then shrinks
         the dimensions if the strategy allows it. The quality actually used is reported on the result,
-        so you can show it. When the target is impossible you get an <code>ImageEncodeException</code>
+        so you can show it. When the target is impossible you get an <code>BmageImageEncodeException</code>
         explaining what the smallest attempt produced, rather than a silently oversized file.
     </p>
     <div class="bb-scroll" tabindex="0" role="region" aria-label="Size budget strategies">
@@ -170,14 +170,14 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Getting the result out</h3>
     <p>
-        An <code>EncodedImage</code> is the bytes, with the format, dimensions and quality used. From there it
+        An <code>BmageEncodedImage</code> is the bytes, with the format, dimensions and quality used. From there it
         goes wherever your code sends it - nothing is uploaded by the library.
     </p>
     <CodeSnippet Code="@OutputSnippet" Language="C#" Expanded="true" />
     <p>
         <code>SaveAsAsync</code> uses the browser's save dialog where the File System Access API exists and
         falls back to a plain download elsewhere, returning false when the user cancels. The clipboard takes
-        PNG in practice, and <code>ImageCapabilities.SupportsClipboardWrite</code> says whether it can be
+        PNG in practice, and <code>BmageImageCapabilities.SupportsClipboardWrite</code> says whether it can be
         written at all.
     </p>
 </div>
@@ -186,18 +186,18 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Transparency without an alpha channel</h3>
     <p>
         JPEG has no alpha channel. Exporting a transparent image as JPEG composites it over
-        <code>ImageExportOptions.Background</code>, which defaults to white - without it, browsers
+        <code>BmageImageExportOptions.Background</code>, which defaults to white - without it, browsers
         composite over black, which is rarely what anyone wants. Set it explicitly when white is wrong
         for your page.
     </p>
-    <CodeSnippet Code="new ImageExportOptions { Format = ImageFormat.Jpeg, Background = new Rgba32(18, 18, 20) }" Language="C#" Expanded="true" />
+    <CodeSnippet Code="new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Background = new BmageRgba32(18, 18, 20) }" Language="C#" Expanded="true" />
 </div>
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Format detection</h3>
     <p>
         Content is trusted over file names and content types, because both can be wrong or hostile.
-        <code>ImageProcessor.Identify</code> reads dimensions from the header without decoding any
+        <code>BmageImageProcessor.Identify</code> reads dimensions from the header without decoding any
         pixels, which is how an oversized upload is rejected before anything is allocated.
         <code>DisplaySize</code> accounts for EXIF orientation, so a portrait photo from a phone
         reports portrait dimensions even though its stored pixels are landscape.
@@ -210,7 +210,7 @@
     <p>
         GIF decodes its first frame, with palettes, interlacing and transparency; animation is out of
         scope, as it is for an animated WebP. No browser canvas writes GIF, so the managed
-        <code>GifEncoder</code> does, everywhere: one frame of at most 256 colours, chosen by median cut
+        <code>BmageGifEncoder</code> does, everywhere: one frame of at most 256 colours, chosen by median cut
         and dithered, with one fully transparent index. For photos, WebP or PNG are better choices.
     </p>
     <p>
@@ -221,12 +221,12 @@
 </div>
 
 @code {
-    private sealed record Row(ImageFormat Format, string? MimeType, long? Bytes, TimeSpan Elapsed, string? Error);
+    private sealed record Row(BmageImageFormat Format, string? MimeType, long? Bytes, TimeSpan Elapsed, string? Error);
 
-    private static readonly ImageFormat[] Candidates = [ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Bmp];
+    private static readonly BmageImageFormat[] Candidates = [BmageImageFormat.Png, BmageImageFormat.Jpeg, BmageImageFormat.WebP, BmageImageFormat.Avif, BmageImageFormat.Bmp];
 
     private readonly List<Row> _rows = [];
-    private ImageBuffer? _sample;
+    private BmageImageBuffer? _sample;
     private bool _busy;
 
     private bool IsHydrating => RendererInfo.IsInteractive is false;
@@ -234,44 +234,44 @@
     private const string ProbeSnippet = """
         var capabilities = await capabilityProvider.GetAsync();
 
-        if (capabilities.CanEncode(ImageFormat.Avif)) { /* ... */ }
+        if (capabilities.CanEncode(BmageImageFormat.Avif)) { /* ... */ }
         if (capabilities.SupportsWebP) { /* ... */ }
 
         try
         {
-            var avif = await exporter.EncodeAsync(image, ImageExportOptions.Avif);
+            var avif = await exporter.EncodeAsync(image, BmageImageExportOptions.Avif);
         }
-        catch (ImageCapabilityException ex)
+        catch (BmageImageCapabilityException ex)
         {
             // "This browser cannot encode Avif; it produced image/png instead. Check
-            //  ImageCapabilities.CanEncode before exporting and fall back to a supported format."
+            //  BmageImageCapabilities.CanEncode before exporting and fall back to a supported format."
         }
         """;
 
     private const string FallbackSnippet = """
         var encoded = await exporter.EncodeWithFallbackAsync(
             image,
-            [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg],
-            new ImageExportOptions { Quality = 0.82 });
+            [BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg],
+            new BmageImageExportOptions { Quality = 0.82 });
 
         Console.WriteLine(encoded.Format);   // whichever one this browser can actually write
         """;
 
     private const string BudgetSnippet = """
-        var encoded = await exporter.EncodeAsync(image, new ImageExportOptions
+        var encoded = await exporter.EncodeAsync(image, new BmageImageExportOptions
         {
-            Format      = ImageFormat.WebP,
+            Format      = BmageImageFormat.WebP,
             Quality     = 0.9,
             MaxFileSize = 100 * 1024,
             MinQuality  = 0.5,
-            MaxFileSizeStrategy = MaxFileSizeStrategy.QualityThenDimensions,
+            MaxFileSizeStrategy = BmageMaxFileSizeStrategy.QualityThenDimensions,
         });
 
         Console.WriteLine($"{encoded.Length} bytes at quality {encoded.Quality}");
         """;
 
     private const string OutputSnippet = """
-        var encoded = await exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png, PngCompressionLevel = 1 });
+        var encoded = await exporter.EncodeAsync(image, new BmageImageExportOptions { Format = BmageImageFormat.Png, PngCompressionLevel = 1 });
 
         byte[] bytes = encoded.Data;                    // upload it, store it
         using var stream = encoded.AsStream();          // hand it to an API that takes a stream
@@ -286,9 +286,9 @@
         """;
 
     private const string DetectSnippet = """
-        var format = ImageFormats.Detect(bytes);              // magic bytes
-        var byName = ImageFormats.FromFileName("photo.JPG");  // convenience only
-        var byMime = ImageFormats.FromMimeType("image/webp"); // convenience only
+        var format = BmageImageFormats.Detect(bytes);              // magic bytes
+        var byName = BmageImageFormats.FromFileName("photo.JPG");  // convenience only
+        var byMime = BmageImageFormats.FromMimeType("image/webp"); // convenience only
 
         var info = processor.Identify(bytes);
         if (info is null) return Error("Not a supported image.");
@@ -313,10 +313,10 @@
             {
                 // Deliberately not checked against the capabilities first: a format this browser
                 // cannot write is what shows the exporter refusing a substitute.
-                var encoded = await Exporter.EncodeAsync(_sample, new ImageExportOptions { Format = format, Quality = 0.82 });
+                var encoded = await Exporter.EncodeAsync(_sample, new BmageImageExportOptions { Format = format, Quality = 0.82 });
                 _rows.Add(new Row(format, encoded.MimeType, encoded.Length, started.Elapsed, null));
             }
-            catch (Exception ex) when (ex is ImageCapabilityException or ImageEncodeException)
+            catch (Exception ex) when (ex is BmageImageCapabilityException or BmageImageEncodeException)
             {
                 _rows.Add(new Row(format, null, null, started.Elapsed, ex.Message));
             }

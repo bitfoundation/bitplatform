@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Data;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// A constraint was violated (<c>SQLITE_CONSTRAINT</c>): unique, primary key, foreign key, check,

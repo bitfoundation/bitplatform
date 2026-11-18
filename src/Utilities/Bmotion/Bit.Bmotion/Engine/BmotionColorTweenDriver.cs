@@ -10,9 +10,9 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
     private readonly Func<double, double> _easeFn;
     private readonly int _repeat;
     private readonly bool _isInfinite;
-    private readonly BmRepeatType _repeatType;
+    private readonly BmotionRepeatType _repeatType;
     private readonly double _repeatDelayMs;
-    private readonly BmColorSpace _colorSpace;
+    private readonly BmotionColorSpace _colorSpace;
     private readonly Action<string> _apply;
 
     private double _startTime = double.NaN; // NaN = not started: a start can be negative (a negative delay near clock 0)
@@ -41,7 +41,7 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
         _curToCh = BmotionColorInterpolator.Parse(to);
         _durationMs = config.Duration * 1000;
         _delayMs = config.Delay * 1000;
-        _easeFn = BmEaseFunctions.Get(config);
+        _easeFn = BmotionEaseFunctions.Get(config);
         _repeat = config.Repeat;
         _isInfinite = config.IsInfiniteRepeat;
         _repeatType = config.RepeatType;
@@ -78,12 +78,12 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
                 // Reverse plays the colour backwards repeatedly (1→0, 1→0, …): swap once on the
                 // first repeat, then keep that order so each later cycle replays in reverse rather
                 // than toggling back to forward (matches the keyframe drivers).
-                if (_repeatType == BmRepeatType.Mirror)
+                if (_repeatType == BmotionRepeatType.Mirror)
                 {
                     (_curFrom, _curTo) = (_curTo, _curFrom);
                     (_curFromCh, _curToCh) = (_curToCh, _curFromCh);
                 }
-                else if (_repeatType == BmRepeatType.Reverse && !_reversed)
+                else if (_repeatType == BmotionRepeatType.Reverse && !_reversed)
                 {
                     (_curFrom, _curTo) = (_curTo, _curFrom);
                     (_curFromCh, _curToCh) = (_curToCh, _curFromCh);
@@ -102,14 +102,14 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
     {
         // Mirror ping-pongs each pass, so the natural terminal colour depends on how many passes
         // run: total passes = _repeat + 1. An even count ends back on _from, an odd count on _to.
-        if (!_isInfinite && _repeatType == BmRepeatType.Mirror)
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Mirror)
         {
             _apply((_repeat + 1) % 2 == 0 ? _from : _to);
             return;
         }
         // Reverse plays forward once (ending on _to) then replays reversed for every later pass
         // (ending on _from), so it ends on _to only when there are no repeats.
-        if (!_isInfinite && _repeatType == BmRepeatType.Reverse)
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Reverse)
         {
             _apply(_repeat == 0 ? _to : _from);
             return;

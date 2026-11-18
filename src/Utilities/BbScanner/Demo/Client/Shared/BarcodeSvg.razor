@@ -42,11 +42,11 @@
 
     /// <summary>The symbology, which says how a module grid is drawn: MaxiCode's are hexagons round a bullseye.</summary>
     [Parameter]
-    public BbBarcodeFormat Format { get; set; }
+    public BbScannerBarcodeFormat Format { get; set; }
 
     /// <summary>A two dimensional module grid to render.</summary>
     [Parameter]
-    public BbBitMatrix? Matrix { get; set; }
+    public BbScannerBitMatrix? Matrix { get; set; }
 
     /// <summary>A linear module array to render; true is a bar.</summary>
     [Parameter]
@@ -78,7 +78,7 @@
 
     protected override void OnParametersSet()
     {
-        _hexagonal = Format == BbBarcodeFormat.MaxiCode && Matrix is not null;
+        _hexagonal = Format == BbScannerBarcodeFormat.MaxiCode && Matrix is not null;
         if (_hexagonal)
         {
             BuildMaxiCodePath(Matrix!);
@@ -93,7 +93,7 @@
         }
     }
 
-    private void BuildMatrixPath(BbBitMatrix matrix)
+    private void BuildMatrixPath(BbScannerBitMatrix matrix)
     {
         var width = matrix.Width + (2 * QuietZone);
         var height = matrix.Height + (2 * QuietZone);
@@ -133,7 +133,7 @@
     /// 0.866 of a module below the last, and the bullseye's three rings round the place of the module at row 16,
     /// column 14 - each ring a pair of circles, filled even-odd.
     /// </summary>
-    private void BuildMaxiCodePath(BbBitMatrix matrix)
+    private void BuildMaxiCodePath(BbScannerBitMatrix matrix)
     {
         const double Pitch = 0.8660254;
         const double Radius = 0.5773503 * 0.9;

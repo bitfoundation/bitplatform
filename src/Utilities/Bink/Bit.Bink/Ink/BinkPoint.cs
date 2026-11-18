@@ -41,22 +41,3 @@ public readonly record struct BinkPoint
         Time = time;
     }
 }
-
-/// <summary>Optional per-point channels a stroke may carry in addition to position, pressure and time.</summary>
-[Flags]
-public enum BinkPointChannels : byte
-{
-    /// <summary>Only X, Y, pressure and time.</summary>
-    None = 0,
-    /// <summary>Tilt X and tilt Y.</summary>
-    Tilt = 1,
-    /// <summary>Barrel rotation.</summary>
-    Twist = 2,
-}
-
-/// <summary>Metadata describing the device that produced a stroke.</summary>
-public readonly record struct BinkStrokeInputInfo(BinkPointerKind Kind, bool HasRealPressure)
-{
-    /// <summary>Unknown device without pressure.</summary>
-    public static readonly BinkStrokeInputInfo Unknown = new(BinkPointerKind.Unknown, false);
-}

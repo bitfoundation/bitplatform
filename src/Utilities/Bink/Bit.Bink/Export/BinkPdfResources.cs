@@ -3,14 +3,6 @@ using System.Text;
 
 namespace Bit.Bink;
 
-/// <summary>The standard PDF faces text is set in. Every viewer has them, so nothing is embedded.</summary>
-internal enum BinkPdfFace : byte
-{
-    Helvetica,
-    Times,
-    Courier,
-}
-
 /// <summary>
 /// The resources every page and form of a PDF export shares: graphics states, fonts, images and forms, written once
 /// as one dictionary that every content stream refers to.

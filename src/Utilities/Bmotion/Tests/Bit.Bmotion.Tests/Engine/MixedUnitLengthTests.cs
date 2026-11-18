@@ -50,7 +50,7 @@ public class MixedUnitLengthTests
         await using var engine = new BmotionAnimationEngine(interop);
         engine.RegisterElement("el", Values(("width", "100px")));
 
-        await engine.AnimateToAsync("el", Values(("width", "50%")), Bm.Tween(0.2, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("width", "50%")), Bm.Tween(0.2, BmotionEase.Linear).ToConfig());
 
         var written = new List<string>();
         for (int i = 0; i <= 16; i++)

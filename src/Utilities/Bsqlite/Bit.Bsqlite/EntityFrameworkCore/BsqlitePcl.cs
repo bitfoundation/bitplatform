@@ -1,6 +1,6 @@
 ﻿using SQLitePCL;
 
-namespace Bit.Bsqlite.EntityFrameworkCore;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Satisfies <c>SQLitePCL.raw</c> on WASM so EF Core can read

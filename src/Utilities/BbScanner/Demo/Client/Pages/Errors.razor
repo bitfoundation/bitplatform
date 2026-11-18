@@ -62,7 +62,7 @@
                         <code>GetCameraPermissionAsync</code> asks the browser what a start would do, without
                         opening the camera or asking the user, so a page can explain why it needs the camera
                         before the prompt appears, or say how to allow it once it has been refused. It returns a
-                        <code>BbCameraPermission</code>:
+                        <code>BbScannerCameraPermission</code>:
                     </p>
                     <dl class="bb-params">
                         <dt>Prompt</dt>
@@ -168,7 +168,7 @@
     private BbScanner? _scanner;
     private BbScannerException? _error;
     private BbScannerStatus _status = BbScannerStatus.Idle;
-    private BbCameraPermission? _permission;
+    private BbScannerCameraPermission? _permission;
 
     private async Task CheckPermission()
     {

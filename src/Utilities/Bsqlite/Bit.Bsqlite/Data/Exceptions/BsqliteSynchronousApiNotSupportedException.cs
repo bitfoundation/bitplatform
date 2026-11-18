@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Data;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// Thrown when a synchronous ADO.NET or EF Core API is used against the default (asynchronous)

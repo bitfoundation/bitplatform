@@ -6,7 +6,7 @@
 using Bit.Bcrdt.Demo.Server.Components;
 using Bit.Bcrdt.Demo.Server.Controllers;
 using Bit.Bcrdt.Demo.Server.Services;
-using Bit.Bcrdt.Server;
+using Bit.Bcrdt;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.SignalR;
 using ModelContextProtocol.Protocol;

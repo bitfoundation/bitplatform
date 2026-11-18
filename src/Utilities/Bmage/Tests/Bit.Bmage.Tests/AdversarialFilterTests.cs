@@ -1,8 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
 
 namespace Bit.Bmage.Tests;
 
@@ -13,7 +9,7 @@ namespace Bit.Bmage.Tests;
 [TestClass]
 public sealed class AdversarialFilterTests
 {
-    private static ImageBuffer Noise(int w, int h, int seed = 1) => AdversarialGeometryTests.Noise(w, h, seed);
+    private static BmageImageBuffer Noise(int w, int h, int seed = 1) => AdversarialGeometryTests.Noise(w, h, seed);
 
     public static IEnumerable<object[]> RegionFilters() =>
         new[]
@@ -21,14 +17,14 @@ public sealed class AdversarialFilterTests
             "blur", "sharpen", "pixelate", "noise", "median", "convolution",
         }.Select(kind => new object[] { kind });
 
-    private static RegionOperation CreateRegionFilter(string kind, Rectangle? region) => kind switch
+    private static BmageRegionOperation CreateRegionFilter(string kind, Rectangle? region) => kind switch
     {
-        "blur" => new BlurFilter(3f, region),
-        "sharpen" => new SharpenFilter(0.8f, 2f, 0f, region),
-        "pixelate" => new PixelateFilter(4, region),
-        "noise" => new NoiseFilter(0.3f, false, 7, region),
-        "median" => new MedianFilter(2, region),
-        "convolution" => ConvolutionFilter.EdgeDetect(region),
+        "blur" => new BmageBlurFilter(3f, region),
+        "sharpen" => new BmageSharpenFilter(0.8f, 2f, 0f, region),
+        "pixelate" => new BmagePixelateFilter(4, region),
+        "noise" => new BmageNoiseFilter(0.3f, false, 7, region),
+        "median" => new BmageMedianFilter(2, region),
+        "convolution" => BmageConvolutionFilter.EdgeDetect(region),
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 
@@ -52,8 +48,8 @@ public sealed class AdversarialFilterTests
             var expected = src.ToArray();
             var filter = CreateRegionFilter(kind, region);
 
-            ImageBuffer? result = null;
-            var ex = Capture.Exception(() => result = filter.Apply(src, OperationContext.Default));
+            BmageImageBuffer? result = null;
+            var ex = Capture.Exception(() => result = filter.Apply(src, BmageOperationContext.Default));
             using (result)
             {
                 Assert.IsTrue(ex is null, $"{kind} with region {region} threw {ex?.GetType().Name}: {ex?.Message}");
@@ -74,7 +70,7 @@ public sealed class AdversarialFilterTests
         var before = src.Clone();
         using (before)
         {
-            using var result = CreateRegionFilter(kind, region).Apply(src, OperationContext.Default);
+            using var result = CreateRegionFilter(kind, region).Apply(src, BmageOperationContext.Default);
             for (var y = 0; y < src.Height; y++)
             {
                 for (var x = 0; x < src.Width; x++)
@@ -101,8 +97,8 @@ public sealed class AdversarialFilterTests
         {
             using var src = Noise(64, 48, 7);
             var filter = CreateRegionFilter(kind, region);
-            ImageBuffer? result = null;
-            var ex = Capture.Exception(() => result = filter.Apply(src, OperationContext.Default));
+            BmageImageBuffer? result = null;
+            var ex = Capture.Exception(() => result = filter.Apply(src, BmageOperationContext.Default));
             using (result)
             {
                 Assert.IsTrue(ex is null, $"{kind} with region {region} threw {ex?.GetType().Name}: {ex?.Message}");
@@ -120,8 +116,8 @@ public sealed class AdversarialFilterTests
         {
             using var a = Noise(48, 36, 11);
             using var b = a.Clone();
-            using var expected = CreateRegionFilter(kind, region).Apply(a, OperationContext.Default);
-            var mutated = CreateRegionFilter(kind, region).Apply(b, OperationContext.Default.WithMutation(true));
+            using var expected = CreateRegionFilter(kind, region).Apply(a, BmageOperationContext.Default);
+            var mutated = CreateRegionFilter(kind, region).Apply(b, BmageOperationContext.Default.WithMutation(true));
             Assert.IsTrue(expected.Bytes.SequenceEqual(mutated.Bytes),
                 $"{kind} (region {region?.ToString() ?? "full"}) differs between the in-place and allocating paths");
         }
@@ -134,7 +130,7 @@ public sealed class AdversarialFilterTests
     {
         using var src = Noise(48, 36, 13);
         var before = src.ToArray();
-        using var result = CreateRegionFilter(kind, null).Apply(src, OperationContext.Default);
+        using var result = CreateRegionFilter(kind, null).Apply(src, BmageOperationContext.Default);
         Assert.IsTrue(before.AsSpan().SequenceEqual(src.Bytes), $"{kind} modified its source buffer");
     }
 
@@ -147,8 +143,8 @@ public sealed class AdversarialFilterTests
         {
             using var src = Noise(w, h, w * 7 + h);
             var filter = CreateRegionFilter(kind, null);
-            ImageBuffer? result = null;
-            var ex = Capture.Exception(() => result = filter.Apply(src, OperationContext.Default));
+            BmageImageBuffer? result = null;
+            var ex = Capture.Exception(() => result = filter.Apply(src, BmageOperationContext.Default));
             using (result)
             {
                 Assert.IsTrue(ex is null, $"{kind} on a {w}x{h} image threw {ex?.GetType().Name}: {ex?.Message}");
@@ -161,28 +157,28 @@ public sealed class AdversarialFilterTests
     [TestMethod]
     public void ExtremeFilterParametersAreHandled()
     {
-        var filters = new IImageOperation[]
+        var filters = new IBmageImageOperation[]
         {
-            new BlurFilter(0f),
-            new BlurFilter(0.04f),
-            new BlurFilter(200f),
-            new SharpenFilter(0f, 1f),
-            new SharpenFilter(10f, 0.5f, 1f),
-            new PixelateFilter(1),
-            new PixelateFilter(1000),
-            new NoiseFilter(0f),
-            new NoiseFilter(1f, true, int.MaxValue),
-            new MedianFilter(1),
-            new MedianFilter(5),
-            new VignetteFilter(1f, 0f, 0f),
-            new VignetteFilter(0f, 1f, 1f),
-            new VignetteFilter(1f, 2f, 2f),
+            new BmageBlurFilter(0f),
+            new BmageBlurFilter(0.04f),
+            new BmageBlurFilter(200f),
+            new BmageSharpenFilter(0f, 1f),
+            new BmageSharpenFilter(10f, 0.5f, 1f),
+            new BmagePixelateFilter(1),
+            new BmagePixelateFilter(1000),
+            new BmageNoiseFilter(0f),
+            new BmageNoiseFilter(1f, true, int.MaxValue),
+            new BmageMedianFilter(1),
+            new BmageMedianFilter(5),
+            new BmageVignetteFilter(1f, 0f, 0f),
+            new BmageVignetteFilter(0f, 1f, 1f),
+            new BmageVignetteFilter(1f, 2f, 2f),
         };
 
         using var src = TestImages.Translucent(32, 32);
         foreach (var filter in filters)
         {
-            using var result = filter.Apply(src, OperationContext.Default);
+            using var result = filter.Apply(src, BmageOperationContext.Default);
             Assert.AreEqual(src.Size, result.Size);
         }
     }
@@ -190,42 +186,42 @@ public sealed class AdversarialFilterTests
     [TestMethod]
     public void InvalidFilterParametersAreRejectedAtConstruction()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BlurFilter(-1f));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BlurFilter(float.NaN));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BlurFilter(float.PositiveInfinity));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(-1f));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(float.NaN));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(float.PositiveInfinity));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, 0f));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, float.NaN));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, float.PositiveInfinity));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new MedianFilter(0));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new MedianFilter(6));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PosterizeFilter(1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PosterizeFilter(257));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new GammaAdjustment(0f));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new GammaAdjustment(-1f));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageBlurFilter(-1f));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageBlurFilter(float.NaN));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageBlurFilter(float.PositiveInfinity));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageSharpenFilter(-1f));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageSharpenFilter(float.NaN));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageSharpenFilter(float.PositiveInfinity));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageSharpenFilter(1f, 0f));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageSharpenFilter(1f, float.NaN));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageSharpenFilter(1f, float.PositiveInfinity));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageMedianFilter(0));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageMedianFilter(6));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmagePosterizeFilter(1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmagePosterizeFilter(257));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageGammaAdjustment(0f));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageGammaAdjustment(-1f));
     }
 
     [TestMethod]
     public void AnAbsurdBlurRadiusFinishesAtOnce()
     {
         using var src = Noise(600, 400, 5);
-        foreach (var filter in new IImageOperation[] { new BlurFilter(1e7f), new SharpenFilter(0.5f, 1e7f), new HighPassFilter(1e7f), new BlurFilter(5e8f, new Rectangle(10, 10, 3, 300)) })
+        foreach (var filter in new IBmageImageOperation[] { new BmageBlurFilter(1e7f), new BmageSharpenFilter(0.5f, 1e7f), new BmageHighPassFilter(1e7f), new BmageBlurFilter(5e8f, new Rectangle(10, 10, 3, 300)) })
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            using var result = filter.Apply(src, OperationContext.Default);
+            using var result = filter.Apply(src, BmageOperationContext.Default);
             Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"{filter.Name} took {watch.ElapsedMilliseconds} ms.");
             Assert.AreEqual(src.Size, result.Size);
             // A blur that did nothing would leave the sharpen nothing to add.
-            if (filter is SharpenFilter) Assert.IsGreaterThan(0, TestImages.MaxChannelDifference(src, result), "The sharpen changed no pixel.");
+            if (filter is BmageSharpenFilter) Assert.IsGreaterThan(0, TestImages.MaxChannelDifference(src, result), "The sharpen changed no pixel.");
         }
     }
 
     [TestMethod]
     public void ScalingAnAbsurdBlurRadiusUpStaysFinite()
     {
-        var scaled = (BlurFilter)new BlurFilter(float.MaxValue).ForScale(4);
+        var scaled = (BmageBlurFilter)new BmageBlurFilter(float.MaxValue).ForScale(4);
         Assert.AreEqual(float.MaxValue, scaled.Radius);
     }
 
@@ -234,11 +230,11 @@ public sealed class AdversarialFilterTests
     public void ABlurRadiusTooWideForTheBoxesStillBlurs()
     {
         using var src = Noise(60, 40, 7);
-        using var widest = new BlurFilter(1e8f).Apply(src, OperationContext.Default);
+        using var widest = new BmageBlurFilter(1e8f).Apply(src, BmageOperationContext.Default);
         Assert.IsGreaterThan(10, TestImages.MaxChannelDifference(src, widest));
         foreach (var radius in new[] { 2e9f, 1e20f, float.MaxValue })
         {
-            using var result = new BlurFilter(radius).Apply(src, OperationContext.Default);
+            using var result = new BmageBlurFilter(radius).Apply(src, BmageOperationContext.Default);
             Assert.AreEqual(0, TestImages.MaxChannelDifference(widest, result), $"radius {radius}");
         }
     }
@@ -247,9 +243,9 @@ public sealed class AdversarialFilterTests
     [TestMethod]
     public void BlurPreservesFlatColour()
     {
-        var colour = new Rgba32(90, 140, 200);
-        using var src = ImageBuffer.Create(64, 64, colour);
-        using var result = new BlurFilter(8f).Apply(src, OperationContext.Default);
+        var colour = new BmageRgba32(90, 140, 200);
+        using var src = BmageImageBuffer.Create(64, 64, colour);
+        using var result = new BmageBlurFilter(8f).Apply(src, BmageOperationContext.Default);
         foreach (var p in result.Pixels.ToArray())
         {
             Assert.IsTrue(Math.Abs(p.R - colour.R) <= 1 && Math.Abs(p.G - colour.G) <= 1 && Math.Abs(p.B - colour.B) <= 1 && p.A == 255,
@@ -261,13 +257,13 @@ public sealed class AdversarialFilterTests
     [TestMethod]
     public void BlurDoesNotBleedColourFromTransparentPixels()
     {
-        using var src = ImageBuffer.Create(64, 64, Rgba32.Transparent);
+        using var src = BmageImageBuffer.Create(64, 64, BmageRgba32.Transparent);
         // An opaque white square on a transparent field whose RGB is black.
         for (var y = 20; y < 44; y++)
             for (var x = 20; x < 44; x++)
-                src[x, y] = Rgba32.White;
+                src[x, y] = BmageRgba32.White;
 
-        using var result = new BlurFilter(4f).Apply(src, OperationContext.Default);
+        using var result = new BmageBlurFilter(4f).Apply(src, BmageOperationContext.Default);
 
         // Every partially transparent edge pixel must stay white, not darken towards the transparent black around it.
         for (var y = 0; y < 64; y++)
@@ -286,26 +282,26 @@ public sealed class AdversarialFilterTests
     [TestMethod]
     public void RgbAdjustmentsPreserveAlpha()
     {
-        var ops = new IImageOperation[]
+        var ops = new IBmageImageOperation[]
         {
-            new BrightnessAdjustment(1f), new BrightnessAdjustment(-1f),
-            new ContrastAdjustment(1f), new ContrastAdjustment(-1f),
-            new ExposureAdjustment(5f), new ExposureAdjustment(-5f),
-            new SaturationAdjustment(1f), new SaturationAdjustment(-1f),
-            new HueAdjustment(180f), new HueAdjustment(-90f),
-            new GammaAdjustment(0.05f), new GammaAdjustment(20f),
-            new VibranceAdjustment(1f), new VibranceAdjustment(-1f),
-            new ShadowsHighlightsAdjustment(1f, 1f),
-            new LevelsAdjustment(0.9f, 0.91f, 0.1f),
-            new TemperatureAdjustment(1f), new TintAdjustment(-1f),
-            new GrayscaleFilter(), new SepiaFilter(), new InvertFilter(),
-            new PosterizeFilter(2), new ThresholdFilter(0.5f),
+            new BmageBrightnessAdjustment(1f), new BmageBrightnessAdjustment(-1f),
+            new BmageContrastAdjustment(1f), new BmageContrastAdjustment(-1f),
+            new BmageExposureAdjustment(5f), new BmageExposureAdjustment(-5f),
+            new BmageSaturationAdjustment(1f), new BmageSaturationAdjustment(-1f),
+            new BmageHueAdjustment(180f), new BmageHueAdjustment(-90f),
+            new BmageGammaAdjustment(0.05f), new BmageGammaAdjustment(20f),
+            new BmageVibranceAdjustment(1f), new BmageVibranceAdjustment(-1f),
+            new BmageShadowsHighlightsAdjustment(1f, 1f),
+            new BmageLevelsAdjustment(0.9f, 0.91f, 0.1f),
+            new BmageTemperatureAdjustment(1f), new BmageTintAdjustment(-1f),
+            new BmageGrayscaleFilter(), new BmageSepiaFilter(), new BmageInvertFilter(),
+            new BmagePosterizeFilter(2), new BmageThresholdFilter(0.5f),
         };
 
         using var src = TestImages.Translucent(32, 32);
         foreach (var op in ops)
         {
-            using var dst = op.Apply(src, OperationContext.Default);
+            using var dst = op.Apply(src, BmageOperationContext.Default);
             for (var i = 0; i < src.PixelCount; i++)
                 Assert.IsTrue(src.Pixels[i].A == dst.Pixels[i].A, $"{op.Name} changed alpha at pixel {i}");
         }
@@ -315,8 +311,8 @@ public sealed class AdversarialFilterTests
     [TestMethod]
     public void OpacityScalesAlphaAndLeavesColourAlone()
     {
-        using var src = ImageBuffer.Create(16, 16, new Rgba32(200, 100, 50, 200));
-        using var dst = new OpacityAdjustment(0.5f).Apply(src, OperationContext.Default);
+        using var src = BmageImageBuffer.Create(16, 16, new BmageRgba32(200, 100, 50, 200));
+        using var dst = new BmageOpacityAdjustment(0.5f).Apply(src, BmageOperationContext.Default);
         foreach (var p in dst.Pixels.ToArray())
         {
             Assert.AreEqual(200, p.R);
@@ -330,25 +326,25 @@ public sealed class AdversarialFilterTests
     [TestMethod]
     public void NeutralParametersReportIdentity()
     {
-        Assert.IsTrue(new BrightnessAdjustment(0f).IsIdentity);
-        Assert.IsTrue(new ContrastAdjustment(0f).IsIdentity);
-        Assert.IsTrue(new SaturationAdjustment(0f).IsIdentity);
-        Assert.IsTrue(new HueAdjustment(0f).IsIdentity);
-        Assert.IsTrue(new ExposureAdjustment(0f).IsIdentity);
-        Assert.IsTrue(new VibranceAdjustment(0f).IsIdentity);
-        Assert.IsTrue(new ShadowsHighlightsAdjustment(0f, 0f).IsIdentity);
-        Assert.IsTrue(new GammaAdjustment(1f).IsIdentity);
-        Assert.IsTrue(new BlurFilter(0f).IsIdentity);
-        Assert.IsTrue(new NoiseFilter(0f).IsIdentity);
-        Assert.IsTrue(new PixelateFilter(1).IsIdentity);
-        Assert.IsTrue(new VignetteFilter(0f).IsIdentity);
-        Assert.IsTrue(new GrayscaleFilter(0f).IsIdentity);
-        Assert.IsTrue(new SepiaFilter(0f).IsIdentity);
-        Assert.IsTrue(new InvertFilter(0f).IsIdentity);
+        Assert.IsTrue(new BmageBrightnessAdjustment(0f).IsIdentity);
+        Assert.IsTrue(new BmageContrastAdjustment(0f).IsIdentity);
+        Assert.IsTrue(new BmageSaturationAdjustment(0f).IsIdentity);
+        Assert.IsTrue(new BmageHueAdjustment(0f).IsIdentity);
+        Assert.IsTrue(new BmageExposureAdjustment(0f).IsIdentity);
+        Assert.IsTrue(new BmageVibranceAdjustment(0f).IsIdentity);
+        Assert.IsTrue(new BmageShadowsHighlightsAdjustment(0f, 0f).IsIdentity);
+        Assert.IsTrue(new BmageGammaAdjustment(1f).IsIdentity);
+        Assert.IsTrue(new BmageBlurFilter(0f).IsIdentity);
+        Assert.IsTrue(new BmageNoiseFilter(0f).IsIdentity);
+        Assert.IsTrue(new BmagePixelateFilter(1).IsIdentity);
+        Assert.IsTrue(new BmageVignetteFilter(0f).IsIdentity);
+        Assert.IsTrue(new BmageGrayscaleFilter(0f).IsIdentity);
+        Assert.IsTrue(new BmageSepiaFilter(0f).IsIdentity);
+        Assert.IsTrue(new BmageInvertFilter(0f).IsIdentity);
 
-        Assert.IsFalse(new BrightnessAdjustment(0.1f).IsIdentity);
-        Assert.IsFalse(new GammaAdjustment(1.5f).IsIdentity);
-        Assert.IsFalse(new BlurFilter(2f).IsIdentity);
+        Assert.IsFalse(new BmageBrightnessAdjustment(0.1f).IsIdentity);
+        Assert.IsFalse(new BmageGammaAdjustment(1.5f).IsIdentity);
+        Assert.IsFalse(new BmageBlurFilter(2f).IsIdentity);
     }
 
     /// <summary>Noise must be deterministic for a given seed, or previews and exports would disagree.</summary>
@@ -356,9 +352,9 @@ public sealed class AdversarialFilterTests
     public void NoiseIsDeterministicForASeed()
     {
         using var src = Noise(32, 32, 17);
-        using var a = new NoiseFilter(0.4f, false, 1234).Apply(src, OperationContext.Default);
-        using var b = new NoiseFilter(0.4f, false, 1234).Apply(src, OperationContext.Default);
-        using var c = new NoiseFilter(0.4f, false, 4321).Apply(src, OperationContext.Default);
+        using var a = new BmageNoiseFilter(0.4f, false, 1234).Apply(src, BmageOperationContext.Default);
+        using var b = new BmageNoiseFilter(0.4f, false, 1234).Apply(src, BmageOperationContext.Default);
+        using var c = new BmageNoiseFilter(0.4f, false, 4321).Apply(src, BmageOperationContext.Default);
 
         Assert.IsTrue(a.Bytes.SequenceEqual(b.Bytes), "the same seed produced different noise");
         Assert.IsFalse(a.Bytes.SequenceEqual(c.Bytes), "different seeds produced identical noise");
@@ -376,24 +372,24 @@ public sealed class AdversarialFilterTests
         var degenerate = new Rectangle(64, 0, 0, 48);
         Assert.IsFalse(degenerate.IsEmpty, "the premise of this test is that such a rectangle is not Rectangle.Empty");
 
-        using var image = ImageBuffer.Create(64, 48, Rgba32.White);
+        using var image = BmageImageBuffer.Create(64, 48, BmageRgba32.White);
         var before = image.ToArray();
 
         // Filling and copying must not throw or write anything.
-        image.Fill(degenerate, Rgba32.Black);
+        image.Fill(degenerate, BmageRgba32.Black);
         Assert.IsTrue(before.AsSpan().SequenceEqual(image.Bytes));
         Assert.ThrowsExactly<ArgumentException>(() => image.CopyRegion(degenerate).Dispose());
 
         // Drawing through a canvas clipped to nothing must draw nothing.
-        using (var canvas = ImageCanvas.FromBuffer(image))
+        using (var canvas = BmageImageCanvas.FromBuffer(image))
         {
             canvas.Clip = degenerate;
-            canvas.FillRectangle(new RectangleF(0, 0, 64, 48), Rgba32.Black);
+            canvas.FillRectangle(new RectangleF(0, 0, 64, 48), BmageRgba32.Black);
         }
         Assert.IsTrue(before.AsSpan().SequenceEqual(image.Bytes), "drawing through an empty clip changed pixels");
 
         // Statistics over an empty region must report a clear error, not crash.
-        Assert.ThrowsExactly<ArgumentException>(() => Bit.Bmage.Analysis.ImageStatistics.Measure(image, degenerate));
+        Assert.ThrowsExactly<ArgumentException>(() => Bit.Bmage.BmageImageStatistics.Measure(image, degenerate));
     }
 
     /// <summary>Scaling a region filter for a proxy must scale the region with it.</summary>
@@ -402,7 +398,7 @@ public sealed class AdversarialFilterTests
     public void ScalingAFilterScalesItsRegion(string kind)
     {
         var region = new Rectangle(40, 20, 80, 60);
-        var scaled = (RegionOperation)CreateRegionFilter(kind, region).ForScale(0.5);
+        var scaled = (BmageRegionOperation)CreateRegionFilter(kind, region).ForScale(0.5);
         var r = scaled.Region!.Value;
         Assert.AreEqual(20, r.X);
         Assert.AreEqual(10, r.Y);

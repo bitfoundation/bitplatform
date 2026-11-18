@@ -1,5 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Demo.Server.Dtos;
+﻿using Bit.Bsqlite.Demo.Server.Dtos;
 using Bit.Bsqlite.Demo.Server.Services;
 
 namespace Bit.Bsqlite.Tests.Mcp;

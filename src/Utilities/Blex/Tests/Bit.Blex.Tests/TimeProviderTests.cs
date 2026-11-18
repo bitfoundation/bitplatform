@@ -1,5 +1,4 @@
-﻿using Bit.Blex.Testing;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 
 namespace Bit.Blex.Tests;

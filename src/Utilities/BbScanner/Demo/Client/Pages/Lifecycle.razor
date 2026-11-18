@@ -22,7 +22,7 @@
         <div class="scan-layout">
             <div class="scan-view">
                 <BbScanner @ref="_scanner"
-                           Formats="BbBarcodeFormat.All"
+                           Formats="BbScannerBarcodeFormat.All"
                            AutoStart="false"
                            ShowControls="false"
                            DuplicateSuppressionWindow="@(_oncePerSession ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(_windowSeconds))"
@@ -95,9 +95,9 @@
                     <label class="bb-field">
                         <span>After an accepted scan</span>
                         <select id="lifecycle-after-scan" value="@_afterScan" @onchange="OnAfterScanChanged">
-                            <option value="@BbAfterScan.Continue">Keep scanning (Continue)</option>
-                            <option value="@BbAfterScan.Pause">Pause - Resume scans another</option>
-                            <option value="@BbAfterScan.Stop">Stop the camera - Start scans another</option>
+                            <option value="@BbScannerAfterScan.Continue">Keep scanning (Continue)</option>
+                            <option value="@BbScannerAfterScan.Pause">Pause - Resume scans another</option>
+                            <option value="@BbScannerAfterScan.Stop">Stop the camera - Start scans another</option>
                         </select>
                         <small>
                             <code>AfterScan</code>: <code>Pause</code> keeps the camera open and the view live, so a
@@ -122,11 +122,11 @@
                     </p>
                     <label class="bb-check">
                         <input type="checkbox" id="feedback-vibrate" @bind="_vibrate" />
-                        Vibrate on a scan (<code>BbScanFeedback.Vibrate</code>)
+                        Vibrate on a scan (<code>BbScannerScanFeedback.Vibrate</code>)
                     </label>
                     <label class="bb-check">
                         <input type="checkbox" id="feedback-beep" @bind="_beep" />
-                        Beep on a scan (<code>BbScanFeedback.Beep</code>)
+                        Beep on a scan (<code>BbScannerScanFeedback.Beep</code>)
                     </label>
                     <p class="bb-card-desc">
                         <code>Feedback</code> is best effort: browsers only play the tone after the user has
@@ -174,8 +174,8 @@
                 <tr><td class="bb-table-key">Idle</td><td>Closed</td><td>No</td><td>Creating the scanner; it stays here when <code>AutoStart</code> is off.</td></tr>
                 <tr><td class="bb-table-key">Starting</td><td>Opening</td><td>No</td><td><code>StartAsync</code>, while the browser asks for permission and opens the track; also while a camera ended in the background waits for the page to be shown.</td></tr>
                 <tr><td class="bb-table-key">Scanning</td><td>Open</td><td>Yes</td><td>The camera opened, or <code>Resume</code>.</td></tr>
-                <tr><td class="bb-table-key">Paused</td><td>Open</td><td>No</td><td><code>Pause</code>, or a scan under <code>AfterScan="BbAfterScan.Pause"</code>.</td></tr>
-                <tr><td class="bb-table-key">Stopped</td><td>Released</td><td>No</td><td><code>StopAsync</code>, or a scan under <code>AfterScan="BbAfterScan.Stop"</code>.</td></tr>
+                <tr><td class="bb-table-key">Paused</td><td>Open</td><td>No</td><td><code>Pause</code>, or a scan under <code>AfterScan="BbScannerAfterScan.Pause"</code>.</td></tr>
+                <tr><td class="bb-table-key">Stopped</td><td>Released</td><td>No</td><td><code>StopAsync</code>, or a scan under <code>AfterScan="BbScannerAfterScan.Stop"</code>.</td></tr>
                 <tr><td class="bb-table-key">Faulted</td><td>Released</td><td>No</td><td>A failure, reported through <code>OnError</code>; <code>StartAsync</code> tries again. See <a href="errors">errors</a>.</td></tr>
             </tbody>
         </table>
@@ -186,10 +186,10 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> In code</h3>
     <p class="bb-card-desc">A check-in desk that reads one ticket at a time and ignores every other code:</p>
     <pre class="bb-code">&lt;<span class="k">BbScanner</span> @@ref=<span class="s">"_scanner"</span>
-           AfterScan=<span class="s">"BbAfterScan.Pause"</span>
+           AfterScan=<span class="s">"BbScannerAfterScan.Pause"</span>
            AcceptResult=<span class="s">"@@(r =&gt; r.Text.StartsWith("TICKET-", StringComparison.Ordinal))"</span>
            DuplicateSuppressionWindow=<span class="s">"Timeout.InfiniteTimeSpan"</span>
-           Feedback=<span class="s">"BbScanFeedback.Beep"</span>
+           Feedback=<span class="s">"BbScannerScanFeedback.Beep"</span>
            OnScan=<span class="s">"CheckIn"</span> /&gt;
 
 &lt;<span class="k">button</span> @@onclick=<span class="s">"() =&gt; _scanner.Resume()"</span>&gt;Scan another&lt;/<span class="k">button</span>&gt;
@@ -197,7 +197,7 @@
 <span class="k">@@code</span> {
     <span class="k">private</span> BbScanner _scanner = <span class="k">default</span>!;
 
-    <span class="k">private</span> Task CheckIn(BbBarcodeResult ticket) =&gt; Tickets.CheckInAsync(ticket.Text);
+    <span class="k">private</span> Task CheckIn(BbScannerBarcodeResult ticket) =&gt; Tickets.CheckInAsync(ticket.Text);
 }</pre>
 </div>
 
@@ -211,7 +211,7 @@
 </div>
 
 @code {
-    private readonly List<BbBarcodeResult> _results = [];
+    private readonly List<BbScannerBarcodeResult> _results = [];
     private readonly HashSet<string> _distinct = [];
 
     private BbScanner? _scanner;
@@ -220,7 +220,7 @@
     private string _prefix = string.Empty;
     private int _reported;
     private int _statusChanges;
-    private BbAfterScan _afterScan = BbAfterScan.Continue;
+    private BbScannerAfterScan _afterScan = BbScannerAfterScan.Continue;
     private bool _releaseWhenHidden;
     private bool _vibrate;
     private bool _beep;
@@ -229,14 +229,14 @@
 
     private void OnAfterScanChanged(ChangeEventArgs args)
     {
-        if (Enum.TryParse<BbAfterScan>(args.Value?.ToString(), out var afterScan))
+        if (Enum.TryParse<BbScannerAfterScan>(args.Value?.ToString(), out var afterScan))
         {
             _afterScan = afterScan;
         }
     }
 
-    private BbScanFeedback Feedback =>
-        (_vibrate ? BbScanFeedback.Vibrate : BbScanFeedback.None) | (_beep ? BbScanFeedback.Beep : BbScanFeedback.None);
+    private BbScannerScanFeedback Feedback =>
+        (_vibrate ? BbScannerScanFeedback.Vibrate : BbScannerScanFeedback.None) | (_beep ? BbScannerScanFeedback.Beep : BbScannerScanFeedback.None);
 
     private Task Start() => _scanner?.StartAsync() ?? Task.CompletedTask;
 
@@ -254,7 +254,7 @@
         }
     }
 
-    private void HandleScan(BbBarcodeResult result)
+    private void HandleScan(BbScannerBarcodeResult result)
     {
         _reported++;
         _distinct.Add(result.Text);

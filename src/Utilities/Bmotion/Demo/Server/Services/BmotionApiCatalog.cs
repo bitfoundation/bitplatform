@@ -50,7 +50,7 @@ public static class BmotionApiCatalog
     /// Every public type with its summary cut to the first sentence.
     /// <para>
     /// The full summaries are what <see cref="GetTypeDetails"/> is for. Several of them run to a
-    /// paragraph and a worked code sample - which is the right answer to "how do I use BmVariants"
+    /// paragraph and a worked code sample - which is the right answer to "how do I use BmotionVariants"
     /// and the wrong one to "which type do I ask about next", the only question a list of 66 types
     /// is called with. Handing over all of them cost more than reading the type itself afterwards.
     /// </para>
@@ -401,7 +401,7 @@ public static class BmotionApiCatalog
         _ => 6
     };
 
-    /// <summary>The C# spelling of a type: "double?", "string[]", "BmValue&lt;double&gt;".</summary>
+    /// <summary>The C# spelling of a type: "double?", "string[]", "BmotionValue&lt;double&gt;".</summary>
     public static string FriendlyName(Type type)
     {
         if (type.IsByRef) return FriendlyName(type.GetElementType()!);

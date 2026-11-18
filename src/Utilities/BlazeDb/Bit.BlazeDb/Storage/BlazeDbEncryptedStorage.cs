@@ -1,9 +1,8 @@
 ﻿using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
-using Bit.BlazeDb.Wal;
 
-namespace Bit.BlazeDb.Storage;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Wraps any <see cref="IBlazeDbStorage"/> so everything the engine persists - WAL records, snapshots and

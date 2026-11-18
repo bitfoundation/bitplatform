@@ -54,7 +54,7 @@ public sealed class LeakTests : IDisposable
     }
 
     /// <summary>Renders a component of <typeparamref name="T"/>, removes it, and returns what the forced check reports.</summary>
-    private BevRetainedComponents[] RenderRemoveAndCheck<T>() where T : IComponent
+    private BevToolsRetainedComponents[] RenderRemoveAndCheck<T>() where T : IComponent
     {
         RenderAndRemove(typeof(T));
         RenderParentAgain();
@@ -295,7 +295,7 @@ public sealed class LeakTests : IDisposable
 
         Session.Diagnostics.Evaluate(force: true);
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "memory.retained-components", Session.Diagnostics.Findings).Diagnostic;
-        Assert.AreEqual(BevDiagnosticSeverity.Info, finding.Severity, "memory kept, not memory growing");
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Info, finding.Severity, "memory kept, not memory growing");
         StringAssert.Contains(finding.Evidence, "this does not grow");
     }
 
@@ -327,7 +327,7 @@ public sealed class LeakTests : IDisposable
         Assert.IsFalse(cause.Bounded);
 
         Session.Diagnostics.Evaluate(force: true);
-        Assert.AreEqual(BevDiagnosticSeverity.Warning, Assert.ContainsSingle(f => f.Diagnostic.RuleId == "memory.retained-components", Session.Diagnostics.Findings).Diagnostic.Severity);
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Warning, Assert.ContainsSingle(f => f.Diagnostic.RuleId == "memory.retained-components", Session.Diagnostics.Findings).Diagnostic.Severity);
     }
 
     [TestMethod]
@@ -340,7 +340,7 @@ public sealed class LeakTests : IDisposable
 
         var group = Assert.ContainsSingle(Session.Leaks.CollectAndCheck());
         Assert.AreEqual("RowPage", group.DisplayName);
-        Assert.Contains(new BevRetainedTypeCount("PageRow", RowPage.Rows), group.Descendants);
+        Assert.Contains(new BevToolsRetainedTypeCount("PageRow", RowPage.Rows), group.Descendants);
         var cause = Assert.ContainsSingle(group.Causes);
         Assert.AreEqual("LeakyEvents (injected) → Changed", cause.Holder);
         Assert.AreEqual("handler PageRow.OnChanged, on PageRow, one of the components it rendered", cause.Detail);
@@ -390,7 +390,7 @@ public sealed class LeakTests : IDisposable
         Assert.AreEqual("IconPage", group.DisplayName);
         Assert.AreEqual(1, group.Count);
         Assert.AreEqual(3, group.DescendantCount);
-        Assert.AreEqual(new BevRetainedTypeCount("PageIcon", 3), Assert.ContainsSingle(group.Descendants));
+        Assert.AreEqual(new BevToolsRetainedTypeCount("PageIcon", 3), Assert.ContainsSingle(group.Descendants));
         Assert.AreEqual("LeakyEvents (injected) → Changed", Assert.ContainsSingle(group.Causes).Holder);
         Assert.HasCount(4, group.InstanceIds);
 
@@ -411,7 +411,7 @@ public sealed class LeakTests : IDisposable
 
         var group = Assert.ContainsSingle(Session.Leaks.CollectAndCheck());
         Assert.AreEqual("Carousel", group.DisplayName);
-        Assert.Contains(new BevRetainedTypeCount("CarouselSlide", 1), group.Descendants);
+        Assert.Contains(new BevToolsRetainedTypeCount("CarouselSlide", 1), group.Descendants);
         Assert.AreEqual("LeakyEvents (injected) → Changed", Assert.ContainsSingle(group.Causes).Holder);
     }
 

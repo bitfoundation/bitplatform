@@ -1,6 +1,5 @@
 ﻿using Bit.BbScanner;
 using Bit.BbScanner.TestKit;
-using Bit.Bmage.BbScanner;
 
 namespace Bit.Bmage.Tests.Integrations;
 
@@ -10,7 +9,7 @@ public sealed class BarcodeTests
     private const string Url = "https://bitplatform.dev/bmage?case=1234567890";
 
     /// <summary>A QR code of <paramref name="scale"/> pixels a module on a wider page, blurred as a camera out of focus would.</summary>
-    internal static ImageBuffer Qr(int scale, double blur)
+    internal static BmageImageBuffer Qr(int scale, double blur)
     {
         var symbol = SyntheticImage.FromMatrix(QrEncoder.Encode(Url), scale, 4);
         var page = ImageTransforms.Frame(symbol, symbol.Width * 3, symbol.Height * 2);
@@ -23,7 +22,7 @@ public sealed class BarcodeTests
         }
         try
         {
-            return ImageBuffer.FromRgba(ImageTransforms.ToRgba(page), page.Width, page.Height);
+            return BmageImageBuffer.FromRgba(ImageTransforms.ToRgba(page), page.Width, page.Height);
         }
         finally
         {
@@ -31,7 +30,7 @@ public sealed class BarcodeTests
         }
     }
 
-    private static ImageBuffer Code128(int scale, double blur)
+    private static BmageImageBuffer Code128(int scale, double blur)
     {
         var symbol = SyntheticImage.FromLinear(LinearEncoders.Code128("BMAGE-1234567"), scale, 40);
         var page = ImageTransforms.Frame(symbol, symbol.Width + 100, symbol.Height * 3);
@@ -40,7 +39,7 @@ public sealed class BarcodeTests
         page.Dispose();
         try
         {
-            return ImageBuffer.FromRgba(ImageTransforms.ToRgba(blurred), blurred.Width, blurred.Height);
+            return BmageImageBuffer.FromRgba(ImageTransforms.ToRgba(blurred), blurred.Width, blurred.Height);
         }
         finally
         {
@@ -58,7 +57,7 @@ public sealed class BarcodeTests
 
         var read = image.ReadBarcodes();
         Assert.IsTrue(read.Found);
-        Assert.AreEqual(BarcodePreprocessing.None, read.Preprocessing);
+        Assert.AreEqual(BmageBarcodePreprocessing.None, read.Preprocessing);
         Assert.AreEqual(1, read.ScaleX);
         Assert.AreEqual(1, read.ScaleY);
         Assert.AreSame(read.Barcodes[0].Corners, read.CornersOf(read.Barcodes[0]));
@@ -73,7 +72,7 @@ public sealed class BarcodeTests
 
         var read = image.ReadBarcodes();
         Assert.IsTrue(read.Found);
-        Assert.AreEqual(BarcodePreprocessing.Sharpen, read.Preprocessing);
+        Assert.AreEqual(BmageBarcodePreprocessing.Sharpen, read.Preprocessing);
         Assert.AreEqual(Url, read.Barcodes[0].Text);
         Assert.AreEqual(0, MaxDifference(before, image), "Reading never changes the image it was given.");
     }
@@ -82,9 +81,9 @@ public sealed class BarcodeTests
     public void EnlargingReadsASoftSmallCodeAndItsCornersMapBack()
     {
         using var image = Qr(scale: 2, blur: 1);
-        var read = image.ReadBarcodes(new BarcodeReadOptions { Preprocessing = [BarcodePreprocessing.None, BarcodePreprocessing.Enlarge] });
+        var read = image.ReadBarcodes(new BmageBarcodeReadOptions { Preprocessing = [BmageBarcodePreprocessing.None, BmageBarcodePreprocessing.Enlarge] });
         Assert.IsTrue(read.Found);
-        Assert.AreEqual(BarcodePreprocessing.Enlarge, read.Preprocessing);
+        Assert.AreEqual(BmageBarcodePreprocessing.Enlarge, read.Preprocessing);
         // Each side scales by what it was rounded to, so the two can differ a little.
         var longer = Math.Max(image.Width, image.Height);
         Assert.AreEqual(Math.Round(image.Width * 1200.0 / longer) / image.Width, read.ScaleX, 1e-12);
@@ -108,29 +107,29 @@ public sealed class BarcodeTests
         using var image = Code128(scale: 2, blur: 1.6);
         Assert.IsEmpty(image.Decode());
         var read = image.ReadBarcodes();
-        Assert.AreEqual(BarcodePreprocessing.Sharpen, read.Preprocessing);
+        Assert.AreEqual(BmageBarcodePreprocessing.Sharpen, read.Preprocessing);
         Assert.AreEqual("BMAGE-1234567", read.Barcodes[0].Text);
-        Assert.AreEqual(BbBarcodeFormat.Code128, read.Barcodes[0].Format);
+        Assert.AreEqual(BbScannerBarcodeFormat.Code128, read.Barcodes[0].Format);
     }
 
     [TestMethod]
     public void AnImageWithoutACodeReportsNothingFound()
     {
-        using var blank = ImageBuffer.Create(300, 200, Rgba32.White);
+        using var blank = BmageImageBuffer.Create(300, 200, BmageRgba32.White);
         var read = blank.ReadBarcodes();
         Assert.IsFalse(read.Found);
         Assert.IsNull(read.Preprocessing);
         // Enlarging is skipped for an image already as large as asked.
-        var large = blank.ReadBarcodes(new BarcodeReadOptions { Preprocessing = [BarcodePreprocessing.Enlarge], MinimumSize = 300 });
+        var large = blank.ReadBarcodes(new BmageBarcodeReadOptions { Preprocessing = [BmageBarcodePreprocessing.Enlarge], MinimumSize = 300 });
         Assert.IsFalse(large.Found);
     }
 
     [TestMethod]
     public void OptionsAreChecked()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BarcodeReadOptions { MaxSymbols = 0 });
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BarcodeReadOptions { MinimumSize = 10 });
-        using var image = ImageBuffer.Create(10, 10);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageBarcodeReadOptions { MaxSymbols = 0 });
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageBarcodeReadOptions { MinimumSize = 10 });
+        using var image = BmageImageBuffer.Create(10, 10);
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => image.Decode(maxSymbols: 0));
         Assert.ThrowsExactly<ArgumentNullException>(() => BmageBarcodes.Read(null!));
         using var cts = new CancellationTokenSource();
@@ -138,7 +137,7 @@ public sealed class BarcodeTests
         Assert.ThrowsExactly<OperationCanceledException>(() => image.ReadBarcodes(cancellationToken: cts.Token));
     }
 
-    internal static int MaxDifference(ImageBuffer a, ImageBuffer b)
+    internal static int MaxDifference(BmageImageBuffer a, BmageImageBuffer b)
     {
         var max = 0;
         var x = a.Bytes;

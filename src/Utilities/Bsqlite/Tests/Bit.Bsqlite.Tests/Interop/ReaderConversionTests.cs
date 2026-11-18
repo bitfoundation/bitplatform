@@ -1,6 +1,4 @@
 ﻿using System.Data;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Testing;
 
 namespace Bit.Bsqlite.Interop.Tests;
 

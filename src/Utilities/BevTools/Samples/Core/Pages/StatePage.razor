@@ -8,7 +8,7 @@
 <h1>State</h1>
 
 <p>
-    <code>CartState</code> implements <code>IBevStateProvider</code>: the <em>State</em> panel lists it with every named
+    <code>CartState</code> implements <code>IBevToolsStateProvider</code>: the <em>State</em> panel lists it with every named
     action and the diff each one made. A product's page is a route with a parameter, which the <em>Routing</em> panel
     shows with its value.
 </p>
@@ -65,7 +65,7 @@
     protected override void OnInitialized() => Cart.Changed += OnCartChanged;
 
     // The cart is scoped, so another page may change it while this one is open.
-    private void OnCartChanged(BevStateChangeInfo change) => InvokeAsync(StateHasChanged);
+    private void OnCartChanged(BevToolsStateChangeInfo change) => InvokeAsync(StateHasChanged);
 
     private void ApplyCoupon() => Cart.ApplyCoupon(_coupon.Code!);
 

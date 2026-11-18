@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Storage;
 
-namespace Bit.Blex.Maui;
+namespace Bit.Blex;
 
 /// <summary>
 /// <see cref="IBlexStorage"/> backed by .NET MAUI <see cref="IPreferences"/>, so persisted store

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Data.Common;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>Parameter collection for <see cref="BsqliteCommand"/>.</summary>
 /// <remarks>

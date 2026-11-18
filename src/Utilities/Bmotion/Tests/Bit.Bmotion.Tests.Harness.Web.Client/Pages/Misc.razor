@@ -40,12 +40,12 @@
 <BmotionInspector />
 
 @code {
-    private readonly BmValue<double> _x = Bm.Value(0.0);
-    private readonly BmValue<double> _blur = Bm.Value(0.0);
-    private BmValue<double> _opacity = default!;
-    private BmValue<double> _spring = default!;
-    private BmValue<string> _filter = default!;
-    private BmValue<string> _labelValue = default!;
+    private readonly BmotionValue<double> _x = Bm.Value(0.0);
+    private readonly BmotionValue<double> _blur = Bm.Value(0.0);
+    private BmotionValue<double> _opacity = default!;
+    private BmotionValue<double> _spring = default!;
+    private BmotionValue<string> _filter = default!;
+    private BmotionValue<string> _labelValue = default!;
     private IDisposable? _subscription;
     private Readout _value = default!;
     private Readout _label = default!;
@@ -64,7 +64,7 @@
 
     private async Task AnimateValueAsync()
     {
-        await Motion.AnimateAsync(_x, 200, Bm.Tween(0.5, BmEase.Linear));
+        await Motion.AnimateAsync(_x, 200, Bm.Tween(0.5, BmotionEase.Linear));
         Log("mv:animated");
     }
 

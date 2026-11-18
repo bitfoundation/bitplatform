@@ -1,7 +1,6 @@
-﻿using Bit.Bsqlite.Data;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Bit.Bsqlite.EntityFrameworkCore;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// A history repository whose migration lock keeps other tabs out without synchronous I/O.

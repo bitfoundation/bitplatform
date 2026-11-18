@@ -2,7 +2,6 @@
 using System.Text;
 using System.Reflection;
 using Bit.BlazeDb.Demo.Client;
-using Bit.BlazeDb.Generators;
 using Microsoft.CodeAnalysis;
 using System.Text.RegularExpressions;
 

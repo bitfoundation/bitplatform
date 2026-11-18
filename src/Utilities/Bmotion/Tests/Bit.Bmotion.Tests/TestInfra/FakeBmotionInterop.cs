@@ -297,17 +297,17 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     }
 
     // ── Viewport observation ──────────────────────────────────────────────────
-    // Both overloads record a BmViewport, so assertions read the effective options the same way
+    // Both overloads record a BmotionViewport, so assertions read the effective options the same way
     // whichever overload the component picked (the bridge receives the same options object shape).
     public ValueTask ObserveViewportAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, bool once) where T : class
     {
         ViewportRefs[elementId] = dotnetRef.Value;
         ViewportReferences[elementId] = dotnetRef;
-        Record("observeViewport", elementId, new BmViewport { Once = once });
+        Record("observeViewport", elementId, new BmotionViewport { Once = once });
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask ObserveViewportWithOptionsAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, BmViewport options) where T : class
+    public ValueTask ObserveViewportWithOptionsAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, BmotionViewport options) where T : class
     {
         ViewportRefs[elementId] = dotnetRef.Value;
         ViewportReferences[elementId] = dotnetRef;

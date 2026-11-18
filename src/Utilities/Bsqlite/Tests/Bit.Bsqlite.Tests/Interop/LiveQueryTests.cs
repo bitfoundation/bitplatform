@@ -1,7 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Testing;
-
-namespace Bit.Bsqlite.Interop.Tests;
+﻿namespace Bit.Bsqlite.Interop.Tests;
 
 [TestClass]
 public sealed class LiveQueryTests

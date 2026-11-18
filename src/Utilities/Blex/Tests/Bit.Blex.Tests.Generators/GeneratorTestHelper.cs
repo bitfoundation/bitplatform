@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Bit.Blex.Generators;
 
 namespace Bit.Blex.Tests.Generators;
 

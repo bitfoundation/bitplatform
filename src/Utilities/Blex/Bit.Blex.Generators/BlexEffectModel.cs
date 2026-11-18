@@ -1,4 +1,4 @@
-﻿namespace Bit.Blex.Generators;
+﻿namespace Bit.Blex;
 
 /// <param name="ImplName">Name of the user-written effect method the wrapper calls.</param>
 /// <param name="WrapperName">Name of the generated public wrapper.</param>

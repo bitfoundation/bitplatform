@@ -41,7 +41,7 @@ suite found in rounds 1-4 were fixed with negative controls. Class **4** applies
 | Capability | Before | Now | Notes |
 |---|---|---|---|
 | One execution architecture choosing browser timeline / recording / frame loop / instant | 1 | 1 | AD-1. |
-| Diagnostics explaining *why* an animation plays where it does | 2 | **1** | Before: the MCP server's offline analysis, the inspector's "N in browser" and a one-time Server warning. Now `BmotionAnimationEngine.AnimationEvent` reports every part's `BmPlaybackStrategy` and, for the frame loop or its absence, the reason; the inspector shows it. |
+| Diagnostics explaining *why* an animation plays where it does | 2 | **1** | Before: the MCP server's offline analysis, the inspector's "N in browser" and a one-time Server warning. Now `BmotionAnimationEngine.AnimationEvent` reports every part's `BmotionPlaybackStrategy` and, for the frame loop or its absence, the reason; the inspector shows it. |
 | Pause / resume / speed / stop / complete / time / seek | 1 | 1 | |
 | Reverse playback (negative speed) | 6 | 6 | Open, P2 - see "Not done". |
 | Concurrent animations on one property | 1 | 1 | The newer replaces the older and inherits its velocity (Motion and GSAP's default). |
@@ -69,11 +69,11 @@ suite found in rounds 1-4 were fixed with negative controls. Class **4** applies
 | Capability | Before | Now | Notes |
 |---|---|---|---|
 | Springs: physics and bounce/duration, velocity, rest thresholds, stability at extremes | 1 | 1 | |
-| Named springs (Gentle, Smooth, Snappy, Bouncy, Stiff, Heavy, Responsive) | 6 | **1** | `BmSprings`, each checked by its measured overshoot and speed order. |
-| Spring prediction: settling time, overshoot, peak velocity, oscillation | 6 | **1** | `BmSpring.Analyze()` steps the engine's own driver at 60 Hz; an MCP test checks it against the whole engine run off-screen. |
+| Named springs (Gentle, Smooth, Snappy, Bouncy, Stiff, Heavy, Responsive) | 6 | **1** | `BmotionSprings`, each checked by its measured overshoot and speed order. |
+| Spring prediction: settling time, overshoot, peak velocity, oscillation | 6 | **1** | `BmotionSpring.Analyze()` steps the engine's own driver at 60 Hz; an MCP test checks it against the whole engine run off-screen. |
 | Inertia: bounds, bounce, snap to grid and points, drag hand-off | 1 | 1 | |
 | Easings: all the plan lists, cubic-bezier, steps | 1 | 1 | |
-| Custom transitions without touching the core | 6 | 6 | P3. `BmTransition` is closed on purpose: every transition must be recordable for the browser path (AD-1), which an arbitrary user driver isn't. Per-frame callbacks and keyframes cover the cases seen so far. |
+| Custom transitions without touching the core | 6 | 6 | P3. `BmotionTransition` is closed on purpose: every transition must be recordable for the browser path (AD-1), which an arbitrary user driver isn't. Per-frame callbacks and keyframes cover the cases seen so far. |
 
 ## 5. Motion values
 
@@ -81,7 +81,7 @@ suite found in rounds 1-4 were fixed with negative controls. Class **4** applies
 |---|---|---|---|
 | Values, velocity, transform, range map, spring follower, template, velocity value | 1 | 1 | |
 | Values derived from several inputs | 2 | **1** | `Bm.Combine(() => ..., a, b)` - only strings (`Bm.Template`) could before. |
-| Previous value | 6 | **1** | `BmValue<T>.Previous`. |
+| Previous value | 6 | **1** | `BmotionValue<T>.Previous`. |
 | Arithmetic helpers (Add, Multiply, Clamp, ...) | 6 | *Decision* | `Transform(v => ...)` and `Combine` express all of them in one line; a dozen operator methods would only widen the surface. |
 | Transactional batching | 6 | *Decision* | Bound values flush once per frame already; a batch API would only save recomputing a derived value, not renders. |
 | No re-render per change; allocation-free numeric tracking | 4 | **1** | Velocity tracking boxed every numeric set (`Convert.ToDouble(object)`) and looked the type up in a set; now a static flag and a JIT-eliminated cast for `double`. |
@@ -102,7 +102,7 @@ suite found in rounds 1-4 were fixed with negative controls. Class **4** applies
 |---|---|---|---|
 | The `<Bmotion>` parameter set the plan lists (Initial ... OnLayoutAnimationComplete) | 1 | 1 | Every one exists. |
 | Variants, propagation, inheritance, stagger, `When`, orchestration | 1 | 1 | |
-| Presets | 1 | 1 | 24 now: `BmPresets.Expand` (accordion, to and from `height: auto`) added. The plan's Success/Error/Skeleton/Attention are `Pop`/`Shake`/`Shimmer`/`Pulse`. |
+| Presets | 1 | 1 | 24 now: `BmotionPresets.Expand` (accordion, to and from `height: auto`) added. The plan's Success/Error/Skeleton/Attention are `Pop`/`Shake`/`Shimmer`/`Pulse`. |
 | Presence: sync/wait/popLayout, nesting, re-entry, custom participants, inert exits | 1 | 1 | |
 
 ## 11-13. Gestures, drag, layout
@@ -131,10 +131,10 @@ suite found in rounds 1-4 were fixed with negative controls. Class **4** applies
 | Capability | Before | Now | Notes |
 |---|---|---|---|
 | Shared motion configuration (default transition, speed, colour space, reduced motion) | 1 | 1 | `BmotionConfig`. |
-| Spring and preset vocabulary | 2 | **1** | `BmSprings` + `BmPresets`. |
+| Spring and preset vocabulary | 2 | **1** | `BmotionSprings` + `BmotionPresets`. |
 | Theme-aware tokens tied to Bit.BlazorUI | 6 | *Decision* | Not in the core: the plan itself forbids coupling Bmotion to BlazorUI. An adapter belongs to a separate package. |
 | `prefers-reduced-motion`, live changes, cascading policy | 1 | 1 | |
-| Per-element reduced-motion behaviour (reduce / instant / essential) | 6 | **1** | `Bmotion.ReducedMotion` and `BmPreset.ReducedMotion`: `Reduce` (default), `Instant`, `Full`. |
+| Per-element reduced-motion behaviour (reduce / instant / essential) | 6 | **1** | `Bmotion.ReducedMotion` and `BmotionPreset.ReducedMotion`: `Reduce` (default), `Instant`, `Full`. |
 | Keyboard tap, keyboard reorder, inert exits, focus-visible | 1 | 1 | |
 
 ## 20-22. Performance, conflicts, testing
@@ -162,14 +162,14 @@ suite found in rounds 1-4 were fixed with negative controls. Class **4** applies
 |---|---|---|---|
 | README, package README, demo pages per feature | 1 | 1 | New: named springs with measured traces, per-element reduced motion, disclosure panels, diagnostics and telemetry. |
 | Spring / easing / timeline playgrounds | 2 | 2 | The Springs page now draws each named spring's measured trace; an editable playground is P3. |
-| MCP: reflected API, real-engine simulation and playback analysis, review rules | 1 | 1 | Spring simulations now report damping ratio, kind and period from the library's own analysis. Found and fixed: a search for `BmSpring` ranked the new `BmSprings` first. |
+| MCP: reflected API, real-engine simulation and playback analysis, review rules | 1 | 1 | Spring simulations now report damping ratio, kind and period from the library's own analysis. Found and fixed: a search for `BmotionSpring` ranked the new `BmotionSprings` first. |
 
 ## Not done, and why
 
 | P | Gap | Why it waits | Next step |
 |---|---|---|---|
 | P2 | Reverse playback | The frame-loop drivers integrate forwards only, and a browser animation played backwards needs its mirror, its commit at the end and the "finished" handling rewritten for a run that ends at its start. Landing it unverified in all three engines would trade a missing feature for a broken one. | Browser plans: negative `playbackRate` plus a mirror that runs backwards and a finish that commits the start. Frame loop: replay to `time - dt` each frame (seek already exists). Then E2E on all hosts. |
-| P2 | Sequence callbacks, nested sequences, motion-value targets | Wants the scheduler to own non-element entries. | `BmSequence.Call(action, at)`, `Add(BmSequence, at)`, `Add(BmValue<double>, to, at)`. |
+| P2 | Sequence callbacks, nested sequences, motion-value targets | Wants the scheduler to own non-element entries. | `BmotionSequence.Call(action, at)`, `Add(BmotionSequence, at)`, `Add(BmotionValue<double>, to, at)`. |
 | P2 | Benchmarks | Needs a harness that measures WebAssembly in a browser, not only .NET. | Follow `Bit.Bdnd.Benchmarks` for the C# half; Playwright traces for the browser half. |
 | P2 | Adapters for BlazorUI / Brouter / Bheadless | Need the other libraries' extension points agreed. | Brouter route transitions first: the presence components already do the work. |
 | P3 | Gestures beyond pan/drag; morph normalisation; OKLCH; relative keyframes; visual regression | Low demand against their cost. | As above. |

@@ -54,7 +54,7 @@ public class HttpTrackingTests
             SynchronizationContext.SetSynchronizationContext(rendererContext);
             try
             {
-                SessionResolver.NoteCurrentContext(session);
+                BevToolsSessionResolver.NoteCurrentContext(session);
                 request = client.GetAsync("https://example.com/flaky");
             }
             finally
@@ -89,15 +89,15 @@ public class HttpTrackingTests
             Assert.AreEqual("GET", record.Method);
             Assert.AreEqual(200, record.StatusCode);
             Assert.IsNotNull(record.DurationMs);
-            Assert.Contains("token=" + BevRedactor.RedactedValue, record.Url);
+            Assert.Contains("token=" + BevToolsRedactor.RedactedValue, record.Url);
             Assert.Contains("page=1", record.Url);
-            Assert.AreEqual(BevRedactor.RedactedValue, record.RequestHeaders!.Single(h => h.Key == "Authorization").Value);
+            Assert.AreEqual(BevToolsRedactor.RedactedValue, record.RequestHeaders!.Single(h => h.Key == "Authorization").Value);
             Assert.AreEqual("abc", record.RequestHeaders!.Single(h => h.Key == "X-Trace").Value);
             Assert.AreEqual(11, record.ResponseBytes);
 
             var evt = session.Timeline.Find(record.TimelineEventId)!;
             Assert.AreEqual(BevToolsEventKind.Http, evt.Kind);
-            Assert.AreEqual("GET /api/items?token=" + BevRedactor.RedactedValue + "&page=1", evt.Title);
+            Assert.AreEqual("GET /api/items?token=" + BevToolsRedactor.RedactedValue + "&page=1", evt.Title);
             Assert.StartsWith("200", evt.Detail);
         }
     }

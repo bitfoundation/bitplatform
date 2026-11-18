@@ -23,17 +23,17 @@ public class QrVersionTableTests
     {
         for (var number = 1; number <= 40; number++)
         {
-            var version = BbQrVersion.GetVersionForNumber(number);
+            var version = BbScannerQrVersion.GetVersionForNumber(number);
             var expected = TotalCodewordsPerVersion[number - 1];
 
             Assert.AreEqual(expected, version.TotalCodewords);
 
             foreach (var level in new[]
                      {
-                         BbQrErrorCorrectionLevel.L,
-                         BbQrErrorCorrectionLevel.M,
-                         BbQrErrorCorrectionLevel.Q,
-                         BbQrErrorCorrectionLevel.H,
+                         BbScannerQrErrorCorrectionLevel.L,
+                         BbScannerQrErrorCorrectionLevel.M,
+                         BbScannerQrErrorCorrectionLevel.Q,
+                         BbScannerQrErrorCorrectionLevel.H,
                      })
             {
                 var blocks = version.GetEcBlocksForLevel(level);
@@ -47,11 +47,11 @@ public class QrVersionTableTests
     {
         for (var number = 1; number <= 40; number++)
         {
-            var version = BbQrVersion.GetVersionForNumber(number);
-            var l = version.GetEcBlocksForLevel(BbQrErrorCorrectionLevel.L).TotalEcCodewords;
-            var m = version.GetEcBlocksForLevel(BbQrErrorCorrectionLevel.M).TotalEcCodewords;
-            var q = version.GetEcBlocksForLevel(BbQrErrorCorrectionLevel.Q).TotalEcCodewords;
-            var h = version.GetEcBlocksForLevel(BbQrErrorCorrectionLevel.H).TotalEcCodewords;
+            var version = BbScannerQrVersion.GetVersionForNumber(number);
+            var l = version.GetEcBlocksForLevel(BbScannerQrErrorCorrectionLevel.L).TotalEcCodewords;
+            var m = version.GetEcBlocksForLevel(BbScannerQrErrorCorrectionLevel.M).TotalEcCodewords;
+            var q = version.GetEcBlocksForLevel(BbScannerQrErrorCorrectionLevel.Q).TotalEcCodewords;
+            var h = version.GetEcBlocksForLevel(BbScannerQrErrorCorrectionLevel.H).TotalEcCodewords;
 
             Assert.IsTrue(l < m, $"Version {number}: L should carry fewer EC codewords than M.");
             Assert.IsTrue(m < q, $"Version {number}: M should carry fewer EC codewords than Q.");
@@ -64,7 +64,7 @@ public class QrVersionTableTests
     {
         for (var number = 1; number <= 40; number++)
         {
-            var version = BbQrVersion.GetVersionForNumber(number);
+            var version = BbScannerQrVersion.GetVersionForNumber(number);
             var centers = version.AlignmentPatternCenters;
             if (centers.Length == 0)
             {
@@ -89,7 +89,7 @@ public class QrVersionTableTests
     [DataRow(16, 0x1689)]
     [DataRow(31, 0x2BED)]
     public void FormatInformationMatchesThePublishedCode(int data, int expected) =>
-        Assert.AreEqual(expected, BbQrFormatInformation.EncodeFormatBits(data));
+        Assert.AreEqual(expected, BbScannerQrFormatInformation.EncodeFormatBits(data));
 
     [TestMethod]
     [DataRow(7, 0x07C94)]
@@ -98,18 +98,18 @@ public class QrVersionTableTests
     [DataRow(10, 0x0A4D3)]
     [DataRow(40, 0x28C69)]
     public void VersionInformationMatchesThePublishedCode(int version, int expected) =>
-        Assert.AreEqual(expected, BbQrFormatInformation.EncodeVersionBits(version));
+        Assert.AreEqual(expected, BbScannerQrFormatInformation.EncodeVersionBits(version));
 
     [TestMethod]
     public void FormatInformationRoundTripsThroughDecoding()
     {
         for (var data = 0; data < 32; data++)
         {
-            var encoded = BbQrFormatInformation.EncodeFormatBits(data);
-            var decoded = BbQrFormatInformation.Decode(encoded, encoded);
+            var encoded = BbScannerQrFormatInformation.EncodeFormatBits(data);
+            var decoded = BbScannerQrFormatInformation.Decode(encoded, encoded);
 
             Assert.IsNotNull(decoded);
-            Assert.AreEqual((BbQrErrorCorrectionLevel)((data >> 3) & 0x03), decoded.ErrorCorrectionLevel);
+            Assert.AreEqual((BbScannerQrErrorCorrectionLevel)((data >> 3) & 0x03), decoded.ErrorCorrectionLevel);
             Assert.AreEqual(data & 0x07, decoded.DataMask);
         }
     }
@@ -117,13 +117,13 @@ public class QrVersionTableTests
     [TestMethod]
     public void FormatInformationSurvivesThreeBitErrors()
     {
-        var encoded = BbQrFormatInformation.EncodeFormatBits(0b10_101);
+        var encoded = BbScannerQrFormatInformation.EncodeFormatBits(0b10_101);
         var damaged = encoded ^ 0b000_0000_0000_0111;
 
-        var decoded = BbQrFormatInformation.Decode(damaged, damaged);
+        var decoded = BbScannerQrFormatInformation.Decode(damaged, damaged);
 
         Assert.IsNotNull(decoded);
-        Assert.AreEqual(BbQrErrorCorrectionLevel.H, decoded.ErrorCorrectionLevel);
+        Assert.AreEqual(BbScannerQrErrorCorrectionLevel.H, decoded.ErrorCorrectionLevel);
         Assert.AreEqual(5, decoded.DataMask);
     }
 
@@ -132,8 +132,8 @@ public class QrVersionTableTests
     {
         for (var version = 7; version <= 40; version++)
         {
-            var encoded = BbQrFormatInformation.EncodeVersionBits(version);
-            var decoded = BbQrFormatInformation.DecodeVersionInformation(encoded);
+            var encoded = BbScannerQrFormatInformation.EncodeVersionBits(version);
+            var decoded = BbScannerQrFormatInformation.DecodeVersionInformation(encoded);
 
             Assert.IsNotNull(decoded);
             Assert.AreEqual(version, decoded.VersionNumber);

@@ -8,7 +8,7 @@ public class ProtobufWriterTests
     [TestMethod]
     public void Primitives_AreReadableByCodedInputStream()
     {
-        var w = new ProtobufWriter(16);
+        var w = new BelemetryProtobufWriter(16);
         w.WriteVarintField(1, 300);
         w.WriteInt64(2, -1);
         w.WriteBool(3, true);
@@ -52,7 +52,7 @@ public class ProtobufWriterTests
     [TestMethod]
     public void NegativeInt64_IsTenBytes()
     {
-        var w = new ProtobufWriter();
+        var w = new BelemetryProtobufWriter();
         w.WriteInt64(1, -1);
         Assert.AreEqual(11, w.Length); // 1 tag byte + 10 varint bytes, per the spec for negative int64
     }
@@ -60,7 +60,7 @@ public class ProtobufWriterTests
     [TestMethod]
     public void PackedRepeated_AreReadable()
     {
-        var w = new ProtobufWriter();
+        var w = new BelemetryProtobufWriter();
         w.WritePackedFixed64(1, new long[] { 1, 2, long.MaxValue });
         w.WritePackedDouble(2, new[] { 0.5, -1.0 });
         w.WritePackedFixed64(3, ReadOnlySpan<long>.Empty);
@@ -91,7 +91,7 @@ public class ProtobufWriterTests
     [DataRow(2_100_000)]
     public void NestedMessage_LengthPrefixIsMinimal(int bodyLength)
     {
-        var w = new ProtobufWriter(64);
+        var w = new BelemetryProtobufWriter(64);
         var outer = w.BeginMessage(1);
         var inner = w.BeginMessage(2);
         w.WriteBytes(3, new byte[bodyLength]);
@@ -122,7 +122,7 @@ public class ProtobufWriterTests
     [TestMethod]
     public void BufferGrows_FromTinyInitialCapacity()
     {
-        var w = new ProtobufWriter(1);
+        var w = new BelemetryProtobufWriter(1);
         var text = new string('x', 10_000);
         w.WriteString(1, text);
 

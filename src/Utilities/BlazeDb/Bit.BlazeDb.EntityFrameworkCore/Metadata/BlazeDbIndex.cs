@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazeDb.EntityFrameworkCore.Metadata;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// One secondary index, described in the terms the translator reasons about: which properties it

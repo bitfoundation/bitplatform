@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.BlazeDb;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>One stored update of one document: a row of <see cref="BcrdtBlazeDbDocumentStore.Table"/>.</summary>
 /// <remarks>

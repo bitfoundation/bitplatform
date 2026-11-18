@@ -1,7 +1,6 @@
-﻿using Bit.Bsqlite.Storage;
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
 
-namespace Bit.Bsqlite.Storage.IndexedDb;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Persists SQLite databases in IndexedDB via <c>IDBBatchAtomicVFS</c>.

@@ -21,7 +21,7 @@ public static class MicroQrEncoder
     /// <param name="content">Digits, QR alphanumeric characters, or any text, which is written as UTF-8 bytes.</param>
     /// <param name="level">'L', 'M' or 'Q'; M1, which only detects errors, is used for 'L' when the content fits it.</param>
     /// <param name="maskPattern">0 to 3, or <see langword="null"/> for the one the specification's evaluation prefers.</param>
-    public static BbBitMatrix Encode(string content, char level = 'L', int? maskPattern = null)
+    public static BbScannerBitMatrix Encode(string content, char level = 'L', int? maskPattern = null)
     {
         ArgumentNullException.ThrowIfNull(content);
         var mode = content.All(char.IsAsciiDigit) ? 0 : content.All(c => AlphanumericChars.Contains(c, StringComparison.Ordinal)) ? 1 : 2;
@@ -123,12 +123,12 @@ public static class MicroQrEncoder
         return codewords;
     }
 
-    private static BbBitMatrix Build(int number, int[] data, int? maskPattern)
+    private static BbScannerBitMatrix Build(int number, int[] data, int? maskPattern)
     {
         var symbol = Symbols[number];
         var codewords = new int[symbol.Total];
         data.CopyTo(codewords, 0);
-        new ReedSolomonEncoder(BbGenericGF.QrCodeField256).Encode(codewords, symbol.Total - symbol.Data);
+        new ReedSolomonEncoder(BbScannerGenericGF.QrCodeField256).Encode(codewords, symbol.Total - symbol.Data);
 
         // The bits in placement order: the data codewords, four bits only of a short last one, then the check codewords.
         var stream = new List<bool>();
@@ -145,7 +145,7 @@ public static class MicroQrEncoder
         }
 
         var dimension = 9 + (2 * symbol.Version);
-        var best = (Matrix: (BbBitMatrix?)null, Score: -1);
+        var best = (Matrix: (BbScannerBitMatrix?)null, Score: -1);
         for (var mask = 0; mask < 4; mask++)
         {
             if (maskPattern is { } wanted && wanted != mask)
@@ -169,9 +169,9 @@ public static class MicroQrEncoder
         return best.Matrix!;
     }
 
-    private static BbBitMatrix Place(int dimension, List<bool> stream, int mask, int format)
+    private static BbScannerBitMatrix Place(int dimension, List<bool> stream, int mask, int format)
     {
-        var matrix = new BbBitMatrix(dimension, dimension);
+        var matrix = new BbScannerBitMatrix(dimension, dimension);
 
         // The finder pattern, its separator light, and the timing patterns along the top row and left column.
         for (var y = 0; y < 7; y++)
@@ -258,7 +258,7 @@ public static class MicroQrEncoder
     };
 
     /// <summary>The specification's evaluation: the darker the right column and bottom row, the lighter of them sixteen times over.</summary>
-    private static int Evaluate(BbBitMatrix matrix)
+    private static int Evaluate(BbScannerBitMatrix matrix)
     {
         var last = matrix.Width - 1;
         var (right, bottom) = (0, 0);

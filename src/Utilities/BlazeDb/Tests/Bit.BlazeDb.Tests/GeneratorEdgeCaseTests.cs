@@ -1,4 +1,3 @@
-using Bit.BlazeDb.Serialization;
 using Bit.BlazeDb.Tests.@event;
 
 namespace Bit.BlazeDb.Tests;
@@ -17,7 +16,7 @@ public class GeneratorEdgeCaseTests
     private static Task<BlazeDbDatabase> OpenPersistentAsync() =>
         BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
         {
-            Storage = new Bit.BlazeDb.Storage.BlazeDbInMemoryStorage(),
+            Storage = new Bit.BlazeDb.BlazeDbInMemoryStorage(),
             FlushInterval = TimeSpan.FromHours(1),
         }.AddTable(KeywordRow.Table)).AsTask();
 
@@ -97,7 +96,7 @@ public class GeneratorEdgeCaseTests
     [TestMethod]
     public async Task A_Row_Changed_In_Place_And_Never_Saved_Neither_Stops_Checkpoints_Nor_Reaches_Them()
     {
-        var storage = new Bit.BlazeDb.Storage.BlazeDbInMemoryStorage();
+        var storage = new Bit.BlazeDb.BlazeDbInMemoryStorage();
         var options = new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(KeywordRow.Table);
         await using (var db = await BlazeDbDatabase.OpenAsync(options))
         {

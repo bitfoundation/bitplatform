@@ -6,7 +6,7 @@
 <HarnessHeader Title="Split text" Ready="Ready" OnLog="BindLog" />
 
 <BmotionSplitText Text="Hi there"
-                  By="BmSplitBy.Chars"
+                  By="BmotionSplitBy.Chars"
                   Class="chars"
                   UnitClass="unit"
                   Initial="Bm.To(opacity: 0, y: 12)"
@@ -16,7 +16,7 @@
                   OnComplete='() => Log("chars:complete")' />
 
 <BmotionSplitText Text="one two three"
-                  By="BmSplitBy.Words"
+                  By="BmotionSplitBy.Words"
                   As="h2"
                   Class="words"
                   UnitClass="unit"
@@ -24,7 +24,7 @@
                   OnComplete='() => Log("words:complete")' />
 
 <BmotionSplitText Text="@("first line\nsecond line")"
-                  By="BmSplitBy.Lines"
+                  By="BmotionSplitBy.Lines"
                   Class="lines"
                   UnitClass="unit"
                   Animate="Bm.To(opacity: 1)" />
@@ -38,11 +38,11 @@
                   Initial="Bm.To(opacity: 0)"
                   Animate="Bm.To(opacity: 1)"
                   Transition="Bm.Tween(0.2)"
-                  Stagger="Bm.Stagger(0.3, from: BmStaggerFrom.Last)"
+                  Stagger="Bm.Stagger(0.3, from: BmotionStaggerFrom.Last)"
                   OnComplete='() => Log("backwards:complete")' />
 
 <button id="go" @onclick="() => Change(() => _go = true)">go</button>
-<BmotionConfig Transition="Bm.Tween(1.2, BmEase.Linear)">
+<BmotionConfig Transition="Bm.Tween(1.2, BmotionEase.Linear)">
     <BmotionSplitText Text="xy"
                       Class="configured"
                       UnitClass="unit"

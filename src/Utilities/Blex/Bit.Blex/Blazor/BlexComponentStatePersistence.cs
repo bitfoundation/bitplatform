@@ -2,7 +2,7 @@
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Components;
 
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>
 /// Bridges Blex stores to Blazor's <see cref="PersistentComponentState"/> so that state produced

@@ -118,7 +118,7 @@
     private bool _lateHover;
     private Readout _panOffset = default!;
 
-    private void OnPan(BmPanInfo info)
+    private void OnPan(BmotionPanInfo info)
     {
         Log("pan");
         _panOffset.Set($"{Math.Round(info.Offset.X)},{Math.Round(info.Offset.Y)}");

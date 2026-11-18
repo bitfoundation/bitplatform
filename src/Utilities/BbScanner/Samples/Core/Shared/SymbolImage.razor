@@ -31,7 +31,7 @@
     /// Traces the dark pixels of an image into SVG path data: one rectangle per horizontal run, and identical rows
     /// merged into one, so a module of a matrix symbol or a whole bar of a linear one is a single rectangle.
     /// </summary>
-    public static string Trace(BbLuminanceBuffer image)
+    public static string Trace(BbScannerLuminanceBuffer image)
     {
         ArgumentNullException.ThrowIfNull(image);
 

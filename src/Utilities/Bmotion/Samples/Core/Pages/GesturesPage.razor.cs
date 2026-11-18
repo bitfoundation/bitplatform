@@ -9,9 +9,9 @@ public partial class GesturesPage
 
     // Kept in fields rather than built in the markup: a drag is re-attached, which ends it, when its configuration
     // changes, and OnDrag re-renders this page on every move.
-    private static readonly BmDragConstraints InParent = BmDragConstraints.Parent();
-    private static readonly BmPreset _button = BmPresets.HoverLift() + BmPresets.Press();
-    private static readonly BmInertia _snap = Bm.Inertia(modifyTarget: Bm.SnapTo(StopSpacing));
+    private static readonly BmotionDragConstraints InParent = BmotionDragConstraints.Parent();
+    private static readonly BmotionPreset _button = BmotionPresets.HoverLift() + BmotionPresets.Press();
+    private static readonly BmotionInertia _snap = Bm.Inertia(modifyTarget: Bm.SnapTo(StopSpacing));
 
     private int _taps;
     private int _hovers;

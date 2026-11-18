@@ -26,9 +26,9 @@ public class TriggerOwnershipTests : BunitContext
 
     private BevToolsSession Session => Services.GetRequiredService<BevToolsSession>();
 
-    private BevComponentRecord RecordOf<TComponent>() => Session.Components.All.Single(r => r.Type == typeof(TComponent));
+    private BevToolsComponentRecord RecordOf<TComponent>() => Session.Components.All.Single(r => r.Type == typeof(TComponent));
 
-    private BevToolsEvent BatchEventOf(BevRenderSample sample) =>
+    private BevToolsEvent BatchEventOf(BevToolsRenderSample sample) =>
         Session.Timeline.Snapshot().Single(e => e.Kind == BevToolsEventKind.RenderBatch && e.Title == "Render batch #" + sample.BatchId);
 
     [TestMethod]
@@ -38,10 +38,10 @@ public class TriggerOwnershipTests : BunitContext
         // every runtime: a render while the navigation runs is its own, a continuation that outlives it is not.
         var cut = Render<FireAndForget>();
         var record = RecordOf<FireAndForget>();
-        using var source = new ActivitySource(ActivityObserver.SourceName);
+        using var source = new ActivitySource(BevToolsActivityObserver.SourceName);
         await cut.InvokeAsync(() =>
         {
-            var activity = source.CreateActivity(ActivityObserver.NavigateName, ActivityKind.Internal)!;
+            var activity = source.CreateActivity(BevToolsActivityObserver.NavigateName, ActivityKind.Internal)!;
             activity.DisplayName = "Route /later -> MyApp.Pages.Later";
             activity.Start();
             cut.Instance.Start();
@@ -49,13 +49,13 @@ public class TriggerOwnershipTests : BunitContext
         });
 
         var navigation = Assert.ContainsSingle(e => e.Kind == BevToolsEventKind.Navigation, Session.Timeline.Snapshot());
-        Assert.AreEqual(BevRenderCause.Navigation, record.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.Navigation, record.LastRender!.Cause);
         Assert.AreEqual(navigation.Id, record.LastRender.TriggerEventId);
 
         cut.Instance.Gate.SetResult();
         await cut.Instance.Done.Task.WaitAsync(Patience);
 
-        Assert.AreEqual(BevRenderCause.StateHasChanged, record.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.StateHasChanged, record.LastRender!.Cause);
         Assert.IsNull(record.LastRender.TriggerEventId);
     }
 
@@ -69,13 +69,13 @@ public class TriggerOwnershipTests : BunitContext
         cut.Find("button").Click();
 
         var click = Assert.ContainsSingle(e => e.Kind == BevToolsEventKind.UiEvent, Session.Timeline.Snapshot());
-        Assert.AreEqual(BevRenderCause.UiEvent, record.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.UiEvent, record.LastRender!.Cause);
         Assert.AreEqual(click.Id, record.LastRender.TriggerEventId);
 
         await cut.Instance.Ticked.Task.WaitAsync(Patience);
 
         var tick = record.LastRender!;
-        Assert.AreEqual(BevRenderCause.StateHasChanged, tick.Cause);
+        Assert.AreEqual(BevToolsRenderCause.StateHasChanged, tick.Cause);
         Assert.IsNull(tick.TriggerEventId);
         Assert.IsNull(BatchEventOf(tick).ParentEventId);
     }
@@ -85,7 +85,7 @@ public class TriggerOwnershipTests : BunitContext
     {
         var cut = Render<FireAndForget>();
         var record = RecordOf<FireAndForget>();
-        BevErrorRecord? error = null;
+        BevToolsErrorRecord? error = null;
         cut.Instance.Continued = () => error = Session.Errors.Record(new InvalidOperationException("later"), "test");
 
         cut.Find("button").Click();
@@ -97,7 +97,7 @@ public class TriggerOwnershipTests : BunitContext
         await cut.Instance.Done.Task.WaitAsync(Patience);
 
         // Nothing the continuation does points at the click: its render, the component it shows, the error it raises.
-        Assert.AreEqual(BevRenderCause.StateHasChanged, record.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.StateHasChanged, record.LastRender!.Cause);
         Assert.IsNull(record.LastRender.TriggerEventId);
         var child = RecordOf<ChildComponent>();
         Assert.IsNull(child.LastRender!.TriggerEventId);
@@ -116,7 +116,7 @@ public class TriggerOwnershipTests : BunitContext
         cut.Find("#show").Click();
 
         var click = Assert.ContainsSingle(e => e.Kind == BevToolsEventKind.UiEvent, Session.Timeline.Snapshot());
-        Assert.AreEqual(BevRenderCause.UiEvent, record.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.UiEvent, record.LastRender!.Cause);
         Assert.AreEqual(click.Id, BatchEventOf(record.LastRender).ParentEventId);
         var child = RecordOf<ChildComponent>();
         Assert.AreEqual(click.Id, child.LastRender!.TriggerEventId);
@@ -134,7 +134,7 @@ public class TriggerOwnershipTests : BunitContext
         await cut.Instance.Completed.Task.WaitAsync(Patience);
 
         var click = Assert.ContainsSingle(e => e.Kind == BevToolsEventKind.UiEvent, Session.Timeline.Snapshot());
-        Assert.AreEqual(BevRenderCause.UiEvent, record.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.UiEvent, record.LastRender!.Cause);
         Assert.AreEqual(click.Id, record.LastRender.TriggerEventId);
     }
 
@@ -159,7 +159,7 @@ public class TriggerOwnershipTests : BunitContext
 
         // The navigation's own renders are still the navigation's: the layout it re-rendered, the page it created.
         var navigations = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.Navigation && e.Title.Contains("/bev-tests/clock", StringComparison.Ordinal)).Select(e => e.Id).ToArray();
-        Assert.AreEqual(BevRenderCause.Navigation, layout.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.Navigation, layout.LastRender!.Cause);
         Assert.Contains(layout.LastRender.TriggerEventId!.Value, navigations);
         var page = RecordOf<ClockPage>();
         Assert.Contains(page.Renders[0].TriggerEventId!.Value, navigations);
@@ -167,7 +167,7 @@ public class TriggerOwnershipTests : BunitContext
         await router.FindComponent<ClockPage>().Instance.Ticked.Task.WaitAsync(Patience);
 
         var tick = page.LastRender!;
-        Assert.AreEqual(BevRenderCause.StateHasChanged, tick.Cause);
+        Assert.AreEqual(BevToolsRenderCause.StateHasChanged, tick.Cause);
         Assert.IsNull(tick.TriggerEventId);
         Assert.IsNull(BatchEventOf(tick).ParentEventId);
     }

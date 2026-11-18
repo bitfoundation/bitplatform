@@ -102,7 +102,7 @@ public static partial class BbScannerSetupGuide
                 can: it opens the camera, cuts each frame down to the luminance - one byte a pixel - of the searched
                 `Region`, and the component reads that back in byte array slices of 30 KB, several at once. Each slice
                 fits in one message, so SignalR's 32 KB `MaximumReceiveMessageSize` can stay as it is. A 640x360 frame
-                searched through `BbScanRegion.CenteredSquare(0.7)` is about 63 KB, against about 900 KB of RGBA. Each
+                searched through `BbScannerScanRegion.CenteredSquare(0.7)` is about 63 KB, against about 900 KB of RGBA. Each
                 tick costs one round trip to poll plus the slices of a frame, and every active scanner costs server CPU
                 to decode. Reference `Bit.BbScanner` from the server project, where the pages render.
                 """,
@@ -234,12 +234,12 @@ public static partial class BbScannerSetupGuide
         @page "/scan"
         @rendermode InteractiveServer
 
-        <BbScanner Formats="BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13"
-                   Region="BbScanRegion.CenteredSquare(0.7)"
+        <BbScanner Formats="BbScannerBarcodeFormat.QrCode | BbScannerBarcodeFormat.Ean13"
+                   Region="BbScannerScanRegion.CenteredSquare(0.7)"
                    OnScan="HandleScan" />
 
         @code {
-            private void HandleScan(BbBarcodeResult result) => Console.WriteLine($"{result.Format}: {result.Text}");
+            private void HandleScan(BbScannerBarcodeResult result) => Console.WriteLine($"{result.Format}: {result.Text}");
         }
         ```
 
@@ -266,16 +266,16 @@ public static partial class BbScannerSetupGuide
 
         ### Pixels the server already has
 
-        `BbBarcodeDecoder` has no dependency on Blazor or JavaScript, so an image your own code has turned into pixels
+        `BbScannerBarcodeDecoder` has no dependency on Blazor or JavaScript, so an image your own code has turned into pixels
         decodes in-process, with no page involved:
 
         ```csharp
         // rgba: the image as packed RGBA pixels, produced by whichever image library the app already uses.
         var options = BbScannerOptions.ForStillImages();
-        options.Formats = BbBarcodeFormat.QrCode;
+        options.Formats = BbScannerBarcodeFormat.QrCode;
 
-        using var decoder = new BbBarcodeDecoder(options);
-        var result = decoder.Decode(rgba, width, height, BbPixelFormat.Rgba32);
+        using var decoder = new BbScannerBarcodeDecoder(options);
+        var result = decoder.Decode(rgba, width, height, BbScannerPixelFormat.Rgba32);
         ```
         """;
 
@@ -309,12 +309,12 @@ public static partial class BbScannerSetupGuide
         ```razor
         @page "/scan"
 
-        <BbScanner Formats="BbBarcodeFormat.QrCode" OnScan="r => _last = r" OnError="e => _error = e" />
+        <BbScanner Formats="BbScannerBarcodeFormat.QrCode" OnScan="r => _last = r" OnError="e => _error = e" />
 
         <p>@(_last?.Text ?? _error?.Message ?? "Point the camera at a QR code.")</p>
 
         @code {
-            private BbBarcodeResult? _last;
+            private BbScannerBarcodeResult? _last;
             private BbScannerException? _error;
         }
         ```
@@ -407,7 +407,7 @@ public static partial class BbScannerSetupGuide
     private const string Next = """
         The scanning itself is markup and plain objects - call `GetBbScannerGuideSection(heading: "Using the component")`
         for the parameters, events and methods, `GetBbScannerFormats()` for the symbologies and the options that steer
-        them, `InspectBbScannerSymbol()` to see a real `BbBarcodeResult`, or `GetBbScannerSourceFile()` for the index of
+        them, `InspectBbScannerSymbol()` to see a real `BbScannerBarcodeResult`, or `GetBbScannerSourceFile()` for the index of
         the demo's working pages.
         """;
 

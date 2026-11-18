@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Stands in for the plan's result inside a rebuilt remainder expression, so the executor can

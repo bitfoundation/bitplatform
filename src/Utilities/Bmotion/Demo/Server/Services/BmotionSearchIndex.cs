@@ -163,7 +163,7 @@ public static class BmotionSearchIndex
 
                 // An inherited member - ChildStagger on every transition type, say - is one answer, not four:
                 // left in, the copies push everything else off the page. They stay indexed on every type, so
-                // the copy a query names its type for ("BmSpring ChildStagger") is the one it finds. Keyed by
+                // the copy a query names its type for ("BmotionSpring ChildStagger") is the one it finds. Keyed by
                 // the types that declare it, not by what its documentation says: two members of one name that
                 // share a stock sentence ("Style" on two components) are still two answers.
                 string[] declaredBy = [.. overloads.Select(o => o.DeclaringType).OfType<string>().Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
@@ -189,9 +189,9 @@ public static class BmotionSearchIndex
 
         foreach (var easing in await BmotionEasingCatalog.GetAsync())
         {
-            // Named by the preset alone, as a member is: "EaseInOut" is the preset's name, and "BmEase" the
+            // Named by the preset alone, as a member is: "EaseInOut" is the preset's name, and "BmotionEase" the
             // type every preset shares.
-            entries.Add(new McpSearchEntry("Easing preset", $"BmEase.{easing.Name}", easing.Family,
+            entries.Add(new McpSearchEntry("Easing preset", $"BmotionEase.{easing.Name}", easing.Family,
                 "GetBmotionEasings()", easing.Feel, $"{easing.Direction} {easing.Family}", Name: easing.Name));
         }
 

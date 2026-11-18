@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Bit.BlazeDb.Generators;
+namespace Bit.BlazeDb;
 
 internal static class BlazeDbSourceEmitter
 {
-    private const string Writer = "global::Bit.BlazeDb.Serialization.BlazeDbBufferWriter";
-    private const string Reader = "global::Bit.BlazeDb.Serialization.BlazeDbBufferReader";
+    private const string Writer = "global::Bit.BlazeDb.BlazeDbBufferWriter";
+    private const string Reader = "global::Bit.BlazeDb.BlazeDbBufferReader";
 
     private static string Bool(bool value) => value ? "true" : "false";
 

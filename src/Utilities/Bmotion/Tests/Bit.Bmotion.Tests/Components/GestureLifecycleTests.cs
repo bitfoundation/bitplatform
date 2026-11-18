@@ -10,7 +10,7 @@ namespace Bit.Bmotion.Tests.Components;
 /// bridge makes) with the engine ticked frame by frame: focus, tap cancel, in-view leave with
 /// <c>Once</c>, drag (snap-to-origin, momentum, constraints), pan, the per-frame <c>OnUpdate</c>
 /// hook, <c>OnAnimationComplete</c>, the shared-element <c>LayoutId</c> hand-off and
-/// <see cref="BmDragControls"/>.
+/// <see cref="BmotionDragControls"/>.
 /// </summary>
 [TestClass]
 public class GestureLifecycleTests
@@ -101,7 +101,7 @@ public class GestureLifecycleTests
             .Add(p => p.Once, once)
             .Add(p => p.OnViewportLeave, EventCallback.Factory.Create(this, () => left = true))
             .Add(p => p.ChildContent, Div));
-        var observed = (BmViewport)ctx.Interop.ArgsOf("observeViewport").Single()[1]!;
+        var observed = (BmotionViewport)ctx.Interop.ArgsOf("observeViewport").Single()[1]!;
         Assert.AreEqual(once, observed.Once, "the bridge must be told whether to keep observing");
 
         var viewport = (Bmotion)ctx.Interop.ViewportRefs["box"];
@@ -137,7 +137,7 @@ public class GestureLifecycleTests
         => ctx.Render<Bmotion>(ps =>
         {
             ps.Add(p => p.Id, "box")
-              .Add(p => p.Drag, BmDrag.Both)
+              .Add(p => p.Drag, BmotionDrag.Both)
               .Add(p => p.WhileDrag, Bm.To(scale: 1.1))
               .Add(p => p.OnDragStart, EventCallback.Factory.Create(this, () => log.Add("start")))
               .Add(p => p.OnDrag, EventCallback.Factory.Create(this, () => log.Add("move")))
@@ -249,11 +249,11 @@ public class GestureLifecycleTests
     {
         using var ctx = new BmotionTestContext();
         var log = new List<string>();
-        BmPanInfo? info = null;
+        BmotionPanInfo? info = null;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.OnPanStart, EventCallback.Factory.Create(this, () => log.Add("start")))
-            .Add(p => p.OnPan, EventCallback.Factory.Create<BmPanInfo>(this, i => { info = i; log.Add("pan"); }))
+            .Add(p => p.OnPan, EventCallback.Factory.Create<BmotionPanInfo>(this, i => { info = i; log.Add("pan"); }))
             .Add(p => p.OnPanEnd, EventCallback.Factory.Create(this, () => log.Add("end")))
             .Add(p => p.ChildContent, Div));
 
@@ -300,14 +300,14 @@ public class GestureLifecycleTests
     public async Task OnAnimationComplete_FiresForTheTargetThatFinished_NotTheOneItSuperseded()
     {
         using var ctx = new BmotionTestContext();
-        var started = new List<BmProps?>();
-        var completed = new List<BmProps?>();
+        var started = new List<BmotionProps?>();
+        var completed = new List<BmotionProps?>();
         var firstCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Animate, Bm.To(opacity: 1))
-            .Add(p => p.OnAnimationStart, EventCallback.Factory.Create<BmProps?>(this, p => started.Add(p)))
-            .Add(p => p.OnAnimationComplete, EventCallback.Factory.Create<BmProps?>(this, p =>
+            .Add(p => p.OnAnimationStart, EventCallback.Factory.Create<BmotionProps?>(this, p => started.Add(p)))
+            .Add(p => p.OnAnimationComplete, EventCallback.Factory.Create<BmotionProps?>(this, p =>
             {
                 lock (completed) completed.Add(p);
                 firstCompletion.TrySetResult();
@@ -395,7 +395,7 @@ public class GestureLifecycleTests
     public async Task DragControls_StartTheDragWithThePointersIdAndPosition()
     {
         using var ctx = new BmotionTestContext();
-        var controls = new BmDragControls();
+        var controls = new BmotionDragControls();
 
         // Not attached to anything yet: a no-op rather than an error.
         await controls.StartAsync(new PointerEventArgs { PointerId = 1 });
@@ -405,7 +405,7 @@ public class GestureLifecycleTests
         {
             b.OpenComponent<Bmotion>(0);
             b.AddComponentParameter(1, nameof(Bmotion.Id), "thumb");
-            b.AddComponentParameter(2, nameof(Bmotion.Drag), BmDrag.X);
+            b.AddComponentParameter(2, nameof(Bmotion.Drag), BmotionDrag.X);
             b.AddComponentParameter(3, nameof(Bmotion.DragControls), controls);
             b.AddComponentParameter(4, nameof(Bmotion.DragListener), false);
             b.AddComponentParameter(5, nameof(Bmotion.ChildContent), Div);

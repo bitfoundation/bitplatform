@@ -63,7 +63,7 @@
 
 <ProblemCard Id="problem-10" Title="10. What changed in the cart, and which click did it?" Symptom="State mutated somewhere; find the action and the before/after values." Href="/checkout">
     <li>Add and remove items. State → CartState: change history with named actions and what each was about (<em>Add · Quantum Lamp 3</em>), diffs and a link to the triggering UI event; the filter finds a change by action, detail or member.</li>
-    <li><em>⟲ restore</em> on an earlier change puts the cart back as it was right after it: <code>CartState</code> implements <code>IBevStateRestorer</code> and keeps its versions - BevTools only asks, the provider restores itself. The restore is a change of its own in the history and the Timeline.</li>
+    <li><em>⟲ restore</em> on an earlier change puts the cart back as it was right after it: <code>CartState</code> implements <code>IBevToolsStateRestorer</code> and keeps its versions - BevTools only asks, the provider restores itself. The restore is a change of its own in the history and the Timeline.</li>
 </ProblemCard>
 
 <ProblemCard Id="problem-11" Title="11. The product list is loaded twice" Symptom="GET /api/products runs on every visit to Products, and once more right after the page appears." Href="/products">

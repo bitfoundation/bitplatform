@@ -1,15 +1,6 @@
 ﻿
 namespace Bit.Bink;
 
-/// <summary>How a stroke's path should be painted.</summary>
-public enum BinkStrokeGeometryMode : byte
-{
-    /// <summary>The path is a closed outline polygon to be filled (variable width strokes).</summary>
-    Fill = 0,
-    /// <summary>The path is a centerline to be stroked with a constant width.</summary>
-    Centerline = 1,
-}
-
 /// <summary>
 /// The renderable vector geometry of a stroke, produced by a <see cref="BinkBrush"/> from stroke points. Immutable and
 /// cached by strokes, so it is only computed once per stroke version regardless of how many times it is drawn.

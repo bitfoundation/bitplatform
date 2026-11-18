@@ -6,7 +6,6 @@
            .UseCrossTabSync());                                      // this browser's tabs sync directly, offline too
    - and every tab that opens the same room is another replica. *@
 @using Bit.Bcrdt
-@using Bit.Bcrdt.Blazor
 
 <BcrdtCollaborationScope DocumentId="@($"live-{Room}")" User="_me" Context="document">
     @* Shown while the page is prerendered and while the document opens. *@

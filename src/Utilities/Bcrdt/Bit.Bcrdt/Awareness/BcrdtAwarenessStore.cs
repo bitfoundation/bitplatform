@@ -1,27 +1,5 @@
 ﻿namespace Bit.Bcrdt;
 
-/// <summary>What one client is currently broadcasting about itself.</summary>
-/// <param name="ClientId">The client session the entry belongs to.</param>
-/// <param name="Clock">That client's awareness counter, used to order its own updates.</param>
-/// <param name="State">The published state, or <see langword="null"/> if the client has gone.</param>
-/// <param name="LastSeen">When this replica last heard from the client.</param>
-public sealed record BcrdtAwarenessEntry(
-    ulong ClientId,
-    long Clock,
-    IReadOnlyDictionary<string, object?>? State,
-    DateTimeOffset LastSeen);
-
-/// <summary>Which clients appeared, changed or disappeared.</summary>
-/// <param name="Added">Clients seen for the first time.</param>
-/// <param name="Updated">Clients that published new state.</param>
-/// <param name="Removed">Clients that left or timed out.</param>
-/// <param name="Origin">What caused the change: <see langword="null"/> for local, otherwise the source.</param>
-public readonly record struct BcrdtAwarenessChangedEventArgs(
-    IReadOnlyList<ulong> Added,
-    IReadOnlyList<ulong> Updated,
-    IReadOnlyList<ulong> Removed,
-    object? Origin);
-
 /// <summary>
 /// The registry of ephemeral, per-client state: cursors, selections, who is online.
 /// </summary>

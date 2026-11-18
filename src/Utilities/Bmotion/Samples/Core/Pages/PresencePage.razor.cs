@@ -8,9 +8,9 @@ public partial class PresencePage
     private static readonly TimeSpan ToastLifetime = TimeSpan.FromSeconds(5);
     private const int MaxToasts = 4;
 
-    private static readonly BmPreset FadePreset = BmPresets.Fade();
-    private static readonly BmPreset ModalPreset = BmPresets.Modal();
-    private static readonly BmPreset ToastPreset = BmPresets.Toast();
+    private static readonly BmotionPreset FadePreset = BmotionPresets.Fade();
+    private static readonly BmotionPreset ModalPreset = BmotionPresets.Modal();
+    private static readonly BmotionPreset ToastPreset = BmotionPresets.Toast();
 
     private static readonly string[] Messages = ["Draft saved", "Link copied", "Settings updated", "Upload finished", "Invite sent"];
 

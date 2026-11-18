@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace Bit.Bcrdt.Server;
+namespace Bit.Bcrdt;
 
 /// <summary>Registers the collaboration hub with a server's dependency injection container.</summary>
 public static class BitBcrdtServer

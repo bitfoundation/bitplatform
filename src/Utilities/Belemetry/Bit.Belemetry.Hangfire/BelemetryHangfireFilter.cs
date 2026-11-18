@@ -4,7 +4,7 @@ using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Server;
 
-namespace Bit.Belemetry.Hangfire;
+namespace Bit.Belemetry;
 
 /// <summary>
 /// Records a consumer span on the <see cref="SourceName"/> source for every job execution, parented to the trace

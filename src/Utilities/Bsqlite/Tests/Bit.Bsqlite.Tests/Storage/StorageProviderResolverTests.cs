@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Interop;
-
-namespace Bit.Bsqlite.Storage.Tests;
+﻿namespace Bit.Bsqlite.Storage.Tests;
 
 [TestClass]
 public sealed class StorageProviderResolverTests

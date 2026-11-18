@@ -57,13 +57,13 @@ public static class BmotionRecipeCatalog
                 </Bmotion>
 
                 @code {
-                    private readonly BmVariants _container = new()
+                    private readonly BmotionVariants _container = new()
                     {
                         ["hidden"] = Bm.To(opacity: 0),
                         ["visible"] = Bm.To(opacity: 1),
                     };
 
-                    private readonly BmVariants _item = new()
+                    private readonly BmotionVariants _item = new()
                     {
                         ["hidden"] = Bm.To(opacity: 0, y: 16),
                         ["visible"] = Bm.To(opacity: 1, y: 0),
@@ -73,7 +73,7 @@ public static class BmotionRecipeCatalog
             Notes = "The stagger lives on the CONTAINER's transition, not on the items - each child inherits " +
                     "the state name and gets its slot in the cascade. Do not also put a Transition on the items " +
                     "unless you mean to override the timing (a per-variant transition is the tidier way). " +
-                    "Bm.Stagger(..., from: BmStaggerFrom.Center) via childStagger makes the cascade radiate " +
+                    "Bm.Stagger(..., from: BmotionStaggerFrom.Center) via childStagger makes the cascade radiate " +
                     "instead of running first-to-last."
         },
         new()
@@ -110,7 +110,7 @@ public static class BmotionRecipeCatalog
             Keywords = "modal dialog popup overlay backdrop scrim open close panel drawer sheet",
             SeeAlso = "/presence",
             Code = """
-                <BmotionAnimatePresence IsPresent="_open" Mode="BmPresenceMode.Wait">
+                <BmotionAnimatePresence IsPresent="_open" Mode="BmotionPresenceMode.Wait">
                     <div>
                         <Bmotion Initial="Bm.To(opacity: 0)" Animate="Bm.To(opacity: 1)"
                                  Exit="Bm.To(opacity: 0)" Transition="Bm.Tween(0.15)">
@@ -169,8 +169,8 @@ public static class BmotionRecipeCatalog
                 <Bmotion Initial="Bm.To(opacity: 0, y: 32)"
                          WhileInView="Bm.To(opacity: 1, y: 0)"
                          Once="true"
-                         Viewport='new BmViewport { Amount = "0.3" }'
-                         Transition="Bm.Tween(0.5, BmEase.Out)">
+                         Viewport='new BmotionViewport { Amount = "0.3" }'
+                         Transition="Bm.Tween(0.5, BmotionEase.Out)">
                     <section class="feature">Content</section>
                 </Bmotion>
                 """,
@@ -186,7 +186,7 @@ public static class BmotionRecipeCatalog
             Keywords = "scroll progress bar indicator reading position parallax timeline scrolltimeline page",
             SeeAlso = "/scroll",
             Code = """
-                <Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
+                <Bmotion Timeline="BmotionScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
                     <div class="progress-bar" style="transform-origin: 0 50%;" />
                 </Bmotion>
                 """,
@@ -203,8 +203,8 @@ public static class BmotionRecipeCatalog
             Keywords = "layout flip position size move resize expand collapse accordion reflow rearrange",
             SeeAlso = "/layout",
             Code = """
-                <Bmotion Layout="BmLayout.Size"
-                         LayoutAnchor="BmLayoutAnchor.Center"
+                <Bmotion Layout="BmotionLayout.Size"
+                         LayoutAnchor="BmotionLayoutAnchor.Center"
                          LayoutDependency="_isOpen"
                          Transition="Bm.Spring(bounce: 0.15, duration: 0.4)">
                     <div class="panel">
@@ -223,7 +223,7 @@ public static class BmotionRecipeCatalog
                 }
                 """,
             Notes = "Nothing here animates height - the element is simply re-rendered into its new size and " +
-                    "Bmotion measures the difference (FLIP). Use BmLayout.Position when scaling would distort " +
+                    "Bmotion measures the difference (FLIP). Use BmotionLayout.Position when scaling would distort " +
                     "text. Add LayoutScroll=\"true\" inside a scrolling container, or the container's own scroll " +
                     "between the two measurements reads as movement and the element jumps. The bridge plays the " +
                     "FLIP itself as a Web Animation, so it works on Blazor Server as well."
@@ -266,9 +266,9 @@ public static class BmotionRecipeCatalog
             Keywords = "drag draggable pointer move constraints bounds elastic momentum snap back slider",
             SeeAlso = "/drag",
             Code = """
-                <Bmotion Drag="BmDrag.Both"
-                         DragConstraints="new BmDragConstraints { Left = -120, Right = 120, Top = -80, Bottom = 80 }"
-                         DragElastic="BmDragElastic.Uniform(0.2)"
+                <Bmotion Drag="BmotionDrag.Both"
+                         DragConstraints="new BmotionDragConstraints { Left = -120, Right = 120, Top = -80, Bottom = 80 }"
+                         DragElastic="BmotionDragElastic.Uniform(0.2)"
                          DragMomentum="true"
                          WhileDrag="Bm.To(scale: 1.05)">
                     <div class="handle" />
@@ -289,17 +289,17 @@ public static class BmotionRecipeCatalog
             SeeAlso = "/keyframes",
             Code = """
                 <Bmotion Animate="Bm.To(rotate: 360)"
-                         Transition="Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever)">
+                         Transition="Bm.Tween(1, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
                     <div class="spinner" />
                 </Bmotion>
 
                 @* a pulse instead: keyframes, mirrored so it breathes rather than snapping back *@
                 <Bmotion Animate="Bm.To(scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6])"
-                         Transition="Bm.Tween(1.4, repeat: BmRepeat.Forever)">
+                         Transition="Bm.Tween(1.4, repeat: BmotionRepeat.Forever)">
                     <div class="dot" />
                 </Bmotion>
                 """,
-            Notes = "BmEase.Linear is the one case where linear is correct: a spinner that eases has a visible " +
+            Notes = "BmotionEase.Linear is the one case where linear is correct: a spinner that eases has a visible " +
                     "stutter every revolution. Both play on Blazor Server: the rotation as a looping two-keyframe " +
                     "timeline, the keyframe pulse as one recorded cycle the browser repeats."
         },
@@ -312,7 +312,7 @@ public static class BmotionRecipeCatalog
             SeeAlso = "/split-text",
             Code = """
                 <BmotionSplitText Text="Motion, written in C#"
-                                  By="BmSplitBy.Words"
+                                  By="BmotionSplitBy.Words"
                                   Initial="Bm.To(opacity: 0, y: 24)"
                                   Animate="Bm.To(opacity: 1, y: 0)"
                                   Stagger="Bm.Stagger(0.05)"
@@ -369,7 +369,7 @@ public static class BmotionRecipeCatalog
             SeeAlso = "/accessibility",
             Code = """
                 // Program.cs - set the policy once, for the whole app.
-                builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
+                builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmotionReducedMotionMode.User);
                 """,
             Notes = "The default is IgnoreUnlessConfigured, which is back-compatible rather than correct: it " +
                     "consults the OS preference only inside a <BmotionConfig>. User respects it everywhere and " +

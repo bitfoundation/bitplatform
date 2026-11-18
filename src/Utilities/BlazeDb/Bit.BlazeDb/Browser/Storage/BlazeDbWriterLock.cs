@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Versioning;
 
-namespace Bit.BlazeDb.Browser;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// The cross-tab writer election both browser backends run through the Web Locks API. Held for the

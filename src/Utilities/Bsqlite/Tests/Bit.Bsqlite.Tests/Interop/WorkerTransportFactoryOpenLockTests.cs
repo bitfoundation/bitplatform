@@ -7,7 +7,7 @@ public sealed class WorkerTransportFactoryOpenLockTests
 
     private CancellationToken Ct => TestContext.CancellationToken;
 
-    private static ValueTask<Storage.IBsqliteStorageProvider?> Unbound(CancellationToken cancellationToken) => default;
+    private static ValueTask<IBsqliteStorageProvider?> Unbound(CancellationToken cancellationToken) => default;
 
     /// <summary>
     /// The page keeps every held open lock in one map, by id, and a factory is made per DI scope. Ids each factory

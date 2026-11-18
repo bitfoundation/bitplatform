@@ -40,8 +40,8 @@ public static class McpPrompts
                the browser, so the packages and the code that opens it belong in the .Client project.
             3. Reference `Bit.BlazeDb` directly from the project that declares the tables: it brings the source generator,
                which does not flow transitively (through a project reference or the EF Core package), and without it a
-               [BlazeDbTable] type compiles but has no `Table` and no `Indexes`. Use the `Bit.BlazeDb.Browser` backends
-               only where the database runs in the browser.
+               [BlazeDbTable] type compiles but has no `Table` and no `Indexes`. Use the browser backends (`BlazeDbOpfsStorage`,
+               `BlazeDbIndexedDbStorage`) only where the database runs in the browser.
             4. Declare the tables, then run each one through `InspectBlazeDbTable` and fix every BLZ diagnostic it reports.
                Pin field numbers with [BlazeDbField(n)] before the app stores real data.
             5. Open the database once and share it (a singleton service), and never open a browser backend during

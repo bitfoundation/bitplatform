@@ -17,12 +17,12 @@ public static class BitBevToolsBelemetry
     /// Belemetry keeps working without it, and BevTools without Belemetry: a production app that leaves BevTools out still
     /// makes support bundles, just without the component hierarchy.
     /// </remarks>
-    public static IServiceCollection AddBitBevToolsBelemetry(this IServiceCollection services, Action<BitBevToolsOptions>? configure = null)
+    public static IServiceCollection AddBitBevToolsBelemetry(this IServiceCollection services, Action<BevToolsOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<IBelemetryComponentContextProvider, BevBelemetryComponentContext>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBelemetryDiagnosticComponentFilter, BevBelemetryComponentFilter>());
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<IBelemetryComponentContextProvider, BevToolsBelemetryComponentContext>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBelemetryDiagnosticComponentFilter, BevToolsBelemetryComponentFilter>());
         services.AddBitBevToolsServices(options =>
         {
             configure?.Invoke(options);

@@ -27,7 +27,7 @@
     <p>
         Point the camera at a QR code, an EAN-13 or any other common symbology - the QR Code, Data Matrix, Code 128,
         Code 39, EAN, UPC and ITF symbols on the <NavLink href="decoder">decoder</NavLink> page, shown on another
-        screen, will do. This scanner keeps to <code>BbBarcodeFormat.Common</code>, the default: PDF417, Aztec,
+        screen, will do. This scanner keeps to <code>BbScannerBarcodeFormat.Common</code>, the default: PDF417, Aztec,
         MaxiCode, Micro QR, Codabar, Code 93 and GS1 DataBar each cost every frame time of their own, so an app asks
         for them by name through <code>Formats</code>, and the camera here passes them by. <em>Scan image</em> reads
         a photo instead, without opening the camera.
@@ -35,7 +35,7 @@
 
     <div class="surface">
         <BbScanner @ref="_scanner"
-                   Region="BbScanRegion.CenteredSquare(0.7)"
+                   Region="BbScannerScanRegion.CenteredSquare(0.7)"
                    OnScan="HandleScan"
                    OnError="e => _error = e"
                    OnStatusChanged="s => _status = s"
@@ -55,26 +55,26 @@
     <ul class="features">
         <li>This page - the live camera: permission, the frame loop, the reticle and duplicate suppression.</li>
         <li><NavLink href="image">Images</NavLink> - a picked or dropped photo, Blazor's <code>InputFile</code>, and pixels the application already has.</li>
-        <li><NavLink href="decoder">Decoder</NavLink> - <code>BbBarcodeDecoder</code> reading every symbology in-process, with the cost of a frame on this host.</li>
+        <li><NavLink href="decoder">Decoder</NavLink> - <code>BbScannerBarcodeDecoder</code> reading every symbology in-process, with the cost of a frame on this host.</li>
     </ul>
 </section>
 
 @code {
-    private readonly List<BbBarcodeResult> _results = [];
+    private readonly List<BbScannerBarcodeResult> _results = [];
     private BbScannerStatus _status = BbScannerStatus.Idle;
     private BbScanner? _scanner;
     private long _decoded;
-    private BbScanDiagnostics _frame;
+    private BbScannerScanDiagnostics _frame;
 
     // Twice a second at most: proof, on every host, that frames reach the decoder and what each one costs there.
-    private void HandleDiagnostics(BbScanDiagnostics frame)
+    private void HandleDiagnostics(BbScannerScanDiagnostics frame)
     {
         _frame = frame;
         _decoded = _scanner?.FramesDecoded ?? 0;
     }
     private BbScannerException? _error;
 
-    private void HandleScan(BbBarcodeResult result)
+    private void HandleScan(BbScannerBarcodeResult result)
     {
         _error = null;
         ResultList.Prepend(_results, [result]);

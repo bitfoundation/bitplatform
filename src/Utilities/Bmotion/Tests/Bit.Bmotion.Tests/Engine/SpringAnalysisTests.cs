@@ -1,7 +1,7 @@
 namespace Bit.Bmotion.Tests.Engine;
 
 /// <summary>
-/// <see cref="BmSpring.Analyze"/> measures the engine's own spring driver, and <see cref="BmSprings"/> names springs whose
+/// <see cref="BmotionSpring.Analyze"/> measures the engine's own spring driver, and <see cref="BmotionSprings"/> names springs whose
 /// character matches what their names promise.
 /// </summary>
 [TestClass]
@@ -13,7 +13,7 @@ public class SpringAnalysisTests
         // ζ = 10 / (2·√100) = 0.5: overshoot e^(-ζπ/√(1-ζ²)) ≈ 16.3 %, period 2π/(10·√0.75) ≈ 0.7255 s.
         var a = Bm.Spring(stiffness: 100, damping: 10).Analyze(0, 100);
 
-        Assert.AreEqual(BmSpringDamping.Underdamped, a.DampingKind);
+        Assert.AreEqual(BmotionSpringDamping.Underdamped, a.DampingKind);
         Assert.AreEqual(0.5, a.DampingRatio, 1e-9);
         Assert.AreEqual(10, a.NaturalFrequency, 1e-9);
         // Measured on 60 Hz frames, as on screen: the frame nearest the peak, integrated in frame-sized steps.
@@ -31,7 +31,7 @@ public class SpringAnalysisTests
     {
         var a = Bm.Spring(stiffness: 100, damping: 20).Analyze(0, 100);
 
-        Assert.AreEqual(BmSpringDamping.CriticallyDamped, a.DampingKind);
+        Assert.AreEqual(BmotionSpringDamping.CriticallyDamped, a.DampingKind);
         Assert.IsTrue(a.Overshoot < 1e-3, $"overshoot {a.Overshoot}");
         Assert.AreEqual(0, a.TargetCrossings);
         Assert.IsNull(a.OscillationPeriod);
@@ -54,7 +54,7 @@ public class SpringAnalysisTests
     [TestMethod]
     public void TheSamples_TraceTheMotionAt60Hz_FromStartToTarget()
     {
-        var a = BmSprings.Bouncy().Analyze(10, 20);
+        var a = BmotionSprings.Bouncy().Analyze(10, 20);
 
         Assert.AreEqual(60, a.SampleRate);
         Assert.AreEqual(10, a.Samples[0]);
@@ -117,7 +117,7 @@ public class SpringAnalysisTests
 
         Assert.IsTrue(a.Settled);
         Assert.IsTrue(a.Samples.All(double.IsFinite));
-        Assert.AreEqual(BmSpringDamping.Overdamped, a.DampingKind);
+        Assert.AreEqual(BmotionSpringDamping.Overdamped, a.DampingKind);
         Assert.AreEqual(0, a.Overshoot);
     }
 
@@ -131,7 +131,7 @@ public class SpringAnalysisTests
     public void RepeatsAndDelays_AreNotTheSpringsMotion()
     {
         var plain = Bm.Spring(stiffness: 200, damping: 15).Analyze();
-        var repeated = Bm.Spring(stiffness: 200, damping: 15, delay: 1, repeat: BmRepeat.Forever).Analyze();
+        var repeated = Bm.Spring(stiffness: 200, damping: 15, delay: 1, repeat: BmotionRepeat.Forever).Analyze();
 
         Assert.AreEqual(plain.SettlingTime, repeated.SettlingTime);
         Assert.IsTrue(repeated.Settled);
@@ -142,9 +142,9 @@ public class SpringAnalysisTests
     [TestMethod]
     public void TheNamedSprings_AreFreshInstances()
     {
-        var a = BmSprings.Snappy();
+        var a = BmotionSprings.Snappy();
         a.Delay = 1;
-        Assert.AreEqual(0, BmSprings.Snappy().Delay);
+        Assert.AreEqual(0, BmotionSprings.Snappy().Delay);
     }
 
     [TestMethod]
@@ -152,8 +152,8 @@ public class SpringAnalysisTests
     {
         foreach (var (name, spring) in new[]
         {
-            ("Smooth", BmSprings.Smooth()), ("Stiff", BmSprings.Stiff()),
-            ("Responsive", BmSprings.Responsive()), ("Heavy", BmSprings.Heavy()),
+            ("Smooth", BmotionSprings.Smooth()), ("Stiff", BmotionSprings.Stiff()),
+            ("Responsive", BmotionSprings.Responsive()), ("Heavy", BmotionSprings.Heavy()),
         })
         {
             var a = spring.Analyze();
@@ -165,8 +165,8 @@ public class SpringAnalysisTests
     [TestMethod]
     public void Heavy_IsCriticallyDamped()
     {
-        var a = BmSprings.Heavy().Analyze();
-        Assert.AreEqual(BmSpringDamping.CriticallyDamped, a.DampingKind, $"ζ {a.DampingRatio}");
+        var a = BmotionSprings.Heavy().Analyze();
+        Assert.AreEqual(BmotionSpringDamping.CriticallyDamped, a.DampingKind, $"ζ {a.DampingRatio}");
     }
 
     [TestMethod]
@@ -174,8 +174,8 @@ public class SpringAnalysisTests
     {
         // The driver falls back to mass 1 before deriving stiffness/damping from bounce/duration, so a mass of 0 runs
         // (and is reported as) the mass-1 spring rather than the near-undamped one SpringFromBounce(.., 0) would give.
-        var zero = new BmSpring { Bounce = 0.3, Duration = 0.5, Mass = 0 }.Analyze();
-        var one = new BmSpring { Bounce = 0.3, Duration = 0.5, Mass = 1 }.Analyze();
+        var zero = new BmotionSpring { Bounce = 0.3, Duration = 0.5, Mass = 0 }.Analyze();
+        var one = new BmotionSpring { Bounce = 0.3, Duration = 0.5, Mass = 1 }.Analyze();
         Assert.AreEqual(one.Stiffness, zero.Stiffness, 1e-9);
         Assert.AreEqual(one.Damping, zero.Damping, 1e-9);
         Assert.AreEqual(1, zero.Mass);
@@ -186,22 +186,22 @@ public class SpringAnalysisTests
     [TestMethod]
     public void Analyze_RejectsANonFiniteMass()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => new BmSpring { Stiffness = 100, Damping = 10, Mass = double.PositiveInfinity }.Analyze());
-        Assert.ThrowsExactly<ArgumentException>(() => new BmSpring { Stiffness = 100, Damping = 10, Mass = double.NaN }.Analyze());
+        Assert.ThrowsExactly<ArgumentException>(() => new BmotionSpring { Stiffness = 100, Damping = 10, Mass = double.PositiveInfinity }.Analyze());
+        Assert.ThrowsExactly<ArgumentException>(() => new BmotionSpring { Stiffness = 100, Damping = 10, Mass = double.NaN }.Analyze());
     }
 
     [TestMethod]
     public void Analyze_RejectsANegativeStiffness()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => new BmSpring { Stiffness = -5, Damping = 10, Mass = 1 }.Analyze());
+        Assert.ThrowsExactly<ArgumentException>(() => new BmotionSpring { Stiffness = -5, Damping = 10, Mass = 1 }.Analyze());
     }
 
     [TestMethod]
     public void TheLivelySprings_BounceInOrder()
     {
-        double snappy = BmSprings.Snappy().Analyze().Overshoot;
-        double gentle = BmSprings.Gentle().Analyze().Overshoot;
-        double bouncy = BmSprings.Bouncy().Analyze().Overshoot;
+        double snappy = BmotionSprings.Snappy().Analyze().Overshoot;
+        double gentle = BmotionSprings.Gentle().Analyze().Overshoot;
+        double bouncy = BmotionSprings.Bouncy().Analyze().Overshoot;
 
         Assert.IsTrue(snappy >= gentle && bouncy > snappy, $"gentle {gentle:P1}, snappy {snappy:P1}, bouncy {bouncy:P1}");
         Assert.IsTrue(bouncy is > 0.08 and < 0.2, $"bouncy {bouncy:P1}");
@@ -211,11 +211,11 @@ public class SpringAnalysisTests
     [TestMethod]
     public void TheNamedSprings_AreOrderedBySpeed()
     {
-        double Settle(BmSpring s) => s.Analyze().SettlingTime;
+        double Settle(BmotionSpring s) => s.Analyze().SettlingTime;
 
-        Assert.IsTrue(Settle(BmSprings.Responsive()) < Settle(BmSprings.Stiff()));
-        Assert.IsTrue(Settle(BmSprings.Stiff()) < Settle(BmSprings.Smooth()));
-        Assert.IsTrue(Settle(BmSprings.Smooth()) < Settle(BmSprings.Gentle()));
-        Assert.IsTrue(Settle(BmSprings.Gentle()) < Settle(BmSprings.Heavy()), "heavy is the slow one");
+        Assert.IsTrue(Settle(BmotionSprings.Responsive()) < Settle(BmotionSprings.Stiff()));
+        Assert.IsTrue(Settle(BmotionSprings.Stiff()) < Settle(BmotionSprings.Smooth()));
+        Assert.IsTrue(Settle(BmotionSprings.Smooth()) < Settle(BmotionSprings.Gentle()));
+        Assert.IsTrue(Settle(BmotionSprings.Gentle()) < Settle(BmotionSprings.Heavy()), "heavy is the slow one");
     }
 }

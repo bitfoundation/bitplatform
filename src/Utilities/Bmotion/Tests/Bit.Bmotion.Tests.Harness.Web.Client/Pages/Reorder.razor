@@ -13,7 +13,7 @@
 <Readout @ref="_verticalOrder" Id="vertical-order" Initial="A,B,C,D" />
 
 <div class="hlist" id="horizontal">
-    <BmotionReorderGroup @bind-Items="_horizontal" Axis="BmDragAxis.X" Context="item" OnReorder='() => Committed(_horizontal, _horizontalOrder, "horizontal")'>
+    <BmotionReorderGroup @bind-Items="_horizontal" Axis="BmotionDragAxis.X" Context="item" OnReorder='() => Committed(_horizontal, _horizontalOrder, "horizontal")'>
         <div class="item" data-item="@item">@item</div>
     </BmotionReorderGroup>
 </div>
@@ -28,7 +28,7 @@
 
 @* A wrapping grid: 3 columns of 60x40 cells, 4px apart. *@
 <div class="reorder-grid" id="grid">
-    <BmotionReorderGroup @bind-Items="_grid" Axis="BmDragAxis.Both" Context="item" OnReorder='() => Committed(_grid, _gridOrder, "grid")'>
+    <BmotionReorderGroup @bind-Items="_grid" Axis="BmotionDragAxis.Both" Context="item" OnReorder='() => Committed(_grid, _gridOrder, "grid")'>
         <div class="cell" data-item="@item">@item</div>
     </BmotionReorderGroup>
 </div>

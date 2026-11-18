@@ -3,172 +3,6 @@
 namespace Bit.Bmotion;
 
 /// <summary>
-/// How a prerendered CSS animation honours <c>prefers-reduced-motion</c>. The component resolves it
-/// from the same inputs as its runtime reduced-motion check, except that the OS preference itself
-/// is left to a media query - nothing can ask the browser while the page is being prerendered.
-/// </summary>
-internal enum BmotionPrerenderMotionPolicy
-{
-    /// <summary>Always the full animation.</summary>
-    Full,
-
-    /// <summary>Always the reduced animation (transforms snap, opacity and colour still animate).</summary>
-    Reduced,
-
-    /// <summary>The full animation, or the reduced one when the OS asks for reduced motion.</summary>
-    FollowOs,
-}
-
-/// <summary>One CSS animation's timing, in the units the <c>animation</c> shorthand takes.</summary>
-internal sealed record BmotionPrerenderTiming(double DurationMs, string Easing, double DelayMs, int Iterations, bool Alternate)
-{
-    /// <summary>Whether the animation repeats forever (<see cref="Iterations"/> is negative).</summary>
-    public bool IsInfinite => Iterations < 0;
-
-    /// <summary>When a finite animation has finished, measured from the moment it was created.</summary>
-    public double EndMs => DelayMs + (DurationMs * Iterations);
-}
-
-/// <summary>
-/// One animated CSS property: its keyframe values, plus the timing it plays with normally and under
-/// reduced motion (<c>null</c> = that variant doesn't animate it - the property just sits at rest).
-/// </summary>
-internal sealed record BmotionPrerenderTrack(string CssProperty, string[] Frames, BmotionPrerenderTiming? Full, BmotionPrerenderTiming? Reduced);
-
-/// <summary>
-/// An element's enter animation compiled for a pass with no browser attached: where it comes to
-/// rest, and the CSS animation (if any) that gets it there.
-/// </summary>
-internal sealed class BmotionPrerenderPlan
-{
-    /// <summary>The engine values the element rests at once the enter animation has played.</summary>
-    public required Dictionary<string, object?> Settled { get; init; }
-
-    /// <summary><see cref="Settled"/> as an inline style.</summary>
-    public required string SettledStyle { get; init; }
-
-    /// <summary>Whether any of the animated properties repeats forever, so the animation never comes to rest.</summary>
-    public required bool IsInfinite { get; init; }
-
-    /// <summary>The properties CSS can animate; everything else just renders at rest.</summary>
-    public required IReadOnlyList<BmotionPrerenderTrack> Tracks { get; init; }
-
-    /// <summary>
-    /// The custom-property declarations that hook the element up to the library stylesheet: the
-    /// animation lists, the easings they share and every keyframe value they reference. Empty when
-    /// nothing animates.
-    /// <para>
-    /// <paramref name="elapsedMs"/> continues the animation from that far in - used when the runtime
-    /// takes over an element whose prerendered animation is still playing. Animations that would
-    /// already have finished by then are left out.
-    /// </para>
-    /// </summary>
-    public string BuildAnimationDeclarations(BmotionPrerenderMotionPolicy policy, double elapsedMs = 0)
-    {
-        var full = policy == BmotionPrerenderMotionPolicy.Reduced ? null : Playing(static t => t.Full, elapsedMs);
-        var reduced = policy == BmotionPrerenderMotionPolicy.Full ? null : Playing(static t => t.Reduced, elapsedMs);
-        if (full is null && reduced is null) return string.Empty;
-
-        var easings = ShareEasings(full, reduced);
-        var sb = new StringBuilder();
-        // Each policy writes its own variables, and the stylesheet reads only the ones the element's
-        // own style attribute declares - never a list inherited from an animated ancestor whose
-        // policy differs.
-        switch (policy)
-        {
-            case BmotionPrerenderMotionPolicy.Full:
-                AppendDeclaration(sb, BmotionPrerenderCss.AnimationVariable, BuildList(full!, elapsedMs, easings));
-                break;
-            case BmotionPrerenderMotionPolicy.Reduced:
-                AppendDeclaration(sb, BmotionPrerenderCss.AnimationVariable, BuildList(reduced!, elapsedMs, easings));
-                break;
-            default:
-                AppendDeclaration(sb, BmotionPrerenderCss.FollowOsAnimationVariable, full is null ? "none" : BuildList(full, elapsedMs, easings));
-                AppendDeclaration(sb, BmotionPrerenderCss.ReducedAnimationVariable, reduced is null ? "none" : BuildList(reduced, elapsedMs, easings));
-                break;
-        }
-
-        foreach (var (easing, variable) in easings)
-            AppendDeclaration(sb, variable, easing);
-
-        foreach (var track in Tracks)
-        {
-            if (!Plays(full, track) && !Plays(reduced, track)) continue;
-            for (int i = 0; i < track.Frames.Length; i++)
-                AppendDeclaration(sb, BmotionPrerenderCss.FrameVariable(track.CssProperty, i), track.Frames[i]);
-        }
-        return sb.ToString();
-    }
-
-    /// <summary>The tracks still playing <paramref name="elapsedMs"/> in, with their timing; <c>null</c> when none is.</summary>
-    private List<PlayingTrack>? Playing(Func<BmotionPrerenderTrack, BmotionPrerenderTiming?> select, double elapsedMs)
-    {
-        List<PlayingTrack>? playing = null;
-        foreach (var track in Tracks)
-        {
-            if (select(track) is not { } timing) continue;
-            if (!timing.IsInfinite && timing.EndMs <= elapsedMs) continue;
-            (playing ??= []).Add(new PlayingTrack(track, timing));
-        }
-        return playing;
-    }
-
-    private static bool Plays(List<PlayingTrack>? playing, BmotionPrerenderTrack track)
-        => playing?.Exists(p => ReferenceEquals(p.Track, track)) ?? false;
-
-    /// <summary>
-    /// A long easing (a sampled <c>linear()</c> curve) that several animations play with - the
-    /// properties sharing a spring, or one property in both motion lists - is declared once in a
-    /// custom property and referenced, instead of being repeated in every animation.
-    /// </summary>
-    private static Dictionary<string, string> ShareEasings(List<PlayingTrack>? full, List<PlayingTrack>? reduced)
-    {
-        var counts = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (var playing in (List<PlayingTrack>?[])[full, reduced])
-        {
-            if (playing is null) continue;
-            foreach (var (_, timing) in playing)
-                if (timing.Easing.Length > MinSharedEasingLength)
-                    counts[timing.Easing] = counts.GetValueOrDefault(timing.Easing) + 1;
-        }
-
-        var shared = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var (easing, count) in counts)
-            if (count > 1) shared[easing] = BmotionPrerenderCss.EasingVariable(shared.Count);
-        return shared;
-    }
-
-    // Below this, a reference (var(--bm-e0) plus the declaration it reads) saves nothing.
-    private const int MinSharedEasingLength = 32;
-
-    private static string BuildList(List<PlayingTrack> playing, double elapsedMs, Dictionary<string, string> easings)
-    {
-        var list = new StringBuilder();
-        foreach (var (track, timing) in playing)
-        {
-            if (list.Length > 0) list.Append(',');
-            list.Append(BmotionPrerenderCss.KeyframesName(track.CssProperty, track.Frames.Length))
-                .Append(' ').Append(BmotionCssFormat.Num(timing.DurationMs)).Append("ms")
-                .Append(' ').Append(easings.TryGetValue(timing.Easing, out var variable) ? $"var({variable})" : timing.Easing)
-                .Append(' ').Append(BmotionCssFormat.Num(timing.DelayMs - elapsedMs)).Append("ms")
-                .Append(' ').Append(timing.IsInfinite ? "infinite" : timing.Iterations.ToString(System.Globalization.CultureInfo.InvariantCulture))
-                .Append(timing.Alternate ? " alternate" : " normal")
-                // Backwards: the first keyframe holds through the delay (a stagger must not show the
-                // resting state first). Not forwards: the resting state is the inline style itself.
-                .Append(" backwards");
-        }
-        return list.ToString();
-    }
-
-    private readonly record struct PlayingTrack(BmotionPrerenderTrack Track, BmotionPrerenderTiming Timing);
-
-    // The leading ';' is what the no-script selectors key on, so a variable can never be mistaken
-    // for the tail of a longer one (--bm-nj-color vs --bm-nj-background-color).
-    private static void AppendDeclaration(StringBuilder sb, string name, string value)
-        => sb.Append(';').Append(name).Append(':').Append(value);
-}
-
-/// <summary>
 /// Compiles an element's enter animation into CSS for the passes where no browser is attached
 /// (prerendering and static SSR), and generates the library stylesheet that CSS runs on.
 /// <para>
@@ -196,7 +30,7 @@ internal static class BmotionPrerenderCss
     internal const string ReducedAnimationVariable = "--bm-ar";
 
     /// <summary>
-    /// The properties the stylesheet has keyframes for: everything <see cref="BmProps"/> can animate
+    /// The properties the stylesheet has keyframes for: everything <see cref="BmotionProps"/> can animate
     /// except <c>d</c> (an SVG attribute, not a style) and <c>offset-path</c> (it doesn't interpolate).
     /// Path drawing lands on <c>stroke-dasharray</c>/<c>stroke-dashoffset</c>, as in the engine.
     /// </summary>
@@ -230,7 +64,7 @@ internal static class BmotionPrerenderCss
     internal static string BuildStylesheet()
     {
         var sb = new StringBuilder();
-        sb.Append("/* Bit.Bmotion prerender stylesheet. Lets elements prerendered with BmPrerenderMode.Animate play their enter\n");
+        sb.Append("/* Bit.Bmotion prerender stylesheet. Lets elements prerendered with BmotionPrerenderMode.Animate play their enter\n");
         sb.Append("   animation before the runtime loads. Generated by BmotionPrerenderCss.BuildStylesheet - edit that, not this file. */\n");
 
         // Keyed on the name and colon only, with no leading ';': once the engine writes a style
@@ -285,7 +119,7 @@ internal static class BmotionPrerenderCss
         Dictionary<string, object?> target,
         BmotionTransitionConfig? full,
         BmotionTransitionConfig? reduced,
-        BmTransformTemplate? template)
+        BmotionTransformTemplate? template)
     {
         foreach (var key in target.Keys)
             if (string.Equals(key, "d", StringComparison.OrdinalIgnoreCase)) return null;
@@ -325,10 +159,10 @@ internal static class BmotionPrerenderCss
         foreach (var (key, frames) in numericFrames)
         {
             if (BmotionTransformComposer.IsTransformProp(key) || IsPathKey(key)) continue;
-            AddTrack(tracks, BmProps.ToDashCase(key), [key], frames.Select(BmotionCssFormat.Num).ToArray(), fullConfig, reduced);
+            AddTrack(tracks, BmotionProps.ToDashCase(key), [key], frames.Select(BmotionCssFormat.Num).ToArray(), fullConfig, reduced);
         }
         foreach (var (key, frames) in stringFrames)
-            AddTrack(tracks, BmProps.ToDashCase(key), [key], frames, fullConfig, reduced,
+            AddTrack(tracks, BmotionProps.ToDashCase(key), [key], frames, fullConfig, reduced,
                 holdWithinEnds: BmotionElementAnimationState.IsColorProp(key));
 
         return new BmotionPrerenderPlan
@@ -346,7 +180,7 @@ internal static class BmotionPrerenderCss
     /// nothing will ever reveal it. Covers the properties the layer touches.
     /// </summary>
     internal static string BuildNoScriptDeclarations(
-        Dictionary<string, object?> rest, Dictionary<string, object?> layer, BmTransformTemplate? template)
+        Dictionary<string, object?> rest, Dictionary<string, object?> layer, BmotionTransformTemplate? template)
     {
         var layerValues = new Dictionary<string, object?>();
         foreach (var (key, raw) in layer)
@@ -379,7 +213,7 @@ internal static class BmotionPrerenderCss
         foreach (var (key, value) in styles)
         {
             if (!touched.Contains(key)) continue;
-            var property = BmProps.ToDashCase(key);
+            var property = BmotionProps.ToDashCase(key);
             if (!_animatable.Contains(property)) continue;
             sb.Append(';').Append(NoScriptVariable(property)).Append(':').Append(value);
         }
@@ -412,7 +246,7 @@ internal static class BmotionPrerenderCss
     }
 
     /// <summary>Renders engine values as an inline style, the way the engine would write them.</summary>
-    internal static string StyleOf(Dictionary<string, object?> values, BmTransformTemplate? template)
+    internal static string StyleOf(Dictionary<string, object?> values, BmotionTransformTemplate? template)
     {
         var state = new BmotionElementAnimationState { TransformTemplate = template };
         state.SetInstant(values);
@@ -424,7 +258,7 @@ internal static class BmotionPrerenderCss
         {
             // `d` is an SVG attribute the browser bridge sets; the element's own `d` renders it here.
             if (key == "d") continue;
-            sb.Append(BmProps.ToDashCase(key)).Append(':').Append(value).Append(';');
+            sb.Append(BmotionProps.ToDashCase(key)).Append(':').Append(value).Append(';');
         }
         return sb.ToString();
     }
@@ -444,8 +278,8 @@ internal static class BmotionPrerenderCss
         if (frameCount < 2 || config.IsInfiniteRepeat) return frameCount - 1;
         return config.RepeatType switch
         {
-            BmRepeatType.Mirror => (config.Repeat + 1) % 2 == 0 ? 0 : frameCount - 1,
-            BmRepeatType.Reverse => config.Repeat == 0 ? frameCount - 1 : 0,
+            BmotionRepeatType.Mirror => (config.Repeat + 1) % 2 == 0 ? 0 : frameCount - 1,
+            BmotionRepeatType.Reverse => config.Repeat == 0 ? frameCount - 1 : 0,
             _ => frameCount - 1,
         };
     }
@@ -615,7 +449,7 @@ internal static class BmotionPrerenderCss
             // CSS eases every keyframe segment alike, which is also what a single ease means to the
             // keyframes driver; differing per-segment eases can't be expressed.
             if (config.Eases is { Length: > 1 } && frameCount > 2) return null;
-            ease = BmEaseFunctions.GetSegmentEases(config, frameCount - 1)[0];
+            ease = BmotionEaseFunctions.GetSegmentEases(config, frameCount - 1)[0];
         }
 
         if (BmotionBrowserTiming.SampleProgress(config, ease) is not { } sampled) return null;
@@ -633,6 +467,6 @@ internal static class BmotionPrerenderCss
             easing,
             config.Delay * 1000,
             config.IsInfiniteRepeat ? -1 : config.Repeat + 1,
-            config.RepeatType == BmRepeatType.Mirror);
+            config.RepeatType == BmotionRepeatType.Mirror);
     }
 }

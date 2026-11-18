@@ -174,9 +174,10 @@ public static partial class BelemetryExceptionFingerprint
         || frame.EndsWith("@native", StringComparison.Ordinal);
 
     /// <summary>
-    /// Belemetry's own frames: every type of the library sits directly in the <c>Bit.Belemetry</c> namespace and is named
-    /// <c>Belemetry*</c> or <c>IBelemetry*</c>. A namespace prefix alone would also pass over an app that lives under
-    /// <c>Bit.Belemetry.*</c> (the demo and the samples do), as if its code were the library's.
+    /// Belemetry's own frames: every type of every Belemetry package (the EF Core and Hangfire integrations too) sits
+    /// directly in the <c>Bit.Belemetry</c> namespace and is named <c>Belemetry*</c> or <c>IBelemetry*</c>. A namespace
+    /// prefix alone would also pass over an app that lives under <c>Bit.Belemetry.*</c> (the demo and the samples do), as
+    /// if its code were the library's.
     /// </summary>
     private static bool IsOwnFrame(string frame)
     {

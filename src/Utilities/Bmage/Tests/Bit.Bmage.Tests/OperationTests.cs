@@ -1,10 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
-using Bit.Bmage.Operations.Transforms;
 
 namespace Bit.Bmage.Tests;
 
@@ -15,7 +10,7 @@ public sealed class CropTests
     public void ExtractsTheRequestedRegion()
     {
         using var source = TestImages.Gradient(20, 10);
-        using var result = new CropOperation(5, 2, 8, 6).Apply(source, OperationContext.Default);
+        using var result = new BmageCropOperation(5, 2, 8, 6).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(8, result.Width);
         Assert.AreEqual(6, result.Height);
         for (var y = 0; y < 6; y++)
@@ -27,9 +22,9 @@ public sealed class CropTests
     public void ClipsToImageBounds()
     {
         using var source = TestImages.Gradient(10, 10);
-        var op = new CropOperation(5, 5, 100, 100);
+        var op = new BmageCropOperation(5, 5, 100, 100);
         Assert.AreEqual(new Size(5, 5), op.GetOutputSize(source.Size));
-        using var result = op.Apply(source, OperationContext.Default);
+        using var result = op.Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(new Size(5, 5), result.Size);
     }
 
@@ -37,17 +32,17 @@ public sealed class CropTests
     public void ThrowsWhenRegionIsOutsideTheImage()
     {
         using var source = TestImages.Gradient(10, 10);
-        Assert.ThrowsExactly<ArgumentException>(() => new CropOperation(50, 50, 10, 10).Apply(source, OperationContext.Default));
+        Assert.ThrowsExactly<ArgumentException>(() => new BmageCropOperation(50, 50, 10, 10).Apply(source, BmageOperationContext.Default));
     }
 
     [TestMethod]
     public void ConsecutiveCropsComposeToTheSameRegion()
     {
         using var source = TestImages.Gradient(40, 30);
-        var a = new CropOperation(5, 4, 20, 20);
-        var b = new CropOperation(3, 2, 10, 10);
-        using var stepwise = b.Apply(a.Apply(source, OperationContext.Default), OperationContext.Default);
-        using var combined = a.Then(b).Apply(source, OperationContext.Default);
+        var a = new BmageCropOperation(5, 4, 20, 20);
+        var b = new BmageCropOperation(3, 2, 10, 10);
+        using var stepwise = b.Apply(a.Apply(source, BmageOperationContext.Default), BmageOperationContext.Default);
+        using var combined = a.Then(b).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(combined.Size, stepwise.Size);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(combined, stepwise));
     }
@@ -55,16 +50,16 @@ public sealed class CropTests
     [TestMethod]
     public void ScalesForProxyPreviews()
     {
-        var op = new CropOperation(10, 20, 40, 60);
-        var half = (CropOperation)op.ForScale(0.5);
+        var op = new BmageCropOperation(10, 20, 40, 60);
+        var half = (BmageCropOperation)op.ForScale(0.5);
         Assert.AreEqual(new Rectangle(5, 10, 20, 30), half.Rectangle);
     }
 
     [TestMethod]
     public void RejectsEmptyRectangles()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CropOperation(0, 0, 0, 10));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CropOperation(0, 0, 10, -1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageCropOperation(0, 0, 0, 10));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageCropOperation(0, 0, 10, -1));
     }
 }
 
@@ -75,10 +70,10 @@ public sealed class ResizeTests
     public void ProducesTheExpectedSizeForEveryMode()
     {
         using var source = TestImages.Gradient(100, 50);
-        foreach (var mode in Enum.GetValues<ResizeMode>())
+        foreach (var mode in Enum.GetValues<BmageResizeMode>())
         {
-            var op = new ResizeOperation(60, 60, mode);
-            using var result = op.Apply(source, OperationContext.Default);
+            var op = new BmageResizeOperation(60, 60, mode);
+            using var result = op.Apply(source, BmageOperationContext.Default);
             Assert.AreEqual(op.GetOutputSize(source.Size), result.Size);
         }
     }
@@ -86,10 +81,10 @@ public sealed class ResizeTests
     [TestMethod]
     public void PreservesASolidColourExactly()
     {
-        using var source = ImageBuffer.Create(64, 64, new Rgba32(37, 111, 200));
-        foreach (var filter in new[] { ResamplingFilter.Box, ResamplingFilter.Bilinear, ResamplingFilter.Bicubic, ResamplingFilter.Lanczos3, ResamplingFilter.NearestNeighbor })
+        using var source = BmageImageBuffer.Create(64, 64, new BmageRgba32(37, 111, 200));
+        foreach (var filter in new[] { BmageResamplingFilter.Box, BmageResamplingFilter.Bilinear, BmageResamplingFilter.Bicubic, BmageResamplingFilter.Lanczos3, BmageResamplingFilter.NearestNeighbor })
         {
-            using var result = new ResizeOperation(23, 41, ResizeMode.Stretch, filter).Apply(source, OperationContext.Default);
+            using var result = new BmageResizeOperation(23, 41, BmageResizeMode.Stretch, filter).Apply(source, BmageOperationContext.Default);
             var p = result[11, 20];
             Assert.IsTrue(Math.Abs(p.R - 37) <= 1 && Math.Abs(p.G - 111) <= 1 && Math.Abs(p.B - 200) <= 1, $"{filter} produced {p}");
             Assert.AreEqual(255, p.A);
@@ -100,7 +95,7 @@ public sealed class ResizeTests
     public void IdentityResizeIsAPassThrough()
     {
         using var source = TestImages.Gradient(32, 32);
-        using var result = new ResizeOperation(32, 32, ResizeMode.Stretch).Apply(source, OperationContext.Default);
+        using var result = new BmageResizeOperation(32, 32, BmageResizeMode.Stretch).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, result));
     }
 
@@ -108,11 +103,11 @@ public sealed class ResizeTests
     public void DownscalingAveragesRatherThanDropsPixels()
     {
         // A 1px checkerboard downscaled by 2 must become mid grey, not pure black or white.
-        using var source = ImageBuffer.Create(64, 64);
+        using var source = BmageImageBuffer.Create(64, 64);
         for (var y = 0; y < 64; y++)
             for (var x = 0; x < 64; x++)
-                source[x, y] = ((x + y) & 1) == 0 ? Rgba32.White : Rgba32.Black;
-        using var result = new ResizeOperation(32, 32, ResizeMode.Stretch, ResamplingFilter.Box).Apply(source, OperationContext.Default);
+                source[x, y] = ((x + y) & 1) == 0 ? BmageRgba32.White : BmageRgba32.Black;
+        using var result = new BmageResizeOperation(32, 32, BmageResizeMode.Stretch, BmageResamplingFilter.Box).Apply(source, BmageOperationContext.Default);
         var p = result[16, 16];
         Assert.IsInRange(100, 155, p.R);
     }
@@ -120,21 +115,21 @@ public sealed class ResizeTests
     [TestMethod]
     public void ContainFillsPaddingWithTheBackgroundColour()
     {
-        using var source = ImageBuffer.Create(100, 50, Rgba32.White);
-        var bg = new Rgba32(10, 20, 30);
-        using var result = new ResizeOperation(100, 100, ResizeMode.Contain, ResamplingFilter.Bilinear, Anchor.Center, bg).Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(100, 50, BmageRgba32.White);
+        var bg = new BmageRgba32(10, 20, 30);
+        using var result = new BmageResizeOperation(100, 100, BmageResizeMode.Contain, BmageResamplingFilter.Bilinear, BmageAnchor.Center, bg).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(new Size(100, 100), result.Size);
         Assert.AreEqual(bg, result[50, 2]);
-        Assert.AreEqual(Rgba32.White, result[50, 50]);
+        Assert.AreEqual(BmageRgba32.White, result[50, 50]);
     }
 
     [TestMethod]
     public void DoesNotDarkenEdgesOfTransparentImages()
     {
         // A fully opaque red square on a transparent field must stay red after downscaling (premultiplied filtering).
-        using var source = ImageBuffer.Create(64, 64, Rgba32.Transparent);
-        source.Fill(new Rectangle(16, 16, 32, 32), new Rgba32(255, 0, 0, 255));
-        using var result = new ResizeOperation(32, 32, ResizeMode.Stretch, ResamplingFilter.Bilinear).Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(64, 64, BmageRgba32.Transparent);
+        source.Fill(new Rectangle(16, 16, 32, 32), new BmageRgba32(255, 0, 0, 255));
+        using var result = new BmageResizeOperation(32, 32, BmageResizeMode.Stretch, BmageResamplingFilter.Bilinear).Apply(source, BmageOperationContext.Default);
         var centre = result[16, 16];
         Assert.AreEqual(255, centre.A);
         Assert.IsTrue(centre.R > 250 && centre.G < 5 && centre.B < 5, $"Centre was {centre}");
@@ -146,8 +141,8 @@ public sealed class ResizeTests
     [TestMethod]
     public void RejectsInvalidArguments()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => new ResizeOperation(null, null));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new ResizeOperation(0, 10));
+        Assert.ThrowsExactly<ArgumentException>(() => new BmageResizeOperation(null, null));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageResizeOperation(0, 10));
     }
 }
 
@@ -158,17 +153,17 @@ public sealed class RotateTests
     public void RightAnglesUseTheLosslessPath()
     {
         using var source = TestImages.Quadrants(16, 16);
-        using var viaRotate = new RotateOperation(90).Apply(source, OperationContext.Default);
-        using var viaOrientation = OrientationOperation.Rotate90.Apply(source, OperationContext.Default);
+        using var viaRotate = new BmageRotateOperation(90).Apply(source, BmageOperationContext.Default);
+        using var viaOrientation = BmageOrientationOperation.Rotate90.Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(viaRotate, viaOrientation));
     }
 
     [TestMethod]
     public void ArbitraryAngleExpandsTheCanvas()
     {
-        using var source = ImageBuffer.Create(100, 100, Rgba32.White);
-        var op = new RotateOperation(45, Rgba32.Transparent);
-        using var result = op.Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(100, 100, BmageRgba32.White);
+        var op = new BmageRotateOperation(45, BmageRgba32.Transparent);
+        using var result = op.Apply(source, BmageOperationContext.Default);
         Assert.IsTrue(result.Width > 130 && result.Width < 150, $"Width was {result.Width}");
         Assert.AreEqual(op.GetOutputSize(source.Size), result.Size);
         Assert.AreEqual(0, result[0, 0].A); // corner is outside the rotated square
@@ -179,11 +174,11 @@ public sealed class RotateTests
     public void FourNinetyDegreeRotationsRestoreTheOriginal()
     {
         using var source = TestImages.Gradient(23, 17);
-        var ctx = OperationContext.Default;
-        using var r1 = new RotateOperation(90).Apply(source, ctx);
-        using var r2 = new RotateOperation(90).Apply(r1, ctx);
-        using var r3 = new RotateOperation(90).Apply(r2, ctx);
-        using var r4 = new RotateOperation(90).Apply(r3, ctx);
+        var ctx = BmageOperationContext.Default;
+        using var r1 = new BmageRotateOperation(90).Apply(source, ctx);
+        using var r2 = new BmageRotateOperation(90).Apply(r1, ctx);
+        using var r3 = new BmageRotateOperation(90).Apply(r2, ctx);
+        using var r4 = new BmageRotateOperation(90).Apply(r3, ctx);
         Assert.AreEqual(source.Size, r4.Size);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, r4));
     }
@@ -191,8 +186,8 @@ public sealed class RotateTests
     [TestMethod]
     public void KeepsCanvasSizeWhenExpansionIsDisabled()
     {
-        using var source = ImageBuffer.Create(50, 30, Rgba32.White);
-        using var result = new RotateOperation(30, Rgba32.Transparent, expandCanvas: false).Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(50, 30, BmageRgba32.White);
+        using var result = new BmageRotateOperation(30, BmageRgba32.Transparent, expandCanvas: false).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(new Size(50, 30), result.Size);
     }
 }
@@ -205,7 +200,7 @@ public sealed class PerspectiveTests
     {
         using var source = TestImages.Gradient(32, 32);
         var corners = new[] { new PointF(0, 0), new PointF(32, 0), new PointF(32, 32), new PointF(0, 32) };
-        using var result = new PerspectiveTransformOperation(corners, new Size(32, 32)).Apply(source, OperationContext.Default);
+        using var result = new BmagePerspectiveTransformOperation(corners, new Size(32, 32)).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(source.Size, result.Size);
         Assert.IsTrue(TestImages.MeanChannelDifference(source, result) < 2.0);
     }
@@ -215,13 +210,13 @@ public sealed class PerspectiveTests
     {
         using var source = TestImages.Gradient(16, 16);
         var collinear = new[] { new PointF(0, 0), new PointF(4, 0), new PointF(8, 0), new PointF(12, 0) };
-        Assert.ThrowsExactly<ArgumentException>(() => new PerspectiveTransformOperation(collinear, new Size(16, 16)).Apply(source, OperationContext.Default));
+        Assert.ThrowsExactly<ArgumentException>(() => new BmagePerspectiveTransformOperation(collinear, new Size(16, 16)).Apply(source, BmageOperationContext.Default));
     }
 
     [TestMethod]
     public void RequiresExactlyFourCorners()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => new PerspectiveTransformOperation([new PointF(0, 0)], null));
+        Assert.ThrowsExactly<ArgumentException>(() => new BmagePerspectiveTransformOperation([new PointF(0, 0)], null));
     }
 }
 
@@ -231,9 +226,9 @@ public sealed class AdjustmentTests
     [TestMethod]
     public void BrightnessLightensAndDarkens()
     {
-        using var source = ImageBuffer.Create(4, 4, new Rgba32(100, 100, 100));
-        using var lighter = new BrightnessAdjustment(0.2f).Apply(source, OperationContext.Default);
-        using var darker = new BrightnessAdjustment(-0.2f).Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(4, 4, new BmageRgba32(100, 100, 100));
+        using var lighter = new BmageBrightnessAdjustment(0.2f).Apply(source, BmageOperationContext.Default);
+        using var darker = new BmageBrightnessAdjustment(-0.2f).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(151, lighter[0, 0].R);
         Assert.AreEqual(49, darker[0, 0].R);
     }
@@ -241,8 +236,8 @@ public sealed class AdjustmentTests
     [TestMethod]
     public void GrayscaleRemovesAllColour()
     {
-        using var source = ImageBuffer.Create(4, 4, new Rgba32(200, 50, 10));
-        using var gray = new GrayscaleFilter().Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(4, 4, new BmageRgba32(200, 50, 10));
+        using var gray = new BmageGrayscaleFilter().Apply(source, BmageOperationContext.Default);
         var p = gray[0, 0];
         Assert.AreEqual(p.R, p.G);
         Assert.AreEqual(p.G, p.B);
@@ -252,14 +247,14 @@ public sealed class AdjustmentTests
     public void AdjustmentsPreserveAlpha()
     {
         using var source = TestImages.Translucent(8, 8);
-        foreach (PointOperation op in new PointOperation[]
+        foreach (BmagePointOperation op in new BmagePointOperation[]
         {
-            new BrightnessAdjustment(0.3f), new ContrastAdjustment(0.4f), new SaturationAdjustment(-0.5f),
-            new HueAdjustment(90), new GammaAdjustment(2.2f), new VibranceAdjustment(0.5f),
-            new ShadowsHighlightsAdjustment(0.3f, -0.3f), new SepiaFilter(), new PosterizeFilter(4), new ThresholdFilter(),
+            new BmageBrightnessAdjustment(0.3f), new BmageContrastAdjustment(0.4f), new BmageSaturationAdjustment(-0.5f),
+            new BmageHueAdjustment(90), new BmageGammaAdjustment(2.2f), new BmageVibranceAdjustment(0.5f),
+            new BmageShadowsHighlightsAdjustment(0.3f, -0.3f), new BmageSepiaFilter(), new BmagePosterizeFilter(4), new BmageThresholdFilter(),
         })
         {
-            using var result = op.Apply(source, OperationContext.Default);
+            using var result = op.Apply(source, BmageOperationContext.Default);
             for (var y = 0; y < 8; y++)
                 for (var x = 0; x < 8; x++)
                     Assert.AreEqual(source[x, y].A, result[x, y].A);
@@ -269,8 +264,8 @@ public sealed class AdjustmentTests
     [TestMethod]
     public void OpacityScalesTheAlphaChannel()
     {
-        using var source = ImageBuffer.Create(4, 4, new Rgba32(10, 20, 30, 200));
-        using var result = new OpacityAdjustment(0.5f).Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(4, 4, new BmageRgba32(10, 20, 30, 200));
+        using var result = new BmageOpacityAdjustment(0.5f).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(100, result[0, 0].A);
         Assert.AreEqual(10, result[0, 0].R);
     }
@@ -279,34 +274,34 @@ public sealed class AdjustmentTests
     public void InvertIsItsOwnInverse()
     {
         using var source = TestImages.Gradient(16, 16);
-        using var once = new InvertFilter().Apply(source, OperationContext.Default);
-        using var twice = new InvertFilter().Apply(once, OperationContext.Default);
+        using var once = new BmageInvertFilter().Apply(source, BmageOperationContext.Default);
+        using var twice = new BmageInvertFilter().Apply(once, BmageOperationContext.Default);
         Assert.IsTrue(TestImages.MaxChannelDifference(source, twice) <= 1);
     }
 
     [TestMethod]
     public void ZeroAmountAdjustmentsAreIdentity()
     {
-        Assert.IsTrue(new BrightnessAdjustment(0).IsIdentity);
-        Assert.IsTrue(new ContrastAdjustment(0).IsIdentity);
-        Assert.IsTrue(new SaturationAdjustment(0).IsIdentity);
-        Assert.IsTrue(new GammaAdjustment(1).IsIdentity);
-        Assert.IsTrue(new VibranceAdjustment(0).IsIdentity);
-        Assert.IsTrue(new GrayscaleFilter(0).IsIdentity);
+        Assert.IsTrue(new BmageBrightnessAdjustment(0).IsIdentity);
+        Assert.IsTrue(new BmageContrastAdjustment(0).IsIdentity);
+        Assert.IsTrue(new BmageSaturationAdjustment(0).IsIdentity);
+        Assert.IsTrue(new BmageGammaAdjustment(1).IsIdentity);
+        Assert.IsTrue(new BmageVibranceAdjustment(0).IsIdentity);
+        Assert.IsTrue(new BmageGrayscaleFilter(0).IsIdentity);
     }
 
     [TestMethod]
     public void GammaRejectsNonPositiveValues()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new GammaAdjustment(0));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new GammaAdjustment(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageGammaAdjustment(0));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageGammaAdjustment(-1));
     }
 
     [TestMethod]
     public void PosterizeRejectsInvalidLevels()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PosterizeFilter(1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PosterizeFilter(300));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmagePosterizeFilter(1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmagePosterizeFilter(300));
     }
 }
 
@@ -316,9 +311,9 @@ public sealed class ColorMatrixTests
     [TestMethod]
     public void ConcatenationMatchesSequentialApplication()
     {
-        var a = ColorMatrix.Saturate(0.5f);
-        var b = ColorMatrix.Contrast(1.3f);
-        var combined = ColorMatrix.Concat(a, b);
+        var a = BmageColorMatrix.Saturate(0.5f);
+        var b = BmageColorMatrix.Contrast(1.3f);
+        var combined = BmageColorMatrix.Concat(a, b);
         var p = new Vector4(0.3f, 0.6f, 0.9f, 1f);
         var stepwise = b.Transform(a.Transform(p));
         var direct = combined.Transform(p);
@@ -329,27 +324,27 @@ public sealed class ColorMatrixTests
     public void IdentityLeavesPixelsUnchanged()
     {
         var p = new Vector4(0.1f, 0.5f, 0.9f, 0.7f);
-        Assert.AreEqual(p, ColorMatrix.Identity.Transform(p));
-        Assert.IsTrue(ColorMatrix.Identity.IsIdentity);
+        Assert.AreEqual(p, BmageColorMatrix.Identity.Transform(p));
+        Assert.IsTrue(BmageColorMatrix.Identity.IsIdentity);
     }
 
     [TestMethod]
     public void FusedMatricesProduceTheSamePixels()
     {
         using var source = TestImages.Gradient(16, 16);
-        var op1 = new SaturationAdjustment(-0.3f);
-        var op2 = new ContrastAdjustment(0.2f);
-        using var stepwise = op2.Apply(op1.Apply(source, OperationContext.Default), OperationContext.Default);
-        var fused = (PointOperation)op1.TryFuse(op2)!;
-        using var combined = fused.Apply(source, OperationContext.Default);
+        var op1 = new BmageSaturationAdjustment(-0.3f);
+        var op2 = new BmageContrastAdjustment(0.2f);
+        using var stepwise = op2.Apply(op1.Apply(source, BmageOperationContext.Default), BmageOperationContext.Default);
+        var fused = (BmagePointOperation)op1.TryFuse(op2)!;
+        using var combined = fused.Apply(source, BmageOperationContext.Default);
         Assert.IsTrue(TestImages.MaxChannelDifference(stepwise, combined) <= 1);
     }
 
     [TestMethod]
     public void RoundTripsThroughArray()
     {
-        var m = ColorMatrix.HueRotate(45);
-        var restored = new ColorMatrix(m.ToArray());
+        var m = BmageColorMatrix.HueRotate(45);
+        var restored = new BmageColorMatrix(m.ToArray());
         Assert.AreEqual(m, restored);
     }
 }
@@ -360,9 +355,9 @@ public sealed class FilterTests
     [TestMethod]
     public void BlurSmoothsAHardEdge()
     {
-        using var source = ImageBuffer.Create(32, 32, Rgba32.Black);
-        source.Fill(new Rectangle(16, 0, 16, 32), Rgba32.White);
-        using var result = new BlurFilter(3f).Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(32, 32, BmageRgba32.Black);
+        source.Fill(new Rectangle(16, 0, 16, 32), BmageRgba32.White);
+        using var result = new BmageBlurFilter(3f).Apply(source, BmageOperationContext.Default);
         var atEdge = result[16, 16];
         Assert.IsInRange(60, 200, atEdge.R); // no longer pure black or white
     }
@@ -370,8 +365,8 @@ public sealed class FilterTests
     [TestMethod]
     public void BlurPreservesASolidColour()
     {
-        using var source = ImageBuffer.Create(32, 32, new Rgba32(77, 88, 99));
-        using var result = new BlurFilter(5f).Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(32, 32, new BmageRgba32(77, 88, 99));
+        using var result = new BmageBlurFilter(5f).Apply(source, BmageOperationContext.Default);
         Assert.IsTrue(TestImages.MaxChannelDifference(source, result) <= 1);
     }
 
@@ -380,7 +375,7 @@ public sealed class FilterTests
     {
         using var source = TestImages.Gradient(64, 64);
         var region = new Rectangle(8, 8, 16, 16);
-        using var result = new BlurFilter(4f, region).Apply(source, OperationContext.Default);
+        using var result = new BmageBlurFilter(4f, region).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(source[40, 40], result[40, 40]);
         Assert.AreEqual(source[0, 0], result[0, 0]);
     }
@@ -389,7 +384,7 @@ public sealed class FilterTests
     public void PixelateProducesUniformBlocks()
     {
         using var source = TestImages.Gradient(32, 32);
-        using var result = new PixelateFilter(8).Apply(source, OperationContext.Default);
+        using var result = new BmagePixelateFilter(8).Apply(source, BmageOperationContext.Default);
         var reference = result[0, 0];
         for (var y = 0; y < 8; y++)
             for (var x = 0; x < 8; x++)
@@ -400,10 +395,10 @@ public sealed class FilterTests
     [TestMethod]
     public void SharpenIncreasesLocalContrast()
     {
-        using var source = ImageBuffer.Create(32, 32, new Rgba32(128, 128, 128));
-        source.Fill(new Rectangle(16, 0, 16, 32), new Rgba32(160, 160, 160));
-        using var blurred = new BlurFilter(2f).Apply(source, OperationContext.Default);
-        using var sharpened = new SharpenFilter(1.0f, 2f).Apply(blurred, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(32, 32, new BmageRgba32(128, 128, 128));
+        source.Fill(new Rectangle(16, 0, 16, 32), new BmageRgba32(160, 160, 160));
+        using var blurred = new BmageBlurFilter(2f).Apply(source, BmageOperationContext.Default);
+        using var sharpened = new BmageSharpenFilter(1.0f, 2f).Apply(blurred, BmageOperationContext.Default);
         var before = Math.Abs(blurred[15, 16].R - blurred[17, 16].R);
         var after = Math.Abs(sharpened[15, 16].R - sharpened[17, 16].R);
         Assert.IsTrue(after >= before, $"before={before} after={after}");
@@ -413,27 +408,27 @@ public sealed class FilterTests
     public void NoiseIsDeterministicForASeed()
     {
         using var source = TestImages.Gradient(16, 16);
-        using var a = new NoiseFilter(0.2f, seed: 42).Apply(source, OperationContext.Default);
-        using var b = new NoiseFilter(0.2f, seed: 42).Apply(source, OperationContext.Default);
+        using var a = new BmageNoiseFilter(0.2f, seed: 42).Apply(source, BmageOperationContext.Default);
+        using var b = new BmageNoiseFilter(0.2f, seed: 42).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(a, b));
-        using var c = new NoiseFilter(0.2f, seed: 7).Apply(source, OperationContext.Default);
+        using var c = new BmageNoiseFilter(0.2f, seed: 7).Apply(source, BmageOperationContext.Default);
         Assert.IsTrue(TestImages.MaxChannelDifference(a, c) > 0);
     }
 
     [TestMethod]
     public void MedianRemovesIsolatedOutliers()
     {
-        using var source = ImageBuffer.Create(16, 16, new Rgba32(100, 100, 100));
-        source[8, 8] = new Rgba32(255, 0, 0);
-        using var result = new MedianFilter(1).Apply(source, OperationContext.Default);
-        Assert.AreEqual(new Rgba32(100, 100, 100), result[8, 8]);
+        using var source = BmageImageBuffer.Create(16, 16, new BmageRgba32(100, 100, 100));
+        source[8, 8] = new BmageRgba32(255, 0, 0);
+        using var result = new BmageMedianFilter(1).Apply(source, BmageOperationContext.Default);
+        Assert.AreEqual(new BmageRgba32(100, 100, 100), result[8, 8]);
     }
 
     [TestMethod]
     public void VignetteDarkensCornersNotTheCentre()
     {
-        using var source = ImageBuffer.Create(64, 64, Rgba32.White);
-        using var result = new VignetteFilter(1f, 0.5f, 0.5f).Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(64, 64, BmageRgba32.White);
+        using var result = new BmageVignetteFilter(1f, 0.5f, 0.5f).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(255, result[32, 32].R);
         Assert.IsTrue(result[0, 0].R < 128, $"Corner was {result[0, 0]}");
     }
@@ -441,15 +436,15 @@ public sealed class FilterTests
     [TestMethod]
     public void ConvolutionKernelMustBeOddSized()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => new ConvolutionFilter([1, 1, 1, 1], 2, 2));
-        Assert.ThrowsExactly<ArgumentException>(() => new ConvolutionFilter([1, 1], 3, 3));
+        Assert.ThrowsExactly<ArgumentException>(() => new BmageConvolutionFilter([1, 1, 1, 1], 2, 2));
+        Assert.ThrowsExactly<ArgumentException>(() => new BmageConvolutionFilter([1, 1], 3, 3));
     }
 
     [TestMethod]
     public void RegionOperationsScaleTheirRegion()
     {
-        var op = new PixelateFilter(10, new Rectangle(20, 20, 40, 40));
-        var scaled = (PixelateFilter)op.ForScale(0.5);
+        var op = new BmagePixelateFilter(10, new Rectangle(20, 20, 40, 40));
+        var scaled = (BmagePixelateFilter)op.ForScale(0.5);
         Assert.AreEqual(5, scaled.BlockSize);
         Assert.AreEqual(new Rectangle(10, 10, 20, 20), scaled.Region);
     }
@@ -464,8 +459,8 @@ public sealed class OperationCancellationTests
         using var source = TestImages.Gradient(1024, 1024);
         using var cts = new CancellationTokenSource();
         cts.Cancel();
-        var ctx = new OperationContext(cancellationToken: cts.Token);
-        Assert.ThrowsExactly<OperationCanceledException>(() => new ResizeOperation(512, 512, ResizeMode.Stretch).Apply(source, ctx));
+        var ctx = new BmageOperationContext(cancellationToken: cts.Token);
+        Assert.ThrowsExactly<OperationCanceledException>(() => new BmageResizeOperation(512, 512, BmageResizeMode.Stretch).Apply(source, ctx));
     }
 
     [TestMethod]
@@ -473,8 +468,8 @@ public sealed class OperationCancellationTests
     {
         using var source = TestImages.Gradient(64, 64);
         var values = new List<double>();
-        var ctx = new OperationContext(progress: new Progress<double>(v => { lock (values) values.Add(v); }));
-        using var result = new ResizeOperation(32, 32, ResizeMode.Stretch).Apply(source, ctx);
+        var ctx = new BmageOperationContext(progress: new Progress<double>(v => { lock (values) values.Add(v); }));
+        using var result = new BmageResizeOperation(32, 32, BmageResizeMode.Stretch).Apply(source, ctx);
         Assert.AreEqual(new Size(32, 32), result.Size);
     }
 }

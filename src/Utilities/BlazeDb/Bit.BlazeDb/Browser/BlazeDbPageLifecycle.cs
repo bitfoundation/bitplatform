@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Versioning;
 
-namespace Bit.BlazeDb.Browser;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Starts a flush of every open database in the tab when the page is hidden or unloaded, so a commit made

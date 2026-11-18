@@ -7,9 +7,9 @@
 [TestClass]
 public class PrerenderCssTests
 {
-    private static Dictionary<string, object?> Values(BmProps props) => props.ToJsDictionary();
+    private static Dictionary<string, object?> Values(BmotionProps props) => props.ToJsDictionary();
 
-    private static BmotionPrerenderPlan Compile(BmProps? initial, BmProps target, BmTransition? transition = null, bool withReduced = false)
+    private static BmotionPrerenderPlan Compile(BmotionProps? initial, BmotionProps target, BmotionTransition? transition = null, bool withReduced = false)
     {
         var full = transition?.ToConfig();
         var plan = BmotionPrerenderCss.Compile(
@@ -84,7 +84,7 @@ public class PrerenderCssTests
     [TestMethod]
     public void SettledStyle_MirroredEvenPasses_EndWhereTheyStarted()
     {
-        var plan = Compile(Bm.To(opacity: 0), Bm.To(opacity: 1), Bm.Tween(0.5, repeat: BmRepeat.Mirror(1)));
+        var plan = Compile(Bm.To(opacity: 0), Bm.To(opacity: 1), Bm.Tween(0.5, repeat: BmotionRepeat.Mirror(1)));
         Assert.AreEqual(0.0, plan.Settled["opacity"]);
     }
 
@@ -124,7 +124,7 @@ public class PrerenderCssTests
     [TestMethod]
     public void Declarations_HookUpTheStylesheet()
     {
-        var plan = Compile(Bm.To(opacity: 0), Bm.To(opacity: 1), Bm.Tween(0.5, ease: BmEase.Linear));
+        var plan = Compile(Bm.To(opacity: 0), Bm.To(opacity: 1), Bm.Tween(0.5, ease: BmotionEase.Linear));
         var css = plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.Full);
 
         Assert.AreEqual(";--bm-a:bm-opacity-2 500ms linear 0ms 1 normal backwards;--bm-opacity-0:0;--bm-opacity-1:1", css);
@@ -133,7 +133,7 @@ public class PrerenderCssTests
     [TestMethod]
     public void Tween_WithoutAFaithfulCssCurve_IsSampledToLinear()
     {
-        var plan = Compile(Bm.To(opacity: 0), Bm.To(opacity: 1), Bm.Tween(0.5, ease: BmEase.CircOut));
+        var plan = Compile(Bm.To(opacity: 0), Bm.To(opacity: 1), Bm.Tween(0.5, ease: BmotionEase.CircOut));
         StringAssert.StartsWith(plan.Tracks.Single().Full!.Easing, "linear(0, ");
     }
 
@@ -180,7 +180,7 @@ public class PrerenderCssTests
     [TestMethod]
     public void Repeat_MapsToIterationsAndDirection()
     {
-        var plan = Compile(Bm.To(rotate: 0), Bm.To(rotate: 360), Bm.Tween(1, ease: BmEase.Linear, repeat: BmRepeat.Mirror()));
+        var plan = Compile(Bm.To(rotate: 0), Bm.To(rotate: 360), Bm.Tween(1, ease: BmotionEase.Linear, repeat: BmotionRepeat.Mirror()));
         var timing = plan.Tracks.Single().Full!;
 
         Assert.IsTrue(plan.IsInfinite);
@@ -232,7 +232,7 @@ public class PrerenderCssTests
     [TestMethod]
     public void TransformComponents_WithDifferentTransitions_RenderAtRest()
     {
-        var transition = new BmTween { Duration = 0.5, Properties = new() { ["scale"] = Bm.Tween(1) } };
+        var transition = new BmotionTween { Duration = 0.5, Properties = new() { ["scale"] = Bm.Tween(1) } };
         var plan = Compile(Bm.To(x: 0, scale: 0.5, opacity: 0), Bm.To(x: 100, scale: 1, opacity: 1), transition);
 
         // transform is one CSS property, so x and scale can't keep their own timings - but opacity can.
@@ -271,7 +271,7 @@ public class PrerenderCssTests
     [TestMethod]
     public void FollowOs_EmitsBothLists_TransformsSnapUnderReduce()
     {
-        var plan = Compile(Bm.To(opacity: 0, y: 20), Bm.To(opacity: 1, y: 0), Bm.Tween(0.5, ease: BmEase.Linear), withReduced: true);
+        var plan = Compile(Bm.To(opacity: 0, y: 20), Bm.To(opacity: 1, y: 0), Bm.Tween(0.5, ease: BmotionEase.Linear), withReduced: true);
         var css = plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.FollowOs);
 
         StringAssert.Contains(css, ";--bm-af:bm-transform-2 500ms linear 0ms 1 normal backwards,bm-opacity-2 500ms linear 0ms 1 normal backwards");
@@ -282,7 +282,7 @@ public class PrerenderCssTests
     [TestMethod]
     public void FixedPolicies_DeclareOnlyTheirOwnList()
     {
-        var plan = Compile(Bm.To(opacity: 0, y: 20), Bm.To(opacity: 1, y: 0), Bm.Tween(0.5, ease: BmEase.Linear), withReduced: true);
+        var plan = Compile(Bm.To(opacity: 0, y: 20), Bm.To(opacity: 1, y: 0), Bm.Tween(0.5, ease: BmotionEase.Linear), withReduced: true);
 
         // Nested under an element that follows the OS preference, a fixed-policy element must not
         // pick up that element's reduced list: it declares nothing the stylesheet would read as one.
@@ -308,7 +308,7 @@ public class PrerenderCssTests
     [TestMethod]
     public void Elapsed_ShiftsTheDelay()
     {
-        var plan = Compile(Bm.To(opacity: 0), Bm.To(opacity: 1), Bm.Tween(1, ease: BmEase.Linear, delay: 0.2));
+        var plan = Compile(Bm.To(opacity: 0), Bm.To(opacity: 1), Bm.Tween(1, ease: BmotionEase.Linear, delay: 0.2));
         var css = plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.Full, elapsedMs: 700);
         StringAssert.Contains(css, "bm-opacity-2 1000ms linear -500ms 1 normal backwards");
     }

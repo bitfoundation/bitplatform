@@ -13,18 +13,18 @@ namespace Bit.Bmotion.Tests.Components;
 [TestClass]
 public class PresenceLifecycleTests
 {
-    private static RenderFragment Box(string id, BmTarget? exit = null, Action<IReadOnlyDictionary<string, string>>? onUpdate = null) => b =>
+    private static RenderFragment Box(string id, BmotionTarget? exit = null, Action<IReadOnlyDictionary<string, string>>? onUpdate = null) => b =>
     {
         b.OpenComponent<Bmotion>(0);
         b.SetKey(id);
         b.AddComponentParameter(1, nameof(Bmotion.Id), id);
-        b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmTarget?)Bm.To(opacity: 0));
-        b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 1));
+        b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmotionTarget?)Bm.To(opacity: 0));
+        b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(opacity: 1));
         if (exit is not null) b.AddComponentParameter(4, nameof(Bmotion.Exit), exit);
         if (onUpdate is not null)
         {
             b.AddComponentParameter(5, nameof(Bmotion.OnUpdate), onUpdate);
-            b.AddComponentParameter(6, nameof(Bmotion.Transition), (BmTransition?)Bm.Tween(1, ease: BmEase.Linear));
+            b.AddComponentParameter(6, nameof(Bmotion.Transition), (BmotionTransition?)Bm.Tween(1, ease: BmotionEase.Linear));
         }
         b.AddComponentParameter(7, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
         {
@@ -117,9 +117,9 @@ public class PresenceLifecycleTests
         {
             b.OpenComponent<Bmotion>(0);
             b.AddComponentParameter(1, nameof(Bmotion.Id), "box");
-            b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmTarget?)Bm.To(scale: 0.5));
-            b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmTarget?)Bm.To(scale: 1));
-            b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmTarget?)Bm.To(opacity: 0));
+            b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmotionTarget?)Bm.To(scale: 0.5));
+            b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(scale: 1));
+            b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmotionTarget?)Bm.To(opacity: 0));
             b.AddComponentParameter(5, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
             {
                 leaf.OpenElement(0, "div");

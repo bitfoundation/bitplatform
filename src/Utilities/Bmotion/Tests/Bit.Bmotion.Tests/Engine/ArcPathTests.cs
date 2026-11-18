@@ -1,14 +1,14 @@
 namespace Bit.Bmotion.Tests.Engine;
 
 /// <summary>
-/// Tests for <see cref="BmArc"/> - the curve an element travels along instead of the straight line
+/// Tests for <see cref="BmotionArc"/> - the curve an element travels along instead of the straight line
 /// between two points - and the coupled driver behind it.
 /// </summary>
 [TestClass]
 public class ArcPathTests
 {
     // Perpendicular distance from the straight line P0→P1 to the point the curve reaches at t.
-    private static double DeviationFromChord(BmArcCurve curve, double t)
+    private static double DeviationFromChord(BmotionArcCurve curve, double t)
     {
         var (x, y) = curve.PointAt(t);
         double dx = curve.ToX - curve.FromX, dy = curve.ToY - curve.FromY;
@@ -86,8 +86,8 @@ public class ArcPathTests
     [TestMethod]
     public void Direction_ChoosesTheSideTheArcBulgesTowards()
     {
-        var cw = Bm.Arc(strength: 0.5, direction: BmArcDirection.Clockwise).BuildCurve(0, 0, 200, 0);
-        var ccw = Bm.Arc(strength: 0.5, direction: BmArcDirection.CounterClockwise).BuildCurve(0, 0, 200, 0);
+        var cw = Bm.Arc(strength: 0.5, direction: BmotionArcDirection.Clockwise).BuildCurve(0, 0, 200, 0);
+        var ccw = Bm.Arc(strength: 0.5, direction: BmotionArcDirection.CounterClockwise).BuildCurve(0, 0, 200, 0);
 
         double cwY = cw.PointAt(0.5).Y;
         double ccwY = ccw.PointAt(0.5).Y;
@@ -184,7 +184,7 @@ public class ArcPathTests
     {
         var curve = Bm.Arc(strength: 0.8).BuildCurve(0, 0, 200, 0);
         var points = new List<(double X, double Y)>();
-        var driver = new BmotionArcDriver(curve, Bm.Tween(0.2, BmEase.Linear).ToConfig(),
+        var driver = new BmotionArcDriver(curve, Bm.Tween(0.2, BmotionEase.Linear).ToConfig(),
             (x, y, _) => points.Add((x, y)));
 
         bool done = false;
@@ -265,12 +265,12 @@ public class ArcPathTests
     [TestMethod]
     public void Path_ParticipatesInTransitionEquality()
     {
-        Assert.IsFalse(BmTransition.AreEquivalent(Bm.Tween(0.5), Bm.Tween(0.5, path: Bm.Arc())));
-        Assert.IsFalse(BmTransition.AreEquivalent(
+        Assert.IsFalse(BmotionTransition.AreEquivalent(Bm.Tween(0.5), Bm.Tween(0.5, path: Bm.Arc())));
+        Assert.IsFalse(BmotionTransition.AreEquivalent(
             Bm.Tween(0.5, path: Bm.Arc(strength: 0.2)),
             Bm.Tween(0.5, path: Bm.Arc(strength: 0.9))));
         // Recreated inline with the same options: must not read as a change.
-        Assert.IsTrue(BmTransition.AreEquivalent(
+        Assert.IsTrue(BmotionTransition.AreEquivalent(
             Bm.Tween(0.5, path: Bm.Arc(strength: 0.6, rotate: 1)),
             Bm.Tween(0.5, path: Bm.Arc(strength: 0.6, rotate: 1))));
     }

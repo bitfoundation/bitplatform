@@ -5,14 +5,14 @@ Nothing in this library requires a component. The editor is one consumer of the 
 ## In the browser, without the editor
 
 ```razor
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
 
 @code {
-    async Task<EncodedImage> MakeThumbnail(IBrowserFile file)
+    async Task<BmageEncodedImage> MakeThumbnail(IBrowserFile file)
     {
         using var image = await Loader.LoadAsync(file);
-        using var thumb = await ImagePipeline.Create()
+        using var thumb = await BmageImagePipeline.Create()
             .AutoOrient()
             .MaxSize(320, 320)
             .Sharpen(0.3f)
@@ -20,8 +20,8 @@ Nothing in this library requires a component. The editor is one consumer of the 
 
         return await Exporter.EncodeWithFallbackAsync(
             thumb,
-            [ImageFormat.WebP, ImageFormat.Jpeg],
-            new ImageExportOptions { Quality = 0.8 });
+            [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
+            new BmageImageExportOptions { Quality = 0.8 });
     }
 }
 ```
@@ -42,12 +42,12 @@ using Bit.Bmage;   // AddBitBmageHeadlessServices lives here
 
 builder.Services.AddBitBmageHeadlessServices(options =>
 {
-    options.Limits = ImageLimits.Default with { MaxPixels = 30_000_000 };
+    options.Limits = BmageImageLimits.Default with { MaxPixels = 30_000_000 };
 });
 ```
 
 ```csharp
-app.MapPost("/upload", async (IFormFile file, ImageProcessor processor) =>
+app.MapPost("/upload", async (IFormFile file, BmageImageProcessor processor) =>
 {
     // Cap the upload before reading it; IFormFile reports its length up front.
     if (file.Length > 20 * 1024 * 1024) return Results.BadRequest("Too large.");
@@ -62,33 +62,33 @@ app.MapPost("/upload", async (IFormFile file, ImageProcessor processor) =>
 
     var thumbnail = await processor.ProcessAsync(
         bytes,
-        ImagePipeline.Create().AutoOrient().MaxSize(400, 400),
-        new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 });
+        BmageImagePipeline.Create().AutoOrient().MaxSize(400, 400),
+        new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 });
 
     return Results.File(thumbnail.Data, thumbnail.MimeType);
 });
 ```
 
 Only the managed codecs exist here: PNG, JPEG, BMP, GIF, WebP and AVIF for decoding, PNG, JPEG, BMP and WebP for
-encoding. Asking to encode AVIF throws `ImageCapabilityException` with a message saying so.
+encoding. Asking to encode AVIF throws `BmageImageCapabilityException` with a message saying so.
 
 ### WebP on a server
 
 WebP is decoded and encoded in C#, lossy or lossless, with its alpha channel, its EXIF, ICC and XMP metadata, and the
-first frame of an animation. Nothing native is loaded, and the decoder checks the declared size against `ImageLimits`
+first frame of an animation. Nothing native is loaded, and the decoder checks the declared size against `BmageImageLimits`
 before it allocates a pixel, like the others.
 
 ```csharp
 using var image = await processor.DecodeAsync(bytes);
 
 // The original, losslessly: every pixel kept, the metadata removed.
-var original = await processor.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true });
+var original = await processor.EncodeAsync(image, new BmageImageExportOptions { Format = BmageImageFormat.WebP, Lossless = true });
 
 // A display copy, lossy; transparency survives, so a circular avatar keeps its corners clear.
 var avatar = await processor.ProcessAsync(
     bytes,
-    ImagePipeline.Create().AutoOrient().Cover(256, 256),
-    new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.8 });
+    BmageImagePipeline.Create().AutoOrient().Cover(256, 256),
+    new BmageImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.8 });
 ```
 
 `Quality` works as it does for JPEG, and `MaxFileSize` searches it the same way. With `Lossless`, quality does not
@@ -106,45 +106,45 @@ colours; see [Formats](formats.md#avif).
 
 | Type | Purpose |
 | --- | --- |
-| `ImageBuffer` | The pixels. Pooled; dispose it. |
-| `ImagePipeline` | An immutable list of operations. |
-| `ImageProcessor` | Decode, process, encode, and batch. Registered directly by `AddBitBmageHeadlessServices`; in a browser app get one from `ImageProcessorFactory.GetAsync()` instead. |
-| `ImageCanvas` | Immediate-mode drawing. |
-| `ImageCodecRegistry` | Which decoders and encoders are available. |
-| `ImageDocument` | A non-destructive edit: pipeline plus annotations. |
-| `DocumentRenderer` | Renders a document against a source image. |
-| `EditHistory` | Undo and redo over documents. |
-| `FontTextRasterizer` | Text from a font file, no browser needed. |
-| `Mask`, `MaskedOperation` | Where an edit applies: shapes, gradients, tone and colour ranges, brushes, mattes. |
-| `Layer`, `LayerCompositor` | Image, fill and adjustment layers with blend modes, on a document or on their own. |
+| `BmageImageBuffer` | The pixels. Pooled; dispose it. |
+| `BmageImagePipeline` | An immutable list of operations. |
+| `BmageImageProcessor` | Decode, process, encode, and batch. Registered directly by `AddBitBmageHeadlessServices`; in a browser app get one from `BmageImageProcessorFactory.GetAsync()` instead. |
+| `BmageImageCanvas` | Immediate-mode drawing. |
+| `BmageImageCodecRegistry` | Which decoders and encoders are available. |
+| `BmageImageDocument` | A non-destructive edit: pipeline plus annotations. |
+| `BmageDocumentRenderer` | Renders a document against a source image. |
+| `BmageEditHistory` | Undo and redo over documents. |
+| `BmageFontTextRasterizer` | Text from a font file, no browser needed. |
+| `BmageMask`, `BmageMaskedOperation` | Where an edit applies: shapes, gradients, tone and colour ranges, brushes, mattes. |
+| `BmageLayer`, `BmageLayerCompositor` | Image, fill and adjustment layers with blend modes, on a document or on their own. |
 | `BmageJson` | Documents and pipelines to and from JSON, to store an edit or replay it elsewhere. |
-| `BudgetedPixelAllocator` | A hard ceiling on the pixel memory a request, session or batch may hold. |
+| `BmageBudgetedPixelAllocator` | A hard ceiling on the pixel memory a request, session or batch may hold. |
 
 ## Drawing without a UI
 
-`ImageCanvas` is a complete drawing surface. This composes a social card from scratch:
+`BmageImageCanvas` is a complete drawing surface. This composes a social card from scratch:
 
 ```csharp
-using var canvas = ImageCanvas.Create(1200, 630, new Rgba32(17, 19, 24));
+using var canvas = BmageImageCanvas.Create(1200, 630, new BmageRgba32(17, 19, 24));
 
 canvas.DrawImage(photo, new RectangleF(700, 0, 500, 630));
 
 // Fade the photo into the panel.
-var fade = new LinearGradientPaint(
+var fade = new BmageLinearGradientPaint(
     new Vector2(700, 0), new Vector2(900, 0),
-    [(0f, new Rgba32(17, 19, 24, 255)), (1f, new Rgba32(17, 19, 24, 0))]);
-canvas.FillPath(new PathBuilder().AddRectangle(new RectangleF(700, 0, 200, 630)).Build(), fade);
+    [(0f, new BmageRgba32(17, 19, 24, 255)), (1f, new BmageRgba32(17, 19, 24, 0))]);
+canvas.FillPath(new BmagePathBuilder().AddRectangle(new RectangleF(700, 0, 200, 630)).Build(), fade);
 
-canvas.FillRoundedRectangle(new RectangleF(60, 60, 160, 40), 20, new Rgba32(37, 99, 235));
-canvas.DrawText("Release notes", new Vector2(60, 200), new TextStyle
+canvas.FillRoundedRectangle(new RectangleF(60, 60, 160, 40), 20, new BmageRgba32(37, 99, 235));
+canvas.DrawText("Release notes", new Vector2(60, 200), new BmageTextStyle
 {
     FontSize = 56,
     Bold = true,
-    FillColor = Rgba32.White,
+    FillColor = BmageRgba32.White,
     MaxWidth = 580,
 }, textRasterizer);
 
-var png = await canvas.ExportAsync(ImageExportOptions.Png);
+var png = await canvas.ExportAsync(BmageImageExportOptions.Png);
 ```
 
 Available on the canvas: `FillPath`, `StrokePath`, `ErasePath`, `DrawLine`, `DrawRectangle`, `FillRectangle`,
@@ -152,16 +152,16 @@ Available on the canvas: `FillPath`, `StrokePath`, `ErasePath`, `DrawLine`, `Dra
 `DrawPolyline`, `DrawArrow`, `DrawImage`, `DrawText`, plus `Save`, `Restore`, `Translate`, `Scale`, `Rotate`, `ClipTo`
 and `ApplyPipeline`.
 
-Paths come from `PathBuilder`: `MoveTo`, `LineTo`, `QuadraticTo`, `CubicTo`, `ArcTo`, `Close`, `AddRectangle`,
+Paths come from `BmagePathBuilder`: `MoveTo`, `LineTo`, `QuadraticTo`, `CubicTo`, `ArcTo`, `Close`, `AddRectangle`,
 `AddRoundedRectangle`, `AddEllipse`, `AddPolygon`, `AddPolyline`. Curves are flattened adaptively.
 
-Fills take a colour or an `IPaint`: `SolidPaint`, `LinearGradientPaint`, `RadialGradientPaint`, or your own.
+Fills take a colour or an `IBmagePaint`: `BmageSolidPaint`, `BmageLinearGradientPaint`, `BmageRadialGradientPaint`, or your own.
 
 ## Text without a browser
 
 ```csharp
-var font = FontFile.Load(await File.ReadAllBytesAsync("Inter-Regular.ttf"));
-var rasterizer = new FontTextRasterizer()
+var font = BmageFontFile.Load(await File.ReadAllBytesAsync("Inter-Regular.ttf"));
+var rasterizer = new BmageFontTextRasterizer()
     .Register("Inter", font)
     .Register("Inter", boldFont, bold: true);
 
@@ -180,20 +180,20 @@ style's font lacks is drawn with the next registered font that has it, so a Lati
 cover text mixing the two:
 
 ```csharp
-var rasterizer = new FontTextRasterizer()
-    .Register("Noto Sans", FontFile.Load(await File.ReadAllBytesAsync("NotoSans-Regular.ttf")))
-    .Register("Vazirmatn", FontFile.Load(await File.ReadAllBytesAsync("Vazirmatn-Regular.ttf")));
+var rasterizer = new BmageFontTextRasterizer()
+    .Register("Noto Sans", BmageFontFile.Load(await File.ReadAllBytesAsync("NotoSans-Regular.ttf")))
+    .Register("Vazirmatn", BmageFontFile.Load(await File.ReadAllBytesAsync("Vazirmatn-Regular.ttf")));
 
 canvas.DrawText("Hello سلام ۱۴۰۵", position, style, rasterizer);
 ```
 
 Scripts that reorder glyphs within a word (Indic, Southeast Asian) and cursive attachment (Nastaliq) are not shaped;
-use `BrowserTextRasterizer` in a browser for those.
+use `BmageBrowserTextRasterizer` in a browser for those.
 
 ## Analysing an image
 
 ```csharp
-var stats = ImageStatistics.Measure(image);
+var stats = BmageImageStatistics.Measure(image);
 
 stats.Luminance.Mean;              // exposure
 stats.Luminance.GetPercentile(0.5);
@@ -202,7 +202,7 @@ stats.AverageColor;                // a placeholder or letterbox colour
 stats.IsGrayscale;
 stats.HasTransparency;
 
-var palette = ImageStatistics.GetDominantColors(image, count: 5, ignoreNearWhiteAndBlack: true);
+var palette = BmageImageStatistics.GetDominantColors(image, count: 5, ignoreNearWhiteAndBlack: true);
 foreach (var c in palette) Console.WriteLine($"{c.Color.ToHex(false)} {c.Percent:0.#}%");
 ```
 
@@ -213,16 +213,16 @@ Two measurements help with photographed documents and uploads:
 
 ```csharp
 // The variance of the Laplacian, at a fixed analysis size: higher is sharper.
-var sharpness = ImageSharpness.Measure(photo);
+var sharpness = BmageImageSharpness.Measure(photo);
 if (sharpness < minimumSharpness) return AskForAnotherPhoto();
 
 // How far the lines of a page are tilted, and how sure the estimate is.
-if (DocumentSkew.Estimate(page) is { Confidence: > 0.3 } skew)
-    pipeline = pipeline.Rotate(skew.Angle, Rgba32.White, expandCanvas: false);   // or Straighten(skew.Angle)
+if (BmageDocumentSkew.Estimate(page) is { Confidence: > 0.3 } skew)
+    pipeline = pipeline.Rotate(skew.Angle, BmageRgba32.White, expandCanvas: false);   // or Straighten(skew.Angle)
 ```
 
-`ImageSharpness` depends on what is photographed as well as on the focus: a plain wall scores low however sharp it is.
-Set the threshold from a few good and bad examples of the images your users send. `DocumentSkew` projects the page's ink
+`BmageImageSharpness` depends on what is photographed as well as on the focus: a plain wall scores low however sharp it is.
+Set the threshold from a few good and bad examples of the images your users send. `BmageDocumentSkew` projects the page's ink
 at candidate angles and finds where its rows of text line up, to a twentieth of a degree; `Angle` is the clockwise turn
 that levels them, and `Confidence` is about 0.9 for lines of text and below 0.3 for scattered marks. Like trimming, both
 depend on the pixels, so they are measurements whose result you record, not operations.
@@ -230,14 +230,14 @@ depend on the pixels, so they are measurements whose result you record, not oper
 ## Placeholders for progressive loading
 
 ```csharp
-var placeholder = ImagePlaceholder.Create(image, columns: 4, rows: 4);
+var placeholder = BmageImagePlaceholder.Create(image, columns: 4, rows: 4);
 
 var token = placeholder.ToCompactString();   // 67 characters for the default 4x4 grid, store it beside the row
 placeholder.AspectRatio;                     // reserve layout space before the image loads
 placeholder.AverageColor;                    // a single-colour fallback
 
 // Later, in the browser or on the server:
-var restored = ImagePlaceholder.Parse(token, width, height);
+var restored = BmageImagePlaceholder.Parse(token, width, height);
 using var blurred = restored!.Render(400, 300);   // smooth, no image request
 var css = restored.ToCssBackground();             // or render it with CSS gradients alone
 ```
@@ -248,16 +248,16 @@ image. A placeholder is small enough to return from a list endpoint without thin
 ## Non-destructive editing without the editor
 
 ```csharp
-var document = ImageDocument.Create(source)
-    .AddOperation(new CropOperation(100, 100, 800, 600))
-    .AddOperation(new BrightnessAdjustment(0.1f))
-    .AddAnnotation(new ArrowAnnotation { Start = a, End = b });
+var document = BmageImageDocument.Create(source)
+    .AddOperation(new BmageCropOperation(100, 100, 800, 600))
+    .AddOperation(new BmageBrightnessAdjustment(0.1f))
+    .AddAnnotation(new BmageArrowAnnotation { Start = a, End = b });
 
-var history = new EditHistory(document);
+var history = new BmageEditHistory(document);
 history.Push(document.AddAnnotation(label), "Add label");
 history.Undo();
 
-using var rendered = new DocumentRenderer(textRasterizer)
+using var rendered = new BmageDocumentRenderer(textRasterizer)
     .Render(history.Current, source);
 ```
 
@@ -270,7 +270,7 @@ source.
 pixels and the server can render it on the original upload at full resolution:
 
 ```csharp
-app.MapPost("/render/{id}", async (string id, HttpRequest request, ImageProcessor processor, FontTextRasterizer fonts) =>
+app.MapPost("/render/{id}", async (string id, HttpRequest request, BmageImageProcessor processor, BmageFontTextRasterizer fonts) =>
 {
     using var reader = new StreamReader(request.Body);
     var document = BmageJson.DeserializeDocument(await reader.ReadToEndAsync(), new BmageJsonOptions
@@ -281,28 +281,28 @@ app.MapPost("/render/{id}", async (string id, HttpRequest request, ImageProcesso
     using var original = await processor.DecodeAsync(await uploads.ReadAsync(id));
     if (original.Size != document.SourceSize) return Results.BadRequest("The edit was made for another image.");
 
-    using var rendered = new DocumentRenderer(fonts).Render(document, original);
-    var file = await processor.EncodeAsync(rendered, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9 });
+    using var rendered = new BmageDocumentRenderer(fonts).Render(document, original);
+    var file = await processor.EncodeAsync(rendered, new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.9 });
     return Results.File(file.Data, file.MimeType);
 });
 ```
 
-A malformed or hostile document is rejected with `ImageDocumentFormatException` saying where, and the pipeline it
-describes is bounded by the same `ImageLimits` as any other.
+A malformed or hostile document is rejected with `BmageImageDocumentFormatException` saying where, and the pipeline it
+describes is bounded by the same `BmageImageLimits` as any other.
 
 ## Layers and masks
 
 Selective edits, layers and blend modes need no component either:
 
 ```csharp
-using var card = LayerCompositor.Flatten(new Size(1200, 630), Rgba32.White,
+using var card = BmageLayerCompositor.Flatten(new Size(1200, 630), BmageRgba32.White,
 [
-    new ImageLayer { Image = photo, Bounds = new RectangleF(0, 0, 1200, 630) },
-    new FillLayer(new Rgba32(10, 20, 60)) { BlendMode = BlendMode.Multiply, Mask = Mask.Gradient(new(0, 1), new(0, 0.3f)) },
+    new BmageImageLayer { Image = photo, Bounds = new RectangleF(0, 0, 1200, 630) },
+    new BmageFillLayer(new BmageRgba32(10, 20, 60)) { BlendMode = BmageBlendMode.Multiply, Mask = BmageMask.Gradient(new(0, 1), new(0, 0.3f)) },
 ]);
 
-using var graded = ImagePipeline.Create()
-    .Masked(new LuminanceRangeMask(0.75f, 1f), highlights => highlights.Exposure(-0.4f))
+using var graded = BmageImagePipeline.Create()
+    .Masked(new BmageLuminanceRangeMask(0.75f, 1f), highlights => highlights.Exposure(-0.4f))
     .Execute(photo);
 ```
 
@@ -311,10 +311,10 @@ See [layers-and-masks.md](layers-and-masks.md).
 ## Batch
 
 ```csharp
-var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
+var result = await processor.ProcessBatchAsync(items, pipeline, new BmageBatchOptions
 {
     MaxConcurrency = Environment.ProcessorCount / 2,
-    ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+    ExportOptions = new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
 });
 ```
 
@@ -323,13 +323,13 @@ against your memory budget, not your core count alone, and let the budget decide
 
 ```csharp
 var items = Directory.EnumerateFiles(inbox, "*.jpg")
-    .Select(path => BatchItem.Deferred(async ct => (ReadOnlyMemory<byte>)await File.ReadAllBytesAsync(path, ct), path));
+    .Select(path => BmageBatchItem.Deferred(async ct => (ReadOnlyMemory<byte>)await File.ReadAllBytesAsync(path, ct), path));
 
-await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BatchOptions
+await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BmageBatchOptions
 {
     MaxConcurrency = 8,
     MaxMemoryBytes = 1L << 30,   // images start only while their estimated need fits in 1 GB
-    ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+    ExportOptions = new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
 }))
 {
     if (result.Output is { } output) await File.WriteAllBytesAsync(Path.ChangeExtension(result.FileName!, ".out.jpg"), output.Data);
@@ -349,7 +349,7 @@ rows over every core, and a 24 megapixel downscale or a rotation then produces e
 builder.Services.AddBitBmageHeadlessServices(options => options.MaxDegreeOfParallelism = Environment.ProcessorCount);
 ```
 
-Per run, `PipelineExecutionOptions.MaxDegreeOfParallelism` overrides it. In a batch every image in flight uses that
+Per run, `BmagePipelineExecutionOptions.MaxDegreeOfParallelism` overrides it. In a batch every image in flight uses that
 many threads, decoding included, so keep `MaxConcurrency` times `MaxDegreeOfParallelism` near the cores you have.
 
 ## Bounding memory per request
@@ -358,13 +358,13 @@ many threads, decoding included, so keep `MaxConcurrency` times `MaxDegreeOfPara
 app.MapPost("/thumbnail", async (IFormFile file) =>
 {
     // Each request may hold at most 200 MB of pixels; beyond that it fails before allocating.
-    var budget = new BudgetedPixelAllocator(200L * 1024 * 1024);
-    var processor = new ImageProcessor(ImageCodecRegistry.CreateDefault(), budget);
+    var budget = new BmageBudgetedPixelAllocator(200L * 1024 * 1024);
+    var processor = new BmageImageProcessor(BmageImageCodecRegistry.CreateDefault(), budget);
     // ... decode, process and encode as above ...
 });
 ```
 
-`ImagePipeline.EstimateMemory(size)` gives the expected peak beforehand, from the dimensions alone, so a request can be
+`BmageImagePipeline.EstimateMemory(size)` gives the expected peak beforehand, from the dimensions alone, so a request can be
 refused, queued or routed before anything is decoded.
 
 ## Custom codecs
@@ -372,10 +372,10 @@ refused, queued or routed before anything is decoded.
 Register your own decoder or encoder and it takes precedence over the built-ins for its formats:
 
 ```csharp
-var registry = ImageCodecRegistry.CreateDefault();
+var registry = BmageImageCodecRegistry.CreateDefault();
 registry.AddDecoder(new MyTiffDecoder());
 registry.AddEncoder(new MyTiffEncoder());
-var processor = new ImageProcessor(registry);
+var processor = new BmageImageProcessor(registry);
 ```
 
 See [extending.md](extending.md).

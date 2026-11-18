@@ -28,7 +28,6 @@
 
     <ItemGroup>
         <Using Include="Bit.Bcrdt" />
-        <Using Include="Bit.Bcrdt.Blazor" />
     </ItemGroup>
 
     <!-- The code under each sample, for CodeSnippet to show. Only the text: the samples compile in their own project

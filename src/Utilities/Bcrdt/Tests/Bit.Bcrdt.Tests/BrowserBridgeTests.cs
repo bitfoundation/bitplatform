@@ -1,4 +1,3 @@
-using Bit.Bcrdt.Blazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
@@ -180,7 +179,7 @@ public class BrowserBridgeTests
     public void A_change_sent_to_the_browser_never_cuts_a_surrogate_pair(string before, string after, int index, string removed, string inserted)
     {
         // The change crosses into JavaScript as JSON, which would turn half a pair into U+FFFD.
-        (int actualIndex, string actualRemoved, string actualInserted) = Bit.Bcrdt.Blazor.BcrdtTextArea.Change(before, after);
+        (int actualIndex, string actualRemoved, string actualInserted) = Bit.Bcrdt.BcrdtTextArea.Change(before, after);
 
         Assert.AreEqual(index, actualIndex);
         Assert.AreEqual(removed, actualRemoved);

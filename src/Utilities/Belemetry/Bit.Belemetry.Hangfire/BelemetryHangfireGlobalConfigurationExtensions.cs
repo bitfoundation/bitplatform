@@ -1,6 +1,6 @@
-﻿using Bit.Belemetry.Hangfire;
+﻿using Hangfire;
 
-namespace Hangfire;
+namespace Bit.Belemetry;
 
 /// <summary>Registration of the Belemetry Hangfire instrumentation.</summary>
 public static class BelemetryHangfireGlobalConfigurationExtensions

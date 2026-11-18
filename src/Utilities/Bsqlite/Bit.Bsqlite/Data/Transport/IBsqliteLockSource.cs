@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Data;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// A transport that can hold a named lock shared with every other tab that opens the same database.

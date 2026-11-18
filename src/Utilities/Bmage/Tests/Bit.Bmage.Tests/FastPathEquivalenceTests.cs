@@ -1,7 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
 
 namespace Bit.Bmage.Tests;
 
@@ -23,7 +20,7 @@ public sealed class FastPathEquivalenceTests
         {
             using var source = Noise(width, height, seed: radius * 31 + width);
             using var expected = ReferenceMedian(source, radius, region: null);
-            using var actual = new MedianFilter(radius).Apply(source, OperationContext.Default);
+            using var actual = new BmageMedianFilter(radius).Apply(source, BmageOperationContext.Default);
             AssertSamePixels(expected, actual, $"radius {radius}, {width}x{height}");
         }
     }
@@ -36,7 +33,7 @@ public sealed class FastPathEquivalenceTests
         foreach (var radius in new[] { 1, 2, 4 })
         {
             using var expected = ReferenceMedian(source, radius, region);
-            using var actual = new MedianFilter(radius, region).Apply(source, OperationContext.Default);
+            using var actual = new BmageMedianFilter(radius, region).Apply(source, BmageOperationContext.Default);
             AssertSamePixels(expected, actual, $"radius {radius}");
         }
     }
@@ -49,7 +46,7 @@ public sealed class FastPathEquivalenceTests
             using var source = Noise(width, height, seed: width + height);
             using var expected = source.Clone();
             ReferenceBoxBlur(expected, expected.Bounds, sigma);
-            using var actual = new BlurFilter(sigma).Apply(source, OperationContext.Default);
+            using var actual = new BmageBlurFilter(sigma).Apply(source, BmageOperationContext.Default);
             AssertSamePixels(expected, actual, $"sigma {sigma}, {width}x{height}");
         }
 
@@ -57,7 +54,7 @@ public sealed class FastPathEquivalenceTests
         var region = new Rectangle(7, 5, 50, 41);
         using var expectedRegion = image.Clone();
         ReferenceBoxBlur(expectedRegion, region, 4f);
-        using var actualRegion = new BlurFilter(4f, region).Apply(image, OperationContext.Default);
+        using var actualRegion = new BmageBlurFilter(4f, region).Apply(image, BmageOperationContext.Default);
         AssertSamePixels(expectedRegion, actualRegion, "region");
     }
 
@@ -69,7 +66,7 @@ public sealed class FastPathEquivalenceTests
             using var source = Noise(width, height, seed: width * 7 + height);
             using var expected = source.Clone();
             ReferenceBoxBlur(expected, expected.Bounds, sigma);
-            using var actual = new BlurFilter(sigma).Apply(source, OperationContext.Default);
+            using var actual = new BmageBlurFilter(sigma).Apply(source, BmageOperationContext.Default);
             AssertSamePixels(expected, actual, $"sigma {sigma}, {width}x{height}");
         }
 
@@ -77,13 +74,13 @@ public sealed class FastPathEquivalenceTests
         var region = new Rectangle(10, 6, 12, 9);
         using var expectedRegion = image.Clone();
         ReferenceBoxBlur(expectedRegion, region, 25f);
-        using var actualRegion = new BlurFilter(25f, region).Apply(image, OperationContext.Default);
+        using var actualRegion = new BmageBlurFilter(25f, region).Apply(image, BmageOperationContext.Default);
         AssertSamePixels(expectedRegion, actualRegion, "region");
 
         using var tiny = Noise(6, 5, seed: 3);
         using var expectedTiny = tiny.Clone();
         ReferenceBoxBlur(expectedTiny, expectedTiny.Bounds, 3000f);
-        using var actualTiny = new BlurFilter(3000f).Apply(tiny, OperationContext.Default);
+        using var actualTiny = new BmageBlurFilter(3000f).Apply(tiny, BmageOperationContext.Default);
         Assert.IsLessThanOrEqualTo(1, TestImages.MaxChannelDifference(expectedTiny, actualTiny));
     }
 
@@ -91,7 +88,7 @@ public sealed class FastPathEquivalenceTests
     public void TiledWarpsMatchSamplingEveryPixelDirectly()
     {
         using var source = Noise(97, 61, seed: 31);
-        var background = new Rgba32(30, 60, 90, 128);
+        var background = new BmageRgba32(30, 60, 90, 128);
         var transforms = new[]
         {
             System.Numerics.Matrix3x2.CreateRotation(0.6458f),
@@ -101,21 +98,21 @@ public sealed class FastPathEquivalenceTests
             System.Numerics.Matrix3x2.CreateScale(5f) * System.Numerics.Matrix3x2.CreateRotation(0.2f),
         };
         foreach (var matrix in transforms)
-        foreach (var sampling in new[] { Bit.Bmage.Operations.Transforms.WarpSampling.Bilinear, Bit.Bmage.Operations.Transforms.WarpSampling.Bicubic })
+        foreach (var sampling in new[] { Bit.Bmage.BmageWarpSampling.Bilinear, Bit.Bmage.BmageWarpSampling.Bicubic })
         {
-            var operation = new Bit.Bmage.Operations.Transforms.AffineTransformOperation(matrix, background: background, sampling: sampling);
-            using var actual = operation.Apply(source, OperationContext.Default);
+            var operation = new Bit.Bmage.BmageAffineTransformOperation(matrix, background: background, sampling: sampling);
+            using var actual = operation.Apply(source, BmageOperationContext.Default);
             System.Numerics.Matrix3x2.Invert(operation.GetTransform(source.Size)!.Value, out var inverse);
-            using var expected = ReferenceWarp(source, actual.Size, inverse, sampling == Bit.Bmage.Operations.Transforms.WarpSampling.Bicubic, background);
+            using var expected = ReferenceWarp(source, actual.Size, inverse, sampling == Bit.Bmage.BmageWarpSampling.Bicubic, background);
             AssertSamePixels(expected, actual, $"{matrix}, {sampling}");
         }
     }
 
     /// <summary>The affine warp sampling every tap straight from the source, as it did before tiles.</summary>
-    private static ImageBuffer ReferenceWarp(ImageBuffer source, System.Drawing.Size size, System.Numerics.Matrix3x2 inverse, bool bicubic, Rgba32 background)
+    private static BmageImageBuffer ReferenceWarp(BmageImageBuffer source, System.Drawing.Size size, System.Numerics.Matrix3x2 inverse, bool bicubic, BmageRgba32 background)
     {
         const float inv = 1f / 255f;
-        System.Numerics.Vector4 Load(Rgba32 p) { var a = p.A * inv; return new System.Numerics.Vector4(p.R * inv * a, p.G * inv * a, p.B * inv * a, a); }
+        System.Numerics.Vector4 Load(BmageRgba32 p) { var a = p.A * inv; return new System.Numerics.Vector4(p.R * inv * a, p.G * inv * a, p.B * inv * a, a); }
         var bg = new System.Numerics.Vector4(background.R * inv * background.A * inv, background.G * inv * background.A * inv, background.B * inv * background.A * inv, background.A * inv);
         int sw = source.Width, sh = source.Height;
         System.Numerics.Vector4 Fetch(int x, int y) => (uint)x < (uint)sw && (uint)y < (uint)sh ? Load(source[x, y]) : bg;
@@ -127,7 +124,7 @@ public sealed class FastPathEquivalenceTests
             if (x < 2f) return ((a * x - 5f * a) * x + 8f * a) * x - 4f * a;
             return 0f;
         }
-        var output = ImageBuffer.Create(size.Width, size.Height);
+        var output = BmageImageBuffer.Create(size.Width, size.Height);
         for (var y = 0; y < size.Height; y++)
         {
             var origin = System.Numerics.Vector2.Transform(new System.Numerics.Vector2(0.5f, y + 0.5f), inverse);
@@ -164,10 +161,10 @@ public sealed class FastPathEquivalenceTests
                         p = top + (bottom - top) * fy;
                     }
                 }
-                if (!(p.W > 1e-5f)) { output[x, y] = Rgba32.Transparent; continue; }
+                if (!(p.W > 1e-5f)) { output[x, y] = BmageRgba32.Transparent; continue; }
                 p = new System.Numerics.Vector4(p.X * (1f / p.W), p.Y * (1f / p.W), p.Z * (1f / p.W), p.W);
                 var v = System.Numerics.Vector4.Clamp(p, System.Numerics.Vector4.Zero, System.Numerics.Vector4.One) * 255f + new System.Numerics.Vector4(0.5f);
-                output[x, y] = new Rgba32((byte)v.X, (byte)v.Y, (byte)v.Z, (byte)v.W);
+                output[x, y] = new BmageRgba32((byte)v.X, (byte)v.Y, (byte)v.Z, (byte)v.W);
             }
         }
         return output;
@@ -181,9 +178,9 @@ public sealed class FastPathEquivalenceTests
         {
             using var source = Noise(width, height, seed: width);
             var region = new Rectangle(3, 2, width - 7, height - 5);
-            using var actual = new SharpenFilter(amount, radius, threshold, region).Apply(source, OperationContext.Default);
+            using var actual = new BmageSharpenFilter(amount, radius, threshold, region).Apply(source, BmageOperationContext.Default);
 
-            using var blurred = new BlurFilter(radius).Apply(source.CopyRegion(region), OperationContext.Default);
+            using var blurred = new BmageBlurFilter(radius).Apply(source.CopyRegion(region), BmageOperationContext.Default);
             using var expected = source.Clone();
             var t = (int)(threshold * 255);
             for (var y = 0; y < region.Height; y++)
@@ -191,14 +188,14 @@ public sealed class FastPathEquivalenceTests
             {
                 var p = source[region.X + x, region.Y + y];
                 var b = blurred[x, y];
-                expected[region.X + x, region.Y + y] = new Rgba32(Sharpen(p.R, b.R), Sharpen(p.G, b.G), Sharpen(p.B, b.B), p.A);
+                expected[region.X + x, region.Y + y] = new BmageRgba32(Sharpen(p.R, b.R), Sharpen(p.G, b.G), Sharpen(p.B, b.B), p.A);
             }
             AssertSamePixels(expected, actual, $"{width}x{height}");
 
             byte Sharpen(byte v, byte blur)
             {
                 var diff = v - blur;
-                return Math.Abs(diff) < t ? v : Rgba32.ClampToByte(v + diff * amount);
+                return Math.Abs(diff) < t ? v : BmageRgba32.ClampToByte(v + diff * amount);
             }
         }
     }
@@ -206,19 +203,19 @@ public sealed class FastPathEquivalenceTests
     [TestMethod]
     public void SmallBlursAreRealGaussians()
     {
-        using var flat = ImageBuffer.Create(30, 20, new Rgba32(90, 140, 200, 255));
+        using var flat = BmageImageBuffer.Create(30, 20, new BmageRgba32(90, 140, 200, 255));
         foreach (var sigma in new[] { 0.3f, 0.5f, 1f, 1.9f })
         {
-            using var blurred = new BlurFilter(sigma).Apply(flat, OperationContext.Default);
+            using var blurred = new BmageBlurFilter(sigma).Apply(flat, BmageOperationContext.Default);
             for (var y = 0; y < flat.Height; y++)
             for (var x = 0; x < flat.Width; x++)
                 Assert.AreEqual(flat[x, y], blurred[x, y], $"a flat colour survives sigma {sigma}");
         }
 
         // A single bright pixel spreads to its neighbours symmetrically, even at a radius three box passes round to nothing.
-        using var dot = ImageBuffer.Create(9, 9, new Rgba32(0, 0, 0, 255));
-        dot[4, 4] = new Rgba32(255, 255, 255, 255);
-        using var spread = new BlurFilter(0.5f).Apply(dot, OperationContext.Default);
+        using var dot = BmageImageBuffer.Create(9, 9, new BmageRgba32(0, 0, 0, 255));
+        dot[4, 4] = new BmageRgba32(255, 255, 255, 255);
+        using var spread = new BmageBlurFilter(0.5f).Apply(dot, BmageOperationContext.Default);
         Assert.IsTrue(spread[4, 4].R < 255 && spread[3, 4].R > 0, "sigma 0.5 blurs");
         Assert.AreEqual(spread[3, 4], spread[5, 4]);
         Assert.AreEqual(spread[4, 3], spread[4, 5]);
@@ -231,14 +228,14 @@ public sealed class FastPathEquivalenceTests
         // Whether the sampled gaussian or the box passes run, a blurred dot spreads by about the deviation asked for, so
         // a slider dragged across the radii where one takes over from the other never jumps in strength, as a 3x3 box
         // (deviation 0.82) taking over from a deviation 0.99 gaussian did.
-        using var dot = ImageBuffer.Create(41, 41, new Rgba32(0, 0, 0, 255));
-        dot[20, 20] = new Rgba32(255, 255, 255, 255);
+        using var dot = BmageImageBuffer.Create(41, 41, new BmageRgba32(0, 0, 0, 255));
+        dot[20, 20] = new BmageRgba32(255, 255, 255, 255);
         var report = new System.Text.StringBuilder();
         var worst = 0.0;
         for (var step = 0; step <= 38; step++)
         {
             var sigma = 0.6f + step * 0.05f;
-            using var blurred = new BlurFilter(sigma).Apply(dot, OperationContext.Default);
+            using var blurred = new BmageBlurFilter(sigma).Apply(dot, BmageOperationContext.Default);
             double mass = 0, moment = 0;
             for (var y = 0; y < 41; y++)
                 for (var x = 0; x < 41; x++)
@@ -255,7 +252,7 @@ public sealed class FastPathEquivalenceTests
     }
 
     /// <summary>The three-pass box blur as it was: premultiplied, each pass over the whole region in turn.</summary>
-    private static void ReferenceBoxBlur(ImageBuffer buffer, Rectangle region, float sigma)
+    private static void ReferenceBoxBlur(BmageImageBuffer buffer, Rectangle region, float sigma)
     {
         int w = region.Width, h = region.Height;
         var a = new System.Numerics.Vector4[w * h];
@@ -314,53 +311,53 @@ public sealed class FastPathEquivalenceTests
             if (p.W > 1e-5f) p = new System.Numerics.Vector4(p.X * (1f / p.W), p.Y * (1f / p.W), p.Z * (1f / p.W), p.W);
             else p = System.Numerics.Vector4.Zero;
             var v = System.Numerics.Vector4.Clamp(p, System.Numerics.Vector4.Zero, System.Numerics.Vector4.One) * 255f + new System.Numerics.Vector4(0.5f);
-            buffer[region.X + x, region.Y + y] = new Rgba32((byte)v.X, (byte)v.Y, (byte)v.Z, (byte)v.W);
+            buffer[region.X + x, region.Y + y] = new BmageRgba32((byte)v.X, (byte)v.Y, (byte)v.Z, (byte)v.W);
         }
     }
 
     [TestMethod]
     public void PointOperationsMatchRunningEveryRowThroughTheirStages()
     {
-        PointOperation[] separable =
+        BmagePointOperation[] separable =
         [
-            new BrightnessAdjustment(0.2f), new BrightnessAdjustment(-0.35f), new ContrastAdjustment(0.4f), new ContrastAdjustment(-0.6f),
-            new ExposureAdjustment(1.3f), new TemperatureAdjustment(0.7f), new TintAdjustment(-0.5f), new OpacityAdjustment(0.6f),
-            new InvertFilter(0.3f), new GammaAdjustment(1.8f), new LevelsAdjustment(0.1f, 0.85f, 1.2f, 0.05f, 0.95f),
-            new PosterizeFilter(5), CurveOperation.FromFunction(v => v * v, ColorChannels.All),
-            new ColorMatrixOperation(ColorMatrix.Scale(1.2f, 0.8f, 1.1f, 0.9f)),
+            new BmageBrightnessAdjustment(0.2f), new BmageBrightnessAdjustment(-0.35f), new BmageContrastAdjustment(0.4f), new BmageContrastAdjustment(-0.6f),
+            new BmageExposureAdjustment(1.3f), new BmageTemperatureAdjustment(0.7f), new BmageTintAdjustment(-0.5f), new BmageOpacityAdjustment(0.6f),
+            new BmageInvertFilter(0.3f), new BmageGammaAdjustment(1.8f), new BmageLevelsAdjustment(0.1f, 0.85f, 1.2f, 0.05f, 0.95f),
+            new BmagePosterizeFilter(5), BmageCurveOperation.FromFunction(v => v * v, BmageColorChannels.All),
+            new BmageColorMatrixOperation(BmageColorMatrix.Scale(1.2f, 0.8f, 1.1f, 0.9f)),
         ];
-        PointOperation[] mixing = [new SaturationAdjustment(0.5f), new VibranceAdjustment(0.4f), new HueAdjustment(40), new ShadowsHighlightsAdjustment(0.3f, -0.2f), new ThresholdFilter(0.4f)];
+        BmagePointOperation[] mixing = [new BmageSaturationAdjustment(0.5f), new BmageVibranceAdjustment(0.4f), new BmageHueAdjustment(40), new BmageShadowsHighlightsAdjustment(0.3f, -0.2f), new BmageThresholdFilter(0.4f)];
 
-        var operations = new List<PointOperation>(separable)
+        var operations = new List<BmagePointOperation>(separable)
         {
             // A mixing stage closed by curves, including one that changes alpha only.
-            new FusedPointOperation([new SaturationAdjustment(0.6f), new GammaAdjustment(1.4f)]),
-            new FusedPointOperation([new BrightnessAdjustment(0.1f), new SaturationAdjustment(1.2f), new PosterizeFilter(4), new GammaAdjustment(0.8f)]),
-            new FusedPointOperation([new VibranceAdjustment(0.5f), new CurveOperation(null, null, null, CurveOperation.BuildTable(v => 1 - v))]),
+            new BmageFusedPointOperation([new BmageSaturationAdjustment(0.6f), new BmageGammaAdjustment(1.4f)]),
+            new BmageFusedPointOperation([new BmageBrightnessAdjustment(0.1f), new BmageSaturationAdjustment(1.2f), new BmagePosterizeFilter(4), new BmageGammaAdjustment(0.8f)]),
+            new BmageFusedPointOperation([new BmageVibranceAdjustment(0.5f), new BmageCurveOperation(null, null, null, BmageCurveOperation.BuildTable(v => 1 - v))]),
         };
         var random = new Random(11);
         for (var i = 0; i < 40; i++)
         {
             // Runs of every shape: all per-channel (one table), a per-channel prefix then mixing stages, and mixing first.
-            var stages = new List<PointOperation>();
+            var stages = new List<BmagePointOperation>();
             for (var s = random.Next(2, 6); s > 0; s--)
                 stages.Add(random.Next(3) == 0 ? mixing[random.Next(mixing.Length)] : separable[random.Next(separable.Length)]);
-            operations.Add(new FusedPointOperation(stages));
+            operations.Add(new BmageFusedPointOperation(stages));
         }
 
         using var source = Noise(256, 64, seed: 3);
         foreach (var operation in operations)
         {
             using var expected = ReferencePointOperation(source, operation);
-            using var actual = operation.Apply(source, OperationContext.Default);
+            using var actual = operation.Apply(source, BmageOperationContext.Default);
             AssertSamePixels(expected, actual, operation.Name);
         }
     }
 
     /// <summary>The direct method: load every row, run the operation over it and store it.</summary>
-    private static ImageBuffer ReferencePointOperation(ImageBuffer source, PointOperation operation)
+    private static BmageImageBuffer ReferencePointOperation(BmageImageBuffer source, BmagePointOperation operation)
     {
-        var output = ImageBuffer.Create(source.Width, source.Height);
+        var output = BmageImageBuffer.Create(source.Width, source.Height);
         var row = new System.Numerics.Vector4[source.Width];
         for (var y = 0; y < source.Height; y++)
         {
@@ -373,7 +370,7 @@ public sealed class FastPathEquivalenceTests
             for (var x = 0; x < source.Width; x++)
             {
                 var v = System.Numerics.Vector4.Clamp(row[x], System.Numerics.Vector4.Zero, System.Numerics.Vector4.One) * 255f + new System.Numerics.Vector4(0.5f);
-                output[x, y] = new Rgba32((byte)v.X, (byte)v.Y, (byte)v.Z, (byte)v.W);
+                output[x, y] = new BmageRgba32((byte)v.X, (byte)v.Y, (byte)v.Z, (byte)v.W);
             }
         }
         return output;
@@ -383,14 +380,14 @@ public sealed class FastPathEquivalenceTests
     public void RowConvertersMatchThePerChannelExpressions()
     {
         // Every red and alpha value against every other, with the remaining channels varied, covers every input byte.
-        var pixels = new Rgba32[256 * 256];
-        for (var i = 0; i < pixels.Length; i++) pixels[i] = new Rgba32((byte)i, (byte)(i * 7 + 3), (byte)(255 - i), (byte)(i >> 8));
+        var pixels = new BmageRgba32[256 * 256];
+        for (var i = 0; i < pixels.Length; i++) pixels[i] = new BmageRgba32((byte)i, (byte)(i * 7 + 3), (byte)(255 - i), (byte)(i >> 8));
         const float inv = 1f / 255f;
 
         var loaded = new System.Numerics.Vector4[pixels.Length];
-        PixelRows.Load(pixels, loaded);
+        BmagePixelRows.Load(pixels, loaded);
         var premultiplied = new System.Numerics.Vector4[pixels.Length];
-        PixelRows.LoadPremultiplied(pixels, premultiplied);
+        BmagePixelRows.LoadPremultiplied(pixels, premultiplied);
         for (var i = 0; i < pixels.Length; i++)
         {
             var p = pixels[i];
@@ -408,10 +405,10 @@ public sealed class FastPathEquivalenceTests
             float Next() => random.Next(8) == 0 ? special[random.Next(special.Length)] : (float)(random.NextDouble() * 1.4 - 0.2);
             values[i] = new System.Numerics.Vector4(Next(), Next(), Next(), Next());
         }
-        var stored = new Rgba32[values.Length];
-        PixelRows.Store(values, stored);
-        var unpremultiplied = new Rgba32[values.Length];
-        PixelRows.StoreUnpremultiplied(values, unpremultiplied);
+        var stored = new BmageRgba32[values.Length];
+        BmagePixelRows.Store(values, stored);
+        var unpremultiplied = new BmageRgba32[values.Length];
+        BmagePixelRows.StoreUnpremultiplied(values, unpremultiplied);
         for (var i = 0; i < values.Length; i++)
         {
             Assert.AreEqual(ReferenceStore(values[i]), stored[i], $"Store {values[i]}");
@@ -420,15 +417,15 @@ public sealed class FastPathEquivalenceTests
             Assert.AreEqual(ReferenceStore(u), unpremultiplied[i], $"StoreUnpremultiplied {values[i]}");
         }
 
-        static Rgba32 ReferenceStore(System.Numerics.Vector4 p)
+        static BmageRgba32 ReferenceStore(System.Numerics.Vector4 p)
         {
             var v = System.Numerics.Vector4.Clamp(p, System.Numerics.Vector4.Zero, System.Numerics.Vector4.One) * 255f + new System.Numerics.Vector4(0.5f);
-            return new Rgba32((byte)v.X, (byte)v.Y, (byte)v.Z, (byte)v.W);
+            return new BmageRgba32((byte)v.X, (byte)v.Y, (byte)v.Z, (byte)v.W);
         }
     }
 
     /// <summary>The direct method: gather the edge-repeating window and sort each channel.</summary>
-    private static ImageBuffer ReferenceMedian(ImageBuffer source, int r, Rectangle? region)
+    private static BmageImageBuffer ReferenceMedian(BmageImageBuffer source, int r, Rectangle? region)
     {
         var area = region ?? source.Bounds;
         var output = source.Clone();
@@ -446,26 +443,26 @@ public sealed class FastPathEquivalenceTests
                 rs[n] = p.R; gs[n] = p.G; bs[n] = p.B; n++;
             }
             Array.Sort(rs); Array.Sort(gs); Array.Sort(bs);
-            output[area.X + x, area.Y + y] = new Rgba32(rs[window / 2], gs[window / 2], bs[window / 2], input[x, y].A);
+            output[area.X + x, area.Y + y] = new BmageRgba32(rs[window / 2], gs[window / 2], bs[window / 2], input[x, y].A);
         }
         return output;
     }
 
-    internal static ImageBuffer Noise(int width, int height, int seed)
+    internal static BmageImageBuffer Noise(int width, int height, int seed)
     {
         var random = new Random(seed);
-        var image = ImageBuffer.Create(width, height, clear: false);
+        var image = BmageImageBuffer.Create(width, height, clear: false);
         for (var y = 0; y < height; y++)
         for (var x = 0; x < width; x++)
         {
             // Mostly full range noise, with runs of repeated values so the histograms see ties.
             var v = random.Next(4) == 0 ? (byte)(x * 7) : (byte)random.Next(256);
-            image[x, y] = new Rgba32(v, (byte)random.Next(256), (byte)(255 - v), (byte)random.Next(256));
+            image[x, y] = new BmageRgba32(v, (byte)random.Next(256), (byte)(255 - v), (byte)random.Next(256));
         }
         return image;
     }
 
-    internal static void AssertSamePixels(ImageBuffer expected, ImageBuffer actual, string because)
+    internal static void AssertSamePixels(BmageImageBuffer expected, BmageImageBuffer actual, string because)
     {
         Assert.AreEqual(expected.Size, actual.Size, because);
         for (var y = 0; y < expected.Height; y++)

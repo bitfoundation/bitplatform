@@ -55,14 +55,3 @@ public sealed record BonboardingStepGeometry
         : InvalidSelector is not null ? BonboardingTargetIssue.InvalidSelector
         : BonboardingStepGeometryIssues.Parse(TargetIssue);
 }
-
-internal static class BonboardingStepGeometryIssues
-{
-    public static BonboardingTargetIssue Parse(string? issue) => issue switch
-    {
-        null or "" or "none" => BonboardingTargetIssue.NotFound,
-        "hidden" => BonboardingTargetIssue.Hidden,
-        "invalid-selector" => BonboardingTargetIssue.InvalidSelector,
-        _ => BonboardingTargetIssue.NotFound,
-    };
-}

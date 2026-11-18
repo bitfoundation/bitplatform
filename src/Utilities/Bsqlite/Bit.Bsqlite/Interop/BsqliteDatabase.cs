@@ -1,8 +1,6 @@
 ﻿using System.Runtime.ExceptionServices;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Storage;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// One named database for the lifetime of the application: opened on first use, shared by every

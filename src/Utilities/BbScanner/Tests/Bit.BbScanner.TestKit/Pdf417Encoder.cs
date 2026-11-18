@@ -5,7 +5,7 @@ namespace Bit.BbScanner.TestKit;
 /// A PDF417 encoder used to generate test symbols.
 /// </summary>
 /// <remarks>
-/// It encodes with the same <see cref="BbPdf417SymbolTable"/> the decoder reads with, so a round
+/// It encodes with the same <see cref="BbScannerPdf417SymbolTable"/> the decoder reads with, so a round
 /// trip validates the detector, the row indicators, the GF(929) error correction and the
 /// compaction modes. It does not validate the symbol character table itself, which is why the
 /// library is explicit that the shipped table is a placeholder.
@@ -27,7 +27,7 @@ public static class Pdf417Encoder
     /// Writes a Macro PDF417 control block after the data: the segment index, the file ID codewords, the optional
     /// segment count field when <c>SegmentCount</c> is set, and the terminator when <c>Last</c> is.
     /// </param>
-    public static BbBitMatrix Encode(
+    public static BbScannerBitMatrix Encode(
         string content,
         int columns = 4,
         int errorCorrectionLevel = 2,
@@ -46,7 +46,7 @@ public static class Pdf417Encoder
             AppendMacro(data, block);
         }
 
-        var numEc = BbPdf417ErrorCorrection.GetErrorCorrectionCodewordCount(errorCorrectionLevel);
+        var numEc = BbScannerPdf417ErrorCorrection.GetErrorCorrectionCodewordCount(errorCorrectionLevel);
         var rows = (int)Math.Ceiling((data.Count + numEc) / (double)columns);
         rows = Math.Clamp(rows, 3, 90);
 
@@ -179,16 +179,16 @@ public static class Pdf417Encoder
     /// </summary>
     internal static int[] GenerateErrorCorrection(List<int> data, int numEc)
     {
-        var field = BbModulusGF.Pdf417;
+        var field = BbScannerModulusGF.Pdf417;
 
         // The generator polynomial has roots at the first numEc powers of the field generator.
         var generator = field.One;
         for (var i = 1; i <= numEc; i++)
         {
-            generator = generator.Multiply(new BbModulusPoly(field, [1, field.Subtract(0, field.Exp(i))]));
+            generator = generator.Multiply(new BbScannerModulusPoly(field, [1, field.Subtract(0, field.Exp(i))]));
         }
 
-        var remainder = new BbModulusPoly(field, [.. data]).MultiplyByMonomial(numEc, 1);
+        var remainder = new BbScannerModulusPoly(field, [.. data]).MultiplyByMonomial(numEc, 1);
         var divisorLeadingInverse = field.Inverse(generator.GetCoefficient(generator.Degree));
 
         while (remainder.Degree >= generator.Degree && !remainder.IsZero)
@@ -207,17 +207,17 @@ public static class Pdf417Encoder
         return result;
     }
 
-    private static BbBitMatrix Render(
+    private static BbScannerBitMatrix Render(
         int[] codewords, int rows, int columns, int errorCorrectionLevel, int rowHeight, int quietZone)
     {
-        var table = BbPdf417SymbolTable.Current;
+        var table = BbScannerPdf417SymbolTable.Current;
 
         int[] startPattern = [8, 1, 1, 1, 1, 1, 1, 3];
         int[] stopPattern = [7, 1, 1, 3, 1, 1, 1, 2, 1];
 
         var symbolWidth = 17 + (17 * (columns + 2)) + 18;
         var width = symbolWidth + (2 * quietZone);
-        var matrix = new BbBitMatrix(width, (rows * rowHeight) + (2 * quietZone));
+        var matrix = new BbScannerBitMatrix(width, (rows * rowHeight) + (2 * quietZone));
 
         for (var row = 0; row < rows; row++)
         {
@@ -267,14 +267,14 @@ public static class Pdf417Encoder
         _ => (30 * (row / 3)) + (errorCorrectionLevel * 3) + ((rows - 1) % 3),
     };
 
-    private static void AppendCodeword(List<bool> modules, BbPdf417SymbolTable table, int cluster, int codeword)
+    private static void AppendCodeword(List<bool> modules, BbScannerPdf417SymbolTable table, int cluster, int codeword)
     {
         if (!table.TryGetPattern(cluster, codeword, out var pattern))
         {
             throw new InvalidOperationException($"Codeword {codeword} has no pattern in cluster {cluster}.");
         }
 
-        for (var bit = BbPdf417SymbolTable.ModulesPerCodeword - 1; bit >= 0; bit--)
+        for (var bit = BbScannerPdf417SymbolTable.ModulesPerCodeword - 1; bit >= 0; bit--)
         {
             modules.Add(((pattern >> bit) & 1) != 0);
         }

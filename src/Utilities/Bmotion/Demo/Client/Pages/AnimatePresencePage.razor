@@ -36,7 +36,7 @@
             <BmotionAnimatePresence IsPresent="@_visible" Mode="_presenceMode" OnExitComplete="@(() => _exits++)">
                 <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.8)"
                         Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
-                        Exit="Bm.To(opacity: 0, y: -40, scale: 0.8, transition: Bm.Tween(0.3, BmEase.In))"
+                        Exit="Bm.To(opacity: 0, y: -40, scale: 0.8, transition: Bm.Tween(0.3, BmotionEase.In))"
                         Transition="Bm.Spring(stiffness: 220, damping: 18)">
                     <div class="box" />
                 </Bmotion>
@@ -99,7 +99,7 @@
     <p>
         By default an exiting item still occupies its space, so the row it sits in only closes up
         once the animation ends - a visible beat of dead air in a chip row or a grid.
-        <code>Mode="BmPresenceMode.PopLayout"</code> takes the exiting item out of the layout flow
+        <code>Mode="BmotionPresenceMode.PopLayout"</code> takes the exiting item out of the layout flow
         (<code>position: absolute</code> at the spot it was in) so its siblings reflow immediately
         while it fades out over them. The container needs <code>position: relative</code> to anchor
         it. Tap a chip to remove it.
@@ -107,7 +107,7 @@
 
     <div class="demo-row">
         <div class="demo-card chip-stage">
-            <BmotionPresenceGroup Items="_chips" Mode="BmPresenceMode.PopLayout" Context="chip">
+            <BmotionPresenceGroup Items="_chips" Mode="BmotionPresenceMode.PopLayout" Context="chip">
                 <Bmotion Initial="Bm.To(opacity: 0, scale: 0.6)"
                         Animate="Bm.To(opacity: 1, scale: 1)"
                         Exit="Bm.To(opacity: 0, scale: 0.6)"
@@ -143,7 +143,7 @@
                 <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
                         Animate="Bm.To(opacity: 1, x: 0)"
                         Exit="Bm.To(opacity: 0, x: -60)"
-                        Transition="Bm.Tween(0.25, BmEase.InOut)">
+                        Transition="Bm.Tween(0.25, BmotionEase.InOut)">
                     <div class="box page-box">@pageNumber</div>
                 </Bmotion>
             </BmotionPresenceSwitch>
@@ -171,11 +171,11 @@
     private int _page = 1;
     private int _nextId = 4;
 
-    private static readonly BmPresenceMode[] _presenceModes = [BmPresenceMode.Sync, BmPresenceMode.Wait];
-    private BmPresenceMode _presenceMode = BmPresenceMode.Sync;
+    private static readonly BmotionPresenceMode[] _presenceModes = [BmotionPresenceMode.Sync, BmotionPresenceMode.Wait];
+    private BmotionPresenceMode _presenceMode = BmotionPresenceMode.Sync;
 
-    private static readonly BmPresenceMode[] _switchModes = [BmPresenceMode.Wait, BmPresenceMode.Sync];
-    private BmPresenceMode _switchMode = BmPresenceMode.Wait;
+    private static readonly BmotionPresenceMode[] _switchModes = [BmotionPresenceMode.Wait, BmotionPresenceMode.Sync];
+    private BmotionPresenceMode _switchMode = BmotionPresenceMode.Wait;
 
     private sealed record Item(int Id, string Label);
 
@@ -218,11 +218,11 @@
             @* The child stays rendered until its Exit target lands, then is removed. The exit carries
                its own, quicker transition; the entrance uses the component's spring. Mode: Sync (the
                default) turns an exit round when the content comes back; Wait finishes it first. *@
-            <BmotionAnimatePresence IsPresent="@_visible" Mode="BmPresenceMode.Wait"
+            <BmotionAnimatePresence IsPresent="@_visible" Mode="BmotionPresenceMode.Wait"
                                     OnExitComplete="@(() => _exits++)">
                 <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.8)"
                          Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
-                         Exit="Bm.To(opacity: 0, y: -40, scale: 0.8, transition: Bm.Tween(0.3, BmEase.In))"
+                         Exit="Bm.To(opacity: 0, y: -40, scale: 0.8, transition: Bm.Tween(0.3, BmotionEase.In))"
                          Transition="Bm.Spring(stiffness: 220, damping: 18)">
                     <div class="box" />
                 </Bmotion>
@@ -307,7 +307,7 @@
         <div class="chip-row">   @* position: relative anchors the popped (absolute) items *@
             @* PopLayout pulls the exiting chip out of the flow so the row closes up at once
                instead of waiting for the animation to finish. *@
-            <BmotionPresenceGroup Items="_chips" Mode="BmPresenceMode.PopLayout" Context="chip">
+            <BmotionPresenceGroup Items="_chips" Mode="BmotionPresenceMode.PopLayout" Context="chip">
                 <Bmotion Initial="Bm.To(opacity: 0, scale: 0.6)"
                          Animate="Bm.To(opacity: 1, scale: 1)"
                          Exit="Bm.To(opacity: 0, scale: 0.6)"
@@ -328,12 +328,12 @@
 
         @* Content is replaced rather than added/removed: the outgoing subtree keeps
            rendering the OLD item while it exits, because the body is a template of the item. *@
-        <BmotionPresenceSwitch Item="_page" Mode="BmPresenceMode.Sync" Context="pageNumber"
+        <BmotionPresenceSwitch Item="_page" Mode="BmotionPresenceMode.Sync" Context="pageNumber"
                                OnExitComplete="@(() => _left++)">
             <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
                      Animate="Bm.To(opacity: 1, x: 0)"
                      Exit="Bm.To(opacity: 0, x: -60)"
-                     Transition="Bm.Tween(0.25, BmEase.InOut)">
+                     Transition="Bm.Tween(0.25, BmotionEase.InOut)">
                 <div>Page @pageNumber</div>
             </Bmotion>
         </BmotionPresenceSwitch>

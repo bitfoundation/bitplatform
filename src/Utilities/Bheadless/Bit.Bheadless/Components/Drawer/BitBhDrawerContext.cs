@@ -2,28 +2,6 @@
 
 namespace Bit.Bheadless;
 
-/// <summary>The edge of the screen a <see cref="BitBhDrawer"/> is attached to (and slides in from).</summary>
-public enum BitBhDrawerSide
-{
-    /// <summary>The bottom edge (a bottom sheet).</summary>
-    Bottom,
-
-    /// <summary>The top edge.</summary>
-    Top,
-
-    /// <summary>The left edge.</summary>
-    Left,
-
-    /// <summary>The right edge.</summary>
-    Right,
-
-    /// <summary>The edge text starts at: left, or right in a right-to-left direction.</summary>
-    Start,
-
-    /// <summary>The edge text ends at: right, or left in a right-to-left direction.</summary>
-    End,
-}
-
 /// <summary>
 /// Cascading context provided by <see cref="BitBhDrawer"/> to its parts (<see cref="BitBhDrawerTrigger"/>,
 /// <see cref="BitBhDrawerBackdrop"/>, <see cref="BitBhDrawerPanel"/>, <see cref="BitBhDrawerTitle"/>,
@@ -108,15 +86,3 @@ public sealed class BitBhDrawerContext : IBitBhCloseContext
 
     internal void PanelMounted() => Owner.PanelMounted();
 }
-
-/// <summary>Render-fragment context exposed by drawer parts for state-driven rendering.</summary>
-public sealed record BitBhDrawerRenderContext
-{
-    /// <summary>Whether the drawer is open.</summary>
-    public required bool IsOpen { get; init; }
-
-    /// <summary>Closes the drawer.</summary>
-    public required Action Close { get; init; }
-}
-
-internal enum BitBhDrawerPart { Trigger, Backdrop, Title, Description }

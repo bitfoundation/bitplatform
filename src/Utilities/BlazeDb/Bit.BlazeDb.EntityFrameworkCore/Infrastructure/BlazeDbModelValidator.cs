@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
+namespace Bit.BlazeDb;
 
 internal sealed class BlazeDbModelValidator : ModelValidator
 {
@@ -29,7 +29,7 @@ internal sealed class BlazeDbModelValidator : ModelValidator
     internal static void ThrowIfUnsupported(IEntityType entityType)
     {
         ThrowIfQueryFiltered(entityType);
-        Storage.BlazeDbConcurrencyTokens.ThrowIfShadowToken(entityType);
+        BlazeDbConcurrencyTokens.ThrowIfShadowToken(entityType);
     }
 
     /// <summary>

@@ -1,5 +1,4 @@
-﻿using Bit.BlazeDb.Serialization;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Bit.BlazeDb.Tests.EntityFrameworkCore;
 

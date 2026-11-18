@@ -5,8 +5,8 @@
 <h1>Engine</h1>
 
 <p>
-    The managed engine needs no browser. This scene is drawn with <code>ImageCanvas</code>, run through an
-    <code>ImagePipeline</code> and encoded to PNG by an <code>ImageProcessor</code> built on the managed codecs, all in
+    The managed engine needs no browser. This scene is drawn with <code>BmageImageCanvas</code>, run through an
+    <code>BmageImagePipeline</code> and encoded to PNG by an <code>BmageImageProcessor</code> built on the managed codecs, all in
     <code>OnInitializedAsync</code>. While prerendering that happens on the server and the PNG is already in the
     served HTML; once interactive it happens again wherever the component runs.
 </p>
@@ -38,21 +38,21 @@
 }
 
 @code {
-    private sealed record Look(string Name, ImagePipeline Pipeline);
+    private sealed record Look(string Name, BmageImagePipeline Pipeline);
 
     private sealed record Result(string Look, string DataUrl, int Width, int Height, long Length, string RanOn, TimeSpan Elapsed);
 
     private static readonly Look[] Looks =
     [
-        new("Original", ImagePipeline.Create().MaxSize(360, 360)),
-        new("Grayscale", ImagePipeline.Create().MaxSize(360, 360).Grayscale()),
-        new("Sepia", ImagePipeline.Create().MaxSize(360, 360).Sepia()),
-        new("Duotone", ImagePipeline.Create().MaxSize(360, 360).Duotone(new Rgba32(24, 32, 88), new Rgba32(250, 214, 140))),
-        new("Vignette", ImagePipeline.Create().MaxSize(360, 360).Vignette(0.6f)),
+        new("Original", BmageImagePipeline.Create().MaxSize(360, 360)),
+        new("Grayscale", BmageImagePipeline.Create().MaxSize(360, 360).Grayscale()),
+        new("Sepia", BmageImagePipeline.Create().MaxSize(360, 360).Sepia()),
+        new("Duotone", BmageImagePipeline.Create().MaxSize(360, 360).Duotone(new BmageRgba32(24, 32, 88), new BmageRgba32(250, 214, 140))),
+        new("Vignette", BmageImagePipeline.Create().MaxSize(360, 360).Vignette(0.6f)),
     ];
 
     // The managed codecs only: the same PNG encoder runs on the server and in the browser.
-    private readonly ImageProcessor _processor = new();
+    private readonly BmageImageProcessor _processor = new();
 
     private Result? _result;
     private string? _error;
@@ -75,7 +75,7 @@
 
             using var scene = SampleScene.Draw(720, 480);
             using var processed = await look.Pipeline.ExecuteAsync(scene);
-            var encoded = await _processor.EncodeAsync(processed, ImageExportOptions.Png);
+            var encoded = await _processor.EncodeAsync(processed, BmageImageExportOptions.Png);
 
             _result = new(look.Name, encoded.ToDataUrl(), encoded.Width, encoded.Height, encoded.Length, RanOn, Stopwatch.GetElapsedTime(started));
         }

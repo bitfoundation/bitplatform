@@ -33,7 +33,7 @@ targets (single values or keyframe sequences), `Bm.Spring` / `Bm.Tween` / `Bm.In
 transitions, `Bm.Stagger` builds multi-element delay generators, `Bm.SnapTo` builds the
 snap-to-grid / snap-to-page hook a drag release settles on, `Bm.Value` creates reactive
 motion values, `Bm.Combine` derives one from several, and `Bm.Template` composes them into CSS
-strings. `BmSprings` names ready-made springs (`Smooth`, `Snappy`, `Bouncy`, ...) and
+strings. `BmotionSprings` names ready-made springs (`Smooth`, `Snappy`, `Bouncy`, ...) and
 `spring.Analyze()` measures any spring's settling time, overshoot and damping on the engine's own
 driver. `BmotionAnimationEngine.AnimationEvent` and the `Bit.Bmotion` meter report how every part
 of an animation plays (browser timeline, browser recording, frame loop, instant) and why. Components:
@@ -44,11 +44,11 @@ DOM surgery), `<BmotionLayoutGroup>` and `<BmotionConfig>`. Programmatic
 animation is available through `BmotionAnimateService` (selector / `ElementReference` based,
 supports sequences and staggers) and `BmotionScrollTracker` (scroll-linked motion values).
 
-A `BmSequence` timeline runs on a single playhead driven by the animation clock, so the controls it
+A `BmotionSequence` timeline runs on a single playhead driven by the animation clock, so the controls it
 returns govern the gaps between steps as well as the steps themselves - pausing a sequence really
 holds it, and `SetSpeed(3)` compresses the silences by the same factor as the movement.
 
-Scroll-linked animation has a fast path of its own: `Timeline="BmScrollTimeline.Page()"` (or
+Scroll-linked animation has a fast path of its own: `Timeline="BmotionScrollTimeline.Page()"` (or
 `View()`, `Container(...)`, `ViewOf(...)`) hands the animation to the browser's native
 `ScrollTimeline` / `ViewTimeline`, so scrubbing it costs no scroll handler, no frame loop and no
 interop at all. Browsers without those APIs get a scroll-scrub fallback over the same Web Animation.
@@ -68,10 +68,10 @@ and `BmotionAnimateService` for the complete API surface.
   Drag stays under the pointer: the browser shows it until .NET catches up, and `OnDrag` runs
   once per frame, a round trip behind. Only what needs the per-frame loop - `OnUpdate`/`OnFrame`
   callbacks, SVG `d`/`points` morphs and the motion values `BmotionAnimateService` animates (a
-  `BmValue`, a raw number, a spring that follows a value) - lands on its target at once.
+  `BmotionValue`, a raw number, a spring that follows a value) - lands on its target at once.
 - ✅ **Prerendering / static SSR** - by default elements render their `Initial` state and animate
-  once interactive. Set `o.Prerender = BmPrerenderMode.Final` to serve them at rest (visible,
-  indexable), or `BmPrerenderMode.Animate` to play the enter animation in pure CSS straight from the
+  once interactive. Set `o.Prerender = BmotionPrerenderMode.Final` to serve them at rest (visible,
+  indexable), or `BmotionPrerenderMode.Animate` to play the enter animation in pure CSS straight from the
   served HTML - before the runtime loads, and on pages that never become interactive. `Animate`
   needs the stylesheet in the page head:
   `<link rel="stylesheet" href="_content/Bit.Bmotion/bit-bmotion.css" />`. In both modes the runtime
@@ -93,10 +93,10 @@ degradation is diagnosable.
 Choose how the library honours the OS `prefers-reduced-motion` setting **globally** at registration:
 
 ```csharp
-builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
+builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmotionReducedMotionMode.User);
 ```
 
-| `BmReducedMotionMode`      | Behaviour |
+| `BmotionReducedMotionMode`      | Behaviour |
 |----------------------------|-----------|
 | `IgnoreUnlessConfigured`   | **Default (back-compat).** OS preference respected only inside a `<BmotionConfig>`. |
 | `User`                     | **Recommended.** Respect the OS preference everywhere - the web-platform default. |
@@ -117,7 +117,7 @@ A local `<BmotionConfig ReduceMotion="true|false">` always overrides the global 
 ```
 
 > **Migration note.** The default remains `IgnoreUnlessConfigured` so existing apps are unaffected.
-> New apps should set `ReducedMotion = BmReducedMotionMode.User` to match the platform default; this
+> New apps should set `ReducedMotion = BmotionReducedMotionMode.User` to match the platform default; this
 > is planned to become the default in a future major version.
 
 ## Security note
@@ -134,7 +134,7 @@ It also rejects anything that makes the browser fetch a URL (`url(`, `src(`, `im
 `css` entries and `cssVars`, any property name that isn't plain letters, digits, `-` and `_`:
 
 ```csharp
-builder.Services.AddBitBmotionServices(o => o.CssSafeMode = BmCssSafeMode.Throw); // or .Warn
+builder.Services.AddBitBmotionServices(o => o.CssSafeMode = BmotionCssSafeMode.Throw); // or .Warn
 ```
 
 It is `Off` by default (for performance/parity); `Warn` logs and still applies, `Throw` rejects.

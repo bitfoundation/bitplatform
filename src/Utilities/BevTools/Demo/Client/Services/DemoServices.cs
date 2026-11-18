@@ -25,7 +25,7 @@ public static class DemoServices
         services.AddScoped<DemoAuthenticationStateProvider>();
         services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider>(sp => sp.GetRequiredService<DemoAuthenticationStateProvider>());
 
-        // State containers that integrate with BevTools through IBevStateProvider.
+        // State containers that integrate with BevTools through IBevToolsStateProvider.
         services.AddBevToolsStateProvider<CartState>();
         services.AddBevToolsStateProvider<AppState>();
 
@@ -143,9 +143,9 @@ public sealed class FilterState
 /// <summary>
 /// Shopping cart exposed to BevTools as a state provider with named actions. It keeps a copy of itself after every
 /// change, so BevTools can ask it to go back to one (State → CartState → ⟲ restore): time travel through the
-/// provider's own contract, IBevStateRestorer.
+/// provider's own contract, IBevToolsStateRestorer.
 /// </summary>
-public sealed class CartState : IBevStateProvider, IBevStateRestorer
+public sealed class CartState : IBevToolsStateProvider, IBevToolsStateRestorer
 {
     private readonly Dictionary<int, (List<CartLine> Lines, string? Coupon)> _versions = [];
     private int _version;
@@ -162,7 +162,7 @@ public sealed class CartState : IBevStateProvider, IBevStateRestorer
 
     public string? Description => "scoped service, one per circuit / app";
 
-    public event Action<BevStateChangeInfo>? Changed;
+    public event Action<BevToolsStateChangeInfo>? Changed;
 
     public object? GetSnapshot() => this;
 
@@ -220,12 +220,12 @@ public sealed class CartState : IBevStateProvider, IBevStateRestorer
         _versions[_version] = (Lines.Select(l => new CartLine { Product = l.Product, Quantity = l.Quantity }).ToList(), CouponCode);
         // The last hundred versions: what the State panel's history can show anyway.
         _versions.Remove(_version - 100);
-        Changed?.Invoke(new BevStateChangeInfo(action, detail) { RestoreToken = _version.ToString(System.Globalization.CultureInfo.InvariantCulture) });
+        Changed?.Invoke(new BevToolsStateChangeInfo(action, detail) { RestoreToken = _version.ToString(System.Globalization.CultureInfo.InvariantCulture) });
     }
 }
 
 /// <summary>Application-wide settings exposed to BevTools; includes a sensitive member that must be redacted.</summary>
-public sealed class AppState : IBevStateProvider
+public sealed class AppState : IBevToolsStateProvider
 {
     private string _theme = "light";
     private bool _notifications = true;
@@ -236,7 +236,7 @@ public sealed class AppState : IBevStateProvider
         set
         {
             _theme = value;
-            Changed?.Invoke(new BevStateChangeInfo("SetTheme", value));
+            Changed?.Invoke(new BevToolsStateChangeInfo("SetTheme", value));
         }
     }
 
@@ -246,7 +246,7 @@ public sealed class AppState : IBevStateProvider
         set
         {
             _notifications = value;
-            Changed?.Invoke(new BevStateChangeInfo("ToggleNotifications"));
+            Changed?.Invoke(new BevToolsStateChangeInfo("ToggleNotifications"));
         }
     }
 
@@ -260,7 +260,7 @@ public sealed class AppState : IBevStateProvider
 
     public string? Description => "scoped application state";
 
-    public event Action<BevStateChangeInfo>? Changed;
+    public event Action<BevToolsStateChangeInfo>? Changed;
 
     public object? GetSnapshot() => this;
 
@@ -272,13 +272,13 @@ public sealed class AppState : IBevStateProvider
             VisitedPages.RemoveAt(0);
         }
 
-        Changed?.Invoke(new BevStateChangeInfo("Visit", page));
+        Changed?.Invoke(new BevToolsStateChangeInfo("Visit", page));
     }
 
     public void Click()
     {
         Counters["clicks"]++;
-        Changed?.Invoke(new BevStateChangeInfo("Click"));
+        Changed?.Invoke(new BevToolsStateChangeInfo("Click"));
     }
 }
 

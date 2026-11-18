@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Bit.Blex.Generators;
+namespace Bit.Blex;
 
 /// <summary>
 /// Immutable array wrapper with structural equality so generator pipeline models cache correctly.

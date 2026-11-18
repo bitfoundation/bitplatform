@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Testing;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>
 /// Produces malformed updates, to prove that decoding hostile input fails safely.

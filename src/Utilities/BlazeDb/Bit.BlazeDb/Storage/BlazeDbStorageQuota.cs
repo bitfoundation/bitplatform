@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazeDb.Storage;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>How much of the origin's storage allowance is used, as reported by the backend.</summary>
 /// <param name="UsageBytes">Bytes currently attributed to this origin.</param>

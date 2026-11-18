@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 /// <summary>
 /// Finds a database's files on a storage. A database names them <c>wal-{id}-{generation}.blz</c> and

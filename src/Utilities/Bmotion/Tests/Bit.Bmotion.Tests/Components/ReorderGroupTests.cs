@@ -335,7 +335,7 @@ public class ReorderGroupTests
             .Add(p => p.ChildContent, Row));
         var ids = RowIds(cut);
 
-        cut.Render(ps => ps.Add(p => p.Axis, BmDragAxis.X).Add(p => p.HandleSelector, ".grip"));
+        cut.Render(ps => ps.Add(p => p.Axis, BmotionDragAxis.X).Add(p => p.HandleSelector, ".grip"));
 
         foreach (var id in ids)
         {
@@ -399,7 +399,7 @@ public class ReorderGroupTests
         List<string>? committed = null;
         var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
             .Add(p => p.Items, new List<string> { "1", "2", "3", "4", "5", "6" })
-            .Add(p => p.Axis, BmDragAxis.Both)
+            .Add(p => p.Axis, BmotionDragAxis.Both)
             .Add(p => p.ItemsChanged, EventCallback.Factory.Create<List<string>>(this, l => committed = l))
             .Add(p => p.ChildContent, Row));
         var ids = RowIds(cut);
@@ -425,7 +425,7 @@ public class ReorderGroupTests
         List<string>? committed = null;
         var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
             .Add(p => p.Items, new List<string> { "1", "2", "3", "4", "5", "6" })
-            .Add(p => p.Axis, BmDragAxis.Both)
+            .Add(p => p.Axis, BmotionDragAxis.Both)
             .Add(p => p.ItemsChanged, EventCallback.Factory.Create<List<string>>(this, l => committed = l))
             .Add(p => p.ChildContent, Row));
         var ids = RowIds(cut);

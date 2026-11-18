@@ -4,7 +4,7 @@
 
 using Bit.Bcrdt.Samples.Core;
 using Bit.Bcrdt.Samples.Server.Components;
-using Bit.Bcrdt.Server;
+using Bit.Bcrdt;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;

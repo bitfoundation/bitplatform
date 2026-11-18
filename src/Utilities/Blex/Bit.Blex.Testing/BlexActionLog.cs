@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 
-namespace Bit.Blex.Testing;
+namespace Bit.Blex;
 
 /// <summary>
 /// Records every action dispatched through a <see cref="BlexManager"/> for assertions in tests.

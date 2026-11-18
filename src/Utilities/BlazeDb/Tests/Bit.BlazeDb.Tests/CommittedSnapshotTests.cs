@@ -1,5 +1,3 @@
-using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
-using Bit.BlazeDb.Storage;
 using Bit.BlazeDb.Tests.@event;
 using Bit.BlazeDb.Tests.EntityFrameworkCore;
 using EfPerson = Bit.BlazeDb.Tests.EntityFrameworkCore.Person;
@@ -120,30 +118,30 @@ public class CommittedSnapshotTests
     {
         // The first snapshot format stored rows without their keys; a checkpoint derives them from the rows.
         var storage = new BlazeDbInMemoryStorage();
-        var snapshot = new Bit.BlazeDb.Serialization.BlazeDbBufferWriter();
+        var snapshot = new Bit.BlazeDb.BlazeDbBufferWriter();
         snapshot.WriteRaw("BLZS"u8);
         snapshot.WriteByte(1);
         snapshot.WriteVarUInt(0);
         snapshot.WriteVarUInt(1);
         snapshot.WriteString(PersonTable.Descriptor.Name);
         snapshot.WriteVarUInt(3);
-        var row = new Bit.BlazeDb.Serialization.BlazeDbBufferWriter();
+        var row = new Bit.BlazeDb.BlazeDbBufferWriter();
         foreach (var person in new[] { new Person(1, "Ada", 36), new Person(2, "Grace", 45), new Person(3, "Edsger", 72) })
         {
             row.Reset();
             PersonTable.Descriptor.RowWriter(row, person);
             snapshot.WriteBytes(row.WrittenSpan);
         }
-        snapshot.WriteFixed32(Bit.BlazeDb.Wal.BlazeDbCrc32.Compute(snapshot.WrittenSpan));
+        snapshot.WriteFixed32(Bit.BlazeDb.BlazeDbCrc32.Compute(snapshot.WrittenSpan));
         await storage.WriteAtomicAsync("snapshot-1.blz", snapshot.ToArray());
-        var manifest = new Bit.BlazeDb.Serialization.BlazeDbBufferWriter();
+        var manifest = new Bit.BlazeDb.BlazeDbBufferWriter();
         manifest.WriteRaw("BLZM"u8);
         manifest.WriteByte(1);
         manifest.WriteVarUInt(1);
         manifest.WriteString("snapshot-1.blz");
         manifest.WriteString("wal-1.blz");
         manifest.WriteVarUInt(0);
-        manifest.WriteFixed32(Bit.BlazeDb.Wal.BlazeDbCrc32.Compute(manifest.WrittenSpan));
+        manifest.WriteFixed32(Bit.BlazeDb.BlazeDbCrc32.Compute(manifest.WrittenSpan));
         await storage.WriteAtomicAsync("manifest.blz", manifest.ToArray());
 
         var options = new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(PersonTable.Descriptor);

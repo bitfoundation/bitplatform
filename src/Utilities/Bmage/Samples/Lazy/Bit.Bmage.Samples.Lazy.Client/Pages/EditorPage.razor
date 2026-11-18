@@ -1,6 +1,5 @@
 ﻿@page "/editor"
 @using Bit.Bmage
-@using Bit.Bmage.Editor.Components
 
 <PageTitle>Editor - Bmage lazy loading sample</PageTitle>
 
@@ -32,7 +31,7 @@
     private string? _exported;
     private string? _error;
 
-    private void OnImageLoaded(ImageBuffer image) => _loaded = true;
+    private void OnImageLoaded(BmageImageBuffer image) => _loaded = true;
 
     private void OnError(Exception ex) => _error = ex.Message;
 

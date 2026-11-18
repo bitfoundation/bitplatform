@@ -49,10 +49,10 @@
             <label class="bb-field">
                 Enabled formats
                 <select id="bench-formats" value="@_benchFormats" @onchange="OnBenchFormatsChanged">
-                    <option value="@BbBarcodeFormat.All">All</option>
-                    <option value="@BbBarcodeFormat.AllMatrix">Matrix only</option>
-                    <option value="@BbBarcodeFormat.AllLinear">Linear only</option>
-                    <option value="@BbBarcodeFormat.QrCode">QR only</option>
+                    <option value="@BbScannerBarcodeFormat.All">All</option>
+                    <option value="@BbScannerBarcodeFormat.AllMatrix">Matrix only</option>
+                    <option value="@BbScannerBarcodeFormat.AllLinear">Linear only</option>
+                    <option value="@BbScannerBarcodeFormat.QrCode">QR only</option>
                 </select>
             </label>
             <div class="bb-toolbar perf-actions">
@@ -127,7 +127,7 @@
     <p class="bb-card-desc">
         The same pipeline on real camera frames, with duplicate suppression off so every decoded
         frame counts. Turn the knobs and watch the stage split move. The panel under the scanner is fed by
-        <code>OnDiagnostics</code>, raised at most twice a second with a <code>BbScanDiagnostics</code>:
+        <code>OnDiagnostics</code>, raised at most twice a second with a <code>BbScannerScanDiagnostics</code>:
         <em>Frame</em> is the time the last frame took, <em>Headroom</em> the frames a second that time would
         allow, <em>Decoded size</em> the image the decoders actually saw after the region and any
         downsampling, and <em>Scan lines</em> how many lines were tried for linear symbols. The bar splits the
@@ -184,10 +184,10 @@
                         <label class="bb-field">
                             <span>Formats</span>
                             <select value="@_liveFormats" @onchange="OnLiveFormatsChanged">
-                                <option value="@BbBarcodeFormat.All">All</option>
-                                <option value="@BbBarcodeFormat.AllMatrix">Matrix only</option>
-                                <option value="@BbBarcodeFormat.AllLinear">Linear only</option>
-                                <option value="@BbBarcodeFormat.QrCode">QR only</option>
+                                <option value="@BbScannerBarcodeFormat.All">All</option>
+                                <option value="@BbScannerBarcodeFormat.AllMatrix">Matrix only</option>
+                                <option value="@BbScannerBarcodeFormat.AllLinear">Linear only</option>
+                                <option value="@BbScannerBarcodeFormat.QrCode">QR only</option>
                             </select>
                             <small>Only the readers of the chosen formats are created at all.</small>
                         </label>
@@ -275,21 +275,21 @@
 
     private readonly List<BenchmarkRow> _benchmarks = [];
 
-    private BbScanDiagnostics _diagnostics;
+    private BbScannerScanDiagnostics _diagnostics;
     private BbScanner? _scanner;
 
     private int _benchSize = 640;
     private int _iterations = 30;
-    private BbBarcodeFormat _benchFormats = BbBarcodeFormat.All;
+    private BbScannerBarcodeFormat _benchFormats = BbScannerBarcodeFormat.All;
     private bool _running;
 
     private int _processingSize = 640;
     private int _frameRate = 15;
     private double _regionFraction = 1.0;
-    private BbScanRegion _region = BbScanRegion.Full;
-    private BbBarcodeFormat _liveFormats = BbBarcodeFormat.All;
+    private BbScannerScanRegion _region = BbScannerScanRegion.Full;
+    private BbScannerBarcodeFormat _liveFormats = BbScannerBarcodeFormat.All;
 
-    private void OnDiagnostics(BbScanDiagnostics diagnostics)
+    private void OnDiagnostics(BbScannerScanDiagnostics diagnostics)
     {
         _diagnostics = diagnostics;
 
@@ -324,20 +324,20 @@
 
     private BenchmarkRow Measure(string name, byte[] gray, int width, int height, bool expectFound, bool enabled)
     {
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
             Formats = _benchFormats,
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
         // One warm-up pass so that the measurement is not dominated by first-call JIT work.
-        var found = decoder.Decode(gray, width, height, BbPixelFormat.Gray8, false) is not null;
+        var found = decoder.Decode(gray, width, height, BbScannerPixelFormat.Gray8, false) is not null;
 
         var timings = new double[_iterations];
         for (var i = 0; i < _iterations; i++)
         {
             var start = System.Diagnostics.Stopwatch.GetTimestamp();
-            decoder.Decode(gray, width, height, BbPixelFormat.Gray8, false);
+            decoder.Decode(gray, width, height, BbScannerPixelFormat.Gray8, false);
             timings[i] = System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds;
         }
 
@@ -398,12 +398,12 @@
     private void OnRegionChanged(ChangeEventArgs args)
     {
         _regionFraction = Math.Clamp(ToInt(args, 100) / 100.0, 0.2, 1.0);
-        _region = _regionFraction >= 0.999 ? BbScanRegion.Full : BbScanRegion.CenteredSquare(_regionFraction);
+        _region = _regionFraction >= 0.999 ? BbScannerScanRegion.Full : BbScannerScanRegion.CenteredSquare(_regionFraction);
     }
 
     private void OnBenchFormatsChanged(ChangeEventArgs args)
     {
-        if (Enum.TryParse<BbBarcodeFormat>(args.Value?.ToString(), out var formats))
+        if (Enum.TryParse<BbScannerBarcodeFormat>(args.Value?.ToString(), out var formats))
         {
             _benchFormats = formats;
         }
@@ -411,7 +411,7 @@
 
     private void OnLiveFormatsChanged(ChangeEventArgs args)
     {
-        if (Enum.TryParse<BbBarcodeFormat>(args.Value?.ToString(), out var formats))
+        if (Enum.TryParse<BbScannerBarcodeFormat>(args.Value?.ToString(), out var formats))
         {
             _liveFormats = formats;
         }

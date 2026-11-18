@@ -31,7 +31,7 @@ namespace Bit.Bcrdt;
 /// <para>
 /// IndexedDB is reached through JavaScript interop, which does not exist while a component is
 /// prerendered: open documents backed by this store only once the component is interactive.
-/// <see cref="Blazor.BcrdtCollaborationScope"/> does that by itself. A whole stored document is read back
+/// <see cref="BcrdtCollaborationScope"/> does that by itself. A whole stored document is read back
 /// as a stream, so in Blazor Server - where the store holds the circuit's replica in the browser - it is
 /// not subject to the circuit's message size limit.
 /// </para>

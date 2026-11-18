@@ -45,7 +45,7 @@ public class ErrorGroupsTests : BunitContext
     [DataRow("Session expired at 2026-10-23T10:30:00Z", "Session expired at {time}")]
     public void A_message_template_replaces_values_that_identify_an_instance_and_keeps_those_that_name_a_failure(string message, string template)
     {
-        Assert.AreEqual(template, BevErrorGroups.Template(message));
+        Assert.AreEqual(template, BevToolsErrorGroups.Template(message));
     }
 
     [TestMethod]
@@ -66,7 +66,7 @@ public class ErrorGroupsTests : BunitContext
     [TestMethod]
     public void Throw_sites_stay_apart_whatever_their_line_numbers_and_however_the_stack_starts()
     {
-        BevErrorRecord Error(string message, string stack, string type = "System.ArgumentNullException", string source = "render") =>
+        BevToolsErrorRecord Error(string message, string stack, string type = "System.ArgumentNullException", string source = "render") =>
             Session.Errors.Record(null, source, message, exceptionType: type, stackTrace: stack);
 
         // Line numbers of four digits are where, not which.
@@ -202,13 +202,13 @@ public class ErrorGroupsTests : BunitContext
             Session.Errors.Record(Thrown(id), "event");
         }
 
-        using var json = JsonDocument.Parse(BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Sections = new HashSet<string> { "errors" } }));
+        using var json = JsonDocument.Parse(BevToolsSessionExporter.ToJson(Session, new BevToolsSessionExportOptions { Sections = new HashSet<string> { "errors" } }));
         Assert.IsTrue(json.RootElement.GetProperty("errors").EnumerateArray().All(e => e.GetProperty("messageTemplate").GetString() == "Order {n} not found"));
         var group = Assert.ContainsSingle(json.RootElement.GetProperty("errorGroups").EnumerateArray().ToList());
         Assert.AreEqual(2, group.GetProperty("occurrences").GetInt32());
         Assert.AreEqual(2, group.GetProperty("distinctMessages").GetInt32());
 
-        var report = BevSessionExporter.ToMarkdownReport(Session);
+        var report = BevToolsSessionExporter.ToMarkdownReport(Session);
         Assert.Contains("One problem with different values in its messages:", report, StringComparison.Ordinal);
         Assert.Contains("InvalidOperationException: Order {n} not found (×2, 2 messages)", report, StringComparison.Ordinal);
     }
@@ -230,7 +230,7 @@ public class ErrorGroupsTests : BunitContext
     private IRenderedComponent<BevToolsPanel> RenderPanel()
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true });
         module.Setup<string?>("loadPrefs", _ => true).SetResult(null);
         module.SetupVoid("savePrefs", _ => true).SetVoidResult();
         return Render<BevToolsPanel>();

@@ -21,7 +21,7 @@ namespace Bit.Bmotion.Demo.Server.Services;
 ///     recording of the frames its own drivers draw otherwise - and both play on Blazor Server. Only
 ///     a few need the per-frame loop, which Blazor Server does not have, and collapse to an instant
 ///     change there. The rule set behind that decision is long and lives in the engine.
-///     <see cref="AnalyzePlaybackAsync(IReadOnlyCollection{string}, BmTransition, string)"/> asks the
+///     <see cref="AnalyzePlaybackAsync(IReadOnlyCollection{string}, BmotionTransition, string)"/> asks the
 ///     engine instead of restating it: it starts the animation as each runtime and watches what the
 ///     engine hands the browser.
 ///   </description></item>
@@ -79,7 +79,7 @@ public static class BmotionMotionLab
         // Inertia has no target: it decelerates from its velocity and rests wherever the physics
         // puts it. Measuring it against the caller's "to" would report a meaningless overshoot, so
         // the measurement is retargeted at where it actually stopped and the caller is told why.
-        if (transition is BmInertia && frames.Count > 0)
+        if (transition is BmotionInertia && frames.Count > 0)
         {
             warnings.Add($"Inertia ignores the target: it decelerates from its velocity and comes to rest " +
                          $"wherever that puts it - here at {frames[^1].Value:0.##}, not at {to:0.##}. The numbers " +
@@ -101,9 +101,9 @@ public static class BmotionMotionLab
         // damping ratio and period it runs with (derived from bounce/duration when those were given).
         // A value the analysis can't give as a finite number is left out with a warning instead: JSON has no NaN or
         // infinity, so one would fail the whole response, and the measured motion above stands on its own.
-        if (transition is BmSpring spring && from != to)
+        if (transition is BmotionSpring spring && from != to)
         {
-            BmSpringAnalysis? physics;
+            BmotionSpringAnalysis? physics;
             try { physics = spring.Analyze(from, to); }
             catch (ArgumentException) { physics = null; }
 
@@ -132,7 +132,7 @@ public static class BmotionMotionLab
     }
 
     /// <summary>
-    /// Samples one <see cref="BmEase"/> preset by running a one-second tween through it and reading
+    /// Samples one <see cref="BmotionEase"/> preset by running a one-second tween through it and reading
     /// the value back at <paramref name="points"/> evenly spaced instants.
     /// <para>
     /// The curve therefore comes from the library's own easing implementation rather than from a
@@ -140,9 +140,9 @@ public static class BmotionMotionLab
     /// whether BackOut overshoots by 5% or 15%, and where BounceOut lands between its steps.
     /// </para>
     /// </summary>
-    public static async Task<double[]> SampleEaseAsync(BmEase ease, int points = 11)
+    public static async Task<double[]> SampleEaseAsync(BmotionEase ease, int points = 11)
     {
-        var (frames, _) = await RecordAsync(new BmTween { Duration = 1, Ease = ease }, 0, 1);
+        var (frames, _) = await RecordAsync(new BmotionTween { Duration = 1, Ease = ease }, 0, 1);
 
         if (frames.Count == 0) return [];
 
@@ -193,7 +193,7 @@ public static class BmotionMotionLab
     /// <param name="transition">The transition to start them with.</param>
     /// <param name="canonical">How the answer names the transition; its type name when omitted.</param>
     public static async Task<BmotionPlaybackDto> AnalyzePlaybackAsync(
-        IReadOnlyCollection<string> properties, BmTransition transition, string? canonical = null)
+        IReadOnlyCollection<string> properties, BmotionTransition transition, string? canonical = null)
     {
         var name = canonical ?? transition.GetType().Name;
         var target = BmotionPropertyCatalog.BuildTarget(properties, out var unknown);
@@ -347,7 +347,7 @@ public static class BmotionMotionLab
     /// before a single frame is drawn - the engine takes it while the animation starts - and the
     /// animation is stopped straight after, since nothing here waits for the motion itself.
     /// <para>
-    /// Shared by <see cref="AnalyzePlaybackAsync(IReadOnlyCollection{string}, BmTransition, string)"/>
+    /// Shared by <see cref="AnalyzePlaybackAsync(IReadOnlyCollection{string}, BmotionTransition, string)"/>
     /// and the property catalog's probe, so the two cannot measure the same thing differently.
     /// </para>
     /// </summary>
@@ -356,7 +356,7 @@ public static class BmotionMotionLab
     /// <param name="computedStyles">What the page shows for the properties the engine has never seen.</param>
     /// <param name="onWebAssembly">True to run as Blazor WebAssembly, with a frame loop; false to run as Blazor Server.</param>
     internal static async Task<PlaybackObservation> ObserveAsync(
-        BmProps target, BmTransition transition, IReadOnlyDictionary<string, string> computedStyles, bool onWebAssembly)
+        BmotionProps target, BmotionTransition transition, IReadOnlyDictionary<string, string> computedStyles, bool onWebAssembly)
     {
         var interop = new HeadlessBmotionInterop { IsInProcess = onWebAssembly, ComputedStyles = computedStyles };
         await using var engine = new BmotionAnimationEngine(interop);
@@ -441,7 +441,7 @@ public static class BmotionMotionLab
     /// </summary>
     /// <returns>The recorded frames, and whether the motion came to rest inside the frame cap.</returns>
     private static async Task<(List<(double Seconds, double Value)> Frames, bool Settled)> RecordAsync(
-        BmTransition transition, double from, double to)
+        BmotionTransition transition, double from, double to)
     {
         var frames = new List<(double Seconds, double Value)>(256);
 
@@ -730,10 +730,10 @@ public static class BmotionMotionLab
         return $"Settles in {settle:0.00}s ({pace}), with {character}.{wobble}{tail}";
     }
 
-    private static string KindOf(BmTransition transition) => transition switch
+    private static string KindOf(BmotionTransition transition) => transition switch
     {
-        BmSpring => "Spring",
-        BmInertia => "Inertia",
+        BmotionSpring => "Spring",
+        BmotionInertia => "Inertia",
         _ => "Tween"
     };
 

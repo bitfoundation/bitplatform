@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Storage;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// The contexts a storage backend can operate in. Backends differ here: OPFS synchronous access

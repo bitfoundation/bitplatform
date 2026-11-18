@@ -1,9 +1,9 @@
 ﻿namespace Bit.Bmotion.Tests.Models;
 
 /// <summary>
-/// Tests for <see cref="BmValue{T}"/> (motion.dev's <c>MotionValue</c>): async subscriber
+/// Tests for <see cref="BmotionValue{T}"/> (motion.dev's <c>MotionValue</c>): async subscriber
 /// notification, unsubscription, disposal ending a derived chain, and the general
-/// <see cref="BmValue{T}.Transform{TOut}(Func{T, TOut})"/> projection.
+/// <see cref="BmotionValue{T}.Transform{TOut}(Func{T, TOut})"/> projection.
 /// </summary>
 [TestClass]
 public class BmValueTests

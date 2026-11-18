@@ -207,39 +207,39 @@
         <p class="bb-overline">Storage</p>
         <h2>Four backends, one interface</h2>
         <p class="bb-section-sub">
-            Each in a namespace of its own, each registered with <code>AddStorageProvider&lt;T&gt;()</code>. Move this
+            Each a provider type in <code>Bit.Bsqlite</code>, registered with <code>AddStorageProvider&lt;T&gt;()</code>. Move this
             tab's database between them with the bar at the top of any demo page.
         </p>
         <div class="bb-scroll" tabindex="0" role="region" aria-label="The four storage backends">
             <table class="bb-table bq-grid">
                 <thead>
-                <tr><th>Backend</th><th>Namespace</th><th>Persists</th><th>Concurrent readers</th><th>Use it when</th></tr>
+                <tr><th>Backend</th><th>Provider</th><th>Persists</th><th>Concurrent readers</th><th>Use it when</th></tr>
                 </thead>
                 <tbody>
                 <tr>
                     <td class="bq-nowrap"><span class="bq-storage-dot" data-name="opfs" aria-hidden="true"></span> opfs</td>
-                    <td>Storage.Opfs</td>
+                    <td>BsqliteOpfsStorageProvider</td>
                     <td><span class="bb-badge bb-badge-success">yes</span></td>
                     <td>no</td>
                     <td>The default. Real files, the synchronous engine build, no COOP/COEP headers needed.</td>
                 </tr>
                 <tr>
                     <td class="bq-nowrap"><span class="bq-storage-dot" data-name="indexeddb" aria-hidden="true"></span> indexeddb</td>
-                    <td>Storage.IndexedDb</td>
+                    <td>BsqliteIndexedDbStorageProvider</td>
                     <td><span class="bb-badge bb-badge-success">yes</span></td>
                     <td>no</td>
                     <td>Widest reach. Survives browsers without OPFS; readers serialise.</td>
                 </tr>
                 <tr>
                     <td class="bq-nowrap"><span class="bq-storage-dot" data-name="cache-storage" aria-hidden="true"></span> cache-storage</td>
-                    <td>Storage.CacheStorage</td>
+                    <td>BsqliteCacheStorageProvider</td>
                     <td><span class="bb-badge bb-badge-success">yes</span></td>
                     <td>yes</td>
                     <td>Read-heavy apps open in several tabs: the one browser backend whose readers do not queue. Persistence cost scales with database size.</td>
                 </tr>
                 <tr>
                     <td class="bq-nowrap"><span class="bq-storage-dot" data-name="in-memory" aria-hidden="true"></span> in-memory</td>
-                    <td>Storage.InMemory</td>
+                    <td>BsqliteInMemoryStorageProvider</td>
                     <td><span class="bb-badge bq-badge-neutral">no</span></td>
                     <td>no</td>
                     <td>Trying the engine, or tests. Gone when the tab closes - and only with an explicit opt-in.</td>

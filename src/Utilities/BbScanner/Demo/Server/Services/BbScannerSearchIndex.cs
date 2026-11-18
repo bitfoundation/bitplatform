@@ -125,7 +125,7 @@ public static class BbScannerSearchIndex
     /// it finds itself, ranked and quoted in the snippets as that word is: "flashlight" finds every
     /// entry about the torch, with "torch" in the snippet that says why.
     /// <para>
-    /// Only a word that means nothing else here belongs in this table: "crop" is <c>BbBitMatrix.Crop</c>
+    /// Only a word that means nothing else here belongs in this table: "crop" is <c>BbScannerBitMatrix.Crop</c>
     /// as much as anything about framing, "light" the light modules of an inverted symbol as much as
     /// the torch, and "file" a source file as much as an image, so they are searched for as themselves.
     /// </para>
@@ -574,7 +574,7 @@ public static class BbScannerSearchIndex
         entries.Add(new Entry("Decode lab", "Inspect a decoded symbol", null,
             "InspectBbScannerSymbol()",
             "Renders a symbol of any supported symbology, optionally rotated and blurred like a camera frame, decodes it with " +
-            "BbBarcodeDecoder under the live and the still image defaults and returns the BbBarcodeResult it produced - text, " +
+            "BbScannerBarcodeDecoder under the live and the still image defaults and returns the BbScannerBarcodeResult it produced - text, " +
             "raw bytes, corners, bounding box, metadata (error correction level, version, GS1, ECI, structured append) and timings.",
             "inspect test try decode result metadata corners raw bytes timing sample check verify debug"));
 

@@ -70,7 +70,7 @@ public static class McpResources
     }
 
     [McpServerResource(UriTemplate = "bmage://api/{typeName}", Name = "Type reference", MimeType = "text/markdown")]
-    [Description("The full reference of one Bit.Bmage type, e.g. bmage://api/ImagePipeline or bmage://api/ImageExportOptions.")]
+    [Description("The full reference of one Bit.Bmage type, e.g. bmage://api/BmageImagePipeline or bmage://api/BmageImageExportOptions.")]
     public static string ApiType(string typeName)
     {
         var details = BmageApiCatalog.GetTypeDetails(typeName);

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Nodes;
-using Bit.Blex.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Blex.Tests;

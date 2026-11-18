@@ -9,7 +9,7 @@ dotnet add package Bit.Bcrdt.Borm
 
 ```razor
 @* TicketForm.razor, rendered inside <BcrdtCollaborationScope DocumentId="..." User="..."> *@
-@using Bit.Bcrdt.Borm
+@using Bit.Bcrdt
 @implements IDisposable
 
 <BormView State="_state" OnValidSubmit="Save" />

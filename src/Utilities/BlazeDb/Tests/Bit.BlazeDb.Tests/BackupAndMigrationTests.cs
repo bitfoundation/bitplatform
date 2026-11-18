@@ -1,8 +1,4 @@
-﻿using Bit.BlazeDb;
-using Bit.BlazeDb.Serialization;
-using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 /// <summary>Single-file export and import, the user version, and the migrations that move it.</summary>
 [TestClass]
@@ -324,6 +320,6 @@ public class BackupAndMigrationTests
         CollectionAssert.AreEqual("BLZS"u8.ToArray(), file[..4]);
         var body = file.AsSpan(0, file.Length - 4);
         var stored = new BlazeDbBufferReader(file.AsSpan(file.Length - 4)).ReadFixed32();
-        Assert.AreEqual(Bit.BlazeDb.Wal.BlazeDbCrc32.Compute(body), stored);
+        Assert.AreEqual(Bit.BlazeDb.BlazeDbCrc32.Compute(body), stored);
     }
 }

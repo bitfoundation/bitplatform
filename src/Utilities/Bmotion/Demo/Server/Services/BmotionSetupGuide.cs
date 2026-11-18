@@ -106,9 +106,9 @@ public static class BmotionSetupGuide
         The element fades in and slides up on first render. If it appears without moving, the page is
         still prerendered markup: by default Bmotion renders the Initial state during prerendering and
         starts once the runtime is interactive. To play enter animations straight from the served HTML
-        instead, set `o.Prerender = BmPrerenderMode.Animate` in `AddBitBmotionServices` (both
+        instead, set `o.Prerender = BmotionPrerenderMode.Animate` in `AddBitBmotionServices` (both
         containers) and link `_content/Bit.Bmotion/bit-bmotion.css` in the page head;
-        `BmPrerenderMode.Final` serves elements at rest with no animation.
+        `BmotionPrerenderMode.Final` serves elements at rest with no animation.
         """;
 
     // -- InteractiveWebAssembly ------------------------------------------------
@@ -252,9 +252,9 @@ public static class BmotionSetupGuide
         | `Transition.OnUpdate` | **Not available** - a per-frame callback needs the frame loop, so the animation lands at once |
         | A component's `OnUpdate` | The animation plays in the browser, but `OnUpdate` is not called frame by frame |
         | SVG `d`/`points` morphs | **Jumps to the target** - Web Animations cannot animate attributes |
-        | An endless `BmRepeat.Reverse`, per-property transitions with an endless repeat, a recording longer than 10 s | **Jumps to the target** |
+        | An endless `BmotionRepeat.Reverse`, per-property transitions with an endless repeat, a recording longer than 10 s | **Jumps to the target** |
         | Motion values bound to elements | **Each change is written** through async interop - no per-frame smoothing |
-        | Animating a motion value itself (`AnimateAsync` on a `BmValue`, a `Spring` follower) | **Settles at once** - it needs the per-frame loop |
+        | Animating a motion value itself (`AnimateAsync` on a `BmotionValue`, a `Spring` follower) | **Settles at once** - it needs the per-frame loop |
         | Layout (FLIP) and shared-element transitions | **Full.** The bridge plays them as Web Animations |
 
         ## Writing for this mode
@@ -266,7 +266,7 @@ public static class BmotionSetupGuide
            when the animation starts and sends more keyframes over the circuit (a few KB for a long
            spring); a timeline is two keyframes whatever its length.
         3. Keep out of what only the frame loop plays: `Transition.OnUpdate`, `d` morphs, an endless
-           `BmRepeat.Reverse` (use `BmRepeat.Mirror`), recordings longer than 10 seconds.
+           `BmotionRepeat.Reverse` (use `BmotionRepeat.Mirror`), recordings longer than 10 seconds.
         4. Check any animation you are unsure about with `AnalyzeBmotionAnimation` - it runs the real
            engine and reports which path it took, rather than guessing from this table.
         5. Make the degradation visible to the reader rather than mysterious, by injecting the
@@ -332,7 +332,7 @@ public static class BmotionSetupGuide
            recording, either way - so the first visit and the second look the same. Prefer `x`, `y`,
            `scale`, `rotate` and `opacity` where they do the job: they run on the compositor.
         2. Gate what only the frame loop plays - `Transition.OnUpdate`, SVG `d` morphs, an endless
-           `BmRepeat.Reverse` - and any `OnDrag` handler whose result must track the pointer frame by frame (it
+           `BmotionRepeat.Reverse` - and any `OnDrag` handler whose result must track the pointer frame by frame (it
            runs a round trip behind on Server), on the capability flag, and give the Server path a static
            equivalent:
 
@@ -341,7 +341,7 @@ public static class BmotionSetupGuide
 
         @if (Caps.SupportsFrameLoop)
         {
-            <Bmotion Drag="BmDrag.Both">...</Bmotion>
+            <Bmotion Drag="BmotionDrag.Both">...</Bmotion>
         }
         else
         {
@@ -393,7 +393,7 @@ public static class BmotionSetupGuide
         ## Worth setting while you are here
 
         ```csharp
-        builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
+        builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmotionReducedMotionMode.User);
         ```
 
         The default is `IgnoreUnlessConfigured`, which is back-compatible rather than correct: it

@@ -37,9 +37,9 @@ public class SentryStackTraceTests
         Error: mail me@example.com
         """;
 
-    private static object?[] Row(SentryStackTrace.Frame f) => [f.Function, f.FileName, f.Line, f.Column, f.InApp];
+    private static object?[] Row(BelemetrySentryStackTrace.Frame f) => [f.Function, f.FileName, f.Line, f.Column, f.InApp];
 
-    private static void AssertFrames(IEnumerable<SentryStackTrace.Frame> frames, params object?[][] expected)
+    private static void AssertFrames(IEnumerable<BelemetrySentryStackTrace.Frame> frames, params object?[][] expected)
     {
         var actual = frames.Select(Row).ToList();
         Assert.HasCount(expected.Length, actual, string.Join(" | ", actual.Select(r => string.Join(", ", r))));
@@ -49,7 +49,7 @@ public class SentryStackTraceTests
     [TestMethod]
     public void JavaScript_V8_OldestFrameFirst()
     {
-        var frames = SentryStackTrace.ParseJavaScript(V8);
+        var frames = BelemetrySentryStackTrace.ParseJavaScript(V8);
         AssertFrames(frames,
             ["?", "https://shop.test/_framework/blazor.web.js", 1, 5000, false],
             ["eval", "https://shop.test/app.js", 1, 1, true],
@@ -64,7 +64,7 @@ public class SentryStackTraceTests
     [TestMethod]
     public void JavaScript_SpiderMonkey_AsyncFrames_Eval_AndAnAtInTheUrl()
     {
-        var frames = SentryStackTrace.ParseJavaScript(Gecko);
+        var frames = BelemetrySentryStackTrace.ParseJavaScript(Gecko);
         frames.Reverse();
         AssertFrames(frames,
             ["render", "https://shop.test/app.js", 10, 15, true],
@@ -78,38 +78,38 @@ public class SentryStackTraceTests
     [TestMethod]
     public void JavaScript_JavaScriptCore_SkipsALineThatOnlyHoldsAnAt()
     {
-        var frames = SentryStackTrace.ParseJavaScript(WebKit);
+        var frames = BelemetrySentryStackTrace.ParseJavaScript(WebKit);
         frames.Reverse();
         AssertFrames(frames,
             ["render", "https://shop.test/app.js", 10, 15, true],
             ["map", "[native code]", null, null, false],
             ["global code", "app://0.0.0.1/app.js", 1, 1, true]);
-        Assert.IsNull(SentryStackTrace.JavaScriptFrame("Error: mail me@example.com"));
-        Assert.IsNull(SentryStackTrace.JavaScriptFrame("TypeError: x is undefined"));
+        Assert.IsNull(BelemetrySentryStackTrace.JavaScriptFrame("Error: mail me@example.com"));
+        Assert.IsNull(BelemetrySentryStackTrace.JavaScriptFrame("TypeError: x is undefined"));
     }
 
     [TestMethod]
     public void JavaScript_ALineNumberOutOfRange_IsDropped_NotThrown()
     {
         // A relayed stack is anyone's text: a number past int, or another script's digits, is no line.
-        var huge = SentryStackTrace.JavaScriptFrame("at f (https://shop.test/app.js:99999999999:1)")!;
+        var huge = BelemetrySentryStackTrace.JavaScriptFrame("at f (https://shop.test/app.js:99999999999:1)")!;
         Assert.AreEqual("https://shop.test/app.js", huge.FileName);
         Assert.IsNull(huge.Line);
         Assert.AreEqual(1, huge.Column);
 
-        var arabic = SentryStackTrace.JavaScriptFrame("at f (https://shop.test/app.js:١:٢)")!;
+        var arabic = BelemetrySentryStackTrace.JavaScriptFrame("at f (https://shop.test/app.js:١:٢)")!;
         Assert.AreEqual("https://shop.test/app.js:١:٢", arabic.FileName);
         Assert.IsNull(arabic.Line);
 
-        Assert.IsNull(SentryStackTrace.JavaScriptFrame("f@shop:99999999999"), "No line, no URL: not a frame.");
-        Assert.IsNull(SentryStackTrace.DotnetFrame("at X.Y.Z() in /src/a.cs:line ١"));
-        Assert.IsNull(SentryStackTrace.DotnetFrame("at X.Y.Z() in /src/a.cs:line 99999999999")!.Line);
+        Assert.IsNull(BelemetrySentryStackTrace.JavaScriptFrame("f@shop:99999999999"), "No line, no URL: not a frame.");
+        Assert.IsNull(BelemetrySentryStackTrace.DotnetFrame("at X.Y.Z() in /src/a.cs:line ١"));
+        Assert.IsNull(BelemetrySentryStackTrace.DotnetFrame("at X.Y.Z() in /src/a.cs:line 99999999999")!.Line);
     }
 
     [TestMethod]
     public void JavaScript_TheDotnetRuntimesWebAssembly_IsNotTheApps()
     {
-        var frames = SentryStackTrace.ParseJavaScript("""
+        var frames = BelemetrySentryStackTrace.ParseJavaScript("""
             Error: boom
                 at wasm://wasm/00a8e8e6:wasm-function[8519]:0x1d1d5d
                 at render (https://shop.test/app.js:10:15)
@@ -131,20 +131,20 @@ public class SentryStackTraceTests
                 at save (https://shop.test/app.js:10:15)
             """;
 
-        Assert.IsFalse(SentryStackTrace.IsDotnet(stack));
-        AssertFrames(SentryStackTrace.ParseJavaScript(stack),
+        Assert.IsFalse(BelemetrySentryStackTrace.IsDotnet(stack));
+        AssertFrames(BelemetrySentryStackTrace.ParseJavaScript(stack),
             ["save", "https://shop.test/app.js", 10, 15, true],
             ["Object.invokeMethodAsync", "https://shop.test/_framework/blazor.webassembly.js", 1, 3000, false]);
 
-        Assert.IsTrue(SentryStackTrace.IsDotnet("System.Exception: mail me@example.com:25\n   at X.Y.Z()"), "A message before the frames is not a frame after them.");
+        Assert.IsTrue(BelemetrySentryStackTrace.IsDotnet("System.Exception: mail me@example.com:25\n   at X.Y.Z()"), "A message before the frames is not a frame after them.");
     }
 
     [TestMethod]
     public void JavaScript_KeepsTheNewestFramesOfADeepStack()
     {
-        var stack = string.Join('\n', Enumerable.Range(0, SentryStackTrace.MaxFrames + 20).Select(i => $"    at f{i} (https://shop.test/app.js:{i + 1}:1)"));
-        var frames = SentryStackTrace.ParseJavaScript(stack);
-        Assert.HasCount(SentryStackTrace.MaxFrames, frames);
+        var stack = string.Join('\n', Enumerable.Range(0, BelemetrySentryStackTrace.MaxFrames + 20).Select(i => $"    at f{i} (https://shop.test/app.js:{i + 1}:1)"));
+        var frames = BelemetrySentryStackTrace.ParseJavaScript(stack);
+        Assert.HasCount(BelemetrySentryStackTrace.MaxFrames, frames);
         Assert.AreEqual("f0", frames[^1].Function);
     }
 
@@ -166,7 +166,7 @@ public class SentryStackTraceTests
     [TestMethod]
     public void Dotnet_Text_TheChainOutermostFirst_FramesOldestFirst()
     {
-        var chain = SentryStackTrace.ParseDotnet(DotnetText);
+        var chain = BelemetrySentryStackTrace.ParseDotnet(DotnetText);
         Assert.HasCount(2, chain);
 
         Assert.AreEqual("System.InvalidOperationException", chain[0].Type);
@@ -191,9 +191,9 @@ public class SentryStackTraceTests
     [TestMethod]
     public void Dotnet_Text_IsToldFromJavaScriptByItsLines()
     {
-        Assert.IsTrue(SentryStackTrace.IsDotnet(DotnetText));
-        Assert.IsTrue(SentryStackTrace.IsDotnet(SentryStackTraceTests.Thrower.Catch(SentryStackTraceTests.Thrower.Wrapped).ToString()));
-        foreach (var stack in new[] { V8, Gecko, WebKit, "", null }) Assert.IsFalse(SentryStackTrace.IsDotnet(stack), stack);
+        Assert.IsTrue(BelemetrySentryStackTrace.IsDotnet(DotnetText));
+        Assert.IsTrue(BelemetrySentryStackTrace.IsDotnet(SentryStackTraceTests.Thrower.Catch(SentryStackTraceTests.Thrower.Wrapped).ToString()));
+        foreach (var stack in new[] { V8, Gecko, WebKit, "", null }) Assert.IsFalse(BelemetrySentryStackTrace.IsDotnet(stack), stack);
     }
 
     [TestMethod]
@@ -209,7 +209,7 @@ public class SentryStackTraceTests
                at X.Y.B()<---
             """;
 
-        var chain = SentryStackTrace.ParseDotnet(text);
+        var chain = BelemetrySentryStackTrace.ParseDotnet(text);
         Assert.HasCount(2, chain);
         Assert.AreEqual("System.AggregateException", chain[0].Type);
         CollectionAssert.AreEqual(new[] { "Outer" }, chain[0].Frames.Select(f => f.Function).ToArray());
@@ -220,18 +220,18 @@ public class SentryStackTraceTests
     [TestMethod]
     public void Dotnet_Text_WithoutFrames_OrWithoutAMessage()
     {
-        var never = SentryStackTrace.ParseDotnet("System.Exception: never thrown").Single();
+        var never = BelemetrySentryStackTrace.ParseDotnet("System.Exception: never thrown").Single();
         Assert.AreEqual("System.Exception", never.Type);
         Assert.AreEqual("never thrown", never.Message);
         Assert.IsEmpty(never.Frames);
 
-        var bare = SentryStackTrace.ParseDotnet("System.Exception\n   at X.Y.Z()").Single();
+        var bare = BelemetrySentryStackTrace.ParseDotnet("System.Exception\n   at X.Y.Z()").Single();
         Assert.AreEqual("System.Exception", bare.Type);
         Assert.IsNull(bare.Message);
         Assert.AreEqual("Z", bare.Frames.Single().Function);
 
-        Assert.AreEqual("Main", SentryStackTrace.DotnetFrame("at App.Program.Main(String[] args) + 0x5a")!.Function, "NativeAOT's format.");
-        Assert.IsNull(SentryStackTrace.DotnetFrame("--- End of stack trace from previous location ---"));
+        Assert.AreEqual("Main", BelemetrySentryStackTrace.DotnetFrame("at App.Program.Main(String[] args) + 0x5a")!.Function, "NativeAOT's format.");
+        Assert.IsNull(BelemetrySentryStackTrace.DotnetFrame("--- End of stack trace from previous location ---"));
     }
 
     [TestMethod]
@@ -246,7 +246,7 @@ public class SentryStackTraceTests
                at Shop.Cart.Save() in /src/Shop/Cart.cs:line 9
             """;
 
-        var chain = SentryStackTrace.ParseDotnet(text);
+        var chain = BelemetrySentryStackTrace.ParseDotnet(text);
         Assert.HasCount(2, chain);
         Assert.AreEqual("Validation failed:\nat least one item is required", chain[0].Message!.ReplaceLineEndings("\n"));
         CollectionAssert.AreEqual(new[] { "Save" }, chain[0].Frames.Select(f => f.Function).ToArray());
@@ -254,7 +254,7 @@ public class SentryStackTraceTests
         CollectionAssert.AreEqual(new[] { "Check" }, chain[1].Frames.Select(f => f.Function).ToArray());
 
         // A frame without the method's metadata (NativeAOT) starts the frames all the same.
-        var aot = SentryStackTrace.ParseDotnet("System.Exception: boom\n   at App!<BaseAddress>+0x1a2b\n   at App!<BaseAddress>+0x3c4d").Single();
+        var aot = BelemetrySentryStackTrace.ParseDotnet("System.Exception: boom\n   at App!<BaseAddress>+0x1a2b\n   at App!<BaseAddress>+0x3c4d").Single();
         Assert.AreEqual("boom", aot.Message);
         Assert.IsEmpty(aot.Frames);
     }
@@ -262,15 +262,15 @@ public class SentryStackTraceTests
     [TestMethod]
     public void Dotnet_Text_AnAsyncLambdasOrLocalFunctionsStateMachine_IsTheMethodItWasWrittenAs()
     {
-        var lambda = SentryStackTrace.DotnetFrame("at Shop.Cart.<>c__DisplayClass0_0.<<BuildRenderTree>b__0>d.MoveNext() in /src/Cart.razor:line 3")!;
+        var lambda = BelemetrySentryStackTrace.DotnetFrame("at Shop.Cart.<>c__DisplayClass0_0.<<BuildRenderTree>b__0>d.MoveNext() in /src/Cart.razor:line 3")!;
         Assert.AreEqual("Shop.Cart.<>c__DisplayClass0_0", lambda.Module);
         Assert.AreEqual("<BuildRenderTree>b__0", lambda.Function);
 
-        var local = SentryStackTrace.DotnetFrame("at Shop.Program.<<Main>g__Local|0_0>d.MoveNext()")!;
+        var local = BelemetrySentryStackTrace.DotnetFrame("at Shop.Program.<<Main>g__Local|0_0>d.MoveNext()")!;
         Assert.AreEqual("Shop.Program", local.Module);
         Assert.AreEqual("<Main>g__Local|0_0", local.Function);
 
-        var iterator = SentryStackTrace.DotnetFrame("at Shop.Orders.<Items>d__7.MoveNext()")!;
+        var iterator = BelemetrySentryStackTrace.DotnetFrame("at Shop.Orders.<Items>d__7.MoveNext()")!;
         Assert.AreEqual(("Shop.Orders", "Items"), (iterator.Module, iterator.Function));
     }
 
@@ -289,7 +289,7 @@ public class SentryStackTraceTests
         foreach (var line in lines)
         {
             var match = pattern.Match(line);
-            var frame = SentryStackTrace.DotnetFrame(line);
+            var frame = BelemetrySentryStackTrace.DotnetFrame(line);
             Assert.AreEqual(match.Success, frame is not null, line);
             if (frame is null) continue;
             Assert.AreEqual(match.Groups["file"].Success ? match.Groups["file"].Value : null, frame.AbsolutePath, line);
@@ -299,7 +299,7 @@ public class SentryStackTraceTests
         // Linear: each ')' of this line would re-scan the rest under the pattern (about 80 million steps).
         var adversarial = "at a(" + string.Concat(Enumerable.Repeat(") in x:line 1", 2500)) + "!";
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        for (var i = 0; i < 10; i++) Assert.IsNull(SentryStackTrace.DotnetFrame(adversarial));
+        for (var i = 0; i < 10; i++) Assert.IsNull(BelemetrySentryStackTrace.DotnetFrame(adversarial));
         Assert.IsLessThan(2000L, watch.ElapsedMilliseconds, "Ten reads of a 32K-character line.");
     }
 
@@ -308,8 +308,8 @@ public class SentryStackTraceTests
     {
         var exception = Thrower.Catch(() => Thrower.RunAsync().GetAwaiter().GetResult());
 
-        var (frames, complete) = SentryStackTrace.FromException(exception);
-        var text = SentryStackTrace.ParseDotnet(exception.ToString()).Single().Frames;
+        var (frames, complete) = BelemetrySentryStackTrace.FromException(exception);
+        var text = BelemetrySentryStackTrace.ParseDotnet(exception.ToString()).Single().Frames;
         Assert.IsTrue(complete, "The JIT has every frame's method.");
 
         // Grouping sees the same frames from the object and from the text: an async method is the method it was written as.
@@ -333,12 +333,12 @@ public class SentryStackTraceTests
 
         // The file and line come from the text, resolved once as the record was made, not from the PDB again.
         Assert.IsNull(frames[^1].Line);
-        Assert.IsTrue(SentryStackTrace.TryAddFileInfo(frames, text));
+        Assert.IsTrue(BelemetrySentryStackTrace.TryAddFileInfo(frames, text));
         Assert.AreEqual(text[^1].Line, frames[^1].Line);
         Assert.AreEqual(text[^1].AbsolutePath, frames[^1].AbsolutePath);
         Assert.IsNotNull(frames[^1].FunctionId, "The object's own data stays.");
-        Assert.AreEqual(text[^1].Line, SentryStackTrace.FromException(exception, fileInfo: true).Frames[^1].Line, "What the PDB says.");
-        Assert.IsFalse(SentryStackTrace.TryAddFileInfo(frames, text[1..]), "Frames that do not line up get nothing.");
+        Assert.AreEqual(text[^1].Line, BelemetrySentryStackTrace.FromException(exception, fileInfo: true).Frames[^1].Line, "What the PDB says.");
+        Assert.IsFalse(BelemetrySentryStackTrace.TryAddFileInfo(frames, text[1..]), "Frames that do not line up get nothing.");
     }
 
     [TestMethod]
@@ -346,8 +346,8 @@ public class SentryStackTraceTests
     {
         var exception = Thrower.Catch(() => Thrower.RunLambdaAsync(1).GetAwaiter().GetResult());
 
-        var frames = SentryStackTrace.FromException(exception).Frames;
-        var text = SentryStackTrace.ParseDotnet(exception.ToString()).Single().Frames;
+        var frames = BelemetrySentryStackTrace.FromException(exception).Frames;
+        var text = BelemetrySentryStackTrace.ParseDotnet(exception.ToString()).Single().Frames;
         CollectionAssert.AreEqual(text.Select(f => f.Module + "." + f.Function).ToArray(), frames.Select(f => f.Module + "." + f.Function).ToArray());
         Assert.IsTrue(frames.Any(f => f.Function!.StartsWith("<" + nameof(Thrower.RunLambdaAsync) + ">b__", StringComparison.Ordinal)), string.Join(" | ", frames.Select(f => f.Module + "." + f.Function)));
         Assert.IsFalse(frames.Any(f => f.Function == "MoveNext"));
@@ -357,9 +357,9 @@ public class SentryStackTraceTests
     public void Dotnet_Object_FollowsTheInnerExceptions()
     {
         var exception = Thrower.Catch(Thrower.Wrapped);
-        var inner = SentryStackTrace.FromException(exception.InnerException!).Frames;
+        var inner = BelemetrySentryStackTrace.FromException(exception.InnerException!).Frames;
         Assert.AreEqual(nameof(Thrower.Fail), inner[^1].Function);
-        var (never, complete) = SentryStackTrace.FromException(new InvalidOperationException("never thrown"));
+        var (never, complete) = BelemetrySentryStackTrace.FromException(new InvalidOperationException("never thrown"));
         Assert.IsEmpty(never);
         Assert.IsTrue(complete, "Nothing is missing from no frames.");
     }
@@ -368,9 +368,9 @@ public class SentryStackTraceTests
     public void DebugImage_IsWhatSystemReflectionMetadataReads()
     {
         var path = typeof(Thrower).Assembly.Location;
-        var image = SentryDebugImage.Of(typeof(Thrower).Module);
+        var image = BelemetrySentryDebugImage.Of(typeof(Thrower).Module);
         Assert.IsNotNull(image);
-        Assert.AreSame(image, SentryDebugImage.Of(typeof(Thrower).Module), "Read once.");
+        Assert.AreSame(image, BelemetrySentryDebugImage.Of(typeof(Thrower).Module), "Read once.");
 
         using var pe = new PEReader(File.OpenRead(path));
         var entries = pe.ReadDebugDirectory();
@@ -390,14 +390,14 @@ public class SentryStackTraceTests
         }
 
         // The runtime's own assemblies have one too.
-        Assert.IsNotNull(SentryDebugImage.Of(typeof(object).Module));
+        Assert.IsNotNull(BelemetrySentryDebugImage.Of(typeof(object).Module));
     }
 
     [TestMethod]
     public void DebugImage_OfWhatIsNotAPortableExecutable_IsNone()
     {
-        Assert.IsNull(SentryDebugImage.Read(new MemoryStream([]), "empty.dll"));
-        Assert.IsNull(SentryDebugImage.Read(new MemoryStream("MZ not really a PE file, just some text that is long enough"u8.ToArray()), "text.dll"));
+        Assert.IsNull(BelemetrySentryDebugImage.Read(new MemoryStream([]), "empty.dll"));
+        Assert.IsNull(BelemetrySentryDebugImage.Read(new MemoryStream("MZ not really a PE file, just some text that is long enough"u8.ToArray()), "text.dll"));
     }
 
     [TestMethod]
@@ -414,7 +414,7 @@ public class SentryStackTraceTests
         BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(peOffset + 20), optionalHeaderSize);
         BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(peOffset + 24), 0x20B);
 
-        Assert.IsNull(SentryDebugImage.Read(new MemoryStream(bytes), "short.dll"));
+        Assert.IsNull(BelemetrySentryDebugImage.Read(new MemoryStream(bytes), "short.dll"));
     }
 
     internal static class Thrower

@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Interop;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// Opens databases: resolves a storage backend, starts a worker against it, and hands back the

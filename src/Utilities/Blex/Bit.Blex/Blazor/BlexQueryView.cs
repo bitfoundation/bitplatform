@@ -1,8 +1,7 @@
-using Bit.Blex.Query;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>
 /// Renders a cached query from markup: its data once there is some, a loading state before, the error

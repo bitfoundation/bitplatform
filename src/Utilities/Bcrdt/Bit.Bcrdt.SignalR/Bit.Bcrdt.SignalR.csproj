@@ -4,7 +4,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
-        <RootNamespace>Bit.Bcrdt.SignalR</RootNamespace>
+        <RootNamespace>Bit.Bcrdt</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
         <Description>The SignalR client transport for bit Bcrdt. It carries no ASP.NET Core server dependency, so it runs in Blazor WebAssembly, Server and Hybrid alike; map the matching hub from Bit.Bcrdt.Server on the server.</Description>

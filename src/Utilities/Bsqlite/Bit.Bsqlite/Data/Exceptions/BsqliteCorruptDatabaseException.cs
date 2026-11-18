@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Data;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>The file image is not a usable SQLite database.</summary>
 public sealed class BsqliteCorruptDatabaseException : BsqliteException

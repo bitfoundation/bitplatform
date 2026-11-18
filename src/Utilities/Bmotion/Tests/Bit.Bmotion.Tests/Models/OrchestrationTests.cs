@@ -26,7 +26,7 @@ public class OrchestrationTests
     {
         // The estimate is the length of one play - a container's delay already shifts its children
         // through the normal transition, and repeats have no bearing on when children may start.
-        var config = Bm.Tween(0.5, delay: 2, repeat: BmRepeat.Loop(4)).ToConfig();
+        var config = Bm.Tween(0.5, delay: 2, repeat: BmotionRepeat.Loop(4)).ToConfig();
 
         Assert.AreEqual(0.5, config.EstimatedDurationSeconds(), 1e-9);
     }
@@ -91,38 +91,38 @@ public class OrchestrationTests
     [TestMethod]
     public void When_DefaultsToTogether()
     {
-        Assert.AreEqual(BmWhen.Together, Bm.Tween(0.3).When);
-        Assert.AreEqual(BmWhen.Together, Bm.Spring().When);
-        Assert.AreEqual(BmWhen.Together, Bm.Tween(0.3).ToConfig().When);
+        Assert.AreEqual(BmotionWhen.Together, Bm.Tween(0.3).When);
+        Assert.AreEqual(BmotionWhen.Together, Bm.Spring().When);
+        Assert.AreEqual(BmotionWhen.Together, Bm.Tween(0.3).ToConfig().When);
     }
 
     [TestMethod]
     public void When_SurvivesLoweringToTheEngineConfig()
     {
-        var config = Bm.Tween(0.3, when: BmWhen.BeforeChildren).ToConfig();
+        var config = Bm.Tween(0.3, when: BmotionWhen.BeforeChildren).ToConfig();
 
-        Assert.AreEqual(BmWhen.BeforeChildren, config.When);
+        Assert.AreEqual(BmotionWhen.BeforeChildren, config.When);
     }
 
     [TestMethod]
     public void When_SurvivesWithDelayAndClone()
     {
-        var transition = Bm.Spring(when: BmWhen.BeforeChildren);
+        var transition = Bm.Spring(when: BmotionWhen.BeforeChildren);
 
-        Assert.AreEqual(BmWhen.BeforeChildren, transition.WithDelay(0.5).When);
-        Assert.AreEqual(BmWhen.BeforeChildren, transition.ToConfig().Clone().When);
+        Assert.AreEqual(BmotionWhen.BeforeChildren, transition.WithDelay(0.5).When);
+        Assert.AreEqual(BmotionWhen.BeforeChildren, transition.ToConfig().Clone().When);
     }
 
     [TestMethod]
     public void When_ParticipatesInTransitionEquality()
     {
         // Otherwise flipping the flag would not read as a parameter change on re-render.
-        Assert.IsFalse(BmTransition.AreEquivalent(
+        Assert.IsFalse(BmotionTransition.AreEquivalent(
             Bm.Tween(0.3),
-            Bm.Tween(0.3, when: BmWhen.BeforeChildren)));
+            Bm.Tween(0.3, when: BmotionWhen.BeforeChildren)));
 
-        Assert.IsTrue(BmTransition.AreEquivalent(
-            Bm.Tween(0.3, when: BmWhen.BeforeChildren),
-            Bm.Tween(0.3, when: BmWhen.BeforeChildren)));
+        Assert.IsTrue(BmotionTransition.AreEquivalent(
+            Bm.Tween(0.3, when: BmotionWhen.BeforeChildren),
+            Bm.Tween(0.3, when: BmotionWhen.BeforeChildren)));
     }
 }

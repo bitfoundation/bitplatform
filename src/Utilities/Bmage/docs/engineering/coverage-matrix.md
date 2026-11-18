@@ -10,158 +10,158 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| File picker, drag and drop, paste, bytes, streams, URLs, camera | verified | P1 | `Input/ImageLoader.cs`, `Input/ImageSource.cs`, `Editor/Components/BmageDropZone.razor` | `ScenarioTests`, E2E `EditorTests`, `DemoRegressionTests` (paste) | - |
-| Format sniffing by magic bytes | verified | P0 | `ImageFormat.cs` | `CodecTests` | - |
+| File picker, drag and drop, paste, bytes, streams, URLs, camera | verified | P1 | `Input/BmageImageLoader.cs`, `Input/BmageImageSource.cs`, `Editor/Components/BmageDropZone.razor` | `ScenarioTests`, E2E `EditorTests`, `DemoRegressionTests` (paste) | - |
+| Format sniffing by magic bytes | verified | P0 | `BmageImageFormat.cs` | `CodecTests` | - |
 | PNG, JPEG, BMP, GIF, WebP managed decode | verified | P1 | `Codecs/*` | `CodecTests`, `WebPCodecTests`, `AdversarialPipelineTests` | GIF/APNG/animated WebP first frame only (by design) |
 | AVIF managed decode | verified | P1 | `Codecs/Avif/*` | `AvifCodecTests` | No colour management; inter-predicted layers and later sequence frames not decoded |
-| WebP, AVIF decode via browser | verified | P1 | `Codecs/BrowserCodecs.cs`, `Scripts/bit-bmage*.ts` | E2E `JsModuleContractTests`, `CapabilityTests` | Depends on browser |
-| SVG | unsupported | - | `FallbackImageDecoder` refuses | `CodecTests` | Untrusted SVG can run script / fetch; by design |
-| EXIF orientation | verified | P1 | `Operations/Transforms/OrientationOperation.cs` | `MetadataTests`, `GeometryTests` | - |
+| WebP, AVIF decode via browser | verified | P1 | `Codecs/BmageBrowserImageDecoder.cs`, `Scripts/bit-bmage*.ts` | E2E `JsModuleContractTests`, `CapabilityTests` | Depends on browser |
+| SVG | unsupported | - | `BmageFallbackImageDecoder` refuses | `CodecTests` | Untrusted SVG can run script / fetch; by design |
+| EXIF orientation | verified | P1 | `Operations/Transforms/BmageOrientationOperation.cs` | `MetadataTests`, `GeometryTests` | - |
 | Metadata extraction (EXIF, GPS, ICC, XMP) | verified | P1 | `Metadata/*` | `MetadataTests`, `AdversarialMetadataTests` | - |
-| Size limits before allocation | verified | P0 | `ImageLimits.cs`, `BitBmageOptions.MaxSourceBytes` | `AdversarialPipelineTests`, `MemoryBudgetTests` | - |
+| Size limits before allocation | verified | P0 | `BmageImageLimits.cs`, `BmageOptions.MaxSourceBytes` | `AdversarialPipelineTests`, `MemoryBudgetTests` | - |
 | Corrupt / truncated input errors | verified | P0 | decoders | `CodecTests`, `AdversarialPipelineTests` | - |
-| CORS failure explained | verified | P1 | `ImageLoader.LoadFromUrlAsync` | `ReviewFindingsTests.AUrlTheBrowserMayNotReadIsExplainedAsTheCorsProblemItUsuallyIs` | The message says what usually causes it; the browser does not say which cause it was |
-| Multi-image import | verified | P1 | `ImageLoader.LoadManyAsync`, batch | `PipelineTests` | - |
+| CORS failure explained | verified | P1 | `BmageImageLoader.LoadFromUrlAsync` | `ReviewFindingsTests.AUrlTheBrowserMayNotReadIsExplainedAsTheCorsProblemItUsuallyIs` | The message says what usually causes it; the browser does not say which cause it was |
+| Multi-image import | verified | P1 | `BmageImageLoader.LoadManyAsync`, batch | `PipelineTests` | - |
 | Import a file as a layer (editor) | verified | P2 | `BmageEditor.AddImageLayerAsync`, Layers tab | E2E `EditingToolTests.TheNewControlsAreNamedForAssistiveTechnology` (control present) | Pixel placement covered by `OverlayAttachmentTests`; no E2E upload of a layer image yet |
 | Animated image editing | deferred | P3 | - | - | First frame decoded; animation editing is a separate problem |
-| ICO decode (largest image, PNG or 1/4/8/24/32-bit bitmap with mask) | verified | P2 | `Codecs/Ico/IcoCodec.cs` | `IcoCodecTests` (bitmap entries, alpha against mask, malformed directories), Pillow cross-check | - |
+| ICO decode (largest image, PNG or 1/4/8/24/32-bit bitmap with mask) | verified | P2 | `Codecs/Ico/` | `IcoCodecTests` (bitmap entries, alpha against mask, malformed directories), Pillow cross-check | - |
 | TIFF, HEIF/HEIC decode | deferred | P3 | - | - | Through the browser decoder where the platform has one; see gap analysis 12 |
 
 ## B. Geometry
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| Crop, aspect crop, smart crop | verified | P1 | `Operations/Transforms/CropOperation.cs`, `Analysis/SmartCrop.cs` | `GeometryTests`, `AnalysisTests` | - |
-| Rotate 90°, flip | verified | P1 | `OrientationOperation` | `GeometryTests` | - |
-| Arbitrary rotation | verified | P1 | `RotateOperation` | `GeometryTests`, `AdversarialGeometryTests` | - |
-| Resize (six modes, filters) | verified | P1 | `ResizeOperation`, `Resampler` | `GeometryTests`, `ResamplingQualityTests` | - |
-| Skew, affine, perspective, straighten quad | verified | P2/P3 | `WarpOperations.cs` | `GeometryTests`, `AdversarialGeometryTests` | - |
-| Canvas extend / reduce with anchor and background | verified | P1 | `Operations/Transforms/CanvasOperations.cs` (`CanvasSizeOperation`), `ImagePipeline.CanvasSize/Pad` | `CanvasSizeTests`, E2E `EditingToolTests.TheCanvasSizeAddsRoomAroundTheImage` | - |
-| Trim transparent / uniform borders | verified | P1 | `Analysis/ContentBounds.cs`, `BmageEditor.TrimAsync` | `ContentBoundsTests` | An analysis that yields a crop, not an operation: sizes must be known without pixels |
-| Straighten (rotate + crop to inscribed rectangle) | verified | P1 | `StraightenOperation` | `StraightenTests` (opacity sweep over 121 angles x 4 sizes x 3 samplers), E2E `StraighteningFromTheTransformTabCropsTheCorners` | ±45° |
-| Overlays stay on content through geometric edits | verified | P0 | `ImagePipeline.TryGetTransform`, `ImageDocument.WithPipeline(.., keepOverlaysAttached)`, `Annotation/Layer/Mask.Transform` | `OverlayAttachmentTests` (25 of 29 fail without it), E2E `AnArrowStaysOnWhatItMarksWhenTheImageIsTurned` | Relative, content and bitmap masks stay put by design; non-affine steps leave overlays in place |
+| Crop, aspect crop, smart crop | verified | P1 | `Operations/Transforms/BmageCropOperation.cs`, `Analysis/BmageSmartCrop.cs` | `GeometryTests`, `AnalysisTests` | - |
+| Rotate 90°, flip | verified | P1 | `BmageOrientationOperation` | `GeometryTests` | - |
+| Arbitrary rotation | verified | P1 | `BmageRotateOperation` | `GeometryTests`, `AdversarialGeometryTests` | - |
+| Resize (six modes, filters) | verified | P1 | `BmageResizeOperation`, `BmageResampler` | `GeometryTests`, `ResamplingQualityTests` | - |
+| Skew, affine, perspective, straighten quad | verified | P2/P3 | `Operations/Transforms/` | `GeometryTests`, `AdversarialGeometryTests` | - |
+| Canvas extend / reduce with anchor and background | verified | P1 | `Operations/Transforms/BmageCanvasSizeOperation.cs` (`BmageCanvasSizeOperation`), `BmageImagePipeline.CanvasSize/Pad` | `CanvasSizeTests`, E2E `EditingToolTests.TheCanvasSizeAddsRoomAroundTheImage` | - |
+| Trim transparent / uniform borders | verified | P1 | `Analysis/BmageContentBounds.cs`, `BmageEditor.TrimAsync` | `ContentBoundsTests` | An analysis that yields a crop, not an operation: sizes must be known without pixels |
+| Straighten (rotate + crop to inscribed rectangle) | verified | P1 | `BmageStraightenOperation` | `StraightenTests` (opacity sweep over 121 angles x 4 sizes x 3 samplers), E2E `StraighteningFromTheTransformTabCropsTheCorners` | ±45° |
+| Overlays stay on content through geometric edits | verified | P0 | `BmageImagePipeline.TryGetTransform`, `BmageImageDocument.WithPipeline(.., keepOverlaysAttached)`, `Annotation/Layer/BmageMask.Transform` | `OverlayAttachmentTests` (25 of 29 fail without it), E2E `AnArrowStaysOnWhatItMarksWhenTheImageIsTurned` | Relative, content and bitmap masks stay put by design; non-affine steps leave overlays in place |
 | Numeric transform inputs in the editor | verified | P1 | Transform tab in `BmageEditorPanel.razor` | E2E `EditingToolTests` (straighten, canvas size) | - |
 
 ## C. Colour and tone
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| Brightness, contrast, exposure, gamma, saturation, vibrance, hue, temperature, tint, shadows/highlights, opacity | verified | P1 | `Operations/Adjustments/Adjustments.cs` | `OperationTests`, `FastPathEquivalenceTests` | Temperature/tint are channel-scale approximations (documented) |
-| Levels, curves, colour matrix | verified | P1 | `Adjustments.cs`, `CurveOperation.cs`, `ColorMatrix.cs` | `OperationTests` | - |
-| Grayscale, sepia, invert, threshold, posterize | verified | P1 | `Adjustments.cs` | `OperationTests` | - |
-| Auto levels, auto contrast, histograms, statistics | verified | P1 | `Analysis/ImageStatistics.cs` | `AnalysisTests` | - |
-| Sharpness (blur detection) | verified | P1 | `Analysis/ImageSharpness.cs` | `ImageSharpnessTests` (monotonic in blur, resolution independent, regions) | Content dependent: thresholds come from the app's own examples |
-| Document skew estimate | verified | P1 | `Analysis/DocumentSkew.cs` | `DocumentSkewTests` (exact to 0.15 degrees at five tilts, light on dark, regions, confidence), E2E `ScanAndCropperTests` | Up to 45 degrees either way |
-| HSL / per-colour adjustment | verified | P1 | `Operations/Adjustments/ColorAdjustments.cs` (`HslAdjustment`) | `ColorAdjustmentTests` | HSL model, not perceptual (documented) |
-| Channel mixer, black-and-white mixer | verified | P1 | `ChannelMixerAdjustment` | `ColorAdjustmentTests` | - |
-| Gradient map, duotone | verified | P1 | `GradientMapOperation` | `ColorAdjustmentTests` | - |
-| White balance (neutral pick, automatic) | verified | P1 | `WhiteBalanceAdjustment`, `AutoWhiteBalanceOperation`, editor picker | `ColorAdjustmentTests` | Gains on encoded sRGB (documented approximation) |
-| Whites / blacks | verified | P1 | `WhitesBlacksAdjustment` | `ColorAdjustmentTests` (monotonic at every extreme) | - |
-| Colorize | verified | P2 | `ColorizeAdjustment` | `ColorAdjustmentTests` | - |
-| Colour replacement / selective colour | verified | P2 | `HslAdjustment`; `FillLayer` with `FloodMask` and `BlendMode.Color` | `ColorAdjustmentTests`, demo `/retouch` | - |
+| Brightness, contrast, exposure, gamma, saturation, vibrance, hue, temperature, tint, shadows/highlights, opacity | verified | P1 | `Operations/Adjustments/` | `OperationTests`, `FastPathEquivalenceTests` | Temperature/tint are channel-scale approximations (documented) |
+| Levels, curves, colour matrix | verified | P1 | `BmageLevelsAdjustment.cs`, `BmageCurveOperation.cs`, `BmageColorMatrix.cs` | `OperationTests` | - |
+| Grayscale, sepia, invert, threshold, posterize | verified | P1 | `Operations/Adjustments/` | `OperationTests` | - |
+| Auto levels, auto contrast, histograms, statistics | verified | P1 | `Analysis/BmageImageStatistics.cs` | `AnalysisTests` | - |
+| Sharpness (blur detection) | verified | P1 | `Analysis/BmageImageSharpness.cs` | `ImageSharpnessTests` (monotonic in blur, resolution independent, regions) | Content dependent: thresholds come from the app's own examples |
+| Document skew estimate | verified | P1 | `Analysis/BmageDocumentSkew.cs` | `DocumentSkewTests` (exact to 0.15 degrees at five tilts, light on dark, regions, confidence), E2E `ScanAndCropperTests` | Up to 45 degrees either way |
+| HSL / per-colour adjustment | verified | P1 | `Operations/Adjustments/BmageHslAdjustment.cs` (`BmageHslAdjustment`) | `ColorAdjustmentTests` | HSL model, not perceptual (documented) |
+| Channel mixer, black-and-white mixer | verified | P1 | `BmageChannelMixerAdjustment` | `ColorAdjustmentTests` | - |
+| Gradient map, duotone | verified | P1 | `BmageGradientMapOperation` | `ColorAdjustmentTests` | - |
+| White balance (neutral pick, automatic) | verified | P1 | `BmageWhiteBalanceAdjustment`, `BmageAutoWhiteBalanceOperation`, editor picker | `ColorAdjustmentTests` | Gains on encoded sRGB (documented approximation) |
+| Whites / blacks | verified | P1 | `BmageWhitesBlacksAdjustment` | `ColorAdjustmentTests` (monotonic at every extreme) | - |
+| Colorize | verified | P2 | `BmageColorizeAdjustment` | `ColorAdjustmentTests` | - |
+| Colour replacement / selective colour | verified | P2 | `BmageHslAdjustment`; `BmageFillLayer` with `BmageFloodMask` and `BmageBlendMode.Color` | `ColorAdjustmentTests`, demo `/retouch` | - |
 | Histogram and clipping view in the editor | verified | P2 | Adjust tab | E2E `TheHistogramFollowsTheImageAndReportsClipping` | Every fourth pixel of every fourth row is counted |
 | ICC colour management | deferred | P3 | - | - | Profiles read and preserved, pixels treated as sRGB |
-| 3D colour lookup tables (`.cube` read and write, tetrahedral) | verified | P2 | `Operations/Adjustments/ColorLookupTable.cs` | `ColorLutTests` (exact for linear maps, domains, malformed files), `SerializationTests` | One-dimensional `.cube` tables refused (a curve is their equivalent) |
+| 3D colour lookup tables (`.cube` read and write, tetrahedral) | verified | P2 | `Operations/Adjustments/BmageColorLookupTable.cs` | `ColorLutTests` (exact for linear maps, domains, malformed files), `SerializationTests` | One-dimensional `.cube` tables refused (a curve is their equivalent) |
 
 ## D. Filters and effects
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| Gaussian blur, unsharp-mask sharpen, pixelate, noise/grain, median, vignette | verified | P1 | `Operations/Filters/Filters.cs` | `OperationTests`, `AdversarialFilterTests`, `ParallelProcessingTests` | - |
-| Convolution, emboss, edge detect presets | verified | P2 | `ConvolutionFilter` | `OperationTests` | - |
-| Motion blur | verified | P2 | `Operations/Filters/DirectionalFilters.cs` | `MotionBlurTests` (geometry, energy, edges, threads, continuity) | Cost grows with distance; capped at 1000 px (120 in the editor) |
-| High-pass | verified | P2 | `HighPassFilter` | `HighPassTests` | - |
-| Masked / selective application | verified | P1 | `Masks/MaskedOperation.cs` | `MaskTests` | - |
+| Gaussian blur, unsharp-mask sharpen, pixelate, noise/grain, median, vignette | verified | P1 | `Operations/Filters/` | `OperationTests`, `AdversarialFilterTests`, `ParallelProcessingTests` | - |
+| Convolution, emboss, edge detect presets | verified | P2 | `BmageConvolutionFilter` | `OperationTests` | - |
+| Motion blur | verified | P2 | `Operations/Filters/BmageMotionBlurFilter.cs` | `MotionBlurTests` (geometry, energy, edges, threads, continuity) | Cost grows with distance; capped at 1000 px (120 in the editor) |
+| High-pass | verified | P2 | `BmageHighPassFilter` | `HighPassTests` | - |
+| Masked / selective application | verified | P1 | `Masks/BmageMaskedOperation.cs` | `MaskTests` | - |
 | Halftone | deferred | P3 | - | - | Niche; a custom operation can do it |
-| Zoom and spin (radial) blur | verified | P2 | `Operations/Filters/RadialBlur.cs`, editor Filters tab | `RadialBlurTests` (directional along wedges and rings, centre sharp, premultiplied, threads, proxy), `SerializationTests` | Passes of four bilinear samples soften a little across the streak; two 16-bit working copies while it runs |
-| Adaptive threshold (Sauvola, mean) | verified | P1 | `Operations/Filters/AdaptiveThreshold.cs`, editor Document look | `AdaptiveThresholdTests` (shadowed page, region, threads, in place), E2E `ScanAndCropperTests` | One byte a pixel of luminance while it runs |
-| Drop shadow, glow, outline as layer effects | deferred | P3 | - | - | Expressible with masks, `MorphedMask.Border`, blur and fill layers |
+| Zoom and spin (radial) blur | verified | P2 | `Operations/Filters/BmageRadialBlurFilter.cs`, editor Filters tab | `RadialBlurTests` (directional along wedges and rings, centre sharp, premultiplied, threads, proxy), `SerializationTests` | Passes of four bilinear samples soften a little across the streak; two 16-bit working copies while it runs |
+| Adaptive threshold (Sauvola, mean) | verified | P1 | `Operations/Filters/BmageAdaptiveThresholdFilter.cs`, editor Document look | `AdaptiveThresholdTests` (shadowed page, region, threads, in place), E2E `ScanAndCropperTests` | One byte a pixel of luminance while it runs |
+| Drop shadow, glow, outline as layer effects | deferred | P3 | - | - | Expressible with masks, `BmageMorphedMask.Border`, blur and fill layers |
 
 ## E. Layers, compositing, masks
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| Image, fill, adjustment layers | verified | P2 | `Layers/Layer.cs` | `LayerTests` | - |
-| Paint (brush) layer | verified | P2 | `Layers/PaintLayer.cs` | `PaintLayerTests`, E2E `TheBrushPaintsOntoANewPaintLayer`, `TheEraserRemovesPaintButNeverTheImage` | Re-rasterised on each composite of the layer |
-| Blend modes (W3C), opacity, visibility, lock | verified | P2 | `Drawing/Compositor.Blending.cs` | `LayerTests`, E2E `ALayersOpacityAndBlendModeAreSetFromThePanel` | - |
-| Layer masks | verified | P2 | `Layer.Mask` | `LayerTests`, `MaskTests` | - |
-| Reorder, remove, duplicate | verified | P2 | `ImageDocument.MoveLayer/RemoveLayer/DuplicateLayer` | `LayerTests` | Duplicate covered through the editor E2E only by presence |
+| Image, fill, adjustment layers | verified | P2 | `Layers/` | `LayerTests` | - |
+| Paint (brush) layer | verified | P2 | `Layers/BmagePaintLayer.cs` | `PaintLayerTests`, E2E `TheBrushPaintsOntoANewPaintLayer`, `TheEraserRemovesPaintButNeverTheImage` | Re-rasterised on each composite of the layer |
+| Blend modes (W3C), opacity, visibility, lock | verified | P2 | `Drawing/BmageCompositor.Blending.cs` | `LayerTests`, E2E `ALayersOpacityAndBlendModeAreSetFromThePanel` | - |
+| Layer masks | verified | P2 | `BmageLayer.Mask` | `LayerTests`, `MaskTests` | - |
+| Reorder, remove, duplicate | verified | P2 | `BmageImageDocument.MoveLayer/RemoveLayer/DuplicateLayer` | `LayerTests` | Duplicate covered through the editor E2E only by presence |
 | Editor layer controls (select, opacity, blend, order, lock, duplicate, add) | verified | P2 | Layers tab | E2E `ALayersOpacityAndBlendModeAreSetFromThePanel` | - |
-| Groups (pass-through and isolated) and clipping to the layer below | verified | P3 | `Layers/GroupLayer.cs`, `LayerCompositor`, `ImageDocument.GroupLayers/Ungroup/MoveLayerIntoGroup/MoveLayerOutOfGroup`, Layers tab | `LayerGroupTests` (17), `SerializationTests` (groups round trip), E2E `LayersAreClippedAndGroupedFromThePanel` | Nested at most 10 deep; each isolated level or clipping stack holds a buffer the size of the image while drawn |
+| Groups (pass-through and isolated) and clipping to the layer below | verified | P3 | `Layers/BmageGroupLayer.cs`, `BmageLayerCompositor`, `BmageImageDocument.GroupLayers/Ungroup/MoveLayerIntoGroup/MoveLayerOutOfGroup`, Layers tab | `LayerGroupTests` (17), `SerializationTests` (groups round trip), E2E `LayersAreClippedAndGroupedFromThePanel` | Nested at most 10 deep; each isolated level or clipping stack holds a buffer the size of the image while drawn |
 
 ## F. Selection and background
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| Rectangle, ellipse, polygon, path, brush, gradient, tone/colour range, bitmap masks | verified | P2 | `Masks/MaskShapes.cs` | `MaskTests` | - |
-| Add, subtract, intersect, invert, feather | verified | P2 | `CombinedMask`, `Mask.Inverted/Feather` | `MaskTests` | - |
-| Transparency-based selection | verified | P2 | `BitmapMask` (`MaskChannel.Alpha`), `FloodMask` on transparency | `MaskTests`, `FloodMaskTests` | - |
-| Magic wand (contiguous / global, tolerance, soft edge) | verified | P2 | `Masks/SelectionMasks.cs` (`FloodMask`) | `FloodMaskTests` | - |
-| Expand, contract, border | verified | P2 | `MorphedMask` | `MorphedMaskTests` (exact distances, windows, nesting guard) | Up to 250 px |
-| Uniform background removal | verified | P2 | `ImagePipeline.RemoveBackground` | `FloodMaskTests.RemovingAPlainBackground...`, demo `/retouch` | Plain backdrops only; a subject touching a corner in the backdrop's colour goes with it |
+| Rectangle, ellipse, polygon, path, brush, gradient, tone/colour range, bitmap masks | verified | P2 | `Masks/` | `MaskTests` | - |
+| Add, subtract, intersect, invert, feather | verified | P2 | `BmageCombinedMask`, `BmageMask.Inverted/Feather` | `MaskTests` | - |
+| Transparency-based selection | verified | P2 | `BmageBitmapMask` (`BmageMaskChannel.Alpha`), `BmageFloodMask` on transparency | `MaskTests`, `FloodMaskTests` | - |
+| Magic wand (contiguous / global, tolerance, soft edge) | verified | P2 | `Masks/BmageFloodMask.cs` | `FloodMaskTests` | - |
+| Expand, contract, border | verified | P2 | `BmageMorphedMask` | `MorphedMaskTests` (exact distances, windows, nesting guard) | Up to 250 px |
+| Uniform background removal | verified | P2 | `BmageImagePipeline.RemoveBackground` | `FloodMaskTests.RemovingAPlainBackground...`, demo `/retouch` | Plain backdrops only; a subject touching a corner in the backdrop's colour goes with it |
 | Fill and magic eraser tools in the editor | verified | P2 | `BmageEditor` (Fill, MagicEraser) | E2E `TheFillToolFillsTheClickedRegionAsALayer` | Magic eraser not asserted in E2E |
-| Selection tools in the editor (rectangle, ellipse, lasso, magic wand; Shift adds, Alt subtracts) with marching ants | verified | P2 | `BmageEditor.razor`, `Masks/MaskContours.cs`, `BmageEditorCanvas` outline | `MaskContourTests`, E2E `ARectangleSelectionIsOutlinedAndItsPixelsMadeTransparent`, `TheMagicWandSelectsARegionToCropTo`, `ASelectionCopiedToALayerBecomesAnImageLayer` | Lasso not driven in E2E; outline traced at most 640 px across |
+| Selection tools in the editor (rectangle, ellipse, lasso, magic wand; Shift adds, Alt subtracts) with marching ants | verified | P2 | `BmageEditor.razor`, `Masks/BmageMaskContours.cs`, `BmageEditorCanvas` outline | `MaskContourTests`, E2E `ARectangleSelectionIsOutlinedAndItsPixelsMadeTransparent`, `TheMagicWandSelectsARegionToCropTo`, `ASelectionCopiedToALayerBecomesAnImageLayer` | Lasso not driven in E2E; outline traced at most 640 px across |
 | Selection actions: make transparent, fill, copy to layer, crop to, invert, select all, deselect | verified | P2 | `BmageEditor` selection API, toolbar group | the E2E tests above | - |
 | Selection follows geometric edits and undo / redo | verified | P2 | `MoveSelectionWith`, `FollowSelection` | E2E `TheSelectionComesBackWithTheImageWhenATurnIsUndone` | Dropped across non-affine steps |
-| AI segmentation | deferred | P3 | `BitmapMask` extension point | - | No model bundled (size, licensing, network) |
+| AI segmentation | deferred | P3 | `BmageBitmapMask` extension point | - | No model bundled (size, licensing, network) |
 
 ## G. Drawing, painting, retouching
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| Freehand (vector), lines, arrows, rectangles, ellipses, polygons | verified | P1 | `Annotations/AnnotationTypes.cs` | `DrawingTests`, `AdversarialAnnotationTests` | - |
-| Raster brush with hardness, opacity, pressure | verified | P2 | `PaintStroke`, Brush tool | `PaintLayerTests`, E2E `TheBrushPaintsOntoANewPaintLayer` | Pen pressure not exercised in E2E (Playwright has no pen) |
-| Eraser | verified | P2 | `PaintStroke.Erase`, Eraser tool | `PaintLayerTests`, E2E `TheEraserRemovesPaintButNeverTheImage` | - |
-| Bucket fill | verified | P2 | `FillLayer` + `FloodMask`, Fill tool | E2E `TheFillToolFillsTheClickedRegionAsALayer` | - |
-| Eyedropper | verified | P2 | `Analysis/ColorSampler.cs`, Eyedropper tool | `ColorSamplerTests`, E2E `TheEyedropperPicksTheColourUnderThePointer` | - |
+| Freehand (vector), lines, arrows, rectangles, ellipses, polygons | verified | P1 | `Annotations/` | `DrawingTests`, `AdversarialAnnotationTests` | - |
+| Raster brush with hardness, opacity, pressure | verified | P2 | `BmagePaintStroke`, Brush tool | `PaintLayerTests`, E2E `TheBrushPaintsOntoANewPaintLayer` | Pen pressure not exercised in E2E (Playwright has no pen) |
+| Eraser | verified | P2 | `BmagePaintStroke.Erase`, Eraser tool | `PaintLayerTests`, E2E `TheEraserRemovesPaintButNeverTheImage` | - |
+| Bucket fill | verified | P2 | `BmageFillLayer` + `BmageFloodMask`, Fill tool | E2E `TheFillToolFillsTheClickedRegionAsALayer` | - |
+| Eyedropper | verified | P2 | `Analysis/BmageColorSampler.cs`, Eyedropper tool | `ColorSamplerTests`, E2E `TheEyedropperPicksTheColourUnderThePointer` | - |
 | Clone / heal | deferred | P3 | - | - | Useful healing needs patch-based reconstruction |
 
 ## H. Text, shapes, annotations
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| Text with font, size, weight, style, alignment, line height, spacing, wrapping, stroke, background | verified | P1 | `TextAnnotation`, `Drawing/ImageCanvas.cs`, `Text/*` | `TextTests` | Managed font rasteriser has no complex shaping; browser rasteriser has |
-| Callouts, steps, highlights, redaction, image stamps | verified | P1 | `AnnotationTypes.cs` | `AdversarialAnnotationTests`, E2E `EditorTests` | - |
-| Select, move, z-order, lock, keyboard nudge | verified | P1 | `ImageDocument`, `BmageEditor.razor` | E2E `DemoRegressionTests` | - |
+| Text with font, size, weight, style, alignment, line height, spacing, wrapping, stroke, background | verified | P1 | `BmageTextAnnotation`, `Drawing/BmageImageCanvas.cs`, `Text/*` | `TextTests` | Managed font rasteriser has no complex shaping; browser rasteriser has |
+| Callouts, steps, highlights, redaction, image stamps | verified | P1 | `Annotations/` | `AdversarialAnnotationTests`, E2E `EditorTests` | - |
+| Select, move, z-order, lock, keyboard nudge | verified | P1 | `BmageImageDocument`, `BmageEditor.razor` | E2E `DemoRegressionTests` | - |
 | Edit a selected annotation's text, size, rotation, opacity, order and lock from the panel | verified | P1 | Tools tab | E2E `PlacedTextIsEditedFromThePanel` | - |
 
 ## I. History
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| Undo, redo, labels, go-to, reset, depth | verified | P1 | `Editing/EditHistory.cs` | `EditorServicesTests`, `EditSession*Tests` | - |
+| Undo, redo, labels, go-to, reset, depth | verified | P1 | `Editing/BmageEditHistory.cs` | `EditorServicesTests`, `EditSession*Tests` | - |
 | Transient drags as one step | verified | P1 | `PushTransient/CommitTransient` | `EditSessionDraftTests` | - |
-| Atomic multi-step edits | verified | P1 | `ImageEditSession.Apply(Func)` | `EditorServicesTests` | - |
-| History memory estimate counts layers and strokes | verified | P2 | `HistoryEntry.EstimatedSize` | `PaintLayerTests.PaintingIsAnUndoableDocumentEdit...` | Shared images not counted (not duplicated); images added or copied to layers are kept until another image is opened |
+| Atomic multi-step edits | verified | P1 | `BmageImageEditSession.Apply(Func)` | `EditorServicesTests` | - |
+| History memory estimate counts layers and strokes | verified | P2 | `BmageHistoryEntry.EstimatedSize` | `PaintLayerTests.PaintingIsAnUndoableDocumentEdit...` | Shared images not counted (not duplicated); images added or copied to layers are kept until another image is opened |
 | A long action shows the editor busy, with undo, redo and reset held, from its first moment | verified | P1 | `BmageEditor.RunAsync` (yields once so the busy state renders), `Undo/Redo/Reset/GoToHistoryAsync` | E2E `ALongActionShowsTheEditorBusyAndHoldsUndoUntilItIsDone` (fails without the yield) | - |
 | Measured actions stop if the image or selection changed meanwhile | implemented | P1 | `IsStill` in trim, crop to selection, copy to layer | - | Not reachable in the WebAssembly demo: a one-step render never yields, so no input arrives during it. Reachable on Interactive Server, which the demo does not host |
-| Before / after compare | verified | P1 | `ImageEditSession.GetSourcePreviewAsync`, Compare button, `\` key | E2E `CompareShowsTheOriginalUntilItIsTurnedOff` | - |
+| Before / after compare | verified | P1 | `BmageImageEditSession.GetSourcePreviewAsync`, Compare button, `\` key | E2E `CompareShowsTheOriginalUntilItIsTurnedOff` | - |
 | History timeline serialisation | deferred | P3 | - | - | Documents and projects serialise; the timeline does not |
 
 ## J. Export and interoperability
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| PNG, JPEG, BMP, WebP (lossy, lossless) managed; WebP, AVIF browser | verified | P1 | `Codecs/*`, `Output/ImageExporter.cs` | `CodecTests`, `WebPCodecTests`, E2E `ProcessingTests` | - |
-| Quality, size budget, alpha flattening | verified | P1 | `ImageExportOptions`, `ImageExporter` | `ExportSearchTests` | - |
-| Metadata policies | verified | P1 | `Metadata/Containers.cs` | `MetadataTests` | - |
-| Blob, bytes, stream, download, clipboard | verified | P1 | `ImageExporter` | E2E `EditorTests` | - |
+| PNG, JPEG, BMP, WebP (lossy, lossless) managed; WebP, AVIF browser | verified | P1 | `Codecs/*`, `Output/BmageImageExporter.cs` | `CodecTests`, `WebPCodecTests`, E2E `ProcessingTests` | - |
+| Quality, size budget, alpha flattening | verified | P1 | `BmageImageExportOptions`, `BmageImageExporter` | `ExportSearchTests` | - |
+| Metadata policies | verified | P1 | `Metadata/BmageMetadataPolicy.cs` | `MetadataTests` | - |
+| Blob, bytes, stream, download, clipboard | verified | P1 | `BmageImageExporter` | E2E `EditorTests` | - |
 | JSON document (external image references) | verified | P2 | `Serialization/*` | `SerializationTests` | - |
-| Indexed PNG (`MaxColors`, `Dither`; 1/2/4/8 bits) | verified | P1 | `Codecs/ColorQuantizer.cs`, `Codecs/Png/PngEncoder.cs`, browser encoder delegates | `IndexedPngTests` (exact for few colours, bit depths, dithering), Pillow cross-check | - |
-| GIF encode (one frame, median cut, dithering) | verified | P2 | `Codecs/Gif/GifEncoder.cs` | `GifEncoderTests` (every code width, table resets, transparency), Pillow cross-check | No partial transparency (GIF has none); no animation |
-| ICO encode and favicons | verified | P2 | `IcoEncoder`, `IcoEncoder.CreateFavicon` | `IcoCodecTests`, `GifEncoderTests.TheProcessorEncodesGifAndIcoThroughItsRegistry` | Images up to 256 pixels |
+| Indexed PNG (`MaxColors`, `Dither`; 1/2/4/8 bits) | verified | P1 | `Codecs/BmageColorQuantizer.cs`, `Codecs/Png/BmagePngEncoder.cs`, browser encoder delegates | `IndexedPngTests` (exact for few colours, bit depths, dithering), Pillow cross-check | - |
+| GIF encode (one frame, median cut, dithering) | verified | P2 | `Codecs/Gif/BmageGifEncoder.cs` | `GifEncoderTests` (every code width, table resets, transparency), Pillow cross-check | No partial transparency (GIF has none); no animation |
+| ICO encode and favicons | verified | P2 | `BmageIcoEncoder`, `BmageIcoEncoder.CreateFavicon` | `IcoCodecTests`, `GifEncoderTests.TheProcessorEncodesGifAndIcoThroughItsRegistry` | Images up to 256 pixels |
 | Self-contained project file | verified | P2 | `Serialization/BmageProject.cs`, editor Save/Open project | `ProjectTests` (round trip, dedup, ownership, hostile archives, zip bomb, pixel budget, unused images, malformed manifests, damaged entries, leak-free failure), E2E `AProjectSavedAndReopenedIsStillEditable` | Images stored as PNG: large for big photos |
 
 ## K. Performance and memory
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| Proxy and draft previews, staged caches | verified | P0 | `ImageEditSession` | `EditSessionCacheTests`, `EditSessionProxyTests`, `EditSessionDraftTests` | - |
-| Pipeline optimiser (exact rewrites) | verified | P0 | `Pipeline/PipelineOptimizer.cs` | `PipelineTests`, `FastPathEquivalenceTests` | - |
-| Parallel rows with identical pixels | verified | P1 | `Operations/ParallelRows.cs` | `ParallelProcessingTests`, `ColorAdjustmentTests`, `MotionBlurTests` | - |
+| Proxy and draft previews, staged caches | verified | P0 | `BmageImageEditSession` | `EditSessionCacheTests`, `EditSessionProxyTests`, `EditSessionDraftTests` | - |
+| Pipeline optimiser (exact rewrites) | verified | P0 | `Pipeline/BmagePipelineOptimizer.cs` | `PipelineTests`, `FastPathEquivalenceTests` | - |
+| Parallel rows with identical pixels | verified | P1 | `Operations/BmageParallelRows.cs` | `ParallelProcessingTests`, `ColorAdjustmentTests`, `MotionBlurTests` | - |
 | Worker codecs in the browser | verified | P1 | `Scripts/bit-bmage-worker.ts` | E2E `JsModuleContractTests` (Chromium, Firefox) | Playwright's Windows WebKit has no `OffscreenCanvas`: the page-thread fallback is verified there instead |
-| Releases wait for full renders already running | verified | P0 | `ImageEditSession.RenderFullAsync`, `WhenIdle` | `ReviewRegressionTests.DisposingDuringAnExportKeepsTheOriginalUntilTheExportIsDone` (fails without it) | Interactive Server: a replaced preview can be disposed while the circuit thread reads it (one wrong frame) |
-| Memory estimates and budgets | verified | P1 | `ImagePipeline.EstimateMemory`, `Memory/BudgetedPixelAllocator.cs` | `MemoryBudgetTests` | New operations use the generic estimate |
+| Releases wait for full renders already running | verified | P0 | `BmageImageEditSession.RenderFullAsync`, `WhenIdle` | `ReviewRegressionTests.DisposingDuringAnExportKeepsTheOriginalUntilTheExportIsDone` (fails without it) | Interactive Server: a replaced preview can be disposed while the circuit thread reads it (one wrong frame) |
+| Memory estimates and budgets | verified | P1 | `BmageImagePipeline.EstimateMemory`, `Memory/BmageBudgetedPixelAllocator.cs` | `MemoryBudgetTests` | New operations use the generic estimate |
 | Benchmarks of the new tools | verified | P1 | `Tests/Bit.Bmage.Benchmarks` (`EditingToolBenchmarks`) | `docs/performance.md#editing-tools` | - |
 | Benchmarks of the document tools, effects and palette encoders | verified | P1 | `Tests/Bit.Bmage.Benchmarks` (`DocumentAndEffectBenchmarks`) | `docs/performance.md#document-tools-effects-and-palettes` | Stopwatch, since BenchmarkDotNet 0.15.8 cannot run on .NET 11; desktop only, not measured on WebAssembly |
 | The new tools measured in WebAssembly, interpreter and AOT | verified | P1 | `/performance` "Run the editing tools", E2E `PerformanceMeasurements` (opt-in) | `docs/performance.md#webassembly-editing-tools` | Headless Chrome 156 on one desktop machine, calibrated against the page's published rows; no phone measured |
@@ -186,7 +186,7 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Untrusted project archives | verified | P0 | `BmageProject.LoadAsync` | `ProjectTests` (`TheImagesTogetherAreBoundedBeforeTheyAreDecoded`, `TheFilesAreCountedFromTheDirectoryNotFromWhatTheArchiveDeclares`, `AMalformedProjectIsReportedAsOneWhateverIsWrongWithIt`) | ZIP64 refused |
 | URL host allow-list | deferred | P2 | - | - | Fetches run in the user's browser under CORS; an app can validate URLs before calling |
 | Extension points (operations, masks, layers, annotations, codecs, tools) | verified | P1 | see `docs/extending.md` | `SerializationTests` (custom codecs) | `Transform` overridable for custom overlays |
-| Editor tools and panels restricted by the host (`Tools`, `Panels`) | verified | P1 | `BmageEditor.Tools/Panels/OfferedTools`, `EditorPanels`, toolbar and panel | E2E `ScanAndCropperTests.TheEditorReducedToACropperOffersOnlyItsToolsAndNoPanel` | - |
+| Editor tools and panels restricted by the host (`Tools`, `Panels`) | verified | P1 | `BmageEditor.Tools/Panels/OfferedTools`, `BmageEditorPanels`, toolbar and panel | E2E `ScanAndCropperTests.TheEditorReducedToACropperOffersOnlyItsToolsAndNoPanel` | - |
 | Cropper (the editor reduced) and a keyboard-appliable crop frame | verified | P1 | `BmageEditor.BeginCrop`, demo `/editor#a-cropper` | E2E `ScanAndCropperTests` (square frame applied) | A separate component deliberately not built; see gap analysis 12 |
 
 ## R. Integrations

@@ -1,7 +1,4 @@
-﻿using Bit.BlazeDb;
-using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 /// <summary>An in-memory backend with a settable allowance, standing in for the browser's estimate.</summary>
 internal sealed class QuotaLimitedStorage : IBlazeDbQuotaAwareStorage

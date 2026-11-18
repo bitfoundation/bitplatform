@@ -25,8 +25,8 @@ maps to exactly one logical child (`blazor.web.js` 10.0.13, `BrowserRenderer.ins
 
 **Changes**
 
-- `Inspection/BevDomMap.cs`: component → path of verified *(logical index, kind)* steps, path → owning component
-  (nearest application component unless *internals*; markup and text handled; stale paths reported), `BevDomMapBatch`
+- `Inspection/BevToolsDomMap.cs`: component → path of verified *(logical index, kind)* steps, path → owning component
+  (nearest application component unless *internals*; markup and text handled; stale paths reported), `BevToolsDomMapBatch`
   for many lookups in one pass; costs counted as *page mapping* overhead.
 - Page hub: key learning from the panel's own element (its logical parent is a comment, which no physical parent can
   be), root detection excluding `true` keys common to ordinary nodes, verified path walking, outline overlay outside the
@@ -108,7 +108,7 @@ previous render tree until the parent renders again. A naive "alive after GC" ch
 leak; the check excludes instances held only there. (bUnit keeps every component it rendered until its context is
 disposed, so the leak tests run on a plain renderer.)
 
-**Changes.** `BevLeakTracker`, `BevRetentionAnalyzer`, rule `memory.retained-components`, Runtime panel section with
+**Changes.** `BevToolsLeakTracker`, `BevToolsRetentionAnalyzer`, rule `memory.retained-components`, Runtime panel section with
 *Collect garbage and check* (refused outside Development in a multi-user process), protocol command `collect`, demo
 problem 16 (`PriceAlert` subscribes to the scoped `FilterState` with a lambda and never unsubscribes).
 
@@ -123,8 +123,8 @@ else reported, the Diagnostics finding present; all round 1 browser checks re-ru
 **Gap.** The inspector inferred `TypeName.razor`; the competing community tool shows the file, and the React DevTools
 "view source" habit is to jump to the code.
 
-**Changes.** `BevSourceLocator` (PDB-based, verified per build), `BevSourceLocation`, `Ui.EditorUrlTemplate`, links in
-the inspector for the component and each bound handler (`BevSourceLink`), `sources`/`handlerSource`/`sourcesPending`
+**Changes.** `BevToolsSourceLocator` (PDB-based, verified per build), `BevToolsSourceLocation`, `Ui.EditorUrlTemplate`, links in
+the inspector for the component and each bound handler (`BevToolsSourceLink`), `sources`/`handlerSource`/`sourcesPending`
 in the protocol and the companion, the hub's `fetchPdb` for WebAssembly.
 
 **Verification.** .NET 353/353 (`SourceLocatorTests` 6: type, handler and async locations against this file's own
@@ -142,7 +142,7 @@ line 24"; the component link now opens the file at its top.
 **Gap.** Nothing read EditContext. The silent form bugs - validation attributes no validator checks (`[Required]`
 that does nothing), messages nothing displays - had no diagnosis.
 
-**Changes.** `BevFormTracker` (EditForms watched from their first render; inputs' contexts on discovery), a Forms tab,
+**Changes.** `BevToolsFormTracker` (EditForms watched from their first render; inputs' contexts on discovery), a Forms tab,
 `forms.validation` rule, `forms` in the export and the companion, `forms.show` command, demo problem 17
 (`NewsletterSignup`: `[Required, EmailAddress]` and no validator).
 
@@ -162,7 +162,7 @@ form-mapping subscription made the unvalidated newsletter form look validated: i
 redirecting to each other; navigations recorded from the .NET 10 activity were titled with the raw display name
 ("Route /x -> App.Pages.X").
 
-**Changes.** `BevNavigationGuards` and the Routing panel's *Navigation guards*; renders and render time per navigation
+**Changes.** `BevToolsNavigationGuards` and the Routing panel's *Navigation guards*; renders and render time per navigation
 in the history; `navigation.loop` (ping-pong and storm); activity navigations titled "Navigate to /route"; demo
 problem 18 (a bounded account ↔ login redirect loop, interactive only so prerendering cannot loop over HTTP).
 
@@ -205,8 +205,8 @@ headers worked with a mouse only; sort, grouping and *since reset* were lost whe
 **Changes.** p95 column (instances and types, sortable, the sample count in its title), sorted durations cached per
 instance until it renders again. Header cells are `<th aria-sort>` with a button. A selected batch shows its cost tree
 (self and with descendants, same-type leaf siblings grouped, click selects the component or filters by type), above the
-batch list and scrolling by itself. Exports have a `profile` section (`BevRenderProfile`) counting components the
-registry already let go; `BevProfileComparison` (public: `Compare(json, json)`, `Compare(json, session)`, options,
+batch list and scrolling by itself. Exports have a `profile` section (`BevToolsRenderProfile`) counting components the
+registry already let go; `BevToolsProfileComparison` (public: `Compare(json, json)`, `Compare(json, session)`, options,
 `ToMarkdown`) classifies each type as regressed / improved / new / gone with reasons and warnings; Profiler →
 *Compare…* (a focusable file input) runs it against the live session, *Compare again* reuses the upload, *Copy as
 Markdown*. View state moved to `BevToolsUiState.Profiler`. `IncludeProfile` export option; protocol snapshots name it
@@ -230,7 +230,7 @@ tests were flaky (1 in 4 runs) because the panel's 250 ms refresh loop could re-
 **Independent review** (a separate agent, 383/383 at the time) found two bugs, both fixed and tested: a type that
 rendered slightly more *and* clearly longer was *Unchanged* (the time check excluded any render increase); and the
 batch tree's subtree totals recursed once per level, so a batch rendering a chain several thousand deep overflowed the
-stack and, on Server, would end the process (now iterative, and the tree moved to `BevBatchCostTree`). Risks fixed:
+stack and, on Server, would end the process (now iterative, and the tree moved to `BevToolsBatchCostTree`). Risks fixed:
 generic types were matched by `FullName`, which carries the assembly versions of their type arguments, so a CI build
 that stamps versions saw `Grid<Product>` as *gone* plus *new* and never as regressed (now a version-free key); the docs
 said counts were exact while the default tolerated 10 % (now exact by default, `RenderChangeRatio` opt-in); a selected
@@ -255,12 +255,12 @@ its own endpoint, so neither the panel nor a rule could say "this list calls the
 named inline lambdas by their compiled names (*onclick → Orders.&lt;BuildRenderTree&gt;b__0_1*), the most common way
 Blazor handlers are written.
 
-**Changes.** `BevHttpEndpoints.Template` and `BevHttpRecord.EndpointTemplate` (ids as `{id}`); Network →
+**Changes.** `BevToolsHttpEndpoints.Template` and `BevToolsHttpRecord.EndpointTemplate` (ids as `{id}`); Network →
 *Requests | Endpoints* (a pressed-button group), the endpoints table (requests, failed, cancelled, p50, p95, max,
-received, last) with an endpoint chip that filters the requests; every column sortable through `BevSortHeader`, shared
-with the Profiler, whose sort now also reverses; `BevSortState` and `BevNetworkView` keep sorts and views across tabs;
+received, last) with an endpoint chip that filters the requests; every column sortable through `BevToolsSortHeader`, shared
+with the Profiler, whose sort now also reverses; `BevToolsSortState` and `BevToolsNetworkView` keep sorts and views across tabs;
 `http.per-item` (`HttpPerItemCount`); `httpEndpoints` in exports and *Busiest endpoints* in the Markdown report;
-`BevLambdaTargets` for event titles and the inspector; `BevStats.Percentile` shared by the profiler and the network.
+`BevToolsLambdaTargets` for event titles and the inspector; `BevToolsStats.Percentile` shared by the profiler and the network.
 Demo: problem 19 (each order row loads its own details, `GET /api/orders/{id}`), and the "fifteen problems" text that
 had not followed problems 16-18.
 
@@ -307,7 +307,7 @@ failure with another id in each message ("Order 1042 not found", "Order 1043 not
 and `error.repeated`, grouping timeline titles, never added them up. The filter's hint left out the `resource` and
 `csp` sources the browser reports.
 
-**Changes.** `BevErrorGroups` (public `Template`; internal group key and summaries); `BevErrorRecord.MessageTemplate`
+**Changes.** `BevToolsErrorGroups` (public `Template`; internal group key and summaries); `BevToolsErrorRecord.MessageTemplate`
 and `Group`, set where errors are recorded; Errors → *Errors | Groups* with sortable columns in both, a group chip that
 filters the errors and selects the latest; `error.repeated` by group, titled with the template and the number of
 different messages; `messageTemplate` and `errorGroups` in exports, and the groups with more than one message in the
@@ -418,7 +418,7 @@ tests). Firefox and WebKit ran every browser check; both found the same defect: 
 loop that was over within milliseconds. The rules run at most once a second, a loop that ends within the second after a
 run changes nothing afterwards, and nothing evaluated again - so the panel showed the loop only if something else
 happened later. Fixed with a trailing evaluation: when nothing changed but the findings are behind the data
-(`DiagnosticsEngine.IsStale`), the open panel runs the rules on its next tick. The first version ran them and did not
+(`BevToolsDiagnosticsEngine.IsStale`), the open panel runs the rules on its next tick. The first version ran them and did not
 re-render, so the panel still showed nothing - its test asserted on the engine, not on what the panel showed; the
 re-run of the browser checks caught it, and the test now reads the panel's markup (it fails without the re-render).
 Exports had the same lag: an export (and the Markdown report) now runs the rules first when anything was captured since
@@ -434,7 +434,7 @@ during reloads: the stack is Blazor's own SignalR send loop, not BevTools.
 **Gap.** A request per list row (`http.per-item`) said which UI event started the list, not which component sent the
 requests - and a row loads its data in `OnInitializedAsync`, inside no event, so often nothing at all.
 
-**Changes.** `BevCallSites`: the nearest component method on the stack and the application method between them
+**Changes.** `BevToolsCallSites`: the nearest component method on the stack and the application method between them
 (*OrderRow.OnInitializedAsync via ProductApi.GetOrderDetailsAsync*), naming async methods through their state machines,
 local functions by themselves, lambdas by their method; framework and BevTools assemblies by exact name, so
 `Bit.BevTools.Demo.*` stays application code. Read at the outer end of an `IHttpClientFactory` pipeline, once per
@@ -456,10 +456,10 @@ capture (see performance.md).
 **Gap.** The two profiler items the roadmap had left: no time-axis view (only the Perfetto export) and no breakdown by
 page.
 
-**Changes.** `BevBatchTimeline`: a batch's renders, each at its start, one row per depth among the components that
+**Changes.** `BevToolsBatchTimeline`: a batch's renders, each at its start, one row per depth among the components that
 rendered in it (depth memoized, no recursion; 300 bars at most); *Tree* | *Time* in the batch section, an image to a
 screen reader with the tree as its alternative, names hidden on bars too narrow for them, equal widths in start order
-when the clock could not separate the renders. `BevRouteProfile`: each retained render on the page shown when it
+when the clock could not separate the renders. `BevToolsRouteProfile`: each retained render on the page shown when it
 happened, with visits, renders, time and the three costliest components; *Renders per page*, computed only while open.
 
 **Verification.** `ProfilerTimeAndRouteTests` (order, depth, start and span; a 20 000-deep chain; route assignment;
@@ -475,10 +475,10 @@ message. The extension is the same frontend. vitest for both views; Playwright o
 
 ## Round 15 — a CI gate
 
-**Gap.** `BevProfileComparison` could fail a test on render regressions, but nothing read an export's findings, and
+**Gap.** `BevToolsProfileComparison` could fail a test on render regressions, but nothing read an export's findings, and
 both needed code.
 
-**Changes.** `BevSessionCheck` (public): an export's findings against a severity, ignored rules, dismissed findings,
+**Changes.** `BevToolsSessionCheck` (public): an export's findings against a severity, ignored rules, dismissed findings,
 optionally recorded errors; refuses an export without the section it needs; caveats for what limits a pass.
 `Bit.BevTools.Cli`: the `bevtools` .NET tool, `check` and `compare` over files, Markdown out, exit codes 0/1/2. It packs
 and installs as a tool (verified locally into a scratch folder) and is in no release workflow: publishing it is the
@@ -513,7 +513,7 @@ An independent review reproduced fifteen defects; all are fixed with tests unles
 - Plausible ones fixed as well: evaluations from different threads are serialized; an export evaluates before writing
   anything, so its version, timeline and findings agree; renders per page is recomputed at most once a second;
   enhanced navigations are the same page; the check reports paused capture and disabled rules; the tool rejects
-  non-finite and out-of-range numbers; `BevCheckedFinding` is not a positional record, so it can grow.
+  non-finite and out-of-range numbers; `BevToolsCheckedFinding` is not a positional record, so it can grow.
 
 **Limits.** A bar's start includes BevTools' state capture for an inspected component (documented, not changed: it
 would move a public property's setter or the hot path); a generic component is named by its definition; a sender
@@ -597,15 +597,15 @@ client's and every library's diagnostics appear.
 - `BevToolsLoggerProvider` (alias `BevTools`, `ISupportExternalScope`) records, with `TrackLogs` (on), each entry at
   `MinimumLogLevel` (Information) or above that the host's logging configuration let through: level, category, event id
   and name, message, template and its values, scopes, exception and its inner chain, W3C trace and span id, the UI event
-  running, and the sending component (`CaptureLogCallers`, a stack walk per entry, `BevCallSites` as for HTTP). Values and
+  running, and the sending component (`CaptureLogCallers`, a stack walk per entry, `BevToolsCallSites` as for HTTP). Values and
   scopes go through the inspector (value access, redaction by name and shape); a value redacted by its name is redacted
   in the message as well, which is then rebuilt from the template, as it is under `Shallow`; under `None` the template
-  stands for the message. `BevLogRecord`, `BevLogStore` (`MaxLogs`, counts per level for the session),
+  stands for the message. `BevToolsLogRecord`, `BevToolsLogStore` (`MaxLogs`, counts per level for the session),
   `BevToolsEventKind.Log` (an addition to the contract).
 - An application entry at Error or above is an error (source *log*); Blazor's own warnings and errors behave as before,
   and an entry that became an error shares its timeline row instead of adding one.
-- `SessionResolver`: after the dispatcher checks, the session whose UI event or navigation the current `Activity`
-  descends from (`ActivityObserver.SessionOfCurrentActivity`) - work that left the dispatcher after a library's
+- `BevToolsSessionResolver`: after the dispatcher checks, the session whose UI event or navigation the current `Activity`
+  descends from (`BevToolsActivityObserver.SessionOfCurrentActivity`) - work that left the dispatcher after a library's
   `ConfigureAwait(false)` provably began in that session's event. HTTP requests and every other ambient lookup gain it
   too. Under BevTools' own events it is nobody's; outside every session in a server process it still is nobody's.
 - Logs panel (entries newest first; `level:` as a minimum, `category:`, `event:`, `trace:`, text; *Categories*; an
@@ -654,15 +654,15 @@ steadier regression gate than durations. The capability matrix had no row for it
 
 **Changes**
 
-- `BevRenderSample.AllocatedBytes`: the runtime's per-thread allocation counter read right around each instrumented
+- `BevToolsRenderSample.AllocatedBytes`: the runtime's per-thread allocation counter read right around each instrumented
   `BuildRenderTree`, after BevTools' own work for the render, so it is the component's render alone (its children
-  render separately). `BevAllocations.IsMeasurable` probes once whether the counter moves; where it does not, nothing is
+  render separately). `BevToolsAllocations.IsMeasurable` probes once whether the counter moves; where it does not, nothing is
   shown as zero. Stored with `Failed` in one int: the sample, the most numerous object BevTools keeps, stays its size.
-- `BevComponentRecord`: total, max, since the baseline; components let go fold theirs into the gone totals.
+- `BevToolsComponentRecord`: total, max, since the baseline; components let go fold theirs into the gone totals.
 - Profiler: *Allocated* per component and per type (sortable, per render in each row's title); the inspector's
   *Rendering*: per render, max, last; each render's timeline data (`allocatedBytes`); exports (per component, and per
   type in `profile`), the Markdown report (*Allocated per render*); the companion's profiler.
-- `BevProfileComparison`: a type allocating `MinAllocationChangeBytes` (1 KB) and `AllocationChangeRatio` (25 %) more
+- `BevToolsProfileComparison`: a type allocating `MinAllocationChangeBytes` (1 KB) and `AllocationChangeRatio` (25 %) more
   per render regresses, fewer improves - per render, so rendering more often is not counted twice - when both
   recordings measured; the Markdown table has the column; different render modes warn that allocations are not
   comparable. `bevtools compare` and `Profiler → Compare…` gain it through the same code.
@@ -700,7 +700,7 @@ with nothing linking its measurement to the Blazor event that caused it.
 - Page hub: `long-animation-frame` (else `longtask`) and Event Timing observers (`TrackResponsiveness`, on), reported
   once a second as ages; an interaction merged across its entries and named after its slowest event; BevTools' own UI
   left out; what the browser supports in the attach snapshot.
-- `BevResponsiveness` (the Browser state): recent interactions and long frames, session totals, INP. Each long frame
+- `BevToolsResponsiveness` (the Browser state): recent interactions and long frames, session totals, INP. Each long frame
   and each interaction of 50 ms or more is a timeline event dated by its age. On WebAssembly: the UI event whose handler
   started inside an interaction's processing (exactly one, within 4 ms), and the events and batches inside a frame.
 - Browser → *Responsiveness* (INP, slowest interaction, long frames, blocking time, what the browser does not report,
@@ -742,7 +742,7 @@ the browser keep the data - and nothing answered them.
 **Changes.** The hub's `getAppStorage` (read with local and session storage, on request): cookie names and value
 lengths (values never read), IndexedDB databases by name and version (never opened), Cache Storage caches with their
 request counts, service worker registrations (active, waiting, installing; URLs redacted) and the controller, usage,
-quota, usage per kind and persistence; each part that fails or times out says why. `BevAppStorage`, bounded and
+quota, usage per kind and persistence; each part that fails or times out says why. `BevToolsAppStorage`, bounded and
 redacted on arrival (`BevToolsPanel.Clean`); the Browser panel's *Read storage*; exports (`browser.storage`); a
 capability row; `pwa.update-waiting`.
 
@@ -763,10 +763,10 @@ the app. A long recording had no way to mark "here I clicked Save".
 
 **Changes**
 
-- `BevHttpRecord.TraceId` and `SpanId`, from the request's `traceparent` header read once it completes (the client
+- `BevToolsHttpRecord.TraceId` and `SpanId`, from the request's `traceparent` header read once it completes (the client
   writes it below BevTools' handler); the request's *Trace* row with *logs in it*, the log entry's *requests in it*,
   `trace:` in the Network filter, exports, the companion, a capability row.
-- `BevUnobservedTasks`: `TaskScheduler.UnobservedTaskException` into Errors (source *task*), never marking the
+- `BevToolsUnobservedTasks`: `TaskScheduler.UnobservedTaskException` into Errors (source *task*), never marking the
   exception observed; tasks BevTools started left out by their outermost frame below the task machinery.
 - Markers: `BevToolsSession.AddMarker`, the Timeline's *⚑ Mark*, `timeline.mark`, the protocol's `mark` command.
 
@@ -788,8 +788,8 @@ collected, so they arrive late, and in a server process they belong to no sessio
 time travel was "N/A" - right for BevTools writing arbitrary objects, but nothing let a provider that *can* restore
 itself offer it.
 
-**Changes.** `IBevStateRestorer` and `BevStateChangeInfo.RestoreToken` (additions to the contract): the provider names
-the state after each change and restores itself when asked. `StateStore.RestoreAsync` asks - only where
+**Changes.** `IBevToolsStateRestorer` and `BevToolsStateChangeInfo.RestoreToken` (additions to the contract): the provider names
+the state after each change and restores itself when asked. `BevToolsStateStore.RestoreAsync` asks - only where
 `BevToolsSession.AllowsStateRestore` (Development or a single-user process), only for a provider that can, only with its
 own token - and answers what happened, never throwing; the restore is a timeline event linked to the change. State
 panel: *⟲ restore* on restorable changes, details (*Add · Quantum Lamp 3*), a filter over providers, actions, details
@@ -815,7 +815,7 @@ asked through the protocol, is reported as started; the outcome is in the timeli
 between a collection's pause and what the app was doing, no WebAssembly memory, and nothing that said "this keeps
 growing" - the outside view of every leak the retained-components check cannot name.
 
-**Changes.** `BevMemoryTrend` (a reading a second from the panel's refresh loop, ten minutes kept): the heap, full
+**Changes.** `BevToolsMemoryTrend` (a reading a second from the panel's refresh loop, ten minutes kept): the heap, full
 collections of the highest generation (gen 1 on Mono), the total pause, the heap after each full collection, and on
 WebAssembly the linear memory (the hub's `wasmMemory`, read in-process). Each full collection is a timeline event.
 Runtime → *Memory over time* (a sparkline with the collections marked, the window's range, the heap after the last
@@ -850,7 +850,7 @@ Seven rounds (16-22), each verified in tests and in real browsers before the nex
   logs is measured in performance.md, and every other addition is off the render path.
 - New diagnostics rules: `log.flood`, `render.allocations`, `browser.slow-interaction`, `browser.long-frame`,
   `pwa.update-waiting`, `memory.growth`. New contract members (additions only): `BevToolsEventKind.Log`,
-  `IBevStateRestorer`, `BevStateChangeInfo.RestoreToken`.
+  `IBevToolsStateRestorer`, `BevToolsStateChangeInfo.RestoreToken`.
 - What is left, and why, is in roadmap.md (*Next*, *Later / investigated*) and audit.md (area Q).
 
 ## Round 23 — closing the open items
@@ -866,7 +866,7 @@ Everything the roadmap's *Next* and the audit's area Q listed, taken to an end: 
   its test now strips the section to stand for an older export. `compare` takes `--min-allocation-change-bytes` and
   `--allocation-change-ratio`, and its JSON carries the allocations. `Bit.BevTools.Cli` is in the release workflows
   (as `Bit.Cli` is); the package installs and runs as a tool.
-- **Entity Framework Core.** `BevDbCommands`: EF's command entries (events 20101, 20102) read while their values are
+- **Entity Framework Core.** `BevToolsDbCommands`: EF's command entries (events 20101, 20102) read while their values are
   still objects - SQL at Full and Shallow access, redacted, and the elapsed time; Logs → *Database*; `db.per-item`
   (`DbPerItemCount`) and `db.slow` (`SlowDbCommandMs`); exports and the companion.
 - **Bodies, opt-in.** `CaptureHttpBodies` (off), `MaxHttpBodyBytes`: text only, redacted, never a stream, a response

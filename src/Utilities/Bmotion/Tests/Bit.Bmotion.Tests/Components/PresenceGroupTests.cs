@@ -16,9 +16,9 @@ public class PresenceGroupTests
     {
         b.OpenComponent<Bmotion>(0);
         b.AddComponentParameter(1, nameof(Bmotion.Id), $"item-{item}");
-        b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmTarget?)Bm.To(opacity: 0));
-        b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 1));
-        b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmTarget?)Bm.To(opacity: 0));
+        b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmotionTarget?)Bm.To(opacity: 0));
+        b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(opacity: 1));
+        b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmotionTarget?)Bm.To(opacity: 0));
         b.AddComponentParameter(5, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
         {
             leaf.OpenElement(0, "li");
@@ -29,7 +29,7 @@ public class PresenceGroupTests
     };
 
     private IRenderedComponent<BmotionPresenceGroup<string>> RenderGroup(
-        BmotionTestContext ctx, string[] items, Action? onExitComplete = null, BmPresenceMode mode = BmPresenceMode.Sync)
+        BmotionTestContext ctx, string[] items, Action? onExitComplete = null, BmotionPresenceMode mode = BmotionPresenceMode.Sync)
         => ctx.Render<BmotionPresenceGroup<string>>(ps => ps
             .Add(p => p.Items, items)
             .Add(p => p.Mode, mode)
@@ -137,7 +137,7 @@ public class PresenceGroupTests
     public async Task PopLayoutMode_PopsOnlyTheRemovedItem()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderGroup(ctx, ["a", "b"], mode: BmPresenceMode.PopLayout);
+        var cut = RenderGroup(ctx, ["a", "b"], mode: BmotionPresenceMode.PopLayout);
         await ctx.FinishWaapiAsync();
 
         cut.Render(ps => ps.Add(p => p.Items, new[] { "a" }));

@@ -11,8 +11,8 @@
 </p>
 
 <div class="surface">
-    <BbScanner Formats="BbBarcodeFormat.QrCode"
-               Region="BbScanRegion.CenteredSquare(0.7)"
+    <BbScanner Formats="BbScannerBarcodeFormat.QrCode"
+               Region="BbScannerScanRegion.CenteredSquare(0.7)"
                OnScan="HandleScan"
                OnError="e => _error = e"
                OnCameraChanged="c => _camera = c" />
@@ -29,11 +29,11 @@
 @code {
     // Fields of BbScanner's types are fine on a page the router loads the assembly for: they are resolved when the page
     // is created, after OnNavigateAsync.
-    private BbBarcodeResult? _last;
-    private BbCameraInfo? _camera;
+    private BbScannerBarcodeResult? _last;
+    private BbScannerCameraInfo? _camera;
     private BbScannerException? _error;
 
-    private void HandleScan(BbBarcodeResult result)
+    private void HandleScan(BbScannerBarcodeResult result)
     {
         _error = null;
         _last = result;

@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Interop;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// A binding store that remembers nothing beyond the current session.

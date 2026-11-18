@@ -35,7 +35,7 @@ what came back.
 ```csharp
 var capabilities = await capabilityProvider.GetAsync();
 
-if (capabilities.CanEncode(ImageFormat.Avif)) { /* ... */ }
+if (capabilities.CanEncode(BmageImageFormat.Avif)) { /* ... */ }
 if (capabilities.SupportsWebP) { /* ... */ }
 ```
 
@@ -44,12 +44,12 @@ The substitution is detected rather than passed on:
 ```csharp
 try
 {
-    var avif = await exporter.EncodeAsync(image, ImageExportOptions.Avif);
+    var avif = await exporter.EncodeAsync(image, BmageImageExportOptions.Avif);
 }
-catch (ImageCapabilityException ex)
+catch (BmageImageCapabilityException ex)
 {
     // "This browser cannot encode Avif; it produced image/png instead. Check
-    //  ImageCapabilities.CanEncode before exporting and fall back to a supported format."
+    //  BmageImageCapabilities.CanEncode before exporting and fall back to a supported format."
 }
 ```
 
@@ -58,8 +58,8 @@ If you would rather degrade than handle an exception, ask for a preference order
 ```csharp
 var encoded = await exporter.EncodeWithFallbackAsync(
     image,
-    [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg],
-    new ImageExportOptions { Quality = 0.82 });
+    [BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg],
+    new BmageImageExportOptions { Quality = 0.82 });
 
 Console.WriteLine(encoded.Format);   // whichever one this browser can actually write
 ```
@@ -119,13 +119,13 @@ Circular avatars need transparency, so prefer WebP or PNG there; a lossy opaque 
 ## Quality and size budgets
 
 ```csharp
-var encoded = await exporter.EncodeAsync(image, new ImageExportOptions
+var encoded = await exporter.EncodeAsync(image, new BmageImageExportOptions
 {
-    Format      = ImageFormat.WebP,
+    Format      = BmageImageFormat.WebP,
     Quality     = 0.9,
     MaxFileSize = 100 * 1024,
     MinQuality  = 0.5,
-    MaxFileSizeStrategy = MaxFileSizeStrategy.QualityThenDimensions,
+    MaxFileSizeStrategy = BmageMaxFileSizeStrategy.QualityThenDimensions,
 });
 
 Console.WriteLine($"{encoded.Length} bytes at quality {encoded.Quality}");
@@ -133,7 +133,7 @@ Console.WriteLine($"{encoded.Length} bytes at quality {encoded.Quality}");
 
 `MaxFileSize` bisects on quality first, down to `MinQuality`, then shrinks dimensions if the strategy allows it. The
 quality actually used is reported on the result, so you can show it. When the target is impossible you get an
-`ImageEncodeException` explaining what the smallest attempt produced, rather than a silently oversized file.
+`BmageImageEncodeException` explaining what the smallest attempt produced, rather than a silently oversized file.
 
 | Strategy | Behaviour |
 | --- | --- |
@@ -143,11 +143,11 @@ quality actually used is reported on the result, so you can show it. When the ta
 
 ## Transparency and formats without alpha
 
-JPEG has no alpha channel. Exporting a transparent image as JPEG composites it over `ImageExportOptions.Background`,
+JPEG has no alpha channel. Exporting a transparent image as JPEG composites it over `BmageImageExportOptions.Background`,
 which defaults to white. Set it explicitly if white is wrong for your page:
 
 ```csharp
-new ImageExportOptions { Format = ImageFormat.Jpeg, Background = new Rgba32(18, 18, 20) }
+new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Background = new BmageRgba32(18, 18, 20) }
 ```
 
 Without this, browsers composite over black, which is rarely what anyone wants.
@@ -157,12 +157,12 @@ Without this, browsers composite over black, which is rarely what anyone wants.
 Content is trusted over file names and content types, because both can be wrong or hostile:
 
 ```csharp
-var format = ImageFormats.Detect(bytes);              // magic bytes
-var byName = ImageFormats.FromFileName("photo.JPG");  // convenience only
-var byMime = ImageFormats.FromMimeType("image/webp"); // convenience only
+var format = BmageImageFormats.Detect(bytes);              // magic bytes
+var byName = BmageImageFormats.FromFileName("photo.JPG");  // convenience only
+var byMime = BmageImageFormats.FromMimeType("image/webp"); // convenience only
 ```
 
-`ImageProcessor.Identify` reads dimensions from the header without decoding pixels, which is how you can reject an
+`BmageImageProcessor.Identify` reads dimensions from the header without decoding pixels, which is how you can reject an
 oversized upload before allocating anything:
 
 ```csharp
@@ -182,12 +182,12 @@ the first frame of an animation, which, as with GIF, is the only frame decoded. 
 the alpha channel stored losslessly beside it when the image has transparency, and lossless WebP when asked:
 
 ```csharp
-new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.8 }      // lossy
-new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true }    // lossless; Quality is ignored
+new BmageImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.8 }      // lossy
+new BmageImageExportOptions { Format = BmageImageFormat.WebP, Lossless = true }    // lossless; Quality is ignored
 ```
 
 A browser's canvas writes only lossy WebP, so a lossless export is always made by the managed encoder, wherever it
-runs; in Blazor WebAssembly that is on the UI thread, which a large photo holds for seconds. WebP cannot hold an image wider or taller than 16383 pixels; encoding one throws `ImageEncodeException`.
+runs; in Blazor WebAssembly that is on the UI thread, which a large photo holds for seconds. WebP cannot hold an image wider or taller than 16383 pixels; encoding one throws `BmageImageEncodeException`.
 
 ## AVIF
 
@@ -210,15 +210,15 @@ What it does not do:
 
 ## Palettes: indexed PNG and GIF
 
-`ImageExportOptions.MaxColors` writes a PNG as an indexed image: a palette of at most that many colours (2 to 256) and one
+`BmageImageExportOptions.MaxColors` writes a PNG as an indexed image: a palette of at most that many colours (2 to 256) and one
 index a pixel, packed into 1, 2, 4 or 8 bits as the palette allows. An icon, a logo, a chart or a screenshot with no more
 colours than that keeps every pixel exactly and is often a third of the size of the full-colour file; a scanned page
 thresholded to black and white becomes a 1-bit PNG. A photo is reduced to the palette, which changes its colours, so
 the option is off unless set.
 
 ```csharp
-var logo = await processor.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png, MaxColors = 64 });
-var scan = await processor.EncodeAsync(page, new ImageExportOptions { Format = ImageFormat.Png, MaxColors = 2 });
+var logo = await processor.EncodeAsync(image, new BmageImageExportOptions { Format = BmageImageFormat.Png, MaxColors = 64 });
+var scan = await processor.EncodeAsync(page, new BmageImageExportOptions { Format = BmageImageFormat.Png, MaxColors = 2 });
 ```
 
 When the image has more colours than allowed, the palette is chosen by median cut, every fully transparent pixel shares
@@ -232,16 +232,16 @@ written. No browser canvas writes GIF, so the managed encoder is the only way to
 
 ## ICO
 
-`IcoEncoder` writes Windows icon files, each image stored as PNG (read by every browser, and by Windows since Vista), at
-most 256 pixels either way. `IcoEncoder.CreateFavicon` fits an image on transparency at 16, 32 and 48 pixels, or the sizes
+`BmageIcoEncoder` writes Windows icon files, each image stored as PNG (read by every browser, and by Windows since Vista), at
+most 256 pixels either way. `BmageIcoEncoder.CreateFavicon` fits an image on transparency at 16, 32 and 48 pixels, or the sizes
 given, in one file:
 
 ```csharp
-var favicon = IcoEncoder.CreateFavicon(logo);            // favicon.ico with three sizes
-var app = IcoEncoder.CreateFavicon(logo, [16, 24, 32, 48, 64, 256]);
+var favicon = BmageIcoEncoder.CreateFavicon(logo);            // favicon.ico with three sizes
+var app = BmageIcoEncoder.CreateFavicon(logo, [16, 24, 32, 48, 64, 256]);
 ```
 
-Through `ImageProcessor.EncodeAsync` with `ImageFormat.Ico`, one image becomes a one-image icon. The decoder reads the
+Through `BmageImageProcessor.EncodeAsync` with `BmageImageFormat.Ico`, one image becomes a one-image icon. The decoder reads the
 largest image in a file, stored as PNG or as a Windows bitmap of 1, 4, 8, 24 or 32 bits a pixel with its transparency
 mask, and checks every directory entry against the file's length before reading it.
 

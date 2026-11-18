@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.Serialization;
-
-namespace Bit.BlazeDb;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// An in-memory table: a primary-key hash index over live row objects, plus any secondary

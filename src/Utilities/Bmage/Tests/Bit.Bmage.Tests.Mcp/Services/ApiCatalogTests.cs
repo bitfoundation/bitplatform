@@ -17,17 +17,17 @@ public class ApiCatalogTests
 
         foreach (var (name, package, ns) in new[]
         {
-            ("ImagePipeline", "Bit.Bmage", "Bit.Bmage.Pipeline"),
-            ("ImageBuffer", "Bit.Bmage", "Bit.Bmage"),
-            ("ImageExportOptions", "Bit.Bmage", "Bit.Bmage.Codecs"),
-            ("RedactionAnnotation", "Bit.Bmage", "Bit.Bmage.Annotations"),
-            ("ImageSource", "Bit.Bmage.Blazor", "Bit.Bmage.Input"),
-            ("ImageLoader", "Bit.Bmage.Blazor", "Bit.Bmage.Input"),
-            ("ImageExporter", "Bit.Bmage.Blazor", "Bit.Bmage.Output"),
+            ("BmageImagePipeline", "Bit.Bmage", "Bit.Bmage"),
+            ("BmageImageBuffer", "Bit.Bmage", "Bit.Bmage"),
+            ("BmageImageExportOptions", "Bit.Bmage", "Bit.Bmage"),
+            ("BmageRedactionAnnotation", "Bit.Bmage", "Bit.Bmage"),
+            ("BmageImageSource", "Bit.Bmage.Blazor", "Bit.Bmage"),
+            ("BmageImageLoader", "Bit.Bmage.Blazor", "Bit.Bmage"),
+            ("BmageImageExporter", "Bit.Bmage.Blazor", "Bit.Bmage"),
             ("BitBmage", "Bit.Bmage", "Bit.Bmage"),
             ("BitBmageBlazor", "Bit.Bmage.Blazor", "Bit.Bmage"),
-            ("BmageEditor", "Bit.Bmage.Blazor", "Bit.Bmage.Editor.Components"),
-            ("BmageEditorStrings", "Bit.Bmage.Blazor", "Bit.Bmage.Editor.Localization"),
+            ("BmageEditor", "Bit.Bmage.Blazor", "Bit.Bmage"),
+            ("BmageEditorStrings", "Bit.Bmage.Blazor", "Bit.Bmage"),
         })
         {
             var type = BmageApiCatalog.Types.SingleOrDefault(entry => entry.Name == name);
@@ -42,10 +42,10 @@ public class ApiCatalogTests
     public void ImageSource_FromBrowserFile_IsOneOfItsMembers_AndDocumented()
     {
         // The one way to load an IBrowserFile: it must be found where the README and the XML docs say it is.
-        var details = BmageApiCatalog.GetMemberDetails("ImageSource.FromBrowserFile");
+        var details = BmageApiCatalog.GetMemberDetails("BmageImageSource.FromBrowserFile");
 
-        Assert.IsNotNull(details, "ImageSource.FromBrowserFile is missing from the catalog.");
-        Assert.IsFalse(string.IsNullOrWhiteSpace(details.Members.Single().Summary), "ImageSource.FromBrowserFile has no summary.");
+        Assert.IsNotNull(details, "BmageImageSource.FromBrowserFile is missing from the catalog.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(details.Members.Single().Summary), "BmageImageSource.FromBrowserFile has no summary.");
     }
 
     [TestMethod]
@@ -62,31 +62,31 @@ public class ApiCatalogTests
         string KindOf(string name) => BmageApiCatalog.Types.Single(type => type.Name == name).Kind;
 
         Assert.AreEqual("Component", KindOf("BmageEditor"));
-        Assert.AreEqual("Enum", KindOf("MetadataPolicy"));
-        Assert.AreEqual("Record", KindOf("ImageExportOptions"));
+        Assert.AreEqual("Enum", KindOf("BmageMetadataPolicy"));
+        Assert.AreEqual("Record", KindOf("BmageImageExportOptions"));
         Assert.AreEqual("Static class", KindOf("BitBmage"));
-        Assert.AreEqual("Struct", KindOf("Rgba32"));
-        Assert.AreEqual("Interface", KindOf("IImageOperation"));
-        Assert.AreEqual("Exception", KindOf("ImageEncodeException"));
-        Assert.AreEqual("Class", KindOf("ImagePipeline"));
+        Assert.AreEqual("Struct", KindOf("BmageRgba32"));
+        Assert.AreEqual("Interface", KindOf("IBmageImageOperation"));
+        Assert.AreEqual("Exception", KindOf("BmageImageEncodeException"));
+        Assert.AreEqual("Class", KindOf("BmageImagePipeline"));
     }
 
     /// <summary>The defaults are read off a freshly constructed instance, so they are the ones a caller really gets.</summary>
     [TestMethod]
     public void Defaults_AreTheOnesAFreshInstanceHas()
     {
-        var options = BmageApiCatalog.GetTypeDetails("ImageExportOptions")!;
+        var options = BmageApiCatalog.GetTypeDetails("BmageImageExportOptions")!;
 
         string? DefaultOf(string member) => options.Members.Single(entry => entry.Name == member).Default;
 
-        Assert.AreEqual("ImageFormat.Png", DefaultOf("Format"));
+        Assert.AreEqual("BmageImageFormat.Png", DefaultOf("Format"));
         Assert.AreEqual("0.85", DefaultOf("Quality"));
-        Assert.AreEqual("MetadataPolicy.Remove", DefaultOf("Metadata"));
-        Assert.AreEqual("Rgba32.White", DefaultOf("Background"));
+        Assert.AreEqual("BmageMetadataPolicy.Remove", DefaultOf("Metadata"));
+        Assert.AreEqual("BmageRgba32.White", DefaultOf("Background"));
         Assert.AreEqual("6", DefaultOf("PngCompressionLevel"));
-        Assert.AreEqual("MaxFileSizeStrategy.QualityThenDimensions", DefaultOf("MaxFileSizeStrategy"));
+        Assert.AreEqual("BmageMaxFileSizeStrategy.QualityThenDimensions", DefaultOf("MaxFileSizeStrategy"));
 
-        // Presets are named, not printed as "new ImageExportOptions()".
+        // Presets are named, not printed as "new BmageImageExportOptions()".
         Assert.IsNull(DefaultOf("Png"));
     }
 
@@ -97,7 +97,7 @@ public class ApiCatalogTests
 
         var image = editor.Members.Single(member => member.Name == "Image");
         Assert.AreEqual("Parameter", image.Kind);
-        Assert.AreEqual("ImageBuffer", image.Type);
+        Assert.AreEqual("BmageImageBuffer", image.Type);
 
         Assert.AreEqual("100", editor.Members.Single(member => member.Name == "MaxHistoryDepth").Default);
         Assert.AreEqual("\"ltr\"", editor.Members.Single(member => member.Name == "Direction").Default);
@@ -110,14 +110,14 @@ public class ApiCatalogTests
     [TestMethod]
     public void Methods_CarryTheirFullSignature_WithDefaults()
     {
-        var pipeline = BmageApiCatalog.GetTypeDetails("ImagePipeline")!;
+        var pipeline = BmageApiCatalog.GetTypeDetails("BmageImagePipeline")!;
 
         var maxSize = pipeline.Members.Single(member => member.Name == "MaxSize");
-        Assert.AreEqual("(int maxWidth, int maxHeight, ResamplingFilter filter = ResamplingFilter.Auto)", maxSize.Signature);
-        Assert.AreEqual("ImagePipeline", maxSize.Type);
+        Assert.AreEqual("(int maxWidth, int maxHeight, BmageResamplingFilter filter = BmageResamplingFilter.Auto)", maxSize.Signature);
+        Assert.AreEqual("BmageImagePipeline", maxSize.Type);
 
         var rotate = pipeline.Members.Single(member => member.Name == "Rotate");
-        StringAssert.Contains(rotate.Signature, "Rgba32 background = default");
+        StringAssert.Contains(rotate.Signature, "BmageRgba32 background = default");
 
         // Extension methods say so.
         var registration = BmageApiCatalog.GetTypeDetails("BitBmageBlazor")!.Members.First(member => member.Name == "AddBitBmageServices");
@@ -127,20 +127,20 @@ public class ApiCatalogTests
     [TestMethod]
     public void Constructors_AreListed_ButNotARecordsCopyConstructor()
     {
-        var crop = BmageApiCatalog.GetTypeDetails("CropOperation")!;
+        var crop = BmageApiCatalog.GetTypeDetails("BmageCropOperation")!;
 
         var constructors = crop.Members.Where(member => member.Kind == "Constructor").ToArray();
         Assert.IsGreaterThanOrEqualTo(1, constructors.Length);
 
-        var options = BmageApiCatalog.GetTypeDetails("ImageExportOptions")!;
-        Assert.IsFalse(options.Members.Any(member => member.Kind == "Constructor" && member.Signature == "(ImageExportOptions original)"));
+        var options = BmageApiCatalog.GetTypeDetails("BmageImageExportOptions")!;
+        Assert.IsFalse(options.Members.Any(member => member.Kind == "Constructor" && member.Signature == "(BmageImageExportOptions original)"));
         Assert.IsFalse(options.Members.Any(member => member.Name is "EqualityContract" or "Deconstruct" or "PrintMembers"));
     }
 
     [TestMethod]
     public void Enums_ListTheirValues_WithTheirDocumentation()
     {
-        var policy = BmageApiCatalog.GetTypeDetails("MetadataPolicy")!;
+        var policy = BmageApiCatalog.GetTypeDetails("BmageMetadataPolicy")!;
 
         CollectionAssert.AreEqual(new[] { "Preserve", "Remove", "StripSensitive" }, policy.Members.Select(member => member.Name).Order().ToArray());
 
@@ -151,14 +151,14 @@ public class ApiCatalogTests
     [TestMethod]
     public void Lookup_ByFullNameMemberAndCaseInsensitively()
     {
-        Assert.AreEqual("ImageExporter", BmageApiCatalog.GetTypeDetails("Bit.Bmage.Output.ImageExporter")?.Name);
-        Assert.AreEqual("ImageExporter", BmageApiCatalog.GetTypeDetails("imageexporter")?.Name);
+        Assert.AreEqual("BmageImageExporter", BmageApiCatalog.GetTypeDetails("Bit.Bmage.BmageImageExporter")?.Name);
+        Assert.AreEqual("BmageImageExporter", BmageApiCatalog.GetTypeDetails("bmageimageexporter")?.Name);
         Assert.IsNull(BmageApiCatalog.GetTypeDetails("Teleporter"));
 
-        var member = BmageApiCatalog.GetMemberDetails("ImageExportOptions.MaxFileSize")!;
+        var member = BmageApiCatalog.GetMemberDetails("BmageImageExportOptions.MaxFileSize")!;
         Assert.AreEqual("MaxFileSize", member.Members.Single().Name);
 
-        Assert.IsNull(BmageApiCatalog.GetMemberDetails("ImageExportOptions.Teleport"));
+        Assert.IsNull(BmageApiCatalog.GetMemberDetails("BmageImageExportOptions.Teleport"));
         Assert.IsNull(BmageApiCatalog.GetMemberDetails("NoSuchType.Member"));
     }
 
@@ -175,7 +175,7 @@ public class ApiCatalogTests
     [TestMethod]
     public void TypeSummaries_AreOneSentenceEach()
     {
-        var pipeline = BmageApiCatalog.TypeSummaries.Single(type => type.Name == "ImagePipeline");
+        var pipeline = BmageApiCatalog.TypeSummaries.Single(type => type.Name == "BmageImagePipeline");
 
         Assert.AreEqual("An immutable, ordered list of operations describing a complete image transformation.", pipeline.Summary);
     }

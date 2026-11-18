@@ -13,7 +13,7 @@ internal sealed class BevToolsLoaderEntryPoint : IBevToolsEntryPoint
 
     public bool TryAddServices(IServiceCollection services, BevToolsLoaderContext context, out string reason)
     {
-        if (services.FirstOrDefault(d => d.ServiceType == typeof(BitBevToolsOptions))?.ImplementationInstance is BitBevToolsOptions registered)
+        if (services.FirstOrDefault(d => d.ServiceType == typeof(BevToolsOptions))?.ImplementationInstance is BevToolsOptions registered)
         {
             reason = "AddBitBevToolsServices was called before AddBitBevToolsLoaderServices" + (registered.ResolvedEnabled ? "." : ", and left BevTools off.");
             return registered.ResolvedEnabled;
@@ -22,11 +22,11 @@ internal sealed class BevToolsLoaderEntryPoint : IBevToolsEntryPoint
         bool enabled;
         if (context.Options.RegisterAtStartup is true)
         {
-            (enabled, reason) = (true, "BitBevToolsLoaderOptions.RegisterAtStartup was set to true.");
+            (enabled, reason) = (true, "BevToolsLoaderOptions.RegisterAtStartup was set to true.");
         }
         else
         {
-            var probe = new BitBevToolsOptions();
+            var probe = new BevToolsOptions();
             Forward(context.Options, probe);
             (enabled, reason) = BitBevTools.ResolveEnabled(services, probe);
         }
@@ -50,12 +50,12 @@ internal sealed class BevToolsLoaderEntryPoint : IBevToolsEntryPoint
     }
 
     public IBevToolsAttachment Attach(IServiceProvider services, BevToolsLoaderContext context) =>
-        new Attachment(RuntimeAttachment.Attach(services, configure: null, context, openedByLoader: true));
+        new Attachment(BevToolsRuntimeAttacher.Attach(services, configure: null, context, openedByLoader: true));
 
-    public IDisposable BeginOwnWork() => SessionResolver.BeginBevToolsWork();
+    public IDisposable BeginOwnWork() => BevToolsSessionResolver.BeginBevToolsWork();
 
-    /// <summary>The options the loader repeats, since the app cannot name <see cref="BitBevToolsOptions"/> at startup.</summary>
-    internal static void Forward(BitBevToolsLoaderOptions from, BitBevToolsOptions to)
+    /// <summary>The options the loader repeats, since the app cannot name <see cref="BevToolsOptions"/> at startup.</summary>
+    internal static void Forward(BevToolsLoaderOptions from, BevToolsOptions to)
     {
         to.UseFrameworkInstrumentation = from.UseFrameworkInstrumentation;
         to.TrackHttp = from.TrackHttp;

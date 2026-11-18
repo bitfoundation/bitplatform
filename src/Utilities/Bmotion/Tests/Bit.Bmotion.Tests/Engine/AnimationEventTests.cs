@@ -53,15 +53,15 @@ public class AnimationEventTests
         await engine.AnimateToAsync("el", Values(("x", 100.0), ("opacity", 0.5)), Bm.Tween(0.3).ToConfig());
 
         var started = events.Single();
-        Assert.AreEqual(BmAnimationEventKind.Started, started.Kind);
-        Assert.AreEqual(BmPlaybackStrategy.BrowserTimeline, started.Strategy);
+        Assert.AreEqual(BmotionAnimationEventKind.Started, started.Kind);
+        Assert.AreEqual(BmotionPlaybackStrategy.BrowserTimeline, started.Strategy);
         Assert.AreEqual("el", started.ElementId);
         CollectionAssert.AreEquivalent(new[] { "x", "opacity" }, started.Properties.ToArray());
         Assert.IsNull(started.Reason, "the browser playing it needs no explanation");
 
         interop.FinishWaapi("el");
-        var finished = await WaitForAsync(events, e => e.Kind == BmAnimationEventKind.Finished);
-        Assert.AreEqual(BmPlaybackStrategy.BrowserTimeline, finished.Strategy);
+        var finished = await WaitForAsync(events, e => e.Kind == BmotionAnimationEventKind.Finished);
+        Assert.AreEqual(BmotionPlaybackStrategy.BrowserTimeline, finished.Strategy);
         Assert.IsTrue(finished.ElapsedMs >= 0);
     }
 
@@ -73,9 +73,9 @@ public class AnimationEventTests
         engine.RegisterElement("el");
 
         await engine.AnimateToAsync("el", Values(("x", new[] { 0.0, 50, 100 })),
-            Bm.Tween(0.4, eases: [BmEase.In, BmEase.Out]).ToConfig());
+            Bm.Tween(0.4, eases: [BmotionEase.In, BmotionEase.Out]).ToConfig());
 
-        Assert.AreEqual(BmPlaybackStrategy.BrowserRecorded, events.Single().Strategy);
+        Assert.AreEqual(BmotionPlaybackStrategy.BrowserRecorded, events.Single().Strategy);
     }
 
     [TestMethod]
@@ -90,12 +90,12 @@ public class AnimationEventTests
         await engine.AnimateToAsync("el", Values(("x", 100.0)), transition.ToConfig());
 
         var started = events.Single();
-        Assert.AreEqual(BmPlaybackStrategy.FrameLoop, started.Strategy);
+        Assert.AreEqual(BmotionPlaybackStrategy.FrameLoop, started.Strategy);
         StringAssert.Contains(started.Reason, "OnUpdate");
 
         RunFrames(engine, 200);
-        var finished = await WaitForAsync(events, e => e.Kind == BmAnimationEventKind.Finished);
-        Assert.AreEqual(BmPlaybackStrategy.FrameLoop, finished.Strategy);
+        var finished = await WaitForAsync(events, e => e.Kind == BmotionAnimationEventKind.Finished);
+        Assert.AreEqual(BmotionPlaybackStrategy.FrameLoop, finished.Strategy);
         Assert.AreEqual(started.Reason, finished.Reason);
     }
 
@@ -109,7 +109,7 @@ public class AnimationEventTests
         await engine.AnimateToAsync("el", Values(("d", "M0 0 L20 20")), Bm.Tween(0.3).ToConfig());
 
         var started = events.Single();
-        Assert.AreEqual(BmPlaybackStrategy.FrameLoop, started.Strategy);
+        Assert.AreEqual(BmotionPlaybackStrategy.FrameLoop, started.Strategy);
         StringAssert.Contains(started.Reason, "'d'");
     }
 
@@ -125,7 +125,7 @@ public class AnimationEventTests
         await engine.AnimateToAsync("el", Values(("x", 100.0)), transition.ToConfig());
 
         var started = events.First();
-        Assert.AreEqual(BmPlaybackStrategy.InstantWithoutFrameLoop, started.Strategy);
+        Assert.AreEqual(BmotionPlaybackStrategy.InstantWithoutFrameLoop, started.Strategy);
         StringAssert.Contains(started.Reason, "OnUpdate");
     }
 
@@ -138,9 +138,9 @@ public class AnimationEventTests
 
         await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(0).ToConfig());
 
-        Assert.AreEqual(BmPlaybackStrategy.Instant, events.First().Strategy);
-        var finished = await WaitForAsync(events, e => e.Kind == BmAnimationEventKind.Finished);
-        Assert.AreEqual(BmPlaybackStrategy.Instant, finished.Strategy);
+        Assert.AreEqual(BmotionPlaybackStrategy.Instant, events.First().Strategy);
+        var finished = await WaitForAsync(events, e => e.Kind == BmotionAnimationEventKind.Finished);
+        Assert.AreEqual(BmotionPlaybackStrategy.Instant, finished.Strategy);
     }
 
     [TestMethod]
@@ -152,15 +152,15 @@ public class AnimationEventTests
 
         await engine.AnimateToAsync("el", Values(("opacity", 0.5), ("d", "M0 0 L20 20")), Bm.Tween(0.1).ToConfig());
 
-        var starts = events.Where(e => e.Kind == BmAnimationEventKind.Started).ToArray();
+        var starts = events.Where(e => e.Kind == BmotionAnimationEventKind.Started).ToArray();
         Assert.AreEqual(2, starts.Length);
-        CollectionAssert.AreEqual(new[] { "opacity" }, starts.Single(e => e.Strategy == BmPlaybackStrategy.BrowserTimeline).Properties.ToArray());
-        CollectionAssert.AreEqual(new[] { "d" }, starts.Single(e => e.Strategy == BmPlaybackStrategy.FrameLoop).Properties.ToArray());
+        CollectionAssert.AreEqual(new[] { "opacity" }, starts.Single(e => e.Strategy == BmotionPlaybackStrategy.BrowserTimeline).Properties.ToArray());
+        CollectionAssert.AreEqual(new[] { "d" }, starts.Single(e => e.Strategy == BmotionPlaybackStrategy.FrameLoop).Properties.ToArray());
 
         interop.FinishWaapi("el");
         RunFrames(engine, 200);
-        await WaitForAsync(events, e => e.Kind == BmAnimationEventKind.Finished && e.Strategy == BmPlaybackStrategy.BrowserTimeline);
-        await WaitForAsync(events, e => e.Kind == BmAnimationEventKind.Finished && e.Strategy == BmPlaybackStrategy.FrameLoop);
+        await WaitForAsync(events, e => e.Kind == BmotionAnimationEventKind.Finished && e.Strategy == BmotionPlaybackStrategy.BrowserTimeline);
+        await WaitForAsync(events, e => e.Kind == BmotionAnimationEventKind.Finished && e.Strategy == BmotionPlaybackStrategy.FrameLoop);
     }
 
     [TestMethod]
@@ -173,9 +173,9 @@ public class AnimationEventTests
         await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1).ToConfig());
         await engine.AnimateToAsync("el", Values(("x", 0.0)), Bm.Tween(1).ToConfig());
 
-        var interrupted = await WaitForAsync(events, e => e.Kind == BmAnimationEventKind.Interrupted);
+        var interrupted = await WaitForAsync(events, e => e.Kind == BmotionAnimationEventKind.Interrupted);
         CollectionAssert.AreEqual(new[] { "x" }, interrupted.Properties.ToArray());
-        Assert.AreEqual(2, events.Count(e => e.Kind == BmAnimationEventKind.Started));
+        Assert.AreEqual(2, events.Count(e => e.Kind == BmotionAnimationEventKind.Started));
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class AnimationEventTests
 
         var kinds = events.Select(e => e.Kind).ToArray();
         CollectionAssert.AreEqual(
-            new[] { BmAnimationEventKind.Started, BmAnimationEventKind.Interrupted, BmAnimationEventKind.Started }, kinds);
+            new[] { BmotionAnimationEventKind.Started, BmotionAnimationEventKind.Interrupted, BmotionAnimationEventKind.Started }, kinds);
     }
 
     [TestMethod]
@@ -207,7 +207,7 @@ public class AnimationEventTests
         await engine.AnimateToAsync("el", Values(("d", "M0 0 L20 20")), config);
 
         var started = events.Single();
-        Assert.AreEqual(BmPlaybackStrategy.FrameLoop, started.Strategy);
+        Assert.AreEqual(BmotionPlaybackStrategy.FrameLoop, started.Strategy);
         StringAssert.Contains(started.Reason, "'d'");
     }
 
@@ -221,14 +221,14 @@ public class AnimationEventTests
 
         await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(0.1).ToConfig());
 
-        var replay = await WaitForAsync(events, e => e.Kind == BmAnimationEventKind.Started && e.Strategy == BmPlaybackStrategy.FrameLoop);
+        var replay = await WaitForAsync(events, e => e.Kind == BmotionAnimationEventKind.Started && e.Strategy == BmotionPlaybackStrategy.FrameLoop);
         StringAssert.Contains(replay.Reason, "didn't start");
-        var browserEnd = events.Single(e => e.Strategy == BmPlaybackStrategy.BrowserTimeline && e.Kind != BmAnimationEventKind.Started);
-        Assert.AreEqual(BmAnimationEventKind.Interrupted, browserEnd.Kind);
+        var browserEnd = events.Single(e => e.Strategy == BmotionPlaybackStrategy.BrowserTimeline && e.Kind != BmotionAnimationEventKind.Started);
+        Assert.AreEqual(BmotionAnimationEventKind.Interrupted, browserEnd.Kind);
 
         RunFrames(engine, 300);
-        var finished = await WaitForAsync(events, e => e.Kind == BmAnimationEventKind.Finished);
-        Assert.AreEqual(BmPlaybackStrategy.FrameLoop, finished.Strategy, "the finish is the frame loop's, not the browser's");
+        var finished = await WaitForAsync(events, e => e.Kind == BmotionAnimationEventKind.Finished);
+        Assert.AreEqual(BmotionPlaybackStrategy.FrameLoop, finished.Strategy, "the finish is the frame loop's, not the browser's");
     }
 
     [TestMethod]
@@ -241,7 +241,7 @@ public class AnimationEventTests
         await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1).ToConfig());
         engine.UnregisterElement("el");
 
-        var interrupted = events.Single(e => e.Kind == BmAnimationEventKind.Interrupted);
+        var interrupted = events.Single(e => e.Kind == BmotionAnimationEventKind.Interrupted);
         CollectionAssert.AreEqual(new[] { "x" }, interrupted.Properties.ToArray());
     }
 
@@ -288,7 +288,7 @@ public class AnimationEventTests
         engine.Stop("el", null);
         engine.ComputeFrame(16);
 
-        await WaitForAsync(events, e => e.Kind == BmAnimationEventKind.Interrupted && e.Strategy == BmPlaybackStrategy.FrameLoop);
+        await WaitForAsync(events, e => e.Kind == BmotionAnimationEventKind.Interrupted && e.Strategy == BmotionPlaybackStrategy.FrameLoop);
     }
 
     [TestMethod]
@@ -360,7 +360,7 @@ public class AnimationEventTests
         BmotionAnimationEngine engine, ConcurrentQueue<BmotionAnimationEvent> events, BmotionTransitionConfig transition)
     {
         engine.RegisterElement("el");
-        engine.AnimationEvent += e => { if (e.Kind == BmAnimationEventKind.Started) engine.UnregisterElement("el"); };
+        engine.AnimationEvent += e => { if (e.Kind == BmotionAnimationEventKind.Started) engine.UnregisterElement("el"); };
         var settled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         bool completed = false;
 
@@ -384,8 +384,8 @@ public class AnimationEventTests
         Assert.IsFalse(completed, "an animation of an element that is gone doesn't finish");
         Assert.AreEqual(0, interop.CountOf("playWaapiAnimation"), "nothing is handed to the browser for it");
         CollectionAssert.AreEqual(
-            new[] { BmAnimationEventKind.Started, BmAnimationEventKind.Interrupted }, seen.Select(e => e.Kind).ToArray());
-        Assert.IsTrue(seen.All(e => e.Strategy == BmPlaybackStrategy.BrowserTimeline));
+            new[] { BmotionAnimationEventKind.Started, BmotionAnimationEventKind.Interrupted }, seen.Select(e => e.Kind).ToArray());
+        Assert.IsTrue(seen.All(e => e.Strategy == BmotionPlaybackStrategy.BrowserTimeline));
     }
 
     [TestMethod]
@@ -402,7 +402,7 @@ public class AnimationEventTests
         Assert.IsFalse(completed);
         Assert.AreEqual(0, frames, "no driver runs for an element that is gone");
         CollectionAssert.AreEqual(
-            new[] { BmAnimationEventKind.Started, BmAnimationEventKind.Interrupted }, seen.Select(e => e.Kind).ToArray());
-        Assert.IsTrue(seen.All(e => e.Strategy == BmPlaybackStrategy.FrameLoop));
+            new[] { BmotionAnimationEventKind.Started, BmotionAnimationEventKind.Interrupted }, seen.Select(e => e.Kind).ToArray());
+        Assert.IsTrue(seen.All(e => e.Strategy == BmotionPlaybackStrategy.FrameLoop));
     }
 }

@@ -4,7 +4,6 @@
            .Configure(options => options.GarbageCollect = false));
    Each panel of the history page is this component, opened by a different user. *@
 @using Bit.Bcrdt
-@using Bit.Bcrdt.Blazor
 
 <BcrdtCollaborationScope DocumentId="demo-history" User="_me" Context="document">
     @{

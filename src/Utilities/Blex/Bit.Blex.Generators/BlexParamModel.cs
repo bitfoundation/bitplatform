@@ -1,4 +1,4 @@
-﻿namespace Bit.Blex.Generators;
+﻿namespace Bit.Blex;
 
 /// <param name="TypeFqn">Fully qualified type of the parameter.</param>
 /// <param name="Name">Name of the parameter.</param>

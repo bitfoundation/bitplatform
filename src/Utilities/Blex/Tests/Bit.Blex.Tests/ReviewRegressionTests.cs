@@ -1,5 +1,3 @@
-using Bit.Blex.Query;
-using Bit.Blex.Testing;
 using Bit.Blex.Tests.Query;
 using static Bit.Blex.Tests.Query.QueryTest;
 

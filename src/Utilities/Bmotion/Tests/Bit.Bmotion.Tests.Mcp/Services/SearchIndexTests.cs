@@ -144,7 +144,7 @@ public class SearchIndexTests
     /// four transition types is the same member however it is qualified.
     /// </summary>
     [TestMethod]
-    [DataRow("BmSpring", "BmSpring")]
+    [DataRow("BmotionSpring", "BmotionSpring")]
     [DataRow("BmotionAnimatePresence", "BmotionAnimatePresence")]
     [DataRow("staggerChildren", "StaggerChildren")]
     [DataRow("LayoutId", "LayoutId")]
@@ -193,7 +193,7 @@ public class SearchIndexTests
 
         Assert.AreNotEqual(0, hits.Length, $"'{query}' found nothing.");
         Assert.AreEqual("Fade and slide in on mount", hits[0].Title, $"'{query}' ranked: {titles}.");
-        Assert.IsTrue(hits.Take(3).Any(hit => hit.Title == "BmPresets.Fade"), $"'{query}' ranked: {titles}.");
+        Assert.IsTrue(hits.Take(3).Any(hit => hit.Title == "BmotionPresets.Fade"), $"'{query}' ranked: {titles}.");
         Assert.IsFalse(hits.Take(5).Any(hit => hit.Title.Contains("Reorder", StringComparison.Ordinal)),
                        $"'{query}' ranked the reorder group, which has nothing to do with fading, among the first hits: {titles}.");
     }
@@ -274,7 +274,7 @@ public class SearchIndexTests
     {
         var hits = await BmotionSearchIndex.SearchAsync(query, 5);
 
-        Assert.IsTrue(hits.Take(3).Any(hit => hit.Kind == "Easing preset" && hit.Title == $"BmEase.{query}"),
+        Assert.IsTrue(hits.Take(3).Any(hit => hit.Kind == "Easing preset" && hit.Title == $"BmotionEase.{query}"),
                       $"'{query}' ranked: {string.Join(", ", hits.Select(hit => $"{hit.Kind}: {hit.Title}"))}.");
     }
 
@@ -310,7 +310,7 @@ public class SearchIndexTests
         var stagger = await BmotionSearchIndex.SearchAsync("ChildStagger", 20);
 
         Assert.AreEqual(1, stagger.Count(hit => hit.Title.EndsWith(".ChildStagger", StringComparison.Ordinal)
-                                                && hit.Context is "BmTransition" or "BmTween" or "BmSpring" or "BmInertia"),
+                                                && hit.Context is "BmotionTransition" or "BmotionTween" or "BmotionSpring" or "BmotionInertia"),
                         $"The inherited ChildStagger was listed once per type: {string.Join(", ", stagger.Select(hit => hit.Title))}.");
     }
 
@@ -326,7 +326,7 @@ public class SearchIndexTests
 
         Assert.AreNotEqual(0, hits.Length, "'fade' found nothing.");
         Assert.AreNotEqual("Bmotion.LayoutCrossfade", hits[0].Title, titles);
-        Assert.IsTrue(hits.Take(2).Any(hit => hit.Title == "BmPresets.Fade"), titles);
+        Assert.IsTrue(hits.Take(2).Any(hit => hit.Title == "BmotionPresets.Fade"), titles);
 
         var stagger = await BmotionSearchIndex.SearchAsync("stagger", 20);
 

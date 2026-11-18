@@ -3,38 +3,6 @@ using System.Text.Json.Nodes;
 
 namespace Bit.Blow;
 
-/// <summary>A node present in both graphs with something about it changed.</summary>
-/// <param name="Before">The node as it was.</param>
-/// <param name="After">The node as it is.</param>
-/// <param name="Properties">The names of the <see cref="BlowNode"/> properties that differ: "Position", "Label", "Data", ...</param>
-public sealed record BlowNodeChange(BlowNode Before, BlowNode After, IReadOnlyList<string> Properties);
-
-/// <summary>An edge present in both graphs with something about it changed.</summary>
-/// <param name="Before">The edge as it was.</param>
-/// <param name="After">The edge as it is.</param>
-/// <param name="Properties">The names of the <see cref="BlowEdge"/> properties that differ: "Target", "Label", "MarkerEnd", ...</param>
-public sealed record BlowEdgeChange(BlowEdge Before, BlowEdge After, IReadOnlyList<string> Properties);
-
-/// <summary>How <see cref="BlowGraphDiff"/> tells a change from none.</summary>
-public sealed class BlowGraphDiffOptions
-{
-    /// <summary>How far a node may move, in flow units on each axis, and still count as where it was. 0 by default.</summary>
-    public double PositionTolerance { get; set; }
-
-    /// <summary>When true, selection counts as a change. It does not by default, as clicking around is not editing.</summary>
-    public bool IncludeSelection { get; set; }
-
-    /// <summary>
-    /// Whether two data payloads are the same. By default: the same object, equal by <see cref="object.Equals(object?)"/>,
-    /// or JSON with the same content (<see cref="JsonNode"/>, <see cref="JsonElement"/>) - which is what data read from a
-    /// document is.
-    /// </summary>
-    public Func<object?, object?, bool>? DataEquals { get; set; }
-
-    /// <summary>Property names to leave out of the comparison: "Position" to compare structure only, say.</summary>
-    public ISet<string>? Ignore { get; set; }
-}
-
 /// <summary>
 /// What changed between two versions of a graph: the nodes and edges added, removed and changed, matched by id - for
 /// a "what changed" view, a review of an import, a merge, or a patch sent to a collaborator. A diff can be applied to

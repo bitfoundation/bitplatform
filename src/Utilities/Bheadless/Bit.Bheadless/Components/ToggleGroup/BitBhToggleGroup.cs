@@ -3,16 +3,6 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.Bheadless;
 
-/// <summary>Whether a <see cref="BitBhToggleGroup"/> allows one or many pressed items.</summary>
-public enum BitBhToggleGroupType
-{
-    /// <summary>At most one item is on (behaves like a radio group).</summary>
-    Single,
-
-    /// <summary>Any number of items can be on.</summary>
-    Multiple,
-}
-
 /// <summary>
 /// A set of two-state buttons — text alignment, view modes, filters. A single
 /// tab stop with arrow-key navigation. A <see cref="BitBhToggleGroupType.Single"/> group
@@ -189,30 +179,4 @@ public class BitBhToggleGroup : BitBhComponentBase
         }
         StateHasChanged();
     }
-}
-
-/// <summary>State of a <see cref="BitBhToggleGroup"/> cascaded to its items.</summary>
-public sealed class BitBhToggleGroupContext
-{
-    internal BitBhToggleGroupContext(BitBhToggleGroup group, BitBhToggleGroupType type, IReadOnlyCollection<string> pressed, bool disabled)
-    {
-        Group = group;
-        Type = type;
-        Pressed = pressed;
-        Disabled = disabled;
-    }
-
-    internal BitBhToggleGroup Group { get; }
-
-    /// <summary>Single or multiple.</summary>
-    public BitBhToggleGroupType Type { get; }
-
-    /// <summary>The pressed values.</summary>
-    public IReadOnlyCollection<string> Pressed { get; }
-
-    /// <summary>Whether the group is disabled.</summary>
-    public bool Disabled { get; }
-
-    /// <summary>Whether <paramref name="value"/> is pressed.</summary>
-    public bool IsPressed(string value) => Pressed.Contains(value);
 }

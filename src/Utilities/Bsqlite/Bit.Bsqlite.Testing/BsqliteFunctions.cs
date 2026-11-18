@@ -1,7 +1,6 @@
-﻿using Bit.Bsqlite.Interop;
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 
-namespace Bit.Bsqlite.Testing;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Registers the scalar functions, aggregates, and collation that EF Core's SQLite provider

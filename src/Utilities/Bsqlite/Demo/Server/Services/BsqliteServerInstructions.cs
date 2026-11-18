@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Bit.Bsqlite.Data;
 
 namespace Bit.Bsqlite.Demo.Server.Services;
 
@@ -43,10 +42,8 @@ public static class BsqliteServerInstructions
           follow-up call that returns its full text.
         - Every reference tool takes the key of one thing and answers with that thing; leave the key out and it answers
           with the index of what there is - documents, public types, storage backends, source files.
-        - Do not write a Bsqlite type or namespace from memory. They are spread over `Bit.Bsqlite`, `Bit.Bsqlite.Data`,
-          `Bit.Bsqlite.Interop`, `Bit.Bsqlite.EntityFrameworkCore` and `Bit.Bsqlite.Storage.*`, while
-          `AddBitBsqliteServices` and `AddBitBsqliteDbContext` live in `Microsoft.Extensions.DependencyInjection` and
-          `UseBitBsqlite` in `Microsoft.EntityFrameworkCore`. `GetBsqliteApi` gives the real names and namespaces.
+        - Do not write a Bsqlite type or namespace from memory. Every one of them, the service and EF Core
+          registration extensions included, is in the single `Bit.Bsqlite` namespace. `GetBsqliteApi` gives the real names and namespaces.
         - Call `GetBsqliteSetupGuide` before writing wiring. In a Blazor Web App the services are registered in the
           client AND the server project, and a page opens its database only once `RendererInfo.IsInteractive` is true;
           Interactive Server is not supported. A Blazor Hybrid app (MAUI, WPF, Windows Forms) uses the same registration

@@ -31,7 +31,7 @@ public class ComponentContextTests : BunitContext
     private IRenderedComponent<BevToolsPanel> RenderPanel()
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true, Visibility = "visible" });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true, Visibility = "visible" });
         module.Setup<string?>("loadPrefs", _ => true).SetResult(null);
         return Render<BevToolsPanel>();
     }
@@ -73,7 +73,7 @@ public class ComponentContextTests : BunitContext
 
         var child = Session.Components.All.Single(r => r.Type == typeof(CascadingChild));
         Assert.IsTrue(child.Parent!.IsHidden, "the renderer's parent is the hidden CascadingValue");
-        Assert.AreEqual(BevRenderCause.ParentRender, child.LastRender!.Cause, child.LastRender.CauseDetail);
+        Assert.AreEqual(BevToolsRenderCause.ParentRender, child.LastRender!.Cause, child.LastRender.CauseDetail);
         Assert.AreEqual("Parent CascadingHost re-rendered (parameters re-applied)", child.LastRender.CauseDetail);
 
         var panel = RenderPanel();

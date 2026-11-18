@@ -287,7 +287,7 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime, bool local 
     public override ValueTask<int> PrepareVideoFrameAsync(string sessionId, int requestId, int maxDimension)
         => Module.InvokeAsync<int>("prepareVideoFrame", CallTimeout, sessionId, requestId, maxDimension);
 
-    public override async ValueTask<(byte[] Pixels, BbPixelFormat Format)?> ReadPreparedAsync(string sessionId, int requestId, int width, int height)
+    public override async ValueTask<(byte[] Pixels, BbScannerPixelFormat Format)?> ReadPreparedAsync(string sessionId, int requestId, int width, int height)
     {
         try
         {
@@ -300,7 +300,7 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime, bool local 
             var buffer = new byte[length];
             if (await ReadAsync(sessionId, requestId, buffer, length).ConfigureAwait(false))
             {
-                return (buffer, BbPixelFormat.Gray8);
+                return (buffer, BbScannerPixelFormat.Gray8);
             }
 
             Array.Clear(buffer);
@@ -327,7 +327,7 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime, bool local 
     /// Has the page show a native camera's preview through itself where the video element is, and report where that
     /// is to <paramref name="receiver"/> whenever it moves.
     /// </summary>
-    public async ValueTask AttachNativePreviewAsync(string sessionId, string videoElementId, DotNetObjectReference<BbNativePreviewReceiver> receiver)
+    public async ValueTask AttachNativePreviewAsync(string sessionId, string videoElementId, DotNetObjectReference<BbScannerNativePreviewReceiver> receiver)
         => await Module.InvokeVoidAsync("attachNativePreview", CallTimeout, sessionId, videoElementId, receiver).ConfigureAwait(false);
 
     /// <summary>Puts the page back as it was before <see cref="AttachNativePreviewAsync"/>.</summary>

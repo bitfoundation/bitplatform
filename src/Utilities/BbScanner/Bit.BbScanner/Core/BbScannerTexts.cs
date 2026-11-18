@@ -121,30 +121,30 @@ public sealed class BbScannerTexts
     /// What a screen reader announces for a scan. Barcode contents are arbitrary, so this is only
     /// ever rendered as text, never as markup.
     /// </summary>
-    public Func<BbBarcodeResult, string> ScanAnnouncement { get; init; } = result => $"{DisplayName(result.Format)}: {result.Text}";
+    public Func<BbScannerBarcodeResult, string> ScanAnnouncement { get; init; } = result => $"{DisplayName(result.Format)}: {result.Text}";
 
     /// <summary>The usual written name of a symbology, such as "QR Code" or "EAN-13".</summary>
-    internal static string DisplayName(BbBarcodeFormat format) => format switch
+    internal static string DisplayName(BbScannerBarcodeFormat format) => format switch
     {
-        BbBarcodeFormat.QrCode => "QR Code",
-        BbBarcodeFormat.DataMatrix => "Data Matrix",
-        BbBarcodeFormat.Pdf417 => "PDF417",
-        BbBarcodeFormat.Aztec => "Aztec Code",
-        BbBarcodeFormat.Code128 => "Code 128",
-        BbBarcodeFormat.Code39 => "Code 39",
-        BbBarcodeFormat.Code93 => "Code 93",
-        BbBarcodeFormat.Codabar => "Codabar",
-        BbBarcodeFormat.Ean13 => "EAN-13",
-        BbBarcodeFormat.Ean8 => "EAN-8",
-        BbBarcodeFormat.UpcA => "UPC-A",
-        BbBarcodeFormat.UpcE => "UPC-E",
-        BbBarcodeFormat.Itf => "ITF",
-        BbBarcodeFormat.DataBar => "GS1 DataBar",
-        BbBarcodeFormat.DataBarLimited => "GS1 DataBar Limited",
-        BbBarcodeFormat.DataBarExpanded => "GS1 DataBar Expanded",
-        BbBarcodeFormat.MaxiCode => "MaxiCode",
-        BbBarcodeFormat.MicroQrCode => "Micro QR",
-        BbBarcodeFormat.MicroPdf417 => "MicroPDF417",
+        BbScannerBarcodeFormat.QrCode => "QR Code",
+        BbScannerBarcodeFormat.DataMatrix => "Data Matrix",
+        BbScannerBarcodeFormat.Pdf417 => "PDF417",
+        BbScannerBarcodeFormat.Aztec => "Aztec Code",
+        BbScannerBarcodeFormat.Code128 => "Code 128",
+        BbScannerBarcodeFormat.Code39 => "Code 39",
+        BbScannerBarcodeFormat.Code93 => "Code 93",
+        BbScannerBarcodeFormat.Codabar => "Codabar",
+        BbScannerBarcodeFormat.Ean13 => "EAN-13",
+        BbScannerBarcodeFormat.Ean8 => "EAN-8",
+        BbScannerBarcodeFormat.UpcA => "UPC-A",
+        BbScannerBarcodeFormat.UpcE => "UPC-E",
+        BbScannerBarcodeFormat.Itf => "ITF",
+        BbScannerBarcodeFormat.DataBar => "GS1 DataBar",
+        BbScannerBarcodeFormat.DataBarLimited => "GS1 DataBar Limited",
+        BbScannerBarcodeFormat.DataBarExpanded => "GS1 DataBar Expanded",
+        BbScannerBarcodeFormat.MaxiCode => "MaxiCode",
+        BbScannerBarcodeFormat.MicroQrCode => "Micro QR",
+        BbScannerBarcodeFormat.MicroPdf417 => "MicroPDF417",
         _ => format.ToString(),
     };
 }

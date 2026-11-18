@@ -1,7 +1,4 @@
 ﻿using System.Text.Json.Nodes;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Interop;
-using Bit.Bsqlite.Storage;
 using Microsoft.JSInterop;
 
 namespace Bit.Bsqlite.Interop.Tests;

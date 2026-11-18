@@ -29,7 +29,7 @@ public class NavigationDiagnosticsTests : BunitContext
         Render<UnsavedChangesEditor>();
         Session.Components.Refresh(force: true);
 
-        var guards = BevNavigationGuards.Read(Session);
+        var guards = BevToolsNavigationGuards.Read(Session);
         var navigationLock = Assert.ContainsSingle(g => g.Kind == "NavigationLock", guards);
         Assert.AreEqual("UnsavedChangesEditor", navigationLock.OwnerName);
         StringAssert.Contains(navigationLock.Description, "confirm leaving the site");
@@ -60,7 +60,7 @@ public class NavigationDiagnosticsTests : BunitContext
 
         Session.Diagnostics.Evaluate(force: true);
         var loop = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "navigation.loop", Session.Diagnostics.Findings).Diagnostic;
-        Assert.AreEqual(BevDiagnosticSeverity.Error, loop.Severity);
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Error, loop.Severity);
         StringAssert.Contains(loop.Title, "Navigate to /login");
         StringAssert.Contains(loop.Title, "Navigate to /account");
         StringAssert.StartsWith(loop.Evidence, "6 navigations");
@@ -111,7 +111,7 @@ public class NavigationDiagnosticsTests : BunitContext
     public void Rules_run_with_the_panel_closed_only_when_asked_to()
     {
         // The panel is on the page, closed: by default the rules wait for it to open (or an export, or a frontend).
-        Services.GetRequiredService<BitBevToolsOptions>().Diagnostics.EvaluateWhileClosed = true;
+        Services.GetRequiredService<BevToolsOptions>().Diagnostics.EvaluateWhileClosed = true;
         Session.Ui.IsOpen = false;
         Render<BevToolsPanel>();
         Session.Diagnostics.Evaluate(force: true);

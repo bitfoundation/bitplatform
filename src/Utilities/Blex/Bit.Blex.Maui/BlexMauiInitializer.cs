@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 
-namespace Bit.Blex.Maui;
+namespace Bit.Blex;
 
 /// <summary>
 /// Runs when <c>MauiApp.Build()</c> executes, performing the startup work that

@@ -1,8 +1,7 @@
-﻿using Bit.BlazeDb.Storage;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Provider configuration for a context. The engine itself is opened from the EF model on first

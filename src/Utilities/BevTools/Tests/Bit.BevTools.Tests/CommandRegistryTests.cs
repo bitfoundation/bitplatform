@@ -4,10 +4,10 @@ namespace Bit.BevTools.Tests;
 [TestClass]
 public class CommandRegistryTests
 {
-    private static CommandRegistry Create()
+    private static BevToolsCommandRegistry Create()
     {
-        var registry = new CommandRegistry();
-        registry.AddRange(BuiltInCommands.Create());
+        var registry = new BevToolsCommandRegistry();
+        registry.AddRange(BevToolsBuiltInCommands.Create());
         return registry;
     }
 
@@ -45,7 +45,7 @@ public class CommandRegistryTests
         var registry = Create();
         Assert.Contains(r => r.Command.Id == "network.show", registry.Search("http"));
         Assert.Contains(r => r.Command.Id == "services.show", registry.Search("di"));
-        Assert.IsTrue(CommandRegistry.IsSubsequence("sce", "Show capabilities and overhead"));
+        Assert.IsTrue(BevToolsCommandRegistry.IsSubsequence("sce", "Show capabilities and overhead"));
         Assert.IsEmpty(registry.Search("zzzzqqq"));
     }
 

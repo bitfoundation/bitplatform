@@ -21,7 +21,7 @@ public class ForceInstantInertiaTests
     // Releases a drag at x = 30 with a horizontal flick of 2 px/frame. The engine scales that by 50
     // into the inertia velocity, so the decay projects 30 + 0.8 (default power) * 100 = 110.
     private static async Task ReleaseAt30(
-        BmotionAnimationEngine engine, BmInertia momentum, BmDragConstraints? constraints = null)
+        BmotionAnimationEngine engine, BmotionInertia momentum, BmotionDragConstraints? constraints = null)
     {
         engine.RegisterElement("el");
         engine.SetDragPosition("el", 30, 0);
@@ -73,7 +73,7 @@ public class ForceInstantInertiaTests
         var (engine, interop) = NewServerEngine();
         await using var _ = engine;
 
-        await ReleaseAt30(engine, Bm.Inertia(modifyTarget: Bm.SnapTo(100)), new BmDragConstraints { Left = 0, Right = 60 });
+        await ReleaseAt30(engine, Bm.Inertia(modifyTarget: Bm.SnapTo(100)), new BmotionDragConstraints { Left = 0, Right = 60 });
 
         Assert.AreEqual(60, TranslateX(CoastTransforms(interop)[^1]), 1e-6, "the snapped 100 is clamped to the right bound");
     }
@@ -150,7 +150,7 @@ public class ForceInstantInertiaTests
         engine.RegisterElement("el");
         engine.SetDragPosition("el", 300, 0);
 
-        await engine.EndDragAsync("el", velX: 0, velY: 0, momentum: false, new BmDragConstraints { Left = 0, Right = 200 },
+        await engine.EndDragAsync("el", velX: 0, velY: 0, momentum: false, new BmotionDragConstraints { Left = 0, Right = 200 },
             axis: "x", null, reducedMotion: true);
 
         Assert.AreEqual(200, X(engine), 1e-6);

@@ -1,6 +1,4 @@
-﻿using Bit.Bcrdt.BlazeDb;
-using Bit.BlazeDb;
-using Bit.BlazeDb.Storage;
+﻿using Bit.BlazeDb;
 using Microsoft.Extensions.DependencyInjection;
 using static Bit.Bcrdt.Tests.HandWrittenUpdates;
 

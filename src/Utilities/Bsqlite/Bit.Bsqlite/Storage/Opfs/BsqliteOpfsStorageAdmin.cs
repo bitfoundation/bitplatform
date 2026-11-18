@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Bit.Bsqlite.Storage;
 using Microsoft.JSInterop;
 
-namespace Bit.Bsqlite.Storage.Opfs;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Database-level operations against OPFS, used by diagnostics and cross-provider migration.

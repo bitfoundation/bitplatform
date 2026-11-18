@@ -19,7 +19,7 @@ public static class FrameFactory
     /// <param name="Width">Frame width.</param>
     /// <param name="Height">Frame height.</param>
     /// <param name="Expected">The value the frame encodes, or null for an empty frame.</param>
-    public sealed record Frame(string Name, BbBarcodeFormat Format, byte[] Pixels, int Width, int Height, string? Expected);
+    public sealed record Frame(string Name, BbScannerBarcodeFormat Format, byte[] Pixels, int Width, int Height, string? Expected);
 
     /// <summary>
     /// The frames every benchmark decodes, and the budget check measures: one of every family of symbol, and an empty
@@ -34,10 +34,10 @@ public static class FrameFactory
         Pdf417("BIT PLATFORM BBSCANNER PDF417 BENCHMARK"),
         Aztec("M1BENCHMARK/BBSCANNER EABC123 AMSJFKKL 0641 300Y012A0042 100"),
         MicroPdf417("MICRO PDF417 BENCHMARK 2026"),
-        Linear("Code 128", BbBarcodeFormat.Code128, LinearEncoders.Code128("BARCODE-SCANNER-128"), "BARCODE-SCANNER-128"),
-        Linear("EAN-13", BbBarcodeFormat.Ean13, LinearEncoders.Ean13("4006381333931"), "4006381333931"),
-        Linear("GS1 DataBar", BbBarcodeFormat.DataBar, LinearEncoders.DataBar("09521234543213"), "0109521234543213"),
-        Linear("GS1 DataBar Expanded", BbBarcodeFormat.DataBarExpanded, LinearEncoders.DataBarExpanded("010952123454321310ABC123"), "010952123454321310ABC123"),
+        Linear("Code 128", BbScannerBarcodeFormat.Code128, LinearEncoders.Code128("BARCODE-SCANNER-128"), "BARCODE-SCANNER-128"),
+        Linear("EAN-13", BbScannerBarcodeFormat.Ean13, LinearEncoders.Ean13("4006381333931"), "4006381333931"),
+        Linear("GS1 DataBar", BbScannerBarcodeFormat.DataBar, LinearEncoders.DataBar("09521234543213"), "0109521234543213"),
+        Linear("GS1 DataBar Expanded", BbScannerBarcodeFormat.DataBarExpanded, LinearEncoders.DataBarExpanded("010952123454321310ABC123"), "010952123454321310ABC123"),
         Empty(),
     ];
 
@@ -52,7 +52,7 @@ public static class FrameFactory
         using var matrix = MicroPdf417Encoder.Encode(content, columns: 3);
         using var symbol = SyntheticImage.FromMatrix(matrix, scale);
         using var rotated = ImageTransforms.Rotate(symbol, degrees, background: 232);
-        return Compose($"MicroPDF417 {matrix.Width}x{matrix.Height}", BbBarcodeFormat.MicroPdf417, rotated, width, height, content, 0);
+        return Compose($"MicroPDF417 {matrix.Width}x{matrix.Height}", BbScannerBarcodeFormat.MicroPdf417, rotated, width, height, content, 0);
     }
 
     /// <summary>Renders a QR code centred in a camera sized frame.</summary>
@@ -63,9 +63,9 @@ public static class FrameFactory
     /// <param name="noise">Peak noise amplitude, 0 for a clean render.</param>
     public static Frame QrCode(string content, int width = 640, int height = 480, int scale = 4, int noise = 0)
     {
-        using var matrix = QrEncoder.Encode(content, BbQrErrorCorrectionLevel.M, maskPattern: 2);
+        using var matrix = QrEncoder.Encode(content, BbScannerQrErrorCorrectionLevel.M, maskPattern: 2);
         using var symbol = SyntheticImage.FromMatrix(matrix, scale);
-        return Compose($"QR {matrix.Width}x{matrix.Height} @{scale}px", BbBarcodeFormat.QrCode, symbol, width, height, content, noise);
+        return Compose($"QR {matrix.Width}x{matrix.Height} @{scale}px", BbScannerBarcodeFormat.QrCode, symbol, width, height, content, noise);
     }
 
     /// <summary>Renders a Data Matrix centred in a camera sized frame.</summary>
@@ -77,7 +77,7 @@ public static class FrameFactory
     {
         using var matrix = DataMatrixEncoder.Encode(content);
         using var symbol = SyntheticImage.FromMatrix(matrix, scale);
-        return Compose($"Data Matrix {matrix.Width}x{matrix.Height}", BbBarcodeFormat.DataMatrix, symbol, width, height, content, 0);
+        return Compose($"Data Matrix {matrix.Width}x{matrix.Height}", BbScannerBarcodeFormat.DataMatrix, symbol, width, height, content, 0);
     }
 
     /// <summary>Renders a PDF417 symbol, tilted the way a hand holds a phone, centred in a camera sized frame.</summary>
@@ -91,7 +91,7 @@ public static class FrameFactory
         using var matrix = Pdf417Encoder.Encode(content, columns: 5);
         using var symbol = SyntheticImage.FromMatrix(matrix, scale);
         using var rotated = ImageTransforms.Rotate(symbol, degrees, background: 232);
-        return Compose($"PDF417 {matrix.Width}x{matrix.Height}", BbBarcodeFormat.Pdf417, rotated, width, height, content, 0);
+        return Compose($"PDF417 {matrix.Width}x{matrix.Height}", BbScannerBarcodeFormat.Pdf417, rotated, width, height, content, 0);
     }
 
     /// <summary>Renders an Aztec symbol, turned a little, centred in a camera sized frame.</summary>
@@ -105,7 +105,7 @@ public static class FrameFactory
         using var matrix = AztecEncoder.Encode(content);
         using var symbol = SyntheticImage.FromMatrix(matrix, scale);
         using var rotated = ImageTransforms.Rotate(symbol, degrees, background: 232);
-        return Compose($"Aztec {matrix.Width}x{matrix.Height}", BbBarcodeFormat.Aztec, rotated, width, height, content, 0);
+        return Compose($"Aztec {matrix.Width}x{matrix.Height}", BbScannerBarcodeFormat.Aztec, rotated, width, height, content, 0);
     }
 
     /// <summary>Renders a linear symbol centred in a camera sized frame.</summary>
@@ -116,7 +116,7 @@ public static class FrameFactory
     /// <param name="width">Frame width.</param>
     /// <param name="height">Frame height.</param>
     public static Frame Linear(
-        string name, BbBarcodeFormat format, bool[] modules, string expected, int width = 640, int height = 480)
+        string name, BbScannerBarcodeFormat format, bool[] modules, string expected, int width = 640, int height = 480)
     {
         using var symbol = SyntheticImage.FromLinear(modules, scale: 2, height: 120, quietZoneModules: 12);
         return Compose(name, format, symbol, width, height, expected, 0);
@@ -129,13 +129,13 @@ public static class FrameFactory
     {
         var pixels = new byte[width * height];
         Array.Fill(pixels, (byte)232);
-        return new Frame("Empty frame", BbBarcodeFormat.None, pixels, width, height, null);
+        return new Frame("Empty frame", BbScannerBarcodeFormat.None, pixels, width, height, null);
     }
 
     private static Frame Compose(
         string name,
-        BbBarcodeFormat format,
-        BbLuminanceBuffer symbol,
+        BbScannerBarcodeFormat format,
+        BbScannerLuminanceBuffer symbol,
         int width,
         int height,
         string expected,

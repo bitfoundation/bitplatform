@@ -25,12 +25,12 @@ public class ComponentTrackingTests : BunitContext
     [TestMethod]
     public void Reflection_accessors_are_available_on_this_framework()
     {
-        Assert.IsNull(BlazorReflection.InitializationError);
-        Assert.IsTrue(BlazorReflection.CanWrapRenderFragment);
-        Assert.IsTrue(BlazorReflection.CanResolveRenderer);
-        Assert.IsTrue(BlazorReflection.CanResolveHierarchy);
-        Assert.IsTrue(BlazorReflection.CanDetectBatches);
-        Assert.IsTrue(BlazorReflection.CanReadRenderQueue);
+        Assert.IsNull(BevToolsBlazorReflection.InitializationError);
+        Assert.IsTrue(BevToolsBlazorReflection.CanWrapRenderFragment);
+        Assert.IsTrue(BevToolsBlazorReflection.CanResolveRenderer);
+        Assert.IsTrue(BevToolsBlazorReflection.CanResolveHierarchy);
+        Assert.IsTrue(BevToolsBlazorReflection.CanDetectBatches);
+        Assert.IsTrue(BevToolsBlazorReflection.CanReadRenderQueue);
     }
 
     [TestMethod]
@@ -46,7 +46,7 @@ public class ComponentTrackingTests : BunitContext
         Assert.AreEqual(1, child.RenderCount);
         Assert.AreSame(parent, child.Parent);
         Assert.IsNotNull(parent.ComponentId);
-        Assert.AreEqual(BevRenderCause.Initial, child.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.Initial, child.LastRender!.Cause);
         Assert.IsNotNull(Session.Dispatcher);
         Assert.IsTrue(parent.LastRender!.DurationMs >= 0);
 
@@ -69,8 +69,8 @@ public class ComponentTrackingTests : BunitContext
 
         Assert.AreEqual(2, parent.RenderCount);
         Assert.AreEqual(2, child.RenderCount);
-        Assert.AreEqual(BevRenderCause.StateHasChanged, parent.LastRender!.Cause);
-        Assert.AreEqual(BevRenderCause.ParentRender, child.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.StateHasChanged, parent.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.ParentRender, child.LastRender!.Cause);
         Assert.Contains("ParentComponent", child.LastRender.CauseDetail!);
         Assert.AreEqual(parent.LastRender.BatchId, child.LastRender.BatchId);
         Assert.Contains(s => s.StartsWith("_counter: 0 → 1"), parent.LastRender.ChangedState!);
@@ -121,7 +121,7 @@ public class ComponentTrackingTests : BunitContext
         var child = Session.Components.All.Single(r => r.Type == typeof(ChildComponent));
         var instance = Assert.IsExactInstanceOfType<ChildComponent>(child.Component);
 
-        Assert.IsExactInstanceOfType<BevTrackingJSRuntime>(instance.JS);
+        Assert.IsExactInstanceOfType<BevToolsTrackingJSRuntime>(instance.JS);
         cut.InvokeAsync(async () => await instance.JS!.InvokeVoidAsync("hello"));
 
         var call = Assert.ContainsSingle(Session.Interop.Snapshot());
@@ -158,7 +158,7 @@ public class ComponentTrackingTests : BunitContext
     [TestMethod]
     public void Ignored_components_are_not_tracked()
     {
-        Services.GetRequiredService<BitBevToolsOptions>().IgnoreComponentPredicates.Add(t => t == typeof(ChildComponent));
+        Services.GetRequiredService<BevToolsOptions>().IgnoreComponentPredicates.Add(t => t == typeof(ChildComponent));
         Render<ParentComponent>();
         Assert.DoesNotContain(r => r.Type == typeof(ChildComponent), Session.Components.All);
     }
@@ -168,7 +168,7 @@ public class ComponentTrackingTests : BunitContext
     {
         var cut = Render<ParentComponent>();
         BevToolsSession? resolved = null;
-        cut.InvokeAsync(() => resolved = SessionResolver.Resolve());
+        cut.InvokeAsync(() => resolved = BevToolsSessionResolver.Resolve());
         Assert.AreSame(Session, resolved);
     }
 
@@ -193,9 +193,9 @@ public class ComponentTrackingTests : BunitContext
         var child = session.Components.All.Single(record => record.Type == typeof(ChildComponent));
 
         Assert.AreEqual(2, parent.RenderCount);
-        Assert.AreEqual(BevRenderCause.Unknown, parent.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.Unknown, parent.LastRender!.Cause);
         Assert.DoesNotContain(e => e.Kind == BevToolsEventKind.Render, session.Timeline.Snapshot());
-        Assert.IsNotExactInstanceOfType<BevTrackingJSRuntime>(((ChildComponent)child.Component!).JS);
+        Assert.IsNotExactInstanceOfType<BevToolsTrackingJSRuntime>(((ChildComponent)child.Component!).JS);
     }
 }
 
@@ -232,7 +232,7 @@ public class PrerenderJsRuntimeTests : BunitContext
 
         var cut = Render<ParentComponent>();
 
-        Assert.IsExactInstanceOfType<BevTrackingJSRuntime>(cut.FindComponent<ChildComponent>().Instance.JS);
+        Assert.IsExactInstanceOfType<BevToolsTrackingJSRuntime>(cut.FindComponent<ChildComponent>().Instance.JS);
     }
 
     [TestMethod]
@@ -241,7 +241,7 @@ public class PrerenderJsRuntimeTests : BunitContext
         var remote = Type.GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime, Microsoft.AspNetCore.Components.Server");
 
         Assert.IsNotNull(remote);
-        Assert.IsNotNull(BlazorReflection.ResolveJSRuntimeNotReady(remote));
+        Assert.IsNotNull(BevToolsBlazorReflection.ResolveJSRuntimeNotReady(remote));
     }
 
     [TestMethod]
@@ -252,7 +252,7 @@ public class PrerenderJsRuntimeTests : BunitContext
 
         var cut = Render<ParentComponent>();
 
-        Assert.IsExactInstanceOfType<BevTrackingJSRuntime>(cut.FindComponent<ChildComponent>().Instance.JS);
+        Assert.IsExactInstanceOfType<BevToolsTrackingJSRuntime>(cut.FindComponent<ChildComponent>().Instance.JS);
         var capability = Services.GetRequiredService<BevToolsSession>().Capabilities.Single(c => c.Name == ".NET → JS calls from components");
         StringAssert.Contains(capability.Explanation, "WebViewJSRuntime");
     }

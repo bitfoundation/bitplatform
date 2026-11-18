@@ -62,7 +62,7 @@ Own UI keyboard model, names, focus, contrast, forced colours; page checks that 
 ### 8. Profiler
 
 p95 per component and type; what one batch rendered as a cost tree (self and subtree time, list rows grouped); two
-recordings compared per type in the Profiler and in tests (`BevProfileComparison`), with exact counts and
+recordings compared per type in the Profiler and in tests (`BevToolsProfileComparison`), with exact counts and
 noise-tolerant times; sort, grouping and comparison kept across tabs; keyboard-operable sorting with `aria-sort`.
 Round 13: a batch on a time axis (*Tree* | *Time*) and renders per page.
 
@@ -82,7 +82,7 @@ Message templates and groups (source, type, template, location); Errors → *Gro
 
 net8.0 and net9.0 suites and Firefox/WebKit browser runs (round 11, with two fixes they found); the component that sent
 each request (12); a batch on a time axis and renders per page (13); the companion's endpoints, senders and error
-groups (14); `BevSessionCheck` and the `bevtools` tool for CI (15). See progress.md.
+groups (14); `BevToolsSessionCheck` and the `bevtools` tool for CI (15). See progress.md.
 
 ### 16. Logs
 
@@ -115,7 +115,7 @@ exceptions of tasks nobody awaited, timeline markers. See progress.md, round 20.
 
 ### 21. State: details, search, restoring
 
-Change details and a filter in the State panel; `IBevStateRestorer` (a provider-owned restore token per change), ⟲ in
+Change details and a filter in the State panel; `IBevToolsStateRestorer` (a provider-owned restore token per change), ⟲ in
 the history and the protocol's `restore`; the demo's `CartState` restores. See progress.md, round 21.
 
 ### 22. Memory over time

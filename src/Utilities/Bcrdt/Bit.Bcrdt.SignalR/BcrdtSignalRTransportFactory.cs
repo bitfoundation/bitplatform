@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 
-namespace Bit.Bcrdt.SignalR;
+namespace Bit.Bcrdt;
 
 /// <summary>
 /// Creates a <see cref="BcrdtSignalRTransport"/> per document against one hub.

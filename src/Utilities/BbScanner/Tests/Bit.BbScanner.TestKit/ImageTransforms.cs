@@ -9,17 +9,17 @@ namespace Bit.BbScanner.TestKit;
 public static class ImageTransforms
 {
     /// <summary>Places the image in the middle of a larger frame filled with <paramref name="background"/>.</summary>
-    public static BbLuminanceBuffer Frame(BbLuminanceBuffer source, int width, int height, byte background = 255)
+    public static BbScannerLuminanceBuffer Frame(BbScannerLuminanceBuffer source, int width, int height, byte background = 255)
     {
         ArgumentNullException.ThrowIfNull(source);
-        var result = BbLuminanceBuffer.Rent(width, height);
+        var result = BbScannerLuminanceBuffer.Rent(width, height);
         result.Pixels.Fill(background);
         Paste(source, result, (width - source.Width) / 2, (height - source.Height) / 2);
         return result;
     }
 
     /// <summary>Copies <paramref name="source"/> into <paramref name="target"/> at the given position, clipping at the edges.</summary>
-    public static void Paste(BbLuminanceBuffer source, BbLuminanceBuffer target, int x, int y)
+    public static void Paste(BbScannerLuminanceBuffer source, BbScannerLuminanceBuffer target, int x, int y)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(target);
@@ -45,7 +45,7 @@ public static class ImageTransforms
     }
 
     /// <summary>Rotates the image about its centre by <paramref name="degrees"/> using bilinear sampling. The output is large enough to hold the whole rotated image.</summary>
-    public static BbLuminanceBuffer Rotate(BbLuminanceBuffer source, double degrees, byte background = 255)
+    public static BbScannerLuminanceBuffer Rotate(BbScannerLuminanceBuffer source, double degrees, byte background = 255)
     {
         ArgumentNullException.ThrowIfNull(source);
         var radians = degrees * Math.PI / 180.0;
@@ -57,7 +57,7 @@ public static class ImageTransforms
         var outW = (int)Math.Ceiling((Math.Abs(w * cos) + Math.Abs(h * sin)));
         var outH = (int)Math.Ceiling((Math.Abs(w * sin) + Math.Abs(h * cos)));
 
-        var result = BbLuminanceBuffer.Rent(outW, outH);
+        var result = BbScannerLuminanceBuffer.Rent(outW, outH);
         var cx = (w - 1) / 2.0;
         var cy = (h - 1) / 2.0;
         var ocx = (outW - 1) / 2.0;
@@ -79,14 +79,14 @@ public static class ImageTransforms
     }
 
     /// <summary>Resizes the image by <paramref name="factor"/> using box filtering when shrinking and bilinear sampling when enlarging.</summary>
-    public static BbLuminanceBuffer Scale(BbLuminanceBuffer source, double factor)
+    public static BbScannerLuminanceBuffer Scale(BbScannerLuminanceBuffer source, double factor)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(factor, 0);
 
         var outW = Math.Max(1, (int)Math.Round(source.Width * factor));
         var outH = Math.Max(1, (int)Math.Round(source.Height * factor));
-        var result = BbLuminanceBuffer.Rent(outW, outH);
+        var result = BbScannerLuminanceBuffer.Rent(outW, outH);
 
         if (factor >= 1)
         {
@@ -129,12 +129,12 @@ public static class ImageTransforms
     }
 
     /// <summary>Applies a separable Gaussian blur with the given standard deviation in pixels.</summary>
-    public static BbLuminanceBuffer Blur(BbLuminanceBuffer source, double sigma)
+    public static BbScannerLuminanceBuffer Blur(BbScannerLuminanceBuffer source, double sigma)
     {
         ArgumentNullException.ThrowIfNull(source);
         if (sigma <= 0)
         {
-            var copy = BbLuminanceBuffer.Rent(source.Width, source.Height);
+            var copy = BbScannerLuminanceBuffer.Rent(source.Width, source.Height);
             source.Pixels.CopyTo(copy.Pixels);
             return copy;
         }
@@ -173,7 +173,7 @@ public static class ImageTransforms
             }
         }
 
-        var result = BbLuminanceBuffer.Rent(w, h);
+        var result = BbScannerLuminanceBuffer.Rent(w, h);
         for (var y = 0; y < h; y++)
         {
             for (var x = 0; x < w; x++)
@@ -197,8 +197,8 @@ public static class ImageTransforms
     /// symbol photographed at an angle. Points are in output pixel coordinates in the order
     /// top-left, top-right, bottom-right, bottom-left. The output size is the bounding box of the points.
     /// </summary>
-    public static BbLuminanceBuffer Perspective(
-        BbLuminanceBuffer source,
+    public static BbScannerLuminanceBuffer Perspective(
+        BbScannerLuminanceBuffer source,
         (double X, double Y) topLeft,
         (double X, double Y) topRight,
         (double X, double Y) bottomRight,
@@ -212,7 +212,7 @@ public static class ImageTransforms
         // Map output quadrilateral -> unit square -> source rectangle.
         var toUnit = SquareToQuadrilateral(topLeft, topRight, bottomRight, bottomLeft).Inverse();
 
-        var result = BbLuminanceBuffer.Rent(outW, outH);
+        var result = BbScannerLuminanceBuffer.Rent(outW, outH);
         for (var y = 0; y < outH; y++)
         {
             for (var x = 0; x < outW; x++)
@@ -232,7 +232,7 @@ public static class ImageTransforms
     }
 
     /// <summary>Tilts the image by <paramref name="degrees"/> around its vertical axis, a typical hand-held camera pose.</summary>
-    public static BbLuminanceBuffer Tilt(BbLuminanceBuffer source, double degrees)
+    public static BbScannerLuminanceBuffer Tilt(BbScannerLuminanceBuffer source, double degrees)
     {
         ArgumentNullException.ThrowIfNull(source);
         var w = source.Width;
@@ -251,12 +251,12 @@ public static class ImageTransforms
     }
 
     /// <summary>Multiplies luminance by a horizontal gradient from <paramref name="leftFactor"/> to <paramref name="rightFactor"/>, simulating uneven lighting.</summary>
-    public static BbLuminanceBuffer LightingGradient(BbLuminanceBuffer source, double leftFactor, double rightFactor)
+    public static BbScannerLuminanceBuffer LightingGradient(BbScannerLuminanceBuffer source, double leftFactor, double rightFactor)
     {
         ArgumentNullException.ThrowIfNull(source);
         var w = source.Width;
         var h = source.Height;
-        var result = BbLuminanceBuffer.Rent(w, h);
+        var result = BbScannerLuminanceBuffer.Rent(w, h);
         for (var y = 0; y < h; y++)
         {
             for (var x = 0; x < w; x++)
@@ -271,10 +271,10 @@ public static class ImageTransforms
     }
 
     /// <summary>Compresses the luminance range to <c>[dark, light]</c>, simulating a washed out or underexposed capture.</summary>
-    public static BbLuminanceBuffer Contrast(BbLuminanceBuffer source, byte dark, byte light)
+    public static BbScannerLuminanceBuffer Contrast(BbScannerLuminanceBuffer source, byte dark, byte light)
     {
         ArgumentNullException.ThrowIfNull(source);
-        var result = BbLuminanceBuffer.Rent(source.Width, source.Height);
+        var result = BbScannerLuminanceBuffer.Rent(source.Width, source.Height);
         var range = light - dark;
         for (var i = 0; i < result.Pixels.Length; i++)
         {
@@ -285,10 +285,10 @@ public static class ImageTransforms
     }
 
     /// <summary>Inverts luminance, producing a light-on-dark symbol.</summary>
-    public static BbLuminanceBuffer Invert(BbLuminanceBuffer source)
+    public static BbScannerLuminanceBuffer Invert(BbScannerLuminanceBuffer source)
     {
         ArgumentNullException.ThrowIfNull(source);
-        var result = BbLuminanceBuffer.Rent(source.Width, source.Height);
+        var result = BbScannerLuminanceBuffer.Rent(source.Width, source.Height);
         for (var i = 0; i < result.Pixels.Length; i++)
         {
             result.Pixels[i] = (byte)(255 - source.Pixels[i]);
@@ -298,7 +298,7 @@ public static class ImageTransforms
     }
 
     /// <summary>Fills the background with a busy texture (text-like stripes and blobs) so the symbol is not the only structure in frame.</summary>
-    public static void Clutter(BbLuminanceBuffer target, int seed, int keepOutLeft, int keepOutTop, int keepOutWidth, int keepOutHeight)
+    public static void Clutter(BbScannerLuminanceBuffer target, int seed, int keepOutLeft, int keepOutTop, int keepOutWidth, int keepOutHeight)
     {
         ArgumentNullException.ThrowIfNull(target);
         var random = new Random(seed);
@@ -330,7 +330,7 @@ public static class ImageTransforms
     }
 
     /// <summary>Expands the image to packed RGBA, tinting slightly so the colour path is exercised.</summary>
-    public static byte[] ToRgba(BbLuminanceBuffer source, bool tint = true)
+    public static byte[] ToRgba(BbScannerLuminanceBuffer source, bool tint = true)
     {
         ArgumentNullException.ThrowIfNull(source);
         var pixels = source.Pixels;
@@ -347,7 +347,7 @@ public static class ImageTransforms
         return rgba;
     }
 
-    private static byte Sample(BbLuminanceBuffer source, double x, double y, byte background)
+    private static byte Sample(BbScannerLuminanceBuffer source, double x, double y, byte background)
     {
         var w = source.Width;
         var h = source.Height;
@@ -371,7 +371,7 @@ public static class ImageTransforms
         return (byte)Math.Clamp(Math.Round((top * (1 - fy)) + (bottom * fy)), 0, 255);
     }
 
-    private static int Pixel(BbLuminanceBuffer source, int x, int y, byte background) =>
+    private static int Pixel(BbScannerLuminanceBuffer source, int x, int y, byte background) =>
         (uint)x < (uint)source.Width && (uint)y < (uint)source.Height
             ? source.Pixels[(y * source.Width) + x]
             : background;

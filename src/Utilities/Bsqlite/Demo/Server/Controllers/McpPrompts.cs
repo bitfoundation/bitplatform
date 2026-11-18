@@ -46,9 +46,9 @@ public static class McpPrompts
             4. In a Blazor Web App, register the services in BOTH the client and the server project (one shared extension
                method), and open the database only once `RendererInfo.IsInteractive` is true. Missing either is the most
                common mistake: it fails during prerendering, not at compile time.
-            5. Call `GetBsqliteApi` for every Bsqlite type you use and copy its namespace: `AddBitBsqliteServices` and
-               `AddBitBsqliteDbContext` are in `Microsoft.Extensions.DependencyInjection`, `IBsqliteDbContextFactory` in
-               `Bit.Bsqlite.EntityFrameworkCore`, the providers in `Bit.Bsqlite.Storage.*`.
+            5. Add `using Bit.Bsqlite;`: every Bsqlite type is in that one namespace, `AddBitBsqliteServices`,
+               `AddBitBsqliteDbContext`, `IBsqliteDbContextFactory` and the storage providers included. Call
+               `GetBsqliteApi` for every Bsqlite type you use rather than writing its members from memory.
             6. Use the async EF Core API throughout; replace any `SaveChanges()`, `ToList()` or `First()` you touch.
             7. Build the app and fix what the compiler says.
 

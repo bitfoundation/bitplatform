@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazeDb.Serialization;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// Wire type encoded in the low 3 bits of a field tag, protobuf-style. Allows readers to

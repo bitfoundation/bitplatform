@@ -1,8 +1,7 @@
 ﻿using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
-using Bit.BlazeDb.Storage;
 
-namespace Bit.BlazeDb.Browser;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// IndexedDB storage backend, for browsers and modes where OPFS is unavailable - Firefox private

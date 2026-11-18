@@ -6,7 +6,7 @@
 <h1>Decoder</h1>
 
 <p>
-    <code>BbBarcodeDecoder</code> has no dependency on Blazor, JavaScript or a camera, so it runs wherever .NET does:
+    <code>BbScannerBarcodeDecoder</code> has no dependency on Blazor, JavaScript or a camera, so it runs wherever .NET does:
     in the browser on WebAssembly, on the server, and natively in a MAUI app, where it is what the frames of the
     platform's own camera API go to. Every symbol below was generated in memory, rendered to grayscale pixels and
     read back on this host by one decoder, frame after frame, the way a camera loop reads them.
@@ -51,7 +51,7 @@
 </div>
 
 @code {
-    private sealed record Row(BarcodeSample Symbol, string Path, int Width, int Height, BbBarcodeResult? Result, TimeSpan Time)
+    private sealed record Row(BarcodeSample Symbol, string Path, int Width, int Height, BbScannerBarcodeResult? Result, TimeSpan Time)
     {
         public bool Read => Result is not null && Result.Format == Symbol.Format && Result.Text == Symbol.Value;
     }
@@ -89,12 +89,12 @@
         try
         {
             var options = _stillImageTuning ? BbScannerOptions.ForStillImages() : new BbScannerOptions();
-            options.Formats = BbBarcodeFormat.All;
+            options.Formats = BbScannerBarcodeFormat.All;
             options.DuplicateSuppressionWindow = TimeSpan.Zero;
 
             // One decoder for every symbol: it owns the scratch state a frame needs and reuses it, which is what keeps a
             // camera loop free of garbage. It is not thread safe - one per scanning session.
-            using var decoder = new BbBarcodeDecoder(options);
+            using var decoder = new BbScannerBarcodeDecoder(options);
             foreach (var symbol in Symbols)
             {
                 using var image = SampleCatalog.Render(symbol, scale: 4, linearScale: 3, height: 60);

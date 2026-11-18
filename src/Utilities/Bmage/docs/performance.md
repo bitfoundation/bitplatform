@@ -123,14 +123,14 @@ aliasing, transparent edges keep their colour, and content stays aligned to with
 An arbitrary rotation costs far more than any other geometric operation, and almost all of that is the sampler,
 which runs once per output pixel. Measured on a 12 megapixel image rotated by 37 degrees:
 
-| `WarpSampling` | Throughput | Use when |
+| `BmageWarpSampling` | Throughput | Use when |
 | --- | ---: | --- |
 | `NearestNeighbor` | 105 MP/s | Pixel art, or a preview that will be re-rendered |
 | `Bilinear` | 95 MP/s | Interactive rotation of a large image |
 | `Bicubic` (default) | 70 MP/s | Final output |
 
 A rotation by a multiple of 90 degrees never samples at all and runs at roughly 350 MP/s, so prefer
-`OrientationOperation` whenever the angle allows it. The editor stays responsive at any setting because previews
+`BmageOrientationOperation` whenever the angle allows it. The editor stays responsive at any setting because previews
 render against a downscaled proxy; the full-resolution pass happens once, on export.
 
 ### Editing tools
@@ -189,7 +189,7 @@ the reference to compare with the tables above. The document rows run on a gener
 The skew estimate and sharpness measure a reduced copy, so they barely grow with the image. The adaptive threshold's
 sliding sums make its cost independent of the radius. The radial blurs were first written as a sample for every pixel
 of every streak, up to 128 of them, which took 3.2 and 6.3 seconds at 1920×1080 and 16 and 30 seconds at 3840×2160;
-the passes of four samples described in `RadialBlurFilter` brought that down by a factor of 10 to 15. They remain the
+the passes of four samples described in `BmageRadialBlurFilter` brought that down by a factor of 10 to 15. They remain the
 costliest filters here, with streaks hundreds of pixels long, and are best previewed at the editor's proxy size.
 
 ### WebAssembly: editing tools
@@ -390,7 +390,7 @@ storing pixel snapshots would need roughly 4.8 GB.
 **Cap dimensions before anything else.** Every later operation costs proportionally less.
 
 ```csharp
-ImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)
+BmageImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)
 ```
 
 **Group adjustments together.** Consecutive per-pixel operations fuse into one pass; separating them with a geometric

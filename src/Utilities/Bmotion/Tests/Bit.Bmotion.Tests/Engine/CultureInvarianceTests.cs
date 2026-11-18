@@ -39,7 +39,7 @@ public class CultureInvarianceTests
     }
 
     // Values chosen to exercise a decimal separator and a minus sign in every kind of CSS number.
-    private static BmProps Fractional => Bm.To(
+    private static BmotionProps Fractional => Bm.To(
         x: -1.5, y: 2.25, rotate: -12.75, scale: 0.5,
         opacity: 0.125,
         width: 10.5, // a bare number becomes a px dimension
@@ -78,7 +78,7 @@ public class CultureInvarianceTests
             // Without Web Animations the whole target plays on the frame loop.
             await using var engine = new BmotionAnimationEngine(new FakeBmotionInterop { WebAnimationsSupported = false });
             engine.RegisterElement("el", null);
-            await engine.AnimateToAsync("el", Fractional.ToJsDictionary(), Bm.Tween(1, ease: BmEase.Linear).ToConfig());
+            await engine.AnimateToAsync("el", Fractional.ToJsDictionary(), Bm.Tween(1, ease: BmotionEase.Linear).ToConfig());
             engine.ComputeFrame(0);
             var frame = engine.ComputeFrame(333)!["el"];
             return string.Join(";", frame.OrderBy(kv => kv.Key, StringComparer.Ordinal).Select(kv => $"{kv.Key}:{kv.Value}"));
@@ -102,7 +102,7 @@ public class CultureInvarianceTests
     public Task BareNumberDimensions_AreCultureInvariant()
         => AssertCultureInvariant(() =>
         {
-            BmStringKeyframes width = 12.5;
+            BmotionStringKeyframes width = 12.5;
             Assert.AreEqual("12.5px", width.First);
             return Task.FromResult(width.First);
         });

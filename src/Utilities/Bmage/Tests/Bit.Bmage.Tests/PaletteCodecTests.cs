@@ -1,10 +1,5 @@
 ﻿using System.Buffers.Binary;
 using System.Drawing;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Gif;
-using Bit.Bmage.Codecs.Ico;
-using Bit.Bmage.Codecs.Png;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 
@@ -12,12 +7,12 @@ namespace Bit.Bmage.Tests;
 public sealed class IndexedPngTests
 {
     /// <summary>A logo-like image: a few flat colours, some translucent, on transparency.</summary>
-    internal static ImageBuffer Flat(int width = 90, int height = 60)
+    internal static BmageImageBuffer Flat(int width = 90, int height = 60)
     {
-        var image = ImageBuffer.Create(width, height, Rgba32.Transparent);
-        image.Fill(new Rectangle(5, 5, 40, 30), new Rgba32(220, 30, 30));
-        image.Fill(new Rectangle(30, 20, 40, 30), new Rgba32(20, 120, 220, 140));
-        image.Fill(new Rectangle(60, 10, 25, 45), new Rgba32(250, 200, 0));
+        var image = BmageImageBuffer.Create(width, height, BmageRgba32.Transparent);
+        image.Fill(new Rectangle(5, 5, 40, 30), new BmageRgba32(220, 30, 30));
+        image.Fill(new Rectangle(30, 20, 40, 30), new BmageRgba32(20, 120, 220, 140));
+        image.Fill(new Rectangle(60, 10, 25, 45), new BmageRgba32(250, 200, 0));
         return image;
     }
 
@@ -29,12 +24,12 @@ public sealed class IndexedPngTests
     public void AnImageWithFewColoursKeepsEveryPixelExactly()
     {
         using var flat = Flat();
-        var encoded = PngEncoder.Encode(flat, new ImageExportOptions { MaxColors = 16 });
+        var encoded = BmagePngEncoder.Encode(flat, new BmageImageExportOptions { MaxColors = 16 });
         Assert.AreEqual(3, ColorType(encoded.Data), "Indexed colour.");
         Assert.AreEqual(2, BitDepth(encoded.Data), "Three colours and transparency fit in two bits a pixel.");
-        using var decoded = PngDecoder.Decode(encoded.Data);
+        using var decoded = BmagePngDecoder.Decode(encoded.Data);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(flat, decoded));
-        var full = PngEncoder.Encode(flat);
+        var full = BmagePngEncoder.Encode(flat);
         Assert.IsLessThan(full.Length, encoded.Length, "The palette makes the file smaller.");
     }
 
@@ -46,24 +41,24 @@ public sealed class IndexedPngTests
     [DataRow(256, 8)]
     public void TheFewestBitsThePaletteNeedsAreUsed(int colours, int bits)
     {
-        using var image = ImageBuffer.Create(colours, 3);
+        using var image = BmageImageBuffer.Create(colours, 3);
         for (var x = 0; x < colours; x++)
-            for (var y = 0; y < 3; y++) image[x, y] = new Rgba32((byte)x, (byte)(255 - x), (byte)(x * 7));
-        var encoded = PngEncoder.Encode(image, new ImageExportOptions { MaxColors = 256 });
+            for (var y = 0; y < 3; y++) image[x, y] = new BmageRgba32((byte)x, (byte)(255 - x), (byte)(x * 7));
+        var encoded = BmagePngEncoder.Encode(image, new BmageImageExportOptions { MaxColors = 256 });
         Assert.AreEqual(bits, BitDepth(encoded.Data));
-        using var decoded = PngDecoder.Decode(encoded.Data);
+        using var decoded = BmagePngDecoder.Decode(encoded.Data);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(image, decoded), "Rows pack and unpack the indices exactly, whatever the width.");
     }
 
     [TestMethod]
     public void APhotoIsReducedToThePaletteCloseToItsColours()
     {
-        using var photo = ImagePipeline.Create().Blur(2).Execute(ParallelProcessingTests.Noise(200, 150, seed: 2));
+        using var photo = BmageImagePipeline.Create().Blur(2).Execute(ParallelProcessingTests.Noise(200, 150, seed: 2));
         foreach (var dither in new[] { false, true })
         {
-            var encoded = PngEncoder.Encode(photo, new ImageExportOptions { MaxColors = 64, Dither = dither });
-            using var decoded = PngDecoder.Decode(encoded.Data);
-            var colours = new HashSet<Rgba32>();
+            var encoded = BmagePngEncoder.Encode(photo, new BmageImageExportOptions { MaxColors = 64, Dither = dither });
+            using var decoded = BmagePngDecoder.Decode(encoded.Data);
+            var colours = new HashSet<BmageRgba32>();
             foreach (var p in decoded.Pixels) colours.Add(p);
             Assert.IsLessThanOrEqualTo(64, colours.Count, $"dither {dither}");
             Assert.IsLessThan(10, TestImages.MeanChannelDifference(photo, decoded, includeAlpha: true), $"dither {dither}");
@@ -74,12 +69,12 @@ public sealed class IndexedPngTests
     public void DitheringBreaksUpBandsInAGradient()
     {
         // A slow grey ramp in eight levels bands into stripes; dithered, each stripe's average stays near the ramp.
-        using var ramp = ImageBuffer.Create(256, 16);
+        using var ramp = BmageImageBuffer.Create(256, 16);
         for (var x = 0; x < 256; x++)
-            for (var y = 0; y < 16; y++) ramp[x, y] = new Rgba32((byte)x, (byte)x, (byte)x);
+            for (var y = 0; y < 16; y++) ramp[x, y] = new BmageRgba32((byte)x, (byte)x, (byte)x);
         double Error(bool dither)
         {
-            using var decoded = PngDecoder.Decode(PngEncoder.Encode(ramp, new ImageExportOptions { MaxColors = 8, Dither = dither }).Data);
+            using var decoded = BmagePngDecoder.Decode(BmagePngEncoder.Encode(ramp, new BmageImageExportOptions { MaxColors = 8, Dither = dither }).Data);
             // The column averages of the result against the ramp: what the eye sees from a distance.
             double total = 0;
             for (var x = 0; x < 256; x++)
@@ -98,20 +93,20 @@ public sealed class IndexedPngTests
     [TestMethod]
     public void MaxColorsIsChecked()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new ImageExportOptions { MaxColors = 1 });
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new ImageExportOptions { MaxColors = 257 });
-        Assert.IsNull(new ImageExportOptions { MaxColors = null }.MaxColors);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageImageExportOptions { MaxColors = 1 });
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageImageExportOptions { MaxColors = 257 });
+        Assert.IsNull(new BmageImageExportOptions { MaxColors = null }.MaxColors);
     }
 
     [TestMethod]
     public void MetadataIsKeptAsThePolicySays()
     {
         using var flat = Flat();
-        flat.Metadata = new Metadata.ImageMetadata(xmp: "<x:xmpmeta xmlns:x='adobe:ns:meta/'/>"u8.ToArray());
-        var kept = PngEncoder.Encode(flat, new ImageExportOptions { MaxColors = 16, Metadata = Metadata.MetadataPolicy.Preserve });
-        var removed = PngEncoder.Encode(flat, new ImageExportOptions { MaxColors = 16 });
+        flat.Metadata = new BmageImageMetadata(xmp: "<x:xmpmeta xmlns:x='adobe:ns:meta/'/>"u8.ToArray());
+        var kept = BmagePngEncoder.Encode(flat, new BmageImageExportOptions { MaxColors = 16, Metadata = BmageMetadataPolicy.Preserve });
+        var removed = BmagePngEncoder.Encode(flat, new BmageImageExportOptions { MaxColors = 16 });
         Assert.IsGreaterThan(removed.Length, kept.Length);
-        using var decoded = PngDecoder.Decode(kept.Data);
+        using var decoded = BmagePngDecoder.Decode(kept.Data);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(flat, decoded));
     }
 }
@@ -123,16 +118,16 @@ public sealed class GifEncoderTests
     public void AFlatImageRoundTripsWithItsTransparency()
     {
         using var flat = IndexedPngTests.Flat();
-        var encoded = GifEncoder.Encode(flat);
-        Assert.AreEqual(ImageFormat.Gif, ImageFormats.Detect(encoded.Data));
-        using var decoded = GifDecoder.Decode(encoded.Data);
+        var encoded = BmageGifEncoder.Encode(flat);
+        Assert.AreEqual(BmageImageFormat.Gif, BmageImageFormats.Detect(encoded.Data));
+        using var decoded = BmageGifDecoder.Decode(encoded.Data);
         // GIF has no partial transparency: the translucent blue (alpha 140) becomes opaque, everything else stays.
         for (var y = 0; y < flat.Height; y++)
             for (var x = 0; x < flat.Width; x++)
             {
                 var p = flat[x, y];
-                var expected = p.A == 0 ? Rgba32.Transparent : p.WithAlpha(255);
-                Assert.AreEqual(expected, decoded[x, y].A == 0 ? Rgba32.Transparent : decoded[x, y], $"({x},{y})");
+                var expected = p.A == 0 ? BmageRgba32.Transparent : p.WithAlpha(255);
+                Assert.AreEqual(expected, decoded[x, y].A == 0 ? BmageRgba32.Transparent : decoded[x, y], $"({x},{y})");
             }
     }
 
@@ -146,9 +141,9 @@ public sealed class GifEncoderTests
     {
         // Noise defeats LZW's dictionary, so the codes widen to twelve bits and the table fills and clears many times.
         using var noise = ParallelProcessingTests.Noise(width, height, seed: width);
-        var options = new ImageExportOptions { Format = ImageFormat.Gif, MaxColors = colours, Dither = false };
-        var expected = ColorQuantizer.Quantize(noise, colours, dither: false, alphaLevels: 2);
-        using var decoded = GifDecoder.Decode(GifEncoder.Encode(noise, options).Data);
+        var options = new BmageImageExportOptions { Format = BmageImageFormat.Gif, MaxColors = colours, Dither = false };
+        var expected = BmageColorQuantizer.Quantize(noise, colours, dither: false, alphaLevels: 2);
+        using var decoded = BmageGifDecoder.Decode(BmageGifEncoder.Encode(noise, options).Data);
         for (var i = 0; i < noise.PixelCount; i++)
         {
             var want = expected.Palette[expected.Indices[i]];
@@ -163,12 +158,12 @@ public sealed class GifEncoderTests
     {
         // Transparency takes one of the two entries and the light pixels the other: black is nearer transparent black
         // than that light grey once alpha counts, but a GIF pixel that was opaque must not vanish.
-        using var image = ImageBuffer.Create(16, 16, Rgba32.White);
-        for (var x = 0; x < 16; x++) image[x, 0] = Rgba32.Transparent;
-        for (var x = 0; x < 16; x++) image[x, 1] = new Rgba32(235, 235, 235);
-        image[8, 8] = Rgba32.Black;
-        var options = new ImageExportOptions { Format = ImageFormat.Gif, MaxColors = 2, Dither = false };
-        using var decoded = GifDecoder.Decode(GifEncoder.Encode(image, options).Data);
+        using var image = BmageImageBuffer.Create(16, 16, BmageRgba32.White);
+        for (var x = 0; x < 16; x++) image[x, 0] = BmageRgba32.Transparent;
+        for (var x = 0; x < 16; x++) image[x, 1] = new BmageRgba32(235, 235, 235);
+        image[8, 8] = BmageRgba32.Black;
+        var options = new BmageImageExportOptions { Format = BmageImageFormat.Gif, MaxColors = 2, Dither = false };
+        using var decoded = BmageGifDecoder.Decode(BmageGifEncoder.Encode(image, options).Data);
         Assert.AreEqual(255, decoded[8, 8].A, "The black pixel is still opaque.");
         Assert.AreEqual(0, decoded[3, 0].A, "The transparent row is still transparent.");
     }
@@ -176,36 +171,36 @@ public sealed class GifEncoderTests
     [TestMethod]
     public void ARepetitiveImageCompressesWell()
     {
-        using var stripes = ImageBuffer.Create(400, 300);
+        using var stripes = BmageImageBuffer.Create(400, 300);
         for (var y = 0; y < 300; y++)
-            for (var x = 0; x < 400; x++) stripes[x, y] = (x / 10 + y / 10) % 2 == 0 ? Rgba32.White : Rgba32.Black;
-        var encoded = GifEncoder.Encode(stripes);
+            for (var x = 0; x < 400; x++) stripes[x, y] = (x / 10 + y / 10) % 2 == 0 ? BmageRgba32.White : BmageRgba32.Black;
+        var encoded = BmageGifEncoder.Encode(stripes);
         Assert.IsLessThan(stripes.PixelCount / 20, encoded.Length);
-        using var decoded = GifDecoder.Decode(encoded.Data);
+        using var decoded = BmageGifDecoder.Decode(encoded.Data);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(stripes, decoded));
     }
 
     [TestMethod]
     public async Task TheProcessorEncodesGifAndIcoThroughItsRegistry()
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var flat = IndexedPngTests.Flat(64, 64);
-        var gif = await processor.EncodeAsync(flat, new ImageExportOptions { Format = ImageFormat.Gif });
-        Assert.AreEqual(ImageFormat.Gif, gif.Format);
+        var gif = await processor.EncodeAsync(flat, new BmageImageExportOptions { Format = BmageImageFormat.Gif });
+        Assert.AreEqual(BmageImageFormat.Gif, gif.Format);
         Assert.AreEqual("image/gif", gif.MimeType);
-        var ico = await processor.EncodeAsync(flat, new ImageExportOptions { Format = ImageFormat.Ico });
-        Assert.AreEqual(ImageFormat.Ico, ImageFormats.Detect(ico.Data));
+        var ico = await processor.EncodeAsync(flat, new BmageImageExportOptions { Format = BmageImageFormat.Ico });
+        Assert.AreEqual(BmageImageFormat.Ico, BmageImageFormats.Detect(ico.Data));
         Assert.AreEqual(".ico", ico.Extension);
         using var back = await processor.DecodeAsync(ico.Data);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(flat, back));
-        Assert.IsTrue(processor.Codecs.CanEncode(ImageFormat.Gif));
+        Assert.IsTrue(processor.Codecs.CanEncode(BmageImageFormat.Gif));
     }
 
     [TestMethod]
     public void AnImageTooLargeForGifIsRefused()
     {
-        using var wide = ImageBuffer.Create(70000, 1, limits: ImageLimits.Unrestricted);
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => GifEncoder.Encode(wide));
+        using var wide = BmageImageBuffer.Create(70000, 1, limits: BmageImageLimits.Unrestricted);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BmageGifEncoder.Encode(wide));
     }
 }
 
@@ -216,47 +211,47 @@ public sealed class IcoCodecTests
     public void AFaviconHoldsEachSizeAndDecodesToTheLargest()
     {
         using var logo = IndexedPngTests.Flat(120, 80);
-        var favicon = IcoEncoder.CreateFavicon(logo);
-        Assert.AreEqual(ImageFormat.Ico, ImageFormats.Detect(favicon.Data));
-        var entries = IcoDecoder.ReadDirectory(favicon.Data);
+        var favicon = BmageIcoEncoder.CreateFavicon(logo);
+        Assert.AreEqual(BmageImageFormat.Ico, BmageImageFormats.Detect(favicon.Data));
+        var entries = BmageIcoDecoder.ReadDirectory(favicon.Data);
         CollectionAssert.AreEqual(new[] { 16, 32, 48 }, entries.Select(e => e.Width).ToArray());
         CollectionAssert.AreEqual(new[] { 16, 32, 48 }, entries.Select(e => e.Height).ToArray());
 
-        var info = new IcoDecoder().Identify(favicon.Data);
+        var info = new BmageIcoDecoder().Identify(favicon.Data);
         Assert.AreEqual(48, info!.Width);
-        using var decoded = IcoDecoder.Decode(favicon.Data);
+        using var decoded = BmageIcoDecoder.Decode(favicon.Data);
         Assert.AreEqual(new Size(48, 48), decoded.Size);
         // Fitted, not stretched: the 3:2 logo leaves transparent bands above and below.
         Assert.AreEqual(0, decoded[24, 2].A);
-        Assert.AreEqual(ImageFormat.Ico, decoded.Metadata!.SourceFormat);
+        Assert.AreEqual(BmageImageFormat.Ico, decoded.Metadata!.SourceFormat);
     }
 
     [TestMethod]
     public void A256PixelImageIsWrittenWithTheDirectorysZero()
     {
-        using var big = ImageBuffer.Create(256, 256, new Rgba32(10, 20, 30));
-        var encoded = IcoEncoder.Encode([big]);
+        using var big = BmageImageBuffer.Create(256, 256, new BmageRgba32(10, 20, 30));
+        var encoded = BmageIcoEncoder.Encode([big]);
         Assert.AreEqual(0, encoded.Data[6], "256 is stored as 0.");
-        Assert.AreEqual(256, IcoDecoder.ReadDirectory(encoded.Data)[0].Width);
-        using var tooBig = ImageBuffer.Create(257, 16);
-        Assert.ThrowsExactly<ArgumentException>(() => IcoEncoder.Encode([tooBig]));
-        Assert.ThrowsExactly<ArgumentException>(() => IcoEncoder.Encode([]));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => IcoEncoder.CreateFavicon(big, [0]));
+        Assert.AreEqual(256, BmageIcoDecoder.ReadDirectory(encoded.Data)[0].Width);
+        using var tooBig = BmageImageBuffer.Create(257, 16);
+        Assert.ThrowsExactly<ArgumentException>(() => BmageIcoEncoder.Encode([tooBig]));
+        Assert.ThrowsExactly<ArgumentException>(() => BmageIcoEncoder.Encode([]));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BmageIcoEncoder.CreateFavicon(big, [0]));
     }
 
     [TestMethod]
     public async Task TheEncoderFitsALargeImageInsideAnIcon()
     {
-        // The IImageEncoder path is what a capability check promises: it fits the image rather than refusing it.
-        using var photo = ImageBuffer.Create(1024, 512, new Rgba32(10, 20, 30));
-        var encoded = await new IcoEncoder().EncodeAsync(photo, new ImageExportOptions { Format = ImageFormat.Ico });
-        var entry = IcoDecoder.ReadDirectory(encoded.Data)[0];
+        // The IBmageImageEncoder path is what a capability check promises: it fits the image rather than refusing it.
+        using var photo = BmageImageBuffer.Create(1024, 512, new BmageRgba32(10, 20, 30));
+        var encoded = await new BmageIcoEncoder().EncodeAsync(photo, new BmageImageExportOptions { Format = BmageImageFormat.Ico });
+        var entry = BmageIcoDecoder.ReadDirectory(encoded.Data)[0];
         Assert.AreEqual(256, entry.Width);
         Assert.AreEqual(128, entry.Height);
     }
 
     /// <summary>An icon whose one image is a bitmap: the header, an optional palette, bottom-up rows, and the mask.</summary>
-    private static byte[] BitmapIcon(int width, int height, int bpp, Func<int, int, byte[]> pixel, Func<int, int, bool> transparent, Rgba32[]? palette = null, bool withMask = true)
+    private static byte[] BitmapIcon(int width, int height, int bpp, Func<int, int, byte[]> pixel, Func<int, int, bool> transparent, BmageRgba32[]? palette = null, bool withMask = true)
     {
         var stride = (width * bpp + 31) / 32 * 4;
         var maskStride = (width + 31) / 32 * 4;
@@ -308,70 +303,70 @@ public sealed class IcoCodecTests
     [TestMethod]
     public void ABitmapIconWithAPaletteUsesItsMaskForTransparency()
     {
-        Rgba32[] palette = [new(255, 0, 0), new(0, 0, 255)];
+        BmageRgba32[] palette = [new(255, 0, 0), new(0, 0, 255)];
         var data = BitmapIcon(10, 6, 1, (x, _) => [(byte)(x % 2)], (x, y) => x == 0 || y == 0, palette);
-        Assert.AreEqual(ImageFormat.Ico, ImageFormats.Detect(data));
-        using var image = IcoDecoder.Decode(data);
+        Assert.AreEqual(BmageImageFormat.Ico, BmageImageFormats.Detect(data));
+        using var image = BmageIcoDecoder.Decode(data);
         Assert.AreEqual(new Size(10, 6), image.Size);
         Assert.AreEqual(0, image[0, 3].A);
         Assert.AreEqual(0, image[5, 0].A);
-        Assert.AreEqual(new Rgba32(0, 0, 255), image[1, 3]);
-        Assert.AreEqual(new Rgba32(255, 0, 0), image[2, 3]);
+        Assert.AreEqual(new BmageRgba32(0, 0, 255), image[1, 3]);
+        Assert.AreEqual(new BmageRgba32(255, 0, 0), image[2, 3]);
     }
 
     [TestMethod]
     public void A32BitIconUsesItsAlphaAndAMasklessOneIsAccepted()
     {
         var data = BitmapIcon(4, 4, 32, (x, y) => [10, 20, 30, (byte)(x * 60)], (_, _) => true, withMask: false);
-        using var image = IcoDecoder.Decode(data);
-        Assert.AreEqual(new Rgba32(30, 20, 10, 120), image[2, 1]);
+        using var image = BmageIcoDecoder.Decode(data);
+        Assert.AreEqual(new BmageRgba32(30, 20, 10, 120), image[2, 1]);
         Assert.AreEqual(0, image[0, 0].A, "Alpha decides, not the absent mask.");
         // No alpha at all, and a mask: the mask decides.
         var masked = BitmapIcon(4, 4, 32, (_, _) => [10, 20, 30, 0], (x, _) => x < 2);
-        using var image2 = IcoDecoder.Decode(masked);
+        using var image2 = BmageIcoDecoder.Decode(masked);
         Assert.AreEqual(0, image2[1, 1].A);
-        Assert.AreEqual(new Rgba32(30, 20, 10), image2[3, 1]);
+        Assert.AreEqual(new BmageRgba32(30, 20, 10), image2[3, 1]);
         var opaque = BitmapIcon(3, 3, 24, (_, _) => [1, 2, 3], (_, _) => false);
-        using var image3 = IcoDecoder.Decode(opaque);
-        Assert.AreEqual(new Rgba32(3, 2, 1), image3[1, 1]);
+        using var image3 = BmageIcoDecoder.Decode(opaque);
+        Assert.AreEqual(new BmageRgba32(3, 2, 1), image3[1, 1]);
     }
 
     [TestMethod]
     public void AMalformedIconIsRefusedAsADecodeError()
     {
-        var good = IcoEncoder.CreateFavicon(IndexedPngTests.Flat(32, 32), [16]).Data;
+        var good = BmageIcoEncoder.CreateFavicon(IndexedPngTests.Flat(32, 32), [16]).Data;
         var noImages = (byte[])good.Clone();
         noImages[4] = 0;
-        Assert.AreNotEqual(ImageFormat.Ico, ImageFormats.Detect(noImages), "A directory of no images is not an icon.");
+        Assert.AreNotEqual(BmageImageFormat.Ico, BmageImageFormats.Detect(noImages), "A directory of no images is not an icon.");
 
         var outside = (byte[])good.Clone();
         BinaryPrimitives.WriteInt32LittleEndian(outside.AsSpan(18), good.Length);
-        Assert.ThrowsExactly<ImageDecodeException>(() => IcoDecoder.Decode(outside));
-        Assert.IsNull(new IcoDecoder().Identify(outside));
+        Assert.ThrowsExactly<BmageImageDecodeException>(() => BmageIcoDecoder.Decode(outside));
+        Assert.IsNull(new BmageIcoDecoder().Identify(outside));
 
         var tooLong = (byte[])good.Clone();
         BinaryPrimitives.WriteInt32LittleEndian(tooLong.AsSpan(14), int.MaxValue);
-        Assert.ThrowsExactly<ImageDecodeException>(() => IcoDecoder.Decode(tooLong));
+        Assert.ThrowsExactly<BmageImageDecodeException>(() => BmageIcoDecoder.Decode(tooLong));
 
         var truncated = good[..30];
-        Assert.ThrowsExactly<ImageDecodeException>(() => IcoDecoder.Decode(truncated));
+        Assert.ThrowsExactly<BmageImageDecodeException>(() => BmageIcoDecoder.Decode(truncated));
 
         var hugeBitmap = BitmapIcon(4, 4, 32, (_, _) => [0, 0, 0, 255], (_, _) => false);
         BinaryPrimitives.WriteInt32LittleEndian(hugeBitmap.AsSpan(22 + 4), 100_000);
-        Assert.ThrowsExactly<ImageDecodeException>(() => IcoDecoder.Decode(hugeBitmap));
+        Assert.ThrowsExactly<BmageImageDecodeException>(() => BmageIcoDecoder.Decode(hugeBitmap));
     }
 
     [TestMethod]
     public void TheFormatIsNamedAndDetected()
     {
-        Assert.AreEqual("image/x-icon", ImageFormat.Ico.GetMimeType());
-        Assert.AreEqual(ImageFormat.Ico, ImageFormats.FromMimeType("image/vnd.microsoft.icon"));
-        Assert.AreEqual(ImageFormat.Ico, ImageFormats.FromFileName("favicon.ico"));
-        Assert.IsTrue(ImageFormat.Ico.SupportsAlpha());
+        Assert.AreEqual("image/x-icon", BmageImageFormat.Ico.GetMimeType());
+        Assert.AreEqual(BmageImageFormat.Ico, BmageImageFormats.FromMimeType("image/vnd.microsoft.icon"));
+        Assert.AreEqual(BmageImageFormat.Ico, BmageImageFormats.FromFileName("favicon.ico"));
+        Assert.IsTrue(BmageImageFormat.Ico.SupportsAlpha());
         // An AVIF whose first box is 256 bytes long starts with the same four bytes as an icon.
         var avif = new byte[300];
         avif[2] = 1;
         "ftypavif"u8.CopyTo(avif.AsSpan(4));
-        Assert.AreEqual(ImageFormat.Avif, ImageFormats.Detect(avif));
+        Assert.AreEqual(BmageImageFormat.Avif, BmageImageFormats.Detect(avif));
     }
 }

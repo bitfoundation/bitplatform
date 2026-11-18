@@ -43,8 +43,8 @@
     <pre class="bb-code"><span class="k">@@page</span> <span class="s">"/scan"</span>
 <span class="k">@@rendermode</span> InteractiveWebAssembly
 
-&lt;<span class="k">BbScanner</span> Formats=<span class="s">"BbBarcodeFormat.QrCode"</span>
-           Region=<span class="s">"BbScanRegion.CenteredSquare(0.7)"</span>
+&lt;<span class="k">BbScanner</span> Formats=<span class="s">"BbScannerBarcodeFormat.QrCode"</span>
+           Region=<span class="s">"BbScannerScanRegion.CenteredSquare(0.7)"</span>
            OnScan=<span class="s">"HandleScan"</span>
            OnError=<span class="s">"HandleError"</span> /&gt;
 
@@ -56,7 +56,7 @@
 <span class="k">@@code</span> {
     <span class="k">private</span> BbScannerException? _error;
 
-    <span class="k">private void</span> HandleScan(BbBarcodeResult result)
+    <span class="k">private void</span> HandleScan(BbScannerBarcodeResult result)
     {
         _error = <span class="k">null</span>;
         Console.WriteLine(<span class="s">$"{result.Format}: {result.Text}"</span>);
@@ -81,8 +81,8 @@
         <div class="scan-sample">
             <div class="scan-layout">
                 <div class="scan-view">
-                    <BbScanner Formats="BbBarcodeFormat.All"
-                               Region="BbScanRegion.CenteredSquare(0.75)"
+                    <BbScanner Formats="BbScannerBarcodeFormat.All"
+                               Region="BbScannerScanRegion.CenteredSquare(0.75)"
                                OnScan="OnScan" />
                 </div>
                 <div class="scan-panels">
@@ -217,9 +217,9 @@
 </div>
 
 @code {
-    private BbBarcodeResult? _last;
+    private BbScannerBarcodeResult? _last;
 
-    private void OnScan(BbBarcodeResult result)
+    private void OnScan(BbScannerBarcodeResult result)
     {
         _last = result;
         StateHasChanged();

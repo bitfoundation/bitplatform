@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
-using Bit.BlazeDb.Storage;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bit.BlazeDb.Tests.EntityFrameworkCore;

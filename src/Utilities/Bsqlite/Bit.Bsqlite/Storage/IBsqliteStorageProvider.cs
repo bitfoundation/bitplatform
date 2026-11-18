@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Storage;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// A storage backend for Bsqlite. Implement this to persist SQLite databases somewhere the

@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Blazor;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>
 /// A <c>&lt;textarea&gt;</c> bound to a <see cref="BcrdtText"/>: what the user types becomes the minimal CRDT edit

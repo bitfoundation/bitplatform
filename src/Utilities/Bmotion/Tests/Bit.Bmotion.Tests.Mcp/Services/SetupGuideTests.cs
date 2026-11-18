@@ -60,7 +60,7 @@ public class SetupGuideTests
         // What is left of the frame loop - the cases that still jump - has to be named.
         StringAssert.Contains(server, "Transition.OnUpdate");
         StringAssert.Contains(server, "`d`");
-        StringAssert.Contains(server, "BmRepeat.Reverse");
+        StringAssert.Contains(server, "BmotionRepeat.Reverse");
     }
 
     /// <summary>

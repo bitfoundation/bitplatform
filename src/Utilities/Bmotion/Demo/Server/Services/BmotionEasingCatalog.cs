@@ -4,7 +4,7 @@ using Bit.Bmotion.Demo.Server.Dtos;
 namespace Bit.Bmotion.Demo.Server.Services;
 
 /// <summary>
-/// Every <see cref="BmEase"/> preset, with the shape of its curve measured rather than described.
+/// Every <see cref="BmotionEase"/> preset, with the shape of its curve measured rather than described.
 /// <para>
 /// "BackOut" and "Anticipate" mean nothing to a model that has never seen them plotted, and the
 /// difference between QuadOut and ExpoOut is the entire question when choosing one. So each preset
@@ -43,7 +43,7 @@ public static class BmotionEasingCatalog
     {
         var easings = new List<BmotionEasingDto>();
 
-        foreach (var ease in Enum.GetValues<BmEase>())
+        foreach (var ease in Enum.GetValues<BmotionEase>())
         {
             double[] curve;
 

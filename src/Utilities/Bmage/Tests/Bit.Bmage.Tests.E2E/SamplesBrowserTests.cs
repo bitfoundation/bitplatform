@@ -95,7 +95,7 @@ public class SamplesBrowserTests
     {
         var (page, errors) = await OpenAsync(sample, "process");
 
-        // The sample scene, encoded to PNG and loaded back through ImageLoader, then capped at 800 px and encoded.
+        // The sample scene, encoded to PNG and loaded back through BmageImageLoader, then capped at 800 px and encoded.
         await page.ClickAsync("#process-sample");
         await Expect(page.Locator("#process-source")).ToHaveTextAsync("Sample scene: 1600 × 1066");
         await Expect(page.Locator("#process-result")).ToContainTextAsync(new Regex("^800 × 533 (WebP|Jpeg),"));

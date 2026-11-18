@@ -1,6 +1,6 @@
 ﻿using Bit.Bink;
 
-namespace Bit.Bcrdt.Bink;
+namespace Bit.Bcrdt;
 
 /// <summary>Settings for a <see cref="BcrdtBinkBinding"/>.</summary>
 public sealed class BcrdtBinkBindingOptions

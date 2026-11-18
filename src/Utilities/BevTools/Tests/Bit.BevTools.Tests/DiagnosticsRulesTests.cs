@@ -110,7 +110,7 @@ public class DiagnosticsRulesTests
             session.Diagnostics.Evaluate(force: true);
             var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", session.Diagnostics.Findings).Diagnostic;
             Assert.AreEqual("→ JS canvas.draw called 60 times in 1 s", finding.Title);
-            Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Severity);
+            Assert.AreEqual(BevToolsDiagnosticSeverity.Warning, finding.Severity);
             StringAssert.Contains(finding.Suggestion, "the .NET code that makes the calls");
             Assert.IsFalse(finding.Suggestion!.Contains("cancelAnimationFrame", StringComparison.Ordinal), finding.Suggestion);
         }
@@ -239,7 +239,7 @@ public class DiagnosticsRulesTests
             var firstRow = finding.TimelineEventId;
             session.Diagnostics.Dismiss(finding.Diagnostic.EffectiveFingerprint);
 
-            rule.Severity = BevDiagnosticSeverity.Warning;
+            rule.Severity = BevToolsDiagnosticSeverity.Warning;
             session.Diagnostics.Evaluate(force: true);
 
             Assert.IsFalse(finding.Dismissed);
@@ -251,17 +251,17 @@ public class DiagnosticsRulesTests
             Assert.IsTrue(escalation.TryGetData("escalatedFrom", out var from) && (string?)from == "Info");
 
             // Flapping between two severities reports nothing new: only a new high is news.
-            rule.Severity = BevDiagnosticSeverity.Info;
+            rule.Severity = BevToolsDiagnosticSeverity.Info;
             session.Diagnostics.Evaluate(force: true);
-            rule.Severity = BevDiagnosticSeverity.Warning;
+            rule.Severity = BevToolsDiagnosticSeverity.Warning;
             session.Diagnostics.Evaluate(force: true);
             Assert.AreEqual(2, session.Timeline.Snapshot().Count(e => e.Category == "diagnostic:" + rule.Id));
         }
     }
 
-    private sealed class AdjustableRule : IBevDiagnosticRule
+    private sealed class AdjustableRule : IBevToolsDiagnosticRule
     {
-        public BevDiagnosticSeverity Severity { get; set; } = BevDiagnosticSeverity.Info;
+        public BevToolsDiagnosticSeverity Severity { get; set; } = BevToolsDiagnosticSeverity.Info;
 
         public string Id => "test.adjustable";
 
@@ -269,13 +269,13 @@ public class DiagnosticsRulesTests
 
         public string Description => "";
 
-        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        public IEnumerable<BevToolsDiagnostic> Evaluate(IBevToolsDiagnosticContext context)
         {
-            yield return new BevDiagnostic(Id, Severity, "adjustable finding", "evidence", Fingerprint: Id);
+            yield return new BevToolsDiagnostic(Id, Severity, "adjustable finding", "evidence", Fingerprint: Id);
         }
     }
 
-    private sealed class RuleExtension(IBevDiagnosticRule rule) : IBevToolsExtension
+    private sealed class RuleExtension(IBevToolsDiagnosticRule rule) : IBevToolsExtension
     {
         public string Name => "test";
 
@@ -348,7 +348,7 @@ public class DiagnosticsRulesTests
             var start = DateTimeOffset.UtcNow.AddSeconds(-2);
             foreach (var (query, offsetMs, durationMs) in new[] { ("s", 0, 400), ("sh", 150, 400), ("sho", 300, 400), ("shoe", 450, 50) })
             {
-                session.Http.Add(new BevHttpRecord
+                session.Http.Add(new BevToolsHttpRecord
                 {
                     Id = session.Http.NextId(),
                     StartedAt = start.AddMilliseconds(offsetMs),
@@ -363,7 +363,7 @@ public class DiagnosticsRulesTests
             // A steady poll of one URL is the duplicate rule's business, not a burst.
             for (var i = 0; i < 5; i++)
             {
-                session.Http.Add(new BevHttpRecord { Id = session.Http.NextId(), StartedAt = start.AddMilliseconds(i * 100), Method = "GET", Url = "/api/status", StatusCode = 200, DurationMs = 5 });
+                session.Http.Add(new BevToolsHttpRecord { Id = session.Http.NextId(), StartedAt = start.AddMilliseconds(i * 100), Method = "GET", Url = "/api/status", StatusCode = 200, DurationMs = 5 });
             }
 
             session.Diagnostics.Evaluate(force: true);
@@ -372,13 +372,13 @@ public class DiagnosticsRulesTests
             StringAssert.StartsWith(burst.Title, "GET /api/products?q: 4 requests");
             StringAssert.Contains(burst.Evidence, "oninput → FilterBar.OnQuery");
             StringAssert.Contains(burst.Evidence, "3 started while the previous one was still running");
-            Assert.AreEqual(BevDiagnosticSeverity.Warning, burst.Severity);
+            Assert.AreEqual(BevToolsDiagnosticSeverity.Warning, burst.Severity);
             StringAssert.Contains(burst.Suggestion, "cancel the superseded request");
         }
     }
 
     /// <summary>One finding that is reported on every evaluation, and one per occurrence that is reported once.</summary>
-    private sealed class PerOccurrenceRule : IBevDiagnosticRule
+    private sealed class PerOccurrenceRule : IBevToolsDiagnosticRule
     {
         public int Occurrence;
 
@@ -388,14 +388,14 @@ public class DiagnosticsRulesTests
 
         public string Description => "";
 
-        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        public IEnumerable<BevToolsDiagnostic> Evaluate(IBevToolsDiagnosticContext context)
         {
-            yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Info, "steady", "", Fingerprint: Id + ":steady");
-            yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Info, "occurrence " + Occurrence, "", Fingerprint: Id + ":" + Occurrence);
+            yield return new BevToolsDiagnostic(Id, BevToolsDiagnosticSeverity.Info, "steady", "", Fingerprint: Id + ":steady");
+            yield return new BevToolsDiagnostic(Id, BevToolsDiagnosticSeverity.Info, "occurrence " + Occurrence, "", Fingerprint: Id + ":" + Occurrence);
         }
     }
 
-    private sealed class CountingRule : IBevDiagnosticRule
+    private sealed class CountingRule : IBevToolsDiagnosticRule
     {
         public int Evaluations;
 
@@ -405,10 +405,10 @@ public class DiagnosticsRulesTests
 
         public string Description => "";
 
-        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        public IEnumerable<BevToolsDiagnostic> Evaluate(IBevToolsDiagnosticContext context)
         {
             Evaluations++;
-            yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Info, "custom finding", context.Events.Count + " events");
+            yield return new BevToolsDiagnostic(Id, BevToolsDiagnosticSeverity.Info, "custom finding", context.Events.Count + " events");
         }
     }
 }

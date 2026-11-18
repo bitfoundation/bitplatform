@@ -1,5 +1,4 @@
 ﻿using System.Buffers.Binary;
-using Bit.Bsqlite.Data;
 using Microsoft.Data.Sqlite;
 
 namespace Bit.Bsqlite.Interop.Tests;

@@ -1,8 +1,6 @@
 ﻿using System.Text;
 using System.Reflection;
 using System.Collections.Concurrent;
-using Bit.Blex.Maui;
-using Bit.Blex.Testing;
 using Bit.Blex.Demo.Server.Dtos;
 using Microsoft.AspNetCore.Components;
 
@@ -18,7 +16,7 @@ namespace Bit.Blex.Demo.Server.Services;
 /// (read off a freshly constructed instance) instead of one someone remembered to copy into a document.
 /// The source generator is not in this list: it has no public API, only the attributes it reads (which
 /// live in Bit.Blex) and the diagnostics it reports (GetBlexDiagnostics). The Blazor integration is: its
-/// types (namespace Bit.Blex.Blazor) are part of the Bit.Blex assembly.
+/// types are part of the Bit.Blex assembly and namespace.
 /// </para>
 /// </summary>
 public static class BlexApiCatalog

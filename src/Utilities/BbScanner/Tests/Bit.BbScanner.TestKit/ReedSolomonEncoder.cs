@@ -3,7 +3,7 @@ namespace Bit.BbScanner.TestKit;
 
 /// <summary>
 /// Generates Reed-Solomon check codewords, the inverse of
-/// <see cref="BbReedSolomonDecoder"/>.
+/// <see cref="BbScannerReedSolomonDecoder"/>.
 /// </summary>
 /// <remarks>
 /// The library only needs to decode, so the encoder lives with the tests. Having both sides
@@ -11,25 +11,25 @@ namespace Bit.BbScanner.TestKit;
 /// </remarks>
 public sealed class ReedSolomonEncoder
 {
-    private readonly BbGenericGF _field;
-    private readonly List<BbGfPoly> _cachedGenerators = [];
+    private readonly BbScannerGenericGF _field;
+    private readonly List<BbScannerGfPoly> _cachedGenerators = [];
 
     /// <summary>Creates an encoder over a field.</summary>
     /// <param name="field">The field the codewords live in.</param>
-    public ReedSolomonEncoder(BbGenericGF field)
+    public ReedSolomonEncoder(BbScannerGenericGF field)
     {
         _field = field;
-        _cachedGenerators.Add(new BbGfPoly(field, [1]));
+        _cachedGenerators.Add(new BbScannerGfPoly(field, [1]));
     }
 
-    private BbGfPoly BuildGenerator(int degree)
+    private BbScannerGfPoly BuildGenerator(int degree)
     {
         if (degree >= _cachedGenerators.Count)
         {
             var last = _cachedGenerators[^1];
             for (var d = _cachedGenerators.Count; d <= degree; d++)
             {
-                var next = last.Multiply(new BbGfPoly(_field, [1, _field.Exp(d - 1 + _field.GeneratorBase)]));
+                var next = last.Multiply(new BbScannerGfPoly(_field, [1, _field.Exp(d - 1 + _field.GeneratorBase)]));
                 _cachedGenerators.Add(next);
                 last = next;
             }
@@ -57,7 +57,7 @@ public sealed class ReedSolomonEncoder
 
         var generator = BuildGenerator(ecBytes);
         var infoCoefficients = toEncode[..dataBytes];
-        var info = new BbGfPoly(_field, infoCoefficients).MultiplyByMonomial(ecBytes, 1);
+        var info = new BbScannerGfPoly(_field, infoCoefficients).MultiplyByMonomial(ecBytes, 1);
         var (_, remainder) = info.Divide(generator);
 
         var coefficients = remainder.Coefficients;

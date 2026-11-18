@@ -49,6 +49,3 @@ public sealed class BlexLoggingMiddleware : IBlexMiddleware
     public void LogIsolatedFailure(BlexError error)
         => IsolatedFailureMessage(_logger, error.Source, error.Detail, error.Exception);
 }
-
-/// <summary>The place <see cref="BlexOptions.UseLogging"/> took in the middleware order, resolved when the manager is built.</summary>
-internal sealed record BlexLoggingRegistration(LogLevel ActionLevel);

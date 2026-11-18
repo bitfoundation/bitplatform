@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
-using Bit.BlazeDb.EntityFrameworkCore.Metadata;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Decides which index, if any, a query should read from.

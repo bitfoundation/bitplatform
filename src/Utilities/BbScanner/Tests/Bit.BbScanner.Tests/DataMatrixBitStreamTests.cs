@@ -10,7 +10,7 @@ namespace Bit.BbScanner.Tests;
 [TestClass]
 public class DataMatrixBitStreamTests
 {
-    private static readonly BbDataMatrixVersion Version = BbDataMatrixVersion.All.First(v => v.VersionNumber == 5);
+    private static readonly BbScannerDataMatrixVersion Version = BbScannerDataMatrixVersion.All.First(v => v.VersionNumber == 5);
 
     private static byte[] Pad(params int[] codewords)
     {
@@ -24,7 +24,7 @@ public class DataMatrixBitStreamTests
     }
 
     private static string? DecodeText(params int[] codewords) =>
-        BbDataMatrixBitStreamParser.Decode(Pad(codewords), Version, 0)?.Text;
+        BbScannerDataMatrixBitStreamParser.Decode(Pad(codewords), Version, 0)?.Text;
 
     [TestMethod]
     public void DecodesAsciiAndDigitPairs()
@@ -39,7 +39,7 @@ public class DataMatrixBitStreamTests
     public void DecodesTheUpperShift()
     {
         // 235 shifts the next value into the upper half of Latin-1.
-        var result = BbDataMatrixBitStreamParser.Decode(Pad(235, 0xE9 - 128 + 1), Version, 0);
+        var result = BbScannerDataMatrixBitStreamParser.Decode(Pad(235, 0xE9 - 128 + 1), Version, 0);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("é", result.Text);
@@ -67,7 +67,7 @@ public class DataMatrixBitStreamTests
     {
         // ISO/IEC 16022 stores the total as 17 minus the low nibble, not the low nibble plus two.
         // Symbol 2 of 3: index nibble 1, count nibble 17 - 3 = 14.
-        var result = BbDataMatrixBitStreamParser.Decode(Pad(233, (1 << 4) | 14, 0x12, 0x34, 'A' + 1), Version, 0);
+        var result = BbScannerDataMatrixBitStreamParser.Decode(Pad(233, (1 << 4) | 14, 0x12, 0x34, 'A' + 1), Version, 0);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(2, result.StructuredAppendIndex);
@@ -79,7 +79,7 @@ public class DataMatrixBitStreamTests
     [TestMethod]
     public void DecodesTheOneCodewordEciForm()
     {
-        var result = BbDataMatrixBitStreamParser.Decode(Pad(241, 27, 'A' + 1), Version, 0);
+        var result = BbScannerDataMatrixBitStreamParser.Decode(Pad(241, 27, 'A' + 1), Version, 0);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(26, result.Eci);
@@ -95,7 +95,7 @@ public class DataMatrixBitStreamTests
     {
         // Codeword 0 is undefined in every position of an ECI and the continuation codewords
         // run from 1 to 254; accepting them produced assignment numbers such as -1.
-        Assert.IsNull(BbDataMatrixBitStreamParser.Decode(Pad(codewords), Version, 0));
+        Assert.IsNull(BbScannerDataMatrixBitStreamParser.Decode(Pad(codewords), Version, 0));
     }
 
     [TestMethod]
@@ -104,14 +104,14 @@ public class DataMatrixBitStreamTests
         // 230 latches C40; shift 3 (value 2) followed by 32 is outside the thirty two character
         // shift 3 set. Encoded as the triple (2, 32, 0): value = 1600 * 2 + 40 * 32 + 0 + 1.
         const int Value = (1600 * 2) + (40 * 32) + 0 + 1;
-        Assert.IsNull(BbDataMatrixBitStreamParser.Decode(Pad(230, Value >> 8, Value & 0xFF, 254), Version, 0));
+        Assert.IsNull(BbScannerDataMatrixBitStreamParser.Decode(Pad(230, Value >> 8, Value & 0xFF, 254), Version, 0));
     }
 
     [TestMethod]
     public void DecodesTheTwoCodewordEciForm()
     {
         // c1 between 128 and 191 means two codewords: (c1 - 128) * 254 + c2 - 1 + 127.
-        var result = BbDataMatrixBitStreamParser.Decode(Pad(241, 131, 2, 'A' + 1), Version, 0);
+        var result = BbScannerDataMatrixBitStreamParser.Decode(Pad(241, 131, 2, 'A' + 1), Version, 0);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(((131 - 128) * 254) + 2 - 1 + 127, result.Eci);
@@ -121,7 +121,7 @@ public class DataMatrixBitStreamTests
     [TestMethod]
     public void DecodesTheThreeCodewordEciForm()
     {
-        var result = BbDataMatrixBitStreamParser.Decode(Pad(241, 200, 5, 9, 'A' + 1), Version, 0);
+        var result = BbScannerDataMatrixBitStreamParser.Decode(Pad(241, 200, 5, 9, 'A' + 1), Version, 0);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(((200 - 192) * 64516) + ((5 - 1) * 254) + 9 - 1 + 16383, result.Eci);
@@ -138,7 +138,7 @@ public class DataMatrixBitStreamTests
 
         // ECI 26, then a Base 256 run of two bytes. Base 256 values are randomised by their
         // one based position in the data stream, which the ECI codewords occupy first.
-        var result = BbDataMatrixBitStreamParser.Decode(
+        var result = BbScannerDataMatrixBitStreamParser.Decode(
             Pad(241, 27, 231, Randomise(2, 4), Randomise(utf8[0], 5), Randomise(utf8[1], 6)),
             Version,
             0);
@@ -151,12 +151,12 @@ public class DataMatrixBitStreamTests
     [TestMethod]
     public void FlagsGs1OnlyWhenTheStreamOpensWithFnc1()
     {
-        var leading = BbDataMatrixBitStreamParser.Decode(Pad(232, '0' + 1, '1' + 1), Version, 0);
+        var leading = BbScannerDataMatrixBitStreamParser.Decode(Pad(232, '0' + 1, '1' + 1), Version, 0);
         Assert.IsNotNull(leading);
         Assert.IsTrue(leading.IsGs1);
 
         // A separator in the middle of the payload is not a GS1 declaration.
-        var middle = BbDataMatrixBitStreamParser.Decode(Pad('A' + 1, 232, 'B' + 1), Version, 0);
+        var middle = BbScannerDataMatrixBitStreamParser.Decode(Pad('A' + 1, 232, 'B' + 1), Version, 0);
         Assert.IsNotNull(middle);
         Assert.IsFalse(middle.IsGs1);
         Assert.AreEqual("AB", middle.Text);
@@ -174,7 +174,7 @@ public class DataMatrixBitStreamTests
             codewords.Add(Randomise(payload[i], 3 + i));
         }
 
-        var result = BbDataMatrixBitStreamParser.Decode(Pad([.. codewords]), Version, 0);
+        var result = BbScannerDataMatrixBitStreamParser.Decode(Pad([.. codewords]), Version, 0);
 
         Assert.IsNotNull(result);
         Assert.AreSequenceEqual(payload, result.RawBytes);
@@ -193,7 +193,7 @@ public class DataMatrixBitStreamTests
         // C40 packs three values into two codewords: 1600 * c1 + 40 * c2 + c3 + 1.
         // Basic set values 14 to 39 are 'A' to 'Z'.
         var value = (1600 * ('A' - 'A' + 14)) + (40 * ('B' - 'A' + 14)) + ('C' - 'A' + 14) + 1;
-        var result = BbDataMatrixBitStreamParser.Decode(
+        var result = BbScannerDataMatrixBitStreamParser.Decode(
             Pad(230, value >> 8, value & 0xFF, 254, 'D' + 1), Version, 0);
 
         Assert.IsNotNull(result);
@@ -208,13 +208,13 @@ public class DataMatrixBitStreamTests
         var random = new Random(31337);
         var accepted = 0;
 
-        foreach (var version in BbDataMatrixVersion.All)
+        foreach (var version in BbScannerDataMatrixVersion.All)
         {
             for (var attempt = 0; attempt < 200; attempt++)
             {
                 var data = new byte[version.TotalDataCodewords];
                 random.NextBytes(data);
-                if (BbDataMatrixBitStreamParser.Decode(data, version, 0) is not null)
+                if (BbScannerDataMatrixBitStreamParser.Decode(data, version, 0) is not null)
                 {
                     accepted++;
                 }
@@ -223,7 +223,7 @@ public class DataMatrixBitStreamTests
 
         // Some random streams are legal ASCII, which is fine; the contract is only that nothing
         // throws and that the parser is willing to say no.
-        Assert.IsTrue(accepted < 200 * BbDataMatrixVersion.All.Count, "Every random stream was accepted.");
+        Assert.IsTrue(accepted < 200 * BbScannerDataMatrixVersion.All.Count, "Every random stream was accepted.");
     }
 
     [TestMethod]
@@ -232,7 +232,7 @@ public class DataMatrixBitStreamTests
         // The solid L and the dashed timing pattern are the cheapest possible check that a
         // sampled grid is really a symbol, and they cost two lines of modules to verify.
         using var real = DataMatrixEncoder.Encode("BORDERS");
-        Assert.IsTrue(BbDataMatrixReader.HasPlausibleBorders(real));
+        Assert.IsTrue(BbScannerDataMatrixReader.HasPlausibleBorders(real));
 
         using var damaged = DataMatrixEncoder.Encode("BORDERS");
         for (var y = 0; y < damaged.Height; y++)
@@ -240,10 +240,10 @@ public class DataMatrixBitStreamTests
             damaged[0, y] = (y & 1) == 0;
         }
 
-        Assert.IsFalse(BbDataMatrixReader.HasPlausibleBorders(damaged));
+        Assert.IsFalse(BbScannerDataMatrixReader.HasPlausibleBorders(damaged));
 
         var random = new Random(99);
-        using var noise = new BbBitMatrix(real.Width, real.Height);
+        using var noise = new BbScannerBitMatrix(real.Width, real.Height);
         for (var y = 0; y < noise.Height; y++)
         {
             for (var x = 0; x < noise.Width; x++)
@@ -252,6 +252,6 @@ public class DataMatrixBitStreamTests
             }
         }
 
-        Assert.IsFalse(BbDataMatrixReader.HasPlausibleBorders(noise));
+        Assert.IsFalse(BbScannerDataMatrixReader.HasPlausibleBorders(noise));
     }
 }

@@ -349,7 +349,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         // Sentry alone sends only an exception or a plain log at its level: a page view, a web vital, a custom event or a
         // lower log goes nowhere.
-        if (export && Settings.ExportsSentryOnly && SentryEnvelopeSerializer.IsCandidate(log, Settings.SentryMinimumSeverity) is false) export = false;
+        if (export && Settings.ExportsSentryOnly && BelemetrySentryEnvelopeSerializer.IsCandidate(log, Settings.SentryMinimumSeverity) is false) export = false;
 
         if (export)
         {

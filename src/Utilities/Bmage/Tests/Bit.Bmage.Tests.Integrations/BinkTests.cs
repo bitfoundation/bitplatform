@@ -1,8 +1,5 @@
 ﻿using System.Drawing;
 using Bit.Bink;
-using Bit.Bmage.Bink;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Layers;
 
 namespace Bit.Bmage.Tests.Integrations;
 
@@ -10,12 +7,12 @@ namespace Bit.Bmage.Tests.Integrations;
 public sealed class BinkTests
 {
     /// <summary>Four coloured quadrants with a translucent band: every pixel distinct enough to show a shift.</summary>
-    private static ImageBuffer Photo(int width = 120, int height = 80)
+    private static BmageImageBuffer Photo(int width = 120, int height = 80)
     {
-        var image = ImageBuffer.Create(width, height);
+        var image = BmageImageBuffer.Create(width, height);
         for (var y = 0; y < height; y++)
             for (var x = 0; x < width; x++)
-                image[x, y] = new Rgba32((byte)(x * 255 / width), (byte)(y * 255 / height), (byte)((x + y) % 256), (byte)(y < 10 ? 128 : 255));
+                image[x, y] = new BmageRgba32((byte)(x * 255 / width), (byte)(y * 255 / height), (byte)((x + y) % 256), (byte)(y < 10 ? 128 : 255));
         return image;
     }
 
@@ -53,7 +50,7 @@ public sealed class BinkTests
         for (var y = 0; y < 80; y++)
             for (var x = 0; x < 120; x++)
             {
-                if (x >= 41 && x < 59 && y >= 31 && y < 49) Assert.AreEqual(new Rgba32(255, 0, 0), flat[x, y], $"({x},{y}) is inside the square");
+                if (x >= 41 && x < 59 && y >= 31 && y < 49) Assert.AreEqual(new BmageRgba32(255, 0, 0), flat[x, y], $"({x},{y}) is inside the square");
                 else if (x < 39 || x >= 61 || y < 29 || y >= 51) Assert.AreEqual(photo[x, y], flat[x, y], $"({x},{y}) is outside it");
             }
     }
@@ -66,7 +63,7 @@ public sealed class BinkTests
         DrawSquare(document, new BinkRect(40, 30, 20, 20));
         using var overlay = document.RenderOverlay(new Size(240, 160)).Image;
         Assert.AreEqual(new Size(240, 160), overlay.Size);
-        Assert.AreEqual(new Rgba32(255, 0, 0), overlay[100, 80], "The square, twice the size, in the middle of where it was.");
+        Assert.AreEqual(new BmageRgba32(255, 0, 0), overlay[100, 80], "The square, twice the size, in the middle of where it was.");
         Assert.AreEqual(0, overlay[20, 20].A, "No image layer and no background: only the drawing.");
         Assert.AreEqual(0, overlay[79, 59].A);
         Assert.ThrowsExactly<ArgumentException>(() => document.RenderOverlay(new Size(240, 80)));
@@ -85,7 +82,7 @@ public sealed class BinkTests
             Assert.AreEqual("Signature", layer.Name);
             Assert.AreEqual(new RectangleF(0, 0, 120, 80), layer.Bounds);
             using var composed = photo.Clone();
-            LayerCompositor.Composite(composed, [layer]);
+            BmageLayerCompositor.Composite(composed, [layer]);
             using var flat = BmageBink.Flatten(photo, document);
             Assert.IsLessThanOrEqualTo(1, BarcodeTests.MaxDifference(flat, composed));
         }
@@ -99,7 +96,7 @@ public sealed class BinkTests
     public void AnImageTooLargeForABinkSourceIsRefused()
     {
         // Noise does not compress: 3000 x 3000 is about 36 MB of PNG, over a data URI's 32 MB.
-        using var noise = ImageBuffer.Create(3000, 3000);
+        using var noise = BmageImageBuffer.Create(3000, 3000);
         new Random(1).NextBytes(noise.Bytes);
         Assert.ThrowsExactly<ArgumentException>(() => noise.ToBinkImageSource());
         using var small = Photo(16, 16);
@@ -140,10 +137,10 @@ public sealed class BinkTests
 
         using var overlay = document.RenderOverlay(photo.Size).Image;
         Assert.AreEqual(0, overlay[5, 20].A, "The renamed, unlocked image layer is still left out.");
-        Assert.AreEqual(new Rgba32(255, 0, 0), overlay[50, 40], "The layer named Image is drawn.");
+        Assert.AreEqual(new BmageRgba32(255, 0, 0), overlay[50, 40], "The layer named Image is drawn.");
         using var flat = BmageBink.Flatten(photo, document);
         Assert.AreEqual(photo[5, 20], flat[5, 20]);
-        Assert.AreEqual(new Rgba32(255, 0, 0), flat[50, 40]);
+        Assert.AreEqual(new BmageRgba32(255, 0, 0), flat[50, 40]);
     }
 
     [TestMethod]
@@ -159,7 +156,7 @@ public sealed class BinkTests
         using var whole = document.RenderToImage().Image;
         Assert.IsLessThanOrEqualTo(2, BarcodeTests.MaxDifference(whole, flat));
         // Multiplied, the square darkens the image under it rather than covering it.
-        Assert.AreNotEqual(new Rgba32(255, 200, 40), flat[60, 45]);
+        Assert.AreNotEqual(new BmageRgba32(255, 200, 40), flat[60, 45]);
         Assert.IsLessThan((int)photo[60, 45].B, (int)flat[60, 45].B);
     }
 
@@ -167,14 +164,14 @@ public sealed class BinkTests
     public void AnIndexedPngOfFewColoursRendersInBink()
     {
         // Two, three and five colours are written at 1, 2 and 4 bits a pixel; an odd width leaves a part-filled byte.
-        Rgba32[] colours = [new(250, 20, 20), new(20, 30, 240), new(10, 200, 60, 128), new(0, 0, 0), new(255, 255, 255)];
+        BmageRgba32[] colours = [new(250, 20, 20), new(20, 30, 240), new(10, 200, 60, 128), new(0, 0, 0), new(255, 255, 255)];
         foreach (var count in new[] { 2, 3, 5 })
         {
-            using var few = ImageBuffer.Create(7, 5);
+            using var few = BmageImageBuffer.Create(7, 5);
             for (var y = 0; y < 5; y++)
                 for (var x = 0; x < 7; x++)
                     few[x, y] = colours[(x + 2 * y) % count];
-            var source = few.ToBinkImageSource(ImageExportOptions.Png with { MaxColors = 16 });
+            var source = few.ToBinkImageSource(BmageImageExportOptions.Png with { MaxColors = 16 });
             var document = new BinkDocument(BinkDocumentSettings.Default with { Width = 7, Height = 5, Background = BinkColor.Transparent });
             document.AddElement(new BinkImageElement(source, new BinkRect(0, 0, 7, 5)));
             var rendered = document.RenderToImage();

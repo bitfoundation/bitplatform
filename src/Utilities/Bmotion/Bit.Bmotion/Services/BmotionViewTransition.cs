@@ -18,15 +18,15 @@ namespace Bit.Bmotion;
 /// <b>Reduced motion:</b> the browser plays a view transition whatever the user's motion preference, unless the
 /// stylesheet says otherwise - and the slides and zooms people author for them are exactly the motion
 /// <c>prefers-reduced-motion</c> asks to avoid. So when the library's policy
-/// (<see cref="BitBmotionOptions.ReducedMotion"/>) reduces motion, the update runs without a transition;
-/// <see cref="BmViewTransitionOptions.ReduceMotion"/> overrides that per call.
+/// (<see cref="BmotionOptions.ReducedMotion"/>) reduces motion, the update runs without a transition;
+/// <see cref="BmotionViewTransitionOptions.ReduceMotion"/> overrides that per call.
 /// </para>
 /// </summary>
 public sealed class BmotionViewTransition : IAsyncDisposable
 {
     private readonly IBmotionInterop _interop;
     private readonly BmotionAnimationEngine? _engine;
-    private readonly BitBmotionOptions? _options;
+    private readonly BmotionOptions? _options;
     private DotNetObjectReference<BmotionViewTransition>? _dotnet;
     private Func<Task>? _pending;
     private bool _inProgress;
@@ -41,7 +41,7 @@ public sealed class BmotionViewTransition : IAsyncDisposable
     /// The constructor dependency injection uses: with the engine (for the OS motion preference) and the library
     /// options (for the reduced-motion policy).
     /// </summary>
-    public BmotionViewTransition(IBmotionInterop interop, BmotionAnimationEngine engine, BitBmotionOptions options)
+    public BmotionViewTransition(IBmotionInterop interop, BmotionAnimationEngine engine, BmotionOptions options)
         : this(interop)
     {
         ArgumentNullException.ThrowIfNull(engine);
@@ -61,7 +61,7 @@ public sealed class BmotionViewTransition : IAsyncDisposable
     /// Runs <paramref name="updateDom"/> inside a native view transition, with <paramref name="options"/> (types, a
     /// reduced-motion override). Returns <c>true</c> when the native API drove the transition.
     /// </summary>
-    public async ValueTask<bool> StartAsync(Func<Task> updateDom, BmViewTransitionOptions? options)
+    public async ValueTask<bool> StartAsync(Func<Task> updateDom, BmotionViewTransitionOptions? options)
     {
         ArgumentNullException.ThrowIfNull(updateDom);
         // One transition at a time: _pending is shared state read back by RunUpdateAsync, so an
@@ -94,8 +94,8 @@ public sealed class BmotionViewTransition : IAsyncDisposable
     /// <summary>Synchronous-callback overload of <see cref="StartAsync(Func{Task})"/>.</summary>
     public ValueTask<bool> StartAsync(Action updateDom) => StartAsync(updateDom, null);
 
-    /// <summary>Synchronous-callback overload of <see cref="StartAsync(Func{Task}, BmViewTransitionOptions?)"/>.</summary>
-    public ValueTask<bool> StartAsync(Action updateDom, BmViewTransitionOptions? options)
+    /// <summary>Synchronous-callback overload of <see cref="StartAsync(Func{Task}, BmotionViewTransitionOptions?)"/>.</summary>
+    public ValueTask<bool> StartAsync(Action updateDom, BmotionViewTransitionOptions? options)
     {
         ArgumentNullException.ThrowIfNull(updateDom);
         return StartAsync(() => { updateDom(); return Task.CompletedTask; }, options);
@@ -103,14 +103,14 @@ public sealed class BmotionViewTransition : IAsyncDisposable
 
     // The library's policy, as BmotionConfig-free code sees it: a service sits outside every <BmotionConfig>, so
     // IgnoreUnlessConfigured (the back-compat default) never reduces here.
-    private async ValueTask<bool> ShouldReduceMotionAsync(BmViewTransitionOptions? options)
+    private async ValueTask<bool> ShouldReduceMotionAsync(BmotionViewTransitionOptions? options)
     {
         if (options?.ReduceMotion is bool explicitly) return explicitly;
         switch (_options?.ReducedMotion)
         {
-            case BmReducedMotionMode.Always:
+            case BmotionReducedMotionMode.Always:
                 return true;
-            case BmReducedMotionMode.User when _engine is not null:
+            case BmotionReducedMotionMode.User when _engine is not null:
                 await _engine.EnsureReducedMotionDetectedAsync();
                 return _engine.OsPrefersReducedMotion;
             default:

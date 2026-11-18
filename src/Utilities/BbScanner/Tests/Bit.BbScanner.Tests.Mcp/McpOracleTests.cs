@@ -40,7 +40,7 @@ public partial class McpOracleTests
     [TestMethod]
     public void The_format_catalog_is_the_enum_and_the_option_defaults()
     {
-        var singles = Enum.GetValues<BbBarcodeFormat>()
+        var singles = Enum.GetValues<BbScannerBarcodeFormat>()
             .Where(format => (int)format != 0 && ((int)format & ((int)format - 1)) == 0)
             .Select(format => format.ToString())
             .ToArray();
@@ -51,12 +51,12 @@ public partial class McpOracleTests
 
         foreach (var entry in BbScannerFormatCatalog.Formats)
         {
-            var format = Enum.Parse<BbBarcodeFormat>(entry.Name);
+            var format = Enum.Parse<BbScannerBarcodeFormat>(entry.Name);
 
             Assert.AreEqual((int)format, entry.Value, entry.Name);
             Assert.AreEqual((defaults.Formats & format) != 0, entry.EnabledByDefault, entry.Name);
-            Assert.AreEqual((BbBarcodeFormat.AllMatrix & format) != 0 ? "Matrix" : "Linear", entry.Family, entry.Name);
-            Assert.AreEqual(format != BbBarcodeFormat.Pdf417 || BbPdf417SymbolTable.Current.IsSpecificationTable, entry.Active, entry.Name);
+            Assert.AreEqual((BbScannerBarcodeFormat.AllMatrix & format) != 0 ? "Matrix" : "Linear", entry.Family, entry.Name);
+            Assert.AreEqual(format != BbScannerBarcodeFormat.Pdf417 || BbScannerPdf417SymbolTable.Current.IsSpecificationTable, entry.Active, entry.Name);
             Assert.IsNotNull(entry.Status, $"{entry.Name} is missing from the guide's symbology table.");
 
             foreach (var option in entry.Options)
@@ -72,7 +72,7 @@ public partial class McpOracleTests
     [TestMethod]
     public void Every_exported_type_is_in_the_api_index()
     {
-        var exported = typeof(BbBarcodeDecoder).Assembly.GetExportedTypes()
+        var exported = typeof(BbScannerBarcodeDecoder).Assembly.GetExportedTypes()
             .Where(type => type.IsNested is false)
             .Select(type => BbScannerApiCatalog.FriendlyName(type))
             .ToHashSet(StringComparer.Ordinal);

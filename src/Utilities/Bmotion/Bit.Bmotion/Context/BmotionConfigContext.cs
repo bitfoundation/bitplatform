@@ -6,7 +6,7 @@ namespace Bit.Bmotion;
 internal class BmotionConfigContext
 {
     /// <summary>Global default transition applied when no individual transition is set.</summary>
-    public BmTransition? DefaultTransition { get; set; }
+    public BmotionTransition? DefaultTransition { get; set; }
 
     /// <summary>
     /// When true, all animations are skipped (useful for accessibility / reduced-motion).
@@ -34,5 +34,5 @@ internal class BmotionConfigContext
     /// Global color-interpolation space for the subtree. <c>null</c> means no override (sRGB);
     /// a per-transition <c>ColorSpace</c> always wins over this.
     /// </summary>
-    public BmColorSpace? ColorSpace { get; set; }
+    public BmotionColorSpace? ColorSpace { get; set; }
 }

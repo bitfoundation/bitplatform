@@ -26,8 +26,8 @@ public class ScrollTimelineTests
         {
             b.OpenComponent<Bmotion>(0);
             b.AddComponentParameter(1, nameof(Bmotion.Id), "bar");
-            b.AddComponentParameter(2, nameof(Bmotion.Timeline), BmScrollTimeline.Page());
-            b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmTarget?)Bm.To(scaleX: new double[] { 0, 1 }));
+            b.AddComponentParameter(2, nameof(Bmotion.Timeline), BmotionScrollTimeline.Page());
+            b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(scaleX: new double[] { 0, 1 }));
             b.AddComponentParameter(4, nameof(Bmotion.ChildContent), Div());
             b.CloseComponent();
         })));
@@ -41,7 +41,7 @@ public class ScrollTimelineTests
     [TestMethod]
     public void Page_LowersToADocumentScrollTimeline()
     {
-        var js = BmScrollTimeline.Page().ToJsObject();
+        var js = BmotionScrollTimeline.Page().ToJsObject();
 
         Assert.AreEqual(false, js["view"]);
         Assert.IsNull(js["selector"]);
@@ -51,14 +51,14 @@ public class ScrollTimelineTests
     [TestMethod]
     public void Axis_X_LowersToTheInlineAxis()
     {
-        Assert.AreEqual("inline", BmScrollTimeline.Page(BmScrollAxis.X).ToJsObject()["axis"]);
-        Assert.AreEqual("inline", BmScrollTimeline.View(BmScrollAxis.X).ToJsObject()["axis"]);
+        Assert.AreEqual("inline", BmotionScrollTimeline.Page(BmotionScrollAxis.X).ToJsObject()["axis"]);
+        Assert.AreEqual("inline", BmotionScrollTimeline.View(BmotionScrollAxis.X).ToJsObject()["axis"]);
     }
 
     [TestMethod]
     public void View_LowersToAViewTimelineCarryingItsRange()
     {
-        var js = BmScrollTimeline.View(range: "entry 0% cover 50%").ToJsObject();
+        var js = BmotionScrollTimeline.View(range: "entry 0% cover 50%").ToJsObject();
 
         Assert.AreEqual(true, js["view"]);
         Assert.AreEqual("entry 0% cover 50%", js["range"]);
@@ -67,33 +67,33 @@ public class ScrollTimelineTests
     [TestMethod]
     public void Container_And_ViewOf_RejectAnEmptySelector()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => BmScrollTimeline.Container(" "));
-        Assert.ThrowsExactly<ArgumentException>(() => BmScrollTimeline.ViewOf(""));
+        Assert.ThrowsExactly<ArgumentException>(() => BmotionScrollTimeline.Container(" "));
+        Assert.ThrowsExactly<ArgumentException>(() => BmotionScrollTimeline.ViewOf(""));
     }
 
     [TestMethod]
     public void AreEquivalent_ComparesByValue_SoAnInlineSpecIsNotAChange()
     {
-        Assert.IsTrue(BmScrollTimeline.AreEquivalent(BmScrollTimeline.Page(), BmScrollTimeline.Page()));
-        Assert.IsTrue(BmScrollTimeline.AreEquivalent(
-            BmScrollTimeline.ViewOf("#hero", range: "cover"), BmScrollTimeline.ViewOf("#hero", range: "cover")));
-        Assert.IsFalse(BmScrollTimeline.AreEquivalent(BmScrollTimeline.Page(), BmScrollTimeline.View()));
-        Assert.IsFalse(BmScrollTimeline.AreEquivalent(
-            BmScrollTimeline.Page(), BmScrollTimeline.Page(BmScrollAxis.X)));
-        Assert.IsFalse(BmScrollTimeline.AreEquivalent(BmScrollTimeline.Page(), null));
+        Assert.IsTrue(BmotionScrollTimeline.AreEquivalent(BmotionScrollTimeline.Page(), BmotionScrollTimeline.Page()));
+        Assert.IsTrue(BmotionScrollTimeline.AreEquivalent(
+            BmotionScrollTimeline.ViewOf("#hero", range: "cover"), BmotionScrollTimeline.ViewOf("#hero", range: "cover")));
+        Assert.IsFalse(BmotionScrollTimeline.AreEquivalent(BmotionScrollTimeline.Page(), BmotionScrollTimeline.View()));
+        Assert.IsFalse(BmotionScrollTimeline.AreEquivalent(
+            BmotionScrollTimeline.Page(), BmotionScrollTimeline.Page(BmotionScrollAxis.X)));
+        Assert.IsFalse(BmotionScrollTimeline.AreEquivalent(BmotionScrollTimeline.Page(), null));
     }
 
     [TestMethod]
     public void Smoothed_LowersItsSpring_ByDefaultMotionDevsRecipe()
     {
-        Assert.IsNull(BmScrollTimeline.Page().ToJsObject()["smooth"], "an exact timeline has no spring");
+        Assert.IsNull(BmotionScrollTimeline.Page().ToJsObject()["smooth"], "an exact timeline has no spring");
 
-        var smooth = (Dictionary<string, object?>)BmScrollTimeline.Page().Smoothed().ToJsObject()["smooth"]!;
+        var smooth = (Dictionary<string, object?>)BmotionScrollTimeline.Page().Smoothed().ToJsObject()["smooth"]!;
         Assert.AreEqual(100.0, smooth["stiffness"]);
         Assert.AreEqual(30.0, smooth["damping"]);
         Assert.AreEqual(1.0, smooth["mass"]);
 
-        var own = (Dictionary<string, object?>)BmScrollTimeline.View(BmScrollAxis.X).Smoothed(new BmSpring { Stiffness = 300, Damping = 12, Mass = 2 }).ToJsObject()["smooth"]!;
+        var own = (Dictionary<string, object?>)BmotionScrollTimeline.View(BmotionScrollAxis.X).Smoothed(new BmotionSpring { Stiffness = 300, Damping = 12, Mass = 2 }).ToJsObject()["smooth"]!;
         Assert.AreEqual(300.0, own["stiffness"]);
         Assert.AreEqual(12.0, own["damping"]);
         Assert.AreEqual(2.0, own["mass"]);
@@ -102,7 +102,7 @@ public class ScrollTimelineTests
     [TestMethod]
     public void Smoothed_ResolvesABounceAndDurationSpring_AndKeepsTheRestOfTheTimeline()
     {
-        var timeline = BmScrollTimeline.ViewOf("#hero", BmScrollAxis.X, "cover").Smoothed(new BmSpring { Bounce = 0, Duration = 0.4 });
+        var timeline = BmotionScrollTimeline.ViewOf("#hero", BmotionScrollAxis.X, "cover").Smoothed(new BmotionSpring { Bounce = 0, Duration = 0.4 });
         var js = timeline.ToJsObject();
         var (stiffness, damping) = BmotionTransitionConfig.SpringFromBounce(0.4, 0, 1);
 
@@ -117,10 +117,10 @@ public class ScrollTimelineTests
     [TestMethod]
     public void Smoothed_TakesPartInEquivalence()
     {
-        Assert.IsTrue(BmScrollTimeline.AreEquivalent(BmScrollTimeline.Page().Smoothed(), BmScrollTimeline.Page().Smoothed()));
-        Assert.IsFalse(BmScrollTimeline.AreEquivalent(BmScrollTimeline.Page(), BmScrollTimeline.Page().Smoothed()));
-        Assert.IsFalse(BmScrollTimeline.AreEquivalent(
-            BmScrollTimeline.Page().Smoothed(), BmScrollTimeline.Page().Smoothed(new BmSpring { Stiffness = 300 })));
+        Assert.IsTrue(BmotionScrollTimeline.AreEquivalent(BmotionScrollTimeline.Page().Smoothed(), BmotionScrollTimeline.Page().Smoothed()));
+        Assert.IsFalse(BmotionScrollTimeline.AreEquivalent(BmotionScrollTimeline.Page(), BmotionScrollTimeline.Page().Smoothed()));
+        Assert.IsFalse(BmotionScrollTimeline.AreEquivalent(
+            BmotionScrollTimeline.Page().Smoothed(), BmotionScrollTimeline.Page().Smoothed(new BmotionSpring { Stiffness = 300 })));
     }
 
     // ── Component wiring ──────────────────────────────────────────────────────
@@ -131,7 +131,7 @@ public class ScrollTimelineTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "bar")
-            .Add(p => p.Timeline, BmScrollTimeline.Page())
+            .Add(p => p.Timeline, BmotionScrollTimeline.Page())
             .Add(p => p.Animate, Bm.To(scaleX: new double[] { 0, 1 }))
             .Add(p => p.ChildContent, Div()));
 
@@ -146,7 +146,7 @@ public class ScrollTimelineTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "bar")
-            .Add(p => p.Timeline, BmScrollTimeline.View(range: "cover"))
+            .Add(p => p.Timeline, BmotionScrollTimeline.View(range: "cover"))
             .Add(p => p.Animate, Bm.To(opacity: new double[] { 0, 1 }))
             .Add(p => p.ChildContent, Div()));
 
@@ -169,7 +169,7 @@ public class ScrollTimelineTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "bar")
-            .Add(p => p.Timeline, BmScrollTimeline.View())
+            .Add(p => p.Timeline, BmotionScrollTimeline.View())
             // Four opacity stops and a scalar y: the y must expand onto the same four frames.
             .Add(p => p.Animate, Bm.To(opacity: new double[] { 0, 1, 1, 0 }, y: 100))
             .Add(p => p.ChildContent, Div()));
@@ -191,7 +191,7 @@ public class ScrollTimelineTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "bar")
-            .Add(p => p.Timeline, BmScrollTimeline.Page())
+            .Add(p => p.Timeline, BmotionScrollTimeline.Page())
             // backgroundColor is not something the browser can be handed as numeric keyframes here.
             .Add(p => p.Animate, Bm.To(backgroundColor: "#fff"))
             .Add(p => p.ChildContent, Div()));
@@ -221,7 +221,7 @@ public class ScrollTimelineTests
         ctx.Interop.ScrollTimelineResult = false; // no native timeline; the bridge scrubs instead
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "bar")
-            .Add(p => p.Timeline, BmScrollTimeline.Page())
+            .Add(p => p.Timeline, BmotionScrollTimeline.Page())
             .Add(p => p.Animate, Bm.To(scaleX: new double[] { 0, 1 }))
             .Add(p => p.ChildContent, Div()));
 
@@ -235,11 +235,11 @@ public class ScrollTimelineTests
         using var ctx = new BmotionTestContext();
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "bar")
-            .Add(p => p.Timeline, BmScrollTimeline.Page())
+            .Add(p => p.Timeline, BmotionScrollTimeline.Page())
             .Add(p => p.Animate, Bm.To(scaleX: new double[] { 0, 1 }))
             .Add(p => p.ChildContent, Div()));
 
-        cut.Render(ps => ps.Add(p => p.Timeline, BmScrollTimeline.View()));
+        cut.Render(ps => ps.Add(p => p.Timeline, BmotionScrollTimeline.View()));
 
         Assert.AreEqual(1, ctx.Interop.CountOf("cancelScrollTimelineAnimation"));
         Assert.AreEqual(2, ctx.Interop.CountOf("playScrollTimelineAnimation"));
@@ -251,12 +251,12 @@ public class ScrollTimelineTests
         using var ctx = new BmotionTestContext();
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "bar")
-            .Add(p => p.Timeline, BmScrollTimeline.Page())
+            .Add(p => p.Timeline, BmotionScrollTimeline.Page())
             .Add(p => p.Animate, Bm.To(scaleX: new double[] { 0, 1 }))
             .Add(p => p.ChildContent, Div()));
 
         // A freshly constructed but identical spec is what a razor attribute produces every render.
-        cut.Render(ps => ps.Add(p => p.Timeline, BmScrollTimeline.Page()));
+        cut.Render(ps => ps.Add(p => p.Timeline, BmotionScrollTimeline.Page()));
 
         Assert.AreEqual(1, ctx.Interop.CountOf("playScrollTimelineAnimation"));
         Assert.AreEqual(0, ctx.Interop.CountOf("cancelScrollTimelineAnimation"));
@@ -268,11 +268,11 @@ public class ScrollTimelineTests
         using var ctx = new BmotionTestContext();
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "bar")
-            .Add(p => p.Timeline, BmScrollTimeline.Page())
+            .Add(p => p.Timeline, BmotionScrollTimeline.Page())
             .Add(p => p.Animate, Bm.To(scaleX: new double[] { 0, 1 }))
             .Add(p => p.ChildContent, Div()));
 
-        cut.Render(ps => ps.Add(p => p.Timeline, (BmScrollTimeline?)null));
+        cut.Render(ps => ps.Add(p => p.Timeline, (BmotionScrollTimeline?)null));
 
         Assert.AreEqual(1, ctx.Interop.CountOf("cancelScrollTimelineAnimation"));
         // The target now belongs to the ordinary engine again.
@@ -282,12 +282,12 @@ public class ScrollTimelineTests
     // ── Reduced motion ────────────────────────────────────────────────────────
 
     private static IRenderedComponent<Bmotion> RenderReduced(
-        BmotionTestContext ctx, BmReducedMotionMode mode, BmReducedMotionBehavior behavior)
+        BmotionTestContext ctx, BmotionReducedMotionMode mode, BmotionReducedMotionBehavior behavior)
     {
         ctx.Options.ReducedMotion = mode;
         return ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "bar")
-            .Add(p => p.Timeline, BmScrollTimeline.Page())
+            .Add(p => p.Timeline, BmotionScrollTimeline.Page())
             .Add(p => p.Animate, Bm.To(scaleX: new double[] { 0, 1 }, opacity: new double[] { 0, 1 }))
             .Add(p => p.ReducedMotion, behavior)
             .Add(p => p.ChildContent, Div()));
@@ -297,7 +297,7 @@ public class ScrollTimelineTests
     public void UnderReducedMotion_AnInstantElement_GivesUpItsScrollAnimation()
     {
         using var ctx = new BmotionTestContext();
-        RenderReduced(ctx, BmReducedMotionMode.Always, BmReducedMotionBehavior.Instant);
+        RenderReduced(ctx, BmotionReducedMotionMode.Always, BmotionReducedMotionBehavior.Instant);
 
         Assert.AreEqual(0, ctx.Interop.CountOf("playScrollTimelineAnimation"), "neither the transform nor the fade follows the scroll");
         Assert.AreEqual(0, ctx.Interop.CountOf("playWaapiAnimation"), "the target lands at once");
@@ -307,7 +307,7 @@ public class ScrollTimelineTests
     public void UnderReducedMotion_AFullElement_KeepsItsScrollAnimation()
     {
         using var ctx = new BmotionTestContext();
-        RenderReduced(ctx, BmReducedMotionMode.Always, BmReducedMotionBehavior.Full);
+        RenderReduced(ctx, BmotionReducedMotionMode.Always, BmotionReducedMotionBehavior.Full);
 
         Assert.AreEqual(1, ctx.Interop.CountOf("playScrollTimelineAnimation"));
     }
@@ -316,7 +316,7 @@ public class ScrollTimelineTests
     public void WithoutReducedMotion_AnInstantElement_KeepsItsScrollAnimation()
     {
         using var ctx = new BmotionTestContext();
-        RenderReduced(ctx, BmReducedMotionMode.Never, BmReducedMotionBehavior.Instant);
+        RenderReduced(ctx, BmotionReducedMotionMode.Never, BmotionReducedMotionBehavior.Instant);
 
         Assert.AreEqual(1, ctx.Interop.CountOf("playScrollTimelineAnimation"));
     }
@@ -325,12 +325,12 @@ public class ScrollTimelineTests
     public void ChangingReducedMotion_DetachesAndReattachesTheScrollAnimation()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderReduced(ctx, BmReducedMotionMode.Always, BmReducedMotionBehavior.Full);
+        var cut = RenderReduced(ctx, BmotionReducedMotionMode.Always, BmotionReducedMotionBehavior.Full);
 
-        cut.Render(ps => ps.Add(p => p.ReducedMotion, BmReducedMotionBehavior.Instant));
+        cut.Render(ps => ps.Add(p => p.ReducedMotion, BmotionReducedMotionBehavior.Instant));
         Assert.AreEqual(1, ctx.Interop.CountOf("cancelScrollTimelineAnimation"));
 
-        cut.Render(ps => ps.Add(p => p.ReducedMotion, BmReducedMotionBehavior.Full));
+        cut.Render(ps => ps.Add(p => p.ReducedMotion, BmotionReducedMotionBehavior.Full));
         Assert.AreEqual(2, ctx.Interop.CountOf("playScrollTimelineAnimation"));
     }
 

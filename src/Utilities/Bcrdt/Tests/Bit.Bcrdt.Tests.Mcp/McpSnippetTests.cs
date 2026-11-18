@@ -161,7 +161,7 @@ public partial class McpSnippetTests
     [TestMethod]
     public void Every_component_attribute_the_setup_guides_and_the_readme_write_is_a_parameter()
     {
-        var components = typeof(Bit.Bcrdt.Blazor.BcrdtComponentBase).Assembly.GetExportedTypes()
+        var components = typeof(Bit.Bcrdt.BcrdtComponentBase).Assembly.GetExportedTypes()
             .Where(type => typeof(IComponent).IsAssignableFrom(type))
             .ToDictionary(type => type.Name, StringComparer.Ordinal);
 
@@ -177,7 +177,7 @@ public partial class McpSnippetTests
             {
                 if (components.TryGetValue(tag.Groups["component"].Value, out var component) is false)
                 {
-                    failures.Add($"{source} renders <{tag.Groups["component"].Value}>, which is not a Bit.Bcrdt.Blazor component.");
+                    failures.Add($"{source} renders <{tag.Groups["component"].Value}>, which is not a Bcrdt component.");
                     continue;
                 }
 

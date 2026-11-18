@@ -1,7 +1,4 @@
-﻿using Bit.BlazeDb;
-using Bit.BlazeDb.Serialization;
-
-namespace Bit.BlazeDb.Demo.Client.Data;
+﻿namespace Bit.BlazeDb.Demo.Client.Data;
 
 public enum Priority
 {

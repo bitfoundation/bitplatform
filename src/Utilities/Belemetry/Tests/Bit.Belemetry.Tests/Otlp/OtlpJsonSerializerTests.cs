@@ -16,7 +16,7 @@ public class OtlpJsonSerializerTests
         span.Status = BelemetryStatusCode.Error;
         span.StatusMessage = "failed";
 
-        using var doc = JsonDocument.Parse(OtlpJsonSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), [span])));
+        using var doc = JsonDocument.Parse(BelemetryOtlpJsonSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), [span])));
         var rs = doc.RootElement.GetProperty("resourceSpans")[0];
         Assert.AreEqual("checkout", FindAttr(rs.GetProperty("resource").GetProperty("attributes"), "service.name").GetProperty("stringValue").GetString());
 
@@ -63,7 +63,7 @@ public class OtlpJsonSerializerTests
         log.SpanId = Records.SpanId;
         log.Flags = 1;
 
-        using var doc = JsonDocument.Parse(OtlpJsonSerializer.SerializeLogs(new BelemetryBatch(Records.Resource(), logs: [log])));
+        using var doc = JsonDocument.Parse(BelemetryOtlpJsonSerializer.SerializeLogs(new BelemetryBatch(Records.Resource(), logs: [log])));
         var r = doc.RootElement.GetProperty("resourceLogs")[0].GetProperty("scopeLogs")[0].GetProperty("logRecords")[0];
 
         Assert.AreEqual(Records.Start.ToString(), r.GetProperty("timeUnixNano").GetString());
@@ -85,7 +85,7 @@ public class OtlpJsonSerializerTests
     public void Metrics_FollowTheJsonRules(BelemetryMetricTemporality temporality)
     {
         var delta = temporality == BelemetryMetricTemporality.Delta;
-        using var doc = JsonDocument.Parse(OtlpJsonSerializer.SerializeMetrics(new BelemetryBatch(Records.Resource(), metrics: OtlpProtobufConformanceTests.MetricsSample()), temporality));
+        using var doc = JsonDocument.Parse(BelemetryOtlpJsonSerializer.SerializeMetrics(new BelemetryBatch(Records.Resource(), metrics: OtlpProtobufConformanceTests.MetricsSample()), temporality));
         var metrics = doc.RootElement.GetProperty("resourceMetrics")[0].GetProperty("scopeMetrics")[0].GetProperty("metrics")
             .EnumerateArray().ToDictionary(m => m.GetProperty("name").GetString()!);
 

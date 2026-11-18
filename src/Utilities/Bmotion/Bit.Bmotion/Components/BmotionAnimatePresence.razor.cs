@@ -35,12 +35,12 @@ public partial class BmotionAnimatePresence : ComponentBase
 
     /// <summary>
     /// How exit and enter sequence when <see cref="IsPresent"/> toggles rapidly:
-    /// <see cref="BmPresenceMode.Wait"/> holds the new children until the exiting ones finish
-    /// (motion.dev's <c>mode="wait"</c>); <see cref="BmPresenceMode.PopLayout"/> pops exiting
+    /// <see cref="BmotionPresenceMode.Wait"/> holds the new children until the exiting ones finish
+    /// (motion.dev's <c>mode="wait"</c>); <see cref="BmotionPresenceMode.PopLayout"/> pops exiting
     /// children out of the layout flow so siblings reflow immediately.
-    /// Default: <see cref="BmPresenceMode.Sync"/>.
+    /// Default: <see cref="BmotionPresenceMode.Sync"/>.
     /// </summary>
-    [Parameter] public BmPresenceMode Mode { get; set; }
+    [Parameter] public BmotionPresenceMode Mode { get; set; }
 
     /// <summary>Fires when all exiting children have finished their exit animations.</summary>
     [Parameter] public EventCallback OnExitComplete { get; set; }
@@ -78,7 +78,7 @@ public partial class BmotionAnimatePresence : ComponentBase
             if (_presenceCtx.ChildCount > 0)
             {
                 // Children are leaving - signal exiting state so Bmotion components play Exit
-                _presenceCtx.PopLayout = Mode == BmPresenceMode.PopLayout;
+                _presenceCtx.PopLayout = Mode == BmotionPresenceMode.PopLayout;
                 _presenceCtx.IsExiting = true;
                 _shouldRender = true; // keep rendering until exit completes
             }
@@ -92,7 +92,7 @@ public partial class BmotionAnimatePresence : ComponentBase
         }
         else if (!_prevIsPresent && IsPresent)
         {
-            if (Mode == BmPresenceMode.Wait && _presenceCtx.IsExiting)
+            if (Mode == BmotionPresenceMode.Wait && _presenceCtx.IsExiting)
             {
                 // Wait for the exiting children to finish before rendering the new ones.
                 _deferEnter = true;

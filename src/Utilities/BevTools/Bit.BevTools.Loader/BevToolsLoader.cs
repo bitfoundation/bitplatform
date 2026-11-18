@@ -30,7 +30,7 @@ public sealed class BevToolsLoader : IDisposable
     /// <summary>
     /// False where BevTools may not be opened, which is outside Development in a process that serves many users
     /// (an ASP.NET Core host: Blazor Server, prerendering, static rendering), unless it was registered there at startup
-    /// or <see cref="BitBevToolsLoaderOptions.AllowInMultiUserHost"/> is set. <see cref="Problem"/> then says why. The
+    /// or <see cref="BevToolsLoaderOptions.AllowInMultiUserHost"/> is set. <see cref="Problem"/> then says why. The
     /// attach applies the same rule, so <see cref="OpenAsync"/> is not refused where this is true. Use it to decide
     /// whether to offer the button that calls <see cref="OpenAsync"/>.
     /// </summary>
@@ -50,7 +50,7 @@ public sealed class BevToolsLoader : IDisposable
     /// WebAssembly through LazyAssemblyLoader when it is marked BlazorWebAssemblyLazyLoad) and attaches it to the running
     /// app, which it then sees from that moment on. Returns false, with <see cref="Problem"/> saying why, when it could not;
     /// also false, leaving <see cref="Problem"/> to it, when a newer call overtook this one while it awaited
-    /// <see cref="BitBevToolsLoaderOptions.Authorize"/> or the download: only the latest call acts on its answer.
+    /// <see cref="BevToolsLoaderOptions.Authorize"/> or the download: only the latest call acts on its answer.
     /// </summary>
     public async Task<bool> OpenAsync()
     {
@@ -111,14 +111,14 @@ public sealed class BevToolsLoader : IDisposable
     }
 
     /// <summary>
-    /// The panel to render: known once BevTools runs in this scope and, with <see cref="BitBevToolsLoaderOptions.Authorize"/>
+    /// The panel to render: known once BevTools runs in this scope and, with <see cref="BevToolsLoaderOptions.Authorize"/>
     /// set, once the latest <see cref="OpenAsync"/> was accepted by it - a BevTools registered at startup included.
     /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     internal Type? PanelType => IsActive && (_authorized || _context.Options.Authorize is null) ? _context.EntryPoint?.PanelType : null;
 
     /// <summary>
-    /// Whether <see cref="BitBevToolsLoaderOptions.Authorize"/> accepts whoever is in this scope (true when none is
+    /// Whether <see cref="BevToolsLoaderOptions.Authorize"/> accepts whoever is in this scope (true when none is
     /// set), on top of <see cref="CanOpen"/>. Use it to show the "Open dev tools" button only to the people allowed to
     /// press it; <see cref="OpenAsync"/> asks again either way. A callback that throws is a refusal here too, and is not
     /// logged: this runs whenever the app renders its button, for every visitor, and <see cref="OpenAsync"/> logs it.
@@ -144,14 +144,14 @@ public sealed class BevToolsLoader : IDisposable
         {
             return BevToolsLoaderContext.IsVersionMismatch(ex)
                 ? BevToolsLoaderContext.VersionMismatch(_context.EntryPoint!, ex)
-                : "BevTools is not opened here: Bit.BevTools failed before asking BitBevToolsLoaderOptions.Authorize: " + ex.GetType().Name + ": " + ex.Message;
+                : "BevTools is not opened here: Bit.BevTools failed before asking BevToolsLoaderOptions.Authorize: " + ex.GetType().Name + ": " + ex.Message;
         }
 
         using (ownWork)
         {
             try
             {
-                return await authorize(_services) ? null : "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize did not accept the current user.";
+                return await authorize(_services) ? null : "BevTools is not opened here: BevToolsLoaderOptions.Authorize did not accept the current user.";
             }
             catch (Exception ex)
             {
@@ -165,7 +165,7 @@ public sealed class BevToolsLoader : IDisposable
                     {
                         if (_services.GetService<ILoggerFactory>() is { } loggerFactory)
                         {
-                            loggerFactory.CreateLogger("Bit.BevTools").LogWarning(ex, "BitBevToolsLoaderOptions.Authorize threw; BevTools stays closed.");
+                            loggerFactory.CreateLogger("Bit.BevTools").LogWarning(ex, "BevToolsLoaderOptions.Authorize threw; BevTools stays closed.");
                             logged = true;
                         }
                     }
@@ -175,7 +175,7 @@ public sealed class BevToolsLoader : IDisposable
                     }
                 }
 
-                return "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize threw " + ex.GetType().Name + (logged ? " (logged)." : ".");
+                return "BevTools is not opened here: BevToolsLoaderOptions.Authorize threw " + ex.GetType().Name + (logged ? " (logged)." : ".");
             }
         }
     }

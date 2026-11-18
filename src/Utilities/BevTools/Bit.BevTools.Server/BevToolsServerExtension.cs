@@ -10,12 +10,12 @@ public sealed class BevToolsServerExtension : IBevToolsExtension
     public void Configure(IBevToolsExtensionBuilder builder)
     {
         builder
-            .AddPanel(new BevToolsPanelDescriptor("circuit", "Circuit", typeof(BevCircuitPanel), Order: 50) { RequiredPlatform = "Server" })
+            .AddPanel(new BevToolsPanelDescriptor("circuit", "Circuit", typeof(BevToolsCircuitPanel), Order: 50) { RequiredPlatform = "Server" })
             .AddDiagnosticRule(new CircuitInstabilityRule())
             .AddCommand(new ShowCircuitsCommand());
     }
 
-    private sealed class CircuitInstabilityRule : IBevDiagnosticRule
+    private sealed class CircuitInstabilityRule : IBevToolsDiagnosticRule
     {
         public string Id => "circuit.unstable";
 
@@ -23,15 +23,15 @@ public sealed class BevToolsServerExtension : IBevToolsExtension
 
         public string Description => "The connection dropped repeatedly within a short time.";
 
-        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        public IEnumerable<BevToolsDiagnostic> Evaluate(IBevToolsDiagnosticContext context)
         {
             var downs = context.EventsInWindow(BevToolsEventKind.Circuit, TimeSpan.FromMinutes(2)).Where(IsConnectionDown).ToList();
             if (downs.Count >= 2)
             {
                 var browserSide = context.Events.Where(e => e.Category == "reconnect").Select(e => e.Title).Distinct().Take(4).ToList();
-                yield return new BevDiagnostic(
+                yield return new BevToolsDiagnostic(
                     Id,
-                    BevDiagnosticSeverity.Warning,
+                    BevToolsDiagnosticSeverity.Warning,
                     $"Connection dropped {downs.Count} times in 2 minutes",
                     "Server-side connection-down events: " + string.Join(", ", downs.Select(d => d.Timestamp.ToLocalTime().ToString("HH:mm:ss"))) + (browserSide.Count > 0 ? ". Browser reported: " + string.Join(", ", browserSide) : "."),
                     "Check proxies/load balancers for WebSocket timeouts, long-running synchronous handlers (see Slow inbound message events) and client network conditions. Consider CircuitOptions.DisconnectedCircuitRetentionPeriod.",
@@ -42,10 +42,10 @@ public sealed class BevToolsServerExtension : IBevToolsExtension
             var slow = context.EventsInWindow(BevToolsEventKind.Circuit, TimeSpan.FromMinutes(1)).Where(IsSlowInbound).ToList();
             if (slow.Count >= 3)
             {
-                yield return new BevDiagnostic(
+                yield return new BevToolsDiagnostic(
                     "circuit.blocked",
-                    BevDiagnosticSeverity.Warning,
-                    $"{slow.Count} inbound messages blocked the circuit for ≥ {(context.GetOptions<BevDiagnosticsOptions>()?.SlowEventHandlerMs ?? 100):0} ms each",
+                    BevToolsDiagnosticSeverity.Warning,
+                    $"{slow.Count} inbound messages blocked the circuit for ≥ {(context.GetOptions<BevToolsDiagnosticsOptions>()?.SlowEventHandlerMs ?? 100):0} ms each",
                     "Longest: " + Ms(slow.Max(e => e.DurationMs ?? 0)) + ". While a message is processed, the circuit cannot handle other input or send renders, which the browser perceives as freezes and eventually as disconnects.",
                     "Move CPU-bound work to Task.Run and avoid blocking waits (.Result, .Wait()) in handlers.",
                     Fingerprint: "circuit.blocked:" + EpisodeStart(context.Events, slow[^1], IsSlowInbound, TimeSpan.FromMinutes(1)),

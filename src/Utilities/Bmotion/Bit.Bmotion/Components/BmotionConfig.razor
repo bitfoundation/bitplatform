@@ -10,7 +10,7 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>Global default transition applied when no per-component transition is set.</summary>
-    [Parameter] public BmTransition? Transition { get; set; }
+    [Parameter] public BmotionTransition? Transition { get; set; }
 
     /// <summary>
     /// Global reduce-motion override.
@@ -28,19 +28,19 @@
 
     /// <summary>
     /// Global color-interpolation space for this subtree. <c>null</c> leaves the default (sRGB);
-    /// set to <c>BmColorSpace.Oklab</c> for perceptual color transitions. A per-transition
+    /// set to <c>BmotionColorSpace.Oklab</c> for perceptual color transitions. A per-transition
     /// <c>colorSpace</c> still wins.
     /// </summary>
-    [Parameter] public BmColorSpace? ColorSpace { get; set; }
+    [Parameter] public BmotionColorSpace? ColorSpace { get; set; }
 
     private BmotionConfigContext _ctx = new();
 
     // Cache the last parameter values so OnParametersSet only swaps in a new context (and triggers
     // a downstream re-render of the cascading value) when one of them actually changes.
-    private BmTransition? _lastTransition;
+    private BmotionTransition? _lastTransition;
     private bool? _lastReduceMotion;
     private double _lastTransitionSpeed = 1.0;
-    private BmColorSpace? _lastColorSpace;
+    private BmotionColorSpace? _lastColorSpace;
     private bool _ctxInitialized;
 
     protected override void OnParametersSet()

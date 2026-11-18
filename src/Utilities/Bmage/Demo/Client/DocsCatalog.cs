@@ -87,8 +87,9 @@ public static class SiteInfo
 /// </summary>
 public static class DocsCatalog
 {
-    // The page types are named through Pages. on purpose: Editor, Metadata and Capabilities are also
-    // namespaces of the library (Bit.Bmage.Editor, ...), and a bare name would bind to those first.
+    // The page types are named through Pages. on purpose: Editor, Metadata, Capabilities and the like are
+    // common names, and qualified they can never meet a type of the same name in a namespace this file
+    // imports - Bit.Bmage, the whole library since it is one namespace, among them.
     public static readonly DocsSection[] Sections =
     [
         new("Getting started",
@@ -167,7 +168,7 @@ public static class DocsCatalog
                 "editor bmageeditor component crop adjust filter draw annotate layers history undo redo theme localisation rtl strings toolbar panel keyboard straighten resize canvas trim histogram white balance colour mixer brush eraser eyedropper fill magic eraser selection lasso magic wand compare group clip project",
                 typeof(Pages.Editor)),
             new("/headless", "Headless API",
-                "The same engine with no components at all: thumbnails, crops, grading, framing, placeholders, analysis, drawing with ImageCanvas, and server-side use.",
+                "The same engine with no components at all: thumbnails, crops, grading, framing, placeholders, analysis, drawing with BmageImageCanvas, and server-side use.",
                 "headless api no ui server console imagecanvas drawing thumbnail exif placeholder statistics histogram colorsampler contentbounds trim smartcrop straighten pad duotone layercompositor addbitbmageheadlessservices",
                 typeof(Pages.Headless)),
         ]),

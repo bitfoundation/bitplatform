@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using Bit.Bcrdt.SignalR;
 
 namespace Bit.Bcrdt.Samples.Core;
 

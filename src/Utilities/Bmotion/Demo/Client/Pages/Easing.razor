@@ -29,7 +29,7 @@
         moving after they arrive. Switch direction to see all 32.
     </p>
     <p>
-        <code>Bm.Tween()</code> with no arguments is a 0.3&nbsp;s <code>BmEase.Out</code> - the plain
+        <code>Bm.Tween()</code> with no arguments is a 0.3&nbsp;s <code>BmotionEase.Out</code> - the plain
         <code>In</code> / <code>Out</code> / <code>InOut</code> rows are the cubic curve, the default.
     </p>
 
@@ -145,13 +145,13 @@
     // In / Out / InOut, so its prefix is empty.
     private static readonly string[] _families = ["Sine", "Quad", "", "Quart", "Quint", "Expo", "Circ", "Back", "Elastic", "Bounce"];
 
-    // Every BmEase in one direction: Linear and Anticipate have none, so they lead and close each list.
-    private static IEnumerable<BmEase> EasesFor(string direction)
+    // Every BmotionEase in one direction: Linear and Anticipate have none, so they lead and close each list.
+    private static IEnumerable<BmotionEase> EasesFor(string direction)
     {
-        yield return BmEase.Linear;
+        yield return BmotionEase.Linear;
         foreach (var family in _families)
-            yield return Enum.Parse<BmEase>(family + direction);
-        yield return BmEase.Anticipate;
+            yield return Enum.Parse<BmotionEase>(family + direction);
+        yield return BmotionEase.Anticipate;
     }
 
     /// <summary>A hand-authored curve: its four control numbers and what they read as.</summary>
@@ -164,9 +164,9 @@
         new("0.9, 0, 1, 0.2 · slow start, hard stop", [0.9, 0, 1, 0.2]),
     ];
 
-    private readonly BmStepJump[] _steps =
+    private readonly BmotionStepJump[] _steps =
     [
-        BmStepJump.End, BmStepJump.Start, BmStepJump.None, BmStepJump.Both,
+        BmotionStepJump.End, BmotionStepJump.Start, BmotionStepJump.None, BmotionStepJump.Both,
     ];
 
     private const string _easeCode = """
@@ -187,21 +187,21 @@
             private bool _on;
 
             // All 32: Linear, Anticipate, and ten families in three directions each.
-            // Bm.Tween() with no arguments is Bm.Tween(0.3, BmEase.Out).
-            private readonly BmEase[] _eases =
+            // Bm.Tween() with no arguments is Bm.Tween(0.3, BmotionEase.Out).
+            private readonly BmotionEase[] _eases =
             [
-                BmEase.Linear,
-                BmEase.SineIn,    BmEase.SineOut,    BmEase.SineInOut,
-                BmEase.QuadIn,    BmEase.QuadOut,    BmEase.QuadInOut,
-                BmEase.In,        BmEase.Out,        BmEase.InOut,        // cubic
-                BmEase.QuartIn,   BmEase.QuartOut,   BmEase.QuartInOut,
-                BmEase.QuintIn,   BmEase.QuintOut,   BmEase.QuintInOut,
-                BmEase.ExpoIn,    BmEase.ExpoOut,    BmEase.ExpoInOut,
-                BmEase.CircIn,    BmEase.CircOut,    BmEase.CircInOut,
-                BmEase.BackIn,    BmEase.BackOut,    BmEase.BackInOut,
-                BmEase.ElasticIn, BmEase.ElasticOut, BmEase.ElasticInOut,
-                BmEase.BounceIn,  BmEase.BounceOut,  BmEase.BounceInOut,
-                BmEase.Anticipate,
+                BmotionEase.Linear,
+                BmotionEase.SineIn,    BmotionEase.SineOut,    BmotionEase.SineInOut,
+                BmotionEase.QuadIn,    BmotionEase.QuadOut,    BmotionEase.QuadInOut,
+                BmotionEase.In,        BmotionEase.Out,        BmotionEase.InOut,        // cubic
+                BmotionEase.QuartIn,   BmotionEase.QuartOut,   BmotionEase.QuartInOut,
+                BmotionEase.QuintIn,   BmotionEase.QuintOut,   BmotionEase.QuintInOut,
+                BmotionEase.ExpoIn,    BmotionEase.ExpoOut,    BmotionEase.ExpoInOut,
+                BmotionEase.CircIn,    BmotionEase.CircOut,    BmotionEase.CircInOut,
+                BmotionEase.BackIn,    BmotionEase.BackOut,    BmotionEase.BackInOut,
+                BmotionEase.ElasticIn, BmotionEase.ElasticOut, BmotionEase.ElasticInOut,
+                BmotionEase.BounceIn,  BmotionEase.BounceOut,  BmotionEase.BounceInOut,
+                BmotionEase.Anticipate,
             ];
         }
         """;
@@ -229,7 +229,7 @@
         @* steps() advances progress in n discrete jumps instead of a continuous curve.
            stepJump decides where the jumps fall: End (default), Start, None or Both. *@
         <Bmotion Animate="@(_on ? Bm.To(x: 160) : Bm.To(x: 0))"
-                 Transition="Bm.Tween(1.2, steps: 6, stepJump: BmStepJump.End)">
+                 Transition="Bm.Tween(1.2, steps: 6, stepJump: BmotionStepJump.End)">
             <div class="box-sm" />
         </Bmotion>
 

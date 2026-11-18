@@ -1,10 +1,8 @@
-using Bit.Bmage.Text;
-
 namespace Bit.Bmage.Demo.Client.Shared;
 
 /// <summary>
 /// The fonts the editor draws text and step numbers with. <c>BmageEditor</c> turns text into outlines, which needs
-/// TrueType fonts registered with the <see cref="FontTextRasterizer"/> the services provide - a browser's own fonts are
+/// TrueType fonts registered with the <see cref="BmageFontTextRasterizer"/> the services provide - a browser's own fonts are
 /// out of its reach. This site ships Noto Sans for Latin, Greek and Cyrillic and Vazirmatn for Persian and Arabic (both
 /// SIL Open Font License, Server/wwwroot/fonts), and fetches them the first time a page with an editor asks, rather
 /// than holding up the start of every page for them.
@@ -13,7 +11,7 @@ namespace Bit.Bmage.Demo.Client.Shared;
 /// Noto Sans is registered first, so it is what the editor's "sans-serif" means; a character it lacks - every Persian
 /// letter - is drawn with Vazirmatn, shaped, joined and ordered right to left by the rasteriser.
 /// </remarks>
-public sealed class DemoFonts(HttpClient http, FontTextRasterizer fonts)
+public sealed class DemoFonts(HttpClient http, BmageFontTextRasterizer fonts)
 {
     private Task? _loading;
 
@@ -31,7 +29,7 @@ public sealed class DemoFonts(HttpClient http, FontTextRasterizer fonts)
                 http.GetByteArrayAsync("fonts/NotoSans-Bold.ttf"),
                 http.GetByteArrayAsync("fonts/Vazirmatn-Regular.ttf"),
                 http.GetByteArrayAsync("fonts/Vazirmatn-Bold.ttf"));
-            var loaded = files.Select(file => FontFile.Load(file)).ToArray();
+            var loaded = files.Select(file => BmageFontFile.Load(file)).ToArray();
             fonts.Register("Noto Sans", loaded[0])
                  .Register("Noto Sans", loaded[1], bold: true)
                  .Register("Vazirmatn", loaded[2])

@@ -42,10 +42,3 @@ public sealed class BitBhHoverCardContext
     /// <summary>Opens or closes immediately.</summary>
     public Task SetOpenAsync(bool open) => _setOpenAsync(open);
 }
-
-/// <summary>Render-fragment context exposed by hover-card parts.</summary>
-public sealed record BitBhHoverCardRenderContext
-{
-    /// <summary>Whether the card is open.</summary>
-    public required bool IsOpen { get; init; }
-}

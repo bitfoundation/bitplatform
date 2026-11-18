@@ -1,4 +1,4 @@
-﻿namespace Bit.Blex.Blazor;
+﻿namespace Bit.Blex;
 
 /// <summary>Shared plumbing for the components that re-render when a store notifies.</summary>
 internal static class BlexRender

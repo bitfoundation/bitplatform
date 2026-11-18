@@ -128,7 +128,7 @@
             "Equality lookups in O(1), range scans in O(log n) with inclusive, exclusive or open bounds for keyset paging, ordinal prefix scans, and per-value counts - maintained automatically on every mutation including rollback.",
             "indexes", "Try the lookups live"),
 
-        new("Composable query plans", "Bit.BlazeDb.Querying",
+        new("Composable query plans", "Bit.BlazeDb",
             "One index source, any number of residual predicates, ordering, paging and projection - the primitive the EF Core provider translates LINQ onto, usable directly too.",
             "queries", "Build a query"),
 
@@ -148,15 +148,15 @@
             "VerifyIntegrity compares every row with every index entry and names what disagrees - the trace a row changed in place leaves behind.",
             "writes", "Change a row in place"),
 
-        new("Write-ahead log and snapshots", "Bit.BlazeDb.Wal",
+        new("Write-ahead log and snapshots", "Bit.BlazeDb",
             "Group-committed WAL records with per-record CRC32, atomic manifest updates, snapshot compaction, torn-tail truncation and replay on open.",
             "durability", "Crash it on purpose"),
 
-        new("Pluggable storage", "Bit.BlazeDb.Storage",
+        new("Pluggable storage", "Bit.BlazeDb",
             "A four-method contract with in-memory and file backends in the core, and an OPFS backend plus Web Locks single-writer election for the browser.",
             "storage", "Trace the engine's I/O"),
 
-        new("Compact binary format", "Bit.BlazeDb.Serialization",
+        new("Compact binary format", "Bit.BlazeDb",
             "Tagged, length-delimited encoding with varints, absent-means-null fields and unknown-field skipping, so old readers survive new writers.",
             "serialization", "Read the actual bytes"),
 
@@ -164,7 +164,7 @@
             "A small exception hierarchy under BlazeDbException, with checksum validation on everything persisted and clear rules about what throws versus what returns false.",
             "errors", "Trigger every one"),
 
-        new("Browser integration", "Bit.BlazeDb.Browser",
+        new("Browser integration", "Bit.BlazeDb",
             "OPFS access through a [JSImport] ES module - atomic writes through createWritable's swap file - plus Web Locks so a second tab cannot corrupt the first one's files.",
             "storage", "See the browser notes"),
 
@@ -176,11 +176,11 @@
             "[BlazeDbCompoundIndex] and [BlazeDbCompoundOrderedIndex] build an index keyed by a value tuple, so a filter on several members resolves to one lookup. Ordered ones sort lexicographically, which keeps a leading-key prefix a single contiguous scan.",
             "indexes", "Page by keyset"),
 
-        new("Streaming query results", "Bit.BlazeDb.Querying",
+        new("Streaming query results", "Bit.BlazeDb",
             "ExecuteAsync hands control back to the browser every N rows, so scanning a large table cannot freeze rendering on WebAssembly's single thread. Filters, ordering and paging apply exactly as in the synchronous path.",
             "queries", "Stream 50,000 rows"),
 
-        new("Encryption at rest", "Bit.BlazeDb.Storage",
+        new("Encryption at rest", "Bit.BlazeDb",
             "An IBlazeDbStorage decorator that seals every write into an AES-GCM frame, keeping appends genuine appends. The file name is bound in as associated data, and a torn trailing frame is ignored while a tampered one is reported as corruption.",
             "encryption", "Encrypt a database"),
 
@@ -188,11 +188,11 @@
             "The engine consults navigator.storage estimates before flushing, compacts when space runs short, and refuses deliberately rather than discovering the limit as a failed append. Data stays intact in memory and the flush can be retried.",
             "storage", "Run into the quota"),
 
-        new("IndexedDB fallback", "Bit.BlazeDb.Browser",
+        new("IndexedDB fallback", "Bit.BlazeDb",
             "A second browser backend for contexts without OPFS, such as Firefox private windows. Same four-method contract, same single-writer lock, so nothing above it changes.",
             "tabs", "See which one this browser gets"),
 
-        new("Cross-tab read replicas", "Bit.BlazeDb.Browser",
+        new("Cross-tab read replicas", "Bit.BlazeDb",
             "Read-only tabs recover from storage and reload when the writer announces a checkpoint over a BroadcastChannel. Only the signal crosses tabs - the data always travels through storage, so a replica cannot observe an uncommitted state.",
             "tabs", "Follow a writer tab"),
 

@@ -6,7 +6,7 @@ namespace Bit.BevTools.Tests;
 
 /// <summary>
 /// What BevTools shows of a value: credential-shaped values are redacted whatever they are called, configuration is
-/// never walked, and <see cref="BevValueAccess"/> limits how much of an application value is read at all.
+/// never walked, and <see cref="BevToolsValueAccess"/> limits how much of an application value is read at all.
 /// </summary>
 [TestClass]
 public class ValueSafetyTests
@@ -28,33 +28,33 @@ public class ValueSafetyTests
     [DataRow("https://example.com/products?page=2", false)]
     public void Credentials_are_recognised_by_their_shape(string value, bool expected)
     {
-        Assert.AreEqual(expected, BevRedactor.LooksLikeSecret(value));
+        Assert.AreEqual(expected, BevToolsRedactor.LooksLikeSecret(value));
     }
 
     [TestMethod]
     public void Free_text_keeps_what_is_not_a_credential()
     {
-        Assert.AreEqual("Login failed for Server=db;Password=" + BevRedactor.RedactedValue + ";",
-            BevRedactor.RedactText("Login failed for Server=db;Password=hunter2;"));
-        Assert.AreEqual("invalid token " + BevRedactor.RedactedValue + " (expired)", BevRedactor.RedactText("invalid token " + Jwt + " (expired)"));
-        Assert.AreEqual("Authorization: Bearer " + BevRedactor.RedactedValue, BevRedactor.RedactText("Authorization: Bearer abc.def"));
+        Assert.AreEqual("Login failed for Server=db;Password=" + BevToolsRedactor.RedactedValue + ";",
+            BevToolsRedactor.RedactText("Login failed for Server=db;Password=hunter2;"));
+        Assert.AreEqual("invalid token " + BevToolsRedactor.RedactedValue + " (expired)", BevToolsRedactor.RedactText("invalid token " + Jwt + " (expired)"));
+        Assert.AreEqual("Authorization: Bearer " + BevToolsRedactor.RedactedValue, BevToolsRedactor.RedactText("Authorization: Bearer abc.def"));
 
         const string plain = "Object reference not set to an instance of an object.";
-        Assert.AreSame(plain, BevRedactor.RedactText(plain), "text without a credential is returned as it is");
+        Assert.AreSame(plain, BevToolsRedactor.RedactText(plain), "text without a credential is returned as it is");
     }
 
     [TestMethod]
-    [DataRow("Server=db;Password='P@ss word';User Id=sa", "Server=db;Password='" + BevRedactor.RedactedValue + "';User Id=sa")]
-    [DataRow("Server=db;Password='ab cd';User Id=sa", "Server=db;Password='" + BevRedactor.RedactedValue + "';User Id=sa")]
-    [DataRow("Server=db;Pwd=\"a;bcdef\";User Id=sa", "Server=db;Pwd=\"" + BevRedactor.RedactedValue + "\";User Id=sa")]
-    [DataRow("Server=db;Password='it''s';User Id=sa", "Server=db;Password='" + BevRedactor.RedactedValue + "';User Id=sa")]
-    [DataRow("{\"password\":\"a\\\"b c\",\"user\":\"ada\"}", "{\"password\":\"" + BevRedactor.RedactedValue + "\",\"user\":\"ada\"}")]
-    [DataRow("Server=db;Password='abc def", "Server=db;Password='" + BevRedactor.RedactedValue)]
+    [DataRow("Server=db;Password='P@ss word';User Id=sa", "Server=db;Password='" + BevToolsRedactor.RedactedValue + "';User Id=sa")]
+    [DataRow("Server=db;Password='ab cd';User Id=sa", "Server=db;Password='" + BevToolsRedactor.RedactedValue + "';User Id=sa")]
+    [DataRow("Server=db;Pwd=\"a;bcdef\";User Id=sa", "Server=db;Pwd=\"" + BevToolsRedactor.RedactedValue + "\";User Id=sa")]
+    [DataRow("Server=db;Password='it''s';User Id=sa", "Server=db;Password='" + BevToolsRedactor.RedactedValue + "';User Id=sa")]
+    [DataRow("{\"password\":\"a\\\"b c\",\"user\":\"ada\"}", "{\"password\":\"" + BevToolsRedactor.RedactedValue + "\",\"user\":\"ada\"}")]
+    [DataRow("Server=db;Password='abc def", "Server=db;Password='" + BevToolsRedactor.RedactedValue)]
     public void A_quoted_value_is_redacted_up_to_its_closing_quote(string text, string expected)
     {
-        Assert.IsTrue(BevRedactor.LooksLikeSecret(text));
-        Assert.AreEqual(expected, BevRedactor.RedactText(text));
-        Assert.IsFalse(BevRedactor.LooksLikeSecret(expected));
+        Assert.IsTrue(BevToolsRedactor.LooksLikeSecret(text));
+        Assert.AreEqual(expected, BevToolsRedactor.RedactText(text));
+        Assert.IsFalse(BevToolsRedactor.LooksLikeSecret(expected));
     }
 
     [TestMethod]
@@ -66,8 +66,8 @@ public class ValueSafetyTests
         var text = string.Concat(Enumerable.Repeat(unit, 100_000 / unit.Length));
 
         var start = System.Diagnostics.Stopwatch.GetTimestamp();
-        Assert.IsFalse(BevRedactor.LooksLikeSecret(text));
-        Assert.AreSame(text, BevRedactor.RedactText(text));
+        Assert.IsFalse(BevToolsRedactor.LooksLikeSecret(text));
+        Assert.AreSame(text, BevToolsRedactor.RedactText(text));
         var elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(start);
 
         Assert.IsTrue(elapsed.TotalMilliseconds < 1000, $"checking 100,000 characters took {elapsed.TotalMilliseconds:0} ms");
@@ -82,8 +82,8 @@ public class ValueSafetyTests
     {
         var text = string.Format(format, Jwt);
 
-        Assert.IsTrue(BevRedactor.LooksLikeSecret(text));
-        Assert.AreEqual(string.Format(format, BevRedactor.RedactedValue), BevRedactor.RedactText(text));
+        Assert.IsTrue(BevToolsRedactor.LooksLikeSecret(text));
+        Assert.AreEqual(string.Format(format, BevToolsRedactor.RedactedValue), BevToolsRedactor.RedactText(text));
     }
 
     [TestMethod]
@@ -94,8 +94,8 @@ public class ValueSafetyTests
     [DataRow("Bit.Demo.HeyJudeComponent.Render.Method")]
     public void Dotted_text_with_ey_inside_a_word_is_not_a_token(string text)
     {
-        Assert.IsFalse(BevRedactor.LooksLikeSecret(text));
-        Assert.AreSame(text, BevRedactor.RedactText(text));
+        Assert.IsFalse(BevToolsRedactor.LooksLikeSecret(text));
+        Assert.AreSame(text, BevToolsRedactor.RedactText(text));
     }
 
     [TestMethod]
@@ -107,10 +107,10 @@ public class ValueSafetyTests
         var token = session.Inspector.Describe("Value", Jwt);
         var connection = session.Inspector.Describe("Target", "Server=db;Password=hunter2;");
 
-        Assert.AreEqual(BevNodeKind.Redacted, token.Kind);
-        Assert.AreEqual(BevRedactor.RedactedValue, token.Display);
-        Assert.AreEqual(BevNodeKind.Redacted, connection.Kind);
-        StringAssert.Contains(connection.Display, "Server=db;Password=" + BevRedactor.RedactedValue);
+        Assert.AreEqual(BevToolsNodeKind.Redacted, token.Kind);
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, token.Display);
+        Assert.AreEqual(BevToolsNodeKind.Redacted, connection.Kind);
+        StringAssert.Contains(connection.Display, "Server=db;Password=" + BevToolsRedactor.RedactedValue);
         Assert.IsFalse(connection.Display.Contains("hunter2", StringComparison.Ordinal));
     }
 
@@ -127,9 +127,9 @@ public class ValueSafetyTests
         var claim = session.Inspector.Children(claims, "[0]");
         var flat = session.Inspector.Flatten(new { Headers = headers, Claims = claims });
 
-        StringAssert.Contains(headerItems[1].Display, BevRedactor.RedactedValue, "KeyValuePair.ToString would print the value");
-        Assert.AreEqual(BevRedactor.RedactedValue, keyHeader.Single(n => n.Name == "Value").Display);
-        Assert.AreEqual(BevRedactor.RedactedValue, claim.Single(n => n.Name == "Value").Display);
+        StringAssert.Contains(headerItems[1].Display, BevToolsRedactor.RedactedValue, "KeyValuePair.ToString would print the value");
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, keyHeader.Single(n => n.Name == "Value").Display);
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, claim.Single(n => n.Name == "Value").Display);
         Assert.IsFalse(flat.Values.Any(v => v.Contains("opaque", StringComparison.Ordinal)), string.Join(", ", flat));
         Assert.IsTrue(flat.Values.Any(v => v.Contains("Ada", StringComparison.Ordinal)), "a pair with an ordinary name keeps its value");
     }
@@ -156,13 +156,13 @@ public class ValueSafetyTests
     [TestMethod]
     public void Exports_below_Full_keep_the_changes_a_render_captured_and_summarize_other_lists()
     {
-        var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = BevValueAccess.Shallow);
+        var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = BevToolsValueAccess.Shallow);
         using var _ = scope;
-        var sample = new BevRenderSample { Sequence = 1, At = DateTimeOffset.UtcNow, StartTicks = System.Diagnostics.Stopwatch.GetTimestamp(), ChangedState = ["_counter: 0 → 1"] };
-        session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Render, Category = "render", Title = "Counter", DurationMs = 1, Data = new RenderEventData(sample, 2) });
+        var sample = new BevToolsRenderSample { Sequence = 1, At = DateTimeOffset.UtcNow, StartTicks = System.Diagnostics.Stopwatch.GetTimestamp(), ChangedState = ["_counter: 0 → 1"] };
+        session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Render, Category = "render", Title = "Counter", DurationMs = 1, Data = new BevToolsRenderEventData(sample, 2) });
         session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.StateChange, Category = "orders", Title = "Order placed", Data = new Dictionary<string, object?> { ["items"] = new List<string> { "opaque-item" } } });
 
-        foreach (var export in new[] { BevSessionExporter.ToJson(session), BevTraceExporter.ToChromeTrace(session) })
+        foreach (var export in new[] { BevToolsSessionExporter.ToJson(session), BevToolsTraceExporter.ToChromeTrace(session) })
         {
             using var document = System.Text.Json.JsonDocument.Parse(export);
             var strings = StringsIn(document.RootElement).ToList();
@@ -182,7 +182,7 @@ public class ValueSafetyTests
     [TestMethod]
     public void Shallow_access_shows_scalars_and_never_walks_or_prints_objects()
     {
-        var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = BevValueAccess.Shallow);
+        var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = BevToolsValueAccess.Shallow);
         using var _ = scope;
         var record = new Customer("Ada", 36);
 
@@ -201,7 +201,7 @@ public class ValueSafetyTests
     [TestMethod]
     public void No_access_reads_no_application_value_but_keeps_BevTools_metadata()
     {
-        var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = BevValueAccess.None);
+        var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = BevToolsValueAccess.None);
         using var _ = scope;
 
         var name = session.Inspector.Describe("Name", "Ada");
@@ -209,30 +209,30 @@ public class ValueSafetyTests
         var cause = session.Inspector.DescribeMetadata("cause", "ParentRender");
         var bag = session.Inspector.DescribeMetadata("payload", new Customer("Ada", 36));
 
-        Assert.AreEqual(BevRedactor.HiddenValue, name.Display);
-        Assert.AreEqual(BevRedactor.HiddenValue, count.Display);
+        Assert.AreEqual(BevToolsRedactor.HiddenValue, name.Display);
+        Assert.AreEqual(BevToolsRedactor.HiddenValue, count.Display);
         Assert.AreEqual("string", name.TypeName, "the type is structure, not data");
         Assert.AreEqual("\"ParentRender\"", cause.Display);
         Assert.AreEqual("Customer", bag.Display, "an extension's object in an event is not printed either");
 
         var flat = new Dictionary<string, string>();
-        session.Inspector.FlattenNamed(flat, "Customer", new Customer("Ada", 36), member: null, maxDepth: 3, maxItems: 25, maxEntries: 400, BevObjectInspector.FlattenDeadline());
-        Assert.AreEqual(BevRedactor.HiddenValue, flat["Customer"]);
+        session.Inspector.FlattenNamed(flat, "Customer", new Customer("Ada", 36), member: null, maxDepth: 3, maxItems: 25, maxEntries: 400, BevToolsObjectInspector.FlattenDeadline());
+        Assert.AreEqual(BevToolsRedactor.HiddenValue, flat["Customer"]);
         Assert.HasCount(1, flat, "nothing below a value that is not read");
     }
 
     [TestMethod]
     public void No_access_the_app_chose_is_not_explained_as_the_multi_user_default()
     {
-        var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = BevValueAccess.None);
+        var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = BevToolsValueAccess.None);
         using var _ = scope;
 
-        var capability = CapabilityReport.Build(session).Single(c => c.Name == "Values (parameters, fields, state, claims)");
-        var fact = BevRuntimeInfo.Build(session).SelectMany(s => s.Facts).Single(f => f.Name == "Value access");
+        var capability = BevToolsCapabilityReport.Build(session).Single(c => c.Name == "Values (parameters, fields, state, claims)");
+        var fact = BevToolsRuntimeInfo.Build(session).SelectMany(s => s.Facts).Single(f => f.Name == "Value access");
 
-        StringAssert.Contains(capability.Explanation, "as BitBevToolsOptions.ValueAccess sets it");
+        StringAssert.Contains(capability.Explanation, "as BevToolsOptions.ValueAccess sets it");
         Assert.IsFalse(capability.Explanation.Contains("serves many users", StringComparison.Ordinal), capability.Explanation);
-        StringAssert.Contains(fact.Hint, "BitBevToolsOptions.ValueAccess is set to None");
+        StringAssert.Contains(fact.Hint, "BevToolsOptions.ValueAccess is set to None");
         Assert.IsFalse(fact.Hint!.Contains("serves many users", StringComparison.Ordinal), fact.Hint);
     }
 
@@ -245,8 +245,8 @@ public class ValueSafetyTests
         var record = session.Errors.Record(new InvalidOperationException("Cannot open Server=db;Password=hunter2;"), "test");
 
         Assert.IsFalse(record.Message.Contains("hunter2", StringComparison.Ordinal));
-        StringAssert.Contains(record.Message, "Password=" + BevRedactor.RedactedValue);
-        Assert.IsFalse(BevSessionExporter.ToJson(session).Contains("hunter2", StringComparison.Ordinal));
+        StringAssert.Contains(record.Message, "Password=" + BevToolsRedactor.RedactedValue);
+        Assert.IsFalse(BevToolsSessionExporter.ToJson(session).Contains("hunter2", StringComparison.Ordinal));
     }
 
     private sealed record Customer(string Name, int Age);

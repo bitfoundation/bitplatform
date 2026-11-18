@@ -19,9 +19,7 @@ internal static class Snippets
 
         public const string Registration =
             """
-            using Bit.Bsqlite.Storage.IndexedDb;
-            using Bit.Bsqlite.Storage.InMemory;
-            using Bit.Bsqlite.Storage.Opfs;
+            using Bit.Bsqlite;
 
             builder.Services.AddBitBsqliteServices(sqlite => sqlite
                 .AddStorageProvider<BsqliteOpfsStorageProvider>()
@@ -40,7 +38,7 @@ internal static class Snippets
         public const string Page =
             """
             @page "/products"
-            @using Bit.Bsqlite.EntityFrameworkCore
+            @using Bit.Bsqlite
             @using Microsoft.EntityFrameworkCore
             @inject IBsqliteDbContextFactory<AppDbContext> Contexts
 

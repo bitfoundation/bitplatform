@@ -13,8 +13,8 @@ public static class SyntheticImage
     /// <param name="quietZoneModules">Light border width in modules.</param>
     /// <param name="dark">Luminance of a dark module.</param>
     /// <param name="light">Luminance of a light module.</param>
-    public static BbLuminanceBuffer FromMatrix(
-        BbBitMatrix matrix,
+    public static BbScannerLuminanceBuffer FromMatrix(
+        BbScannerBitMatrix matrix,
         int scale = 4,
         int quietZoneModules = 4,
         byte dark = 0,
@@ -24,7 +24,7 @@ public static class SyntheticImage
 
         var width = (matrix.Width + (2 * quietZoneModules)) * scale;
         var height = (matrix.Height + (2 * quietZoneModules)) * scale;
-        var buffer = BbLuminanceBuffer.Rent(width, height);
+        var buffer = BbScannerLuminanceBuffer.Rent(width, height);
         var pixels = buffer.Pixels;
         pixels.Fill(light);
 
@@ -57,7 +57,7 @@ public static class SyntheticImage
     /// <param name="modules">The 30 by 33 grid; <see langword="true"/> is a dark module.</param>
     /// <param name="moduleWidth">The width of a module, in pixels; a row is 0.866 of it below the last.</param>
     /// <param name="quietZoneModules">Light border width in module widths on each side.</param>
-    public static BbLuminanceBuffer FromMaxiCode(BbBitMatrix modules, double moduleWidth = 6, int quietZoneModules = 2)
+    public static BbScannerLuminanceBuffer FromMaxiCode(BbScannerBitMatrix modules, double moduleWidth = 6, int quietZoneModules = 2)
     {
         ArgumentNullException.ThrowIfNull(modules);
         const double Pitch = 0.8660254037844386;
@@ -68,7 +68,7 @@ public static class SyntheticImage
         var margin = quietZoneModules * moduleWidth;
         var width = (int)Math.Ceiling((30.5 * moduleWidth) + (2 * margin));
         var height = (int)Math.Ceiling(((32 * Pitch) + (2 * HexRadius)) * moduleWidth + (2 * margin));
-        var buffer = BbLuminanceBuffer.Rent(width, height);
+        var buffer = BbScannerLuminanceBuffer.Rent(width, height);
         var pixels = buffer.Pixels;
 
         double CentreX(int row, int column) => margin + ((column + 0.5 + ((row & 1) == 1 ? 0.5 : 0)) * moduleWidth);
@@ -145,14 +145,14 @@ public static class SyntheticImage
     /// <param name="scale">Pixels per module.</param>
     /// <param name="height">Image height in pixels.</param>
     /// <param name="quietZoneModules">Light border width in modules on each side.</param>
-    public static BbLuminanceBuffer FromLinear(
+    public static BbScannerLuminanceBuffer FromLinear(
         ReadOnlySpan<bool> modules,
         int scale = 3,
         int height = 60,
         int quietZoneModules = 12)
     {
         var width = (modules.Length + (2 * quietZoneModules)) * scale;
-        var buffer = BbLuminanceBuffer.Rent(width, height);
+        var buffer = BbScannerLuminanceBuffer.Rent(width, height);
         var pixels = buffer.Pixels;
         pixels.Fill(255);
 
@@ -184,7 +184,7 @@ public static class SyntheticImage
     /// <param name="barGain">Pixels added to every bar; negative narrows them.</param>
     /// <param name="height">Image height in pixels.</param>
     /// <param name="quietZoneModules">Light border width in modules on each side.</param>
-    public static BbLuminanceBuffer FromLinearWithBarGain(
+    public static BbScannerLuminanceBuffer FromLinearWithBarGain(
         ReadOnlySpan<bool> modules,
         int scale,
         int barGain,
@@ -192,7 +192,7 @@ public static class SyntheticImage
         int quietZoneModules = 12)
     {
         var width = (modules.Length + (2 * quietZoneModules)) * scale;
-        var buffer = BbLuminanceBuffer.Rent(width, height);
+        var buffer = BbScannerLuminanceBuffer.Rent(width, height);
         var pixels = buffer.Pixels;
         pixels.Fill(255);
 
@@ -257,7 +257,7 @@ public static class SyntheticImage
     /// <param name="buffer">The image to perturb, in place.</param>
     /// <param name="amplitude">Maximum absolute change per pixel.</param>
     /// <param name="seed">Random seed, so failures are reproducible.</param>
-    public static void AddNoise(BbLuminanceBuffer buffer, int amplitude, int seed)
+    public static void AddNoise(BbScannerLuminanceBuffer buffer, int amplitude, int seed)
     {
         ArgumentNullException.ThrowIfNull(buffer);
         var random = new Random(seed);

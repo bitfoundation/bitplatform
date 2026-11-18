@@ -2,7 +2,7 @@ namespace Bit.Bmotion;
 
 /// <summary>
 /// Drives <c>x</c> and <c>y</c> (and optionally <c>rotate</c>) together along a curve - the engine
-/// side of <see cref="BmArc"/>.
+/// side of <see cref="BmotionArc"/>.
 /// <para>
 /// Every other driver owns a single property, which is exactly why an arc needs its own: two
 /// independent drivers interpolating x and y can only ever describe the straight line between the
@@ -13,14 +13,14 @@ namespace Bit.Bmotion;
 /// </summary>
 internal sealed class BmotionArcDriver : IBmotionAnimationDriver
 {
-    private readonly BmArcCurve _curve;
+    private readonly BmotionArcCurve _curve;
     private readonly IBmotionAnimationDriver _progress;
     private readonly Action<double, double, double?> _apply;
 
     /// <param name="curve">The path to follow, already resolved from the element's current position.</param>
     /// <param name="config">Timing/physics for the journey; drives a 0→1 progress value.</param>
     /// <param name="apply">Receives <c>(x, y, rotateDegrees)</c>; rotation is null when the arc doesn't turn the element.</param>
-    public BmotionArcDriver(BmArcCurve curve, BmotionTransitionConfig config, Action<double, double, double?> apply)
+    public BmotionArcDriver(BmotionArcCurve curve, BmotionTransitionConfig config, Action<double, double, double?> apply)
     {
         _curve = curve;
         _apply = apply;

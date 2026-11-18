@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Brings a value read out of a LINQ predicate to the type an index (or the primary key) is keyed

@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Samples.Core.Data;
+﻿namespace Bit.BlazeDb.Samples.Core.Data;
 
 /// <summary>
 /// The one database every page uses, opened on first use and kept for as long as the container that registers it -

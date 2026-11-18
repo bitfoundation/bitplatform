@@ -10,7 +10,7 @@ internal sealed class BmotionTweenDriver : IBmotionAnimationDriver
     private readonly Func<double, double> _easeFn;
     private readonly int _repeat;
     private readonly bool _isInfinite;
-    private readonly BmRepeatType _repeatType;
+    private readonly BmotionRepeatType _repeatType;
     private readonly double _repeatDelayMs;
     private readonly Action<double> _apply;
 
@@ -36,7 +36,7 @@ internal sealed class BmotionTweenDriver : IBmotionAnimationDriver
         _curTo = _to = to;
         _durationMs = config.Duration * 1000;
         _delayMs = config.Delay * 1000;
-        _easeFn = BmEaseFunctions.Get(config);
+        _easeFn = BmotionEaseFunctions.Get(config);
         _repeat = config.Repeat;
         _isInfinite = config.IsInfiniteRepeat;
         _repeatType = config.RepeatType;
@@ -67,9 +67,9 @@ internal sealed class BmotionTweenDriver : IBmotionAnimationDriver
                 // Reverse plays backwards repeatedly (1→0, 1→0, …): swap once on the first repeat,
                 // then keep that order so each later cycle replays in reverse rather than toggling
                 // back to forward (matches BmotionColorTweenDriver / BmotionSpringDriver).
-                if (_repeatType == BmRepeatType.Mirror)
+                if (_repeatType == BmotionRepeatType.Mirror)
                     (_curFrom, _curTo) = (_curTo, _curFrom);
-                else if (_repeatType == BmRepeatType.Reverse && !_reversed)
+                else if (_repeatType == BmotionRepeatType.Reverse && !_reversed)
                 {
                     (_curFrom, _curTo) = (_curTo, _curFrom);
                     _reversed = true;
@@ -92,12 +92,12 @@ internal sealed class BmotionTweenDriver : IBmotionAnimationDriver
         //  • Reverse plays forward once (ending on _to) then replays reversed for every later pass
         //    (ending on _from), so it ends on _to only when there are no repeats.
         // Loop (and infinite repeats, which have no natural end) terminate on _to.
-        if (!_isInfinite && _repeatType == BmRepeatType.Mirror)
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Mirror)
         {
             _apply((_repeat + 1) % 2 == 0 ? _from : _to);
             return;
         }
-        if (!_isInfinite && _repeatType == BmRepeatType.Reverse)
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Reverse)
         {
             _apply(_repeat == 0 ? _to : _from);
             return;

@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using Bit.BlazeDb.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
@@ -10,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Query.Internal;
 // implementing it is what lets a query stay a few expression walks instead of a translation stack.
 #pragma warning disable EF1001
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Replaces EF's query pipeline outright.

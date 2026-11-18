@@ -1,7 +1,6 @@
 ﻿@* One participant with an undo stack of its own, which undoes only this user's edits. Each panel of the undo
    page is this component, opened by a different user. *@
 @using Bit.Bcrdt
-@using Bit.Bcrdt.Blazor
 @inherits BcrdtComponentBase
 
 <BcrdtCollaborationScope DocumentId="demo-undo" User="_me" OnOpened="Opened" Context="document">

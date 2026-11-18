@@ -224,7 +224,7 @@ public class AzureMonitorLiveMetricsTests
         Apply(live, Streams("""{ "TelemetryType": "Request", "Filters": { "Filters": [] } }"""));
 
         for (var i = 0; i < 50; i++) live.OnRecord(Request(200));
-        Assert.AreEqual((int)AzureMonitorLiveConfiguration.DefaultInitialQuota, Post(live).GetProperty("Documents").GetArrayLength(), "The clock stands still: nothing is earned back.");
+        Assert.AreEqual((int)BelemetryAzureMonitorLiveConfiguration.DefaultInitialQuota, Post(live).GetProperty("Documents").GetArrayLength(), "The clock stands still: nothing is earned back.");
 
         time.Advance(TimeSpan.FromSeconds(3));
         for (var i = 0; i < 50; i++) live.OnRecord(Request(200));
@@ -640,7 +640,7 @@ public class AzureMonitorLiveMetricsTests
         CollectionAssert.AreEqual(new Dictionary<string, string?> { ["tenant"] = "contoso", ["PageName"] = "Orders", ["PageUrl"] = "https://shop.test/orders" }, properties,
                                   "Its fields' attributes are no properties, and its PageName takes the place of the attribute's.");
 
-        using var envelope = JsonDocument.Parse(AzureMonitorEnvelopeSerializer.Serialize(new BelemetryBatch(Records.Resource(), logs: [visit]), new("ikey", MaskIp: false), out _));
+        using var envelope = JsonDocument.Parse(BelemetryAzureMonitorEnvelopeSerializer.Serialize(new BelemetryBatch(Records.Resource(), logs: [visit]), new("ikey", MaskIp: false), out _));
         var written = envelope.RootElement[0].GetProperty("data").GetProperty("baseData").GetProperty("properties").EnumerateObject()
                               .Select(p => KeyValuePair.Create(p.Name, (string?)p.Value.GetString())).ToList();
         CollectionAssert.AreEqual(properties.ToList(), written, "The properties of its item in Application Insights, once each.");
@@ -758,7 +758,7 @@ public class AzureMonitorLiveMetricsTests
     [DataRow("1.00:00:00", 86400000d)]
     public void ADurationComparand_IsReadAsTheServiceWritesIt(string comparand, double milliseconds)
     {
-        Assert.IsTrue(AzureMonitorLiveFilter.TryParseDuration(comparand, out var parsed));
+        Assert.IsTrue(BelemetryAzureMonitorLiveFilter.TryParseDuration(comparand, out var parsed));
         Assert.AreEqual(milliseconds, parsed, 0.001);
     }
 
@@ -787,9 +787,9 @@ public class AzureMonitorLiveMetricsTests
     {
         var span = Request(404);
         span.Attributes.Set("tenant", "contoso");
-        var item = AzureMonitorLiveItem.FromSpan(span);
+        var item = BelemetryAzureMonitorLiveItem.FromSpan(span);
 
-        Assert.AreEqual(matches, AzureMonitorLiveFilter.Create(AzureMonitorLiveTelemetryType.Request, field, predicate, comparand).Matches(item));
+        Assert.AreEqual(matches, BelemetryAzureMonitorLiveFilter.Create(BelemetryAzureMonitorLiveTelemetryType.Request, field, predicate, comparand).Matches(item));
     }
 
     [TestMethod]
@@ -803,9 +803,9 @@ public class AzureMonitorLiveMetricsTests
         var span = Records.Span(name: "SELECT orders");
         span.Attributes.Set(BelemetrySemanticConventions.DbSystemName, "postgresql").Set(BelemetrySemanticConventions.DbQueryText, "SELECT * FROM orders")
                        .Set(BelemetrySemanticConventions.ServerAddress, "db.test").Set(BelemetrySemanticConventions.ServerPort, 5432);
-        var item = AzureMonitorLiveItem.FromSpan(span);
+        var item = BelemetryAzureMonitorLiveItem.FromSpan(span);
 
-        Assert.AreEqual(matches, AzureMonitorLiveFilter.Create(AzureMonitorLiveTelemetryType.Dependency, field, predicate, comparand).Matches(item),
+        Assert.AreEqual(matches, BelemetryAzureMonitorLiveFilter.Create(BelemetryAzureMonitorLiveTelemetryType.Dependency, field, predicate, comparand).Matches(item),
                         "A dependency without a result code has none to equal.");
     }
 
@@ -828,7 +828,7 @@ public class AzureMonitorLiveMetricsTests
     [DataRow("Trace", "Name", "Equal", "x")]
     public void AFilterThatCannotApply_IsRefused(string type, string field, string predicate, string comparand)
     {
-        Assert.ThrowsExactly<FormatException>(() => AzureMonitorLiveFilter.Create(Enum.Parse<AzureMonitorLiveTelemetryType>(type), field, predicate, comparand));
+        Assert.ThrowsExactly<FormatException>(() => BelemetryAzureMonitorLiveFilter.Create(Enum.Parse<BelemetryAzureMonitorLiveTelemetryType>(type), field, predicate, comparand));
     }
 
     [TestMethod]
@@ -865,16 +865,16 @@ public class AzureMonitorLiveMetricsTests
         Assert.AreEqual(0, Post(live).GetProperty("Documents").GetArrayLength());
     }
 
-    private static AzureMonitorLiveMetrics Create(Action<BelemetryAzureMonitorExporterOptions>? configure = null, Action<string>? diagnostic = null, HttpMessageHandler? handler = null,
+    private static BelemetryAzureMonitorLiveMetrics Create(Action<BelemetryAzureMonitorExporterOptions>? configure = null, Action<string>? diagnostic = null, HttpMessageHandler? handler = null,
                                                   BelemetrySettings? settings = null, TimeProvider? time = null)
     {
         var options = new BelemetryAzureMonitorExporterOptions { ConnectionString = ConnectionString };
         configure?.Invoke(options);
         var exporter = new BelemetryAzureMonitorExporter(options, "azuremonitor");
-        return new AzureMonitorLiveMetrics(exporter, settings ?? TestHost.CreateSettings(), (_, message) => diagnostic?.Invoke(message), handler, time);
+        return new BelemetryAzureMonitorLiveMetrics(exporter, settings ?? TestHost.CreateSettings(), (_, message) => diagnostic?.Invoke(message), handler, time);
     }
 
-    private static void Apply(AzureMonitorLiveMetrics live, string configuration, string etag = "e1")
+    private static void Apply(BelemetryAzureMonitorLiveMetrics live, string configuration, string etag = "e1")
     {
         live.ApplyConfiguration(Encoding.UTF8.GetBytes(configuration), etag);
         Assert.AreEqual(etag, live.Configuration?.ETag);
@@ -908,7 +908,7 @@ public class AzureMonitorLiveMetricsTests
         return span;
     }
 
-    private static JsonElement Post(AzureMonitorLiveMetrics live)
+    private static JsonElement Post(BelemetryAzureMonitorLiveMetrics live)
     {
         using var document = JsonDocument.Parse(live.CreatePostBody(TimeSpan.FromSeconds(1)));
         return document.RootElement.EnumerateArray().Single().Clone();

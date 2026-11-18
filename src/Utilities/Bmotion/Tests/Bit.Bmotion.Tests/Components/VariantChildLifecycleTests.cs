@@ -17,7 +17,7 @@ namespace Bit.Bmotion.Tests.Components;
 [TestClass]
 public class VariantChildLifecycleTests
 {
-    private static readonly BmVariants _states = new()
+    private static readonly BmotionVariants _states = new()
     {
         ["hidden"] = Bm.To(opacity: 0),
         ["visible"] = Bm.To(opacity: 1),
@@ -25,8 +25,8 @@ public class VariantChildLifecycleTests
 
     private sealed class Log
     {
-        public readonly List<BmProps?> Started = new();
-        public readonly List<BmProps?> Completed = new();
+        public readonly List<BmotionProps?> Started = new();
+        public readonly List<BmotionProps?> Completed = new();
     }
 
     // The parent's own element, with one cascade-driven child Bmotion per id inside it.
@@ -41,9 +41,9 @@ public class VariantChildLifecycleTests
             if (log is not null)
             {
                 b.AddComponentParameter(3, nameof(Bmotion.OnAnimationStart),
-                    EventCallback.Factory.Create<BmProps?>(this, p => log.Started.Add(p)));
+                    EventCallback.Factory.Create<BmotionProps?>(this, p => log.Started.Add(p)));
                 b.AddComponentParameter(4, nameof(Bmotion.OnAnimationComplete),
-                    EventCallback.Factory.Create<BmProps?>(this, p => { lock (log.Completed) log.Completed.Add(p); }));
+                    EventCallback.Factory.Create<BmotionProps?>(this, p => { lock (log.Completed) log.Completed.Add(p); }));
             }
             b.AddComponentParameter(5, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
             {
@@ -55,7 +55,7 @@ public class VariantChildLifecycleTests
         b.CloseElement();
     };
 
-    private static IRenderedComponent<Bmotion> RenderParent(BmotionTestContext ctx, RenderFragment children, BmTransition? transition = null)
+    private static IRenderedComponent<Bmotion> RenderParent(BmotionTestContext ctx, RenderFragment children, BmotionTransition? transition = null)
         => ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "parent")
             .Add(p => p.Variants, _states)

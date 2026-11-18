@@ -26,18 +26,18 @@ using Bit.Bmage;   // AddBitBmageServices and AddBitBmageHeadlessServices live h
 builder.Services.AddBitBmageServices();
 ```
 
-This registers `ImageLoader`, `ImageExporter`, `IImageCapabilityProvider` and `ImageProcessorFactory`. It does not
-register `ImageProcessor` directly, because in a browser the processor can only be built once the browser's codec
+This registers `BmageImageLoader`, `BmageImageExporter`, `IBmageImageCapabilityProvider` and `BmageImageProcessorFactory`. It does not
+register `BmageImageProcessor` directly, because in a browser the processor can only be built once the browser's codec
 support has been probed, and that probe is asynchronous. Get one from the factory when you need the lower level API:
 
 ```csharp
-@inject ImageProcessorFactory ProcessorFactory
+@inject BmageImageProcessorFactory ProcessorFactory
 
 // Inside an event handler or OnAfterRenderAsync, never during prerendering.
 var processor = await ProcessorFactory.GetAsync();
 ```
 
-`AddBitBmageHeadlessServices` has no such constraint and does register `ImageProcessor` directly, because the managed
+`AddBitBmageHeadlessServices` has no such constraint and does register `BmageImageProcessor` directly, because the managed
 codecs need no probing. That is the one difference in the service graph between the two registrations.
 
 With options:
@@ -46,7 +46,7 @@ With options:
 builder.Services.AddBitBmageServices(options =>
 {
     // Refuse anything larger than this before decoding, to protect against decompression bombs.
-    options.Limits = ImageLimits.Default with { MaxPixels = 40_000_000 };
+    options.Limits = BmageImageLimits.Default with { MaxPixels = 40_000_000 };
 
     // Largest upload accepted from a file input.
     options.MaxSourceBytes = 32 * 1024 * 1024;
@@ -69,8 +69,8 @@ scope per circuit, so browser state is never shared between users; in Blazor Hyb
 ### Lazy loading Bmage on WebAssembly
 
 `BmageEditor` also works without the registration, so a WebAssembly app can download Bmage only when someone opens the
-editor. When `ImageLoader` is not registered, the editor builds every service it needs itself, once per browser
-connection, with the `BitBmageOptions` the app registered or the defaults. Mark both assemblies as lazy loaded and load
+editor. When `BmageImageLoader` is not registered, the editor builds every service it needs itself, once per browser
+connection, with the `BmageOptions` the app registered or the defaults. Mark both assemblies as lazy loaded and load
 them before the editor first renders:
 
 ```xml
@@ -87,7 +87,7 @@ await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm", "Bit.Bmage.Blazo
 ```
 
 Leave `AddBitBmageServices` out of `Program.cs` in that project: calling it references Bmage's types before the
-assemblies are there. Code of your own that injects `ImageLoader` or `ImageExporter` needs the registration, so lazy
+assemblies are there. Code of your own that injects `BmageImageLoader` or `BmageImageExporter` needs the registration, so lazy
 loading suits an app whose only use of Bmage is the editor. Do not lazy load in an AOT build: AOT compiles every
 assembly into `dotnet.native.wasm`, so there is nothing left to download later, and lazy loading an AOT-compiled
 assembly can fail at startup.
@@ -138,8 +138,8 @@ trade-offs.
 
 ```razor
 @page "/upload"
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
 
 <InputFile OnChange="OnChange" accept="image/*" />
 
@@ -159,7 +159,7 @@ trade-offs.
         using var image = await Loader.LoadAsync(e.File);
 
         // Process on the decoded pixels.
-        using var processed = await ImagePipeline.Create()
+        using var processed = await BmageImagePipeline.Create()
             .MaxSize(800, 800)
             .Sharpen(0.3f)
             .ExecuteAsync(image);
@@ -167,8 +167,8 @@ trade-offs.
         // Encode, preferring WebP but falling back where it is unavailable.
         var encoded = await Exporter.EncodeWithFallbackAsync(
             processed,
-            [ImageFormat.WebP, ImageFormat.Jpeg],
-            new ImageExportOptions { Quality = 0.85 });
+            [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
+            new BmageImageExportOptions { Quality = 0.85 });
 
         _size = encoded.Length;
         _preview = await Exporter.CreateObjectUrlAsync(encoded);
@@ -178,9 +178,9 @@ trade-offs.
 
 Two things in that snippet matter and are easy to miss.
 
-**Dispose your images.** An `ImageBuffer` holds pooled memory: a 4000 × 3000 image is 48 MB. `using` returns it to the
+**Dispose your images.** A `BmageImageBuffer` holds pooled memory: a 4000 × 3000 image is 48 MB. `using` returns it to the
 pool immediately instead of waiting for a collection. Buffers you receive from `LoadAsync`, `ExecuteAsync` and
-`RenderFullAsync` are yours to dispose. Buffers exposed as properties, such as `ImageEditSession.Preview`, are not.
+`RenderFullAsync` are yours to dispose. Buffers exposed as properties, such as `BmageImageEditSession.Preview`, are not.
 
 **Prefer object URLs to data URLs.** `CreateObjectUrlAsync` hands the browser the bytes directly. `ToDataUrl()` exists
 but base64 inflates the payload by a third and forces it through the DOM as a string. Release object URLs with
@@ -201,9 +201,9 @@ but base64 inflates the payload by a third and forces it through the DOM as a st
     private BmageEditor? _editor;
 
     private Task Save() => _editor!.DownloadAsync("edited",
-        new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.9 });
+        new BmageImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.9 });
 
-    private void OnExported(EncodedImage image)
+    private void OnExported(BmageEncodedImage image)
     {
         // Also called when the user exports from the editor's own panel.
     }
@@ -224,15 +224,15 @@ builder.Services.AddBitBmageHeadlessServices();
 ```
 
 ```csharp
-app.MapPost("/upload", async (IFormFile file, ImageProcessor processor) =>
+app.MapPost("/upload", async (IFormFile file, BmageImageProcessor processor) =>
 {
     using var buffer = new MemoryStream();
     await file.OpenReadStream().CopyToAsync(buffer);
 
     var thumbnail = await processor.ProcessAsync(
         buffer.ToArray(),
-        ImagePipeline.Create().AutoOrient().MaxSize(400, 400),
-        new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 });
+        BmageImagePipeline.Create().AutoOrient().MaxSize(400, 400),
+        new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 });
 
     return Results.File(thumbnail.Data, thumbnail.MimeType);
 });
@@ -252,7 +252,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
 }
 ```
 
-`IImageCapabilityProvider.GetAsync` is deliberately forgiving here: when no browser is reachable it returns the managed
+`IBmageImageCapabilityProvider.GetAsync` is deliberately forgiving here: when no browser is reachable it returns the managed
 capability set with `Environment` set to `Prerendering` rather than throwing, so a prerendered page still renders
 something sensible and re-detects once interactive.
 

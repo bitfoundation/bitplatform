@@ -5,20 +5,20 @@
 [TestClass]
 public class BarcodeDecoderTests
 {
-    private static BbLuminanceBuffer RenderQr(string content) =>
+    private static BbScannerLuminanceBuffer RenderQr(string content) =>
         SyntheticImage.FromMatrix(QrEncoder.Encode(content), scale: 5);
 
     [TestMethod]
     public void DecodesAQrCodeFromAGrayscaleFrame()
     {
-        using var decoder = new BbBarcodeDecoder();
+        using var decoder = new BbScannerBarcodeDecoder();
         using var image = RenderQr("PIPELINE");
 
         var result = decoder.Decode(image.View);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("PIPELINE", result.Text);
-        Assert.AreEqual(BbBarcodeFormat.QrCode, result.Format);
+        Assert.AreEqual(BbScannerBarcodeFormat.QrCode, result.Format);
         Assert.AreEqual(image.Width, result.FrameWidth);
         Assert.IsTrue(result.BoundingBox.Width > 0);
     }
@@ -26,14 +26,14 @@ public class BarcodeDecoderTests
     [TestMethod]
     public void DecodesALinearCodeFromAGrayscaleFrame()
     {
-        using var decoder = new BbBarcodeDecoder();
+        using var decoder = new BbScannerBarcodeDecoder();
         using var image = SyntheticImage.FromLinear(LinearEncoders.Code128("PIPELINE-128"), scale: 3, height: 120);
 
         var result = decoder.Decode(image.View);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("PIPELINE-128", result.Text);
-        Assert.AreEqual(BbBarcodeFormat.Code128, result.Format);
+        Assert.AreEqual(BbScannerBarcodeFormat.Code128, result.Format);
     }
 
     [TestMethod]
@@ -50,8 +50,8 @@ public class BarcodeDecoderTests
             rgba[(i * 4) + 3] = 255;
         }
 
-        using var decoder = new BbBarcodeDecoder();
-        var result = decoder.Decode(rgba, image.Width, image.Height, BbPixelFormat.Rgba32);
+        using var decoder = new BbScannerBarcodeDecoder();
+        var result = decoder.Decode(rgba, image.Width, image.Height, BbScannerPixelFormat.Rgba32);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("RGBA FRAME", result.Text);
@@ -60,7 +60,7 @@ public class BarcodeDecoderTests
     [TestMethod]
     public void SuppressesDuplicatesWithinTheWindow()
     {
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
             DuplicateSuppressionWindow = TimeSpan.FromMinutes(5),
         });
@@ -77,7 +77,7 @@ public class BarcodeDecoderTests
     [TestMethod]
     public void DoesNotSuppressWhenTheWindowIsZero()
     {
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.Zero });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.Zero });
         using var image = RenderQr("REPEATED");
 
         Assert.IsNotNull(decoder.Decode(image.View));
@@ -87,7 +87,7 @@ public class BarcodeDecoderTests
     [TestMethod]
     public void RestrictingFormatsSkipsOtherSymbologies()
     {
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Ean13 });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = BbScannerBarcodeFormat.Ean13 });
         using var image = RenderQr("IGNORED");
 
         Assert.IsNull(decoder.Decode(image.View));
@@ -101,17 +101,17 @@ public class BarcodeDecoderTests
         // Compose a frame twice as wide, with the symbol in the right half only.
         var width = qr.Width * 2;
         var height = qr.Height;
-        using var frame = BbLuminanceBuffer.Rent(width, height);
+        using var frame = BbScannerLuminanceBuffer.Rent(width, height);
         frame.Pixels.Fill(255);
         for (var y = 0; y < height; y++)
         {
             qr.Pixels.Slice(y * qr.Width, qr.Width).CopyTo(frame.Pixels.Slice((y * width) + qr.Width, qr.Width));
         }
 
-        using var leftOnly = new BbBarcodeDecoder(new BbScannerOptions { Region = new BbScanRegion(0, 0, 0.5, 1) });
+        using var leftOnly = new BbScannerBarcodeDecoder(new BbScannerOptions { Region = new BbScannerScanRegion(0, 0, 0.5, 1) });
         Assert.IsNull(leftOnly.Decode(frame.View));
 
-        using var rightOnly = new BbBarcodeDecoder(new BbScannerOptions { Region = new BbScanRegion(0.5, 0, 0.5, 1) });
+        using var rightOnly = new BbScannerBarcodeDecoder(new BbScannerOptions { Region = new BbScannerScanRegion(0.5, 0, 0.5, 1) });
         var result = rightOnly.Decode(frame.View);
 
         Assert.IsNotNull(result);
@@ -125,8 +125,8 @@ public class BarcodeDecoderTests
         using var image = SyntheticImage.FromMatrix(QrEncoder.Encode("DOWNSAMPLED"), scale: 8);
         var gray = image.Pixels.ToArray();
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { DownsampleFactor = 2 });
-        var result = decoder.Decode(gray, image.Width, image.Height, BbPixelFormat.Gray8);
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { DownsampleFactor = 2 });
+        var result = decoder.Decode(gray, image.Width, image.Height, BbScannerPixelFormat.Gray8);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("DOWNSAMPLED", result.Text);
@@ -140,14 +140,14 @@ public class BarcodeDecoderTests
         using var frame = ImageTransforms.Frame(qr, 1280, 720);
         var rgba = ImageTransforms.ToRgba(frame, tint: false);
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.QrCode,
-            Region = BbScanRegion.CenteredSquare(0.5),
+            Formats = BbScannerBarcodeFormat.QrCode,
+            Region = BbScannerScanRegion.CenteredSquare(0.5),
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
-        var result = decoder.Decode(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32);
+        var result = decoder.Decode(rgba, frame.Width, frame.Height, BbScannerPixelFormat.Rgba32);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("CROPPED FIRST", result.Text);
@@ -166,9 +166,9 @@ public class BarcodeDecoderTests
         var gray = new byte[60 * 60];
         gray.AsSpan().Fill(255);
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { DownsampleFactor = 8 });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { DownsampleFactor = 8 });
 
-        Assert.IsNull(decoder.Decode(gray, 60, 60, BbPixelFormat.Gray8));
+        Assert.IsNull(decoder.Decode(gray, 60, 60, BbScannerPixelFormat.Gray8));
         Assert.IsTrue(decoder.LastFrame.DecodedWidth >= 8, $"Decoded {decoder.LastFrame.DecodedWidth} pixels wide.");
         Assert.IsTrue(decoder.LastFrame.DecodedHeight >= 8, $"Decoded {decoder.LastFrame.DecodedHeight} pixels high.");
     }
@@ -176,7 +176,7 @@ public class BarcodeDecoderTests
     [TestMethod]
     public void ReportsDiagnosticsForEveryFrame()
     {
-        using var decoder = new BbBarcodeDecoder();
+        using var decoder = new BbScannerBarcodeDecoder();
         using var image = RenderQr("DIAGNOSTICS");
 
         decoder.Decode(image.View);
@@ -192,14 +192,14 @@ public class BarcodeDecoderTests
     [TestMethod]
     public void RepeatedFramesDoNotAllocateAfterWarmUp()
     {
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.QrCode,
+            Formats = BbScannerBarcodeFormat.QrCode,
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
         // A blank frame is the common case during continuous scanning: nothing is in view.
-        using var blank = BbLuminanceBuffer.Rent(320, 240);
+        using var blank = BbScannerLuminanceBuffer.Rent(320, 240);
         blank.Pixels.Fill(255);
 
         for (var i = 0; i < 5; i++)

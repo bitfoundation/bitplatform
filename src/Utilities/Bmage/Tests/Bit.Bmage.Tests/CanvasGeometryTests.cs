@@ -1,10 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Analysis;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 
@@ -15,8 +10,8 @@ public sealed class CanvasSizeTests
     public void GrowingCentresTheImageAndFillsTheNewArea()
     {
         using var source = TestImages.Gradient(10, 6);
-        var red = new Rgba32(255, 0, 0);
-        using var output = new CanvasSizeOperation(20, 10, Anchor.Center, red).Apply(source, OperationContext.Default);
+        var red = new BmageRgba32(255, 0, 0);
+        using var output = new BmageCanvasSizeOperation(20, 10, BmageAnchor.Center, red).Apply(source, BmageOperationContext.Default);
 
         Assert.AreEqual(new Size(20, 10), output.Size);
         for (var y = 0; y < 10; y++)
@@ -31,8 +26,8 @@ public sealed class CanvasSizeTests
     public void TheDefaultBackgroundIsTransparent()
     {
         using var source = TestImages.Gradient(4, 4);
-        using var output = ImagePipeline.Create().CanvasSize(8, 8, Anchor.TopLeft).Execute(source);
-        Assert.AreEqual(Rgba32.Transparent, output[7, 7]);
+        using var output = BmageImagePipeline.Create().CanvasSize(8, 8, BmageAnchor.TopLeft).Execute(source);
+        Assert.AreEqual(BmageRgba32.Transparent, output[7, 7]);
         Assert.AreEqual(source[3, 3], output[3, 3]);
     }
 
@@ -40,10 +35,10 @@ public sealed class CanvasSizeTests
     public void ShrinkingCutsTheEdgesTheAnchorLeavesOut()
     {
         using var source = TestImages.Gradient(12, 9);
-        foreach (var (anchor, origin) in new[] { (Anchor.TopLeft, new Point(0, 0)), (Anchor.BottomRight, new Point(7, 5)), (Anchor.Center, new Point(3, 2)) })
+        foreach (var (anchor, origin) in new[] { (BmageAnchor.TopLeft, new Point(0, 0)), (BmageAnchor.BottomRight, new Point(7, 5)), (BmageAnchor.Center, new Point(3, 2)) })
         {
-            using var output = new CanvasSizeOperation(5, 4, anchor).Apply(source, OperationContext.Default);
-            using var expected = new CropOperation(origin.X, origin.Y, 5, 4).Apply(source, OperationContext.Default);
+            using var output = new BmageCanvasSizeOperation(5, 4, anchor).Apply(source, BmageOperationContext.Default);
+            using var expected = new BmageCropOperation(origin.X, origin.Y, 5, 4).Apply(source, BmageOperationContext.Default);
             Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, output), anchor.ToString());
         }
     }
@@ -52,8 +47,8 @@ public sealed class CanvasSizeTests
     public void MarginsAddAndCutPerSide()
     {
         using var source = TestImages.Gradient(10, 8);
-        var white = Rgba32.White;
-        using var output = CanvasSizeOperation.Margins(3, -2, 0, 4, white).Apply(source, OperationContext.Default);
+        var white = BmageRgba32.White;
+        using var output = BmageCanvasSizeOperation.Margins(3, -2, 0, 4, white).Apply(source, BmageOperationContext.Default);
 
         Assert.AreEqual(new Size(13, 10), output.Size);
         Assert.AreEqual(white, output[0, 0]);
@@ -65,30 +60,30 @@ public sealed class CanvasSizeTests
     [TestMethod]
     public void ZeroMarginsAreAnIdentityTheOptimiserDrops()
     {
-        var pad = CanvasSizeOperation.Margins(0);
+        var pad = BmageCanvasSizeOperation.Margins(0);
         Assert.IsTrue(pad.IsIdentity);
-        Assert.AreEqual(0, ImagePipeline.Create().Apply(pad).Optimize(new Size(10, 10)).Count);
-        Assert.IsFalse(new CanvasSizeOperation(10, 10).IsIdentity, "an absolute size depends on the input");
+        Assert.AreEqual(0, BmageImagePipeline.Create().Apply(pad).Optimize(new Size(10, 10)).Count);
+        Assert.IsFalse(new BmageCanvasSizeOperation(10, 10).IsIdentity, "an absolute size depends on the input");
     }
 
     [TestMethod]
     public void MarginsThatLeaveNoCanvasAreRejectedBeforeAndDuringExecution()
     {
-        var op = CanvasSizeOperation.Margins(-6, 0, -5, 0);
+        var op = BmageCanvasSizeOperation.Margins(-6, 0, -5, 0);
         Assert.ThrowsExactly<ArgumentException>(() => op.GetOutputSize(new Size(10, 10)));
         using var source = TestImages.Gradient(10, 10);
-        Assert.ThrowsExactly<ArgumentException>(() => op.Apply(source, OperationContext.Default).Dispose());
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CanvasSizeOperation(0, 10));
+        Assert.ThrowsExactly<ArgumentException>(() => op.Apply(source, BmageOperationContext.Default).Dispose());
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageCanvasSizeOperation(0, 10));
     }
 
     [TestMethod]
     public void TheTransformMapsSourcePixelsToWhereTheyLand()
     {
         var size = new Size(10, 6);
-        foreach (var op in new[] { new CanvasSizeOperation(25, 9, Anchor.BottomRight), CanvasSizeOperation.Margins(4, 1, 0, 0), new CanvasSizeOperation(6, 4, Anchor.Center) })
+        foreach (var op in new[] { new BmageCanvasSizeOperation(25, 9, BmageAnchor.BottomRight), BmageCanvasSizeOperation.Margins(4, 1, 0, 0), new BmageCanvasSizeOperation(6, 4, BmageAnchor.Center) })
         {
             using var source = TestImages.Gradient(size.Width, size.Height);
-            using var output = op.Apply(source, OperationContext.Default);
+            using var output = op.Apply(source, BmageOperationContext.Default);
             var m = op.GetTransform(size)!.Value;
             for (var y = 0; y < size.Height; y++)
                 for (var x = 0; x < size.Width; x++)
@@ -104,12 +99,12 @@ public sealed class CanvasSizeTests
     [TestMethod]
     public void ForScaleExpressesTheSameCanvasForAProxy()
     {
-        var absolute = (CanvasSizeOperation)new CanvasSizeOperation(1200, 800, Anchor.Top, Rgba32.White).ForScale(0.25);
+        var absolute = (BmageCanvasSizeOperation)new BmageCanvasSizeOperation(1200, 800, BmageAnchor.Top, BmageRgba32.White).ForScale(0.25);
         Assert.AreEqual(new Size(300, 200), absolute.Size);
-        Assert.AreEqual(Anchor.Top, absolute.Anchor);
-        Assert.AreEqual(Rgba32.White, absolute.Background);
+        Assert.AreEqual(BmageAnchor.Top, absolute.Anchor);
+        Assert.AreEqual(BmageRgba32.White, absolute.Background);
 
-        var margins = (CanvasSizeOperation)CanvasSizeOperation.Margins(40, -20, 10, 0).ForScale(0.5);
+        var margins = (BmageCanvasSizeOperation)BmageCanvasSizeOperation.Margins(40, -20, 10, 0).ForScale(0.5);
         Assert.AreEqual((20, -10, 5, 0), (margins.Left, margins.Top, margins.Right, margins.Bottom));
     }
 
@@ -118,7 +113,7 @@ public sealed class CanvasSizeTests
     {
         using var source = TestImages.Gradient(6, 6);
         var before = source.ToArray();
-        using var output = CanvasSizeOperation.Margins(2).Apply(source, OperationContext.Default.WithMutation(false));
+        using var output = BmageCanvasSizeOperation.Margins(2).Apply(source, BmageOperationContext.Default.WithMutation(false));
         CollectionAssert.AreEqual(before, source.ToArray());
         Assert.AreNotSame(source, output);
     }
@@ -126,14 +121,14 @@ public sealed class CanvasSizeTests
     [TestMethod]
     public void APipelineEstimatesTheCanvasItWillProduce()
     {
-        var pipeline = ImagePipeline.Create().Pad(10, Rgba32.White).CanvasSize(50, 50, Anchor.TopLeft);
+        var pipeline = BmageImagePipeline.Create().Pad(10, BmageRgba32.White).CanvasSize(50, 50, BmageAnchor.TopLeft);
         Assert.AreEqual(new Size(50, 50), pipeline.GetOutputSize(new Size(20, 30)));
         using var source = TestImages.Gradient(20, 30);
         using var output = pipeline.Execute(source);
         Assert.AreEqual(new Size(50, 50), output.Size);
-        Assert.AreEqual(Rgba32.White, output[0, 0]);
+        Assert.AreEqual(BmageRgba32.White, output[0, 0]);
         Assert.AreEqual(source[0, 0], output[10, 10]);
-        Assert.AreEqual(Rgba32.Transparent, output[45, 45]);
+        Assert.AreEqual(BmageRgba32.Transparent, output[45, 45]);
     }
 }
 
@@ -143,10 +138,10 @@ public sealed class StraightenTests
     [TestMethod]
     public void ZeroDegreesChangesNothing()
     {
-        var op = new StraightenOperation(0);
+        var op = new BmageStraightenOperation(0);
         Assert.IsTrue(op.IsIdentity);
         using var source = TestImages.Gradient(9, 7);
-        using var output = op.Apply(source, OperationContext.Default.WithMutation(false));
+        using var output = op.Apply(source, BmageOperationContext.Default.WithMutation(false));
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, output));
         Assert.AreEqual(source.Size, op.GetOutputSize(source.Size));
     }
@@ -162,11 +157,11 @@ public sealed class StraightenTests
     {
         using var source = ParallelProcessingTests.Noise(width, height, seed: 11);
         for (var y = 0; y < height; y++)
-            foreach (ref var p in source.GetRow(y)) p = new Rgba32(p.R, p.G, p.B, 255);
+            foreach (ref var p in source.GetRow(y)) p = new BmageRgba32(p.R, p.G, p.B, 255);
 
-        foreach (var sampling in Enum.GetValues<WarpSampling>())
+        foreach (var sampling in Enum.GetValues<BmageWarpSampling>())
         {
-            using var output = new StraightenOperation(degrees, sampling).Apply(source, OperationContext.Default);
+            using var output = new BmageStraightenOperation(degrees, sampling).Apply(source, BmageOperationContext.Default);
             AssertOpaque(output, $"{sampling} at {degrees} degrees");
         }
     }
@@ -178,17 +173,17 @@ public sealed class StraightenTests
         // bilinear sample's taps beyond it. Rounding usually leaves some slack; sweeping the angles finds the exact fits.
         foreach (var (width, height) in new[] { (64, 48), (48, 64), (50, 50), (97, 31) })
         {
-            using var source = ImageBuffer.Create(width, height, new Rgba32(200, 120, 40));
+            using var source = BmageImageBuffer.Create(width, height, new BmageRgba32(200, 120, 40));
             for (var degrees = -45.0; degrees <= 45; degrees += 0.75)
-                foreach (var sampling in Enum.GetValues<WarpSampling>())
+                foreach (var sampling in Enum.GetValues<BmageWarpSampling>())
                 {
-                    using var output = new StraightenOperation(degrees, sampling).Apply(source, OperationContext.Default);
+                    using var output = new BmageStraightenOperation(degrees, sampling).Apply(source, BmageOperationContext.Default);
                     AssertOpaque(output, $"{sampling} at {degrees} degrees on {width}x{height}");
                 }
         }
     }
 
-    private static void AssertOpaque(ImageBuffer image, string what)
+    private static void AssertOpaque(BmageImageBuffer image, string what)
     {
         for (var y = 0; y < image.Height; y++)
             foreach (var p in image.GetRow(y))
@@ -199,9 +194,9 @@ public sealed class StraightenTests
     public void TheCropIsTheLargestRectangleOfTheSameAspectInsideTheRotatedImage()
     {
         var size = new Size(4000, 3000);
-        var op = new StraightenOperation(5);
+        var op = new BmageStraightenOperation(5);
         var output = op.GetOutputSize(size);
-        var k = StraightenOperation.GetCropScale(size, 5);
+        var k = BmageStraightenOperation.GetCropScale(size, 5);
         Assert.AreEqual((int)Math.Floor(4000 * k), output.Width);
         Assert.AreEqual((int)Math.Floor(3000 * k), output.Height);
 
@@ -220,24 +215,24 @@ public sealed class StraightenTests
     public void TheInteriorMatchesARotationCroppedAboutTheCentre()
     {
         using var source = TestImages.Gradient(120, 80);
-        var straighten = new StraightenOperation(-9);
-        using var straightened = straighten.Apply(source, OperationContext.Default);
-        using var rotated = new RotateOperation(-9, expandCanvas: false).Apply(source, OperationContext.Default);
+        var straighten = new BmageStraightenOperation(-9);
+        using var straightened = straighten.Apply(source, BmageOperationContext.Default);
+        using var rotated = new BmageRotateOperation(-9, expandCanvas: false).Apply(source, BmageOperationContext.Default);
         var x0 = (rotated.Width - straightened.Width) / 2;
         var y0 = (rotated.Height - straightened.Height) / 2;
-        using var cropped = new CropOperation(x0, y0, straightened.Width, straightened.Height).Apply(rotated, OperationContext.Default);
+        using var cropped = new BmageCropOperation(x0, y0, straightened.Width, straightened.Height).Apply(rotated, BmageOperationContext.Default);
 
         // Away from the border the two sample the same points of the same rotation, give or take the half pixel the
         // centred crop rounds by.
-        using var inner = new CropOperation(4, 4, straightened.Width - 8, straightened.Height - 8).Apply(straightened, OperationContext.Default);
-        using var innerExpected = new CropOperation(4, 4, straightened.Width - 8, straightened.Height - 8).Apply(cropped, OperationContext.Default);
+        using var inner = new BmageCropOperation(4, 4, straightened.Width - 8, straightened.Height - 8).Apply(straightened, BmageOperationContext.Default);
+        using var innerExpected = new BmageCropOperation(4, 4, straightened.Width - 8, straightened.Height - 8).Apply(cropped, BmageOperationContext.Default);
         Assert.IsLessThan(6.0, TestImages.MeanChannelDifference(innerExpected, inner));
     }
 
     [TestMethod]
     public void TheProxyAndTheFullImageFrameTheSameCrop()
     {
-        var op = new StraightenOperation(6.5);
+        var op = new BmageStraightenOperation(6.5);
         var full = op.GetOutputSize(new Size(6000, 4000));
         var proxy = op.ForScale(0.25).GetOutputSize(new Size(1500, 1000));
         Assert.IsLessThanOrEqualTo(1, Math.Abs(proxy.Width - full.Width / 4.0));
@@ -247,17 +242,17 @@ public sealed class StraightenTests
     [TestMethod]
     public void AnglesBeyondFortyFiveDegreesAreRejected()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new StraightenOperation(45.01));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new StraightenOperation(double.NaN));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new StraightenOperation(double.NegativeInfinity));
-        _ = new StraightenOperation(-45);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageStraightenOperation(45.01));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageStraightenOperation(double.NaN));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageStraightenOperation(double.NegativeInfinity));
+        _ = new BmageStraightenOperation(-45);
     }
 
     [TestMethod]
     public void TheCentreStaysTheCentre()
     {
         var size = new Size(301, 201);
-        var op = new StraightenOperation(17);
+        var op = new BmageStraightenOperation(17);
         var output = op.GetOutputSize(size);
         var centre = Vector2.Transform(new Vector2(size.Width / 2f, size.Height / 2f), op.GetTransform(size)!.Value);
         Assert.AreEqual(output.Width / 2f, centre.X, 1e-3f);
@@ -270,16 +265,16 @@ public sealed class StraightenTests
         using var source = TestImages.Gradient(400, 300);
         using var cts = new CancellationTokenSource();
         cts.Cancel();
-        Assert.ThrowsExactly<OperationCanceledException>(() => new StraightenOperation(4).Apply(source, OperationContext.Default.WithCancellation(cts.Token)).Dispose());
+        Assert.ThrowsExactly<OperationCanceledException>(() => new BmageStraightenOperation(4).Apply(source, BmageOperationContext.Default.WithCancellation(cts.Token)).Dispose());
     }
 }
 
 [TestClass]
 public sealed class ContentBoundsTests
 {
-    private static ImageBuffer Framed(int width, int height, Rectangle content, Rgba32 border, Rgba32 fill)
+    private static BmageImageBuffer Framed(int width, int height, Rectangle content, BmageRgba32 border, BmageRgba32 fill)
     {
-        var image = ImageBuffer.Create(width, height, border);
+        var image = BmageImageBuffer.Create(width, height, border);
         image.Fill(content, fill);
         return image;
     }
@@ -287,65 +282,65 @@ public sealed class ContentBoundsTests
     [TestMethod]
     public void TransparentBordersAreFoundExactly()
     {
-        using var image = Framed(40, 30, new Rectangle(7, 4, 20, 11), Rgba32.Transparent, new Rgba32(10, 200, 30));
-        Assert.AreEqual(new Rectangle(7, 4, 20, 11), ContentBounds.Find(image));
+        using var image = Framed(40, 30, new Rectangle(7, 4, 20, 11), BmageRgba32.Transparent, new BmageRgba32(10, 200, 30));
+        Assert.AreEqual(new Rectangle(7, 4, 20, 11), BmageContentBounds.Find(image));
     }
 
     [TestMethod]
     public void PaddingKeepsSomeBorderButNeverReachesOutsideTheImage()
     {
-        using var image = Framed(40, 30, new Rectangle(2, 4, 20, 11), Rgba32.Transparent, Rgba32.Black);
-        Assert.AreEqual(Rectangle.FromLTRB(0, 1, 25, 18), ContentBounds.Find(image, new TrimOptions { Padding = 3 }));
+        using var image = Framed(40, 30, new Rectangle(2, 4, 20, 11), BmageRgba32.Transparent, BmageRgba32.Black);
+        Assert.AreEqual(Rectangle.FromLTRB(0, 1, 25, 18), BmageContentBounds.Find(image, new BmageTrimOptions { Padding = 3 }));
     }
 
     [TestMethod]
     public void AUniformBorderIsFoundWithinTheTolerance()
     {
-        using var image = Framed(50, 50, new Rectangle(10, 12, 25, 20), Rgba32.White, new Rgba32(30, 60, 90));
+        using var image = Framed(50, 50, new Rectangle(10, 12, 25, 20), BmageRgba32.White, new BmageRgba32(30, 60, 90));
         // JPEG-like noise in the border: within 4% it is still border.
-        image[0, 49] = new Rgba32(250, 252, 249);
-        image[49, 0] = new Rgba32(247, 255, 251);
-        Assert.AreEqual(new Rectangle(10, 12, 25, 20), ContentBounds.Find(image));
-        Assert.AreEqual(Rectangle.FromLTRB(0, 0, 50, 50), ContentBounds.Find(image, new TrimOptions { Tolerance = 0 }), "with no tolerance the noise is content");
+        image[0, 49] = new BmageRgba32(250, 252, 249);
+        image[49, 0] = new BmageRgba32(247, 255, 251);
+        Assert.AreEqual(new Rectangle(10, 12, 25, 20), BmageContentBounds.Find(image));
+        Assert.AreEqual(Rectangle.FromLTRB(0, 0, 50, 50), BmageContentBounds.Find(image, new BmageTrimOptions { Tolerance = 0 }), "with no tolerance the noise is content");
     }
 
     [TestMethod]
     public void AnImageThatIsAllBackgroundHasNoContent()
     {
-        using var image = ImageBuffer.Create(20, 10, Rgba32.White);
-        Assert.IsNull(ContentBounds.Find(image));
-        using var clear = ImageBuffer.Create(20, 10);
-        Assert.IsNull(ContentBounds.Find(clear, new TrimOptions { Mode = TrimMode.Transparent }));
+        using var image = BmageImageBuffer.Create(20, 10, BmageRgba32.White);
+        Assert.IsNull(BmageContentBounds.Find(image));
+        using var clear = BmageImageBuffer.Create(20, 10);
+        Assert.IsNull(BmageContentBounds.Find(clear, new BmageTrimOptions { Mode = BmageTrimMode.Transparent }));
     }
 
     [TestMethod]
     public void AutoUsesTransparencyOnlyWhenACornerIsTransparent()
     {
         // An opaque white page with a translucent stamp in it: the page is the border, the stamp is content.
-        using var page = Framed(30, 30, new Rectangle(5, 5, 10, 10), Rgba32.White, new Rgba32(0, 0, 0, 40));
-        Assert.AreEqual(new Rectangle(5, 5, 10, 10), ContentBounds.Find(page));
+        using var page = Framed(30, 30, new Rectangle(5, 5, 10, 10), BmageRgba32.White, new BmageRgba32(0, 0, 0, 40));
+        Assert.AreEqual(new Rectangle(5, 5, 10, 10), BmageContentBounds.Find(page));
 
         // A cut-out on transparency with a white subject: transparency is the border, the white is content.
-        using var cutout = Framed(30, 30, new Rectangle(8, 3, 4, 20), Rgba32.Transparent, Rgba32.White);
-        Assert.AreEqual(new Rectangle(8, 3, 4, 20), ContentBounds.Find(cutout));
+        using var cutout = Framed(30, 30, new Rectangle(8, 3, 4, 20), BmageRgba32.Transparent, BmageRgba32.White);
+        Assert.AreEqual(new Rectangle(8, 3, 4, 20), BmageContentBounds.Find(cutout));
     }
 
     [TestMethod]
     public void AnExplicitColourIsTheBorderWhateverTheCorners()
     {
-        var green = new Rgba32(0, 255, 0);
+        var green = new BmageRgba32(0, 255, 0);
         using var image = Framed(30, 20, new Rectangle(0, 0, 30, 20), green, green);
-        image.Fill(new Rectangle(0, 0, 3, 3), Rgba32.Black);
-        image.Fill(new Rectangle(20, 10, 5, 5), Rgba32.Black);
-        Assert.AreEqual(Rectangle.FromLTRB(0, 0, 25, 15), ContentBounds.Find(image, new TrimOptions { Mode = TrimMode.Color, Color = green }));
+        image.Fill(new Rectangle(0, 0, 3, 3), BmageRgba32.Black);
+        image.Fill(new Rectangle(20, 10, 5, 5), BmageRgba32.Black);
+        Assert.AreEqual(Rectangle.FromLTRB(0, 0, 25, 15), BmageContentBounds.Find(image, new BmageTrimOptions { Mode = BmageTrimMode.Color, Color = green }));
     }
 
     [TestMethod]
     public void TheBoundsCropToTheContent()
     {
-        using var image = Framed(64, 48, new Rectangle(13, 9, 30, 21), Rgba32.Transparent, new Rgba32(200, 100, 50));
-        var bounds = ContentBounds.Find(image)!.Value;
-        using var trimmed = ImagePipeline.Create().Crop(bounds).Execute(image);
+        using var image = Framed(64, 48, new Rectangle(13, 9, 30, 21), BmageRgba32.Transparent, new BmageRgba32(200, 100, 50));
+        var bounds = BmageContentBounds.Find(image)!.Value;
+        using var trimmed = BmageImagePipeline.Create().Crop(bounds).Execute(image);
         Assert.AreEqual(new Size(30, 21), trimmed.Size);
         Assert.IsFalse(trimmed.HasTransparency());
     }
@@ -353,8 +348,8 @@ public sealed class ContentBoundsTests
     [TestMethod]
     public void InvalidOptionsAreRejected()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new TrimOptions { Padding = -1 });
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new TrimOptions { Tolerance = float.NaN });
-        Assert.AreEqual(1f, new TrimOptions { Tolerance = 3 }.Tolerance);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageTrimOptions { Padding = -1 });
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageTrimOptions { Tolerance = float.NaN });
+        Assert.AreEqual(1f, new BmageTrimOptions { Tolerance = 3 }.Tolerance);
     }
 }

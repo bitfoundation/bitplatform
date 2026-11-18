@@ -23,14 +23,14 @@ public static class BmageCompletions
     private static readonly string[] _symptoms =
     [
         "the page throws 'Could not load the Bmage browser module' on first load",
-        "AVIF export throws ImageCapabilityException on Safari",
+        "AVIF export throws BmageImageCapabilityException on Safari",
         "photos from phones appear sideways after export",
         "the editor is invisible or unstyled",
         "the tab crashes on mobile when processing large photos",
         "processing is very slow in the browser",
         "uploaded avatars still contain the GPS location",
-        "ObjectDisposedException: ImageBuffer after loading into the editor",
-        "There is no registered service of type 'ImageProcessor'",
+        "ObjectDisposedException: BmageImageBuffer after loading into the editor",
+        "There is no registered service of type 'BmageImageProcessor'",
         "the size budget throws 'Cannot reach N bytes for this image'",
     ];
 
@@ -72,7 +72,7 @@ public static class BmageCompletions
             : [.. candidates
                 .Where(value => value.Contains(prefix, StringComparison.OrdinalIgnoreCase))
                 // What was typed is a prefix far more often than it is a substring.
-                .OrderByDescending(value => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(value => IsPrefixOf(prefix, value))
                 .ThenBy(value => value, StringComparer.OrdinalIgnoreCase)];
 
         return new Completion
@@ -81,6 +81,17 @@ public static class BmageCompletions
             Total = matches.Length,
             HasMore = matches.Length > MaxValues
         };
+    }
+
+    /// <summary>
+    /// Whether <paramref name="value"/> starts with what was typed, with or without the "Bmage" every type name starts
+    /// with: "Crop" is a prefix of BmageCropOperation just as "BmageCrop" is.
+    /// </summary>
+    private static bool IsPrefixOf(string prefix, string value)
+    {
+        if (value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) return true;
+        var start = value.StartsWith("IBmage", StringComparison.Ordinal) ? "IBmage".Length : value.StartsWith("Bmage", StringComparison.Ordinal) ? "Bmage".Length : 0;
+        return start > 0 && value.AsSpan(start).StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string[] CandidatesFor(string? argumentName) => argumentName switch

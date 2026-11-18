@@ -41,7 +41,7 @@ public class IsolationAndSecurityTests
             // one user's server activity in another user's BevTools.
             session.Platform = "Server";
 
-            using var handler = new BevToolsHttpMessageHandler(new BitBevToolsOptions()) { InnerHandler = new StubHandler() };
+            using var handler = new BevToolsHttpMessageHandler(new BevToolsOptions()) { InnerHandler = new StubHandler() };
             using var client = new HttpClient(handler);
             await Task.Run(() => client.GetAsync("https://example.com/background"));
 
@@ -65,7 +65,7 @@ public class IsolationAndSecurityTests
             var record = Assert.ContainsSingle(session.Http.Snapshot());
             Assert.DoesNotContain("leak", record.Url, StringComparison.Ordinal);
             Assert.Contains("page=2", record.Url, StringComparison.Ordinal);
-            Assert.AreEqual(BevRedactor.RedactedValue, record.RequestHeaders!.Single(h => h.Key == "Authorization").Value);
+            Assert.AreEqual(BevToolsRedactor.RedactedValue, record.RequestHeaders!.Single(h => h.Key == "Authorization").Value);
             Assert.AreEqual("keep-me", record.RequestHeaders!.Single(h => h.Key == "X-Trace").Value);
         }
     }

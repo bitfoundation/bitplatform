@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Metadata;
+namespace Bit.BlazeDb;
 
 /// <summary>Maps entity types onto the engine's tables.</summary>
 internal interface IBlazeDbTableCache

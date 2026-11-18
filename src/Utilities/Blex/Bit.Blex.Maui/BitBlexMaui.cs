@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Hosting;
 
-namespace Bit.Blex.Maui;
+namespace Bit.Blex;
 
 /// <summary>DI helpers for wiring Blex into a .NET MAUI application.</summary>
 /// <remarks>
@@ -123,15 +123,15 @@ public static class BitBlexMaui
     }
 
     /// <summary>
-    /// Registers the server-state cache (<see cref="Query.BlexQueryClient"/>) as a singleton. Pairs with
+    /// Registers the server-state cache (<see cref="BlexQueryClient"/>) as a singleton. Pairs with
     /// <see cref="UseBitBlex"/>. A native app has no browser to report focus or the network: call
-    /// <see cref="Query.BlexQueryClient.NotifyFocused"/> when a window activates, and
-    /// <see cref="Query.BlexQueryClient.NotifyOffline"/> / <see cref="Query.BlexQueryClient.NotifyReconnected"/> when
+    /// <see cref="BlexQueryClient.NotifyFocused"/> when a window activates, and
+    /// <see cref="BlexQueryClient.NotifyOffline"/> / <see cref="BlexQueryClient.NotifyReconnected"/> when
     /// <c>Connectivity.ConnectivityChanged</c> reports the network gone or back, so requests wait for it.
     /// </summary>
     public static MauiAppBuilder AddBitBlexQueries(
         this MauiAppBuilder builder,
-        Action<Query.BlexQueryClientOptions>? configure = null)
+        Action<BlexQueryClientOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
         builder.Services.AddBitBlexQueries(configure, ServiceLifetime.Singleton);

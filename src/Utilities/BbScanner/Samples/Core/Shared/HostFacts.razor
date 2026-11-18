@@ -27,7 +27,7 @@
             return "from the browser's camera, copied straight into WebAssembly memory and decoded there";
         }
 
-        return Services.GetService(typeof(IBbCameraSource)) is IBbCameraSource { IsSupported: true }
+        return Services.GetService(typeof(IBbScannerCameraSource)) is IBbScannerCameraSource { IsSupported: true }
             ? "from the device's own camera, straight to the decoder here; the page only draws the overlays"
             : "from the page's camera, as the luminance of the searched region, decoded here";
     }

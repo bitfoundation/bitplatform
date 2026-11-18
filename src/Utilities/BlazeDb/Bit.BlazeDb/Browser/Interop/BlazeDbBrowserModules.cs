@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 
-namespace Bit.BlazeDb.Browser;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Loads BlazeDb's JS modules once each and resolves their URLs against the document base.

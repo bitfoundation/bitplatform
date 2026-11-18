@@ -32,11 +32,11 @@ public class BbScannerRemoteTests : BunitContext
     {
         Interactive(renderer);
         _page.Frame = FrameWithQrCode("REMOTE-FRAME", centreX: FrameWidth / 2, centreY: FrameHeight / 2);
-        var scans = new List<BbBarcodeResult>();
+        var scans = new List<BbScannerBarcodeResult>();
         var statuses = new List<BbScannerStatus>();
 
         var scanner = Render<BbScanner>(parameters => parameters
-            .Add(p => p.Formats, BbBarcodeFormat.QrCode)
+            .Add(p => p.Formats, BbScannerBarcodeFormat.QrCode)
             .Add(p => p.OnScan, r => scans.Add(r))
             .Add(p => p.OnStatusChanged, s => statuses.Add(s)));
 
@@ -56,11 +56,11 @@ public class BbScannerRemoteTests : BunitContext
     {
         Interactive("Server");
         _page.Frame = FrameWithQrCode("REGION", centreX: FrameWidth / 2, centreY: FrameHeight / 2);
-        BbBarcodeResult? scanned = null;
+        BbScannerBarcodeResult? scanned = null;
 
         var scanner = Render<BbScanner>(parameters => parameters
-            .Add(p => p.Formats, BbBarcodeFormat.QrCode)
-            .Add(p => p.Region, BbScanRegion.CenteredSquare(0.7))
+            .Add(p => p.Formats, BbScannerBarcodeFormat.QrCode)
+            .Add(p => p.Region, BbScannerScanRegion.CenteredSquare(0.7))
             .Add(p => p.OnScan, r => scanned = r));
 
         WaitUntil(() => Assert.IsNotNull(scanned));
@@ -89,8 +89,8 @@ public class BbScannerRemoteTests : BunitContext
         var scans = 0;
 
         var scanner = Render<BbScanner>(parameters => parameters
-            .Add(p => p.Formats, BbBarcodeFormat.QrCode)
-            .Add(p => p.Region, BbScanRegion.CenteredSquare(0.5))
+            .Add(p => p.Formats, BbScannerBarcodeFormat.QrCode)
+            .Add(p => p.Region, BbScannerScanRegion.CenteredSquare(0.5))
             .Add(p => p.OnScan, _ => scans++));
 
         WaitUntil(() => Assert.IsGreaterThanOrEqualTo(3, _page.Grabs.Count));
@@ -109,10 +109,10 @@ public class BbScannerRemoteTests : BunitContext
         _page.FailNext("poll", new TaskCanceledException());
         _page.FailNext("readData", new OperationCanceledException());
         BbScannerException? error = null;
-        BbBarcodeResult? scanned = null;
+        BbScannerBarcodeResult? scanned = null;
 
         var scanner = Render<BbScanner>(parameters => parameters
-            .Add(p => p.Formats, BbBarcodeFormat.QrCode)
+            .Add(p => p.Formats, BbScannerBarcodeFormat.QrCode)
             .Add(p => p.OnError, e => error = e)
             .Add(p => p.OnScan, r => scanned = r));
 
@@ -161,7 +161,7 @@ public class BbScannerRemoteTests : BunitContext
 
         // The track renegotiated, or the phone turned, between the page answering the start and the scanner's first poll.
         _page.CameraJsonAfterStart = _page.CameraJson.Replace("\"width\":640,\"height\":480", "\"width\":480,\"height\":640");
-        var cameras = new List<BbCameraInfo>();
+        var cameras = new List<BbScannerCameraInfo>();
 
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnCameraChanged, c => cameras.Add(c)));
 
@@ -293,7 +293,7 @@ public class BbScannerRemoteTests : BunitContext
 
         Assert.IsTrue(await scanner.InvokeAsync(() => scanner.Instance.SetTorchAsync(true)));
         Assert.IsTrue(scanner.Instance.IsTorchOn);
-        Assert.AreEqual(BbCameraPermission.Granted, await scanner.InvokeAsync(() => scanner.Instance.GetCameraPermissionAsync()));
+        Assert.AreEqual(BbScannerCameraPermission.Granted, await scanner.InvokeAsync(() => scanner.Instance.GetCameraPermissionAsync()));
     }
 
     [TestMethod]
@@ -336,7 +336,7 @@ public class BbScannerRemoteTests : BunitContext
     /// <summary>A light frame of the configured size with a QR code centred on the given point.</summary>
     private static byte[] FrameWithQrCode(string text, int centreX, int centreY)
     {
-        using var frame = BbLuminanceBuffer.Rent(FrameWidth, FrameHeight);
+        using var frame = BbScannerLuminanceBuffer.Rent(FrameWidth, FrameHeight);
         frame.Pixels.Fill(255);
         using (var symbol = SyntheticImage.FromMatrix(QrEncoder.Encode(text), scale: 4))
         {

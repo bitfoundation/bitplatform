@@ -125,12 +125,8 @@ public class McpToolTests
             Assert.Contains($"## Package {package}", index);
         }
 
-        foreach (var ns in new[] { "Bit.Bsqlite.Storage.Opfs", "Bit.Bsqlite.Storage.IndexedDb", "Bit.Bsqlite.Storage.CacheStorage" })
-        {
-            Assert.Contains($"### `using {ns};`", index, "The storage backends ship in the library package, each in its own namespace.");
-        }
-
-        Assert.Contains("### `using Microsoft.Extensions.DependencyInjection;`", index, "The DI entry points live in Microsoft's namespace.");
+        Assert.Contains("### `using Bit.Bsqlite;`", index, "Every type of the library, the storage backends included, is in Bit.Bsqlite.");
+        Assert.DoesNotContain("### `using Microsoft.Extensions.DependencyInjection;`", index, "The DI entry points live in Bit.Bsqlite too.");
 
         foreach (var type in new[] { "BsqliteDatabase", "BsqliteConnection", "IBsqliteStorageProvider", "BsqliteStorageSelectionBuilder", "IBsqliteDbContextFactory<TContext>", "BsqliteInProcessTransport", "BitBsqlite" })
         {
@@ -150,7 +146,7 @@ public class McpToolTests
 
         Assert.StartsWith("# BsqliteOpfsStorageProvider (Class)", reference);
         Assert.Contains("package `Bit.Bsqlite`", reference);
-        Assert.Contains("`using Bit.Bsqlite.Storage.Opfs;`", reference);
+        Assert.Contains("`using Bit.Bsqlite;`", reference);
         Assert.Contains("implements `IBsqliteStorageProvider`", reference);
         Assert.Contains("**ProviderName** : `string` = `\"opfs\"`", reference, "A constant reads as its real value.");
         Assert.Contains("## Constructor", reference);
@@ -184,7 +180,7 @@ public class McpToolTests
         var reference = await McpCall.TextAsync("GetBsqliteApi", new() { ["typeName"] = "BsqliteStorageProviderConformanceTests" });
 
         Assert.Contains("- protected **CreateProvider**() : `IBsqliteStorageProvider`", reference);
-        Assert.Contains("`using Bit.Bsqlite.Storage.ConformanceTests;`", reference);
+        Assert.Contains("`using Bit.Bsqlite;`", reference);
     }
 
     [TestMethod]
@@ -371,8 +367,8 @@ public class McpToolTests
     {
         var guide = await McpCall.TextAsync("GetBsqliteSetupGuide", new() { ["scenario"] = "storage" });
 
-        Assert.Contains("| `opfs` | `Bit.Bsqlite.Storage.Opfs` | Synchronous | true | false | refused | allowed |", guide);
-        Assert.Contains("| `indexeddb` | `Bit.Bsqlite.Storage.IndexedDb` | AsyncCapable | true | false | allowed | refused |", guide);
+        Assert.Contains("| `opfs` | `Bit.Bsqlite` | Synchronous | true | false | refused | allowed |", guide);
+        Assert.Contains("| `indexeddb` | `Bit.Bsqlite` | AsyncCapable | true | false | allowed | refused |", guide);
         Assert.Contains("AllowNonPersistentFallback()", guide);
     }
 

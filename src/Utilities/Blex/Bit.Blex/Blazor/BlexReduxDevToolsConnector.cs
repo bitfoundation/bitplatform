@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Nodes;
 using Microsoft.JSInterop;
 
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>
 /// Bridges a <see cref="BlexManager"/> to the Redux DevTools browser extension, enabling

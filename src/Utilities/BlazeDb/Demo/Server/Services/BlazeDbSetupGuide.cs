@@ -189,7 +189,7 @@ public static partial class BlazeDbSetupGuide
 
         1. `dotnet add package Bit.BlazeDb` - plus `Bit.BlazeDb.EntityFrameworkCore` for `UseBlazeDb()`. In a Blazor
            Web App, add them to the .Client project. The package brings the source generator and the browser backends
-           (`Bit.BlazeDb.Browser`). Reference it directly from the project that declares the tables: the generator does
+           (`BlazeDbOpfsStorage`, `BlazeDbIndexedDbStorage`, ...), all in the one `Bit.BlazeDb` namespace. Reference it directly from the project that declares the tables: the generator does
            not flow transitively (through a project reference or the EF Core package), and without it a `[BlazeDbTable]`
            type compiles but gets no `Table` and no `Indexes`.
         2. Declare each table as a top-level `partial` type marked `[BlazeDbTable("name")]` with one `[BlazeDbKey]`
@@ -199,7 +199,7 @@ public static partial class BlazeDbSetupGuide
            that lazy loads Bit.BlazeDb keeps that service's fields free of BlazeDb's types, since Program.cs names it
            before the assembly is there - see the guide's lazy loading section.)
         4. Never open a browser backend outside the browser: not during prerendering, not in an InteractiveServer or
-           InteractiveAuto server render. Every type in `Bit.BlazeDb.Browser` is `[SupportedOSPlatform("browser")]`.
+           InteractiveAuto server render. Every browser backend is `[SupportedOSPlatform("browser")]`.
         5. Handle the second tab: `CreateAsync` throws `BlazeDbDatabaseLockedException` when another tab is the writer -
            open a read-only replica there (`CreateReadOnlyAsync` + `ReadOnly = true`), or fall back to in-memory storage.
         6. Where OPFS cannot be written (Firefox private windows, Safari before 26), use `BlazeDbIndexedDbStorage`;
@@ -213,7 +213,8 @@ public static partial class BlazeDbSetupGuide
 
         1. `dotnet add package Bit.BlazeDb` - plus `Bit.BlazeDb.EntityFrameworkCore` for `UseBlazeDb()`. The package
            brings the source generator; reference it directly from the project that declares the `[BlazeDbTable]` types.
-           `Bit.BlazeDb.Browser` does not apply here: its backends ship in the same package but exist only on WebAssembly.
+           The browser backends (`BlazeDbOpfsStorage`, `BlazeDbIndexedDbStorage`) do not apply here: they ship in the
+           same package but exist only on WebAssembly.
         2. Declare each table as a top-level `partial` type marked `[BlazeDbTable("name")]` with one `[BlazeDbKey]`
            property, and check it with `InspectBlazeDbTable`.
         3. Open each database once and keep it for the process's lifetime. `BlazeDbFileStorage` takes an exclusive lock on
@@ -265,8 +266,6 @@ public static partial class BlazeDbSetupGuide
 
         ```csharp
         using Bit.BlazeDb;
-        using Bit.BlazeDb.Browser;
-        using Bit.BlazeDb.Storage;
 
         /// <summary>The tab's one database, opened on first use and shared by every page.</summary>
         public sealed class AppDatabase : IAsyncDisposable
@@ -370,7 +369,6 @@ public static partial class BlazeDbSetupGuide
 
         ```csharp
         using Bit.BlazeDb;
-        using Bit.BlazeDb.Storage;
 
         /// <summary>
         /// One database for the process, and one lock around every use of it: the engine's reads take no lock
@@ -442,7 +440,6 @@ public static partial class BlazeDbSetupGuide
 
         ```csharp
         using Bit.BlazeDb;
-        using Bit.BlazeDb.Storage;
 
         public sealed class AppDatabase(BlazeDbFileStorage storage) : IAsyncDisposable
         {
@@ -469,7 +466,6 @@ public static partial class BlazeDbSetupGuide
 
         ```csharp
         using Bit.BlazeDb;
-        using Bit.BlazeDb.Storage;
 
         using var storage = new BlazeDbFileStorage("data");   // exclusive lock on the directory while it lives
         await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }

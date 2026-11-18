@@ -100,12 +100,12 @@ internal sealed class BbScannerWasmBridge : BbScannerBridge
     public override ValueTask<int> PrepareVideoFrameAsync(string sessionId, int requestId, int maxDimension)
         => new(BbScannerJsInterop.PrepareVideoFrame(sessionId, requestId, maxDimension));
 
-    public override ValueTask<(byte[] Pixels, BbPixelFormat Format)?> ReadPreparedAsync(string sessionId, int requestId, int width, int height)
+    public override ValueTask<(byte[] Pixels, BbScannerPixelFormat Format)?> ReadPreparedAsync(string sessionId, int requestId, int width, int height)
     {
         var required = width * height * 4;
         var buffer = new byte[required];
         var written = BbScannerJsInterop.ReadPrepared(sessionId, requestId, buffer);
-        return new(written < required ? null : (buffer, BbPixelFormat.Rgba32));
+        return new(written < required ? null : (buffer, BbScannerPixelFormat.Rgba32));
     }
 
     public override ValueTask ReleasePreparedAsync(string sessionId, int requestId)

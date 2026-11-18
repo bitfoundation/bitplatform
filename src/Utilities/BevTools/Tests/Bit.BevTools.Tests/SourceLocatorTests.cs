@@ -29,7 +29,7 @@ public class SourceLocatorTests : BunitContext
     /// <summary>The line of this file that is exactly <paramref name="text"/>, trimmed (one-based), read from where the PDB says the file is.</summary>
     private static int LineOf(string text)
     {
-        var path = BevSourceLocator.Of(typeof(LocatedComponent), null)[0].Path;
+        var path = BevToolsSourceLocator.Of(typeof(LocatedComponent), null)[0].Path;
         var line = Array.FindIndex(File.ReadAllLines(path), l => l.Trim() == text);
         Assert.IsTrue(line >= 0, text);
         return line + 1;
@@ -38,7 +38,7 @@ public class SourceLocatorTests : BunitContext
     [TestMethod]
     public void A_components_file_and_first_line_come_from_the_symbols()
     {
-        var sources = BevSourceLocator.Of(typeof(LocatedComponent), "vscode://file/{path}:{line}:{column}");
+        var sources = BevToolsSourceLocator.Of(typeof(LocatedComponent), "vscode://file/{path}:{line}:{column}");
         var source = Assert.ContainsSingle(sources);
         Assert.AreEqual("SourceLocatorTests.cs", source.FileName);
         Assert.IsTrue(Path.IsPathRooted(source.Path), source.Path);
@@ -51,13 +51,13 @@ public class SourceLocatorTests : BunitContext
     [TestMethod]
     public void A_method_and_an_async_methods_body_are_located()
     {
-        var handler = BevSourceLocator.Of(typeof(LocatedComponent).GetMethod(nameof(LocatedComponent.Save))!, null);
+        var handler = BevToolsSourceLocator.Of(typeof(LocatedComponent).GetMethod(nameof(LocatedComponent.Save))!, null);
         // A debug build's first sequence point is the opening brace.
         Assert.AreEqual(LineOf("public void Save()") + 1, handler!.Line);
         Assert.IsNull(handler.Url, "no template, no link");
 
         // The kickoff method of an async method has no sequence points; its state machine has them.
-        var async = BevSourceLocator.Of(typeof(LocatedComponent).GetMethod(nameof(LocatedComponent.LoadAsync))!, null);
+        var async = BevToolsSourceLocator.Of(typeof(LocatedComponent).GetMethod(nameof(LocatedComponent.LoadAsync))!, null);
         Assert.AreEqual(LineOf("public async Task LoadAsync()") + 1, async!.Line);
     }
 
@@ -71,12 +71,12 @@ public class SourceLocatorTests : BunitContext
         }
 
         var tests = typeof(SourceLocatorTests).Assembly.Location;
-        var bevTools = typeof(BevSourceLocator).Assembly.Location;
+        var bevTools = typeof(BevToolsSourceLocator).Assembly.Location;
         using var testsPdb = System.Reflection.Metadata.MetadataReaderProvider.FromPortablePdbStream(File.OpenRead(Path.ChangeExtension(tests, ".pdb")));
         using var bevToolsPdb = System.Reflection.Metadata.MetadataReaderProvider.FromPortablePdbStream(File.OpenRead(Path.ChangeExtension(bevTools, ".pdb")));
 
-        Assert.IsTrue(BevSourceLocator.IsBuildOf(testsPdb, BuildId(tests)));
-        Assert.IsFalse(BevSourceLocator.IsBuildOf(bevToolsPdb, BuildId(tests)), "another assembly's PDB, as a PDB of another build would be");
+        Assert.IsTrue(BevToolsSourceLocator.IsBuildOf(testsPdb, BuildId(tests)));
+        Assert.IsFalse(BevToolsSourceLocator.IsBuildOf(bevToolsPdb, BuildId(tests)), "another assembly's PDB, as a PDB of another build would be");
     }
 
     [TestMethod]
@@ -88,9 +88,9 @@ public class SourceLocatorTests : BunitContext
             var fromMemory = context.LoadFromStream(new MemoryStream(File.ReadAllBytes(typeof(SourceLocatorTests).Assembly.Location)));
             Assert.AreEqual("", fromMemory.Location);
 
-            Assert.IsEmpty(BevSourceLocator.Of(fromMemory.GetType(typeof(LocatedComponent).FullName!)!, null));
-            Assert.IsFalse(BevSourceLocator.NeedsDownload(fromMemory), "the app serves no PDB list outside WebAssembly");
-            StringAssert.Contains(BevSourceLocator.WhyUnavailable(fromMemory), "has no file on disk");
+            Assert.IsEmpty(BevToolsSourceLocator.Of(fromMemory.GetType(typeof(LocatedComponent).FullName!)!, null));
+            Assert.IsFalse(BevToolsSourceLocator.NeedsDownload(fromMemory), "the app serves no PDB list outside WebAssembly");
+            StringAssert.Contains(BevToolsSourceLocator.WhyUnavailable(fromMemory), "has no file on disk");
         }
         finally
         {
@@ -103,16 +103,16 @@ public class SourceLocatorTests : BunitContext
     {
         try
         {
-            Assert.IsFalse(Assert.ContainsSingle(BevSourceLocator.Of(typeof(LocatedComponent), null)).MayHaveMoved);
-            typeof(BevSourceLocator).GetMethod("ClearCache", BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(null, [new[] { typeof(LocatedComponent) }]);
+            Assert.IsFalse(Assert.ContainsSingle(BevToolsSourceLocator.Of(typeof(LocatedComponent), null)).MayHaveMoved);
+            typeof(BevToolsSourceLocator).GetMethod("ClearCache", BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(null, [new[] { typeof(LocatedComponent) }]);
 
-            Assert.IsTrue(Assert.ContainsSingle(BevSourceLocator.Of(typeof(LocatedComponent), null)).MayHaveMoved);
-            Assert.IsTrue(BevSourceLocator.Of(typeof(LocatedComponent).GetMethod(nameof(LocatedComponent.Save))!, null)!.MayHaveMoved);
-            Assert.Contains(a => a.HandlerType == typeof(BevSourceLocator), typeof(BevSourceLocator).Assembly.GetCustomAttributes<System.Reflection.Metadata.MetadataUpdateHandlerAttribute>());
+            Assert.IsTrue(Assert.ContainsSingle(BevToolsSourceLocator.Of(typeof(LocatedComponent), null)).MayHaveMoved);
+            Assert.IsTrue(BevToolsSourceLocator.Of(typeof(LocatedComponent).GetMethod(nameof(LocatedComponent.Save))!, null)!.MayHaveMoved);
+            Assert.Contains(a => a.HandlerType == typeof(BevToolsSourceLocator), typeof(BevToolsSourceLocator).Assembly.GetCustomAttributes<System.Reflection.Metadata.MetadataUpdateHandlerAttribute>());
         }
         finally
         {
-            BevSourceLocator.ForgetEdits();
+            BevToolsSourceLocator.ForgetEdits();
         }
     }
 
@@ -120,12 +120,12 @@ public class SourceLocatorTests : BunitContext
     public void Symbols_that_are_absent_or_unreadable_are_said_to_be_so()
     {
         var empty = AssemblyBuilderFor("Bev.Missing");
-        BevSourceLocator.Provide(empty, null);
-        StringAssert.Contains(BevSourceLocator.WhyUnavailable(empty), "serves no symbols");
+        BevToolsSourceLocator.Provide(empty, null);
+        StringAssert.Contains(BevToolsSourceLocator.WhyUnavailable(empty), "serves no symbols");
 
         var broken = AssemblyBuilderFor("Bev.Broken");
-        BevSourceLocator.Provide(broken, [1, 2, 3, 4]);
-        StringAssert.Contains(BevSourceLocator.WhyUnavailable(broken), "could not be read");
+        BevToolsSourceLocator.Provide(broken, [1, 2, 3, 4]);
+        StringAssert.Contains(BevToolsSourceLocator.WhyUnavailable(broken), "could not be read");
     }
 
     private static Assembly AssemblyBuilderFor(string name) =>
@@ -135,39 +135,39 @@ public class SourceLocatorTests : BunitContext
     public void A_file_name_is_read_from_paths_of_either_platform()
     {
         // WebAssembly runs on a Unix-like runtime and reads PDBs built on Windows.
-        Assert.AreEqual("Counter.razor", new BevSourceLocation(@"D:\app\Pages\Counter.razor", 1, 1, null).FileName);
-        Assert.AreEqual("Counter.razor", new BevSourceLocation("/src/app/Pages/Counter.razor", 1, 1, null).FileName);
+        Assert.AreEqual("Counter.razor", new BevToolsSourceLocation(@"D:\app\Pages\Counter.razor", 1, 1, null).FileName);
+        Assert.AreEqual("Counter.razor", new BevToolsSourceLocation("/src/app/Pages/Counter.razor", 1, 1, null).FileName);
     }
 
     [TestMethod]
     public void Editor_links_escape_the_path_and_never_run_script()
     {
         Assert.AreEqual("vscode://file/D:/My%20Projects/App/Pages/Counter.razor:12:5",
-            BevSourceLocator.EditorUrl("vscode://file/{path}:{line}:{column}", @"D:\My Projects\App\Pages\Counter.razor", 12, 5));
+            BevToolsSourceLocator.EditorUrl("vscode://file/{path}:{line}:{column}", @"D:\My Projects\App\Pages\Counter.razor", 12, 5));
         Assert.AreEqual("idea://open?file=/src/app/Counter.razor&line=3",
-            BevSourceLocator.EditorUrl("idea://open?file={path}&line={line}", "/src/app/Counter.razor", 3, 1));
-        Assert.IsNull(BevSourceLocator.EditorUrl(" javascript:alert(1)//{path}", "/x", 1, 1));
-        Assert.IsNull(BevSourceLocator.EditorUrl("data:text/html,{path}", "/x", 1, 1));
-        Assert.IsNull(BevSourceLocator.EditorUrl(null, "/x", 1, 1));
+            BevToolsSourceLocator.EditorUrl("idea://open?file={path}&line={line}", "/src/app/Counter.razor", 3, 1));
+        Assert.IsNull(BevToolsSourceLocator.EditorUrl(" javascript:alert(1)//{path}", "/x", 1, 1));
+        Assert.IsNull(BevToolsSourceLocator.EditorUrl("data:text/html,{path}", "/x", 1, 1));
+        Assert.IsNull(BevToolsSourceLocator.EditorUrl(null, "/x", 1, 1));
 
         // Browsers drop tabs and newlines inside a scheme and control characters before it: "java\tscript:" runs script.
-        Assert.IsNull(BevSourceLocator.EditorUrl("java\tscript:alert(1)//{path}", "/x", 1, 1));
-        Assert.IsNull(BevSourceLocator.EditorUrl("\u0001javascript:alert(1)//{path}", "/x", 1, 1));
-        Assert.IsNull(BevSourceLocator.EditorUrl("JavaScript:alert(1)//{path}", "/x", 1, 1));
-        Assert.IsNull(BevSourceLocator.EditorUrl("{path}", "javascript:alert(1)", 1, 1), "no scheme of its own: not an editor link");
+        Assert.IsNull(BevToolsSourceLocator.EditorUrl("java\tscript:alert(1)//{path}", "/x", 1, 1));
+        Assert.IsNull(BevToolsSourceLocator.EditorUrl("\u0001javascript:alert(1)//{path}", "/x", 1, 1));
+        Assert.IsNull(BevToolsSourceLocator.EditorUrl("JavaScript:alert(1)//{path}", "/x", 1, 1));
+        Assert.IsNull(BevToolsSourceLocator.EditorUrl("{path}", "javascript:alert(1)", 1, 1), "no scheme of its own: not an editor link");
     }
 
     [TestMethod]
     public void The_inspector_links_the_component_and_its_handlers_to_the_editor()
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { TargetId = "t1" });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { TargetId = "t1" });
         var panel = Render<BevToolsPanel>();
         Render<LocatedComponent>();
         var record = Session.Components.All.Single(r => r.Type == typeof(LocatedComponent));
         panel.InvokeAsync(() => panel.Instance.SelectComponent(record.InstanceId));
 
-        var first = BevSourceLocator.Of(typeof(LocatedComponent), null)[0].Line;
+        var first = BevToolsSourceLocator.Of(typeof(LocatedComponent), null)[0].Line;
         var save = LineOf("public void Save()") + 1;
         var links = panel.FindAll(".bev-right a[href^='vscode://file/']").Select(a => a.TextContent).ToList();
         Assert.Contains("SourceLocatorTests.cs:" + first, links);

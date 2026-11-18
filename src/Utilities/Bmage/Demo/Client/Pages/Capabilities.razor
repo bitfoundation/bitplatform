@@ -1,5 +1,5 @@
 ﻿@page "/capabilities"
-@inject IImageCapabilityProvider Provider
+@inject IBmageImageCapabilityProvider Provider
 
 @* The capability probe's report for the browser reading this page. Nothing here is looked up from a
    user agent: every format row is the result of actually encoding (or decoding) a pixel, and the
@@ -86,7 +86,7 @@
         {
             <text>
                 On this browser, <code>[Avif, WebP, Jpeg]</code> resolves to
-                <strong>@_capabilities.ChooseEncodableFormat([ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg]).ToString().ToUpperInvariant()</strong>.
+                <strong>@_capabilities.ChooseEncodableFormat([BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg]).ToString().ToUpperInvariant()</strong>.
             </text>
         }
     </p>
@@ -99,8 +99,8 @@
         Browsers lie in a specific way: asked to encode a format they cannot write, they silently hand
         back a PNG. A library that trusted the request would label that PNG as AVIF and corrupt
         whatever stored it. Bmage encodes a pixel in each candidate format and checks the bytes that
-        came back, and <code>ImageExporter</code> refuses a substitution at export time too - it
-        throws <code>ImageCapabilityException</code> rather than passing it on.
+        came back, and <code>BmageImageExporter</code> refuses a substitution at export time too - it
+        throws <code>BmageImageCapabilityException</code> rather than passing it on.
     </p>
     <p>
         The canvas limit matters as much. Browsers do not expose it, and exceeding it produces a
@@ -135,16 +135,16 @@
     </div>
     <p>
         <code>HardwareConcurrency</code> is also what sizes the pool of Web Workers the browser codecs run in -
-        one per spare core, at most four, unless <code>BitBmageOptions.MaxCodecWorkers</code> says otherwise.
+        one per spare core, at most four, unless <code>BmageOptions.MaxCodecWorkers</code> says otherwise.
     </p>
 </div>
 
 @code {
-    private ImageCapabilities? _capabilities;
+    private BmageImageCapabilities? _capabilities;
 
-    private static readonly ImageFormat[] Formats =
+    private static readonly BmageImageFormat[] Formats =
     [
-        ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Gif, ImageFormat.Bmp,
+        BmageImageFormat.Png, BmageImageFormat.Jpeg, BmageImageFormat.WebP, BmageImageFormat.Avif, BmageImageFormat.Gif, BmageImageFormat.Bmp,
     ];
 
     private const string Snippet = """
@@ -152,7 +152,7 @@
 
         // Never assume: pick the best format this browser can actually write.
         var format = caps.ChooseEncodableFormat(
-            [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg]);
+            [BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg]);
 
         if (!caps.CanRenderCanvas(width, height))
         {

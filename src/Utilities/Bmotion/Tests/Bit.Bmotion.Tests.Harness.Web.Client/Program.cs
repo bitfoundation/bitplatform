@@ -7,7 +7,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 // The library registers the options instance it is handed as a singleton, so keeping hold of it lets the
 // options be filled in once the host - and with it the JS runtime that can read the page - exists.
-BitBmotionOptions bmotionOptions = default!;
+BmotionOptions bmotionOptions = default!;
 builder.Services.AddBitBmotionServices(o => bmotionOptions = o);
 
 var host = builder.Build();

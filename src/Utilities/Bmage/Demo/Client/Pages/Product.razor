@@ -1,8 +1,8 @@
 ﻿@page "/product"
 @implements IDisposable
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
-@inject IImageCapabilityProvider Capabilities
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
+@inject IBmageImageCapabilityProvider Capabilities
 
 @* A catalogue's image set from one upload: the decoded source is kept and every size is a run of the
    same pipeline shape against it, so the expensive part - the decode - happens once. Sizes larger
@@ -139,8 +139,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> One source, many outputs</h3>
     <p>
         <code>Fit</code> rather than <code>Cover</code>: a product must never be cropped, so it is
-        scaled to fit the padded area and centred on an <code>ImageCanvas</code> filled with the
-        catalogue background. (<code>ResizeMode.Contain</code> pads too, but it fits to the full canvas
+        scaled to fit the padded area and centred on an <code>BmageImageCanvas</code> filled with the
+        catalogue background. (<code>BmageResizeMode.Contain</code> pads too, but it fits to the full canvas
         first - fine for a letterbox, wrong for a margin.) Each size is a separate run against pixels
         that were decoded once, which is the expensive part.
     </p>
@@ -157,25 +157,25 @@
 </div>
 
 @code {
-    private sealed record Variant(string Name, int Size, ImageBuffer Image, EncodedImage Encoded, long Version)
+    private sealed record Variant(string Name, int Size, BmageImageBuffer Image, BmageEncodedImage Encoded, long Version)
     {
         public long Bytes => Encoded.Length;
     }
 
-    private ImageBuffer? _source;
+    private BmageImageBuffer? _source;
     private readonly List<Variant> _variants = [];
     private readonly HashSet<int> _sizes = [1024, 512, 256, 128];
-    private Rgba32 _background = Rgba32.White;
+    private BmageRgba32 _background = BmageRgba32.White;
     private int _padding = 6;
     private string _shape = "square";
-    private ImageFormat _format = ImageFormat.WebP;
+    private BmageImageFormat _format = BmageImageFormat.WebP;
     private readonly List<int> _skipped = [];
     private long _sourceBytes;
     private bool _busy;
     private int _planned;
     private string? _error;
     private long _version;
-    private ImageCapabilities? _capabilities;
+    private BmageImageCapabilities? _capabilities;
     private readonly Debouncer _debounce = new(250);
     // Identifies the newest run. A change while a run is producing variants starts a new run and the old one stops.
     private int _run;
@@ -185,9 +185,9 @@
     private bool IsHydrating => RendererInfo.IsInteractive is false;
 
     // Until the probe has run, only the current choice is listed (and the list is disabled).
-    private IEnumerable<ImageFormat> AvailableFormats => _capabilities is null
+    private IEnumerable<BmageImageFormat> AvailableFormats => _capabilities is null
         ? [_format]
-        : new[] { ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Jpeg, ImageFormat.Png }.Where(_capabilities.CanEncode);
+        : new[] { BmageImageFormat.WebP, BmageImageFormat.Avif, BmageImageFormat.Jpeg, BmageImageFormat.Png }.Where(_capabilities.CanEncode);
 
     private const string Snippet = """
         // Fit, never Cover: a product must never be cropped. It is scaled to fit the
@@ -195,13 +195,13 @@
         foreach (var size in sizes)
         {
             var inner = (int)(size * (1 - padding * 2));
-            using var fitted = await ImagePipeline.Create()
+            using var fitted = await BmageImagePipeline.Create()
                 .AutoOrient()
-                .Resize(inner, inner, ResizeMode.Fit)
+                .Resize(inner, inner, BmageResizeMode.Fit)
                 .Sharpen(0.25f)
                 .ExecuteAsync(decodedOnce);
 
-            using var canvas = ImageCanvas.Create(size, size, catalogueBackground);
+            using var canvas = BmageImageCanvas.Create(size, size, catalogueBackground);
             canvas.DrawImage(fitted, new RectangleF(
                 (size - fitted.Width) / 2f, (size - fitted.Height) / 2f, fitted.Width, fitted.Height));
 
@@ -212,21 +212,21 @@
 
     private const string CanvasSnippet = """
         // Fit inside the padded area, then grow the canvas to the full size around it.
-        var tile = ImagePipeline.Create()
+        var tile = BmageImagePipeline.Create()
             .AutoOrient()
-            .Resize(inner, inner, ResizeMode.Fit)
+            .Resize(inner, inner, BmageResizeMode.Fit)
             .Sharpen(0.25f)
-            .CanvasSize(size, size, Anchor.Center, catalogueBackground);
+            .CanvasSize(size, size, BmageAnchor.Center, catalogueBackground);
 
         // Or a fixed border on every side, whatever the size.
-        var framed = ImagePipeline.Create().MaxSize(1000, 1000).Pad(40, catalogueBackground);
+        var framed = BmageImagePipeline.Create().MaxSize(1000, 1000).Pad(40, catalogueBackground);
         """;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || IsHydrating) return;
         _capabilities = await Capabilities.GetAsync();
-        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([ImageFormat.WebP, ImageFormat.Jpeg]);
+        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([BmageImageFormat.WebP, BmageImageFormat.Jpeg]);
         StateHasChanged();
     }
 
@@ -254,7 +254,7 @@
         await SetSourceAsync(SampleImages.Landscape(), 0);
     }
 
-    private async Task SetSourceAsync(ImageBuffer image, long bytes)
+    private async Task SetSourceAsync(BmageImageBuffer image, long bytes)
     {
         _run++; // a run still producing variants was reading the old source
         ClearVariants();
@@ -279,7 +279,7 @@
 
     private void OnBackgroundChanged(ChangeEventArgs e)
     {
-        if (e.Value is string hex && Rgba32.TryParseHex(hex, out var color))
+        if (e.Value is string hex && BmageRgba32.TryParseHex(hex, out var color))
         {
             _background = color;
             _debounce.Schedule(async _ => await Generate());
@@ -294,7 +294,7 @@
 
     private void OnFormatChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format))
+        if (e.Value is string value && Enum.TryParse<BmageImageFormat>(value, out var format))
         {
             _format = format;
             _debounce.Schedule(async _ => await Generate());
@@ -317,11 +317,11 @@
         ClearVariants();
         _skipped.Clear();
 
-        var exportOptions = new ImageExportOptions
+        var exportOptions = new BmageImageExportOptions
         {
             Format = _format,
             Quality = 0.85,
-            Metadata = MetadataPolicy.Remove,
+            Metadata = BmageMetadataPolicy.Remove,
             Background = _background,
         };
 
@@ -350,21 +350,21 @@
                 // Fit the product inside the padded area, then centre it on a full size canvas of the catalogue
                 // colour. Not a second Resize(Contain): Contain fits before it pads, so it would scale the
                 // product straight back up to the canvas edge and the padding would only survive on one axis.
-                using var fitted = await ImagePipeline.Create()
+                using var fitted = await BmageImagePipeline.Create()
                     .AutoOrient()
-                    .Resize(innerW, innerH, ResizeMode.Fit)
+                    .Resize(innerW, innerH, BmageResizeMode.Fit)
                     .Sharpen(0.25f)
                     .ExecuteAsync(source);
 
-                ImageBuffer image;
-                using (var canvas = ImageCanvas.Create(width, height, _background))
+                BmageImageBuffer image;
+                using (var canvas = BmageImageCanvas.Create(width, height, _background))
                 {
                     canvas.DrawImage(fitted, new System.Drawing.RectangleF(
                         (width - fitted.Width) / 2f, (height - fitted.Height) / 2f, fitted.Width, fitted.Height));
                     image = canvas.Snapshot();
                 }
 
-                EncodedImage encoded;
+                BmageEncodedImage encoded;
                 try
                 {
                     encoded = await Exporter.EncodeAsync(image, exportOptions);
@@ -444,9 +444,9 @@
 
     private static string Describe(Exception ex) => ex switch
     {
-        ImageLimitExceededException => "That image is too large to process here.",
-        ImageDecodeException => "That file could not be read as an image.",
-        ImageCapabilityException c => c.Message,
+        BmageImageLimitExceededException => "That image is too large to process here.",
+        BmageImageDecodeException => "That file could not be read as an image.",
+        BmageImageCapabilityException c => c.Message,
         _ => ex.Message,
     };
 

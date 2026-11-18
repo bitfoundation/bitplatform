@@ -13,19 +13,6 @@ using Microsoft.AspNetCore.Components.RenderTree;
 namespace Bit.Bmotion;
 
 /// <summary>
-/// The attributes a <see cref="Bmotion"/> injects into the animated element.
-/// <see cref="MotionStyle"/> is the motion-only initial style; the rewriter places it before any
-/// consumer-authored declarations so the consumer's win conflicts.
-/// </summary>
-internal readonly record struct BmotionInjection(string Id, string? MotionStyle, bool AddPathLength);
-
-/// <summary>
-/// Decides what to inject into the first root element of the child content, given the element's
-/// tag name and any consumer-authored <c>id</c> / <c>style</c> attribute values found on it.
-/// </summary>
-internal delegate BmotionInjection BmotionInjectionPlanner(string tagName, string? authorId, string? authorStyle);
-
-/// <summary>
 /// Replays a <see cref="RenderFragment"/>'s render-tree frames into another builder, injecting the
 /// engine attributes (id, initial style, pathLength) into the first root HTML element found -
 /// the Blazor equivalent of React's <c>cloneElement</c>. Everything else (keys, event handlers,

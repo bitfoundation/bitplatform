@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 
-namespace Bit.Blex.Testing;
+namespace Bit.Blex;
 
 /// <summary>A single recorded action and the state snapshot taken immediately after it.</summary>
 /// <param name="Store">The store that produced the action.</param>

@@ -30,7 +30,7 @@ public class BelemetrySpanExceptionTests
 
     private static int AzureItems(BelemetrySpan span, params BelemetryLogRecord[] logs)
     {
-        AzureMonitorEnvelopeSerializer.Serialize(new BelemetryBatch(Records.Resource(), [span], logs), new AzureMonitorEnvelopeSerializer.Context("ikey", true), out var count);
+        BelemetryAzureMonitorEnvelopeSerializer.Serialize(new BelemetryBatch(Records.Resource(), [span], logs), new BelemetryAzureMonitorEnvelopeSerializer.Context("ikey", true), out var count);
         return count;
     }
 

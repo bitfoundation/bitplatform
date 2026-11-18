@@ -43,7 +43,7 @@ public class AsyncLifecycleTests
 
         // AnimateAsync returns once the animation has started; the token has to outlive that.
         await cut.InvokeAsync(async () =>
-            await cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ffffff"), Bm.Tween(1, ease: BmEase.Linear), cts.Token));
+            await cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ffffff"), Bm.Tween(1, ease: BmotionEase.Linear), cts.Token));
         await ctx.RunFramesAsync(0, 300);
         var midway = State(ctx, "box").StringValues["backgroundColor"];
 
@@ -65,7 +65,7 @@ public class AsyncLifecycleTests
             .Add(p => p.Initial, Bm.To(opacity: 0))
             .Add(p => p.Animate, Bm.To(opacity: 1))
             .Add(p => p.Transition, Bm.Tween(0.2))
-            .Add(p => p.OnAnimationComplete, EventCallback.Factory.Create<BmProps?>(this, async _ =>
+            .Add(p => p.OnAnimationComplete, EventCallback.Factory.Create<BmotionProps?>(this, async _ =>
             {
                 await Task.Yield();
                 throw new InvalidOperationException("OnAnimationComplete failed");
@@ -91,7 +91,7 @@ public class AsyncLifecycleTests
 
         // A later animation of the same property, started without the token.
         await cut.InvokeAsync(async () =>
-            await cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ff0000"), Bm.Tween(1, ease: BmEase.Linear)));
+            await cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ff0000"), Bm.Tween(1, ease: BmotionEase.Linear)));
         await ctx.RunFramesAsync(416, 600);
         var whenCancelled = State(ctx, "box").StringValues["backgroundColor"];
 
@@ -110,7 +110,7 @@ public class AsyncLifecycleTests
         var cut = RenderBlack(ctx);
         using var cts = new CancellationTokenSource();
         await cut.InvokeAsync(async () =>
-            await cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ffffff"), Bm.Tween(1, ease: BmEase.Linear), cts.Token));
+            await cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ffffff"), Bm.Tween(1, ease: BmotionEase.Linear), cts.Token));
         await ctx.RunFramesAsync(0, 300);
 
         await cut.InvokeAsync(() =>
@@ -118,7 +118,7 @@ public class AsyncLifecycleTests
             // Cancelled off the renderer's context (CancelAfter's timer): the stop is queued on it, behind this.
             Task.Run(cts.Cancel).Wait();
             // Before the queued stop runs, a newer animation takes the property over.
-            _ = cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ff0000"), Bm.Tween(1, ease: BmEase.Linear));
+            _ = cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ff0000"), Bm.Tween(1, ease: BmotionEase.Linear));
         });
         await cut.InvokeAsync(() => { }); // the queued stop has run
         var whenCancelled = State(ctx, "box").StringValues["backgroundColor"];
@@ -135,10 +135,10 @@ public class AsyncLifecycleTests
         {
             b.OpenComponent<Bmotion>(0);
             b.AddComponentParameter(1, nameof(Bmotion.Id), "box");
-            b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmTarget?)Bm.To(opacity: 0));
-            b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 1));
-            b.AddComponentParameter(4, nameof(Bmotion.WhileHover), (BmTarget?)Bm.To(scale: 1.1));
-            b.AddComponentParameter(5, nameof(Bmotion.WhileInView), (BmTarget?)Bm.To(y: 0));
+            b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmotionTarget?)Bm.To(opacity: 0));
+            b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(opacity: 1));
+            b.AddComponentParameter(4, nameof(Bmotion.WhileHover), (BmotionTarget?)Bm.To(scale: 1.1));
+            b.AddComponentParameter(5, nameof(Bmotion.WhileInView), (BmotionTarget?)Bm.To(y: 0));
             b.AddComponentParameter(6, nameof(Bmotion.ChildContent), Div);
             b.CloseComponent();
         })));
@@ -157,7 +157,7 @@ public class AsyncLifecycleTests
     {
         using var ctx = new BmotionTestContext();
         // The OS preference matters under User, so initialisation starts with the probe round trip.
-        ctx.Options.ReducedMotion = BmReducedMotionMode.User;
+        ctx.Options.ReducedMotion = BmotionReducedMotionMode.User;
         var probe = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         ctx.Interop.PrefersReducedMotionGate = probe.Task;
         var host = RenderInteractive(ctx);

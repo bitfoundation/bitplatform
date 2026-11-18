@@ -5,7 +5,7 @@ namespace Bit.BevTools.Tests;
 [TestClass]
 public class StateStoreTests
 {
-    public sealed class CounterState : IBevStateProvider
+    public sealed class CounterState : IBevToolsStateProvider
     {
         public int Count { get; private set; }
 
@@ -15,7 +15,7 @@ public class StateStoreTests
 
         public string Name => "CounterState";
 
-        public event Action<BevStateChangeInfo>? Changed;
+        public event Action<BevToolsStateChangeInfo>? Changed;
 
         public object? GetSnapshot() => this;
 
@@ -23,36 +23,36 @@ public class StateStoreTests
         {
             Count++;
             Log.Add("inc");
-            Changed?.Invoke(new BevStateChangeInfo("Increment", Count.ToString()));
+            Changed?.Invoke(new BevToolsStateChangeInfo("Increment", Count.ToString()));
         }
     }
 
-    private sealed class ConcurrentState : IBevStateProvider
+    private sealed class ConcurrentState : IBevToolsStateProvider
     {
         private int _count;
 
         public string Name => "ConcurrentState";
 
-        public event Action<BevStateChangeInfo>? Changed;
+        public event Action<BevToolsStateChangeInfo>? Changed;
 
         public object GetSnapshot() => new { Count = Volatile.Read(ref _count) };
 
         public void Increment()
         {
             var count = Interlocked.Increment(ref _count);
-            Changed?.Invoke(new BevStateChangeInfo("Increment", count.ToString()));
+            Changed?.Invoke(new BevToolsStateChangeInfo("Increment", count.ToString()));
         }
     }
 
-    private sealed class OrdersState : IBevStateProvider
+    private sealed class OrdersState : IBevToolsStateProvider
     {
         public string Name => "Orders";
 
-        public event Action<BevStateChangeInfo>? Changed;
+        public event Action<BevToolsStateChangeInfo>? Changed;
 
         public object? GetSnapshot() => null;
 
-        public void Place(params KeyValuePair<string, object?>[] arguments) => Changed?.Invoke(new BevStateChangeInfo("Place", "from the cart") { Arguments = arguments });
+        public void Place(params KeyValuePair<string, object?>[] arguments) => Changed?.Invoke(new BevToolsStateChangeInfo("Place", "from the cart") { Arguments = arguments });
     }
 
     private sealed class ObservableState
@@ -120,7 +120,7 @@ public class StateStoreTests
             Assert.AreEqual("Increment", last.Action);
             Assert.Contains(c => c.Path == "Count" && c.Before == "1" && c.After == "2", last.Changes);
             Assert.Contains(c => c.Path == "Log[1]" && c.Kind == "added", last.Changes);
-            Assert.AreEqual(BevRedactor.RedactedValue, last.Snapshot["Password"]);
+            Assert.AreEqual(BevToolsRedactor.RedactedValue, last.Snapshot["Password"]);
 
             var evt = session.Timeline.Find(last.TimelineEventId)!;
             Assert.AreEqual(BevToolsEventKind.StateChange, evt.Kind);
@@ -136,7 +136,7 @@ public class StateStoreTests
     [TestMethod]
     public void A_changes_arguments_are_read_through_the_inspector_at_the_sessions_value_access()
     {
-        string? Detail(BevValueAccess access)
+        string? Detail(BevToolsValueAccess access)
         {
             var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = access);
             using (scope)
@@ -148,10 +148,10 @@ public class StateStoreTests
             }
         }
 
-        var full = Detail(BevValueAccess.Full);
+        var full = Detail(BevToolsValueAccess.Full);
         StringAssert.StartsWith(full, "from the cart · id=42, street=\"1 Main St\", password=«redacted», customer=");
-        Assert.AreEqual("from the cart · id=42, street=\"1 Main St\", password=«redacted», customer=CounterState", Detail(BevValueAccess.Shallow), "an object by its type");
-        Assert.AreEqual("from the cart · id, street, password, customer", Detail(BevValueAccess.None), "names only");
+        Assert.AreEqual("from the cart · id=42, street=\"1 Main St\", password=«redacted», customer=CounterState", Detail(BevToolsValueAccess.Shallow), "an object by its type");
+        Assert.AreEqual("from the cart · id, street, password, customer", Detail(BevToolsValueAccess.None), "names only");
     }
 
     [TestMethod]
@@ -232,7 +232,7 @@ public class StateStoreTests
     public void Concurrent_provider_notifications_do_not_lose_change_counts()
     {
         var state = new ConcurrentState();
-        var (session, scope) = TestHelpers.CreateSession(services: services => services.AddSingleton<IBevStateProvider>(state));
+        var (session, scope) = TestHelpers.CreateSession(services: services => services.AddSingleton<IBevToolsStateProvider>(state));
         using (scope)
         {
             Parallel.For(0, 100, _ => state.Increment());

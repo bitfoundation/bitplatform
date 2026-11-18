@@ -29,7 +29,7 @@ public class SplitTextOrchestrationTests
             .Add(p => p.Text, "abcd")
             .Add(p => p.Initial, Bm.To(opacity: 0))
             .Add(p => p.Animate, Bm.To(opacity: 1))
-            .Add(p => p.Stagger, Bm.Stagger(0.1, from: BmStaggerFrom.Last))
+            .Add(p => p.Stagger, Bm.Stagger(0.1, from: BmotionStaggerFrom.Last))
             .Add(p => p.OnComplete, EventCallback.Factory.Create(this, () => completions++)));
         var ids = UnitIds(cut);
         Assert.AreEqual(4, ids.Length);
@@ -53,7 +53,7 @@ public class SplitTextOrchestrationTests
         var cut = ctx.Render<BmotionSplitText>(ps => ps
             .Add(p => p.Text, "abcde")
             .Add(p => p.Animate, Bm.To(opacity: 1))
-            .Add(p => p.Stagger, Bm.Stagger(0.1, from: BmStaggerFrom.Last))
+            .Add(p => p.Stagger, Bm.Stagger(0.1, from: BmotionStaggerFrom.Last))
             .Add(p => p.OnComplete, EventCallback.Factory.Create(this, () => { })));
 
         var reporting = cut.FindComponents<Bmotion>().Select(u => u.Instance.OnAnimationComplete.HasDelegate).ToArray();
@@ -71,7 +71,7 @@ public class SplitTextOrchestrationTests
             {
                 b.OpenComponent<BmotionSplitText>(0);
                 b.AddComponentParameter(1, nameof(BmotionSplitText.Text), "abc");
-                b.AddComponentParameter(2, nameof(BmotionSplitText.Animate), (BmTarget?)Bm.To(opacity: 1));
+                b.AddComponentParameter(2, nameof(BmotionSplitText.Animate), (BmotionTarget?)Bm.To(opacity: 1));
                 b.AddComponentParameter(3, nameof(BmotionSplitText.Stagger), Bm.Stagger(0.1));
                 b.CloseComponent();
             })));

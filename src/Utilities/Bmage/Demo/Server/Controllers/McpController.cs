@@ -12,7 +12,7 @@ namespace Bit.Bmage.Demo.Server.Controllers;
 /// guessing at its API - or at what its output will weigh.
 /// <para>
 /// Documentation tools alone are not enough for an image library. An agent can read every property
-/// of <c>ImageExportOptions</c> and still not know whether a 1200 x 1200 avatar fits in 80 KB at
+/// of <c>BmageImageExportOptions</c> and still not know whether a 1200 x 1200 avatar fits in 80 KB at
 /// quality 0.8, whether PNG or JPEG is smaller for a screenshot, or whether an <c>AutoOrient()</c> in
 /// front of a resize stops the optimiser fusing it with the crop after it. Those facts live in the
 /// engine, not in prose. So the tools here fall into two halves: the ones that answer from this
@@ -80,8 +80,8 @@ public class McpController : ControllerBase
               BOTH the server and the client container of a Blazor Web App, because the prerender pass instantiates every
               component on the server. `Bit.Bmage` alone and `AddBitBmageHeadlessServices` on a server, in a console app
               or a worker. They register different things.
-            - **No `@inject ImageProcessor` in a browser app.** Get it from `ImageProcessorFactory.GetAsync()`, or use
-              `ImageLoader` and `ImageExporter`, which do that for you.
+            - **No `@inject BmageImageProcessor` in a browser app.** Get it from `BmageImageProcessorFactory.GetAsync()`, or use
+              `BmageImageLoader` and `BmageImageExporter`, which do that for you.
             - **Browser work after the first render.** Capabilities, downloads, object URLs, the clipboard and paste
               listeners need a browser, and `OnInitialized(Async)` also runs during prerendering, when there is none. Use
               `OnAfterRenderAsync(firstRender)` or an event handler.
@@ -93,7 +93,7 @@ public class McpController : ControllerBase
               WebAssembly a fallback list passes it over where the browser cannot write it, as Bmage's encoder would
               hold the UI thread.
             - **Privacy is the default.** Export metadata is `Remove` unless you ask; `StripSensitive` keeps camera data
-              without GPS; `Preserve` keeps the location. Redact with `RedactionMode.Solid`.
+              without GPS; `Preserve` keeps the location. Redact with `BmageRedactionMode.Solid`.
             - **Cap dimensions first.** `.AutoOrient().MaxSize(...)` before adjustments and filters; group adjustments
               together so the optimiser fuses them into one pass.
             - **AOT the browser project.** `<RunAOTCompilation>true</RunAOTCompilation>`: the interpreter runs the pixel
@@ -200,7 +200,7 @@ public class McpController : ControllerBase
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
     [Description("Lists the public types of Bit.Bmage and Bit.Bmage.Blazor - pipelines, operations, codecs, options, metadata, drawing, annotations, editing, the browser services and the editor components - with the namespace to import, the package, its kind and a one-line summary. Narrow it with 'filter' (a namespace, a package, a kind or any part of a name) rather than reading all of it, then pass a name to GetBmageApiDetails.")]
     public BmageApiTypeDto[] GetBmageApiList(
-        [Description("Optional. A namespace ('Bit.Bmage.Annotations', or 'Bit.Bmage.Editor' for every editor namespace), a package ('Bit.Bmage.Blazor'), a kind ('Enum', 'Component', 'Record', 'Exception') or any substring of a type name ('Export'). Omitted, every type is returned.")] string? filter = null)
+        [Description("Optional. A package ('Bit.Bmage' or 'Bit.Bmage.Blazor'), a kind ('Enum', 'Component', 'Record', 'Exception') or any substring of a type name ('Export'). Omitted, every type is returned.")] string? filter = null)
     {
         var types = BmageApiCatalog.TypeSummaries;
 
@@ -231,9 +231,9 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmageApiDetails), Title = "Full reference of one type",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Gets the full reference of one Bit.Bmage type - or of one member, written 'Type.Member' - read straight out of the shipped assemblies: its namespace and package, constructors, Blazor parameters and properties with their default values, methods with their full parameter lists, enum values, each with its XML documentation. Call it before using a type you are unsure about, e.g. 'ImagePipeline', 'ImageExportOptions', 'ImageLoader', 'ImageExporter', 'BmageEditor', 'MetadataPolicy', 'RedactionAnnotation', or 'ImagePipeline.Cover'. In an image library the defaults (quality 0.85, metadata Remove, PNG level 6) are the behaviour.")]
+    [Description("Gets the full reference of one Bit.Bmage type - or of one member, written 'Type.Member' - read straight out of the shipped assemblies: its namespace and package, constructors, Blazor parameters and properties with their default values, methods with their full parameter lists, enum values, each with its XML documentation. Call it before using a type you are unsure about, e.g. 'BmageImagePipeline', 'BmageImageExportOptions', 'BmageImageLoader', 'BmageImageExporter', 'BmageEditor', 'BmageMetadataPolicy', 'BmageRedactionAnnotation', or 'BmageImagePipeline.Cover'. In an image library the defaults (quality 0.85, metadata Remove, PNG level 6) are the behaviour.")]
     public BmageApiDetailsResultDto GetBmageApiDetails(
-        [Description("A type name such as 'ImagePipeline', a full name such as 'Bit.Bmage.Output.ImageExporter', or 'Type.Member' such as 'ImageExportOptions.MaxFileSize'.")] string typeName)
+        [Description("A type name such as 'BmageImagePipeline', a full name such as 'Bit.Bmage.BmageImageExporter', or 'Type.Member' such as 'BmageImageExportOptions.MaxFileSize'.")] string typeName)
     {
         var details = BmageApiCatalog.GetTypeDetails(typeName) ?? BmageApiCatalog.GetMemberDetails(typeName);
 
@@ -243,7 +243,7 @@ public class McpController : ControllerBase
         var dot = probe.LastIndexOf('.');
         var typePart = dot > 0 ? probe[..dot] : probe;
 
-        // "ImagePipeline.Teleport": the type exists, the member does not - say which, and list what it has.
+        // "BmageImagePipeline.Teleport": the type exists, the member does not - say which, and list what it has.
         if (dot > 0 && BmageApiCatalog.GetTypeDetails(typePart) is { } owner)
         {
             return new BmageApiDetailsResultDto
@@ -328,7 +328,7 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(ReviewBmageCode), Title = "Review code that uses Bit.Bmage",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Reviews Razor, C#, a .csproj or a host page that uses Bit.Bmage and reports the mistakes that compile cleanly and then fail at runtime, leak or produce the wrong file: browser calls in OnInitialized that break prerendering, ImageBuffers never disposed, @inject ImageProcessor in a browser app, the wrong registration for the host, the editor's stylesheet missing or mislinked, no RunAOTCompilation, WebP/AVIF with no fallback or on a server, MetadataPolicy.Preserve leaking GPS, orientation lost, unhandled size budgets, the 500 KB IBrowserFile limit. Every finding names the line and the correction. Run it before calling Bmage code done.")]
+    [Description("Reviews Razor, C#, a .csproj or a host page that uses Bit.Bmage and reports the mistakes that compile cleanly and then fail at runtime, leak or produce the wrong file: browser calls in OnInitialized that break prerendering, ImageBuffers never disposed, @inject BmageImageProcessor in a browser app, the wrong registration for the host, the editor's stylesheet missing or mislinked, no RunAOTCompilation, WebP/AVIF with no fallback or on a server, BmageMetadataPolicy.Preserve leaking GPS, orientation lost, unhandled size budgets, the 500 KB IBrowserFile limit. Every finding names the line and the correction. Run it before calling Bmage code done.")]
     public BmageReviewDto ReviewBmageCode(
         [Description("The code to review: a component, a Program.cs, a .csproj, App.razor/index.html, or a fragment of any of them. Several files can be pasted together.")] string code)
     {
@@ -362,15 +362,15 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(RunBmagePipeline), Title = "Run a pipeline on the real engine",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Runs a pipeline on the real Bit.Bmage engine on this server, against a generated test image (a photo with sensor grain, a flat-colour screenshot, or a transparent graphic), and reports what it really does: the output size, the encoded bytes per format and quality with the managed codecs, whether a MaxFileSize budget is reachable and at what quality, the operation list the optimiser actually runs, and how long it took with and without the optimiser. Use it to choose dimensions, formats, qualities and byte budgets on evidence before writing them into code. Example pipeline: 'ImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)'.")]
+    [Description("Runs a pipeline on the real Bit.Bmage engine on this server, against a generated test image (a photo with sensor grain, a flat-colour screenshot, or a transparent graphic), and reports what it really does: the output size, the encoded bytes per format and quality with the managed codecs, whether a MaxFileSize budget is reachable and at what quality, the operation list the optimiser actually runs, and how long it took with and without the optimiser. Use it to choose dimensions, formats, qualities and byte budgets on evidence before writing them into code. Example pipeline: 'BmageImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)'.")]
     public Task<BmagePipelineRunDto> RunBmagePipeline(
-        [Description("The pipeline as the C# method chain, e.g. 'ImagePipeline.Create().AutoOrient().Cover(512, 512, Anchor.Top).Sharpen(0.3f)' - copied out of code verbatim, or without the 'ImagePipeline.Create()' prefix. Every ImagePipeline builder method is accepted with its real parameters, named arguments included; Rgba32 and Rectangle are written 'new Rgba32(24, 26, 31)' / '\"#18181f\"' and 'new Rectangle(0, 0, 200, 80)'.")] string pipeline,
+        [Description("The pipeline as the C# method chain, e.g. 'BmageImagePipeline.Create().AutoOrient().Cover(512, 512, BmageAnchor.Top).Sharpen(0.3f)' - copied out of code verbatim, or without the 'BmageImagePipeline.Create()' prefix. Every BmageImagePipeline builder method is accepted with its real parameters, named arguments included; Rgba32 and Rectangle are written 'new BmageRgba32(24, 26, 31)' / '\"#18181f\"' and 'new Rectangle(0, 0, 200, 80)'.")] string pipeline,
         [Description("The generated input: 'photo' (default - a landscape with sensor grain, compresses like a photograph), 'screenshot' (flat colour, hard edges, text-like runs) or 'graphic' (a logo on a transparent background).")] string source = "photo",
         [Description("Width of the generated input in pixels. Default 2400; at most 4096, and 12 megapixels in all.")] int width = BmagePipelineLab.DefaultWidth,
         [Description("Height of the generated input in pixels. Default 1600.")] int height = BmagePipelineLab.DefaultHeight,
         [Description("Optional. Formats to encode the output in, comma-separated: jpeg, png, bmp, webp - measured; avif - encoded only by browsers, reported with guidance rather than measured. Default 'jpeg, png'.")] string? formats = null,
         [Description("Optional. Qualities for the lossy formats, comma-separated in [0, 1], e.g. '0.6, 0.75, 0.85'. Default '0.7, 0.8, 0.9'.")] string? qualities = null,
-        [Description("Optional. A file-size budget in bytes, e.g. 102400: runs ImageExportOptions.MaxFileSize's search for jpeg and png and reports the quality and dimensions it settles on, or why it cannot be met.")] long? maxFileSize = null,
+        [Description("Optional. A file-size budget in bytes, e.g. 102400: runs BmageImageExportOptions.MaxFileSize's search for jpeg and png and reports the quality and dimensions it settles on, or why it cannot be met.")] long? maxFileSize = null,
         CancellationToken cancellationToken = default)
     {
         return BmagePipelineLab.RunAsync(pipeline, source, width, height, formats, qualities, maxFileSize, cancellationToken);
@@ -379,7 +379,7 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(CompareBmageMetadataPolicies), Title = "Compare metadata export policies",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Encodes a camera photo carrying a GPS position, a serial number, the owner's name, camera, lens, ISO, a date and a copyright through the real Bit.Bmage encoder under each MetadataPolicy (Remove, StripSensitive, Preserve), decodes every file again, and reports which fields survived - so a privacy decision rests on what the exported file contains rather than on what a policy name suggests. Pass format 'jpeg' (default), 'png', 'bmp' or 'webp'.")]
+    [Description("Encodes a camera photo carrying a GPS position, a serial number, the owner's name, camera, lens, ISO, a date and a copyright through the real Bit.Bmage encoder under each BmageMetadataPolicy (Remove, StripSensitive, Preserve), decodes every file again, and reports which fields survived - so a privacy decision rests on what the exported file contains rather than on what a policy name suggests. Pass format 'jpeg' (default), 'png', 'bmp' or 'webp'.")]
     public Task<BmageMetadataComparisonDto> CompareBmageMetadataPolicies(
         [Description("The export format: 'jpeg' (default), 'png', 'bmp' or 'webp'.")] string format = "jpeg",
         CancellationToken cancellationToken = default)

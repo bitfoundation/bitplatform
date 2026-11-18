@@ -92,7 +92,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBbScannerApi), Title = "Public API reference", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the public API of Bit.BbScanner as Markdown, read out of the shipped assembly: one type with every Blazor parameter, property, method, event or enum value it has - each with its C# type, its real default value and its documentation. Omit the type name for the index of every public type. Call it before using a member you are unsure about, e.g. 'BbScanner', 'BbScannerOptions', 'BbBarcodeFormat', 'BbBarcodeResult', 'BbBarcodeResultMetadata', 'BbBarcodeDecoder', 'BbScanRegion', 'BbScannerException', 'BbCameraInfo'.")]
+    [Description("Gets the public API of Bit.BbScanner as Markdown, read out of the shipped assembly: one type with every Blazor parameter, property, method, event or enum value it has - each with its C# type, its real default value and its documentation. Omit the type name for the index of every public type. Call it before using a member you are unsure about, e.g. 'BbScanner', 'BbScannerOptions', 'BbScannerBarcodeFormat', 'BbScannerBarcodeResult', 'BbScannerBarcodeResultMetadata', 'BbScannerBarcodeDecoder', 'BbScannerScanRegion', 'BbScannerException', 'BbScannerCameraInfo'.")]
     public string GetBbScannerApi(
         [Description("The type's name without its namespace, e.g. 'BbScanner' or 'BbScannerOptions'. Omit it for the index of types.")] string? typeName = null)
     {
@@ -110,14 +110,14 @@ public class McpController : ControllerBase
 
         return candidates.Length > 0
             ? $"Bit.BbScanner has no public type called '{typeName}'. Did you mean: {string.Join(", ", candidates)}?"
-            : $"Bit.BbScanner has no public type called '{typeName}'. The component is 'BbScanner' and every other public type is prefixed 'Bb' (e.g. 'BbBarcodeResult' rather than 'BarcodeResult', 'BbScannerOptions' rather than 'ScannerOptions'); call GetBbScannerApi with no type name for the index.";
+            : $"Bit.BbScanner has no public type called '{typeName}'. The component is 'BbScanner' and every other public type is prefixed 'Bb' (e.g. 'BbScannerBarcodeResult' rather than 'BarcodeResult', 'BbScannerOptions' rather than 'ScannerOptions'); call GetBbScannerApi with no type name for the index.";
     }
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBbScannerFormats), Title = "Supported symbologies and their options", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the symbologies Bit.BbScanner reads - QR Code, Data Matrix, PDF417, Code 128, Code 39, EAN-13, EAN-8, UPC-A, UPC-E, ITF - read out of the library: each one's BbBarcodeFormat flag and its value, what of it is read, whether it is enabled by default and whether the pipeline actually creates its reader, and the BbScannerOptions members that steer it with their real defaults. Omit the format for the table of all of them. Use it to pick the Formats to pass and the options worth changing.")]
+    [Description("Gets the symbologies Bit.BbScanner reads - QR Code, Data Matrix, PDF417, Code 128, Code 39, EAN-13, EAN-8, UPC-A, UPC-E, ITF - read out of the library: each one's BbScannerBarcodeFormat flag and its value, what of it is read, whether it is enabled by default and whether the pipeline actually creates its reader, and the BbScannerOptions members that steer it with their real defaults. Omit the format for the table of all of them. Use it to pick the Formats to pass and the options worth changing.")]
     public string GetBbScannerFormats(
-        [Description("The symbology, as its BbBarcodeFormat member ('QrCode', 'Ean13') or its usual name ('QR Code', 'EAN-13'). Omit it for the table of every symbology.")] string? format = null)
+        [Description("The symbology, as its BbScannerBarcodeFormat member ('QrCode', 'Ean13') or its usual name ('QR Code', 'EAN-13'). Omit it for the table of every symbology.")] string? format = null)
     {
         if (string.IsNullOrWhiteSpace(format)) return BbScannerFormatCatalog.RenderIndex();
 
@@ -127,7 +127,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(InspectBbScannerSymbol), Title = "Decode a rendered symbol", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Renders a symbol of one symbology with the given payload, optionally rotated and blurred the way a camera frame is, and runs Bit.BbScanner's own BbBarcodeDecoder over it twice - with the live camera defaults and with BbScannerOptions.ForStillImages() - reporting the BbBarcodeResult each produced: its text, format, raw bytes, corners, bounding box, metadata (error correction level, version, GS1, ECI, structured append) and timings, with notes on what to change when one of them does not read it. Call it with only a format for a sample payload, the quickest way to see what a result looks like. The rendered frame is limited to 4 megapixels and 4096 pixels a side; a larger one is reported, not rendered.")]
+    [Description("Renders a symbol of one symbology with the given payload, optionally rotated and blurred the way a camera frame is, and runs Bit.BbScanner's own BbScannerBarcodeDecoder over it twice - with the live camera defaults and with BbScannerOptions.ForStillImages() - reporting the BbScannerBarcodeResult each produced: its text, format, raw bytes, corners, bounding box, metadata (error correction level, version, GS1, ECI, structured append) and timings, with notes on what to change when one of them does not read it. Call it with only a format for a sample payload, the quickest way to see what a result looks like. The rendered frame is limited to 4 megapixels and 4096 pixels a side; a larger one is reported, not rendered.")]
     public BbScannerDecodeReportDto InspectBbScannerSymbol(
         [Description("The symbology, e.g. 'QrCode', 'DataMatrix', 'Code128', 'Ean13' or 'Itf'.")] string format = "QrCode",
         [Description("The payload to encode. Omit it for a sample payload. An EAN-13, EAN-8 or UPC-A payload without its check digit gets one.")] string? text = null,

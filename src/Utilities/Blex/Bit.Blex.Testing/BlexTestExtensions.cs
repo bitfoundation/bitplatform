@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 
-namespace Bit.Blex.Testing;
+namespace Bit.Blex;
 
 /// <summary>Convenience extensions for testing Blex stores and managers.</summary>
 public static class BlexTestExtensions

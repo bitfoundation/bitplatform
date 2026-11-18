@@ -1,8 +1,5 @@
-﻿@using Bit.Bmage.Analysis
-@using Bit.Bmage.Editor.Tools
-@using Bit.Bmage.Operations.Adjustments
-@using Bit.Bmage.Operations.Filters
-@using Bit.Bmage.Operations.Transforms
+﻿@namespace Bit.Bmage
+@using Bit.Bmage
 
 @*
     The default options panel: adjustments, filters, style controls for the active tool, the annotation list and the
@@ -51,65 +48,65 @@
                         </figure>
                     }
                     <div class="bmg-field-actions" role="group" aria-label="@Context.Strings.Auto">
-                        <button type="button" class="bmg-button" aria-pressed="@(Context.FindAdjustment<AutoLevelsOperation>() is not null ? "true" : "false")"
+                        <button type="button" class="bmg-button" aria-pressed="@(Context.FindAdjustment<BmageAutoLevelsOperation>() is not null ? "true" : "false")"
                                 disabled="@Context.IsBusy" @onclick="Context.ToggleAutoLevelsAsync">@Context.Strings.AutoLevels</button>
-                        <button type="button" class="bmg-button" aria-pressed="@(Context.FindAdjustment<AutoWhiteBalanceOperation>() is not null ? "true" : "false")"
+                        <button type="button" class="bmg-button" aria-pressed="@(Context.FindAdjustment<BmageAutoWhiteBalanceOperation>() is not null ? "true" : "false")"
                                 disabled="@Context.IsBusy" @onclick="Context.ToggleAutoWhiteBalanceAsync">@Context.Strings.AutoWhiteBalance</button>
                         <button type="button" class="bmg-button" aria-pressed="@(Context.IsPickingWhiteBalance ? "true" : "false")"
                                 disabled="@Context.IsBusy" @onclick="Context.PickWhiteBalance">@Context.Strings.PickWhiteBalance</button>
                     </div>
-                    @RenderSlider(Context.Strings.Brightness, GetValue<BrightnessAdjustment>(a => a.Amount), -1, 1, 0.01,
-                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BrightnessAdjustment((float)v), Context.Strings.Brightness, true),
-                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BrightnessAdjustment>(), Context.Strings.Brightness))
-                    @RenderSlider(Context.Strings.Contrast, GetValue<ContrastAdjustment>(a => a.Amount), -1, 1, 0.01,
-                        v => Context.SetAdjustmentAsync(v == 0 ? null : new ContrastAdjustment((float)v), Context.Strings.Contrast, true),
-                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<ContrastAdjustment>(), Context.Strings.Contrast))
-                    @RenderSlider(Context.Strings.Saturation, GetValue<SaturationAdjustment>(a => a.Amount), -1, 1, 0.01,
-                        v => Context.SetAdjustmentAsync(v == 0 ? null : new SaturationAdjustment((float)v), Context.Strings.Saturation, true),
-                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<SaturationAdjustment>(), Context.Strings.Saturation))
-                    @RenderSlider(Context.Strings.Exposure, GetValue<ExposureAdjustment>(a => a.Ev), -3, 3, 0.05,
-                        v => Context.SetAdjustmentAsync(v == 0 ? null : new ExposureAdjustment((float)v), Context.Strings.Exposure, true),
-                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<ExposureAdjustment>(), Context.Strings.Exposure))
-                    @RenderSlider(Context.Strings.Temperature, GetValue<TemperatureAdjustment>(a => a.Amount), -1, 1, 0.01,
-                        v => Context.SetAdjustmentAsync(v == 0 ? null : new TemperatureAdjustment((float)v), Context.Strings.Temperature, true),
-                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<TemperatureAdjustment>(), Context.Strings.Temperature))
-                    @RenderSlider(Context.Strings.Vibrance, GetValue<VibranceAdjustment>(a => a.Amount), -1, 1, 0.01,
-                        v => Context.SetAdjustmentAsync(v == 0 ? null : new VibranceAdjustment((float)v), Context.Strings.Vibrance, true),
-                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<VibranceAdjustment>(), Context.Strings.Vibrance))
-                    @RenderSlider(Context.Strings.Shadows, GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), -1, 1, 0.01,
-                        v => SetShadowsHighlights((float)v, GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), true),
-                        () => SetShadowsHighlights(GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), false))
-                    @RenderSlider(Context.Strings.Highlights, GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), -1, 1, 0.01,
-                        v => SetShadowsHighlights(GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), (float)v, true),
-                        () => SetShadowsHighlights(GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), false))
-                    @RenderSlider(Context.Strings.Whites, GetValue<WhitesBlacksAdjustment>(a => a.Whites), -1, 1, 0.01,
-                        v => SetWhitesBlacks((float)v, GetValue<WhitesBlacksAdjustment>(a => a.Blacks), true),
-                        () => SetWhitesBlacks(GetValue<WhitesBlacksAdjustment>(a => a.Whites), GetValue<WhitesBlacksAdjustment>(a => a.Blacks), false))
-                    @RenderSlider(Context.Strings.Blacks, GetValue<WhitesBlacksAdjustment>(a => a.Blacks), -1, 1, 0.01,
-                        v => SetWhitesBlacks(GetValue<WhitesBlacksAdjustment>(a => a.Whites), (float)v, true),
-                        () => SetWhitesBlacks(GetValue<WhitesBlacksAdjustment>(a => a.Whites), GetValue<WhitesBlacksAdjustment>(a => a.Blacks), false))
-                    @RenderSlider(Context.Strings.Tint, GetValue<TintAdjustment>(a => a.Amount), -1, 1, 0.01,
-                        v => Context.SetAdjustmentAsync(v == 0 ? null : new TintAdjustment((float)v), Context.Strings.Tint, true),
-                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<TintAdjustment>(), Context.Strings.Tint))
-                    @RenderSlider(Context.Strings.Hue, GetValue<HueAdjustment>(a => a.Degrees), -180, 180, 1,
-                        v => Context.SetAdjustmentAsync(v == 0 ? null : new HueAdjustment((float)v), Context.Strings.Hue, true),
-                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<HueAdjustment>(), Context.Strings.Hue))
-                    @RenderSlider(Context.Strings.Sharpen, GetValue<SharpenFilter>(a => a.Amount), 0, 2, 0.05,
-                        v => Context.SetAdjustmentAsync(v == 0 ? null : new SharpenFilter((float)v), Context.Strings.Sharpen, true),
-                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<SharpenFilter>(), Context.Strings.Sharpen))
-                    @RenderSlider(Context.Strings.Blur, GetValue<BlurFilter>(a => a.Radius), 0, 20, 0.5,
-                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BlurFilter((float)v), Context.Strings.Blur, true),
-                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BlurFilter>(), Context.Strings.Blur))
-                    @RenderSlider(Context.Strings.Vignette, GetValue<VignetteFilter>(a => a.Amount), 0, 1, 0.01,
-                        v => Context.SetAdjustmentAsync(v == 0 ? null : new VignetteFilter((float)v), Context.Strings.Vignette, true),
-                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<VignetteFilter>(), Context.Strings.Vignette))
+                    @RenderSlider(Context.Strings.Brightness, GetValue<BmageBrightnessAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BmageBrightnessAdjustment((float)v), Context.Strings.Brightness, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BmageBrightnessAdjustment>(), Context.Strings.Brightness))
+                    @RenderSlider(Context.Strings.Contrast, GetValue<BmageContrastAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BmageContrastAdjustment((float)v), Context.Strings.Contrast, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BmageContrastAdjustment>(), Context.Strings.Contrast))
+                    @RenderSlider(Context.Strings.Saturation, GetValue<BmageSaturationAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BmageSaturationAdjustment((float)v), Context.Strings.Saturation, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BmageSaturationAdjustment>(), Context.Strings.Saturation))
+                    @RenderSlider(Context.Strings.Exposure, GetValue<BmageExposureAdjustment>(a => a.Ev), -3, 3, 0.05,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BmageExposureAdjustment((float)v), Context.Strings.Exposure, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BmageExposureAdjustment>(), Context.Strings.Exposure))
+                    @RenderSlider(Context.Strings.Temperature, GetValue<BmageTemperatureAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BmageTemperatureAdjustment((float)v), Context.Strings.Temperature, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BmageTemperatureAdjustment>(), Context.Strings.Temperature))
+                    @RenderSlider(Context.Strings.Vibrance, GetValue<BmageVibranceAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BmageVibranceAdjustment((float)v), Context.Strings.Vibrance, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BmageVibranceAdjustment>(), Context.Strings.Vibrance))
+                    @RenderSlider(Context.Strings.Shadows, GetValue<BmageShadowsHighlightsAdjustment>(a => a.Shadows), -1, 1, 0.01,
+                        v => SetShadowsHighlights((float)v, GetValue<BmageShadowsHighlightsAdjustment>(a => a.Highlights), true),
+                        () => SetShadowsHighlights(GetValue<BmageShadowsHighlightsAdjustment>(a => a.Shadows), GetValue<BmageShadowsHighlightsAdjustment>(a => a.Highlights), false))
+                    @RenderSlider(Context.Strings.Highlights, GetValue<BmageShadowsHighlightsAdjustment>(a => a.Highlights), -1, 1, 0.01,
+                        v => SetShadowsHighlights(GetValue<BmageShadowsHighlightsAdjustment>(a => a.Shadows), (float)v, true),
+                        () => SetShadowsHighlights(GetValue<BmageShadowsHighlightsAdjustment>(a => a.Shadows), GetValue<BmageShadowsHighlightsAdjustment>(a => a.Highlights), false))
+                    @RenderSlider(Context.Strings.Whites, GetValue<BmageWhitesBlacksAdjustment>(a => a.Whites), -1, 1, 0.01,
+                        v => SetWhitesBlacks((float)v, GetValue<BmageWhitesBlacksAdjustment>(a => a.Blacks), true),
+                        () => SetWhitesBlacks(GetValue<BmageWhitesBlacksAdjustment>(a => a.Whites), GetValue<BmageWhitesBlacksAdjustment>(a => a.Blacks), false))
+                    @RenderSlider(Context.Strings.Blacks, GetValue<BmageWhitesBlacksAdjustment>(a => a.Blacks), -1, 1, 0.01,
+                        v => SetWhitesBlacks(GetValue<BmageWhitesBlacksAdjustment>(a => a.Whites), (float)v, true),
+                        () => SetWhitesBlacks(GetValue<BmageWhitesBlacksAdjustment>(a => a.Whites), GetValue<BmageWhitesBlacksAdjustment>(a => a.Blacks), false))
+                    @RenderSlider(Context.Strings.Tint, GetValue<BmageTintAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BmageTintAdjustment((float)v), Context.Strings.Tint, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BmageTintAdjustment>(), Context.Strings.Tint))
+                    @RenderSlider(Context.Strings.Hue, GetValue<BmageHueAdjustment>(a => a.Degrees), -180, 180, 1,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BmageHueAdjustment((float)v), Context.Strings.Hue, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BmageHueAdjustment>(), Context.Strings.Hue))
+                    @RenderSlider(Context.Strings.Sharpen, GetValue<BmageSharpenFilter>(a => a.Amount), 0, 2, 0.05,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BmageSharpenFilter((float)v), Context.Strings.Sharpen, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BmageSharpenFilter>(), Context.Strings.Sharpen))
+                    @RenderSlider(Context.Strings.Blur, GetValue<BmageBlurFilter>(a => a.Radius), 0, 20, 0.5,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BmageBlurFilter((float)v), Context.Strings.Blur, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BmageBlurFilter>(), Context.Strings.Blur))
+                    @RenderSlider(Context.Strings.Vignette, GetValue<BmageVignetteFilter>(a => a.Amount), 0, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BmageVignetteFilter((float)v), Context.Strings.Vignette, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BmageVignetteFilter>(), Context.Strings.Vignette))
                 </fieldset>
                 <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
                     <legend class="bmg-legend">@Context.Strings.ColorMixer</legend>
                     <label class="bmg-field">
                         <span class="bmg-field-label">@Context.Strings.Band</span>
                         <select class="bmg-select" @onchange="OnBandChanged">
-                            @foreach (var band in Enum.GetValues<HueBand>())
+                            @foreach (var band in Enum.GetValues<BmageHueBand>())
                             {
                                 <option value="@band" selected="@(_band == band)">@BandName(band)</option>
                             }
@@ -139,25 +136,25 @@
                 </div>
                 <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
                     <legend class="bmg-legend">@Context.Strings.MotionBlur</legend>
-                    @RenderSlider(Context.Strings.MotionBlur, GetValue<MotionBlurFilter>(a => a.Distance), 0, 120, 1,
-                        v => SetMotionBlur((float)v, GetValue<MotionBlurFilter>(a => a.Angle), true),
-                        () => SetMotionBlur(GetValue<MotionBlurFilter>(a => a.Distance), GetValue<MotionBlurFilter>(a => a.Angle), false))
-                    @RenderSlider(Context.Strings.Angle, GetValue<MotionBlurFilter>(a => a.Angle), -90, 90, 1,
-                        v => SetMotionBlur(GetValue<MotionBlurFilter>(a => a.Distance), (float)v, true),
-                        () => SetMotionBlur(GetValue<MotionBlurFilter>(a => a.Distance), GetValue<MotionBlurFilter>(a => a.Angle), false))
+                    @RenderSlider(Context.Strings.MotionBlur, GetValue<BmageMotionBlurFilter>(a => a.Distance), 0, 120, 1,
+                        v => SetMotionBlur((float)v, GetValue<BmageMotionBlurFilter>(a => a.Angle), true),
+                        () => SetMotionBlur(GetValue<BmageMotionBlurFilter>(a => a.Distance), GetValue<BmageMotionBlurFilter>(a => a.Angle), false))
+                    @RenderSlider(Context.Strings.Angle, GetValue<BmageMotionBlurFilter>(a => a.Angle), -90, 90, 1,
+                        v => SetMotionBlur(GetValue<BmageMotionBlurFilter>(a => a.Distance), (float)v, true),
+                        () => SetMotionBlur(GetValue<BmageMotionBlurFilter>(a => a.Distance), GetValue<BmageMotionBlurFilter>(a => a.Angle), false))
                 </fieldset>
                 <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
                     <legend class="bmg-legend">@Context.Strings.ZoomBlur</legend>
-                    @RenderSlider(Context.Strings.ZoomBlur, GetValue<RadialBlurFilter>(a => a.Amount) * 100, 0, 60, 1,
+                    @RenderSlider(Context.Strings.ZoomBlur, GetValue<BmageRadialBlurFilter>(a => a.Amount) * 100, 0, 60, 1,
                         v => SetZoomBlur((float)v / 100, true),
-                        () => SetZoomBlur(GetValue<RadialBlurFilter>(a => a.Amount), false))
+                        () => SetZoomBlur(GetValue<BmageRadialBlurFilter>(a => a.Amount), false))
                 </fieldset>
                 break;
 
             case PanelTab.Transform:
                 <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage || Context.IsBusy)">
                     <legend class="bmg-legend">@Context.Strings.Straighten</legend>
-                    @RenderSlider(Context.Strings.Straighten, GetStraighten(), -StraightenOperation.MaxDegrees, StraightenOperation.MaxDegrees, 0.1,
+                    @RenderSlider(Context.Strings.Straighten, GetStraighten(), -BmageStraightenOperation.MaxDegrees, BmageStraightenOperation.MaxDegrees, 0.1,
                         v => Context.SetStraightenAsync(v, true), () => Context.SetStraightenAsync(GetStraighten()))
                 </fieldset>
                 <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage || Context.IsBusy)">
@@ -196,7 +193,7 @@
                     <label class="bmg-field">
                         <span class="bmg-field-label">@Context.Strings.Anchor</span>
                         <select class="bmg-select" @onchange="OnAnchorChanged">
-                            @foreach (var anchor in Enum.GetValues<Anchor>())
+                            @foreach (var anchor in Enum.GetValues<BmageAnchor>())
                             {
                                 <option value="@anchor" selected="@(_canvasAnchor == anchor)">@Context.Strings.FormatAnchor(anchor)</option>
                             }
@@ -205,7 +202,7 @@
                     <label class="bmg-field">
                         <span class="bmg-field-label">@Context.Strings.Background</span>
                         <input type="color" class="bmg-color" value="@_canvasColor.ToHex(false)" disabled="@_canvasTransparent"
-                               @onchange="e => { if (e.Value is string hex && Rgba32.TryParseHex(hex, out var color)) _canvasColor = color; }" />
+                               @onchange="e => { if (e.Value is string hex && BmageRgba32.TryParseHex(hex, out var color)) _canvasColor = color; }" />
                     </label>
                     <label class="bmg-field bmg-field-inline">
                         <input type="checkbox" checked="@_canvasTransparent" @onchange="e => _canvasTransparent = (bool)(e.Value ?? false)" />
@@ -213,7 +210,7 @@
                     </label>
                     <div class="bmg-field-actions">
                         <button type="button" class="bmg-button"
-                                @onclick="() => Context.SetCanvasSizeAsync(_canvasWidth, _canvasHeight, _canvasAnchor, _canvasTransparent ? Rgba32.Transparent : _canvasColor)">
+                                @onclick="() => Context.SetCanvasSizeAsync(_canvasWidth, _canvasHeight, _canvasAnchor, _canvasTransparent ? BmageRgba32.Transparent : _canvasColor)">
                             @Context.Strings.Apply
                         </button>
                         <button type="button" class="bmg-button" @onclick="Context.TrimAsync">@Context.Strings.Trim</button>
@@ -227,7 +224,7 @@
                     @* The selected annotation's own properties: what the canvas shows selected, editable without the pointer. *@
                     <fieldset class="bmg-fieldset" disabled="@Context.IsBusy">
                         <legend class="bmg-legend">@Context.Strings.SelectedAnnotation: @KindOf(chosen)</legend>
-                        @if (chosen is TextAnnotation text)
+                        @if (chosen is BmageTextAnnotation text)
                         {
                             <label class="bmg-field">
                                 <span class="bmg-field-label">@Context.Strings.Text</span>
@@ -235,7 +232,7 @@
                                           @oninput="e => SetText(text, e, true)" @onchange="e => SetText(text, e, false)"></textarea>
                             </label>
                             @RenderSlider($"{KindOf(chosen)} {Context.Strings.FontSize}", text.Style.FontSize, 8, 400, 1,
-                                v => UpdateSelected(a => ((TextAnnotation)a) with { Style = ((TextAnnotation)a).Style with { FontSize = (float)v }, MeasuredSize = null }, true),
+                                v => UpdateSelected(a => ((BmageTextAnnotation)a) with { Style = ((BmageTextAnnotation)a).Style with { FontSize = (float)v }, MeasuredSize = null }, true),
                                 () => UpdateSelected(a => a, false))
                         }
                         @RenderSlider($"{KindOf(chosen)} {Context.Strings.Rotation}", chosen.Rotation, -180, 180, 1,
@@ -284,26 +281,26 @@
                     @RenderSlider(Context.Strings.FontSize, Context.Settings.FontSize, 8, 200, 1,
                         v => { Context.UpdateSettings(s => s with { FontSize = (float)v }); return Task.CompletedTask; }, null)
 
-                    @if (Context.Tool is EditorToolKind.Brush or EditorToolKind.Eraser)
+                    @if (Context.Tool is BmageEditorToolKind.Brush or BmageEditorToolKind.Eraser)
                     {
                         @RenderSlider(Context.Strings.BrushSize, Context.Settings.BrushSize, 1, 300, 1,
                             v => { Context.UpdateSettings(s => s with { BrushSize = (float)v }); return Task.CompletedTask; }, null)
                         @RenderSlider(Context.Strings.Hardness, Context.Settings.BrushHardness, 0, 1, 0.05,
                             v => { Context.UpdateSettings(s => s with { BrushHardness = (float)v }); return Task.CompletedTask; }, null)
                     }
-                    @if (Context.Tool is EditorToolKind.Fill or EditorToolKind.MagicEraser or EditorToolKind.MagicWand)
+                    @if (Context.Tool is BmageEditorToolKind.Fill or BmageEditorToolKind.MagicEraser or BmageEditorToolKind.MagicWand)
                     {
                         @RenderSlider(Context.Strings.Tolerance, Context.Settings.Tolerance, 0, 1, 0.01,
                             v => { Context.UpdateSettings(s => s with { Tolerance = (float)v }); return Task.CompletedTask; }, null)
                     }
-                    @if (Context.Tool == EditorToolKind.Redact)
+                    @if (Context.Tool == BmageEditorToolKind.Redact)
                     {
                         <label class="bmg-field">
                             <span class="bmg-field-label">@Context.Strings.RedactionStyle</span>
                             <select class="bmg-select" @onchange="OnRedactionModeChanged">
-                                <option value="@nameof(RedactionMode.Solid)" selected="@(Context.Settings.RedactionMode == RedactionMode.Solid)">@Context.Strings.Solid</option>
-                                <option value="@nameof(RedactionMode.Pixelate)" selected="@(Context.Settings.RedactionMode == RedactionMode.Pixelate)">@Context.Strings.Pixelate</option>
-                                <option value="@nameof(RedactionMode.Blur)" selected="@(Context.Settings.RedactionMode == RedactionMode.Blur)">@Context.Strings.Blur</option>
+                                <option value="@nameof(BmageRedactionMode.Solid)" selected="@(Context.Settings.RedactionMode == BmageRedactionMode.Solid)">@Context.Strings.Solid</option>
+                                <option value="@nameof(BmageRedactionMode.Pixelate)" selected="@(Context.Settings.RedactionMode == BmageRedactionMode.Pixelate)">@Context.Strings.Pixelate</option>
+                                <option value="@nameof(BmageRedactionMode.Blur)" selected="@(Context.Settings.RedactionMode == BmageRedactionMode.Blur)">@Context.Strings.Blur</option>
                             </select>
                         </label>
                     }
@@ -340,17 +337,17 @@
                             <label class="bmg-field">
                                 <span class="bmg-field-label">@Context.Strings.BlendMode</span>
                                 <select class="bmg-select" @onchange="OnBlendModeChanged">
-                                    @foreach (var mode in Enum.GetValues<BlendMode>())
+                                    @foreach (var mode in Enum.GetValues<BmageBlendMode>())
                                     {
                                         <option value="@mode" selected="@(selected.BlendMode == mode)">@Context.Strings.FormatBlendMode(mode)</option>
                                     }
                                 </select>
                             </label>
-                            @if (selected is GroupLayer group)
+                            @if (selected is BmageGroupLayer group)
                             {
                                 <label class="bmg-field bmg-field-inline">
                                     <input type="checkbox" checked="@group.Isolated"
-                                           @onchange="e => UpdateActiveLayer(l => l is GroupLayer g ? g with { Isolated = (bool)(e.Value ?? false) } : l, false)" />
+                                           @onchange="e => UpdateActiveLayer(l => l is BmageGroupLayer g ? g with { Isolated = (bool)(e.Value ?? false) } : l, false)" />
                                     <span class="bmg-field-label">@Context.Strings.BlendGroupAsOne</span>
                                 </label>
                             }
@@ -362,14 +359,14 @@
                                 @if (below is not null)
                                 {
                                     <button type="button" class="bmg-button" @onclick="() => Context.GroupWithLayerBelowAsync(selected.Id)">
-                                        @(below is GroupLayer ? Context.Strings.MoveIntoGroupBelow : Context.Strings.GroupWithLayerBelow)
+                                        @(below is BmageGroupLayer ? Context.Strings.MoveIntoGroupBelow : Context.Strings.GroupWithLayerBelow)
                                     </button>
                                 }
                                 @if (parent is not null)
                                 {
                                     <button type="button" class="bmg-button" @onclick="() => Context.MoveLayerOutOfGroupAsync(selected.Id)">@Context.Strings.MoveOutOfGroup</button>
                                 }
-                                @if (selected is GroupLayer)
+                                @if (selected is BmageGroupLayer)
                                 {
                                     <button type="button" class="bmg-button" @onclick="() => Context.UngroupAsync(selected.Id)">@Context.Strings.Ungroup</button>
                                 }
@@ -392,7 +389,7 @@
                                 </button>
                                 <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {KindOf(annotation)}")"
                                         @onclick="() => Context.DeleteAnnotationAsync(annotation.Id)">
-                                    @((MarkupString)Icons.Delete)
+                                    @((MarkupString)BmageIcons.Delete)
                                 </button>
                             </li>
                         }
@@ -442,9 +439,9 @@
                     <label class="bmg-field">
                         <span class="bmg-field-label">@Context.Strings.Metadata</span>
                         <select class="bmg-select" @onchange="OnMetadataChanged">
-                            <option value="@nameof(MetadataPolicy.Remove)" selected="@(_metadataPolicy == MetadataPolicy.Remove)">@Context.Strings.RemoveMetadata</option>
-                            <option value="@nameof(MetadataPolicy.StripSensitive)" selected="@(_metadataPolicy == MetadataPolicy.StripSensitive)">@Context.Strings.StripSensitiveMetadata</option>
-                            <option value="@nameof(MetadataPolicy.Preserve)" selected="@(_metadataPolicy == MetadataPolicy.Preserve)">@Context.Strings.KeepMetadata</option>
+                            <option value="@nameof(BmageMetadataPolicy.Remove)" selected="@(_metadataPolicy == BmageMetadataPolicy.Remove)">@Context.Strings.RemoveMetadata</option>
+                            <option value="@nameof(BmageMetadataPolicy.StripSensitive)" selected="@(_metadataPolicy == BmageMetadataPolicy.StripSensitive)">@Context.Strings.StripSensitiveMetadata</option>
+                            <option value="@nameof(BmageMetadataPolicy.Preserve)" selected="@(_metadataPolicy == BmageMetadataPolicy.Preserve)">@Context.Strings.KeepMetadata</option>
                         </select>
                     </label>
                     <div class="bmg-field-actions">
@@ -486,10 +483,10 @@
     private PanelTab? _focusTab;
     // The Export tab starts from the editor's ExportOptions, and the reader's choices there win until the host hands
     // in other options.
-    private ImageExportOptions? _exportDefaults;
-    private ImageFormat _exportFormat = ImageFormat.Png;
+    private BmageImageExportOptions? _exportDefaults;
+    private BmageImageFormat _exportFormat = BmageImageFormat.Png;
     private double _exportQuality = 0.85;
-    private MetadataPolicy _metadataPolicy = MetadataPolicy.Remove;
+    private BmageMetadataPolicy _metadataPolicy = BmageMetadataPolicy.Remove;
 
     /// <summary>The editor context supplying state and actions.</summary>
     [Parameter, EditorRequired] public BmageEditorContext Context { get; set; } = default!;
@@ -500,9 +497,9 @@
     private enum PanelTab { Adjust, Filters, Transform, Style, Layers, History, Export }
 
     // Kinds and the default layer names are English words from the model; the strings record names them for the UI.
-    private string KindOf(Annotation annotation) => Context.Strings.FormatKind(annotation.Kind);
+    private string KindOf(BmageAnnotation annotation) => Context.Strings.FormatKind(annotation.Kind);
 
-    private string NameOf(Layer layer) => layer.Name ?? Context.Strings.FormatKind(layer.Kind);
+    private string NameOf(BmageLayer layer) => layer.Name ?? Context.Strings.FormatKind(layer.Kind);
 
     private (PanelTab Key, string Label)[] Tabs =>
     [
@@ -521,13 +518,13 @@
     /// <summary>True when the editor's <see cref="BmageEditor.Panels"/> include the tab.</summary>
     private bool IsShown(PanelTab tab) => Context.Panels.HasFlag(tab switch
     {
-        PanelTab.Adjust => EditorPanels.Adjust,
-        PanelTab.Filters => EditorPanels.Filters,
-        PanelTab.Transform => EditorPanels.Transform,
-        PanelTab.Style => EditorPanels.Tools,
-        PanelTab.Layers => EditorPanels.Layers,
-        PanelTab.History => EditorPanels.History,
-        _ => EditorPanels.Export,
+        PanelTab.Adjust => BmageEditorPanels.Adjust,
+        PanelTab.Filters => BmageEditorPanels.Filters,
+        PanelTab.Transform => BmageEditorPanels.Transform,
+        PanelTab.Style => BmageEditorPanels.Tools,
+        PanelTab.Layers => BmageEditorPanels.Layers,
+        PanelTab.History => BmageEditorPanels.History,
+        _ => BmageEditorPanels.Export,
     });
 
     private (string Key, string Label)[] FilterPresets =>
@@ -544,24 +541,24 @@
     ];
 
     /// <summary>The look the duotone preset gives: navy shadows, warm gold highlights.</summary>
-    private static readonly (Rgba32 Shadows, Rgba32 Highlights) DuotoneColors = (new Rgba32(24, 32, 88), new Rgba32(250, 214, 140));
+    private static readonly (BmageRgba32 Shadows, BmageRgba32 Highlights) DuotoneColors = (new BmageRgba32(24, 32, 88), new BmageRgba32(250, 214, 140));
 
     /// <summary>Whether an operation is one of the mutually exclusive looks the filter grid offers.</summary>
-    private static bool IsPreset(IImageOperation operation)
-        => operation is GrayscaleFilter or SepiaFilter or InvertFilter or PosterizeFilter or ThresholdFilter or AdaptiveThresholdFilter or GradientMapOperation or ChannelMixerAdjustment { IsMonochrome: true };
+    private static bool IsPreset(IBmageImageOperation operation)
+        => operation is BmageGrayscaleFilter or BmageSepiaFilter or BmageInvertFilter or BmagePosterizeFilter or BmageThresholdFilter or BmageAdaptiveThresholdFilter or BmageGradientMapOperation or BmageChannelMixerAdjustment { IsMonochrome: true };
 
-    private IEnumerable<ImageFormat> AvailableFormats
+    private IEnumerable<BmageImageFormat> AvailableFormats
     {
         get
         {
             var capabilities = Context.Capabilities;
-            var candidates = new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif };
+            var candidates = new[] { BmageImageFormat.Png, BmageImageFormat.Jpeg, BmageImageFormat.WebP, BmageImageFormat.Avif };
             return capabilities is null ? candidates.Take(2) : candidates.Where(capabilities.CanEncode);
         }
     }
 
     /// <summary>The chosen format, or the first one offered when this browser cannot write it: what the list shows.</summary>
-    private ImageFormat ExportFormat => AvailableFormats.Contains(_exportFormat) ? _exportFormat : AvailableFormats.First();
+    private BmageImageFormat ExportFormat => AvailableFormats.Contains(_exportFormat) ? _exportFormat : AvailableFormats.First();
 
     private void OnTabKeyDown(KeyboardEventArgs e, PanelTab current)
     {
@@ -596,18 +593,18 @@
         }
     }
 
-    private float GetValue<TOperation>(Func<TOperation, float> read) where TOperation : class, IImageOperation
+    private float GetValue<TOperation>(Func<TOperation, float> read) where TOperation : class, IBmageImageOperation
         => Context.FindAdjustment<TOperation>() is { } op ? read(op) : 0f;
 
     private Task SetShadowsHighlights(float shadows, float highlights, bool transient)
     {
-        var operation = shadows == 0 && highlights == 0 ? null : new ShadowsHighlightsAdjustment(shadows, highlights);
+        var operation = shadows == 0 && highlights == 0 ? null : new BmageShadowsHighlightsAdjustment(shadows, highlights);
         return Context.SetAdjustmentAsync(operation, Context.Strings.Shadows, transient);
     }
 
     private void UpdateColor(ChangeEventArgs e, bool stroke)
     {
-        if (e.Value is not string hex || !Rgba32.TryParseHex(hex, out var color)) return;
+        if (e.Value is not string hex || !BmageRgba32.TryParseHex(hex, out var color)) return;
         Context.UpdateSettings(s => stroke
             ? s with { StrokeColor = color }
             : s with { FillColor = color.WithAlpha(s.FillColor.A) });
@@ -615,47 +612,47 @@
 
     private void OnRedactionModeChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<RedactionMode>(value, out var mode))
+        if (e.Value is string value && Enum.TryParse<BmageRedactionMode>(value, out var mode))
             Context.UpdateSettings(s => s with { RedactionMode = mode });
     }
 
     private void OnFormatChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format)) _exportFormat = format;
+        if (e.Value is string value && Enum.TryParse<BmageImageFormat>(value, out var format)) _exportFormat = format;
     }
 
     private void OnMetadataChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<MetadataPolicy>(value, out var policy)) _metadataPolicy = policy;
+        if (e.Value is string value && Enum.TryParse<BmageMetadataPolicy>(value, out var policy)) _metadataPolicy = policy;
     }
 
     private bool IsFilterActive(string key) => key switch
     {
-        "grayscale" => Context.FindAdjustment<GrayscaleFilter>() is not null,
-        "sepia" => Context.FindAdjustment<SepiaFilter>() is not null,
-        "invert" => Context.FindAdjustment<InvertFilter>() is not null,
-        "posterize" => Context.FindAdjustment<PosterizeFilter>() is not null,
-        "threshold" => Context.FindAdjustment<ThresholdFilter>() is not null,
-        "blackAndWhite" => Context.FindAdjustment<ChannelMixerAdjustment>() is { IsMonochrome: true },
-        "duotone" => Context.FindAdjustment<GradientMapOperation>() is not null,
-        "document" => Context.FindAdjustment<AdaptiveThresholdFilter>() is not null,
+        "grayscale" => Context.FindAdjustment<BmageGrayscaleFilter>() is not null,
+        "sepia" => Context.FindAdjustment<BmageSepiaFilter>() is not null,
+        "invert" => Context.FindAdjustment<BmageInvertFilter>() is not null,
+        "posterize" => Context.FindAdjustment<BmagePosterizeFilter>() is not null,
+        "threshold" => Context.FindAdjustment<BmageThresholdFilter>() is not null,
+        "blackAndWhite" => Context.FindAdjustment<BmageChannelMixerAdjustment>() is { IsMonochrome: true },
+        "duotone" => Context.FindAdjustment<BmageGradientMapOperation>() is not null,
+        "document" => Context.FindAdjustment<BmageAdaptiveThresholdFilter>() is not null,
         "none" => Context.Document?.Pipeline.Any(IsPreset) != true,
         _ => false,
     };
 
     private Task ApplyFilterAsync(string key)
     {
-        IImageOperation? filter = key switch
+        IBmageImageOperation? filter = key switch
         {
-            "grayscale" => new GrayscaleFilter(),
-            "sepia" => new SepiaFilter(),
-            "invert" => new InvertFilter(),
-            "posterize" => new PosterizeFilter(6),
-            "threshold" => new ThresholdFilter(),
-            "blackAndWhite" => ChannelMixerAdjustment.Monochrome(),
-            "duotone" => GradientMapOperation.Duotone(DuotoneColors.Shadows, DuotoneColors.Highlights),
+            "grayscale" => new BmageGrayscaleFilter(),
+            "sepia" => new BmageSepiaFilter(),
+            "invert" => new BmageInvertFilter(),
+            "posterize" => new BmagePosterizeFilter(6),
+            "threshold" => new BmageThresholdFilter(),
+            "blackAndWhite" => BmageChannelMixerAdjustment.Monochrome(),
+            "duotone" => BmageGradientMapOperation.Duotone(DuotoneColors.Shadows, DuotoneColors.Highlights),
             // A window about a line of text tall on a page photographed whole: a sixtieth of its longer side.
-            "document" => new AdaptiveThresholdFilter(Math.Clamp(Math.Max(Context.OutputSize.Width, Context.OutputSize.Height) / 60f, 8, AdaptiveThresholdFilter.MaxRadius)),
+            "document" => new BmageAdaptiveThresholdFilter(Math.Clamp(Math.Max(Context.OutputSize.Width, Context.OutputSize.Height) / 60f, 8, BmageAdaptiveThresholdFilter.MaxRadius)),
             _ => null,
         };
         var label = key switch
@@ -686,44 +683,44 @@
     // ---- Whites, blacks, the colour mixer and motion blur ----
 
     private Task SetWhitesBlacks(float whites, float blacks, bool transient)
-        => Context.SetAdjustmentAsync(whites == 0 && blacks == 0 ? null : new WhitesBlacksAdjustment(whites, blacks), Context.Strings.Whites, transient);
+        => Context.SetAdjustmentAsync(whites == 0 && blacks == 0 ? null : new BmageWhitesBlacksAdjustment(whites, blacks), Context.Strings.Whites, transient);
 
-    private HueBand _band = HueBand.Reds;
+    private BmageHueBand _band = BmageHueBand.Reds;
 
-    private HslShift Shift => Context.FindAdjustment<HslAdjustment>() is { } hsl ? hsl[_band] : default;
+    private BmageHslShift Shift => Context.FindAdjustment<BmageHslAdjustment>() is { } hsl ? hsl[_band] : default;
 
-    private Task SetShift(HslShift shift, bool transient)
+    private Task SetShift(BmageHslShift shift, bool transient)
     {
-        var hsl = (Context.FindAdjustment<HslAdjustment>() ?? new HslAdjustment()).With(_band, shift);
+        var hsl = (Context.FindAdjustment<BmageHslAdjustment>() ?? new BmageHslAdjustment()).With(_band, shift);
         return Context.SetAdjustmentAsync(hsl.IsIdentity ? null : hsl, Context.Strings.ColorMixer, transient);
     }
 
     private void OnBandChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<HueBand>(value, out var band)) _band = band;
+        if (e.Value is string value && Enum.TryParse<BmageHueBand>(value, out var band)) _band = band;
     }
 
-    private string BandName(HueBand band) => band switch
+    private string BandName(BmageHueBand band) => band switch
     {
-        HueBand.Reds => Context.Strings.Reds,
-        HueBand.Oranges => Context.Strings.Oranges,
-        HueBand.Yellows => Context.Strings.Yellows,
-        HueBand.Greens => Context.Strings.Greens,
-        HueBand.Aquas => Context.Strings.Aquas,
-        HueBand.Blues => Context.Strings.Blues,
-        HueBand.Purples => Context.Strings.Purples,
+        BmageHueBand.Reds => Context.Strings.Reds,
+        BmageHueBand.Oranges => Context.Strings.Oranges,
+        BmageHueBand.Yellows => Context.Strings.Yellows,
+        BmageHueBand.Greens => Context.Strings.Greens,
+        BmageHueBand.Aquas => Context.Strings.Aquas,
+        BmageHueBand.Blues => Context.Strings.Blues,
+        BmageHueBand.Purples => Context.Strings.Purples,
         _ => Context.Strings.Magentas,
     };
 
     private Task SetMotionBlur(float distance, float angle, bool transient)
-        => Context.SetAdjustmentAsync(distance < 1 ? null : new MotionBlurFilter(distance, angle), Context.Strings.MotionBlur, transient);
+        => Context.SetAdjustmentAsync(distance < 1 ? null : new BmageMotionBlurFilter(distance, angle), Context.Strings.MotionBlur, transient);
 
     private Task SetZoomBlur(float amount, bool transient)
-        => Context.SetAdjustmentAsync(amount <= 0 ? null : new RadialBlurFilter(amount), Context.Strings.ZoomBlur, transient);
+        => Context.SetAdjustmentAsync(amount <= 0 ? null : new BmageRadialBlurFilter(amount), Context.Strings.ZoomBlur, transient);
 
     // ---- Histogram ----
 
-    private ImageBuffer? _histogramSource;
+    private BmageImageBuffer? _histogramSource;
     private (string Path, double Black, double White)? _histogram;
 
     /// <summary>
@@ -745,7 +742,7 @@
             {
                 var p = row[x];
                 if (p.A == 0) continue;
-                bins[Masks.MaskBuffer.Luma(p)]++;
+                bins[BmageMaskBuffer.Luma(p)]++;
                 total++;
             }
         }
@@ -766,13 +763,13 @@
 
     // ---- Transform ----
 
-    private float GetStraighten() => Context.FindAdjustment<StraightenOperation>() is { } s ? (float)s.Degrees : 0f;
+    private float GetStraighten() => Context.FindAdjustment<BmageStraightenOperation>() is { } s ? (float)s.Degrees : 0f;
 
     private System.Drawing.Size _transformFieldsFor;
     private int _resizeWidth, _resizeHeight, _canvasWidth, _canvasHeight;
     private bool _keepProportions = true;
-    private Anchor _canvasAnchor = Anchor.Center;
-    private Rgba32 _canvasColor = Rgba32.White;
+    private BmageAnchor _canvasAnchor = BmageAnchor.Center;
+    private BmageRgba32 _canvasColor = BmageRgba32.White;
     private bool _canvasTransparent;
 
     /// <summary>Fills the size fields with the image's size whenever it changes, so they start from what is there.</summary>
@@ -805,7 +802,7 @@
 
     private void OnAnchorChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<Anchor>(value, out var anchor)) _canvasAnchor = anchor;
+        if (e.Value is string value && Enum.TryParse<BmageAnchor>(value, out var anchor)) _canvasAnchor = anchor;
     }
 
     // ---- The selected annotation ----
@@ -836,21 +833,21 @@
         _exportDefaults = options;
     }
 
-    private Task UpdateSelected(Func<Annotation, Annotation> change, bool transient)
+    private Task UpdateSelected(Func<BmageAnnotation, BmageAnnotation> change, bool transient)
         => Context.SelectedAnnotation is { IsLocked: false } annotation ? Context.UpdateAnnotationAsync(change(annotation), transient) : Task.CompletedTask;
 
-    private Task SetText(TextAnnotation text, ChangeEventArgs e, bool transient)
-        => e.Value is string value ? UpdateSelected(a => a is TextAnnotation t ? t with { Text = value, MeasuredSize = null } : a, transient) : Task.CompletedTask;
+    private Task SetText(BmageTextAnnotation text, ChangeEventArgs e, bool transient)
+        => e.Value is string value ? UpdateSelected(a => a is BmageTextAnnotation t ? t with { Text = value, MeasuredSize = null } : a, transient) : Task.CompletedTask;
 
     // ---- Layers ----
 
     private Task OnAddImageLayer(InputFileChangeEventArgs e)
-        => Context.AddImageLayerAsync(Input.ImageSource.FromBrowserFile(e.File));
+        => Context.AddImageLayerAsync(BmageImageSource.FromBrowserFile(e.File));
 
     private Task OnOpenProject(InputFileChangeEventArgs e) => Context.OpenProjectAsync(e.File);
 
     /// <summary>The rows of a list of layers, top first, each group's own layers in a list nested under its row.</summary>
-    private RenderFragment LayerRows(IReadOnlyList<Layer> list) => __builder =>
+    private RenderFragment LayerRows(IReadOnlyList<BmageLayer> list) => __builder =>
     {
         for (var i = list.Count - 1; i >= 0; i--)
         {
@@ -869,36 +866,36 @@
                             aria-pressed="@(layer.IsVisible ? "false" : "true")"
                             disabled="@layer.IsLocked"
                             @onclick="() => Context.UpdateLayerAsync(layer with { IsVisible = !layer.IsVisible })">
-                        @((MarkupString)(layer.IsVisible ? Icons.Visible : Icons.Hidden))
+                        @((MarkupString)(layer.IsVisible ? BmageIcons.Visible : BmageIcons.Hidden))
                     </button>
                     <button type="button" class="bmg-icon-button"
                             title="@(layer.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)"
                             aria-label="@($"{(layer.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)}: {NameOf(layer)}")"
                             aria-pressed="@(layer.IsLocked ? "true" : "false")"
                             @onclick="() => Context.UpdateLayerAsync(layer with { IsLocked = !layer.IsLocked })">
-                        @((MarkupString)(layer.IsLocked ? Icons.Locked : Icons.Unlocked))
+                        @((MarkupString)(layer.IsLocked ? BmageIcons.Locked : BmageIcons.Unlocked))
                     </button>
                     <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveUp" aria-label="@($"{Context.Strings.MoveUp}: {NameOf(layer)}")"
                             disabled="@(layer.IsLocked || index == list.Count - 1)"
                             @onclick="() => Context.MoveLayerAsync(layer.Id, index + 1)">
-                        @((MarkupString)Icons.MoveUp)
+                        @((MarkupString)BmageIcons.MoveUp)
                     </button>
                     <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveDown" aria-label="@($"{Context.Strings.MoveDown}: {NameOf(layer)}")"
                             disabled="@(layer.IsLocked || index == 0)"
                             @onclick="() => Context.MoveLayerAsync(layer.Id, index - 1)">
-                        @((MarkupString)Icons.MoveDown)
+                        @((MarkupString)BmageIcons.MoveDown)
                     </button>
                     <button type="button" class="bmg-icon-button" title="@Context.Strings.Duplicate" aria-label="@($"{Context.Strings.Duplicate}: {NameOf(layer)}")"
                             @onclick="() => Context.DuplicateLayerAsync(layer.Id)">
-                        @((MarkupString)Icons.Duplicate)
+                        @((MarkupString)BmageIcons.Duplicate)
                     </button>
                     <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {NameOf(layer)}")"
                             disabled="@layer.IsLocked"
                             @onclick="() => Context.RemoveLayerAsync(layer.Id)">
-                        @((MarkupString)Icons.Delete)
+                        @((MarkupString)BmageIcons.Delete)
                     </button>
                 </div>
-                @if (layer is GroupLayer { Layers.Count: > 0 } group)
+                @if (layer is BmageGroupLayer { Layers.Count: > 0 } group)
                 {
                     <ul class="bmg-layer-children" aria-label="@NameOf(group)">
                         @LayerRows(group.Layers)
@@ -908,11 +905,11 @@
         }
     };
 
-    private Task UpdateActiveLayer(Func<Layer, Layer> change, bool transient)
+    private Task UpdateActiveLayer(Func<BmageLayer, BmageLayer> change, bool transient)
         => Context.ActiveLayer is { IsLocked: false } layer ? Context.UpdateLayerAsync(change(layer), transient) : Task.CompletedTask;
 
     private Task OnBlendModeChanged(ChangeEventArgs e)
-        => e.Value is string value && Enum.TryParse<BlendMode>(value, out var mode) ? UpdateActiveLayer(l => l with { BlendMode = mode }, false) : Task.CompletedTask;
+        => e.Value is string value && Enum.TryParse<BmageBlendMode>(value, out var mode) ? UpdateActiveLayer(l => l with { BlendMode = mode }, false) : Task.CompletedTask;
 
     // The rest of the host's options - the background, a size budget - still apply.
     private Task DownloadAsync() => Context.DownloadAsync(DownloadFileName, (_exportDefaults ?? Context.ExportOptions) with

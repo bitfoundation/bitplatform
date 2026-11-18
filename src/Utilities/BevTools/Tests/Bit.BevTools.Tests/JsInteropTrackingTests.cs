@@ -14,14 +14,14 @@ public class JsInteropTrackingTests
         {
             var fake = new FakeJSRuntime { Handler = (id, _) => id == "add" ? 3 : null };
             var tracked = fake.WithBevToolsTracking(session);
-            Assert.IsExactInstanceOfType<BevTrackingJSRuntime>(tracked);
+            Assert.IsExactInstanceOfType<BevToolsTrackingJSRuntime>(tracked);
 
             var result = await tracked.InvokeAsync<int>("add", 1, 2);
             Assert.AreEqual(3, result);
 
             var record = Assert.ContainsSingle(session.Interop.Snapshot());
             Assert.AreEqual("add", record.Identifier);
-            Assert.AreEqual(BevJsInteropDirection.DotNetToJs, record.Direction);
+            Assert.AreEqual(BevToolsJsInteropDirection.DotNetToJs, record.Direction);
             Assert.AreEqual(2, record.ArgumentCount);
             Assert.AreEqual("Int32, Int32", record.ArgumentTypes);
             Assert.AreEqual("Int32", record.ResultType);
@@ -62,7 +62,7 @@ public class JsInteropTrackingTests
             var tracked = fake.WithBevToolsTracking(session);
 
             var imported = await tracked.InvokeAsync<IJSObjectReference>("import", "./x.js");
-            Assert.IsExactInstanceOfType<BevTrackingJSObjectReference>(imported);
+            Assert.IsExactInstanceOfType<BevToolsTrackingJSObjectReference>(imported);
             await imported.InvokeVoidAsync("doWork", 1);
 
             var calls = session.Interop.Snapshot();
@@ -82,16 +82,16 @@ public class JsInteropTrackingTests
         using (scope)
         {
             var fake = new Net10JSRuntime();
-            var tracked = (BevTrackingInProcessJSRuntime)fake.WithBevToolsTracking(session);
+            var tracked = (BevToolsTrackingInProcessJSRuntime)fake.WithBevToolsTracking(session);
 
             Assert.AreEqual("Home", await tracked.GetValueAsync<string>("document.title"));
             await tracked.SetValueAsync("document.title", "Orders");
             var map = await tracked.InvokeConstructorAsync("Map");
             Assert.AreEqual("Orders", tracked.GetValue<string>("document.title"));
             tracked.SetValue("app.ready", true);
-            Assert.IsExactInstanceOfType<BevTrackingInProcessJSObjectReference>(tracked.InvokeConstructor("Set"));
+            Assert.IsExactInstanceOfType<BevToolsTrackingInProcessJSObjectReference>(tracked.InvokeConstructor("Set"));
 
-            Assert.IsExactInstanceOfType<BevTrackingInProcessJSObjectReference>(map);
+            Assert.IsExactInstanceOfType<BevToolsTrackingInProcessJSObjectReference>(map);
             Assert.AreEqual(1, await map.GetValueAsync<int>("size"));
             await map.SetValueAsync("label", "m");
 
@@ -152,7 +152,7 @@ public class JsInteropTrackingTests
             var fake = new FakeJSRuntime();
             var once = fake.WithBevToolsTracking(session);
             var twice = once.WithBevToolsTracking(session);
-            Assert.AreSame(fake, ((BevTrackingJSRuntime)twice).Inner);
+            Assert.AreSame(fake, ((BevToolsTrackingJSRuntime)twice).Inner);
         }
 
         var collection = new Microsoft.Extensions.DependencyInjection.ServiceCollection();

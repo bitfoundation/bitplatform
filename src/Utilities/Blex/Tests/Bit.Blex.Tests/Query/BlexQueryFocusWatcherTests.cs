@@ -1,5 +1,3 @@
-using Bit.Blex.Blazor;
-using Bit.Blex.Query;
 using Microsoft.JSInterop;
 using static Bit.Blex.Tests.Query.QueryTest;
 

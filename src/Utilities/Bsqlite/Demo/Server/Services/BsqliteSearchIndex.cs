@@ -488,7 +488,7 @@ public static class BsqliteSearchIndex
             // so they match half the words of any question about storage while answering none of it. The kit is
             // found by its type, whose reference lists every rule; of its members only the ones a test class
             // overrides are indexed, since those are what a backend author has to write.
-            var kit = type.Namespace.EndsWith(".ConformanceTests", StringComparison.Ordinal);
+            var kit = type.Name.EndsWith("ConformanceTests", StringComparison.Ordinal);
 
             // One entry per member NAME, not per member: two overloads of UseBitBsqlite are two members and
             // one thing to know about, and both are read by the same call anyway. Their documentation is

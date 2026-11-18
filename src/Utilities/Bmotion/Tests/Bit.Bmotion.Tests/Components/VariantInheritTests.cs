@@ -12,7 +12,7 @@ namespace Bit.Bmotion.Tests.Components;
 [TestClass]
 public class VariantInheritTests
 {
-    private static readonly BmVariants _states = new()
+    private static readonly BmotionVariants _states = new()
     {
         ["hidden"] = Bm.To(opacity: 0),
         ["visible"] = Bm.To(opacity: 1),
@@ -96,7 +96,7 @@ public class VariantInheritTests
                 inner.OpenComponent<Bmotion>(1);
                 inner.AddComponentParameter(2, nameof(Bmotion.Id), "solo");
                 inner.AddComponentParameter(3, nameof(Bmotion.Inherit), false);
-                inner.AddComponentParameter(4, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 0.5));
+                inner.AddComponentParameter(4, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(opacity: 0.5));
                 inner.AddComponentParameter(5, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
                 {
                     leaf.OpenElement(0, "div");

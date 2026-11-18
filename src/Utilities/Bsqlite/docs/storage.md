@@ -4,15 +4,15 @@ A storage backend is a `IBsqliteStorageProvider`: a .NET half that declares capa
 
 ## First-party backends
 
-All five ship in the `Bit.Bsqlite` package, each in a namespace of its own. Four serve the browser; the fifth serves Blazor Hybrid apps, where .NET runs natively.
+All five ship in the `Bit.Bsqlite` package and the `Bit.Bsqlite` namespace. Four serve the browser; the fifth serves Blazor Hybrid apps, where .NET runs natively.
 
-| Name | Provider (namespace) | Engine build | Persistent | Notes |
+| Name | Provider | Engine build | Persistent | Notes |
 |---|---|---|---|---|
-| `opfs` | `BsqliteOpfsStorageProvider` (`Bit.Bsqlite.Storage.Opfs`) | Synchronous | Yes | `OPFSCoopSyncVFS`. Fastest. Several connections and tabs, coordinated through Web Locks. No `ATTACH`. Worker-only, no COOP/COEP needed. |
-| `indexeddb` | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite.Storage.IndexedDb`) | Async-capable | Yes | `IDBBatchAtomicVFS`. Works where OPFS does not (older Safari, some embedded views). Page size fixed at 4096. `cache_size` raised to 8 MiB so batch-atomic commits skip the journal. |
-| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Async-capable | Yes | 4096-byte pages in the Cache API, committed through a journal. |
-| `in-memory` | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite.Storage.InMemory`) | Synchronous | No | The engine's own memory VFS. Tests, demos, and a declared last resort. |
-| `file-system` | `BsqliteFileSystemStorageProvider` (`Bit.Bsqlite.Storage.FileSystem`) | None - the native SQLite the app brings | Yes | Blazor Hybrid only, registered and selected for it automatically. Plain SQLite files in the app's own folder. |
+| `opfs` | `BsqliteOpfsStorageProvider` | Synchronous | Yes | `OPFSCoopSyncVFS`. Fastest. Several connections and tabs, coordinated through Web Locks. No `ATTACH`. Worker-only, no COOP/COEP needed. |
+| `indexeddb` | `BsqliteIndexedDbStorageProvider` | Async-capable | Yes | `IDBBatchAtomicVFS`. Works where OPFS does not (older Safari, some embedded views). Page size fixed at 4096. `cache_size` raised to 8 MiB so batch-atomic commits skip the journal. |
+| `cache-storage` | `BsqliteCacheStorageProvider` | Async-capable | Yes | 4096-byte pages in the Cache API, committed through a journal. |
+| `in-memory` | `BsqliteInMemoryStorageProvider` | Synchronous | No | The engine's own memory VFS. Tests, demos, and a declared last resort. |
+| `file-system` | `BsqliteFileSystemStorageProvider` | None - the native SQLite the app brings | Yes | Blazor Hybrid only, registered and selected for it automatically. Plain SQLite files in the app's own folder. |
 
 The engine build matters: a VFS that suspends to read storage (IndexedDB, Cache Storage) needs the JSPI build where the browser has it (Chrome 137+) and the Asyncify build otherwise. The synchronous build is the smallest and serves OPFS and in-memory. Exactly one is downloaded per session.
 
@@ -120,7 +120,7 @@ A backend for the browser:
 
 1. Implement `IBsqliteStorageProvider`: a stable `Name`, `Capabilities` (which engine build the VFS needs, whether data persists, and the rest), `VfsModule` pointing at an ES module, `Admin`, and `ProbeAsync` that reports unavailability rather than throwing.
 2. Write the VFS against the base classes served from `_content/Bit.Bsqlite/engine/` (`VFS.js`, `FacadeVFS.js`, `WebLocksMixin.js`), imported relatively - `../Bit.Bsqlite/engine/VFS.js` from your package's own `_content` folder - so the application can be served under a sub-path. Export `register({ module, sqlite3, databaseName })` returning `{ vfsName, onOpenSql? }`. Ship it as a static web asset of your package: like the first-party VFSes, it is imported only once your backend is selected.
-3. Inherit `BsqliteStorageProviderConformanceTests` and `BsqliteStorageEngineConformanceTests` (namespace `Bit.Bsqlite.Storage.ConformanceTests`, package `Bit.Bsqlite.Testing`) in your MSTest project, with `[TestClass]` on each derived class. They check that the declared capabilities are coherent and that the admin surface behaves the way migration assumes.
+3. Inherit `BsqliteStorageProviderConformanceTests` and `BsqliteStorageEngineConformanceTests` (namespace `Bit.Bsqlite`, package `Bit.Bsqlite.Testing`) in your MSTest project, with `[TestClass]` on each derived class. They check that the declared capabilities are coherent and that the admin surface behaves the way migration assumes.
 
 A backend for Blazor Hybrid declares `SupportedContexts = BsqliteExecutionContexts.NativeProcess` and implements `IBsqliteFileStorageProvider.GetDatabasePath`; it needs no VFS module, and the session factory opens its databases with `BsqliteNativeTransport`. Register it with `AddStorageProvider<T>()` and selection ranks it as it does the first-party one. The engine kit runs against it on desktop .NET with a `BsqliteNativeTransport` opened on the provider.
 

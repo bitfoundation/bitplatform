@@ -32,7 +32,7 @@
     </div>
     <div class="demo-label progress-caption">The "whileInView" strip's journey &middot; ViewOf(".inview-strip")</div>
     <div class="scroll-track">
-        <Bmotion Timeline='BmScrollTimeline.ViewOf(".inview-strip")' Animate="Bm.To(scaleX: [0, 1])">
+        <Bmotion Timeline='BmotionScrollTimeline.ViewOf(".inview-strip")' Animate="Bm.To(scaleX: [0, 1])">
             <div class="scroll-fill full-width" />
         </Bmotion>
     </div>
@@ -52,7 +52,7 @@
         through .NET.
     </p>
     <p>
-        <code>BmScrollTimeline.Page()</code> is the whole document's progress;
+        <code>BmotionScrollTimeline.Page()</code> is the whole document's progress;
         <code>Container(selector)</code> is one scroller's; <code>View()</code> is the animated
         element's own journey through the viewport, and <code>ViewOf(selector)</code> is some other
         element's. Only transforms and <code>opacity</code> can be handed over this way - they are
@@ -62,15 +62,15 @@
     </p>
 
     <div class="timeline-bar-wrap">
-        <span class="demo-label">BmScrollTimeline.Page() &middot; scroll the page</span>
+        <span class="demo-label">BmotionScrollTimeline.Page() &middot; scroll the page</span>
         <div class="scroll-track">
-            <Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
+            <Bmotion Timeline="BmotionScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
                 <div class="scroll-fill full-width" />
             </Bmotion>
         </div>
-        <span class="demo-label">BmScrollTimeline.Page().Smoothed() &middot; the same, through a spring</span>
+        <span class="demo-label">BmotionScrollTimeline.Page().Smoothed() &middot; the same, through a spring</span>
         <div class="scroll-track">
-            <Bmotion Timeline="BmScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])">
+            <Bmotion Timeline="BmotionScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])">
                 <div class="scroll-fill full-width" />
             </Bmotion>
         </div>
@@ -95,14 +95,14 @@
     <div class="demo-row">
         <div class="demo-card stack">
             <span class="demo-label">View() &middot; the whole journey</span>
-            <Bmotion Timeline="BmScrollTimeline.View()"
+            <Bmotion Timeline="BmotionScrollTimeline.View()"
                      Animate="Bm.To(opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.6], rotate: [-12, 0, 0, 12])">
                 <div class="box" />
             </Bmotion>
         </div>
         <div class="demo-card stack">
             <span class="demo-label">View(range: "entry 0% cover 50%") &middot; arrives by mid-screen</span>
-            <Bmotion Timeline='BmScrollTimeline.View(range: "entry 0% cover 50%")'
+            <Bmotion Timeline='BmotionScrollTimeline.View(range: "entry 0% cover 50%")'
                      Animate="Bm.To(opacity: [0, 1], scale: [0.6, 1], rotate: [-12, 0])">
                 <div class="box" />
             </Bmotion>
@@ -111,16 +111,16 @@
 
     <p>
         <code>Container(selector)</code> reads one scroll container instead of the page, on either axis -
-        <code>BmScrollAxis.X</code> for a rail that scrolls sideways. And <code>ViewOf(selector)</code> lets some
+        <code>BmotionScrollAxis.X</code> for a rail that scrolls sideways. And <code>ViewOf(selector)</code> lets some
         <em>other</em> element's journey drive this one: the second bar in the readout pinned at the top of the
         page follows the "whileInView" strip at the bottom of it, filling as that strip crosses the screen.
     </p>
 
     <div class="demo-row">
         <div class="demo-card stack">
-            <span class="demo-label">Container(".h-rail", BmScrollAxis.X) &middot; scroll the rail sideways</span>
+            <span class="demo-label">Container(".h-rail", BmotionScrollAxis.X) &middot; scroll the rail sideways</span>
             <div class="scroll-track">
-                <Bmotion Timeline='BmScrollTimeline.Container(".h-rail", BmScrollAxis.X)' Animate="Bm.To(scaleX: [0, 1])">
+                <Bmotion Timeline='BmotionScrollTimeline.Container(".h-rail", BmotionScrollAxis.X)' Animate="Bm.To(scaleX: [0, 1])">
                     <div class="scroll-fill full-width" />
                 </Bmotion>
             </div>
@@ -141,7 +141,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Tracking the scroll position</h3>
     <p>
         Inject <strong>BmotionScrollTracker</strong> and call <code>ObserveAsync</code> to receive a
-        <code>BmScrollInfo</code> on every scroll: absolute offsets and normalised
+        <code>BmotionScrollInfo</code> on every scroll: absolute offsets and normalised
         <code>0..1</code> progress on both axes. The tracker is <em>transient</em> and owned by the
         component that injected it, which is why the page below implements
         <code>IAsyncDisposable</code> - the browser-side listener goes away with the component
@@ -233,7 +233,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> An element's own progress</h3>
     <p>
         Window progress is the wrong measure for anything that is not the whole page. Pass
-        <strong>BmScrollOptions</strong> a <code>TargetId</code> and a pair of
+        <strong>BmotionScrollOptions</strong> a <code>TargetId</code> and a pair of
         <code>Offset</code> alignments instead, and progress is measured over <em>that element's</em>
         journey through the viewport. Each offset reads
         <code>"&lt;target edge&gt; &lt;container edge&gt;"</code>, so the default
@@ -281,7 +281,7 @@
             var idx = i;
             <Bmotion Initial="@(Bm.To(opacity: 0, x: idx % 2 == 0 ? -60 : 60))"
                     WhileInView="Bm.To(opacity: 1, x: 0)"
-                    Transition="Bm.Tween(0.5, BmEase.BackOut)"
+                    Transition="Bm.Tween(0.5, BmotionEase.BackOut)"
                     Once="true">
                 <div class="inview-band @(idx % 2 == 0 ? "from-left" : "from-right")">
                     Section @(idx + 1)
@@ -301,13 +301,13 @@
     private double _railProgress;
 
     // Created once (not inline in the markup) so re-renders don't re-subscribe the bindings.
-    private Dictionary<string, BmValue<double>> _barValues = default!;
-    private Dictionary<string, BmValue<double>> _boxValues = default!;
-    private Dictionary<string, BmValue<double>> _skewValues = default!;
-    private BmValue<double>? _scrollSpeed;
-    private BmValue<double>? _leanSpring;
-    private Dictionary<string, BmValue<double>> _targetValues = default!;
-    private Dictionary<string, BmValue<string>> _filterValue = default!;
+    private Dictionary<string, BmotionValue<double>> _barValues = default!;
+    private Dictionary<string, BmotionValue<double>> _boxValues = default!;
+    private Dictionary<string, BmotionValue<double>> _skewValues = default!;
+    private BmotionValue<double>? _scrollSpeed;
+    private BmotionValue<double>? _leanSpring;
+    private Dictionary<string, BmotionValue<double>> _targetValues = default!;
+    private Dictionary<string, BmotionValue<string>> _filterValue = default!;
 
     private static string Percent(double progress)
         => (progress * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
@@ -352,7 +352,7 @@
         });
 
         await TargetScroll.ObserveAsync(
-            new BmScrollOptions
+            new BmotionScrollOptions
             {
                 TargetId = "scroll-target",
                 Offset = ["start end", "end start"],
@@ -399,8 +399,8 @@
         </Bmotion>
 
         @code {
-            private Dictionary<string, BmValue<double>> _barValues = default!;
-            private Dictionary<string, BmValue<double>> _boxValues = default!;
+            private Dictionary<string, BmotionValue<double>> _barValues = default!;
+            private Dictionary<string, BmotionValue<double>> _boxValues = default!;
 
             // Built once, not inline in the markup: a fresh dictionary each render would
             // re-subscribe the bindings every time.
@@ -431,9 +431,9 @@
         </Bmotion>
 
         @code {
-            private Dictionary<string, BmValue<double>> _skewValues = default!;
-            private BmValue<double>? _speed;
-            private BmValue<double>? _lean;
+            private Dictionary<string, BmotionValue<double>> _skewValues = default!;
+            private BmotionValue<double>? _speed;
+            private BmotionValue<double>? _lean;
 
             protected override void OnInitialized()
             {
@@ -472,7 +472,7 @@
         </Bmotion>
 
         @code {
-            private Dictionary<string, BmValue<string>> _filterValue = default!;
+            private Dictionary<string, BmotionValue<string>> _filterValue = default!;
 
             protected override void OnInitialized()
             {
@@ -509,7 +509,7 @@
         <span>Target progress: @((_progress * 100).ToString("F1"))%</span>
 
         @code {
-            private Dictionary<string, BmValue<double>> _targetValues = default!;
+            private Dictionary<string, BmotionValue<double>> _targetValues = default!;
             private double _progress;
 
             protected override void OnInitialized()
@@ -519,7 +519,7 @@
             {
                 if (firstRender is false) return;
 
-                await TargetScroll.ObserveAsync(new BmScrollOptions
+                await TargetScroll.ObserveAsync(new BmotionScrollOptions
                 {
                     TargetId = "scroll-target",
                     // "<target edge> <container edge>": 0 when the target's top reaches the
@@ -550,41 +550,41 @@
         @* A reading-progress bar. No scroll handler, no OnInitialized, no IAsyncDisposable:
            the browser's own ScrollTimeline drives it on the compositor. *@
         <div class="scroll-track">
-            <Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
+            <Bmotion Timeline="BmotionScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
                 <div class="scroll-fill" />
             </Bmotion>
         </div>
 
         @* The same bar following the scroll through a spring: a flick glides instead of jumping. *@
         <div class="scroll-track">
-            <Bmotion Timeline="BmScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])">
+            <Bmotion Timeline="BmotionScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])">
                 <div class="scroll-fill" />
             </Bmotion>
         </div>
 
         @* View(): the element's own journey through the viewport, 0 as it enters and 1 as it
            leaves. Four keyframes, so it fades in, holds, then fades out again. *@
-        <Bmotion Timeline="BmScrollTimeline.View()"
+        <Bmotion Timeline="BmotionScrollTimeline.View()"
                  Animate="Bm.To(opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.6], rotate: [-12, 0, 0, 12])">
             <div class="box" />
         </Bmotion>
 
         @* A native range (CSS animation-range) narrows the journey: arrived by mid-screen. *@
-        <Bmotion Timeline='BmScrollTimeline.View(range: "entry 0% cover 50%")'
+        <Bmotion Timeline='BmotionScrollTimeline.View(range: "entry 0% cover 50%")'
                  Animate="Bm.To(opacity: [0, 1], scale: [0.6, 1], rotate: [-12, 0])">
             <div class="box" />
         </Bmotion>
 
         @* One scroll container instead of the page, read along the inline (horizontal) axis. *@
         <div class="scroll-track">
-            <Bmotion Timeline='BmScrollTimeline.Container(".h-rail", BmScrollAxis.X)' Animate="Bm.To(scaleX: [0, 1])">
+            <Bmotion Timeline='BmotionScrollTimeline.Container(".h-rail", BmotionScrollAxis.X)' Animate="Bm.To(scaleX: [0, 1])">
                 <div class="scroll-fill" />
             </Bmotion>
         </div>
         <div class="h-rail" style="display:flex;gap:.75rem;overflow-x:auto">…</div>
 
         @* Another element's journey driving this one - a pinned bar following a strip further down. *@
-        <Bmotion Timeline='BmScrollTimeline.ViewOf(".inview-strip")' Animate="Bm.To(scaleX: [0, 1])">
+        <Bmotion Timeline='BmotionScrollTimeline.ViewOf(".inview-strip")' Animate="Bm.To(scaleX: [0, 1])">
             <div class="scroll-fill" />
         </Bmotion>
 
@@ -652,7 +652,7 @@
             var idx = i;
             <Bmotion Initial="@(Bm.To(opacity: 0, x: idx % 2 == 0 ? -60 : 60))"
                      WhileInView="Bm.To(opacity: 1, x: 0)"
-                     Transition="Bm.Tween(0.5, BmEase.BackOut)"
+                     Transition="Bm.Tween(0.5, BmotionEase.BackOut)"
                      Once="true">
                 <div class="band">Section @(idx + 1)</div>
             </Bmotion>
@@ -660,7 +660,7 @@
 
         @* For finer control, swap Once for the full viewport options: *@
         <Bmotion WhileInView="Bm.To(opacity: 1)"
-                 Viewport='new BmViewport { Once = true, Amount = "all", Margin = "0px 0px -80px 0px" }'>
+                 Viewport='new BmotionViewport { Once = true, Amount = "all", Margin = "0px 0px -80px 0px" }'>
             <div class="band" />
         </Bmotion>
         """;

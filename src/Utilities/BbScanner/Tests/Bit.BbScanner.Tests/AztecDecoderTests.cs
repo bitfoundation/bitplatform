@@ -8,12 +8,12 @@
 [TestClass]
 public class AztecDecoderTests
 {
-    private static BbBarcodeResult? Decode(BbLuminanceBuffer image, BbScannerOptions? options = null, BbBarcodeFormat formats = BbBarcodeFormat.Aztec)
+    private static BbScannerBarcodeResult? Decode(BbScannerLuminanceBuffer image, BbScannerOptions? options = null, BbScannerBarcodeFormat formats = BbScannerBarcodeFormat.Aztec)
     {
         options ??= new BbScannerOptions();
         options.Formats = formats;
         options.DuplicateSuppressionWindow = TimeSpan.Zero;
-        using var decoder = new BbBarcodeDecoder(options);
+        using var decoder = new BbScannerBarcodeDecoder(options);
         return decoder.Decode(image.View, suppressDuplicates: false);
     }
 
@@ -40,7 +40,7 @@ public class AztecDecoderTests
         var result = Decode(image);
 
         Assert.IsNotNull(result, $"{(compact ? "compact" : "full range")} {layers}");
-        Assert.AreEqual(BbBarcodeFormat.Aztec, result.Format);
+        Assert.AreEqual(BbScannerBarcodeFormat.Aztec, result.Format);
         Assert.AreEqual(content, result.Text);
         StringAssert.StartsWith(result.Metadata?.SymbolVersion, compact ? "Compact" : "Full range");
     }
@@ -157,7 +157,7 @@ public class AztecDecoderTests
 
         for (var seed = 0; seed < 20; seed++)
         {
-            using var noise = BbLuminanceBuffer.Rent(320, 240);
+            using var noise = BbScannerLuminanceBuffer.Rent(320, 240);
             noise.Pixels.Fill(128);
             SyntheticImage.AddNoise(noise, 127, seed);
             Assert.IsNull(Decode(noise, BbScannerOptions.ForStillImages()), $"Noise {seed} read as Aztec.");
@@ -170,9 +170,9 @@ public class AztecDecoderTests
         using var matrix = AztecEncoder.Encode("FORMATS");
         using var image = SyntheticImage.FromMatrix(matrix, scale: 4);
 
-        Assert.IsNull(Decode(image, formats: BbBarcodeFormat.All & ~BbBarcodeFormat.Aztec));
-        Assert.AreEqual("FORMATS", Decode(image, formats: BbBarcodeFormat.All)?.Text);
-        Assert.IsTrue(BbBarcodeFormat.AllMatrix.HasFlag(BbBarcodeFormat.Aztec));
+        Assert.IsNull(Decode(image, formats: BbScannerBarcodeFormat.All & ~BbScannerBarcodeFormat.Aztec));
+        Assert.AreEqual("FORMATS", Decode(image, formats: BbScannerBarcodeFormat.All)?.Text);
+        Assert.IsTrue(BbScannerBarcodeFormat.AllMatrix.HasFlag(BbScannerBarcodeFormat.Aztec));
     }
 
     [TestMethod]
@@ -203,7 +203,7 @@ public class AztecDecoderTests
         using var right = AztecEncoder.Encode("RIGHT TICKET");
         using var leftImage = SyntheticImage.FromMatrix(left, scale: 4);
         using var rightImage = SyntheticImage.FromMatrix(right, scale: 4);
-        using var sheet = BbLuminanceBuffer.Rent(leftImage.Width + rightImage.Width, Math.Max(leftImage.Height, rightImage.Height));
+        using var sheet = BbScannerLuminanceBuffer.Rent(leftImage.Width + rightImage.Width, Math.Max(leftImage.Height, rightImage.Height));
         sheet.Pixels.Fill(255);
         for (var y = 0; y < leftImage.Height; y++)
         {
@@ -211,7 +211,7 @@ public class AztecDecoderTests
             rightImage.Pixels.Slice(y * rightImage.Width, rightImage.Width).CopyTo(sheet.Pixels.Slice((y * sheet.Width) + leftImage.Width, rightImage.Width));
         }
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Aztec, DuplicateSuppressionWindow = TimeSpan.Zero });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = BbScannerBarcodeFormat.Aztec, DuplicateSuppressionWindow = TimeSpan.Zero });
         var values = decoder.DecodeAll(sheet.View, maxSymbols: 4).Select(r => r.Text).Order().ToList();
 
         CollectionAssert.AreEqual(new[] { "LEFT TICKET", "RIGHT TICKET" }, values);
@@ -221,9 +221,9 @@ public class AztecDecoderTests
     {
         // Three check codewords locate one error. With an odd count the locator could come out a degree too high,
         // and two errors came back "corrected" as two - into a valid codeword that was never written.
-        var field = new BbGenericGF(0x43, 64, 1);
+        var field = new BbScannerGenericGF(0x43, 64, 1);
         var encoder = new ReedSolomonEncoder(field);
-        var decoder = new BbReedSolomonDecoder(field);
+        var decoder = new BbScannerReedSolomonDecoder(field);
         var random = new Random(5);
         var overclaimed = 0;
         for (var trial = 0; trial < 5000; trial++)
@@ -256,11 +256,11 @@ public class AztecDecoderTests
         // The test kit gives a symbol's spare codewords to error correction, so the content is lengthened until only the
         // three check codewords of the lowest level are left: three of forty is 7%.
         string? content = null;
-        BbBitMatrix? found = null;
+        BbScannerBitMatrix? found = null;
         for (var length = 36; length <= 48 && content is null; length++)
         {
             var candidate = new string('M', length);
-            BbBitMatrix encoded;
+            BbScannerBitMatrix encoded;
             try
             {
                 encoded = AztecEncoder.Encode(candidate, errorCorrectionPercent: 0, compact: true, layers: 2);
@@ -291,7 +291,7 @@ public class AztecDecoderTests
         for (var trial = 0; trial < 200; trial++)
         {
             // Two modules of the data layers, outside the eleven by eleven core.
-            using var damaged = new BbBitMatrix(symbol.Width, symbol.Height);
+            using var damaged = new BbScannerBitMatrix(symbol.Width, symbol.Height);
             for (var y = 0; y < symbol.Height; y++)
             {
                 for (var x = 0; x < symbol.Width; x++)
@@ -329,12 +329,12 @@ public class AztecDecoderTests
         // the next root was asked for, 13 of the 17 independently encoded fixtures did that. Each fixture's own count is
         // found by trying them all without a repair - which is why the largest, whose counts run to a thousand, are left out -
         // and must still read with one.
-        var decoder = typeof(BbAztecReader).Assembly.GetType("Bit.BbScanner.BbAztecDecoder", throwOnError: true)!;
+        var decoder = typeof(BbScannerAztecReader).Assembly.GetType("Bit.BbScanner.BbScannerAztecDecoder", throwOnError: true)!;
         const System.Reflection.BindingFlags Internal = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic;
         var decode = decoder.GetMethod("Decode", Internal)!;
         var size = decoder.GetMethod("Size", Internal)!;
         var wrong = new List<string>();
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.Aztec && s.Width < 45 && !s.Id.StartsWith("aztec-rune", StringComparison.Ordinal)))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbScannerBarcodeFormat.Aztec && s.Width < 45 && !s.Id.StartsWith("aztec-rune", StringComparison.Ordinal)))
         {
             using var grid = symbol.ToMatrix();
 
@@ -364,7 +364,7 @@ public class AztecDecoderTests
             }
 
             string? Read(bool compact, int layers, int dataCodewords, int modeErrors) =>
-                (decode.Invoke(null, [grid, compact, layers, dataCodewords, modeErrors]) as BbDecoderResult)?.Text;
+                (decode.Invoke(null, [grid, compact, layers, dataCodewords, modeErrors]) as BbScannerDecoderResult)?.Text;
         }
 
         Assert.IsEmpty(wrong, string.Join(" | ", wrong));
@@ -379,7 +379,7 @@ public class AztecDecoderTests
         // running every target framework's tests side by side takes ten times as long.
         const int Period = 8;
         const int Modules = 1500;
-        using var tiles = new BbBitMatrix(Modules, Modules);
+        using var tiles = new BbScannerBitMatrix(Modules, Modules);
         for (var y = 0; y < Modules; y++)
         {
             for (var x = 0; x < Modules; x++)
@@ -421,7 +421,7 @@ public class AztecDecoderTests
         // orientation modules match no turn of the upright pattern, and its layers run the other way round.
         var symbol = ReferenceSymbols.Get(id);
         using var grid = symbol.ToMatrix();
-        using var mirrored = new BbBitMatrix(grid.Width, grid.Height);
+        using var mirrored = new BbScannerBitMatrix(grid.Width, grid.Height);
         for (var y = 0; y < grid.Height; y++)
         {
             for (var x = 0; x < grid.Width; x++)
@@ -461,7 +461,7 @@ public class AztecDecoderTests
 
         // The same core with data around it, where a compact symbol's first layer would be, is not a rune: it is a
         // compact symbol whose mode message does not decode.
-        using var crowded = new BbBitMatrix(grid.Width + 4, grid.Height + 4);
+        using var crowded = new BbScannerBitMatrix(grid.Width + 4, grid.Height + 4);
         var random = new Random(8);
         for (var y = 0; y < crowded.Height; y++)
         {

@@ -1450,7 +1450,7 @@ new BonboardingStepDefinition
 | `Wait` (default) | Watch the DOM until the element appears, then show the step. On timeout, apply `WaitTimeoutBehavior`. |
 | `Skip` | Move silently to the next step in the direction of travel. |
 | `Center` | Show the step as a centred card with no spotlight. |
-| `Fail` | End the tour with `BonboardingTourEndReason.Failed` and an `BonboardingException`. |
+| `Fail` | End the tour with `BonboardingTourEndReason.Failed` and a `BonboardingException`. |
 
 `WaitTimeoutBehavior` defaults to `Skip`. Setting it to `Wait` would spin forever, so it is treated
 as `Skip`.
@@ -1777,7 +1777,7 @@ new BonboardingTourDefinition
 }
 ```
 
-`StartOnceAsync` returns `null` when it declines. `StartAsync` throws an `BonboardingException`,
+`StartOnceAsync` returns `null` when it declines. `StartAsync` throws a `BonboardingException`,
 because you asked for it explicitly. `BonboardingStartOptions.Force` bypasses the check.
 
 A `CanStart` that throws reaches the caller of `StartAsync`. A once-only start and an automatic one are never
@@ -2404,7 +2404,7 @@ whose `Session` is `null` is an ambient host like the layout's, and would draw t
 
 ### Building the UI from scratch
 
-If you want no rendering from the library at all, do not place an `BonboardingRoot`. Drive
+If you want no rendering from the library at all, do not place a `BonboardingRoot`. Drive
 `IBonboardingService` and `IBonboardingTourSession` directly and render whatever you like from
 `session.CurrentStep`, `session.Placement` and `session.TargetRect`, subscribing to `session.Changed`
 to re-render.
@@ -2436,7 +2436,7 @@ same visual freedom, none of the plumbing.
 
 ### Labels
 
-Every string the default UI renders comes from an `BonboardingLabels` instance.
+Every string the default UI renders comes from a `BonboardingLabels` instance.
 
 ```csharp
 public sealed class BonboardingLabels
@@ -2982,7 +2982,7 @@ user their progress. A "replay the tours" button in a settings page is `ResetAll
 ## Events and analytics
 
 Onboarding is only worth building if you can tell whether it worked. Every moment of a tour is
-published as an `BonboardingEvent`, including how long each step was on screen.
+published as a `BonboardingEvent`, including how long each step was on screen.
 
 ### The event stream
 
@@ -3396,7 +3396,7 @@ Members: `Definition`, `Session`, `IsRunning`, `StartAsync`, `StartOnceAsync`, `
 
 #### `BonboardingStep`
 
-Declares one step. Renders nothing. Must be inside an `BonboardingTour`.
+Declares one step. Renders nothing. Must be inside a `BonboardingTour`.
 
 | Parameter | Type | Description |
 |---|---|---|

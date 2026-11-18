@@ -13,17 +13,17 @@ namespace Bit.BbScanner.TestKit;
 /// </remarks>
 public static class AztecEncoder
 {
-    private static readonly BbGenericGF ModeField = new(0x13, 16, 1);
-    private static readonly BbGenericGF Field6 = new(0x43, 64, 1);
-    private static readonly BbGenericGF Field10 = new(0x409, 1024, 1);
-    private static readonly BbGenericGF Field12 = new(0x1069, 4096, 1);
+    private static readonly BbScannerGenericGF ModeField = new(0x13, 16, 1);
+    private static readonly BbScannerGenericGF Field6 = new(0x43, 64, 1);
+    private static readonly BbScannerGenericGF Field10 = new(0x409, 1024, 1);
+    private static readonly BbScannerGenericGF Field12 = new(0x1069, 4096, 1);
 
     /// <summary>Encodes text, choosing the smallest symbol that holds it with the error correction asked for.</summary>
     /// <param name="content">The text to encode.</param>
     /// <param name="errorCorrectionPercent">The share of the symbol, beyond three codewords, given to error correction.</param>
     /// <param name="compact">Only a compact symbol (<see langword="true"/>), only a full range one (<see langword="false"/>), or either.</param>
     /// <param name="layers">A specific number of layers, or zero to choose.</param>
-    public static BbBitMatrix Encode(string content, int errorCorrectionPercent = 33, bool? compact = null, int layers = 0)
+    public static BbScannerBitMatrix Encode(string content, int errorCorrectionPercent = 33, bool? compact = null, int layers = 0)
     {
         ArgumentNullException.ThrowIfNull(content);
         var bits = HighLevel(content);
@@ -188,12 +188,12 @@ public static class AztecEncoder
         return words;
     }
 
-    private static BbBitMatrix Build(bool compact, int layers, List<int> dataWords, int totalWords, int wordSize)
+    private static BbScannerBitMatrix Build(bool compact, int layers, List<int> dataWords, int totalWords, int wordSize)
     {
         var field = wordSize switch
         {
             6 => Field6,
-            8 => BbGenericGF.DataMatrixField256,
+            8 => BbScannerGenericGF.DataMatrixField256,
             10 => Field10,
             _ => Field12,
         };
@@ -215,7 +215,7 @@ public static class AztecEncoder
         }
 
         var size = Size(compact, layers);
-        var matrix = new BbBitMatrix(size, size);
+        var matrix = new BbScannerBitMatrix(size, size);
         var c = size / 2;
         void Set(int u, int v, bool dark)
         {
@@ -302,7 +302,7 @@ public static class AztecEncoder
     }
 
     /// <summary>The decoder's layer order, written instead of read.</summary>
-    private static void PlaceData(BbBitMatrix matrix, bool compact, int layers, bool[] bits)
+    private static void PlaceData(BbScannerBitMatrix matrix, bool compact, int layers, bool[] bits)
     {
         var withoutGrid = (compact ? 11 : 14) + (4 * layers);
         var map = new int[withoutGrid];

@@ -18,7 +18,7 @@ public class TransformTemplateTests
         b.CloseElement();
     };
 
-    private static readonly BmTransformTemplate _centred =
+    private static readonly BmotionTransformTemplate _centred =
         (_, generated) => $"translate(-50%, -50%) {generated}";
 
     // ── The pre-first-paint inline style ──────────────────────────────────────
@@ -78,7 +78,7 @@ public class TransformTemplateTests
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(x: 40, scale: 2))
-            .Add(p => p.TransformTemplate, new BmTransformTemplate((components, generated) =>
+            .Add(p => p.TransformTemplate, new BmotionTransformTemplate((components, generated) =>
             {
                 seenComponents = components;
                 seenGenerated = generated;
@@ -101,7 +101,7 @@ public class TransformTemplateTests
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(x: 40))
-            .Add(p => p.TransformTemplate, new BmTransformTemplate((_, generated) => generated))
+            .Add(p => p.TransformTemplate, new BmotionTransformTemplate((_, generated) => generated))
             .Add(p => p.ChildContent, Div));
 
         Assert.AreEqual("translate(40px,0px)", ctx.Engine.GetCurrentTransformString("box"));
@@ -116,7 +116,7 @@ public class TransformTemplateTests
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(x: 40))
-            .Add(p => p.TransformTemplate, new BmTransformTemplate((_, _) => throw new InvalidOperationException()))
+            .Add(p => p.TransformTemplate, new BmotionTransformTemplate((_, _) => throw new InvalidOperationException()))
             .Add(p => p.ChildContent, Div));
 
         // This runs inside the rAF tick, where an exception would evict the element from the engine.
@@ -130,7 +130,7 @@ public class TransformTemplateTests
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(x: 40))
-            .Add(p => p.TransformTemplate, new BmTransformTemplate((_, _) => null!))
+            .Add(p => p.TransformTemplate, new BmotionTransformTemplate((_, _) => null!))
             .Add(p => p.ChildContent, Div));
 
         Assert.AreEqual("translate(40px,0px)", ctx.Engine.GetCurrentTransformString("box"));

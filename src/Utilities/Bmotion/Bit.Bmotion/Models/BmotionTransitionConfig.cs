@@ -1,8 +1,8 @@
 ﻿namespace Bit.Bmotion;
 /// <summary>
 /// Internal flat transition representation consumed by the animation engine and drivers.
-/// The public API is the <see cref="BmTransition"/> hierarchy, which lowers into this
-/// via <see cref="BmTransition.ToConfig()"/>.
+/// The public API is the <see cref="BmotionTransition"/> hierarchy, which lowers into this
+/// via <see cref="BmotionTransition.ToConfig()"/>.
 /// </summary>
 internal sealed class BmotionTransitionConfig
 {
@@ -17,8 +17,8 @@ internal sealed class BmotionTransitionConfig
     /// <summary>Delay before animation starts, in seconds. Default: 0.</summary>
     public double Delay { get; set; } = 0;
 
-    /// <summary>Named easing preset. See <see cref="BmEase"/>. Default: Out.</summary>
-    public BmEase Ease { get; set; } = BmEase.Out;
+    /// <summary>Named easing preset. See <see cref="BmotionEase"/>. Default: Out.</summary>
+    public BmotionEase Ease { get; set; } = BmotionEase.Out;
 
     /// <summary>
     /// Custom cubic-bezier as [x1, y1, x2, y2]. Overrides <see cref="Ease"/> when set.
@@ -41,11 +41,11 @@ internal sealed class BmotionTransitionConfig
     /// </summary>
     public int StepCount { get; set; }
 
-    /// <summary>Where a stepped easing's jumps occur. See <see cref="BmStepJump"/>.</summary>
-    public BmStepJump StepJump { get; set; } = BmStepJump.End;
+    /// <summary>Where a stepped easing's jumps occur. See <see cref="BmotionStepJump"/>.</summary>
+    public BmotionStepJump StepJump { get; set; } = BmotionStepJump.End;
 
     /// <summary>Color space used when interpolating color properties. Default: sRGB.</summary>
-    public BmColorSpace ColorSpace { get; set; } = BmColorSpace.Srgb;
+    public BmotionColorSpace ColorSpace { get; set; } = BmotionColorSpace.Srgb;
 
     private static double[]? ValidateCubicBezier(double[]? value)
     {
@@ -56,7 +56,7 @@ internal sealed class BmotionTransitionConfig
                 nameof(value));
         // The control-point X coordinates must stay within [0, 1] so the bezier's x(t) curve is
         // monotonic. Outside that range x(t) can fold back on itself, and the Newton-Raphson solver
-        // in BmEaseFunctions can then converge to the wrong root (a visibly broken easing).
+        // in BmotionEaseFunctions can then converge to the wrong root (a visibly broken easing).
         if (value[0] is < 0 or > 1 || value[2] is < 0 or > 1)
             throw new ArgumentException(
                 "EaseCubicBezier X coordinates (x1, x2) must be within [0, 1]; only Y may overshoot.",
@@ -81,7 +81,7 @@ internal sealed class BmotionTransitionConfig
     internal bool IsInfiniteRepeat => RepeatInfinite || Repeat == int.MaxValue;
 
     /// <summary>How to repeat: Loop, Mirror (ping-pong), or Reverse.</summary>
-    public BmRepeatType RepeatType { get; set; } = BmRepeatType.Loop;
+    public BmotionRepeatType RepeatType { get; set; } = BmotionRepeatType.Loop;
 
     /// <summary>Delay between repetitions, in seconds.</summary>
     public double RepeatDelay { get; set; } = 0;
@@ -108,12 +108,12 @@ internal sealed class BmotionTransitionConfig
     /// frame <c>i</c> to frame <c>i+1</c>. When shorter than the segment count the last entry
     /// repeats; when omitted every segment uses <see cref="Ease"/>/<see cref="EaseCubicBezier"/>.
     /// </summary>
-    public BmEase[]? Eases
+    public BmotionEase[]? Eases
     {
-        get => _eases is null ? null : (BmEase[])_eases.Clone();
-        set => _eases = value is null ? null : (BmEase[])value.Clone();
+        get => _eases is null ? null : (BmotionEase[])_eases.Clone();
+        set => _eases = value is null ? null : (BmotionEase[])value.Clone();
     }
-    private BmEase[]? _eases;
+    private BmotionEase[]? _eases;
 
     private static double[]? ValidateTimes(double[]? value)
     {
@@ -209,20 +209,20 @@ internal sealed class BmotionTransitionConfig
     public double? DelayChildren { get; set; }
 
     /// <summary>Whether this element's own animation runs alongside its children or ahead of them.</summary>
-    public BmWhen When { get; set; } = BmWhen.Together;
+    public BmotionWhen When { get; set; } = BmotionWhen.Together;
 
     /// <summary>
     /// Curves the straight line between this animation's start and end <c>x</c>/<c>y</c>
-    /// (see <see cref="BmArc"/>). Ignored unless the target carries both as single values.
+    /// (see <see cref="BmotionArc"/>). Ignored unless the target carries both as single values.
     /// </summary>
-    public BmArc? Path { get; set; }
+    public BmotionArc? Path { get; set; }
 
     /// <summary>
     /// How long this transition takes to play, in seconds, ignoring <see cref="Delay"/> and
     /// repeats. Tweens report their duration exactly; springs report their visual duration when
     /// they have one and otherwise an estimate from the physics, since a spring has no true end.
     /// <para>
-    /// Used to schedule children behind a parent under <see cref="BmWhen.BeforeChildren"/>.
+    /// Used to schedule children behind a parent under <see cref="BmotionWhen.BeforeChildren"/>.
     /// </para>
     /// </summary>
     internal double EstimatedDurationSeconds()
@@ -306,7 +306,7 @@ internal sealed class BmotionTransitionConfig
         RepeatType = RepeatType,
         RepeatDelay = RepeatDelay,
         Times = _times is null ? null : (double[])_times.Clone(),
-        Eases = _eases is null ? null : (BmEase[])_eases.Clone(),
+        Eases = _eases is null ? null : (BmotionEase[])_eases.Clone(),
         Stiffness = Stiffness,
         Damping = Damping,
         Mass = Mass,
@@ -375,7 +375,7 @@ internal sealed class BmotionTransitionConfig
         };
     }
 
-    public static BmotionTransitionConfig Tween(double duration = 0.3, BmEase ease = BmEase.Out)
+    public static BmotionTransitionConfig Tween(double duration = 0.3, BmotionEase ease = BmotionEase.Out)
         => new() { Type = BmotionTransitionType.Tween, Duration = duration, Ease = ease };
 
     public static BmotionTransitionConfig Inertia(double velocity = 0, double timeConstant = 700)
