@@ -178,7 +178,7 @@ trade-offs.
 
 Two things in that snippet matter and are easy to miss.
 
-**Dispose your images.** An `BmageImageBuffer` holds pooled memory: a 4000 × 3000 image is 48 MB. `using` returns it to the
+**Dispose your images.** A `BmageImageBuffer` holds pooled memory: a 4000 × 3000 image is 48 MB. `using` returns it to the
 pool immediately instead of waiting for a collection. Buffers you receive from `LoadAsync`, `ExecuteAsync` and
 `RenderFullAsync` are yours to dispose. Buffers exposed as properties, such as `BmageImageEditSession.Preview`, are not.
 

@@ -106,7 +106,7 @@ nothing beneath them to blend with.
 The image's layer is known by a mark in its metadata (`BmageBink.ImageLayerMetadataKey`), not by its name, so renaming
 or unlocking it still leaves it out of an overlay, and a layer the user names "Image" is drawn like any other.
 
-What is returned is yours: dispose the images, and an `BmageImageLayer`'s image once no document uses the layer.
+What is returned is yours: dispose the images, and a `BmageImageLayer`'s image once no document uses the layer.
 
 ## Other utilities
 

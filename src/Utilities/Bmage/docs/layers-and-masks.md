@@ -114,7 +114,7 @@ Exporting to a format without alpha, such as JPEG, fills the cleared area with `
 
 ## Layers
 
-An `BmageImageDocument` composites its layers onto the pipeline's output, bottom first, and draws its annotations over
+A `BmageImageDocument` composites its layers onto the pipeline's output, bottom first, and draws its annotations over
 them:
 
 ```
@@ -152,7 +152,7 @@ var document = BmageImageDocument.Create(photo)
 using var rendered = new BmageDocumentRenderer().Render(document, photo);
 ```
 
-Every layer has `Id`, `Name`, `BlendMode`, `Opacity`, `BmageMask`, `IsVisible`, `IsLocked` and `ClipToLayerBelow`. Its
+Every layer has `Id`, `Name`, `BlendMode`, `Opacity`, `Mask`, `IsVisible`, `IsLocked` and `ClipToLayerBelow`. Its
 coordinates, the mask's included, are those of the pipeline's output. `BmageImageDocument` edits them like annotations:
 `AddLayer`, `UpdateLayer` (by id), `RemoveLayer`, `MoveLayer`, `DuplicateLayer` (a copy under a new id, directly above),
 `FindLayer` and `ClearLayers`, which reach layers inside groups too. `BmageLayer.Transform(matrix)` moves one with the image;
@@ -222,7 +222,7 @@ image by itself, which is how photo editors build contrast curves out of blend m
 An image layer runs its pipeline at the resolution its result is drawn at whenever that is smaller, the way a proxy
 preview runs an edit, so a 24 megapixel texture placed in a corner costs what the corner does; a crop in the pipeline
 counts, so a crop of a large logo is shrunk only as far as what the crop leaves. A layer's mask is drawn only over the
-area the layer covers, so a small masked watermark on a large export costs its own pixels. In an `BmageImageEditSession` the
+area the layer covers, so a small masked watermark on a large export costs its own pixels. In a `BmageImageEditSession` the
 image a layer draws is prepared once and kept while the layer is faded, moved or re-blended, as long as its image,
 pipeline and size stay the same.
 

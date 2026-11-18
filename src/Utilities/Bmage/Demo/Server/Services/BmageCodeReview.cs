@@ -30,7 +30,7 @@ public static partial class BmageCodeReview
         new() { Id = "browser-call-during-prerender", Severity = "Error", Source = "getting-started",
                 Catches = "Browser features called from OnInitialized/OnParametersSet, which also run during prerendering: the JS calls throw, and the capability probe answers with the managed set." },
         new() { Id = "image-buffer-not-disposed", Severity = "Warning", Source = "getting-started",
-                Catches = "An BmageImageBuffer (or an BmageImageCanvas that owns one) from LoadAsync, ExecuteAsync, DecodeAsync, Render, Snapshot or Clone that is never disposed." },
+                Catches = "A BmageImageBuffer (or a BmageImageCanvas that owns one) from LoadAsync, ExecuteAsync, DecodeAsync, Render, Snapshot or Clone that is never disposed." },
         new() { Id = "borrowed-buffer-disposed", Severity = "Error", Source = "troubleshooting",
                 Catches = "Disposing BmageImageEditSession.Preview or Original, which the session owns - an ObjectDisposedException on the next render." },
         new() { Id = "editor-owns-loaded-buffer", Severity = "Error", Source = "troubleshooting",
@@ -226,9 +226,9 @@ public static partial class BmageCodeReview
                 Rule = "image-buffer-not-disposed",
                 Line = i + 1,
                 Message = canvas
-                    ? $"'{name}' is an BmageImageCanvas that owns its pixel buffer, and it is never disposed. The pixels are pooled " +
+                    ? $"'{name}' is a BmageImageCanvas that owns its pixel buffer, and it is never disposed. The pixels are pooled " +
                       "memory that stays rented until a garbage collection happens to finalise it."
-                    : $"'{name}' is an BmageImageBuffer you own ({api} returns a new buffer to the caller), and it is never disposed. " +
+                    : $"'{name}' is a BmageImageBuffer you own ({api} returns a new buffer to the caller), and it is never disposed. " +
                       "Buffers are pooled memory - a 4000 x 3000 image is 48 MB - and an undisposed one stays rented until the " +
                       "collector gets round to it. On a phone the tab is killed first.",
                 Fix = $"Declare it with `using var {name} = ...`, or dispose it when it is replaced and in the component's Dispose. " +
@@ -1021,7 +1021,7 @@ public static partial class BmageCodeReview
     private static partial Regex EditorClassRegex();
 
     // A Razor directive starts its line; "@inject BmageImageProcessor" in a sentence is prose about one.
-    [GeneratedRegex(@"(?:^\s*@inject\s+(?:Bit\.Bmage\.Pipeline\.)?BmageImageProcessor\s+\w+|\[Inject\][^;{]*\bImageProcessor\s+\w+\s*\{)")]
+    [GeneratedRegex(@"(?:^\s*@inject\s+(?:Bit\.Bmage\.)?BmageImageProcessor\s+\w+|\[Inject\][^;{]*\bBmageImageProcessor\s+\w+\s*\{)")]
     private static partial Regex ProcessorInjectRegex();
 
     [GeneratedRegex(@"(?:^\s*@inject\s+|\[Inject\][^;{]*\b|\bGetRequiredService<)(?<service>BmageImageLoader|BmageImageExporter|BmageImageProcessorFactory|BmageBrowserTextRasterizer|BmageBrowserCapabilityProvider)\b|<(?<service>BmageEditor)\b", RegexOptions.Multiline)]
@@ -1058,7 +1058,7 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"AddBitBmageHeadlessServices|new\s+BmageImageProcessor\s*\(|BmageImageCodecRegistry\.CreateDefault|\bIFormFile\b|\bMapPost\s*\(|:\s*ControllerBase\b|static\s+async\s+Task\s+Main\s*\(")]
     private static partial Regex ServerMarkerRegex();
 
-    [GeneratedRegex(@"\bImageExporter\b|\bExporter\.|BmageImageProcessorFactory|\bIBrowserFile\b|InputFileChangeEventArgs|<BmageEditor\b|\bAddBitBmageServices\b|@inject\b")]
+    [GeneratedRegex(@"\bBmageImageExporter\b|\bExporter\.|BmageImageProcessorFactory|\bIBrowserFile\b|InputFileChangeEventArgs|<BmageEditor\b|\bAddBitBmageServices\b|@inject\b")]
     private static partial Regex BrowserMarkerRegex();
 
     [GeneratedRegex(@"\bAutoOrient\s*=\s*false\b")]
@@ -1074,7 +1074,7 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"\.\s*(?<name>[A-Z]\w*)\s*\(")]
     private static partial Regex StepRegex();
 
-    [GeneratedRegex(@"catch\s*\(\s*(?:System\.)?(?:Image)?Exception\b|catch\s*\{|catch\s*$", RegexOptions.Multiline)]
+    [GeneratedRegex(@"catch\s*\(\s*(?:System\.|Bit\.Bmage\.)?(?:BmageImage)?Exception\b|catch\s*\{|catch\s*$", RegexOptions.Multiline)]
     private static partial Regex GeneralCatchRegex();
 
     [GeneratedRegex(@"\bMaxFileSize\s*=\s*(?!null\b)\S")]

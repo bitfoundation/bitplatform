@@ -33,7 +33,7 @@ builder.Services.AddBitBmageServices(options =>
 });
 ```
 
-Rejection is an `BmageImageLimitExceededException` with the actual numbers in the message, so you can tell the user what went
+Rejection is a `BmageImageLimitExceededException` with the actual numbers in the message, so you can tell the user what went
 wrong rather than showing a generic failure.
 
 `BmageImageProcessor.Identify` lets you check before committing to a decode at all:
@@ -47,7 +47,7 @@ if ((long)info.Width * info.Height > 30_000_000) return Error("That image is too
 ## Malformed input
 
 Every decoder treats its input as hostile. Truncated files, bad chunk lengths, invalid Huffman tables, corrupt LZW
-streams, impossible palettes and out-of-range offsets all produce an `BmageImageDecodeException` rather than an out-of-bounds
+streams, impossible palettes and out-of-range offsets all produce a `BmageImageDecodeException` rather than an out-of-bounds
 read or an unbounded allocation.
 
 EXIF parsing is deliberately more forgiving, because metadata is not worth failing an image over: bad offsets, circular
@@ -78,7 +78,7 @@ against `BmageImageLimits` before it allocates a plane, and bounds every offset 
 itself. Its sample planes come from a shared pool, so the one tool that copies samples within a frame, intra block copy,
 is held to the vectors the AV1 specification allows, which point only at samples already decoded, and a frame that
 enables it starts from cleared planes besides: no earlier image, another user's included, can show through. A failure
-anywhere, a grid tile decoded on another thread included, is an `BmageImageDecodeException`.
+anywhere, a grid tile decoded on another thread included, is a `BmageImageDecodeException`.
 
 Project files (`BmageProject`) are ZIP archives, which brings the archive attacks with it. A project is read from
 memory, never extracted to disk, so path traversal cannot write anything; even so only the files the manifest names
@@ -165,7 +165,7 @@ The services take theirs from `BmageOptions`: the processors, the loader and eve
 through `Allocator` and are bound by `Limits`. Those options are one instance for the application, which in a
 WebAssembly app means one browser tab, so `options.Allocator = new BmageBudgetedPixelAllocator(...)` gives the tab's editor
 and loads one budget between them. On Blazor Server the same instance serves every circuit; give each its own session
-there instead, with an `BmageImageEditSession` built from `BmageImageEditSessionOptions { Allocator = ... }`.
+there instead, with a `BmageImageEditSession` built from `BmageImageEditSessionOptions { Allocator = ... }`.
 
 A batch can be admitted by memory too: with `BmageBatchOptions.MaxMemoryBytes` an image only starts when its estimated need,
 read from its header before anything is decoded, fits beside the ones already running.

@@ -1,8 +1,4 @@
-﻿using System.Reflection.Metadata;
-
-[assembly: MetadataUpdateHandler(typeof(Bit.BevTools.BevToolsSourceLocator))]
-
-namespace Bit.BevTools;
+﻿namespace Bit.BevTools;
 
 /// <summary>Where code is written: a file of the build, a line and a column, from the assembly's portable PDB.</summary>
 /// <param name="Path">The file as the build saw it: an absolute path on the machine that built the assembly.</param>

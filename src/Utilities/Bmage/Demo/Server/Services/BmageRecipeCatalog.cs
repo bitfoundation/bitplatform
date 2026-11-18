@@ -977,7 +977,7 @@ public static class BmageRecipeCatalog
                 // Without a document: BmageLayerCompositor.Flatten(size, background, layers) builds an image from layers alone.
                 """,
             Notes = "Layers composite onto the pipeline's output, bottom first, and annotations draw over them. The blend modes " +
-                    "are CSS mix-blend-mode's (W3C Compositing and Blending). An BmageAdjustmentLayer edits everything beneath it, " +
+                    "are CSS mix-blend-mode's (W3C Compositing and Blending). A BmageAdjustmentLayer edits everything beneath it, " +
                     "layers included, and at full opacity without a mask equals its pipeline exactly. In the editor use " +
                     "context.AddLayerAsync / UpdateLayerAsync(transient: true) / RemoveLayerAsync; the editor previews layers " +
                     "on its proxy and exports them at full resolution."
@@ -1115,7 +1115,7 @@ public static class BmageRecipeCatalog
             Notes = "Straighten accepts up to 45 degrees either way and crops by a fraction of the image, so a proxy preview frames " +
                     "what the export will. White balance gains apply to the encoded sRGB values: a picked colour comes out " +
                     "exactly neutral and the rest closely follows; AutoWhiteBalance assumes the mid-tones average to grey and " +
-                    "stops at 80% by default, because sunsets and forests are not grey. In an BmageImageDocument add geometric steps " +
+                    "stops at 80% by default, because sunsets and forests are not grey. In a BmageImageDocument add geometric steps " +
                     "with AddOperation(op, keepOverlaysAttached: true) so annotations and layers stay on what they mark."
         },
         new()
@@ -1142,7 +1142,7 @@ public static class BmageRecipeCatalog
                 """,
             Notes = "Images are stored as lossless PNG, which keeps the pixels exactly and makes a project of a large photo tens of " +
                     "megabytes. The project owns the original and the document's images until disposed; DetachOriginal and " +
-                    "DetachImages hand them on, for instance to an BmageImageEditSession through Own. The original's metadata is " +
+                    "DetachImages hand them on, for instance to a BmageImageEditSession through Own. The original's metadata is " +
                     "removed by default (BmageProjectOptions.OriginalMetadata), like an export, so a shared project does not " +
                     "carry the photo's location. Malformed or hostile archives throw BmageImageDocumentFormatException and leave " +
                     "nothing allocated."

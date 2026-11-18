@@ -866,7 +866,7 @@ export function renderText(text: string, font: string, color: string, maxWidth: 
     const pad = Math.ceil(metrics.fontSize * 0.35) + 2;
     const width = Math.max(1, Math.ceil(metrics.width) + pad * 2);
     const height = Math.max(1, Math.ceil(metrics.lines.length * metrics.lineHeight) + pad * 2);
-    // Refused before the canvas exists, with the size alone; .NET turns that into an BmageImageLimitExceededException.
+    // Refused before the canvas exists, with the size alone; .NET turns that into a BmageImageLimitExceededException.
     if ((maxPixels && width * height > maxPixels) || (maxBitmapWidth && width > maxBitmapWidth) || (maxBitmapHeight && height > maxBitmapHeight))
         return new ByteResult(new Uint8Array(0), { width, height, tooLarge: true });
     const canvas = rentCanvas(width, height);

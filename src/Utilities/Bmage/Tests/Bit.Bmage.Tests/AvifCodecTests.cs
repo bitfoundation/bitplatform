@@ -468,7 +468,7 @@ public sealed class AvifCodecTests
     public void GridTileFailuresAreDecodeErrorsWhateverTheThreads()
     {
         // The tiles after the first decode side by side, each item once however many cells name it; one that is cut short
-        // must still fail as the sequential loop would, as an BmageImageDecodeException a host can fall back on, not wrapped in
+        // must still fail as the sequential loop would, as a BmageImageDecodeException a host can fall back on, not wrapped in
         // an AggregateException.
         var source = BmageAvifContainer.Parse(Asset("photo-420.avif"));
         var tile = source.GetItem(1)!;

@@ -99,7 +99,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
 }
 ```
 
-If you call a browser feature too early anyway, you get an `BmageImageCapabilityException` that says so explicitly rather
+If you call a browser feature too early anyway, you get a `BmageImageCapabilityException` that says so explicitly rather
 than an opaque interop error.
 
 ## Browsers

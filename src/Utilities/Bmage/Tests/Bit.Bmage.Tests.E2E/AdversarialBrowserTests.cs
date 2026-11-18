@@ -229,7 +229,7 @@ public class JsModuleContractTests : DemoTest
 
     /// <summary>
     /// Text whose bitmap would pass the pixel, width or height limit is refused before its canvas is made: the result
-    /// carries only its size, flagged tooLarge, which .NET turns into an BmageImageLimitExceededException. Every canvas the
+    /// carries only its size, flagged tooLarge, which .NET turns into a BmageImageLimitExceededException. Every canvas the
     /// module draws on during a call is recorded as it takes its context, and none is past the limits of that call.
     /// </summary>
     [TestMethod]

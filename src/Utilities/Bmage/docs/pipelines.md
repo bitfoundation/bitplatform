@@ -1,6 +1,6 @@
 ﻿# Pipelines
 
-An `BmageImagePipeline` is an immutable, ordered list of operations. Building one does no work; it is a description of an
+A `BmageImagePipeline` is an immutable, ordered list of operations. Building one does no work; it is a description of an
 edit that you can inspect, store, reuse across images and threads, and execute when you are ready.
 
 ```csharp

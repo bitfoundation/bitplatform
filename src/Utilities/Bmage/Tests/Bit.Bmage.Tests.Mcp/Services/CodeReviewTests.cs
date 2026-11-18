@@ -251,6 +251,9 @@ public class CodeReviewTests
 
         None(Review("@inject BmageImageProcessorFactory Processors"), "processor-injected-in-browser");
 
+        Single(Review("@inject Bit.Bmage.BmageImageProcessor Processor"), "processor-injected-in-browser");
+        Single(Review("[Inject] public BmageImageProcessor Processor { get; set; } = default!;"), "processor-injected-in-browser");
+
         // On a server with the headless registration, the processor is exactly what is registered.
         None(Review("builder.Services.AddBitBmageHeadlessServices();\n[Inject] public BmageImageProcessor Processor { get; set; } = default!;"), "processor-injected-in-browser");
     }
@@ -405,6 +408,9 @@ public class CodeReviewTests
         None(Review("@inject BmageImageExporter Exporter\nif (caps.CanEncode(BmageImageFormat.Avif)) await Exporter.EncodeAsync(image, BmageImageExportOptions.Avif);"), "format-without-capability-check");
         None(Review("@inject BmageImageExporter Exporter\ntry { await Exporter.EncodeAsync(image, BmageImageExportOptions.Avif); }\ncatch (BmageImageCapabilityException) { _fallback = true; }"), "format-without-capability-check");
 
+        // The exporter's type marks browser code, whatever the field is called.
+        Assert.AreEqual(2, Single(Review("[Inject] private BmageImageExporter Encoder { get; set; } = default!;\nawait Encoder.EncodeAsync(image, BmageImageExportOptions.Avif);"), "format-without-capability-check").Line);
+
         // A sentence about "@inject BmageImageProcessor" is prose, not a directive.
         None(Review("<p>Do not @inject BmageImageProcessor in a browser app.</p>"), "processor-injected-in-browser");
     }
@@ -490,6 +496,8 @@ public class CodeReviewTests
         Single(Review("await Exporter.EncodeAsync(image, new BmageImageExportOptions { MaxFileSize = 100 * 1024 });"), "size-budget-unhandled");
 
         None(Review("try { await Exporter.EncodeAsync(image, new BmageImageExportOptions { MaxFileSize = 100 * 1024 }); }\ncatch (BmageImageEncodeException) { }"), "size-budget-unhandled");
+        // The encode failure derives from the base exception, so catching that handles it too.
+        None(Review("try { await Exporter.EncodeAsync(image, new BmageImageExportOptions { MaxFileSize = 100 * 1024 }); }\ncatch (BmageImageException) { }"), "size-budget-unhandled");
         None(Review("new BmageImageExportOptions { MaxFileSize = null }"), "size-budget-unhandled");
     }
 

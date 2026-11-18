@@ -40,7 +40,7 @@ keeps that architecture; section 6 explains why a Canvas or WebGL engine was not
    sniffs magic bytes, never the extension, and decodes through `BmageImageProcessor`: managed PNG/JPEG/BMP/GIF first,
    browser codecs (in a worker pool) for WebP, AVIF and anything the managed decoders reject. `BmageImageLimits` and
    `MaxSourceBytes` are checked before allocation. EXIF is read; `AutoOrient` applies the orientation.
-2. **Edit** - `BmageImageEditSession` owns the original, a display-sized proxy, and an `BmageEditHistory` of immutable
+2. **Edit** - `BmageImageEditSession` owns the original, a display-sized proxy, and a `BmageEditHistory` of immutable
    `BmageImageDocument` values (pipeline + layers + annotations). Previews render on the proxy, serialised and cancellable,
    with staged caches split at optimiser barriers.
 3. **Render** - `BmageDocumentRenderer`: pipeline, then layers through W3C blend modes and masks, then annotations.
