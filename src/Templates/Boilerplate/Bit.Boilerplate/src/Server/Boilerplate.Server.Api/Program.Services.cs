@@ -38,6 +38,8 @@ using Microsoft.Data.Sqlite;
 using Microsoft.OpenApi;
 using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.DataProtection;
 using SmsBridge.DependencyInjection;
@@ -298,7 +300,16 @@ public static partial class Program
         services.AddSingleton<HtmlSanitizer>();
 
         services
-            .AddControllers(options => options.Filters.Add<AutoCsrfProtectionFilter>())
+            .AddControllers(options =>
+            {
+                options.Filters.Add<AutoCsrfProtectionFilter>();
+
+                // ODataQueryOptions binds from $filter, $top and the rest, which the OpenAPI document lists for the actions that
+                // take it (AddOpenApi below). As a parameter of its own, the document would describe it as an object holding
+                // HttpContext, the EDM model and all they reach, which no client sends. Special keeps it out of the api
+                // descriptions, as it keeps CancellationToken, and changes nothing in how it binds.
+                options.ModelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(ODataQueryOptions), BindingSource.Special));
+            })
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ApplyDefaultOptions();
@@ -485,7 +496,11 @@ public static partial class Program
                 // MapControllers().RequireAuthorization() makes every action authorized, so [AllowAnonymous] is what
                 // marks the exceptions - the AuthorizeAttribute on an action only narrows an already required token.
                 var isAnonymousAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is IAllowAnonymous);
+                // [EnableQuery] applies the query options to what the action returns.
                 var isODataEnabledAction = context.Description.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is EnableQueryAttribute);
+                // An ODataQueryOptions parameter has the action apply them itself, to the typed query it pages: $filter, $orderby,
+                // $top and $skip. $select and $expand would turn its rows into wrappers it can't cast back, and nothing applies $search.
+                var takesODataQueryOptions = context.Description.ActionDescriptor.Parameters.Any(p => p.ParameterType.IsAssignableTo(typeof(ODataQueryOptions)));
 
                 operation.Parameters ??= [];
 
@@ -497,18 +512,23 @@ public static partial class Program
                     ];
                 }
 
-                if (isODataEnabledAction)
+                if (isODataEnabledAction || takesODataQueryOptions)
                 {
-                    operation.Parameters.AddRange([
+                    // OpenAPI 3.1 requires a schema (or content) on every parameter.
+                    OpenApiParameter[] queryOptions =
+                    [
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$filter", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Filters the results, based on a Boolean condition. (ex. Age gt 25)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$select", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Returns only the selected properties. (ex. FirstName, LastName)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$expand", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Include only the selected objects. (ex. Orders, Locations)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$search", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Finds resources that match a search criteria. (ex. \"search term\")" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$top", Schema = new OpenApiSchema { Type = JsonSchemaType.Integer }, Description = "Returns only the first n items from a collection. (ex. 10)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$skip", Schema = new OpenApiSchema { Type = JsonSchemaType.Integer }, Description = "Skips the first n items from a collection. (ex. 10)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$orderby", Schema = new OpenApiSchema { Type = JsonSchemaType.String }, Description = "Orders the results of a query by one or more properties. (ex. Name desc)" }
+                    ];
 
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$filter", Description = "Filters the results, based on a Boolean condition. (ex. Age gt 25)" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$select", Description = "Returns only the selected properties. (ex. FirstName, LastName)" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$expand", Description = "Include only the selected objects. (ex. Orders, Locations)" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$search", Description = "Finds resources that match a search criteria. (ex. \"search term\")" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$top", Description = "Returns only the first n items from a collection. (ex. 10)" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$skip", Description = "Skips the first n items from a collection. (ex. 10)" },
-                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$orderby", Description = "Orders the results of a query by one or more properties. (ex. Name desc)" }
-                    ]);
+                    operation.Parameters.AddRange(isODataEnabledAction
+                        ? queryOptions
+                        : [.. queryOptions.Where(option => option.Name is "$filter" or "$orderby" or "$top" or "$skip")]);
                 }
 
                 // OData lists about 40 JSON variants per body, which made the document 1 MB; application/json alone describes them.
