@@ -4550,7 +4550,9 @@ public class BitSearchBoxTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, clear.Invocations);
+        // The disposal is dispatched to the renderer, which may still be busy with the input's debounced work, so
+        // the teardown does not necessarily reach the clear before DisposeComponentsAsync returns.
+        component.WaitForAssertion(() => Assert.HasCount(1, clear.Invocations));
         Assert.AreSame(searchBox, reference.Value);
 
         clear.SetVoidResult();
