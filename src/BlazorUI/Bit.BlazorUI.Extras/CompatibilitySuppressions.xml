@@ -38,7 +38,42 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitDataGridColumnSlot`1</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitDataGridDataProcessor</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitDataGridExcelStyle</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Bit.BlazorUI.BitDataGridPagerPosition</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitDataGridPropertyAccessor`1</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitDataGridQueryableProcessor</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

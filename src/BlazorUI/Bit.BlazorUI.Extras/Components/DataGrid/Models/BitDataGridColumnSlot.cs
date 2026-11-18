@@ -8,4 +8,4 @@ namespace Bit.BlazorUI;
 /// scrolled-out columns, so the row keeps its full scroll width with far fewer DOM cells.
 /// When column virtualization is off, the slots are simply all visible columns in order.
 /// </summary>
-public readonly record struct BitDataGridColumnSlot<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitDataGridColumn<TItem>? Column, int ColIndex, double SpacerWidth);
+internal readonly record struct BitDataGridColumnSlot<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitDataGridColumn<TItem>? Column, int ColIndex, double SpacerWidth);
