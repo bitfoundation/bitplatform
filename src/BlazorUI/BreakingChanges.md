@@ -5,6 +5,27 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitFullCalendarState` is read-only, but for its filters ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+`BitFullCalendar.State` is what the calendar is showing, for an app to read. The 56 members that changed it are no
+longer public. Each was the plumbing between the calendar and its parts, or a second way to do what a parameter, a
+`Settings` property or a method of `BitFullCalendar` already does. Several of them were undone by the calendar's next
+render, which applies its parameters again. Its color and attendee filters keep their public methods (`SetColorFilter`,
+`SetAttendeeFilter`, `FilterByColor`, `ClearFilter`), since nothing else sets them. What to use instead:
+
+| Was on `State` | Use |
+| --- | --- |
+| `SetSelectedDate(date)` | `BitFullCalendar.GoToDate(date)`, or `DefaultDate` |
+| `GoToToday()`, `NavigateNext()`, `NavigatePrevious()` | The methods of the same names on `BitFullCalendar` |
+| `SetView(view)`, `SetMode(mode)` | `BitFullCalendar.ChangeView(view)`, `ChangeMode(mode)`, or `DefaultView`, `DefaultMode` |
+| `SetUse24HourFormat`, `SetBadgeVariant`, `SetStartOfDayHour`, `SetSlotDurationMinutes`, `SetHiddenDays`, `SetFirstDayOfWeek`, `SetShowWeekNumbers`, `SetShowCurrentTimeIndicator`, `SetMaxEventsPerDayCell`, `SetRequireEventDescription`, `SetAllowEventOverlap`, `SetAllowRangeSelection`, `SetBusinessDays`, `SetHighlightBusinessHours`, `SetRestrictToBusinessHours`, `SetFixedWeekCount`, `SetShowNonCurrentDates`, `SetNavLinks`, `SetAgendaModeGroupBy`, `SetEventLayout`, `SetShowDayViewCalendar`, `SetWeekDayCount` | The `Settings` property of the same name |
+| `SetVisibleHours(start, end)`, `SetBusinessHours(start, end)` | `Settings.VisibleStartHour` / `VisibleEndHour`, `Settings.BusinessStartHour` / `BusinessEndHour` |
+| `SetEditPermissions(add, edit, delete, drag, resize)` | `Settings.AllowAdd`, `AllowEdit`, `AllowDelete`, `AllowDrag`, `AllowResize` |
+| `ToggleTimeFormat()`, `ToggleShowWeekNumbers()`, `ToggleShowCurrentTimeIndicator()`, `ToggleHighlightBusinessHours()`, `ToggleShowDayViewCalendar()`, `ToggleEventLayout()` | Set the `Settings` property to the opposite of what `State` reads |
+| `SetReadOnly`, `SetDateBounds`, `SetCulture`, `SetDirection`, `SyncViews` | The `ReadOnly`, `MinDate` / `MaxDate`, `Culture` / `CultureName`, `Dir` and `Views` parameters |
+| `Initialize`, `SyncEvents`, `AddEvent`, `UpdateEvent`, `RemoveEvent`, `SyncResources` | The `Events` and `Resources` parameters: change the list the calendar is given |
+| The constructor, `StartDrag`, `EndDrag`, `HandleDrop`, `UpdateUI`, `MarkCurrentRangeReported`, `AgendaScrollToTodayNonce` | Nothing: the calendar's own plumbing, which a `State` an app constructs is never attached to. With no public constructor, `BitFullCalendarState` can no longer be constructed or derived from. |
+
 ### Five of `BitDataGrid`'s helper types are internal ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 `BitDataGridDataProcessor`, `BitDataGridQueryableProcessor`, `BitDataGridPropertyAccessor<TItem>`,

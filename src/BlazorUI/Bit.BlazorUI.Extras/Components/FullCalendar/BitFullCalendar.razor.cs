@@ -371,8 +371,9 @@ public partial class BitFullCalendar : BitComponentBase
     /// <summary>
     /// The calendar's live state: the active view, mode, selected date, resolved settings, and the
     /// event/resource projections every inner view renders from. Exposed so consumers can read what
-    /// the calendar is currently showing; drive it through the parameters and the navigation methods
-    /// rather than mutating it directly.
+    /// the calendar is currently showing, and set its color and attendee filters
+    /// (<see cref="BitFullCalendarState.SetColorFilter"/>, <see cref="BitFullCalendarState.SetAttendeeFilter"/>);
+    /// everything else is driven through the parameters, <see cref="Settings"/> and the navigation methods.
     /// </summary>
     public BitFullCalendarState State { get; } = new();
 

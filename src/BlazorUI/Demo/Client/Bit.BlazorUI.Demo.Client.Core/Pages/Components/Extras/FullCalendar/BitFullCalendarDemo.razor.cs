@@ -851,7 +851,7 @@ public partial class BitFullCalendarDemo
             Name = "State",
             Type = "BitFullCalendarState",
             DefaultValue = "",
-            Description = "The live state: the active view, mode and date, the resolved settings and the event projections the views render from. Read it; drive the calendar through the parameters and the methods below.",
+            Description = "The live state: the active view, mode and date, the resolved settings and the event projections the views render from. Read it, and set its color and attendee filters; drive everything else through the parameters, Settings and the methods below.",
         },
         new()
         {
