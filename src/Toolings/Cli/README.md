@@ -50,7 +50,7 @@ Every option of the bit Boilerplate template works the same way:
 
 | Option | Values | Default |
 |---|---|---|
-| `--framework` | `net10.0`, `net11.0` | `net10.0` |
+| `--framework` | `net10.0`, `net11.0` | `net11.0` |
 | `--database` | `Sqlite`, `SqlServer`, `PostgreSQL`, `MySql`, `Other` | `Sqlite` |
 | `--filesStorage` | `Local`, `S3`, `AzureBlobStorage`, `Other` | `Local` |
 | `--api` | `Integrated`, `Standalone` | `Integrated` |

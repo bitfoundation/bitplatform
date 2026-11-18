@@ -586,7 +586,7 @@ public class ToolTests
         Assert.AreEqual(TemplateRequirements.Embedded.Sdk, TemplateRequirements.Embedded.For(net11).Sdk);
         Assert.AreEqual("10.0", TemplateRequirements.Embedded.For(net10).Sdk?.Channel);
         Assert.IsFalse(TemplateRequirements.Embedded.For(net10).Sdk?.Pinned);
-        Assert.AreEqual(TemplateRequirements.Embedded.For(net10).Sdk, TemplateRequirements.Embedded.For(new TemplateSelection(TemplateManifest.Embedded)).Sdk);
+        Assert.AreEqual(TemplateRequirements.Embedded.For(net11).Sdk, TemplateRequirements.Embedded.For(new TemplateSelection(TemplateManifest.Embedded)).Sdk);
     }
 
     [TestMethod]
