@@ -114,6 +114,8 @@ public sealed record ToolAction
 
     public required IReadOnlyList<ProcessSpec> Commands { get; init; }
 
+    public IReadOnlyList<ProcessSpec> Fallback { get; init; } = [];
+
     public Elevation Elevation { get; init; }
 
     public bool Interactive { get; init; }
