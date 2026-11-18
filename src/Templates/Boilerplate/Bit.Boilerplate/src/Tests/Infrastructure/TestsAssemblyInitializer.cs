@@ -1,6 +1,7 @@
 //+:cnd:noEmit
 //#if (aspire == true)
 using Aspire.Hosting;
+using Aspire.Hosting.Dotnet;
 using Aspire.Hosting.Testing;
 using Aspire.Hosting.ApplicationModel;
 //#endif
@@ -50,7 +51,7 @@ public partial class TestsAssemblyInitializer
         var aspireAppBuilder = await DistributedApplicationTestingBuilder
             .CreateAsync<Program>(testContext.CancellationToken);
 
-        foreach (var res in aspireAppBuilder.Resources.Where(r => r is ProjectResource or IResourceWithParent<ProjectResource>).ToList())
+        foreach (var res in aspireAppBuilder.Resources.Where(r => r is DotnetProjectResource or IResourceWithParent<DotnetProjectResource>).ToList())
             aspireAppBuilder.Resources.Remove(res);
 
         // The following resources are not that much useful in tests and just add to the startup time, so we remove them from the application.
@@ -61,6 +62,7 @@ public partial class TestsAssemblyInitializer
         //#endif
         string[] typeNamesToBeRemoved = [
             "OtlpLoopbackResource",
+            "DotnetProjectBuildResource",
             //#if (cloudflare == true)
             nameof(Aspire.Hosting.ApplicationModel.CloudflareTunnelResource),
             nameof(Aspire.Hosting.ApplicationModel.CloudflareQuickTunnelResource),

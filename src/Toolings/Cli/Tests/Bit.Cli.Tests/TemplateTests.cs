@@ -269,8 +269,8 @@ public class TemplateTests
         Assert.AreEqual(24, TemplateRequirements.ParseNodeMajor("{ \"engines\": { \"node\": \">=24\" } }"));
         Assert.AreEqual(22, TemplateRequirements.ParseNodeMajor("{ \"engines\": { \"node\": \"^22.11\" } }"));
         Assert.IsNull(TemplateRequirements.ParseNodeMajor("{ \"devDependencies\": {} }"));
-        Assert.AreEqual(new Version(13, 6, 0), TemplateRequirements.ParseAspire("<Project Sdk=\"Aspire.AppHost.Sdk/13.6.0\">"));
-        Assert.IsNull(TemplateRequirements.ParseAspire("<Project Sdk=\"Microsoft.NET.Sdk\">"));
+        Assert.AreEqual(new Version(17, 0, 0), TemplateRequirements.ParseAspire("<Project><ItemGroup><PackageVersion Condition=\" '$(aspire)' == 'true' \" Include=\"Aspire.Hosting.AppHost\" Version=\"17.0.0\" /></ItemGroup></Project>"));
+        Assert.IsNull(TemplateRequirements.ParseAspire("<Project><ItemGroup><PackageVersion Include=\"Aspire.Hosting.Testing\" Version=\"17.0.0\" /></ItemGroup></Project>"));
     }
 
     [TestMethod]
