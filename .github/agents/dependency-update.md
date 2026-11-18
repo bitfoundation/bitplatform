@@ -189,8 +189,10 @@ A `Condition="..."` attribute sits between `PackageVersion` and `Include` on man
 `Directory.Packages.props` lines — a naive `Include="X" Version="Y"` regex silently drops ~60
 packages, including everything Aspire, FusionCache, and Agents.AI.
 
-The Boilerplate AppHost's `<Project Sdk="Aspire.AppHost.Sdk/<version>">` is a NuGet pin the grep
-doesn't see. Keep it equal to the `Aspire.Hosting.*` packages; it stayed two patches behind them once.
+The Boilerplate's `CommunityToolkit.Aspire.*` packages follow Aspire's major: while the toolkit has only betas for the
+major `Aspire.Hosting.*` is on, they take its newest beta. The Aspire dashboard image that `aspire publish` puts in the
+Docker Compose project (`aspire/dashboard` in `DockerComposePublishingExtensions.cs`) takes Aspire's major and minor
+once MCR has that tag, which can be days after the release.
 
 NuGet audit warnings (NU1902/NU1903) on a transitive package whose DLL the shared framework also
 carries, such as `System.Security.Cryptography.Pkcs` in `Microsoft.AspNetCore.App`, are noise: the
