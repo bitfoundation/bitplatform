@@ -260,10 +260,11 @@ public static class AssemblyMethods
         return $"{metadata.GetString(declaring.Namespace)}.{metadata.GetString(declaring.Name)}/{metadata.GetString(metadata.GetTypeDefinition(handle).Name)}";
     }
 
-    /// <param name="methodArguments">For an instance of a generic method, the classes its type parameters stand for: its signature is inflated with them, as Mono's profiler writes it.</param>
-    internal static AotProfileMethod ProfileMethod(AotProfileClass owner, MetadataReader metadata, TypeDefinition type, MethodDefinition method, IReadOnlyList<string>? typeArguments, IReadOnlyList<AotProfileClass>? methodArguments = null)
+    /// <param name="methodArguments">For an instance of a generic method, the classes its type parameters stand for, as the profile names them.</param>
+    /// <param name="methodArgumentNames">The names Mono gives <paramref name="methodArguments"/> in a signature (see <see cref="MonoNames"/>): the signature is inflated with them, as Mono's profiler writes it.</param>
+    internal static AotProfileMethod ProfileMethod(AotProfileClass owner, MetadataReader metadata, TypeDefinition type, MethodDefinition method, IReadOnlyList<string>? typeArguments, IReadOnlyList<AotProfileClass>? methodArguments = null, IReadOnlyList<string>? methodArgumentNames = null)
     {
-        var signature = method.DecodeSignature(new SignatureFormatter(metadata, type, method, typeArguments, methodArguments?.Select(TypeText).ToList()), null);
+        var signature = method.DecodeSignature(new SignatureFormatter(metadata, type, method, typeArguments, methodArgumentNames), null);
         return new AotProfileMethod(owner, metadata.GetString(method.Name), signature.ParameterTypes.Length,
             $"{signature.ReturnType.Text}({string.Join(",", signature.ParameterTypes.Select(p => p.Text))})", methodArguments);
     }
@@ -271,6 +272,21 @@ public static class AssemblyMethods
     private static IEnumerable<AotProfileImage> Images(AotProfileClass type)
     {
         return type.Arguments is null ? [type.Image] : [type.Image, .. type.Arguments.SelectMany(Images)];
+    }
+
+    /// <summary>The names Mono gives profiled classes where they stand in a signature, or null when one of them isn't in the app.</summary>
+    internal static IReadOnlyList<string>? MonoNames(IReadOnlyList<AotProfileClass> types, AppAssemblies assemblies)
+    {
+        var names = new List<string>(types.Count);
+        foreach (var type in types)
+        {
+            if (MonoName(type, assemblies) is not { } name)
+                return null;
+
+            names.Add(name);
+        }
+
+        return names;
     }
 
     /// <summary>The name Mono gives a profiled class where it stands in a signature, or null when it isn't in the app.</summary>

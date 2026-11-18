@@ -41,10 +41,22 @@ public static class InterpreterCallGaps
         var instantiated = profiledList.Select(m => m.Class).ToList();
 
         // The instantiations the profile has of each class's generic methods, by the class and the number of type parameters.
-        var siblings = profiledList
-            .Where(m => m.Arguments is { Count: > 0 })
-            .GroupBy(m => (m.Class.Key, m.Arguments!.Count))
-            .ToDictionary(g => g.Key, g => g.Select(m => m.Arguments!).DistinctBy(AotProfile.ArgumentsKey).ToList());
+        // The class is the one its profile name finds in the app, so the profiler's short name of a class nested in a nested
+        // class finds the same one as its full name, and a short name two classes share finds neither.
+        var siblings = new Dictionary<(MetadataReader Metadata, TypeDefinitionHandle Type, int Arity), List<IReadOnlyList<AotProfileClass>>>();
+        foreach (var profiledMethod in profiledList)
+        {
+            if (profiledMethod.Class.Arguments is not null || profiledMethod.Arguments is not { Count: > 0 } arguments
+                || assemblies.TryGetType(profiledMethod.Class.Image.Name, profiledMethod.Class.Name, out var classMetadata, out var classHandle) is false)
+                continue;
+
+            var key = (classMetadata, classHandle, arguments.Count);
+            if (siblings.TryGetValue(key, out var found) is false)
+                siblings[key] = found = [];
+
+            if (found.Any(a => AotProfile.ArgumentsKey(a) == AotProfile.ArgumentsKey(arguments)) is false)
+                found.Add(arguments);
+        }
 
         var gaps = new CallGaps(assemblies);
         var methods = new List<AotProfileMethod>();
@@ -69,16 +81,21 @@ public static class InterpreterCallGaps
                 if (arity == 0 || type.GetGenericParameters().Count > 0)
                     continue;
 
-                var owner = new AotProfileClass(image, AssemblyMethods.ClassName(metadata, typeHandle));
-                if (siblings.TryGetValue((owner.Key, arity), out var instances) is false)
+                if (siblings.TryGetValue((metadata, typeHandle, arity), out var instances) is false)
                     continue;
+
+                var owner = new AotProfileClass(image, AssemblyMethods.ClassName(metadata, typeHandle));
 
                 foreach (var arguments in instances)
                 {
+                    // An instantiation over a class that isn't in the app can't be named in a signature.
+                    if (AssemblyMethods.MonoNames(arguments, assemblies) is not { } names)
+                        continue;
+
                     // A signature the formatter can't decode is left out, as AssemblyMethods leaves one out.
                     try
                     {
-                        methods.Add(AssemblyMethods.ProfileMethod(owner, metadata, type, method, typeArguments: null, arguments));
+                        methods.Add(AssemblyMethods.ProfileMethod(owner, metadata, type, method, typeArguments: null, arguments, names));
                     }
                     catch (Exception exp) when (exp is BadImageFormatException or NotSupportedException or ArgumentOutOfRangeException or InvalidOperationException)
                     {
@@ -136,7 +153,12 @@ public static class InterpreterCallGaps
                         targets.Add(MetadataTokens.EntityHandle(il.ReadInt32()));
                         break;
                     case ILOpCode.Switch:
-                        il.Offset += 4 * (int)il.ReadUInt32();
+                        // The count is read before the offset is taken: `il.Offset += 4 * il.ReadUInt32()` would take
+                        // it first and land 4 bytes short, inside the jump table.
+                        var count = il.ReadUInt32();
+                        if (count > (uint)il.RemainingBytes / 4)
+                            throw new BadImageFormatException();
+                        il.Offset += 4 * (int)count;
                         break;
                     default:
                         il.Offset += OperandSize(opCode);
@@ -195,34 +217,141 @@ internal sealed class CallGaps(AppAssemblies assemblies)
     {
         try
         {
-            // An instance of a generic method is the method it instantiates.
-            if (method.Kind == HandleKind.MethodSpecification)
-                return IsGap(metadata, metadata.GetMethodSpecification((MethodSpecificationHandle)method).Method);
-
-            var provider = new ShapeProvider(this);
-            MethodSignature<Shape>? signature = null;
-
-            if (method.Kind == HandleKind.MethodDefinition)
-            {
-                var definition = metadata.GetMethodDefinition((MethodDefinitionHandle)method);
-
-                // Declared where it's used, so a definition of the caller's own assembly.
-                if (definition.GetCustomAttributes().Any(a => AssemblyMethods.AttributeName(metadata, a) == "UnsafeAccessorAttribute"))
-                    return true;
-
-                signature = definition.DecodeSignature(provider, null);
-            }
-            else if (method.Kind == HandleKind.MemberReference && metadata.GetMemberReference((MemberReferenceHandle)method) is var reference && reference.GetKind() == MemberReferenceKind.Method)
-            {
-                signature = reference.DecodeMethodSignature(provider, null);
-            }
-
-            // A struct passed by reference is passed as a pointer.
-            return signature is { } found && (found.ReturnType.Holds || found.ParameterTypes.Any(p => p.Holds));
+            return IsGap(metadata, method, methodArguments: default);
         }
         catch (Exception exp) when (exp is BadImageFormatException or InvalidOperationException or ArgumentOutOfRangeException)
         {
             return false;
+        }
+    }
+
+    /// <param name="methodArguments">For an instance of a generic method, what its type arguments are as far as this asks.</param>
+    private bool IsGap(MetadataReader metadata, EntityHandle method, ImmutableArray<Shape> methodArguments)
+    {
+        var provider = new ShapeProvider(this);
+        MethodSignature<Shape> signature;
+
+        switch (method.Kind)
+        {
+            case HandleKind.MethodSpecification:
+                // An instance of a generic method is the method it instantiates, with its type arguments standing for
+                // its type parameters: Echo<T>(T) passes one by value as Echo<InlineBuffer>, not as Echo<int>.
+                var specification = metadata.GetMethodSpecification((MethodSpecificationHandle)method);
+                return IsGap(metadata, specification.Method, specification.DecodeSignature(provider, default));
+
+            case HandleKind.MethodDefinition:
+                var definition = metadata.GetMethodDefinition((MethodDefinitionHandle)method);
+                if (IsUnsafeAccessor(metadata, definition))
+                    return true;
+
+                signature = definition.DecodeSignature(provider, new ShapeContext(default, methodArguments));
+                break;
+
+            case HandleKind.MemberReference:
+                var reference = metadata.GetMemberReference((MemberReferenceHandle)method);
+                if (reference.GetKind() != MemberReferenceKind.Method)
+                    return false;
+
+                // Declared in another assembly, or on a generic type, which a call names by a reference.
+                if (IsUnsafeAccessor(metadata, reference))
+                    return true;
+
+                // A method of a generic type instance, like Box<InlineBuffer>.Echo(T): the instance's type arguments
+                // stand for the type's type parameters in its signature.
+                var typeArguments = GenericInstance(metadata, reference.Parent) is { } instance ? instance.Arguments(provider) : default;
+                signature = reference.DecodeMethodSignature(provider, new ShapeContext(typeArguments, methodArguments));
+                break;
+
+            default:
+                return false;
+        }
+
+        // A struct passed by reference is passed as a pointer.
+        return signature.ReturnType.Holds || signature.ParameterTypes.Any(p => p.Holds);
+    }
+
+    private static bool IsUnsafeAccessor(MetadataReader metadata, MethodDefinition method)
+        => method.GetCustomAttributes().Any(a => AssemblyMethods.AttributeName(metadata, a) == "UnsafeAccessorAttribute");
+
+    /// <summary>Whether a method reference is to an <c>[UnsafeAccessor]</c> method: the one of its type, in the app, with its name and signature.</summary>
+    private bool IsUnsafeAccessor(MetadataReader metadata, MemberReference reference)
+    {
+        var parent = reference.Parent;
+        if (GenericInstance(metadata, parent) is { } instance)
+            parent = instance.Type;
+
+        MetadataReader? typeMetadata = metadata;
+        TypeDefinitionHandle typeHandle;
+
+        if (parent.Kind == HandleKind.TypeDefinition)
+            typeHandle = (TypeDefinitionHandle)parent;
+        else if (parent.Kind != HandleKind.TypeReference
+            || assemblies.Resolve(metadata, (TypeReferenceHandle)parent) is not { } resolved
+            || assemblies.TryGetType(resolved.Image, resolved.Name, out typeMetadata, out typeHandle) is false)
+            return false;
+
+        var type = typeMetadata.GetTypeDefinition(typeHandle);
+        var name = metadata.GetString(reference.Name);
+
+        // The name and the attribute first, so only the signatures of the few methods that can match are read.
+        var candidates = type.GetMethods()
+            .Select(typeMetadata.GetMethodDefinition)
+            .Where(m => typeMetadata.StringComparer.Equals(m.Name, name) && IsUnsafeAccessor(typeMetadata, m))
+            .ToList();
+
+        if (candidates.Count == 0)
+            return false;
+
+        var typeParameters = GenericNames("!", type.GetGenericParameters().Count);
+
+        foreach (var candidate in candidates)
+        {
+            var methodParameters = GenericNames("!!", candidate.GetGenericParameters().Count);
+            var expected = SignatureText(candidate.DecodeSignature(new SignatureFormatter(typeMetadata, type, candidate, typeParameters, methodParameters), null));
+            var actual = SignatureText(reference.DecodeMethodSignature(new SignatureFormatter(metadata, type, candidate, typeParameters, methodParameters), null));
+
+            if (expected == actual)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static List<string> GenericNames(string prefix, int count) => [.. Enumerable.Range(0, count).Select(i => prefix + i)];
+
+    private static string SignatureText(MethodSignature<SignatureType> signature)
+        => $"{signature.Header.IsInstance} {signature.GenericParameterCount} {signature.ReturnType.Text}({string.Join(",", signature.ParameterTypes.Select(p => p.Text))})";
+
+    /// <summary>The generic type a type specification instantiates and its type arguments, or null for any other type.</summary>
+    private static GenericTypeInstance? GenericInstance(MetadataReader metadata, EntityHandle type)
+    {
+        if (type.Kind != HandleKind.TypeSpecification)
+            return null;
+
+        var blob = metadata.GetBlobReader(metadata.GetTypeSpecification((TypeSpecificationHandle)type).Signature);
+        if (blob.ReadSignatureTypeCode() != SignatureTypeCode.GenericTypeInstance)
+            return null;
+
+        blob.ReadByte(); // CLASS or VALUETYPE
+        return new GenericTypeInstance(metadata, blob.ReadTypeHandle(), blob);
+    }
+
+    /// <param name="ArgumentsBlob">The signature, read up to the count of type arguments.</param>
+    private readonly record struct GenericTypeInstance(MetadataReader Metadata, EntityHandle Type, BlobReader ArgumentsBlob)
+    {
+        public ImmutableArray<Shape> Arguments(ISignatureTypeProvider<Shape, ShapeContext> provider)
+        {
+            var blob = ArgumentsBlob;
+            var decoder = new SignatureDecoder<Shape, ShapeContext>(provider, Metadata, default);
+            var count = blob.ReadCompressedInteger();
+            var arguments = ImmutableArray.CreateBuilder<Shape>(count);
+
+            for (var i = 0; i < count; i++)
+            {
+                arguments.Add(decoder.DecodeType(ref blob));
+            }
+
+            return arguments.MoveToImmutable();
         }
     }
 
@@ -247,7 +376,7 @@ internal sealed class CallGaps(AppAssemblies assemblies)
                 if ((field.Attributes & FieldAttributes.Static) != 0)
                     continue;
 
-                if (field.DecodeSignature(provider, null).Holds)
+                if (field.DecodeSignature(provider, default).Holds)
                 {
                     result = true;
                     break;
@@ -261,7 +390,10 @@ internal sealed class CallGaps(AppAssemblies assemblies)
     /// <summary>A type as far as this asks: whether it's a struct, and whether it holds an inline array where it's passed by value.</summary>
     internal readonly record struct Shape(bool ValueType, bool Holds);
 
-    private sealed class ShapeProvider(CallGaps gaps) : ISignatureTypeProvider<Shape, object?>
+    /// <summary>What the type parameters of a method's type and of the method stand for, where that is known.</summary>
+    internal readonly record struct ShapeContext(ImmutableArray<Shape> TypeArguments, ImmutableArray<Shape> MethodArguments);
+
+    private sealed class ShapeProvider(CallGaps gaps) : ISignatureTypeProvider<Shape, ShapeContext>
     {
         private static readonly Shape Reference = new(false, false);
 
@@ -282,7 +414,7 @@ internal sealed class CallGaps(AppAssemblies assemblies)
                 : new(true, false);
         }
 
-        public Shape GetTypeFromSpecification(MetadataReader reader, object? genericContext, TypeSpecificationHandle handle, byte rawTypeKind)
+        public Shape GetTypeFromSpecification(MetadataReader reader, ShapeContext genericContext, TypeSpecificationHandle handle, byte rawTypeKind)
             => reader.GetTypeSpecification(handle).DecodeSignature(this, genericContext);
 
         // A generic struct holds one when its definition does (InlineArray8<T> is one), or - taken broadly, as compiling a
@@ -300,10 +432,13 @@ internal sealed class CallGaps(AppAssemblies assemblies)
 
         public Shape GetFunctionPointerType(MethodSignature<Shape> signature) => Reference;
 
-        // What a type parameter stands for isn't known here.
-        public Shape GetGenericTypeParameter(object? genericContext, int index) => Reference;
+        // A type parameter is what it stands for in an instance, and taken for a class where that isn't known.
+        public Shape GetGenericTypeParameter(ShapeContext genericContext, int index) => Argument(genericContext.TypeArguments, index);
 
-        public Shape GetGenericMethodParameter(object? genericContext, int index) => Reference;
+        public Shape GetGenericMethodParameter(ShapeContext genericContext, int index) => Argument(genericContext.MethodArguments, index);
+
+        private static Shape Argument(ImmutableArray<Shape> arguments, int index)
+            => arguments.IsDefault || index >= arguments.Length ? Reference : arguments[index];
 
         public Shape GetModifiedType(Shape modifier, Shape unmodifiedType, bool isRequired) => unmodifiedType;
 

@@ -289,7 +289,48 @@ public class AotProfileTests
             .Select(m => m.Name)
             .ToList();
 
-        CollectionAssert.AreEquivalent(new[] { "SetsAmount", "PointsAtSetAmount" }, methods);
+        // One declared on a generic type is called through a member reference, resolved to its definition.
+        CollectionAssert.AreEquivalent(new[] { "SetsAmount", "PointsAtSetAmount", "SetsAmountThroughGeneric" }, methods);
+    }
+
+    [TestMethod]
+    public void TheCallersOfAGenericInstancePassingAnInlineArrayByValue_Should_BeListed()
+    {
+        var methods = GapCallerMethods([])
+            .Where(m => m.Class.Name == "Bit.Cli.Tests.ProfileGenericInlineArraySamples")
+            .Select(m => m.Name)
+            .ToList();
+
+        // Echo<ProfileInlineArrayHolder> and ProfileEchoBox<ProfileInlineArrayHolder>.Echo pass one by value; their
+        // instances over int, and those taking it by reference, don't.
+        CollectionAssert.AreEquivalent(new[] { "CallsEchoOfHolder", "CallsBoxEchoOfHolder" }, methods);
+    }
+
+    [TestMethod]
+    public void AGenericMethodCallingOne_Should_BeListedWithItsSignatureNamingTheTypeArgumentsAsMonoDoes()
+    {
+        // The profile names a class of the global namespace with a dot first; a signature names it without.
+        var samples = new AotProfileClass(Tests, "Bit.Cli.Tests.ProfileInlineArraySamples");
+        var global = new AotProfileClass(Tests, ".ProfileGlobalItem");
+        var sibling = new AotProfileMethod(samples, "Sibling", 1, "ProfileGlobalItem(ProfileGlobalItem)", [global]);
+
+        var method = GapCallerMethods([sibling]).Single(m => m.Name == "GenericCaller");
+
+        Assert.AreEqual("int(ProfileGlobalItem)", method.Signature);
+        Assert.AreEqual(global.Key, method.Arguments!.Single().Key);
+    }
+
+    [TestMethod]
+    public void AGenericMethodOfAClassNestedInANestedClass_Should_BeListedForTheInstantiationsTheProfileNamesItsClassBy()
+    {
+        // Mono's profiler names ProfileNestedOuter.Middle.Samples by the class it's nested in directly alone.
+        var samples = new AotProfileClass(Tests, ".Middle/Samples");
+        var sibling = new AotProfileMethod(samples, "Sibling", 1, "char(char)", [new AotProfileClass(CoreLib, "System.Char")]);
+
+        var method = GapCallerMethods([sibling]).Single(m => m.Name == "GenericCaller" && m.Class.Name.EndsWith("/Samples", StringComparison.Ordinal));
+
+        Assert.AreEqual("int(char)", method.Signature);
+        Assert.AreEqual("Bit.Cli.Tests.ProfileNestedOuter/Middle/Samples", method.Class.Name);
     }
 
     [TestMethod]
@@ -349,6 +390,42 @@ public class AotProfileTests
         var targets = InterpreterCallGaps.CallTargets(assemblies.Body(metadata, metadata.GetMethodDefinition(handle))!);
 
         CollectionAssert.AreEqual(new[] { "CallsNothing", "Take" }, targets.Select(t => MethodName(metadata, t)).Where(n => n is "CallsNothing" or "Take").ToList());
+    }
+
+    [TestMethod]
+    public void TheCallsOfABody_Should_BeReadFromTheInstructionRightAfterASwitchsJumpTable()
+    {
+        // A switch with one target 0x28 bytes on - the opcode of call - then a call: resumed even a byte off, the scan
+        // reads the table's displacement as a call of its own.
+        byte[] il =
+        [
+            0x45, 0x01, 0x00, 0x00, 0x00, 0x28, 0x00, 0x00, 0x00, // switch (1 target: +0x28)
+            0x28, 0x01, 0x00, 0x00, 0x06,                         // call 0x06000001
+            0x2A                                                  // ret
+        ];
+
+        CollectionAssert.AreEqual(new[] { 0x06000001 }, CallTargetsOf(il).Select(System.Reflection.Metadata.Ecma335.MetadataTokens.GetToken).ToList());
+
+        // A count the body has no room for ends the scan there, with the calls read before it.
+        Assert.IsEmpty(CallTargetsOf([0x45, 0xFF, 0xFF, 0xFF, 0x0F, 0x28, 0x01, 0x00, 0x00, 0x06, 0x2A]));
+    }
+
+    /// <summary>The call targets <see cref="InterpreterCallGaps.CallTargets"/> reads in this IL, given a tiny method header.</summary>
+    private static List<System.Reflection.Metadata.EntityHandle> CallTargetsOf(byte[] il)
+    {
+        var builder = new System.Reflection.Metadata.Ecma335.MetadataBuilder();
+        builder.AddModule(0, builder.GetOrAddString("Fixture"), builder.GetOrAddGuid(Guid.NewGuid()), default, default);
+
+        var body = new System.Reflection.Metadata.BlobBuilder();
+        body.WriteByte((byte)(il.Length << 2 | 0x2));
+        body.WriteBytes(il);
+        var handle = builder.GetOrAddBlob(body);
+
+        var image = new System.Reflection.Metadata.BlobBuilder();
+        new System.Reflection.Metadata.Ecma335.MetadataRootBuilder(builder).Serialize(image, 0, 0);
+
+        using var provider = System.Reflection.Metadata.MetadataReaderProvider.FromMetadataImage(image.ToImmutableArray());
+        return InterpreterCallGaps.CallTargets(System.Reflection.Metadata.MethodBodyBlock.Create(provider.GetMetadataReader().GetBlobReader(handle)));
     }
 
     private static int OperandsThenCalls(int value, string text)
@@ -1296,12 +1373,70 @@ public static class ProfileUnsafeAccessorSamples
 
     public static Action<ProfileUsageHolder, decimal?> PointsAtSetAmount() => SetAmount;
 
+    public static void SetsAmountThroughGeneric(ProfileUsageHolder holder) => ProfileUnsafeAccessorOf<int>.SetAmount(holder, 1m);
+
     public static decimal? ReadsAmount(ProfileUsageHolder holder) => holder.Amount;
 }
 
 public sealed class ProfileInlineArrayCallerOf<T>
 {
     public int CallsTake(T value) => ProfileInlineArraySamples.Take(default) + value!.GetHashCode();
+}
+
+/// <summary>Generic methods, and methods of a generic type, that pass an inline array by value only in some of their instances.</summary>
+public static class ProfileGenericInlineArraySamples
+{
+    public static T Echo<T>(T value) => value;
+
+    public static int EchoByRef<T>(ref T value) => value!.GetHashCode();
+
+    public static int CallsEchoOfHolder() => Echo(default(ProfileInlineArrayHolder)).Values[0];
+
+    public static int CallsEchoOfNumber() => Echo(1);
+
+    public static int CallsEchoByRefOfHolder()
+    {
+        var holder = default(ProfileInlineArrayHolder);
+        return EchoByRef(ref holder);
+    }
+
+    public static int CallsBoxEchoOfHolder() => ProfileEchoBox<ProfileInlineArrayHolder>.Echo(default).Values[0];
+
+    public static int CallsBoxEchoOfNumber() => ProfileEchoBox<int>.Echo(1);
+
+    public static int CallsBoxEchoByRefOfHolder()
+    {
+        var holder = default(ProfileInlineArrayHolder);
+        return ProfileEchoBox<ProfileInlineArrayHolder>.EchoByRef(ref holder);
+    }
+}
+
+public static class ProfileEchoBox<T>
+{
+    public static T Echo(T value) => value;
+
+    public static int EchoByRef(ref T value) => value!.GetHashCode();
+}
+
+/// <summary>An <c>[UnsafeAccessor]</c> declared on a generic type, which a call names by a member reference.</summary>
+public static class ProfileUnsafeAccessorOf<T>
+{
+    [System.Runtime.CompilerServices.UnsafeAccessor(System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = "set_Amount")]
+    public static extern void SetAmount(ProfileUsageHolder holder, decimal? amount);
+}
+
+public static class ProfileNestedOuter
+{
+    public static class Middle
+    {
+        /// <summary>A class nested in a nested class, which Mono's profiler names <c>.Middle/Samples</c>.</summary>
+        public static class Samples
+        {
+            public static int GenericCaller<T>(T value) => ProfileInlineArraySamples.Take(default) + value!.GetHashCode();
+
+            public static T Sibling<T>(T value) => value;
+        }
+    }
 }
 
 /// <summary>Shaped like System.Text.Json's dictionary converters: a virtual method that takes a type parameter by <c>in</c>.</summary>
