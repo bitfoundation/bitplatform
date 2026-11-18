@@ -4,7 +4,7 @@
 **bit BlazorUI** offers a comprehensive set of native, light-weight, and high-performance UI controls for Blazor. Developed in C#, it stands independent of external JavaScript frameworks or libraries, ensuring seamless and efficient integration.
 
 **Why choose bit BlazorUI components?**
-- **Free and Open Source**: bit BlazorUI components come at no cost and are open to the community for contributions and improvements.
+- **Free and Source Available**: bit BlazorUI components come at no cost and are open to the community for contributions and improvements.
 - **Light Weight**: Built for low load time and fast render.
 - **High Performance**: Built for optimal speed and performance.
 - **Blazor Native**: Specifically designed as native Blazor components, ensuring a consistent development experience.

@@ -1753,4 +1753,4 @@ false unless its drop already counted, and the drop result published so far - in
 ## License
 
 Bit.Bdnd is part of the [bit platform](https://github.com/bitfoundation/bitplatform) and is licensed under the
-[MIT License](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE).
+[Functional Source License (FSL-1.1-MIT)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE).

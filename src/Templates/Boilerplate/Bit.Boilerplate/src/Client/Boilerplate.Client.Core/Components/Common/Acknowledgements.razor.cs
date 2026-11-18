@@ -2,7 +2,7 @@
 namespace Boilerplate.Client.Core.Components.Common;
 
 /// <summary>
-/// A tip of the hat to the open-source projects, tools, and services this app is built with.
+/// A tip of the hat to the open-source and source-available projects, tools, and services this app is built with.
 /// It also doubles as the third-party attribution / license notice required by many of those licenses.
 /// The lists below mirror the actual dependencies of the generated project: entries wrapped in the
 /// template's conditional markers only ship when the matching option is selected. The marker is spelled `//if` in
@@ -18,14 +18,15 @@ public partial class Acknowledgements
     /// <param name="Url">Official website (falls back to the repository when there is no distinct homepage).</param>
     /// <param name="Repo">Public source repository, or null for closed-source products.</param>
     /// <param name="License">SPDX license identifier, or a short phrase when the package is multi-licensed or its license has no SPDX identifier.</param>
-    private record Dependency(string Name, string? Url, string? Repo, string License);
+    /// <param name="LicenseUrl">The license text, for a license whose terms ask a redistributed copy to link to them.</param>
+    private record Dependency(string Name, string? Url, string? Repo, string License, string? LicenseUrl = null);
 
     /// <summary>
     /// Production NuGet packages (the app's runtime dependencies), grouped by product.
     /// </summary>
     private static readonly Dependency[] RuntimeDependencies =
     [
-        new("bit platform ❤️", "https://bitplatform.dev", "https://github.com/bitfoundation/bitplatform", "MIT"),
+        new("bit platform ❤️", "https://bitplatform.dev", "https://github.com/bitfoundation/bitplatform", "FSL-1.1-MIT", "https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE"),
         new(".NET", "https://dot.net", "https://github.com/dotnet/runtime", "MIT"),
         new("ASP.NET Core - Blazor", "https://asp.net", "https://github.com/dotnet/aspnetcore", "MIT"),
         //#if (aspire == true)

@@ -3,14 +3,14 @@
 
 <PageOutlet Url="pricing"
             Title="Pricing"
-            Description="bit platform is free and open source. Optional paid support packages give your team direct access to the bit core developers." />
+            Description="bit platform is free and source available. Optional paid support packages give your team direct access to the bit core developers." />
 
 <div class="page-container">
     <section class="page-section main-section">
         <div class="page-section-content">
             <BitText Typography="BitTypography.H1" Gutter>Pricing</BitText>
             <BitText Typography="BitTypography.H4" Gutter>
-                bit platform is open source and using it is truly free.
+                bit platform is source available and using it is truly free.
             </BitText>
             <BitText Typography="BitTypography.Subtitle1">
                 When you require more, you may choose a package that fits your needs.
@@ -46,7 +46,7 @@
                         <div class="plan-card-desc">
                             <div class="plan-card-item">
                                 <BitIcon IconName="CheckMark" Class="plan-check-icon" />
-                                <BitText Typography="BitTypography.H6" Gutter><b>MIT</b> License</BitText>
+                                <BitText Typography="BitTypography.H6" Gutter><b>FSL-1.1-MIT</b> License</BitText>
                             </div>
                             <div class="plan-card-item">
                                 <BitIcon IconName="CheckMark" Class="plan-check-icon" />
@@ -62,7 +62,7 @@
                             </div>
                             <div class="plan-card-item">
                                 <BitIcon IconName="CheckMark" Class="plan-check-icon" />
-                                <BitText Typography="BitTypography.H6" Gutter>Open-source support (GitHub issues)</BitText>
+                                <BitText Typography="BitTypography.H6" Gutter>Community support (GitHub issues)</BitText>
                             </div>
                         </div>
                         <BitButton Class="plan-card-button" Href="/#our-products">Get started</BitButton>
@@ -110,6 +110,21 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section class="page-section">
+        <div class="page-section-content">
+            <BitText Typography="BitTypography.H5" Gutter>Commercial license</BitText>
+            <BitText Typography="BitTypography.Body1" Gutter>
+                Any app you build with bit platform, commercial or not, is covered by the free
+                <a href="https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE" target="_blank" rel="noopener">license</a>
+                and its <a href="https://github.com/bitfoundation/bitplatform/blob/develop/NOTICE.md" target="_blank" rel="noopener">additional permission</a>.
+                A commercial license is needed only for a product that competes with bit platform itself, such as a UI component
+                library, a project template or developer tooling built from its code, until that code becomes MIT two years after
+                its release.
+            </BitText>
+            <BitButton Variant="BitVariant.Outline" OnClick=@(WrapHandled(() => ShowBuyModal()))>Ask about a commercial license</BitButton>
         </div>
     </section>
 

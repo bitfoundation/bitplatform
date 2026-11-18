@@ -1,7 +1,7 @@
 
 # bit Boilerplate
 
-Free, open-source, full-stack, cross-platform, cloud-ready, and battle-tested project template for those who love C# & Blazor ❤️
+Free, source-available, full-stack, cross-platform, cloud-ready, and battle-tested project template for those who love C# & Blazor ❤️
 
 ## Features
 

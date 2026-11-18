@@ -10,7 +10,7 @@ under `_content/Bit.Bsqlite`, and the file system backend a Blazor Hybrid app ru
 app opens its files with is not in it: add `SQLitePCLRaw.bundle_e_sqlite3` (or the SQLitePCLRaw bundle the app
 already uses) to the Hybrid app's project.
 
-**Runtime:** .NET 10 and 11, each with its EF Core. **License:** MIT (bundles [wa-sqlite](https://github.com/rhashimoto/wa-sqlite), also MIT).
+**Runtime:** .NET 10 and 11, each with its EF Core. **License:** FSL-1.1-MIT (bundles [wa-sqlite](https://github.com/rhashimoto/wa-sqlite), which is MIT).
 
 ## Install
 

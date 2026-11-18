@@ -2,7 +2,7 @@
 
 <br/>
 
-![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
+[![License](https://img.shields.io/badge/license-FSL--1.1--MIT-blue.svg)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
 ![Release Build Status](https://github.com/bitfoundation/bitplatform/actions/workflows/all.release.build.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
 [![Nuget downloads](https://img.shields.io/badge/packages_download-10M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
@@ -14,7 +14,7 @@
 
 # 🧾 Introduction
 
-**bitplatform** is a set of open-source tools for building fast, polished apps with Blazor and C#. The libraries target **.NET 10 and 11** and are built for Blazor WebAssembly, Server, and Hybrid (MAUI) apps.
+**bitplatform** is a set of source-available tools for building fast, polished apps with Blazor and C#. The libraries target **.NET 10 and 11** and are built for Blazor WebAssembly, Server, and Hybrid (MAUI) apps.
 
 For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 
@@ -79,9 +79,9 @@ bit new MyApp
 
 <br/>
 
-# 🎁 OSS Showcases
+# 🎁 Source Available Showcases
 
-The following apps are our open-source projects powered by the bit platform showcasing the different capabilities of our toolchain:
+The following apps are our source-available projects powered by the bit platform showcasing the different capabilities of our toolchain:
 
 | | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS |
 |:-:|:--:|:--:|:--:|:--:|:--:|
@@ -104,6 +104,16 @@ The following apps are our open-source projects powered by the bit platform show
 [Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram.
 
 Prerendering combined with PWA functionality delivers an experience similar to GitHub's and Reddit's. bitplatform brings that combination to Blazor apps built on the modern .NET project structure.
+
+<br/>
+
+# 📜 License
+
+bitplatform is licensed under the [Functional Source License, FSL-1.1-MIT](LICENSE), with the additional permissions in [NOTICE.md](NOTICE.md):
+
+* Any app you build with bitplatform, or from one of its project templates, is a permitted use, commercial or not, whatever it does.
+* Only a commercial product that competes with bitplatform itself, such as a UI component library, a project template or developer tooling built from its code, needs a commercial license ([info@bitplatform.dev](mailto:info@bitplatform.dev)).
+* Each version becomes MIT two years after it is made available: a commit two years after it is pushed, a package two years after it is published to nuget.org. Every version published before the move to the FSL ([#14834](https://github.com/bitfoundation/bitplatform/issues/14834)) is MIT already.
 
 <br/>
 

@@ -2985,4 +2985,4 @@ existing operations, including `BinkBatchOperation`, instead.
 ## License
 
 Bink is part of [bitplatform](https://github.com/bitfoundation/bitplatform) and is licensed under the
-[MIT license](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE).
+[Functional Source License (FSL-1.1-MIT)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE).
