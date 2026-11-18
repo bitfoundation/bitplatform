@@ -8,7 +8,7 @@ namespace Bit.BlazorUI;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public partial class _BitFcEventBullet
 {
-    [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+    [CascadingParameter] internal BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
 
     [Parameter] public string? Color { get; set; }
 }

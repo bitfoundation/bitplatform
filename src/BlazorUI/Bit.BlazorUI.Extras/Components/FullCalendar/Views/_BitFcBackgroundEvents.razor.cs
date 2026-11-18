@@ -15,7 +15,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcBackgroundEvents
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+    [CascadingParameter] internal BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
     /// <summary>True on the event-mode grids, which have no resource rows to tell apart.</summary>

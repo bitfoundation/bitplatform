@@ -16,6 +16,12 @@
         <SupportedPlatform Include="browser" />
     </ItemGroup>
 
+    <!-- The unit tests pin internal parts of the package (BitFullCalendar's helpers, color scheme and change notifier, the
+         PdfViewer's byte sources, ...) directly. They are signed with the repository's key for this alone. -->
+    <ItemGroup>
+        <InternalsVisibleTo Include="Bit.BlazorUI.Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001008d726fe8f1bed8ca2a003848640c872c6a5f2191c81eda677b249a6e34bd9134eba9ff7251582a5020cb3eee83a61e7034ce712f5873d60f7c3c61f48592b256c560d7b3384e9889e4f81e4d406bc2b639915a4062d60751193ae66028d7bd4b9a3bf0823f1e38abe5eadc3cd9615c6ff811974a9f6f89297dc2a722bf23d0bb" />
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
         <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0" />

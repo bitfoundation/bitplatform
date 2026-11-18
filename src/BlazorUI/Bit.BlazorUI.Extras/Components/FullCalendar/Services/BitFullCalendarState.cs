@@ -148,7 +148,11 @@ public class BitFullCalendarState
     /// </summary>
     public bool IsTimelineModeAvailable => _resources.Count > 0 && _views.Any(_timelineViews.Contains);
 
-    /// <summary>When set, only events that include this attendee (by <see cref="BitFullCalendarHelpers.AttendeeFilterKey"/>) are shown.</summary>
+    /// <summary>
+    /// When set, only events that include this attendee are shown. The key is <c>"id:"</c> and the attendee's
+    /// <see cref="BitFullCalendarAttendee.Id"/>, or, for an attendee without one, <c>"name:"</c> and its
+    /// <see cref="BitFullCalendarAttendee.FullName"/> in lower case.
+    /// </summary>
     public string? SelectedAttendeeKey { get; private set; }
     public bool Use24HourFormat { get; private set; } = true;
     public BitFullCalendarBadgeVariant BadgeVariant { get; private set; } = BitFullCalendarBadgeVariant.Colored;
@@ -614,9 +618,9 @@ public class BitFullCalendarState
     }
 
     /// <summary>
-    /// Sets the hour window the day/week time grids render. The window is normalized (see
-    /// <see cref="BitFullCalendarHelpers.NormalizeVisibleHours"/>) and the scroll anchor is pulled
-    /// back inside it.
+    /// Sets the hour window the day/week time grids render. The start is clamped to 0-23 and the end
+    /// to 1-24, an end not after the start becomes the hour after it, and the scroll anchor is pulled
+    /// back inside the window.
     /// </summary>
     public void SetVisibleHours(int startHour, int endHour)
     {

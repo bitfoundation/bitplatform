@@ -318,6 +318,27 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitFullCalendarChangeNotifier</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitFullCalendarColorScheme</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitFullCalendarHelpers</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Bit.BlazorUI.BitMapTooltipDirection</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
@@ -634,83 +655,6 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitErrorBoundary.HasNotBeenSet(System.String)</Target>
-    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
-    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitFullCalendarChangeNotifier.get_RefusalReporter</Target>
-    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
-    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitFullCalendarChangeNotifier.ReportRefusal(Bit.BlazorUI.BitFullCalendarChangeRefusal)</Target>
-    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
-    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitFullCalendarHelpers.GetCurrentTimeLineOffsetHours(System.Int32)</Target>
-    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
-    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitFullCalendarHelpers.GetCurrentTimeLineTopPx(System.Int32)</Target>
-    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
-    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitFullCalendarHelpers.GetDateRange(Bit.BlazorUI.BitFullCalendarView,System.DateTime,System.Globalization.CultureInfo,System.Nullable{System.DayOfWeek})</Target>
-    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
-    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitFullCalendarHelpers.GetEventsForView(System.Collections.Generic.List{Bit.BlazorUI.BitFullCalendarEvent},Bit.BlazorUI.BitFullCalendarView,System.DateTime,System.Globalization.CultureInfo,System.Nullable{System.DayOfWeek})</Target>
-    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
-    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitFullCalendarHelpers.GetEventsForWeek(System.Collections.Generic.List{Bit.BlazorUI.BitFullCalendarEvent},System.DateTime,System.Globalization.CultureInfo,System.Nullable{System.DayOfWeek})</Target>
-    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
-    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitFullCalendarHelpers.GetWeekDates(System.DateTime,System.Globalization.CultureInfo,System.Nullable{System.DayOfWeek},System.Collections.Generic.IReadOnlyList{System.DayOfWeek})</Target>
-    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
-    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitFullCalendarHelpers.IsNowInVisibleHours(System.Int32,System.Int32)</Target>
-    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
-    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitFullCalendarHelpers.NavigateDate(System.DateTime,Bit.BlazorUI.BitFullCalendarView,System.Boolean,System.Globalization.CultureInfo,System.Collections.Generic.IReadOnlyList{System.DayOfWeek})</Target>
-    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
-    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitFullCalendarHelpers.RangeText(Bit.BlazorUI.BitFullCalendarView,System.DateTime,System.Globalization.CultureInfo,System.Nullable{System.DayOfWeek})</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

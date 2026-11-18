@@ -13,6 +13,10 @@
         <RollForward>Major</RollForward>
         <EnableMSTestRunner>true</EnableMSTestRunner>
         <DefineConstants>$(DefineConstants);DEMO_SHARED_ENUM_DOCS_TESTS</DefineConstants>
+        <!-- Signed with the repository's key so Bit.BlazorUI.Extras can open its internals to these tests (a signed
+             assembly can name only a signed one in InternalsVisibleTo). -->
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'AssemblyOriginatorKeyFile.snk'))\AssemblyOriginatorKeyFile.snk))</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -42,17 +46,6 @@
       <!-- Compile-linked so BitPublicCssVariablesTests can pin how a style string is cut into declarations
            (quotes, brackets, escapes) without InternalsVisibleTo. -->
       <Compile Include="..\..\Bit.BlazorUI\Utils\BitPublicCssVariables.cs" Link="Utils\BitPublicCssVariables.cs" />
-      <!-- Compile-linked so BitDataGridValueComparerTests can pin that the comparer a sort picks for a column's keys
-           orders them exactly as the general one does, without InternalsVisibleTo. -->
-      <Compile Include="..\..\Bit.BlazorUI.Extras\Components\DataGrid\Infrastructure\BitDataGridValueComparer.cs" Link="Components\Extras\DataGrid\BitDataGridValueComparer.cs" />
-      <!-- Compile-linked so BitPdfOpCodeTests can pin the internal enum's contiguous
-           blocks without InternalsVisibleTo (same source the Extras assembly builds). -->
-      <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\Content\BitPdfOpCode.cs" Link="Components\Extras\PdfViewer\BitPdfOpCode.cs" />
-      <!-- Compile-linked to test the internal byte-source contract without adding a public API. -->
-      <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\BitPdfByteSourceWindow.cs" Link="Components\Extras\PdfViewer\BitPdfByteSourceWindow.cs" />
-      <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\IBitPdfByteSource.cs" Link="Components\Extras\PdfViewer\IBitPdfByteSource.cs" />
-      <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\BitPdfMemoryByteSource.cs" Link="Components\Extras\PdfViewer\BitPdfMemoryByteSource.cs" />
-      <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\BitPdfByteSourceReader.cs" Link="Components\Extras\PdfViewer\BitPdfByteSourceReader.cs" />
       <!-- Compile-linked so DemoSharedEnumsTests can call every shared enum table of the demo pages and
            compare what it builds against the enum, rather than reading the tables out of the source.
            These files carry their own usings, since this project has no implicit ones. The generated

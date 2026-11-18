@@ -5,6 +5,19 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitFullCalendarChangeNotifier`, `BitFullCalendarColorScheme` and `BitFullCalendarHelpers` are internal ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+These are the machinery `BitFullCalendar` and its parts work with: the change notifier that hands a drag, a resize or
+an edit to `OnChanging` and `OnChange`, the color scheme the calendar builds from `EventColorOptions`, and the date,
+layout and recurrence helpers its views are drawn with. None of `BitFullCalendar`'s parameters, callbacks or templates
+hands one of them out, so they are no longer public.
+
+- The calendar's changes reach an app through `OnChanging`, `OnChange` and `OnRefused`, as before.
+- An event's color is still set by `BitFullCalendarEvent.Color`, an id of `EventColorOptions`; its default is
+  `"blue"`, which `BitFullCalendarColorScheme.FallbackColorId` held.
+- The occurrences of the recurring events in the shown range are in `BitFullCalendar.State.ExpandedEvents`, and the
+  date math of a week or a month is in .NET's own `Calendar`, `CultureInfo` and `ISOWeek`.
+
 ### `BitFullCalendar`'s `BitFc*` parts are `_BitFc*` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 The 40 `BitFc*` components are the header, views, dialogs, event blocks and other parts `BitFullCalendar` draws

@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcDroppableArea
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
+    [CascadingParameter] internal BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string? Class { get; set; }
     [Parameter] public DateTime Date { get; set; }
