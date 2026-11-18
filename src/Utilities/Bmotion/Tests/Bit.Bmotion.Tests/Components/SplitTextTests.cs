@@ -15,7 +15,7 @@ public class SplitTextTests
     [TestMethod]
     public void Split_Words_KeepsWhitespaceAsGaps()
     {
-        var chunks = BmotionTextSplitter.Split("hi  there", BmSplitBy.Words);
+        var chunks = BmotionTextSplitter.Split("hi  there", BmotionSplitBy.Words);
 
         Assert.AreEqual(3, chunks.Count);
         Assert.AreEqual("hi", chunks[0].Units.Single());
@@ -28,7 +28,7 @@ public class SplitTextTests
     [TestMethod]
     public void Split_Chars_GroupsCharactersByWord()
     {
-        var chunks = BmotionTextSplitter.Split("ab c", BmSplitBy.Chars);
+        var chunks = BmotionTextSplitter.Split("ab c", BmotionSplitBy.Chars);
 
         Assert.AreEqual(3, chunks.Count);
         CollectionAssert.AreEqual(new[] { "a", "b" }, chunks[0].Units.ToArray());
@@ -41,7 +41,7 @@ public class SplitTextTests
     {
         // A ZWJ emoji sequence and a combining accent must each stay one animatable character
         // rather than being torn into unrenderable UTF-16 halves.
-        var chunks = BmotionTextSplitter.Split("👨‍👩‍👧é", BmSplitBy.Chars);
+        var chunks = BmotionTextSplitter.Split("👨‍👩‍👧é", BmotionSplitBy.Chars);
 
         var units = chunks.Single().Units;
         Assert.AreEqual(2, units.Count);
@@ -52,7 +52,7 @@ public class SplitTextTests
     [TestMethod]
     public void Split_Lines_SplitsOnAuthoredNewlines_NormalisingCrLf()
     {
-        var chunks = BmotionTextSplitter.Split("one\r\ntwo\n\nthree", BmSplitBy.Lines);
+        var chunks = BmotionTextSplitter.Split("one\r\ntwo\n\nthree", BmotionSplitBy.Lines);
 
         Assert.AreEqual(4, chunks.Count);
         Assert.AreEqual("one", chunks[0].Units.Single());
@@ -65,8 +65,8 @@ public class SplitTextTests
     [TestMethod]
     public void Split_EmptyText_ProducesNoChunks()
     {
-        Assert.AreEqual(0, BmotionTextSplitter.Split(null, BmSplitBy.Chars).Count);
-        Assert.AreEqual(0, BmotionTextSplitter.Split("", BmSplitBy.Words).Count);
+        Assert.AreEqual(0, BmotionTextSplitter.Split(null, BmotionSplitBy.Chars).Count);
+        Assert.AreEqual(0, BmotionTextSplitter.Split("", BmotionSplitBy.Words).Count);
     }
 
     // ── Rendering ─────────────────────────────────────────────────────────────
@@ -89,7 +89,7 @@ public class SplitTextTests
         using var ctx = new BmotionTestContext();
         var cut = ctx.Render<BmotionSplitText>(ps => ps
             .Add(p => p.Text, "ab c")
-            .Add(p => p.By, BmSplitBy.Words)
+            .Add(p => p.By, BmotionSplitBy.Words)
             .Add(p => p.UnitClass, "u")
             .Add(p => p.Animate, Bm.To(opacity: 1)));
 

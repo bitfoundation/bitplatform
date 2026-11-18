@@ -14,7 +14,7 @@ public sealed class AdversarialMetadataTests
     /// Builds a minimal TIFF/EXIF block containing one IFD0 with the given tags, in either byte order. Rationals are
     /// written as (numerator, denominator) pairs.
     /// </summary>
-    private static byte[] BuildTiff(bool bigEndian, params (ushort Tag, ExifType Type, uint[] Values)[] entries)
+    private static byte[] BuildTiff(bool bigEndian, params (ushort Tag, BmageExifType Type, uint[] Values)[] entries)
     {
         var header = new byte[8];
         if (bigEndian)
@@ -45,8 +45,8 @@ public sealed class AdversarialMetadataTests
         Span<byte> entry = stackalloc byte[12];
         foreach (var (tag, type, values) in entries)
         {
-            var size = ExifValue.SizeOf(type);
-            var componentCount = type is ExifType.Rational or ExifType.SRational ? values.Length / 2 : values.Length;
+            var size = BmageExifValue.SizeOf(type);
+            var componentCount = type is BmageExifType.Rational or BmageExifType.SRational ? values.Length / 2 : values.Length;
             var payload = new byte[componentCount * size];
             for (var i = 0; i < values.Length; i++)
             {
@@ -91,14 +91,14 @@ public sealed class AdversarialMetadataTests
     [DataRow(0u, 1u)]
     public void RationalsDecodeIdenticallyInBothByteOrders(uint numerator, uint denominator)
     {
-        var little = ExifData.Parse(BuildTiff(false, (ExifTag.ExposureTime, ExifType.Rational, [numerator, denominator])));
-        var big = ExifData.Parse(BuildTiff(true, (ExifTag.ExposureTime, ExifType.Rational, [numerator, denominator])));
+        var little = BmageExifData.Parse(BuildTiff(false, (BmageExifTag.ExposureTime, BmageExifType.Rational, [numerator, denominator])));
+        var big = BmageExifData.Parse(BuildTiff(true, (BmageExifTag.ExposureTime, BmageExifType.Rational, [numerator, denominator])));
 
         Assert.IsNotNull(little);
         Assert.IsNotNull(big);
         var expected = numerator / (double)denominator;
-        Assert.AreEqual(expected, little!.Primary.Get(ExifTag.ExposureTime)!.GetDouble()!.Value, 0.5e-9);
-        Assert.AreEqual(expected, big!.Primary.Get(ExifTag.ExposureTime)!.GetDouble()!.Value, 0.5e-9);
+        Assert.AreEqual(expected, little!.Primary.Get(BmageExifTag.ExposureTime)!.GetDouble()!.Value, 0.5e-9);
+        Assert.AreEqual(expected, big!.Primary.Get(BmageExifTag.ExposureTime)!.GetDouble()!.Value, 0.5e-9);
     }
 
     /// <summary>A multi-component rational array (GPS coordinates are three) must decode fully in both byte orders.</summary>
@@ -107,30 +107,30 @@ public sealed class AdversarialMetadataTests
     {
         // 51 degrees, 30 minutes, 27.5 seconds.
         uint[] values = [51, 1, 30, 1, 275, 10];
-        var little = ExifData.Parse(BuildTiff(false, (ExifTag.GpsLatitude, ExifType.Rational, values)))!;
-        var big = ExifData.Parse(BuildTiff(true, (ExifTag.GpsLatitude, ExifType.Rational, values)))!;
+        var little = BmageExifData.Parse(BuildTiff(false, (BmageExifTag.GpsLatitude, BmageExifType.Rational, values)))!;
+        var big = BmageExifData.Parse(BuildTiff(true, (BmageExifTag.GpsLatitude, BmageExifType.Rational, values)))!;
 
         for (var i = 0; i < 3; i++)
         {
-            var l = little.Primary.Get(ExifTag.GpsLatitude)!.GetDouble(i);
-            var b = big.Primary.Get(ExifTag.GpsLatitude)!.GetDouble(i);
+            var l = little.Primary.Get(BmageExifTag.GpsLatitude)!.GetDouble(i);
+            var b = big.Primary.Get(BmageExifTag.GpsLatitude)!.GetDouble(i);
             Assert.AreEqual(l, b);
         }
-        Assert.AreEqual(51d, big.Primary.Get(ExifTag.GpsLatitude)!.GetDouble(0));
-        Assert.AreEqual(30d, big.Primary.Get(ExifTag.GpsLatitude)!.GetDouble(1));
-        Assert.AreEqual(27.5d, big.Primary.Get(ExifTag.GpsLatitude)!.GetDouble(2));
+        Assert.AreEqual(51d, big.Primary.Get(BmageExifTag.GpsLatitude)!.GetDouble(0));
+        Assert.AreEqual(30d, big.Primary.Get(BmageExifTag.GpsLatitude)!.GetDouble(1));
+        Assert.AreEqual(27.5d, big.Primary.Get(BmageExifTag.GpsLatitude)!.GetDouble(2));
     }
 
     [TestMethod]
-    [DataRow(ExifType.Short)]
-    [DataRow(ExifType.Long)]
-    [DataRow(ExifType.Rational)]
-    public void ScalarTypesDecodeIdenticallyInBothByteOrders(ExifType type)
+    [DataRow(BmageExifType.Short)]
+    [DataRow(BmageExifType.Long)]
+    [DataRow(BmageExifType.Rational)]
+    public void ScalarTypesDecodeIdenticallyInBothByteOrders(BmageExifType type)
     {
-        uint[] values = type is ExifType.Rational ? [355u, 113u] : [1234u];
-        var little = ExifData.Parse(BuildTiff(false, (ExifTag.Iso, type, values)))!;
-        var big = ExifData.Parse(BuildTiff(true, (ExifTag.Iso, type, values)))!;
-        Assert.AreEqual(little.Primary.Get(ExifTag.Iso)!.GetDouble(), big.Primary.Get(ExifTag.Iso)!.GetDouble());
+        uint[] values = type is BmageExifType.Rational ? [355u, 113u] : [1234u];
+        var little = BmageExifData.Parse(BuildTiff(false, (BmageExifTag.Iso, type, values)))!;
+        var big = BmageExifData.Parse(BuildTiff(true, (BmageExifTag.Iso, type, values)))!;
+        Assert.AreEqual(little.Primary.Get(BmageExifTag.Iso)!.GetDouble(), big.Primary.Get(BmageExifTag.Iso)!.GetDouble());
     }
 
     /// <summary>Hostile EXIF must be ignored, not throw: it arrives inside files the application did not create.</summary>
@@ -139,25 +139,25 @@ public sealed class AdversarialMetadataTests
     {
         var rnd = new Random(9182);
         var baseTiff = BuildTiff(false,
-            (ExifTag.Orientation, ExifType.Short, [6u]),
-            (ExifTag.ExposureTime, ExifType.Rational, [1u, 60u]),
-            (ExifTag.Make, ExifType.Ascii, [65u, 66u, 67u, 0u]));
+            (BmageExifTag.Orientation, BmageExifType.Short, [6u]),
+            (BmageExifTag.ExposureTime, BmageExifType.Rational, [1u, 60u]),
+            (BmageExifTag.Make, BmageExifType.Ascii, [65u, 66u, 67u, 0u]));
 
         for (var trial = 0; trial < 500; trial++)
         {
             var copy = baseTiff.ToArray();
             for (var flips = 0; flips < 5; flips++) copy[rnd.Next(copy.Length)] = (byte)rnd.Next(256);
-            var ex = Capture.Exception(() => ExifData.Parse(copy));
+            var ex = Capture.Exception(() => BmageExifData.Parse(copy));
             Assert.IsTrue(ex is null, $"corrupted EXIF threw {ex?.GetType().Name}: {ex?.Message}");
         }
 
         // Explicitly hostile offsets: values that would overflow a naive bounds check.
         foreach (var offset in new uint[] { uint.MaxValue, uint.MaxValue - 3, 0x7FFFFFFF, 0x80000000 })
         {
-            var tiff = BuildTiff(false, (ExifTag.Make, ExifType.Ascii, [65u, 66u, 67u, 68u, 69u, 70u, 71u, 72u]));
+            var tiff = BuildTiff(false, (BmageExifTag.Make, BmageExifType.Ascii, [65u, 66u, 67u, 68u, 69u, 70u, 71u, 72u]));
             // Point the (out of line) value at a hostile offset.
             BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(8 + 2 + 8), offset);
-            var ex = Capture.Exception(() => ExifData.Parse(tiff));
+            var ex = Capture.Exception(() => BmageExifData.Parse(tiff));
             Assert.IsTrue(ex is null, $"EXIF value offset {offset} threw {ex?.GetType().Name}");
         }
     }
@@ -166,9 +166,9 @@ public sealed class AdversarialMetadataTests
     [TestMethod]
     public async Task IdentifyToleratesHostileExif()
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var img = AdversarialGeometryTests.Noise(16, 16, 5);
-        var png = (await processor.EncodeAsync(img, ImageExportOptions.Png with { Metadata = MetadataPolicy.Preserve })).Data;
+        var png = (await processor.EncodeAsync(img, BmageImageExportOptions.Png with { Metadata = BmageMetadataPolicy.Preserve })).Data;
 
         var rnd = new Random(5150);
         for (var trial = 0; trial < 200; trial++)
@@ -197,21 +197,21 @@ public sealed class AdversarialMetadataTests
     [DataRow(BmageOrientation.Rotate270)]
     public async Task AutoOrientProducesUprightPixelsForEveryExifOrientation(BmageOrientation orientation)
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var upright = TestImages.Quadrants(32, 24);
 
         // Store the image the way a camera would: pixels in sensor order, with the orientation tag saying how to
         // display them. Sensor order is the inverse of the display transform.
-        using var stored = new OrientationOperation(orientation.Inverse()).Apply(upright, OperationContext.Default);
-        stored.Metadata = new ImageMetadata(ExifData.FromOrientation(orientation), sourceFormat: BmageImageFormat.Jpeg);
+        using var stored = new BmageOrientationOperation(orientation.Inverse()).Apply(upright, BmageOperationContext.Default);
+        stored.Metadata = new BmageImageMetadata(BmageExifData.FromOrientation(orientation), sourceFormat: BmageImageFormat.Jpeg);
 
-        var encoded = await processor.EncodeAsync(stored, ImageExportOptions.Jpeg with
+        var encoded = await processor.EncodeAsync(stored, BmageImageExportOptions.Jpeg with
         {
             Quality = 1.0,
-            Metadata = MetadataPolicy.Preserve,
+            Metadata = BmageMetadataPolicy.Preserve,
         });
 
-        using var decoded = await processor.DecodeAsync(encoded.Data, new DecodeOptions { AutoOrient = true });
+        using var decoded = await processor.DecodeAsync(encoded.Data, new BmageDecodeOptions { AutoOrient = true });
 
         Assert.AreEqual(upright.Size, decoded.Size);
         Assert.IsTrue(TestImages.MaxChannelDifference(upright, decoded) < 40,
@@ -233,19 +233,19 @@ public sealed class AdversarialMetadataTests
     [DataRow(BmageOrientation.Transpose)]
     public async Task ReEncodingWithoutAutoOrientKeepsTheOrientationTag(BmageOrientation orientation)
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var upright = TestImages.Quadrants(32, 24);
-        using var stored = new OrientationOperation(orientation.Inverse()).Apply(upright, OperationContext.Default);
-        stored.Metadata = new ImageMetadata(ExifData.FromOrientation(orientation), sourceFormat: BmageImageFormat.Jpeg);
+        using var stored = new BmageOrientationOperation(orientation.Inverse()).Apply(upright, BmageOperationContext.Default);
+        stored.Metadata = new BmageImageMetadata(BmageExifData.FromOrientation(orientation), sourceFormat: BmageImageFormat.Jpeg);
 
-        var camera = await processor.EncodeAsync(stored, ImageExportOptions.Jpeg with { Quality = 1.0, Metadata = MetadataPolicy.Preserve });
+        var camera = await processor.EncodeAsync(stored, BmageImageExportOptions.Jpeg with { Quality = 1.0, Metadata = BmageMetadataPolicy.Preserve });
 
         // Round trip in sensor order, exactly what a "strip metadata but keep the picture" workflow does badly.
-        using var raw = await processor.DecodeAsync(camera.Data, new DecodeOptions { AutoOrient = false });
+        using var raw = await processor.DecodeAsync(camera.Data, new BmageDecodeOptions { AutoOrient = false });
         Assert.AreEqual(orientation, raw.Metadata!.Orientation);
 
-        var reencoded = await processor.EncodeAsync(raw, ImageExportOptions.Jpeg with { Quality = 1.0, Metadata = MetadataPolicy.Preserve });
-        using var final = await processor.DecodeAsync(reencoded.Data, new DecodeOptions { AutoOrient = true });
+        var reencoded = await processor.EncodeAsync(raw, BmageImageExportOptions.Jpeg with { Quality = 1.0, Metadata = BmageMetadataPolicy.Preserve });
+        using var final = await processor.DecodeAsync(reencoded.Data, new BmageDecodeOptions { AutoOrient = true });
 
         Assert.AreEqual(upright.Size, final.Size);
         Assert.IsTrue(TestImages.MaxChannelDifference(upright, final) < 40,
@@ -256,35 +256,35 @@ public sealed class AdversarialMetadataTests
     public void AutoOrientIsIdempotent()
     {
         using var src = AdversarialGeometryTests.Noise(20, 14, 3);
-        src.Metadata = new ImageMetadata(ExifData.FromOrientation(BmageOrientation.Rotate90));
-        using var once = AutoOrientOperation.Instance.Apply(src, OperationContext.Default);
-        using var twice = AutoOrientOperation.Instance.Apply(once, OperationContext.Default);
+        src.Metadata = new BmageImageMetadata(BmageExifData.FromOrientation(BmageOrientation.Rotate90));
+        using var once = BmageAutoOrientOperation.Instance.Apply(src, BmageOperationContext.Default);
+        using var twice = BmageAutoOrientOperation.Instance.Apply(once, BmageOperationContext.Default);
         Assert.AreEqual(once.Size, twice.Size);
         Assert.IsTrue(once.Bytes.SequenceEqual(twice.Bytes), "auto-orient applied twice changed the image");
     }
 
     // ---------------------------------------------------------------- privacy
 
-    private static ExifData BuildSensitiveExif()
+    private static BmageExifData BuildSensitiveExif()
     {
-        var gps = new ExifDirectory()
-            .With(ExifTag.GpsLatitude, ExifValue.FromRational((51, 1), (30, 1), (275, 10)))
-            .With(ExifTag.GpsLatitudeRef, ExifValue.FromString("N"))
-            .With(ExifTag.GpsLongitude, ExifValue.FromRational((0, 1), (7, 1), (390, 10)))
-            .With(ExifTag.GpsLongitudeRef, ExifValue.FromString("W"));
-        var exif = new ExifDirectory()
-            .With(ExifTag.BodySerialNumber, ExifValue.FromString("SN-12345"))
-            .With(ExifTag.LensSerialNumber, ExifValue.FromString("LENS-999"))
-            .With(ExifTag.OwnerName, ExifValue.FromString("Jane Doe"))
-            .With(ExifTag.UserComment, ExifValue.FromString("private note"))
-            .With(ExifTag.ImageUniqueId, ExifValue.FromString("UID-abc"))
-            .With(ExifTag.MakerNote, ExifValue.FromUndefined(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 }))
-            .With(ExifTag.DateTimeOriginal, ExifValue.FromString("2024:01:02 03:04:05"));
-        var primary = new ExifDirectory()
-            .With(ExifTag.Make, ExifValue.FromString("TestCam"))
-            .With(ExifTag.Model, ExifValue.FromString("T1000"))
-            .With(ExifTag.Copyright, ExifValue.FromString("(c) Jane"));
-        return new ExifData(primary, exif, gps, null, new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 });
+        var gps = new BmageExifDirectory()
+            .With(BmageExifTag.GpsLatitude, BmageExifValue.FromRational((51, 1), (30, 1), (275, 10)))
+            .With(BmageExifTag.GpsLatitudeRef, BmageExifValue.FromString("N"))
+            .With(BmageExifTag.GpsLongitude, BmageExifValue.FromRational((0, 1), (7, 1), (390, 10)))
+            .With(BmageExifTag.GpsLongitudeRef, BmageExifValue.FromString("W"));
+        var exif = new BmageExifDirectory()
+            .With(BmageExifTag.BodySerialNumber, BmageExifValue.FromString("SN-12345"))
+            .With(BmageExifTag.LensSerialNumber, BmageExifValue.FromString("LENS-999"))
+            .With(BmageExifTag.OwnerName, BmageExifValue.FromString("Jane Doe"))
+            .With(BmageExifTag.UserComment, BmageExifValue.FromString("private note"))
+            .With(BmageExifTag.ImageUniqueId, BmageExifValue.FromString("UID-abc"))
+            .With(BmageExifTag.MakerNote, BmageExifValue.FromUndefined(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 }))
+            .With(BmageExifTag.DateTimeOriginal, BmageExifValue.FromString("2024:01:02 03:04:05"));
+        var primary = new BmageExifDirectory()
+            .With(BmageExifTag.Make, BmageExifValue.FromString("TestCam"))
+            .With(BmageExifTag.Model, BmageExifValue.FromString("T1000"))
+            .With(BmageExifTag.Copyright, BmageExifValue.FromString("(c) Jane"));
+        return new BmageExifData(primary, exif, gps, null, new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 });
     }
 
     [TestMethod]
@@ -305,12 +305,12 @@ public sealed class AdversarialMetadataTests
         Assert.IsNull(stripped.Location);
         Assert.AreEqual(0, stripped.Gps.Count);
         Assert.IsTrue(stripped.Thumbnail.IsEmpty);
-        foreach (var tag in new[] { ExifTag.BodySerialNumber, ExifTag.LensSerialNumber, ExifTag.OwnerName, ExifTag.UserComment, ExifTag.ImageUniqueId, ExifTag.MakerNote })
+        foreach (var tag in new[] { BmageExifTag.BodySerialNumber, BmageExifTag.LensSerialNumber, BmageExifTag.OwnerName, BmageExifTag.UserComment, BmageExifTag.ImageUniqueId, BmageExifTag.MakerNote })
             Assert.IsFalse(stripped.Exif.Contains(tag), $"tag 0x{tag:X4} survived StripSensitive");
 
-        Assert.AreEqual("TestCam", stripped.Primary.Get(ExifTag.Make)?.GetString());
-        Assert.AreEqual("(c) Jane", stripped.Primary.Get(ExifTag.Copyright)?.GetString());
-        Assert.AreEqual("2024:01:02 03:04:05", stripped.Exif.Get(ExifTag.DateTimeOriginal)?.GetString());
+        Assert.AreEqual("TestCam", stripped.Primary.Get(BmageExifTag.Make)?.GetString());
+        Assert.AreEqual("(c) Jane", stripped.Primary.Get(BmageExifTag.Copyright)?.GetString());
+        Assert.AreEqual("2024:01:02 03:04:05", stripped.Exif.Get(BmageExifTag.DateTimeOriginal)?.GetString());
     }
 
     /// <summary>
@@ -318,22 +318,22 @@ public sealed class AdversarialMetadataTests
     /// Checking the serialised file, not just the object model, is what makes this a real guarantee.
     /// </summary>
     [TestMethod]
-    [DataRow(MetadataPolicy.Remove)]
-    [DataRow(MetadataPolicy.StripSensitive)]
-    public async Task ExportedBytesContainNoSensitiveMetadata(MetadataPolicy policy)
+    [DataRow(BmageMetadataPolicy.Remove)]
+    [DataRow(BmageMetadataPolicy.StripSensitive)]
+    public async Task ExportedBytesContainNoSensitiveMetadata(BmageMetadataPolicy policy)
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var img = AdversarialGeometryTests.Noise(32, 32, 11);
-        img.Metadata = new ImageMetadata(BuildSensitiveExif(), sourceFormat: BmageImageFormat.Jpeg);
+        img.Metadata = new BmageImageMetadata(BuildSensitiveExif(), sourceFormat: BmageImageFormat.Jpeg);
 
         foreach (var format in new[] { BmageImageFormat.Jpeg, BmageImageFormat.Png })
         {
-            var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = format, Metadata = policy });
+            var encoded = await processor.EncodeAsync(img, new BmageImageExportOptions { Format = format, Metadata = policy });
             var text = System.Text.Encoding.Latin1.GetString(encoded.Data);
             foreach (var secret in new[] { "SN-12345", "LENS-999", "Jane Doe", "private note", "UID-abc" })
                 Assert.DoesNotContain(secret, text, StringComparison.Ordinal);
 
-            var round = ExifData.Parse(text.Length == 0 ? [] : encoded.Data);
+            var round = BmageExifData.Parse(text.Length == 0 ? [] : encoded.Data);
             var reread = await processor.DecodeAsync(encoded.Data);
             using (reread)
             {
@@ -348,21 +348,21 @@ public sealed class AdversarialMetadataTests
     [TestMethod]
     public async Task StripSensitiveDropsTheArtistAndTheWindowsCommentAndAuthor()
     {
-        static ExifValue Utf16(string text)
+        static BmageExifValue Utf16(string text)
         {
             var bytes = System.Text.Encoding.Unicode.GetBytes(text + "\0");
-            return new ExifValue(ExifType.Byte, bytes.Length, bytes);
+            return new BmageExifValue(BmageExifType.Byte, bytes.Length, bytes);
         }
-        var primary = new ExifDirectory()
-            .With(ExifTag.Make, ExifValue.FromString("TestCam"))
-            .With(ExifTag.Copyright, ExifValue.FromString("(c) Studio"))
-            .With(ExifTag.Artist, ExifValue.FromString("Sam Rivera"))
-            .With(ExifTag.WindowsComment, Utf16("private note"))
-            .With(ExifTag.WindowsAuthor, Utf16("Jane Doe"));
-        var exif = new ExifData(primary, null, null, null, default);
+        var primary = new BmageExifDirectory()
+            .With(BmageExifTag.Make, BmageExifValue.FromString("TestCam"))
+            .With(BmageExifTag.Copyright, BmageExifValue.FromString("(c) Studio"))
+            .With(BmageExifTag.Artist, BmageExifValue.FromString("Sam Rivera"))
+            .With(BmageExifTag.WindowsComment, Utf16("private note"))
+            .With(BmageExifTag.WindowsAuthor, Utf16("Jane Doe"));
+        var exif = new BmageExifData(primary, null, null, null, default);
 
         var stripped = exif.StripSensitive();
-        foreach (var tag in new[] { ExifTag.Artist, ExifTag.WindowsComment, ExifTag.WindowsAuthor })
+        foreach (var tag in new[] { BmageExifTag.Artist, BmageExifTag.WindowsComment, BmageExifTag.WindowsAuthor })
             Assert.IsFalse(stripped.Primary.Contains(tag), $"tag 0x{tag:X4} survived StripSensitive");
         Assert.AreEqual("TestCam", stripped.Make);
         Assert.AreEqual("(c) Studio", stripped.Copyright);
@@ -373,13 +373,13 @@ public sealed class AdversarialMetadataTests
             System.Text.Encoding.Unicode.GetBytes("private note"),
             System.Text.Encoding.Unicode.GetBytes("Jane Doe"),
         };
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var img = AdversarialGeometryTests.Noise(32, 32, 19);
-        img.Metadata = new ImageMetadata(exif, sourceFormat: BmageImageFormat.Jpeg);
+        img.Metadata = new BmageImageMetadata(exif, sourceFormat: BmageImageFormat.Jpeg);
         foreach (var format in new[] { BmageImageFormat.Jpeg, BmageImageFormat.Png })
         {
-            var preserved = await processor.EncodeAsync(img, new ImageExportOptions { Format = format, Metadata = MetadataPolicy.Preserve });
-            var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = format, Metadata = MetadataPolicy.StripSensitive });
+            var preserved = await processor.EncodeAsync(img, new BmageImageExportOptions { Format = format, Metadata = BmageMetadataPolicy.Preserve });
+            var encoded = await processor.EncodeAsync(img, new BmageImageExportOptions { Format = format, Metadata = BmageMetadataPolicy.StripSensitive });
             foreach (var secret in secrets)
             {
                 Assert.IsGreaterThanOrEqualTo(0, preserved.Data.AsSpan().IndexOf(secret), $"{format} dropped a secret even when preserving");
@@ -405,12 +405,12 @@ public sealed class AdversarialMetadataTests
         {
             var entry = tiff.AsSpan(10 + i * 12);
             BinaryPrimitives.WriteUInt16LittleEndian(entry, (ushort)(0x1000 + i));
-            BinaryPrimitives.WriteUInt16LittleEndian(entry[2..], (ushort)ExifType.Undefined);
+            BinaryPrimitives.WriteUInt16LittleEndian(entry[2..], (ushort)BmageExifType.Undefined);
             BinaryPrimitives.WriteUInt32LittleEndian(entry[4..], valueBytes);
             BinaryPrimitives.WriteUInt32LittleEndian(entry[8..], (uint)valueOffset);
         }
 
-        var exif = ExifData.Parse(tiff);
+        var exif = BmageExifData.Parse(tiff);
 
         Assert.IsNotNull(exif);
         Assert.IsGreaterThan(0, exif.Primary.Count);
@@ -428,7 +428,7 @@ public sealed class AdversarialMetadataTests
         var tiff = new byte[valueOffset + 2 * valueBytes];
         "II*\0"u8.CopyTo(tiff);
         BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(4), 8);
-        void WriteDirectory(int at, int next, params (ushort Tag, ExifType Type, uint Count, uint Value)[] entries)
+        void WriteDirectory(int at, int next, params (ushort Tag, BmageExifType Type, uint Count, uint Value)[] entries)
         {
             BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(at), (ushort)entries.Length);
             for (var i = 0; i < entries.Length; i++)
@@ -442,19 +442,19 @@ public sealed class AdversarialMetadataTests
             BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(at + 2 + entries.Length * 12), (uint)next);
         }
         WriteDirectory(8, ifd1Offset,
-            (ExifTag.ExifIfdPointer, ExifType.Long, 1, exifOffset),
-            (0x1001, ExifType.Undefined, valueBytes, valueOffset),
-            (0x1002, ExifType.Undefined, valueBytes, valueOffset),
-            (0x1003, ExifType.Undefined, valueBytes, valueOffset));
+            (BmageExifTag.ExifIfdPointer, BmageExifType.Long, 1, exifOffset),
+            (0x1001, BmageExifType.Undefined, valueBytes, valueOffset),
+            (0x1002, BmageExifType.Undefined, valueBytes, valueOffset),
+            (0x1003, BmageExifType.Undefined, valueBytes, valueOffset));
         WriteDirectory(exifOffset, 0,
-            (0x2001, ExifType.Undefined, valueBytes, valueOffset),
-            (0x2002, ExifType.Undefined, valueBytes, valueOffset),
-            (0x2003, ExifType.Undefined, valueBytes, valueOffset));
+            (0x2001, BmageExifType.Undefined, valueBytes, valueOffset),
+            (0x2002, BmageExifType.Undefined, valueBytes, valueOffset),
+            (0x2003, BmageExifType.Undefined, valueBytes, valueOffset));
         WriteDirectory(ifd1Offset, 0,
-            (0x0201, ExifType.Long, 1, valueOffset),
-            (0x0202, ExifType.Long, 1, 2 * valueBytes));
+            (0x0201, BmageExifType.Long, 1, valueOffset),
+            (0x0202, BmageExifType.Long, 1, 2 * valueBytes));
 
-        var exif = ExifData.Parse(tiff);
+        var exif = BmageExifData.Parse(tiff);
 
         Assert.IsNotNull(exif);
         Assert.AreEqual(3, exif.Primary.Count);
@@ -480,18 +480,18 @@ public sealed class AdversarialMetadataTests
         {
             var entry = tiff.AsSpan(10 + i * 12);
             BinaryPrimitives.WriteUInt16LittleEndian(entry, 0x1000);
-            BinaryPrimitives.WriteUInt16LittleEndian(entry[2..], (ushort)ExifType.Undefined);
+            BinaryPrimitives.WriteUInt16LittleEndian(entry[2..], (ushort)BmageExifType.Undefined);
             // The last copy is one byte longer, so which one was kept shows.
             BinaryPrimitives.WriteUInt32LittleEndian(entry[4..], (uint)(i == copies - 1 ? valueBytes + 1 : valueBytes));
             BinaryPrimitives.WriteUInt32LittleEndian(entry[8..], (uint)valueOffset);
         }
         var orientation = tiff.AsSpan(10 + copies * 12);
-        BinaryPrimitives.WriteUInt16LittleEndian(orientation, ExifTag.Orientation);
-        BinaryPrimitives.WriteUInt16LittleEndian(orientation[2..], (ushort)ExifType.Short);
+        BinaryPrimitives.WriteUInt16LittleEndian(orientation, BmageExifTag.Orientation);
+        BinaryPrimitives.WriteUInt16LittleEndian(orientation[2..], (ushort)BmageExifType.Short);
         BinaryPrimitives.WriteUInt32LittleEndian(orientation[4..], 1);
         BinaryPrimitives.WriteUInt16LittleEndian(orientation[8..], (ushort)BmageOrientation.Rotate90);
 
-        var exif = ExifData.Parse(tiff);
+        var exif = BmageExifData.Parse(tiff);
 
         Assert.IsNotNull(exif);
         Assert.AreEqual(2, exif.Primary.Count);
@@ -503,16 +503,16 @@ public sealed class AdversarialMetadataTests
     public void AnIccProfileThatInflatesPastTheCapIsDropped()
     {
         using var img = AdversarialGeometryTests.Noise(8, 8, 3);
-        var png = PngEncoder.Encode(img).Data;
+        var png = BmagePngEncoder.Encode(img).Data;
 
-        var bomb = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, BmageImageFormat.Png));
+        var bomb = BmagePngContainer.WriteMetadata(png, new BmageImageMetadata(null, new byte[5 << 20], default, BmageImageFormat.Png));
         Assert.IsLessThan(64 * 1024, bomb.Length);
-        Assert.IsTrue(PngContainer.ReadMetadata(bomb).IccProfile.IsEmpty);
+        Assert.IsTrue(BmagePngContainer.ReadMetadata(bomb).IccProfile.IsEmpty);
 
         var profile = new byte[1 << 20];
         new Random(5).NextBytes(profile);
-        var real = PngContainer.WriteMetadata(png, new ImageMetadata(null, profile, default, BmageImageFormat.Png));
-        CollectionAssert.AreEqual(profile, PngContainer.ReadMetadata(real).IccProfile.ToArray());
+        var real = BmagePngContainer.WriteMetadata(png, new BmageImageMetadata(null, profile, default, BmageImageFormat.Png));
+        CollectionAssert.AreEqual(profile, BmagePngContainer.ReadMetadata(real).IccProfile.ToArray());
     }
 
     /// <summary>
@@ -523,13 +523,13 @@ public sealed class AdversarialMetadataTests
     public void OnlyTheFirstIccProfileIsRead()
     {
         using var img = AdversarialGeometryTests.Noise(8, 8, 3);
-        var png = PngEncoder.Encode(img).Data;
-        var bomb = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, BmageImageFormat.Png));
+        var png = BmagePngEncoder.Encode(img).Data;
+        var bomb = BmagePngContainer.WriteMetadata(png, new BmageImageMetadata(null, new byte[5 << 20], default, BmageImageFormat.Png));
         var profile = new byte[1024];
         new Random(9).NextBytes(profile);
-        var real = PngContainer.WriteMetadata(png, new ImageMetadata(null, profile, default, BmageImageFormat.Png));
-        var bombChunk = PngContainer.EnumerateChunks(bomb).Single(c => c.TypeName == "iCCP");
-        var realChunk = PngContainer.EnumerateChunks(real).Single(c => c.TypeName == "iCCP");
+        var real = BmagePngContainer.WriteMetadata(png, new BmageImageMetadata(null, profile, default, BmageImageFormat.Png));
+        var bombChunk = BmagePngContainer.EnumerateChunks(bomb).Single(c => c.TypeName == "iCCP");
+        var realChunk = BmagePngContainer.EnumerateChunks(real).Single(c => c.TypeName == "iCCP");
 
         // The bomb, repeated a thousand times, then a valid profile, all before the image data.
         var ihdrEnd = 8 + 25;
@@ -540,13 +540,13 @@ public sealed class AdversarialMetadataTests
             .ToArray();
 
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        var metadata = PngContainer.ReadMetadata(repeated);
+        var metadata = BmagePngContainer.ReadMetadata(repeated);
         Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"Reading took {watch.ElapsedMilliseconds} ms.");
         Assert.IsTrue(metadata.IccProfile.IsEmpty);
 
         var first = png[..ihdrEnd].Concat(real.AsSpan(realChunk.Offset, realChunk.TotalLength).ToArray())
             .Concat(bomb.AsSpan(bombChunk.Offset, bombChunk.TotalLength).ToArray()).Concat(png[ihdrEnd..]).ToArray();
-        CollectionAssert.AreEqual(profile, PngContainer.ReadMetadata(first).IccProfile.ToArray());
+        CollectionAssert.AreEqual(profile, BmagePngContainer.ReadMetadata(first).IccProfile.ToArray());
     }
 
     /// <summary>
@@ -556,27 +556,27 @@ public sealed class AdversarialMetadataTests
     [TestMethod]
     public async Task StripSensitiveRemovesASensitiveTagFromWhicheverDirectoryHoldsIt()
     {
-        var primary = new ExifDirectory()
-            .With(ExifTag.Make, ExifValue.FromString("TestCam"))
-            .With(ExifTag.OwnerName, ExifValue.FromString("Owner In Ifd0"))
-            .With(ExifTag.BodySerialNumber, ExifValue.FromString("SN-IFD0-123"));
-        var exifDirectory = new ExifDirectory()
-            .With(ExifTag.Iso, ExifValue.FromShort(100))
-            .With(ExifTag.Artist, ExifValue.FromString("Artist In ExifIfd"))
-            .With(ExifTag.WindowsAuthor, ExifValue.FromString("Author In ExifIfd"));
-        var exif = new ExifData(primary, exifDirectory, null, null, default);
+        var primary = new BmageExifDirectory()
+            .With(BmageExifTag.Make, BmageExifValue.FromString("TestCam"))
+            .With(BmageExifTag.OwnerName, BmageExifValue.FromString("Owner In Ifd0"))
+            .With(BmageExifTag.BodySerialNumber, BmageExifValue.FromString("SN-IFD0-123"));
+        var exifDirectory = new BmageExifDirectory()
+            .With(BmageExifTag.Iso, BmageExifValue.FromShort(100))
+            .With(BmageExifTag.Artist, BmageExifValue.FromString("Artist In ExifIfd"))
+            .With(BmageExifTag.WindowsAuthor, BmageExifValue.FromString("Author In ExifIfd"));
+        var exif = new BmageExifData(primary, exifDirectory, null, null, default);
 
         var stripped = exif.StripSensitive();
         foreach (var directory in new[] { stripped.Primary, stripped.Exif, stripped.Interop })
-            foreach (var tag in new[] { ExifTag.OwnerName, ExifTag.BodySerialNumber, ExifTag.Artist, ExifTag.WindowsAuthor })
+            foreach (var tag in new[] { BmageExifTag.OwnerName, BmageExifTag.BodySerialNumber, BmageExifTag.Artist, BmageExifTag.WindowsAuthor })
                 Assert.IsFalse(directory.Contains(tag), $"tag 0x{tag:X4} survived StripSensitive");
         Assert.AreEqual("TestCam", stripped.Make);
-        Assert.IsTrue(stripped.Exif.Contains(ExifTag.Iso));
+        Assert.IsTrue(stripped.Exif.Contains(BmageExifTag.Iso));
 
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var img = AdversarialGeometryTests.Noise(16, 16, 23);
-        img.Metadata = new ImageMetadata(exif, sourceFormat: BmageImageFormat.Jpeg);
-        var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Metadata = MetadataPolicy.StripSensitive });
+        img.Metadata = new BmageImageMetadata(exif, sourceFormat: BmageImageFormat.Jpeg);
+        var encoded = await processor.EncodeAsync(img, new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Metadata = BmageMetadataPolicy.StripSensitive });
         foreach (var secret in new[] { "Owner In Ifd0", "SN-IFD0-123", "Artist In ExifIfd", "Author In ExifIfd" })
             Assert.AreEqual(-1, encoded.Data.AsSpan().IndexOf(System.Text.Encoding.ASCII.GetBytes(secret)), $"kept {secret}");
     }
@@ -584,39 +584,39 @@ public sealed class AdversarialMetadataTests
     [TestMethod]
     public async Task PreservePolicyKeepsDescriptiveMetadataThroughAJpegRoundTrip()
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var img = AdversarialGeometryTests.Noise(32, 32, 13);
-        img.Metadata = new ImageMetadata(BuildSensitiveExif(), sourceFormat: BmageImageFormat.Jpeg);
+        img.Metadata = new BmageImageMetadata(BuildSensitiveExif(), sourceFormat: BmageImageFormat.Jpeg);
 
-        var encoded = await processor.EncodeAsync(img, ImageExportOptions.Jpeg with { Metadata = MetadataPolicy.Preserve });
+        var encoded = await processor.EncodeAsync(img, BmageImageExportOptions.Jpeg with { Metadata = BmageMetadataPolicy.Preserve });
         using var decoded = await processor.DecodeAsync(encoded.Data);
 
-        Assert.AreEqual("TestCam", decoded.Metadata?.Exif?.Primary.Get(ExifTag.Make)?.GetString());
-        Assert.AreEqual("T1000", decoded.Metadata?.Exif?.Primary.Get(ExifTag.Model)?.GetString());
+        Assert.AreEqual("TestCam", decoded.Metadata?.Exif?.Primary.Get(BmageExifTag.Make)?.GetString());
+        Assert.AreEqual("T1000", decoded.Metadata?.Exif?.Primary.Get(BmageExifTag.Model)?.GetString());
     }
 
     /// <summary>Exported metadata must describe the exported pixels, not the ones that went in.</summary>
     [TestMethod]
     public async Task ExportedMetadataDescribesTheExportedPixels()
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var img = AdversarialGeometryTests.Noise(64, 48, 17);
-        img.Metadata = new ImageMetadata(
-            new ExifData(
-                new ExifDirectory().With(ExifTag.Make, ExifValue.FromString("TestCam")),
-                new ExifDirectory()
-                    .With(ExifTag.PixelXDimension, ExifValue.FromLong(64))
-                    .With(ExifTag.PixelYDimension, ExifValue.FromLong(48)),
+        img.Metadata = new BmageImageMetadata(
+            new BmageExifData(
+                new BmageExifDirectory().With(BmageExifTag.Make, BmageExifValue.FromString("TestCam")),
+                new BmageExifDirectory()
+                    .With(BmageExifTag.PixelXDimension, BmageExifValue.FromLong(64))
+                    .With(BmageExifTag.PixelYDimension, BmageExifValue.FromLong(48)),
                 null, null, default),
             sourceFormat: BmageImageFormat.Jpeg);
 
-        using var resized = new ResizeOperation(32, 24, BmageResizeMode.Stretch).Apply(img, OperationContext.Default);
-        var encoded = await processor.EncodeAsync(resized, ImageExportOptions.Jpeg with { Metadata = MetadataPolicy.Preserve });
+        using var resized = new BmageResizeOperation(32, 24, BmageResizeMode.Stretch).Apply(img, BmageOperationContext.Default);
+        var encoded = await processor.EncodeAsync(resized, BmageImageExportOptions.Jpeg with { Metadata = BmageMetadataPolicy.Preserve });
         using var decoded = await processor.DecodeAsync(encoded.Data);
 
         Assert.AreEqual(new Size(32, 24), decoded.Size);
-        Assert.AreEqual(32, decoded.Metadata?.Exif?.Exif.Get(ExifTag.PixelXDimension)?.GetInt32());
-        Assert.AreEqual(24, decoded.Metadata?.Exif?.Exif.Get(ExifTag.PixelYDimension)?.GetInt32());
+        Assert.AreEqual(32, decoded.Metadata?.Exif?.Exif.Get(BmageExifTag.PixelXDimension)?.GetInt32());
+        Assert.AreEqual(24, decoded.Metadata?.Exif?.Exif.Get(BmageExifTag.PixelYDimension)?.GetInt32());
     }
 
     /// <summary>An EXIF block must survive a write/read round trip unchanged, in the little-endian form written.</summary>
@@ -624,12 +624,12 @@ public sealed class AdversarialMetadataTests
     public void ExifWriteReadRoundTripPreservesValues()
     {
         var original = BuildSensitiveExif();
-        var bytes = ExifWriter.Write(original);
-        var parsed = ExifData.Parse(bytes);
+        var bytes = BmageExifWriter.Write(original);
+        var parsed = BmageExifData.Parse(bytes);
 
         Assert.IsNotNull(parsed);
-        Assert.AreEqual("TestCam", parsed!.Primary.Get(ExifTag.Make)?.GetString());
-        Assert.AreEqual("SN-12345", parsed.Exif.Get(ExifTag.BodySerialNumber)?.GetString());
+        Assert.AreEqual("TestCam", parsed!.Primary.Get(BmageExifTag.Make)?.GetString());
+        Assert.AreEqual("SN-12345", parsed.Exif.Get(BmageExifTag.BodySerialNumber)?.GetString());
         Assert.IsNotNull(parsed.Location);
         Assert.AreEqual(original.Location!.Value.Latitude, parsed.Location!.Value.Latitude, 0.5e-6);
         Assert.AreEqual(original.Location!.Value.Longitude, parsed.Location!.Value.Longitude, 0.5e-6);

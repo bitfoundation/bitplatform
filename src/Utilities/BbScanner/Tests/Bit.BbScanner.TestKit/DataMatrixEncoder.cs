@@ -19,7 +19,7 @@ public static class DataMatrixEncoder
     /// the two byte file identification the sequence shares.
     /// </param>
     /// <param name="eci">Writes an ECI designator, below 127, ahead of the data: 26 has its bytes read as UTF-8.</param>
-    public static BbBitMatrix Encode(string content, int minimumVersion = 1, (int Position, int Count, int FileId)? structuredAppend = null, int? eci = null)
+    public static BbScannerBitMatrix Encode(string content, int minimumVersion = 1, (int Position, int Count, int FileId)? structuredAppend = null, int? eci = null)
     {
         ArgumentNullException.ThrowIfNull(content);
 
@@ -46,7 +46,7 @@ public static class DataMatrixEncoder
     /// </summary>
     /// <param name="content">The text to encode; ISO-8859-1 characters only.</param>
     /// <param name="version">The shape to produce.</param>
-    public static BbBitMatrix Encode(string content, BbDataMatrixVersion version)
+    public static BbScannerBitMatrix Encode(string content, BbScannerDataMatrixVersion version)
     {
         ArgumentNullException.ThrowIfNull(content);
         ArgumentNullException.ThrowIfNull(version);
@@ -62,7 +62,7 @@ public static class DataMatrixEncoder
         return Build(codewords, version);
     }
 
-    private static BbBitMatrix Build(List<byte> codewords, BbDataMatrixVersion version)
+    private static BbScannerBitMatrix Build(List<byte> codewords, BbScannerDataMatrixVersion version)
     {
         AddPadding(codewords, version.TotalDataCodewords);
 
@@ -130,9 +130,9 @@ public static class DataMatrixEncoder
         }
     }
 
-    private static BbDataMatrixVersion? ChooseVersion(int dataCodewords, int minimumVersion)
+    private static BbScannerDataMatrixVersion? ChooseVersion(int dataCodewords, int minimumVersion)
     {
-        foreach (var version in BbDataMatrixVersion.All)
+        foreach (var version in BbScannerDataMatrixVersion.All)
         {
             if (version.IsRectangular || version.VersionNumber < minimumVersion)
             {
@@ -148,9 +148,9 @@ public static class DataMatrixEncoder
         return null;
     }
 
-    private static byte[] InterleaveWithEcCodewords(byte[] data, BbDataMatrixVersion version)
+    private static byte[] InterleaveWithEcCodewords(byte[] data, BbScannerDataMatrixVersion version)
     {
-        var encoder = new ReedSolomonEncoder(BbGenericGF.DataMatrixField256);
+        var encoder = new ReedSolomonEncoder(BbScannerGenericGF.DataMatrixField256);
 
         var totalBlocks = version.NumBlocks;
         var blocks = new List<byte[]>();
@@ -218,13 +218,13 @@ public static class DataMatrixEncoder
     /// <summary>
     /// Writes codewords into the mapping matrix using the ECC 200 placement algorithm.
     /// </summary>
-    private static BbBitMatrix Place(byte[] codewords, BbDataMatrixVersion version)
+    private static BbScannerBitMatrix Place(byte[] codewords, BbScannerDataMatrixVersion version)
     {
         var numRows = version.SymbolSizeRows / version.DataRegionSizeRows * version.DataRegionSizeRows;
         var numColumns = version.SymbolSizeColumns / version.DataRegionSizeColumns * version.DataRegionSizeColumns;
 
-        var matrix = new BbBitMatrix(numColumns, numRows);
-        var written = new BbBitMatrix(numColumns, numRows);
+        var matrix = new BbScannerBitMatrix(numColumns, numRows);
+        var written = new BbScannerBitMatrix(numColumns, numRows);
 
         var chr = 0;
         var row = 4;
@@ -297,7 +297,7 @@ public static class DataMatrixEncoder
     }
 
     private static void WriteModule(
-        BbBitMatrix matrix, BbBitMatrix written, int row, int column, byte codeword, int bit, int numRows, int numColumns)
+        BbScannerBitMatrix matrix, BbScannerBitMatrix written, int row, int column, byte codeword, int bit, int numRows, int numColumns)
     {
         if (row < 0)
         {
@@ -321,7 +321,7 @@ public static class DataMatrixEncoder
     }
 
     private static void WriteUtah(
-        BbBitMatrix matrix, BbBitMatrix written, int row, int column, byte codeword, int numRows, int numColumns)
+        BbScannerBitMatrix matrix, BbScannerBitMatrix written, int row, int column, byte codeword, int numRows, int numColumns)
     {
         WriteModule(matrix, written, row - 2, column - 2, codeword, 1, numRows, numColumns);
         WriteModule(matrix, written, row - 2, column - 1, codeword, 2, numRows, numColumns);
@@ -333,7 +333,7 @@ public static class DataMatrixEncoder
         WriteModule(matrix, written, row, column, codeword, 8, numRows, numColumns);
     }
 
-    private static void WriteCorner1(BbBitMatrix matrix, BbBitMatrix written, byte codeword, int numRows, int numColumns)
+    private static void WriteCorner1(BbScannerBitMatrix matrix, BbScannerBitMatrix written, byte codeword, int numRows, int numColumns)
     {
         WriteModule(matrix, written, numRows - 1, 0, codeword, 1, numRows, numColumns);
         WriteModule(matrix, written, numRows - 1, 1, codeword, 2, numRows, numColumns);
@@ -345,7 +345,7 @@ public static class DataMatrixEncoder
         WriteModule(matrix, written, 3, numColumns - 1, codeword, 8, numRows, numColumns);
     }
 
-    private static void WriteCorner2(BbBitMatrix matrix, BbBitMatrix written, byte codeword, int numRows, int numColumns)
+    private static void WriteCorner2(BbScannerBitMatrix matrix, BbScannerBitMatrix written, byte codeword, int numRows, int numColumns)
     {
         WriteModule(matrix, written, numRows - 3, 0, codeword, 1, numRows, numColumns);
         WriteModule(matrix, written, numRows - 2, 0, codeword, 2, numRows, numColumns);
@@ -357,7 +357,7 @@ public static class DataMatrixEncoder
         WriteModule(matrix, written, 1, numColumns - 1, codeword, 8, numRows, numColumns);
     }
 
-    private static void WriteCorner3(BbBitMatrix matrix, BbBitMatrix written, byte codeword, int numRows, int numColumns)
+    private static void WriteCorner3(BbScannerBitMatrix matrix, BbScannerBitMatrix written, byte codeword, int numRows, int numColumns)
     {
         WriteModule(matrix, written, numRows - 3, 0, codeword, 1, numRows, numColumns);
         WriteModule(matrix, written, numRows - 2, 0, codeword, 2, numRows, numColumns);
@@ -369,7 +369,7 @@ public static class DataMatrixEncoder
         WriteModule(matrix, written, 3, numColumns - 1, codeword, 8, numRows, numColumns);
     }
 
-    private static void WriteCorner4(BbBitMatrix matrix, BbBitMatrix written, byte codeword, int numRows, int numColumns)
+    private static void WriteCorner4(BbScannerBitMatrix matrix, BbScannerBitMatrix written, byte codeword, int numRows, int numColumns)
     {
         WriteModule(matrix, written, numRows - 1, 0, codeword, 1, numRows, numColumns);
         WriteModule(matrix, written, numRows - 1, numColumns - 1, codeword, 2, numRows, numColumns);
@@ -382,11 +382,11 @@ public static class DataMatrixEncoder
     }
 
     /// <summary>Wraps every data region in its solid finder and dashed timing borders.</summary>
-    private static BbBitMatrix AddBorders(BbBitMatrix placement, BbDataMatrixVersion version)
+    private static BbScannerBitMatrix AddBorders(BbScannerBitMatrix placement, BbScannerDataMatrixVersion version)
     {
         var regionRows = version.DataRegionSizeRows;
         var regionColumns = version.DataRegionSizeColumns;
-        var result = new BbBitMatrix(version.SymbolSizeColumns, version.SymbolSizeRows);
+        var result = new BbScannerBitMatrix(version.SymbolSizeColumns, version.SymbolSizeRows);
 
         var numRegionsDown = version.SymbolSizeRows / regionRows;
         var numRegionsAcross = version.SymbolSizeColumns / regionColumns;

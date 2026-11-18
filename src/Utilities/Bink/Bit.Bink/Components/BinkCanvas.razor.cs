@@ -2523,36 +2523,3 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         public void Announce(string message) => canvas.Announce(message);
     }
 }
-
-/// <summary>Information about a stroke event.</summary>
-/// <param name="Stroke">The stroke, once it exists. Null when a stroke has only just started.</param>
-/// <param name="Device">The device that drew it.</param>
-public readonly record struct BinkStrokeEventArgs(BinkStroke? Stroke, BinkPointerKind Device);
-
-/// <summary>What the mouse wheel and a trackpad do over a <see cref="BinkCanvas"/>.</summary>
-public enum BinkWheelMode : byte
-{
-    /// <summary>Nothing: the page scrolls as usual. Right for a canvas embedded in a form.</summary>
-    None = 0,
-
-    /// <summary>
-    /// The wheel and two-finger trackpad scrolling pan the view; Ctrl (Command on macOS) with the wheel, and a
-    /// trackpad pinch, zoom around the pointer. Shift with the wheel pans sideways. This is the convention of design
-    /// tools and whiteboards.
-    /// </summary>
-    PanAndZoom = 1,
-
-    /// <summary>The wheel zooms around the pointer; Shift with the wheel pans. This is the convention of maps.</summary>
-    Zoom = 2,
-}
-
-/// <summary>An image format the browser encodes for <see cref="BinkCanvas.ExportImageAsync"/>.</summary>
-public enum BinkImageFormat : byte
-{
-    /// <summary>Lossless, with transparency. Also available without a browser, through <see cref="BinkPngExporter"/>.</summary>
-    Png = 0,
-    /// <summary>Lossy and small, without transparency.</summary>
-    Jpeg = 1,
-    /// <summary>Lossy or lossless with transparency. Not encoded by Safari.</summary>
-    Webp = 2,
-}

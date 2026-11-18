@@ -224,7 +224,7 @@ public sealed class BmotionInterop : IBmotionInterop
         => await (await Module()).InvokeVoidAsync("attachEventListeners", elementId, events, dotnetRef);
 
     /// <summary>
-    /// Starts a drag on an element from an external pointer event (see <see cref="BmDragControls"/>).
+    /// Starts a drag on an element from an external pointer event (see <see cref="BmotionDragControls"/>).
     /// No-op when the element has no drag attached.
     /// </summary>
     public async ValueTask StartDragAsync(string elementId, long pointerId, double clientX, double clientY)
@@ -238,7 +238,7 @@ public sealed class BmotionInterop : IBmotionInterop
                new Dictionary<string, object?> { ["once"] = once, ["margin"] = "0px", ["threshold"] = 0.0 });
 
     public async ValueTask ObserveViewportWithOptionsAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
-        string elementId, DotNetObjectReference<T> dotnetRef, BmViewport options) where T : class
+        string elementId, DotNetObjectReference<T> dotnetRef, BmotionViewport options) where T : class
         => await (await Module()).InvokeVoidAsync("observeViewport", elementId, dotnetRef, options.ToJsObject());
 
     public async ValueTask UnobserveViewportAsync(string elementId)

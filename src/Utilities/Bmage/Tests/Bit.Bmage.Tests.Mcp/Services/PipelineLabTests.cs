@@ -40,8 +40,8 @@ public class PipelineLabTests
         Assert.IsNull(png.Quality, "PNG is lossless and has no quality.");
 
         using var source = BmagePipelineLab.CreateSource("photo", 640, 480);
-        using var output = Bit.Bmage.ImagePipeline.Create().MaxSize(320, 320).Execute(source);
-        var expected = await new Bit.Bmage.ImageProcessor().EncodeAsync(output, new Bit.Bmage.ImageExportOptions { Format = BmageImageFormat.Png });
+        using var output = Bit.Bmage.BmageImagePipeline.Create().MaxSize(320, 320).Execute(source);
+        var expected = await new Bit.Bmage.BmageImageProcessor().EncodeAsync(output, new Bit.Bmage.BmageImageExportOptions { Format = BmageImageFormat.Png });
 
         Assert.AreEqual(expected.Length, png.Bytes, "The PNG measured is not the PNG the library encodes.");
     }

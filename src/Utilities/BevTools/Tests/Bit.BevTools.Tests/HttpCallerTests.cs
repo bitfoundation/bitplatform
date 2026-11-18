@@ -45,9 +45,9 @@ public class HttpCallerTests : BunitContext
         Assert.AreEqual("CallerApi.GetDetailsAsync", request.CallerVia);
         Assert.AreEqual("CallerRow.OnInitializedAsync via CallerApi.GetDetailsAsync", request.Caller);
 
-        var endpoint = Assert.ContainsSingle(BevHttpEndpoints.Summarize(Session.Http.Snapshot()));
+        var endpoint = Assert.ContainsSingle(BevToolsHttpEndpoints.Summarize(Session.Http.Snapshot()));
         Assert.AreEqual(("CallerRow.OnInitializedAsync", 1), Assert.ContainsSingle(endpoint.Callers));
-        StringAssert.Contains(BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Indented = false, Sections = new HashSet<string> { "http" } }),
+        StringAssert.Contains(BevToolsSessionExporter.ToJson(Session, new BevToolsSessionExportOptions { Indented = false, Sections = new HashSet<string> { "http" } }),
             "\"caller\":\"CallerRow.OnInitializedAsync via CallerApi.GetDetailsAsync\"");
     }
 
@@ -84,7 +84,7 @@ public class HttpCallerTests : BunitContext
         Assert.IsNull(request.Caller);
         // Which reason depends on what ran the test: from a continuation (as MSTest runs it) it says so.
         StringAssert.StartsWith(request.CallerMissing, "no component on the stack");
-        StringAssert.Contains(BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Indented = false, Sections = new HashSet<string> { "http" } }),
+        StringAssert.Contains(BevToolsSessionExporter.ToJson(Session, new BevToolsSessionExportOptions { Indented = false, Sections = new HashSet<string> { "http" } }),
             "\"callerMissing\":\"no component on the stack");
     }
 
@@ -103,7 +103,7 @@ public class HttpCallerTests : BunitContext
 
             Assert.IsTrue(seen.IsCompleted);
             Assert.IsNull(seen.Result.Component, seen.Result.Component);
-            Assert.AreEqual(BevCallSites.AfterCompletion, seen.Result.Missing);
+            Assert.AreEqual(BevToolsCallSites.AfterCompletion, seen.Result.Missing);
 
             // The control: called by the component directly, it is the component's.
             Assert.AreEqual("GateOpener.Look", new GateOpener().Look().Component);
@@ -117,13 +117,13 @@ public class HttpCallerTests : BunitContext
     [TestMethod]
     public void An_endpoint_counts_every_sender_although_it_lists_the_first_five()
     {
-        var records = Enumerable.Range(0, 7).Select(i => new BevHttpRecord
+        var records = Enumerable.Range(0, 7).Select(i => new BevToolsHttpRecord
         {
             Id = i + 1, StartedAt = DateTimeOffset.UtcNow, Method = "GET", Url = "/api/orders/" + (1001 + i), StatusCode = 200, DurationMs = 5,
             CallerComponent = "Row" + i + ".OnInitializedAsync",
         }).ToArray();
 
-        var endpoint = Assert.ContainsSingle(BevHttpEndpoints.Summarize(records));
+        var endpoint = Assert.ContainsSingle(BevToolsHttpEndpoints.Summarize(records));
         Assert.HasCount(5, endpoint.Callers);
         Assert.AreEqual(7, endpoint.CallerCount);
     }
@@ -177,7 +177,7 @@ public class HttpCallerTests : BunitContext
         var start = DateTimeOffset.UtcNow.AddSeconds(-2);
         for (var i = 0; i < 6; i++)
         {
-            Session.Http.Add(new BevHttpRecord
+            Session.Http.Add(new BevToolsHttpRecord
             {
                 Id = Session.Http.NextId(), StartedAt = start.AddMilliseconds(i * 3), Method = "GET", Url = "/api/orders/" + (1001 + i), StatusCode = 200, DurationMs = 20,
                 CallerComponent = "OrderRow.OnInitializedAsync", CallerVia = "ProductApi.GetOrderDetailsAsync",
@@ -199,10 +199,10 @@ public sealed class CallerApi(HttpClient client)
 internal static class GateWaiter
 {
     // A service method awaiting a gate, then reading its call site: what an HTTP send at that point would get.
-    internal static async Task<BevCallSites.CallSite> LookAfter(Task gate)
+    internal static async Task<BevToolsCallSites.CallSite> LookAfter(Task gate)
     {
         await gate;
-        return BevCallSites.Find(skipFrames: 0);
+        return BevToolsCallSites.Find(skipFrames: 0);
     }
 }
 
@@ -210,7 +210,7 @@ public class GateOpener : ComponentBase
 {
     public void Open(TaskCompletionSource gate) => gate.SetResult();
 
-    internal BevCallSites.CallSite Look() => BevCallSites.Find(skipFrames: 0);
+    internal BevToolsCallSites.CallSite Look() => BevToolsCallSites.Find(skipFrames: 0);
 }
 
 public sealed class FactoryCallerApi(HttpClient client)

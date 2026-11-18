@@ -27,7 +27,7 @@ public class CorrelationTests
         }
     }
 
-    private static async Task<BevHttpRecord> Send(BevToolsSession session, string? traceparent)
+    private static async Task<BevToolsHttpRecord> Send(BevToolsSession session, string? traceparent)
     {
         using var client = new HttpClient(new BevToolsHttpMessageHandler(session) { InnerHandler = new PropagatingHandler(traceparent) });
         await client.GetAsync("https://api.test/orders/1");
@@ -50,7 +50,7 @@ public class CorrelationTests
             Assert.IsNull((await Send(session, "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-zz")).TraceId, "flags are two hex digits");
             Assert.IsNull((await Send(session, "garbage")).TraceId);
 
-            using var json = JsonDocument.Parse(BevSessionExporter.ToJson(session, new BevSessionExportOptions { Sections = new HashSet<string> { "http" } }));
+            using var json = JsonDocument.Parse(BevToolsSessionExporter.ToJson(session, new BevToolsSessionExportOptions { Sections = new HashSet<string> { "http" } }));
             Assert.AreEqual("4bf92f3577b34da6a3ce929d0e0e4736", json.RootElement.GetProperty("http")[0].GetProperty("traceId").GetString());
         }
     }
@@ -63,7 +63,7 @@ public class CorrelationTests
         {
             var appTask = Task.Run(() => throw new InvalidOperationException("Saving the draft failed"));
             // An async method of BevTools' own that faults: its task is BevTools'.
-            var ownTask = BevRenderProfile.ParseAsync(new MemoryStream("not json"u8.ToArray()));
+            var ownTask = BevToolsRenderProfile.ParseAsync(new MemoryStream("not json"u8.ToArray()));
             try
             {
                 Task.WaitAll(appTask, ownTask);
@@ -72,8 +72,8 @@ public class CorrelationTests
             {
             }
 
-            BevUnobservedTasks.Record(session, appTask.Exception);
-            BevUnobservedTasks.Record(session, ownTask.Exception);
+            BevToolsUnobservedTasks.Record(session, appTask.Exception);
+            BevToolsUnobservedTasks.Record(session, ownTask.Exception);
 
             // An application's fire-and-forget call that went through BevTools' tracked IJSRuntime is still the application's.
             var js = new FakeJSRuntime { Handler = (_, _) => throw new InvalidOperationException("JS failed") }.WithBevToolsTracking(session);
@@ -86,8 +86,8 @@ public class CorrelationTests
             {
             }
 
-            Assert.IsFalse(BevUnobservedTasks.IsBevToolsOwn(viaWrapper.Exception!.InnerException!), viaWrapper.Exception.InnerException!.StackTrace);
-            Assert.IsTrue(BevUnobservedTasks.IsBevToolsOwn(ownTask.Exception!.InnerException!));
+            Assert.IsFalse(BevToolsUnobservedTasks.IsBevToolsOwn(viaWrapper.Exception!.InnerException!), viaWrapper.Exception.InnerException!.StackTrace);
+            Assert.IsTrue(BevToolsUnobservedTasks.IsBevToolsOwn(ownTask.Exception!.InnerException!));
 
             // The tracked runtime recorded the failed JS call itself; the unobserved task is one error of its own.
             var error = Assert.ContainsSingle(e => e.Source == "task", session.Errors.Snapshot());

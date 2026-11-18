@@ -9,9 +9,9 @@ namespace Bit.Bmage.Demo.Server.Services;
 /// <para>
 /// Image code goes wrong in ways no compiler sees. A capability probe in <c>OnInitializedAsync</c>
 /// compiles, runs during prerendering, and concludes that no browser can write WebP. An
-/// <c>ImageBuffer</c> nobody disposes is 48 MB of pooled memory that stays rented until the
-/// collector gets round to it - on a phone, the tab dies first. <c>MetadataPolicy.Preserve</c>
-/// publishes the user's home address in the GPS block. <c>@inject ImageProcessor</c> in a browser
+/// <c>BmageImageBuffer</c> nobody disposes is 48 MB of pooled memory that stays rented until the
+/// collector gets round to it - on a phone, the tab dies first. <c>BmageMetadataPolicy.Preserve</c>
+/// publishes the user's home address in the GPS block. <c>@inject BmageImageProcessor</c> in a browser
 /// app is a missing-service exception at the first prerender, because the browser registration
 /// deliberately does not register it. Every rule below is one of those, and each one is grounded in
 /// the library's own documented behaviour: the guide it comes from is named in <see cref="Catalog"/>.
@@ -30,9 +30,9 @@ public static partial class BmageCodeReview
         new() { Id = "browser-call-during-prerender", Severity = "Error", Source = "getting-started",
                 Catches = "Browser features called from OnInitialized/OnParametersSet, which also run during prerendering: the JS calls throw, and the capability probe answers with the managed set." },
         new() { Id = "image-buffer-not-disposed", Severity = "Warning", Source = "getting-started",
-                Catches = "An ImageBuffer (or an ImageCanvas that owns one) from LoadAsync, ExecuteAsync, DecodeAsync, Render, Snapshot or Clone that is never disposed." },
+                Catches = "An BmageImageBuffer (or an BmageImageCanvas that owns one) from LoadAsync, ExecuteAsync, DecodeAsync, Render, Snapshot or Clone that is never disposed." },
         new() { Id = "borrowed-buffer-disposed", Severity = "Error", Source = "troubleshooting",
-                Catches = "Disposing ImageEditSession.Preview or Original, which the session owns - an ObjectDisposedException on the next render." },
+                Catches = "Disposing BmageImageEditSession.Preview or Original, which the session owns - an ObjectDisposedException on the next render." },
         new() { Id = "editor-owns-loaded-buffer", Severity = "Error", Source = "troubleshooting",
                 Catches = "A buffer handed to BmageEditor.LoadImageAsync (which takes ownership by default) that is also disposed by the caller." },
         new() { Id = "editor-stylesheet-missing", Severity = "Warning", Source = "getting-started",
@@ -44,29 +44,29 @@ public static partial class BmageCodeReview
         new() { Id = "editor-without-height", Severity = "Suggestion", Source = "troubleshooting",
                 Catches = "A BmageEditor with no height anywhere around it: it fills its container, and a container with no height collapses." },
         new() { Id = "processor-injected-in-browser", Severity = "Error", Source = "getting-started",
-                Catches = "@inject ImageProcessor in a browser app: AddBitBmageServices registers ImageProcessorFactory, not ImageProcessor." },
+                Catches = "@inject BmageImageProcessor in a browser app: AddBitBmageServices registers BmageImageProcessorFactory, not BmageImageProcessor." },
         new() { Id = "browser-services-with-headless-registration", Severity = "Error", Source = "headless",
-                Catches = "ImageLoader, ImageExporter, ImageProcessorFactory or the editor used where only AddBitBmageHeadlessServices is registered." },
+                Catches = "BmageImageLoader, BmageImageExporter, BmageImageProcessorFactory or the editor used where only AddBitBmageHeadlessServices is registered." },
         new() { Id = "headless-services-in-browser", Severity = "Error", Source = "getting-started",
-                Catches = "AddBitBmageHeadlessServices in a WebAssembly host: no browser codecs, no ImageLoader, no ImageExporter." },
+                Catches = "AddBitBmageHeadlessServices in a WebAssembly host: no browser codecs, no BmageImageLoader, no BmageImageExporter." },
         new() { Id = "services-not-registered", Severity = "Warning", Source = "browser-support",
                 Catches = "A Blazor host Program.cs that never registers Bmage - in a Web App the prerender pass needs it in the server container too." },
         new() { Id = "blazor-package-missing", Severity = "Error", Source = "getting-started",
-                Catches = "A browser project that references Bit.Bmage alone: AddBitBmageServices, ImageLoader, ImageExporter and BmageEditor ship in Bit.Bmage.Blazor." },
+                Catches = "A browser project that references Bit.Bmage alone: AddBitBmageServices, BmageImageLoader, BmageImageExporter and BmageEditor ship in Bit.Bmage.Blazor." },
         new() { Id = "aot-not-enabled", Severity = "Warning", Source = "performance",
                 Catches = "A Blazor WebAssembly project using Bmage without RunAOTCompilation: pixel loops run 10 to 35 times slower." },
         new() { Id = "format-without-capability-check", Severity = "Warning", Source = "formats",
-                Catches = "Exporting AVIF in a browser with no capability check or fallback: most browsers cannot write it and throw ImageCapabilityException." },
+                Catches = "Exporting AVIF in a browser with no capability check or fallback: most browsers cannot write it and throw BmageImageCapabilityException." },
         new() { Id = "browser-format-on-server", Severity = "Error", Source = "headless",
-                Catches = "AVIF with the headless/managed codecs, which cannot encode it - ImageCapabilityException at the first request." },
+                Catches = "AVIF with the headless/managed codecs, which cannot encode it - BmageImageCapabilityException at the first request." },
         new() { Id = "metadata-preserve-keeps-location", Severity = "Warning", Source = "metadata-and-privacy",
-                Catches = "MetadataPolicy.Preserve, which keeps GPS, serial numbers and owner names in the exported file." },
+                Catches = "BmageMetadataPolicy.Preserve, which keeps GPS, serial numbers and owner names in the exported file." },
         new() { Id = "autoorient-off-without-rotation", Severity = "Warning", Source = "metadata-and-privacy",
-                Catches = "DecodeOptions.AutoOrient = false with no AutoOrient() step: the default export removes the orientation tag and the image is saved sideways." },
+                Catches = "BmageDecodeOptions.AutoOrient = false with no AutoOrient() step: the default export removes the orientation tag and the image is saved sideways." },
         new() { Id = "resize-late-in-pipeline", Severity = "Suggestion", Source = "performance",
                 Catches = "Per-pixel work (adjustments, filters, rotation) placed before the downscale, so it runs on every source pixel." },
         new() { Id = "size-budget-unhandled", Severity = "Suggestion", Source = "formats",
-                Catches = "MaxFileSize with no ImageEncodeException handling: an impossible budget throws rather than returning an oversized file." },
+                Catches = "MaxFileSize with no BmageImageEncodeException handling: an impossible budget throws rather than returning an oversized file." },
         new() { Id = "data-url-preview", Severity = "Suggestion", Source = "getting-started",
                 Catches = "ToDataUrl() for showing an image: base64 inflates the bytes by a third and pushes them through the DOM as a string." },
         new() { Id = "object-url-not-released", Severity = "Suggestion", Source = "getting-started",
@@ -76,13 +76,13 @@ public static partial class BmageCodeReview
         new() { Id = "browser-file-default-limit", Severity = "Warning", Source = "troubleshooting",
                 Catches = "IBrowserFile.OpenReadStream() without maxAllowedSize: it refuses anything over 500 KB, which is most photos." },
         new() { Id = "redaction-not-solid", Severity = "Suggestion", Source = "security",
-                Catches = "RedactionMode.Blur or Pixelate for hiding text: recoverable when the possible inputs are constrained. Solid removes the doubt." },
+                Catches = "BmageRedactionMode.Blur or Pixelate for hiding text: recoverable when the possible inputs are constrained. Solid removes the doubt." },
         new() { Id = "svg-input", Severity = "Warning", Source = "security",
-                Catches = "Accepting SVG files: Bmage refuses SVG with ImageDecodeException, because untrusted SVG can run scripts." },
+                Catches = "Accepting SVG files: Bmage refuses SVG with BmageImageDecodeException, because untrusted SVG can run scripts." },
         new() { Id = "batch-concurrency-high", Severity = "Suggestion", Source = "pipelines",
                 Catches = "A browser batch with MaxConcurrency of 4 or more: each worker holds a decoded image, and phones run out of memory." },
         new() { Id = "identify-before-decode", Severity = "Suggestion", Source = "security",
-                Catches = "A server endpoint decoding an upload without ImageProcessor.Identify first, so dimensions are checked only after allocation is attempted." },
+                Catches = "A server endpoint decoding an upload without BmageImageProcessor.Identify first, so dimensions are checked only after allocation is attempted." },
     ];
 
     /// <summary>The rules this review applies, so an empty result is not mistaken for an unchecked one.</summary>
@@ -149,7 +149,7 @@ public static partial class BmageCodeReview
 
     /// <summary>
     /// Browser work in a lifecycle method the prerender pass also runs. There is no browser then:
-    /// the JS bridge calls throw ImageCapabilityException, and the capability probe - deliberately
+    /// the JS bridge calls throw BmageImageCapabilityException, and the capability probe - deliberately
     /// forgiving - answers with the managed set, so a decision made from it is wrong on every browser.
     /// </summary>
     private static void CheckPrerenderCalls(string text, List<BmageReviewFindingDto> findings)
@@ -174,7 +174,7 @@ public static partial class BmageCodeReview
                     Rule = "browser-call-during-prerender",
                     Line = LineOf(text, start + match.Index),
                     Message = $"{match.Groups["call"].Value} needs a live browser, and {method} also runs during prerendering, " +
-                              "when there is none - it throws ImageCapabilityException (\"Could not load the Bmage browser " +
+                              "when there is none - it throws BmageImageCapabilityException (\"Could not load the Bmage browser " +
                               "module\") on the server, before the page is ever interactive.",
                     Fix = initialization
                         ? "Move it to OnAfterRenderAsync(bool firstRender) behind `if (!firstRender || !RendererInfo.IsInteractive) return;`, " +
@@ -192,8 +192,8 @@ public static partial class BmageCodeReview
                     Rule = "browser-call-during-prerender",
                     Line = LineOf(text, start + match.Index),
                     Message = $"{match.Groups["call"].Value} in {method} runs during prerendering too. It does not throw there: " +
-                              "IImageCapabilityProvider answers with the managed capability set (Environment = Prerendering), " +
-                              "and ImageProcessorFactory/ImageExporter fall back to the managed codecs - so a format chosen here " +
+                              "IBmageImageCapabilityProvider answers with the managed capability set (Environment = Prerendering), " +
+                              "and BmageImageProcessorFactory/BmageImageExporter fall back to the managed codecs - so a format chosen here " +
                               "never picks AVIF on any browser, and the browser's own codecs are never used.",
                     Fix = "Read capabilities and encode in OnAfterRenderAsync(firstRender) when RendererInfo.IsInteractive, or in an " +
                           "event handler; render a 'probing' state until then."
@@ -218,7 +218,7 @@ public static partial class BmageCodeReview
 
             if (IsReleased(text, name)) continue;
 
-            var canvas = api.StartsWith("ImageCanvas", StringComparison.Ordinal);
+            var canvas = api.StartsWith("BmageImageCanvas", StringComparison.Ordinal);
 
             findings.Add(new BmageReviewFindingDto
             {
@@ -226,13 +226,13 @@ public static partial class BmageCodeReview
                 Rule = "image-buffer-not-disposed",
                 Line = i + 1,
                 Message = canvas
-                    ? $"'{name}' is an ImageCanvas that owns its pixel buffer, and it is never disposed. The pixels are pooled " +
+                    ? $"'{name}' is an BmageImageCanvas that owns its pixel buffer, and it is never disposed. The pixels are pooled " +
                       "memory that stays rented until a garbage collection happens to finalise it."
-                    : $"'{name}' is an ImageBuffer you own ({api} returns a new buffer to the caller), and it is never disposed. " +
+                    : $"'{name}' is an BmageImageBuffer you own ({api} returns a new buffer to the caller), and it is never disposed. " +
                       "Buffers are pooled memory - a 4000 x 3000 image is 48 MB - and an undisposed one stays rented until the " +
                       "collector gets round to it. On a phone the tab is killed first.",
                 Fix = $"Declare it with `using var {name} = ...`, or dispose it when it is replaced and in the component's Dispose. " +
-                      "Buffers you read from a property (ImageEditSession.Preview) are not yours to dispose."
+                      "Buffers you read from a property (BmageImageEditSession.Preview) are not yours to dispose."
             });
         }
     }
@@ -307,7 +307,7 @@ public static partial class BmageCodeReview
                 Severity = "Error",
                 Rule = "borrowed-buffer-disposed",
                 Line = i + 1,
-                Message = "ImageEditSession.Preview and ImageEditSession.Original belong to the session, which keeps rendering from " +
+                Message = "BmageImageEditSession.Preview and BmageImageEditSession.Original belong to the session, which keeps rendering from " +
                           "them. Disposing one returns its memory to the pool while the editor still reads it: the next render " +
                           "throws ObjectDisposedException, or worse, paints whatever reused that memory.",
                 Fix = "Do not dispose buffers you read from a property. If you need pixels of your own, take a copy with .Clone() " +
@@ -323,7 +323,7 @@ public static partial class BmageCodeReview
         {
             var name = Regex.Escape(match.Groups["name"].Value);
 
-            var disposed = Has(text, false, $@"\busing\s+(var|ImageBuffer\??)\s+{name}\b")
+            var disposed = Has(text, false, $@"\busing\s+(var|BmageImageBuffer\??)\s+{name}\b")
                         || Has(text, false, $@"\busing\s*\(\s*(var\s+)?{name}\b")
                         || Has(text, false, $@"\b{name}\s*\??\.\s*Dispose\s*\(");
 
@@ -430,7 +430,7 @@ public static partial class BmageCodeReview
         });
     }
 
-    /// <summary>ImageProcessor injected into a component, where the browser registration does not provide it.</summary>
+    /// <summary>BmageImageProcessor injected into a component, where the browser registration does not provide it.</summary>
     private static void CheckProcessorInjection(string text, string[] lines, List<BmageReviewFindingDto> findings)
     {
         if (HeadlessCallRegex().IsMatch(text)) return;
@@ -444,11 +444,11 @@ public static partial class BmageCodeReview
                 Severity = "Error",
                 Rule = "processor-injected-in-browser",
                 Line = i + 1,
-                Message = "AddBitBmageServices does not register ImageProcessor: in a browser the processor can only be built once " +
+                Message = "AddBitBmageServices does not register BmageImageProcessor: in a browser the processor can only be built once " +
                           "the browser's codecs have been probed, which is asynchronous. Injecting it fails with \"There is no " +
-                          "registered service of type 'ImageProcessor'\" - at prerender in a Web App, not at compile time.",
-                Fix = "@inject ImageProcessorFactory Processors, then `var processor = await Processors.GetAsync();` in an event " +
-                      "handler or OnAfterRenderAsync. Or use ImageLoader/ImageExporter, which do this for you."
+                          "registered service of type 'BmageImageProcessor'\" - at prerender in a Web App, not at compile time.",
+                Fix = "@inject BmageImageProcessorFactory Processors, then `var processor = await Processors.GetAsync();` in an event " +
+                      "handler or OnAfterRenderAsync. Or use BmageImageLoader/BmageImageExporter, which do this for you."
             });
         }
     }
@@ -467,8 +467,8 @@ public static partial class BmageCodeReview
                 Severity = "Error",
                 Rule = "headless-services-in-browser",
                 Line = headless + 1,
-                Message = "AddBitBmageHeadlessServices in a WebAssembly host registers only the managed engine: no ImageLoader, no " +
-                          "ImageExporter, no ImageProcessorFactory, no browser codecs - so no AVIF export, no clipboard, no " +
+                Message = "AddBitBmageHeadlessServices in a WebAssembly host registers only the managed engine: no BmageImageLoader, no " +
+                          "BmageImageExporter, no BmageImageProcessorFactory, no browser codecs - so no AVIF export, no clipboard, no " +
                           "downloads, and the editor cannot be resolved.",
                 Fix = "builder.Services.AddBitBmageServices() in the browser project, from the Bit.Bmage.Blazor package. The " +
                       "headless registration is for servers, console apps and workers."
@@ -488,10 +488,10 @@ public static partial class BmageCodeReview
             Rule = "browser-services-with-headless-registration",
             Line = LineOf(text, browserUse.Index),
             Message = $"{browserUse.Groups["service"].Value} is a browser service, and the only registration here is " +
-                      "AddBitBmageHeadlessServices, which registers ImageProcessor, a managed capability provider and " +
-                      "FontTextRasterizer - nothing else. Resolving it throws a missing-service exception.",
+                      "AddBitBmageHeadlessServices, which registers BmageImageProcessor, a managed capability provider and " +
+                      "BmageFontTextRasterizer - nothing else. Resolving it throws a missing-service exception.",
             Fix = "Components that talk to a browser need AddBitBmageServices from the Bit.Bmage.Blazor package (in every " +
-                  "container they run in). On the server, inject ImageProcessor and work with bytes instead."
+                  "container they run in). On the server, inject BmageImageProcessor and work with bytes instead."
         });
     }
 
@@ -523,8 +523,8 @@ public static partial class BmageCodeReview
             Rule = "services-not-registered",
             Line = line + 1,
             Message = wasm
-                ? "This WebAssembly host never registers Bmage, so every @inject ImageLoader / ImageExporter / " +
-                  "IImageCapabilityProvider in its components throws a missing-service exception when the page renders."
+                ? "This WebAssembly host never registers Bmage, so every @inject BmageImageLoader / BmageImageExporter / " +
+                  "IBmageImageCapabilityProvider in its components throws a missing-service exception when the page renders."
                 : "This Blazor Web App host never registers Bmage. Its prerender pass instantiates the client's components in " +
                   "this container, so any component that injects a Bmage service fails at prerender - in production, not at build.",
             Fix = "Call builder.Services.AddBitBmageServices(), from the Bit.Bmage.Blazor package, here - in a Web App, through one " +
@@ -553,7 +553,7 @@ public static partial class BmageCodeReview
             Rule = "blazor-package-missing",
             Line = LineOf(text, engine.Index),
             Message = "This browser project references Bit.Bmage alone, which is the headless engine. AddBitBmageServices, " +
-                      "ImageLoader, ImageExporter, ImageProcessorFactory, the browser codecs and BmageEditor ship in Bit.Bmage.Blazor: " +
+                      "BmageImageLoader, BmageImageExporter, BmageImageProcessorFactory, the browser codecs and BmageEditor ship in Bit.Bmage.Blazor: " +
                       "without it the build fails with CS1061 ('IServiceCollection' does not contain a definition for " +
                       "'AddBitBmageServices') or CS0246 for the browser types.",
             Fix = "<PackageReference Include=\"Bit.Bmage.Blazor\" /> in place of Bit.Bmage, which it brings along at the matching " +
@@ -617,12 +617,12 @@ public static partial class BmageCodeReview
                 Severity = "Error",
                 Rule = "browser-format-on-server",
                 Line = line + 1,
-                Message = $"{format} is encoded only by a browser. With no browser - AddBitBmageHeadlessServices, new ImageProcessor(), " +
+                Message = $"{format} is encoded only by a browser. With no browser - AddBitBmageHeadlessServices, new BmageImageProcessor(), " +
                           "a server endpoint - only the managed codecs exist (PNG, JPEG, BMP and WebP encode), and asking for " +
-                          $"{format} throws ImageCapabilityException: \"No encoder is registered for {format} in this environment\".",
+                          $"{format} throws BmageImageCapabilityException: \"No encoder is registered for {format} in this environment\".",
                 Fix = "Encode WebP on the server instead: lossy for photos and transparency (Quality), lossless for originals " +
                       "(Lossless = true). If the file must be AVIF, encode it in the browser before upload with " +
-                      "ImageExporter.EncodeWithFallbackAsync([BmageImageFormat.Avif, BmageImageFormat.WebP])."
+                      "BmageImageExporter.EncodeWithFallbackAsync([BmageImageFormat.Avif, BmageImageFormat.WebP])."
             });
 
             return;
@@ -632,7 +632,7 @@ public static partial class BmageCodeReview
         if (BrowserMarkerRegex().IsMatch(text) is false) return;
 
         // Code that catches the refusal has decided what to do on a browser that cannot write the format.
-        if (text.Contains("ImageCapabilityException", StringComparison.Ordinal)) return;
+        if (text.Contains("BmageImageCapabilityException", StringComparison.Ordinal)) return;
 
         findings.Add(new BmageReviewFindingDto
         {
@@ -640,7 +640,7 @@ public static partial class BmageCodeReview
             Rule = "format-without-capability-check",
             Line = line + 1,
             Message = $"{format} is exported with no capability check and no fallback. Few browsers can encode AVIF, and Bmage " +
-                      "refuses the PNG a browser silently substitutes: EncodeAsync throws ImageCapabilityException on the others.",
+                      "refuses the PNG a browser silently substitutes: EncodeAsync throws BmageImageCapabilityException on the others.",
             Fix = "Exporter.EncodeWithFallbackAsync(image, [BmageImageFormat.Avif, BmageImageFormat.WebP], options) - it picks the first " +
                   "format this browser can really encode and reports it on encoded.Format, JPEG when it can write none. Or check " +
                   "capabilities.CanEncode(format) first."
@@ -654,16 +654,16 @@ public static partial class BmageCodeReview
 
         for (int i = 0; i < lines.Length; i++)
         {
-            if (lines[i].Contains("MetadataPolicy.Preserve", StringComparison.Ordinal) is false) continue;
+            if (lines[i].Contains("BmageMetadataPolicy.Preserve", StringComparison.Ordinal) is false) continue;
 
             findings.Add(new BmageReviewFindingDto
             {
                 Severity = "Warning",
                 Rule = "metadata-preserve-keeps-location",
                 Line = i + 1,
-                Message = "MetadataPolicy.Preserve keeps everything the format can carry: the GPS position the phone recorded, the " +
+                Message = "BmageMetadataPolicy.Preserve keeps everything the format can carry: the GPS position the phone recorded, the " +
                           "camera's serial number, the owner's name, unique ids and XMP. Published, that is where the user lives.",
-                Fix = "Use MetadataPolicy.Remove (the default) for anything users upload or publish, or StripSensitive to keep camera " +
+                Fix = "Use BmageMetadataPolicy.Remove (the default) for anything users upload or publish, or StripSensitive to keep camera " +
                       "and exposure data without the location and identity. Keep Preserve for files you produced yourself."
             });
 
@@ -688,7 +688,7 @@ public static partial class BmageCodeReview
                 Message = "With AutoOrient = false the pixels stay as the camera stored them, and only the EXIF tag says how to turn " +
                           "them. Every metadata policy resets that tag on export (and Remove, the default, drops it), so a phone " +
                           "photo is saved sideways with nothing left to correct it.",
-                Fix = "Leave DecodeOptions.AutoOrient on, or add .AutoOrient() as the first step of the pipeline before exporting."
+                Fix = "Leave BmageDecodeOptions.AutoOrient on, or add .AutoOrient() as the first step of the pipeline before exporting."
             });
 
             return;
@@ -731,7 +731,7 @@ public static partial class BmageCodeReview
     /// <summary>A size budget whose failure is not handled.</summary>
     private static void CheckSizeBudget(string text, string[] lines, List<BmageReviewFindingDto> findings)
     {
-        if (text.Contains("ImageEncodeException", StringComparison.Ordinal) || GeneralCatchRegex().IsMatch(text)) return;
+        if (text.Contains("BmageImageEncodeException", StringComparison.Ordinal) || GeneralCatchRegex().IsMatch(text)) return;
 
         var line = Array.FindIndex(lines, line => MaxFileSizeRegex().IsMatch(line));
         if (line < 0) return;
@@ -742,10 +742,10 @@ public static partial class BmageCodeReview
             Rule = "size-budget-unhandled",
             Line = line + 1,
             Message = "MaxFileSize makes the encoder search for settings that fit, and when the budget is impossible it throws " +
-                      "ImageEncodeException (\"Cannot reach N bytes for this image\") rather than returning an oversized file. " +
+                      "BmageImageEncodeException (\"Cannot reach N bytes for this image\") rather than returning an oversized file. " +
                       "Unhandled, that is an unhandled exception for whichever user uploads a detailed photo.",
-            Fix = "catch (ImageEncodeException) and tell the user, or raise the budget, lower MinQuality, or allow " +
-                  "MaxFileSizeStrategy.QualityThenDimensions. RunBmagePipeline with maxFileSize shows whether a budget is reachable."
+            Fix = "catch (BmageImageEncodeException) and tell the user, or raise the budget, lower MinQuality, or allow " +
+                  "BmageMaxFileSizeStrategy.QualityThenDimensions. RunBmagePipeline with maxFileSize shows whether a budget is reachable."
         });
     }
 
@@ -780,7 +780,7 @@ public static partial class BmageCodeReview
             Severity = "Suggestion",
             Rule = "object-url-not-released",
             Line = create + 1,
-            Message = "Every object URL keeps its bytes alive in the browser until it is released. ImageExporter releases the ones " +
+            Message = "Every object URL keeps its bytes alive in the browser until it is released. BmageImageExporter releases the ones " +
                       "it created when it is disposed - but it is scoped, and in WebAssembly that scope is the whole app, so a " +
                       "page that previews many images keeps every one of them.",
             Fix = "await Exporter.ReleaseObjectUrlAsync(previousUrl) before replacing a preview, and in the component's DisposeAsync."
@@ -825,8 +825,8 @@ public static partial class BmageCodeReview
                 Line = i + 1,
                 Message = "IBrowserFile.OpenReadStream() with no maxAllowedSize refuses anything over 512,000 bytes - an IOException " +
                           "for nearly every photo a phone takes.",
-                Fix = "Pass the limit: file.OpenReadStream(maxAllowedSize: 32 * 1024 * 1024). Or let ImageLoader.LoadAsync(file) read " +
-                      "it, which applies BitBmageOptions.MaxSourceBytes."
+                Fix = "Pass the limit: file.OpenReadStream(maxAllowedSize: 32 * 1024 * 1024). Or let BmageImageLoader.LoadAsync(file) read " +
+                      "it, which applies BmageOptions.MaxSourceBytes."
             });
 
             return;
@@ -849,7 +849,7 @@ public static partial class BmageCodeReview
                 Message = $"RedactionMode.{match.Groups["mode"].Value} replaces the pixels, but published research has recovered text from " +
                           "blurred and pixelated images when the possible inputs are constrained - exactly the case for account " +
                           "numbers and short strings.",
-                Fix = "Use RedactionMode.Solid for anything that must not be recovered."
+                Fix = "Use BmageRedactionMode.Solid for anything that must not be recovered."
             });
         }
     }
@@ -866,7 +866,7 @@ public static partial class BmageCodeReview
                 Severity = "Warning",
                 Rule = "svg-input",
                 Line = i + 1,
-                Message = "This input offers SVG files, and Bmage refuses SVG with ImageDecodeException - rasterising untrusted SVG " +
+                Message = "This input offers SVG files, and Bmage refuses SVG with BmageImageDecodeException - rasterising untrusted SVG " +
                           "can run embedded scripts and fetch remote resources, and a library cannot make that safe for you.",
                 Fix = "Accept image/png, image/jpeg, image/webp, image/avif and image/gif (or image/*). If you control the SVG, " +
                       "rasterise it yourself and pass the pixels."
@@ -911,11 +911,11 @@ public static partial class BmageCodeReview
             Severity = "Suggestion",
             Rule = "identify-before-decode",
             Line = line + 1,
-            Message = "An uploaded file is decoded with no look at its header first. The decoder's ImageLimits still refuse a " +
+            Message = "An uploaded file is decoded with no look at its header first. The decoder's BmageImageLimits still refuse a " +
                       "decompression bomb, but the endpoint has no say in what it accepts, and the user gets an exception rather " +
                       "than a reason.",
             Fix = "var info = processor.Identify(bytes); reject null (not an image) and anything whose Width * Height is over " +
-                  "your limit, before ProcessAsync. Treat ImageDecodeException as an expected outcome."
+                  "your limit, before ProcessAsync. Treat BmageImageDecodeException as an expected outcome."
         });
     }
 
@@ -992,7 +992,7 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"\b(?<call>\w*(?:[Cc]apabilit|[Pp]rovider|[Ff]actor|[Pp]rocessors)\w*\.GetAsync|\w*[Ee]xporter\w*\.Encode(?:WithFallback)?Async)\s*\(")]
     private static partial Regex ProbeCallRegex();
 
-    [GeneratedRegex(@"^\s*(?:var|ImageBuffer\??|ImageCanvas)\s+(?<name>\w+)\s*=\s*(?:await\s+)?[^;]*?(?<api>\bLoadAsync|\bLoadFromClipboardAsync|\bExecuteAsync|\bExecute|\bDecodeAsync|\bRenderAsync|\bRenderFullAsync|\bRender|\bSnapshot|\bClone|\bCopyRegion|ImageBuffer\.FromRgba|ImageBuffer\.Create|ImageCanvas\.Create|ImageCanvas\.FromImage)\s*\(")]
+    [GeneratedRegex(@"^\s*(?:var|BmageImageBuffer\??|BmageImageCanvas)\s+(?<name>\w+)\s*=\s*(?:await\s+)?[^;]*?(?<api>\bLoadAsync|\bLoadFromClipboardAsync|\bExecuteAsync|\bExecute|\bDecodeAsync|\bRenderAsync|\bRenderFullAsync|\bRender|\bSnapshot|\bClone|\bCopyRegion|BmageImageBuffer\.FromRgba|BmageImageBuffer\.Create|BmageImageCanvas\.Create|BmageImageCanvas\.FromImage)\s*\(")]
     private static partial Regex OwnedBufferRegex();
 
     [GeneratedRegex(@"\.(?:Preview|Original)\s*\??\.\s*Dispose\s*\(")]
@@ -1020,11 +1020,11 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"<BmageEditor\b[^>]*\b(?:Class|Style)\s*=")]
     private static partial Regex EditorClassRegex();
 
-    // A Razor directive starts its line; "@inject ImageProcessor" in a sentence is prose about one.
-    [GeneratedRegex(@"(?:^\s*@inject\s+(?:Bit\.Bmage\.Pipeline\.)?ImageProcessor\s+\w+|\[Inject\][^;{]*\bImageProcessor\s+\w+\s*\{)")]
+    // A Razor directive starts its line; "@inject BmageImageProcessor" in a sentence is prose about one.
+    [GeneratedRegex(@"(?:^\s*@inject\s+(?:Bit\.Bmage\.Pipeline\.)?BmageImageProcessor\s+\w+|\[Inject\][^;{]*\bImageProcessor\s+\w+\s*\{)")]
     private static partial Regex ProcessorInjectRegex();
 
-    [GeneratedRegex(@"(?:^\s*@inject\s+|\[Inject\][^;{]*\b|\bGetRequiredService<)(?<service>ImageLoader|ImageExporter|ImageProcessorFactory|BrowserTextRasterizer|BrowserCapabilityProvider)\b|<(?<service>BmageEditor)\b", RegexOptions.Multiline)]
+    [GeneratedRegex(@"(?:^\s*@inject\s+|\[Inject\][^;{]*\b|\bGetRequiredService<)(?<service>BmageImageLoader|BmageImageExporter|BmageImageProcessorFactory|BmageBrowserTextRasterizer|BmageBrowserCapabilityProvider)\b|<(?<service>BmageEditor)\b", RegexOptions.Multiline)]
     private static partial Regex BrowserServiceUseRegex();
 
     // Only calls on the service collection: the render-mode calls chained on MapRazorComponents are not registrations.
@@ -1049,16 +1049,16 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"<RunAOTCompilation>\s*false\s*</RunAOTCompilation>", RegexOptions.IgnoreCase)]
     private static partial Regex AotDisabledRegex();
 
-    [GeneratedRegex(@"\b(?:BmageImageFormat|ImageExportOptions)\.(?<format>Avif)\b")]
+    [GeneratedRegex(@"\b(?:BmageImageFormat|BmageImageExportOptions)\.(?<format>Avif)\b")]
     private static partial Regex BrowserFormatRegex();
 
     [GeneratedRegex(@"EncodeWithFallbackAsync|\.CanEncode\s*\(|SupportsWebP|SupportsAvif|ChooseEncodableFormat")]
     private static partial Regex CapabilityCheckRegex();
 
-    [GeneratedRegex(@"AddBitBmageHeadlessServices|new\s+ImageProcessor\s*\(|ImageCodecRegistry\.CreateDefault|\bIFormFile\b|\bMapPost\s*\(|:\s*ControllerBase\b|static\s+async\s+Task\s+Main\s*\(")]
+    [GeneratedRegex(@"AddBitBmageHeadlessServices|new\s+BmageImageProcessor\s*\(|BmageImageCodecRegistry\.CreateDefault|\bIFormFile\b|\bMapPost\s*\(|:\s*ControllerBase\b|static\s+async\s+Task\s+Main\s*\(")]
     private static partial Regex ServerMarkerRegex();
 
-    [GeneratedRegex(@"\bImageExporter\b|\bExporter\.|ImageProcessorFactory|\bIBrowserFile\b|InputFileChangeEventArgs|<BmageEditor\b|\bAddBitBmageServices\b|@inject\b")]
+    [GeneratedRegex(@"\bImageExporter\b|\bExporter\.|BmageImageProcessorFactory|\bIBrowserFile\b|InputFileChangeEventArgs|<BmageEditor\b|\bAddBitBmageServices\b|@inject\b")]
     private static partial Regex BrowserMarkerRegex();
 
     [GeneratedRegex(@"\bAutoOrient\s*=\s*false\b")]
@@ -1068,7 +1068,7 @@ public static partial class BmageCodeReview
     private static partial Regex AutoOrientStepRegex();
 
     // A fluent pipeline: from where it is created to the end of the statement or the call that runs it.
-    [GeneratedRegex(@"ImagePipeline\s*\.\s*(?:Create\s*\(\s*\)|Empty)[^;]*", RegexOptions.Singleline)]
+    [GeneratedRegex(@"BmageImagePipeline\s*\.\s*(?:Create\s*\(\s*\)|Empty)[^;]*", RegexOptions.Singleline)]
     private static partial Regex PipelineChainRegex();
 
     [GeneratedRegex(@"\.\s*(?<name>[A-Z]\w*)\s*\(")]

@@ -24,12 +24,12 @@ namespace Bit.Bmage.Demo.Server.Services;
 ///   <item><description>
 ///     <b>What does the optimiser do with it?</b> Identities dropped, crops merged, adjustments fused
 ///     into one pass - or nothing, because an AutoOrient in front stopped it planning. The optimised
-///     operation list is read off <see cref="ImagePipeline.Optimize"/> for the real input size, and
+///     operation list is read off <see cref="BmageImagePipeline.Optimize"/> for the real input size, and
 ///     both versions are timed.
 ///   </description></item>
 ///   <item><description>
 ///     <b>Does the export policy really drop the location?</b> <see cref="CompareMetadataPoliciesAsync"/>
-///     encodes a GPS-tagged photo under each <see cref="MetadataPolicy"/> and reads the file back.
+///     encodes a GPS-tagged photo under each <see cref="BmageMetadataPolicy"/> and reads the file back.
 ///   </description></item>
 /// </list>
 /// <para>
@@ -53,7 +53,7 @@ public static class BmagePipelineLab
     /// The limits every run executes under. The source cap alone does not bound a run: a Resize or a Pad can
     /// grow the image far past it, and the library's default limits allow 64 megapixel buffers.
     /// </summary>
-    private static readonly ImageLimits RunLimits = new() { MaxWidth = MaxEdge, MaxHeight = MaxEdge, MaxPixels = MaxPixels };
+    private static readonly BmageImageLimits RunLimits = new() { MaxWidth = MaxEdge, MaxHeight = MaxEdge, MaxPixels = MaxPixels };
 
     /// <summary>How long one run may take, queueing included, before it is cancelled.</summary>
     public static readonly TimeSpan RunTimeout = TimeSpan.FromSeconds(20);
@@ -70,7 +70,7 @@ public static class BmagePipelineLab
     /// </summary>
     private static readonly SemaphoreSlim _gate = new(2, 2);
 
-    private static readonly ImageProcessor _processor = new();
+    private static readonly BmageImageProcessor _processor = new();
 
     /// <summary>
     /// Whether the engine in this process was compiled without optimisations. A Debug build runs the
@@ -78,7 +78,7 @@ public static class BmagePipelineLab
     /// library's speed.
     /// </summary>
     private static readonly bool IsDebugBuild =
-        typeof(ImageBuffer).Assembly.GetCustomAttributes(typeof(DebuggableAttribute), false)
+        typeof(BmageImageBuffer).Assembly.GetCustomAttributes(typeof(DebuggableAttribute), false)
             .OfType<DebuggableAttribute>()
             .Any(attribute => attribute.IsJITOptimizerDisabled);
 
@@ -135,27 +135,27 @@ public static class BmagePipelineLab
         {
             using var input = CreateSource(kind, sourceWidth, sourceHeight);
 
-            ImageBuffer? output = null;
+            BmageImageBuffer? output = null;
             double executeMs, unoptimizedMs = 0;
 
             try
             {
                 // Twice, and the faster one kept: the first run in a fresh process includes the JIT
                 // compiling the operations, which says something about the server and nothing about them.
-                (output, executeMs) = await TimeAsync(() => pipeline.ExecuteAsync(input, new PipelineExecutionOptions { Limits = RunLimits, YieldBetweenOperations = false, CancellationToken = cancellationToken }));
+                (output, executeMs) = await TimeAsync(() => pipeline.ExecuteAsync(input, new BmagePipelineExecutionOptions { Limits = RunLimits, YieldBetweenOperations = false, CancellationToken = cancellationToken }));
                 output.Dispose();
                 output = null;
-                (output, var second) = await TimeAsync(() => pipeline.ExecuteAsync(input, new PipelineExecutionOptions { Limits = RunLimits, YieldBetweenOperations = false, CancellationToken = cancellationToken }));
+                (output, var second) = await TimeAsync(() => pipeline.ExecuteAsync(input, new BmagePipelineExecutionOptions { Limits = RunLimits, YieldBetweenOperations = false, CancellationToken = cancellationToken }));
                 executeMs = Math.Min(executeMs, second);
 
                 if (SameOperations(pipeline, optimized) is false)
                 {
-                    var (unoptimized, ms) = await TimeAsync(() => pipeline.ExecuteAsync(input, new PipelineExecutionOptions { Limits = RunLimits, Optimize = false, YieldBetweenOperations = false, CancellationToken = cancellationToken }));
+                    var (unoptimized, ms) = await TimeAsync(() => pipeline.ExecuteAsync(input, new BmagePipelineExecutionOptions { Limits = RunLimits, Optimize = false, YieldBetweenOperations = false, CancellationToken = cancellationToken }));
                     unoptimized.Dispose();
                     unoptimizedMs = ms;
                 }
             }
-            catch (ImageException ex)
+            catch (BmageImageException ex)
             {
                 // The second run may have finished before the unoptimised one failed; its buffer goes back to the pool.
                 output?.Dispose();
@@ -210,7 +210,7 @@ public static class BmagePipelineLab
 
     /// <summary>
     /// Encodes a camera photo carrying a GPS position, a serial number, an owner name, camera and
-    /// lens, ISO, a date and a copyright through the real encoder under each <see cref="MetadataPolicy"/>,
+    /// lens, ISO, a date and a copyright through the real encoder under each <see cref="BmageMetadataPolicy"/>,
     /// and decodes each file again to report what is really in it.
     /// </summary>
     public static async Task<BmageMetadataComparisonDto> CompareMetadataPoliciesAsync(string? format = "jpeg", CancellationToken cancellationToken = default)
@@ -237,18 +237,18 @@ public static class BmagePipelineLab
         try
         {
             using var photo = SampleImages.Landscape(800, 533);
-            photo.Metadata = new ImageMetadata(SampleExif());
+            photo.Metadata = new BmageImageMetadata(SampleExif());
 
             var original = Fields.Select(field => (field.Label, Value: field.Read(photo.Metadata.Exif!))).Where(field => field.Value is not null).ToArray();
             var results = new List<BmageMetadataPolicyDto>();
 
-            foreach (var policy in Enum.GetValues<MetadataPolicy>())
+            foreach (var policy in Enum.GetValues<BmageMetadataPolicy>())
             {
-                var encoded = await _processor.EncodeAsync(photo, new ImageExportOptions { Format = target, Quality = 0.85, Metadata = policy }, cancellationToken);
+                var encoded = await _processor.EncodeAsync(photo, new BmageImageExportOptions { Format = target, Quality = 0.85, Metadata = policy }, cancellationToken);
 
                 // Decoded again from the bytes: the report is what the file contains, not what the policy is documented to do.
                 using var back = await _processor.DecodeAsync(encoded.Data, cancellationToken: cancellationToken);
-                var exif = back.Metadata?.Exif ?? new ExifData();
+                var exif = back.Metadata?.Exif ?? new BmageExifData();
 
                 var kept = Fields.Where(field => field.Read(exif) is not null).Select(field => $"{field.Label}: {field.Read(exif)}").ToArray();
                 var removed = original.Where(field => Fields.First(f => f.Label == field.Label).Read(exif) is null).Select(field => field.Label).ToArray();
@@ -261,7 +261,7 @@ public static class BmagePipelineLab
                     Kept = kept,
                     Removed = removed,
                     LeaksLocation = exif.Location is not null,
-                    LeaksIdentity = exif.Exif.Get(ExifTag.BodySerialNumber) is not null || exif.Exif.Get(ExifTag.OwnerName) is not null,
+                    LeaksIdentity = exif.Exif.Get(BmageExifTag.BodySerialNumber) is not null || exif.Exif.Get(BmageExifTag.OwnerName) is not null,
                 });
             }
 
@@ -298,7 +298,7 @@ public static class BmagePipelineLab
     }
 
     /// <summary>Draws the test image. The caller owns the buffer.</summary>
-    public static ImageBuffer CreateSource(string kind, int width, int height) => kind switch
+    public static BmageImageBuffer CreateSource(string kind, int width, int height) => kind switch
     {
         "screenshot" => Screenshot(width, height),
         "graphic" => Graphic(width, height),
@@ -309,26 +309,26 @@ public static class BmagePipelineLab
     /// The demo's sunset scene with sensor grain on top. Without the grain a vector drawing compresses
     /// an order of magnitude better than any photograph, and the byte counts would mislead.
     /// </summary>
-    private static ImageBuffer Photo(int width, int height)
+    private static BmageImageBuffer Photo(int width, int height)
     {
         using var scene = SampleImages.Landscape(width, height);
 
-        return ImagePipeline.Create().Noise(0.04f, monochrome: false, seed: 7).Execute(scene, new PipelineExecutionOptions { YieldBetweenOperations = false });
+        return BmageImagePipeline.Create().Noise(0.04f, monochrome: false, seed: 7).Execute(scene, new BmagePipelineExecutionOptions { YieldBetweenOperations = false });
     }
 
     /// <summary>A light-theme app window: flat fills, hard edges and rows of text-like glyph runs.</summary>
-    private static ImageBuffer Screenshot(int width, int height)
+    private static BmageImageBuffer Screenshot(int width, int height)
     {
-        using var canvas = ImageCanvas.Create(width, height, new Rgba32(246, 247, 249));
+        using var canvas = BmageImageCanvas.Create(width, height, new BmageRgba32(246, 247, 249));
         var random = new Random(42);
         var unit = Math.Max(1f, height / 100f);
 
-        canvas.FillRectangle(new RectangleF(0, 0, width, unit * 6), new Rgba32(33, 37, 48));
-        canvas.FillRectangle(new RectangleF(0, unit * 6, width * 0.2f, height), new Rgba32(232, 235, 240));
+        canvas.FillRectangle(new RectangleF(0, 0, width, unit * 6), new BmageRgba32(33, 37, 48));
+        canvas.FillRectangle(new RectangleF(0, unit * 6, width * 0.2f, height), new BmageRgba32(232, 235, 240));
 
         for (var i = 0; i < 8; i++)
         {
-            canvas.FillRoundedRectangle(new RectangleF(unit * 2, unit * (10 + i * 5), width * 0.2f - unit * 4, unit * 3), unit, i == 1 ? new Rgba32(105, 65, 198, 60) : new Rgba32(210, 214, 222));
+            canvas.FillRoundedRectangle(new RectangleF(unit * 2, unit * (10 + i * 5), width * 0.2f - unit * 4, unit * 3), unit, i == 1 ? new BmageRgba32(105, 65, 198, 60) : new BmageRgba32(210, 214, 222));
         }
 
         // Paragraphs of "text": runs of short dark blocks, the way glyphs read to an encoder.
@@ -340,46 +340,46 @@ public static class BmagePipelineLab
             while (x < lineEnd)
             {
                 var word = unit * (1.5f + (float)random.NextDouble() * 4);
-                canvas.FillRectangle(new RectangleF(x, y, word, unit * 1.3f), new Rgba32(52, 56, 66));
+                canvas.FillRectangle(new RectangleF(x, y, word, unit * 1.3f), new BmageRgba32(52, 56, 66));
                 x += word + unit * 0.8f;
             }
         }
 
         // A button, a card and a bar chart: the flat colour areas PNG is good at.
-        canvas.FillRoundedRectangle(new RectangleF(left, height * 0.66f, unit * 16, unit * 5), unit * 1.2f, new Rgba32(105, 65, 198));
-        canvas.FillRoundedRectangle(new RectangleF(width * 0.55f, height * 0.66f, width * 0.4f, height * 0.3f), unit, Rgba32.White);
+        canvas.FillRoundedRectangle(new RectangleF(left, height * 0.66f, unit * 16, unit * 5), unit * 1.2f, new BmageRgba32(105, 65, 198));
+        canvas.FillRoundedRectangle(new RectangleF(width * 0.55f, height * 0.66f, width * 0.4f, height * 0.3f), unit, BmageRgba32.White);
         for (var i = 0; i < 7; i++)
         {
             var bar = height * 0.05f + (float)random.NextDouble() * height * 0.2f;
-            canvas.FillRectangle(new RectangleF(width * 0.57f + i * width * 0.05f, height * 0.94f - bar, width * 0.035f, bar), new Rgba32(66, 133, 244));
+            canvas.FillRectangle(new RectangleF(width * 0.57f + i * width * 0.05f, height * 0.94f - bar, width * 0.035f, bar), new BmageRgba32(66, 133, 244));
         }
 
         return canvas.Snapshot();
     }
 
     /// <summary>A logo on a transparent background: flat shapes, a gradient and anti-aliased edges.</summary>
-    private static ImageBuffer Graphic(int width, int height)
+    private static BmageImageBuffer Graphic(int width, int height)
     {
-        using var canvas = ImageCanvas.Create(width, height);
+        using var canvas = BmageImageCanvas.Create(width, height);
         var cx = width / 2f;
         var cy = height / 2f;
         var radius = Math.Min(width, height) * 0.42f;
 
         canvas.FillPath(new BmagePathBuilder().AddEllipse(new RectangleF(cx - radius, cy - radius, radius * 2, radius * 2)).Build(),
             new BmageLinearGradientPaint(new Vector2(cx - radius, cy - radius), new Vector2(cx + radius, cy + radius),
-                [(0f, new Rgba32(124, 58, 237)), (1f, new Rgba32(37, 99, 235))]));
+                [(0f, new BmageRgba32(124, 58, 237)), (1f, new BmageRgba32(37, 99, 235))]));
         canvas.FillPolygon(
         [
             new(cx - radius * 0.45f, cy + radius * 0.35f), new(cx, cy - radius * 0.55f), new(cx + radius * 0.45f, cy + radius * 0.35f),
-        ], Rgba32.White);
-        canvas.FillCircle(new Vector2(cx, cy + radius * 0.05f), radius * 0.16f, new Rgba32(124, 58, 237));
+        ], BmageRgba32.White);
+        canvas.FillCircle(new Vector2(cx, cy + radius * 0.05f), radius * 0.16f, new BmageRgba32(124, 58, 237));
 
         return canvas.Snapshot();
     }
 
     // -- Measuring -------------------------------------------------------------
 
-    private static async Task<(ImageBuffer Result, double Milliseconds)> TimeAsync(Func<ValueTask<ImageBuffer>> run)
+    private static async Task<(BmageImageBuffer Result, double Milliseconds)> TimeAsync(Func<ValueTask<BmageImageBuffer>> run)
     {
         var watch = Stopwatch.StartNew();
         var result = await run();
@@ -387,7 +387,7 @@ public static class BmagePipelineLab
         return (result, watch.Elapsed.TotalMilliseconds);
     }
 
-    private static async Task<BmageEncodingDto[]> EncodeAllAsync(ImageBuffer output, BmageImageFormat[] formats, double[] qualities, bool transparent, CancellationToken cancellationToken)
+    private static async Task<BmageEncodingDto[]> EncodeAllAsync(BmageImageBuffer output, BmageImageFormat[] formats, double[] qualities, bool transparent, CancellationToken cancellationToken)
     {
         var results = new List<BmageEncodingDto>();
         var pixels = (double)output.PixelCount;
@@ -410,7 +410,7 @@ public static class BmagePipelineLab
 
             foreach (var quality in format.IsLossy() ? qualities : [double.NaN])
             {
-                var options = new ImageExportOptions { Format = format, Quality = double.IsNaN(quality) ? 0.85 : quality };
+                var options = new BmageImageExportOptions { Format = format, Quality = double.IsNaN(quality) ? 0.85 : quality };
                 var watch = Stopwatch.StartNew();
                 var encoded = await _processor.EncodeAsync(output, options, cancellationToken);
                 var ms = watch.Elapsed.TotalMilliseconds;
@@ -423,7 +423,7 @@ public static class BmagePipelineLab
                     BitsPerPixel = Math.Round(encoded.Length * 8 / pixels, 3),
                     EncodeMilliseconds = Math.Round(ms, 1),
                     Note = transparent && format.SupportsAlpha() is false
-                        ? $"{format} has no alpha channel: the transparent pixels were flattened onto ImageExportOptions.Background (white by default)."
+                        ? $"{format} has no alpha channel: the transparent pixels were flattened onto BmageImageExportOptions.Background (white by default)."
                         : format == BmageImageFormat.Png ? "Lossless, compression level 6 (the default); level 1 encodes about 3.4 times faster for a larger file."
                         : format == BmageImageFormat.Gif ? "One frame of at most 256 colours (median cut, dithered): a photo loses colour, and a pixel is either opaque or fully transparent. Use PNG or WebP for photos."
                         : null
@@ -434,7 +434,7 @@ public static class BmagePipelineLab
         return [.. results];
     }
 
-    private static async Task<BmageBudgetDto[]> RunBudgetsAsync(ImageBuffer output, BmageImageFormat[] formats, double[] qualities, long budget, List<string> warnings, CancellationToken cancellationToken)
+    private static async Task<BmageBudgetDto[]> RunBudgetsAsync(BmageImageBuffer output, BmageImageFormat[] formats, double[] qualities, long budget, List<string> warnings, CancellationToken cancellationToken)
     {
         if (budget <= 0)
         {
@@ -448,7 +448,7 @@ public static class BmagePipelineLab
         {
             try
             {
-                var encoded = await _processor.EncodeAsync(output, new ImageExportOptions
+                var encoded = await _processor.EncodeAsync(output, new BmageImageExportOptions
                 {
                     Format = format,
                     // The search starts at the highest quality asked about, as real code passes its preferred quality.
@@ -467,7 +467,7 @@ public static class BmagePipelineLab
                     Height = encoded.Height,
                 });
             }
-            catch (ImageEncodeException ex)
+            catch (BmageImageEncodeException ex)
             {
                 results.Add(new BmageBudgetDto { Format = format.ToString(), MaxFileSize = budget, Met = false, Error = ex.Message });
             }
@@ -478,13 +478,13 @@ public static class BmagePipelineLab
         return [.. results];
     }
 
-    private static bool SameOperations(ImagePipeline a, ImagePipeline b)
+    private static bool SameOperations(BmageImagePipeline a, BmageImagePipeline b)
         => a.Count == b.Count && a.Zip(b).All(pair => ReferenceEquals(pair.First, pair.Second));
 
-    private static string[] Describe(ImagePipeline pipeline) => [.. pipeline.Select(operation => operation.ToString() ?? operation.Name)];
+    private static string[] Describe(BmageImagePipeline pipeline) => [.. pipeline.Select(operation => operation.ToString() ?? operation.Name)];
 
     /// <summary>What the optimiser changed, read off the two operation lists - and what stopped it.</summary>
-    private static string[] OptimizerNotes(ImagePipeline original, ImagePipeline optimized)
+    private static string[] OptimizerNotes(BmageImagePipeline original, BmageImagePipeline optimized)
     {
         var notes = new List<string>();
 
@@ -499,7 +499,7 @@ public static class BmagePipelineLab
             notes.Add($"Fused into a single pass over the pixels: {fused}.");
         }
 
-        if (optimized.OfType<ResizeCropOperation>().Any())
+        if (optimized.OfType<BmageResizeCropOperation>().Any())
         {
             notes.Add("Fused a resize with the crop after it: only the surviving region is resampled, bit-identical to resizing everything and cropping.");
         }
@@ -511,16 +511,16 @@ public static class BmagePipelineLab
         }
 
         // AutoOrient's output size depends on metadata, so nothing after it can be planned.
-        var autoOrient = original.ToList().FindIndex(operation => operation is AutoOrientOperation);
+        var autoOrient = original.ToList().FindIndex(operation => operation is BmageAutoOrientOperation);
         if (autoOrient >= 0)
         {
             for (var i = autoOrient + 1; i + 1 < original.Count; i++)
             {
-                if (original[i] is ResizeOperation && original[i + 1] is CropOperation && optimized.OfType<ResizeCropOperation>().Any() is false)
+                if (original[i] is BmageResizeOperation && original[i + 1] is BmageCropOperation && optimized.OfType<BmageResizeCropOperation>().Any() is false)
                 {
                     notes.Add("The resize and the crop after AutoOrient were not fused: AutoOrient's output size depends on the image's EXIF " +
-                              "orientation, so the optimiser cannot plan past it. An image from ImageLoader is already upright " +
-                              "(DecodeOptions.AutoOrient is on by default), so on those the step can go - and the fusion is about 2.4 times faster.");
+                              "orientation, so the optimiser cannot plan past it. An image from BmageImageLoader is already upright " +
+                              "(BmageDecodeOptions.AutoOrient is on by default), so on those the step can go - and the fusion is about 2.4 times faster.");
                     break;
                 }
             }
@@ -531,7 +531,7 @@ public static class BmagePipelineLab
         var inRun = false;
         foreach (var operation in original.Where(operation => operation.IsIdentity is false))
         {
-            var point = operation is PointOperation;
+            var point = operation is BmagePointOperation;
             if (point && inRun is false) runs++;
             inRun = point;
         }
@@ -547,7 +547,7 @@ public static class BmagePipelineLab
         return [.. notes];
     }
 
-    private static string Read(string kind, ImageBuffer output, double executeMs, double unoptimizedMs, BmageEncodingDto[] encodings, BmageBudgetDto[]? budgets)
+    private static string Read(string kind, BmageImageBuffer output, double executeMs, double unoptimizedMs, BmageEncodingDto[] encodings, BmageBudgetDto[]? budgets)
     {
         var parts = new List<string>
         {
@@ -745,7 +745,7 @@ public static class BmagePipelineLab
     // -- The test photo's metadata --------------------------------------------
 
     /// <summary>One field of the report: how to read it out of EXIF.</summary>
-    private sealed record Field(string Label, Func<ExifData, string?> Read);
+    private sealed record Field(string Label, Func<BmageExifData, string?> Read);
 
     private static readonly Field[] Fields =
     [
@@ -754,26 +754,26 @@ public static class BmagePipelineLab
         new("ISO", e => e.Iso?.ToString(CultureInfo.InvariantCulture)),
         new("Taken", e => e.DateTaken?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)),
         new("Copyright", e => e.Copyright),
-        new("Serial number", e => e.Exif.Get(ExifTag.BodySerialNumber)?.GetString()),
-        new("Owner", e => e.Exif.Get(ExifTag.OwnerName)?.GetString()),
+        new("Serial number", e => e.Exif.Get(BmageExifTag.BodySerialNumber)?.GetString()),
+        new("Owner", e => e.Exif.Get(BmageExifTag.OwnerName)?.GetString()),
         new("Location", e => e.Location?.ToString()),
     ];
 
     /// <summary>What a phone writes into a photo: who made the camera, how it was exposed, when, whose it is and where it was.</summary>
-    private static ExifData SampleExif() => new ExifData()
-        .WithPrimary(new ExifDirectory()
-            .With(ExifTag.Make, ExifValue.FromString("Bmage"))
-            .With(ExifTag.Model, ExifValue.FromString("Demo Phone 15"))
-            .With(ExifTag.Copyright, ExifValue.FromString("© 2026 Sam Rivera")))
-        .WithExif(new ExifDirectory()
-            .With(ExifTag.DateTimeOriginal, ExifValue.FromString("2026:06:21 19:42:07"))
-            .With(ExifTag.Iso, ExifValue.FromShort(125))
-            .With(ExifTag.LensModel, ExifValue.FromString("Demo Phone 15 back camera 6.9mm f/1.8"))
-            .With(ExifTag.BodySerialNumber, ExifValue.FromString("DP15-0042-7731"))
-            .With(ExifTag.OwnerName, ExifValue.FromString("Sam Rivera")))
-        .WithGps(new ExifDirectory()
-            .With(ExifTag.GpsLatitudeRef, ExifValue.FromString("N"))
-            .With(ExifTag.GpsLatitude, ExifValue.FromRational((53, 1), (12, 1), (3720, 100)))
-            .With(ExifTag.GpsLongitudeRef, ExifValue.FromString("E"))
-            .With(ExifTag.GpsLongitude, ExifValue.FromRational((5, 1), (47, 1), (5280, 100))));
+    private static BmageExifData SampleExif() => new BmageExifData()
+        .WithPrimary(new BmageExifDirectory()
+            .With(BmageExifTag.Make, BmageExifValue.FromString("Bmage"))
+            .With(BmageExifTag.Model, BmageExifValue.FromString("Demo Phone 15"))
+            .With(BmageExifTag.Copyright, BmageExifValue.FromString("© 2026 Sam Rivera")))
+        .WithExif(new BmageExifDirectory()
+            .With(BmageExifTag.DateTimeOriginal, BmageExifValue.FromString("2026:06:21 19:42:07"))
+            .With(BmageExifTag.Iso, BmageExifValue.FromShort(125))
+            .With(BmageExifTag.LensModel, BmageExifValue.FromString("Demo Phone 15 back camera 6.9mm f/1.8"))
+            .With(BmageExifTag.BodySerialNumber, BmageExifValue.FromString("DP15-0042-7731"))
+            .With(BmageExifTag.OwnerName, BmageExifValue.FromString("Sam Rivera")))
+        .WithGps(new BmageExifDirectory()
+            .With(BmageExifTag.GpsLatitudeRef, BmageExifValue.FromString("N"))
+            .With(BmageExifTag.GpsLatitude, BmageExifValue.FromRational((53, 1), (12, 1), (3720, 100)))
+            .With(BmageExifTag.GpsLongitudeRef, BmageExifValue.FromString("E"))
+            .With(BmageExifTag.GpsLongitude, BmageExifValue.FromRational((5, 1), (47, 1), (5280, 100))));
 }

@@ -3,16 +3,6 @@
 namespace Bit.Borm;
 
 /// <summary>
-/// A message provider that answers in a form's own <see cref="BormState.Language"/> as well as in the current UI
-/// culture. <see cref="BormTranslatedMessageProvider"/> is one; a provider of your own can be too.
-/// </summary>
-public interface IBormLocalizedMessageProvider : IBormMessageProvider
-{
-    /// <summary>The message for <paramref name="key"/> in <paramref name="language"/> - a culture name, <c>de</c> or <c>pt-BR</c>.</summary>
-    string Get(string language, string key, params object?[] args);
-}
-
-/// <summary>
 /// The library's own words - every validation message, button, announcement and label it renders - in German,
 /// Spanish, French, Italian, Dutch, Portuguese, Russian, Turkish, Persian, Arabic, Chinese (simplified) and
 /// Japanese, and in English for any other language or any word a table lacks. Register it with
@@ -86,40 +76,4 @@ public sealed class BormTranslatedMessageProvider : IBormLocalizedMessageProvide
         if (args.Length < MaxArgs) Array.Resize(ref args, MaxArgs);
         return string.Format(CultureInfo.CurrentCulture, template, args);
     }
-}
-
-/// <summary>The tables <see cref="BormTranslatedMessageProvider"/> reads, one per language, each in a file of its own.</summary>
-internal static partial class BormTranslations
-{
-    private static Dictionary<string, IReadOnlyDictionary<string, string>>? _tables;
-
-    internal static Dictionary<string, IReadOnlyDictionary<string, string>> Tables => _tables ??= Build();
-
-    private static Dictionary<string, IReadOnlyDictionary<string, string>> Build()
-    {
-        var chinese = Chinese();
-        return new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["de"] = German(),
-            ["es"] = Spanish(),
-            ["fr"] = French(),
-            ["it"] = Italian(),
-            ["nl"] = Dutch(),
-            ["pt"] = Portuguese(),
-            ["ru"] = Russian(),
-            ["tr"] = Turkish(),
-            ["fa"] = Persian(),
-            ["ar"] = Arabic(),
-            ["ja"] = Japanese(),
-            ["zh"] = chinese,
-            ["zh-Hans"] = chinese,
-            ["zh-CN"] = chinese,
-            ["zh-SG"] = chinese
-        };
-    }
-
-    // The keys the designer's properties and kinds are named under, for the tables to spell.
-    private static string Property(string name) => BormMessageKeys.DesignerProperty(name);
-
-    private static string Kind(string name) => BormMessageKeys.DesignerKind(name);
 }

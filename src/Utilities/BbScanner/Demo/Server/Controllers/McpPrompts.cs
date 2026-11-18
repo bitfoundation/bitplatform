@@ -75,12 +75,12 @@ public static class McpPrompts
             4. Call `GetBbScannerFormats` for the symbologies involved: narrow `Formats` to them, and set the options
                that guard against misreads where they apply (`ItfLengths` for ITF, `Code39CheckDigit` for Code 39).
             5. Prefer the library's own mechanism over hand-rolling one: `EnableFileScanning`/`OpenFilePickerAsync` or
-               `DecodeImage` over reading files yourself, `BbBarcodeDecoder` with `BbScannerOptions.ForStillImages()`
+               `DecodeImage` over reading files yourself, `BbScannerBarcodeDecoder` with `BbScannerOptions.ForStillImages()`
                for images on the server, `DuplicateSuppressionWindow` over filtering repeats yourself, `Region` with
-               `BbScanRegion.CenteredSquare` over cropping, `SetTorchAsync`/`SetZoomAsync`/`GetCamerasAsync` over
+               `BbScannerScanRegion.CenteredSquare` over cropping, `SetTorchAsync`/`SetZoomAsync`/`GetCamerasAsync` over
                touching the media stream, `Overlay`/`MessageTemplate`/`ControlsContent` and the `--bit-bbscanner-*`
                custom properties over restyling with selectors.
-            6. Check the `BbBarcodeResult` the code will receive with `InspectBbScannerSymbol` - its text, raw bytes,
+            6. Check the `BbScannerBarcodeResult` the code will receive with `InspectBbScannerSymbol` - its text, raw bytes,
                corners and metadata - so the code reads the members that are actually filled in.
             7. Write the code, then say which tool call each non-obvious choice came from.
 

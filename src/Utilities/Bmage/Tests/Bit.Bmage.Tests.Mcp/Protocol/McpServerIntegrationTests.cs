@@ -137,9 +137,9 @@ public class McpServerIntegrationTests
             [nameof(McpController.GetBmageSetupGuide)] = new Dictionary<string, object?> { ["renderMode"] = "wasm" },
             [nameof(McpController.GetBmageRecipe)] = new Dictionary<string, object?> { ["id"] = "avatar-crop" },
             [nameof(McpController.GetBmageDocument)] = new Dictionary<string, object?> { ["name"] = "pipelines", ["section"] = "The optimiser" },
-            [nameof(McpController.GetBmageApiDetails)] = new Dictionary<string, object?> { ["typeName"] = "ImageExportOptions" },
+            [nameof(McpController.GetBmageApiDetails)] = new Dictionary<string, object?> { ["typeName"] = "BmageImageExportOptions" },
             [nameof(McpController.GetBmageSourceFile)] = new Dictionary<string, object?> { ["path"] = "Demo/Server/Program.cs" },
-            [nameof(McpController.ReviewBmageCode)] = new Dictionary<string, object?> { ["code"] = "@inject ImageProcessor Processor" },
+            [nameof(McpController.ReviewBmageCode)] = new Dictionary<string, object?> { ["code"] = "@inject BmageImageProcessor Processor" },
             [nameof(McpController.RunBmagePipeline)] = new Dictionary<string, object?> { ["pipeline"] = "MaxSize(320, 320)", ["width"] = 640, ["height"] = 480 },
             [nameof(McpController.CompareBmageMetadataPolicies)] = new Dictionary<string, object?> { ["format"] = "jpeg" },
         };
@@ -170,7 +170,7 @@ public class McpServerIntegrationTests
             nameof(McpController.RunBmagePipeline),
             new Dictionary<string, object?>
             {
-                ["pipeline"] = "ImagePipeline.Create().AutoOrient().MaxSize(400, 400).Sharpen(0.3f)",
+                ["pipeline"] = "BmageImagePipeline.Create().AutoOrient().MaxSize(400, 400).Sharpen(0.3f)",
                 ["source"] = "photo",
                 ["width"] = 800,
                 ["height"] = 600,
@@ -220,7 +220,7 @@ public class McpServerIntegrationTests
             nameof(McpController.ReviewBmageCode),
             new Dictionary<string, object?>
             {
-                ["code"] = "@page \"/x\"\n@inject ImageProcessor Processor\n\n<p>hi</p>",
+                ["code"] = "@page \"/x\"\n@inject BmageImageProcessor Processor\n\n<p>hi</p>",
             });
 
         var payload = Payload(result);
@@ -257,7 +257,7 @@ public class McpServerIntegrationTests
     {
         var result = await _server.Client.CallToolAsync(
             nameof(McpController.RunBmagePipeline),
-            new Dictionary<string, object?> { ["pipeline"] = "ImagePipeline.Create().Teleport(3)" });
+            new Dictionary<string, object?> { ["pipeline"] = "BmageImagePipeline.Create().Teleport(3)" });
 
         Assert.IsFalse(result.IsError is true, "A correctable mistake was reported as a failed call.");
 
@@ -372,14 +372,14 @@ public class McpServerIntegrationTests
         var document = await _server.Client.ReadResourceAsync("bmage://docs/pipelines");
         StringAssert.Contains(((TextResourceContents)document.Contents[0]).Text!, "## The optimiser");
 
-        var type = await _server.Client.ReadResourceAsync("bmage://api/ImageExportOptions");
+        var type = await _server.Client.ReadResourceAsync("bmage://api/BmageImageExportOptions");
         StringAssert.Contains(((TextResourceContents)type.Contents[0]).Text!, "MaxFileSize");
 
         var setup = await _server.Client.ReadResourceAsync("bmage://setup/headless");
         StringAssert.Contains(((TextResourceContents)setup.Contents[0]).Text!, "AddBitBmageHeadlessServices");
 
         var recipe = await _server.Client.ReadResourceAsync("bmage://recipes/strip-location");
-        StringAssert.Contains(((TextResourceContents)recipe.Contents[0]).Text!, "MetadataPolicy.StripSensitive");
+        StringAssert.Contains(((TextResourceContents)recipe.Contents[0]).Text!, "BmageMetadataPolicy.StripSensitive");
     }
 
     /// <summary>
@@ -407,8 +407,8 @@ public class McpServerIntegrationTests
     {
         var types = await _server.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bmage://api/{typeName}" }, "typeName", "ImageExp");
 
-        CollectionAssert.Contains(types.Completion.Values.ToArray(), "ImageExportOptions");
-        CollectionAssert.Contains(types.Completion.Values.ToArray(), "ImageExporter");
+        CollectionAssert.Contains(types.Completion.Values.ToArray(), "BmageImageExportOptions");
+        CollectionAssert.Contains(types.Completion.Values.ToArray(), "BmageImageExporter");
 
         var recipes = await _server.Client.CompleteAsync(new PromptReference { Name = "build-with-bmage" }, "renderMode", "head");
 
@@ -429,7 +429,7 @@ public class McpServerIntegrationTests
             (nameof(McpController.SearchBmage), new() { ["query"] = "strip gps" }),
             (nameof(McpController.GetBmageApiList), new()),
             (nameof(McpController.CompareBmageMetadataPolicies), new()),
-            (nameof(McpController.ReviewBmageCode), new() { ["code"] = "MetadataPolicy.Preserve" }),
+            (nameof(McpController.ReviewBmageCode), new() { ["code"] = "BmageMetadataPolicy.Preserve" }),
             (nameof(McpController.RunBmagePipeline), new() { ["pipeline"] = "Cover(200, 200)", ["width"] = 640, ["height"] = 480, ["formats"] = "jpeg" }),
             (nameof(McpController.GetBmageRecipes), new()),
             (nameof(McpController.RunBmagePipeline), new() { ["pipeline"] = "MaxSize(300, 300)", ["width"] = 600, ["height"] = 400, ["formats"] = "png" }),
@@ -470,7 +470,7 @@ public class McpServerIntegrationTests
         Assert.AreEqual(200, run.OutputWidth);
         Assert.IsNull(run.Error);
 
-        var review = await http.GetFromJsonAsync<BmageReviewDto>($"/api/Mcp/ReviewBmageCode?code={Uri.EscapeDataString("MetadataPolicy.Preserve")}");
+        var review = await http.GetFromJsonAsync<BmageReviewDto>($"/api/Mcp/ReviewBmageCode?code={Uri.EscapeDataString("BmageMetadataPolicy.Preserve")}");
 
         Assert.IsNotNull(review);
         Assert.AreEqual("metadata-preserve-keeps-location", review.Findings.Single().Rule);

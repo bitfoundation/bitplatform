@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 namespace Bit.Bmotion.Tests.Components;
 
 /// <summary>
-/// Tests for <see cref="BmPrerenderMode"/>: what an element renders in a pass with no browser
+/// Tests for <see cref="BmotionPrerenderMode"/>: what an element renders in a pass with no browser
 /// attached, and how the interactive runtime takes over an element that was prerendered at rest.
 /// </summary>
 [TestClass]
@@ -37,7 +37,7 @@ public class PrerenderTests
             ps.Add(p => p.Id, "box")
               .Add(p => p.Initial, Bm.To(opacity: 0, y: 20))
               .Add(p => p.Animate, Bm.To(opacity: 1, y: 0))
-              .Add(p => p.Transition, Bm.Tween(0.5, ease: BmEase.Linear))
+              .Add(p => p.Transition, Bm.Tween(0.5, ease: BmotionEase.Linear))
               .Add(p => p.ChildContent, Div);
             extra?.Invoke(ps);
         });
@@ -58,7 +58,7 @@ public class PrerenderTests
     }
 
     /// <summary>What the prerendering pass persists for elements resting at <paramref name="settledStyle"/>, whose markup carried <paramref name="ids"/>.</summary>
-    private static void PersistPrerendered(BunitPersistentComponentState state, BmPrerenderMode mode, string settledStyle, params string[] ids)
+    private static void PersistPrerendered(BunitPersistentComponentState state, BmotionPrerenderMode mode, string settledStyle, params string[] ids)
     {
         var signature = BmotionPrerenderState.Signature(mode, settledStyle);
         for (int i = 0; i < ids.Length; i++)
@@ -85,7 +85,7 @@ public class PrerenderTests
     public void Static_Final_RendersAtRest_WithoutAnimation()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.Prerender = BmPrerenderMode.Final;
+        ctx.Options.Prerender = BmotionPrerenderMode.Final;
         UseStaticRender(ctx);
 
         var cut = RenderFadeUp(ctx);
@@ -97,7 +97,7 @@ public class PrerenderTests
     public void Static_Animate_PlaysTheEnterAnimationInCss()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.Prerender = BmPrerenderMode.Animate;
+        ctx.Options.Prerender = BmotionPrerenderMode.Animate;
         UseStaticRender(ctx);
 
         var style = StyleOf(RenderFadeUp(ctx));
@@ -113,10 +113,10 @@ public class PrerenderTests
     public void PrerenderParameter_OverridesTheOption()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.Prerender = BmPrerenderMode.Animate;
+        ctx.Options.Prerender = BmotionPrerenderMode.Animate;
         UseStaticRender(ctx);
 
-        var cut = RenderFadeUp(ctx, ps => ps.Add(p => p.Prerender, BmPrerenderMode.Initial));
+        var cut = RenderFadeUp(ctx, ps => ps.Add(p => p.Prerender, BmotionPrerenderMode.Initial));
 
         Assert.AreEqual("transform:translate(0px,20px);opacity:0;", StyleOf(cut));
     }
@@ -125,8 +125,8 @@ public class PrerenderTests
     public void Static_Animate_HonoursTheReducedMotionPolicy()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.Prerender = BmPrerenderMode.Animate;
-        ctx.Options.ReducedMotion = BmReducedMotionMode.User;
+        ctx.Options.Prerender = BmotionPrerenderMode.Animate;
+        ctx.Options.ReducedMotion = BmotionReducedMotionMode.User;
         UseStaticRender(ctx);
 
         var style = StyleOf(RenderFadeUp(ctx));
@@ -139,7 +139,7 @@ public class PrerenderTests
     public void Static_Final_KeepsTheConsumersStyleLast()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.Prerender = BmPrerenderMode.Animate;
+        ctx.Options.Prerender = BmotionPrerenderMode.Animate;
         UseStaticRender(ctx);
 
         var cut = ctx.Render<Bmotion>(ps => ps
@@ -159,9 +159,9 @@ public class PrerenderTests
     public void Static_StaggeredVariantChildren_GetTheirDelays()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.Prerender = BmPrerenderMode.Animate;
+        ctx.Options.Prerender = BmotionPrerenderMode.Animate;
         UseStaticRender(ctx);
-        var states = new BmVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
+        var states = new BmotionVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
 
         var cut = ctx.Render(b =>
         {
@@ -170,7 +170,7 @@ public class PrerenderTests
             b.AddComponentParameter(2, nameof(Bmotion.InitialState), "hidden");
             b.AddComponentParameter(3, nameof(Bmotion.State), "visible");
             b.AddComponentParameter(4, nameof(Bmotion.Transition),
-                Bm.Tween(0.3, childStagger: Bm.Stagger(0.1, from: BmStaggerFrom.Last)));
+                Bm.Tween(0.3, childStagger: Bm.Stagger(0.1, from: BmotionStaggerFrom.Last)));
             b.AddComponentParameter(5, nameof(Bmotion.ChildContent), (RenderFragment)(inner =>
             {
                 inner.OpenElement(0, "ul");
@@ -203,7 +203,7 @@ public class PrerenderTests
     public void Static_WhileInView_ShowsTheInViewStateWithoutScripting()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.Prerender = BmPrerenderMode.Final;
+        ctx.Options.Prerender = BmotionPrerenderMode.Final;
         UseStaticRender(ctx);
 
         var cut = ctx.Render<Bmotion>(ps => ps
@@ -221,7 +221,7 @@ public class PrerenderTests
     {
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
-        ctx.Options.Prerender = BmPrerenderMode.Final;
+        ctx.Options.Prerender = BmotionPrerenderMode.Final;
         UseStaticRender(ctx);
 
         RenderFadeUp(ctx, InInteractiveIsland);
@@ -236,7 +236,7 @@ public class PrerenderTests
         state.TriggerOnPersisting();
 
         // Each element registers its own callback, so each entry goes to that element's runtime.
-        var signature = BmotionPrerenderState.Signature(BmPrerenderMode.Final, "opacity:1;");
+        var signature = BmotionPrerenderState.Signature(BmotionPrerenderMode.Final, "opacity:1;");
         Assert.IsTrue(state.TryTake<int>(BmotionPrerenderState.CountKey(signature), out var count));
         Assert.AreEqual(2, count);
         Assert.IsTrue(state.TryTake<string>(BmotionPrerenderState.EntryKey(signature, 0), out var first));
@@ -250,7 +250,7 @@ public class PrerenderTests
     {
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
-        ctx.Options.Prerender = BmPrerenderMode.Final;
+        ctx.Options.Prerender = BmotionPrerenderMode.Final;
         UseStaticRender(ctx);
 
         // No runtime ever renders static SSR content again: an entry for it could only be claimed
@@ -258,7 +258,7 @@ public class PrerenderTests
         RenderFadeUp(ctx);
         state.TriggerOnPersisting();
 
-        var signature = BmotionPrerenderState.Signature(BmPrerenderMode.Final, "opacity:1;");
+        var signature = BmotionPrerenderState.Signature(BmotionPrerenderMode.Final, "opacity:1;");
         Assert.IsFalse(state.TryTake<int>(BmotionPrerenderState.CountKey(signature), out _));
     }
 
@@ -272,7 +272,7 @@ public class PrerenderTests
         RenderFadeUp(ctx, InInteractiveIsland);
         state.TriggerOnPersisting();
 
-        foreach (var mode in new[] { BmPrerenderMode.Initial, BmPrerenderMode.Final })
+        foreach (var mode in new[] { BmotionPrerenderMode.Initial, BmotionPrerenderMode.Final })
             Assert.IsFalse(state.TryTake<int>(BmotionPrerenderState.CountKey(BmotionPrerenderState.Signature(mode, "opacity:1;")), out _));
     }
 
@@ -280,10 +280,10 @@ public class PrerenderTests
     public void Static_ReducedList_LeavesOutTheStaggerDelay()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.Prerender = BmPrerenderMode.Animate;
-        ctx.Options.ReducedMotion = BmReducedMotionMode.User;
+        ctx.Options.Prerender = BmotionPrerenderMode.Animate;
+        ctx.Options.ReducedMotion = BmotionReducedMotionMode.User;
         UseStaticRender(ctx);
-        var states = new BmVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
+        var states = new BmotionVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
 
         var cut = ctx.Render(b =>
         {
@@ -324,12 +324,12 @@ public class PrerenderTests
     {
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
-        PersistPrerendered(state, BmPrerenderMode.Final, "opacity:1;", "box");
-        ctx.Options.Prerender = BmPrerenderMode.Final;
+        PersistPrerendered(state, BmotionPrerenderMode.Final, "opacity:1;", "box");
+        ctx.Options.Prerender = BmotionPrerenderMode.Final;
         UseInteractiveRender(ctx);
         int starts = 0;
 
-        var cut = RenderFadeUp(ctx, ps => ps.Add(p => p.OnAnimationStart, (BmProps? _) => starts++));
+        var cut = RenderFadeUp(ctx, ps => ps.Add(p => p.OnAnimationStart, (BmotionProps? _) => starts++));
 
         Assert.AreEqual("opacity:1;", StyleOf(cut));
         Assert.AreEqual(0, starts, "the enter animation must not replay");
@@ -342,8 +342,8 @@ public class PrerenderTests
     {
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
-        PersistPrerendered(state, BmPrerenderMode.Final, "opacity:1;", "box");
-        ctx.Options.Prerender = BmPrerenderMode.Final;
+        PersistPrerendered(state, BmotionPrerenderMode.Final, "opacity:1;", "box");
+        ctx.Options.Prerender = BmotionPrerenderMode.Final;
         UseInteractiveRender(ctx);
 
         var cut = RenderFadeUp(ctx, ps => ps.Add(p => p.WhileHover, Bm.To(scale: 1.1)));
@@ -359,8 +359,8 @@ public class PrerenderTests
     {
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
-        PersistPrerendered(state, BmPrerenderMode.Animate, "opacity:1;", "bm-prerendered");
-        ctx.Options.Prerender = BmPrerenderMode.Animate;
+        PersistPrerendered(state, BmotionPrerenderMode.Animate, "opacity:1;", "bm-prerendered");
+        ctx.Options.Prerender = BmotionPrerenderMode.Animate;
         ctx.Interop.PrerenderedAnimationElapsedMs = 200;
         UseInteractiveRender(ctx);
 
@@ -377,8 +377,8 @@ public class PrerenderTests
     {
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
-        PersistPrerendered(state, BmPrerenderMode.Animate, "opacity:1;", "box");
-        ctx.Options.Prerender = BmPrerenderMode.Animate;
+        PersistPrerendered(state, BmotionPrerenderMode.Animate, "opacity:1;", "box");
+        ctx.Options.Prerender = BmotionPrerenderMode.Animate;
         ctx.Interop.PrerenderedAnimationElapsedMs = 200;
         UseInteractiveRender(ctx);
 
@@ -386,7 +386,7 @@ public class PrerenderTests
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(opacity: 0))
             .Add(p => p.Animate, Bm.To(opacity: 1))
-            .Add(p => p.Transition, Bm.Tween(0.5, ease: BmEase.Linear))
+            .Add(p => p.Transition, Bm.Tween(0.5, ease: BmotionEase.Linear))
             .Add(p => p.ChildContent, StyledDiv("color:red")));
         StringAssert.Contains(StyleOf(cut), "--bm-a:");
 
@@ -404,8 +404,8 @@ public class PrerenderTests
     {
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
-        PersistPrerendered(state, BmPrerenderMode.Animate, "opacity:1;", "box");
-        ctx.Options.Prerender = BmPrerenderMode.Animate;
+        PersistPrerendered(state, BmotionPrerenderMode.Animate, "opacity:1;", "box");
+        ctx.Options.Prerender = BmotionPrerenderMode.Animate;
         UseInteractiveRender(ctx);
 
         Assert.AreEqual("opacity:1;", StyleOf(RenderFadeUp(ctx)));
@@ -416,8 +416,8 @@ public class PrerenderTests
     {
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
-        PersistPrerendered(state, BmPrerenderMode.Final, "opacity:1;", "box");
-        ctx.Options.Prerender = BmPrerenderMode.Final;
+        PersistPrerendered(state, BmotionPrerenderMode.Final, "opacity:1;", "box");
+        ctx.Options.Prerender = BmotionPrerenderMode.Final;
         UseInteractiveRender(ctx);
 
         RenderFadeUp(ctx);
@@ -436,16 +436,16 @@ public class PrerenderTests
     {
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
-        PersistPrerendered(state, BmPrerenderMode.Final, "opacity:1;", "box");
-        ctx.Options.Prerender = BmPrerenderMode.Final;
+        PersistPrerendered(state, BmotionPrerenderMode.Final, "opacity:1;", "box");
+        ctx.Options.Prerender = BmotionPrerenderMode.Final;
         UseInteractiveRender(ctx);
 
         // Both mount in the first render, but only one was in the prerendered markup.
         var cut = ctx.Render(b =>
         {
             b.OpenComponent<Bmotion>(0);
-            b.AddComponentParameter(1, nameof(Bmotion.Initial), (BmTarget?)Bm.To(opacity: 0));
-            b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 0.8));
+            b.AddComponentParameter(1, nameof(Bmotion.Initial), (BmotionTarget?)Bm.To(opacity: 0));
+            b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(opacity: 0.8));
             b.AddComponentParameter(3, nameof(Bmotion.ChildContent), (RenderFragment)(inner =>
             {
                 inner.OpenElement(0, "span");
@@ -453,8 +453,8 @@ public class PrerenderTests
             }));
             b.CloseComponent();
             b.OpenComponent<Bmotion>(4);
-            b.AddComponentParameter(5, nameof(Bmotion.Initial), (BmTarget?)Bm.To(opacity: 0));
-            b.AddComponentParameter(6, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 1));
+            b.AddComponentParameter(5, nameof(Bmotion.Initial), (BmotionTarget?)Bm.To(opacity: 0));
+            b.AddComponentParameter(6, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(opacity: 1));
             b.AddComponentParameter(7, nameof(Bmotion.ChildContent), Div);
             b.CloseComponent();
         });
@@ -468,8 +468,8 @@ public class PrerenderTests
     {
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
-        PersistPrerendered(state, BmPrerenderMode.Final, "opacity:1;", "a");
-        ctx.Options.Prerender = BmPrerenderMode.Final;
+        PersistPrerendered(state, BmotionPrerenderMode.Final, "opacity:1;", "a");
+        ctx.Options.Prerender = BmotionPrerenderMode.Final;
         UseInteractiveRender(ctx);
 
         var cut = ctx.Render(b =>
@@ -478,8 +478,8 @@ public class PrerenderTests
             {
                 b.OpenComponent<Bmotion>(0);
                 b.SetKey(i);
-                b.AddComponentParameter(1, nameof(Bmotion.Initial), (BmTarget?)Bm.To(opacity: 0));
-                b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 1));
+                b.AddComponentParameter(1, nameof(Bmotion.Initial), (BmotionTarget?)Bm.To(opacity: 0));
+                b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(opacity: 1));
                 b.AddComponentParameter(3, nameof(Bmotion.ChildContent), Div);
                 b.CloseComponent();
             }
@@ -496,10 +496,10 @@ public class PrerenderTests
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
         // Two elements rested alike, but the first one's entry went to another runtime's state.
-        var signature = BmotionPrerenderState.Signature(BmPrerenderMode.Final, "opacity:1;");
+        var signature = BmotionPrerenderState.Signature(BmotionPrerenderMode.Final, "opacity:1;");
         state.Persist(BmotionPrerenderState.EntryKey(signature, 1), "box");
         state.Persist(BmotionPrerenderState.CountKey(signature), 2);
-        ctx.Options.Prerender = BmPrerenderMode.Final;
+        ctx.Options.Prerender = BmotionPrerenderMode.Final;
         UseInteractiveRender(ctx);
 
         Assert.AreEqual("opacity:1;", StyleOf(RenderFadeUp(ctx)));
@@ -510,11 +510,11 @@ public class PrerenderTests
     {
         using var ctx = new BmotionTestContext();
         ctx.AddBunitPersistentComponentState();
-        ctx.Options.Prerender = BmPrerenderMode.Final;
+        ctx.Options.Prerender = BmotionPrerenderMode.Final;
         UseInteractiveRender(ctx);
         int starts = 0;
 
-        var cut = RenderFadeUp(ctx, ps => ps.Add(p => p.OnAnimationStart, (BmProps? _) => starts++));
+        var cut = RenderFadeUp(ctx, ps => ps.Add(p => p.OnAnimationStart, (BmotionProps? _) => starts++));
 
         Assert.AreEqual("transform:translate(0px,20px);opacity:0;", StyleOf(cut));
         Assert.AreEqual(1, starts);
@@ -527,17 +527,17 @@ public class PrerenderTests
         var state = ctx.AddBunitPersistentComponentState();
         var settled = BmotionPrerenderCss.Compile(
             Bm.To(rotate: 0).ToJsDictionary(), Bm.To(rotate: 360).ToJsDictionary(),
-            Bm.Tween(1, ease: BmEase.Linear, repeat: BmRepeat.Forever).ToConfig(), null, null)!.SettledStyle;
-        PersistPrerendered(state, BmPrerenderMode.Animate, settled, "bm-prerendered");
-        ctx.Options.Prerender = BmPrerenderMode.Animate;
+            Bm.Tween(1, ease: BmotionEase.Linear, repeat: BmotionRepeat.Forever).ToConfig(), null, null)!.SettledStyle;
+        PersistPrerendered(state, BmotionPrerenderMode.Animate, settled, "bm-prerendered");
+        ctx.Options.Prerender = BmotionPrerenderMode.Animate;
         UseInteractiveRender(ctx);
         int starts = 0;
 
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Initial, Bm.To(rotate: 0))
             .Add(p => p.Animate, Bm.To(rotate: 360))
-            .Add(p => p.Transition, Bm.Tween(1, ease: BmEase.Linear, repeat: BmRepeat.Forever))
-            .Add(p => p.OnAnimationStart, (BmProps? _) => starts++)
+            .Add(p => p.Transition, Bm.Tween(1, ease: BmotionEase.Linear, repeat: BmotionRepeat.Forever))
+            .Add(p => p.OnAnimationStart, (BmotionProps? _) => starts++)
             .Add(p => p.ChildContent, Div));
 
         // It never comes to rest, so there is no resting state to take over at.

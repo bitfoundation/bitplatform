@@ -30,7 +30,7 @@ public class CliFormatTests : BunitContext
         {
             var export = WriteExport(folder.FullName);
             var parent = Session.Components.All.Single(c => c.DisplayName == nameof(ParentComponent)).InstanceId;
-            var expected = BevSessionCheck.Check(File.ReadAllText(export));
+            var expected = BevToolsSessionCheck.Check(File.ReadAllText(export));
 
             var (code, output, _) = Run("check", export, "--format", "json");
 
@@ -92,7 +92,7 @@ public class CliFormatTests : BunitContext
         try
         {
             var export = WriteExport(folder.FullName);
-            var expected = BevSessionCheck.Check(File.ReadAllText(export));
+            var expected = BevToolsSessionCheck.Check(File.ReadAllText(export));
 
             var (code, output, _) = Run("check", export, "--format", "sarif");
 
@@ -124,7 +124,7 @@ public class CliFormatTests : BunitContext
                 Assert.AreEqual(ruleId, rules[result.GetProperty("ruleIndex").GetInt32()]);
                 Assert.IsFalse(result.TryGetProperty("locations", out _));
                 var finding = expected.Findings.Concat(expected.Dismissed).Single(f => f.RuleId == ruleId);
-                Assert.AreEqual(finding.Fingerprint, result.GetProperty("partialFingerprints").GetProperty(BevCliFormats.FingerprintKey).GetString());
+                Assert.AreEqual(finding.Fingerprint, result.GetProperty("partialFingerprints").GetProperty(BevToolsCliFormats.FingerprintKey).GetString());
                 StringAssert.StartsWith(result.GetProperty("message").GetProperty("text").GetString(), finding.Title);
                 StringAssert.Contains(result.GetProperty("message").GetProperty("text").GetString(), finding.Evidence);
                 Assert.AreEqual(finding.Dismissed, result.TryGetProperty("suppressions", out var suppressions));
@@ -225,10 +225,10 @@ public class CliFormatTests : BunitContext
     [TestMethod]
     public void The_github_format_escapes_what_an_export_says_so_no_text_can_start_a_command()
     {
-        Assert.AreEqual("100%25 done%0D%0Anext", BevCliFormats.EscapeData("100% done\r\nnext"));
-        Assert.AreEqual("%250A", BevCliFormats.EscapeData("%0A"), "% first, so an escape already in the text is not decoded by the runner");
-        Assert.AreEqual("a%3Ab%2Cc%25%0A", BevCliFormats.EscapeProperty("a:b,c%\n"));
-        Assert.AreEqual("x::y", BevCliFormats.EscapeData("x::y"), "the message is everything after the first ::, which an escaped property cannot hold");
+        Assert.AreEqual("100%25 done%0D%0Anext", BevToolsCliFormats.EscapeData("100% done\r\nnext"));
+        Assert.AreEqual("%250A", BevToolsCliFormats.EscapeData("%0A"), "% first, so an escape already in the text is not decoded by the runner");
+        Assert.AreEqual("a%3Ab%2Cc%25%0A", BevToolsCliFormats.EscapeProperty("a:b,c%\n"));
+        Assert.AreEqual("x::y", BevToolsCliFormats.EscapeData("x::y"), "the message is everything after the first ::, which an escaped property cannot hold");
 
         var folder = Directory.CreateTempSubdirectory("bevtools-cli-");
         try
@@ -239,7 +239,7 @@ public class CliFormatTests : BunitContext
             var (code, output, _) = Run("check", export, "--format", "github", "--report", report);
 
             Assert.AreEqual(BevToolsCli.Failed, code);
-            Assert.AreEqual(BevSessionCheck.Check(File.ReadAllText(export)).ToMarkdown(), File.ReadAllText(report), "--report still gets the Markdown");
+            Assert.AreEqual(BevToolsSessionCheck.Check(File.ReadAllText(export)).ToMarkdown(), File.ReadAllText(report), "--report still gets the Markdown");
             var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
             foreach (var line in lines[..^1])
             {
@@ -283,7 +283,7 @@ public class CliFormatTests : BunitContext
             var (markdownCode, markdownOutput, _) = Run("check", export, "--output", markdownFile);
             Assert.AreEqual(BevToolsCli.Failed, markdownCode);
             Assert.AreEqual("", markdownOutput);
-            Assert.AreEqual(BevSessionCheck.Check(File.ReadAllText(export)).ToMarkdown(), File.ReadAllText(markdownFile));
+            Assert.AreEqual(BevToolsSessionCheck.Check(File.ReadAllText(export)).ToMarkdown(), File.ReadAllText(markdownFile));
 
             var (emptyCode, emptyOutput, emptyError) = Run("check", export, "--output", "");
             Assert.AreEqual(BevToolsCli.Unusable, emptyCode);
@@ -311,12 +311,12 @@ public class CliFormatTests : BunitContext
         {
             var cut = Render<ParentComponent>(ps => ps.Add(p => p.Value, 1));
             var baseline = Path.Combine(folder.FullName, "baseline.json");
-            File.WriteAllText(baseline, BevSessionExporter.ToJson(Session));
+            File.WriteAllText(baseline, BevToolsSessionExporter.ToJson(Session));
             await cut.InvokeAsync(() => cut.Instance.Increment());
             await cut.InvokeAsync(() => cut.Instance.Increment());
             var current = Path.Combine(folder.FullName, "current.json");
-            File.WriteAllText(current, BevSessionExporter.ToJson(Session));
-            var expected = BevProfileComparison.Compare(File.ReadAllText(baseline), File.ReadAllText(current));
+            File.WriteAllText(current, BevToolsSessionExporter.ToJson(Session));
+            var expected = BevToolsProfileComparison.Compare(File.ReadAllText(baseline), File.ReadAllText(current));
 
             var (code, output, _) = Run("compare", baseline, current, "--format", "json");
 
@@ -367,7 +367,7 @@ public class CliFormatTests : BunitContext
             Assert.DoesNotContain(a => a.GetName().Name!.StartsWith("ModelContextProtocol", StringComparison.Ordinal), context.Assemblies);
 
             // The control: reading the tools' attributes loads it, so the assertion above can fail.
-            _ = tool.GetType("Bit.BevTools.BevMcpTools")!.GetMethod("ListSessions")!.GetCustomAttributes(inherit: false);
+            _ = tool.GetType("Bit.BevTools.BevToolsMcpTools")!.GetMethod("ListSessions")!.GetCustomAttributes(inherit: false);
             Assert.Contains(a => a.GetName().Name!.StartsWith("ModelContextProtocol", StringComparison.Ordinal), context.Assemblies);
         }
         finally
@@ -385,7 +385,7 @@ public class CliFormatTests : BunitContext
         Session.Diagnostics.Evaluate(force: true);
         Session.Diagnostics.Dismiss("cli.dismissed");
         var path = Path.Combine(folder, "session.json");
-        File.WriteAllText(path, BevSessionExporter.ToJson(Session));
+        File.WriteAllText(path, BevToolsSessionExporter.ToJson(Session));
         return path;
     }
 
@@ -419,7 +419,7 @@ internal sealed class CliPlantedFindings : IBevToolsExtension
 
     public void Configure(IBevToolsExtensionBuilder builder) => builder.AddDiagnosticRule(new Rule());
 
-    private sealed class Rule : IBevDiagnosticRule
+    private sealed class Rule : IBevToolsDiagnosticRule
     {
         public string Id => "cli.planted";
 
@@ -427,13 +427,13 @@ internal sealed class CliPlantedFindings : IBevToolsExtension
 
         public string Description => "Findings with known text, for the tool's output formats.";
 
-        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        public IEnumerable<BevToolsDiagnostic> Evaluate(IBevToolsDiagnosticContext context)
         {
             var parent = context.Components.FirstOrDefault(c => c.DisplayName == nameof(ParentComponent))?.InstanceId;
-            yield return new BevDiagnostic("cli.error", BevDiagnosticSeverity.Error, "Order total is negative", "Total -5 for order 7", "Check the discount.", Fingerprint: "cli.error", ComponentInstanceId: parent);
-            yield return new BevDiagnostic("cli.hostile", BevDiagnosticSeverity.Warning, "Hostile: a:b, c", Hostile, Fingerprint: "cli.hostile");
-            yield return new BevDiagnostic("cli.hint", BevDiagnosticSeverity.Info, "A hint", "Seen once.", Fingerprint: "cli.hint");
-            yield return new BevDiagnostic("cli.dismissed", BevDiagnosticSeverity.Error, "Dismissed problem", "Someone looked at it.", Fingerprint: "cli.dismissed");
+            yield return new BevToolsDiagnostic("cli.error", BevToolsDiagnosticSeverity.Error, "Order total is negative", "Total -5 for order 7", "Check the discount.", Fingerprint: "cli.error", ComponentInstanceId: parent);
+            yield return new BevToolsDiagnostic("cli.hostile", BevToolsDiagnosticSeverity.Warning, "Hostile: a:b, c", Hostile, Fingerprint: "cli.hostile");
+            yield return new BevToolsDiagnostic("cli.hint", BevToolsDiagnosticSeverity.Info, "A hint", "Seen once.", Fingerprint: "cli.hint");
+            yield return new BevToolsDiagnostic("cli.dismissed", BevToolsDiagnosticSeverity.Error, "Dismissed problem", "Someone looked at it.", Fingerprint: "cli.dismissed");
         }
     }
 }

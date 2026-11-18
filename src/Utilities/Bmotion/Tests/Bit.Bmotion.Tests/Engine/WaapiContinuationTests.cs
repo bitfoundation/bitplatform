@@ -99,7 +99,7 @@ public class WaapiContinuationTests
         // Started through the regular entry point, as a <Bmotion> does: onSettled hears however it
         // ends, onComplete only a natural finish.
         await ManualSynchronizationContext.RunUnder(context, () => engine.AnimateToAsync("el",
-            Values(("x", 100.0)), Bm.Tween(1, ease: BmEase.Linear).ToConfig(),
+            Values(("x", 100.0)), Bm.Tween(1, ease: BmotionEase.Linear).ToConfig(),
             onComplete: () => { completed = true; return Task.CompletedTask; },
             onSettled: () => settled = true));
         Assert.AreEqual(1, interop.CountOf("playWaapiAnimation"));

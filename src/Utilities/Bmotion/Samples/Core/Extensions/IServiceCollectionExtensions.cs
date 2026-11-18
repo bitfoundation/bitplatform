@@ -17,11 +17,11 @@ public static class IServiceCollectionExtensions
             // host's App.razor) plays as soon as the HTML arrives, so nothing waits invisible at its
             // Initial state while the runtime starts. The runtime then takes each element over instead
             // of playing its enter a second time. The MAUI app never prerenders, so it has no effect there.
-            options.Prerender = BmPrerenderMode.Animate;
+            options.Prerender = BmotionPrerenderMode.Animate;
 
             // Follow the operating system's reduced-motion setting everywhere, as the library
             // recommends for new apps: moves snap, fades still fade.
-            options.ReducedMotion = BmReducedMotionMode.User;
+            options.ReducedMotion = BmotionReducedMotionMode.User;
         });
 
         return services;

@@ -114,7 +114,7 @@ builder.Services.AddBitBevToolsServerServices();
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What changed in my state?</h3>
                 <p class="bb-card-desc">
-                    State containers that implement <code>IBevStateProvider</code> get a history of named actions with
+                    State containers that implement <code>IBevToolsStateProvider</code> get a history of named actions with
                     before/after diffs and the click behind each one.
                 </p>
                 <a href="checkout" class="btn btn-outline">Checkout →</a>
@@ -206,17 +206,17 @@ builder.Services.AddBitBevToolsServices(o =&gt;
                     <span class="bb-step">02</span>
                     <h3>Expose your state</h3>
                     <p>
-                        A state container that implements <code>IBevStateProvider</code> gets a history of named
+                        A state container that implements <code>IBevToolsStateProvider</code> gets a history of named
                         changes with diffs. Register it once and the State panel shows it.
                     </p>
                     <a href="checkout">Checkout →</a>
                 </div>
-                <pre class="bb-code"><span class="k">public sealed class</span> CartState : IBevStateProvider
+                <pre class="bb-code"><span class="k">public sealed class</span> CartState : IBevToolsStateProvider
 {
     <span class="k">public string</span> Name =&gt; <span class="s">"CartState"</span>;
-    <span class="k">public event</span> Action&lt;BevStateChangeInfo&gt;? Changed;
+    <span class="k">public event</span> Action&lt;BevToolsStateChangeInfo&gt;? Changed;
     <span class="k">public object</span>? GetSnapshot() =&gt; <span class="k">this</span>;
-    <span class="c">// … Changed?.Invoke(new BevStateChangeInfo("Add", product.Name));</span>
+    <span class="c">// … Changed?.Invoke(new BevToolsStateChangeInfo("Add", product.Name));</span>
 }
 
 builder.Services.AddBevToolsStateProvider&lt;CartState&gt;();</pre>
@@ -326,7 +326,7 @@ builder.Services.AddBevToolsStateProvider&lt;CartState&gt;();</pre>
                     Yes. Export the session after a test run and <code>bevtools check session.json</code> fails the build
                     on the rules' findings; <code>bevtools compare before.json after.json</code> fails it when a component
                     renders more often, or clearly longer, than before. The same checks run in a test through
-                    <code>BevSessionCheck</code> and <code>BevProfileComparison</code>.
+                    <code>BevToolsSessionCheck</code> and <code>BevToolsProfileComparison</code>.
                 </p>
             </details>
             <details>

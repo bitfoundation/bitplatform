@@ -8,7 +8,7 @@ namespace Bit.Bmage.Demo.Server.Services;
 /// <summary>
 /// Reads the XML documentation the Bit.Bmage build emits next to its assembly - the engine, the
 /// browser integration and the editor components - and flattens each entry into plain text:
-/// <c>&lt;see cref="T:Bit.Bmage.ImagePipeline"/&gt;</c> becomes <c>ImagePipeline</c>,
+/// <c>&lt;see cref="T:Bit.Bmage.BmageImagePipeline"/&gt;</c> becomes <c>BmageImagePipeline</c>,
 /// <c>&lt;c&gt;</c> spans become their content, and paragraphs become blank lines. That text is the
 /// same prose a developer reads in IntelliSense, which makes it the most accurate answer an MCP
 /// client can get about a member - there is no second copy to keep in sync.
@@ -39,7 +39,7 @@ public static partial class BmageXmlDocs
         if (_members.Value.TryGetValue(documentationId, out var member) is false &&
             _overloads.Value.TryGetValue(documentationId, out member) is false) return null;
 
-        // A member may carry several <remarks> blocks; ImagePipeline's optimiser does. Every one of
+        // A member may carry several <remarks> blocks; BmageImagePipeline's optimiser does. Every one of
         // them is a caveat, so they are joined rather than all but the first being dropped.
         var elements = member.Elements(section).ToArray();
 
@@ -201,7 +201,7 @@ public static partial class BmageXmlDocs
         return string.Join('\n', lines.Select(line => line.Length >= indent ? line[indent..] : line.TrimStart())).Trim('\n').TrimEnd();
     }
 
-    /// <summary>Turns a cref such as "M:Bit.Bmage.ImagePipeline.Cover(...)" into "ImagePipeline.Cover".</summary>
+    /// <summary>Turns a cref such as "M:Bit.Bmage.BmageImagePipeline.Cover(...)" into "BmageImagePipeline.Cover".</summary>
     private static string Reference(XElement element)
     {
         var target = element.Attribute("cref")?.Value ?? element.Attribute("langword")?.Value ?? element.Value;

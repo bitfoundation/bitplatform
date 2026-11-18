@@ -90,9 +90,9 @@
                         }
                     </div>
                     <div class="bb-segmented scan-presets" role="group" aria-label="Format presets">
-                        <button type="button" aria-pressed="@(_formats == BbBarcodeFormat.All ? "true" : "false")" @onclick="() => SetFormats(BbBarcodeFormat.All)">All</button>
-                        <button type="button" aria-pressed="@(_formats == BbBarcodeFormat.AllMatrix ? "true" : "false")" @onclick="() => SetFormats(BbBarcodeFormat.AllMatrix)">Matrix only</button>
-                        <button type="button" aria-pressed="@(_formats == BbBarcodeFormat.AllLinear ? "true" : "false")" @onclick="() => SetFormats(BbBarcodeFormat.AllLinear)">Linear only</button>
+                        <button type="button" aria-pressed="@(_formats == BbScannerBarcodeFormat.All ? "true" : "false")" @onclick="() => SetFormats(BbScannerBarcodeFormat.All)">All</button>
+                        <button type="button" aria-pressed="@(_formats == BbScannerBarcodeFormat.AllMatrix ? "true" : "false")" @onclick="() => SetFormats(BbScannerBarcodeFormat.AllMatrix)">Matrix only</button>
+                        <button type="button" aria-pressed="@(_formats == BbScannerBarcodeFormat.AllLinear ? "true" : "false")" @onclick="() => SetFormats(BbScannerBarcodeFormat.AllLinear)">Linear only</button>
                     </div>
                 </section>
 
@@ -147,9 +147,9 @@
                     <label class="bb-field">
                         <span>After a scan</span>
                         <select id="after-scan" value="@_afterScan" @onchange="OnAfterScanChanged">
-                            <option value="@BbAfterScan.Continue">Keep scanning</option>
-                            <option value="@BbAfterScan.Pause">Pause</option>
-                            <option value="@BbAfterScan.Stop">Stop the camera</option>
+                            <option value="@BbScannerAfterScan.Continue">Keep scanning</option>
+                            <option value="@BbScannerAfterScan.Pause">Pause</option>
+                            <option value="@BbScannerAfterScan.Stop">Stop the camera</option>
                         </select>
                         <small><code>AfterScan</code>: what a reported scan does to the scanner. Pause keeps the camera open, so Resume is instant; Stop releases it.</small>
                     </label>
@@ -157,9 +157,9 @@
                     <label class="bb-field">
                         <span>Preferred camera</span>
                         <select id="facing" value="@_facing" @onchange="OnFacingChanged">
-                            <option value="@BbCameraFacing.Rear">Rear</option>
-                            <option value="@BbCameraFacing.Front">Front</option>
-                            <option value="@BbCameraFacing.Any">Any</option>
+                            <option value="@BbScannerCameraFacing.Rear">Rear</option>
+                            <option value="@BbScannerCameraFacing.Front">Front</option>
+                            <option value="@BbScannerCameraFacing.Any">Any</option>
                         </select>
                         <small><code>Facing</code>: the camera to open when no specific one is chosen. Changing it reopens the running camera.</small>
                     </label>
@@ -278,7 +278,7 @@
                         <label class="bb-check"><input type="checkbox" checked="@_beep" @onchange="e => _beep = (bool)(e.Value ?? false)" /> Beep on a scan</label>
                     </div>
                     <p class="bb-card-desc">
-                        <code>Feedback</code> takes <code>BbScanFeedback.Vibrate</code>, <code>Beep</code> or both.
+                        <code>Feedback</code> takes <code>BbScannerScanFeedback.Vibrate</code>, <code>Beep</code> or both.
                         Browsers only sound a tone after the user has interacted with the page, and Safari does not
                         vibrate, so the outline and the screen reader announcement always come too.
                     </p>
@@ -345,23 +345,23 @@
         Tune(o => o.ItfLengths = lengths);
     }
 
-    private static readonly BbBarcodeFormat[] Formats =
+    private static readonly BbScannerBarcodeFormat[] Formats =
     [
-        BbBarcodeFormat.QrCode, BbBarcodeFormat.DataMatrix, BbBarcodeFormat.Code128, BbBarcodeFormat.Code39,
-        BbBarcodeFormat.Ean13, BbBarcodeFormat.Ean8, BbBarcodeFormat.UpcA, BbBarcodeFormat.UpcE, BbBarcodeFormat.Itf,
-        BbBarcodeFormat.Pdf417, BbBarcodeFormat.Aztec, BbBarcodeFormat.Code93, BbBarcodeFormat.Codabar,
-        BbBarcodeFormat.DataBar, BbBarcodeFormat.DataBarLimited, BbBarcodeFormat.DataBarExpanded,
-        BbBarcodeFormat.MaxiCode, BbBarcodeFormat.MicroQrCode, BbBarcodeFormat.MicroPdf417,
+        BbScannerBarcodeFormat.QrCode, BbScannerBarcodeFormat.DataMatrix, BbScannerBarcodeFormat.Code128, BbScannerBarcodeFormat.Code39,
+        BbScannerBarcodeFormat.Ean13, BbScannerBarcodeFormat.Ean8, BbScannerBarcodeFormat.UpcA, BbScannerBarcodeFormat.UpcE, BbScannerBarcodeFormat.Itf,
+        BbScannerBarcodeFormat.Pdf417, BbScannerBarcodeFormat.Aztec, BbScannerBarcodeFormat.Code93, BbScannerBarcodeFormat.Codabar,
+        BbScannerBarcodeFormat.DataBar, BbScannerBarcodeFormat.DataBarLimited, BbScannerBarcodeFormat.DataBarExpanded,
+        BbScannerBarcodeFormat.MaxiCode, BbScannerBarcodeFormat.MicroQrCode, BbScannerBarcodeFormat.MicroPdf417,
     ];
 
-    private readonly List<BbBarcodeResult> _results = [];
+    private readonly List<BbScannerBarcodeResult> _results = [];
 
     private BbScanner? _scanner;
-    private BbBarcodeFormat _formats = BbBarcodeFormat.All;
-    private BbScanRegion _region = BbScanRegion.CenteredSquare(0.7);
+    private BbScannerBarcodeFormat _formats = BbScannerBarcodeFormat.All;
+    private BbScannerScanRegion _region = BbScannerScanRegion.CenteredSquare(0.7);
     private double _regionFraction = 0.7;
-    private BbCameraFacing _facing = BbCameraFacing.Rear;
-    private BbScanDiagnostics _diagnostics;
+    private BbScannerCameraFacing _facing = BbScannerCameraFacing.Rear;
+    private BbScannerScanDiagnostics _diagnostics;
     private BbScannerException? _error;
 
     private int _frameRate = 15;
@@ -370,7 +370,7 @@
     private int _processingSize = 640;
     private int _duplicateSeconds = 2;
     private int _symbolsPerFrame = 1;
-    private BbAfterScan _afterScan = BbAfterScan.Continue;
+    private BbScannerAfterScan _afterScan = BbScannerAfterScan.Continue;
     private bool _showControls = true;
     private bool _showStatus = true;
     private bool _showReticle = true;
@@ -380,8 +380,8 @@
     private bool _vibrate;
     private bool _beep;
 
-    private BbScanFeedback Feedback =>
-        (_vibrate ? BbScanFeedback.Vibrate : BbScanFeedback.None) | (_beep ? BbScanFeedback.Beep : BbScanFeedback.None);
+    private BbScannerScanFeedback Feedback =>
+        (_vibrate ? BbScannerScanFeedback.Vibrate : BbScannerScanFeedback.None) | (_beep ? BbScannerScanFeedback.Beep : BbScannerScanFeedback.None);
 
     private void OnResolutionChanged(ChangeEventArgs args)
     {
@@ -393,7 +393,7 @@
         };
     }
 
-    private void HandleScan(BbBarcodeResult result)
+    private void HandleScan(BbScannerBarcodeResult result)
     {
         _lastFormat = result.Format.ToString();
         _results.Insert(0, result);
@@ -421,29 +421,29 @@
         StateHasChanged();
     }
 
-    private void HandleDiagnostics(BbScanDiagnostics diagnostics)
+    private void HandleDiagnostics(BbScannerScanDiagnostics diagnostics)
     {
         _diagnostics = diagnostics;
 
         StateHasChanged();
     }
 
-    private void ToggleFormat(BbBarcodeFormat format, bool enabled)
+    private void ToggleFormat(BbScannerBarcodeFormat format, bool enabled)
     {
         _formats = enabled ? _formats | format : _formats & ~format;
     }
 
-    private void SetFormats(BbBarcodeFormat formats) => _formats = formats;
+    private void SetFormats(BbScannerBarcodeFormat formats) => _formats = formats;
 
     private void OnRegionChanged(ChangeEventArgs args)
     {
         _regionFraction = Math.Clamp(ToInt(args, 70) / 100.0, 0.2, 1.0);
-        _region = _regionFraction >= 0.999 ? BbScanRegion.Full : BbScanRegion.CenteredSquare(_regionFraction);
+        _region = _regionFraction >= 0.999 ? BbScannerScanRegion.Full : BbScannerScanRegion.CenteredSquare(_regionFraction);
     }
 
     private void OnFacingChanged(ChangeEventArgs args)
     {
-        if (Enum.TryParse<BbCameraFacing>(args.Value?.ToString(), out var facing))
+        if (Enum.TryParse<BbScannerCameraFacing>(args.Value?.ToString(), out var facing))
         {
             _facing = facing;
         }
@@ -451,7 +451,7 @@
 
     private void OnAfterScanChanged(ChangeEventArgs args)
     {
-        if (Enum.TryParse<BbAfterScan>(args.Value?.ToString(), out var afterScan))
+        if (Enum.TryParse<BbScannerAfterScan>(args.Value?.ToString(), out var afterScan))
         {
             _afterScan = afterScan;
         }
@@ -462,26 +462,26 @@
     private static int ToInt(ChangeEventArgs args, int fallback) =>
         int.TryParse(args.Value?.ToString(), out var value) ? value : fallback;
 
-    private static string Label(BbBarcodeFormat format) => format switch
+    private static string Label(BbScannerBarcodeFormat format) => format switch
     {
-        BbBarcodeFormat.QrCode => "QR Code",
-        BbBarcodeFormat.DataMatrix => "Data Matrix",
-        BbBarcodeFormat.Code128 => "Code 128",
-        BbBarcodeFormat.Code39 => "Code 39",
-        BbBarcodeFormat.Ean13 => "EAN-13",
-        BbBarcodeFormat.Ean8 => "EAN-8",
-        BbBarcodeFormat.UpcA => "UPC-A",
-        BbBarcodeFormat.UpcE => "UPC-E",
-        BbBarcodeFormat.Itf => "ITF",
-        BbBarcodeFormat.Pdf417 => "PDF417",
-        BbBarcodeFormat.Aztec => "Aztec",
-        BbBarcodeFormat.Code93 => "Code 93",
-        BbBarcodeFormat.DataBar => "GS1 DataBar",
-        BbBarcodeFormat.DataBarLimited => "DataBar Limited",
-        BbBarcodeFormat.DataBarExpanded => "DataBar Expanded",
-        BbBarcodeFormat.MaxiCode => "MaxiCode",
-        BbBarcodeFormat.MicroQrCode => "Micro QR",
-        BbBarcodeFormat.MicroPdf417 => "MicroPDF417",
+        BbScannerBarcodeFormat.QrCode => "QR Code",
+        BbScannerBarcodeFormat.DataMatrix => "Data Matrix",
+        BbScannerBarcodeFormat.Code128 => "Code 128",
+        BbScannerBarcodeFormat.Code39 => "Code 39",
+        BbScannerBarcodeFormat.Ean13 => "EAN-13",
+        BbScannerBarcodeFormat.Ean8 => "EAN-8",
+        BbScannerBarcodeFormat.UpcA => "UPC-A",
+        BbScannerBarcodeFormat.UpcE => "UPC-E",
+        BbScannerBarcodeFormat.Itf => "ITF",
+        BbScannerBarcodeFormat.Pdf417 => "PDF417",
+        BbScannerBarcodeFormat.Aztec => "Aztec",
+        BbScannerBarcodeFormat.Code93 => "Code 93",
+        BbScannerBarcodeFormat.DataBar => "GS1 DataBar",
+        BbScannerBarcodeFormat.DataBarLimited => "DataBar Limited",
+        BbScannerBarcodeFormat.DataBarExpanded => "DataBar Expanded",
+        BbScannerBarcodeFormat.MaxiCode => "MaxiCode",
+        BbScannerBarcodeFormat.MicroQrCode => "Micro QR",
+        BbScannerBarcodeFormat.MicroPdf417 => "MicroPDF417",
         _ => format.ToString(),
     };
 }

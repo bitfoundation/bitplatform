@@ -21,7 +21,7 @@ public class McpControllerTests
         StringAssert.Contains(overview, "## Installation");
         StringAssert.Contains(overview, "## Where it runs");
         StringAssert.Contains(overview, "AddBitBmageHeadlessServices");
-        StringAssert.Contains(overview, "ImageProcessorFactory.GetAsync()");
+        StringAssert.Contains(overview, "BmageImageProcessorFactory.GetAsync()");
         StringAssert.Contains(overview, "OnAfterRenderAsync");
         StringAssert.Contains(overview, "bit-bmage-editor.css");
         Assert.IsFalse(overview.Contains("was not found in this build", StringComparison.Ordinal), "A README section the overview quotes has been renamed.");
@@ -37,7 +37,7 @@ public class McpControllerTests
     [DataRow("MAUI", "AddMauiBlazorWebView")]
     [DataRow("headless", "AddBitBmageHeadlessServices")]
     [DataRow("InteractiveServer", "InteractiveServer")]
-    [DataRow("console", "new ImageProcessor()")]
+    [DataRow("console", "new BmageImageProcessor()")]
     public void SetupGuide_AnswersEveryHostingModel_AndItsAliases(string mode, string expected)
     {
         StringAssert.Contains(_controller.GetBmageSetupGuide(mode), expected);
@@ -64,8 +64,8 @@ public class McpControllerTests
         var recipe = _controller.GetBmageRecipe("AVATAR-CROP").Recipe;
 
         Assert.IsNotNull(recipe);
-        StringAssert.Contains(recipe.Code, "SmartCrop(AspectRatio.Square)");
-        StringAssert.Contains(recipe.Notes, "ImageEncodeException");
+        StringAssert.Contains(recipe.Code, "SmartCrop(BmageAspectRatio.Square)");
+        StringAssert.Contains(recipe.Notes, "BmageImageEncodeException");
     }
 
     [TestMethod]
@@ -123,18 +123,18 @@ public class McpControllerTests
         // Every type is in the one Bit.Bmage namespace, so "Editor" matches as a part of a name.
         var editor = _controller.GetBmageApiList("Editor");
         Assert.IsTrue(editor.All(type => type.Name.Contains("Editor", StringComparison.OrdinalIgnoreCase)));
-        Assert.IsTrue(editor.Any(type => type.Name == "BmageEditor") && editor.Any(type => type.Name == "EditorToolKind"));
+        Assert.IsTrue(editor.Any(type => type.Name == "BmageEditor") && editor.Any(type => type.Name == "BmageEditorToolKind"));
         Assert.IsTrue(all.All(type => type.Namespace == "Bit.Bmage"), "Every Bmage type is in the Bit.Bmage namespace.");
 
         var enums = _controller.GetBmageApiList("enum");
         Assert.IsTrue(enums.All(type => type.Kind == "Enum"));
-        Assert.IsTrue(enums.Any(type => type.Name == "MetadataPolicy"));
+        Assert.IsTrue(enums.Any(type => type.Name == "BmageMetadataPolicy"));
 
         var annotations = _controller.GetBmageApiList("Annotation");
-        Assert.IsTrue(annotations.Any(type => type.Name == "RedactionAnnotation"));
+        Assert.IsTrue(annotations.Any(type => type.Name == "BmageRedactionAnnotation"));
 
         var export = _controller.GetBmageApiList("Export");
-        Assert.IsTrue(export.Any(type => type.Name == "ImageExportOptions") && export.Any(type => type.Name == "ImageExporter"));
+        Assert.IsTrue(export.Any(type => type.Name == "BmageImageExportOptions") && export.Any(type => type.Name == "BmageImageExporter"));
 
         Assert.IsLessThan(all.Length, export.Length);
         Assert.IsEmpty(_controller.GetBmageApiList("Teleporter"), "A filter that matches nothing must not fall back to everything.");
@@ -157,26 +157,26 @@ public class McpControllerTests
     [TestMethod]
     public void ApiDetails_AType_AMember_AndTheNearMisses()
     {
-        var type = _controller.GetBmageApiDetails("ImageExportOptions").Details;
+        var type = _controller.GetBmageApiDetails("BmageImageExportOptions").Details;
 
         Assert.IsNotNull(type);
         Assert.AreEqual("Bit.Bmage", type.Namespace);
         Assert.AreEqual("Bit.Bmage", type.Package);
 
-        var member = _controller.GetBmageApiDetails("ImagePipeline.Cover").Details;
+        var member = _controller.GetBmageApiDetails("BmageImagePipeline.Cover").Details;
 
         Assert.IsNotNull(member);
         Assert.IsTrue(member.Members.All(entry => entry.Name == "Cover"));
-        StringAssert.Contains(member.Members[0].Signature, "Anchor anchor = Anchor.Center");
+        StringAssert.Contains(member.Members[0].Signature, "BmageAnchor anchor = BmageAnchor.Center");
 
-        var noMember = _controller.GetBmageApiDetails("ImagePipeline.Teleport");
+        var noMember = _controller.GetBmageApiDetails("BmageImagePipeline.Teleport");
         Assert.IsNull(noMember.Details);
         StringAssert.Contains(noMember.Message, "no member called 'Teleport'");
         StringAssert.Contains(noMember.Message, "MaxSize");
 
         var nearMiss = _controller.GetBmageApiDetails("Exporter");
         Assert.IsNull(nearMiss.Details);
-        StringAssert.Contains(nearMiss.Message, "ImageExporter");
+        StringAssert.Contains(nearMiss.Message, "BmageImageExporter");
 
         StringAssert.Contains(_controller.GetBmageApiDetails("Teleporter").Message, "SearchBmage");
     }
@@ -213,7 +213,7 @@ public class McpControllerTests
     [TestMethod]
     public void Review_TooLongACode_IsReviewedInPart_AndSaysSo()
     {
-        var code = "MetadataPolicy.Preserve\n" + new string('x', McpController.MaxDocumentLength);
+        var code = "BmageMetadataPolicy.Preserve\n" + new string('x', McpController.MaxDocumentLength);
 
         var review = _controller.ReviewBmageCode(code);
 

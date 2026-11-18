@@ -26,7 +26,7 @@ public static class IServiceCollectionExtensions
             // Generous for a demo, where people drop whatever is on their phone; a real app would
             // tune these to its users' devices (see the Hosting page).
             options.MaxSourceBytes = 64 * 1024 * 1024;
-            options.Limits = ImageLimits.Default with { MaxPixels = 80_000_000 };
+            options.Limits = BmageImageLimits.Default with { MaxPixels = 80_000_000 };
         });
 
         services.AddScoped(_ => baseAddress is null

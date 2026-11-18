@@ -23,14 +23,14 @@ public class InitialFalseTests
     private static BmotionElementDiagnostics State(BmotionTestContext ctx, string id)
         => ctx.Engine.GetDiagnostics().Single(d => d.Id == id);
 
-    private IRenderedComponent<Bmotion> RenderAtRest(BmotionTestContext ctx, List<BmProps?> started, List<BmProps?> completed)
+    private IRenderedComponent<Bmotion> RenderAtRest(BmotionTestContext ctx, List<BmotionProps?> started, List<BmotionProps?> completed)
         => ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Initial, (BmTarget)false)
+            .Add(p => p.Initial, (BmotionTarget)false)
             .Add(p => p.Animate, Bm.To(opacity: 0.5, x: 40))
             .Add(p => p.Transition, Bm.Tween(0.3))
-            .Add(p => p.OnAnimationStart, EventCallback.Factory.Create<BmProps?>(this, p => started.Add(p)))
-            .Add(p => p.OnAnimationComplete, EventCallback.Factory.Create<BmProps?>(this, p => { lock (completed) completed.Add(p); }))
+            .Add(p => p.OnAnimationStart, EventCallback.Factory.Create<BmotionProps?>(this, p => started.Add(p)))
+            .Add(p => p.OnAnimationComplete, EventCallback.Factory.Create<BmotionProps?>(this, p => { lock (completed) completed.Add(p); }))
             .Add(p => p.ChildContent, Div));
 
     [TestMethod]
@@ -54,8 +54,8 @@ public class InitialFalseTests
     public async Task Mount_StartsNoEnterAnimation_AndReportsNone()
     {
         using var ctx = new BmotionTestContext();
-        var started = new List<BmProps?>();
-        var completed = new List<BmProps?>();
+        var started = new List<BmotionProps?>();
+        var completed = new List<BmotionProps?>();
         RenderAtRest(ctx, started, completed);
 
         // Neither a compositor animation nor a frame-loop driver: the element is simply at rest.
@@ -73,8 +73,8 @@ public class InitialFalseTests
     public async Task ALaterAnimateChange_AnimatesFromTheMountedTarget_AndReportsIt()
     {
         using var ctx = new BmotionTestContext();
-        var started = new List<BmProps?>();
-        var completed = new List<BmProps?>();
+        var started = new List<BmotionProps?>();
+        var completed = new List<BmotionProps?>();
         var cut = RenderAtRest(ctx, started, completed);
 
         cut.Render(ps => ps.Add(p => p.Animate, Bm.To(opacity: 1, x: 40)));

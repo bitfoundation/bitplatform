@@ -14,28 +14,28 @@ public sealed class EditSessionCacheTests
     public async Task EveryCachedPreviewMatchesAFreshRender()
     {
         using var source = FastPathEquivalenceTests.Noise(300, 200, seed: 21);
-        using var session = new ImageEditSession(source.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 160 });
-        var blur = new BlurFilter(3f);
-        var rectangle = new RectangleAnnotation { Rectangle = new RectangleF(20, 30, 120, 60) };
+        using var session = new BmageImageEditSession(source.Clone(), new BmageImageEditSessionOptions { MaxProxyDimension = 160 });
+        var blur = new BmageBlurFilter(3f);
+        var rectangle = new BmageRectangleAnnotation { Rectangle = new RectangleF(20, 30, 120, 60) };
 
         // A slider dragged after a blur, a crop and an orientation, annotations added and moved, steps undone: every kind
         // of change that keeps part of what the previous render computed.
-        var edits = new Func<ImageDocument, ImageDocument>[]
+        var edits = new Func<BmageImageDocument, BmageImageDocument>[]
         {
-            d => d.AddOperation(new BrightnessAdjustment(0.1f)),
+            d => d.AddOperation(new BmageBrightnessAdjustment(0.1f)),
             d => d.AddOperation(blur),
-            d => d.AddOperation(new ContrastAdjustment(0.3f)),
-            d => d.ReplaceOperation(2, new ContrastAdjustment(0.5f)),
-            d => d.ReplaceOperation(2, new ContrastAdjustment(-0.2f)),
+            d => d.AddOperation(new BmageContrastAdjustment(0.3f)),
+            d => d.ReplaceOperation(2, new BmageContrastAdjustment(0.5f)),
+            d => d.ReplaceOperation(2, new BmageContrastAdjustment(-0.2f)),
             d => d.AddAnnotation(rectangle),
             d => d.UpdateAnnotation(rectangle.Translate(15, 5)),
-            d => d.AddOperation(new CropOperation(10, 10, 250, 170)),
-            d => d.AddOperation(OrientationOperation.Rotate90),
-            d => d.AddOperation(new SharpenFilter(0.8f, 2f)),
-            d => d.AddOperation(new SaturationAdjustment(0.4f)),
-            d => d.ReplaceOperation(0, new BrightnessAdjustment(-0.1f)),
-            d => d.ReplaceOperation(1, new BlurFilter(0.01f)),
-            d => d.AddAnnotation(new EllipseAnnotation { Rectangle = new RectangleF(5, 5, 50, 50) }),
+            d => d.AddOperation(new BmageCropOperation(10, 10, 250, 170)),
+            d => d.AddOperation(BmageOrientationOperation.Rotate90),
+            d => d.AddOperation(new BmageSharpenFilter(0.8f, 2f)),
+            d => d.AddOperation(new BmageSaturationAdjustment(0.4f)),
+            d => d.ReplaceOperation(0, new BmageBrightnessAdjustment(-0.1f)),
+            d => d.ReplaceOperation(1, new BmageBlurFilter(0.01f)),
+            d => d.AddAnnotation(new BmageEllipseAnnotation { Rectangle = new RectangleF(5, 5, 50, 50) }),
         };
 
         foreach (var edit in edits)
@@ -54,21 +54,21 @@ public sealed class EditSessionCacheTests
     public async Task AShapeDrawnOverThePreviewMatchesRenderingTheDocumentWithIt()
     {
         using var source = FastPathEquivalenceTests.Noise(240, 180, seed: 8);
-        using var session = new ImageEditSession(source.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 120 });
-        session.AddOperation(new BlurFilter(2f));
-        session.AddAnnotation(new RectangleAnnotation { Rectangle = new RectangleF(10, 10, 80, 40) });
+        using var session = new BmageImageEditSession(source.Clone(), new BmageImageEditSessionOptions { MaxProxyDimension = 120 });
+        session.AddOperation(new BmageBlurFilter(2f));
+        session.AddAnnotation(new BmageRectangleAnnotation { Rectangle = new RectangleF(10, 10, 80, 40) });
         await session.RenderPreviewAsync();
 
         for (var step = 1; step <= 5; step++)
         {
-            var shape = new LineAnnotation { Start = new Vector2(5, 5), End = new Vector2(20 * step, 15 * step) };
+            var shape = new BmageLineAnnotation { Start = new Vector2(5, 5), End = new Vector2(20 * step, 15 * step) };
             var preview = await session.RenderPreviewAsync(d => d.AddAnnotation(shape));
             using var expected = await FreshRender(source, session.Document.AddAnnotation(shape), 120);
             FastPathEquivalenceTests.AssertSamePixels(expected, preview, $"overlay step {step}");
         }
 
         // A redaction is drawn below everything else, so it cannot simply go on top of the kept preview.
-        var redaction = new RedactionAnnotation { Rectangle = new RectangleF(0, 0, 60, 60) };
+        var redaction = new BmageRedactionAnnotation { Rectangle = new RectangleF(0, 0, 60, 60) };
         var redacted = await session.RenderPreviewAsync(d => d.AddAnnotation(redaction));
         using var expectedRedaction = await FreshRender(source, session.Document.AddAnnotation(redaction), 120);
         FastPathEquivalenceTests.AssertSamePixels(expectedRedaction, redacted, "redaction overlay");
@@ -78,21 +78,21 @@ public sealed class EditSessionCacheTests
     public async Task WorkBeforeTheLastBarrierRunsOnceWhileLaterStepsAndAnnotationsChange()
     {
         using var source = TestImages.Gradient(200, 150);
-        using var session = new ImageEditSession(source.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 100 });
+        using var session = new BmageImageEditSession(source.Clone(), new BmageImageEditSessionOptions { MaxProxyDimension = 100 });
         var counting = new CountingOperation();
         session.AddOperation(counting);
-        session.AddOperation(new BrightnessAdjustment(0.1f));
+        session.AddOperation(new BmageBrightnessAdjustment(0.1f));
         await session.RenderPreviewAsync();
         Assert.AreEqual(1, counting.Applied);
 
         for (var i = 1; i <= 5; i++)
         {
-            session.ApplyTransient(d => d.ReplaceOperation(1, new BrightnessAdjustment(0.05f * i)));
+            session.ApplyTransient(d => d.ReplaceOperation(1, new BmageBrightnessAdjustment(0.05f * i)));
             await session.RenderPreviewAsync();
         }
-        session.AddAnnotation(new RectangleAnnotation { Rectangle = new RectangleF(10, 10, 50, 50) });
+        session.AddAnnotation(new BmageRectangleAnnotation { Rectangle = new RectangleF(10, 10, 50, 50) });
         await session.RenderPreviewAsync();
-        await session.RenderPreviewAsync(d => d.AddAnnotation(new LineAnnotation { Start = Vector2.Zero, End = new Vector2(40, 40) }));
+        await session.RenderPreviewAsync(d => d.AddAnnotation(new BmageLineAnnotation { Start = Vector2.Zero, End = new Vector2(40, 40) }));
         Assert.AreEqual(1, counting.Applied, "the barrier's output is reused");
 
         var replacement = new CountingOperation();
@@ -106,7 +106,7 @@ public sealed class EditSessionCacheTests
     public async Task InvalidatingMakesTheNextRenderRunTheWholeDocument()
     {
         using var source = TestImages.Gradient(200, 150);
-        using var session = new ImageEditSession(source.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 100 });
+        using var session = new BmageImageEditSession(source.Clone(), new BmageImageEditSessionOptions { MaxProxyDimension = 100 });
         var counting = new CountingOperation();
         session.AddOperation(counting);
         var first = await session.RenderPreviewAsync();
@@ -128,8 +128,8 @@ public sealed class EditSessionCacheTests
     {
         using var first = TestImages.Gradient(120, 90);
         using var second = FastPathEquivalenceTests.Noise(120, 90, seed: 4);
-        using var session = new ImageEditSession(first.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 60 });
-        var blur = new BlurFilter(2f);
+        using var session = new BmageImageEditSession(first.Clone(), new BmageImageEditSessionOptions { MaxProxyDimension = 60 });
+        var blur = new BmageBlurFilter(2f);
         session.AddOperation(blur);
         await session.RenderPreviewAsync();
 
@@ -141,7 +141,7 @@ public sealed class EditSessionCacheTests
         FastPathEquivalenceTests.AssertSamePixels(expected, preview, "after ReplaceSource");
     }
 
-    private static async Task AssertMatchesFreshRender(ImageBuffer source, ImageEditSession session, ImageDocument document)
+    private static async Task AssertMatchesFreshRender(BmageImageBuffer source, BmageImageEditSession session, BmageImageDocument document)
     {
         var preview = await session.RenderPreviewAsync();
         using var expected = await FreshRender(source, document, session.MaxProxyDimension);
@@ -149,19 +149,19 @@ public sealed class EditSessionCacheTests
     }
 
     /// <summary>A render with nothing cached: a new session given the document directly.</summary>
-    private static async Task<ImageBuffer> FreshRender(ImageBuffer source, ImageDocument document, int maxProxyDimension)
+    private static async Task<BmageImageBuffer> FreshRender(BmageImageBuffer source, BmageImageDocument document, int maxProxyDimension)
     {
-        using var fresh = new ImageEditSession(source.Clone(), new ImageEditSessionOptions { MaxProxyDimension = maxProxyDimension });
+        using var fresh = new BmageImageEditSession(source.Clone(), new BmageImageEditSessionOptions { MaxProxyDimension = maxProxyDimension });
         fresh.Apply(_ => document, "same document");
         return (await fresh.RenderPreviewAsync()).Clone();
     }
 
     /// <summary>An operation the optimiser knows nothing about, which counts how often it runs.</summary>
-    private sealed class CountingOperation : ImageOperation
+    private sealed class CountingOperation : BmageImageOperation
     {
         public int Applied { get; private set; }
         public override string Name => "Counting";
-        public override ImageBuffer Apply(ImageBuffer source, OperationContext context)
+        public override BmageImageBuffer Apply(BmageImageBuffer source, BmageOperationContext context)
         {
             Applied++;
             return GetMutableCopy(source, context);

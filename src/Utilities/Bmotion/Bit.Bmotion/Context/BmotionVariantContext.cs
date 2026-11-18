@@ -26,7 +26,7 @@ internal class BmotionVariantContext
     public string? InitialVariant { get; internal set; }
 
     /// <summary>Shared variants dictionary from the nearest ancestor that defined variants.</summary>
-    public BmVariants? Variants { get; internal set; }
+    public BmotionVariants? Variants { get; internal set; }
 
     /// <summary>Seconds to stagger each child's animation start.</summary>
     public double StaggerChildren { get; internal set; }
@@ -38,7 +38,7 @@ internal class BmotionVariantContext
     /// Full stagger generator for the children, when the parent supplied one. It wins over the flat
     /// <see cref="StaggerChildren"/> interval and is what enables <c>from</c> origins and grids.
     /// </summary>
-    public BmStagger? ChildStagger { get; internal set; }
+    public BmotionStagger? ChildStagger { get; internal set; }
 
     // A child that reports no duration contributes only its stagger delay to the cascade's length.
     private static readonly Func<double> _noDuration = static () => 0;
@@ -117,7 +117,7 @@ internal class BmotionVariantContext
     {
         int rank = RankOf(childIndex);
         return ChildStagger is { } stagger
-            // BmStagger carries its own start delay; DelayChildren adds on top of it.
+            // BmotionStagger carries its own start delay; DelayChildren adds on top of it.
             ? DelayChildren + stagger.DelayFor(rank, Math.Max(TotalChildren, rank + 1))
             : DelayChildren + rank * StaggerChildren;
     }
@@ -125,7 +125,7 @@ internal class BmotionVariantContext
     /// <summary>
     /// When the whole cascade will have finished, in seconds from the moment it starts: the latest
     /// (child delay + that child's own animation duration) across every registered child. This is
-    /// what a <see cref="BmWhen.AfterChildren"/> parent waits for.
+    /// what a <see cref="BmotionWhen.AfterChildren"/> parent waits for.
     /// </summary>
     internal double MaxChildFinishSeconds()
     {

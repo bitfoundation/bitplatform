@@ -160,7 +160,7 @@ Without the loader, `BitBevTools.Attach(serviceProvider)` attaches BevTools from
 (then render `<BevToolsPanel />` from that scope). It falls back to reflection where the loader has hooks: it replaces
 the renderer's activator and wraps the handler of the `HttpClient` registered in DI, and cannot see `IHttpClientFactory`
 clients or the DI graph; in an app that called `AddBitBevToolsLoaderServices` it uses the loader's hooks instead. In a
-server process outside Development it stays off unless `BitBevToolsOptions.Enabled` is true. Either way the session ends
+server process outside Development it stays off unless `BevToolsOptions.Enabled` is true. Either way the session ends
 with its scope, and a BevTools registered at startup but left off does not stand in the way of an attach. The About
 panel lists exactly what an attached session can see.
 
@@ -181,7 +181,7 @@ instruments the renderer), a **protocol** it answers (`BevToolsProtocol`), and *
 ```
  .NET runtime (circuit or WebAssembly)            page                         frontends
  ─────────────────────────────────────    ───────────────────────────    ──────────────────────────────
- BevToolsSession ── BevJsBridge ─────────► page hub (bit-bevtools.js) ──► in-app panel (Razor)
+ BevToolsSession ── BevToolsJsBridge ─────────► page hub (bit-bevtools.js) ──► in-app panel (Razor)
    instrumentation   [JSInvokable]           window.__BIT_BEVTOOLS__  ──► companion window (opener)
    stores, rules     Protocol(...)           targets · traffic        ──► browser extension (DevTools)
 ```
@@ -220,11 +220,11 @@ since the profiler baseline* exports only what happened after the last baseline 
 | What did one render batch render, and where did its time go? | Profiler → a batch in *Recent render batches* → cost tree (self and with descendants), or *Time*: each render on a time axis |
 | Which page costs the most rendering, and in which components? | Profiler → *Renders per page* |
 | Which components allocate the most per render, and did my change make one allocate more? | Profiler → *Allocated* (per render in each row's title), the inspector's *Rendering*; *Compare…* and `bevtools compare` flag more bytes per render; Diagnostics (*render.allocations*) |
-| Did my change make anything render more often or for longer? | Profiler → *Compare…* with the export from before the change; in CI, `bevtools compare before.json after.json` (`Bit.BevTools.Cli`), or `BevProfileComparison.Compare` and `ToMarkdown()` in a test |
-| Can CI fail a build on what BevTools found? | `bevtools check session.json` (`Bit.BevTools.Cli`), or `BevSessionCheck.Check` in a test |
+| Did my change make anything render more often or for longer? | Profiler → *Compare…* with the export from before the change; in CI, `bevtools compare before.json after.json` (`Bit.BevTools.Cli`), or `BevToolsProfileComparison.Compare` and `ToMarkdown()` in a test |
+| Can CI fail a build on what BevTools found? | `bevtools check session.json` (`Bit.BevTools.Cli`), or `BevToolsSessionCheck.Check` in a test |
 | What happened when I clicked, and what did it cause (renders, HTTP, JS, state)? | Timeline (select an event: *caused by* / *caused*) |
 | What changed in my state container and which click did it? | State (history with before/after diffs, details, a filter) |
-| Can I go back to the state before that change? | State → a change → *⟲ restore* puts back the state right *after* that change, so to undo a change restore the one just before it; for a provider that implements `IBevStateRestorer` (Development and single-user hosts) |
+| Can I go back to the state before that change? | State → a change → *⟲ restore* puts back the state right *after* that change, so to undo a change restore the one just before it; for a provider that implements `IBevToolsStateRestorer` (Development and single-user hosts) |
 | Which HTTP requests ran, how long, which failed, what triggered them, which component sent them? | Network (*Sent from* in a request's detail and per endpoint) |
 | Which database queries did that click run, and is one of them running once per row? | Logs → *Database* (EF Core's commands by SQL, with times and senders), Diagnostics (*db.per-item*, *db.slow*) |
 | What did the request send and what came back? | Network → a request → *Request body* / *Response body*, with `CaptureHttpBodies` (off by default; text, bounded, redacted) |
@@ -308,7 +308,7 @@ How the information is obtained, in short:
 * **Circuits**: `CircuitHandler` (lifecycle, connection state, inbound message processing time) +
   Blazor's `components-reconnect-state-changed` in the browser (dispatched on the app's own reconnect dialog).
 * **Event handlers and callbacks**: the frames of the component's latest render, which the renderer keeps
-  (`ComponentState.CurrentRenderTree`, through `BlazorReflection`): attribute frames with event handlers, `@bind`'s
+  (`ComponentState.CurrentRenderTree`, through `BevToolsBlazorReflection`): attribute frames with event handlers, `@bind`'s
   change handlers, and `EventCallback` parameters on child component frames, each named by the method it runs.
 * **Render modes**: what the renderer assigned to each component (`@rendermode`, `[RenderMode*]`), read once, on its
   first render.
@@ -339,12 +339,12 @@ developer tools, the plan and what each improvement round changed and verified -
 An application never has to expose a secret to use BevTools, and production inspection is opt-in and restricted.
 
 **Where it runs.** Development only by default. Outside Development it runs only where the app turns it on:
-`BitBevToolsOptions.Enabled`, or opened on demand (Bit.BevTools.Loader, `BitBevTools.Attach`). In a process that serves
+`BevToolsOptions.Enabled`, or opened on demand (Bit.BevTools.Loader, `BitBevTools.Attach`). In a process that serves
 many users (Blazor Server, prerendering, static rendering) opening it on demand takes `AllowInMultiUserHost` *and* an
 `Authorize` callback that decides who may look, asked on every open; each such attach is logged by the app
 (`Bit.BevTools` category, Warning). A bare `BitBevTools.Attach` there needs `Enabled = true` from the app's own code.
 
-**How much it reads: `BitBevToolsOptions.ValueAccess`.** Structure, counts, timings, causes, events, requests and errors
+**How much it reads: `BevToolsOptions.ValueAccess`.** Structure, counts, timings, causes, events, requests and errors
 are recorded at every level; what differs is how much of the application's own values is read.
 
 | Level | Parameters, fields, state, claims | Default |
@@ -414,19 +414,19 @@ BevTools references `Bit.BevTools`, which carries the extension contracts:
 
 - `IBevToolsExtension` / `IBevToolsExtensionBuilder` - contribute panels, state providers, diagnostic rules, commands
   and value formatters, or hide internal components.
-- `IBevStateProvider` - expose a state container to the State panel, with snapshots, change history and diffs;
-  `IBevStateRestorer` alongside it, with a `RestoreToken` on each `BevStateChangeInfo`, lets the panel restore an
+- `IBevToolsStateProvider` - expose a state container to the State panel, with snapshots, change history and diffs;
+  `IBevToolsStateRestorer` alongside it, with a `RestoreToken` on each `BevToolsStateChangeInfo`, lets the panel restore an
   earlier state through the provider's own code. A change's `Arguments` (an action's payload) are read through the
   inspector at the session's value access; its `Detail` is shown as it is, so it carries no application value.
-- `IBevDiagnosticRule` - turn symptoms into findings with evidence.
+- `IBevToolsDiagnosticRule` - turn symptoms into findings with evidence.
 - `IBevToolsCommand` - add commands to the command palette.
 - `IBevToolsTimeline` / `BevToolsEvent` - write your own events into the activity timeline.
 - `[BevToolsSensitive]` / `[BevToolsIgnore]` - redact members, or hide members and whole components.
 
 Application code can also emit timeline events through `IBevToolsTimeline`, expose state with
-`IBevStateProvider` (or `services.AddBevToolsStateProvider<T>()`), attribute background work with
+`IBevToolsStateProvider` (or `services.AddBevToolsStateProvider<T>()`), attribute background work with
 `session.UseAmbient()`, pause and resume capture (`session.PauseCapture()` / `ResumeCapture()`) and export everything
-with `BevSessionExporter` (session JSON, Markdown) or `BevTraceExporter` (Chrome trace), and mark a moment in the
+with `BevToolsSessionExporter` (session JSON, Markdown) or `BevToolsTraceExporter` (Chrome trace), and mark a moment in the
 timeline (`session.AddMarker("before the fix")`). Whatever the app logs through `ILogger` is in the Logs panel already. Commands get `CopyTextAsync` /
 `DownloadTextAsync` on their context to hand text to the browser. The `Bit.BevTools.Server` package is itself an
 extension (Circuit panel, circuit rules, command).
@@ -501,4 +501,4 @@ search/commands, DI inspection, circuit, runtime, prerendering and retained-comp
 of the page, the rules engine, session and trace export, the CI tool, the companion window and the browser extension.
 The demo shows each of them. See [docs/architecture.md](docs/architecture.md) for the design and the list of deliberate
 non-goals (request bodies by default, SignalR payloads, BevTools writing application state - a provider restores itself through
-`IBevStateRestorer` - editing component state).
+`IBevToolsStateRestorer` - editing component state).

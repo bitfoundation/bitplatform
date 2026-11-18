@@ -2,48 +2,6 @@
 
 namespace Bit.Bheadless;
 
-/// <summary>How a menu should place its highlight when it opens.</summary>
-public enum BitBhMenuFocus
-{
-    /// <summary>Don't move focus into the menu (pointer-opened submenus).</summary>
-    None,
-
-    /// <summary>Focus the menu without highlighting an item (pointer-opened menus).</summary>
-    Container,
-
-    /// <summary>Highlight the first enabled item (Enter / Space / ArrowDown).</summary>
-    First,
-
-    /// <summary>Highlight the last enabled item (ArrowUp).</summary>
-    Last,
-}
-
-/// <summary>A component that owns a menu tree: dropdown menu, context menu, menubar menu.</summary>
-internal interface IBitBhMenuRoot
-{
-    bool IsOpen { get; }
-    bool Disabled { get; }
-    BitBhDirection Dir { get; }
-    string? TriggerId { get; }
-    BitBhMenubarContext? Menubar { get; }
-    Task CloseAsync();
-
-    /// <summary>
-    /// Open because the pointer rested on the trigger, and neither clicked nor focused since (<c>OpenOnHover</c>):
-    /// the pointer highlights items without moving the focus, and the menu's surfaces are hover layers.
-    /// </summary>
-    bool OpenedByHover => false;
-
-    /// <summary>Whether the root follows the pointer over its panels (<c>OpenOnHover</c>).</summary>
-    bool TracksHover => false;
-
-    /// <summary>The pointer entered (<paramref name="inside"/>) or left one of the root's panels.</summary>
-    void PanelHoverChanged(string contentId, bool inside) { }
-
-    /// <summary>The focus moved into one of the root's panels.</summary>
-    void FocusEntered() { }
-}
-
 /// <summary>
 /// One level of a menu tree — the root menu panel or a submenu panel. Owns the
 /// item collection, the highlighted ("active") item and the keyboard model.

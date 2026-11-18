@@ -1,7 +1,7 @@
 ﻿@page "/annotate"
 @implements IAsyncDisposable
-@inject ImageLoader Loader
-@inject IImageCapabilityProvider Capabilities
+@inject BmageImageLoader Loader
+@inject IBmageImageCapabilityProvider Capabilities
 @inject DemoFonts Fonts
 
 @* A bug report's screenshot: paste it in, point at the problem, black out what must not be shared.
@@ -72,7 +72,7 @@
     <div class="bb-note">
         <p>
             Redaction is about pixels; metadata is a separate leak. This page exports with
-            <code>MetadataPolicy.Remove</code> - see <a href="/metadata">Metadata and privacy</a>.
+            <code>BmageMetadataPolicy.Remove</code> - see <a href="/metadata">Metadata and privacy</a>.
         </p>
     </div>
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
@@ -92,15 +92,15 @@
                 <tr><th scope="col">Record</th><th scope="col">Draws</th></tr>
             </thead>
             <tbody>
-                <tr><th scope="row"><code>RectangleAnnotation</code>, <code>EllipseAnnotation</code></th><td>A shape, outlined or filled, solid or dashed.</td></tr>
-                <tr><th scope="row"><code>LineAnnotation</code>, <code>ArrowAnnotation</code></th><td>A straight line, or one with an arrow head at its end.</td></tr>
-                <tr><th scope="row"><code>FreehandAnnotation</code>, <code>PolygonAnnotation</code></th><td>A smoothed pen stroke, or a closed outline through points.</td></tr>
-                <tr><th scope="row"><code>TextAnnotation</code></th><td>A label in any registered font, wrapped, with an optional background box - shaped right to left where the text is.</td></tr>
-                <tr><th scope="row"><code>CalloutAnnotation</code></th><td>A speech bubble with text and a leader line to what it explains.</td></tr>
-                <tr><th scope="row"><code>StepAnnotation</code></th><td>A numbered marker for the order of a tutorial or a reproduction.</td></tr>
-                <tr><th scope="row"><code>HighlightAnnotation</code></th><td>A translucent block, like a marker pen.</td></tr>
-                <tr><th scope="row"><code>RedactionAnnotation</code></th><td>Hidden content: solid, pixelated or blurred, in the pixels themselves.</td></tr>
-                <tr><th scope="row"><code>ImageAnnotation</code></th><td>An image stamped in a rectangle: a logo, a sticker, a signature.</td></tr>
+                <tr><th scope="row"><code>BmageRectangleAnnotation</code>, <code>BmageEllipseAnnotation</code></th><td>A shape, outlined or filled, solid or dashed.</td></tr>
+                <tr><th scope="row"><code>BmageLineAnnotation</code>, <code>BmageArrowAnnotation</code></th><td>A straight line, or one with an arrow head at its end.</td></tr>
+                <tr><th scope="row"><code>BmageFreehandAnnotation</code>, <code>BmagePolygonAnnotation</code></th><td>A smoothed pen stroke, or a closed outline through points.</td></tr>
+                <tr><th scope="row"><code>BmageTextAnnotation</code></th><td>A label in any registered font, wrapped, with an optional background box - shaped right to left where the text is.</td></tr>
+                <tr><th scope="row"><code>BmageCalloutAnnotation</code></th><td>A speech bubble with text and a leader line to what it explains.</td></tr>
+                <tr><th scope="row"><code>BmageStepAnnotation</code></th><td>A numbered marker for the order of a tutorial or a reproduction.</td></tr>
+                <tr><th scope="row"><code>BmageHighlightAnnotation</code></th><td>A translucent block, like a marker pen.</td></tr>
+                <tr><th scope="row"><code>BmageRedactionAnnotation</code></th><td>Hidden content: solid, pixelated or blurred, in the pixels themselves.</td></tr>
+                <tr><th scope="row"><code>BmageImageAnnotation</code></th><td>An image stamped in a rectangle: a logo, a sticker, a signature.</td></tr>
             </tbody>
         </table>
     </div>
@@ -123,8 +123,8 @@
 
 @code {
     private BmageEditor? _editor;
-    private ImageBuffer? _source;
-    private ImageCapabilities? _capabilities;
+    private BmageImageBuffer? _source;
+    private BmageImageCapabilities? _capabilities;
     private IAsyncDisposable? _pasteListener;
     private string? _error;
     private bool _copied;
@@ -134,67 +134,67 @@
 
     private bool IsHydrating => RendererInfo.IsInteractive is false;
 
-    private static readonly ImageExportOptions ExportOptions = new()
+    private static readonly BmageImageExportOptions ExportOptions = new()
     {
         Format = BmageImageFormat.Png,
-        Metadata = MetadataPolicy.Remove,
+        Metadata = BmageMetadataPolicy.Remove,
     };
 
     private const string Snippet = """
         // Annotations are records, so building one is a value, not a mutation.
-        await editor.AddAnnotationAsync(new RedactionAnnotation
+        await editor.AddAnnotationAsync(new BmageRedactionAnnotation
         {
             Rectangle = new RectangleF(40, 120, 320, 28),
-            Mode      = RedactionMode.Solid,   // Pixelate and Blur are also available
+            Mode      = BmageRedactionMode.Solid,   // Pixelate and Blur are also available
         });
 
-        await editor.AddAnnotationAsync(new ArrowAnnotation
+        await editor.AddAnnotationAsync(new BmageArrowAnnotation
         {
             Start = new Vector2(500, 380),
             End   = new Vector2(360, 220),
-            Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 6 } },
+            Style = BmageShapeStyle.Default with { Stroke = new BmageStrokeStyle { Width = 6 } },
         });
 
-        await editor.AddAnnotationAsync(new StepAnnotation
+        await editor.AddAnnotationAsync(new BmageStepAnnotation
         {
             Center = new Vector2(340, 400),
             Number = 1,
         });
 
-        await editor.AddAnnotationAsync(new CalloutAnnotation
+        await editor.AddAnnotationAsync(new BmageCalloutAnnotation
         {
             Bubble    = new RectangleF(620, 420, 260, 64),
             Target    = new Vector2(700, 330),   // where the leader line points
             Text      = "Total shows 0",
-            TextStyle = new TextStyle { FontSize = 22, Bold = true, Alignment = BmageTextAlignment.Center, Baseline = TextBaseline.Middle },
+            TextStyle = new BmageTextStyle { FontSize = 22, Bold = true, Alignment = BmageTextAlignment.Center, Baseline = BmageTextBaseline.Middle },
         });
         """;
 
     private const string MoreSnippet = """
-        await editor.AddAnnotationAsync(new TextAnnotation
+        await editor.AddAnnotationAsync(new BmageTextAnnotation
         {
             Text            = "Steps to reproduce",
             Position        = new Vector2(40, 60),
-            Style           = new TextStyle { FontSize = 28, Bold = true, FillColor = Rgba32.White, MaxWidth = 400 },
-            BackgroundColor = new Rgba32(20, 20, 20, 200),
+            Style           = new BmageTextStyle { FontSize = 28, Bold = true, FillColor = BmageRgba32.White, MaxWidth = 400 },
+            BackgroundColor = new BmageRgba32(20, 20, 20, 200),
         });
 
-        await editor.AddAnnotationAsync(new EllipseAnnotation
+        await editor.AddAnnotationAsync(new BmageEllipseAnnotation
         {
             Rectangle = new RectangleF(500, 200, 160, 90),
-            Style     = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 4, DashPattern = [10f, 6f] } },
+            Style     = BmageShapeStyle.Default with { Stroke = new BmageStrokeStyle { Width = 4, DashPattern = [10f, 6f] } },
         });
 
-        await editor.AddAnnotationAsync(new ImageAnnotation { Image = logo, Rectangle = new RectangleF(20, 20, 96, 96) });
+        await editor.AddAnnotationAsync(new BmageImageAnnotation { Image = logo, Rectangle = new RectangleF(20, 20, 96, 96) });
 
         // Every annotation is a record: change one with `with`, and the edit is one undo step.
-        var arrow = (ArrowAnnotation)editor.Document!.FindAnnotation(id)!;
+        var arrow = (BmageArrowAnnotation)editor.Document!.FindAnnotation(id)!;
         await editor.UpdateAnnotationAsync(arrow with { Rotation = 15, Opacity = 0.8f, IsLocked = true });
         """;
 
     private const string PasteSnippet = """
         @implements IAsyncDisposable
-        @inject ImageLoader Loader
+        @inject BmageImageLoader Loader
 
         <BmageEditor @ref="_editor" />
 
@@ -247,7 +247,7 @@
         if (_editor?.Session is not null) await _editor.RefreshAsync();
     }
 
-    private Task OnPastedAsync(ImageBuffer image)
+    private Task OnPastedAsync(BmageImageBuffer image)
     {
         _error = null;
         SetSource(image);
@@ -270,14 +270,14 @@
         }
         catch (Exception ex)
         {
-            _error = ex is ImageCapabilityException c ? c.Message : $"Could not read the clipboard: {ex.Message}";
+            _error = ex is BmageImageCapabilityException c ? c.Message : $"Could not read the clipboard: {ex.Message}";
         }
     }
 
     private void UseSample() => SetSource(SampleImages.Landscape());
 
     /// <summary>Hands a new image to the editor, which copies it, replacing whatever it was showing.</summary>
-    private void SetSource(ImageBuffer image)
+    private void SetSource(BmageImageBuffer image)
     {
         _source?.Dispose();
         _source = image;
@@ -293,55 +293,55 @@
         var w = session.OutputSize.Width;
         var h = session.OutputSize.Height;
 
-        await _editor.AddAnnotationAsync(new RedactionAnnotation
+        await _editor.AddAnnotationAsync(new BmageRedactionAnnotation
         {
             Rectangle = new System.Drawing.RectangleF(w * 0.06f, h * 0.10f, w * 0.34f, h * 0.06f),
-            Mode = RedactionMode.Solid,
+            Mode = BmageRedactionMode.Solid,
         }, "Redact");
 
-        await _editor.AddAnnotationAsync(new RectangleAnnotation
+        await _editor.AddAnnotationAsync(new BmageRectangleAnnotation
         {
             Rectangle = new System.Drawing.RectangleF(w * 0.52f, h * 0.30f, w * 0.36f, h * 0.22f),
-            Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = MathF.Max(3, w / 300f) } },
+            Style = BmageShapeStyle.Default with { Stroke = new BmageStrokeStyle { Width = MathF.Max(3, w / 300f) } },
         }, "Rectangle");
 
-        await _editor.AddAnnotationAsync(new ArrowAnnotation
+        await _editor.AddAnnotationAsync(new BmageArrowAnnotation
         {
             Start = new Vector2(w * 0.30f, h * 0.78f),
             End = new Vector2(w * 0.56f, h * 0.46f),
-            Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = MathF.Max(4, w / 220f) } },
+            Style = BmageShapeStyle.Default with { Stroke = new BmageStrokeStyle { Width = MathF.Max(4, w / 220f) } },
         }, "Arrow");
 
-        await _editor.AddAnnotationAsync(new StepAnnotation
+        await _editor.AddAnnotationAsync(new BmageStepAnnotation
         {
             Center = new Vector2(w * 0.26f, h * 0.82f),
             Number = 1,
             Radius = MathF.Max(14, w / 45f),
         }, "Step");
 
-        await _editor.AddAnnotationAsync(new HighlightAnnotation
+        await _editor.AddAnnotationAsync(new BmageHighlightAnnotation
         {
             Rectangle = new System.Drawing.RectangleF(w * 0.06f, h * 0.60f, w * 0.30f, h * 0.05f),
         }, "Highlight");
 
         // The second redaction mode, beside the solid block above: the blocks are coarse enough that nothing reads.
-        await _editor.AddAnnotationAsync(new RedactionAnnotation
+        await _editor.AddAnnotationAsync(new BmageRedactionAnnotation
         {
             Rectangle = new System.Drawing.RectangleF(w * 0.56f, h * 0.10f, w * 0.34f, h * 0.06f),
-            Mode = RedactionMode.Pixelate,
+            Mode = BmageRedactionMode.Pixelate,
         }, "Redact");
 
         // A callout under the outlined area, saying what is wrong there, its text sized to fit the bubble on one line
         // whatever the screenshot's shape.
         var bubbleWidth = w * 0.30f;
         var fontSize = MathF.Max(10, MathF.Min(h / 26f, bubbleWidth / 9.5f));
-        await _editor.AddAnnotationAsync(new CalloutAnnotation
+        await _editor.AddAnnotationAsync(new BmageCalloutAnnotation
         {
             Bubble = new System.Drawing.RectangleF(w * 0.60f, h * 0.64f, bubbleWidth, fontSize * 2.2f),
             Target = new Vector2(w * 0.70f, h * 0.52f),
             Text = "Wrong total here",
-            TextStyle = new TextStyle { FontSize = fontSize, Bold = true, Alignment = BmageTextAlignment.Center, Baseline = TextBaseline.Middle },
-            Style = ShapeStyle.Default with { FillColor = Rgba32.White, Stroke = new StrokeStyle { Width = MathF.Max(2, w / 400f) } },
+            TextStyle = new BmageTextStyle { FontSize = fontSize, Bold = true, Alignment = BmageTextAlignment.Center, Baseline = BmageTextBaseline.Middle },
+            Style = BmageShapeStyle.Default with { FillColor = BmageRgba32.White, Stroke = new BmageStrokeStyle { Width = MathF.Max(2, w / 400f) } },
         }, "Callout");
     }
 
@@ -358,7 +358,7 @@
     private void OnEditorError(Exception ex) => _error = Describe(ex);
 
     // The editor can load an image through its own drop zone, so the page has to re-render to enable its buttons.
-    private void OnEditorImageLoaded(ImageBuffer image) => StateHasChanged();
+    private void OnEditorImageLoaded(BmageImageBuffer image) => StateHasChanged();
 
     private async Task Clear()
     {
@@ -372,8 +372,8 @@
 
     private static string Describe(Exception ex) => ex switch
     {
-        ImageLimitExceededException => "That image is larger than this page allows.",
-        ImageDecodeException => "That could not be read as an image.",
+        BmageImageLimitExceededException => "That image is larger than this page allows.",
+        BmageImageDecodeException => "That could not be read as an image.",
         _ => ex.Message,
     };
 

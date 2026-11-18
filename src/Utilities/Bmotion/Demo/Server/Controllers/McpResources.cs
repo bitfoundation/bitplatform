@@ -66,7 +66,7 @@ public static class McpResources
     }
 
     [McpServerResource(UriTemplate = "bmotion://api/{typeName}", Name = "Type reference", MimeType = "text/markdown")]
-    [Description("The full reference of one Bit.Bmotion type, e.g. bmotion://api/BmSpring.")]
+    [Description("The full reference of one Bit.Bmotion type, e.g. bmotion://api/BmotionSpring.")]
     public static string ApiType(string typeName)
     {
         var details = BmotionApiCatalog.GetTypeDetails(typeName);
@@ -122,20 +122,20 @@ public static class McpResources
     }
 
     [McpServerResource(UriTemplate = "bmotion://easings", Name = "Easing presets", MimeType = "text/markdown")]
-    [Description("Every BmEase preset with its curve sampled from the library's own easing implementation.")]
+    [Description("Every BmotionEase preset with its curve sampled from the library's own easing implementation.")]
     public static async Task<string> Easings()
     {
         var easings = await BmotionEasingCatalog.GetAsync();
 
         var builder = new StringBuilder();
 
-        builder.AppendLine("# BmEase presets").AppendLine();
+        builder.AppendLine("# BmotionEase presets").AppendLine();
         builder.AppendLine("| Preset | Family | Curve | Overshoots |");
         builder.AppendLine("|---|---|---|---|");
 
         foreach (var easing in easings)
         {
-            builder.AppendLine($"| `BmEase.{easing.Name}` | {easing.Family} | `{easing.Sparkline}` | " +
+            builder.AppendLine($"| `BmotionEase.{easing.Name}` | {easing.Family} | `{easing.Sparkline}` | " +
                                $"{(easing.Overshoots ? "yes" : "no")} |");
         }
 

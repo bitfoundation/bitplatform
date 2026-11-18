@@ -26,34 +26,34 @@
     <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.Transform">
         <button type="button" class="bmg-tool" title="@Context.Strings.RotateLeft" aria-label="@Context.Strings.RotateLeft"
                 disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="() => Context.RotateAsync(-90)">
-            @((MarkupString)Icons.RotateLeft)
+            @((MarkupString)BmageIcons.RotateLeft)
         </button>
         <button type="button" class="bmg-tool" title="@Context.Strings.RotateRight" aria-label="@Context.Strings.RotateRight"
                 disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="() => Context.RotateAsync(90)">
-            @((MarkupString)Icons.RotateRight)
+            @((MarkupString)BmageIcons.RotateRight)
         </button>
         <button type="button" class="bmg-tool" title="@Context.Strings.FlipHorizontal" aria-label="@Context.Strings.FlipHorizontal"
                 disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="() => Context.FlipAsync(true)">
-            @((MarkupString)Icons.FlipHorizontal)
+            @((MarkupString)BmageIcons.FlipHorizontal)
         </button>
         <button type="button" class="bmg-tool" title="@Context.Strings.FlipVertical" aria-label="@Context.Strings.FlipVertical"
                 disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="() => Context.FlipAsync(false)">
-            @((MarkupString)Icons.FlipVertical)
+            @((MarkupString)BmageIcons.FlipVertical)
         </button>
     </div>
 
     <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.History">
         <button type="button" class="bmg-tool" title="@Context.Strings.Undo" aria-label="@Context.Strings.Undo"
                 disabled="@(!Context.CanUndo || Context.IsBusy)" @onclick="Context.Undo">
-            @((MarkupString)Icons.Undo)
+            @((MarkupString)BmageIcons.Undo)
         </button>
         <button type="button" class="bmg-tool" title="@Context.Strings.Redo" aria-label="@Context.Strings.Redo"
                 disabled="@(!Context.CanRedo || Context.IsBusy)" @onclick="Context.Redo">
-            @((MarkupString)Icons.Redo)
+            @((MarkupString)BmageIcons.Redo)
         </button>
         <button type="button" class="bmg-tool" title="@Context.Strings.Reset" aria-label="@Context.Strings.Reset"
                 disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="Context.Reset">
-            @((MarkupString)Icons.Reset)
+            @((MarkupString)BmageIcons.Reset)
         </button>
     </div>
 
@@ -64,7 +64,7 @@
                 title="@($"{Context.Strings.Compare} (\\)")" aria-label="@Context.Strings.Compare"
                 aria-pressed="@(Context.IsComparing ? "true" : "false")"
                 disabled="@(!Context.HasImage)" @onclick="() => Context.SetCompareAsync(!Context.IsComparing)">
-            @((MarkupString)Icons.Compare)
+            @((MarkupString)BmageIcons.Compare)
         </button>
     </div>
 
@@ -94,7 +94,7 @@
         </div>
     }
 
-    @if (Context.Tool == EditorToolKind.Crop)
+    @if (Context.Tool == BmageEditorToolKind.Crop)
     {
         <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.Crop">
             <button type="button" class="bmg-button bmg-button-primary" disabled="@Context.IsBusy" @onclick="Context.ApplyCropAsync">
@@ -124,7 +124,7 @@
     [Parameter] public string DownloadFileName { get; set; } = "image";
 
     /// <summary>The editor's tools in the order its <see cref="BmageEditor.Tools"/> lists them; every tool in the default order when that is null.</summary>
-    private IEnumerable<(EditorToolKind Kind, string Label, string Icon)> OfferedTools
+    private IEnumerable<(BmageEditorToolKind Kind, string Label, string Icon)> OfferedTools
     {
         get
         {
@@ -133,28 +133,28 @@
         }
     }
 
-    private (EditorToolKind Kind, string Label, string Icon)[] Tools =>
+    private (BmageEditorToolKind Kind, string Label, string Icon)[] Tools =>
     [
-        (EditorToolKind.Select, Context.Strings.Select, Icons.Select),
-        (EditorToolKind.Pan, Context.Strings.Pan, Icons.Pan),
-        (EditorToolKind.Crop, Context.Strings.Crop, Icons.Crop),
-        (EditorToolKind.Draw, Context.Strings.Draw, Icons.Pen),
-        (EditorToolKind.Arrow, Context.Strings.Arrow, Icons.Arrow),
-        (EditorToolKind.Line, Context.Strings.Line, Icons.Line),
-        (EditorToolKind.Rectangle, Context.Strings.Rectangle, Icons.Rectangle),
-        (EditorToolKind.Ellipse, Context.Strings.Ellipse, Icons.Ellipse),
-        (EditorToolKind.Text, Context.Strings.Text, Icons.Text),
-        (EditorToolKind.Step, Context.Strings.Step, Icons.Step),
-        (EditorToolKind.Highlight, Context.Strings.Highlight, Icons.Highlight),
-        (EditorToolKind.Redact, Context.Strings.Redact, Icons.Redact),
-        (EditorToolKind.Brush, Context.Strings.Brush, Icons.Brush),
-        (EditorToolKind.Eraser, Context.Strings.Eraser, Icons.Eraser),
-        (EditorToolKind.Fill, Context.Strings.Fill, Icons.Fill),
-        (EditorToolKind.MagicEraser, Context.Strings.MagicEraser, Icons.MagicEraser),
-        (EditorToolKind.Eyedropper, Context.Strings.Eyedropper, Icons.Eyedropper),
-        (EditorToolKind.SelectRectangle, Context.Strings.SelectRectangle, Icons.SelectRectangle),
-        (EditorToolKind.SelectEllipse, Context.Strings.SelectEllipse, Icons.SelectEllipse),
-        (EditorToolKind.Lasso, Context.Strings.Lasso, Icons.Lasso),
-        (EditorToolKind.MagicWand, Context.Strings.MagicWand, Icons.MagicWand),
+        (BmageEditorToolKind.Select, Context.Strings.Select, BmageIcons.Select),
+        (BmageEditorToolKind.Pan, Context.Strings.Pan, BmageIcons.Pan),
+        (BmageEditorToolKind.Crop, Context.Strings.Crop, BmageIcons.Crop),
+        (BmageEditorToolKind.Draw, Context.Strings.Draw, BmageIcons.Pen),
+        (BmageEditorToolKind.Arrow, Context.Strings.Arrow, BmageIcons.Arrow),
+        (BmageEditorToolKind.Line, Context.Strings.Line, BmageIcons.Line),
+        (BmageEditorToolKind.Rectangle, Context.Strings.Rectangle, BmageIcons.Rectangle),
+        (BmageEditorToolKind.Ellipse, Context.Strings.Ellipse, BmageIcons.Ellipse),
+        (BmageEditorToolKind.Text, Context.Strings.Text, BmageIcons.Text),
+        (BmageEditorToolKind.Step, Context.Strings.Step, BmageIcons.Step),
+        (BmageEditorToolKind.Highlight, Context.Strings.Highlight, BmageIcons.Highlight),
+        (BmageEditorToolKind.Redact, Context.Strings.Redact, BmageIcons.Redact),
+        (BmageEditorToolKind.Brush, Context.Strings.Brush, BmageIcons.Brush),
+        (BmageEditorToolKind.Eraser, Context.Strings.Eraser, BmageIcons.Eraser),
+        (BmageEditorToolKind.Fill, Context.Strings.Fill, BmageIcons.Fill),
+        (BmageEditorToolKind.MagicEraser, Context.Strings.MagicEraser, BmageIcons.MagicEraser),
+        (BmageEditorToolKind.Eyedropper, Context.Strings.Eyedropper, BmageIcons.Eyedropper),
+        (BmageEditorToolKind.SelectRectangle, Context.Strings.SelectRectangle, BmageIcons.SelectRectangle),
+        (BmageEditorToolKind.SelectEllipse, Context.Strings.SelectEllipse, BmageIcons.SelectEllipse),
+        (BmageEditorToolKind.Lasso, Context.Strings.Lasso, BmageIcons.Lasso),
+        (BmageEditorToolKind.MagicWand, Context.Strings.MagicWand, BmageIcons.MagicWand),
     ];
 }

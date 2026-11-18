@@ -4,18 +4,18 @@ namespace Bit.Bmage.Tests.Mcp.Services;
 
 /// <summary>
 /// The pipeline reader: a fluent chain written the way it is written in C# becomes the real
-/// ImagePipeline - every builder method, with its real parameters - and anything else comes back as
+/// BmageImagePipeline - every builder method, with its real parameters - and anything else comes back as
 /// an explanation an agent can correct, never as an exception.
 /// </summary>
 [TestClass]
 public class PipelineSpecTests
 {
     [TestMethod]
-    [DataRow("ImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)")]
+    [DataRow("BmageImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)")]
     [DataRow("AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)")]
     [DataRow(".AutoOrient()\n.MaxSize(1920, 1920)\n.Sharpen(0.3f);")]
-    [DataRow("var pipeline = ImagePipeline.Create()\n    .AutoOrient()            // upright first\n    .MaxSize(1920, 1920)\n    .Sharpen(0.3f);")]
-    [DataRow("ImagePipeline.Empty.AutoOrient().MaxSize(1920, 1920).Sharpen(amount: 0.3f)")]
+    [DataRow("var pipeline = BmageImagePipeline.Create()\n    .AutoOrient()            // upright first\n    .MaxSize(1920, 1920)\n    .Sharpen(0.3f);")]
+    [DataRow("BmageImagePipeline.Empty.AutoOrient().MaxSize(1920, 1920).Sharpen(amount: 0.3f)")]
     public void Parse_TheWaysAPipelineIsWritten_AllBuildTheSamePipeline(string spec)
     {
         var result = BmagePipelineSpec.Parse(spec);
@@ -28,17 +28,17 @@ public class PipelineSpecTests
     [TestMethod]
     public void Parse_EnumsNamedArgumentsAndDefaults_BindToTheRealParameters()
     {
-        var result = BmagePipelineSpec.Parse("Cover(512, 512, Anchor.Top).Resize(400, null, mode: BmageResizeMode.Max, filter: ResamplingFilter.Lanczos3)");
+        var result = BmagePipelineSpec.Parse("Cover(512, 512, BmageAnchor.Top).Resize(400, null, mode: BmageResizeMode.Max, filter: BmageResamplingFilter.Lanczos3)");
 
         Assert.IsNull(result.Error, result.Error);
 
-        var cover = (ResizeOperation)result.Pipeline![0];
+        var cover = (BmageResizeOperation)result.Pipeline![0];
         Assert.AreEqual(BmageResizeMode.Cover, cover.Mode);
-        Assert.AreEqual(Anchor.Top, cover.Anchor);
+        Assert.AreEqual(BmageAnchor.Top, cover.Anchor);
 
-        var resize = (ResizeOperation)result.Pipeline[1];
+        var resize = (BmageResizeOperation)result.Pipeline[1];
         Assert.AreEqual(BmageResizeMode.Max, resize.Mode);
-        Assert.AreEqual(ResamplingFilter.Lanczos3, resize.Filter);
+        Assert.AreEqual(BmageResamplingFilter.Lanczos3, resize.Filter);
         Assert.IsNull(resize.Height);
     }
 
@@ -46,20 +46,20 @@ public class PipelineSpecTests
     public void Parse_TheValueTypesAPipelineTakes_AreAllReadable()
     {
         var result = BmagePipelineSpec.Parse(
-            "SmartCrop(AspectRatio.Square)" +
+            "SmartCrop(BmageAspectRatio.Square)" +
             ".CropToAspect(\"16:9\")" +
             ".Pixelate(14, new Rectangle(40, 120, 300, 40))" +
-            ".Rotate(12.5, Rgba32.Transparent)" +
+            ".Rotate(12.5, BmageRgba32.Transparent)" +
             ".Resize(400, 260, BmageResizeMode.Contain, background: \"#18181f\")" +
-            ".Skew(10, 0, new Rgba32(24, 26, 31))" +
+            ".Skew(10, 0, new BmageRgba32(24, 26, 31))" +
             ".Crop(0, 0, 100, 100)" +
             ".Orient(BmageOrientation.Rotate90)");
 
         Assert.IsNull(result.Error, result.Error);
         Assert.AreEqual(8, result.Pipeline!.Count);
 
-        Assert.AreEqual(new Rectangle(40, 120, 300, 40), ((PixelateFilter)result.Pipeline[2]).Region);
-        Assert.AreEqual(Rgba32.ParseHex("#18181f"), ((ResizeOperation)result.Pipeline[4]).Background);
+        Assert.AreEqual(new Rectangle(40, 120, 300, 40), ((BmagePixelateFilter)result.Pipeline[2]).Region);
+        Assert.AreEqual(BmageRgba32.ParseHex("#18181f"), ((BmageResizeOperation)result.Pipeline[4]).Background);
     }
 
     [TestMethod]
@@ -78,13 +78,13 @@ public class PipelineSpecTests
     {
         var result = BmagePipelineSpec.Parse("autoorient().maxsize(1920,1920)");
 
-        Assert.AreEqual("ImagePipeline.Create()\n    .AutoOrient()\n    .MaxSize(1920, 1920)", result.Canonical);
+        Assert.AreEqual("BmageImagePipeline.Create()\n    .AutoOrient()\n    .MaxSize(1920, 1920)", result.Canonical);
     }
 
     [TestMethod]
     public void Parse_TheCallsThatRunThePipeline_AreIgnored_AndSaidToBe()
     {
-        var result = BmagePipelineSpec.Parse("ImagePipeline.Create().MaxSize(100, 100).ExecuteAsync(image)");
+        var result = BmagePipelineSpec.Parse("BmageImagePipeline.Create().MaxSize(100, 100).ExecuteAsync(image)");
 
         Assert.IsNull(result.Error, result.Error);
         Assert.AreEqual(1, result.Pipeline!.Count);
@@ -97,15 +97,15 @@ public class PipelineSpecTests
     [DataRow("MaxSize(1920)", "'maxHeight' is required")]
     [DataRow("MaxSize(1920, 1920, 3, 4)", "at most")]
     [DataRow("MaxSize(19.5, 1920)", "not a whole number")]
-    [DataRow("Cover(10, 10, Anchor.Sideways)", "Anchor has no member 'Sideways'")]
-    [DataRow("Cover(10, 10, BmageResizeMode.Max)", "is not a Anchor")]
-    [DataRow("Resize(10, 10, colour: Rgba32.White)", "no parameter called 'colour'")]
+    [DataRow("Cover(10, 10, BmageAnchor.Sideways)", "BmageAnchor has no member 'Sideways'")]
+    [DataRow("Cover(10, 10, BmageResizeMode.Max)", "is not a BmageAnchor")]
+    [DataRow("Resize(10, 10, colour: BmageRgba32.White)", "no parameter called 'colour'")]
     [DataRow("Apply(new Duotone())", "cannot construct")]
     [DataRow("ColorMatrix(matrix)", "cannot construct")]
     [DataRow("MaxSize(10, 10", "not closed")]
     [DataRow("MaxSize(10, 10) junk", "Expected '('")]
     [DataRow("Posterize(1)", "rejected its arguments")]
-    [DataRow("SmartCrop(AspectRatio.Golden)", "not one of AspectRatio's presets")]
+    [DataRow("SmartCrop(BmageAspectRatio.Golden)", "not one of BmageAspectRatio's presets")]
     public void Parse_WhatCannotBeRead_IsExplained_NeverThrown(string spec, string expected)
     {
         var result = BmagePipelineSpec.Parse(spec);

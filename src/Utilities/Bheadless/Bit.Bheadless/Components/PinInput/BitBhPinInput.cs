@@ -6,19 +6,6 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.Bheadless;
 
-/// <summary>Which characters a <see cref="BitBhPinInput"/> accepts.</summary>
-public enum BitBhPinInputType
-{
-    /// <summary>Digits only (0–9). Phones show a numeric keypad.</summary>
-    Numeric,
-
-    /// <summary>Letters and digits.</summary>
-    Alphanumeric,
-
-    /// <summary>Letters only.</summary>
-    Alphabetic,
-}
-
 /// <summary>
 /// A headless PIN / one-time-code input: one single-character input per position (<see cref="BitBhPinInputSlot"/>),
 /// read and written as one string.
@@ -406,21 +393,4 @@ public class BitBhPinInput : BitBhComponentBase, IDisposable
         _binding?.Dispose();
         FieldContext?.ReleaseControlFocus(this);
     }
-}
-
-/// <summary>The state a <see cref="BitBhPinInput"/> shares with its <see cref="BitBhPinInputSlot"/>s.</summary>
-public sealed class BitBhPinInputContext
-{
-    internal BitBhPinInputContext(BitBhPinInput owner) => Owner = owner;
-
-    internal BitBhPinInput Owner { get; }
-
-    /// <summary>The current code.</summary>
-    public string Value => Owner.CurrentValue;
-
-    /// <summary>The number of positions.</summary>
-    public int Length => Owner.Length;
-
-    /// <summary>Whether every position is filled.</summary>
-    public bool IsComplete => Owner.IsComplete;
 }

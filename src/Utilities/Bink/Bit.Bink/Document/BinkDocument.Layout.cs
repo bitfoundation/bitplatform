@@ -2,41 +2,6 @@ using System.Numerics;
 
 namespace Bit.Bink;
 
-/// <summary>Which edge or centre <see cref="BinkDocument.AlignElements"/> lines elements up on.</summary>
-public enum BinkAlignment : byte
-{
-    /// <summary>Left edges.</summary>
-    Left = 0,
-    /// <summary>Horizontal centres, on one vertical line.</summary>
-    HorizontalCenter = 1,
-    /// <summary>Right edges.</summary>
-    Right = 2,
-    /// <summary>Top edges.</summary>
-    Top = 3,
-    /// <summary>Vertical centres, on one horizontal line.</summary>
-    VerticalCenter = 4,
-    /// <summary>Bottom edges.</summary>
-    Bottom = 5,
-}
-
-/// <summary>The axis along which <see cref="BinkDocument.DistributeElements"/> spaces elements out.</summary>
-public enum BinkDistribution : byte
-{
-    /// <summary>Equal gaps from left to right.</summary>
-    Horizontal = 0,
-    /// <summary>Equal gaps from top to bottom.</summary>
-    Vertical = 1,
-}
-
-/// <summary>Which way <see cref="BinkDocument.FlipElements"/> mirrors elements.</summary>
-public enum BinkFlipDirection : byte
-{
-    /// <summary>Left becomes right, about a vertical line.</summary>
-    Horizontal = 0,
-    /// <summary>Top becomes bottom, about a horizontal line.</summary>
-    Vertical = 1,
-}
-
 public sealed partial class BinkDocument
 {
     /// <summary>

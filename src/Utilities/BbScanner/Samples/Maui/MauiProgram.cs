@@ -22,7 +22,7 @@ public static class MauiProgram
 
         // One app, one DI container: the BlazorWebView renders every component in this process. .NET runs natively
         // here, not on WebAssembly: the camera's frames go from the platform straight to the decoder, which runs here
-        // at native speed, as BbBarcodeDecoder does on the decoder page; the page only hosts the scanner's overlays.
+        // at native speed, as BbScannerBarcodeDecoder does on the decoder page; the page only hosts the scanner's overlays.
         // The camera needs the platform's permission, declared in the Platforms folder.
         builder.Services.AddCoreServices();
 

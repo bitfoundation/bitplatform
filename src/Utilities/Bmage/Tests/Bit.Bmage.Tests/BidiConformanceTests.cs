@@ -33,11 +33,11 @@ public sealed class BidiConformanceTests
             var expectedParagraph = int.Parse(fields[2], CultureInfo.InvariantCulture);
             var expectedLevels = fields[3].Split(Separators, StringSplitOptions.RemoveEmptyEntries);
             var expectedOrder = fields[4].Split(Separators, StringSplitOptions.RemoveEmptyEntries).Select(s => int.Parse(s, CultureInfo.InvariantCulture)).ToArray();
-            var types = codePoints.Select(UnicodeData.GetBidiClass).ToArray();
+            var types = codePoints.Select(BmageUnicodeData.GetBidiClass).ToArray();
 
             var (paragraph, levels, order) = Run(types, codePoints, direction);
             count++;
-            var actualLevels = string.Join(' ', levels.Select((l, i) => BidiParagraph.IsRemovedByX9(types[i]) ? "x" : l.ToString(CultureInfo.InvariantCulture)));
+            var actualLevels = string.Join(' ', levels.Select((l, i) => BmageBidiParagraph.IsRemovedByX9(types[i]) ? "x" : l.ToString(CultureInfo.InvariantCulture)));
             if (paragraph != expectedParagraph || actualLevels != string.Join(' ', expectedLevels) || !order.SequenceEqual(expectedOrder))
                 failures.Add($"{fields[0]}; dir {fields[1]}: paragraph {paragraph}/{expectedParagraph}, levels [{actualLevels}] / [{fields[3]}], order [{string.Join(' ', order)}] / [{fields[4]}]");
         }
@@ -67,14 +67,14 @@ public sealed class BidiConformanceTests
             }
             if (line[0] == '@') continue;
             var fields = line.Split(';');
-            var types = fields[0].Split(Separators, StringSplitOptions.RemoveEmptyEntries).Select(Enum.Parse<BidiClass>).ToArray();
+            var types = fields[0].Split(Separators, StringSplitOptions.RemoveEmptyEntries).Select(Enum.Parse<BmageBidiClass>).ToArray();
             var bits = int.Parse(fields[1].Trim(), CultureInfo.InvariantCulture);
             foreach (var (bit, direction) in new[] { (1, -1), (2, 0), (4, 1) })
             {
                 if ((bits & bit) == 0) continue;
                 var (_, actual, order) = Run(types, null, direction);
                 count++;
-                var actualLevels = string.Join(' ', actual.Select((l, i) => BidiParagraph.IsRemovedByX9(types[i]) ? "x" : l.ToString(CultureInfo.InvariantCulture)));
+                var actualLevels = string.Join(' ', actual.Select((l, i) => BmageBidiParagraph.IsRemovedByX9(types[i]) ? "x" : l.ToString(CultureInfo.InvariantCulture)));
                 if (actualLevels != string.Join(' ', levels) || !order.SequenceEqual(reorder))
                     failures.Add($"{fields[0]}; {(direction < 0 ? "auto" : direction == 0 ? "LTR" : "RTL")}: levels [{actualLevels}] / [{string.Join(' ', levels)}], order [{string.Join(' ', order)}] / [{string.Join(' ', reorder)}]");
             }
@@ -87,7 +87,7 @@ public sealed class BidiConformanceTests
     /// Resolves the input as the test files mean it: each paragraph separator ends a paragraph, and the whole input is
     /// one line. The visual order leaves out the characters X9 removes.
     /// </summary>
-    private static (int Paragraph, byte[] Levels, int[] Order) Run(BidiClass[] types, int[]? codePoints, int direction)
+    private static (int Paragraph, byte[] Levels, int[] Order) Run(BmageBidiClass[] types, int[]? codePoints, int direction)
     {
         var levels = new byte[types.Length];
         var order = new List<int>();
@@ -95,16 +95,16 @@ public sealed class BidiConformanceTests
         for (var start = 0; start < types.Length;)
         {
             var end = start;
-            while (end < types.Length && types[end] != BidiClass.B) end++;
+            while (end < types.Length && types[end] != BmageBidiClass.B) end++;
             if (end < types.Length) end++;
-            var paragraph = new BidiParagraph(types[start..end], codePoints?[start..end], direction);
+            var paragraph = new BmageBidiParagraph(types[start..end], codePoints?[start..end], direction);
             if (firstParagraph < 0) firstParagraph = paragraph.ParagraphLevel;
             var lineLevels = paragraph.GetLineLevels(0, end - start);
             lineLevels.CopyTo(levels, start);
 
-            var kept = Enumerable.Range(start, end - start).Where(i => !BidiParagraph.IsRemovedByX9(types[i])).ToArray();
+            var kept = Enumerable.Range(start, end - start).Where(i => !BmageBidiParagraph.IsRemovedByX9(types[i])).ToArray();
             var keptLevels = kept.Select(i => levels[i]).ToArray();
-            order.AddRange(BidiParagraph.GetVisualOrder(keptLevels).Select(i => kept[i]));
+            order.AddRange(BmageBidiParagraph.GetVisualOrder(keptLevels).Select(i => kept[i]));
             start = end;
         }
         return (firstParagraph < 0 ? 0 : firstParagraph, levels, [.. order]);

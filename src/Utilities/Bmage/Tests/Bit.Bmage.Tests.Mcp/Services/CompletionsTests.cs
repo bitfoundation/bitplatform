@@ -6,7 +6,7 @@ public class CompletionsTests
 {
     [TestMethod]
     [DataRow("name", "pipe", "pipelines")]
-    [DataRow("typeName", "ImagePipe", "ImagePipeline")]
+    [DataRow("typeName", "ImagePipe", "BmageImagePipeline")]
     [DataRow("path", "Avatar", "Demo/Client/Pages/Avatar.razor")]
     [DataRow("id", "avatar", "avatar-crop")]
     [DataRow("renderMode", "stand", "standalone-wasm")]
@@ -24,12 +24,12 @@ public class CompletionsTests
     [TestMethod]
     public void Complete_PrefixesRankAboveSubstrings()
     {
-        // CropOperation starts with it; AspectCropOperation, SmartCropOperation and ResizeCropOperation only contain it.
+        // BmageCropOperation starts with it after the Bmage prefix; BmageAspectCropOperation, BmageSmartCropOperation and BmageResizeCropOperation only contain it.
         var values = BmageCompletions.Complete("typeName", "Crop").Values;
 
         Assert.IsGreaterThan(1, values.Count);
-        StringAssert.StartsWith(values[0], "Crop", "A substring match outranked a prefix match.");
-        Assert.IsTrue(values.Any(value => value.StartsWith("Crop", StringComparison.Ordinal) is false), "Substring matches were left out.");
+        StringAssert.StartsWith(values[0], "BmageCrop", "A substring match outranked a prefix match.");
+        Assert.IsTrue(values.Any(value => value.StartsWith("BmageCrop", StringComparison.Ordinal) is false), "Substring matches were left out.");
     }
 
     [TestMethod]

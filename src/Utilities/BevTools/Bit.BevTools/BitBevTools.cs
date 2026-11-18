@@ -11,20 +11,20 @@ namespace Bit.BevTools;
 public static class BitBevTools
 {
     /// <summary>
-    /// Registers BevTools. Enabled only in Development unless <see cref="BitBevToolsOptions.Enabled"/> is set.
+    /// Registers BevTools. Enabled only in Development unless <see cref="BevToolsOptions.Enabled"/> is set.
     /// Place <c>&lt;BevToolsPanel /&gt;</c> inside an interactive component (typically the layout) to show the UI.
     /// <para>
     /// Calling this more than once (for example <c>AddBitBevToolsServices()</c> and then <c>AddBitBevToolsServerServices()</c>)
     /// applies the additional configuration to the existing options instead of being ignored.
     /// </para>
     /// </summary>
-    public static IServiceCollection AddBitBevToolsServices(this IServiceCollection services, Action<BitBevToolsOptions>? configure = null)
+    public static IServiceCollection AddBitBevToolsServices(this IServiceCollection services, Action<BevToolsOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
         // Second and later calls configure the options that are already registered, so extensions and thresholds
         // contributed by different packages accumulate instead of silently overwriting each other.
-        if (services.FirstOrDefault(d => d.ServiceType == typeof(BitBevToolsOptions))?.ImplementationInstance is BitBevToolsOptions existing)
+        if (services.FirstOrDefault(d => d.ServiceType == typeof(BevToolsOptions))?.ImplementationInstance is BevToolsOptions existing)
         {
             configure?.Invoke(existing);
             var (mergedEnabled, mergedReason) = ResolveEnabled(services, existing);
@@ -39,7 +39,7 @@ public static class BitBevTools
             return services;
         }
 
-        var options = new BitBevToolsOptions();
+        var options = new BevToolsOptions();
         configure?.Invoke(options);
         var (enabled, reason) = ResolveEnabled(services, options);
         options.ResolvedEnabled = enabled;
@@ -49,7 +49,7 @@ public static class BitBevTools
 
         services.AddScoped<BevToolsSession>();
         services.AddScoped<IBevToolsTimeline>(sp => sp.GetRequiredService<BevToolsSession>().TimelineApi);
-        services.AddScoped<IBevStateProviderRegistry>(sp => sp.GetRequiredService<BevToolsSession>().StateProviders);
+        services.AddScoped<IBevToolsStateProviderRegistry>(sp => sp.GetRequiredService<BevToolsSession>().StateProviders);
         ApplyServiceRegistrations(services, enabled);
 
         if (!enabled)
@@ -71,21 +71,21 @@ public static class BitBevTools
     /// later call. The session ends with the scope. When the app called <c>AddBitBevToolsLoaderServices</c>, the
     /// startup hooks it installed are used, and its options apply before <paramref name="configure"/>.
     /// <para>
-    /// It is enabled unless <see cref="BitBevToolsOptions.Enabled"/> says otherwise, except in a process that serves
+    /// It is enabled unless <see cref="BevToolsOptions.Enabled"/> says otherwise, except in a process that serves
     /// many users (Blazor Server, prerendering) outside Development: there the panel would show whoever opens it the
-    /// server side objects of their circuit, so it stays off unless <see cref="BitBevToolsOptions.Enabled"/> is true
+    /// server side objects of their circuit, so it stays off unless <see cref="BevToolsOptions.Enabled"/> is true
     /// (or the loader's <c>AllowInMultiUserHost</c> is set).
     /// </para>
     /// </summary>
-    public static BevToolsSession Attach(IServiceProvider services, Action<BitBevToolsOptions>? configure = null)
+    public static BevToolsSession Attach(IServiceProvider services, Action<BevToolsOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return RuntimeAttachment.Attach(services, configure, services.GetService<BevToolsLoaderContext>(), openedByLoader: false);
+        return BevToolsRuntimeAttacher.Attach(services, configure, services.GetService<BevToolsLoaderContext>(), openedByLoader: false);
     }
 
     /// <summary>Registers an extension. Safe to combine with other <c>AddBitBevToolsServices</c> calls.</summary>
-    public static IServiceCollection AddBitBevToolsServicesExtension<TExtension>(this IServiceCollection services, Action<BitBevToolsOptions>? configure = null) where TExtension : IBevToolsExtension, new()
+    public static IServiceCollection AddBitBevToolsServicesExtension<TExtension>(this IServiceCollection services, Action<BevToolsOptions>? configure = null) where TExtension : IBevToolsExtension, new()
         => services.AddBitBevToolsServices(o =>
         {
             o.Extensions.Add(new TExtension());
@@ -93,10 +93,10 @@ public static class BitBevTools
         });
 
     /// <summary>Registers a state provider so the State panel shows it. The provider type must also be resolvable (it is registered as scoped if not already).</summary>
-    public static IServiceCollection AddBevToolsStateProvider<TProvider>(this IServiceCollection services) where TProvider : class, IBevStateProvider
+    public static IServiceCollection AddBevToolsStateProvider<TProvider>(this IServiceCollection services) where TProvider : class, IBevToolsStateProvider
     {
         services.TryAddScoped<TProvider>();
-        services.AddScoped<IBevStateProvider>(sp => sp.GetRequiredService<TProvider>());
+        services.AddScoped<IBevToolsStateProvider>(sp => sp.GetRequiredService<TProvider>());
         return services;
     }
 
@@ -106,7 +106,7 @@ public static class BitBevTools
         var serviceLifetime = services.LastOrDefault(d => d.ServiceType == typeof(TService) && !d.IsKeyedService)?.Lifetime;
         var adapterLifetime = serviceLifetime == ServiceLifetime.Singleton ? ServiceLifetime.Singleton : ServiceLifetime.Scoped;
         services.Add(ServiceDescriptor.Describe(
-            typeof(IBevStateProvider),
+            typeof(IBevToolsStateProvider),
             sp => new DelegateStateProvider<TService>(sp.GetRequiredService<TService>(), name, snapshot, subscribe),
             adapterLifetime));
         return services;
@@ -119,11 +119,11 @@ public static class BitBevTools
     public static IServiceCollection AddBevToolsStateProviderWithSubscription<TService>(this IServiceCollection services, string name, Func<TService, object?> snapshot, Func<TService, Action, IDisposable> subscribe) where TService : class
     {
         ArgumentNullException.ThrowIfNull(subscribe);
-        services.AddScoped<IBevStateProvider>(sp => new DelegateStateProvider<TService>(sp.GetRequiredService<TService>(), name, snapshot, subscribe));
+        services.AddScoped<IBevToolsStateProvider>(sp => new DelegateStateProvider<TService>(sp.GetRequiredService<TService>(), name, snapshot, subscribe));
         return services;
     }
 
-    private static void ReplaceRegistry(IServiceCollection services, BitBevToolsOptions options, bool enabled, string reason)
+    private static void ReplaceRegistry(IServiceCollection services, BevToolsOptions options, bool enabled, string reason)
     {
         var previous = services.FirstOrDefault(d => d.ServiceType == typeof(BevToolsRegistry));
         if (previous is not null)
@@ -134,7 +134,7 @@ public static class BitBevTools
         services.AddSingleton(sp => new BevToolsRegistry(options, enabled, reason, services));
     }
 
-    private static void RegisterInstrumentation(IServiceCollection services, BitBevToolsOptions options)
+    private static void RegisterInstrumentation(IServiceCollection services, BevToolsOptions options)
     {
         // The framework only registers its own ActivitySource/meters for server-side rendering. Registering them here
         // is what makes "why did this render?" work in WebAssembly and in any other host; both calls are public and
@@ -174,11 +174,11 @@ public static class BitBevTools
     /// Decides whether BevTools runs, and records why. The reason is shown in the About panel so a developer who
     /// expected BevTools and does not see it can tell immediately what the host reported.
     /// </summary>
-    internal static (bool Enabled, string Reason) ResolveEnabled(IServiceCollection services, BitBevToolsOptions options)
+    internal static (bool Enabled, string Reason) ResolveEnabled(IServiceCollection services, BevToolsOptions options)
     {
         if (options.Enabled is { } explicitValue)
         {
-            return (explicitValue, "BitBevToolsOptions.Enabled was set to " + explicitValue.ToString().ToLowerInvariant() + ".");
+            return (explicitValue, "BevToolsOptions.Enabled was set to " + explicitValue.ToString().ToLowerInvariant() + ".");
         }
 
         foreach (var descriptor in services)
@@ -208,10 +208,10 @@ public static class BitBevTools
             return (string.Equals(variable, "Development", StringComparison.OrdinalIgnoreCase), $"Environment variable reports '{variable}'.");
         }
 
-        return (false, "No host environment information was available at registration time, so BevTools stayed off. Set BitBevToolsOptions.Enabled explicitly.");
+        return (false, "No host environment information was available at registration time, so BevTools stayed off. Set BevToolsOptions.Enabled explicitly.");
     }
 
-    private sealed class DelegateStateProvider<TService> : IBevStateProvider, IDisposable where TService : class
+    private sealed class DelegateStateProvider<TService> : IBevToolsStateProvider, IDisposable where TService : class
     {
         private readonly TService _service;
         private readonly Func<TService, object?> _snapshot;
@@ -236,7 +236,7 @@ public static class BitBevTools
 
         public string Name { get; }
 
-        public string? Description => TypeNames.Short(typeof(TService));
+        public string? Description => BevToolsTypeNames.Short(typeof(TService));
 
         public object? GetSnapshot() => Volatile.Read(ref _disposed) != 0 ? null : _snapshot(_service);
 
@@ -244,7 +244,7 @@ public static class BitBevTools
         {
             if (Volatile.Read(ref _disposed) == 0)
             {
-                Changed?.Invoke(BevStateChangeInfo.Empty);
+                Changed?.Invoke(BevToolsStateChangeInfo.Empty);
             }
         }
 
@@ -259,11 +259,6 @@ public static class BitBevTools
             Changed = null;
         }
 
-        public event Action<BevStateChangeInfo>? Changed;
+        public event Action<BevToolsStateChangeInfo>? Changed;
     }
-}
-
-internal interface IBevToolsServiceRegistration
-{
-    void Apply(IServiceCollection services, bool enabled);
 }

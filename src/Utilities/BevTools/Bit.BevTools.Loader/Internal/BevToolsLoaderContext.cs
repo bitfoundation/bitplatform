@@ -10,7 +10,7 @@ namespace Bit.BevTools;
 /// What <c>AddBitBevToolsLoaderServices</c> decided and captured, plus Bit.BevTools once it is loaded. Singleton:
 /// the assembly is loaded once per process, whichever scope asked for it first.
 /// </summary>
-internal sealed class BevToolsLoaderContext(BitBevToolsLoaderOptions options, IServiceCollection services)
+internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServiceCollection services)
 {
     internal const string AssemblyName = "Bit.BevTools";
     private const string EntryPointTypeName = "Bit.BevTools.BevToolsLoaderEntryPoint";
@@ -20,7 +20,7 @@ internal sealed class BevToolsLoaderContext(BitBevToolsLoaderOptions options, IS
     // 0: not checked yet, 1: no, 2: yes.
     private int _multiUserHost;
 
-    public BitBevToolsLoaderOptions Options { get; } = options;
+    public BevToolsLoaderOptions Options { get; } = options;
 
     /// <summary>
     /// The app's service collection. A session attached after the container was built cannot capture it any more, so
@@ -61,7 +61,7 @@ internal sealed class BevToolsLoaderContext(BitBevToolsLoaderOptions options, IS
     /// <summary>Whether BevTools may be attached in the scope of <paramref name="services"/>; <see cref="BevToolsAttachPolicy"/> says why.</summary>
     internal (bool Allowed, string Reason) ResolveAttach(IServiceProvider services) =>
         BevToolsAttachPolicy.Resolve(services, IsMultiUserHost, Options.AllowInMultiUserHost, Options.Authorize is not null,
-            "Set BitBevToolsLoaderOptions.AllowInMultiUserHost, with BitBevToolsLoaderOptions.Authorize, to allow it.");
+            "Set BevToolsLoaderOptions.AllowInMultiUserHost, with BevToolsLoaderOptions.Authorize, to allow it.");
 
     internal void Registered(IBevToolsEntryPoint entryPoint, string reason)
     {

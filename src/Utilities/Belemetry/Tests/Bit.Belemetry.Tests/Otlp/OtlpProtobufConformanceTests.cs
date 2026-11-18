@@ -12,7 +12,7 @@ using PbStatus = OpenTelemetry.Proto.Trace.V1.Status;
 namespace Bit.Belemetry.Tests.Otlp;
 
 /// <summary>
-/// Decodes the bytes <see cref="OtlpProtobufSerializer"/> writes with the types generated from the official
+/// Decodes the bytes <see cref="BelemetryOtlpProtobufSerializer"/> writes with the types generated from the official
 /// opentelemetry-proto v1.11.1 files, and checks every field.
 /// </summary>
 [TestClass]
@@ -45,7 +45,7 @@ public class OtlpProtobufConformanceTests
         second.ParentSpanId = null;
         second.Scope = new BelemetryScope("MyApp", null);
 
-        var bytes = OtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), spans: [span, second]));
+        var bytes = BelemetryOtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), spans: [span, second]));
         var request = ExportTraceServiceRequest.Parser.ParseFrom(bytes);
 
         Assert.HasCount(1, request.ResourceSpans);
@@ -124,7 +124,7 @@ public class OtlpProtobufConformanceTests
             spans.Add(span);
         }
 
-        var request = ExportTraceServiceRequest.Parser.ParseFrom(OtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), spans)));
+        var request = ExportTraceServiceRequest.Parser.ParseFrom(BelemetryOtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), spans)));
         var decoded = request.ResourceSpans[0].ScopeSpans[0].Spans;
 
         CollectionAssert.AreEqual(
@@ -141,7 +141,7 @@ public class OtlpProtobufConformanceTests
         span = new BelemetrySpan { TraceId = span.TraceId, SpanId = span.SpanId, Name = span.Name, Attributes = limited };
 
         var resource = new BelemetryResource(new BelemetryAttributes(1).Set("service.name", "x").Set("extra", "y"));
-        var request = ExportTraceServiceRequest.Parser.ParseFrom(OtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(resource, [span])));
+        var request = ExportTraceServiceRequest.Parser.ParseFrom(BelemetryOtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(resource, [span])));
 
         Assert.AreEqual(1u, request.ResourceSpans[0].Resource.DroppedAttributesCount);
         var s = request.ResourceSpans[0].ScopeSpans[0].Spans[0];
@@ -157,7 +157,7 @@ public class OtlpProtobufConformanceTests
         var span = Records.Span();
         span.Attributes.Set("medium", medium).Set("large", large).Set("unicode", "héllo ✓ 😀");
 
-        var bytes = OtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), [span]));
+        var bytes = BelemetryOtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), [span]));
         var s = ExportTraceServiceRequest.Parser.ParseFrom(bytes).ResourceSpans[0].ScopeSpans[0].Spans[0];
 
         Assert.AreEqual(medium, Attr(s.Attributes, "medium").StringValue);
@@ -173,7 +173,7 @@ public class OtlpProtobufConformanceTests
         span.TraceId = "not-hex";
         span.ParentSpanId = "zz";
 
-        var s = ExportTraceServiceRequest.Parser.ParseFrom(OtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), [span])))
+        var s = ExportTraceServiceRequest.Parser.ParseFrom(BelemetryOtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), [span])))
             .ResourceSpans[0].ScopeSpans[0].Spans[0];
 
         Assert.IsTrue(s.TraceId.IsEmpty);
@@ -193,7 +193,7 @@ public class OtlpProtobufConformanceTests
 
         var minimal = new BelemetryLogRecord { TimeUnixNano = Records.Start, Severity = BelemetrySeverity.Unspecified, Scope = log.Scope };
 
-        var bytes = OtlpProtobufSerializer.SerializeLogs(new BelemetryBatch(Records.Resource(), logs: [log, minimal]));
+        var bytes = BelemetryOtlpProtobufSerializer.SerializeLogs(new BelemetryBatch(Records.Resource(), logs: [log, minimal]));
         var request = ExportLogsServiceRequest.Parser.ParseFrom(bytes);
 
         var scopeLogs = request.ResourceLogs[0].ScopeLogs[0];
@@ -232,7 +232,7 @@ public class OtlpProtobufConformanceTests
         var severities = new[] { BelemetrySeverity.Trace, BelemetrySeverity.Debug, BelemetrySeverity.Info, BelemetrySeverity.Warn, BelemetrySeverity.Error, BelemetrySeverity.Fatal };
         var logs = severities.Select(s => Records.Log(severity: s)).ToList();
 
-        var decoded = ExportLogsServiceRequest.Parser.ParseFrom(OtlpProtobufSerializer.SerializeLogs(new BelemetryBatch(Records.Resource(), logs: logs)))
+        var decoded = ExportLogsServiceRequest.Parser.ParseFrom(BelemetryOtlpProtobufSerializer.SerializeLogs(new BelemetryBatch(Records.Resource(), logs: logs)))
             .ResourceLogs[0].ScopeLogs[0].LogRecords;
 
         CollectionAssert.AreEqual(
@@ -248,7 +248,7 @@ public class OtlpProtobufConformanceTests
         var delta = temporality == BelemetryMetricTemporality.Delta;
         var batch = new BelemetryBatch(Records.Resource(), metrics: MetricsSample());
 
-        var bytes = OtlpProtobufSerializer.SerializeMetrics(batch, temporality);
+        var bytes = BelemetryOtlpProtobufSerializer.SerializeMetrics(batch, temporality);
         var request = ExportMetricsServiceRequest.Parser.ParseFrom(bytes);
 
         var scopeMetrics = request.ResourceMetrics[0].ScopeMetrics[0];
@@ -322,7 +322,7 @@ public class OtlpProtobufConformanceTests
             },
         };
 
-        var hp = ExportMetricsServiceRequest.Parser.ParseFrom(OtlpProtobufSerializer.SerializeMetrics(new BelemetryBatch(Records.Resource(), metrics: [metric]), BelemetryMetricTemporality.Cumulative))
+        var hp = ExportMetricsServiceRequest.Parser.ParseFrom(BelemetryOtlpProtobufSerializer.SerializeMetrics(new BelemetryBatch(Records.Resource(), metrics: [metric]), BelemetryMetricTemporality.Cumulative))
             .ResourceMetrics[0].ScopeMetrics[0].Metrics[0].Histogram.DataPoints[0];
 
         Assert.AreEqual(0UL, hp.Count);
@@ -343,7 +343,7 @@ public class OtlpProtobufConformanceTests
         counter.Add(3, new KeyValuePair<string, object?>("route", "/a"));
         histogram.Record(12.5);
 
-        var bytes = OtlpProtobufSerializer.SerializeMetrics(new BelemetryBatch(Records.Resource(), metrics: collector.Collect()), BelemetryMetricTemporality.Cumulative);
+        var bytes = BelemetryOtlpProtobufSerializer.SerializeMetrics(new BelemetryBatch(Records.Resource(), metrics: collector.Collect()), BelemetryMetricTemporality.Cumulative);
         var metrics = ExportMetricsServiceRequest.Parser.ParseFrom(bytes).ResourceMetrics[0].ScopeMetrics[0].Metrics.ToDictionary(m => m.Name);
 
         Assert.AreEqual(3L, metrics["hits"].Sum.DataPoints[0].AsInt);

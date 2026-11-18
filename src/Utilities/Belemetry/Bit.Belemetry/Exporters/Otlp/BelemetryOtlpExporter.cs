@@ -32,19 +32,19 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
         if (batch.Spans.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Traces))
         {
             yield return Create(Resolve(options.TracesEndpoint, options.Endpoint, protocol, BelemetrySignals.Traces), contentType,
-                json ? OtlpJsonSerializer.SerializeTraces(batch) : OtlpProtobufSerializer.SerializeTraces(batch), batch.Spans.Count);
+                json ? BelemetryOtlpJsonSerializer.SerializeTraces(batch) : BelemetryOtlpProtobufSerializer.SerializeTraces(batch), batch.Spans.Count);
         }
 
         if (batch.Logs.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Logs))
         {
             yield return Create(Resolve(options.LogsEndpoint, options.Endpoint, protocol, BelemetrySignals.Logs), contentType,
-                json ? OtlpJsonSerializer.SerializeLogs(batch) : OtlpProtobufSerializer.SerializeLogs(batch), batch.Logs.Count);
+                json ? BelemetryOtlpJsonSerializer.SerializeLogs(batch) : BelemetryOtlpProtobufSerializer.SerializeLogs(batch), batch.Logs.Count);
         }
 
         if (batch.Metrics.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Metrics))
         {
             yield return Create(Resolve(options.MetricsEndpoint, options.Endpoint, protocol, BelemetrySignals.Metrics), contentType,
-                json ? OtlpJsonSerializer.SerializeMetrics(batch, temporality) : OtlpProtobufSerializer.SerializeMetrics(batch, temporality),
+                json ? BelemetryOtlpJsonSerializer.SerializeMetrics(batch, temporality) : BelemetryOtlpProtobufSerializer.SerializeMetrics(batch, temporality),
                 batch.Metrics.Sum(m => m.Points.Count));
         }
     }
@@ -66,7 +66,7 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
     public string? DescribePartialSuccess(string? mediaType, ReadOnlySpan<byte> body, out long rejected)
     {
         rejected = 0;
-        return body.IsEmpty ? null : OtlpPartialSuccess.Describe(body, json: mediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) is true, out rejected);
+        return body.IsEmpty ? null : BelemetryOtlpPartialSuccess.Describe(body, json: mediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) is true, out rejected);
     }
 
     public BelemetryHttpRequest? GetRetryForPartialSuccess(BelemetryHttpRequest request, int statusCode, string? responseBody, out int rejected)

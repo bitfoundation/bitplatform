@@ -8,9 +8,9 @@ Bmage removes metadata by default. You have to ask for it to be kept.
 ## The three policies
 
 ```csharp
-new ImageExportOptions { Metadata = MetadataPolicy.Remove }          // the default
-new ImageExportOptions { Metadata = MetadataPolicy.StripSensitive }
-new ImageExportOptions { Metadata = MetadataPolicy.Preserve }
+new BmageImageExportOptions { Metadata = BmageMetadataPolicy.Remove }          // the default
+new BmageImageExportOptions { Metadata = BmageMetadataPolicy.StripSensitive }
+new BmageImageExportOptions { Metadata = BmageMetadataPolicy.Preserve }
 ```
 
 | Policy | Keeps | Removes |
@@ -53,7 +53,7 @@ if (exif is not null)
 Every tag remains reachable even when there is no typed accessor:
 
 ```csharp
-var artist = exif.Primary.Get(ExifTag.Artist)?.GetString();
+var artist = exif.Primary.Get(BmageExifTag.Artist)?.GetString();
 var custom = exif.Exif.Get(0x9C9B)?.GetString();
 ```
 
@@ -74,21 +74,21 @@ The demo's headless page shows the pattern: read the location, tell the user it 
 ## Writing metadata
 
 ```csharp
-var exif = new ExifData()
-    .WithPrimary(new ExifDirectory()
-        .With(ExifTag.Artist, ExifValue.FromString("Sam Rivera"))
-        .With(ExifTag.Copyright, ExifValue.FromString("© 2026 Sam Rivera")));
+var exif = new BmageExifData()
+    .WithPrimary(new BmageExifDirectory()
+        .With(BmageExifTag.Artist, BmageExifValue.FromString("Sam Rivera"))
+        .With(BmageExifTag.Copyright, BmageExifValue.FromString("© 2026 Sam Rivera")));
 
-image.Metadata = new ImageMetadata(exif);
+image.Metadata = new BmageImageMetadata(exif);
 
-var encoded = await exporter.EncodeAsync(image, new ImageExportOptions
+var encoded = await exporter.EncodeAsync(image, new BmageImageExportOptions
 {
     Format = BmageImageFormat.Jpeg,
-    Metadata = MetadataPolicy.Preserve,
+    Metadata = BmageMetadataPolicy.Preserve,
 });
 ```
 
-`ExifValue.FromString` writes UTF-8. The EXIF specification calls the type ASCII, but cameras and editors have written
+`BmageExifValue.FromString` writes UTF-8. The EXIF specification calls the type ASCII, but cameras and editors have written
 UTF-8 in these fields for years, and restricting to ASCII would silently turn "©" into "?" and mangle any name with an
 accent. There is a test asserting that a copyright symbol survives a round trip, and it caught exactly that bug during
 development.
@@ -102,7 +102,7 @@ Bmage applies it during decoding by default, so you rarely think about it:
 
 ```csharp
 await loader.LoadAsync(file);                                          // upright
-await loader.LoadAsync(file, new DecodeOptions { AutoOrient = false }); // as stored
+await loader.LoadAsync(file, new BmageDecodeOptions { AutoOrient = false }); // as stored
 ```
 
 With `AutoOrient = false` the orientation is reported rather than applied, so you can decide:
@@ -112,7 +112,7 @@ var orientation = image.Metadata!.Orientation;
 if (orientation.SwapsDimensions()) { /* portrait photo stored as landscape */ }
 ```
 
-The eight EXIF orientations form the dihedral group of the square, and `OrientationMath` implements the algebra:
+The eight EXIF orientations form the dihedral group of the square, and `BmageOrientationMath` implements the algebra:
 `Then` composes two, `Inverse` undoes one, `SwapsDimensions` tells you whether width and height exchange, and `ToMatrix`
 gives the coordinate mapping. A test verifies all 64 compositions against actually transforming pixels, and another
 verifies the matrix against the pixel mapping, because getting transpose and transverse the wrong way round is easy and
@@ -140,7 +140,7 @@ data at forty different lengths and corrupt offsets to confirm nothing escapes.
 
 ## A checklist for user uploads
 
-1. Leave the default `MetadataPolicy.Remove` unless you have a reason.
+1. Leave the default `BmageMetadataPolicy.Remove` unless you have a reason.
 2. If you keep metadata for a gallery, use `StripSensitive`, not `Preserve`.
 3. Tell users what is in their file before they publish it.
 4. Leave `AutoOrient` on so the exported pixels match what the user saw.

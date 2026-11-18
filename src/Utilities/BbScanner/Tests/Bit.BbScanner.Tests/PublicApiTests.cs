@@ -11,7 +11,7 @@ namespace Bit.BbScanner.Tests;
 [TestClass]
 public class PublicApiTests
 {
-    private static BbLuminanceBuffer Qr(string content = "API") =>
+    private static BbScannerLuminanceBuffer Qr(string content = "API") =>
         SyntheticImage.FromMatrix(QrEncoder.Encode(content), scale: 5);
 
     [TestMethod]
@@ -34,8 +34,8 @@ public class PublicApiTests
     {
         var options = new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.Ean13,
-            Region = new BbScanRegion(0.1, 0.2, 0.3, 0.4),
+            Formats = BbScannerBarcodeFormat.Ean13,
+            Region = new BbScannerScanRegion(0.1, 0.2, 0.3, 0.4),
             MaxScanLines = 7,
             DownsampleFactor = 3,
             TryHarder = true,
@@ -67,11 +67,11 @@ public class PublicApiTests
     [TestMethod]
     public void TheDecoderTakesACopyOfItsOptions()
     {
-        var options = new BbScannerOptions { Formats = BbBarcodeFormat.QrCode };
-        using var decoder = new BbBarcodeDecoder(options);
+        var options = new BbScannerOptions { Formats = BbScannerBarcodeFormat.QrCode };
+        using var decoder = new BbScannerBarcodeDecoder(options);
 
         // Editing the caller's instance afterwards must not reconfigure a running scanner.
-        options.Formats = BbBarcodeFormat.None;
+        options.Formats = BbScannerBarcodeFormat.None;
 
         using var image = Qr();
         Assert.IsNotNull(decoder.Decode(image.View, suppressDuplicates: false));
@@ -80,7 +80,7 @@ public class PublicApiTests
     [TestMethod]
     public void DisposedDecodersRefuseToWork()
     {
-        var decoder = new BbBarcodeDecoder();
+        var decoder = new BbScannerBarcodeDecoder();
         decoder.Dispose();
         decoder.Dispose();
 
@@ -91,26 +91,26 @@ public class PublicApiTests
     [TestMethod]
     public void DecodeRejectsImpossibleDimensions()
     {
-        using var decoder = new BbBarcodeDecoder();
+        using var decoder = new BbScannerBarcodeDecoder();
         var pixels = new byte[64 * 64];
 
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => decoder.Decode(pixels, 0, 64, BbPixelFormat.Gray8));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => decoder.Decode(pixels, 64, -1, BbPixelFormat.Gray8));
-        Assert.ThrowsExactly<ArgumentException>(() => decoder.Decode(pixels, 4, 4, BbPixelFormat.Gray8));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => decoder.Decode(pixels, 0, 64, BbScannerPixelFormat.Gray8));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => decoder.Decode(pixels, 64, -1, BbScannerPixelFormat.Gray8));
+        Assert.ThrowsExactly<ArgumentException>(() => decoder.Decode(pixels, 4, 4, BbScannerPixelFormat.Gray8));
     }
 
     [TestMethod]
     public void AFrameLargerThanItsPixelsIsRejectedBeforeAnythingIsAllocated()
     {
-        using var decoder = new BbBarcodeDecoder();
+        using var decoder = new BbScannerBarcodeDecoder();
         var pixels = new byte[64 * 64];
 
         var before = GC.GetAllocatedBytesForCurrentThread();
-        Assert.ThrowsExactly<ArgumentException>(() => decoder.Decode(pixels, 8000, 8000, BbPixelFormat.Gray8));
-        Assert.ThrowsExactly<ArgumentException>(() => decoder.DecodeAll(pixels, 64, 64, BbPixelFormat.Rgba32));
+        Assert.ThrowsExactly<ArgumentException>(() => decoder.Decode(pixels, 8000, 8000, BbScannerPixelFormat.Gray8));
+        Assert.ThrowsExactly<ArgumentException>(() => decoder.DecodeAll(pixels, 64, 64, BbScannerPixelFormat.Rgba32));
 
         // Four bytes a pixel of a frame the largest int a side is past the largest long, and wraps round to a negative.
-        Assert.ThrowsExactly<ArgumentException>(() => decoder.Decode(pixels, int.MaxValue, int.MaxValue, BbPixelFormat.Rgba32));
+        Assert.ThrowsExactly<ArgumentException>(() => decoder.Decode(pixels, int.MaxValue, int.MaxValue, BbScannerPixelFormat.Rgba32));
 
         Assert.IsLessThan(1_000_000L, GC.GetAllocatedBytesForCurrentThread() - before);
     }
@@ -118,29 +118,29 @@ public class PublicApiTests
     [TestMethod]
     public void ACutOutRegionOutsideItsFrameIsRejected()
     {
-        using var decoder = new BbBarcodeDecoder();
+        using var decoder = new BbScannerBarcodeDecoder();
         var pixels = new byte[64 * 100];
 
         // Added to its offset, a size near the largest int wraps round to a small sum that lies inside the frame.
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeRegion(decoder, pixels, BbPixelFormat.Gray8, (int.MaxValue - 10, 0, 100, 64), 640, 480));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeRegion(decoder, pixels, BbPixelFormat.Gray8, (0, int.MaxValue - 10, 64, 100), 640, 480));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeAllRegion(decoder, pixels, BbPixelFormat.Gray8, (600, 0, 64, 100), 640, 480, 16));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeAllRegion(decoder, pixels, BbPixelFormat.Gray8, (-1, 0, 64, 100), 640, 480, 16));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeRegion(decoder, pixels, BbScannerPixelFormat.Gray8, (int.MaxValue - 10, 0, 100, 64), 640, 480));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeRegion(decoder, pixels, BbScannerPixelFormat.Gray8, (0, int.MaxValue - 10, 64, 100), 640, 480));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeAllRegion(decoder, pixels, BbScannerPixelFormat.Gray8, (600, 0, 64, 100), 640, 480, 16));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeAllRegion(decoder, pixels, BbScannerPixelFormat.Gray8, (-1, 0, 64, 100), 640, 480, 16));
     }
 
     [TestMethod]
     public void ACutOutRegionLargerThanItsPixelsIsRejectedBeforeAnythingIsAllocated()
     {
-        using var decoder = new BbBarcodeDecoder();
+        using var decoder = new BbScannerBarcodeDecoder();
         var pixels = new byte[16];
 
         var before = GC.GetAllocatedBytesForCurrentThread();
-        Assert.ThrowsExactly<ArgumentException>(() => DecodeRegion(decoder, pixels, BbPixelFormat.Gray8, (0, 0, 64, 64), 640, 480));
+        Assert.ThrowsExactly<ArgumentException>(() => DecodeRegion(decoder, pixels, BbScannerPixelFormat.Gray8, (0, 0, 64, 64), 640, 480));
 
         // Four bytes a pixel of two billion squared is past the largest long, and wraps round to a negative.
         const int Huge = 2_000_000_000;
-        Assert.ThrowsExactly<ArgumentException>(() => DecodeRegion(decoder, pixels, BbPixelFormat.Rgba32, (0, 0, Huge, Huge), Huge, Huge));
-        Assert.ThrowsExactly<ArgumentException>(() => DecodeAllRegion(decoder, pixels, BbPixelFormat.Rgb24, (0, 0, Huge, Huge), Huge, Huge, 16));
+        Assert.ThrowsExactly<ArgumentException>(() => DecodeRegion(decoder, pixels, BbScannerPixelFormat.Rgba32, (0, 0, Huge, Huge), Huge, Huge));
+        Assert.ThrowsExactly<ArgumentException>(() => DecodeAllRegion(decoder, pixels, BbScannerPixelFormat.Rgb24, (0, 0, Huge, Huge), Huge, Huge, 16));
 
         Assert.IsLessThan(1_000_000L, GC.GetAllocatedBytesForCurrentThread() - before);
     }
@@ -148,20 +148,20 @@ public class PublicApiTests
     // The entry points a remote page's frames, cut out to the searched region, are decoded through: internal, as only
     // the component hands them frames.
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "DecodeRegion")]
-    private static extern BbBarcodeResult? DecodeRegion(
-        BbBarcodeDecoder decoder,
+    private static extern BbScannerBarcodeResult? DecodeRegion(
+        BbScannerBarcodeDecoder decoder,
         ReadOnlySpan<byte> pixels,
-        BbPixelFormat format,
+        BbScannerPixelFormat format,
         (int X, int Y, int Width, int Height) region,
         int frameWidth,
         int frameHeight,
         bool suppressDuplicates = true);
 
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "DecodeAllRegion")]
-    private static extern IReadOnlyList<BbBarcodeResult> DecodeAllRegion(
-        BbBarcodeDecoder decoder,
+    private static extern IReadOnlyList<BbScannerBarcodeResult> DecodeAllRegion(
+        BbScannerBarcodeDecoder decoder,
         ReadOnlySpan<byte> pixels,
-        BbPixelFormat format,
+        BbScannerPixelFormat format,
         (int X, int Y, int Width, int Height) region,
         int frameWidth,
         int frameHeight,
@@ -171,7 +171,7 @@ public class PublicApiTests
     [TestMethod]
     public void TheDuplicateWindowCanBeChangedWhileRunning()
     {
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
             DuplicateSuppressionWindow = TimeSpan.FromMinutes(5),
         });
@@ -189,90 +189,90 @@ public class PublicApiTests
     [TestMethod]
     public void DuplicateSuppressionIsKeyedOnValueAndSymbologyTogether()
     {
-        var filter = new BbDuplicateFilter(TimeSpan.FromSeconds(2));
+        var filter = new BbScannerDuplicateFilter(TimeSpan.FromSeconds(2));
 
-        Assert.IsTrue(filter.ShouldReport("A", BbBarcodeFormat.QrCode, 0));
-        Assert.IsFalse(filter.ShouldReport("A", BbBarcodeFormat.QrCode, 500));
+        Assert.IsTrue(filter.ShouldReport("A", BbScannerBarcodeFormat.QrCode, 0));
+        Assert.IsFalse(filter.ShouldReport("A", BbScannerBarcodeFormat.QrCode, 500));
 
         // A different symbology carrying the same text is a different symbol.
-        Assert.IsTrue(filter.ShouldReport("A", BbBarcodeFormat.Code128, 600));
+        Assert.IsTrue(filter.ShouldReport("A", BbScannerBarcodeFormat.Code128, 600));
 
         // A different value reports at once rather than waiting out the window.
-        Assert.IsTrue(filter.ShouldReport("B", BbBarcodeFormat.Code128, 700));
+        Assert.IsTrue(filter.ShouldReport("B", BbScannerBarcodeFormat.Code128, 700));
 
         filter.Reset();
-        Assert.IsTrue(filter.ShouldReport("B", BbBarcodeFormat.Code128, 750));
+        Assert.IsTrue(filter.ShouldReport("B", BbScannerBarcodeFormat.Code128, 750));
     }
 
     [TestMethod]
     public void HoldingASymbolInViewKeepsItSuppressed()
     {
-        var filter = new BbDuplicateFilter(TimeSpan.FromSeconds(1));
-        Assert.IsTrue(filter.ShouldReport("HELD", BbBarcodeFormat.QrCode, 0));
+        var filter = new BbScannerDuplicateFilter(TimeSpan.FromSeconds(1));
+        Assert.IsTrue(filter.ShouldReport("HELD", BbScannerBarcodeFormat.QrCode, 0));
 
         // Reported once, then suppressed for as long as it keeps being seen, rather than firing
         // again every time the window elapses.
         for (var t = 500L; t < 10_000; t += 500)
         {
-            Assert.IsFalse(filter.ShouldReport("HELD", BbBarcodeFormat.QrCode, t));
+            Assert.IsFalse(filter.ShouldReport("HELD", BbScannerBarcodeFormat.QrCode, t));
         }
 
         // Once it leaves the view for longer than the window, it reports again.
-        Assert.IsTrue(filter.ShouldReport("HELD", BbBarcodeFormat.QrCode, 20_000));
+        Assert.IsTrue(filter.ShouldReport("HELD", BbScannerBarcodeFormat.QrCode, 20_000));
     }
 
     [TestMethod]
     public void TwoSymbolsInViewAreEachReportedOnceHoweverTheFramesAlternate()
     {
-        var filter = new BbDuplicateFilter(TimeSpan.FromSeconds(2));
+        var filter = new BbScannerDuplicateFilter(TimeSpan.FromSeconds(2));
 
         // A label with two codes decodes one or the other depending on the noise in each frame.
-        Assert.IsTrue(filter.ShouldReport("LABEL-128", BbBarcodeFormat.Code128, 0));
-        Assert.IsTrue(filter.ShouldReport("4006381333931", BbBarcodeFormat.Ean13, 66));
+        Assert.IsTrue(filter.ShouldReport("LABEL-128", BbScannerBarcodeFormat.Code128, 0));
+        Assert.IsTrue(filter.ShouldReport("4006381333931", BbScannerBarcodeFormat.Ean13, 66));
 
         for (var t = 133L; t < 5_000; t += 66)
         {
             var code128 = (t / 66) % 2 == 0;
             Assert.IsFalse(code128
-                ? filter.ShouldReport("LABEL-128", BbBarcodeFormat.Code128, t)
-                : filter.ShouldReport("4006381333931", BbBarcodeFormat.Ean13, t));
+                ? filter.ShouldReport("LABEL-128", BbScannerBarcodeFormat.Code128, t)
+                : filter.ShouldReport("4006381333931", BbScannerBarcodeFormat.Ean13, t));
         }
     }
 
     [TestMethod]
     public void TheFilterForgetsTheSymbolSeenLongestAgoOnceItIsFull()
     {
-        var filter = new BbDuplicateFilter(TimeSpan.FromMinutes(1));
+        var filter = new BbScannerDuplicateFilter(TimeSpan.FromMinutes(1));
 
         for (var i = 0; i < 64; i++)
         {
-            Assert.IsTrue(filter.ShouldReport($"ITEM-{i}", BbBarcodeFormat.Code128, i));
+            Assert.IsTrue(filter.ShouldReport($"ITEM-{i}", BbScannerBarcodeFormat.Code128, i));
         }
 
         // The most recent ones are still suppressed; the first ones were forgotten to make room.
-        Assert.IsFalse(filter.ShouldReport("ITEM-63", BbBarcodeFormat.Code128, 100));
-        Assert.IsTrue(filter.ShouldReport("ITEM-0", BbBarcodeFormat.Code128, 101));
+        Assert.IsFalse(filter.ShouldReport("ITEM-63", BbScannerBarcodeFormat.Code128, 100));
+        Assert.IsTrue(filter.ShouldReport("ITEM-0", BbScannerBarcodeFormat.Code128, 101));
     }
 
     [TestMethod]
     public void AZeroWindowReportsEveryFrame()
     {
-        var filter = new BbDuplicateFilter(TimeSpan.Zero);
-        Assert.IsTrue(filter.ShouldReport("X", BbBarcodeFormat.QrCode, 0));
-        Assert.IsTrue(filter.ShouldReport("X", BbBarcodeFormat.QrCode, 0));
+        var filter = new BbScannerDuplicateFilter(TimeSpan.Zero);
+        Assert.IsTrue(filter.ShouldReport("X", BbScannerBarcodeFormat.QrCode, 0));
+        Assert.IsTrue(filter.ShouldReport("X", BbScannerBarcodeFormat.QrCode, 0));
     }
 
     [TestMethod]
     public void AnInfiniteWindowReportsEachValueOnceUntilReset()
     {
-        var filter = new BbDuplicateFilter(Timeout.InfiniteTimeSpan);
+        var filter = new BbScannerDuplicateFilter(Timeout.InfiniteTimeSpan);
 
-        Assert.IsTrue(filter.ShouldReport("A", BbBarcodeFormat.QrCode, 0));
-        Assert.IsFalse(filter.ShouldReport("A", BbBarcodeFormat.QrCode, long.MaxValue / 2), "However long it is out of view.");
-        Assert.IsTrue(filter.ShouldReport("A", BbBarcodeFormat.DataMatrix, 0), "The same text in another symbology is another code.");
+        Assert.IsTrue(filter.ShouldReport("A", BbScannerBarcodeFormat.QrCode, 0));
+        Assert.IsFalse(filter.ShouldReport("A", BbScannerBarcodeFormat.QrCode, long.MaxValue / 2), "However long it is out of view.");
+        Assert.IsTrue(filter.ShouldReport("A", BbScannerBarcodeFormat.DataMatrix, 0), "The same text in another symbology is another code.");
 
         filter.Reset();
-        Assert.IsTrue(filter.ShouldReport("A", BbBarcodeFormat.QrCode, 0));
+        Assert.IsTrue(filter.ShouldReport("A", BbScannerBarcodeFormat.QrCode, 0));
     }
 
     [TestMethod]
@@ -280,29 +280,29 @@ public class PublicApiTests
     {
         // A stocktake sweeps past hundreds of distinct labels; the live window's sixteen would forget the first
         // ones and count them twice.
-        var filter = new BbDuplicateFilter(Timeout.InfiniteTimeSpan);
+        var filter = new BbScannerDuplicateFilter(Timeout.InfiniteTimeSpan);
         for (var i = 0; i < 1000; i++)
         {
-            Assert.IsTrue(filter.ShouldReport($"ITEM-{i}", BbBarcodeFormat.Code128, i));
+            Assert.IsTrue(filter.ShouldReport($"ITEM-{i}", BbScannerBarcodeFormat.Code128, i));
         }
 
         for (var i = 0; i < 1000; i++)
         {
-            Assert.IsFalse(filter.ShouldReport($"ITEM-{i}", BbBarcodeFormat.Code128, 2000 + i), $"ITEM-{i} was counted twice.");
+            Assert.IsFalse(filter.ShouldReport($"ITEM-{i}", BbScannerBarcodeFormat.Code128, 2000 + i), $"ITEM-{i} was counted twice.");
         }
     }
 
     [TestMethod]
     public void AnInfiniteWindowIsBoundedAndForgetsTheOldestFirst()
     {
-        var filter = new BbDuplicateFilter(Timeout.InfiniteTimeSpan);
-        for (var i = 0; i <= BbDuplicateFilter.SessionCapacity; i++)
+        var filter = new BbScannerDuplicateFilter(Timeout.InfiniteTimeSpan);
+        for (var i = 0; i <= BbScannerDuplicateFilter.SessionCapacity; i++)
         {
-            filter.ShouldReport($"V{i}", BbBarcodeFormat.QrCode, i);
+            filter.ShouldReport($"V{i}", BbScannerBarcodeFormat.QrCode, i);
         }
 
-        Assert.IsTrue(filter.ShouldReport("V0", BbBarcodeFormat.QrCode, 0), "The oldest value made room for the newest.");
-        Assert.IsFalse(filter.ShouldReport($"V{BbDuplicateFilter.SessionCapacity}", BbBarcodeFormat.QrCode, 0));
+        Assert.IsTrue(filter.ShouldReport("V0", BbScannerBarcodeFormat.QrCode, 0), "The oldest value made room for the newest.");
+        Assert.IsFalse(filter.ShouldReport($"V{BbScannerDuplicateFilter.SessionCapacity}", BbScannerBarcodeFormat.QrCode, 0));
     }
 
     private const string Magazine = "9771234567003";
@@ -310,58 +310,58 @@ public class PublicApiTests
     [TestMethod]
     public void AnAddOnIsPartOfTheValue()
     {
-        var filter = new BbDuplicateFilter(TimeSpan.FromSeconds(2));
+        var filter = new BbScannerDuplicateFilter(TimeSpan.FromSeconds(2));
 
         // Two issues of a magazine share the main symbol and differ in the add-on alone.
-        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 0));
-        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "02", 100), "Issue 02 is not issue 01 again.");
-        Assert.IsFalse(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "02", 200));
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, "01", 0));
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, "02", 100), "Issue 02 is not issue 01 again.");
+        Assert.IsFalse(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, "02", 200));
 
         // A frame that missed the add-on is a repeat of either.
-        Assert.IsFalse(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, 300));
+        Assert.IsFalse(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, 300));
     }
 
     [TestMethod]
     public void AFrameThatReadsTheAddOnAnEarlierOneMissedIsReported()
     {
-        var filter = new BbDuplicateFilter(TimeSpan.FromSeconds(2));
+        var filter = new BbScannerDuplicateFilter(TimeSpan.FromSeconds(2));
 
-        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, 0));
-        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 66), "Otherwise the add-on would never reach the application.");
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, 0));
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, "01", 66), "Otherwise the add-on would never reach the application.");
 
         // Held in view, the frames go on reading it with the add-on or without, and report nothing more.
         for (var t = 133L; t < 5_000; t += 66)
         {
-            Assert.IsFalse(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, (t / 66) % 2 == 0 ? "01" : null, t));
+            Assert.IsFalse(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, (t / 66) % 2 == 0 ? "01" : null, t));
         }
     }
 
     [TestMethod]
     public void AnInfiniteWindowCountsEachIssueOnce()
     {
-        var filter = new BbDuplicateFilter(Timeout.InfiniteTimeSpan);
+        var filter = new BbScannerDuplicateFilter(Timeout.InfiniteTimeSpan);
 
-        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 0));
-        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "02", 0));
-        Assert.IsFalse(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 0));
-        Assert.IsFalse(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, 0), "A frame that missed the add-on counts nothing new.");
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, "01", 0));
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, "02", 0));
+        Assert.IsFalse(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, "01", 0));
+        Assert.IsFalse(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, 0), "A frame that missed the add-on counts nothing new.");
 
         filter.Reset();
-        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, 0));
-        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 0));
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, 0));
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, "01", 0));
     }
 
     [TestMethod]
     public void AnInfiniteWindowForgetsAMainSymbolOnceEveryReadingOfItIsForgotten()
     {
-        var filter = new BbDuplicateFilter(Timeout.InfiniteTimeSpan);
-        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 0));
-        for (var i = 0; i < BbDuplicateFilter.SessionCapacity; i++)
+        var filter = new BbScannerDuplicateFilter(Timeout.InfiniteTimeSpan);
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, "01", 0));
+        for (var i = 0; i < BbScannerDuplicateFilter.SessionCapacity; i++)
         {
-            filter.ShouldReport($"V{i}", BbBarcodeFormat.QrCode, i);
+            filter.ShouldReport($"V{i}", BbScannerBarcodeFormat.QrCode, i);
         }
 
-        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, 0), "The issue made room, and the main symbol went with it.");
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbScannerBarcodeFormat.Ean13, 0), "The issue made room, and the main symbol went with it.");
     }
 
     [TestMethod]
@@ -369,13 +369,13 @@ public class PublicApiTests
     {
         var symbol = ReferenceSymbols.Get("ean13-addon2");
         using var image = SyntheticImage.FromLinear(SyntheticImage.ExpandWidths(symbol.Widths), scale: 3, height: 40);
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Ean13, RequireEanExtension = true });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = BbScannerBarcodeFormat.Ean13, RequireEanExtension = true });
         var result = decoder.Decode(image.View, suppressDuplicates: false);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(symbol.Extension, result.Metadata?.Extension);
 
-        var filter = new BbDuplicateFilter(TimeSpan.FromSeconds(2));
+        var filter = new BbScannerDuplicateFilter(TimeSpan.FromSeconds(2));
         Assert.IsTrue(filter.ShouldReport(result, 0));
         Assert.IsFalse(filter.ShouldReport(result, 100));
         Assert.IsTrue(filter.ShouldReport(result.Text, result.Format, "99", 200), "Another add-on is another symbol.");
@@ -386,7 +386,7 @@ public class PublicApiTests
     {
         new BbScannerOptions { DuplicateSuppressionWindow = Timeout.InfiniteTimeSpan }.Validate();
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = Timeout.InfiniteTimeSpan });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = Timeout.InfiniteTimeSpan });
         decoder.DuplicateSuppressionWindow = Timeout.InfiniteTimeSpan;
 
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
@@ -399,9 +399,9 @@ public class PublicApiTests
         using var qr = Qr("GEOMETRY");
         using var frame = ImageTransforms.Frame(qr, 640, 480);
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.QrCode,
+            Formats = BbScannerBarcodeFormat.QrCode,
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
@@ -417,7 +417,7 @@ public class PublicApiTests
         Assert.IsInRange(640 / 2.0 - 40, (640 / 2.0) + 40, box.Center.X);
         Assert.IsInRange(480 / 2.0 - 40, (480 / 2.0) + 40, box.Center.Y);
         Assert.IsInRange(qr.Width * 0.4, qr.Width, box.Width);
-        Assert.AreEqual(BbBarcodeFormat.QrCode, result.Format);
+        Assert.AreEqual(BbScannerBarcodeFormat.QrCode, result.Format);
         Assert.AreEqual("GEOMETRY", result.Text);
         Assert.IsNotNull(result.Metadata);
         Assert.AreEqual("M", result.Metadata.ErrorCorrectionLevel);
@@ -427,14 +427,14 @@ public class PublicApiTests
     public void PointsFromARegionAreReportedInFullFrameCoordinates()
     {
         using var qr = Qr("REGION");
-        using var frame = BbLuminanceBuffer.Rent(640, 480);
+        using var frame = BbScannerLuminanceBuffer.Rent(640, 480);
         frame.Pixels.Fill(255);
         ImageTransforms.Paste(qr, frame, 400, 300);
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.QrCode,
-            Region = new BbScanRegion(0.5, 0.5, 0.5, 0.5),
+            Formats = BbScannerBarcodeFormat.QrCode,
+            Region = new BbScannerScanRegion(0.5, 0.5, 0.5, 0.5),
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
@@ -457,9 +457,9 @@ public class PublicApiTests
         using var qr = Qr("EDGE");
         using var frame = ImageTransforms.Frame(qr, 320, 240);
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Region = new BbScanRegion(x, y, w, h),
+            Region = new BbScannerScanRegion(x, y, w, h),
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
@@ -470,8 +470,8 @@ public class PublicApiTests
     [TestMethod]
     public void ScanRectFromPointsEnclosesThemAll()
     {
-        ReadOnlySpan<BbScanPoint> points = [new(10, 20), new(30, 5), new(15, 40)];
-        var rect = BbScanRect.FromPoints(points);
+        ReadOnlySpan<BbScannerScanPoint> points = [new(10, 20), new(30, 5), new(15, 40)];
+        var rect = BbScannerScanRect.FromPoints(points);
 
         Assert.AreEqual(10, rect.X);
         Assert.AreEqual(5, rect.Y);
@@ -479,7 +479,7 @@ public class PublicApiTests
         Assert.AreEqual(35, rect.Height);
         Assert.AreEqual(30, rect.Right);
         Assert.AreEqual(40, rect.Bottom);
-        Assert.AreEqual(default, BbScanRect.FromPoints([]));
+        Assert.AreEqual(default, BbScannerScanRect.FromPoints([]));
     }
 
     [TestMethod]
@@ -488,10 +488,10 @@ public class PublicApiTests
         using var qr = Qr("DIAG");
         using var frame = ImageTransforms.Frame(qr, 640, 480);
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.QrCode,
-            Region = BbScanRegion.CenteredSquare(0.5),
+            Formats = BbScannerBarcodeFormat.QrCode,
+            Region = BbScannerScanRegion.CenteredSquare(0.5),
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
@@ -511,13 +511,13 @@ public class PublicApiTests
     {
         // This is the property that keeps a WebAssembly scanner free of collection pauses: the
         // common case, a frame the user has not yet aimed, must cost nothing but time.
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.AllLinear,
+            Formats = BbScannerBarcodeFormat.AllLinear,
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
-        using var blank = BbLuminanceBuffer.Rent(320, 240);
+        using var blank = BbScannerLuminanceBuffer.Rent(320, 240);
         blank.Pixels.Fill(255);
 
         for (var i = 0; i < 10; i++)
@@ -538,12 +538,12 @@ public class PublicApiTests
     [TestMethod]
     public void ContinuousScanningWithEveryFormatStaysWithinAFixedOverhead()
     {
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
-        using var blank = BbLuminanceBuffer.Rent(320, 240);
+        using var blank = BbScannerLuminanceBuffer.Rent(320, 240);
         blank.Pixels.Fill(255);
 
         for (var i = 0; i < 10; i++)
@@ -577,13 +577,13 @@ public class PublicApiTests
         var results = new string?[8];
         Parallel.For(0, results.Length, i =>
         {
-            using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+            using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
             {
-                Formats = BbBarcodeFormat.QrCode,
+                Formats = BbScannerBarcodeFormat.QrCode,
                 DuplicateSuppressionWindow = TimeSpan.Zero,
             });
 
-            results[i] = decoder.Decode(pixels, width, height, BbPixelFormat.Gray8, false)?.Text;
+            results[i] = decoder.Decode(pixels, width, height, BbScannerPixelFormat.Gray8, false)?.Text;
         });
 
         foreach (var r in results) { Assert.AreEqual("PARALLEL", r); };
@@ -594,9 +594,9 @@ public class PublicApiTests
     {
         // PDF417 is read by default now that the specification table ships, so asking for it alone has to find
         // nothing in a frame that holds a different symbol rather than misread it.
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.Pdf417,
+            Formats = BbScannerBarcodeFormat.Pdf417,
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
@@ -607,25 +607,25 @@ public class PublicApiTests
     [TestMethod]
     public void EveryFormatFlagIsDistinctAndTheGroupsAgree()
     {
-        var all = Enum.GetValues<BbBarcodeFormat>()
-            .Where(f => f is not (BbBarcodeFormat.None or BbBarcodeFormat.All or BbBarcodeFormat.AllLinear or BbBarcodeFormat.AllMatrix or BbBarcodeFormat.Common))
+        var all = Enum.GetValues<BbScannerBarcodeFormat>()
+            .Where(f => f is not (BbScannerBarcodeFormat.None or BbScannerBarcodeFormat.All or BbScannerBarcodeFormat.AllLinear or BbScannerBarcodeFormat.AllMatrix or BbScannerBarcodeFormat.Common))
             .ToArray();
 
         Assert.AreEqual(all.Length, all.Distinct().Count());
 
         // Every symbology belongs to exactly one of the two groups.
-        var linear = all.Where(f => BbBarcodeFormat.AllLinear.HasFlag(f)).ToArray();
-        var matrix = all.Where(f => BbBarcodeFormat.AllMatrix.HasFlag(f)).ToArray();
+        var linear = all.Where(f => BbScannerBarcodeFormat.AllLinear.HasFlag(f)).ToArray();
+        var matrix = all.Where(f => BbScannerBarcodeFormat.AllMatrix.HasFlag(f)).ToArray();
         Assert.AreEqual(all.Length, linear.Length + matrix.Length);
         Assert.IsEmpty(linear.Intersect(matrix));
 
-        var union = BbBarcodeFormat.None;
+        var union = BbScannerBarcodeFormat.None;
         foreach (var format in all)
         {
             union |= format;
         }
 
-        Assert.AreEqual(BbBarcodeFormat.All, union);
+        Assert.AreEqual(BbScannerBarcodeFormat.All, union);
     }
 
     [TestMethod]
@@ -633,12 +633,12 @@ public class PublicApiTests
     {
         // Each symbology costs every frame time of its own; the rarer ones, and Codabar with no check character, are
         // asked for by name.
-        Assert.AreEqual(BbBarcodeFormat.Common, new BbScannerOptions().Formats);
-        Assert.AreEqual(BbBarcodeFormat.Common, BbBarcodeFormat.Common & BbBarcodeFormat.All);
-        foreach (var rare in new[] { BbBarcodeFormat.Pdf417, BbBarcodeFormat.Aztec, BbBarcodeFormat.MaxiCode, BbBarcodeFormat.MicroQrCode,
-                     BbBarcodeFormat.Codabar, BbBarcodeFormat.Code93, BbBarcodeFormat.DataBar, BbBarcodeFormat.DataBarLimited, BbBarcodeFormat.DataBarExpanded })
+        Assert.AreEqual(BbScannerBarcodeFormat.Common, new BbScannerOptions().Formats);
+        Assert.AreEqual(BbScannerBarcodeFormat.Common, BbScannerBarcodeFormat.Common & BbScannerBarcodeFormat.All);
+        foreach (var rare in new[] { BbScannerBarcodeFormat.Pdf417, BbScannerBarcodeFormat.Aztec, BbScannerBarcodeFormat.MaxiCode, BbScannerBarcodeFormat.MicroQrCode,
+                     BbScannerBarcodeFormat.Codabar, BbScannerBarcodeFormat.Code93, BbScannerBarcodeFormat.DataBar, BbScannerBarcodeFormat.DataBarLimited, BbScannerBarcodeFormat.DataBarExpanded })
         {
-            Assert.AreEqual(BbBarcodeFormat.None, BbBarcodeFormat.Common & rare, rare.ToString());
+            Assert.AreEqual(BbScannerBarcodeFormat.None, BbScannerBarcodeFormat.Common & rare, rare.ToString());
         }
     }
 

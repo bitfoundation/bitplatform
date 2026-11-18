@@ -9,10 +9,10 @@ public sealed class RasterizerTests
     [TestMethod]
     public void FillsARectangleExactly()
     {
-        using var canvas = ImageCanvas.Create(32, 32);
-        canvas.FillRectangle(new RectangleF(8, 8, 16, 16), Rgba32.Black);
-        Assert.AreEqual(Rgba32.Black, canvas.Buffer[8, 8]);
-        Assert.AreEqual(Rgba32.Black, canvas.Buffer[23, 23]);
+        using var canvas = BmageImageCanvas.Create(32, 32);
+        canvas.FillRectangle(new RectangleF(8, 8, 16, 16), BmageRgba32.Black);
+        Assert.AreEqual(BmageRgba32.Black, canvas.Buffer[8, 8]);
+        Assert.AreEqual(BmageRgba32.Black, canvas.Buffer[23, 23]);
         Assert.AreEqual(0, canvas.Buffer[7, 7].A);
         Assert.AreEqual(0, canvas.Buffer[24, 24].A);
     }
@@ -20,10 +20,10 @@ public sealed class RasterizerTests
     [TestMethod]
     public void AntiAliasesDiagonalEdges()
     {
-        using var canvas = ImageCanvas.Create(64, 64);
+        using var canvas = BmageImageCanvas.Create(64, 64);
         // Right triangle whose hypotenuse is the line x + y = 64.
         var triangle = new BmagePathBuilder().AddPolygon([new Vector2(0, 0), new Vector2(64, 0), new Vector2(0, 64)]).Build();
-        canvas.FillPath(triangle, Rgba32.Black);
+        canvas.FillPath(triangle, BmageRgba32.Black);
         for (var i = 8; i < 56; i++)
         {
             var y = 64 - i;
@@ -38,11 +38,11 @@ public sealed class RasterizerTests
     [TestMethod]
     public void EvenOddRuleCutsHoles()
     {
-        using var canvas = ImageCanvas.Create(64, 64);
+        using var canvas = BmageImageCanvas.Create(64, 64);
         var builder = new BmagePathBuilder();
         builder.AddRectangle(new RectangleF(8, 8, 48, 48));
         builder.AddRectangle(new RectangleF(20, 20, 24, 24));
-        canvas.FillPath(builder.Build(), Rgba32.Black, FillRule.EvenOdd);
+        canvas.FillPath(builder.Build(), BmageRgba32.Black, BmageFillRule.EvenOdd);
         Assert.AreEqual(255, canvas.Buffer[10, 32].A);
         Assert.AreEqual(0, canvas.Buffer[32, 32].A);
     }
@@ -50,20 +50,20 @@ public sealed class RasterizerTests
     [TestMethod]
     public void NonZeroRuleFillsNestedContours()
     {
-        using var canvas = ImageCanvas.Create(64, 64);
+        using var canvas = BmageImageCanvas.Create(64, 64);
         var builder = new BmagePathBuilder();
         builder.AddRectangle(new RectangleF(8, 8, 48, 48));
         builder.AddRectangle(new RectangleF(20, 20, 24, 24));
-        canvas.FillPath(builder.Build(), Rgba32.Black, FillRule.NonZero);
+        canvas.FillPath(builder.Build(), BmageRgba32.Black, BmageFillRule.NonZero);
         Assert.AreEqual(255, canvas.Buffer[32, 32].A);
     }
 
     [TestMethod]
     public void RespectsTheClipRectangle()
     {
-        using var canvas = ImageCanvas.Create(32, 32);
+        using var canvas = BmageImageCanvas.Create(32, 32);
         canvas.Clip = new Rectangle(0, 0, 16, 32);
-        canvas.FillRectangle(new RectangleF(0, 0, 32, 32), Rgba32.Black);
+        canvas.FillRectangle(new RectangleF(0, 0, 32, 32), BmageRgba32.Black);
         Assert.AreEqual(255, canvas.Buffer[8, 8].A);
         Assert.AreEqual(0, canvas.Buffer[24, 8].A);
     }
@@ -71,9 +71,9 @@ public sealed class RasterizerTests
     [TestMethod]
     public void RespectsOpacity()
     {
-        using var canvas = ImageCanvas.Create(16, 16, Rgba32.White);
+        using var canvas = BmageImageCanvas.Create(16, 16, BmageRgba32.White);
         canvas.Opacity = 0.5f;
-        canvas.FillRectangle(new RectangleF(0, 0, 16, 16), Rgba32.Black);
+        canvas.FillRectangle(new RectangleF(0, 0, 16, 16), BmageRgba32.Black);
         var p = canvas.Buffer[8, 8];
         Assert.IsInRange(120, 135, p.R);
     }
@@ -81,8 +81,8 @@ public sealed class RasterizerTests
     [TestMethod]
     public void FillsWithALinearGradient()
     {
-        using var canvas = ImageCanvas.Create(64, 8);
-        var paint = new BmageLinearGradientPaint(new Vector2(0, 0), new Vector2(64, 0), [(0f, Rgba32.Black), (1f, Rgba32.White)]);
+        using var canvas = BmageImageCanvas.Create(64, 8);
+        var paint = new BmageLinearGradientPaint(new Vector2(0, 0), new Vector2(64, 0), [(0f, BmageRgba32.Black), (1f, BmageRgba32.White)]);
         canvas.FillPath(new BmagePathBuilder().AddRectangle(new RectangleF(0, 0, 64, 8)).Build(), paint);
         Assert.IsTrue(canvas.Buffer[1, 4].R < 20);
         Assert.IsTrue(canvas.Buffer[62, 4].R > 235);
@@ -92,7 +92,7 @@ public sealed class RasterizerTests
     [TestMethod]
     public void SaveAndRestoreRoundTripState()
     {
-        using var canvas = ImageCanvas.Create(16, 16);
+        using var canvas = BmageImageCanvas.Create(16, 16);
         canvas.Save();
         canvas.Opacity = 0.25f;
         canvas.Translate(5, 5);
@@ -108,8 +108,8 @@ public sealed class StrokerTests
     [TestMethod]
     public void StrokeWidthIsHonoured()
     {
-        using var canvas = ImageCanvas.Create(64, 64);
-        canvas.DrawLine(new Vector2(32, 0), new Vector2(32, 64), Rgba32.Black, new StrokeStyle { Width = 8, Cap = BmageLineCap.Butt });
+        using var canvas = BmageImageCanvas.Create(64, 64);
+        canvas.DrawLine(new Vector2(32, 0), new Vector2(32, 64), BmageRgba32.Black, new BmageStrokeStyle { Width = 8, Cap = BmageLineCap.Butt });
         var covered = 0;
         for (var x = 0; x < 64; x++) if (canvas.Buffer[x, 32].A > 128) covered++;
         Assert.IsInRange(7, 9, covered);
@@ -118,19 +118,19 @@ public sealed class StrokerTests
     [TestMethod]
     public void RoundCapsExtendBeyondTheEndpoints()
     {
-        using var canvas = ImageCanvas.Create(64, 64);
-        canvas.DrawLine(new Vector2(20, 32), new Vector2(44, 32), Rgba32.Black, new StrokeStyle { Width = 10, Cap = BmageLineCap.Round });
+        using var canvas = BmageImageCanvas.Create(64, 64);
+        canvas.DrawLine(new Vector2(20, 32), new Vector2(44, 32), BmageRgba32.Black, new BmageStrokeStyle { Width = 10, Cap = BmageLineCap.Round });
         Assert.IsTrue(canvas.Buffer[17, 32].A > 100, "Round cap did not extend past the start point");
-        using var butt = ImageCanvas.Create(64, 64);
-        butt.DrawLine(new Vector2(20, 32), new Vector2(44, 32), Rgba32.Black, new StrokeStyle { Width = 10, Cap = BmageLineCap.Butt });
+        using var butt = BmageImageCanvas.Create(64, 64);
+        butt.DrawLine(new Vector2(20, 32), new Vector2(44, 32), BmageRgba32.Black, new BmageStrokeStyle { Width = 10, Cap = BmageLineCap.Butt });
         Assert.IsTrue(butt.Buffer[17, 32].A < 20, "Butt cap extended past the start point");
     }
 
     [TestMethod]
     public void DashedLinesLeaveGaps()
     {
-        using var canvas = ImageCanvas.Create(100, 16);
-        canvas.DrawLine(new Vector2(0, 8), new Vector2(100, 8), Rgba32.Black, new StrokeStyle { Width = 4, Cap = BmageLineCap.Butt, DashPattern = [10f, 10f] });
+        using var canvas = BmageImageCanvas.Create(100, 16);
+        canvas.DrawLine(new Vector2(0, 8), new Vector2(100, 8), BmageRgba32.Black, new BmageStrokeStyle { Width = 4, Cap = BmageLineCap.Butt, DashPattern = [10f, 10f] });
         var covered = 0;
         var gaps = 0;
         for (var x = 0; x < 100; x++)
@@ -145,8 +145,8 @@ public sealed class StrokerTests
     [TestMethod]
     public void ClosedShapesAreStrokedAllTheWayAround()
     {
-        using var canvas = ImageCanvas.Create(64, 64);
-        canvas.DrawRectangle(new RectangleF(16, 16, 32, 32), Rgba32.Black, new StrokeStyle { Width = 4 });
+        using var canvas = BmageImageCanvas.Create(64, 64);
+        canvas.DrawRectangle(new RectangleF(16, 16, 32, 32), BmageRgba32.Black, new BmageStrokeStyle { Width = 4 });
         Assert.IsTrue(canvas.Buffer[32, 16].A > 200, "top edge missing");
         Assert.IsTrue(canvas.Buffer[32, 48].A > 200, "bottom edge missing");
         Assert.IsTrue(canvas.Buffer[16, 32].A > 200, "left edge missing");
@@ -157,15 +157,15 @@ public sealed class StrokerTests
     [TestMethod]
     public void ArrowsDrawAHeadAtTheEnd()
     {
-        using var canvas = ImageCanvas.Create(80, 80);
-        canvas.DrawArrow(new Vector2(10, 40), new Vector2(70, 40), Rgba32.Black, new StrokeStyle { Width = 4 });
+        using var canvas = BmageImageCanvas.Create(80, 80);
+        canvas.DrawArrow(new Vector2(10, 40), new Vector2(70, 40), BmageRgba32.Black, new BmageStrokeStyle { Width = 4 });
         Assert.IsTrue(canvas.Buffer[40, 40].A > 200, "shaft missing");
         // The head is wider than the shaft near the tip.
         var shaftWidth = CountColumn(canvas, 30);
         var headWidth = CountColumn(canvas, 60);
         Assert.IsTrue(headWidth > shaftWidth, $"head ({headWidth}) not wider than shaft ({shaftWidth})");
 
-        static int CountColumn(ImageCanvas c, int x)
+        static int CountColumn(BmageImageCanvas c, int x)
         {
             var n = 0;
             for (var y = 0; y < 80; y++) if (c.Buffer[x, y].A > 128) n++;
@@ -177,7 +177,7 @@ public sealed class StrokerTests
     public void RejectsNonPositiveStrokeWidth()
     {
         var path = new BmagePathBuilder().MoveTo(0, 0).LineTo(10, 10).Build();
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => Stroker.CreateStrokeOutline(path, new StrokeStyle { Width = 0 }));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BmageStroker.CreateStrokeOutline(path, new BmageStrokeStyle { Width = 0 }));
     }
 }
 
@@ -188,7 +188,7 @@ public sealed class CanvasImageTests
     public void DrawsAnImageAtItsNaturalSize()
     {
         using var source = TestImages.Quadrants(16, 16);
-        using var canvas = ImageCanvas.Create(32, 32);
+        using var canvas = BmageImageCanvas.Create(32, 32);
         canvas.DrawImage(source, new Vector2(8, 8));
         Assert.AreEqual(source[0, 0], canvas.Buffer[8, 8]);
         Assert.AreEqual(source[15, 15], canvas.Buffer[23, 23]);
@@ -198,8 +198,8 @@ public sealed class CanvasImageTests
     [TestMethod]
     public void ScalesAnImageIntoADestinationRectangle()
     {
-        using var source = ImageBuffer.Create(8, 8, new Rgba32(20, 120, 220));
-        using var canvas = ImageCanvas.Create(64, 64);
+        using var source = BmageImageBuffer.Create(8, 8, new BmageRgba32(20, 120, 220));
+        using var canvas = BmageImageCanvas.Create(64, 64);
         canvas.DrawImage(source, new RectangleF(0, 0, 64, 64));
         var p = canvas.Buffer[32, 32];
         Assert.IsTrue(Math.Abs(p.R - 20) <= 2 && Math.Abs(p.G - 120) <= 2 && Math.Abs(p.B - 220) <= 2, $"{p}");
@@ -208,8 +208,8 @@ public sealed class CanvasImageTests
     [TestMethod]
     public void ComposesTransparencyCorrectly()
     {
-        using var source = ImageBuffer.Create(16, 16, new Rgba32(255, 0, 0, 128));
-        using var canvas = ImageCanvas.Create(16, 16, Rgba32.White);
+        using var source = BmageImageBuffer.Create(16, 16, new BmageRgba32(255, 0, 0, 128));
+        using var canvas = BmageImageCanvas.Create(16, 16, BmageRgba32.White);
         canvas.DrawImage(source, Vector2.Zero);
         var p = canvas.Buffer[8, 8];
         Assert.AreEqual(255, p.A);
@@ -220,8 +220,8 @@ public sealed class CanvasImageTests
     [TestMethod]
     public void DrawsUnderARotationTransform()
     {
-        using var source = ImageBuffer.Create(20, 20, Rgba32.Black);
-        using var canvas = ImageCanvas.Create(64, 64);
+        using var source = BmageImageBuffer.Create(20, 20, BmageRgba32.Black);
+        using var canvas = BmageImageCanvas.Create(64, 64);
         canvas.Rotate(45, new Vector2(32, 32));
         canvas.DrawImage(source, new RectangleF(22, 22, 20, 20));
         Assert.IsTrue(canvas.Buffer[32, 32].A > 200, "rotated image did not cover the centre");
@@ -230,8 +230,8 @@ public sealed class CanvasImageTests
     [TestMethod]
     public void EraseBlendModeRemovesAlpha()
     {
-        using var canvas = ImageCanvas.Create(16, 16, Rgba32.Black);
-        using var mask = ImageBuffer.Create(8, 8, Rgba32.White);
+        using var canvas = BmageImageCanvas.Create(16, 16, BmageRgba32.Black);
+        using var mask = BmageImageBuffer.Create(8, 8, BmageRgba32.White);
         canvas.DrawImage(mask, new Vector2(0, 0), BmageBlendMode.Erase);
         Assert.AreEqual(0, canvas.Buffer[4, 4].A);
         Assert.AreEqual(255, canvas.Buffer[12, 12].A);
@@ -240,8 +240,8 @@ public sealed class CanvasImageTests
     [TestMethod]
     public void ApplyPipelineReplacesCanvasContents()
     {
-        using var canvas = ImageCanvas.Create(32, 32, new Rgba32(200, 100, 50));
-        canvas.ApplyPipeline(ImagePipeline.Create().Grayscale());
+        using var canvas = BmageImageCanvas.Create(32, 32, new BmageRgba32(200, 100, 50));
+        canvas.ApplyPipeline(BmageImagePipeline.Create().Grayscale());
         var p = canvas.Buffer[16, 16];
         Assert.AreEqual(p.R, p.G);
         Assert.AreEqual(p.G, p.B);
@@ -250,9 +250,9 @@ public sealed class CanvasImageTests
     [TestMethod]
     public void ApplyPipelineRejectsResizeOnABorrowedBuffer()
     {
-        using var buffer = ImageBuffer.Create(32, 32, Rgba32.White);
-        using var canvas = ImageCanvas.FromBuffer(buffer);
-        Assert.ThrowsExactly<InvalidOperationException>(() => canvas.ApplyPipeline(ImagePipeline.Create().Resize(16, 16, BmageResizeMode.Stretch)));
+        using var buffer = BmageImageBuffer.Create(32, 32, BmageRgba32.White);
+        using var canvas = BmageImageCanvas.FromBuffer(buffer);
+        Assert.ThrowsExactly<InvalidOperationException>(() => canvas.ApplyPipeline(BmageImagePipeline.Create().Resize(16, 16, BmageResizeMode.Stretch)));
     }
 }
 
@@ -262,9 +262,9 @@ public sealed class AnnotationTests
     [TestMethod]
     public void RectangleAnnotationRendersItsOutline()
     {
-        using var canvas = ImageCanvas.Create(64, 64);
-        var annotation = new RectangleAnnotation { Rectangle = new RectangleF(16, 16, 32, 32) };
-        annotation.Render(canvas, new AnnotationRenderContext());
+        using var canvas = BmageImageCanvas.Create(64, 64);
+        var annotation = new BmageRectangleAnnotation { Rectangle = new RectangleF(16, 16, 32, 32) };
+        annotation.Render(canvas, new BmageAnnotationRenderContext());
         Assert.IsTrue(canvas.Buffer[32, 16].A > 200);
         Assert.IsTrue(canvas.Buffer[32, 32].A < 20);
     }
@@ -272,8 +272,8 @@ public sealed class AnnotationTests
     [TestMethod]
     public void TranslatePreservesIdentityAndShape()
     {
-        var original = new RectangleAnnotation { Rectangle = new RectangleF(10, 10, 20, 20) };
-        var moved = (RectangleAnnotation)original.Translate(5, -5);
+        var original = new BmageRectangleAnnotation { Rectangle = new RectangleF(10, 10, 20, 20) };
+        var moved = (BmageRectangleAnnotation)original.Translate(5, -5);
         Assert.AreEqual(original.Id, moved.Id);
         Assert.AreEqual(new RectangleF(15, 5, 20, 20), moved.Rectangle);
         Assert.AreEqual(new RectangleF(10, 10, 20, 20), original.Rectangle);
@@ -282,15 +282,15 @@ public sealed class AnnotationTests
     [TestMethod]
     public void HitTestingFindsShapesAndMissesEmptySpace()
     {
-        var rect = new RectangleAnnotation { Rectangle = new RectangleF(10, 10, 20, 20) };
+        var rect = new BmageRectangleAnnotation { Rectangle = new RectangleF(10, 10, 20, 20) };
         Assert.IsTrue(rect.HitTest(new Vector2(20, 20)));
         Assert.IsFalse(rect.HitTest(new Vector2(60, 60)));
 
-        var ellipse = new EllipseAnnotation { Rectangle = new RectangleF(0, 0, 40, 40) };
+        var ellipse = new BmageEllipseAnnotation { Rectangle = new RectangleF(0, 0, 40, 40) };
         Assert.IsTrue(ellipse.HitTest(new Vector2(20, 20)));
         Assert.IsFalse(ellipse.HitTest(new Vector2(2, 2)));
 
-        var line = new LineAnnotation { Start = new Vector2(0, 0), End = new Vector2(40, 40) };
+        var line = new BmageLineAnnotation { Start = new Vector2(0, 0), End = new Vector2(40, 40) };
         Assert.IsTrue(line.HitTest(new Vector2(20, 20)));
         Assert.IsFalse(line.HitTest(new Vector2(0, 40)));
     }
@@ -298,13 +298,13 @@ public sealed class AnnotationTests
     [TestMethod]
     public void ForScaleScalesGeometryAndStrokeWidth()
     {
-        var arrow = new ArrowAnnotation
+        var arrow = new BmageArrowAnnotation
         {
             Start = new Vector2(10, 10),
             End = new Vector2(50, 50),
-            Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 8 } },
+            Style = BmageShapeStyle.Default with { Stroke = new BmageStrokeStyle { Width = 8 } },
         };
-        var half = (ArrowAnnotation)arrow.ForScale(0.5);
+        var half = (BmageArrowAnnotation)arrow.ForScale(0.5);
         Assert.AreEqual(new Vector2(5, 5), half.Start);
         Assert.AreEqual(new Vector2(25, 25), half.End);
         Assert.AreEqual(4f, half.Style.Stroke.Width);
@@ -313,21 +313,21 @@ public sealed class AnnotationTests
     [TestMethod]
     public void RedactionActuallyDestroysTheUnderlyingPixels()
     {
-        using var canvas = ImageCanvas.FromImage(TestImages.Gradient(64, 64));
+        using var canvas = BmageImageCanvas.FromImage(TestImages.Gradient(64, 64));
         var before = canvas.Buffer[20, 20];
-        var redaction = new RedactionAnnotation { Rectangle = new RectangleF(10, 10, 30, 30), Mode = RedactionMode.Solid };
-        redaction.Render(canvas, new AnnotationRenderContext());
-        Assert.AreEqual(Rgba32.Black, canvas.Buffer[20, 20]);
+        var redaction = new BmageRedactionAnnotation { Rectangle = new RectangleF(10, 10, 30, 30), Mode = BmageRedactionMode.Solid };
+        redaction.Render(canvas, new BmageAnnotationRenderContext());
+        Assert.AreEqual(BmageRgba32.Black, canvas.Buffer[20, 20]);
         Assert.AreNotEqual(before, canvas.Buffer[20, 20]);
-        Assert.AreNotEqual(Rgba32.Black, canvas.Buffer[60, 60]);
+        Assert.AreNotEqual(BmageRgba32.Black, canvas.Buffer[60, 60]);
     }
 
     [TestMethod]
     public void PixelateRedactionRemovesFineDetail()
     {
-        using var canvas = ImageCanvas.FromImage(TestImages.Gradient(64, 64));
-        var redaction = new RedactionAnnotation { Rectangle = new RectangleF(0, 0, 32, 32), Mode = RedactionMode.Pixelate, Strength = 16 };
-        redaction.Render(canvas, new AnnotationRenderContext());
+        using var canvas = BmageImageCanvas.FromImage(TestImages.Gradient(64, 64));
+        var redaction = new BmageRedactionAnnotation { Rectangle = new RectangleF(0, 0, 32, 32), Mode = BmageRedactionMode.Pixelate, Strength = 16 };
+        redaction.Render(canvas, new BmageAnnotationRenderContext());
         Assert.AreEqual(canvas.Buffer[0, 0], canvas.Buffer[15, 15]);
         Assert.AreNotEqual(canvas.Buffer[0, 0], canvas.Buffer[40, 40]);
     }
@@ -335,8 +335,8 @@ public sealed class AnnotationTests
     [TestMethod]
     public void HighlightBlendsRatherThanCovers()
     {
-        using var canvas = ImageCanvas.Create(32, 32, Rgba32.White);
-        new HighlightAnnotation { Rectangle = new RectangleF(0, 0, 32, 32) }.Render(canvas, new AnnotationRenderContext());
+        using var canvas = BmageImageCanvas.Create(32, 32, BmageRgba32.White);
+        new BmageHighlightAnnotation { Rectangle = new RectangleF(0, 0, 32, 32) }.Render(canvas, new BmageAnnotationRenderContext());
         var p = canvas.Buffer[16, 16];
         Assert.IsTrue(p.R > 200 && p.B < 200, $"Highlight did not tint the background: {p}");
     }
@@ -344,12 +344,12 @@ public sealed class AnnotationTests
     [TestMethod]
     public void FreehandSmoothingProducesAContinuousStroke()
     {
-        using var canvas = ImageCanvas.Create(64, 64);
-        var stroke = new FreehandAnnotation
+        using var canvas = BmageImageCanvas.Create(64, 64);
+        var stroke = new BmageFreehandAnnotation
         {
             Points = [new Vector2(8, 32), new Vector2(24, 16), new Vector2(40, 48), new Vector2(56, 32)],
         };
-        stroke.Render(canvas, new AnnotationRenderContext());
+        stroke.Render(canvas, new BmageAnnotationRenderContext());
         // Every column between the endpoints must have some ink.
         for (var x = 12; x <= 52; x++)
         {
@@ -362,16 +362,16 @@ public sealed class AnnotationTests
     [TestMethod]
     public void InvisibleAnnotationsAreNotDrawn()
     {
-        using var canvas = ImageCanvas.Create(32, 32);
-        var annotation = new RectangleAnnotation { Rectangle = new RectangleF(4, 4, 24, 24), IsVisible = false };
-        annotation.RenderWithTransform(canvas, new AnnotationRenderContext());
+        using var canvas = BmageImageCanvas.Create(32, 32);
+        var annotation = new BmageRectangleAnnotation { Rectangle = new RectangleF(4, 4, 24, 24), IsVisible = false };
+        annotation.RenderWithTransform(canvas, new BmageAnnotationRenderContext());
         Assert.AreEqual(0, canvas.Buffer[4, 4].A);
     }
 
     [TestMethod]
     public void RotationChangesRenderedOutputAndBounds()
     {
-        var annotation = new RectangleAnnotation { Rectangle = new RectangleF(10, 20, 40, 10), Rotation = 90 };
+        var annotation = new BmageRectangleAnnotation { Rectangle = new RectangleF(10, 20, 40, 10), Rotation = 90 };
         var bounds = annotation.GetRotatedBounds();
         Assert.IsTrue(bounds.Height > bounds.Width, $"Rotated bounds were not reoriented: {bounds}");
     }
@@ -383,8 +383,8 @@ public sealed class DocumentAndHistoryTests
     [TestMethod]
     public void DocumentsAreImmutable()
     {
-        var doc = ImageDocument.Create(new Size(100, 100));
-        var withCrop = doc.AddOperation(new CropOperation(0, 0, 50, 50));
+        var doc = BmageImageDocument.Create(new Size(100, 100));
+        var withCrop = doc.AddOperation(new BmageCropOperation(0, 0, 50, 50));
         Assert.IsTrue(doc.IsEmpty);
         Assert.ContainsSingle(withCrop.Pipeline);
         Assert.AreEqual(new Size(50, 50), withCrop.OutputSize);
@@ -394,15 +394,15 @@ public sealed class DocumentAndHistoryTests
     [TestMethod]
     public void AnnotationsCanBeAddedUpdatedAndRemoved()
     {
-        var doc = ImageDocument.Create(new Size(100, 100));
-        var arrow = new ArrowAnnotation { Start = new Vector2(0, 0), End = new Vector2(10, 10) };
+        var doc = BmageImageDocument.Create(new Size(100, 100));
+        var arrow = new BmageArrowAnnotation { Start = new Vector2(0, 0), End = new Vector2(10, 10) };
         doc = doc.AddAnnotation(arrow);
         Assert.ContainsSingle(doc.Annotations);
 
         var moved = arrow.Translate(5, 5);
         doc = doc.UpdateAnnotation(moved);
         Assert.ContainsSingle(doc.Annotations);
-        Assert.AreEqual(new Vector2(5, 5), ((ArrowAnnotation)doc.Annotations[0]).Start);
+        Assert.AreEqual(new Vector2(5, 5), ((BmageArrowAnnotation)doc.Annotations[0]).Start);
 
         doc = doc.RemoveAnnotation(arrow.Id);
         Assert.IsEmpty(doc.Annotations);
@@ -411,27 +411,27 @@ public sealed class DocumentAndHistoryTests
     [TestMethod]
     public void RedactionsAlwaysRenderBeforeOtherAnnotations()
     {
-        var doc = ImageDocument.Create(new Size(100, 100))
-            .AddAnnotation(new ArrowAnnotation { Start = Vector2.Zero, End = new Vector2(10, 10) })
-            .AddAnnotation(new RedactionAnnotation { Rectangle = new RectangleF(0, 0, 20, 20) });
+        var doc = BmageImageDocument.Create(new Size(100, 100))
+            .AddAnnotation(new BmageArrowAnnotation { Start = Vector2.Zero, End = new Vector2(10, 10) })
+            .AddAnnotation(new BmageRedactionAnnotation { Rectangle = new RectangleF(0, 0, 20, 20) });
         var order = doc.GetRenderOrder();
-        Assert.IsExactInstanceOfType<RedactionAnnotation>(order[0]);
-        Assert.IsExactInstanceOfType<ArrowAnnotation>(order[1]);
+        Assert.IsExactInstanceOfType<BmageRedactionAnnotation>(order[0]);
+        Assert.IsExactInstanceOfType<BmageArrowAnnotation>(order[1]);
     }
 
     [TestMethod]
     public void RedactionDoesNotEraseAnnotationsDrawnOnTop()
     {
         using var source = TestImages.Gradient(64, 64);
-        var doc = ImageDocument.Create(source)
-            .AddAnnotation(new ArrowAnnotation
+        var doc = BmageImageDocument.Create(source)
+            .AddAnnotation(new BmageArrowAnnotation
             {
                 Start = new Vector2(4, 32),
                 End = new Vector2(60, 32),
-                Style = ShapeStyle.Default with { StrokeColor = new Rgba32(255, 0, 0), Stroke = new StrokeStyle { Width = 6 } },
+                Style = BmageShapeStyle.Default with { StrokeColor = new BmageRgba32(255, 0, 0), Stroke = new BmageStrokeStyle { Width = 6 } },
             })
-            .AddAnnotation(new RedactionAnnotation { Rectangle = new RectangleF(0, 0, 64, 64), Mode = RedactionMode.Solid });
-        using var rendered = new DocumentRenderer().Render(doc, source);
+            .AddAnnotation(new BmageRedactionAnnotation { Rectangle = new RectangleF(0, 0, 64, 64), Mode = BmageRedactionMode.Solid });
+        using var rendered = new BmageDocumentRenderer().Render(doc, source);
         var p = rendered[32, 32];
         Assert.IsTrue(p.R > 200 && p.G < 60, $"The arrow was redacted away: {p}");
     }
@@ -439,9 +439,9 @@ public sealed class DocumentAndHistoryTests
     [TestMethod]
     public void HitTestingPicksTheTopmostAnnotation()
     {
-        var bottom = new RectangleAnnotation { Rectangle = new RectangleF(0, 0, 50, 50) };
-        var top = new RectangleAnnotation { Rectangle = new RectangleF(10, 10, 20, 20) };
-        var doc = ImageDocument.Create(new Size(100, 100)).AddAnnotation(bottom).AddAnnotation(top);
+        var bottom = new BmageRectangleAnnotation { Rectangle = new RectangleF(0, 0, 50, 50) };
+        var top = new BmageRectangleAnnotation { Rectangle = new RectangleF(10, 10, 20, 20) };
+        var doc = BmageImageDocument.Create(new Size(100, 100)).AddAnnotation(bottom).AddAnnotation(top);
         Assert.AreEqual(top.Id, doc.HitTest(new Vector2(20, 20))!.Id);
         Assert.AreEqual(bottom.Id, doc.HitTest(new Vector2(45, 45))!.Id);
         Assert.IsNull(doc.HitTest(new Vector2(90, 90)));
@@ -450,24 +450,24 @@ public sealed class DocumentAndHistoryTests
     [TestMethod]
     public void ForScaleScalesBothPipelineAndAnnotations()
     {
-        var doc = ImageDocument.Create(new Size(1000, 800))
-            .AddOperation(new CropOperation(100, 100, 400, 400))
-            .AddAnnotation(new ArrowAnnotation { Start = new Vector2(200, 200), End = new Vector2(400, 400) });
+        var doc = BmageImageDocument.Create(new Size(1000, 800))
+            .AddOperation(new BmageCropOperation(100, 100, 400, 400))
+            .AddAnnotation(new BmageArrowAnnotation { Start = new Vector2(200, 200), End = new Vector2(400, 400) });
         var half = doc.ForScale(0.5);
         Assert.AreEqual(new Size(500, 400), half.SourceSize);
-        Assert.AreEqual(new Rectangle(50, 50, 200, 200), ((CropOperation)half.Pipeline[0]).Rectangle);
-        Assert.AreEqual(new Vector2(100, 100), ((ArrowAnnotation)half.Annotations[0]).Start);
+        Assert.AreEqual(new Rectangle(50, 50, 200, 200), ((BmageCropOperation)half.Pipeline[0]).Rectangle);
+        Assert.AreEqual(new Vector2(100, 100), ((BmageArrowAnnotation)half.Annotations[0]).Start);
     }
 
     [TestMethod]
     public void HistoryUndoesAndRedoes()
     {
-        var doc = ImageDocument.Create(new Size(100, 100));
-        var history = new EditHistory(doc);
+        var doc = BmageImageDocument.Create(new Size(100, 100));
+        var history = new BmageEditHistory(doc);
         Assert.IsFalse(history.CanUndo);
         Assert.IsFalse(history.CanRedo);
 
-        history.Push(doc.AddOperation(new BrightnessAdjustment(0.2f)), "Brightness");
+        history.Push(doc.AddOperation(new BmageBrightnessAdjustment(0.2f)), "Brightness");
         Assert.IsTrue(history.CanUndo);
         Assert.ContainsSingle(history.Current.Pipeline);
 
@@ -482,12 +482,12 @@ public sealed class DocumentAndHistoryTests
     [TestMethod]
     public void EditingAfterUndoDiscardsTheRedoTrail()
     {
-        var history = new EditHistory(ImageDocument.Create(new Size(50, 50)));
-        history.Push(history.Current.AddOperation(new BrightnessAdjustment(0.1f)), "A");
-        history.Push(history.Current.AddOperation(new ContrastAdjustment(0.1f)), "B");
+        var history = new BmageEditHistory(BmageImageDocument.Create(new Size(50, 50)));
+        history.Push(history.Current.AddOperation(new BmageBrightnessAdjustment(0.1f)), "A");
+        history.Push(history.Current.AddOperation(new BmageContrastAdjustment(0.1f)), "B");
         history.Undo();
         Assert.IsTrue(history.CanRedo);
-        history.Push(history.Current.AddOperation(new SaturationAdjustment(0.1f)), "C");
+        history.Push(history.Current.AddOperation(new BmageSaturationAdjustment(0.1f)), "C");
         Assert.IsFalse(history.CanRedo);
         Assert.AreEqual("C", history.CurrentEntry.Label);
     }
@@ -495,21 +495,21 @@ public sealed class DocumentAndHistoryTests
     [TestMethod]
     public void AmendReplacesTheCurrentEntryInsteadOfGrowingHistory()
     {
-        var history = new EditHistory(ImageDocument.Create(new Size(50, 50)));
-        history.Push(history.Current.AddOperation(new BrightnessAdjustment(0.1f)), "Brightness");
+        var history = new BmageEditHistory(BmageImageDocument.Create(new Size(50, 50)));
+        history.Push(history.Current.AddOperation(new BmageBrightnessAdjustment(0.1f)), "Brightness");
         var count = history.Entries.Count;
         for (var i = 0; i < 20; i++)
-            history.Amend(ImageDocument.Create(new Size(50, 50)).AddOperation(new BrightnessAdjustment(i / 100f)));
+            history.Amend(BmageImageDocument.Create(new Size(50, 50)).AddOperation(new BmageBrightnessAdjustment(i / 100f)));
         Assert.AreEqual(count, history.Entries.Count);
     }
 
     [TestMethod]
     public void HistoryRespectsItsDepthLimitAndKeepsTheOriginal()
     {
-        var original = ImageDocument.Create(new Size(50, 50));
-        var history = new EditHistory(original, maxDepth: 5);
+        var original = BmageImageDocument.Create(new Size(50, 50));
+        var history = new BmageEditHistory(original, maxDepth: 5);
         for (var i = 0; i < 20; i++)
-            history.Push(history.Current.AddOperation(new BrightnessAdjustment(0.01f * (i + 1))), $"Step {i}");
+            history.Push(history.Current.AddOperation(new BmageBrightnessAdjustment(0.01f * (i + 1))), $"Step {i}");
         Assert.AreEqual(5, history.Entries.Count);
         Assert.IsTrue(history.Entries[0].Document.IsEmpty, "The original state was discarded");
     }
@@ -517,9 +517,9 @@ public sealed class DocumentAndHistoryTests
     [TestMethod]
     public void HistoryMemoryStaysSmallForManyEdits()
     {
-        var history = new EditHistory(ImageDocument.Create(new Size(6000, 4000)), maxDepth: 100);
+        var history = new BmageEditHistory(BmageImageDocument.Create(new Size(6000, 4000)), maxDepth: 100);
         for (var i = 0; i < 99; i++)
-            history.Push(history.Current.AddOperation(new BrightnessAdjustment(0.001f * i)), $"Step {i}");
+            history.Push(history.Current.AddOperation(new BmageBrightnessAdjustment(0.001f * i)), $"Step {i}");
         // 100 undo steps on a 24 megapixel image must not cost anything like 100 copies of the pixels.
         Assert.IsTrue(history.EstimatedMemory < 1_000_000, $"History used {history.EstimatedMemory} bytes");
     }
@@ -527,8 +527,8 @@ public sealed class DocumentAndHistoryTests
     [TestMethod]
     public void ResetReturnsToTheOriginalWithoutLosingRedo()
     {
-        var history = new EditHistory(ImageDocument.Create(new Size(50, 50)));
-        history.Push(history.Current.AddOperation(new BrightnessAdjustment(0.5f)), "Brightness");
+        var history = new BmageEditHistory(BmageImageDocument.Create(new Size(50, 50)));
+        history.Push(history.Current.AddOperation(new BmageBrightnessAdjustment(0.5f)), "Brightness");
         history.Reset();
         Assert.IsTrue(history.Current.IsEmpty);
         Assert.IsTrue(history.CanRedo);
@@ -537,16 +537,16 @@ public sealed class DocumentAndHistoryTests
     [TestMethod]
     public void RendererAppliesPipelineThenAnnotations()
     {
-        using var source = ImageBuffer.Create(64, 64, Rgba32.White);
-        var doc = ImageDocument.Create(source)
-            .AddOperation(new BrightnessAdjustment(-0.5f))
-            .AddAnnotation(new RectangleAnnotation
+        using var source = BmageImageBuffer.Create(64, 64, BmageRgba32.White);
+        var doc = BmageImageDocument.Create(source)
+            .AddOperation(new BmageBrightnessAdjustment(-0.5f))
+            .AddAnnotation(new BmageRectangleAnnotation
             {
                 Rectangle = new RectangleF(8, 8, 20, 20),
-                Style = ShapeStyle.Default with { FillColor = new Rgba32(0, 200, 0), StrokeColor = null },
+                Style = BmageShapeStyle.Default with { FillColor = new BmageRgba32(0, 200, 0), StrokeColor = null },
             });
-        using var result = new DocumentRenderer().Render(doc, source);
+        using var result = new BmageDocumentRenderer().Render(doc, source);
         Assert.IsInRange(120, 135, result[50, 50].R);          // darkened background
-        Assert.AreEqual(new Rgba32(0, 200, 0), result[16, 16]); // annotation on top, undarkened
+        Assert.AreEqual(new BmageRgba32(0, 200, 0), result[16, 16]); // annotation on top, undarkened
     }
 }

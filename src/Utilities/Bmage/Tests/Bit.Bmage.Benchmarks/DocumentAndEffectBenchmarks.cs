@@ -10,9 +10,9 @@ namespace Bit.Bmage.Benchmarks;
 [MemoryDiagnoser]
 public class DocumentAndEffectBenchmarks
 {
-    private ImageBuffer _photo = null!;
-    private ImageBuffer _page = null!;
-    private ColorLookupTable _lut = null!;
+    private BmageImageBuffer _photo = null!;
+    private BmageImageBuffer _page = null!;
+    private BmageColorLookupTable _lut = null!;
 
     [Params("1920x1080", "3840x2160")]
     public string Size { get; set; } = "1920x1080";
@@ -24,7 +24,7 @@ public class DocumentAndEffectBenchmarks
         int width = int.Parse(parts[0]), height = int.Parse(parts[1]);
         _photo = Images.Create(width, height);
         // A page: rows of dark words on paper, lit from the right.
-        _page = ImageBuffer.Create(width, height, Rgba32.White);
+        _page = BmageImageBuffer.Create(width, height, BmageRgba32.White);
         var rng = new Random(3);
         for (var top = height / 20; top < height - height / 20; top += height / 40)
         {
@@ -32,7 +32,7 @@ public class DocumentAndEffectBenchmarks
             while (x < width - width / 10)
             {
                 var word = rng.Next(width / 60, width / 15);
-                _page.Fill(new System.Drawing.Rectangle(x, top, word, height / 90), new Rgba32(30, 30, 40));
+                _page.Fill(new System.Drawing.Rectangle(x, top, word, height / 90), new BmageRgba32(30, 30, 40));
                 x += word + width / 120;
             }
         }
@@ -43,13 +43,13 @@ public class DocumentAndEffectBenchmarks
             {
                 var light = 0.5f + 0.5f * x / width;
                 var p = row[x];
-                row[x] = new Rgba32((byte)(p.R * light), (byte)(p.G * light), (byte)(p.B * light));
+                row[x] = new BmageRgba32((byte)(p.R * light), (byte)(p.G * light), (byte)(p.B * light));
             }
         }
-        var tilted = new RotateOperation(-3, Rgba32.White, expandCanvas: false).Apply(_page, Images.OneThread.WithMutation(false));
+        var tilted = new BmageRotateOperation(-3, BmageRgba32.White, expandCanvas: false).Apply(_page, Images.OneThread.WithMutation(false));
         _page.Dispose();
         _page = tilted;
-        _lut = ColorLookupTable.Create(33, c => new Vector3(MathF.Sqrt(c.X), c.Y * c.Y, 0.1f + 0.8f * c.Z));
+        _lut = BmageColorLookupTable.Create(33, c => new Vector3(MathF.Sqrt(c.X), c.Y * c.Y, 0.1f + 0.8f * c.Z));
     }
 
     [GlobalCleanup]
@@ -59,46 +59,46 @@ public class DocumentAndEffectBenchmarks
         _page.Dispose();
     }
 
-    private int Run(IImageOperation operation, ImageBuffer? source = null)
+    private int Run(IBmageImageOperation operation, BmageImageBuffer? source = null)
     {
         using var result = operation.Apply(source ?? _photo, Images.OneThread.WithMutation(false));
         return result.Width;
     }
 
     [Benchmark(Baseline = true, Description = "Vibrance (reference)")]
-    public int Vibrance() => Run(new VibranceAdjustment(0.4f));
+    public int Vibrance() => Run(new BmageVibranceAdjustment(0.4f));
 
     [Benchmark(Description = "Adaptive threshold, Sauvola, radius 16")]
-    public int AdaptiveThreshold() => Run(new AdaptiveThresholdFilter(16), _page);
+    public int AdaptiveThreshold() => Run(new BmageAdaptiveThresholdFilter(16), _page);
 
     [Benchmark(Description = "Adaptive threshold, mean, radius 16")]
-    public int AdaptiveThresholdMean() => Run(new AdaptiveThresholdFilter(16, 0.05f, AdaptiveThresholdMethod.Mean), _page);
+    public int AdaptiveThresholdMean() => Run(new BmageAdaptiveThresholdFilter(16, 0.05f, BmageAdaptiveThresholdMethod.Mean), _page);
 
     [Benchmark(Description = "Document skew estimate")]
-    public double Skew() => DocumentSkew.Estimate(_page)?.Angle ?? 0;
+    public double Skew() => BmageDocumentSkew.Estimate(_page)?.Angle ?? 0;
 
     [Benchmark(Description = "Sharpness")]
-    public double Sharpness() => ImageSharpness.Measure(_photo);
+    public double Sharpness() => BmageImageSharpness.Measure(_photo);
 
     [Benchmark(Description = "Zoom blur 0.2")]
-    public int ZoomBlur() => Run(new RadialBlurFilter(0.2f));
+    public int ZoomBlur() => Run(new BmageRadialBlurFilter(0.2f));
 
     [Benchmark(Description = "Spin blur 0.3")]
-    public int SpinBlur() => Run(new RadialBlurFilter(0.3f, RadialBlurMode.Spin));
+    public int SpinBlur() => Run(new BmageRadialBlurFilter(0.3f, BmageRadialBlurMode.Spin));
 
     [Benchmark(Description = "3D LUT, 33 entries an axis")]
-    public int Lut() => Run(new ColorLutAdjustment(_lut));
+    public int Lut() => Run(new BmageColorLutAdjustment(_lut));
 
     [Benchmark(Description = "Indexed PNG, 256 colours, dithered")]
-    public long IndexedPng() => PngEncoder.Encode(_photo, new ImageExportOptions { MaxColors = 256 }).Length;
+    public long IndexedPng() => BmagePngEncoder.Encode(_photo, new BmageImageExportOptions { MaxColors = 256 }).Length;
 
     [Benchmark(Description = "1-bit PNG of the thresholded page")]
     public long OneBitPng()
     {
-        using var scan = new AdaptiveThresholdFilter(16).Apply(_page, Images.OneThread.WithMutation(false));
-        return PngEncoder.Encode(scan, new ImageExportOptions { MaxColors = 2 }).Length;
+        using var scan = new BmageAdaptiveThresholdFilter(16).Apply(_page, Images.OneThread.WithMutation(false));
+        return BmagePngEncoder.Encode(scan, new BmageImageExportOptions { MaxColors = 2 }).Length;
     }
 
     [Benchmark(Description = "GIF, 256 colours, dithered")]
-    public long Gif() => GifEncoder.Encode(_photo).Length;
+    public long Gif() => BmageGifEncoder.Encode(_photo).Length;
 }

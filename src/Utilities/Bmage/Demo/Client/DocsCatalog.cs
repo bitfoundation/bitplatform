@@ -168,7 +168,7 @@ public static class DocsCatalog
                 "editor bmageeditor component crop adjust filter draw annotate layers history undo redo theme localisation rtl strings toolbar panel keyboard straighten resize canvas trim histogram white balance colour mixer brush eraser eyedropper fill magic eraser selection lasso magic wand compare group clip project",
                 typeof(Pages.Editor)),
             new("/headless", "Headless API",
-                "The same engine with no components at all: thumbnails, crops, grading, framing, placeholders, analysis, drawing with ImageCanvas, and server-side use.",
+                "The same engine with no components at all: thumbnails, crops, grading, framing, placeholders, analysis, drawing with BmageImageCanvas, and server-side use.",
                 "headless api no ui server console imagecanvas drawing thumbnail exif placeholder statistics histogram colorsampler contentbounds trim smartcrop straighten pad duotone layercompositor addbitbmageheadlessservices",
                 typeof(Pages.Headless)),
         ]),

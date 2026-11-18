@@ -13,33 +13,33 @@ public sealed class ParallelProcessingTests
 {
     private static IEnumerable<object[]> Operations()
     {
-        yield return [new BrightnessAdjustment(0.15f)];
-        yield return [new SaturationAdjustment(0.4f)];
-        yield return [new FusedPointOperation([new ContrastAdjustment(0.2f), new SaturationAdjustment(-0.3f), new GammaAdjustment(1.3f)])];
-        yield return [new ResizeOperation(611, 433, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3)];
-        yield return [new ResizeOperation(1500, 1100, BmageResizeMode.Stretch, ResamplingFilter.Bicubic)];
-        yield return [new ResizeOperation(97, 61, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3)];
-        yield return [new ResizeOperation(333, 222, BmageResizeMode.Stretch, ResamplingFilter.NearestNeighbor)];
-        yield return [new RotateOperation(37, new Rgba32(10, 20, 30, 200))];
-        yield return [new RotateOperation(-12.5, sampling: WarpSampling.Bilinear)];
-        yield return [new RotateOperation(80, sampling: WarpSampling.NearestNeighbor)];
-        yield return [new PerspectiveTransformOperation([new PointF(40, 10), new PointF(900, 60), new PointF(1000, 700), new PointF(0, 760)])];
-        yield return [ConvolutionFilter.EdgeDetect()];
-        yield return [new MedianFilter(1)];
-        yield return [new MedianFilter(3, new Rectangle(100, 50, 600, 400))];
-        yield return [new VignetteFilter(0.7f)];
-        yield return [new OrientationOperation(BmageOrientation.Rotate90)];
-        yield return [new OrientationOperation(BmageOrientation.Transverse)];
-        yield return [new OrientationOperation(BmageOrientation.FlipHorizontal)];
+        yield return [new BmageBrightnessAdjustment(0.15f)];
+        yield return [new BmageSaturationAdjustment(0.4f)];
+        yield return [new BmageFusedPointOperation([new BmageContrastAdjustment(0.2f), new BmageSaturationAdjustment(-0.3f), new BmageGammaAdjustment(1.3f)])];
+        yield return [new BmageResizeOperation(611, 433, BmageResizeMode.Stretch, BmageResamplingFilter.Lanczos3)];
+        yield return [new BmageResizeOperation(1500, 1100, BmageResizeMode.Stretch, BmageResamplingFilter.Bicubic)];
+        yield return [new BmageResizeOperation(97, 61, BmageResizeMode.Stretch, BmageResamplingFilter.Lanczos3)];
+        yield return [new BmageResizeOperation(333, 222, BmageResizeMode.Stretch, BmageResamplingFilter.NearestNeighbor)];
+        yield return [new BmageRotateOperation(37, new BmageRgba32(10, 20, 30, 200))];
+        yield return [new BmageRotateOperation(-12.5, sampling: BmageWarpSampling.Bilinear)];
+        yield return [new BmageRotateOperation(80, sampling: BmageWarpSampling.NearestNeighbor)];
+        yield return [new BmagePerspectiveTransformOperation([new PointF(40, 10), new PointF(900, 60), new PointF(1000, 700), new PointF(0, 760)])];
+        yield return [BmageConvolutionFilter.EdgeDetect()];
+        yield return [new BmageMedianFilter(1)];
+        yield return [new BmageMedianFilter(3, new Rectangle(100, 50, 600, 400))];
+        yield return [new BmageVignetteFilter(0.7f)];
+        yield return [new BmageOrientationOperation(BmageOrientation.Rotate90)];
+        yield return [new BmageOrientationOperation(BmageOrientation.Transverse)];
+        yield return [new BmageOrientationOperation(BmageOrientation.FlipHorizontal)];
     }
 
     [TestMethod]
     [DynamicData(nameof(Operations))]
-    public void ManyThreadsProduceExactlyThePixelsOfOne(IImageOperation operation)
+    public void ManyThreadsProduceExactlyThePixelsOfOne(IBmageImageOperation operation)
     {
         using var source = Noise(1024, 768, seed: 11);
-        using var sequential = operation.Apply(source, new OperationContext(maxDegreeOfParallelism: 1));
-        using var parallel = operation.Apply(source, new OperationContext(maxDegreeOfParallelism: 8));
+        using var sequential = operation.Apply(source, new BmageOperationContext(maxDegreeOfParallelism: 1));
+        using var parallel = operation.Apply(source, new BmageOperationContext(maxDegreeOfParallelism: 8));
 
         Assert.AreEqual(sequential.Size, parallel.Size);
         Assert.IsTrue(sequential.Bytes.SequenceEqual(parallel.Bytes), $"{operation.Name} differs between one thread and eight.");
@@ -49,14 +49,14 @@ public sealed class ParallelProcessingTests
     public void APipelineRunOnManyThreadsMatchesOneThread()
     {
         using var source = Noise(1200, 900, seed: 5);
-        var pipeline = ImagePipeline.Create()
+        var pipeline = BmageImagePipeline.Create()
             .Rotate(7)
             .MaxSize(800, 800)
             .Contrast(0.1f).Saturation(0.2f)
             .Vignette(0.3f);
 
-        using var one = pipeline.Execute(source, new PipelineExecutionOptions { MaxDegreeOfParallelism = 1 });
-        using var many = pipeline.Execute(source, new PipelineExecutionOptions { MaxDegreeOfParallelism = 6 });
+        using var one = pipeline.Execute(source, new BmagePipelineExecutionOptions { MaxDegreeOfParallelism = 1 });
+        using var many = pipeline.Execute(source, new BmagePipelineExecutionOptions { MaxDegreeOfParallelism = 6 });
 
         Assert.IsTrue(one.Bytes.SequenceEqual(many.Bytes));
     }
@@ -67,12 +67,12 @@ public sealed class ParallelProcessingTests
         using var source = Noise(1024, 1024, seed: 3);
 
         var unsafeOperation = new ThreadRecordingOperation(concurrent: false);
-        using (unsafeOperation.Apply(source, new OperationContext(maxDegreeOfParallelism: 8))) { }
+        using (unsafeOperation.Apply(source, new BmageOperationContext(maxDegreeOfParallelism: 8))) { }
         Assert.AreEqual(1, unsafeOperation.Threads.Count, "A custom operation that did not opt in ran on several threads.");
 
         var safeOperation = new ThreadRecordingOperation(concurrent: true);
         // Fused with a built-in stage, which may run concurrently, the run is only as concurrent as its least safe stage.
-        var fused = new FusedPointOperation([new BrightnessAdjustment(0.1f), new ThreadRecordingOperation(concurrent: false)]);
+        var fused = new BmageFusedPointOperation([new BmageBrightnessAdjustment(0.1f), new ThreadRecordingOperation(concurrent: false)]);
         Assert.IsFalse(fused.CanProcessRowsConcurrently);
         Assert.IsTrue(safeOperation.CanProcessRowsConcurrently);
     }
@@ -82,7 +82,7 @@ public sealed class ParallelProcessingTests
     {
         using var source = Noise(1024, 1024, seed: 9);
         var failing = new FailingOperation();
-        Assert.ThrowsExactly<InvalidDataException>(() => failing.Apply(source, new OperationContext(maxDegreeOfParallelism: 8)));
+        Assert.ThrowsExactly<InvalidDataException>(() => failing.Apply(source, new BmageOperationContext(maxDegreeOfParallelism: 8)));
     }
 
     [TestMethod]
@@ -92,7 +92,7 @@ public sealed class ParallelProcessingTests
         using var cts = new CancellationTokenSource();
         cts.Cancel();
         Assert.ThrowsExactly<OperationCanceledException>(() =>
-            new RotateOperation(33).Apply(source, new OperationContext(cancellationToken: cts.Token, maxDegreeOfParallelism: 8)));
+            new BmageRotateOperation(33).Apply(source, new BmageOperationContext(cancellationToken: cts.Token, maxDegreeOfParallelism: 8)));
     }
 
     [TestMethod]
@@ -100,7 +100,7 @@ public sealed class ParallelProcessingTests
     {
         using var source = Noise(1024, 1024, seed: 2);
         var values = new ConcurrentQueue<double>();
-        using (new RotateOperation(21).Apply(source, new OperationContext(progress: new Inline(values.Enqueue), maxDegreeOfParallelism: 8))) { }
+        using (new BmageRotateOperation(21).Apply(source, new BmageOperationContext(progress: new Inline(values.Enqueue), maxDegreeOfParallelism: 8))) { }
 
         var reported = values.ToArray();
         Assert.IsGreaterThan(1, reported.Length);
@@ -112,18 +112,18 @@ public sealed class ParallelProcessingTests
     [TestMethod]
     public void SmallImagesAreNotSplitAtAll()
     {
-        Assert.AreEqual(1, ParallelRows.BandCount(8, rows: 100, pixelsPerRow: 100));
-        Assert.AreEqual(1, ParallelRows.BandCount(1, rows: 4000, pixelsPerRow: 4000));
-        Assert.AreEqual(16, ParallelRows.BandCount(8, rows: 4000, pixelsPerRow: 4000));
-        Assert.AreEqual(3, ParallelRows.BandCount(8, rows: 3, pixelsPerRow: 1_000_000));
+        Assert.AreEqual(1, BmageParallelRows.BandCount(8, rows: 100, pixelsPerRow: 100));
+        Assert.AreEqual(1, BmageParallelRows.BandCount(1, rows: 4000, pixelsPerRow: 4000));
+        Assert.AreEqual(16, BmageParallelRows.BandCount(8, rows: 4000, pixelsPerRow: 4000));
+        Assert.AreEqual(3, BmageParallelRows.BandCount(8, rows: 3, pixelsPerRow: 1_000_000));
     }
 
     [TestMethod]
     public void TheParallelismOptionRejectsZeroThreads()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new OperationContext(maxDegreeOfParallelism: 0));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PipelineExecutionOptions { MaxDegreeOfParallelism = 0 });
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BitBmageOptions { MaxDegreeOfParallelism = -1 });
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageOperationContext(maxDegreeOfParallelism: 0));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmagePipelineExecutionOptions { MaxDegreeOfParallelism = 0 });
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageOptions { MaxDegreeOfParallelism = -1 });
     }
 
     private sealed class Inline(Action<double> report) : IProgress<double>
@@ -131,7 +131,7 @@ public sealed class ParallelProcessingTests
         public void Report(double value) => report(value);
     }
 
-    private sealed class ThreadRecordingOperation(bool concurrent) : PointOperation
+    private sealed class ThreadRecordingOperation(bool concurrent) : BmagePointOperation
     {
         public ConcurrentDictionary<int, bool> Threads { get; } = new();
         public override string Name => "Records threads";
@@ -145,7 +145,7 @@ public sealed class ParallelProcessingTests
         }
     }
 
-    private sealed class FailingOperation : PointOperation
+    private sealed class FailingOperation : BmagePointOperation
     {
         private int _rows;
         public override string Name => "Fails";
@@ -157,10 +157,10 @@ public sealed class ParallelProcessingTests
         }
     }
 
-    internal static ImageBuffer Noise(int width, int height, int seed)
+    internal static BmageImageBuffer Noise(int width, int height, int seed)
     {
         var random = new Random(seed);
-        var image = ImageBuffer.Create(width, height);
+        var image = BmageImageBuffer.Create(width, height);
         var bytes = image.Bytes;
         random.NextBytes(bytes);
         // Mostly opaque, with some fully transparent and some translucent pixels, so alpha handling is exercised.

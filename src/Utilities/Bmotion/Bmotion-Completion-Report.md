@@ -7,7 +7,7 @@ gap analysis it worked from is [Bmotion-Assessment.md](Bmotion-Assessment.md); t
 ## What changed for users
 
 **Why an animation plays where it does, at run time.** `BmotionAnimationEngine.AnimationEvent` reports every part of
-an element animation as it starts and ends: its `BmPlaybackStrategy` (`Instant`, `BrowserTimeline`,
+an element animation as it starts and ends: its `BmotionPlaybackStrategy` (`Instant`, `BrowserTimeline`,
 `BrowserRecorded`, `FrameLoop`, `InstantWithoutFrameLoop`), its properties, how it ended (`Finished` or
 `Interrupted`) and how long it ran - and, for the frame loop or its absence, the reason: a per-frame callback, a
 playback rate other than 1, an SVG `d`/`points` morph, a drag owning the transform, or a curve the browser can't
@@ -16,26 +16,26 @@ reproduce exactly. The same goes to the BCL meter `Bit.Bmotion` (`bmotion.animat
 each element's latest parts and counts what landed without a frame loop. Property names only - never values or page
 content - and nothing is tracked while nobody listens.
 
-**Springs by name and by measurement.** `BmSprings.Smooth/Snappy/Bouncy/Gentle/Stiff/Heavy/Responsive()` say how
+**Springs by name and by measurement.** `BmotionSprings.Smooth/Snappy/Bouncy/Gentle/Stiff/Heavy/Responsive()` say how
 motion should feel. `spring.Analyze(from, to)` returns its settling time, overshoot, peak time and velocity, target
 crossings, damping ratio and kind, oscillation period and a 60 Hz trace, by stepping the engine's own driver as the
 frame loop does. The MCP server's spring simulations now include the damping ratio, kind and period.
 
-**Reduced motion per element.** `<Bmotion ReducedMotion="...">` (or `BmPreset.ReducedMotion`) says how an element
+**Reduced motion per element.** `<Bmotion ReducedMotion="...">` (or `BmotionPreset.ReducedMotion`) says how an element
 answers reduced motion: `Reduce` (the default, unchanged), `Instant` (fades land too) or `Full` (calm, informative
 motion keeps playing). Prerendered CSS follows it.
 
-**Motion values.** `Bm.Combine(() => ..., a, b)` derives a numeric value from several; `BmValue<T>.Previous` is the
+**Motion values.** `Bm.Combine(() => ..., a, b)` derives a numeric value from several; `BmotionValue<T>.Previous` is the
 value before the latest change. Velocity tracking no longer boxes on every numeric set.
 
-**Presets.** `BmPresets.Expand()` - an accordion panel to and from `height: auto`.
+**Presets.** `BmotionPresets.Expand()` - an accordion panel to and from `height: auto`.
 
 **Fixes.**
 
 - A sequence segment placed after a physical spring started 0.8 s in, whatever the spring - 0.6 s late after a stiff
   spring, 3.2 s early after a loose one. It now uses the settling estimate the engine already schedules children with
   (the default spring's placement is unchanged: 0.8 s).
-- The MCP search ranked `BmSprings` above an exact `BmSpring` (the plural rule made them equal); an exact name now wins.
+- The MCP search ranked `BmotionSprings` above an exact `BmotionSpring` (the plural rule made them equal); an exact name now wins.
 
 ## Validation
 
@@ -65,7 +65,7 @@ What the new tests pin:
 - `TheLibrarysSpringAnalysis_AgreesWithTheEngineRunOffScreen` (MCP, 3 springs): `Analyze` and the whole engine agree
   on settling time within two frames and on overshoot within a percentage point.
 - `ReducedMotionBehaviorTests` (6) and `PresetCompositionTests` (2): each behaviour under reduced motion, no effect
-  when motion isn't reduced, preset precedence, composition, and a reflection guard that `BmPreset +` keeps every
+  when motion isn't reduced, preset precedence, composition, and a reflection guard that `BmotionPreset +` keeps every
   property.
 - `MotionValueCombineTests` (8), `SequenceSpringPlacementTests` (3), and an inspector test on Server.
 

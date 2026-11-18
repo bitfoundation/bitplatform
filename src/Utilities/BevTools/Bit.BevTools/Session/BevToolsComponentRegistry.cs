@@ -1,0 +1,511 @@
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
+
+namespace Bit.BevTools;
+
+/// <summary>
+/// All component instances known to a session, with lazily resolved hierarchy and disposal detection.
+/// <para>
+/// Components are referenced weakly (see <see cref="BevToolsComponentRecord.Component"/>) and records are swept on a
+/// schedule that does not depend on the BevTools UI being open, so tracking never keeps an application object
+/// alive and never grows without bound.
+/// </para>
+/// </summary>
+internal sealed class BevToolsComponentRegistry
+{
+    private readonly BevToolsSession _session;
+    private readonly BevToolsOptions _options;
+    private readonly ConditionalWeakTable<IComponent, BevToolsComponentRecord> _byComponent = new();
+    private readonly ConcurrentDictionary<long, BevToolsComponentRecord> _byId = new();
+    private static long _nextInstanceId;
+    private long _lastRefreshVersion = -1;
+    private long _lastRefreshTicks;
+    private long _lastSweepTicks = Stopwatch.GetTimestamp();
+    private BevToolsComponentTreeNode[]? _treeCache;
+    private bool _treeCacheIncludesHidden;
+    private readonly List<WeakReference<Renderer>> _renderers = [];
+    private WeakReference<Renderer>? _firstRenderer;
+
+    // The framework's activities and meters name a component type, never an instance. These remember, past the records
+    // themselves, which types the application rendered and which only BevTools' own UI did - its panels, an extension's
+    // panel, and the framework components they render (Virtualize in the component tree) - so that what the latter do
+    // is not put down to the application.
+    private readonly ConcurrentDictionary<string, byte> _applicationTypes = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, byte> _bevToolsTypes = new(StringComparer.Ordinal);
+
+    public BevToolsComponentRegistry(BevToolsSession session, BevToolsOptions options)
+    {
+        _session = session;
+        _options = options;
+    }
+
+    /// <summary>Records currently kept, including recently disposed ones still shown in the UI.</summary>
+    public int TrackedCount => _byId.Count;
+
+    /// <summary>Application components that are still attached to a renderer. BevTools' own UI is not one of them.</summary>
+    public int LiveCount => _byId.Values.Count(r => !r.IsDisposed && !r.IsBevTools);
+
+    /// <summary>True when <see cref="BevToolsOptions.MaxTrackedComponents"/> was hit and new components are no longer tracked.</summary>
+    public bool IsTruncated { get; private set; }
+
+    /// <summary>
+    /// The first renderer the session saw that is still alive. Read on every activity stop (each HTTP call, JS call and
+    /// UI event), so the answer is kept: a lock and a walk of the list only when that renderer is gone.
+    /// </summary>
+    public Renderer? Renderer
+    {
+        get
+        {
+            if (Volatile.Read(ref _firstRenderer) is { } first && first.TryGetTarget(out var renderer))
+            {
+                return renderer;
+            }
+
+            lock (_renderers)
+            {
+                foreach (var reference in _renderers)
+                {
+                    if (reference.TryGetTarget(out renderer))
+                    {
+                        Volatile.Write(ref _firstRenderer, reference);
+                        return renderer;
+                    }
+                }
+            }
+
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Every live renderer the session's components were rendered by. A page can have more than one: a root component
+    /// added from JavaScript, a second WebAssembly root, a hybrid host's own.
+    /// </summary>
+    public IReadOnlyList<Renderer> Renderers
+    {
+        get
+        {
+            lock (_renderers)
+            {
+                var live = new List<Renderer>(_renderers.Count);
+                foreach (var reference in _renderers)
+                {
+                    if (reference.TryGetTarget(out var renderer))
+                    {
+                        live.Add(renderer);
+                    }
+                }
+
+                return live;
+            }
+        }
+    }
+
+    public BevToolsComponentRecord? Register(IComponent component, Type type, bool isBevTools, bool isHidden)
+    {
+        MaybeSweep();
+        if (_byId.Count >= _options.MaxTrackedComponents)
+        {
+            IsTruncated = true;
+            return null;
+        }
+
+        var record = new BevToolsComponentRecord(Interlocked.Increment(ref _nextInstanceId), component, type, _options.MaxRendersPerComponent, isBevTools, isHidden);
+        _byComponent.AddOrUpdate(component, record);
+        _byId[record.InstanceId] = record;
+        if (isBevTools)
+        {
+            _bevToolsTypes.TryAdd(record.TypeName, 0);
+        }
+
+        _session.Touch();
+        return record;
+    }
+
+    /// <summary>
+    /// Whether components of this type (its full name) were rendered only by BevTools' own UI in this session: known as
+    /// BevTools', never as the application's. A type not seen at all yet is not.
+    /// </summary>
+    public bool IsBevToolsOnlyType(string typeName) => _bevToolsTypes.ContainsKey(typeName) && !_applicationTypes.ContainsKey(typeName);
+
+    public bool TryGet(IComponent component, out BevToolsComponentRecord record) => _byComponent.TryGetValue(component, out record!);
+
+    public BevToolsComponentRecord? Get(long instanceId) => _byId.TryGetValue(instanceId, out var record) ? record : null;
+
+    public IEnumerable<BevToolsComponentRecord> All => _byId.Values;
+
+    internal void NoteRenderer(Renderer renderer)
+    {
+        // Once per component: a loop over the one or two renderers a page has, without allocating when it is known.
+        lock (_renderers)
+        {
+            for (var i = _renderers.Count - 1; i >= 0; i--)
+            {
+                if (!_renderers[i].TryGetTarget(out var known))
+                {
+                    _renderers.RemoveAt(i);
+                }
+                else if (ReferenceEquals(known, renderer))
+                {
+                    return;
+                }
+            }
+
+            _renderers.Add(new WeakReference<Renderer>(renderer));
+        }
+    }
+
+    /// <summary>
+    /// Prunes on component churn so long-running sessions stay bounded even when the BevTools panel is never opened.
+    /// Runs on the renderer's dispatcher (it is called from component activation), at most once per second.
+    /// </summary>
+    private void MaybeSweep()
+    {
+        if (Stopwatch.GetElapsedTime(_lastSweepTicks).TotalSeconds < 1)
+        {
+            return;
+        }
+
+        _lastSweepTicks = Stopwatch.GetTimestamp();
+        Refresh(force: true);
+    }
+
+    /// <summary>Resolves component ids, parents and disposal state. Cheap enough for the UI refresh cadence; skipped when nothing changed.</summary>
+    public void Refresh(bool force = false)
+    {
+        var version = _session.Version;
+        if (!force && version == _lastRefreshVersion && Stopwatch.GetElapsedTime(_lastRefreshTicks).TotalSeconds < 2)
+        {
+            return;
+        }
+
+        var start = Stopwatch.GetTimestamp();
+        _lastRefreshVersion = version;
+        _lastRefreshTicks = start;
+        _lastSweepTicks = start;
+        _treeCache = null;
+
+        var now = DateTimeOffset.UtcNow;
+        var retention = TimeSpan.FromSeconds(_options.DisposedComponentRetentionSeconds);
+        foreach (var record in _byId.Values)
+        {
+            if (record.IsDisposed)
+            {
+                if (now - record.DisposedAt > retention && _byId.TryRemove(record.InstanceId, out _))
+                {
+                    FoldIntoGone(record);
+                }
+
+                continue;
+            }
+
+            if (!record.IsAlive)
+            {
+                // The application dropped the instance and the GC reclaimed it before we noticed: it is gone.
+                MarkDisposed(record, now, collected: true);
+                continue;
+            }
+
+            ResolveHierarchy(record, now);
+        }
+
+        _session.Overhead.AddTreeRefresh(Stopwatch.GetTimestamp() - start);
+    }
+
+    internal void ResolveHierarchy(BevToolsComponentRecord record, DateTimeOffset now)
+    {
+        var component = record.Component;
+        if (component is null)
+        {
+            MarkDisposed(record, now, collected: true);
+            return;
+        }
+
+        if (!record.RendererResolved && component is ComponentBase cb && BevToolsBlazorReflection.CanResolveRenderer)
+        {
+            var renderer = BevToolsBlazorReflection.ResolveRenderer(cb, out var componentId);
+            if (renderer is not null)
+            {
+                record.Renderer = renderer;
+                record.ComponentId = componentId;
+                record.RendererResolved = true;
+                NoteRenderer(renderer);
+            }
+        }
+
+        var effectiveRenderer = record.Renderer ?? Renderer;
+        if (effectiveRenderer is null || !BevToolsBlazorReflection.CanResolveHierarchy)
+        {
+            return;
+        }
+
+        var state = BevToolsBlazorReflection.ResolveState(effectiveRenderer, component);
+        if (state is null)
+        {
+            // Not attached yet (just created) or already disposed by the renderer. A render proves it was attached,
+            // whether or not it was recorded: renders while capture is paused count too.
+            var age = now - record.CreatedAt;
+            if (record.HasRendered || age > TimeSpan.FromSeconds(5))
+            {
+                MarkDisposed(record, now, collected: false);
+            }
+
+            return;
+        }
+
+        record.ComponentId ??= state.ComponentId;
+        if (!record.ParentResolved)
+        {
+            var parentState = state.LogicalParentComponentState ?? state.ParentComponentState;
+            if (parentState is null)
+            {
+                record.ParentResolved = true;
+            }
+            else if (_byComponent.TryGetValue(parentState.Component, out var parent))
+            {
+                record.Parent = parent;
+                record.ParentResolved = true;
+
+                // A component that does not derive from ComponentBase (a CascadingValue) has no render of its own to
+                // link it at, only the next refresh; until then a render's walk up to the ancestor that re-rendered
+                // it would stop there, and the render would be put down to StateHasChanged. Linking it links its own
+                // unlinked parent in turn.
+                if (!parent.ParentResolved && parent.Component is not ComponentBase)
+                {
+                    ResolveHierarchy(parent, now);
+                }
+            }
+            // A renderer can expose the child before its parent has been registered by our activator.
+            // Leave the link unresolved so a later refresh can repair the tree.
+        }
+
+        // Anything the BevTools UI renders belongs to BevTools, including the framework components it uses. This is
+        // the earliest point the owner is known: at activation the instance is not attached to the renderer yet.
+        if (!record.IsBevTools && record.Parent?.IsBevTools == true)
+        {
+            record.MarkBevToolsOwned();
+        }
+
+        if (record.IsBevTools)
+        {
+            _bevToolsTypes.TryAdd(record.TypeName, 0);
+        }
+        else if (record.ParentResolved)
+        {
+            _applicationTypes.TryAdd(record.TypeName, 0);
+        }
+    }
+
+    private void MarkDisposed(BevToolsComponentRecord record, DateTimeOffset now, bool collected)
+    {
+        record.IsDisposed = true;
+        record.DisposedAt = now;
+        if (record.Component is { } component)
+        {
+            _byComponent.Remove(component);
+            if (!record.IsHidden)
+            {
+                // Held weakly from here on: whether garbage collection reclaims it is the leak check's question.
+                _session.Leaks.Track(record, component);
+            }
+        }
+
+        record.ReleaseReferences();
+        if (record.IsBevTools || record.IsHidden)
+        {
+            return;
+        }
+
+        _session.Timeline.Record(new BevToolsEvent
+        {
+            Kind = BevToolsEventKind.Lifecycle,
+            Category = "lifecycle",
+            Title = record.DisplayName + " disposed",
+            Detail = collected ? "instance was garbage collected" : null,
+            ComponentInstanceId = record.InstanceId,
+            ComponentName = record.DisplayName,
+        });
+    }
+
+    /// <summary>Builds the visible tree (roots first). Hidden components are collapsed: their children attach to the nearest visible ancestor.</summary>
+    public BevToolsComponentTreeNode[] BuildTree(bool includeHidden)
+    {
+        if (_treeCache is not null && _treeCacheIncludesHidden == includeHidden)
+        {
+            return _treeCache;
+        }
+
+        var nodes = new Dictionary<long, BevToolsComponentTreeNode>();
+        var live = _byId.Values.Where(r => !r.IsDisposed && !r.IsBevTools && (includeHidden || !r.IsHidden)).OrderBy(r => r.ComponentId ?? int.MaxValue).ThenBy(r => r.InstanceId).ToList();
+        foreach (var record in live)
+        {
+            nodes[record.InstanceId] = new BevToolsComponentTreeNode { Record = record };
+        }
+
+        var roots = new List<BevToolsComponentTreeNode>();
+        foreach (var record in live)
+        {
+            var node = nodes[record.InstanceId];
+            var parent = record.Parent;
+            var hops = 0;
+            while (parent is not null && !nodes.ContainsKey(parent.InstanceId) && hops++ < 1024)
+            {
+                parent = parent.Parent;
+            }
+
+            if (parent is null || !nodes.TryGetValue(parent.InstanceId, out var parentNode) || ReferenceEquals(parentNode, node))
+            {
+                roots.Add(node);
+            }
+            else
+            {
+                parentNode.Children.Add(node);
+            }
+        }
+
+        foreach (var root in roots)
+        {
+            Aggregate(root);
+        }
+
+        _treeCache = roots.ToArray();
+        _treeCacheIncludesHidden = includeHidden;
+        return _treeCache;
+    }
+
+    /// <summary>
+    /// Iterative post-order aggregation. Recursion would overflow the stack on deeply nested or recursive component
+    /// trees, which are exactly the trees a developer opens BevTools to understand.
+    /// </summary>
+    private static void Aggregate(BevToolsComponentTreeNode root)
+    {
+        var order = new List<BevToolsComponentTreeNode>();
+        var stack = new Stack<BevToolsComponentTreeNode>();
+        root.Depth = 0;
+        stack.Push(root);
+        while (stack.Count > 0)
+        {
+            var node = stack.Pop();
+            order.Add(node);
+            node.SubtreeRenders = node.Record.RenderCount;
+            node.SubtreeRenderMs = node.Record.TotalRenderMs;
+            foreach (var child in node.Children)
+            {
+                child.Depth = node.Depth + 1;
+                stack.Push(child);
+            }
+        }
+
+        for (var i = order.Count - 1; i >= 0; i--)
+        {
+            var node = order[i];
+            foreach (var child in node.Children)
+            {
+                node.SubtreeRenders += child.SubtreeRenders;
+                node.SubtreeRenderMs += child.SubtreeRenderMs;
+            }
+        }
+    }
+
+    private readonly Dictionary<string, BevToolsGoneRenderTotals> _gone = [];
+
+    /// <summary>
+    /// Render totals per type of the components the registry let go after their retention, so a profile of a long
+    /// interaction (pages navigated away from a minute ago) still adds up. Read under the lock.
+    /// </summary>
+    internal BevToolsGoneRenderTotals[] GoneTotals()
+    {
+        lock (_gone)
+        {
+            return [.. _gone.Values.Select(g => g with { })];
+        }
+    }
+
+    private void FoldIntoGone(BevToolsComponentRecord record)
+    {
+        if (record.IsBevTools || record.IsHidden || record.RenderCount == 0)
+        {
+            return;
+        }
+
+        lock (_gone)
+        {
+            if (!_gone.TryGetValue(record.TypeName, out var totals))
+            {
+                _gone[record.TypeName] = totals = new BevToolsGoneRenderTotals { TypeName = record.TypeName, DisplayName = record.DisplayName };
+            }
+
+            totals.Instances++;
+            totals.Renders += record.RenderCount;
+            totals.RenderMs += record.TotalRenderMs;
+            totals.MaxRenderMs = Math.Max(totals.MaxRenderMs, record.MaxRenderMs);
+            totals.AllocatedBytes += record.TotalAllocatedBytes;
+            if (record.RendersSinceBaseline > 0)
+            {
+                totals.AllocatedBytesSinceBaseline += record.AllocatedBytesSinceBaseline;
+                totals.InstancesSinceBaseline++;
+                totals.RendersSinceBaseline += record.RendersSinceBaseline;
+                totals.RenderMsSinceBaseline += record.RenderMsSinceBaseline;
+                totals.MaxRenderMsSinceBaseline = Math.Max(totals.MaxRenderMsSinceBaseline, record.MaxRenderMsSinceBaseline);
+            }
+        }
+    }
+
+    /// <summary>When the profiler baseline was last reset for this session, or null when it never was.</summary>
+    public DateTimeOffset? BaselineAt { get; private set; }
+
+    /// <summary>
+    /// Starts a new profiling window for every tracked component: "since baseline" render figures restart from zero
+    /// while the raw counters keep running. The typical workflow is reset → perform one interaction → read what
+    /// rendered, which is impossible when the numbers include everything since page load.
+    /// </summary>
+    public void MarkBaseline()
+    {
+        var now = DateTimeOffset.UtcNow;
+        BaselineAt = now;
+        foreach (var record in _byId.Values)
+        {
+            record.MarkBaseline(now);
+        }
+
+        lock (_gone)
+        {
+            foreach (var totals in _gone.Values)
+            {
+                totals.InstancesSinceBaseline = 0;
+                totals.RendersSinceBaseline = 0;
+                totals.RenderMsSinceBaseline = 0;
+                totals.MaxRenderMsSinceBaseline = 0;
+                totals.AllocatedBytesSinceBaseline = 0;
+            }
+        }
+
+        _session.Touch();
+    }
+
+    /// <summary>Drops the history of components that are already gone. Live components keep their statistics.</summary>
+    public void ClearDisposed()
+    {
+        foreach (var record in _byId.Values)
+        {
+            if (record.IsDisposed)
+            {
+                _byId.TryRemove(record.InstanceId, out _);
+            }
+        }
+
+        // Asked to forget the components that are gone: their totals too.
+        lock (_gone)
+        {
+            _gone.Clear();
+        }
+
+        // Once an instance was omitted at the cap we cannot know when that untracked instance is disposed.
+        // Keep this warning sticky for the session rather than implying the registry is complete again.
+        _treeCache = null;
+        _session.Touch();
+    }
+}

@@ -61,7 +61,7 @@ public class VariantContextTests
     public void UnregisterChild_ReachesAStaggerThatRadiatesFromTheLastChild()
     {
         // from: Last needs the total: with "c" gone, "b" is the last child and starts first.
-        var ctx = new BmotionVariantContext { ChildStagger = Bm.Stagger(0.1, from: BmStaggerFrom.Last) };
+        var ctx = new BmotionVariantContext { ChildStagger = Bm.Stagger(0.1, from: BmotionStaggerFrom.Last) };
         int a = ctx.RegisterChild();
         int b = ctx.RegisterChild();
         int c = ctx.RegisterChild();

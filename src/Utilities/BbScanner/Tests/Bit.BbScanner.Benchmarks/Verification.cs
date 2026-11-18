@@ -14,9 +14,9 @@ public static class Verification
     {
         var frames = FrameFactory.Standard();
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.All,
+            Formats = BbScannerBarcodeFormat.All,
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
@@ -27,7 +27,7 @@ public static class Verification
         foreach (var frame in frames)
         {
             var result = decoder.Decode(
-                frame.Pixels, frame.Width, frame.Height, BbPixelFormat.Gray8, suppressDuplicates: false);
+                frame.Pixels, frame.Width, frame.Height, BbScannerPixelFormat.Gray8, suppressDuplicates: false);
 
             var ok = frame.Expected is null ? result is null : result?.Text == frame.Expected;
             if (!ok)

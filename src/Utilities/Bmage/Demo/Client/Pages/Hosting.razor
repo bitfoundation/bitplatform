@@ -70,7 +70,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Prerendering</h3>
     <p>
         During prerendering there is no browser, so <code>IJSRuntime</code> cannot be used. Rather
-        than throwing, <code>IImageCapabilityProvider.GetAsync</code> returns the managed capability
+        than throwing, <code>IBmageImageCapabilityProvider.GetAsync</code> returns the managed capability
         set with <code>Environment</code> set to <code>Prerendering</code>, so a prerendered page still
         renders something sensible and detects properly once interactive. Move browser work to
         <code>OnAfterRenderAsync</code> or an event handler.
@@ -95,12 +95,12 @@
     </p>
     <ul class="bb-detail-list">
         <li>Constrain the working size aggressively: <code>options.MaxInteractiveDimension = 1200</code>.</li>
-        <li>Use <code>DecodeOptions.MaxSize</code> so the browser downscales before the pixels are sent at all.</li>
+        <li>Use <code>BmageDecodeOptions.MaxSize</code> so the browser downscales before the pixels are sent at all.</li>
         <li>Prefer the headless API on the server for bulk work, and use the browser only for what needs a browser.</li>
         <li>Consider whether the image-heavy pages belong in the client project, with WebAssembly.</li>
     </ul>
     <p>
-        <code>IImageCapabilityProvider</code> reports <code>ImageEnvironment.BrowserServer</code> there,
+        <code>IBmageImageCapabilityProvider</code> reports <code>BmageImageEnvironment.BrowserServer</code> there,
         so code can adapt.
     </p>
 </div>
@@ -120,7 +120,7 @@
     <p>
         Everything works. The components run in compiled .NET inside the app's own process and render
         into a WebView, which Bmage reaches over JavaScript interop - the same position as Interactive
-        Server, so <code>IImageCapabilityProvider</code> reports <code>ImageEnvironment.BrowserServer</code>
+        Server, so <code>IBmageImageCapabilityProvider</code> reports <code>BmageImageEnvironment.BrowserServer</code>
         and picks codecs the same way: images are decoded and encoded by .NET in the app, and AVIF
         exports and photos whose colours need colour management by the WebView. Nothing crosses a network,
         but those pixels and the editor's previews are copied through the WebView's message channel.
@@ -149,16 +149,16 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Lazy loading on WebAssembly</h3>
     <p>
         <code>BmageEditor</code> also works without the registration, so a WebAssembly app can download
-        Bmage only when someone opens the editor. When <code>ImageLoader</code> is not registered, the
+        Bmage only when someone opens the editor. When <code>BmageImageLoader</code> is not registered, the
         editor builds every service it needs itself, once per browser connection, with the
-        <code>BitBmageOptions</code> the app registered or the defaults. Mark both assemblies as lazy
+        <code>BmageOptions</code> the app registered or the defaults. Mark both assemblies as lazy
         loaded, and load them before the editor first renders:
     </p>
     <CodeSnippet Code="@LazyProjectSnippet" Language="XML" Expanded="true" />
     <CodeSnippet Code="@LazyLoadSnippet" Language="Razor" Expanded="true" />
     <ul class="bb-detail-list">
         <li>Leave <code>AddBitBmageServices</code> out of that project's <code>Program.cs</code>: calling it references Bmage's types before the assemblies are there.</li>
-        <li>Code of your own that injects <code>ImageLoader</code> or <code>ImageExporter</code> needs the registration, so lazy loading suits an app whose only use of Bmage is the editor.</li>
+        <li>Code of your own that injects <code>BmageImageLoader</code> or <code>BmageImageExporter</code> needs the registration, so lazy loading suits an app whose only use of Bmage is the editor.</li>
         <li>In a Blazor Web App only the browser lazy loads. Give <code>Routes</code> the <code>InteractiveWebAssembly</code> or <code>InteractiveAuto</code> render mode in <code>App.razor</code>, so the router - and its <code>OnNavigateAsync</code> - runs in the browser. The server project loads Bmage with the rest of the app and keeps its <code>AddBitBmageServices()</code>, and registers <code>LazyAssemblyLoader</code>, which the router's file injects while it is prerendered there: <code>builder.Services.AddScoped&lt;LazyAssemblyLoader&gt;()</code>.</li>
         <li>Do not lazy load in an AOT build. AOT compiles every assembly into <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup.</li>
     </ul>
@@ -177,7 +177,7 @@
     <p>
         Nothing breaks without them: where workers are blocked or the browser has no
         <code>OffscreenCanvas</code>, the same work runs on the page's thread. Cap the pool, or turn it
-        off, with <code>BitBmageOptions.MaxCodecWorkers</code> - see
+        off, with <code>BmageOptions.MaxCodecWorkers</code> - see
         <a href="/performance#threads-workers-and-memory">Performance</a>.
     </p>
 </div>
@@ -209,7 +209,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Without a browser</h3>
     <p>
         On a server, in a console app or a background worker, register the headless services instead.
-        There is no JavaScript and no probing, so <code>ImageProcessor</code> is registered directly.
+        There is no JavaScript and no probing, so <code>BmageImageProcessor</code> is registered directly.
         Only the managed codecs exist: PNG, JPEG, BMP and GIF for decoding; PNG, JPEG and BMP for
         encoding.
     </p>
@@ -235,7 +235,7 @@
                 services.AddBitBmageServices(options =>
                 {
                     options.MaxSourceBytes = 64 * 1024 * 1024;
-                    options.Limits = ImageLimits.Default with { MaxPixels = 80_000_000 };
+                    options.Limits = BmageImageLimits.Default with { MaxPixels = 80_000_000 };
                 });
 
                 return services;
@@ -292,7 +292,7 @@
         """;
 
     private const string PrerenderSnippet = """
-        @inject IImageCapabilityProvider Capabilities
+        @inject IBmageImageCapabilityProvider Capabilities
 
         @if (_capabilities is null)
         {
@@ -300,7 +300,7 @@
         }
 
         @code {
-            private ImageCapabilities? _capabilities;
+            private BmageImageCapabilities? _capabilities;
 
             protected override async Task OnAfterRenderAsync(bool firstRender)
             {
@@ -413,10 +413,10 @@
 
         builder.Services.AddBitBmageHeadlessServices(options =>
         {
-            options.Limits = ImageLimits.Default with { MaxPixels = 30_000_000 };
+            options.Limits = BmageImageLimits.Default with { MaxPixels = 30_000_000 };
         });
 
-        // Then inject ImageProcessor wherever you need it.
-        app.MapPost("/thumbnail", async (IFormFile file, ImageProcessor processor) => { /* ... */ });
+        // Then inject BmageImageProcessor wherever you need it.
+        app.MapPost("/thumbnail", async (IFormFile file, BmageImageProcessor processor) => { /* ... */ });
         """;
 }

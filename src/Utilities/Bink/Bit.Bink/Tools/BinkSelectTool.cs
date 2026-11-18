@@ -2,44 +2,6 @@
 
 namespace Bit.Bink;
 
-/// <summary>The handles drawn around a selection.</summary>
-public enum BinkSelectionHandle : byte
-{
-    /// <summary>No handle.</summary>
-    None = 0,
-    /// <summary>Top-left corner.</summary>
-    TopLeft = 1,
-    /// <summary>Top-center edge.</summary>
-    Top = 2,
-    /// <summary>Top-right corner.</summary>
-    TopRight = 3,
-    /// <summary>Right-center edge.</summary>
-    Right = 4,
-    /// <summary>Bottom-right corner.</summary>
-    BottomRight = 5,
-    /// <summary>Bottom-center edge.</summary>
-    Bottom = 6,
-    /// <summary>Bottom-left corner.</summary>
-    BottomLeft = 7,
-    /// <summary>Left-center edge.</summary>
-    Left = 8,
-    /// <summary>The rotation handle above the selection.</summary>
-    Rotate = 9,
-}
-
-/// <summary>The shape a drag on empty space selects with.</summary>
-public enum BinkMarqueeShape : byte
-{
-    /// <summary>A rectangle: everything it touches is selected.</summary>
-    Rectangle = 0,
-
-    /// <summary>
-    /// A freehand loop: what it encloses is selected. The natural way to pick up handwriting, where a rectangle
-    /// around one word also catches the lines above and below it.
-    /// </summary>
-    Lasso = 1,
-}
-
 /// <summary>
 /// Select, move, resize, rotate, duplicate and delete elements. Dragging on empty space draws a marquee or a lasso;
 /// dragging an element moves it, and with Alt held moves a copy of it; dragging a handle resizes or rotates the

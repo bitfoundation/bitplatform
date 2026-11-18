@@ -14,19 +14,19 @@ public static class BitBmage
     /// Adds Bmage without any browser integration, for server-side or console use. Only the managed codecs are
     /// available: PNG, JPEG, BMP and WebP, lossy and lossless, and GIF and AVIF decoding.
     /// </summary>
-    public static IServiceCollection AddBitBmageHeadlessServices(this IServiceCollection services, Action<BitBmageOptions>? configure = null)
+    public static IServiceCollection AddBitBmageHeadlessServices(this IServiceCollection services, Action<BmageOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
-        var options = new BitBmageOptions();
+        var options = new BmageOptions();
         configure?.Invoke(options);
         services.TryAddSingleton(options);
-        services.TryAddSingleton<IImageCapabilityProvider>(ManagedCapabilityProvider.Instance);
+        services.TryAddSingleton<IBmageImageCapabilityProvider>(BmageManagedCapabilityProvider.Instance);
         services.TryAddSingleton(sp =>
         {
-            var o = sp.GetRequiredService<BitBmageOptions>();
-            return new ImageProcessor(ImageCodecRegistry.CreateDefault(), o.Allocator, o.Limits) { MaxDegreeOfParallelism = o.MaxDegreeOfParallelism };
+            var o = sp.GetRequiredService<BmageOptions>();
+            return new BmageImageProcessor(BmageImageCodecRegistry.CreateDefault(), o.Allocator, o.Limits) { MaxDegreeOfParallelism = o.MaxDegreeOfParallelism };
         });
-        services.TryAddSingleton<FontTextRasterizer>();
+        services.TryAddSingleton<BmageFontTextRasterizer>();
         return services;
     }
 }

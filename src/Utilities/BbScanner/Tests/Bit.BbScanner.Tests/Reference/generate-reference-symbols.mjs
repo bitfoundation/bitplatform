@@ -34,8 +34,8 @@ const gtin = digits => {
     return digits + ((10 - (sum % 10)) % 10);
 };
 
-// Each case: an id, the BbBarcodeFormat it must decode as, the BWIPP encoder and its options, the data handed to
-// the encoder, and what the decoder must report. `gs1` is the expected BbBarcodeResultMetadata.IsGs1, and
+// Each case: an id, the BbScannerBarcodeFormat it must decode as, the BWIPP encoder and its options, the data handed to
+// the encoder, and what the decoder must report. `gs1` is the expected BbScannerBarcodeResultMetadata.IsGs1, and
 // `decoderOptions` names the BbScannerOptions a case needs beyond the defaults.
 const cases = [
     // PDF417: every compaction mode, a spread of shapes and every security level.

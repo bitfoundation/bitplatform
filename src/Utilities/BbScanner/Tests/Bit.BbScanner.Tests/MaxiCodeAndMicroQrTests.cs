@@ -8,7 +8,7 @@
 [TestClass]
 public class MaxiCodeAndMicroQrTests
 {
-    private const BbBarcodeFormat Both = BbBarcodeFormat.MaxiCode | BbBarcodeFormat.MicroQrCode;
+    private const BbScannerBarcodeFormat Both = BbScannerBarcodeFormat.MaxiCode | BbScannerBarcodeFormat.MicroQrCode;
 
     [TestMethod]
     [DataRow("UPPER CASE, DIGITS 0123 AND $%&'()*+-./:", 4)]
@@ -20,11 +20,11 @@ public class MaxiCodeAndMicroQrTests
         using var matrix = MaxiCodeEncoder.Encode(content, mode);
         using var image = SyntheticImage.FromMaxiCode(matrix, moduleWidth: 4);
 
-        var result = Decode(image, BbBarcodeFormat.MaxiCode, still: true);
+        var result = Decode(image, BbScannerBarcodeFormat.MaxiCode, still: true);
 
         Assert.IsNotNull(result, content);
         Assert.AreEqual(content, result.Text);
-        Assert.AreEqual(BbBarcodeFormat.MaxiCode, result.Format);
+        Assert.AreEqual(BbScannerBarcodeFormat.MaxiCode, result.Format);
         Assert.AreEqual($"Mode {mode}", result.Metadata?.SymbolVersion);
         Assert.AreEqual(mode == 5 ? "Enhanced" : "Standard", result.Metadata?.ErrorCorrectionLevel);
     }
@@ -48,8 +48,8 @@ public class MaxiCodeAndMicroQrTests
                 using var matrix = MicroQrEncoder.Encode(content, level, mask);
                 Assert.AreEqual(9 + (2 * (version[1] - '0')), matrix.Width, $"{content} {level}");
                 using var image = SyntheticImage.FromMatrix(matrix, 3, quietZoneModules: 2);
-                var result = Decode(image, BbBarcodeFormat.MicroQrCode, still: true);
-                if (result?.Text != content || result.Format != BbBarcodeFormat.MicroQrCode || result.Metadata?.SymbolVersion != version)
+                var result = Decode(image, BbScannerBarcodeFormat.MicroQrCode, still: true);
+                if (result?.Text != content || result.Format != BbScannerBarcodeFormat.MicroQrCode || result.Metadata?.SymbolVersion != version)
                 {
                     failures.Add($"{content} {level} mask {mask}: {result?.Text} {result?.Metadata?.SymbolVersion}");
                 }
@@ -74,7 +74,7 @@ public class MaxiCodeAndMicroQrTests
         // two. Every angle, a still image and four live frames of each.
         var symbol = ReferenceSymbols.Get(id);
         using var matrix = symbol.ToMatrix();
-        using var rendered = symbol.BarcodeFormat == BbBarcodeFormat.MaxiCode
+        using var rendered = symbol.BarcodeFormat == BbScannerBarcodeFormat.MaxiCode
             ? SyntheticImage.FromMaxiCode(matrix, moduleWidth: pixels)
             : SyntheticImage.FromMatrix(matrix, pixels, quietZoneModules: 2);
         var failures = new List<string>();
@@ -108,7 +108,7 @@ public class MaxiCodeAndMicroQrTests
         // perspective the four sides of its finder pattern give.
         var symbol = ReferenceSymbols.Get(id);
         using var matrix = symbol.ToMatrix();
-        using var rendered = symbol.BarcodeFormat == BbBarcodeFormat.MaxiCode
+        using var rendered = symbol.BarcodeFormat == BbScannerBarcodeFormat.MaxiCode
             ? SyntheticImage.FromMaxiCode(matrix, moduleWidth: 4)
             : SyntheticImage.FromMatrix(matrix, 4, quietZoneModules: 2);
         var failures = new List<string>();
@@ -187,7 +187,7 @@ public class MaxiCodeAndMicroQrTests
                     wrong.Add($"{symbol.Id}: {result.Format} {result.Text}");
                 }
 
-                if (Decode(image, BbBarcodeFormat.All, still: true) is { Format: BbBarcodeFormat.MaxiCode or BbBarcodeFormat.MicroQrCode } all)
+                if (Decode(image, BbScannerBarcodeFormat.All, still: true) is { Format: BbScannerBarcodeFormat.MaxiCode or BbScannerBarcodeFormat.MicroQrCode } all)
                 {
                     wrong.Add($"{symbol.Id} with every symbology: {all.Format} {all.Text}");
                 }
@@ -202,11 +202,11 @@ public class MaxiCodeAndMicroQrTests
     {
         // Micro QR is looked for round the finder patterns only when no QR symbol was read, so a QR symbol is reported as
         // one, and costs nothing more.
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.QrCode).Take(12))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbScannerBarcodeFormat.QrCode).Take(12))
         {
             using var image = symbol.Render(3);
-            var result = Decode(image, BbBarcodeFormat.QrCode | BbBarcodeFormat.MicroQrCode, still: true);
-            Assert.AreEqual(BbBarcodeFormat.QrCode, result?.Format, symbol.Id);
+            var result = Decode(image, BbScannerBarcodeFormat.QrCode | BbScannerBarcodeFormat.MicroQrCode, still: true);
+            Assert.AreEqual(BbScannerBarcodeFormat.QrCode, result?.Format, symbol.Id);
             Assert.AreEqual(symbol.Expected, result?.Text, symbol.Id);
         }
     }
@@ -216,7 +216,7 @@ public class MaxiCodeAndMicroQrTests
     {
         // Every row crosses a bullseye's runs every 21 pixels, and the column through each centre is light from top to
         // bottom: followed to the image's edge from every row, it cost the square of the height.
-        using var stripes = new BbBitMatrix(64, 100_000);
+        using var stripes = new BbScannerBitMatrix(64, 100_000);
         Fill(stripes, static (x, _) => IsRing(x));
 
         AssertGivenUpQuickly(stripes);
@@ -227,7 +227,7 @@ public class MaxiCodeAndMicroQrTests
     {
         // The rows either side of each light row find bullseyes, their columns confirm them, and the light row through
         // the centre the columns give runs on to the image's edge.
-        using var bands = new BbBitMatrix(65_536, 1_024);
+        using var bands = new BbScannerBitMatrix(65_536, 1_024);
         Fill(bands, static (x, y) => (y % 21) switch
         {
             11 => false,
@@ -243,7 +243,7 @@ public class MaxiCodeAndMicroQrTests
     {
         // Each cross is a bullseye along its row and its column, and both its diagonals are light through every other
         // cross to the image's edge.
-        using var lattice = new BbBitMatrix(8_192, 8_192);
+        using var lattice = new BbScannerBitMatrix(8_192, 8_192);
         Fill(lattice, static (x, y) => IsCentre(y) ? IsRing(x) : IsCentre(x) && IsRing(y));
 
         AssertGivenUpQuickly(lattice);
@@ -259,7 +259,7 @@ public class MaxiCodeAndMicroQrTests
     /// Fills an image whose rows repeat every 21, as each above does: the first 21 a bit at a time, every later one
     /// copied a word at a time from the one 21 above it - set one by one, the larger images took seconds.
     /// </summary>
-    private static void Fill(BbBitMatrix image, Func<int, int, bool> dark)
+    private static void Fill(BbScannerBitMatrix image, Func<int, int, bool> dark)
     {
         for (var y = 0; y < image.Height; y++)
         {
@@ -282,10 +282,10 @@ public class MaxiCodeAndMicroQrTests
     /// seconds bounded, over two minutes not - and a shared build machine running every target framework's tests side by
     /// side takes ten times as long again: close to twenty seconds bounded. The bound sits between the two.
     /// </summary>
-    private static void AssertGivenUpQuickly(BbBitMatrix image)
+    private static void AssertGivenUpQuickly(BbScannerBitMatrix image)
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        var result = new BbMaxiCodeReader().Decode(image, new BbMatrixDecodeOptions(TryHarder: true, AllowInverted: false));
+        var result = new BbScannerMaxiCodeReader().Decode(image, new BbScannerMatrixDecodeOptions(TryHarder: true, AllowInverted: false));
         watch.Stop();
 
         Assert.IsNull(result);
@@ -293,9 +293,9 @@ public class MaxiCodeAndMicroQrTests
     }
 
     /// <summary>Up to four live frames of the same image through one decoder, as a camera held still delivers them.</summary>
-    private static BbBarcodeResult? DecodeLive(BbLuminanceBuffer frame, BbBarcodeFormat format)
+    private static BbScannerBarcodeResult? DecodeLive(BbScannerLuminanceBuffer frame, BbScannerBarcodeFormat format)
     {
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = format, DuplicateSuppressionWindow = TimeSpan.Zero });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = format, DuplicateSuppressionWindow = TimeSpan.Zero });
         for (var i = 0; i < 4; i++)
         {
             if (decoder.Decode(frame.View, suppressDuplicates: false) is { } result)
@@ -307,12 +307,12 @@ public class MaxiCodeAndMicroQrTests
         return null;
     }
 
-    private static BbBarcodeResult? Decode(BbLuminanceBuffer image, BbBarcodeFormat format, bool still)
+    private static BbScannerBarcodeResult? Decode(BbScannerLuminanceBuffer image, BbScannerBarcodeFormat format, bool still)
     {
         var options = still ? BbScannerOptions.ForStillImages() : new BbScannerOptions();
         options.Formats = format;
         options.DuplicateSuppressionWindow = TimeSpan.Zero;
-        using var decoder = new BbBarcodeDecoder(options);
+        using var decoder = new BbScannerBarcodeDecoder(options);
         return decoder.Decode(image.View, suppressDuplicates: false);
     }
 }

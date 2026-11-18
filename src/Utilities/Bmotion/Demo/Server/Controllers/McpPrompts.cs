@@ -80,9 +80,9 @@ public static class McpPrompts
                `GetBmotionGuideSection(heading: "Lazy loading on WebAssembly")`.
             3. Add `@using Bit.Bmotion` to `_Imports.razor` in every project that renders animations.
             4. Set the reduced-motion policy while you are wiring the services up. Where Program.cs registers them,
-               that is `AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User)` there. A WebAssembly
+               that is `AddBitBmotionServices(o => o.ReducedMotion = BmotionReducedMotionMode.User)` there. A WebAssembly
                client that lazy loads Bit.Bmotion still registers nothing in its Program.cs: it sets the policy in
-               `Services.ConfigureBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User)` in the layout,
+               `Services.ConfigureBmotionServices(o => o.ReducedMotion = BmotionReducedMotionMode.User)` in the layout,
                the same as the server's `AddBitBmotionServices` sets it. The default is back-compatible rather than
                correct, and this is the one moment when adding it costs nothing.
             5. Add one small animation from `GetBmotionRecipe(id: "fade-in-on-mount")` to prove the wiring works
@@ -143,7 +143,7 @@ public static class McpPrompts
                often there verbatim.
             2. If nothing animates at all, establish the render mode, then call `AnalyzeBmotionAnimation` with the
                properties and transition. The browser plays almost everything, but what the engine keeps on the C#
-               frame loop - a transition OnUpdate, an SVG path morph, an endless BmRepeat.Reverse - becomes an
+               frame loop - a transition OnUpdate, an SVG path morph, an endless BmotionRepeat.Reverse - becomes an
                instant state change on Blazor Server, which is exactly the "works on my machine, not in production"
                shape, and the "works on the second visit but not the first" shape under InteractiveAuto.
             3. If the element does not move on mount, check whether `Initial` is set. `Animate` alone leaves the
@@ -158,7 +158,7 @@ public static class McpPrompts
                is missing from the layout of the page that failed, and "Bit.Bmotion's options are already set" means
                two calls - or the call and the server's `AddBitBmotionServices` - set different options.
             7. Rule out reduced motion. If the operating system asks for reduced motion and the app sets
-               `BmReducedMotionMode.User` or `Always`, transforms and layout changes snap by design while opacity
+               `BmotionReducedMotionMode.User` or `Always`, transforms and layout changes snap by design while opacity
                and colour keep animating. That is correct behaviour, and it looks exactly like a bug.
 
             Tell me the cause and the fix, and cite the tool call that established it.

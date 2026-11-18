@@ -2,7 +2,7 @@ namespace Bit.Bmotion;
 
 /// <summary>
 /// Fires a set of timed callbacks off the engine's own animation clock rather than the wall clock -
-/// the timeline playhead behind <see cref="BmSequence"/>.
+/// the timeline playhead behind <see cref="BmotionSequence"/>.
 /// <para>
 /// This is what makes a sequence's playback controls mean anything. A wall-clock timer would start
 /// every later segment on schedule no matter what the controls said, so pausing a timeline would

@@ -21,7 +21,7 @@
     <p>
         <code>AnimateAsync(selector, target, transition, stagger)</code> resolves every matching
         element and animates them together, with the optional <strong>stagger</strong> spreading
-        their start times. The call returns <strong>BmAnimationControls</strong>: awaitable for
+        their start times. The call returns <strong>BmotionAnimationControls</strong>: awaitable for
         completion, and holding <code>Pause</code>, <code>Play</code>, <code>SetSpeed</code>,
         <code>Stop</code> (freeze where it is) and <code>Complete</code> (jump to the end). It also knows where
         it is - <code>Duration</code>, <code>Time</code>, <code>Progress</code> and <code>State</code> - and
@@ -118,7 +118,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Sequences</h3>
     <p>
-        A <strong>BmSequence</strong> is a timeline: each step names its own target, and
+        A <strong>BmotionSequence</strong> is a timeline: each step names its own target, and
         <code>at</code> places it relative to what came before. <code>"+0.2"</code> and
         <code>"-0.1"</code> are offsets from the previous step's <em>end</em> (so a negative value
         overlaps it), <code>"&lt;"</code> aligns with the previous step's <em>start</em>, a bare
@@ -238,7 +238,7 @@
         <div class="demo-card">
             <Bmotion @ref="_box"
                      Animate="Bm.To(rotate: 360)"
-                     Transition="Bm.Tween(4, BmEase.Linear, repeat: BmRepeat.Forever)">
+                     Transition="Bm.Tween(4, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
                 <div class="box" />
             </Bmotion>
         </div>
@@ -279,7 +279,7 @@
                         <div class="box box-sm" />
                     </Bmotion>
                     <Bmotion Animate="@(_configOn ? Bm.To(y: 30, scale: 1.3) : Bm.To(y: -30, scale: 1))"
-                             Transition="Bm.Tween(0.8, BmEase.InOut)">
+                             Transition="Bm.Tween(0.8, BmotionEase.InOut)">
                         <div class="box box-sm" />
                     </Bmotion>
                     <Bmotion Animate="@(_configOn ? Bm.To(y: -30, rotate: -90) : Bm.To(y: 30, rotate: 0))">
@@ -306,8 +306,8 @@
 
 @code {
     private Bmotion _box = default!;
-    private BmAnimationControls? _controls;
-    private BmAnimationControls? _sequenceControls;
+    private BmotionAnimationControls? _controls;
+    private BmotionAnimationControls? _sequenceControls;
     private string _runState = "idle";
     private int _scrub;
     private string _scrubLabel = "";
@@ -315,11 +315,11 @@
     private double _count;
 
     private int _slider = 20;
-    private readonly BmValue<double> _driver = Bm.Value(20.0);
-    private BmValue<double>? _follower;
-    private Dictionary<string, BmValue<double>> _directValues = default!;
-    private Dictionary<string, BmValue<double>> _springValues = default!;
-    private Dictionary<string, BmValue<double>> _rotateValues = default!;
+    private readonly BmotionValue<double> _driver = Bm.Value(20.0);
+    private BmotionValue<double>? _follower;
+    private Dictionary<string, BmotionValue<double>> _directValues = default!;
+    private Dictionary<string, BmotionValue<double>> _springValues = default!;
+    private Dictionary<string, BmotionValue<double>> _rotateValues = default!;
 
     private bool _configOn;
     private double _speed = 1;
@@ -403,7 +403,7 @@
         var controls = await Motion.AnimateAsync(
             ".prog-dot",
             Bm.To(y: [0, -60, 0], scale: [1, 1.25, 1]),
-            Bm.Tween(2.4, BmEase.InOut),
+            Bm.Tween(2.4, BmotionEase.InOut),
             stagger: Bm.Stagger(0.12));
 
         _controls = controls;
@@ -422,7 +422,7 @@
     {
         if (_controls is null || int.TryParse(e.Value?.ToString(), out var value) is false) return;
         _scrub = value;
-        if (_controls.State is BmPlaybackState.Running) _controls.Pause();
+        if (_controls.State is BmotionPlaybackState.Running) _controls.Pause();
         _controls.Seek(value / 1000.0 * _controls.Duration);
         _scrubLabel = $"{_controls.Time:0.00} s of {_controls.Duration:0.00} s · {_controls.State}";
         _runState = "scrubbing";
@@ -443,12 +443,12 @@
         {
             _count = value;
             StateHasChanged();
-        }, Bm.Tween(1.4, BmEase.InOut));
+        }, Bm.Tween(1.4, BmotionEase.InOut));
 
     private async Task RunSequenceAsync()
     {
-        var sequence = new BmSequence()
-            .Add("#seq-box", Bm.To(x: 90), Bm.Tween(0.5, BmEase.InOut))
+        var sequence = new BmotionSequence()
+            .Add("#seq-box", Bm.To(x: 90), Bm.Tween(0.5, BmotionEase.InOut))
             .Add("#seq-box", Bm.To(rotate: 180), Bm.Tween(0.4), at: "-0.2")   // overlap the previous step
             .Label("burst")
             .Add(".seq-dot", Bm.To(scale: [1, 1.8, 1]), Bm.Spring(stiffness: 400, damping: 16), at: "burst")
@@ -487,7 +487,7 @@
         </div>
 
         @code {
-            private BmAnimationControls? _controls;
+            private BmotionAnimationControls? _controls;
 
             async Task RunAsync()
             {
@@ -495,7 +495,7 @@
                 _controls = await Motion.AnimateAsync(
                     ".prog-dot",
                     Bm.To(y: [0, -60, 0], scale: [1, 1.25, 1]),
-                    Bm.Tween(2.4, BmEase.InOut),
+                    Bm.Tween(2.4, BmotionEase.InOut),
                     stagger: Bm.Stagger(0.12));
 
                 await _controls;   // the controls are directly awaitable
@@ -531,7 +531,7 @@
                 {
                     _count = value;
                     StateHasChanged();
-                }, Bm.Tween(1.4, BmEase.InOut));
+                }, Bm.Tween(1.4, BmotionEase.InOut));
         }
         """;
 
@@ -544,8 +544,8 @@
         @code {
             async Task RunSequenceAsync()
             {
-                var sequence = new BmSequence()
-                    .Add("#seq-box", Bm.To(x: 90), Bm.Tween(0.5, BmEase.InOut))
+                var sequence = new BmotionSequence()
+                    .Add("#seq-box", Bm.To(x: 90), Bm.Tween(0.5, BmotionEase.InOut))
 
                     // "-0.2" starts 0.2s BEFORE the previous step ends, so the two overlap.
                     // "+0.2" would leave a gap; "<" aligns with the previous step's start.
@@ -570,7 +570,7 @@
             void Resume() => _controls?.Play();
             void Faster() => _controls?.SetSpeed(3);   // steps AND gaps compress by 3x
 
-            private BmAnimationControls? _controls;
+            private BmotionAnimationControls? _controls;
         }
         """;
 
@@ -587,13 +587,13 @@
 
         @code {
             // One source of truth; everything else is derived from it.
-            private readonly BmValue<double> _driver = Bm.Value(20.0);
-            private BmValue<double>? _follower;
+            private readonly BmotionValue<double> _driver = Bm.Value(20.0);
+            private BmotionValue<double>? _follower;
             private int _slider = 20;
 
-            private Dictionary<string, BmValue<double>> _directValues = default!;
-            private Dictionary<string, BmValue<double>> _springValues = default!;
-            private Dictionary<string, BmValue<double>> _rotateValues = default!;
+            private Dictionary<string, BmotionValue<double>> _directValues = default!;
+            private Dictionary<string, BmotionValue<double>> _springValues = default!;
+            private Dictionary<string, BmotionValue<double>> _rotateValues = default!;
 
             protected override void OnInitialized()
             {
@@ -651,7 +651,7 @@
             private ElementReference _plain;
             private int _turns;
 
-            // Both return BmAnimationControls, like a selector that matches many.
+            // Both return BmotionAnimationControls, like a selector that matches many.
             Task NudgeAsync() => Motion.AnimateAsync("#promo-card", Bm.To(x: 50, scale: 1.2),
                                                      Bm.Spring(stiffness: 260, damping: 18)).AsTask();
 
@@ -665,7 +665,7 @@
 
         <Bmotion @ref="_box"
                  Animate="Bm.To(rotate: 360)"
-                 Transition="Bm.Tween(4, BmEase.Linear, repeat: BmRepeat.Forever)">
+                 Transition="Bm.Tween(4, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
             <div class="box" />
         </Bmotion>
 
@@ -694,7 +694,7 @@
            0.25 is the slow-motion switch for tuning, 0 makes everything instant. *@
         <BmotionConfig Transition="Bm.Spring(stiffness: 180, damping: 16)"
                        TransitionSpeed="0.25"
-                       ColorSpace="BmColorSpace.Oklab"
+                       ColorSpace="BmotionColorSpace.Oklab"
                        ReduceMotion="null">
             ...
         </BmotionConfig>
@@ -705,6 +705,6 @@
            so the library never silently disables motion an app did not opt into.
 
            For an app-wide policy, set it at registration instead:
-           builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User); *@
+           builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmotionReducedMotionMode.User); *@
         """;
 }

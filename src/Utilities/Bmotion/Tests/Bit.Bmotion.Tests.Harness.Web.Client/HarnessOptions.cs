@@ -3,13 +3,13 @@
 namespace BmotionTests.Harness.Web.Client;
 
 /// <summary>
-/// The library's global options (<see cref="BitBmotionOptions"/>) a harness host was started with. The server
+/// The library's global options (<see cref="BmotionOptions"/>) a harness host was started with. The server
 /// reads them from configuration (<c>--BmotionHarness:Prerender=Animate</c>, ...) and writes them on
 /// <c>&lt;body data-bm-*&gt;</c>, where the WebAssembly client reads them back: both containers must register the
 /// library identically, or the prerendering pass and the runtime that takes over would disagree about what an
 /// element looks like at rest.
 /// </summary>
-public sealed record HarnessOptions(BmPrerenderMode Prerender, BmReducedMotionMode ReducedMotion, BmCssSafeMode CssSafeMode)
+public sealed record HarnessOptions(BmotionPrerenderMode Prerender, BmotionReducedMotionMode ReducedMotion, BmotionCssSafeMode CssSafeMode)
 {
     public const string PrerenderKey = "BmotionHarness:Prerender";
     public const string ReducedMotionKey = "BmotionHarness:ReducedMotion";
@@ -19,7 +19,7 @@ public sealed record HarnessOptions(BmPrerenderMode Prerender, BmReducedMotionMo
     public const string ReducedMotionAttribute = "data-bm-reduced-motion";
     public const string CssSafeModeAttribute = "data-bm-css-safe-mode";
 
-    public static HarnessOptions Default { get; } = new(BmPrerenderMode.Initial, BmReducedMotionMode.IgnoreUnlessConfigured, BmCssSafeMode.Off);
+    public static HarnessOptions Default { get; } = new(BmotionPrerenderMode.Initial, BmotionReducedMotionMode.IgnoreUnlessConfigured, BmotionCssSafeMode.Off);
 
     /// <summary>Reads the options through <paramref name="read"/>; a missing value keeps the library's default.</summary>
     public static HarnessOptions Read(Func<string, string?> read) => new(
@@ -27,7 +27,7 @@ public sealed record HarnessOptions(BmPrerenderMode Prerender, BmReducedMotionMo
         Parse(read(ReducedMotionKey), Default.ReducedMotion),
         Parse(read(CssSafeModeKey), Default.CssSafeMode));
 
-    public void Apply(BitBmotionOptions options)
+    public void Apply(BmotionOptions options)
     {
         options.Prerender = Prerender;
         options.ReducedMotion = ReducedMotion;

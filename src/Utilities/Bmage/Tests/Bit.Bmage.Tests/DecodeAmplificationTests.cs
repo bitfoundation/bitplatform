@@ -10,7 +10,7 @@ namespace Bit.Bmage.Tests;
 [TestClass]
 public sealed class DecodeAmplificationTests
 {
-    // A frame of 8192 x 8192 is within ImageLimits.Default; what it costs is the point.
+    // A frame of 8192 x 8192 is within BmageImageLimits.Default; what it costs is the point.
     private const int Side = 8192;
 
     // Far less than the planes of an 8192 x 8192 frame, which are 200 MB and more; far more than an 8 x 8 decode needs.
@@ -20,9 +20,9 @@ public sealed class DecodeAmplificationTests
     public void ABaselineJpegWhoseDataIsFarTooShortForItsFrameIsRefusedBeforeItsPlanesAreAllocated()
     {
         using var small = TestImages.Gradient(8, 8);
-        var jpeg = WithFrameSize(JpegEncoder.Encode(small).Data, Side, Side);
+        var jpeg = WithFrameSize(BmageJpegEncoder.Encode(small).Data, Side, Side);
 
-        var allocated = Allocated(() => Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(jpeg)));
+        var allocated = Allocated(() => Assert.ThrowsExactly<BmageImageDecodeException>(() => BmageJpegDecoder.Decode(jpeg)));
 
         Assert.IsLessThan(Allowance, allocated, $"Allocated {allocated:N0} bytes.");
     }
@@ -33,10 +33,10 @@ public sealed class DecodeAmplificationTests
         // The same file marked progressive (SOF2): its scan, a sequential one, is then invalid, but the coefficients
         // were allocated from the frame header before any scan was read.
         using var small = TestImages.Gradient(8, 8);
-        var jpeg = WithFrameSize(JpegEncoder.Encode(small).Data, Side, Side);
+        var jpeg = WithFrameSize(BmageJpegEncoder.Encode(small).Data, Side, Side);
         jpeg[FrameMarker(jpeg) + 1] = 0xC2;
 
-        var allocated = Allocated(() => Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(jpeg)));
+        var allocated = Allocated(() => Assert.ThrowsExactly<BmageImageDecodeException>(() => BmageJpegDecoder.Decode(jpeg)));
 
         Assert.IsLessThan(Allowance, allocated, $"Allocated {allocated:N0} bytes.");
     }
@@ -46,14 +46,14 @@ public sealed class DecodeAmplificationTests
     {
         // Comment segments after the scan make the file long enough for its frame, but none of them is image data.
         using var small = TestImages.Gradient(8, 8);
-        var jpeg = WithFrameSize(JpegEncoder.Encode(small).Data, Side, Side);
+        var jpeg = WithFrameSize(BmageJpegEncoder.Encode(small).Data, Side, Side);
         var comment = new byte[4 + 65533];
         comment[0] = 0xFF;
         comment[1] = 0xFE;
         BinaryPrimitives.WriteUInt16BigEndian(comment.AsSpan(2), 65535);
         var padded = jpeg[..^2].Concat(Enumerable.Repeat(comment, 32).SelectMany(c => c)).Concat(jpeg[^2..]).ToArray();
 
-        var allocated = Allocated(() => Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(padded)));
+        var allocated = Allocated(() => Assert.ThrowsExactly<BmageImageDecodeException>(() => BmageJpegDecoder.Decode(padded)));
 
         Assert.IsLessThan(Allowance, allocated, $"Allocated {allocated:N0} bytes.");
     }
@@ -75,7 +75,7 @@ public sealed class DecodeAmplificationTests
             0xFF, 0xD9,
         ];
 
-        var allocated = Allocated(() => Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(jpeg)));
+        var allocated = Allocated(() => Assert.ThrowsExactly<BmageImageDecodeException>(() => BmageJpegDecoder.Decode(jpeg)));
 
         Assert.IsLessThan(Allowance, allocated, $"Allocated {allocated:N0} bytes.");
     }
@@ -86,7 +86,7 @@ public sealed class DecodeAmplificationTests
         foreach (var size in new[] { 1, 8, 17, 640 })
         {
             using var source = TestImages.Gradient(size, size);
-            using var decoded = JpegDecoder.Decode(JpegEncoder.Encode(source).Data);
+            using var decoded = BmageJpegDecoder.Decode(BmageJpegEncoder.Encode(source).Data);
             Assert.AreEqual(source.Size, decoded.Size);
         }
     }
@@ -95,13 +95,13 @@ public sealed class DecodeAmplificationTests
     public void ALossyWebPWhoseFirstPartitionIsFarTooShortForItsFrameIsRefusedBeforeItIsAllocated()
     {
         using var small = TestImages.Gradient(16, 16);
-        var webp = WebPEncoder.Encode(small, ImageExportOptions.WebP).Data;
+        var webp = BmageWebPEncoder.Encode(small, BmageImageExportOptions.WebP).Data;
         var payload = webp.AsSpan().IndexOf("VP8 "u8) + 8;
         Assert.IsGreaterThan(7, payload, "Not a simple lossy WebP.");
         BinaryPrimitives.WriteUInt16LittleEndian(webp.AsSpan(payload + 6), 8909);
         BinaryPrimitives.WriteUInt16LittleEndian(webp.AsSpan(payload + 8), 4302);
 
-        var allocated = Allocated(() => Assert.ThrowsExactly<ImageDecodeException>(() => WebPDecoder.Decode(webp)));
+        var allocated = Allocated(() => Assert.ThrowsExactly<BmageImageDecodeException>(() => BmageWebPDecoder.Decode(webp)));
 
         Assert.IsLessThan(Allowance, allocated, $"Allocated {allocated:N0} bytes.");
     }

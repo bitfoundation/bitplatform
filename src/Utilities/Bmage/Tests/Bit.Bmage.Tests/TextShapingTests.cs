@@ -16,8 +16,8 @@ public sealed class TextShapingTests
 
     private static ushort[] Shape(string text, BmageFontFile? font = null)
     {
-        var codePoints = TextShaper.CodePoints(text);
-        var buffer = TextShaper.ShapeRun(font ?? Vazirmatn, codePoints, 0, codePoints.Length, UnicodeScript.Arabic, rtl: true);
+        var codePoints = BmageTextShaper.CodePoints(text);
+        var buffer = BmageTextShaper.ShapeRun(font ?? Vazirmatn, codePoints, 0, codePoints.Length, BmageUnicodeScript.Arabic, rtl: true);
         return [.. buffer.AsSpan().ToArray().Where(g => !g.Hidden).Select(g => g.Glyph)];
     }
 
@@ -74,8 +74,8 @@ public sealed class TextShapingTests
     public void ZeroWidthNonJoinerSeparatesLettersAndDrawsNothing()
     {
         // The Persian half-space: two isolated behs, and the ZWNJ itself takes no room.
-        var codePoints = TextShaper.CodePoints("ب‌ب");
-        var buffer = TextShaper.ShapeRun(Vazirmatn, codePoints, 0, codePoints.Length, UnicodeScript.Arabic, rtl: true);
+        var codePoints = BmageTextShaper.CodePoints("ب‌ب");
+        var buffer = BmageTextShaper.ShapeRun(Vazirmatn, codePoints, 0, codePoints.Length, BmageUnicodeScript.Arabic, rtl: true);
         var glyphs = buffer.AsSpan().ToArray();
         CollectionAssert.AreEqual(new[] { Nominal("ب"), Nominal("ب") }, glyphs.Where(g => g.XAdvance > 0).Select(g => g.Glyph).ToArray());
         Assert.AreEqual(3, glyphs.Length);
@@ -106,8 +106,8 @@ public sealed class TextShapingTests
     public void HarakatHangOnTheirLetters()
     {
         // Beh with a fatha: the mark takes no room and sits above its letter.
-        var codePoints = TextShaper.CodePoints("بَ");
-        var line = TextShaper.LayoutLine([Vazirmatn], codePoints, BidiParagraph.Create(codePoints).GetLineLevels(0, codePoints.Length), 0, codePoints.Length, 100, 0);
+        var codePoints = BmageTextShaper.CodePoints("بَ");
+        var line = BmageTextShaper.LayoutLine([Vazirmatn], codePoints, BmageBidiParagraph.Create(codePoints).GetLineLevels(0, codePoints.Length), 0, codePoints.Length, 100, 0);
         Assert.HasCount(2, line.Glyphs);
         var beh = line.Glyphs.Single(g => g.Glyph == Nominal("ب"));
         var fatha = line.Glyphs.Single(g => g.Glyph != beh.Glyph);
@@ -121,35 +121,35 @@ public sealed class TextShapingTests
     [TestMethod]
     public void ALongRunOfMarksHangsOnItsLetterAtOnce()
     {
-        var codePoints = TextShaper.CodePoints("ب" + new string('\u064E', 60_000));
+        var codePoints = BmageTextShaper.CodePoints("ب" + new string('\u064E', 60_000));
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        var buffer = TextShaper.ShapeRun(Vazirmatn, codePoints, 0, codePoints.Length, UnicodeScript.Arabic, rtl: true);
+        var buffer = BmageTextShaper.ShapeRun(Vazirmatn, codePoints, 0, codePoints.Length, BmageUnicodeScript.Arabic, rtl: true);
         Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"Shaping took {watch.ElapsedMilliseconds} ms.");
         Assert.AreEqual(codePoints.Length, buffer.Count);
         Assert.AreEqual(0, buffer[1].AttachTo);
 
-        var pair = TextShaper.CodePoints("ب" + new string('\u064E', 2));
-        var stacked = TextShaper.ShapeRun(Vazirmatn, pair, 0, pair.Length, UnicodeScript.Arabic, rtl: true)[2].AttachTo == 1;
+        var pair = BmageTextShaper.CodePoints("ب" + new string('\u064E', 2));
+        var stacked = BmageTextShaper.ShapeRun(Vazirmatn, pair, 0, pair.Length, BmageUnicodeScript.Arabic, rtl: true)[2].AttachTo == 1;
         var misplaced = Enumerable.Range(2, buffer.Count - 2).FirstOrDefault(i => buffer[i].AttachTo != (stacked ? i - 1 : 0), -1);
         Assert.AreEqual(-1, misplaced, $"mark {misplaced} attaches to {(misplaced < 0 ? 0 : buffer[misplaced].AttachTo)}");
 
         // A hidden code point between the letter and its mark is passed over: the fatha still hangs on the beh.
-        var joined = TextShaper.CodePoints("ب‍َ");
-        Assert.AreEqual(0, TextShaper.ShapeRun(Vazirmatn, joined, 0, joined.Length, UnicodeScript.Arabic, rtl: true)[2].AttachTo);
+        var joined = BmageTextShaper.CodePoints("ب‍َ");
+        Assert.AreEqual(0, BmageTextShaper.ShapeRun(Vazirmatn, joined, 0, joined.Length, BmageUnicodeScript.Arabic, rtl: true)[2].AttachTo);
     }
 
     [TestMethod]
     public void AMarkAfterALigatureHangsOnTheLigature()
     {
         // Lam and alef become one glyph in the lam's place, and the fatha after them hangs on it.
-        var codePoints = TextShaper.CodePoints("لاَ");
-        var buffer = TextShaper.ShapeRun(Vazirmatn, codePoints, 0, codePoints.Length, UnicodeScript.Arabic, rtl: true);
+        var codePoints = BmageTextShaper.CodePoints("لاَ");
+        var buffer = BmageTextShaper.ShapeRun(Vazirmatn, codePoints, 0, codePoints.Length, BmageUnicodeScript.Arabic, rtl: true);
         Assert.AreEqual(2, buffer.Count);
         Assert.AreEqual(Form(0xFEFB), buffer[0].Glyph);
         Assert.AreEqual(0, buffer[1].AttachTo);
     }
 
-    private static (float MinX, float MinY, float MaxX, float MaxY) Bounds(PlacedGlyph glyph)
+    private static (float MinX, float MinY, float MaxX, float MaxY) Bounds(BmagePlacedGlyph glyph)
     {
         var builder = new BmagePathBuilder();
         glyph.Font.GetGlyphOutline(glyph.Glyph)!.AppendTo(builder, new Vector2(glyph.X, glyph.Y), 100f / glyph.Font.UnitsPerEm);
@@ -157,11 +157,11 @@ public sealed class TextShapingTests
         return (points.Min(p => p.X), points.Min(p => p.Y), points.Max(p => p.X), points.Max(p => p.Y));
     }
 
-    private static PlacedGlyph[] Line(string text, params BmageFontFile[] fonts)
+    private static BmagePlacedGlyph[] Line(string text, params BmageFontFile[] fonts)
     {
-        var codePoints = TextShaper.CodePoints(text);
-        var bidi = BidiParagraph.Create(codePoints);
-        return TextShaper.LayoutLine(fonts.Length == 0 ? [Vazirmatn] : fonts, codePoints, bidi.GetLineLevels(0, codePoints.Length), 0, codePoints.Length, 100, 0).Glyphs;
+        var codePoints = BmageTextShaper.CodePoints(text);
+        var bidi = BmageBidiParagraph.Create(codePoints);
+        return BmageTextShaper.LayoutLine(fonts.Length == 0 ? [Vazirmatn] : fonts, codePoints, bidi.GetLineLevels(0, codePoints.Length), 0, codePoints.Length, 100, 0).Glyphs;
     }
 
     [TestMethod]
@@ -217,8 +217,8 @@ public sealed class TextShapingTests
     public void EachCharacterIsDrawnWithAFontThatHasIt()
     {
         // The test font has only A, B and C; the Persian word comes from the next registered font.
-        var rasterizer = new FontTextRasterizer().Register("Test", Latin).Register("Vazirmatn", Vazirmatn);
-        var style = new TextStyle { FontSize = 40 };
+        var rasterizer = new BmageFontTextRasterizer().Register("Test", Latin).Register("Vazirmatn", Vazirmatn);
+        var style = new BmageTextStyle { FontSize = 40 };
         var path = rasterizer.GetTextPath("AB سلام", new Vector2(10, 50), style);
         Assert.IsNotNull(path);
         var glyphs = Line("AB سلام", Latin, Vazirmatn);
@@ -230,8 +230,8 @@ public sealed class TextShapingTests
     [TestMethod]
     public void PersianTextWrapsIntoLines()
     {
-        var rasterizer = new FontTextRasterizer().Register("Vazirmatn", Vazirmatn);
-        var style = new TextStyle { FontSize = 30, MaxWidth = 160 };
+        var rasterizer = new BmageFontTextRasterizer().Register("Vazirmatn", Vazirmatn);
+        var style = new BmageTextStyle { FontSize = 30, MaxWidth = 160 };
         var metrics = rasterizer.Measure("این یک متن فارسی است که باید در چند خط شکسته شود", style);
         Assert.IsGreaterThan(1, metrics.LineCount);
         Assert.IsLessThanOrEqualTo(160f, metrics.Width);
@@ -242,8 +242,8 @@ public sealed class TextShapingTests
     {
         // Marks with nothing to sit on, controls, lone joiners, deep embeddings and every bracket at once.
         var text = "ََ‍‌" + new string('‫', 200) + "((([[[{{{ب" + new string('‬', 300) + "⁧لا⁩" + "﻿؜";
-        var rasterizer = new FontTextRasterizer().Register("Vazirmatn", Vazirmatn);
-        _ = rasterizer.GetTextPath(text, Vector2.Zero, new TextStyle { FontSize = 20, MaxWidth = 50 });
-        _ = rasterizer.Measure(text, new TextStyle { FontSize = 20 });
+        var rasterizer = new BmageFontTextRasterizer().Register("Vazirmatn", Vazirmatn);
+        _ = rasterizer.GetTextPath(text, Vector2.Zero, new BmageTextStyle { FontSize = 20, MaxWidth = 50 });
+        _ = rasterizer.Measure(text, new BmageTextStyle { FontSize = 20 });
     }
 }

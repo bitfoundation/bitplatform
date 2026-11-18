@@ -17,30 +17,30 @@ public sealed class ExportSearchTests
         foreach (var fraction in fractions)
         {
             var counting = new CountingEncoder();
-            var registry = ImageCodecRegistry.CreateDefault().AddEncoder(counting);
-            var processor = new ImageProcessor(registry);
-            var largest = JpegEncoder.Encode(image, ImageExportOptions.Jpeg with { Quality = 0.95 }).Length;
-            var smallest = JpegEncoder.Encode(image, ImageExportOptions.Jpeg with { Quality = 0.3 }).Length;
+            var registry = BmageImageCodecRegistry.CreateDefault().AddEncoder(counting);
+            var processor = new BmageImageProcessor(registry);
+            var largest = BmageJpegEncoder.Encode(image, BmageImageExportOptions.Jpeg with { Quality = 0.95 }).Length;
+            var smallest = BmageJpegEncoder.Encode(image, BmageImageExportOptions.Jpeg with { Quality = 0.3 }).Length;
             var budget = (long)(smallest + (largest - smallest) * fraction);
 
-            var result = await processor.EncodeAsync(image, ImageExportOptions.Jpeg with { Quality = 0.95, MinQuality = 0.3, MaxFileSize = budget });
+            var result = await processor.EncodeAsync(image, BmageImageExportOptions.Jpeg with { Quality = 0.95, MinQuality = 0.3, MaxFileSize = budget });
 
             Assert.IsTrue(result.Length <= budget, $"{result.Length} bytes for a budget of {budget}");
             Assert.IsTrue(counting.Encodes <= bisection, $"{counting.Encodes} encodes for a budget of {budget}");
             // Nearly the highest quality that fits: one notch higher must not fit.
-            var better = JpegEncoder.Encode(image, ImageExportOptions.Jpeg with { Quality = result.Quality!.Value + 0.03 }).Length;
+            var better = BmageJpegEncoder.Encode(image, BmageImageExportOptions.Jpeg with { Quality = result.Quality!.Value + 0.03 }).Length;
             Assert.IsTrue(better > budget * 0.97, $"quality {result.Quality} leaves room: {better} bytes still fit {budget}");
         }
     }
 
-    private sealed class CountingEncoder : IImageEncoder
+    private sealed class CountingEncoder : IBmageImageEncoder
     {
         public int Encodes { get; private set; }
         public IReadOnlyCollection<BmageImageFormat> Formats { get; } = [BmageImageFormat.Jpeg];
-        public ValueTask<EncodedImage> EncodeAsync(ImageBuffer image, ImageExportOptions options, CancellationToken cancellationToken = default)
+        public ValueTask<BmageEncodedImage> EncodeAsync(BmageImageBuffer image, BmageImageExportOptions options, CancellationToken cancellationToken = default)
         {
             Encodes++;
-            return ValueTask.FromResult(JpegEncoder.Encode(image, options, cancellationToken));
+            return ValueTask.FromResult(BmageJpegEncoder.Encode(image, options, cancellationToken));
         }
     }
 }

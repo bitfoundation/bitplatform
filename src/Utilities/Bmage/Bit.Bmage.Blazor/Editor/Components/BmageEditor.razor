@@ -9,7 +9,7 @@
     while keeping the editing engine, or use the defaults and get a working editor in one line of markup.
 *@
 
-<div class="bmg-editor @(Class) @(_capabilities?.Environment == ImageEnvironment.Prerendering ? "bmg-prerender" : null)"
+<div class="bmg-editor @(Class) @(_capabilities?.Environment == BmageImageEnvironment.Prerendering ? "bmg-prerender" : null)"
      style="@Style"
      dir="@Direction"
      role="region"
@@ -51,7 +51,7 @@
                                    Pan="_pan"
                                    Strings="Strings"
                                    Busy="_busy"
-                                   ShowCropOverlay="_tool == EditorToolKind.Crop && !_comparing"
+                                   ShowCropOverlay="_tool == BmageEditorToolKind.Crop && !_comparing"
                                    CropRectangle="_comparing ? null : _cropRectangle"
                                    SelectionBounds="_comparing ? null : SelectionBounds"
                                    SelectionOutline="@(_comparing ? null : _selectionOutline)"
@@ -80,7 +80,7 @@
         {
             @Panel(BuildContext())
         }
-        else if (ShowPanel && Panels != EditorPanels.None && _session is not null)
+        else if (ShowPanel && Panels != BmageEditorPanels.None && _session is not null)
         {
             <BmageEditorPanel Context="BuildContext()" />
         }
@@ -95,25 +95,25 @@
 @code {
     // Resolved rather than injected, so the editor also works when the app never called AddBitBmageServices.
     private IServiceProvider EditorServices => field ??= BitBmageBlazor.GetEditorServices(Services);
-    private ImageLoader Loader => field ??= EditorServices.GetRequiredService<ImageLoader>();
-    private ImageExporter Exporter => field ??= EditorServices.GetRequiredService<ImageExporter>();
-    private IImageCapabilityProvider Capabilities => field ??= EditorServices.GetRequiredService<IImageCapabilityProvider>();
-    private Bit.Bmage.FontTextRasterizer FontRasterizer => field ??= EditorServices.GetRequiredService<Bit.Bmage.FontTextRasterizer>();
-    private BitBmageOptions Options => field ??= EditorServices.GetRequiredService<BitBmageOptions>();
+    private BmageImageLoader Loader => field ??= EditorServices.GetRequiredService<BmageImageLoader>();
+    private BmageImageExporter Exporter => field ??= EditorServices.GetRequiredService<BmageImageExporter>();
+    private IBmageImageCapabilityProvider Capabilities => field ??= EditorServices.GetRequiredService<IBmageImageCapabilityProvider>();
+    private Bit.Bmage.BmageFontTextRasterizer FontRasterizer => field ??= EditorServices.GetRequiredService<Bit.Bmage.BmageFontTextRasterizer>();
+    private BmageOptions Options => field ??= EditorServices.GetRequiredService<BmageOptions>();
 
-    private ImageEditSession? _session;
+    private BmageImageEditSession? _session;
     private BmageEditorCanvas? _canvas;
-    private ImageCapabilities? _capabilities;
-    private EditorToolKind _tool = EditorToolKind.Select;
-    private EditorToolSettings _settings = new();
-    private ToolDrag? _drag;
-    private Annotation? _dragPreview;
+    private BmageImageCapabilities? _capabilities;
+    private BmageEditorToolKind _tool = BmageEditorToolKind.Select;
+    private BmageEditorToolSettings _settings = new();
+    private BmageToolDrag? _drag;
+    private BmageAnnotation? _dragPreview;
     private Guid? _selectedId;
     private Vector2 _selectionDragOrigin;
     private RectangleF? _cropRectangle;
-    private CropHandle? _cropHandle;
+    private BmageCropHandle? _cropHandle;
     private RectangleF _cropStart;
-    private AspectRatio? _cropAspect;
+    private BmageAspectRatio? _cropAspect;
     private double _zoom = 1.0;
     private Vector2 _pan;
     private long _previewVersion;
@@ -128,25 +128,25 @@
     private bool _wantedRefine;
     private RenderKind _renderingNow;
     private int _renderRequests;
-    private Func<ImageDocument, ImageDocument>? _wantedOverlay;
+    private Func<BmageImageDocument, BmageImageDocument>? _wantedOverlay;
     private TaskCompletionSource? _renderWaiters;
-    private ImageBuffer? _shownPreview;
-    private ImageDocument? _notifiedDocument;
+    private BmageImageBuffer? _shownPreview;
+    private BmageImageDocument? _notifiedDocument;
     private int _stepCounter;
     // The Image parameter last loaded. The session holds a copy, so it cannot be compared with the parameter itself.
-    private ImageBuffer? _loadedParameter;
+    private BmageImageBuffer? _loadedParameter;
     private bool _fitPending;
     private SizeF? _viewport;
     private Vector2 _panLast;
     // While comparing, the canvas shows the source at preview resolution, owned by the session.
     private bool _comparing;
-    private ImageBuffer? _sourcePreview;
+    private BmageImageBuffer? _sourcePreview;
     // The layer the layer panel has selected, which painting goes to when it is a paint layer.
     private Guid? _activeLayerId;
     // The next eyedropper pick sets the white balance instead of the drawing colour.
     private bool _pickingWhiteBalance;
     // The pixel selection, in output coordinates, and its outline as SVG path data in the canvas's coordinates.
-    private Mask? _selection;
+    private BmageMask? _selection;
     private string? _selectionOutline;
     private int _outlineVersion;
     private SelectionMode _selectionMode;
@@ -155,7 +155,7 @@
     private enum SelectionMode { Replace, Add, Subtract }
 
     /// <summary>The image to edit. Setting this replaces the current session and discards its history.</summary>
-    [Parameter] public ImageBuffer? Image { get; set; }
+    [Parameter] public BmageImageBuffer? Image { get; set; }
 
     /// <summary>Localised strings for every label in the editor.</summary>
     [Parameter] public BmageEditorStrings Strings { get; set; } = BmageEditorStrings.Default;
@@ -180,15 +180,15 @@
 
     /// <summary>
     /// The tools the editor offers, or null for every one. The built-in toolbar shows only these, in this order, and
-    /// <see cref="SetTool"/> selects no other: a cropper is <c>[EditorToolKind.Crop, EditorToolKind.Pan]</c>, an
-    /// annotation tool leaves the painting and selection tools out. The editor starts with <see cref="EditorToolKind.Select"/>
+    /// <see cref="SetTool"/> selects no other: a cropper is <c>[BmageEditorToolKind.Crop, BmageEditorToolKind.Pan]</c>, an
+    /// annotation tool leaves the painting and selection tools out. The editor starts with <see cref="BmageEditorToolKind.Select"/>
     /// when it is offered, and otherwise with the first tool listed. An empty list offers no tool: the pointer then edits
     /// nothing, though the panels and the public actions still work.
     /// </summary>
-    [Parameter] public IReadOnlyList<EditorToolKind>? Tools { get; set; }
+    [Parameter] public IReadOnlyList<BmageEditorToolKind>? Tools { get; set; }
 
-    /// <summary>The tabs of the built-in options panel to show. Default <see cref="EditorPanels.All"/>; <see cref="EditorPanels.None"/> hides the panel.</summary>
-    [Parameter] public EditorPanels Panels { get; set; } = EditorPanels.All;
+    /// <summary>The tabs of the built-in options panel to show. Default <see cref="BmageEditorPanels.All"/>; <see cref="BmageEditorPanels.None"/> hides the panel.</summary>
+    [Parameter] public BmageEditorPanels Panels { get; set; } = BmageEditorPanels.All;
 
     /// <summary>Replaces the toolbar entirely. The context exposes every editor action.</summary>
     [Parameter] public RenderFragment<BmageEditorContext>? Toolbar { get; set; }
@@ -207,7 +207,7 @@
 
     /// <summary>
     /// Longest edge used for interactive editing. Larger images are edited through a downscaled proxy and the edit is
-    /// replayed at full resolution on export. Null uses <see cref="BitBmageOptions.MaxInteractiveDimension"/>, or
+    /// replayed at full resolution on export. Null uses <see cref="BmageOptions.MaxInteractiveDimension"/>, or
     /// 2048 when that is not configured either. Zero edits at full resolution, which is only sensible for small images.
     /// </summary>
     [Parameter] public int? MaxProxyDimension { get; set; }
@@ -218,31 +218,31 @@
     [Parameter] public int MaxHistoryDepth { get; set; } = 100;
 
     /// <summary>
-    /// Draws text and step-number annotations. Null uses the <see cref="Bit.Bmage.FontTextRasterizer"/> from
+    /// Draws text and step-number annotations. Null uses the <see cref="Bit.Bmage.BmageFontTextRasterizer"/> from
     /// dependency injection, which renders text once a font has been registered with it.
     /// </summary>
-    [Parameter] public ITextRasterizer? TextRasterizer { get; set; }
+    [Parameter] public IBmageTextRasterizer? TextRasterizer { get; set; }
 
     /// <summary>Export settings used by the built-in save action.</summary>
-    [Parameter] public ImageExportOptions ExportOptions { get; set; } = ImageExportOptions.Png;
+    [Parameter] public BmageImageExportOptions ExportOptions { get; set; } = BmageImageExportOptions.Png;
 
     /// <summary>Raised after every edit, with the current document.</summary>
-    [Parameter] public EventCallback<ImageDocument> OnDocumentChanged { get; set; }
+    [Parameter] public EventCallback<BmageImageDocument> OnDocumentChanged { get; set; }
 
     /// <summary>Raised when the user exports, with the encoded result.</summary>
-    [Parameter] public EventCallback<EncodedImage> OnExported { get; set; }
+    [Parameter] public EventCallback<BmageEncodedImage> OnExported { get; set; }
 
     /// <summary>Raised when an image is loaded into the editor.</summary>
-    [Parameter] public EventCallback<ImageBuffer> OnImageLoaded { get; set; }
+    [Parameter] public EventCallback<BmageImageBuffer> OnImageLoaded { get; set; }
 
     /// <summary>Raised when an operation fails. When not handled, the error is shown in the editor.</summary>
     [Parameter] public EventCallback<Exception> OnError { get; set; }
 
     /// <summary>The live editing session, or null when no image is loaded.</summary>
-    public ImageEditSession? Session => _session;
+    public BmageImageEditSession? Session => _session;
 
     /// <summary>The current document, or null when no image is loaded.</summary>
-    public ImageDocument? Document => _session?.Document;
+    public BmageImageDocument? Document => _session?.Document;
 
     // Annotations live in full-resolution coordinates; the canvas shows the preview, which may be a smaller proxy.
     private RectangleF? SelectionBounds => _selectedId is { } id && _session?.Document.FindAnnotation(id) is { } a
@@ -262,7 +262,7 @@
     private float PreviewScale => _session is { UsesProxy: true } s ? (float)s.ProxyScale : 1f;
 
     /// <summary>What the canvas shows: the edit, or the original while comparing.</summary>
-    private ImageBuffer? ShownImage => _comparing && _sourcePreview is { IsDisposed: false } original ? original : _session?.Preview;
+    private BmageImageBuffer? ShownImage => _comparing && _sourcePreview is { IsDisposed: false } original ? original : _session?.Preview;
 
     /// <summary>The size the canvas shows its image at, in proxy pixels.</summary>
     private SizeF ShownDisplaySize => _comparing && _sourcePreview is { IsDisposed: false } original
@@ -337,13 +337,13 @@
     }
 
     /// <summary>Loads an image into the editor, replacing any current session.</summary>
-    public async Task LoadImageAsync(ImageBuffer image, bool takeOwnership = true)
+    public async Task LoadImageAsync(BmageImageBuffer image, bool takeOwnership = true)
     {
         ArgumentNullException.ThrowIfNull(image);
         _session?.Dispose();
         // When the caller keeps ownership the session gets a copy, so disposing the session never frees their buffer.
         var owned = takeOwnership ? image : image.Clone();
-        _session = new ImageEditSession(owned, new ImageEditSessionOptions
+        _session = new BmageImageEditSession(owned, new BmageImageEditSessionOptions
         {
             MaxProxyDimension = EffectiveProxyDimension,
             MaxHistoryDepth = MaxHistoryDepth,
@@ -393,9 +393,9 @@
     });
 
     [System.Runtime.Versioning.SupportedOSPlatform("browser")]
-    private ValueTask<ImageBuffer?> ScaleProxyInBrowserAsync(ImageBuffer source, System.Drawing.Size size, CancellationToken cancellationToken)
-        => Bit.Bmage.BrowserPixels.ScaleAsync(EditorServices.GetRequiredService<Bit.Bmage.BrowserImageInterop>(), source, size,
-            Options.Allocator ?? Bit.Bmage.PooledPixelAllocator.Shared, cancellationToken);
+    private ValueTask<BmageImageBuffer?> ScaleProxyInBrowserAsync(BmageImageBuffer source, System.Drawing.Size size, CancellationToken cancellationToken)
+        => Bit.Bmage.BmageBrowserPixels.ScaleAsync(EditorServices.GetRequiredService<Bit.Bmage.BmageBrowserImageInterop>(), source, size,
+            Options.Allocator ?? Bit.Bmage.BmagePooledPixelAllocator.Shared, cancellationToken);
 
     // ---- Preview rendering ----
 
@@ -408,7 +408,7 @@
     /// and the next render shows whatever the document is by then, so a slider dragged faster than frames can render
     /// skips the values in between instead of falling further and further behind the pointer.
     /// </remarks>
-    private Task RenderPreviewAsync(Func<ImageDocument, ImageDocument>? overlay = null, bool draft = false, bool refine = false)
+    private Task RenderPreviewAsync(Func<BmageImageDocument, BmageImageDocument>? overlay = null, bool draft = false, bool refine = false)
     {
         if (_session is null) return Task.CompletedTask;
         _wantedOverlay = overlay;
@@ -475,7 +475,7 @@
     /// Replaces a draft with the full preview once the pointer rests, even before the drag ends: nothing has asked
     /// for a render since request <paramref name="request"/>.
     /// </summary>
-    private async Task RefineWhenIdleAsync(int request, Func<ImageDocument, ImageDocument>? overlay)
+    private async Task RefineWhenIdleAsync(int request, Func<BmageImageDocument, BmageImageDocument>? overlay)
     {
         await Task.Delay(200);
         if (request == _renderRequests && _session is not null) await RenderPreviewAsync(overlay, refine: true);
@@ -498,7 +498,7 @@
     /// Renders once and returns the exception the render ended with, if any, for the caller to report: an
     /// <see cref="OperationCanceledException"/> when it was cancelled, which is not a failure.
     /// </summary>
-    private async Task<Exception?> RenderOnceAsync(Func<ImageDocument, ImageDocument>? overlay, bool draft)
+    private async Task<Exception?> RenderOnceAsync(Func<BmageImageDocument, BmageImageDocument>? overlay, bool draft)
     {
         if (_session is null) return null;
 
@@ -544,7 +544,7 @@
     /// <summary>What the render in flight draws, which decides whether a newer request cancels it.</summary>
     private enum RenderKind { None, Full, Draft, Refine }
 
-    private async Task ApplyAndRenderAsync(Func<ImageDocument, ImageDocument> change, string label, bool transient = false)
+    private async Task ApplyAndRenderAsync(Func<BmageImageDocument, BmageImageDocument> change, string label, bool transient = false)
     {
         if (_session is null) return;
         // An edit made while comparing is an edit the user wants to see.
@@ -570,55 +570,55 @@
 
     // ---- Pointer interaction ----
 
-    private async Task OnDragStart(CanvasPointerArgs e)
+    private async Task OnDragStart(BmageCanvasPointerArgs e)
     {
         // With no tool offered (an empty Tools list) the pointer edits nothing.
         if (_session is null || !IsToolUsable) return;
         // The original is only to look at: everything but panning waits until the comparison ends.
-        if (_comparing && _tool != EditorToolKind.Pan) return;
+        if (_comparing && _tool != BmageEditorToolKind.Pan) return;
         // Crop works on the preview (ApplyCropAsync maps it to full resolution); everything else edits the document.
-        var point = _tool == EditorToolKind.Crop ? e.Point : ToDocument(e.Point);
+        var point = _tool == BmageEditorToolKind.Crop ? e.Point : ToDocument(e.Point);
         switch (_tool)
         {
-            case EditorToolKind.Pan:
-                _drag = new ToolDrag { Start = point, Current = point };
+            case BmageEditorToolKind.Pan:
+                _drag = new BmageToolDrag { Start = point, Current = point };
                 _panLast = e.Screen;
                 break;
 
-            case EditorToolKind.Crop:
+            case BmageEditorToolKind.Crop:
                 if (_cropRectangle is null)
                 {
                     _cropRectangle = new RectangleF(point.X, point.Y, 0, 0);
-                    _drag = new ToolDrag { Start = point, Current = point, ShiftKey = e.ShiftKey };
+                    _drag = new BmageToolDrag { Start = point, Current = point, ShiftKey = e.ShiftKey };
                 }
                 else if (e.Handle is null)
                 {
                     // Dragging inside the existing rectangle moves it.
-                    _cropHandle = _cropRectangle.Value.Contains(point.X, point.Y) ? CropHandle.Move : null;
+                    _cropHandle = _cropRectangle.Value.Contains(point.X, point.Y) ? BmageCropHandle.Move : null;
                     _cropStart = _cropRectangle.Value;
-                    _drag = new ToolDrag { Start = point, Current = point };
+                    _drag = new BmageToolDrag { Start = point, Current = point };
                 }
                 break;
 
-            case EditorToolKind.Select:
+            case BmageEditorToolKind.Select:
                 var hit = _session.Document.HitTest(point, 6f / (float)Math.Max(_zoom, 0.01) / PreviewScale);
                 _selectedId = hit?.Id;
                 if (hit is not null)
                 {
                     _selectionDragOrigin = point;
-                    _drag = new ToolDrag { Start = point, Current = point };
+                    _drag = new BmageToolDrag { Start = point, Current = point };
                 }
                 break;
 
-            case EditorToolKind.Text:
+            case BmageEditorToolKind.Text:
                 WarnIfTextCannotRender();
                 await AddTextAnnotationAsync(point);
                 break;
 
-            case EditorToolKind.Step:
+            case BmageEditorToolKind.Step:
                 WarnIfTextCannotRender();
                 _stepCounter++;
-                await ApplyAndRenderAsync(d => d.AddAnnotation(new StepAnnotation
+                await ApplyAndRenderAsync(d => d.AddAnnotation(new BmageStepAnnotation
                 {
                     Center = point,
                     Number = _stepCounter,
@@ -627,48 +627,48 @@
                     TextStyle = _settings.ToTextStyle() with
                     {
                         Alignment = BmageTextAlignment.Center,
-                        Baseline = TextBaseline.Middle,
+                        Baseline = BmageTextBaseline.Middle,
                         Bold = true,
-                        FillColor = Rgba32.White,
+                        FillColor = BmageRgba32.White,
                     },
                 }), Strings.Step);
                 break;
 
-            case EditorToolKind.Brush or EditorToolKind.Eraser:
-                _drag = new ToolDrag { Start = point, Current = point };
+            case BmageEditorToolKind.Brush or BmageEditorToolKind.Eraser:
+                _drag = new BmageToolDrag { Start = point, Current = point };
                 _drag.Points.Add(point);
                 if (e.IsPen) _drag.Pressures.Add(e.Pressure);
                 await RenderStrokePreviewAsync();
                 break;
 
-            case EditorToolKind.Eyedropper:
+            case BmageEditorToolKind.Eyedropper:
                 await PickColorAsync(e.Point);
                 break;
 
-            case EditorToolKind.Fill:
+            case BmageEditorToolKind.Fill:
                 await FillAsync(point);
                 break;
 
-            case EditorToolKind.MagicEraser:
+            case BmageEditorToolKind.MagicEraser:
                 await MagicEraseAsync(point);
                 break;
 
-            case EditorToolKind.SelectRectangle or EditorToolKind.SelectEllipse or EditorToolKind.Lasso:
+            case BmageEditorToolKind.SelectRectangle or BmageEditorToolKind.SelectEllipse or BmageEditorToolKind.Lasso:
                 // Shift adds to the selection and Alt takes away from it, decided when the drag starts.
                 _selectionMode = e.ShiftKey ? SelectionMode.Add : e.AltKey ? SelectionMode.Subtract : SelectionMode.Replace;
-                _drag = new ToolDrag { Start = point, Current = point };
+                _drag = new BmageToolDrag { Start = point, Current = point };
                 _drag.Points.Add(point);
                 break;
 
-            case EditorToolKind.MagicWand:
+            case BmageEditorToolKind.MagicWand:
                 _selectionMode = e.ShiftKey ? SelectionMode.Add : e.AltKey ? SelectionMode.Subtract : SelectionMode.Replace;
-                CombineSelection(new FloodMask([point]) { Tolerance = _settings.Tolerance });
+                CombineSelection(new BmageFloodMask([point]) { Tolerance = _settings.Tolerance });
                 break;
 
             default:
-                if (EditorTools.BuiltIn.ContainsKey(_tool))
+                if (BmageEditorTools.BuiltIn.ContainsKey(_tool))
                 {
-                    _drag = new ToolDrag { Start = point, Current = point, ShiftKey = e.ShiftKey, AltKey = e.AltKey };
+                    _drag = new BmageToolDrag { Start = point, Current = point, ShiftKey = e.ShiftKey, AltKey = e.AltKey };
                     _drag.Points.Add(point);
                 }
                 break;
@@ -676,41 +676,41 @@
         StateHasChanged();
     }
 
-    private async Task OnDragMove(CanvasPointerArgs e)
+    private async Task OnDragMove(BmageCanvasPointerArgs e)
     {
         if (_session is null || _drag is null) return;
-        var point = _tool == EditorToolKind.Crop ? e.Point : ToDocument(e.Point);
+        var point = _tool == BmageEditorToolKind.Crop ? e.Point : ToDocument(e.Point);
         _drag.Current = point;
         _drag.ShiftKey = e.ShiftKey;
         _drag.AltKey = e.AltKey;
 
         switch (_tool)
         {
-            case EditorToolKind.Pan:
+            case BmageEditorToolKind.Pan:
                 // Measured on screen: image coordinates move under the pointer as the view pans.
                 _pan += e.Screen - _panLast;
                 _panLast = e.Screen;
                 StateHasChanged();
                 return;
 
-            case EditorToolKind.Crop:
+            case BmageEditorToolKind.Crop:
                 UpdateCropRectangle(point);
                 StateHasChanged();
                 return;
 
-            case EditorToolKind.Brush or EditorToolKind.Eraser:
+            case BmageEditorToolKind.Brush or BmageEditorToolKind.Eraser:
                 AddSmoothedPoint(point, e.IsPen ? e.Pressure : null);
                 await RenderStrokePreviewAsync();
                 return;
 
-            case EditorToolKind.SelectRectangle or EditorToolKind.SelectEllipse or EditorToolKind.Lasso:
-                if (_tool == EditorToolKind.Lasso) AddSmoothedPoint(point);
+            case BmageEditorToolKind.SelectRectangle or BmageEditorToolKind.SelectEllipse or BmageEditorToolKind.Lasso:
+                if (_tool == BmageEditorToolKind.Lasso) AddSmoothedPoint(point);
                 // The shape being drawn, outlined straight from the drag: tracing a mask waits for the release.
                 _selectionOutline = ShapePath(_drag);
                 StateHasChanged();
                 return;
 
-            case EditorToolKind.Select when _selectedId is { } id:
+            case BmageEditorToolKind.Select when _selectedId is { } id:
             {
                 var delta = point - _selectionDragOrigin;
                 if (delta.LengthSquared() < 0.01f) return;
@@ -722,9 +722,9 @@
             }
 
             default:
-                if (EditorTools.BuiltIn.TryGetValue(_tool, out var tool))
+                if (BmageEditorTools.BuiltIn.TryGetValue(_tool, out var tool))
                 {
-                    if (_tool == EditorToolKind.Draw) AddSmoothedPoint(point);
+                    if (_tool == BmageEditorToolKind.Draw) AddSmoothedPoint(point);
                     _dragPreview = tool.BuildPreview(_drag, _settings);
                     await RenderWithPreviewAsync();
                 }
@@ -732,7 +732,7 @@
         }
     }
 
-    private async Task OnDragEnd(CanvasPointerArgs e)
+    private async Task OnDragEnd(BmageCanvasPointerArgs e)
     {
         if (_session is null || _drag is null) return;
         var drag = _drag;
@@ -742,21 +742,21 @@
 
         switch (_tool)
         {
-            case EditorToolKind.Pan or EditorToolKind.Crop:
+            case BmageEditorToolKind.Pan or BmageEditorToolKind.Crop:
                 StateHasChanged();
                 return;
 
-            case EditorToolKind.Select:
+            case BmageEditorToolKind.Select:
                 if (_selectedId is not null) _session.Commit(Strings.Select);
                 StateHasChanged();
                 return;
 
-            case EditorToolKind.Brush or EditorToolKind.Eraser:
+            case BmageEditorToolKind.Brush or BmageEditorToolKind.Eraser:
                 // A pen lifts with no pressure, so the stroke ends at the last point it was pressed down on.
                 await PaintStrokeAsync(drag);
                 return;
 
-            case EditorToolKind.SelectRectangle or EditorToolKind.SelectEllipse or EditorToolKind.Lasso:
+            case BmageEditorToolKind.SelectRectangle or BmageEditorToolKind.SelectEllipse or BmageEditorToolKind.Lasso:
                 if (SelectionShape(drag) is { } shape) CombineSelection(shape);
                 // A click that drew nothing deselects, as in other editors; with Shift or Alt it changes nothing.
                 else if (_selectionMode == SelectionMode.Replace) SetSelection(null);
@@ -764,7 +764,7 @@
                 return;
 
             default:
-                if (EditorTools.BuiltIn.TryGetValue(_tool, out var tool))
+                if (BmageEditorTools.BuiltIn.TryGetValue(_tool, out var tool))
                 {
                     drag.Current = ToDocument(e.Point);
                     var annotation = tool.BuildFinal(drag, _settings);
@@ -819,26 +819,26 @@
     private async Task RenderStrokePreviewAsync()
     {
         if (_drag is null) return;
-        var erase = _tool == EditorToolKind.Eraser;
-        var color = erase ? new Rgba32(255, 255, 255, 150) : _settings.StrokeColor.WithAlpha((byte)Math.Round(255 * Math.Clamp(_settings.Opacity, 0f, 1f)));
-        _dragPreview = new FreehandAnnotation
+        var erase = _tool == BmageEditorToolKind.Eraser;
+        var color = erase ? new BmageRgba32(255, 255, 255, 150) : _settings.StrokeColor.WithAlpha((byte)Math.Round(255 * Math.Clamp(_settings.Opacity, 0f, 1f)));
+        _dragPreview = new BmageFreehandAnnotation
         {
             Points = [.. _drag.Points],
-            Style = new ShapeStyle
+            Style = new BmageShapeStyle
             {
                 StrokeColor = color,
                 FillColor = null,
-                Stroke = new StrokeStyle { Width = _settings.BrushSize, Cap = BmageLineCap.Round, Join = BmageLineJoin.Round },
+                Stroke = new BmageStrokeStyle { Width = _settings.BrushSize, Cap = BmageLineCap.Round, Join = BmageLineJoin.Round },
             },
         };
         await RenderWithPreviewAsync();
     }
 
     /// <summary>Paints a finished stroke onto the paint layer, adding one on top when there is none to paint on.</summary>
-    private async Task PaintStrokeAsync(ToolDrag drag)
+    private async Task PaintStrokeAsync(BmageToolDrag drag)
     {
         if (_session is null) return;
-        var erase = _tool == EditorToolKind.Eraser;
+        var erase = _tool == BmageEditorToolKind.Eraser;
         var target = FindPaintLayer(_session.Document);
         if (drag.Points.Count == 0 || (target is null && erase))
         {
@@ -847,24 +847,24 @@
             StateHasChanged();
             return;
         }
-        var stroke = new PaintStroke(drag.Points, _settings.BrushSize, _settings.StrokeColor.WithAlpha(255))
+        var stroke = new BmagePaintStroke(drag.Points, _settings.BrushSize, _settings.StrokeColor.WithAlpha(255))
         {
             Pressures = drag.Pressures.Count == drag.Points.Count ? drag.Pressures : null,
             Opacity = _settings.Opacity,
             Hardness = _settings.BrushHardness,
             Erase = erase,
         };
-        var layer = (target ?? new PaintLayer { Name = Strings.Paint }).Add(stroke);
+        var layer = (target ?? new BmagePaintLayer { Name = Strings.Paint }).Add(stroke);
         await ApplyAndRenderAsync(d => target is null ? d.AddLayer(layer) : d.UpdateLayer(layer), erase ? Strings.Eraser : Strings.Brush);
         _activeLayerId = layer.Id;
     }
 
     /// <summary>The paint layer strokes go to: the selected layer when it is an unlocked paint layer, else the topmost one.</summary>
-    private PaintLayer? FindPaintLayer(ImageDocument document)
+    private BmagePaintLayer? FindPaintLayer(BmageImageDocument document)
     {
-        if (_activeLayerId is { } id && document.FindLayer(id) is PaintLayer { IsLocked: false } active) return active;
+        if (_activeLayerId is { } id && document.FindLayer(id) is BmagePaintLayer { IsLocked: false } active) return active;
         for (var i = document.Layers.Count - 1; i >= 0; i--)
-            if (document.Layers[i] is PaintLayer { IsLocked: false } paint) return paint;
+            if (document.Layers[i] is BmagePaintLayer { IsLocked: false } paint) return paint;
         return null;
     }
 
@@ -877,16 +877,16 @@
         if (_session?.Preview is not { IsDisposed: false } preview) return;
         // A draft has fewer pixels than the proxy whose coordinates the pointer reports.
         var factor = (float)(_session.PreviewScale / _session.ProxyScale);
-        var color = ColorSampler.Sample(preview, new Point((int)MathF.Floor(previewPoint.X * factor), (int)MathF.Floor(previewPoint.Y * factor)), radius: 1);
+        var color = BmageColorSampler.Sample(preview, new Point((int)MathF.Floor(previewPoint.X * factor), (int)MathF.Floor(previewPoint.Y * factor)), radius: 1);
         if (_pickingWhiteBalance)
         {
             _pickingWhiteBalance = false;
             _tool = DefaultTool;
             // The preview shows any earlier white balance already, so the new correction is made on top of it.
-            var correction = WhiteBalanceAdjustment.FromNeutral(color);
-            var existing = _session.Document.Pipeline.OfType<WhiteBalanceAdjustment>().FirstOrDefault();
+            var correction = BmageWhiteBalanceAdjustment.FromNeutral(color);
+            var existing = _session.Document.Pipeline.OfType<BmageWhiteBalanceAdjustment>().FirstOrDefault();
             var combined = existing is null ? correction
-                : new WhiteBalanceAdjustment(existing.RedGain * correction.RedGain, existing.GreenGain * correction.GreenGain, existing.BlueGain * correction.BlueGain);
+                : new BmageWhiteBalanceAdjustment(existing.RedGain * correction.RedGain, existing.GreenGain * correction.GreenGain, existing.BlueGain * correction.BlueGain);
             await SetAdjustmentAsync(combined, Strings.WhiteBalance);
             return;
         }
@@ -895,38 +895,38 @@
     }
 
     /// <summary>Fills the region of similar colour under the pointer, in the image as it is composited so far, as a layer.</summary>
-    private Task FillAsync(Vector2 point) => ApplyAndRenderAsync(d => d.AddLayer(new FillLayer(_settings.FillColor.WithAlpha(255))
+    private Task FillAsync(Vector2 point) => ApplyAndRenderAsync(d => d.AddLayer(new BmageFillLayer(_settings.FillColor.WithAlpha(255))
     {
         Name = Strings.Fill,
         Opacity = _settings.Opacity,
-        Mask = new FloodMask([point]) { Tolerance = _settings.Tolerance },
+        Mask = new BmageFloodMask([point]) { Tolerance = _settings.Tolerance },
     }), Strings.Fill);
 
     /// <summary>Makes the region of similar colour under the pointer transparent.</summary>
     private Task MagicEraseAsync(Vector2 point) => ApplyAndRenderAsync(
-        d => d.AddOperation(new AlphaMaskOperation(new FloodMask([point]) { Tolerance = _settings.Tolerance, Inverted = true })),
+        d => d.AddOperation(new BmageAlphaMaskOperation(new BmageFloodMask([point]) { Tolerance = _settings.Tolerance, Inverted = true })),
         Strings.MagicEraser);
 
     // ---- The pixel selection ----
 
     /// <summary>The shape a selection drag drew, in output coordinates, or null when it drew nothing.</summary>
-    private Mask? SelectionShape(ToolDrag drag)
+    private BmageMask? SelectionShape(BmageToolDrag drag)
     {
-        if (_tool == EditorToolKind.Lasso)
-            return drag.Points.Count >= 3 ? new PolygonMask([.. drag.Points]) : null;
+        if (_tool == BmageEditorToolKind.Lasso)
+            return drag.Points.Count >= 3 ? new BmagePolygonMask([.. drag.Points]) : null;
         var rect = RectangleF.FromLTRB(MathF.Min(drag.Start.X, drag.Current.X), MathF.Min(drag.Start.Y, drag.Current.Y),
             MathF.Max(drag.Start.X, drag.Current.X), MathF.Max(drag.Start.Y, drag.Current.Y));
         if (rect.Width < 2 || rect.Height < 2) return null;
-        return _tool == EditorToolKind.SelectEllipse ? new EllipseMask(rect) : new RectangleMask(rect);
+        return _tool == BmageEditorToolKind.SelectEllipse ? new BmageEllipseMask(rect) : new BmageRectangleMask(rect);
     }
 
     /// <summary>The outline of the shape a selection drag is drawing, as SVG path data in the canvas's coordinates.</summary>
-    private string? ShapePath(ToolDrag? drag)
+    private string? ShapePath(BmageToolDrag? drag)
     {
         if (drag is null || _session is null) return null;
         var scale = PreviewScale;
         static string N(float v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
-        if (_tool == EditorToolKind.Lasso)
+        if (_tool == BmageEditorToolKind.Lasso)
         {
             if (drag.Points.Count < 2) return null;
             var path = new System.Text.StringBuilder();
@@ -936,14 +936,14 @@
         }
         float x0 = MathF.Min(drag.Start.X, drag.Current.X) * scale, y0 = MathF.Min(drag.Start.Y, drag.Current.Y) * scale;
         float x1 = MathF.Max(drag.Start.X, drag.Current.X) * scale, y1 = MathF.Max(drag.Start.Y, drag.Current.Y) * scale;
-        if (_tool == EditorToolKind.SelectRectangle) return $"M{N(x0)} {N(y0)}H{N(x1)}V{N(y1)}H{N(x0)}Z";
+        if (_tool == BmageEditorToolKind.SelectRectangle) return $"M{N(x0)} {N(y0)}H{N(x1)}V{N(y1)}H{N(x0)}Z";
         var rx = (x1 - x0) / 2;
         var ry = (y1 - y0) / 2;
         return $"M{N(x0)} {N(y0 + ry)}a{N(rx)} {N(ry)} 0 1 0 {N(2 * rx)} 0a{N(rx)} {N(ry)} 0 1 0 {N(-2 * rx)} 0Z";
     }
 
     /// <summary>Adds a shape to the selection, takes it away, or makes it the selection, as the drag started.</summary>
-    private void CombineSelection(Mask shape)
+    private void CombineSelection(BmageMask shape)
     {
         var combined = _selectionMode switch
         {
@@ -956,10 +956,10 @@
     }
 
     /// <summary>The pixel selection, in output coordinates, or null when nothing is selected.</summary>
-    public Mask? Selection => _selection;
+    public BmageMask? Selection => _selection;
 
     /// <summary>Sets the pixel selection the selection actions work on, or clears it with null.</summary>
-    public void SetSelection(Mask? selection)
+    public void SetSelection(BmageMask? selection)
     {
         _selection = selection;
         _ = UpdateSelectionOutlineAsync();
@@ -967,7 +967,7 @@
     }
 
     /// <summary>Selects the whole image.</summary>
-    public void SelectAll() => SetSelection(Mask.All());
+    public void SelectAll() => SetSelection(BmageMask.All());
 
     /// <summary>Selects everything that is not selected.</summary>
     public void InvertSelection()
@@ -978,13 +978,13 @@
     /// <summary>Makes the selected pixels transparent, keeping the selection.</summary>
     public Task ClearSelectionAsync()
         => _selection is { } selection
-            ? ApplyAndRenderAsync(d => d.AddOperation(new AlphaMaskOperation(selection.Invert())), Strings.ClearSelection)
+            ? ApplyAndRenderAsync(d => d.AddOperation(new BmageAlphaMaskOperation(selection.Invert())), Strings.ClearSelection)
             : Task.CompletedTask;
 
     /// <summary>Fills the selection with the fill colour, as a layer at the drawing opacity.</summary>
     public Task FillSelectionAsync()
         => _selection is { } selection
-            ? ApplyAndRenderAsync(d => d.AddLayer(new FillLayer(_settings.FillColor.WithAlpha(255)) { Name = Strings.FillSelection, Opacity = _settings.Opacity, Mask = selection }), Strings.FillSelection)
+            ? ApplyAndRenderAsync(d => d.AddLayer(new BmageFillLayer(_settings.FillColor.WithAlpha(255)) { Name = Strings.FillSelection, Opacity = _settings.Opacity, Mask = selection }), Strings.FillSelection)
             : Task.CompletedTask;
 
     /// <summary>Crops the image to the bounds of the selected pixels, carrying the overlays and the selection along.</summary>
@@ -1000,7 +1000,7 @@
             ShowMessage(Strings.NothingSelected, isError: false);
             return;
         }
-        var crop = new CropOperation(area);
+        var crop = new BmageCropOperation(area);
         MoveSelectionWith(crop);
         await ApplyAndRenderAsync(d => d.AddOperation(crop, keepOverlaysAttached: true), Strings.CropToSelection);
         FitToWindow();
@@ -1014,7 +1014,7 @@
     {
         if (_session is not { } session || _selection is not { } selection) return;
         var document = session.Document;
-        ImageBuffer? piece = null;
+        BmageImageBuffer? piece = null;
         Rectangle area;
         using (var rendered = await session.RenderFullAsync())
         {
@@ -1044,7 +1044,7 @@
                 throw;
             }
         }
-        var layer = new ImageLayer { Image = piece, Bounds = new RectangleF(area.X, area.Y, area.Width, area.Height), Name = Strings.CopyToLayer };
+        var layer = new BmageImageLayer { Image = piece, Bounds = new RectangleF(area.X, area.Y, area.Width, area.Height), Name = Strings.CopyToLayer };
         await ApplyAndRenderAsync(d => d.AddLayer(layer), Strings.CopyToLayer);
         _activeLayerId = layer.Id;
     });
@@ -1053,7 +1053,7 @@
     /// The bounds of the pixels a selection covers, in output coordinates, or null when it covers none. A selection by
     /// colour is measured on the image at full resolution, as it looks with its layers and annotations.
     /// </summary>
-    private async Task<Rectangle?> SelectedBoundsAsync(Mask selection)
+    private async Task<Rectangle?> SelectedBoundsAsync(BmageMask selection)
     {
         if (_session is null || !_session.Document.TryGetOutputSize(out var size)) return null;
         using var rendered = await _session.RenderFullAsync();
@@ -1067,22 +1067,22 @@
     /// worked out from the image before an await only applies to the image it was worked out from, and an undo, a slider
     /// or another image may have come in between.
     /// </summary>
-    private bool IsStill(ImageEditSession session, ImageDocument document) => ReferenceEquals(_session, session) && ReferenceEquals(session.Document, document);
+    private bool IsStill(BmageImageEditSession session, BmageImageDocument document) => ReferenceEquals(_session, session) && ReferenceEquals(session.Document, document);
 
     /// <summary>
     /// Carries the selection from what one document shows to what another shows, after an undo, a redo or a jump through
     /// the history: the steps the two pipelines do not share are undone and redone on it, and it is dropped when what
     /// they do to coordinates cannot be said.
     /// </summary>
-    private void FollowSelection(ImageDocument from, ImageDocument to)
+    private void FollowSelection(BmageImageDocument from, BmageImageDocument to)
     {
         if (_selection is not { } selection || ReferenceEquals(from.Pipeline, to.Pipeline)) return;
         var shared = 0;
         while (shared < from.Pipeline.Count && shared < to.Pipeline.Count && ReferenceEquals(from.Pipeline[shared], to.Pipeline[shared])) shared++;
         if (from.SourceSize == to.SourceSize
-            && ImagePipeline.From(from.Pipeline.Take(shared)).TryGetOutputSize(from.SourceSize, out var size)
-            && ImagePipeline.From(from.Pipeline.Skip(shared)).TryGetTransform(size, out var before)
-            && ImagePipeline.From(to.Pipeline.Skip(shared)).TryGetTransform(size, out var after)
+            && BmageImagePipeline.From(from.Pipeline.Take(shared)).TryGetOutputSize(from.SourceSize, out var size)
+            && BmageImagePipeline.From(from.Pipeline.Skip(shared)).TryGetTransform(size, out var before)
+            && BmageImagePipeline.From(to.Pipeline.Skip(shared)).TryGetTransform(size, out var after)
             && Matrix3x2.Invert(before, out var undo))
         {
             var change = undo * after;
@@ -1095,10 +1095,10 @@
     }
 
     /// <summary>Moves the selection the way appending <paramref name="operation"/> moves the image, or drops it when that cannot be said.</summary>
-    private void MoveSelectionWith(IImageOperation operation)
+    private void MoveSelectionWith(IBmageImageOperation operation)
     {
         if (_selection is not { } selection || _session is null) return;
-        if (operation is IGeometricOperation geometric && _session.Document.TryGetOutputSize(out var size) && geometric.GetTransform(size) is { } matrix)
+        if (operation is IBmageGeometricOperation geometric && _session.Document.TryGetOutputSize(out var size) && geometric.GetTransform(size) is { } matrix)
             SetSelection(selection.Transform(matrix));
         else
             SetSelection(null);
@@ -1126,13 +1126,13 @@
             // selection by colour floods a tenth of the pixels that way, which is what keeps it quick on the interpreter.
             var factor = Math.Min(1.0, 640.0 / Math.Max(preview.Width, preview.Height));
             using var small = factor < 1
-                ? new ResizeOperation(Math.Max(1, (int)Math.Round(preview.Width * factor)), Math.Max(1, (int)Math.Round(preview.Height * factor)), BmageResizeMode.Stretch, ResamplingFilter.Box)
-                    .Apply(preview, new OperationContext(Options.Allocator, Options.Limits).WithMutation(false))
+                ? new BmageResizeOperation(Math.Max(1, (int)Math.Round(preview.Width * factor)), Math.Max(1, (int)Math.Round(preview.Height * factor)), BmageResizeMode.Stretch, BmageResamplingFilter.Box)
+                    .Apply(preview, new BmageOperationContext(Options.Allocator, Options.Limits).WithMutation(false))
                 : null;
             var source = small ?? preview;
             var scale = _session.PreviewScale * source.Width / preview.Width;
             using var traced = selection.ForScale(scale).Render(source.Size, source);
-            var curves = MaskContours.Trace(traced, maxPoints: 40_000);
+            var curves = BmageMaskContours.Trace(traced, maxPoints: 40_000);
             // From the traced mask's pixels to the preview's, then to the proxy's, which the canvas is laid out in.
             var toCanvas = (float)(preview.Width / (double)traced.Width * _session.ProxyScale / _session.PreviewScale);
             var builder = new System.Text.StringBuilder();
@@ -1162,7 +1162,7 @@
     {
         // A real editor would open an inline text box; the built-in flow adds placeholder text the user then edits
         // through the panel, which keeps the component free of a modal dialog.
-        var annotation = new TextAnnotation
+        var annotation = new BmageTextAnnotation
         {
             Text = Strings.Text,
             Position = point,
@@ -1186,7 +1186,7 @@
     /// would fail every render containing text, so it is only used once a font has been registered; until then text is
     /// skipped and <see cref="WarnIfTextCannotRender"/> explains why.
     /// </summary>
-    private ITextRasterizer? EffectiveTextRasterizer => TextRasterizer ?? (FontRasterizer.HasFonts ? FontRasterizer : null);
+    private IBmageTextRasterizer? EffectiveTextRasterizer => TextRasterizer ?? (FontRasterizer.HasFonts ? FontRasterizer : null);
 
     /// <summary>
     /// What a session draws text with: <see cref="EffectiveTextRasterizer"/>, looked up on every call rather than once
@@ -1194,11 +1194,11 @@
     /// <see cref="TextRasterizer"/> set later then draws from the next render, and <see cref="RefreshAsync"/> redraws
     /// the text already there. Until there is one, text is skipped as it is with no rasteriser at all.
     /// </summary>
-    private sealed class SessionTextRasterizer(BmageEditor editor) : ITextRasterizer
+    private sealed class SessionTextRasterizer(BmageEditor editor) : IBmageTextRasterizer
     {
-        public TextMetrics Measure(string text, TextStyle style) => editor.EffectiveTextRasterizer?.Measure(text, style) ?? default;
+        public BmageTextMetrics Measure(string text, BmageTextStyle style) => editor.EffectiveTextRasterizer?.Measure(text, style) ?? default;
 
-        public VectorPath? GetTextPath(string text, Vector2 origin, TextStyle style) => editor.EffectiveTextRasterizer?.GetTextPath(text, origin, style);
+        public BmageVectorPath? GetTextPath(string text, Vector2 origin, BmageTextStyle style) => editor.EffectiveTextRasterizer?.GetTextPath(text, origin, style);
     }
 
     private void UpdateCropRectangle(Vector2 point)
@@ -1206,18 +1206,18 @@
         if (_session is null) return;
         var shown = PreviewDisplaySize;
         var bounds = shown.IsEmpty ? new RectangleF(PointF.Empty, _session.ProxySize) : new RectangleF(PointF.Empty, shown);
-        if (_cropHandle is { } handle && handle != CropHandle.Move)
+        if (_cropHandle is { } handle && handle != BmageCropHandle.Move)
         {
             var r = _cropStart;
             var left = r.Left; var top = r.Top; var right = r.Right; var bottom = r.Bottom;
-            if (handle is CropHandle.TopLeft or CropHandle.Left or CropHandle.BottomLeft) left = point.X;
-            if (handle is CropHandle.TopRight or CropHandle.Right or CropHandle.BottomRight) right = point.X;
-            if (handle is CropHandle.TopLeft or CropHandle.Top or CropHandle.TopRight) top = point.Y;
-            if (handle is CropHandle.BottomLeft or CropHandle.Bottom or CropHandle.BottomRight) bottom = point.Y;
+            if (handle is BmageCropHandle.TopLeft or BmageCropHandle.Left or BmageCropHandle.BottomLeft) left = point.X;
+            if (handle is BmageCropHandle.TopRight or BmageCropHandle.Right or BmageCropHandle.BottomRight) right = point.X;
+            if (handle is BmageCropHandle.TopLeft or BmageCropHandle.Top or BmageCropHandle.TopRight) top = point.Y;
+            if (handle is BmageCropHandle.BottomLeft or BmageCropHandle.Bottom or BmageCropHandle.BottomRight) bottom = point.Y;
             var rect = RectangleF.FromLTRB(MathF.Min(left, right), MathF.Min(top, bottom), MathF.Max(left, right), MathF.Max(top, bottom));
             _cropRectangle = ApplyAspect(Clamp(rect, bounds));
         }
-        else if (_cropHandle == CropHandle.Move && _drag is not null)
+        else if (_cropHandle == BmageCropHandle.Move && _drag is not null)
         {
             var delta = point - _drag.Start;
             var moved = new RectangleF(_cropStart.X + delta.X, _cropStart.Y + delta.Y, _cropStart.Width, _cropStart.Height);
@@ -1248,15 +1248,15 @@
             Math.Clamp(rect.Right, bounds.Left, bounds.Right),
             Math.Clamp(rect.Bottom, bounds.Top, bounds.Bottom));
 
-    private async Task OnCropHandleDown(CropHandleArgs e)
+    private async Task OnCropHandleDown(BmageCropHandleArgs e)
     {
         _cropHandle = e.Handle;
         _cropStart = _cropRectangle ?? default;
-        _drag = new ToolDrag { Start = e.Pointer.Point, Current = e.Pointer.Point };
+        _drag = new BmageToolDrag { Start = e.Pointer.Point, Current = e.Pointer.Point };
         await Task.CompletedTask;
     }
 
-    private void OnZoomGesture(ZoomArgs e)
+    private void OnZoomGesture(BmageZoomArgs e)
     {
         var next = Math.Clamp(_zoom * e.Factor, 0.05, 32);
         // Keep the focal point stationary on screen.
@@ -1297,7 +1297,7 @@
                 break;
             case "Escape":
                 _selectedId = null;
-                if (_tool == EditorToolKind.Crop) _cropRectangle = null;
+                if (_tool == BmageEditorToolKind.Crop) _cropRectangle = null;
                 if (_selection is not null) SetSelection(null);
                 break;
             case "ArrowLeft" or "ArrowRight" or "ArrowUp" or "ArrowDown" when _selectedId is { } moveId:
@@ -1316,10 +1316,10 @@
                 break;
             }
             case "+" or "=":
-                OnZoomGesture(new ZoomArgs(1.2, ViewCentre()));
+                OnZoomGesture(new BmageZoomArgs(1.2, ViewCentre()));
                 break;
             case "-" or "_":
-                OnZoomGesture(new ZoomArgs(1 / 1.2, ViewCentre()));
+                OnZoomGesture(new BmageZoomArgs(1 / 1.2, ViewCentre()));
                 break;
             case "0" when ctrl:
                 FitToWindow();
@@ -1327,10 +1327,10 @@
             case "\\":
                 await SetCompareAsync(!_comparing);
                 break;
-            case "[" when _tool is EditorToolKind.Brush or EditorToolKind.Eraser:
+            case "[" when _tool is BmageEditorToolKind.Brush or BmageEditorToolKind.Eraser:
                 _settings = _settings with { BrushSize = Math.Max(1, _settings.BrushSize / 1.2f) };
                 break;
-            case "]" when _tool is EditorToolKind.Brush or EditorToolKind.Eraser:
+            case "]" when _tool is BmageEditorToolKind.Brush or BmageEditorToolKind.Eraser:
                 _settings = _settings with { BrushSize = Math.Min(1000, _settings.BrushSize * 1.2f) };
                 break;
         }
@@ -1346,39 +1346,39 @@
     }
 
     // History labels are shown to the user, so they come from the localised strings rather than the enum names.
-    private string ToolLabel(EditorToolKind kind) => kind switch
+    private string ToolLabel(BmageEditorToolKind kind) => kind switch
     {
-        EditorToolKind.Draw => Strings.Draw,
-        EditorToolKind.Line => Strings.Line,
-        EditorToolKind.Arrow => Strings.Arrow,
-        EditorToolKind.Rectangle => Strings.Rectangle,
-        EditorToolKind.Ellipse => Strings.Ellipse,
-        EditorToolKind.Highlight => Strings.Highlight,
-        EditorToolKind.Redact => Strings.Redact,
-        EditorToolKind.Text => Strings.Text,
-        EditorToolKind.Step => Strings.Step,
-        EditorToolKind.Brush => Strings.Brush,
-        EditorToolKind.Eraser => Strings.Eraser,
-        EditorToolKind.Eyedropper => Strings.Eyedropper,
-        EditorToolKind.Fill => Strings.Fill,
-        EditorToolKind.MagicEraser => Strings.MagicEraser,
-        EditorToolKind.SelectRectangle => Strings.SelectRectangle,
-        EditorToolKind.SelectEllipse => Strings.SelectEllipse,
-        EditorToolKind.Lasso => Strings.Lasso,
-        EditorToolKind.MagicWand => Strings.MagicWand,
+        BmageEditorToolKind.Draw => Strings.Draw,
+        BmageEditorToolKind.Line => Strings.Line,
+        BmageEditorToolKind.Arrow => Strings.Arrow,
+        BmageEditorToolKind.Rectangle => Strings.Rectangle,
+        BmageEditorToolKind.Ellipse => Strings.Ellipse,
+        BmageEditorToolKind.Highlight => Strings.Highlight,
+        BmageEditorToolKind.Redact => Strings.Redact,
+        BmageEditorToolKind.Text => Strings.Text,
+        BmageEditorToolKind.Step => Strings.Step,
+        BmageEditorToolKind.Brush => Strings.Brush,
+        BmageEditorToolKind.Eraser => Strings.Eraser,
+        BmageEditorToolKind.Eyedropper => Strings.Eyedropper,
+        BmageEditorToolKind.Fill => Strings.Fill,
+        BmageEditorToolKind.MagicEraser => Strings.MagicEraser,
+        BmageEditorToolKind.SelectRectangle => Strings.SelectRectangle,
+        BmageEditorToolKind.SelectEllipse => Strings.SelectEllipse,
+        BmageEditorToolKind.Lasso => Strings.Lasso,
+        BmageEditorToolKind.MagicWand => Strings.MagicWand,
         _ => kind.ToString(),
     };
 
     // ---- Public actions, also used by custom toolbars ----
 
     /// <summary>The active tool.</summary>
-    public EditorToolKind Tool => _tool;
+    public BmageEditorToolKind Tool => _tool;
 
     /// <summary>The current drawing settings.</summary>
-    public EditorToolSettings Settings => _settings;
+    public BmageEditorToolSettings Settings => _settings;
 
     /// <summary>The detected browser capabilities.</summary>
-    public ImageCapabilities? BrowserCapabilities => _capabilities;
+    public BmageImageCapabilities? BrowserCapabilities => _capabilities;
 
     /// <summary>Current zoom factor.</summary>
     public double Zoom => _zoom;
@@ -1390,59 +1390,59 @@
     public Guid? SelectedAnnotationId => _selectedId;
 
     /// <summary>The tools the editor offers, in the order the toolbar shows them: <see cref="Tools"/>, or every tool when that is null.</summary>
-    public IReadOnlyList<EditorToolKind> OfferedTools => Tools is { } tools ? [.. tools.Distinct()] : AllTools;
+    public IReadOnlyList<BmageEditorToolKind> OfferedTools => Tools is { } tools ? [.. tools.Distinct()] : AllTools;
 
     /// <summary>Every tool, in the order the built-in toolbar has always shown them.</summary>
-    private static readonly EditorToolKind[] AllTools =
+    private static readonly BmageEditorToolKind[] AllTools =
     [
-        EditorToolKind.Select, EditorToolKind.Pan, EditorToolKind.Crop, EditorToolKind.Draw, EditorToolKind.Arrow,
-        EditorToolKind.Line, EditorToolKind.Rectangle, EditorToolKind.Ellipse, EditorToolKind.Text, EditorToolKind.Step,
-        EditorToolKind.Highlight, EditorToolKind.Redact, EditorToolKind.Brush, EditorToolKind.Eraser, EditorToolKind.Fill,
-        EditorToolKind.MagicEraser, EditorToolKind.Eyedropper, EditorToolKind.SelectRectangle, EditorToolKind.SelectEllipse,
-        EditorToolKind.Lasso, EditorToolKind.MagicWand,
+        BmageEditorToolKind.Select, BmageEditorToolKind.Pan, BmageEditorToolKind.Crop, BmageEditorToolKind.Draw, BmageEditorToolKind.Arrow,
+        BmageEditorToolKind.Line, BmageEditorToolKind.Rectangle, BmageEditorToolKind.Ellipse, BmageEditorToolKind.Text, BmageEditorToolKind.Step,
+        BmageEditorToolKind.Highlight, BmageEditorToolKind.Redact, BmageEditorToolKind.Brush, BmageEditorToolKind.Eraser, BmageEditorToolKind.Fill,
+        BmageEditorToolKind.MagicEraser, BmageEditorToolKind.Eyedropper, BmageEditorToolKind.SelectRectangle, BmageEditorToolKind.SelectEllipse,
+        BmageEditorToolKind.Lasso, BmageEditorToolKind.MagicWand,
     ];
 
     /// <summary>True when the editor offers <paramref name="tool"/>.</summary>
-    public bool IsToolOffered(EditorToolKind tool) => Tools is not { } tools || tools.Contains(tool);
+    public bool IsToolOffered(BmageEditorToolKind tool) => Tools is not { } tools || tools.Contains(tool);
 
     /// <summary>The tool the editor returns to after a crop or a pick: select when offered, else the first one offered.</summary>
-    /// <remarks>With no tool offered it stays <see cref="EditorToolKind.Select"/>, which <see cref="IsToolUsable"/> then keeps from acting.</remarks>
-    private EditorToolKind DefaultTool => IsToolOffered(EditorToolKind.Select) || Tools is not { Count: > 0 } tools ? EditorToolKind.Select : tools[0];
+    /// <remarks>With no tool offered it stays <see cref="BmageEditorToolKind.Select"/>, which <see cref="IsToolUsable"/> then keeps from acting.</remarks>
+    private BmageEditorToolKind DefaultTool => IsToolOffered(BmageEditorToolKind.Select) || Tools is not { Count: > 0 } tools ? BmageEditorToolKind.Select : tools[0];
 
     /// <summary>
     /// True when the active tool may act on the pointer: it is offered, or it is the eyedropper of a white-balance pick,
     /// which the Adjust tab starts whether or not the eyedropper is offered as a tool.
     /// </summary>
-    private bool IsToolUsable => IsToolOffered(_tool) || (_pickingWhiteBalance && _tool == EditorToolKind.Eyedropper);
+    private bool IsToolUsable => IsToolOffered(_tool) || (_pickingWhiteBalance && _tool == BmageEditorToolKind.Eyedropper);
 
     /// <summary>Switches the active tool. A tool the editor does not offer (see <see cref="Tools"/>) is not selected.</summary>
-    public void SetTool(EditorToolKind tool)
+    public void SetTool(BmageEditorToolKind tool)
     {
         if (!IsToolOffered(tool)) return;
         SelectTool(tool);
     }
 
     /// <summary>Switches the active tool whether or not the toolbar offers it, for the editor's own uses of a tool.</summary>
-    private void SelectTool(EditorToolKind tool)
+    private void SelectTool(BmageEditorToolKind tool)
     {
         _tool = tool;
-        if (tool != EditorToolKind.Eyedropper) _pickingWhiteBalance = false;
+        if (tool != BmageEditorToolKind.Eyedropper) _pickingWhiteBalance = false;
         // Panning to see more of the image keeps the frame for when the crop tool comes back; any other tool discards it,
         // as applying and cancelling the crop do.
-        if (tool is not (EditorToolKind.Crop or EditorToolKind.Pan)) _cropRectangle = null;
-        if (tool != EditorToolKind.Select) _selectedId = null;
+        if (tool is not (BmageEditorToolKind.Crop or BmageEditorToolKind.Pan)) _cropRectangle = null;
+        if (tool != BmageEditorToolKind.Select) _selectedId = null;
         StateHasChanged();
     }
 
     /// <summary>Updates the drawing settings.</summary>
-    public void SetSettings(EditorToolSettings settings)
+    public void SetSettings(BmageEditorToolSettings settings)
     {
-        _settings = settings ?? new EditorToolSettings();
+        _settings = settings ?? new BmageEditorToolSettings();
         StateHasChanged();
     }
 
     /// <summary>Sets the aspect ratio the crop tool enforces, or null for freeform.</summary>
-    public void SetCropAspect(AspectRatio? aspect)
+    public void SetCropAspect(BmageAspectRatio? aspect)
     {
         _cropAspect = aspect;
         if (_cropRectangle is { } r) _cropRectangle = ApplyAspect(r);
@@ -1454,11 +1454,11 @@
     /// in the middle of the image, ready to move, resize or apply: a cropper's starting point, and one a keyboard user
     /// can apply without drawing it. Does nothing when no image is loaded or the crop tool is not offered.
     /// </summary>
-    public void BeginCrop(AspectRatio? aspect = null)
+    public void BeginCrop(BmageAspectRatio? aspect = null)
     {
-        if (_session is null || !IsToolOffered(EditorToolKind.Crop)) return;
+        if (_session is null || !IsToolOffered(BmageEditorToolKind.Crop)) return;
         _cropAspect = aspect;
-        SelectTool(EditorToolKind.Crop);
+        SelectTool(BmageEditorToolKind.Crop);
         var shown = PreviewDisplaySize;
         var bounds = shown.IsEmpty ? new SizeF(_session.ProxySize) : shown;
         var (width, height) = (bounds.Width, bounds.Height);
@@ -1486,7 +1486,7 @@
         _cropRectangle = null;
         _tool = DefaultTool;
         // Geometric edits carry the annotations, the layers and the selection with the content they mark.
-        var crop = new CropOperation(full);
+        var crop = new BmageCropOperation(full);
         MoveSelectionWith(crop);
         await ApplyAndRenderAsync(d => d.AddOperation(crop, keepOverlaysAttached: true), Strings.Crop);
         FitToWindow();
@@ -1502,7 +1502,7 @@
     /// <summary>Rotates the image by a multiple of 90 degrees.</summary>
     public Task RotateAsync(int degrees)
     {
-        var turn = OrientationOperation.FromRotation(degrees);
+        var turn = BmageOrientationOperation.FromRotation(degrees);
         MoveSelectionWith(turn);
         return ApplyAndRenderAsync(d => d.AddOperation(turn, keepOverlaysAttached: true), degrees > 0 ? Strings.RotateRight : Strings.RotateLeft);
     }
@@ -1510,7 +1510,7 @@
     /// <summary>Mirrors the image.</summary>
     public Task FlipAsync(bool horizontal)
     {
-        var flip = horizontal ? OrientationOperation.FlipHorizontal : OrientationOperation.FlipVertical;
+        var flip = horizontal ? BmageOrientationOperation.FlipHorizontal : BmageOrientationOperation.FlipVertical;
         MoveSelectionWith(flip);
         return ApplyAndRenderAsync(d => d.AddOperation(flip, keepOverlaysAttached: true), horizontal ? Strings.FlipHorizontal : Strings.FlipVertical);
     }
@@ -1523,7 +1523,7 @@
     {
         // Re-editing a step mid-pipeline moves the image in a way the selection cannot follow exactly; it is dropped.
         if (_selection is not null) SetSelection(null);
-        return SetAdjustmentAsync(degrees == 0 || !double.IsFinite(degrees) ? null : new StraightenOperation(Math.Clamp(degrees, -StraightenOperation.MaxDegrees, StraightenOperation.MaxDegrees)),
+        return SetAdjustmentAsync(degrees == 0 || !double.IsFinite(degrees) ? null : new BmageStraightenOperation(Math.Clamp(degrees, -BmageStraightenOperation.MaxDegrees, BmageStraightenOperation.MaxDegrees)),
             Strings.Straighten, transient);
     }
 
@@ -1531,7 +1531,7 @@
     public async Task ResizeAsync(int width, int height)
     {
         if (_session is null || width <= 0 || height <= 0) return;
-        var resize = new ResizeOperation(width, height, BmageResizeMode.Stretch);
+        var resize = new BmageResizeOperation(width, height, BmageResizeMode.Stretch);
         MoveSelectionWith(resize);
         await ApplyAndRenderAsync(d => d.AddOperation(resize, keepOverlaysAttached: true), Strings.Resize);
         FitToWindow();
@@ -1541,10 +1541,10 @@
     /// Sets the canvas to <paramref name="width"/> by <paramref name="height"/> without scaling the image, placing it by
     /// <paramref name="anchor"/> and filling new area with <paramref name="background"/>.
     /// </summary>
-    public async Task SetCanvasSizeAsync(int width, int height, Anchor anchor, Rgba32 background)
+    public async Task SetCanvasSizeAsync(int width, int height, BmageAnchor anchor, BmageRgba32 background)
     {
         if (_session is null || width <= 0 || height <= 0) return;
-        var canvas = new CanvasSizeOperation(width, height, anchor, background);
+        var canvas = new BmageCanvasSizeOperation(width, height, anchor, background);
         MoveSelectionWith(canvas);
         await ApplyAndRenderAsync(d => d.AddOperation(canvas, keepOverlaysAttached: true), Strings.CanvasSize);
         FitToWindow();
@@ -1562,7 +1562,7 @@
         System.Drawing.Size size;
         using (var rendered = await session.RenderFullAsync())
         {
-            bounds = ContentBounds.Find(rendered);
+            bounds = BmageContentBounds.Find(rendered);
             size = rendered.Size;
         }
         if (!IsStill(session, document)) return;
@@ -1571,7 +1571,7 @@
             ShowMessage(Strings.NothingToTrim, isError: false);
             return;
         }
-        var trim = new CropOperation(content);
+        var trim = new BmageCropOperation(content);
         MoveSelectionWith(trim);
         await ApplyAndRenderAsync(d => d.AddOperation(trim, keepOverlaysAttached: true), Strings.Trim);
         FitToWindow();
@@ -1579,18 +1579,18 @@
 
     /// <summary>Turns automatic white balance on, or off when it is on.</summary>
     public Task ToggleAutoWhiteBalanceAsync()
-        => SetAdjustmentAsync(FindAdjustment<AutoWhiteBalanceOperation>() is null ? new AutoWhiteBalanceOperation() : null, Strings.AutoWhiteBalance);
+        => SetAdjustmentAsync(FindAdjustment<BmageAutoWhiteBalanceOperation>() is null ? new BmageAutoWhiteBalanceOperation() : null, Strings.AutoWhiteBalance);
 
     /// <summary>Turns automatic levels on, or off when they are on.</summary>
     public Task ToggleAutoLevelsAsync()
-        => SetAdjustmentAsync(FindAdjustment<AutoLevelsOperation>() is null ? new AutoLevelsOperation() : null, Strings.AutoLevels);
+        => SetAdjustmentAsync(FindAdjustment<BmageAutoLevelsOperation>() is null ? new BmageAutoLevelsOperation() : null, Strings.AutoLevels);
 
     /// <summary>Makes the next eyedropper pick set the white balance: click something that should be grey or white.</summary>
     public void PickWhiteBalance()
     {
         if (_session is null) return;
         // White balance belongs to the Adjust tab, so it picks even where the eyedropper is not offered as a tool.
-        SelectTool(EditorToolKind.Eyedropper);
+        SelectTool(BmageEditorToolKind.Eyedropper);
         _pickingWhiteBalance = true;
         ShowMessage(Strings.PickNeutralHint, isError: false);
     }
@@ -1598,7 +1598,7 @@
     /// <summary>True while the next eyedropper pick sets the white balance.</summary>
     public bool IsPickingWhiteBalance => _pickingWhiteBalance;
 
-    private TOperation? FindAdjustment<TOperation>() where TOperation : class, IImageOperation
+    private TOperation? FindAdjustment<TOperation>() where TOperation : class, IBmageImageOperation
         => _session?.Document.Pipeline.OfType<TOperation>().FirstOrDefault();
 
     // ---- Comparing ----
@@ -1645,10 +1645,10 @@
     public async Task AddPaintLayerAsync()
     {
         if (_session is null) return;
-        var layer = new PaintLayer { Name = Strings.Paint };
+        var layer = new BmagePaintLayer { Name = Strings.Paint };
         await ApplyAndRenderAsync(d => d.AddLayer(layer), Strings.AddPaintLayer);
         _activeLayerId = layer.Id;
-        SetTool(EditorToolKind.Brush);
+        SetTool(BmageEditorToolKind.Brush);
     }
 
     /// <summary>
@@ -1670,7 +1670,7 @@
         var scale = Math.Min(1.0, Math.Min(output.Width * 0.6 / image.Width, output.Height * 0.6 / image.Height));
         var width = (float)(image.Width * scale);
         var height = (float)(image.Height * scale);
-        var layer = new ImageLayer
+        var layer = new BmageImageLayer
         {
             Image = image,
             Bounds = new RectangleF((output.Width - width) / 2, (output.Height - height) / 2, width, height),
@@ -1699,7 +1699,7 @@
         Guid? group = null;
         try
         {
-            if (below is GroupLayer existing) await ApplyAndRenderAsync(d => d.MoveLayerIntoGroup(id, existing.Id), Strings.MoveIntoGroupBelow);
+            if (below is BmageGroupLayer existing) await ApplyAndRenderAsync(d => d.MoveLayerIntoGroup(id, existing.Id), Strings.MoveIntoGroupBelow);
             else await ApplyAndRenderAsync(d => d.GroupLayers([below.Id, id], out group, Strings.Group), Strings.Group);
         }
         catch (ArgumentException)
@@ -1714,7 +1714,7 @@
     /// <summary>Replaces a group by its layers, where it was. The group's own opacity, blend mode and mask go with it.</summary>
     public async Task UngroupAsync(Guid id)
     {
-        if (_session?.Document.FindLayer(id) is not GroupLayer) return;
+        if (_session?.Document.FindLayer(id) is not BmageGroupLayer) return;
         await ApplyAndRenderAsync(d => d.Ungroup(id), Strings.Ungroup);
         if (_activeLayerId == id) _activeLayerId = null;
     }
@@ -1723,7 +1723,7 @@
     public Task MoveLayerOutOfGroupAsync(Guid id) => ApplyAndRenderAsync(d => d.MoveLayerOutOfGroup(id), Strings.MoveOutOfGroup);
 
     /// <summary>Adds or updates an adjustment, replacing any existing one of the same type so sliders stay live.</summary>
-    public Task SetAdjustmentAsync<TOperation>(TOperation? operation, string label, bool transient = false) where TOperation : class, IImageOperation
+    public Task SetAdjustmentAsync<TOperation>(TOperation? operation, string label, bool transient = false) where TOperation : class, IBmageImageOperation
         => ApplyAndRenderAsync(d =>
         {
             var pipeline = d.Pipeline;
@@ -1739,7 +1739,7 @@
         }, label, transient);
 
     /// <summary>Applies any change to the document as one history entry and one render.</summary>
-    public Task ApplyAsync(Func<ImageDocument, ImageDocument> change, string label, bool transient = false)
+    public Task ApplyAsync(Func<BmageImageDocument, BmageImageDocument> change, string label, bool transient = false)
     {
         ArgumentNullException.ThrowIfNull(change);
         return ApplyAndRenderAsync(change, label, transient);
@@ -1747,7 +1747,7 @@
 
     /// <summary>
     /// Renders the preview again from scratch, for when something outside the document changed how it looks, such as a
-    /// font registered after the text was first drawn. See <see cref="ImageEditSession.Invalidate"/>.
+    /// font registered after the text was first drawn. See <see cref="BmageImageEditSession.Invalidate"/>.
     /// </summary>
     public Task RefreshAsync()
     {
@@ -1756,15 +1756,15 @@
     }
 
     /// <summary>Adds an arbitrary operation.</summary>
-    public Task AddOperationAsync(IImageOperation operation, string? label = null)
+    public Task AddOperationAsync(IBmageImageOperation operation, string? label = null)
         => ApplyAndRenderAsync(d => d.AddOperation(operation), label ?? operation.Name);
 
     /// <summary>Adds an annotation.</summary>
-    public Task AddAnnotationAsync(Annotation annotation, string? label = null)
+    public Task AddAnnotationAsync(BmageAnnotation annotation, string? label = null)
         => ApplyAndRenderAsync(d => d.AddAnnotation(annotation), label ?? Strings.FormatKind(annotation.Kind));
 
     /// <summary>Replaces an annotation, matched by id.</summary>
-    public Task UpdateAnnotationAsync(Annotation annotation, bool transient = false)
+    public Task UpdateAnnotationAsync(BmageAnnotation annotation, bool transient = false)
         => ApplyAndRenderAsync(d => d.UpdateAnnotation(annotation), Strings.FormatKind(annotation.Kind), transient);
 
     /// <summary>Removes an annotation.</summary>
@@ -1842,7 +1842,7 @@
     public void SetZoom(double zoom)
     {
         var next = Math.Clamp(zoom, 0.05, 32);
-        OnZoomGesture(new ZoomArgs(next / _zoom, ViewCentre()));
+        OnZoomGesture(new BmageZoomArgs(next / _zoom, ViewCentre()));
     }
 
     /// <summary>Zooms and pans so the whole image is visible and centred, never enlarging it past 100%.</summary>
@@ -1854,10 +1854,10 @@
     }
 
     /// <summary>Renders the edit at full resolution and encodes it.</summary>
-    public async Task<EncodedImage?> ExportAsync(ImageExportOptions? options = null)
+    public async Task<BmageEncodedImage?> ExportAsync(BmageImageExportOptions? options = null)
     {
         if (_session is null) return null;
-        EncodedImage? result = null;
+        BmageEncodedImage? result = null;
         await RunAsync(async () =>
         {
             using var full = await _session.RenderFullAsync();
@@ -1868,7 +1868,7 @@
     }
 
     /// <summary>Renders, encodes and downloads the edit.</summary>
-    public async Task DownloadAsync(string fileName, ImageExportOptions? options = null)
+    public async Task DownloadAsync(string fileName, BmageImageExportOptions? options = null)
     {
         var encoded = await ExportAsync(options);
         if (encoded is not null) await RunAsync(() => Exporter.DownloadAsync(encoded, fileName).AsTask());
@@ -1917,7 +1917,7 @@
 
     /// <summary>
     /// Opens a project file the user picked. Projects carry their original losslessly, so they may be four times the
-    /// size <see cref="BitBmageOptions.MaxSourceBytes"/> allows an image upload.
+    /// size <see cref="BmageOptions.MaxSourceBytes"/> allows an image upload.
     /// </summary>
     public async Task OpenProjectAsync(IBrowserFile file)
     {
@@ -1940,7 +1940,7 @@
     {
         if (_session is null) return;
         using var full = await _session.RenderFullAsync();
-        var encoded = await Exporter.EncodeAsync(full, ImageExportOptions.Png);
+        var encoded = await Exporter.EncodeAsync(full, BmageImageExportOptions.Png);
         await Exporter.CopyToClipboardAsync(encoded);
     });
 
@@ -1976,11 +1976,11 @@
         }
         ShowMessage(ex switch
         {
-            ImageLimitExceededException => Strings.ImageTooLarge,
-            ImageDecodeException => Strings.UnsupportedFormat,
-            ImageCapabilityException c => c.Message,
-            ImageEncodeException => Strings.ExportFailed,
-            ImageDocumentFormatException => Strings.ProjectFailed,
+            BmageImageLimitExceededException => Strings.ImageTooLarge,
+            BmageImageDecodeException => Strings.UnsupportedFormat,
+            BmageImageCapabilityException c => c.Message,
+            BmageImageEncodeException => Strings.ExportFailed,
+            BmageImageDocumentFormatException => Strings.ProjectFailed,
             _ => Strings.LoadFailed,
         }, isError: true);
     }

@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace Bit.Bmotion.Demo.Server.Services;
 
 /// <summary>
-/// Turns the way a person (or an agent) writes a transition into the <see cref="BmTransition"/> the
+/// Turns the way a person (or an agent) writes a transition into the <see cref="BmotionTransition"/> the
 /// engine runs.
 /// <para>
 /// An MCP client has one string to hand over, and no two of them phrase a spring the same way:
@@ -27,7 +27,7 @@ public static partial class BmotionTransitionSpec
     /// <param name="Canonical">The C# call that produces it - what to write in the code.</param>
     /// <param name="Warnings">Arguments that were not recognised, and assumptions that were made.</param>
     /// <param name="Error">Why the spec could not be read, when it could not.</param>
-    public sealed record Result(BmTransition? Transition, string Canonical, string[] Warnings, string? Error);
+    public sealed record Result(BmotionTransition? Transition, string Canonical, string[] Warnings, string? Error);
 
     /// <summary>The transition kinds a spec can name, for error messages and tool descriptions.</summary>
     public static readonly string[] Kinds = ["spring", "tween", "inertia"];
@@ -130,7 +130,7 @@ public static partial class BmotionTransitionSpec
 
                 // Bm.Tween takes the duration first, but "tween(BackOut)" is how an easing-only tween
                 // is written, and reading that as a duration would reject the one thing it says. The
-                // number test comes first: Enum.TryParse reads a bare number as a BmEase.
+                // number test comes first: Enum.TryParse reads a bare number as a BmotionEase.
                 if (slot is "duration" && TryParseNumber(text, out _) is false && TryEase(text, out _))
                 {
                     slot = "ease";
@@ -160,7 +160,7 @@ public static partial class BmotionTransitionSpec
 
     private static Result BuildSpring(Dictionary<string, string> named, List<string> warnings)
     {
-        var spring = new BmSpring();
+        var spring = new BmotionSpring();
         var written = new List<string>();
 
         // Bounce and duration derive stiffness and damping, so a spec that sets both forms would
@@ -260,7 +260,7 @@ public static partial class BmotionTransitionSpec
 
     private static Result BuildTween(Dictionary<string, string> named, List<string> warnings)
     {
-        var tween = new BmTween();
+        var tween = new BmotionTween();
         var written = new List<string>();
 
         foreach (var (name, value) in named)
@@ -272,11 +272,11 @@ public static partial class BmotionTransitionSpec
                 if (TryEase(value, out var ease))
                 {
                     tween.Ease = ease;
-                    written.Add($"BmEase.{ease}");
+                    written.Add($"BmotionEase.{ease}");
                 }
                 else
                 {
-                    warnings.Add($"'{value}' is not a BmEase value; the tween kept BmEase.{tween.Ease}. " +
+                    warnings.Add($"'{value}' is not a BmotionEase value; the tween kept BmotionEase.{tween.Ease}. " +
                                  "Call GetBmotionEasings for the full list.");
                 }
 
@@ -333,7 +333,7 @@ public static partial class BmotionTransitionSpec
 
     private static Result BuildInertia(Dictionary<string, string> named, List<string> warnings)
     {
-        var inertia = new BmInertia();
+        var inertia = new BmotionInertia();
         var written = new List<string>();
 
         foreach (var (name, value) in named)
@@ -390,15 +390,15 @@ public static partial class BmotionTransitionSpec
         return new Result(inertia, $"Bm.Inertia({string.Join(", ", written)})", [.. warnings], null);
     }
 
-    /// <summary>Resolves a <see cref="BmEase"/> by name, with or without its enum qualifier.</summary>
-    public static bool TryEase(string? text, out BmEase ease)
+    /// <summary>Resolves a <see cref="BmotionEase"/> by name, with or without its enum qualifier.</summary>
+    public static bool TryEase(string? text, out BmotionEase ease)
     {
-        ease = BmEase.Out;
+        ease = BmotionEase.Out;
 
         var name = (text ?? string.Empty).Trim();
         if (name.Length == 0) return false;
 
-        // "BmEase.InOut", "ease.InOut" and "easeInOut" all name the same member.
+        // "BmotionEase.InOut", "ease.InOut" and "easeInOut" all name the same member.
         var dot = name.LastIndexOf('.');
         if (dot >= 0) name = name[(dot + 1)..];
         if (name.StartsWith("ease", StringComparison.OrdinalIgnoreCase) && name.Length > 4) name = name[4..];
@@ -519,6 +519,6 @@ public static partial class BmotionTransitionSpec
     [GeneratedRegex(@"(\b[A-Za-z_][A-Za-z0-9_]*)\s*([:=])\s*")]
     private static partial Regex NameSeparatorSpaceRegex();
 
-    [GeneratedRegex(@"^\s*(Bm|Motion|BmTransition)\s*\.\s*", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"^\s*(Bm|Motion|BmotionTransition)\s*\.\s*", RegexOptions.IgnoreCase)]
     private static partial Regex QualifierRegex();
 }

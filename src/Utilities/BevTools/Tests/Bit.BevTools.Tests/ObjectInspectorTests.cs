@@ -4,11 +4,11 @@ namespace Bit.BevTools.Tests;
 [TestClass]
 public class ObjectInspectorTests
 {
-    private static BevObjectInspector Create(Action<BitBevToolsOptions>? configure = null)
+    private static BevToolsObjectInspector Create(Action<BevToolsOptions>? configure = null)
     {
-        var options = new BitBevToolsOptions();
+        var options = new BevToolsOptions();
         configure?.Invoke(options);
-        return new BevObjectInspector(options, new BevRedactor(options.SensitiveNamePatterns));
+        return new BevToolsObjectInspector(options, new BevToolsRedactor(options.SensitiveNamePatterns));
     }
 
     private sealed class Node
@@ -60,7 +60,7 @@ public class ObjectInspectorTests
         var flat = Create().Flatten(json, maxDepth: 5);
         Assert.AreEqual("2", flat["cart.items"]);
         Assert.AreEqual("\"A\"", flat["cart.lines[0].sku"]);
-        Assert.AreEqual(BevRedactor.RedactedValue, flat["cart.token"]);
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, flat["cart.token"]);
     }
 
     [TestMethod]
@@ -80,9 +80,9 @@ public class ObjectInspectorTests
         Assert.IsFalse(inspector.Describe("pass", new Pass("ada", "opaque-code")).Display.Contains("opaque-code", StringComparison.Ordinal));
         Assert.IsFalse(inspector.Describe("badge", new Badge("ada", "opaque-code")).Display.Contains("opaque-code", StringComparison.Ordinal));
         var children = inspector.Children(new Pass("ada", "opaque-code"), "");
-        Assert.AreEqual(BevNodeKind.Redacted, children.Single(c => c.Name == nameof(Pass.Code)).Kind);
+        Assert.AreEqual(BevToolsNodeKind.Redacted, children.Single(c => c.Name == nameof(Pass.Code)).Kind);
         Assert.AreEqual("\"ada\"", children.Single(c => c.Name == nameof(Pass.Holder)).Display);
-        Assert.AreEqual(BevRedactor.RedactedValue, inspector.Flatten(new Pass("ada", "opaque-code"))[nameof(Pass.Code)]);
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, inspector.Flatten(new Pass("ada", "opaque-code"))[nameof(Pass.Code)]);
     }
 
     [TestMethod]
@@ -100,7 +100,7 @@ public class ObjectInspectorTests
 
         Assert.IsFalse(inspector.Describe("ticket", new GateTicket("ada", "opaque-code")).Display.Contains("opaque-code", StringComparison.Ordinal));
         var children = inspector.Children(new GateTicket("ada", "opaque-code"), "");
-        Assert.AreEqual(BevNodeKind.Redacted, children.Single(c => c.Name == nameof(GateTicket.Code)).Kind);
+        Assert.AreEqual(BevToolsNodeKind.Redacted, children.Single(c => c.Name == nameof(GateTicket.Code)).Kind);
         Assert.AreEqual("\"ada\"", children.Single(c => c.Name == nameof(GateTicket.Holder)).Display);
         Assert.AreEqual("\"opaque-code\"", inspector.Children(new Ticket("ada", "opaque-code"), "").Single(c => c.Name == nameof(Ticket.Code)).Display,
             "only the derived record marks it");
@@ -113,7 +113,7 @@ public class ObjectInspectorTests
     [TestMethod]
     public void A_constructor_that_cannot_be_read_is_skipped()
     {
-        var redactor = new BevRedactor(new BitBevToolsOptions().SensitiveNamePatterns);
+        var redactor = new BevToolsRedactor(new BevToolsOptions().SensitiveNamePatterns);
         var type = new UnreadableConstructorType();
 
         Assert.IsTrue(redactor.IsSensitive(new ReflectedProperty(typeof(Voucher).GetProperty(nameof(Voucher.Code))!, type)));
@@ -194,11 +194,11 @@ public class ObjectInspectorTests
     public void Json_shows_its_size_below_Full_and_its_keys_checked_at_Full()
     {
         using var document = System.Text.Json.JsonDocument.Parse("""{"user":"ada","accessToken":"opaque","items":[1,2]}""");
-        var options = new BitBevToolsOptions();
-        var shallow = new BevObjectInspector(options, new BevRedactor(options.SensitiveNamePatterns), valueAccess: BevValueAccess.Shallow);
+        var options = new BevToolsOptions();
+        var shallow = new BevToolsObjectInspector(options, new BevToolsRedactor(options.SensitiveNamePatterns), valueAccess: BevToolsValueAccess.Shallow);
 
         Assert.AreEqual("JsonElement (3 properties)", shallow.Describe("json", document.RootElement).Display);
-        Assert.AreEqual("{\"user\": \"ada\", \"accessToken\": " + BevRedactor.RedactedValue + ", \"items\": [1, 2]}", Create().Describe("json", document.RootElement).Display);
+        Assert.AreEqual("{\"user\": \"ada\", \"accessToken\": " + BevToolsRedactor.RedactedValue + ", \"items\": [1, 2]}", Create().Describe("json", document.RootElement).Display);
     }
 
     [TestMethod]
@@ -206,8 +206,8 @@ public class ObjectInspectorTests
     {
         // What a state provider that snapshots as JSON hands over (Blex does).
         using var document = System.Text.Json.JsonDocument.Parse("""{"Cart":{"customerEmail":"bob@x.test","items":[1,2]}}""");
-        var options = new BitBevToolsOptions();
-        var shallow = new BevObjectInspector(options, new BevRedactor(options.SensitiveNamePatterns), valueAccess: BevValueAccess.Shallow);
+        var options = new BevToolsOptions();
+        var shallow = new BevToolsObjectInspector(options, new BevToolsRedactor(options.SensitiveNamePatterns), valueAccess: BevToolsValueAccess.Shallow);
 
         Assert.IsEmpty(shallow.Flatten(document.RootElement), "below Full, JSON is its type and size, as an object is");
 
@@ -221,8 +221,8 @@ public class ObjectInspectorTests
     {
         var inspector = Create();
         var children = inspector.Children(new Node(), "");
-        Assert.AreEqual(BevRedactor.RedactedValue, children.Single(c => c.Name == "Password").Display);
-        Assert.AreEqual(BevNodeKind.Redacted, children.Single(c => c.Name == "Handle").Kind);
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, children.Single(c => c.Name == "Password").Display);
+        Assert.AreEqual(BevToolsNodeKind.Redacted, children.Single(c => c.Name == "Handle").Kind);
         Assert.AreEqual("\"root\"", children.Single(c => c.Name == "Name").Display);
     }
 
@@ -236,7 +236,7 @@ public class ObjectInspectorTests
 
         var level1 = inspector.Children(a, "Next");
         var next = level1.Single(c => c.Name == "Next");
-        Assert.AreEqual(BevNodeKind.Circular, next.Kind);
+        Assert.AreEqual(BevToolsNodeKind.Circular, next.Kind);
         Assert.IsFalse(next.IsExpandable);
     }
 
@@ -245,7 +245,7 @@ public class ObjectInspectorTests
     {
         var inspector = Create();
         var throws = inspector.Children(new Node(), "").Single(c => c.Name == "Throws");
-        Assert.AreEqual(BevNodeKind.Error, throws.Kind);
+        Assert.AreEqual(BevToolsNodeKind.Error, throws.Kind);
         Assert.Contains("InvalidOperationException", throws.Display);
     }
 
@@ -254,7 +254,7 @@ public class ObjectInspectorTests
     {
         var inspector = Create(o => o.MaxCollectionItems = 2);
         var root = inspector.Describe("numbers", new List<int> { 1, 2, 3, 4 });
-        Assert.AreEqual(BevNodeKind.Collection, root.Kind);
+        Assert.AreEqual(BevToolsNodeKind.Collection, root.Kind);
         Assert.AreEqual(4, root.Count);
         var children = inspector.Children(new List<int> { 1, 2, 3, 4 }, "");
         Assert.AreEqual(3, children.Count); // 2 items + "…"
@@ -272,7 +272,7 @@ public class ObjectInspectorTests
         var inspector = Create();
         var children = inspector.Children(new Node(), "");
         var callback = children.Single(c => c.Name == "Callback");
-        Assert.AreEqual(BevNodeKind.Special, callback.Kind);
+        Assert.AreEqual(BevToolsNodeKind.Special, callback.Kind);
         Assert.StartsWith("delegate", callback.Display);
         Assert.IsFalse(callback.IsExpandable);
     }
@@ -295,11 +295,11 @@ public class ObjectInspectorTests
         before.Numbers.Add(4);
         var flatAfter = inspector.Flatten(before);
 
-        var diff = BevObjectInspector.Diff(flatBefore, flatAfter);
+        var diff = BevToolsObjectInspector.Diff(flatBefore, flatAfter);
         Assert.Contains(d => d.Path == "Name" && d.Before == "\"one\"" && d.After == "\"two\"", diff);
         Assert.Contains(d => d.Path == "Numbers[3]" && d.Kind == "added", diff);
         Assert.DoesNotContain(d => d.Path == "Numbers", diff); // parent collapsed in favour of the specific child change
-        Assert.AreEqual(BevRedactor.RedactedValue, flatAfter["Password"]);
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, flatAfter["Password"]);
     }
 
     /// <summary>
@@ -313,9 +313,9 @@ public class ObjectInspectorTests
         var inspector = Create();
         var result = new Dictionary<string, string>(StringComparer.Ordinal);
 
-        inspector.FlattenNamed(result, "First", new Node(), member: null, maxDepth: 2, maxItems: 25, maxEntries: 150, BevObjectInspector.FlattenDeadline());
+        inspector.FlattenNamed(result, "First", new Node(), member: null, maxDepth: 2, maxItems: 25, maxEntries: 150, BevToolsObjectInspector.FlattenDeadline());
         Assert.AreEqual("\"root\"", result["First.Name"]);
-        Assert.AreEqual(BevRedactor.RedactedValue, result["First.Password"]);
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, result["First.Password"]);
         Assert.Contains("First.Numbers[2]", result.Keys);
         var walked = result.Count;
 
@@ -325,7 +325,7 @@ public class ObjectInspectorTests
         Assert.Contains("Second", result.Keys);
 
         // The entry cap counts the whole dictionary, so it is the caller's running total that bounds the walk.
-        inspector.FlattenNamed(result, "Third", new Node(), member: null, maxDepth: 2, maxItems: 25, maxEntries: result.Count + 2, BevObjectInspector.FlattenDeadline());
+        inspector.FlattenNamed(result, "Third", new Node(), member: null, maxDepth: 2, maxItems: 25, maxEntries: result.Count + 2, BevToolsObjectInspector.FlattenDeadline());
         Assert.AreEqual(walked + 1 + 2, result.Count);
     }
 
@@ -335,7 +335,7 @@ public class ObjectInspectorTests
         var inspector = Create(o => o.MaxInspectionDepth = 2);
         var chain = new Node { Next = new Node { Next = new Node { Next = new Node() } } };
         var deep = inspector.Children(chain, "Next.Next");
-        Assert.AreEqual(BevNodeKind.Special, deep.Single(c => c.Name == "Next").Kind);
+        Assert.AreEqual(BevToolsNodeKind.Special, deep.Single(c => c.Name == "Next").Kind);
     }
 
     [TestMethod]
@@ -352,8 +352,8 @@ public class ObjectInspectorTests
 
         var children = inspector.Children(headers, "");
 
-        Assert.AreEqual(BevNodeKind.Redacted, children.Single(c => c.Name == "Authorization").Kind);
-        Assert.AreEqual(BevNodeKind.Redacted, children.Single(c => c.Name == "password").Kind);
+        Assert.AreEqual(BevToolsNodeKind.Redacted, children.Single(c => c.Name == "Authorization").Kind);
+        Assert.AreEqual(BevToolsNodeKind.Redacted, children.Single(c => c.Name == "password").Kind);
         Assert.AreEqual("\"application/json\"", children.Single(c => c.Name == "Accept").Display);
         Assert.IsEmpty(inspector.Children(headers, "[password]"));
         Assert.DoesNotContain(c => c.Display.Contains("eyJ", StringComparison.Ordinal), children);

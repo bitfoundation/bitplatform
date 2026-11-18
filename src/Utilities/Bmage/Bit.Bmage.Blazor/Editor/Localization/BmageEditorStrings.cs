@@ -251,8 +251,8 @@ public sealed record BmageEditorStrings
     public Func<double, double, string> FormatClipping { get; init; } = static (black, white) => $"{black * 100:0.#}% black, {white * 100:0.#}% white";
 
     /// <summary>
-    /// The name of an annotation's or a layer's kind - <see cref="Annotation.Kind"/> or
-    /// <see cref="Layer.Kind"/>, such as "Rectangle" or "Paint" - wherever the panel or the history shows one.
+    /// The name of an annotation's or a layer's kind - <see cref="BmageAnnotation.Kind"/> or
+    /// <see cref="BmageLayer.Kind"/>, such as "Rectangle" or "Paint" - wherever the panel or the history shows one.
     /// </summary>
     public Func<string, string> FormatKind { get; init; } = static kind => kind;
 
@@ -275,12 +275,12 @@ public sealed record BmageEditorStrings
     };
 
     /// <summary>The name of an anchor position in the canvas size controls.</summary>
-    public Func<Anchor, string> FormatAnchor { get; init; } = static anchor => anchor switch
+    public Func<BmageAnchor, string> FormatAnchor { get; init; } = static anchor => anchor switch
     {
-        global::Bit.Bmage.Anchor.TopLeft => "Top left",
-        global::Bit.Bmage.Anchor.TopRight => "Top right",
-        global::Bit.Bmage.Anchor.BottomLeft => "Bottom left",
-        global::Bit.Bmage.Anchor.BottomRight => "Bottom right",
+        global::Bit.Bmage.BmageAnchor.TopLeft => "Top left",
+        global::Bit.Bmage.BmageAnchor.TopRight => "Top right",
+        global::Bit.Bmage.BmageAnchor.BottomLeft => "Bottom left",
+        global::Bit.Bmage.BmageAnchor.BottomRight => "Bottom right",
         _ => anchor.ToString(),
     };
 }

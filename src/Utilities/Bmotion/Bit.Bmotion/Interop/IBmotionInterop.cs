@@ -103,7 +103,7 @@ public interface IBmotionInterop : IAsyncDisposable
 
     // ── Viewport observation ──────────────────────────────────────────────────
     ValueTask ObserveViewportAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, bool once) where T : class;
-    ValueTask ObserveViewportWithOptionsAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, BmViewport options) where T : class;
+    ValueTask ObserveViewportWithOptionsAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, BmotionViewport options) where T : class;
     ValueTask UnobserveViewportAsync(string elementId);
 
     // ── FLIP layout ───────────────────────────────────────────────────────────

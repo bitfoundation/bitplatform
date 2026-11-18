@@ -37,13 +37,13 @@ public class NetworkEndpointsTests : BunitContext
     [DataRow("GET", "https://shop.test/api/orders/12#top", "GET https://shop.test/api/orders/{id}")]
     public void Ids_in_a_path_are_one_endpoint_and_words_are_not(string method, string url, string template)
     {
-        Assert.AreEqual(template, BevHttpEndpoints.Template(method, url));
+        Assert.AreEqual(template, BevToolsHttpEndpoints.Template(method, url));
     }
 
     [TestMethod]
     public void An_endpoint_summary_counts_failures_apart_from_cancellations_and_times_only_completed_requests()
     {
-        BevHttpRecord[] requests =
+        BevToolsHttpRecord[] requests =
         [
             Request("/api/orders/1", 200, 10),
             Request("/api/orders/2", 200, 20),
@@ -53,7 +53,7 @@ public class NetworkEndpointsTests : BunitContext
             Request("/api/products", 200, 5),
         ];
 
-        var orders = BevHttpEndpoints.Summarize(requests).Single(e => e.Endpoint == "GET /api/orders/{id}");
+        var orders = BevToolsHttpEndpoints.Summarize(requests).Single(e => e.Endpoint == "GET /api/orders/{id}");
 
         Assert.AreEqual(5, orders.Requests);
         Assert.AreEqual(5, orders.DistinctUrls);
@@ -96,7 +96,7 @@ public class NetworkEndpointsTests : BunitContext
             Assert.AreEqual("GET /api/orders/{id}: one request per item (25 ids)", finding.Title);
             StringAssert.Contains(finding.Evidence, "25 requests for 25 different ids within 96 ms");
             StringAssert.Contains(finding.Evidence, "not inside a UI event");
-            Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Severity);
+            Assert.AreEqual(BevToolsDiagnosticSeverity.Warning, finding.Severity);
             Assert.DoesNotContain(f => f.Diagnostic.RuleId == "http.burst", session.Diagnostics.Findings);
         }
     }
@@ -122,8 +122,8 @@ public class NetworkEndpointsTests : BunitContext
         var orders = rows[0].QuerySelectorAll("td").Select(c => c.TextContent.Trim()).ToArray();
         Assert.AreEqual("GET /api/orders/{id}", orders[0], "the busiest first");
         Assert.AreEqual("6", orders[1]);
-        Assert.AreEqual(BevFmt.Ms(30), orders[3], "p50 of 10…60 ms");
-        Assert.AreEqual(BevFmt.Ms(60), orders[4]);
+        Assert.AreEqual(BevToolsFmt.Ms(30), orders[3], "p50 of 10…60 ms");
+        Assert.AreEqual(BevToolsFmt.Ms(60), orders[4]);
         Assert.Contains("bev-err", rows[1].QuerySelectorAll("td")[2].ClassName!, StringComparison.Ordinal);
 
         // Sorting is a button in the header: once by failures, largest first; again, smallest first.
@@ -140,7 +140,7 @@ public class NetworkEndpointsTests : BunitContext
         Assert.HasCount(6, panel.FindAll("tbody tr.bev-row"));
 
         panel.FindAll("thead th[aria-sort] button").Single(b => b.TextContent.StartsWith("Duration", StringComparison.Ordinal)).Click();
-        Assert.AreEqual(BevFmt.Ms(60), panel.FindAll("tbody tr.bev-row")[0].QuerySelectorAll("td")[4].TextContent.Trim());
+        Assert.AreEqual(BevToolsFmt.Ms(60), panel.FindAll("tbody tr.bev-row")[0].QuerySelectorAll("td")[4].TextContent.Trim());
         Assert.AreEqual("descending", panel.FindAll("thead th[aria-sort]").Single(h => h.TextContent.StartsWith("Duration", StringComparison.Ordinal)).GetAttribute("aria-sort"));
 
         panel.Find("button[aria-label='Show the requests to every endpoint']").Click();
@@ -150,14 +150,14 @@ public class NetworkEndpointsTests : BunitContext
     [TestMethod]
     public void Bytes_received_are_a_total_only_when_every_response_reported_its_size()
     {
-        static BevHttpRecord Sized(string url, long? bytes, int? status = 200, string? error = null) => new()
+        static BevToolsHttpRecord Sized(string url, long? bytes, int? status = 200, string? error = null) => new()
         {
             Id = 1, StartedAt = DateTimeOffset.UtcNow, Method = "GET", Url = url, StatusCode = status, DurationMs = 5, ResponseBytes = bytes, Error = error,
         };
 
-        Assert.AreEqual(300, BevHttpEndpoints.Summarize([Sized("/a/1", 100), Sized("/a/2", 200)]).Single().ResponseBytes);
-        Assert.IsNull(BevHttpEndpoints.Summarize([Sized("/a/1", 0), Sized("/a/2", null)]).Single().ResponseBytes, "one chunked response: a sum would read as the whole");
-        Assert.AreEqual(100, BevHttpEndpoints.Summarize([Sized("/a/1", 100), Sized("/a/2", null, status: null, error: "connection refused")]).Single().ResponseBytes, "no response, nothing received");
+        Assert.AreEqual(300, BevToolsHttpEndpoints.Summarize([Sized("/a/1", 100), Sized("/a/2", 200)]).Single().ResponseBytes);
+        Assert.IsNull(BevToolsHttpEndpoints.Summarize([Sized("/a/1", 0), Sized("/a/2", null)]).Single().ResponseBytes, "one chunked response: a sum would read as the whole");
+        Assert.AreEqual(100, BevToolsHttpEndpoints.Summarize([Sized("/a/1", 100), Sized("/a/2", null, status: null, error: "connection refused")]).Single().ResponseBytes, "no response, nothing received");
     }
 
     [TestMethod]
@@ -174,7 +174,7 @@ public class NetworkEndpointsTests : BunitContext
             var typed = new[] { "1", "12", "123", "1234", "12345" };
             for (var i = 0; i < typed.Length; i++)
             {
-                session.Http.Add(new BevHttpRecord
+                session.Http.Add(new BevToolsHttpRecord
                 {
                     Id = session.Http.NextId(), StartedAt = start.AddMilliseconds(i * 150), Method = "GET", Url = "/api/orders/" + typed[i], StatusCode = 200, DurationMs = 40,
                     TriggerEventId = 100 + i, TriggerDescription = "oninput → OrderLookup.OnInput",
@@ -183,7 +183,7 @@ public class NetworkEndpointsTests : BunitContext
 
             for (var i = 0; i < 6; i++)
             {
-                session.Http.Add(new BevHttpRecord
+                session.Http.Add(new BevToolsHttpRecord
                 {
                     Id = session.Http.NextId(), StartedAt = start.AddMilliseconds(i * 5), Method = "GET", Url = "/api/customers/" + (500 + i), StatusCode = 200, DurationMs = 40,
                     TriggerEventId = 900, TriggerDescription = "onclick → Customers.Load (lambda)",
@@ -230,7 +230,7 @@ public class NetworkEndpointsTests : BunitContext
         var panel = RenderPanel();
         var start = DateTimeOffset.UtcNow.AddSeconds(-5);
         Session.Http.Add(Request("https://shop.test/api/orders/1", 500, 10, start, Session.Http.NextId()));
-        Session.Http.Add(new BevHttpRecord { Id = Session.Http.NextId(), StartedAt = start.AddMilliseconds(5), Method = "GET", Url = "https://shop.test/api/orders/2", Error = "connection refused", DurationMs = 3 });
+        Session.Http.Add(new BevToolsHttpRecord { Id = Session.Http.NextId(), StartedAt = start.AddMilliseconds(5), Method = "GET", Url = "https://shop.test/api/orders/2", Error = "connection refused", DurationMs = 3 });
         Session.Http.Add(Request("https://shop.test/api/orders/3", 200, 10, start.AddMilliseconds(10), Session.Http.NextId()));
         panel.FindAll(".bev-tab").First(t => t.TextContent.Contains("Network", StringComparison.Ordinal)).Click();
         panel.Find("button[aria-label='Refresh captured data']").Click();
@@ -265,18 +265,18 @@ public class NetworkEndpointsTests : BunitContext
             Session.Http.Add(Request("/api/orders/" + i, 200, 10 * (i + 1), start.AddMilliseconds(i), Session.Http.NextId()));
         }
 
-        using var json = JsonDocument.Parse(BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Sections = new HashSet<string> { "http" } }));
+        using var json = JsonDocument.Parse(BevToolsSessionExporter.ToJson(Session, new BevToolsSessionExportOptions { Sections = new HashSet<string> { "http" } }));
         var endpoint = Assert.ContainsSingle(json.RootElement.GetProperty("httpEndpoints").EnumerateArray().ToList());
         Assert.AreEqual("GET /api/orders/{id}", endpoint.GetProperty("endpoint").GetString());
         Assert.AreEqual(3, endpoint.GetProperty("requests").GetInt32());
         Assert.AreEqual(20, endpoint.GetProperty("p50Ms").GetDouble());
 
-        var report = BevSessionExporter.ToMarkdownReport(Session);
+        var report = BevToolsSessionExporter.ToMarkdownReport(Session);
         Assert.Contains("## Busiest endpoints", report, StringComparison.Ordinal);
         Assert.Contains("| `GET /api/orders/{id}` | 3 | 0 |", report, StringComparison.Ordinal);
     }
 
-    private static BevHttpRecord Request(string url, int? status, double? durationMs, DateTimeOffset? at = null, long id = 1, bool cancelled = false) => new()
+    private static BevToolsHttpRecord Request(string url, int? status, double? durationMs, DateTimeOffset? at = null, long id = 1, bool cancelled = false) => new()
     {
         Id = id,
         StartedAt = at ?? DateTimeOffset.UtcNow,
@@ -290,7 +290,7 @@ public class NetworkEndpointsTests : BunitContext
     private IRenderedComponent<BevToolsPanel> RenderPanel()
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true });
         module.Setup<string?>("loadPrefs", _ => true).SetResult(null);
         module.SetupVoid("savePrefs", _ => true).SetVoidResult();
         return Render<BevToolsPanel>();

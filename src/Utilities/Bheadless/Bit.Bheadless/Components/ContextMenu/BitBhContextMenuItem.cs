@@ -48,18 +48,3 @@ public class BitBhContextMenuItem : BitBhMenuItemBase
             builder.AddContent(sequence, BitBhContent.Pick(Template, ChildContent, new BitBhContextMenuItemRenderContext { IsActive = IsActive, Disabled = IsItemDisabled }));
     }
 }
-
-/// <summary>Groups related context-menu items (<c>role="group"</c>). See <see cref="BitBhMenuGroup"/>.</summary>
-public class BitBhContextMenuGroup : BitBhMenuGroup
-{
-}
-
-/// <summary>A non-interactive heading inside a context menu. See <see cref="BitBhMenuLabel"/>.</summary>
-public class BitBhContextMenuLabel : BitBhMenuLabel
-{
-}
-
-/// <summary>A divider between context-menu items. See <see cref="BitBhMenuSeparator"/>.</summary>
-public class BitBhContextMenuSeparator : BitBhMenuSeparator
-{
-}

@@ -1,0 +1,553 @@
+﻿using System.Buffers;
+using System.Globalization;
+using System.Text.Json;
+
+namespace Bit.Belemetry;
+
+/// <summary>
+/// Maps OpenTelemetry-shaped records to Application Insights envelopes (the <c>/v2.1/track</c> schema). The mapping is
+/// documented in CLAUDE.md and mirrored by <c>Scripts/exporters/azure.ts</c>.
+/// </summary>
+internal static class BelemetryAzureMonitorEnvelopeSerializer
+{
+    private const int MaxKeyLength = 150;
+    private const int MaxValueLength = 8192;
+    private const int MaxMessageLength = 32768;
+
+    private static readonly HashSet<string> _contextAttributes =
+    [
+        BelemetrySemanticConventions.SessionId, BelemetrySemanticConventions.UserId, BelemetrySemanticConventions.EndUserPseudoId,
+    ];
+
+    /// <param name="InstrumentationKey">The iKey of every envelope.</param>
+    /// <param name="MaskIp">Whether envelopes carry <c>ai.location.ip = 0.0.0.0</c>.</param>
+    /// <param name="Logs">Whether the exporter sends log records: only then does a logged exception stand for the same one recorded on its span.</param>
+    /// <param name="MinimumSeverity">The exporter's minimum log level, which a logged exception must pass to stand for that one.</param>
+    public sealed record Context(string InstrumentationKey, bool MaskIp, bool Logs = true, BelemetrySeverity? MinimumSeverity = null)
+    {
+        /// <summary>
+        /// Whether the exporter sends the log record of <paramref name="logged"/>, as an Exception item: not one dropped
+        /// before any exporter had it.
+        /// </summary>
+        public bool Sends(BelemetryLoggedException logged) => Logs && logged.IsDropped is false && logged.Passes(MinimumSeverity);
+    }
+
+    /// <summary>Serializes every record of <paramref name="batch"/> as a JSON array of envelopes; <paramref name="count"/> is how many.</summary>
+    public static byte[] Serialize(BelemetryBatch batch, Context context, out int count)
+    {
+        var buffer = new ArrayBufferWriter<byte>(4096);
+        count = 0;
+
+        using (var w = new Utf8JsonWriter(buffer))
+        {
+            var resource = new ResourceTags(batch.Resource, context);
+
+            w.WriteStartArray();
+            foreach (var span in batch.Spans)
+            {
+                count += WriteSpan(w, span, resource, context);
+            }
+            foreach (var log in batch.Logs)
+            {
+                WriteLog(w, log, resource);
+                count++;
+            }
+            foreach (var metric in batch.Metrics)
+            {
+                count += WriteMetric(w, metric, resource);
+            }
+            w.WriteEndArray();
+        }
+
+        return buffer.WrittenSpan.ToArray();
+    }
+
+    /// <summary>The number of envelopes <see cref="Serialize"/> writes for <paramref name="batch"/>, without writing them.</summary>
+    public static int Count(BelemetryBatch batch, Context context)
+    {
+        var count = batch.Logs.Count;
+        foreach (var span in batch.Spans)
+        {
+            count++;
+            foreach (var spanEvent in span.Events)
+            {
+                if (IsItem(spanEvent, context)) count++;
+            }
+        }
+        foreach (var metric in batch.Metrics)
+        {
+            foreach (var point in metric.Points)
+            {
+                if (IsItem(metric.Type, point)) count++;
+            }
+        }
+        return count;
+    }
+
+    /// <summary>
+    /// Whether a span event is an item of its own, as the Azure Monitor OpenTelemetry exporter writes them: an exception
+    /// (<see cref="BelemetrySpanEvent.IsException"/>) is an Exception - unless the error limits dropped it, or a log record
+    /// this exporter sends is the same exception - and any other named event is a Message. An <c>exception</c> event with
+    /// neither <c>exception.type</c> nor <c>exception.message</c> is neither, as there.
+    /// </summary>
+    internal static bool IsItem(BelemetrySpanEvent spanEvent, Context context)
+    {
+        if (spanEvent.Name != BelemetrySemanticConventions.ExceptionEvent) return string.IsNullOrEmpty(spanEvent.Name) is false;
+
+        return spanEvent.Attributes.HasException && spanEvent.Limited is false && (spanEvent.LoggedAs is not { } logged || context.Sends(logged) is false);
+    }
+
+    /// <summary>Whether a metric point is an item: a sum or histogram point with nothing new since the last export is not.</summary>
+    private static bool IsItem(BelemetryMetricType type, BelemetryMetricPoint p) => type switch
+    {
+        BelemetryMetricType.Gauge => true,
+        BelemetryMetricType.Sum => p.HasDeltaUpdate || p.DeltaValue != 0 || p.DeltaLongValue != 0,
+        _ => p.DeltaCount != 0,
+    };
+
+    /// <summary>Writes the span's envelope and one per event of it that is an item of its own; returns how many it wrote.</summary>
+    private static int WriteSpan(Utf8JsonWriter w, BelemetrySpan span, ResourceTags resource, Context context)
+    {
+        var isRequest = IsRequest(span);
+        var attributes = span.Attributes;
+        var statusCode = attributes.GetInt64(BelemetrySemanticConventions.HttpResponseStatusCode);
+        var url = GetUrl(attributes);
+        var success = IsSuccess(span, isRequest, statusCode);
+        var name = isRequest ? GetRequestName(span) : span.Name;
+        // The span's events are items of it: kept with it, at its rate.
+        var sampleRate = SampleRate(span.SamplingRatio);
+
+        BeginEnvelope(w, isRequest ? "Request" : "RemoteDependency", span.StartTimeUnixNano, sampleRate);
+        WriteTags(w, resource, span.TraceId, span.ParentSpanId, isRequest ? name : null, attributes);
+
+        w.WriteStartObject("data");
+        w.WriteString("baseType", isRequest ? "RequestData" : "RemoteDependencyData");
+        w.WriteStartObject("baseData");
+        w.WriteNumber("ver", 2);
+        w.WriteString("id", span.SpanId);
+        w.WriteString("name", Truncate(name, 1024));
+        w.WriteString("duration", FormatDuration(span.Duration));
+        w.WriteBoolean("success", success);
+
+        if (isRequest)
+        {
+            w.WriteString("responseCode", (statusCode ?? 0).ToString(CultureInfo.InvariantCulture));
+            if (url is not null) w.WriteString("url", Truncate(url, 2048));
+        }
+        else
+        {
+            w.WriteString("type", GetDependencyType(span, url));
+            if (statusCode is not null) w.WriteString("resultCode", statusCode.Value.ToString(CultureInfo.InvariantCulture));
+            var data = GetDependencyData(attributes, url);
+            if (data is not null) w.WriteString("data", Truncate(data, 8192));
+            if (GetTarget(attributes, url) is { } target) w.WriteString("target", Truncate(target, 1024));
+        }
+
+        WriteProperties(w, BelemetryAzureMonitorProperties.OfSpan(span));
+        w.WriteEndObject();
+        w.WriteEndObject();
+        w.WriteEndObject();
+
+        // The span's envelope has no room for its events: each is an item under the span (IsItem), at its own time. The ids
+        // are the span's attributes (the enrichment step adds them to records, not to their events).
+        var written = 1;
+        foreach (var spanEvent in span.Events)
+        {
+            if (IsItem(spanEvent, context) is false) continue;
+
+            if (spanEvent.Name == BelemetrySemanticConventions.ExceptionEvent)
+            {
+                WriteException(w, resource, spanEvent.TimeUnixNano, sampleRate, span.TraceId, span.SpanId, isRequest ? name : null, attributes, spanEvent.Attributes, null, BelemetrySeverity.Error);
+            }
+            else
+            {
+                // No severity, as the Azure Monitor OpenTelemetry exporter writes it: an event is not a log level.
+                BeginEnvelope(w, "Message", spanEvent.TimeUnixNano, sampleRate);
+                WriteTags(w, resource, span.TraceId, span.SpanId, isRequest ? name : null, attributes);
+                w.WriteStartObject("data");
+                w.WriteString("baseType", "MessageData");
+                w.WriteStartObject("baseData");
+                w.WriteNumber("ver", 2);
+                w.WriteString("message", Truncate(spanEvent.Name, MaxMessageLength));
+                WriteProperties(w, BelemetryAzureMonitorProperties.Of(spanEvent.Attributes));
+                w.WriteEndObject();
+                w.WriteEndObject();
+                w.WriteEndObject();
+            }
+            written++;
+        }
+
+        return written;
+    }
+
+    private static void WriteException(Utf8JsonWriter w, ResourceTags resource, long timeUnixNano, double sampleRate, string? traceId, string? parentId, string? operationName,
+                                       BelemetryAttributes idAttributes, BelemetryAttributes attributes, string? body, BelemetrySeverity severity)
+    {
+        BeginEnvelope(w, "Exception", timeUnixNano, sampleRate);
+        WriteTags(w, resource, traceId, parentId, operationName, idAttributes);
+        w.WriteStartObject("data");
+        w.WriteString("baseType", "ExceptionData");
+        w.WriteStartObject("baseData");
+        w.WriteNumber("ver", 2);
+        w.WriteStartArray("exceptions");
+        w.WriteStartObject();
+        w.WriteNumber("id", 1);
+        w.WriteNumber("outerId", 0);
+        w.WriteString("typeName", Truncate(attributes.GetString(BelemetrySemanticConventions.ExceptionType) ?? "Error", 1024));
+        w.WriteString("message", Truncate(attributes.GetString(BelemetrySemanticConventions.ExceptionMessage) ?? body ?? string.Empty, MaxMessageLength));
+        var stack = attributes.GetString(BelemetrySemanticConventions.ExceptionStacktrace);
+        w.WriteBoolean("hasFullStack", stack is not null);
+        if (stack is not null) w.WriteString("stack", Truncate(stack, MaxMessageLength));
+        w.WriteEndObject();
+        w.WriteEndArray();
+        w.WriteNumber("severityLevel", ToSeverityLevel(severity == BelemetrySeverity.Unspecified ? BelemetrySeverity.Error : severity));
+        WriteProperties(w, BelemetryAzureMonitorProperties.OfException(attributes));
+        w.WriteEndObject();
+        w.WriteEndObject();
+        w.WriteEndObject();
+    }
+
+    private static void WriteLog(Utf8JsonWriter w, BelemetryLogRecord log, ResourceTags resource)
+    {
+        var attributes = log.Attributes;
+        var sampleRate = SampleRate(log.SamplingRatio);
+
+        if (log.HasException)
+        {
+            WriteException(w, resource, log.TimeUnixNano, sampleRate, log.TraceId, log.SpanId, null, attributes, attributes, log.Body, log.Severity);
+            return;
+        }
+
+        switch (log.EventName)
+        {
+            case BelemetrySemanticConventions.PageViewEvent:
+                {
+                    var url = attributes.GetString(BelemetrySemanticConventions.UrlFull);
+                    // The body is the page view's name (the one given to TrackPageView, else the title, else the template),
+                    // as the script writes it.
+                    var name = log.Body is { Length: > 0 } body ? body
+                             : attributes.GetString(BelemetrySemanticConventions.PageTitle) is { Length: > 0 } title ? title
+                             : attributes.GetString(BelemetrySemanticConventions.UrlTemplate) is { Length: > 0 } template ? template
+                             : attributes.GetString(BelemetrySemanticConventions.UrlPath) ?? url ?? "page";
+
+                    BeginEnvelope(w, "PageView", log.TimeUnixNano, sampleRate);
+                    WriteTags(w, resource, log.TraceId, log.SpanId, name, attributes);
+                    w.WriteStartObject("data");
+                    w.WriteString("baseType", "PageViewData");
+                    w.WriteStartObject("baseData");
+                    w.WriteNumber("ver", 2);
+                    w.WriteString("id", log.SpanId ?? BelemetryHex.NewSpanId());
+                    w.WriteString("name", Truncate(name, 1024));
+                    if (url is not null) w.WriteString("url", Truncate(url, 2048));
+                    w.WriteString("duration", FormatDuration(TimeSpan.Zero));
+                    WriteProperties(w, BelemetryAzureMonitorProperties.OfLog(log));
+                    w.WriteEndObject();
+                    w.WriteEndObject();
+                    w.WriteEndObject();
+                    return;
+                }
+
+            case BelemetrySemanticConventions.WebVitalEvent:
+                {
+                    var name = attributes.GetString(BelemetrySemanticConventions.WebVitalName) ?? "web_vital";
+                    var value = attributes.GetDouble(BelemetrySemanticConventions.WebVitalValue) ?? 0;
+
+                    BeginEnvelope(w, "Metric", log.TimeUnixNano, sampleRate);
+                    WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
+                    w.WriteStartObject("data");
+                    w.WriteString("baseType", "MetricData");
+                    w.WriteStartObject("baseData");
+                    w.WriteNumber("ver", 2);
+                    w.WriteStartArray("metrics");
+                    w.WriteStartObject();
+                    w.WriteString("name", name);
+                    w.WriteNumber("kind", 0);
+                    WriteDouble(w, "value", value);
+                    w.WriteNumber("count", 1);
+                    w.WriteEndObject();
+                    w.WriteEndArray();
+                    WriteProperties(w, BelemetryAzureMonitorProperties.OfLog(log));
+                    w.WriteEndObject();
+                    w.WriteEndObject();
+                    w.WriteEndObject();
+                    return;
+                }
+
+            case BelemetrySemanticConventions.PageVisitTimeEvent:
+                {
+                    // The shape the Application Insights JS SDK's autoTrackPageVisitTime produces, so the same workbooks apply:
+                    // its PageName and PageUrl are properties (BelemetryAzureMonitorProperties.OfLog).
+                    BeginEnvelope(w, "Event", log.TimeUnixNano, sampleRate);
+                    WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
+                    w.WriteStartObject("data");
+                    w.WriteString("baseType", "EventData");
+                    w.WriteStartObject("baseData");
+                    w.WriteNumber("ver", 2);
+                    w.WriteString("name", "PageVisitTime");
+                    WriteProperties(w, BelemetryAzureMonitorProperties.OfLog(log));
+                    w.WriteStartObject("measurements");
+                    WriteDouble(w, "PageVisitTime", attributes.GetDouble(BelemetrySemanticConventions.PageVisitDuration) ?? 0);
+                    w.WriteEndObject();
+                    w.WriteEndObject();
+                    w.WriteEndObject();
+                    w.WriteEndObject();
+                    return;
+                }
+
+            case { Length: > 0 } eventName:
+                BeginEnvelope(w, "Event", log.TimeUnixNano, sampleRate);
+                WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
+                w.WriteStartObject("data");
+                w.WriteString("baseType", "EventData");
+                w.WriteStartObject("baseData");
+                w.WriteNumber("ver", 2);
+                w.WriteString("name", Truncate(eventName, 512));
+                WriteProperties(w, BelemetryAzureMonitorProperties.OfLog(log));
+                w.WriteEndObject();
+                w.WriteEndObject();
+                w.WriteEndObject();
+                return;
+
+            default:
+                BeginEnvelope(w, "Message", log.TimeUnixNano, sampleRate);
+                WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
+                w.WriteStartObject("data");
+                w.WriteString("baseType", "MessageData");
+                w.WriteStartObject("baseData");
+                w.WriteNumber("ver", 2);
+                w.WriteString("message", Truncate(log.Body ?? string.Empty, MaxMessageLength));
+                w.WriteNumber("severityLevel", ToSeverityLevel(log.Severity));
+                WriteProperties(w, BelemetryAzureMonitorProperties.OfLog(log));
+                w.WriteEndObject();
+                w.WriteEndObject();
+                w.WriteEndObject();
+                return;
+        }
+    }
+
+    private static int WriteMetric(Utf8JsonWriter w, BelemetryMetric metric, ResourceTags resource)
+    {
+        var written = 0;
+        foreach (var p in metric.Points)
+        {
+            if (IsItem(metric.Type, p) is false) continue;
+
+            double value;
+            long count = 1;
+            double? min = null, max = null;
+
+            switch (metric.Type)
+            {
+                case BelemetryMetricType.Gauge:
+                    value = p.IsInteger ? p.LongValue : p.Value;
+                    break;
+                case BelemetryMetricType.Sum:
+                    value = p.IsInteger ? p.DeltaLongValue : p.DeltaValue;
+                    break;
+                default:
+                    value = p.DeltaSum;
+                    count = p.DeltaCount;
+                    min = p.DeltaMin;
+                    max = p.DeltaMax;
+                    break;
+            }
+
+            // Never sampled: a point aggregates every measurement.
+            BeginEnvelope(w, "Metric", p.TimeUnixNano, 100);
+            WriteTags(w, resource, null, null, null, p.Attributes);
+            w.WriteStartObject("data");
+            w.WriteString("baseType", "MetricData");
+            w.WriteStartObject("baseData");
+            w.WriteNumber("ver", 2);
+            w.WriteStartArray("metrics");
+            w.WriteStartObject();
+            w.WriteString("name", Truncate(metric.Name, 1024));
+            if (string.IsNullOrEmpty(metric.Scope.Name) is false) w.WriteString("ns", Truncate(metric.Scope.Name, 256));
+            w.WriteNumber("kind", metric.Type == BelemetryMetricType.Histogram ? 1 : 0);
+            WriteDouble(w, "value", value);
+            w.WriteNumber("count", count);
+            if (min is not null) WriteDouble(w, "min", min.Value);
+            if (max is not null) WriteDouble(w, "max", max.Value);
+            w.WriteEndObject();
+            w.WriteEndArray();
+            WriteProperties(w, BelemetryAzureMonitorProperties.Of(p.Attributes));
+            w.WriteEndObject();
+            w.WriteEndObject();
+            w.WriteEndObject();
+            written++;
+        }
+
+        return written;
+    }
+
+    private static void BeginEnvelope(Utf8JsonWriter w, string type, long timeUnixNano, double sampleRate)
+    {
+        w.WriteStartObject();
+        w.WriteNumber("ver", 1);
+        w.WriteString("name", "Microsoft.ApplicationInsights." + type);
+        var time = timeUnixNano > 0 ? BelemetryTime.ToDateTime(timeUnixNano) : DateTime.UtcNow;
+        w.WriteString("time", time.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ", CultureInfo.InvariantCulture));
+        w.WriteNumber("sampleRate", sampleRate);
+    }
+
+    /// <summary>
+    /// The envelope's <c>sampleRate</c>: the percentage of such items kept, <c>100 / </c><see cref="ItemCount"/>, so
+    /// Application Insights counts each one <c>itemCount</c> times. The same in <c>Scripts/exporters/azure.ts</c>.
+    /// </summary>
+    internal static double SampleRate(double ratio) => 100 / ItemCount(ratio);
+
+    /// <summary>
+    /// How many items one kept at <paramref name="ratio"/> (<see cref="BelemetrySpan.SamplingRatio"/>,
+    /// <see cref="BelemetryLogRecord.SamplingRatio"/>) stands for: <c>1 / ratio</c>, rounded to a whole number, as
+    /// Application Insights counts an item only in whole numbers (it supports sample rates of <c>100 / N</c>), so Live
+    /// Metrics counts the same. 1 for a ratio of 1 or more, 0 or less, or not a number: as the script reads a session
+    /// ratio, it samples nothing out (or keeps nothing, and then no record carries it). At most
+    /// <see cref="int.MaxValue"/>, so a tiny ratio cannot make the counts infinite.
+    /// </summary>
+    internal static double ItemCount(double ratio) =>
+        ratio > 0 && ratio < 1 ? Math.Min(Math.Round(1 / ratio, MidpointRounding.AwayFromZero), int.MaxValue) : 1;
+
+    private static void WriteTags(Utf8JsonWriter w, ResourceTags resource, string? traceId, string? parentId, string? operationName, BelemetryAttributes attributes)
+    {
+        w.WriteString("iKey", resource.InstrumentationKey);
+        w.WriteStartObject("tags");
+        w.WriteString("ai.cloud.role", resource.Role);
+        w.WriteString("ai.cloud.roleInstance", resource.RoleInstance);
+        w.WriteString("ai.device.type", resource.DeviceType);
+        w.WriteString("ai.internal.sdkVersion", resource.SdkVersion);
+        if (resource.ApplicationVersion is not null) w.WriteString("ai.application.ver", resource.ApplicationVersion);
+        if (resource.MaskIp) w.WriteString("ai.location.ip", "0.0.0.0");
+        if (resource.UserAgent is not null) w.WriteString("ai.user.agent", Truncate(resource.UserAgent, 1024));
+        if (resource.Locale is not null) w.WriteString("ai.device.locale", Truncate(resource.Locale, 64));
+        if (traceId is not null) w.WriteString("ai.operation.id", traceId);
+        if (parentId is not null) w.WriteString("ai.operation.parentId", parentId);
+        if (operationName is not null) w.WriteString("ai.operation.name", Truncate(operationName, 1024));
+        if (attributes.GetString(BelemetrySemanticConventions.SessionId) is { } session) w.WriteString("ai.session.id", session);
+        if (attributes.GetString(BelemetrySemanticConventions.EndUserPseudoId) is { } pseudo) w.WriteString("ai.user.id", pseudo);
+        if (attributes.GetString(BelemetrySemanticConventions.UserId) is { } user) w.WriteString("ai.user.authUserId", user);
+        w.WriteEndObject();
+    }
+
+    private static void WriteProperties(Utf8JsonWriter w, BelemetryAzureMonitorProperties properties)
+    {
+        w.WriteStartObject("properties");
+        foreach (var (key, value) in properties) w.WriteString(Truncate(key, MaxKeyLength), Truncate(value, MaxValueLength));
+        w.WriteEndObject();
+    }
+
+    internal static string FormatDuration(TimeSpan duration) => (duration < TimeSpan.Zero ? TimeSpan.Zero : duration).ToString("c", CultureInfo.InvariantCulture);
+
+    internal static int ToSeverityLevel(BelemetrySeverity severity)
+    {
+        return (int)severity switch
+        {
+            <= 8 => 0, // Verbose (TRACE, DEBUG)
+            <= 12 => 1, // Information
+            <= 16 => 2, // Warning
+            <= 20 => 3, // Error
+            _ => 4, // Critical
+        };
+    }
+
+    /// <summary>Whether a span is a <c>Request</c> (server or consumer) rather than a <c>RemoteDependency</c>.</summary>
+    internal static bool IsRequest(BelemetrySpan span) => span.Kind is BelemetrySpanKind.Server or BelemetrySpanKind.Consumer;
+
+    /// <summary>A request's or dependency's <c>url</c>: <c>url.full</c>, else the one the server attributes describe.</summary>
+    internal static string? GetUrl(BelemetryAttributes attributes) => attributes.GetString(BelemetrySemanticConventions.UrlFull) ?? BuildServerUrl(attributes);
+
+    /// <summary>A request's or dependency's <c>success</c>: no error status, and no HTTP status of 500 (request) or 400 (dependency) and up.</summary>
+    internal static bool IsSuccess(BelemetrySpan span, bool isRequest, long? statusCode) =>
+        span.Status != BelemetryStatusCode.Error && (statusCode is null || statusCode == 0 || statusCode < (isRequest ? 500 : 400));
+
+    /// <summary>A request's <c>name</c> (and <c>ai.operation.name</c>): <c>{method} {route}</c> when both are known, else the span name.</summary>
+    internal static string GetRequestName(BelemetrySpan span)
+    {
+        // As in TS: an empty method or route is not known.
+        var attributes = span.Attributes;
+        return attributes.GetString(BelemetrySemanticConventions.HttpRequestMethod) is { Length: > 0 } method
+               && attributes.GetString(BelemetrySemanticConventions.HttpRoute) is { Length: > 0 } route
+            ? $"{method} {route}"
+            : span.Name;
+    }
+
+    /// <summary>A dependency's <c>type</c>: <c>Ajax</c> (browser) or <c>HTTP</c>, the database system, <c>InProc</c>, or the span kind.</summary>
+    internal static string GetDependencyType(BelemetrySpan span, string? url)
+    {
+        if (url is not null || span.Attributes.GetString(BelemetrySemanticConventions.HttpRequestMethod) is not null)
+        {
+            return span.Scope.Name.StartsWith("bit.belemetry", StringComparison.Ordinal) ? "Ajax" : "HTTP";
+        }
+
+        return span.Attributes.GetString(BelemetrySemanticConventions.DbSystemName) ?? span.Attributes.GetString("db.system")
+               ?? (span.Kind == BelemetrySpanKind.Internal ? "InProc" : span.Kind.ToString());
+    }
+
+    /// <summary>A dependency's <c>data</c>: its URL, else its query text.</summary>
+    internal static string? GetDependencyData(BelemetryAttributes attributes, string? url) => url ?? attributes.GetString(BelemetrySemanticConventions.DbQueryText);
+
+    /// <summary>Whether an attribute is one of the ids the envelope carries as tags (<c>ai.session.id</c>, ...), never as a property.</summary>
+    internal static bool IsContextAttribute(string key) => _contextAttributes.Contains(key);
+
+    private static string? BuildServerUrl(BelemetryAttributes attributes)
+    {
+        var scheme = attributes.GetString(BelemetrySemanticConventions.UrlScheme);
+        var host = attributes.GetString(BelemetrySemanticConventions.ServerAddress);
+        var path = attributes.GetString(BelemetrySemanticConventions.UrlPath);
+        if (scheme is null || host is null) return null;
+
+        var port = attributes.GetInt64(BelemetrySemanticConventions.ServerPort);
+        var defaultPort = (scheme == "https" && port == 443) || (scheme == "http" && port == 80);
+        var query = attributes.GetString(BelemetrySemanticConventions.UrlQuery);
+        return $"{scheme}://{host}{(port is null || defaultPort ? string.Empty : ":" + port)}{path}{(string.IsNullOrEmpty(query) ? string.Empty : "?" + query.TrimStart('?'))}";
+    }
+
+    internal static string? GetTarget(BelemetryAttributes attributes, string? url)
+    {
+        if (attributes.GetString(BelemetrySemanticConventions.ServerAddress) is { } host)
+        {
+            var port = attributes.GetInt64(BelemetrySemanticConventions.ServerPort);
+            return port is null or 80 or 443 ? host : $"{host}:{port}";
+        }
+
+        return url is not null && Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.Authority : null;
+    }
+
+    private static void WriteDouble(Utf8JsonWriter w, string name, double value) => w.WriteNumber(name, double.IsFinite(value) ? value : 0);
+
+    // Never inside a surrogate pair: the writer refuses a lone surrogate, and the whole batch would fail to serialize.
+    private static string Truncate(string value, int max) => BelemetryValueLimit.Truncate(value, max);
+
+    private sealed class ResourceTags
+    {
+        public ResourceTags(BelemetryResource resource, Context context)
+        {
+            var attributes = resource.Attributes;
+            var name = attributes.GetString(BelemetrySemanticConventions.ServiceName) ?? "unknown_service";
+            var ns = attributes.GetString(BelemetrySemanticConventions.ServiceNamespace);
+            var language = attributes.GetString(BelemetrySemanticConventions.TelemetrySdkLanguage);
+            var os = attributes.GetString(BelemetrySemanticConventions.OsType);
+
+            InstrumentationKey = context.InstrumentationKey;
+            MaskIp = context.MaskIp;
+            // Same role naming as the Azure Monitor OpenTelemetry exporter, so both land on one Application Map node.
+            Role = string.IsNullOrEmpty(ns) ? name : $"[{ns}]/{name}";
+            RoleInstance = attributes.GetString(BelemetrySemanticConventions.ServiceInstanceId) ?? attributes.GetString(BelemetrySemanticConventions.HostName) ?? string.Empty;
+            ApplicationVersion = attributes.GetString(BelemetrySemanticConventions.ServiceVersion);
+            var browser = language == "webjs";
+            DeviceType = browser ? "Browser" : os is "android" or "ios" ? "Phone" : "PC";
+            SdkVersion = (browser ? "bitblmjs:" : "bitblm:") + (attributes.GetString(BelemetrySemanticConventions.TelemetrySdkVersion) ?? BelemetrySettings.SdkVersion);
+            UserAgent = attributes.GetString("user_agent.original");
+            Locale = attributes.GetString(BelemetrySemanticConventions.BrowserLanguage);
+        }
+
+        public string InstrumentationKey { get; }
+        public bool MaskIp { get; }
+        public string Role { get; }
+        public string RoleInstance { get; }
+        public string? ApplicationVersion { get; }
+        public string DeviceType { get; }
+        public string SdkVersion { get; }
+        public string? UserAgent { get; }
+        public string? Locale { get; }
+    }
+}

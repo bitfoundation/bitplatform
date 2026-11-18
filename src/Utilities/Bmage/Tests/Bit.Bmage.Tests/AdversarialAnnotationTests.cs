@@ -18,22 +18,22 @@ public sealed class AdversarialAnnotationTests
             "Text", "Highlight", "Redaction", "Callout", "Step", "Image",
         }.Select(kind => new object[] { kind });
 
-    private static readonly ImageBuffer Stamp = ImageBuffer.Create(8, 8, new Rgba32(0, 128, 255));
+    private static readonly BmageImageBuffer Stamp = BmageImageBuffer.Create(8, 8, new BmageRgba32(0, 128, 255));
 
-    private static Annotation Create(string kind) => kind switch
+    private static BmageAnnotation Create(string kind) => kind switch
     {
-        "Rectangle" => new RectangleAnnotation { Rectangle = new RectangleF(20, 30, 60, 40), CornerRadius = 5 },
-        "Ellipse" => new EllipseAnnotation { Rectangle = new RectangleF(20, 30, 60, 40) },
-        "Line" => new LineAnnotation { Start = new Vector2(10, 20), End = new Vector2(90, 70) },
-        "Arrow" => new ArrowAnnotation { Start = new Vector2(10, 20), End = new Vector2(90, 70) },
-        "Freehand" => new FreehandAnnotation { Points = [new(10, 10), new(30, 40), new(60, 20), new(80, 60)] },
-        "Polygon" => new PolygonAnnotation { Points = [new(15, 15), new(70, 25), new(50, 70)] },
-        "Text" => new TextAnnotation { Text = "Hello", Position = new Vector2(30, 40), MeasuredSize = new SizeF(50, 16) },
-        "Highlight" => new HighlightAnnotation { Rectangle = new RectangleF(20, 30, 60, 20) },
-        "Redaction" => new RedactionAnnotation { Rectangle = new RectangleF(20, 30, 40, 25), Mode = RedactionMode.Solid },
-        "Callout" => new CalloutAnnotation { Bubble = new RectangleF(20, 20, 60, 30), Target = new Vector2(95, 80), Text = "note" },
-        "Step" => new StepAnnotation { Center = new Vector2(50, 50), Number = 3, Radius = 15 },
-        "Image" => new ImageAnnotation { Rectangle = new RectangleF(20, 30, 40, 40), Image = Stamp },
+        "Rectangle" => new BmageRectangleAnnotation { Rectangle = new RectangleF(20, 30, 60, 40), CornerRadius = 5 },
+        "Ellipse" => new BmageEllipseAnnotation { Rectangle = new RectangleF(20, 30, 60, 40) },
+        "Line" => new BmageLineAnnotation { Start = new Vector2(10, 20), End = new Vector2(90, 70) },
+        "Arrow" => new BmageArrowAnnotation { Start = new Vector2(10, 20), End = new Vector2(90, 70) },
+        "Freehand" => new BmageFreehandAnnotation { Points = [new(10, 10), new(30, 40), new(60, 20), new(80, 60)] },
+        "Polygon" => new BmagePolygonAnnotation { Points = [new(15, 15), new(70, 25), new(50, 70)] },
+        "Text" => new BmageTextAnnotation { Text = "Hello", Position = new Vector2(30, 40), MeasuredSize = new SizeF(50, 16) },
+        "Highlight" => new BmageHighlightAnnotation { Rectangle = new RectangleF(20, 30, 60, 20) },
+        "Redaction" => new BmageRedactionAnnotation { Rectangle = new RectangleF(20, 30, 40, 25), Mode = BmageRedactionMode.Solid },
+        "Callout" => new BmageCalloutAnnotation { Bubble = new RectangleF(20, 20, 60, 30), Target = new Vector2(95, 80), Text = "note" },
+        "Step" => new BmageStepAnnotation { Center = new Vector2(50, 50), Number = 3, Radius = 15 },
+        "Image" => new BmageImageAnnotation { Rectangle = new RectangleF(20, 30, 40, 40), Image = Stamp },
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 
@@ -159,14 +159,14 @@ public sealed class AdversarialAnnotationTests
     public void AnnotationsLandOnTheSameContentAtProxyResolution(string kind)
     {
         var annotation = Create(kind);
-        var document = ImageDocument.Create(new Size(200, 160)).AddAnnotation(annotation);
-        var renderer = new DocumentRenderer();
+        var document = BmageImageDocument.Create(new Size(200, 160)).AddAnnotation(annotation);
+        var renderer = new BmageDocumentRenderer();
 
-        using var full = ImageBuffer.Create(200, 160, Rgba32.White);
+        using var full = BmageImageBuffer.Create(200, 160, BmageRgba32.White);
         using var rendered = renderer.Render(document, full);
 
         const double scale = 0.5;
-        using var proxySource = ImageBuffer.Create(100, 80, Rgba32.White);
+        using var proxySource = BmageImageBuffer.Create(100, 80, BmageRgba32.White);
         using var proxyRendered = renderer.Render(document.ForScale(scale), proxySource, null, scale);
 
         // Compare the centre of mass of the marked (non-white) pixels; a coordinate-space error moves it.
@@ -180,7 +180,7 @@ public sealed class AdversarialAnnotationTests
         Assert.IsTrue(drift <= 2.0f, $"{kind}: annotation centre drifted {drift:0.00}px between full and proxy rendering");
     }
 
-    private static Vector2? MarkedCentre(ImageBuffer image)
+    private static Vector2? MarkedCentre(BmageImageBuffer image)
     {
         double sx = 0, sy = 0;
         var n = 0;
@@ -208,9 +208,9 @@ public sealed class AdversarialAnnotationTests
             foreach (var dy in offsets)
             {
                 var annotation = Create(kind).Translate(dx, dy);
-                var document = ImageDocument.Create(new Size(64, 48)).AddAnnotation(annotation);
-                using var canvasImage = ImageBuffer.Create(64, 48, Rgba32.White);
-                var ex = Capture.Exception(() => new DocumentRenderer().RenderAnnotations(document, canvasImage));
+                var document = BmageImageDocument.Create(new Size(64, 48)).AddAnnotation(annotation);
+                using var canvasImage = BmageImageBuffer.Create(64, 48, BmageRgba32.White);
+                var ex = Capture.Exception(() => new BmageDocumentRenderer().RenderAnnotations(document, canvasImage));
                 Assert.IsTrue(ex is null, $"{kind} at offset ({dx},{dy}) threw {ex?.GetType().Name}: {ex?.Message}");
             }
         }
@@ -219,28 +219,28 @@ public sealed class AdversarialAnnotationTests
     [TestMethod]
     public void DegenerateAnnotationsRenderWithoutCrashing()
     {
-        var degenerate = new Annotation[]
+        var degenerate = new BmageAnnotation[]
         {
-            new RectangleAnnotation { Rectangle = new RectangleF(10, 10, 0, 0) },
-            new RectangleAnnotation { Rectangle = new RectangleF(10, 10, -20, -20) },
-            new EllipseAnnotation { Rectangle = new RectangleF(5, 5, 0, 30) },
-            new LineAnnotation { Start = new Vector2(10, 10), End = new Vector2(10, 10) },
-            new ArrowAnnotation { Start = new Vector2(10, 10), End = new Vector2(10, 10) },
-            new FreehandAnnotation { Points = [] },
-            new FreehandAnnotation { Points = [new(5, 5)] },
-            new PolygonAnnotation { Points = [] },
-            new PolygonAnnotation { Points = [new(1, 1), new(1, 1)] },
-            new TextAnnotation { Text = "", Position = new Vector2(5, 5) },
-            new StepAnnotation { Center = new Vector2(5, 5), Number = 0, Radius = 0 },
-            new RedactionAnnotation { Rectangle = new RectangleF(0, 0, 0, 0) },
-            new CalloutAnnotation { Bubble = new RectangleF(5, 5, 0, 0), Target = new Vector2(5, 5) },
+            new BmageRectangleAnnotation { Rectangle = new RectangleF(10, 10, 0, 0) },
+            new BmageRectangleAnnotation { Rectangle = new RectangleF(10, 10, -20, -20) },
+            new BmageEllipseAnnotation { Rectangle = new RectangleF(5, 5, 0, 30) },
+            new BmageLineAnnotation { Start = new Vector2(10, 10), End = new Vector2(10, 10) },
+            new BmageArrowAnnotation { Start = new Vector2(10, 10), End = new Vector2(10, 10) },
+            new BmageFreehandAnnotation { Points = [] },
+            new BmageFreehandAnnotation { Points = [new(5, 5)] },
+            new BmagePolygonAnnotation { Points = [] },
+            new BmagePolygonAnnotation { Points = [new(1, 1), new(1, 1)] },
+            new BmageTextAnnotation { Text = "", Position = new Vector2(5, 5) },
+            new BmageStepAnnotation { Center = new Vector2(5, 5), Number = 0, Radius = 0 },
+            new BmageRedactionAnnotation { Rectangle = new RectangleF(0, 0, 0, 0) },
+            new BmageCalloutAnnotation { Bubble = new RectangleF(5, 5, 0, 0), Target = new Vector2(5, 5) },
         };
 
         foreach (var annotation in degenerate)
         {
-            var document = ImageDocument.Create(new Size(32, 32)).AddAnnotation(annotation);
-            using var image = ImageBuffer.Create(32, 32, Rgba32.White);
-            var ex = Capture.Exception(() => new DocumentRenderer().RenderAnnotations(document, image));
+            var document = BmageImageDocument.Create(new Size(32, 32)).AddAnnotation(annotation);
+            using var image = BmageImageBuffer.Create(32, 32, BmageRgba32.White);
+            var ex = Capture.Exception(() => new BmageDocumentRenderer().RenderAnnotations(document, image));
             Assert.IsTrue(ex is null, $"{annotation.Kind} ({annotation.GetBounds()}) threw {ex?.GetType().Name}: {ex?.Message}");
             // Degenerate geometry must also survive being scaled for a proxy.
             var scaledEx = Capture.Exception(() => annotation.ForScale(0.5).GetBounds());
@@ -252,37 +252,37 @@ public sealed class AdversarialAnnotationTests
     [TestMethod]
     public void RedactionsRenderBeforeOtherAnnotations()
     {
-        var redaction = new RedactionAnnotation { Rectangle = new RectangleF(0, 0, 32, 32), Mode = RedactionMode.Solid, ZIndex = 100 };
-        var marker = new StepAnnotation { Center = new Vector2(16, 16), Number = 1, Radius = 8, ZIndex = 0 };
-        var document = ImageDocument.Create(new Size(32, 32)).AddAnnotation(marker).AddAnnotation(redaction);
+        var redaction = new BmageRedactionAnnotation { Rectangle = new RectangleF(0, 0, 32, 32), Mode = BmageRedactionMode.Solid, ZIndex = 100 };
+        var marker = new BmageStepAnnotation { Center = new Vector2(16, 16), Number = 1, Radius = 8, ZIndex = 0 };
+        var document = BmageImageDocument.Create(new Size(32, 32)).AddAnnotation(marker).AddAnnotation(redaction);
 
         var order = document.GetRenderOrder();
-        Assert.IsExactInstanceOfType<RedactionAnnotation>(order[0]);
-        Assert.IsExactInstanceOfType<StepAnnotation>(order[1]);
+        Assert.IsExactInstanceOfType<BmageRedactionAnnotation>(order[0]);
+        Assert.IsExactInstanceOfType<BmageStepAnnotation>(order[1]);
 
-        using var image = ImageBuffer.Create(32, 32, Rgba32.White);
-        new DocumentRenderer().RenderAnnotations(document, image);
+        using var image = BmageImageBuffer.Create(32, 32, BmageRgba32.White);
+        new BmageDocumentRenderer().RenderAnnotations(document, image);
         // The step marker must still be visible on top of the redaction.
-        Assert.AreNotEqual(Rgba32.Black, image[16, 16]);
+        Assert.AreNotEqual(BmageRgba32.Black, image[16, 16]);
     }
 
     /// <summary>A redaction must actually destroy the content it covers, not merely obscure it in a preview.</summary>
     [TestMethod]
-    [DataRow(RedactionMode.Solid)]
-    [DataRow(RedactionMode.Pixelate)]
-    public void RedactionDestroysTheContentUnderneath(RedactionMode mode)
+    [DataRow(BmageRedactionMode.Solid)]
+    [DataRow(BmageRedactionMode.Pixelate)]
+    public void RedactionDestroysTheContentUnderneath(BmageRedactionMode mode)
     {
-        using var secret = ImageBuffer.Create(64, 64, Rgba32.White);
+        using var secret = BmageImageBuffer.Create(64, 64, BmageRgba32.White);
         // A high contrast pattern: anything left of it after redaction is a leak.
         for (var y = 0; y < 64; y++)
             for (var x = 0; x < 64; x++)
-                secret[x, y] = ((x / 2 + y / 2) % 2 == 0) ? Rgba32.Black : Rgba32.White;
+                secret[x, y] = ((x / 2 + y / 2) % 2 == 0) ? BmageRgba32.Black : BmageRgba32.White;
 
-        var document = ImageDocument.Create(secret.Size)
-            .AddAnnotation(new RedactionAnnotation { Rectangle = new RectangleF(8, 8, 32, 32), Mode = mode, Strength = 32 });
+        var document = BmageImageDocument.Create(secret.Size)
+            .AddAnnotation(new BmageRedactionAnnotation { Rectangle = new RectangleF(8, 8, 32, 32), Mode = mode, Strength = 32 });
 
         using var result = secret.Clone();
-        new DocumentRenderer().RenderAnnotations(document, result);
+        new BmageDocumentRenderer().RenderAnnotations(document, result);
 
         // Inside the redacted area the fine pattern must be gone: neighbouring pixels should no longer alternate.
         var alternations = 0;
@@ -297,26 +297,26 @@ public sealed class AdversarialAnnotationTests
     /// one that is not a number still renders, and still hides what is underneath.
     /// </summary>
     [TestMethod]
-    [DataRow(RedactionMode.Pixelate, float.PositiveInfinity)]
-    [DataRow(RedactionMode.Pixelate, float.MaxValue)]
-    [DataRow(RedactionMode.Pixelate, float.NaN)]
-    [DataRow(RedactionMode.Blur, float.PositiveInfinity)]
-    [DataRow(RedactionMode.Blur, float.MaxValue)]
-    [DataRow(RedactionMode.Blur, float.NaN)]
-    public void ARedactionWithANonFiniteStrengthStillRenders(RedactionMode mode, float strength)
+    [DataRow(BmageRedactionMode.Pixelate, float.PositiveInfinity)]
+    [DataRow(BmageRedactionMode.Pixelate, float.MaxValue)]
+    [DataRow(BmageRedactionMode.Pixelate, float.NaN)]
+    [DataRow(BmageRedactionMode.Blur, float.PositiveInfinity)]
+    [DataRow(BmageRedactionMode.Blur, float.MaxValue)]
+    [DataRow(BmageRedactionMode.Blur, float.NaN)]
+    public void ARedactionWithANonFiniteStrengthStillRenders(BmageRedactionMode mode, float strength)
     {
-        using var secret = ImageBuffer.Create(64, 64, Rgba32.White);
+        using var secret = BmageImageBuffer.Create(64, 64, BmageRgba32.White);
         for (var y = 0; y < 64; y++)
             for (var x = 0; x < 64; x++)
-                secret[x, y] = ((x / 2 + y / 2) % 2 == 0) ? Rgba32.Black : Rgba32.White;
-        var redaction = new RedactionAnnotation { Rectangle = new RectangleF(8, 8, 32, 32), Mode = mode, Strength = strength };
+                secret[x, y] = ((x / 2 + y / 2) % 2 == 0) ? BmageRgba32.Black : BmageRgba32.White;
+        var redaction = new BmageRedactionAnnotation { Rectangle = new RectangleF(8, 8, 32, 32), Mode = mode, Strength = strength };
 
         foreach (var scale in new[] { 1.0, 1e30 })
         {
-            var scaled = (RedactionAnnotation)redaction.ForScale(scale) with { Rectangle = redaction.Rectangle };
-            var document = ImageDocument.Create(secret.Size).AddAnnotation(scaled);
+            var scaled = (BmageRedactionAnnotation)redaction.ForScale(scale) with { Rectangle = redaction.Rectangle };
+            var document = BmageImageDocument.Create(secret.Size).AddAnnotation(scaled);
             using var result = secret.Clone();
-            new DocumentRenderer().RenderAnnotations(document, result);
+            new BmageDocumentRenderer().RenderAnnotations(document, result);
 
             // The pattern steps from black to white; anything near that step between neighbours is a leak.
             var largestStep = 0;
@@ -331,11 +331,11 @@ public sealed class AdversarialAnnotationTests
     [TestMethod]
     public void ZOrderOperationsPreserveEveryAnnotation()
     {
-        var document = ImageDocument.Create(new Size(100, 100));
+        var document = BmageImageDocument.Create(new Size(100, 100));
         var ids = new List<Guid>();
         for (var i = 0; i < 6; i++)
         {
-            var a = new RectangleAnnotation { Rectangle = new RectangleF(i, i, 10, 10) };
+            var a = new BmageRectangleAnnotation { Rectangle = new RectangleF(i, i, 10, 10) };
             ids.Add(a.Id);
             document = document.AddAnnotation(a);
         }
@@ -351,14 +351,14 @@ public sealed class AdversarialAnnotationTests
     [TestMethod]
     public void UpdateAndRemoveTargetTheRightAnnotation()
     {
-        var a = new RectangleAnnotation { Rectangle = new RectangleF(0, 0, 10, 10) };
-        var b = new RectangleAnnotation { Rectangle = new RectangleF(20, 20, 10, 10) };
-        var document = ImageDocument.Create(new Size(64, 64)).AddAnnotation(a).AddAnnotation(b);
+        var a = new BmageRectangleAnnotation { Rectangle = new RectangleF(0, 0, 10, 10) };
+        var b = new BmageRectangleAnnotation { Rectangle = new RectangleF(20, 20, 10, 10) };
+        var document = BmageImageDocument.Create(new Size(64, 64)).AddAnnotation(a).AddAnnotation(b);
 
-        var moved = (RectangleAnnotation)b.Translate(5, 5);
+        var moved = (BmageRectangleAnnotation)b.Translate(5, 5);
         document = document.UpdateAnnotation(moved);
-        Assert.AreEqual(new RectangleF(25, 25, 10, 10), ((RectangleAnnotation)document.FindAnnotation(b.Id)!).Rectangle);
-        Assert.AreEqual(new RectangleF(0, 0, 10, 10), ((RectangleAnnotation)document.FindAnnotation(a.Id)!).Rectangle);
+        Assert.AreEqual(new RectangleF(25, 25, 10, 10), ((BmageRectangleAnnotation)document.FindAnnotation(b.Id)!).Rectangle);
+        Assert.AreEqual(new RectangleF(0, 0, 10, 10), ((BmageRectangleAnnotation)document.FindAnnotation(a.Id)!).Rectangle);
 
         document = document.RemoveAnnotation(a.Id);
         Assert.IsNull(document.FindAnnotation(a.Id));
@@ -376,13 +376,13 @@ public sealed class AdversarialAnnotationTests
     [TestMethod]
     public void AnnotationsDoNotChangeTheRenderedSize()
     {
-        using var source = ImageBuffer.Create(120, 90, Rgba32.White);
-        var document = ImageDocument.Create(source.Size)
-            .WithPipeline(ImagePipeline.Create().Resize(60, 45, BmageResizeMode.Stretch))
-            .AddAnnotation(new RectangleAnnotation { Rectangle = new RectangleF(5, 5, 20, 20) })
-            .AddAnnotation(new StepAnnotation { Center = new Vector2(30, 22), Number = 1 });
+        using var source = BmageImageBuffer.Create(120, 90, BmageRgba32.White);
+        var document = BmageImageDocument.Create(source.Size)
+            .WithPipeline(BmageImagePipeline.Create().Resize(60, 45, BmageResizeMode.Stretch))
+            .AddAnnotation(new BmageRectangleAnnotation { Rectangle = new RectangleF(5, 5, 20, 20) })
+            .AddAnnotation(new BmageStepAnnotation { Center = new Vector2(30, 22), Number = 1 });
 
-        using var rendered = new DocumentRenderer().Render(document, source);
+        using var rendered = new BmageDocumentRenderer().Render(document, source);
         Assert.AreEqual(new Size(60, 45), rendered.Size);
         Assert.AreEqual(new Size(60, 45), document.OutputSize);
     }
@@ -392,15 +392,15 @@ public sealed class AdversarialAnnotationTests
     public void RotatedAnnotationRendersAtTheRotatedPosition()
     {
         // A wide bar rotated 90 degrees about its centre becomes a tall bar at the same centre.
-        var bar = new RectangleAnnotation
+        var bar = new BmageRectangleAnnotation
         {
             Rectangle = new RectangleF(20, 46, 60, 8),
-            Style = ShapeStyle.Default with { FillColor = Rgba32.Black, StrokeColor = null },
+            Style = BmageShapeStyle.Default with { FillColor = BmageRgba32.Black, StrokeColor = null },
         };
-        var document = ImageDocument.Create(new Size(100, 100)).AddAnnotation(bar with { Rotation = 90f });
+        var document = BmageImageDocument.Create(new Size(100, 100)).AddAnnotation(bar with { Rotation = 90f });
 
-        using var image = ImageBuffer.Create(100, 100, Rgba32.White);
-        new DocumentRenderer().RenderAnnotations(document, image);
+        using var image = BmageImageBuffer.Create(100, 100, BmageRgba32.White);
+        new BmageDocumentRenderer().RenderAnnotations(document, image);
 
         var centre = MarkedCentre(image);
         Assert.IsNotNull(centre);
@@ -411,7 +411,7 @@ public sealed class AdversarialAnnotationTests
         var painted = new List<(int X, int Y)>();
         for (var y = 0; y < 100; y++)
             for (var x = 0; x < 100; x++)
-                if (image[x, y] != Rgba32.White) painted.Add((x, y));
+                if (image[x, y] != BmageRgba32.White) painted.Add((x, y));
         var width = painted.Max(p => p.X) - painted.Min(p => p.X);
         var height = painted.Max(p => p.Y) - painted.Min(p => p.Y);
         Assert.IsTrue(height > width, $"rotated bar rendered {width}x{height}, so the rotation was not applied");

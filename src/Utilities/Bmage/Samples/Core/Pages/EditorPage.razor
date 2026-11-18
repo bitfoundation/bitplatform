@@ -1,7 +1,7 @@
 ﻿@page "/editor"
 @implements IAsyncDisposable
-@inject IImageCapabilityProvider Capabilities
-@inject ImageLoader Loader
+@inject IBmageImageCapabilityProvider Capabilities
+@inject BmageImageLoader Loader
 
 <PageTitle>Editor · Bmage samples</PageTitle>
 
@@ -9,7 +9,7 @@
 
 <p>
     <code>BmageEditor</code>, whole: drop or open an image on it, or load the sample scene, then crop, adjust, filter,
-    draw, annotate, undo and export, or paste an image into the page (<code>ImageLoader.ListenForPasteAsync</code>).
+    draw, annotate, undo and export, or paste an image into the page (<code>BmageImageLoader.ListenForPasteAsync</code>).
     Under Interactive Server and in the MAUI app it works too, with its previews crossing to the browser over JS
     interop.
     The host links <code>_content/Bit.Bmage.Blazor/bit-bmage-editor.css</code>, the one thing the editor asks of it.
@@ -48,7 +48,7 @@
     private IAsyncDisposable? _paste;
     private string? _pasted;
     private bool _loaded;
-    private EncodedImage? _exported;
+    private BmageEncodedImage? _exported;
     private string? _error;
     private bool _disposed;
 
@@ -100,7 +100,7 @@
             // WebP where this browser can write it; the editor's managed PNG encoder otherwise.
             var caps = await Capabilities.GetAsync();
             var format = caps.ChooseEncodableFormat([BmageImageFormat.WebP, BmageImageFormat.Png], BmageImageFormat.Png);
-            await _editor!.ExportAsync(new ImageExportOptions { Format = format, Quality = 0.9 });
+            await _editor!.ExportAsync(new BmageImageExportOptions { Format = format, Quality = 0.9 });
         }
         catch (Exception ex)
         {
@@ -108,9 +108,9 @@
         }
     }
 
-    private void OnImageLoaded(ImageBuffer image) => _loaded = true;
+    private void OnImageLoaded(BmageImageBuffer image) => _loaded = true;
 
-    private void OnExported(EncodedImage image) => _exported = image;
+    private void OnExported(BmageEncodedImage image) => _exported = image;
 
     private void OnError(Exception ex) => _error = ex.Message;
 

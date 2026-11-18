@@ -6,22 +6,6 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.Bheadless;
 
-/// <summary>Why a <see cref="BitBhTagsInput"/> refused a tag.</summary>
-public enum BitBhTagRejectionReason
-{
-    /// <summary>The tag is already in the list (and <c>AllowDuplicates</c> is off).</summary>
-    Duplicate,
-
-    /// <summary>The list already holds <c>Max</c> tags.</summary>
-    MaxReached,
-
-    /// <summary>The <c>Validate</c> callback refused it.</summary>
-    Invalid,
-}
-
-/// <summary>A tag a <see cref="BitBhTagsInput"/> refused, and why.</summary>
-public sealed record BitBhTagRejection(string Tag, BitBhTagRejectionReason Reason);
-
 /// <summary>
 /// A headless tags input: a text input that turns what is typed into a list of removable tags (keywords,
 /// e-mail recipients, labels), read and written as one list of strings.
@@ -394,33 +378,4 @@ public class BitBhTagsInput : BitBhComponentBase, IDisposable
         => index >= 0 && index < CurrentValues.Count ? Interop.FocusAsync(TagId(index)).AsTask() : Interop.FocusAsync(InputId).AsTask();
 
     public virtual void Dispose() => _binding?.Dispose();
-}
-
-/// <summary>The state of a <see cref="BitBhTagsInput"/>, cascaded to its parts and given to its <c>Template</c>.</summary>
-public sealed class BitBhTagsInputContext
-{
-    internal BitBhTagsInputContext(BitBhTagsInput owner) => Owner = owner;
-
-    internal BitBhTagsInput Owner { get; }
-
-    /// <summary>The current tags.</summary>
-    public IReadOnlyList<string> Values => Owner.CurrentValues;
-
-    /// <summary>The text being typed.</summary>
-    public string Text => Owner.Text;
-
-    /// <summary>Whether no more tags can be added.</summary>
-    public bool IsMaxReached => Owner.IsMaxReached;
-
-    /// <summary>Whether the input is disabled.</summary>
-    public bool Disabled => Owner.IsDisabled;
-
-    /// <summary>Adds a tag.</summary>
-    public Task<bool> AddAsync(string tag) => Owner.AddAsync(tag);
-
-    /// <summary>Removes the tag at an index.</summary>
-    public Task RemoveAtAsync(int index) => Owner.RemoveAtAsync(index);
-
-    /// <summary>Removes every tag.</summary>
-    public Task ClearAsync() => Owner.ClearAsync();
 }

@@ -8,8 +8,8 @@ namespace Bit.BbScanner.Demo.Server.Services;
 
 /// <summary>
 /// Reads the XML documentation the Bit.BbScanner build emits next to its assembly and flattens each
-/// entry into plain text: <c>&lt;see cref="T:Bit.BbScanner.IBbRowDecoder"/&gt;</c> becomes
-/// <c>IBbRowDecoder</c>, <c>&lt;c&gt;</c> spans become their content, and paragraphs become blank
+/// entry into plain text: <c>&lt;see cref="T:Bit.BbScanner.IBbScannerRowDecoder"/&gt;</c> becomes
+/// <c>IBbScannerRowDecoder</c>, <c>&lt;c&gt;</c> spans become their content, and paragraphs become blank
 /// lines. That text is the same prose a developer reads in IntelliSense, which makes it the most
 /// accurate answer an MCP client can get about a member - no second copy to keep in sync.
 /// </summary>
@@ -54,7 +54,7 @@ public static partial class BbScannerXmlDocs
 
     private static FrozenDictionary<string, XElement> Load()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, $"{typeof(BbBarcodeDecoder).Assembly.GetName().Name}.xml");
+        var path = Path.Combine(AppContext.BaseDirectory, $"{typeof(BbScannerBarcodeDecoder).Assembly.GetName().Name}.xml");
 
         if (File.Exists(path) is false) return FrozenDictionary<string, XElement>.Empty;
 
@@ -183,7 +183,7 @@ public static partial class BbScannerXmlDocs
         var kind = target.Length > 2 && target[1] == ':' ? target[0] : '\0';
         if (kind != '\0') target = target[2..];
 
-        // A method cref carries its parameter list ("M:Bit.BbScanner.BbBarcodeDecoder.Decode(System.ReadOnlySpan{System.Byte},System.Int32,System.Int32,Bit.BbScanner.BbPixelFormat,System.Boolean)").
+        // A method cref carries its parameter list ("M:Bit.BbScanner.BbScannerBarcodeDecoder.Decode(System.ReadOnlySpan{System.Byte},System.Int32,System.Int32,Bit.BbScanner.BbScannerPixelFormat,System.Boolean)").
         // Fully qualified argument types read as noise in prose, and the '.'s inside them would
         // otherwise be split on below - which would keep the arguments and drop the owning type.
         var arguments = target.IndexOf('(', StringComparison.Ordinal);

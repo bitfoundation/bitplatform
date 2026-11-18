@@ -11,7 +11,7 @@ namespace Bit.Bmotion.Tests.Services;
 public class ScrollTrackerTests
 {
     // What the bridge would report a third of the way down a 3000px page in a 1000px viewport.
-    private static BmScrollInfo Info(double? targetProgress = null) => new()
+    private static BmotionScrollInfo Info(double? targetProgress = null) => new()
     {
         ScrollX = 0,
         ScrollY = 666,
@@ -31,7 +31,7 @@ public class ScrollTrackerTests
     {
         var interop = new FakeBmotionInterop();
         await using var tracker = new BmotionScrollTracker(interop);
-        BmScrollInfo? observed = null;
+        BmotionScrollInfo? observed = null;
 
         await tracker.ObserveAsync(info => observed = info);
         var key = (string)interop.ArgsOf("observeScroll").Single()[2]!;
@@ -76,7 +76,7 @@ public class ScrollTrackerTests
     {
         var interop = new FakeBmotionInterop();
         await using var tracker = new BmotionScrollTracker(interop);
-        await tracker.ObserveAsync((Func<BmScrollInfo, Task>)(_ => throw new InvalidOperationException("boom")));
+        await tracker.ObserveAsync((Func<BmotionScrollInfo, Task>)(_ => throw new InvalidOperationException("boom")));
 
         await FromBridge(interop, "scroll-key-1").OnScroll(Info());
 
@@ -90,7 +90,7 @@ public class ScrollTrackerTests
         await using var tracker = new BmotionScrollTracker(interop);
 
         await tracker.ObserveAsync(_ => { });
-        await tracker.ObserveAsync(new BmScrollOptions { ContainerId = "list" }, _ => { });
+        await tracker.ObserveAsync(new BmotionScrollOptions { ContainerId = "list" }, _ => { });
 
         CollectionAssert.AreEqual(new[] { "scroll-key-1" }, interop.ArgsOf("unobserveScroll").Select(a => (string)a[0]!).ToArray());
         Assert.AreEqual("list", interop.ArgsOf("observeScroll")[1][0], "the new subscription watches the container");

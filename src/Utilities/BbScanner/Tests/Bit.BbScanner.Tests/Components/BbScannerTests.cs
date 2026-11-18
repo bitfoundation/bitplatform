@@ -66,8 +66,8 @@ public class BbScannerTests : BunitContext
     [TestMethod]
     public void The_mask_dims_only_around_a_region_smaller_than_the_frame()
     {
-        var full = RenderPrerendered(parameters => parameters.Add(p => p.Region, BbScanRegion.Full));
-        var square = RenderPrerendered(parameters => parameters.Add(p => p.Region, BbScanRegion.CenteredSquare(0.5)));
+        var full = RenderPrerendered(parameters => parameters.Add(p => p.Region, BbScannerScanRegion.Full));
+        var square = RenderPrerendered(parameters => parameters.Add(p => p.Region, BbScannerScanRegion.CenteredSquare(0.5)));
 
         Assert.IsEmpty(full.FindAll(".bit-bbscanner__mask"));
         Assert.Contains("polygon(evenodd", square.Find(".bit-bbscanner__mask").GetAttribute("style")!);
@@ -119,7 +119,7 @@ public class BbScannerTests : BunitContext
         Assert.AreEqual(before, scanner.Instance.Status);
         Assert.IsFalse(await scanner.InvokeAsync(() => scanner.Instance.SetTorchAsync(true)));
         Assert.IsFalse(await scanner.InvokeAsync(() => scanner.Instance.SetZoomAsync(2)));
-        Assert.AreEqual(BbCameraPermission.Unknown, await scanner.InvokeAsync(() => scanner.Instance.GetCameraPermissionAsync()));
+        Assert.AreEqual(BbScannerCameraPermission.Unknown, await scanner.InvokeAsync(() => scanner.Instance.GetCameraPermissionAsync()));
     }
 
     [TestMethod]
@@ -128,21 +128,21 @@ public class BbScannerTests : BunitContext
         using var image = SyntheticImage.FromMatrix(QrEncoder.Encode("BUNIT-DECODE-IMAGE"), scale: 4);
         var rgba = ImageTransforms.ToRgba(image, tint: false);
 
-        var qr = RenderPrerendered(parameters => parameters.Add(p => p.Formats, BbBarcodeFormat.QrCode));
-        var linear = RenderPrerendered(parameters => parameters.Add(p => p.Formats, BbBarcodeFormat.AllLinear));
+        var qr = RenderPrerendered(parameters => parameters.Add(p => p.Formats, BbScannerBarcodeFormat.QrCode));
+        var linear = RenderPrerendered(parameters => parameters.Add(p => p.Formats, BbScannerBarcodeFormat.AllLinear));
 
-        var result = qr.Instance.DecodeImage(rgba, image.Width, image.Height, BbPixelFormat.Rgba32);
+        var result = qr.Instance.DecodeImage(rgba, image.Width, image.Height, BbScannerPixelFormat.Rgba32);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("BUNIT-DECODE-IMAGE", result.Text);
-        Assert.AreEqual(BbBarcodeFormat.QrCode, result.Format);
-        Assert.IsNull(linear.Instance.DecodeImage(rgba, image.Width, image.Height, BbPixelFormat.Rgba32), "A scanner looking for linear symbols only must not report a QR code.");
+        Assert.AreEqual(BbScannerBarcodeFormat.QrCode, result.Format);
+        Assert.IsNull(linear.Instance.DecodeImage(rgba, image.Width, image.Height, BbScannerPixelFormat.Rgba32), "A scanner looking for linear symbols only must not report a QR code.");
     }
 
     [TestMethod]
     public void DecodeAllInImage_reads_every_symbol_with_the_scanner_formats()
     {
-        using var frame = BbLuminanceBuffer.Rent(900, 400);
+        using var frame = BbScannerLuminanceBuffer.Rent(900, 400);
         frame.Pixels.Fill(255);
         using (var left = SyntheticImage.FromMatrix(QrEncoder.Encode("LEFT"), scale: 5))
         using (var right = SyntheticImage.FromMatrix(QrEncoder.Encode("RIGHT"), scale: 5))
@@ -152,12 +152,12 @@ public class BbScannerTests : BunitContext
         }
 
         var rgba = ImageTransforms.ToRgba(frame, tint: false);
-        var qr = RenderPrerendered(parameters => parameters.Add(p => p.Formats, BbBarcodeFormat.QrCode));
+        var qr = RenderPrerendered(parameters => parameters.Add(p => p.Formats, BbScannerBarcodeFormat.QrCode));
 
-        var results = qr.Instance.DecodeAllInImage(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32);
+        var results = qr.Instance.DecodeAllInImage(rgba, frame.Width, frame.Height, BbScannerPixelFormat.Rgba32);
 
         CollectionAssert.AreEquivalent(new[] { "LEFT", "RIGHT" }, results.Select(r => r.Text).ToArray());
-        Assert.HasCount(1, qr.Instance.DecodeAllInImage(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32, maxSymbols: 1));
+        Assert.HasCount(1, qr.Instance.DecodeAllInImage(rgba, frame.Width, frame.Height, BbScannerPixelFormat.Rgba32, maxSymbols: 1));
     }
 
     [TestMethod]
@@ -222,12 +222,12 @@ public class BbScannerTests : BunitContext
     {
         var scanner = RenderPrerendered(parameters => parameters
             .Add(p => p.MaxSymbolsPerFrame, 4)
-            .Add(p => p.AfterScan, BbAfterScan.Stop)
+            .Add(p => p.AfterScan, BbScannerAfterScan.Stop)
             .Add(p => p.AcceptResult, r => r.Text.StartsWith("TICKET-", StringComparison.Ordinal))
             .Add(p => p.DuplicateSuppressionWindow, Timeout.InfiniteTimeSpan));
 
         Assert.AreEqual(4, scanner.Instance.MaxSymbolsPerFrame);
-        Assert.AreEqual(BbAfterScan.Stop, scanner.Instance.AfterScan);
+        Assert.AreEqual(BbScannerAfterScan.Stop, scanner.Instance.AfterScan);
         scanner.Instance.ResetDuplicateFilter();
     }
 

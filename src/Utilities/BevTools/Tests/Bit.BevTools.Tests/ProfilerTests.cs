@@ -106,10 +106,10 @@ public class ProfilerTests : BunitContext
     [TestMethod]
     public void P95_is_the_nearest_rank_of_the_retained_durations()
     {
-        Assert.AreEqual(0, BevStats.Percentile([], 95));
-        Assert.AreEqual(5, BevStats.Percentile([5], 95));
-        Assert.AreEqual(19, BevStats.Percentile(Enumerable.Range(1, 20).Select(i => (double)i).ToArray(), 95));
-        Assert.AreEqual(100, BevStats.Percentile(Enumerable.Range(1, 100).Select(i => (double)i).ToArray(), 100));
+        Assert.AreEqual(0, BevToolsStats.Percentile([], 95));
+        Assert.AreEqual(5, BevToolsStats.Percentile([5], 95));
+        Assert.AreEqual(19, BevToolsStats.Percentile(Enumerable.Range(1, 20).Select(i => (double)i).ToArray(), 95));
+        Assert.AreEqual(100, BevToolsStats.Percentile(Enumerable.Range(1, 100).Select(i => (double)i).ToArray(), 100));
     }
 
     [TestMethod]
@@ -134,7 +134,7 @@ public class ProfilerTests : BunitContext
         var p95Cell = row.QuerySelectorAll("td")[4];
         Assert.AreEqual("of 5 retained renders", p95Cell.GetAttribute("title"));
         var sorted = parent.Renders.Select(r => r.DurationMs).Order().ToArray();
-        Assert.AreEqual(BevFmt.Ms(sorted[^1]), p95Cell.TextContent.Trim(), "nearest rank of 5 samples at 95% is the largest");
+        Assert.AreEqual(BevToolsFmt.Ms(sorted[^1]), p95Cell.TextContent.Trim(), "nearest rank of 5 samples at 95% is the largest");
 
         panel.FindAll("thead th[aria-sort] button").Single(b => b.TextContent.StartsWith("p95", StringComparison.Ordinal)).Click();
         headers = panel.FindAll("thead th[aria-sort]");
@@ -170,8 +170,8 @@ public class ProfilerTests : BunitContext
         var parentSelf = parent.Renders.Where(s => s.BatchId == batchId).Sum(s => s.DurationMs);
         var childSelf = child.Renders.Where(s => s.BatchId == batchId).Sum(s => s.DurationMs);
         var cells = rows[0].QuerySelectorAll("td");
-        Assert.AreEqual(BevFmt.Ms(parentSelf), cells[1].TextContent.Trim());
-        Assert.AreEqual(BevFmt.Ms(parentSelf + childSelf), cells[2].TextContent.Trim(), "with descendants adds the child's own time");
+        Assert.AreEqual(BevToolsFmt.Ms(parentSelf), cells[1].TextContent.Trim());
+        Assert.AreEqual(BevToolsFmt.Ms(parentSelf + childSelf), cells[2].TextContent.Trim(), "with descendants adds the child's own time");
 
         rows[1].Click();
         Assert.AreEqual(child.InstanceId, Session.Ui.SelectedComponentId);
@@ -195,9 +195,9 @@ public class ProfilerTests : BunitContext
             .QuerySelectorAll("td").Select(c => c.TextContent.Trim()).ToArray();
         string[] Order() => [.. panel.FindAll("tbody tr.bev-row").Select(r => r.QuerySelector("td")!.TextContent.Trim()).Where(n => n is "ParentComponent" or "TwoChildren")];
 
-        Assert.AreEqual(BevFmt.Ms(1), Cells("ParentComponent")[4], "nearest rank 20 of 21 is the last 1 ms sample, not the 100 ms spike");
-        Assert.AreEqual(BevFmt.Ms(100), Cells("ParentComponent")[5]);
-        Assert.AreEqual(BevFmt.Ms(10), Cells("TwoChildren")[4]);
+        Assert.AreEqual(BevToolsFmt.Ms(1), Cells("ParentComponent")[4], "nearest rank 20 of 21 is the last 1 ms sample, not the 100 ms spike");
+        Assert.AreEqual(BevToolsFmt.Ms(100), Cells("ParentComponent")[5]);
+        Assert.AreEqual(BevToolsFmt.Ms(10), Cells("TwoChildren")[4]);
         Assert.AreEqual("of 21 retained renders", panel.FindAll("tbody tr.bev-row").First(r => r.TextContent.Contains("ParentComponent", StringComparison.Ordinal)).QuerySelectorAll("td")[4].GetAttribute("title"));
 
         panel.FindAll("thead th[aria-sort] button").Single(b => b.TextContent.StartsWith("p95", StringComparison.Ordinal)).Click();
@@ -209,7 +209,7 @@ public class ProfilerTests : BunitContext
         panel.Find("button[aria-label='Reset profiler baseline']").Click();
         AddSamples(spiky, [50, 50, 50]);
         panel.Find("button[aria-label='Refresh captured data']").Click();
-        Assert.AreEqual(BevFmt.Ms(50), Cells("ParentComponent")[4]);
+        Assert.AreEqual(BevToolsFmt.Ms(50), Cells("ParentComponent")[4]);
         Assert.AreEqual("of 3 retained renders", panel.FindAll("tbody tr.bev-row").First(r => r.TextContent.Contains("ParentComponent", StringComparison.Ordinal)).QuerySelectorAll("td")[4].GetAttribute("title"));
     }
 
@@ -243,11 +243,11 @@ public class ProfilerTests : BunitContext
         Assert.IsNull(Session.Ui.Profiler.BatchId);
     }
 
-    private static void AddSamples(BevComponentRecord record, double[] durations)
+    private static void AddSamples(BevToolsComponentRecord record, double[] durations)
     {
         foreach (var ms in durations)
         {
-            record.AddRender(new BevRenderSample { Sequence = record.RenderCount, At = DateTimeOffset.UtcNow, StartTicks = System.Diagnostics.Stopwatch.GetTimestamp(), DurationMs = ms });
+            record.AddRender(new BevToolsRenderSample { Sequence = record.RenderCount, At = DateTimeOffset.UtcNow, StartTicks = System.Diagnostics.Stopwatch.GetTimestamp(), DurationMs = ms });
         }
     }
 
@@ -288,7 +288,7 @@ public class ProfilerTests : BunitContext
         Assert.AreEqual(2, rows.Length);
         Assert.StartsWith("TwoChildren", rows[0].QuerySelector("td")!.TextContent.Trim());
         Assert.AreEqual("ChildComponent ×2 instances", rows[1].QuerySelector("td")!.TextContent.Trim());
-        Assert.AreEqual(BevFmt.Ms(children.Sum(c => c.Renders.Where(s => s.BatchId == batchId).Sum(s => s.DurationMs))), rows[1].QuerySelectorAll("td")[1].TextContent.Trim());
+        Assert.AreEqual(BevToolsFmt.Ms(children.Sum(c => c.Renders.Where(s => s.BatchId == batchId).Sum(s => s.DurationMs))), rows[1].QuerySelectorAll("td")[1].TextContent.Trim());
 
         rows[1].Click();
         Assert.AreEqual("ChildComponent", Session.Ui.GetQuery("profiler"));
@@ -337,8 +337,8 @@ public class ProfilerTests : BunitContext
     {
         RenderPanel();
         Render<ParentComponent>();
-        var commands = new CommandRegistry();
-        commands.AddRange(BuiltInCommands.Create());
+        var commands = new BevToolsCommandRegistry();
+        commands.AddRange(BevToolsBuiltInCommands.Create());
         var context = new RecordingContext(Services);
 
         await commands.Find("session.export")!.ExecuteAsync(context, null);
@@ -410,7 +410,7 @@ public class ProfilerTests : BunitContext
     private IRenderedComponent<BevToolsPanel> RenderPanel()
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true });
         module.Setup<string?>("loadPrefs", _ => true).SetResult(null);
         module.SetupVoid("savePrefs", _ => true).SetVoidResult();
         return Render<BevToolsPanel>();

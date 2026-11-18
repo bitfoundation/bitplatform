@@ -9,7 +9,7 @@ using Microsoft.JSInterop;
 namespace Bit.BevTools.Tests;
 
 /// <summary>
-/// Components mapped to the page and back (<see cref="BevDomMap"/>): the paths come from the renderer's own render trees
+/// Components mapped to the page and back (<see cref="BevToolsDomMap"/>): the paths come from the renderer's own render trees
 /// and must mirror how Blazor's browser renderer turns frames into logical DOM nodes.
 /// </summary>
 [TestClass]
@@ -23,21 +23,21 @@ public class DomMapTests : BunitContext
 
     private BevToolsSession Session => Services.GetRequiredService<BevToolsSession>();
 
-    private BevComponentRecord Record<T>(Func<T, bool>? where = null) where T : IComponent
+    private BevToolsComponentRecord Record<T>(Func<T, bool>? where = null) where T : IComponent
     {
         Session.Components.Refresh(force: true);
         return Session.Components.All.Single(r => !r.IsDisposed && r.Component is T c && (where is null || where(c)));
     }
 
-    private BevDomLocation Locate(BevComponentRecord record)
+    private BevToolsDomLocation Locate(BevToolsComponentRecord record)
     {
-        var location = BevDomMap.Locate(Session, record, out var error);
+        var location = BevToolsDomMap.Locate(Session, record, out var error);
         Assert.IsNotNull(location, error);
         return location;
     }
 
-    private BevDomOwner? Resolve(BevDomLocation root, IReadOnlyList<BevDomStep> path, bool includeHidden = false) =>
-        BevDomMap.Resolve(Session, path, root.Anchored, root.RootSignature, root.RootOrdinal, root.RootCount, includeHidden, out _);
+    private BevToolsDomOwner? Resolve(BevToolsDomLocation root, IReadOnlyList<BevToolsDomStep> path, bool includeHidden = false) =>
+        BevToolsDomMap.Resolve(Session, path, root.Anchored, root.RootSignature, root.RootOrdinal, root.RootCount, includeHidden, out _);
 
     [TestMethod]
     public void A_path_counts_one_logical_child_per_element_text_markup_and_component_and_none_for_regions_and_attributes()
@@ -46,11 +46,11 @@ public class DomMapTests : BunitContext
 
         // <h1> markup is child 0 of the page, <main> child 1; inside <main>: the text, then three items from a region.
         var second = Locate(Record<DomMapItem>(i => i.Index == 1));
-        CollectionAssert.AreEqual(new[] { new BevDomStep(1, "main"), new BevDomStep(2, "#c") }, second.Path.TakeLast(2).ToArray());
+        CollectionAssert.AreEqual(new[] { new BevToolsDomStep(1, "main"), new BevToolsDomStep(2, "#c") }, second.Path.TakeLast(2).ToArray());
 
         // The footer follows the region's three items: child 4 of <main>, its leaf component its only child.
         var leaf = Locate(Record<DomMapLeaf>(l => l.Label == "footer"));
-        CollectionAssert.AreEqual(new[] { new BevDomStep(1, "main"), new BevDomStep(4, "footer"), new BevDomStep(0, "#c") }, leaf.Path.TakeLast(3).ToArray());
+        CollectionAssert.AreEqual(new[] { new BevToolsDomStep(1, "main"), new BevToolsDomStep(4, "footer"), new BevToolsDomStep(0, "#c") }, leaf.Path.TakeLast(3).ToArray());
         Assert.AreEqual("DomMapLeaf", leaf.Name);
     }
 
@@ -80,13 +80,13 @@ public class DomMapTests : BunitContext
         var location = Locate(item);
 
         // <li class="item">: its text node, then the leaf component inside it.
-        var owner = Resolve(location, [.. location.Path, new BevDomStep(0, "li"), new BevDomStep(0, "#text")]);
+        var owner = Resolve(location, [.. location.Path, new BevToolsDomStep(0, "li"), new BevToolsDomStep(0, "#text")]);
         Assert.IsNotNull(owner);
         Assert.AreSame(item, owner.Record);
         Assert.AreEqual("<li.item>", owner.Element);
         Assert.AreEqual(location.Path.Count, owner.Depth);
 
-        var button = Resolve(location, [.. location.Path, new BevDomStep(0, "li"), new BevDomStep(1, "#c"), new BevDomStep(0, "button")]);
+        var button = Resolve(location, [.. location.Path, new BevToolsDomStep(0, "li"), new BevToolsDomStep(1, "#c"), new BevToolsDomStep(0, "button")]);
         Assert.IsNotNull(button);
         Assert.AreSame(Record<DomMapLeaf>(l => l.Label == "item-0"), button.Record);
         Assert.AreEqual("<button#leaf-item-0>", button.Element);
@@ -99,7 +99,7 @@ public class DomMapTests : BunitContext
         Render<DomMapPage>();
         var page = Record<DomMapPage>();
         var location = Locate(page);
-        var owner = Resolve(location, [.. location.Path, new BevDomStep(0, "#c"), new BevDomStep(0, "h1")]);
+        var owner = Resolve(location, [.. location.Path, new BevToolsDomStep(0, "#c"), new BevToolsDomStep(0, "h1")]);
         Assert.IsNotNull(owner);
         Assert.AreSame(page, owner.Record);
         Assert.IsTrue(owner.InMarkup);
@@ -112,10 +112,10 @@ public class DomMapTests : BunitContext
         var location = Locate(Record<DomMapPage>());
 
         // <main> is child 1, not 0, and it is not a <section>; and child 9 does not exist.
-        Assert.IsNull(BevDomMap.Resolve(Session, [.. location.Path, new BevDomStep(0, "main")], false, location.RootSignature, 0, 1, false, out var error));
+        Assert.IsNull(BevToolsDomMap.Resolve(Session, [.. location.Path, new BevToolsDomStep(0, "main")], false, location.RootSignature, 0, 1, false, out var error));
         StringAssert.Contains(error, "does not match");
-        Assert.IsNull(Resolve(location, [.. location.Path, new BevDomStep(1, "section")]));
-        Assert.IsNull(Resolve(location, [.. location.Path, new BevDomStep(9, "div")]));
+        Assert.IsNull(Resolve(location, [.. location.Path, new BevToolsDomStep(1, "section")]));
+        Assert.IsNull(Resolve(location, [.. location.Path, new BevToolsDomStep(9, "div")]));
     }
 
     [TestMethod]
@@ -127,7 +127,7 @@ public class DomMapTests : BunitContext
 
         // Reversed: item 2 is now the first child after the text.
         var location = Locate(last);
-        Assert.AreEqual(new BevDomStep(1, "#c"), location.Path[^1]);
+        Assert.AreEqual(new BevToolsDomStep(1, "#c"), location.Path[^1]);
         Assert.AreSame(last, Resolve(location, location.Path)!.Record);
     }
 
@@ -139,7 +139,7 @@ public class DomMapTests : BunitContext
         var location = Locate(page);
 
         // <section> is rendered by CascadingValue's child content: the frames are CascadingValue's.
-        BevDomStep[] path = [.. location.Path, new BevDomStep(0, "#c"), new BevDomStep(0, "section")];
+        BevToolsDomStep[] path = [.. location.Path, new BevToolsDomStep(0, "#c"), new BevToolsDomStep(0, "section")];
         var owner = Resolve(location, path);
         Assert.IsNotNull(owner);
         Assert.AreSame(page, owner.Record);
@@ -163,8 +163,8 @@ public class DomMapTests : BunitContext
         Session.PanelComponent = footer.Component;
         var location = Locate(footer);
         Assert.IsTrue(location.Anchored);
-        Assert.AreSame(footer, BevDomMap.Resolve(Session, location.Path, anchored: true, null, 0, 1, false, out _)!.Record);
-        Assert.IsNull(BevDomMap.Resolve(Session, location.Path, anchored: false, location.RootSignature, 0, 1, false, out var error), "the anchor root is not a candidate for unanchored paths");
+        Assert.AreSame(footer, BevToolsDomMap.Resolve(Session, location.Path, anchored: true, null, 0, 1, false, out _)!.Record);
+        Assert.IsNull(BevToolsDomMap.Resolve(Session, location.Path, anchored: false, location.RootSignature, 0, 1, false, out var error), "the anchor root is not a candidate for unanchored paths");
         Assert.IsNotNull(error);
     }
 
@@ -177,7 +177,7 @@ public class DomMapTests : BunitContext
         Session.Components.Refresh(force: true);
 
         Assert.IsTrue(item.IsDisposed);
-        Assert.IsNull(BevDomMap.Locate(Session, item, out var error));
+        Assert.IsNull(BevToolsDomMap.Locate(Session, item, out var error));
         StringAssert.Contains(error, "disposed");
     }
 
@@ -214,18 +214,18 @@ public class DomMapTests : BunitContext
         var location = Locate(leaf);
 
         // <form>: @formname and the element capture add nothing; <em> markup is child 0, the captured leaf child 1.
-        CollectionAssert.AreEqual(new[] { new BevDomStep(0, "form"), new BevDomStep(1, "#c") }, location.Path.TakeLast(2).ToArray());
+        CollectionAssert.AreEqual(new[] { new BevToolsDomStep(0, "form"), new BevToolsDomStep(1, "#c") }, location.Path.TakeLast(2).ToArray());
         Assert.AreSame(leaf, Resolve(location, location.Path)!.Record);
 
         var root = Locate(frames);
-        var markup = Resolve(root, [.. root.Path, new BevDomStep(0, "form"), new BevDomStep(0, "#c"), new BevDomStep(0, "em")]);
+        var markup = Resolve(root, [.. root.Path, new BevToolsDomStep(0, "form"), new BevToolsDomStep(0, "#c"), new BevToolsDomStep(0, "em")]);
         Assert.IsTrue(markup!.InMarkup);
         Assert.AreSame(frames, markup.Record);
 
-        var circle = Resolve(root, [.. root.Path, new BevDomStep(1, "svg"), new BevDomStep(0, "g"), new BevDomStep(0, "circle")]);
+        var circle = Resolve(root, [.. root.Path, new BevToolsDomStep(1, "svg"), new BevToolsDomStep(0, "g"), new BevToolsDomStep(0, "circle")]);
         Assert.AreSame(frames, circle!.Record);
         Assert.AreEqual("<circle#dot>", circle.Element);
-        Assert.AreEqual("<foreignObject>", Resolve(root, [.. root.Path, new BevDomStep(1, "svg"), new BevDomStep(1, "foreignObject")])!.Element, "SVG tag names keep their case; matching ignores it");
+        Assert.AreEqual("<foreignObject>", Resolve(root, [.. root.Path, new BevToolsDomStep(1, "svg"), new BevToolsDomStep(1, "foreignObject")])!.Element, "SVG tag names keep their case; matching ignores it");
     }
 
     [TestMethod]
@@ -242,12 +242,12 @@ public class DomMapTests : BunitContext
 
         // The page holds exactly these two: the second one in the page is the second one here, and the answer says the
         // match was by position.
-        var owner = BevDomMap.Resolve(Session, second.Path, false, second.RootSignature, 1, sameCount: 2, false, out _);
+        var owner = BevToolsDomMap.Resolve(Session, second.Path, false, second.RootSignature, 1, sameCount: 2, false, out _);
         Assert.AreSame(twins[1], owner!.Record);
         Assert.IsTrue(owner.Ambiguous);
 
         // A third identical root in the page belongs to another runtime: position means nothing, so no answer.
-        Assert.IsNull(BevDomMap.Resolve(Session, second.Path, false, second.RootSignature, 1, sameCount: 3, false, out var error));
+        Assert.IsNull(BevToolsDomMap.Resolve(Session, second.Path, false, second.RootSignature, 1, sameCount: 3, false, out var error));
         StringAssert.Contains(error, "cannot tell which one");
     }
 
@@ -256,7 +256,7 @@ public class DomMapTests : BunitContext
     {
         // A stale attribute frame right after an element's subtree - what a reused buffer holds - is not the element's.
         RenderTreeFrame[] frames = [.. new DomMapStaleFrames().Frames()];
-        Assert.AreEqual("<p>", BevComponentWiringReader.DescribeElement(frames, 0));
+        Assert.AreEqual("<p>", BevToolsComponentWiringReader.DescribeElement(frames, 0));
     }
 
     [TestMethod]
@@ -272,7 +272,7 @@ public class DomMapTests : BunitContext
         var start = System.Diagnostics.Stopwatch.GetTimestamp();
         foreach (var row in rows)
         {
-            Assert.IsNotNull(BevDomMap.Locate(Session, row, out _));
+            Assert.IsNotNull(BevToolsDomMap.Locate(Session, row, out _));
         }
 
         var wide = System.Diagnostics.Stopwatch.GetElapsedTime(start);
@@ -296,11 +296,11 @@ public class DomMapTests : BunitContext
         Render<DomMapPage>(ps => ps.Add(p => p.Items, 5));
         Render<DomMapCascading>();
         Session.Components.Refresh(force: true);
-        var batch = new BevDomMapBatch();
+        var batch = new BevToolsDomMapBatch();
         foreach (var record in Session.Components.All.Where(r => !r.IsDisposed && r.Type.Namespace == typeof(DomMapPage).Namespace))
         {
-            var single = BevDomMap.Locate(Session, record, out _);
-            var batched = BevDomMap.Locate(Session, record, out _, batch);
+            var single = BevToolsDomMap.Locate(Session, record, out _);
+            var batched = BevToolsDomMap.Locate(Session, record, out _, batch);
             Assert.IsNotNull(single);
             Assert.IsNotNull(batched);
             CollectionAssert.AreEqual(single.Path.ToArray(), batched.Path.ToArray(), record.ToString());

@@ -43,7 +43,7 @@
                     {
                         @foreach (var s in starts)
                         {
-                            <div class="bm-insp-how @(s.Strategy == BmPlaybackStrategy.InstantWithoutFrameLoop ? "warn" : null)" title="@s.Reason">
+                            <div class="bm-insp-how @(s.Strategy == BmotionPlaybackStrategy.InstantWithoutFrameLoop ? "warn" : null)" title="@s.Reason">
                                 @StrategyLabel(s.Strategy): @string.Join(", ", s.Properties)@(s.Reason is null ? null : " - " + s.Reason)
                             </div>
                         }
@@ -140,8 +140,8 @@
 
     private void OnAnimationEvent(BmotionAnimationEvent e)
     {
-        if (e.Kind != BmAnimationEventKind.Started) return;
-        if (e.Strategy == BmPlaybackStrategy.InstantWithoutFrameLoop) _degraded++;
+        if (e.Kind != BmotionAnimationEventKind.Started) return;
+        if (e.Strategy == BmotionPlaybackStrategy.InstantWithoutFrameLoop) _degraded++;
         if (!_lastStarts.TryGetValue(e.ElementId, out var parts)) _lastStarts[e.ElementId] = parts = new();
         // The parts of one start arrive together: a part for properties already listed replaces their old line.
         parts.RemoveAll(p => p.Properties.Intersect(e.Properties).Any());
@@ -159,12 +159,12 @@
             _lastStarts.Remove(id);
     }
 
-    private static string StrategyLabel(BmPlaybackStrategy strategy) => strategy switch
+    private static string StrategyLabel(BmotionPlaybackStrategy strategy) => strategy switch
     {
-        BmPlaybackStrategy.Instant => "instant",
-        BmPlaybackStrategy.BrowserTimeline => "browser",
-        BmPlaybackStrategy.BrowserRecorded => "browser (recorded)",
-        BmPlaybackStrategy.FrameLoop => "frame loop",
+        BmotionPlaybackStrategy.Instant => "instant",
+        BmotionPlaybackStrategy.BrowserTimeline => "browser",
+        BmotionPlaybackStrategy.BrowserRecorded => "browser (recorded)",
+        BmotionPlaybackStrategy.FrameLoop => "frame loop",
         _ => "landed (no frame loop)",
     };
 

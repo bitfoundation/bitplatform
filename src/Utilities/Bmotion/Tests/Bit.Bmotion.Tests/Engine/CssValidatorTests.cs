@@ -101,7 +101,7 @@ public class CssValidatorTests
     public void ThrowMode_RejectsInjectedValue()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
 
         Assert.ThrowsExactly<InvalidOperationException>(() =>
             ctx.Render<Bmotion>(ps => ps
@@ -123,7 +123,7 @@ public class CssValidatorTests
     public void ThrowMode_AllowsCleanValue()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
         // A legitimate color must pass.
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Animate, Bm.To(backgroundColor: "#ff0000"))
@@ -134,7 +134,7 @@ public class CssValidatorTests
     public void ThrowMode_ProgrammaticSet_RejectsInjectedValue()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
         var cut = ctx.Render<Bmotion>(ps => ps.Add(p => p.ChildContent, Div));
 
         // The imperative API must enforce safe mode just like the declarative Animate path.

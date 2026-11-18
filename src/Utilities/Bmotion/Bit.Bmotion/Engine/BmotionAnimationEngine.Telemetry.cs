@@ -41,7 +41,7 @@ public sealed partial class BmotionAnimationEngine
     /// <code>
     /// Engine.AnimationEvent += e =&gt;
     /// {
-    ///     if (e.Strategy == BmPlaybackStrategy.InstantWithoutFrameLoop) Logger.LogWarning("{Reason}", e.Reason);
+    ///     if (e.Strategy == BmotionPlaybackStrategy.InstantWithoutFrameLoop) Logger.LogWarning("{Reason}", e.Reason);
     /// };
     /// </code>
     /// The event and the <see cref="MeterName"/> meter carry property names, never the animated values.
@@ -60,11 +60,11 @@ public sealed partial class BmotionAnimationEngine
     private readonly Lock _partsLock = new();
 
     private sealed class ReportedPart(
-        string elementId, string[] properties, BmPlaybackStrategy strategy, string? reason, long startedAt)
+        string elementId, string[] properties, BmotionPlaybackStrategy strategy, string? reason, long startedAt)
     {
         public string ElementId { get; } = elementId;
         public string[] Properties { get; } = properties;
-        public BmPlaybackStrategy Strategy { get; } = strategy;
+        public BmotionPlaybackStrategy Strategy { get; } = strategy;
         public string? Reason { get; } = reason;
         public long StartedAt { get; } = startedAt;
         public bool Ended { get; set; }
@@ -87,7 +87,7 @@ public sealed partial class BmotionAnimationEngine
     /// </para>
     /// </summary>
     private bool ReportPart(
-        string elementId, IEnumerable<string> keys, BmPlaybackStrategy strategy, string? reason, Task<bool>? end)
+        string elementId, IEnumerable<string> keys, BmotionPlaybackStrategy strategy, string? reason, Task<bool>? end)
     {
         string[] properties = [.. keys];
         var part = new ReportedPart(elementId, properties, strategy, reason, Stopwatch.GetTimestamp());
@@ -98,7 +98,7 @@ public sealed partial class BmotionAnimationEngine
                     EndPart(superseded, finished: false);
 
             if (s_started.Enabled) s_started.Add(1, new KeyValuePair<string, object?>("bmotion.strategy", StrategyTag(strategy)));
-            Raise(new BmotionAnimationEvent(BmAnimationEventKind.Started, elementId, properties, strategy, reason));
+            Raise(new BmotionAnimationEvent(BmotionAnimationEventKind.Started, elementId, properties, strategy, reason));
 
             // A handler runs inline and may have unregistered the element (which ended its running parts already):
             // this part ends with it rather than being tracked for an element that is gone.
@@ -139,10 +139,10 @@ public sealed partial class BmotionAnimationEngine
                     new KeyValuePair<string, object?>("bmotion.strategy", strategyTag),
                     new KeyValuePair<string, object?>("bmotion.outcome", finished ? "finished" : "interrupted"));
             // An instant part runs no time: recording its ~0 s would only drag the distribution of real runs down.
-            if (finished && part.Strategy != BmPlaybackStrategy.Instant && s_duration.Enabled)
+            if (finished && part.Strategy != BmotionPlaybackStrategy.Instant && s_duration.Enabled)
                 s_duration.Record(elapsedMs / 1000, new KeyValuePair<string, object?>("bmotion.strategy", strategyTag));
             Raise(new BmotionAnimationEvent(
-                finished ? BmAnimationEventKind.Finished : BmAnimationEventKind.Interrupted,
+                finished ? BmotionAnimationEventKind.Finished : BmotionAnimationEventKind.Interrupted,
                 part.ElementId, part.Properties, part.Strategy, part.Reason)
             { ElapsedMs = elapsedMs });
         }
@@ -172,12 +172,12 @@ public sealed partial class BmotionAnimationEngine
         }
     }
 
-    private static string StrategyTag(BmPlaybackStrategy strategy) => strategy switch
+    private static string StrategyTag(BmotionPlaybackStrategy strategy) => strategy switch
     {
-        BmPlaybackStrategy.Instant => "instant",
-        BmPlaybackStrategy.BrowserTimeline => "browser_timeline",
-        BmPlaybackStrategy.BrowserRecorded => "browser_recorded",
-        BmPlaybackStrategy.FrameLoop => "frame_loop",
+        BmotionPlaybackStrategy.Instant => "instant",
+        BmotionPlaybackStrategy.BrowserTimeline => "browser_timeline",
+        BmotionPlaybackStrategy.BrowserRecorded => "browser_recorded",
+        BmotionPlaybackStrategy.FrameLoop => "frame_loop",
         _ => "instant_without_frame_loop",
     };
 

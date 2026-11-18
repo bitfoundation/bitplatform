@@ -1,7 +1,7 @@
 namespace Bit.Bmotion.Tests.Engine;
 
 /// <summary>
-/// Tests for the timeline playhead behind <see cref="BmSequence"/>. The point of running segment
+/// Tests for the timeline playhead behind <see cref="BmotionSequence"/>. The point of running segment
 /// starts off the engine clock instead of the wall clock is that a sequence's playback controls
 /// govern the gaps between segments too, so that is what these assert.
 /// </summary>

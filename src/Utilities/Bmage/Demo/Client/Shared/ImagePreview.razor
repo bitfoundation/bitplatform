@@ -1,8 +1,8 @@
 ﻿@implements IAsyncDisposable
-@inject ImageExporter Exporter
+@inject BmageImageExporter Exporter
 
 @*
-    Shows an ImageBuffer as an <img>. Encodes to PNG once and hands the browser an object URL, which is far cheaper
+    Shows an BmageImageBuffer as an <img>. Encodes to PNG once and hands the browser an object URL, which is far cheaper
     than a data URL and lets the browser own the decoded bitmap.
 *@
 
@@ -22,14 +22,14 @@ else if (Image is not null)
 
 @code {
     private string? _url;
-    private ImageBuffer? _rendered;
+    private BmageImageBuffer? _rendered;
     private long _renderedVersion = -1;
     private string? _error;
     // Parameters can change again while an encode is in flight; only the newest request may publish its URL.
     private int _request;
 
     /// <summary>The image to show. Not owned by this component.</summary>
-    [Parameter] public ImageBuffer? Image { get; set; }
+    [Parameter] public BmageImageBuffer? Image { get; set; }
 
     /// <summary>Increment when the image contents change without the reference changing.</summary>
     [Parameter] public long Version { get; set; }
@@ -57,7 +57,7 @@ else if (Image is not null)
         _error = null;
         try
         {
-            var encoded = await Exporter.EncodeAsync(Image, ImageExportOptions.Png);
+            var encoded = await Exporter.EncodeAsync(Image, BmageImageExportOptions.Png);
             var url = await Exporter.CreateObjectUrlAsync(encoded);
             if (request != _request)
             {

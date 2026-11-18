@@ -11,7 +11,7 @@ namespace Bit.Bmage.Demo.Server.Services;
 /// <c>AddBitBmageHeadlessServices</c> without one - and the two register different services), and
 /// which codecs exist at all (AVIF is encoded only by browsers). None of those mistakes fails to
 /// compile. A missing registration throws at prerender; a headless registration in a browser app
-/// leaves <c>ImageLoader</c> unresolvable; an AVIF export on a server throws at the first upload.
+/// leaves <c>BmageImageLoader</c> unresolvable; an AVIF export on a server throws at the first upload.
 /// </para>
 /// <para>
 /// The guides are composed from plain (uninterpolated) raw string literals: every one of them is
@@ -178,10 +178,10 @@ public static class BmageSetupGuide
         prerender also runs:
 
         ```razor
-        @inject IImageCapabilityProvider Capabilities
+        @inject IBmageImageCapabilityProvider Capabilities
 
         @code {
-            private ImageCapabilities? _capabilities;
+            private BmageImageCapabilities? _capabilities;
 
             protected override async Task OnAfterRenderAsync(bool firstRender)
             {
@@ -195,11 +195,11 @@ public static class BmageSetupGuide
         }
         ```
 
-        What goes wrong otherwise is quiet. `IImageCapabilityProvider.GetAsync` does not throw during prerendering:
+        What goes wrong otherwise is quiet. `IBmageImageCapabilityProvider.GetAsync` does not throw during prerendering:
         it returns the **managed** capability set with `Environment = Prerendering` - so a page that decides its
         export format in `OnInitializedAsync` concludes that AVIF is unsupported on every browser. The calls that
         need the JavaScript bridge - downloads, object URLs, the clipboard, paste listeners, remote URLs - throw
-        `ImageCapabilityException` ("Could not load the Bmage browser module") instead.
+        `BmageImageCapabilityException` ("Could not load the Bmage browser module") instead.
         """;
 
     private const string FirstImage = """
@@ -208,8 +208,8 @@ public static class BmageSetupGuide
         ```razor
         @page "/upload"
         @implements IAsyncDisposable
-        @inject ImageLoader Loader
-        @inject ImageExporter Exporter
+        @inject BmageImageLoader Loader
+        @inject BmageImageExporter Exporter
 
         <InputFile OnChange="OnChange" accept="image/*" />
 
@@ -228,7 +228,7 @@ public static class BmageSetupGuide
                 // Decoded by the browser, upright (EXIF rotation applied), and yours to dispose.
                 using var image = await Loader.LoadAsync(e.File);
 
-                using var processed = await ImagePipeline.Create()
+                using var processed = await BmageImagePipeline.Create()
                     .MaxSize(800, 800)
                     .Sharpen(0.3f)
                     .ExecuteAsync(image);
@@ -236,7 +236,7 @@ public static class BmageSetupGuide
                 // WebP where this browser can write it, JPEG where it cannot.
                 var encoded = await Exporter.EncodeWithFallbackAsync(
                     processed, [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
-                    new ImageExportOptions { Quality = 0.85 });
+                    new BmageImageExportOptions { Quality = 0.85 });
 
                 if (_preview is not null) await Exporter.ReleaseObjectUrlAsync(_preview);
 
@@ -251,7 +251,7 @@ public static class BmageSetupGuide
         }
         ```
 
-        Two things in it are easy to miss: `using` on every `ImageBuffer` (a 4000 x 3000 image is 48 MB of pooled
+        Two things in it are easy to miss: `using` on every `BmageImageBuffer` (a 4000 x 3000 image is 48 MB of pooled
         memory, and you own what `LoadAsync` and `ExecuteAsync` return), and an object URL rather than
         `ToDataUrl()` (base64 inflates the bytes by a third and pushes them through the DOM as a string).
         """;
@@ -271,7 +271,7 @@ public static class BmageSetupGuide
 
         A Blazor Web App has two DI containers: the client's, in the browser, and the server's, which prerenders
         every page before the runtime has downloaded. Every component is instantiated in both, so anything it
-        injects (`ImageLoader`, `ImageExporter`, `IImageCapabilityProvider`, `ImageProcessorFactory`) has to
+        injects (`BmageImageLoader`, `BmageImageExporter`, `IBmageImageCapabilityProvider`, `BmageImageProcessorFactory`) has to
         resolve in both - or the prerender fails with a missing-service exception, not the build. Keep the
         registration in one method in the client project and call it from both `Program.cs` files:
 
@@ -288,7 +288,7 @@ public static class BmageSetupGuide
                 services.AddBitBmageServices(options =>
                 {
                     // Refuse oversized uploads before anything is decoded.
-                    options.Limits = ImageLimits.Default with { MaxPixels = 40_000_000 };
+                    options.Limits = BmageImageLimits.Default with { MaxPixels = 40_000_000 };
                     options.MaxSourceBytes = 32 * 1024 * 1024;
                 });
 
@@ -328,8 +328,8 @@ public static class BmageSetupGuide
         app.Run();
         ```
 
-        `AddBitBmageServices` registers `ImageLoader`, `ImageExporter`, `IImageCapabilityProvider` and
-        `ImageProcessorFactory` - **not** `ImageProcessor`, because in a browser the processor can only be built
+        `AddBitBmageServices` registers `BmageImageLoader`, `BmageImageExporter`, `IBmageImageCapabilityProvider` and
+        `BmageImageProcessorFactory` - **not** `BmageImageProcessor`, because in a browser the processor can only be built
         once the browser's codecs have been probed, which is asynchronous. Inject the factory and call
         `await Factory.GetAsync()` in a handler. Do not use `AddBitBmageHeadlessServices` here: it registers none
         of the browser services.
@@ -377,7 +377,7 @@ public static class BmageSetupGuide
         {
             // Work small: every pixel crosses the circuit twice.
             options.MaxInteractiveDimension = 1200;
-            options.Limits = ImageLimits.Default with { MaxPixels = 30_000_000 };
+            options.Limits = BmageImageLimits.Default with { MaxPixels = 30_000_000 };
             options.MaxSourceBytes = 20 * 1024 * 1024;
         });
 
@@ -402,8 +402,8 @@ public static class BmageSetupGuide
 
         Interactive Server prerenders too. Call browser features from `OnAfterRenderAsync(firstRender)` or from an
         event handler, never from `OnInitialized(Async)`: during the prerender there is no circuit yet, so
-        `IImageCapabilityProvider.GetAsync` answers with the managed set (`Environment = Prerendering`) and the JS
-        calls throw `ImageCapabilityException`.
+        `IBmageImageCapabilityProvider.GetAsync` answers with the managed set (`Environment = Prerendering`) and the JS
+        calls throw `BmageImageCapabilityException`.
 
         There is no WebAssembly here, so `RunAOTCompilation` does not apply - the pipelines run on the server's JIT.
         """;
@@ -411,12 +411,12 @@ public static class BmageSetupGuide
     private const string ServerCapabilities = """
         ## Writing for this mode
 
-        1. Shrink before the pixels travel: `Loader.LoadAsync(file, new DecodeOptions { MaxSize = new Size(1600, 1600) })`
+        1. Shrink before the pixels travel: `Loader.LoadAsync(file, new BmageDecodeOptions { MaxSize = new Size(1600, 1600) })`
            lets the browser downscale while decoding, so the full-size pixels never cross the circuit.
         2. Keep `MaxInteractiveDimension` low (1200) - the editor's proxy is what crosses the circuit on every edit.
         3. Prefer the headless API in a controller or minimal API for bulk work (`GetBmageSetupGuide("headless")`),
            and use the browser only for what needs one.
-        4. `IImageCapabilityProvider` reports `ImageEnvironment.BrowserServer`, so code can adapt.
+        4. `IBmageImageCapabilityProvider` reports `BmageImageEnvironment.BrowserServer`, so code can adapt.
         5. If images are central to the app, consider rendering the image pages with `InteractiveWebAssembly`
            instead - `GetBmageSetupGuide("wasm")`.
         """;
@@ -465,7 +465,7 @@ public static class BmageSetupGuide
 
         - Never decide anything from capabilities read during prerendering; read them in `OnAfterRenderAsync`, and
           expect `Environment` to be `BrowserServer` on a first visit and `BrowserWebAssembly` afterwards.
-        - Use `DecodeOptions.MaxSize` when loading, so a first visit does not stream full-size pixels to the server.
+        - Use `BmageDecodeOptions.MaxSize` when loading, so a first visit does not stream full-size pixels to the server.
         - Use `EncodeWithFallbackAsync` for AVIF: the browser does the encoding in both modes, and few browsers can
           write it. WebP needs no fallback: what the browser cannot write, the managed encoder does.
         """;
@@ -492,15 +492,15 @@ public static class BmageSetupGuide
 
         builder.Services.AddBitBmageServices(options =>
         {
-            options.Limits = ImageLimits.Default with { MaxPixels = 40_000_000 };
+            options.Limits = BmageImageLimits.Default with { MaxPixels = 40_000_000 };
         });
 
         await builder.Build().RunAsync();
         ```
 
         There is no second container and no prerender pass, so the registration mistake that catches out Blazor
-        Web Apps cannot happen here. `ImageProcessor` is still not registered directly - inject
-        `ImageProcessorFactory` and `await Factory.GetAsync()` for the low-level API.
+        Web Apps cannot happen here. `BmageImageProcessor` is still not registered directly - inject
+        `BmageImageProcessorFactory` and `await Factory.GetAsync()` for the low-level API.
         """;
 
     private const string StandaloneCapabilities = """
@@ -508,7 +508,7 @@ public static class BmageSetupGuide
 
         Everything: the browser's codecs (WebP and usually AVIF decode, WebP encode on most browsers, the managed
         encoder on the rest), the
-        clipboard, the camera, downloads and the editor. Probe rather than assume - `IImageCapabilityProvider`
+        clipboard, the camera, downloads and the editor. Probe rather than assume - `IBmageImageCapabilityProvider`
         encodes a real pixel in each format, because browsers asked for a format they cannot write silently
         hand back a PNG.
         """;
@@ -519,8 +519,8 @@ public static class BmageSetupGuide
         # Bit.Bmage in a Blazor Hybrid app - MAUI, WPF, Windows Forms
 
         The components run in compiled .NET inside the app's own process and render into a WebView, which Bmage reaches
-        over JavaScript interop. That is the Interactive Server position without the network: `IImageCapabilityProvider`
-        reports `ImageEnvironment.BrowserServer`, images are decoded and encoded by the managed codecs in the app, and
+        over JavaScript interop. That is the Interactive Server position without the network: `IBmageImageCapabilityProvider`
+        reports `BmageImageEnvironment.BrowserServer`, images are decoded and encoded by the managed codecs in the app, and
         AVIF exports and photos whose colours need colour management by the WebView - their pixels, and the editor's
         previews, copied through the WebView's message channel. There is one DI container, and the pages render straight
         into the WebView.
@@ -547,7 +547,7 @@ public static class BmageSetupGuide
 
                 builder.Services.AddBitBmageServices(options =>
                 {
-                    options.Limits = ImageLimits.Default with { MaxPixels = 40_000_000 };
+                    options.Limits = BmageImageLimits.Default with { MaxPixels = 40_000_000 };
                     // The pixel loops run on the device's CPU, not in WebAssembly: give an image every core.
                     options.MaxDegreeOfParallelism = Environment.ProcessorCount;
                 });
@@ -569,7 +569,7 @@ public static class BmageSetupGuide
     private const string HybridSaving = """
         ## 4. Save files through the platform on mobile
 
-        `ImageExporter.DownloadAsync` and `BmageEditor.DownloadAsync` hand the file to the WebView as a browser download.
+        `BmageImageExporter.DownloadAsync` and `BmageEditor.DownloadAsync` hand the file to the WebView as a browser download.
         WebView2 on Windows saves it as Edge would; Android's WebView and iOS's WKWebView leave downloads to the app, so
         there nothing happens. Encode instead, and save the bytes with the platform:
 
@@ -603,7 +603,7 @@ public static class BmageSetupGuide
            Android System WebView, Safari's in WKWebView on iOS and Mac Catalyst, with its tighter canvas limits. Use
            `EncodeWithFallbackAsync` or `ChooseEncodableFormat`.
         2. Prefer PNG, JPEG and WebP for work that stays in the app: the managed codecs code them, so their pixels never
-           cross the WebView's bridge. Load with `DecodeOptions.MaxSize` when the full size is not needed, so an AVIF is
+           cross the WebView's bridge. Load with `BmageDecodeOptions.MaxSize` when the full size is not needed, so an AVIF is
            scaled down by the WebView before its pixels cross.
         3. The WebView is there from the first render, so the probe always answers for it. Components shared with a Web
            App still do their browser work in `OnAfterRenderAsync`, which works in both.
@@ -617,7 +617,7 @@ public static class BmageSetupGuide
 
         The same engine with no JavaScript at all. Only the managed codecs exist: PNG, JPEG, BMP, WebP, AVIF and GIF
         (first frame) for decoding; PNG, JPEG, BMP and WebP (lossy, or lossless with `Lossless = true`) for encoding.
-        **AVIF is encoded only by browsers**: asking for it here throws `ImageCapabilityException` ("No encoder is
+        **AVIF is encoded only by browsers**: asking for it here throws `BmageImageCapabilityException` ("No encoder is
         registered for Avif in this environment").
         """;
 
@@ -628,7 +628,7 @@ public static class BmageSetupGuide
         browser.
 
         ```bash
-        dotnet add package Bit.Bmage   # register AddBitBmageHeadlessServices, or construct ImageProcessor yourself
+        dotnet add package Bit.Bmage   # register AddBitBmageHeadlessServices, or construct BmageImageProcessor yourself
         ```
         """;
 
@@ -640,13 +640,13 @@ public static class BmageSetupGuide
 
         builder.Services.AddBitBmageHeadlessServices(options =>
         {
-            options.Limits = ImageLimits.Default with { MaxPixels = 30_000_000 };
+            options.Limits = BmageImageLimits.Default with { MaxPixels = 30_000_000 };
         });
         ```
 
-        This registers `ImageProcessor` directly (the managed codecs need no probing), a managed
-        `IImageCapabilityProvider` and a `FontTextRasterizer` - and none of the browser services: no
-        `ImageLoader`, no `ImageExporter`, no `ImageProcessorFactory`, and so no `BmageEditor`.
+        This registers `BmageImageProcessor` directly (the managed codecs need no probing), a managed
+        `IBmageImageCapabilityProvider` and a `BmageFontTextRasterizer` - and none of the browser services: no
+        `BmageImageLoader`, no `BmageImageExporter`, no `BmageImageProcessorFactory`, and so no `BmageEditor`.
         """;
 
     private const string HeadlessEndpoint = """
@@ -655,7 +655,7 @@ public static class BmageSetupGuide
         ```csharp
         using Bit.Bmage;
 
-        app.MapPost("/thumbnail", async (IFormFile file, ImageProcessor processor) =>
+        app.MapPost("/thumbnail", async (IFormFile file, BmageImageProcessor processor) =>
         {
             if (file.Length > 20 * 1024 * 1024) return Results.BadRequest("Too large.");
 
@@ -670,15 +670,15 @@ public static class BmageSetupGuide
 
             var thumbnail = await processor.ProcessAsync(
                 bytes,
-                ImagePipeline.Create().AutoOrient().MaxSize(400, 400),
-                new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 });
+                BmageImagePipeline.Create().AutoOrient().MaxSize(400, 400),
+                new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 });
 
             return Results.File(thumbnail.Data, thumbnail.MimeType);
         }).DisableAntiforgery();
         ```
 
         An upload is attacker-chosen input to your decoder. Keep the limits tight, check `Identify` before decoding,
-        run the work with a timeout, and treat `ImageDecodeException` as an expected outcome.
+        run the work with a timeout, and treat `BmageImageDecodeException` as an expected outcome.
         """;
 
     private const string HeadlessConsole = """
@@ -687,15 +687,15 @@ public static class BmageSetupGuide
         ```csharp
         using Bit.Bmage;
 
-        var processor = new ImageProcessor();   // the managed codecs
+        var processor = new BmageImageProcessor();   // the managed codecs
 
         var result = await processor.ProcessBatchAsync(
-            Directory.GetFiles("photos", "*.jpg").Select(path => new BatchItem(File.ReadAllBytes(path), Path.GetFileName(path))),
-            ImagePipeline.Create().AutoOrient().MaxSize(1600, 1600).Sharpen(0.3f),
-            new BatchOptions
+            Directory.GetFiles("photos", "*.jpg").Select(path => new BmageBatchItem(File.ReadAllBytes(path), Path.GetFileName(path))),
+            BmageImagePipeline.Create().AutoOrient().MaxSize(1600, 1600).Sharpen(0.3f),
+            new BmageBatchOptions
             {
                 MaxConcurrency = Environment.ProcessorCount / 2,
-                ExportOptions = new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
+                ExportOptions = new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
             });
 
         foreach (var item in result.Succeeded) File.WriteAllBytes(Path.Combine("out", item.FileName!), item.Output!.Data);
@@ -713,10 +713,10 @@ public static class BmageSetupGuide
         | PNG, JPEG, BMP, WebP, GIF (first frame) decode | Managed |
         | AVIF decode | Managed, without colour management: wide gamut and HDR files decode with muted colours |
         | PNG, JPEG, BMP, WebP encode | Managed; WebP lossy or lossless |
-        | AVIF encode | **Not available** - browser codecs only; throws `ImageCapabilityException` |
-        | SVG | Refused everywhere with `ImageDecodeException` (untrusted SVG can run scripts) |
-        | Pipelines, `ImageCanvas` drawing, annotations, `DocumentRenderer`, metadata, analysis | Full |
-        | Text | `FontTextRasterizer` with a registered TrueType font (`glyf` outlines; CFF fonts throw) |
+        | AVIF encode | **Not available** - browser codecs only; throws `BmageImageCapabilityException` |
+        | SVG | Refused everywhere with `BmageImageDecodeException` (untrusted SVG can run scripts) |
+        | Pipelines, `BmageImageCanvas` drawing, annotations, `BmageDocumentRenderer`, metadata, analysis | Full |
+        | Text | `BmageFontTextRasterizer` with a registered TrueType font (`glyf` outlines; CFF fonts throw) |
 
         `RunBmagePipeline` runs exactly this engine with these codecs, so its byte counts are what this host would
         produce.

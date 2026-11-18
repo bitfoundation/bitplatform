@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // The pages run here, on the server, and only their markup reaches the browser. BbScanner opens the camera in the
 // browser, which cuts each frame down to the luminance of the searched region and streams it over the circuit; the
-// frame loop and the decoder run here. The page closes a camera the circuit leaves behind. BbBarcodeDecoder runs here
+// frame loop and the decoder run here. The page closes a camera the circuit leaves behind. BbScannerBarcodeDecoder runs here
 // in-process too (the decoder page).
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

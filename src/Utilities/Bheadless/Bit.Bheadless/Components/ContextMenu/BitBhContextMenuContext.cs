@@ -45,23 +45,3 @@ public sealed class BitBhContextMenuContext : IBitBhCloseContext
     /// <summary>Closes the menu.</summary>
     public Task CloseAsync() => Menu.CloseAsync();
 }
-
-/// <summary>Render-fragment context exposed by <see cref="BitBhContextMenuTrigger"/>.</summary>
-public sealed record BitBhContextMenuTriggerRenderContext
-{
-    /// <summary>Whether the menu is open.</summary>
-    public required bool IsOpen { get; init; }
-
-    /// <summary>Whether the trigger is disabled.</summary>
-    public required bool Disabled { get; init; }
-}
-
-/// <summary>Render-fragment context exposed by <see cref="BitBhContextMenuItem"/>.</summary>
-public sealed record BitBhContextMenuItemRenderContext
-{
-    /// <summary>Whether this item is highlighted.</summary>
-    public required bool IsActive { get; init; }
-
-    /// <summary>Whether this item is disabled.</summary>
-    public required bool Disabled { get; init; }
-}

@@ -7,12 +7,12 @@
 
 <HarnessHeader Title="Scroll" Ready="Ready" OnLog="BindLog" />
 
-<Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
+<Bmotion Timeline="BmotionScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
     <div id="page-progress" class="progress" style="position: fixed; top: 0; left: 0"></div>
 </Bmotion>
 
 @* The same, following the scroll through motion.dev's smoothing spring (stiffness 100, damping 30). *@
-<Bmotion Timeline="BmScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])">
+<Bmotion Timeline="BmotionScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])">
     <div id="smooth-progress" class="progress" style="position: fixed; top: 8px; left: 0"></div>
 </Bmotion>
 
@@ -26,7 +26,7 @@
 
 <div class="scroller" id="tl-scroller">
     <div class="inner">
-        <Bmotion Timeline='BmScrollTimeline.Container("#tl-scroller")' Animate="Bm.To(opacity: [0.2, 1])">
+        <Bmotion Timeline='BmotionScrollTimeline.Container("#tl-scroller")' Animate="Bm.To(opacity: [0.2, 1])">
             <div id="container-driven" class="small" style="position: sticky; top: 0"></div>
         </Bmotion>
     </div>
@@ -34,7 +34,7 @@
 
 <div class="spacer"></div>
 
-<Bmotion Timeline="BmScrollTimeline.View()" Animate="Bm.To(x: [0, 200])">
+<Bmotion Timeline="BmotionScrollTimeline.View()" Animate="Bm.To(x: [0, 200])">
     <div id="view-driven" class="small"></div>
 </Bmotion>
 
@@ -47,7 +47,7 @@
 @code {
     private Readout _progress = default!;
     private Readout _target = default!;
-    private Dictionary<string, BmValue<double>> _bound = default!;
+    private Dictionary<string, BmotionValue<double>> _bound = default!;
 
     protected override void OnInitialized()
         => _bound = new() { ["x"] = Tracker.ProgressYValue.Transform([0, 1], [0, 300]) };
@@ -56,7 +56,7 @@
     {
         if (firstRender is false) return;
 
-        await Tracker.ObserveAsync(new BmScrollOptions { TargetId = "tracked-target", Offset = ["start end", "end start"] }, info =>
+        await Tracker.ObserveAsync(new BmotionScrollOptions { TargetId = "tracked-target", Offset = ["start end", "end start"] }, info =>
         {
             _progress.Set(info.ProgressY);
             if (info.TargetProgress is double target) _target.Set(target);

@@ -60,7 +60,7 @@ public class CliMcpTests : BunitContext
                 Assert.IsFalse(sessions.RootElement.GetProperty("truncated").GetBoolean());
                 Assert.AreEqual(0, list[0].GetProperty("index").GetInt32());
                 Assert.AreEqual(baseline, list[0].GetProperty("file").GetString());
-                Assert.AreEqual(BevSessionExporter.Format, list[1].GetProperty("format").GetString());
+                Assert.AreEqual(BevToolsSessionExporter.Format, list[1].GetProperty("format").GetString());
                 var sections = list[0].GetProperty("sections");
                 Assert.AreEqual(JsonDocument.Parse(File.ReadAllText(baseline)).RootElement.GetProperty("timeline").GetArrayLength(), sections.GetProperty("timeline").GetInt32());
                 Assert.IsGreaterThanOrEqualTo(2, sections.GetProperty("components").GetInt32());
@@ -278,7 +278,7 @@ public class CliMcpTests : BunitContext
 
             using (var check = await served.CallAsync("check", new() { ["session"] = "0" }))
             {
-                var expected = BevSessionCheck.Check(File.ReadAllText(baseline));
+                var expected = BevToolsSessionCheck.Check(File.ReadAllText(baseline));
                 Assert.IsFalse(check.RootElement.GetProperty("passed").GetBoolean());
                 Assert.AreEqual(baseline, check.RootElement.GetProperty("file").GetString());
                 Assert.HasCount(expected.Findings.Count + expected.Dismissed.Count, check.RootElement.GetProperty("findings").EnumerateArray());
@@ -342,8 +342,8 @@ public class CliMcpTests : BunitContext
     public void A_page_stops_before_the_item_that_would_take_it_past_its_size_bound_and_pages_on_from_there()
     {
         var events = Enumerable.Range(1, 300).Select(i => new { id = i, kind = "Custom", title = "event " + i, detail = new string('x', 990) }).ToArray();
-        using var exports = BevMcpExports.Parse([("big.json", JsonSerializer.Serialize(new { format = "bit-bevtools/1", timeline = events }))]);
-        var tools = new BevMcpTools(exports);
+        using var exports = BevToolsMcpExports.Parse([("big.json", JsonSerializer.Serialize(new { format = "bit-bevtools/1", timeline = events }))]);
+        var tools = new BevToolsMcpTools(exports);
 
         var answer = tools.GetTimeline(limit: 500);
         Assert.IsLessThanOrEqualTo(64 * 1024, System.Text.Encoding.UTF8.GetByteCount(answer), "within the bound, not one item past it");
@@ -364,8 +364,8 @@ public class CliMcpTests : BunitContext
     {
         const string json = """{"format":"bit-bevtools/1"}""";
         var folder = new string('f', 1000);
-        using var exports = BevMcpExports.Parse(Enumerable.Range(0, 200).Select(i => ($"{folder}/{i}.json", json)).ToList());
-        var tools = new BevMcpTools(exports);
+        using var exports = BevToolsMcpExports.Parse(Enumerable.Range(0, 200).Select(i => ($"{folder}/{i}.json", json)).ToList());
+        var tools = new BevToolsMcpTools(exports);
 
         var answer = tools.ListSessions();
         Assert.IsLessThanOrEqualTo(64 * 1024, System.Text.Encoding.UTF8.GetByteCount(answer), "within the bound, not one export past it");
@@ -384,7 +384,7 @@ public class CliMcpTests : BunitContext
     public void An_export_is_named_exactly_first_and_regardless_of_case_after()
     {
         const string json = """{"format":"bit-bevtools/1"}""";
-        using var exports = BevMcpExports.Parse([("run/a.json", json), ("run/A.json", json)]);
+        using var exports = BevToolsMcpExports.Parse([("run/a.json", json), ("run/A.json", json)]);
         Assert.AreEqual(0, exports.Get("a.json").Index);
         Assert.AreEqual(1, exports.Get("A.json").Index);
         Assert.AreEqual(1, exports.Get("run/A.json").Index);
@@ -455,12 +455,12 @@ public class CliMcpTests : BunitContext
         Session.Diagnostics.Evaluate(force: true);
         Session.Diagnostics.Dismiss("cli.dismissed");
         var baseline = Path.Combine(folder, "baseline.json");
-        File.WriteAllText(baseline, BevSessionExporter.ToJson(Session));
+        File.WriteAllText(baseline, BevToolsSessionExporter.ToJson(Session));
 
         await cut.InvokeAsync(() => cut.Instance.Increment());
         await cut.InvokeAsync(() => cut.Instance.Increment());
         var current = Path.Combine(folder, "current.json");
-        File.WriteAllText(current, BevSessionExporter.ToJson(Session));
+        File.WriteAllText(current, BevToolsSessionExporter.ToJson(Session));
         return (baseline, current);
     }
 
@@ -484,14 +484,14 @@ public class CliMcpTests : BunitContext
         private readonly Pipe _toServer = new();
         private readonly Pipe _toClient = new();
         private readonly CancellationTokenSource _timeout = new(TimeSpan.FromMinutes(2));
-        private BevMcpExports _exports = null!;
+        private BevToolsMcpExports _exports = null!;
         private Task _server = Task.CompletedTask;
 
         public McpClient Client { get; private set; } = null!;
 
         public static async Task<Served> StartAsync(params string[] files)
         {
-            var served = new Served { _exports = BevMcpExports.Parse(files.Select(f => (f, File.ReadAllText(f))).ToList()) };
+            var served = new Served { _exports = BevToolsMcpExports.Parse(files.Select(f => (f, File.ReadAllText(f))).ToList()) };
             served._server = BevToolsMcp.RunAsync(served._exports, served._toServer.Reader.AsStream(), served._toClient.Writer.AsStream(), served._timeout.Token);
             served.Client = await McpClient.CreateAsync(new StreamClientTransport(served._toServer.Writer.AsStream(), served._toClient.Reader.AsStream()), cancellationToken: served._timeout.Token);
             return served;

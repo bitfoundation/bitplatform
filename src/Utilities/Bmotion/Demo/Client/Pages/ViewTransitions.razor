@@ -26,7 +26,7 @@
         whether the browser played one, which the line under the panel reports.
     </p>
     <p>
-        <strong>BmViewTransitionOptions</strong> tunes a single call. <code>Types</code> tags the transition so a
+        <strong>BmotionViewTransitionOptions</strong> tunes a single call. <code>Types</code> tags the transition so a
         stylesheet can tell kinds of change apart with <code>:active-view-transition-type()</code>: with the box
         ticked, moving to a tab on the right is a <code>"forward"</code> transition and slides the panel left,
         and moving back is <code>"backward"</code> and slides it right. A browser without typed transitions
@@ -97,7 +97,7 @@
 
         // Moving right is "forward", moving left "backward"; the stylesheet slides each its own way.
         var kind = Array.IndexOf(_tabs, tab) > Array.IndexOf(_tabs, _active) ? "forward" : "backward";
-        var options = _typed ? new BmViewTransitionOptions { Types = [kind] } : null;
+        var options = _typed ? new BmotionViewTransitionOptions { Types = [kind] } : null;
 
         var played = await ViewTransition.StartAsync(() => { _active = tab; StateHasChanged(); }, options);
         _lastSwitch = !played ? "applied without one - the API is missing here, or motion is reduced"
@@ -140,7 +140,7 @@
                 var forward = Array.IndexOf(_tabs, tab) > Array.IndexOf(_tabs, _active);
                 bool played = await ViewTransition.StartAsync(
                     () => { _active = tab; StateHasChanged(); },
-                    new BmViewTransitionOptions
+                    new BmotionViewTransitionOptions
                     {
                         Types = [forward ? "forward" : "backward"],
                         // ReduceMotion = false,   // play it even when motion is reduced

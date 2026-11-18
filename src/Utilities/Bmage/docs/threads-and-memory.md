@@ -41,7 +41,7 @@ running sums, and splitting them would change the sums and so the pixels.
 builder.Services.AddBitBmageServices(options => options.MaxDegreeOfParallelism = Environment.ProcessorCount);
 
 // For one run:
-pipeline.Execute(image, new PipelineExecutionOptions { MaxDegreeOfParallelism = Environment.ProcessorCount });
+pipeline.Execute(image, new BmagePipelineExecutionOptions { MaxDegreeOfParallelism = Environment.ProcessorCount });
 ```
 
 In a batch every image in flight uses that many threads, so `MaxConcurrency` times `MaxDegreeOfParallelism` is what a
@@ -49,8 +49,8 @@ batch can occupy. A WebAssembly app built with `<WasmEnableThreads>true</WasmEna
 default the same way. Whatever the number, progress is reported on the thread that called the operation, so a sink that
 updates a UI or a Blazor component needs no marshalling of its own.
 
-A custom `PointOperation` runs on one thread unless it overrides `CanProcessRowsConcurrently` to say its `ProcessRow`
-keeps no shared state; a fused run is only as concurrent as its least safe stage. A custom `ImageOperation` is its own
+A custom `BmagePointOperation` runs on one thread unless it overrides `CanProcessRowsConcurrently` to say its `ProcessRow`
+keeps no shared state; a fused run is only as concurrent as its least safe stage. A custom `BmageImageOperation` is its own
 code and chooses for itself.
 
 ## Web Workers
@@ -71,7 +71,7 @@ so over several cores.
   a worker fails at a piece of work, that work runs on the page's thread exactly as before. A failed piece of work hands
   its input back with the error, so no copy is kept aside for the fallback. A format the browser cannot write fails the
   same way in both places and is reported, never retried.
-- **It can be turned off**, or capped, with `BitBmageOptions.MaxCodecWorkers`; 0 keeps everything on the page.
+- **It can be turned off**, or capped, with `BmageOptions.MaxCodecWorkers`; 0 keeps everything on the page.
 
 A Content Security Policy that lists sources explicitly needs `worker-src 'self'`, or a `script-src 'self'` it falls
 back to. Blob URLs are never used for workers.
@@ -92,14 +92,14 @@ really allocates and twice that.
 
 ### Bounding it
 
-A `BudgetedPixelAllocator` hands out memory from another allocator while what it has outstanding stays within its
-budget, and refuses past that with `ImageMemoryBudgetExceededException` before anything is allocated. Every buffer and
+A `BmageBudgetedPixelAllocator` hands out memory from another allocator while what it has outstanding stays within its
+budget, and refuses past that with `BmageImageMemoryBudgetExceededException` before anything is allocated. Every buffer and
 mask an operation makes comes from the allocator in its context, so one budget bounds a request, a session or a batch,
 on any number of threads:
 
 ```csharp
-var budget = new BudgetedPixelAllocator(256L * 1024 * 1024);
-using var result = pipeline.Execute(source, new PipelineExecutionOptions { Allocator = budget });
+var budget = new BmageBudgetedPixelAllocator(256L * 1024 * 1024);
+using var result = pipeline.Execute(source, new BmagePipelineExecutionOptions { Allocator = budget });
 Console.WriteLine($"{budget.PeakBytes / 1048576.0:0.0} MB at the peak");
 ```
 
@@ -109,9 +109,9 @@ megabytes.
 ### Batches of any length
 
 ```csharp
-var items = paths.Select(path => BatchItem.Deferred(async ct => (ReadOnlyMemory<byte>)await File.ReadAllBytesAsync(path, ct), path));
+var items = paths.Select(path => BmageBatchItem.Deferred(async ct => (ReadOnlyMemory<byte>)await File.ReadAllBytesAsync(path, ct), path));
 
-await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BatchOptions
+await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BmageBatchOptions
 {
     MaxConcurrency = 4,
     MaxMemoryBytes = 768L * 1024 * 1024,
@@ -124,13 +124,13 @@ await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, 
 - **Deferred items** read their file only when the batch reaches them, so a batch of a thousand photos never holds a
   thousand files.
 - **Streaming** hands each result over as it completes, in completion order, so outputs do not pile up either. The
-  source may be an `IAsyncEnumerable<BatchItem>`, such as files arriving from an upload.
+  source may be an `IAsyncEnumerable<BmageBatchItem>`, such as files arriving from an upload.
 - **`MaxMemoryBytes`** admits images by their expected peak, estimated from each file's header before decoding: the
   file, its pixels, the pipeline's working buffers and an allowance for encoding. Small photos then run several at a
   time and a large one runs with room to spare. Requests are admitted in order, so a large image is never starved by a
   stream of small ones, and one larger than the whole budget runs alone rather than never.
 
-It schedules by estimate; for a hard ceiling as well, give the processor a `BudgetedPixelAllocator`.
+It schedules by estimate; for a hard ceiling as well, give the processor a `BmageBudgetedPixelAllocator`.
 
 ### What masks and layers cost
 

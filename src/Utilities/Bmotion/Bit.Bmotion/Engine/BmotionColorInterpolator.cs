@@ -31,7 +31,7 @@ internal static partial class BmotionColorInterpolator
     /// regex/parse cost of the string overload.
     /// </summary>
     public static string Lerp(double[] from, double[] to, double t)
-        => Lerp(from, to, t, BmColorSpace.Srgb);
+        => Lerp(from, to, t, BmotionColorSpace.Srgb);
 
     /// <summary>
     /// Interpolates between two pre-parsed RGBA channel arrays in the given color space. sRGB mixes
@@ -40,10 +40,10 @@ internal static partial class BmotionColorInterpolator
     /// darkening through translucent black - and it is what the browser plays, so a browser-played colour
     /// animation and the frame loop agree.
     /// </summary>
-    public static string Lerp(double[] from, double[] to, double t, BmColorSpace space)
+    public static string Lerp(double[] from, double[] to, double t, BmotionColorSpace space)
     {
         double a = Math.Clamp(from[3] + (to[3] - from[3]) * t, 0, 1);
-        if (space == BmColorSpace.Oklab)
+        if (space == BmotionColorSpace.Oklab)
             return LerpOklab(from, to, t, a);
 
         int r = (int)Math.Round(Math.Clamp(Unpremultiply(from[0], from[3], to[0], to[3], t, a), 0, 255));

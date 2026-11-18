@@ -19,7 +19,7 @@ public class BrowserTimingTests
     {
         Assert.IsFalse(BmotionBrowserTiming.CanPlay(Bm.Inertia(velocity: 500).ToConfig()));
         Assert.IsFalse(BmotionBrowserTiming.CanPlay(Bm.Tween(0).ToConfig()));
-        Assert.IsFalse(BmotionBrowserTiming.CanPlay(Bm.Tween(0.5, repeat: BmRepeat.Reverse()).ToConfig()));
+        Assert.IsFalse(BmotionBrowserTiming.CanPlay(Bm.Tween(0.5, repeat: BmotionRepeat.Reverse()).ToConfig()));
         Assert.IsTrue(BmotionBrowserTiming.CanPlay(Bm.Spring(stiffness: 300, damping: 20).ToConfig()));
     }
 
@@ -36,7 +36,7 @@ public class BrowserTimingTests
     [TestMethod]
     public void Easing_PrefersAnExactKeyword_OnlyWhenAsked()
     {
-        var config = Bm.Tween(0.5, ease: BmEase.Linear).ToConfig();
+        var config = Bm.Tween(0.5, ease: BmotionEase.Linear).ToConfig();
         var samples = BmotionBrowserTiming.SampleProgress(config)!.Value.Samples;
 
         Assert.AreEqual("linear", BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported: true, preferKeyword: true));
@@ -48,7 +48,7 @@ public class BrowserTimingTests
     public void Easing_StepsAlwaysPlayAsSteps()
     {
         // Sampled to linear(), each jump of a staircase would play as a ramp between two samples.
-        var config = Bm.Tween(1.2, steps: 6, stepJump: BmStepJump.None).ToConfig();
+        var config = Bm.Tween(1.2, steps: 6, stepJump: BmotionStepJump.None).ToConfig();
         var samples = BmotionBrowserTiming.SampleProgress(config)!.Value.Samples;
 
         Assert.AreEqual("steps(6,jump-none)", BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported: true, preferKeyword: false));

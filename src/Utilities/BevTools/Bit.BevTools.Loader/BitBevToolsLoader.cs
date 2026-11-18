@@ -13,7 +13,7 @@ public static class BitBevToolsLoader
     /// lazy load it (<c>&lt;BlazorWebAssemblyLazyLoad Include="Bit.BevTools.wasm" /&gt;</c>).
     /// <para>
     /// When Bit.BevTools is among the assemblies the app starts with and should run from the first render
-    /// (<see cref="BitBevToolsLoaderOptions.RegisterAtStartup"/>; Development by default), this registers it exactly as
+    /// (<see cref="BevToolsLoaderOptions.RegisterAtStartup"/>; Development by default), this registers it exactly as
     /// <c>AddBitBevToolsServices</c> would. Otherwise it installs the hooks a later attach needs, which cost next to
     /// nothing until then: a pass-through component activator, pass-through handlers in <c>IHttpClientFactory</c>
     /// pipelines, the framework's ActivitySource and meters, and the service collection for the Services panel.
@@ -23,7 +23,7 @@ public static class BitBevToolsLoader
     /// Calling this again configures the existing options; what the first call decided stays.
     /// </para>
     /// </summary>
-    public static IServiceCollection AddBitBevToolsLoaderServices(this IServiceCollection services, Action<BitBevToolsLoaderOptions>? configure = null)
+    public static IServiceCollection AddBitBevToolsLoaderServices(this IServiceCollection services, Action<BevToolsLoaderOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -33,7 +33,7 @@ public static class BitBevToolsLoader
             return services;
         }
 
-        var options = new BitBevToolsLoaderOptions();
+        var options = new BevToolsLoaderOptions();
         configure?.Invoke(options);
         var context = new BevToolsLoaderContext(options, services);
         services.AddSingleton(context);
@@ -44,7 +44,7 @@ public static class BitBevToolsLoader
         string reason;
         if (options.RegisterAtStartup is false)
         {
-            context.Deferred(null, "BitBevToolsLoaderOptions.RegisterAtStartup was set to false.");
+            context.Deferred(null, "BevToolsLoaderOptions.RegisterAtStartup was set to false.");
         }
         else if (context.TryLoadFromApp(out var error) is not { } entryPoint)
         {

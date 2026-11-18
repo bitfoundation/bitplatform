@@ -1,7 +1,7 @@
 ﻿@page "/scan"
 @using Bit.Bmage
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
 @implements IDisposable
 
 @* A photographed page made into a clean scan, all on the device: is it sharp enough, how far is it tilted, level
@@ -85,7 +85,7 @@
                                     <li><strong>@barcode.Format</strong> <span class="bb-mono">@barcode.Text</span></li>
                                 }
                             </ul>
-                            <p class="demo-small bb-muted">Read @(_read.Preprocessing == BarcodePreprocessing.None ? "as photographed" : $"after preprocessing: {_read.Preprocessing}").</p>
+                            <p class="demo-small bb-muted">Read @(_read.Preprocessing == BmageBarcodePreprocessing.None ? "as photographed" : $"after preprocessing: {_read.Preprocessing}").</p>
                         }
                         else
                         {
@@ -165,13 +165,13 @@
 @code {
     private const string BbScannerUrl = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BbScanner";
 
-    private ImageBuffer? _source;
-    private ImageBuffer? _result;
-    private EncodedImage? _encoded;
+    private BmageImageBuffer? _source;
+    private BmageImageBuffer? _result;
+    private BmageEncodedImage? _encoded;
     private long _version;
     private double _sharpness;
-    private SkewEstimate? _skew;
-    private BarcodeReadResult? _read;
+    private BmageSkewEstimate? _skew;
+    private BmageBarcodeReadResult? _read;
     private bool _level = true;
     private bool _clean = true;
     private bool _codes = true;
@@ -193,15 +193,15 @@
         using var photo = await loader.LoadAsync(file);
 
         // Measured once; a soft photo is better taken again than cleaned up.
-        if (ImageSharpness.Measure(photo) < minimumSharpness) return AskForAnotherPhoto();
+        if (BmageImageSharpness.Measure(photo) < minimumSharpness) return AskForAnotherPhoto();
 
-        var pipeline = ImagePipeline.Create();
-        if (DocumentSkew.Estimate(photo) is { Confidence: > 0.3 } skew)
-            pipeline = pipeline.Rotate(skew.Angle, Rgba32.White, expandCanvas: false);
+        var pipeline = BmageImagePipeline.Create();
+        if (BmageDocumentSkew.Estimate(photo) is { Confidence: > 0.3 } skew)
+            pipeline = pipeline.Rotate(skew.Angle, BmageRgba32.White, expandCanvas: false);
         pipeline = pipeline.AdaptiveThreshold(radius: 18);   // about a line of text
 
         using var scan = await pipeline.ExecuteAsync(photo);
-        var png = await exporter.EncodeAsync(scan, new ImageExportOptions
+        var png = await exporter.EncodeAsync(scan, new BmageImageExportOptions
         {
             Format    = BmageImageFormat.Png,
             MaxColors = 2,                                    // a 1-bit indexed PNG
@@ -234,18 +234,18 @@
         try
         {
             _error = null;
-            var image = await Loader.LoadAsync(files[0], new DecodeOptions { FileName = files[0].Name, MaxSize = new System.Drawing.Size(2400, 2400) });
+            var image = await Loader.LoadAsync(files[0], new BmageDecodeOptions { FileName = files[0].Name, MaxSize = new System.Drawing.Size(2400, 2400) });
             // The decoder may hand back more than the hint; the page keeps its own cap so the steps stay quick.
             if (Math.Max(image.Width, image.Height) > 2400)
             {
                 using var large = image;
-                image = await ImagePipeline.Create().MaxSize(2400, 2400).ExecuteAsync(large);
+                image = await BmageImagePipeline.Create().MaxSize(2400, 2400).ExecuteAsync(large);
             }
             await SetSourceAsync(image);
         }
         catch (Exception ex)
         {
-            _error = ex is ImageDecodeException ? "Not a readable image." : ex.Message;
+            _error = ex is BmageImageDecodeException ? "Not a readable image." : ex.Message;
         }
     }
 
@@ -258,9 +258,9 @@
     }
 
     // Sources replaced while a run still reads one of them: the run disposes them once it is done.
-    private readonly List<ImageBuffer> _retired = [];
+    private readonly List<BmageImageBuffer> _retired = [];
 
-    private async Task SetSourceAsync(ImageBuffer image)
+    private async Task SetSourceAsync(BmageImageBuffer image)
     {
         if (_source is not null)
         {
@@ -290,7 +290,7 @@
         while (_again && _source is not null);
     }
 
-    private async Task RunOnceAsync(ImageBuffer source)
+    private async Task RunOnceAsync(BmageImageBuffer source)
     {
         _busy = true;
         StateHasChanged();
@@ -298,21 +298,21 @@
         await Task.Yield();
         try
         {
-            _sharpness = ImageSharpness.Measure(source);
-            _skew = DocumentSkew.Estimate(source);
+            _sharpness = BmageImageSharpness.Measure(source);
+            _skew = BmageDocumentSkew.Estimate(source);
             _read = _codes ? source.ReadBarcodes() : null;
 
-            var pipeline = ImagePipeline.Create();
+            var pipeline = BmageImagePipeline.Create();
             if (_level && _skew is { Confidence: > 0.3 } skew && Math.Abs(skew.Angle) >= 0.1)
-                pipeline = pipeline.Rotate(skew.Angle, Rgba32.White, expandCanvas: false);
+                pipeline = pipeline.Rotate(skew.Angle, BmageRgba32.White, expandCanvas: false);
             pipeline = _clean ? pipeline.AdaptiveThreshold(_window) : pipeline.Grayscale();
 
             // The scan and its PNG replace the last ones together, once both are made: a failure leaves the last pair.
             var result = await pipeline.ExecuteAsync(source);
-            EncodedImage encoded;
+            BmageEncodedImage encoded;
             try
             {
-                encoded = await Exporter.EncodeAsync(result, new ImageExportOptions { Format = BmageImageFormat.Png, MaxColors = _clean ? 2 : 256 });
+                encoded = await Exporter.EncodeAsync(result, new BmageImageExportOptions { Format = BmageImageFormat.Png, MaxColors = _clean ? 2 : 256 });
             }
             catch
             {
@@ -355,12 +355,12 @@
     /// A letter-size page of "words" with a QR code in its corner, photographed badly: tilted four degrees, darker on
     /// the left than the right, and a little soft.
     /// </summary>
-    private static ImageBuffer SamplePage()
+    private static BmageImageBuffer SamplePage()
     {
         const int width = 850, height = 1100;
-        using var page = ImageBuffer.Create(width, height, Rgba32.White);
+        using var page = BmageImageBuffer.Create(width, height, BmageRgba32.White);
         var random = new Random(4);
-        page.Fill(new System.Drawing.Rectangle(70, 70, 420, 26), new Rgba32(20, 20, 30));
+        page.Fill(new System.Drawing.Rectangle(70, 70, 420, 26), new BmageRgba32(20, 20, 30));
         for (var top = 140; top < height - 320; top += 30)
         {
             var x = 70;
@@ -368,7 +368,7 @@
             while (x < end - 40)
             {
                 var word = random.Next(20, 90);
-                page.Fill(new System.Drawing.Rectangle(x, top, Math.Min(word, end - x), 12), new Rgba32(30, 30, 40));
+                page.Fill(new System.Drawing.Rectangle(x, top, Math.Min(word, end - x), 12), new BmageRgba32(30, 30, 40));
                 x += word + random.Next(9, 16);
             }
         }
@@ -376,10 +376,10 @@
         var origin = new System.Drawing.Point(width - 70 - QrCode[0].Length * module, 70);
         for (var y = 0; y < QrCode.Length; y++)
             for (var x = 0; x < QrCode[y].Length; x++)
-                if (QrCode[y][x] == '#') page.Fill(new System.Drawing.Rectangle(origin.X + x * module, origin.Y + y * module, module, module), new Rgba32(10, 10, 20));
+                if (QrCode[y][x] == '#') page.Fill(new System.Drawing.Rectangle(origin.X + x * module, origin.Y + y * module, module, module), new BmageRgba32(10, 10, 20));
 
         // The camera: a tilt, light falling off to the left, and a slight blur.
-        using var tilted = new RotateOperation(-4, new Rgba32(200, 200, 195), expandCanvas: false).Apply(page, OperationContext.Default);
+        using var tilted = new BmageRotateOperation(-4, new BmageRgba32(200, 200, 195), expandCanvas: false).Apply(page, BmageOperationContext.Default);
         for (var y = 0; y < height; y++)
         {
             var row = tilted.GetRow(y);
@@ -387,10 +387,10 @@
             {
                 var light = 0.45f + 0.55f * x / width;
                 var p = row[x];
-                row[x] = new Rgba32((byte)(p.R * light), (byte)(p.G * light), (byte)(p.B * light * 0.95f));
+                row[x] = new BmageRgba32((byte)(p.R * light), (byte)(p.G * light), (byte)(p.B * light * 0.95f));
             }
         }
-        return new BlurFilter(0.8f).Apply(tilted, OperationContext.Default);
+        return new BmageBlurFilter(0.8f).Apply(tilted, BmageOperationContext.Default);
     }
 
     private bool _disposed;

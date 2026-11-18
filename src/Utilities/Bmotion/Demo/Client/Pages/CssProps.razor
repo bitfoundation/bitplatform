@@ -130,7 +130,7 @@
         <div class="demo-card stack">
             <span class="demo-label">width + height in rem</span>
             <Bmotion Animate='@(_size ? Bm.To(width: "7rem", height: "4rem") : Bm.To(width: "3rem", height: "3rem"))'
-                     Transition="Bm.Tween(0.6, BmEase.InOut)">
+                     Transition="Bm.Tween(0.6, BmotionEase.InOut)">
                 <div class="size-box" />
             </Bmotion>
         </div>
@@ -332,7 +332,7 @@
             <Bmotion Initial='Bm.To(cssVars: new() { ["--glow"] = "0px" })'
                      Animate='@(_vars ? Bm.To(cssVars: new() { ["--glow"] = "26px" })
                                       : Bm.To(cssVars: new() { ["--glow"] = "0px" }))'
-                     Transition="Bm.Tween(0.8, BmEase.InOut)">
+                     Transition="Bm.Tween(0.8, BmotionEase.InOut)">
                 <div class="glow-card">
                     <div class="glow-ring" />
                 </div>
@@ -350,13 +350,13 @@
     <ul class="bb-detail-list">
         <li>
             <strong>Reduced motion</strong> -
-            <code>AddBitBmotionServices(o =&gt; o.ReducedMotion = BmReducedMotionMode.User)</code>
+            <code>AddBitBmotionServices(o =&gt; o.ReducedMotion = BmotionReducedMotionMode.User)</code>
             respects the OS <code>prefers-reduced-motion</code> everywhere. When reduced, transforms
             snap while opacity/color still animate.
         </li>
         <li>
             <strong>CSS-injection safe mode</strong> -
-            <code>o.CssSafeMode = BmCssSafeMode.Throw</code> validates string values before they reach
+            <code>o.CssSafeMode = BmotionCssSafeMode.Throw</code> validates string values before they reach
             inline style (reject <code>;</code>, <code>}</code>, <code>javascript:</code>, anything that loads a
             URL such as <code>url(…)</code>, …) and the property names of <code>css</code> and
             <code>cssVars</code> entries, and throws on one that fails; <code>Warn</code> logs it and applies it anyway, and <code>Off</code>, the default, skips the
@@ -395,7 +395,7 @@
         <Bmotion Initial='Bm.To(cssVars: new() { ["--glow"] = "0px" })'
                  Animate='@(_on ? Bm.To(cssVars: new() { ["--glow"] = "26px" })
                                 : Bm.To(cssVars: new() { ["--glow"] = "0px" }))'
-                 Transition="Bm.Tween(0.8, BmEase.InOut)">
+                 Transition="Bm.Tween(0.8, BmotionEase.InOut)">
             <div class="glow-card">
                 <div class="glow-ring" />
             </div>
@@ -462,7 +462,7 @@
 
         @* Strings pass through - any unit, as long as both ends use the same one *@
         <Bmotion Animate='@(_on ? Bm.To(width: "7rem", height: "4rem") : Bm.To(width: "3rem", height: "3rem"))'
-                 Transition="Bm.Tween(0.6, BmEase.InOut)">
+                 Transition="Bm.Tween(0.6, BmotionEase.InOut)">
             <div class="box" />
         </Bmotion>
 

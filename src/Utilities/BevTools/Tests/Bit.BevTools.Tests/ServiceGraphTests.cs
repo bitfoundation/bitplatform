@@ -35,7 +35,7 @@ public class ServiceGraphTests
         var services = new ServiceCollection();
         services.AddSingleton<IRepo, Repo>();
         services.AddScoped<ScopedThing>();
-        var graph = BevServiceGraph.Build(services);
+        var graph = BevToolsServiceGraph.Build(services);
 
         var thing = graph.Services.Single(s => s.ServiceType == typeof(ScopedThing));
         var repo = graph.Services.Single(s => s.ServiceType == typeof(IRepo));
@@ -53,11 +53,11 @@ public class ServiceGraphTests
         services.AddSingleton<IRepo, Repo>();
         services.AddScoped<ScopedThing>();
         services.AddSingleton<Captor>();
-        var findings = BevServiceGraph.Build(services).Analyze().ToList();
+        var findings = BevToolsServiceGraph.Build(services).Analyze().ToList();
 
         var captive = Assert.ContainsSingle(f => f.RuleId == "di.captive", findings);
         Assert.Contains("Captor captures scoped ScopedThing", captive.Title);
-        Assert.AreEqual(BevDiagnosticSeverity.Error, captive.Severity);
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Error, captive.Severity);
     }
 
     [TestMethod]
@@ -66,7 +66,7 @@ public class ServiceGraphTests
         var services = new ServiceCollection();
         services.AddScoped<A>();
         services.AddScoped<B>();
-        var graph = BevServiceGraph.Build(services);
+        var graph = BevToolsServiceGraph.Build(services);
 
         var cycle = Assert.ContainsSingle(graph.FindCycles());
         Assert.AreEqual(2, cycle.Count);
@@ -81,7 +81,7 @@ public class ServiceGraphTests
         services.AddScoped<ScopedThing>(); // IRepo not registered
         services.AddSingleton<IRepo, Repo>();
         services.AddSingleton<IRepo>(new Repo());
-        var graph = BevServiceGraph.Build(services);
+        var graph = BevToolsServiceGraph.Build(services);
 
         var repos = graph.Services.Where(s => s.ServiceType == typeof(IRepo)).ToList();
         Assert.IsTrue(repos[0].IsShadowed);

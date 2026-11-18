@@ -3,7 +3,7 @@ using System.Reflection;
 namespace Bit.Bmotion.Tests.Mcp.Services;
 
 /// <summary>
-/// The animatable-property catalog: the list is reflected off <see cref="BmProps"/> and the
+/// The animatable-property catalog: the list is reflected off <see cref="BmotionProps"/> and the
 /// expensive claim on each entry - whether the browser plays it, as a timeline or a recording, and
 /// therefore whether it animates or jumps on Blazor Server - is measured by running the engine.
 /// <para>
@@ -25,9 +25,9 @@ public class PropertyCatalogTests
     {
         var catalog = await BmotionPropertyCatalog.GetAsync();
 
-        var expected = typeof(BmProps)
+        var expected = typeof(BmotionProps)
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(property => property.CanWrite && property.Name != nameof(BmProps.Transition))
+            .Where(property => property.CanWrite && property.Name != nameof(BmotionProps.Transition))
             .Select(property => char.ToLowerInvariant(property.Name[0]) + property.Name[1..])
             .ToArray();
 
@@ -38,7 +38,7 @@ public class PropertyCatalogTests
     /// <summary>
     /// A property with no entry in the description table falls back to placeholders ("Other", the
     /// name as its own CSS, "name: ..."), which is a silent, low-quality answer rather than a
-    /// failure. Adding a property to BmProps without describing it should be caught here.
+    /// failure. Adding a property to BmotionProps without describing it should be caught here.
     /// </summary>
     [TestMethod]
     public async Task Get_EveryProperty_IsDescribed_NotFilledInWithPlaceholders()
@@ -232,7 +232,7 @@ public class PropertyCatalogTests
     [TestMethod]
     public void ExplainPlayback_WhenPlayedAsATimeline_ExplainsAndOffersNothingToFix()
     {
-        var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x", "opacity"], new BmTween(), BmotionPlaybackPath.Timeline);
+        var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x", "opacity"], new BmotionTween(), BmotionPlaybackPath.Timeline);
 
         StringAssert.Contains(reason, "Blazor Server");
         StringAssert.Contains(reason, "two keyframes");
@@ -251,7 +251,7 @@ public class PropertyCatalogTests
     [DataRow("backgroundColor", "opacity")]
     public void ExplainPlayback_APropertyOffTheCompositor_NamesTheCompositorEquivalent(string property, string replacement)
     {
-        var (reason, _) = BmotionPropertyCatalog.ExplainPlayback([property], new BmTween(), BmotionPlaybackPath.Timeline);
+        var (reason, _) = BmotionPropertyCatalog.ExplainPlayback([property], new BmotionTween(), BmotionPlaybackPath.Timeline);
 
         StringAssert.Contains(reason, replacement, $"'{property}' was not pointed at {replacement}.");
         StringAssert.Contains(reason, "compositor");
@@ -260,7 +260,7 @@ public class PropertyCatalogTests
     [TestMethod]
     public void ExplainPlayback_ATweenWithNoDuration_IsExplainedAsInstant()
     {
-        var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], new BmTween { Duration = 0 }, BmotionPlaybackPath.Instant);
+        var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], new BmotionTween { Duration = 0 }, BmotionPlaybackPath.Instant);
 
         StringAssert.Contains(reason, "no duration");
         StringAssert.Contains(reason, "every runtime");
@@ -270,7 +270,7 @@ public class PropertyCatalogTests
     [TestMethod]
     public void ExplainPlayback_AnEndlessReverseRepeat_IsNamedAsTheFrameLoopBlocker_WithTheMirrorEquivalent()
     {
-        var transition = new BmTween { Repeat = BmRepeat.Reverse() };
+        var transition = new BmotionTween { Repeat = BmotionRepeat.Reverse() };
 
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], transition, BmotionPlaybackPath.FrameLoop);
 
@@ -282,7 +282,7 @@ public class PropertyCatalogTests
     [TestMethod]
     public void ExplainPlayback_ACountedReverseRepeat_IsNamedAsWhatMakesItARecording()
     {
-        var transition = new BmTween { Repeat = BmRepeat.Reverse(2) };
+        var transition = new BmotionTween { Repeat = BmotionRepeat.Reverse(2) };
 
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], transition, BmotionPlaybackPath.Recorded);
 
@@ -293,7 +293,7 @@ public class PropertyCatalogTests
     [TestMethod]
     public void ExplainPlayback_ARepeatDelay_IsNamedAsWhatMakesItARecording()
     {
-        var transition = new BmTween { Repeat = BmRepeat.Loop(3, delay: 0.5) };
+        var transition = new BmotionTween { Repeat = BmotionRepeat.Loop(3, delay: 0.5) };
 
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], transition, BmotionPlaybackPath.Recorded);
 
@@ -304,7 +304,7 @@ public class PropertyCatalogTests
     [TestMethod]
     public void ExplainPlayback_ARecording_StatesWhatItCostsAgainstATimeline()
     {
-        var (reason, _) = BmotionPropertyCatalog.ExplainPlayback(["x"], new BmInertia(), BmotionPlaybackPath.Recorded);
+        var (reason, _) = BmotionPropertyCatalog.ExplainPlayback(["x"], new BmotionInertia(), BmotionPlaybackPath.Recorded);
 
         StringAssert.Contains(reason, "recording");
         StringAssert.Contains(reason, "more keyframes");
@@ -318,7 +318,7 @@ public class PropertyCatalogTests
     [TestMethod]
     public void ExplainPlayback_AValueTheBrowserCannotInterpolate_IsBlamedRatherThanTheTransition()
     {
-        var (reason, _) = BmotionPropertyCatalog.ExplainPlayback(["offsetPath"], new BmTween(), BmotionPlaybackPath.Recorded, ["offsetPath"]);
+        var (reason, _) = BmotionPropertyCatalog.ExplainPlayback(["offsetPath"], new BmotionTween(), BmotionPlaybackPath.Recorded, ["offsetPath"]);
 
         StringAssert.Contains(reason, "offsetPath is a value the browser does not interpolate");
     }
@@ -326,7 +326,7 @@ public class PropertyCatalogTests
     [TestMethod]
     public void ExplainPlayback_AnOnUpdateCallback_IsNamedAsTheBlocker()
     {
-        var transition = new BmTween { OnUpdate = _ => { } };
+        var transition = new BmotionTween { OnUpdate = _ => { } };
 
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], transition, BmotionPlaybackPath.FrameLoop);
 
@@ -337,7 +337,7 @@ public class PropertyCatalogTests
     [TestMethod]
     public void ExplainPlayback_AnSvgPathMorph_IsNamedAsTheBlocker()
     {
-        var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["d"], new BmTween(), BmotionPlaybackPath.FrameLoop);
+        var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["d"], new BmotionTween(), BmotionPlaybackPath.FrameLoop);
 
         StringAssert.Contains(reason, "SVG geometry attribute");
         Assert.AreNotEqual(0, remedies.Length);
@@ -346,7 +346,7 @@ public class PropertyCatalogTests
     [TestMethod]
     public void ExplainPlayback_ARepeatThatUnrollsPastTenSeconds_NamesTheRecordingLimit()
     {
-        var transition = new BmTween { Duration = 4, Repeat = BmRepeat.Mirror(2) };
+        var transition = new BmotionTween { Duration = 4, Repeat = BmotionRepeat.Mirror(2) };
 
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], transition, BmotionPlaybackPath.FrameLoop);
 
@@ -362,7 +362,7 @@ public class PropertyCatalogTests
     [TestMethod]
     public void ExplainPlayback_WithNoKnownBlocker_StillSaysWhatToDo()
     {
-        var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], new BmTween { Duration = 0.3 }, BmotionPlaybackPath.FrameLoop);
+        var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], new BmotionTween { Duration = 0.3 }, BmotionPlaybackPath.FrameLoop);
 
         StringAssert.Contains(reason, "worth reporting");
         Assert.AreNotEqual(0, remedies.Length);

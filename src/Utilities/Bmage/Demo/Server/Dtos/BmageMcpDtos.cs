@@ -52,7 +52,7 @@ public record BmageApiMemberDto
     /// <summary>The C# type of the member, or a method's return type.</summary>
     public string? Type { get; init; }
 
-    /// <summary>A method's parameter list, e.g. "(int maxWidth, int maxHeight, ResamplingFilter filter = ResamplingFilter.Auto)".</summary>
+    /// <summary>A method's parameter list, e.g. "(int maxWidth, int maxHeight, BmageResamplingFilter filter = BmageResamplingFilter.Auto)".</summary>
     public string? Signature { get; init; }
 
     /// <summary>The value the member holds on a freshly created instance, when it could be determined.</summary>
@@ -351,7 +351,7 @@ public record BmageBudgetDto
 
     public long? Bytes { get; init; }
 
-    /// <summary>The quality the search settled on - reported on EncodedImage.Quality in real code.</summary>
+    /// <summary>The quality the search settled on - reported on BmageEncodedImage.Quality in real code.</summary>
     public double? Quality { get; init; }
 
     /// <summary>The dimensions it settled on; smaller than the output when the strategy had to shrink it.</summary>
@@ -359,7 +359,7 @@ public record BmageBudgetDto
 
     public int? Height { get; init; }
 
-    /// <summary>The ImageEncodeException message when the budget could not be met.</summary>
+    /// <summary>The BmageImageEncodeException message when the budget could not be met.</summary>
     public string? Error { get; init; }
 }
 

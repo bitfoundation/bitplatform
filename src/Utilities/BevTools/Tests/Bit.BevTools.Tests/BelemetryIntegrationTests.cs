@@ -73,7 +73,7 @@ public class BelemetryIntegrationTests : BunitContext
     public void The_support_panel_is_contributed()
     {
         var registry = Services.GetRequiredService<BevToolsRegistry>();
-        Assert.Contains(p => p.Id == BevToolsBelemetryExtension.PanelId && p.ComponentType == typeof(BevBelemetryPanel), registry.Panels);
+        Assert.Contains(p => p.Id == BevToolsBelemetryExtension.PanelId && p.ComponentType == typeof(BevToolsBelemetryPanel), registry.Panels);
         Assert.IsEmpty(registry.ExtensionErrors);
     }
 
@@ -95,7 +95,7 @@ public class BelemetryIntegrationTests : BunitContext
     [TestMethod]
     public async Task Without_a_live_instance_the_provider_says_nothing()
     {
-        var provider = Services.GetServices<IBelemetryComponentContextProvider>().OfType<BevBelemetryComponentContext>().Single();
+        var provider = Services.GetServices<IBelemetryComponentContextProvider>().OfType<BevToolsBelemetryComponentContext>().Single();
         var described = await provider.DescribeAsync(new BelemetryComponentContextRequest { ComponentTypes = ["Not.A.Component"] }, CancellationToken.None);
         Assert.IsEmpty(described);
     }
@@ -143,14 +143,14 @@ public class BelemetryIntegrationTests : BunitContext
         cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll(".bit-belemetry-preview")));
 
         var filter = Services.GetServices<IBelemetryDiagnosticComponentFilter>().Single();
-        Assert.IsTrue(filter.IsExcluded(typeof(BevBelemetryPanel).FullName!));
+        Assert.IsTrue(filter.IsExcluded(typeof(BevToolsBelemetryPanel).FullName!));
         Assert.IsTrue(filter.IsExcluded(typeof(BevToolsPanel).FullName!));
         Assert.IsFalse(filter.IsExcluded(typeof(SupportChild).FullName!), "Exact namespace: an application under Bit.BevTools.* is the application.");
         Assert.IsFalse(Services.GetRequiredService<IBelemetryDiagnostics>().GetEvents().Any(e => e.ComponentType is { } type && filter.IsExcluded(type)));
     }
 }
 
-/// <summary>The Support panel under <see cref="BevValueAccess.None"/>: BevTools' own rule applies to Belemetry's values too.</summary>
+/// <summary>The Support panel under <see cref="BevToolsValueAccess.None"/>: BevTools' own rule applies to Belemetry's values too.</summary>
 [TestClass]
 public class BelemetryIntegrationValueAccessTests : BunitContext
 {
@@ -169,7 +169,7 @@ public class BelemetryIntegrationValueAccessTests : BunitContext
         Services.AddBitBevToolsBelemetry(o =>
         {
             o.Enabled = true;
-            o.ValueAccess = BevValueAccess.None;
+            o.ValueAccess = BevToolsValueAccess.None;
         });
         this.UseRenderer("Server");
         JSInterop.Mode = JSRuntimeMode.Loose;
@@ -187,7 +187,7 @@ public class BelemetryIntegrationValueAccessTests : BunitContext
 
         Assert.Contains("System.InvalidOperationException", cut.Markup, StringComparison.Ordinal);
         Assert.DoesNotContain("The child broke", cut.Markup, StringComparison.Ordinal);
-        Assert.Contains(BevRedactor.HiddenValue, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(BevToolsRedactor.HiddenValue, cut.Markup, StringComparison.Ordinal);
         Assert.IsTrue(cut.Find("#bev-belemetry-capture").HasAttribute("disabled"));
     }
 }

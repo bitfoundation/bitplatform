@@ -42,7 +42,7 @@ public class SafetyTests
         public Node? Self { get; set; }
     }
 
-    private static BevObjectInspector NewInspector() => new(new BitBevToolsOptions(), BevRedactor.Default);
+    private static BevToolsObjectInspector NewInspector() => new(new BevToolsOptions(), BevToolsRedactor.Default);
 
     [TestMethod]
     public void Sensitive_names_are_redacted_whatever_the_value_type()
@@ -52,8 +52,8 @@ public class SafetyTests
 
         Assert.AreEqual("ada", children.Single(c => c.Name == "User").Display.Trim('"'));
         // A key does not stop being a secret because it is stored as bytes rather than as a string.
-        Assert.AreEqual(BevRedactor.RedactedValue, children.Single(c => c.Name == "ApiKeyBytes").Display);
-        Assert.AreEqual(BevRedactor.RedactedValue, children.Single(c => c.Name == "PasswordAttempts").Display);
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, children.Single(c => c.Name == "ApiKeyBytes").Display);
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, children.Single(c => c.Name == "PasswordAttempts").Display);
     }
 
     [TestMethod]
@@ -91,7 +91,7 @@ public class SafetyTests
     [TestMethod]
     public void Urls_hide_embedded_credentials_and_sensitive_query_values()
     {
-        var redactor = BevRedactor.Default;
+        var redactor = BevToolsRedactor.Default;
 
         Assert.AreEqual("https://«redacted»@api.example.com/v1", redactor.RedactUrl("https://ada:hunter2@api.example.com/v1"));
         Assert.AreEqual("https://api.example.com/v1?page=2&token=«redacted»", redactor.RedactUrl("https://api.example.com/v1?page=2&token=abc123"));
@@ -104,7 +104,7 @@ public class SafetyTests
         var before = new Dictionary<string, string> { ["Items"] = "List (1 items)", ["Items[0].Name"] = "a", ["Other"] = "1" };
         var after = new Dictionary<string, string> { ["Items"] = "List (2 items)", ["Items[0].Name"] = "b", ["Other"] = "1" };
 
-        var changes = BevObjectInspector.Diff(before, after);
+        var changes = BevToolsObjectInspector.Diff(before, after);
 
         var change = Assert.ContainsSingle(changes);
         Assert.AreEqual("Items[0].Name", change.Path);
@@ -122,7 +122,7 @@ public class SafetyTests
             var tracked = inner.WithBevToolsTracking(session);
 
             var wrapped = await tracked.InvokeAsync<IJSObjectReference>("import", ["./x.js"]);
-            Assert.IsExactInstanceOfType<BevTrackingJSObjectReference>(wrapped);
+            Assert.IsExactInstanceOfType<BevToolsTrackingJSObjectReference>(wrapped);
 
             await tracked.InvokeVoidAsync("use", wrapped);
 
@@ -175,11 +175,11 @@ public class SafetyTests
         using (scope)
         {
             session.Platform = "WebAssembly";
-            Assert.AreSame(session, SessionResolver.Resolve());
+            Assert.AreSame(session, BevToolsSessionResolver.Resolve());
 
             // On a server, "the only circuit right now" is not evidence that ambient work belongs to that user.
             session.Platform = "Server";
-            Assert.IsNull(SessionResolver.Resolve());
+            Assert.IsNull(BevToolsSessionResolver.Resolve());
         }
     }
 
@@ -192,14 +192,14 @@ public class SafetyTests
         using (controlScope)
         {
             Assert.IsNull(control.Platform);
-            Assert.AreSame(control, SessionResolver.Resolve());
+            Assert.AreSame(control, BevToolsSessionResolver.Resolve());
         }
 
         var (session, scope) = TestHelpers.CreateSession(services: s => s.AddSingleton<Microsoft.AspNetCore.Hosting.Server.IServer>(_ => throw new InvalidOperationException("only its registration is consulted")));
         using (scope)
         {
             Assert.IsNull(session.Platform);
-            Assert.IsNull(SessionResolver.Resolve());
+            Assert.IsNull(BevToolsSessionResolver.Resolve());
         }
     }
 
@@ -209,7 +209,7 @@ public class SafetyTests
         var (session, scope) = TestHelpers.CreateSession(o => o.MaxTrackedComponents = 2);
         using (scope)
         {
-            var tracked = new List<BevComponentRecord>();
+            var tracked = new List<BevToolsComponentRecord>();
             for (var i = 0; i < 5; i++)
             {
                 var record = session.Components.Register(new ChildComponent(), typeof(ChildComponent), isBevTools: false, isHidden: false);
@@ -236,7 +236,7 @@ public class SafetyTests
         services.AddBitBevToolsServices(o => o.MaxEvents = 17);
 
         using var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<BitBevToolsOptions>();
+        var options = provider.GetRequiredService<BevToolsOptions>();
         Assert.AreEqual(17, options.MaxEvents);
         Assert.IsTrue(provider.GetRequiredService<BevToolsRegistry>().IsEnabled);
     }
@@ -250,7 +250,7 @@ public class SafetyTests
 
         using var provider = services.BuildServiceProvider();
         Assert.IsTrue(provider.GetRequiredService<BevToolsRegistry>().IsEnabled);
-        Assert.IsTrue(provider.GetRequiredService<BitBevToolsOptions>().ResolvedEnabled);
+        Assert.IsTrue(provider.GetRequiredService<BevToolsOptions>().ResolvedEnabled);
         Assert.Contains(d => d.ServiceType == typeof(Microsoft.AspNetCore.Components.IComponentActivator)
             && d.ImplementationType == typeof(BevToolsComponentActivator), services);
         Assert.ContainsSingle(d => d.ServiceType == typeof(Microsoft.Extensions.Http.IHttpMessageHandlerBuilderFilter)

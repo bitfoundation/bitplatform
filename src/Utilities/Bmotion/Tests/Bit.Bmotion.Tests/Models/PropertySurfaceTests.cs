@@ -52,14 +52,14 @@ public class PropertySurfaceTests
     [DataRow("letterSpacing", "letterSpacing")]
     [DataRow("--my-var", "--my-var")]
     public void ToCamelCase_Converts(string input, string expected)
-        => Assert.AreEqual(expected, BmProps.ToCamelCase(input));
+        => Assert.AreEqual(expected, BmotionProps.ToCamelCase(input));
 
     [TestMethod]
     [DataRow("letterSpacing", "letter-spacing")]
     [DataRow("gap", "gap")]
     [DataRow("--my-var", "--my-var")]
     public void ToDashCase_Converts(string input, string expected)
-        => Assert.AreEqual(expected, BmProps.ToDashCase(input));
+        => Assert.AreEqual(expected, BmotionProps.ToDashCase(input));
 
     [TestMethod]
     public void ValueEquals_DetectsExtendedPropChange()

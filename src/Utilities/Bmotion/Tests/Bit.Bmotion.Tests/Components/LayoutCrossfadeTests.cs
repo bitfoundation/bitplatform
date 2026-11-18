@@ -18,8 +18,8 @@ public class LayoutCrossfadeTests
         b.OpenComponent<Bmotion>(0);
         b.AddComponentParameter(1, nameof(Bmotion.Id), $"card-{item}");
         b.AddComponentParameter(2, nameof(Bmotion.LayoutId), "card");
-        b.AddComponentParameter(3, nameof(Bmotion.Exit), (BmTarget?)Bm.To(opacity: 0));
-        b.AddComponentParameter(4, nameof(Bmotion.Transition), (BmTransition?)Bm.Tween(0.4));
+        b.AddComponentParameter(3, nameof(Bmotion.Exit), (BmotionTarget?)Bm.To(opacity: 0));
+        b.AddComponentParameter(4, nameof(Bmotion.Transition), (BmotionTransition?)Bm.Tween(0.4));
         b.AddComponentParameter(5, nameof(Bmotion.LayoutCrossfade), crossfade);
         b.AddComponentParameter(6, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
         {
@@ -37,7 +37,7 @@ public class LayoutCrossfadeTests
         _ => null,
     };
 
-    private static IRenderedComponent<BmotionPresenceSwitch<int>> RenderSwitch(BmotionTestContext ctx, BmPresenceMode mode, bool crossfade = true)
+    private static IRenderedComponent<BmotionPresenceSwitch<int>> RenderSwitch(BmotionTestContext ctx, BmotionPresenceMode mode, bool crossfade = true)
     {
         ctx.Interop.BoundingRectProvider = Rects;
         return ctx.Render<BmotionPresenceSwitch<int>>(ps => ps
@@ -50,7 +50,7 @@ public class LayoutCrossfadeTests
     public void TheNewHolder_GrowsOutOfTheOneLeaving_AndTheTwoCrossfade()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderSwitch(ctx, BmPresenceMode.Sync);
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.Sync);
 
         cut.Render(ps => ps.Add(p => p.Item, 2));
 
@@ -76,7 +76,7 @@ public class LayoutCrossfadeTests
         // On Blazor Server the crossfade starts round trips after the first paint: until then the new card must not
         // show at its new place at full strength.
         using var ctx = new BmotionTestContext();
-        var cut = RenderSwitch(ctx, BmPresenceMode.Sync);
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.Sync);
         StringAssert.DoesNotMatch(cut.Find("#card-1").GetAttribute("style") ?? "", new System.Text.RegularExpressions.Regex("filter"), "nothing to crossfade with");
 
         cut.Render(ps => ps.Add(p => p.Item, 2));
@@ -91,7 +91,7 @@ public class LayoutCrossfadeTests
     public async Task IfTheLeavingCardHasGoneBeforeTheCrossfadeCanStart_TheNewOneIsShownAnyway()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderSwitch(ctx, BmPresenceMode.Sync);
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.Sync);
         var measuring = new TaskCompletionSource();
         ctx.Interop.BoundingRectGate = measuring.Task;
 
@@ -109,7 +109,7 @@ public class LayoutCrossfadeTests
     public async Task WaitMode_TheOldCardHasGoneFirst_SoTheNewOneOnlyFlips()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderSwitch(ctx, BmPresenceMode.Wait);
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.Wait);
 
         cut.Render(ps => ps.Add(p => p.Item, 2));
         await ctx.FinishWaapiAsync("card-1"); // its exit
@@ -124,7 +124,7 @@ public class LayoutCrossfadeTests
     public void LayoutCrossfadeFalse_OnlyFlips()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderSwitch(ctx, BmPresenceMode.Sync, crossfade: false);
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.Sync, crossfade: false);
 
         cut.Render(ps => ps.Add(p => p.Item, 2));
 
@@ -136,7 +136,7 @@ public class LayoutCrossfadeTests
     public async Task TheLeavingCard_NoLongerRecordsWhereItIs()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderSwitch(ctx, BmPresenceMode.Sync);
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.Sync);
         cut.Render(ps => ps.Add(p => p.Item, 2));
         cut.Render(ps => ps.Add(p => p.Item, 2)); // re-rendered while card 1 is on its way out
         await ctx.FinishWaapiAsync("card-1");

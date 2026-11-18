@@ -342,9 +342,3 @@ public sealed class BsqliteBuilder
         Services.TryAddScoped(sp => (BsqliteSessionFactory)sp.GetRequiredService<IBsqliteSessionFactory>());
     }
 }
-
-/// <summary>
-/// One per <see cref="BsqliteBuilder.AddDatabase"/> call, so the registered names can be listed
-/// without opening - or even constructing - any of the databases.
-/// </summary>
-internal sealed record BsqliteDatabaseRegistration(string DatabaseName);

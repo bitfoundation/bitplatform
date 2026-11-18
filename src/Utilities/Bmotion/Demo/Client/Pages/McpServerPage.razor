@@ -147,7 +147,7 @@
                     @* @key on the replay counter: changing it re-mounts the element, which is what makes
                        the keyframe animation play again rather than sit at its resting value. *@
                     <Bmotion Animate="Bm.To(x: _replayFrames)"
-                             Transition="Bm.Tween(_replayOf.SettleSeconds, BmEase.Linear)"
+                             Transition="Bm.Tween(_replayOf.SettleSeconds, BmotionEase.Linear)"
                              @key="_replay">
                         <div class="box box-sm" />
                     </Bmotion>

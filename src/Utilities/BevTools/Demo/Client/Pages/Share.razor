@@ -128,8 +128,8 @@ bevtools compare checkout.baseline.json checkout.session.json</pre>
     <p class="bb-card-desc">
         Most rules look back 10 to 60 seconds when they run, so for a recording you will check, set
         <code>o.Diagnostics.EvaluateWhileClosed = true</code>: the rules then run as the app is used, not only while the
-        panel is open. In a test, <code>BevSessionCheck.Check(json)</code> and
-        <code>BevProfileComparison.Compare(baseline, current)</code> do the same without the tool.
+        panel is open. In a test, <code>BevToolsSessionCheck.Check(json)</code> and
+        <code>BevToolsProfileComparison.Compare(baseline, current)</code> do the same without the tool.
     </p>
 </div>
 

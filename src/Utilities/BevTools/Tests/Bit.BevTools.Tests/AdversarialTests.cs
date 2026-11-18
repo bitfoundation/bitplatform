@@ -35,12 +35,12 @@ public class AdversarialTests : BunitContext
         var record = Session.Components.All.Single(r => r.Type == typeof(HostileComponent));
         var children = Session.Inspector.Children(record.Component, "");
 
-        Assert.Contains(c => c.Name == "Exploding" && c.Kind == BevNodeKind.Error, children);
+        Assert.Contains(c => c.Name == "Exploding" && c.Kind == BevToolsNodeKind.Error, children);
         Assert.Contains(c => c.Name == "Enormous" && c.Count == 1_000_000, children);
 
         // The cycle is one level down: SelfReferencing.Next points back at SelfReferencing.
         var cycle = Session.Inspector.Children(record.Component, "SelfReferencing");
-        Assert.Contains(c => c.Name == "Next" && c.Kind == BevNodeKind.Circular, cycle);
+        Assert.Contains(c => c.Name == "Next" && c.Kind == BevToolsNodeKind.Circular, cycle);
         Assert.AreEqual(1, record.RenderCount);
     }
 
@@ -52,7 +52,7 @@ public class AdversarialTests : BunitContext
         var node = inspector.Describe("endless", Endless());
         var children = inspector.Children(new { Endless = Endless() }, "Endless");
 
-        Assert.AreEqual(BevNodeKind.Collection, node.Kind);
+        Assert.AreEqual(BevToolsNodeKind.Collection, node.Kind);
         Assert.IsTrue(children.Count <= Session.Options.MaxCollectionItems + 1);
 
         static IEnumerable<int> Endless()
@@ -139,18 +139,18 @@ public class AdversarialTests : BunitContext
         }
     }
 
-    private sealed class ExplodingStateProvider : IBevStateProvider
+    private sealed class ExplodingStateProvider : IBevToolsStateProvider
     {
         public string Name => "Exploding";
 
         public object? GetSnapshot() => throw new InvalidOperationException("no snapshot for you");
 
-        public void Raise() => Changed?.Invoke(new BevStateChangeInfo("boom"));
+        public void Raise() => Changed?.Invoke(new BevToolsStateChangeInfo("boom"));
 
-        public event Action<BevStateChangeInfo>? Changed;
+        public event Action<BevToolsStateChangeInfo>? Changed;
     }
 
-    private sealed class ExplodingRule : IBevDiagnosticRule
+    private sealed class ExplodingRule : IBevToolsDiagnosticRule
     {
         public string Id => "acme.exploding";
 
@@ -158,7 +158,7 @@ public class AdversarialTests : BunitContext
 
         public string Description => "Throws every time.";
 
-        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        public IEnumerable<BevToolsDiagnostic> Evaluate(IBevToolsDiagnosticContext context)
             => throw new InvalidOperationException("rule failure");
     }
 }

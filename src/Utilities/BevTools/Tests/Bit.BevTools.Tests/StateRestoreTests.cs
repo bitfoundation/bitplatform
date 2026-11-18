@@ -38,7 +38,7 @@ public class StateRestoreTests : BunitContext
     }
 
     /// <summary>A counter that keeps its versions and can go back to one.</summary>
-    private sealed class VersionedCounter : IBevStateProvider, IBevStateRestorer
+    private sealed class VersionedCounter : IBevToolsStateProvider, IBevToolsStateRestorer
     {
         private readonly Dictionary<string, int> _versions = [];
         private int _version;
@@ -47,7 +47,7 @@ public class StateRestoreTests : BunitContext
 
         public string Name => "Counter";
 
-        public event Action<BevStateChangeInfo>? Changed;
+        public event Action<BevToolsStateChangeInfo>? Changed;
 
         public object? GetSnapshot() => this;
 
@@ -68,20 +68,20 @@ public class StateRestoreTests : BunitContext
         {
             var token = (++_version).ToString(System.Globalization.CultureInfo.InvariantCulture);
             _versions[token] = Value;
-            Changed?.Invoke(new BevStateChangeInfo(action, detail) { RestoreToken = token });
+            Changed?.Invoke(new BevToolsStateChangeInfo(action, detail) { RestoreToken = token });
         }
     }
 
     /// <summary>A provider that gives tokens but cannot restore: BevTools must not keep or offer them.</summary>
-    private sealed class TokensOnly : IBevStateProvider
+    private sealed class TokensOnly : IBevToolsStateProvider
     {
         public string Name => "TokensOnly";
 
-        public event Action<BevStateChangeInfo>? Changed;
+        public event Action<BevToolsStateChangeInfo>? Changed;
 
         public object? GetSnapshot() => new { Value = 1 };
 
-        public void Raise() => Changed?.Invoke(new BevStateChangeInfo("Set") { RestoreToken = "1" });
+        public void Raise() => Changed?.Invoke(new BevToolsStateChangeInfo("Set") { RestoreToken = "1" });
     }
 
     [TestMethod]
@@ -121,7 +121,7 @@ public class StateRestoreTests : BunitContext
         counter.Add(1);
         var counted = Session.State.Entries.Single(e => e.Name == "Counter").Changes.Single();
         // A token the provider no longer knows: its exception is an answer, and an error of BevTools' own.
-        typeof(BevStateChangeRecord).GetProperty(nameof(BevStateChangeRecord.RestoreToken))!.SetValue(counted, "404");
+        typeof(BevToolsStateChangeRecord).GetProperty(nameof(BevToolsStateChangeRecord.RestoreToken))!.SetValue(counted, "404");
         StringAssert.StartsWith(await Session.State.RestoreAsync(counted.Id), "Counter could not restore it: InvalidOperationException: No version 404");
         Assert.Contains(e => e.Source == "bevtools", Session.Errors.Snapshot());
     }
@@ -139,7 +139,7 @@ public class StateRestoreTests : BunitContext
             Assert.IsFalse(session.AllowsStateRestore);
             StringAssert.StartsWith(await session.State.RestoreAsync(session.State.Entries.Single().Changes.Single().Id), "Restoring state is not allowed");
             Assert.AreEqual(1, counter.Value);
-            Assert.AreEqual(BevCapabilityStatus.NotAvailable, session.Capabilities.Single(c => c.Name.StartsWith("Restoring an earlier state", StringComparison.Ordinal)).Status);
+            Assert.AreEqual(BevToolsCapabilityStatus.NotAvailable, session.Capabilities.Single(c => c.Name.StartsWith("Restoring an earlier state", StringComparison.Ordinal)).Status);
         }
     }
 
@@ -156,7 +156,7 @@ public class StateRestoreTests : BunitContext
         Assert.AreEqual("Restored Counter to after Add.", answer.GetProperty("done").GetString());
         Assert.AreEqual(2, counter.Value);
 
-        using var json = JsonDocument.Parse(BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Indented = false, Sections = new HashSet<string> { "state" } }));
+        using var json = JsonDocument.Parse(BevToolsSessionExporter.ToJson(Session, new BevToolsSessionExportOptions { Indented = false, Sections = new HashSet<string> { "state" } }));
         var text = json.RootElement.GetProperty("state").GetRawText();
         StringAssert.Contains(text, "\"restorable\":true");
         Assert.DoesNotContain("restoreToken", text, StringComparison.Ordinal, "the token means something only to the live app");

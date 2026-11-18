@@ -38,7 +38,7 @@ public class BmotionInteropTests
         module.SetupVoid("observeViewport", _ => true).SetVoidResult();
         using var target = DotNetObjectReference.Create(new Target());
 
-        await interop.ObserveViewportWithOptionsAsync("box", target, new BmViewport
+        await interop.ObserveViewportWithOptionsAsync("box", target, new BmotionViewport
         {
             Once = true,
             Margin = "0px 0px -20% 0px",
@@ -64,8 +64,8 @@ public class BmotionInteropTests
         module.SetupVoid("observeViewport", _ => true).SetVoidResult();
         using var target = DotNetObjectReference.Create(new Target());
 
-        await interop.ObserveViewportWithOptionsAsync("a", target, new BmViewport { Amount = "0.4" });
-        await interop.ObserveViewportWithOptionsAsync("b", target, new BmViewport { Amount = "7" });
+        await interop.ObserveViewportWithOptionsAsync("a", target, new BmotionViewport { Amount = "0.4" });
+        await interop.ObserveViewportWithOptionsAsync("b", target, new BmotionViewport { Amount = "7" });
 
         var calls = module.Invocations["observeViewport"];
         Assert.AreEqual(0.4, OptionsOf(calls[0], 2)["threshold"]);

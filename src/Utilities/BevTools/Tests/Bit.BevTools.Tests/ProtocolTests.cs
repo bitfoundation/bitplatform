@@ -57,7 +57,7 @@ public class ProtocolTests : BunitContext
         Assert.AreEqual(BevToolsProtocol.Version, hello.GetProperty("protocol").GetInt32());
         Assert.AreEqual(Session.Id, hello.GetProperty("sessionId").GetInt64());
         Assert.AreEqual("Full", hello.GetProperty("valueAccess").GetString());
-        Assert.AreEqual(BevSessionExporter.Format, hello.GetProperty("exportFormat").GetString());
+        Assert.AreEqual(BevToolsSessionExporter.Format, hello.GetProperty("exportFormat").GetString());
     }
 
     [TestMethod]
@@ -69,7 +69,7 @@ public class ProtocolTests : BunitContext
         var version = first.GetProperty("version").GetInt64();
         var again = Ask("snapshot", new { since = version });
 
-        Assert.AreEqual(BevSessionExporter.Format, first.GetProperty("session").GetProperty("format").GetString());
+        Assert.AreEqual(BevToolsSessionExporter.Format, first.GetProperty("session").GetProperty("format").GetString());
         Assert.IsTrue(first.GetProperty("session").GetProperty("components").GetProperty("items").GetArrayLength() >= 2);
         Assert.IsTrue(again.GetProperty("unchanged").GetBoolean());
         Assert.IsFalse(first.GetProperty("session").TryGetProperty("profile", out _), "polls leave the render profile out");
@@ -126,11 +126,11 @@ public class ProtocolTests : BunitContext
         var expanded = Ask("expand", new { instanceId = record.InstanceId, section = "parameters", name = nameof(SecretHolder.Settings), path = "" });
 
         Assert.AreEqual("SecretHolder", inspected.GetProperty("displayName").GetString());
-        Assert.AreEqual(BevRedactor.RedactedValue, parameters.Single(p => p.GetProperty("name").GetString() == nameof(SecretHolder.ApiKey)).GetProperty("display").GetString());
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, parameters.Single(p => p.GetProperty("name").GetString() == nameof(SecretHolder.ApiKey)).GetProperty("display").GetString());
         Assert.IsTrue(settings.GetProperty("expandable").GetBoolean());
         var children = expanded.GetProperty("children").EnumerateArray().ToDictionary(c => c.GetProperty("name").GetString()!, c => c.GetProperty("display").GetString());
         Assert.AreEqual("\"smtp.example.com\"", children["Host"]);
-        Assert.AreEqual(BevRedactor.RedactedValue, children["Password"]);
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, children["Password"]);
         Assert.IsTrue(record.CaptureState, "inspecting from outside captures its state like selecting it in the panel");
         Assert.AreEqual("No such member.", Ask("expand", new { instanceId = record.InstanceId, section = "parameters", name = "Nope", path = "" }).GetProperty("error").GetString());
     }
@@ -161,7 +161,7 @@ public class ProtocolTests : BunitContext
 
         var trace = Ask("export", new { format = "trace" });
         StringAssert.EndsWith(trace.GetProperty("fileName").GetString(), ".json");
-        Assert.AreEqual(BevTraceExporter.Format, JsonDocument.Parse(trace.GetProperty("content").GetString()!).RootElement.GetProperty("otherData").GetProperty("format").GetString());
+        Assert.AreEqual(BevToolsTraceExporter.Format, JsonDocument.Parse(trace.GetProperty("content").GetString()!).RootElement.GetProperty("otherData").GetProperty("format").GetString());
         StringAssert.StartsWith(Ask("export", new { format = "markdown" }).GetProperty("content").GetString(), "# BevTools report");
         Assert.AreEqual("Unknown method 'nope'.", Ask("nope").GetProperty("error").GetString());
     }
@@ -169,16 +169,16 @@ public class ProtocolTests : BunitContext
     [TestMethod]
     public void Traffic_reports_become_timeline_events_and_a_large_batch_finding()
     {
-        var bridge = new BevJsBridge(Session, () => { });
-        var socket = new BevSocketStats
+        var bridge = new BevToolsJsBridge(Session, () => { });
+        var socket = new BevToolsSocketStats
         {
             Id = 1,
             Url = "wss://app.example/_blazor?id=«redacted»",
             Kind = "blazor-circuit",
             OpenedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             ObservedFrom = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-            RenderBatches = new BevRenderBatchTraffic { Count = 3, Bytes = 400_000, MaxBytes = 300_000, ApplyMs = 90, MaxApplyMs = 60 },
-            Largest = [new BevLargeMessage { Direction = "←", Kind = "JS.RenderBatch", Bytes = 300_000, At = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }],
+            RenderBatches = new BevToolsRenderBatchTraffic { Count = 3, Bytes = 400_000, MaxBytes = 300_000, ApplyMs = 90, MaxApplyMs = 60 },
+            Largest = [new BevToolsLargeMessage { Direction = "←", Kind = "JS.RenderBatch", Bytes = 300_000, At = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }],
         };
 
         bridge.ReportTraffic([socket]);
@@ -195,9 +195,9 @@ public class ProtocolTests : BunitContext
     [TestMethod]
     public void A_traffic_snapshot_sent_in_parts_is_read_once_whole()
     {
-        var bridge = new BevJsBridge(Session, () => { });
+        var bridge = new BevToolsJsBridge(Session, () => { });
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        BevSocketStats Socket(int id, bool closed = false) => new()
+        BevToolsSocketStats Socket(int id, bool closed = false) => new()
         {
             Id = id,
             Url = "wss://app.example/hub" + id,
@@ -234,7 +234,7 @@ public class ProtocolTests : BunitContext
     [TestMethod]
     public void Reconnect_states_are_counted_and_dated_by_their_age()
     {
-        var bridge = new BevJsBridge(Session, () => { });
+        var bridge = new BevToolsJsBridge(Session, () => { });
         var before = DateTimeOffset.UtcNow;
 
         bridge.OnReconnectState("show", 0, 0, 3000);
@@ -252,10 +252,10 @@ public class ProtocolTests : BunitContext
     [TestMethod]
     public void Resource_failures_CSP_violations_and_enhanced_navigation_are_recorded_by_kind()
     {
-        var bridge = new BevJsBridge(Session, () => { });
+        var bridge = new BevToolsJsBridge(Session, () => { });
 
-        bridge.OnJsError(new BevJsErrorPayload { Type = "ResourceLoadError", Message = "Failed to load <script> /_framework/app.wasm", Source = "/_framework/app.wasm" });
-        bridge.OnJsError(new BevJsErrorPayload { Type = "CspViolation", Message = "Content Security Policy blocked inline (script-src)" });
+        bridge.OnJsError(new BevToolsJsErrorPayload { Type = "ResourceLoadError", Message = "Failed to load <script> /_framework/app.wasm", Source = "/_framework/app.wasm" });
+        bridge.OnJsError(new BevToolsJsErrorPayload { Type = "CspViolation", Message = "Content Security Policy blocked inline (script-src)" });
         bridge.OnBrowserEvent("enhancedload", "/products?token=abc123");
 
         Assert.AreEqual(1, Session.Browser.ResourceLoadErrors);
@@ -271,13 +271,13 @@ public class ProtocolTests : BunitContext
     [TestMethod]
     public void A_JavaScript_error_longer_than_the_page_hub_ever_sends_is_refused()
     {
-        var bridge = new BevJsBridge(Session, () => { });
+        var bridge = new BevToolsJsBridge(Session, () => { });
 
-        bridge.OnJsError(new BevJsErrorPayload { Message = new string('e', 4001) });
-        bridge.OnJsError(new BevJsErrorPayload { Message = "TypeError: x is undefined", Stack = new string('s', 4001) });
-        bridge.OnJsError(new BevJsErrorPayload { Message = "TypeError: x is undefined", Source = new string('u', 4001) });
-        bridge.OnJsError(new BevJsErrorPayload { Message = "TypeError: x is undefined", Type = new string('t', 201) });
-        bridge.OnJsError(new BevJsErrorPayload { Message = "TypeError: x is undefined", Stack = "at app.js:1:1" });
+        bridge.OnJsError(new BevToolsJsErrorPayload { Message = new string('e', 4001) });
+        bridge.OnJsError(new BevToolsJsErrorPayload { Message = "TypeError: x is undefined", Stack = new string('s', 4001) });
+        bridge.OnJsError(new BevToolsJsErrorPayload { Message = "TypeError: x is undefined", Source = new string('u', 4001) });
+        bridge.OnJsError(new BevToolsJsErrorPayload { Message = "TypeError: x is undefined", Type = new string('t', 201) });
+        bridge.OnJsError(new BevToolsJsErrorPayload { Message = "TypeError: x is undefined", Stack = "at app.js:1:1" });
 
         Assert.AreEqual(1, Session.Browser.JsErrorCount);
         Assert.ContainsSingle(Session.Errors.Snapshot());
@@ -287,9 +287,9 @@ public class ProtocolTests : BunitContext
     public void The_name_of_a_JavaScript_error_is_redacted_like_its_message()
     {
         const string jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.c2lnbmF0dXJl";
-        var bridge = new BevJsBridge(Session, () => { });
+        var bridge = new BevToolsJsBridge(Session, () => { });
 
-        bridge.OnJsError(new BevJsErrorPayload { Message = "failed", Type = "Error " + jwt });
+        bridge.OnJsError(new BevToolsJsErrorPayload { Message = "failed", Type = "Error " + jwt });
 
         Assert.IsFalse(Session.Errors.Snapshot().Single().ExceptionType.Contains(jwt, StringComparison.Ordinal));
     }

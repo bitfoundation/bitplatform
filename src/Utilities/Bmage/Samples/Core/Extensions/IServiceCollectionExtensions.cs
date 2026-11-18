@@ -5,7 +5,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class IServiceCollectionExtensions
 {
     /// <param name="configure">What a host adds to the shared options, such as the threads it can give an image.</param>
-    public static IServiceCollection AddCoreServices(this IServiceCollection services, Action<BitBmageOptions>? configure = null)
+    public static IServiceCollection AddCoreServices(this IServiceCollection services, Action<BmageOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -15,7 +15,7 @@ public static class IServiceCollectionExtensions
         services.AddBitBmageServices(options =>
         {
             options.MaxSourceBytes = 32 * 1024 * 1024;
-            options.Limits = ImageLimits.Default with { MaxPixels = 40_000_000 };
+            options.Limits = BmageImageLimits.Default with { MaxPixels = 40_000_000 };
             configure?.Invoke(options);
         });
 

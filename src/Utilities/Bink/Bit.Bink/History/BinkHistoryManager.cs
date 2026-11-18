@@ -4,9 +4,6 @@ using System.Runtime.InteropServices;
 
 namespace Bit.Bink;
 
-/// <summary>One undoable step.</summary>
-public sealed record BinkHistoryEntry(BinkDrawingOperation Forward, BinkDrawingOperation Inverse, string Label, DateTimeOffset Timestamp);
-
 /// <summary>
 /// Undo/redo for an <see cref="BinkDocument"/>. Records the inverse of every local change as it happens, so no
 /// document snapshots are ever taken: memory usage is proportional to what changed, and elements referenced by

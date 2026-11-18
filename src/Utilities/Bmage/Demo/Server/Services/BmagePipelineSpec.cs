@@ -7,21 +7,21 @@ namespace Bit.Bmage.Demo.Server.Services;
 
 /// <summary>
 /// Reads a pipeline written the way an agent writes it - the fluent C# chain, e.g.
-/// <c>ImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)</c> - and builds the
-/// real <see cref="ImagePipeline"/> from it.
+/// <c>BmageImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)</c> - and builds the
+/// real <see cref="BmageImagePipeline"/> from it.
 /// <para>
 /// The builder methods are found by reflection rather than listed here, so every method
-/// <see cref="ImagePipeline"/> has is accepted with exactly the parameters it has, defaults and
+/// <see cref="BmageImagePipeline"/> has is accepted with exactly the parameters it has, defaults and
 /// named arguments included: a pipeline copied out of an agent's code works verbatim, and one the
 /// library would reject is rejected with the library's own message rather than a second opinion of
-/// it. What a text spec cannot express - a custom <c>IImageOperation</c>, a <c>ColorMatrix</c> - is
+/// it. What a text spec cannot express - a custom <c>IBmageImageOperation</c>, a <c>BmageColorMatrix</c> - is
 /// refused by name.
 /// </para>
 /// </summary>
 public static class BmagePipelineSpec
 {
     /// <summary>A parsed pipeline, or the reason it could not be read.</summary>
-    public sealed record Result(ImagePipeline? Pipeline, string Canonical, string[] Warnings, string? Error);
+    public sealed record Result(BmageImagePipeline? Pipeline, string Canonical, string[] Warnings, string? Error);
 
     /// <summary>The longest spec read; a pipeline is a dozen calls, not a file.</summary>
     public const int MaxLength = 4_000;
@@ -45,8 +45,8 @@ public static class BmagePipelineSpec
     };
 
     private static readonly Lazy<ILookup<string, MethodInfo>> _builders = new(() =>
-        typeof(ImagePipeline).GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Where(method => method.ReturnType == typeof(ImagePipeline) && method.IsGenericMethod is false)
+        typeof(BmageImagePipeline).GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .Where(method => method.ReturnType == typeof(BmageImagePipeline) && method.IsGenericMethod is false)
             .ToLookup(method => method.Name, StringComparer.OrdinalIgnoreCase));
 
     /// <summary>Every builder method a spec can call, for the error that lists them.</summary>
@@ -63,7 +63,7 @@ public static class BmagePipelineSpec
         {
             return new Result(null, string.Empty, [],
                 "The pipeline is empty. Write it the way you would in C#, e.g. " +
-                "'ImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)' - the 'ImagePipeline.Create()' " +
+                "'BmageImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)' - the 'BmageImagePipeline.Create()' " +
                 "prefix is optional.");
         }
 
@@ -81,8 +81,8 @@ public static class BmagePipelineSpec
                 return new Result(null, string.Empty, [], $"The pipeline chains {calls.Count} calls; at most {MaxOperations} are run.");
             }
             var warnings = new List<string>();
-            var pipeline = ImagePipeline.Create();
-            var canonical = new StringBuilder("ImagePipeline.Create()");
+            var pipeline = BmageImagePipeline.Create();
+            var canonical = new StringBuilder("BmageImagePipeline.Create()");
 
             foreach (var call in calls)
             {
@@ -105,7 +105,7 @@ public static class BmagePipelineSpec
                 if (candidates.Length == 0)
                 {
                     return new Result(null, string.Empty, [.. warnings],
-                        $"ImagePipeline has no method called '{call.Name}'. Its builder methods are: {string.Join(", ", BuilderNames)}.");
+                        $"BmageImagePipeline has no method called '{call.Name}'. Its builder methods are: {string.Join(", ", BuilderNames)}.");
                 }
 
                 var failures = new List<string>();
@@ -127,18 +127,18 @@ public static class BmagePipelineSpec
                 {
                     return new Result(null, string.Empty, [.. warnings],
                         $"'{call.Name}({string.Join(", ", call.Arguments.Select(argument => argument.Source))})' does not match " +
-                        $"ImagePipeline.{candidates[0].Name}: {string.Join(" / ", failures)}");
+                        $"BmageImagePipeline.{candidates[0].Name}: {string.Join(" / ", failures)}");
                 }
 
                 try
                 {
-                    pipeline = (ImagePipeline)match.Method.Invoke(pipeline, match.Arguments)!;
+                    pipeline = (BmageImagePipeline)match.Method.Invoke(pipeline, match.Arguments)!;
                 }
                 catch (TargetInvocationException ex) when (ex.InnerException is not null)
                 {
                     // The library's own validation: AspectRatio(0, 9), Posterize(1). Its message is the answer.
                     return new Result(null, string.Empty, [.. warnings],
-                        $"ImagePipeline.{match.Method.Name} rejected its arguments: {ex.InnerException.Message}");
+                        $"BmageImagePipeline.{match.Method.Name} rejected its arguments: {ex.InnerException.Message}");
                 }
 
                 canonical.Append("\n    .").Append(match.Method.Name).Append('(')
@@ -158,7 +158,7 @@ public static class BmagePipelineSpec
         {
             return new Result(null, string.Empty, [],
                 $"{ex.Message} Write the pipeline as a C# method chain, e.g. " +
-                "'ImagePipeline.Create().AutoOrient().Cover(512, 512, Anchor.Top).Sharpen(0.3f)'.");
+                "'BmageImagePipeline.Create().AutoOrient().Cover(512, 512, BmageAnchor.Top).Sharpen(0.3f)'.");
         }
     }
 
@@ -268,7 +268,7 @@ public static class BmagePipelineSpec
 
     /// <summary>
     /// A parameter's declared default as a value Invoke accepts. A defaulted struct
-    /// (<c>Rgba32 background = default</c>) reports null, and an enum default its underlying number.
+    /// (<c>BmageRgba32 background = default</c>) reports null, and an enum default its underlying number.
     /// </summary>
     private static object? DefaultOf(ParameterInfo parameter)
     {
@@ -351,29 +351,29 @@ public static class BmagePipelineSpec
                 reason = $"{target.Name} has no member '{name}' (it has {string.Join(", ", Enum.GetNames(target))})";
                 return false;
 
-            case ValueKind.Identifier when target == typeof(AspectRatio):
-                if (TryStatic(value.Identifier!, typeof(AspectRatio), out var ratio))
+            case ValueKind.Identifier when target == typeof(BmageAspectRatio):
+                if (TryStatic(value.Identifier!, typeof(BmageAspectRatio), out var ratio))
                 {
                     result = ratio;
                     return true;
                 }
 
-                reason = $"'{value.Identifier}' is not one of AspectRatio's presets ({string.Join(", ", StaticNames(typeof(AspectRatio)))}) - " +
-                         "write new AspectRatio(4, 5) or \"4:5\" for any other";
+                reason = $"'{value.Identifier}' is not one of BmageAspectRatio's presets ({string.Join(", ", StaticNames(typeof(BmageAspectRatio)))}) - " +
+                         "write new BmageAspectRatio(4, 5) or \"4:5\" for any other";
                 return false;
 
-            case ValueKind.Identifier when target == typeof(Rgba32):
-                if (TryStatic(value.Identifier!, typeof(Rgba32), out var color))
+            case ValueKind.Identifier when target == typeof(BmageRgba32):
+                if (TryStatic(value.Identifier!, typeof(BmageRgba32), out var color))
                 {
                     result = color;
                     return true;
                 }
 
-                reason = $"'{value.Identifier}' is not a colour - write Rgba32.White, new Rgba32(24, 26, 31) or \"#18181f\"";
+                reason = $"'{value.Identifier}' is not a colour - write BmageRgba32.White, new BmageRgba32(24, 26, 31) or \"#18181f\"";
                 return false;
 
-            case ValueKind.String when target == typeof(Rgba32):
-                if (Rgba32.TryParseHex(value.Text, out var hex))
+            case ValueKind.String when target == typeof(BmageRgba32):
+                if (BmageRgba32.TryParseHex(value.Text, out var hex))
                 {
                     result = hex;
                     return true;
@@ -382,7 +382,7 @@ public static class BmagePipelineSpec
                 reason = $"\"{value.Text}\" is not a hex colour";
                 return false;
 
-            case ValueKind.String when target == typeof(AspectRatio):
+            case ValueKind.String when target == typeof(BmageAspectRatio):
                 var parts = value.Text!.Split([':', 'x', '/'], StringSplitOptions.TrimEntries);
 
                 if (parts.Length == 2
@@ -390,20 +390,20 @@ public static class BmagePipelineSpec
                     && double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var height)
                     && width > 0 && height > 0)
                 {
-                    result = new AspectRatio(width, height);
+                    result = new BmageAspectRatio(width, height);
                     return true;
                 }
 
                 reason = $"\"{value.Text}\" is not a ratio such as \"16:9\"";
                 return false;
 
-            case ValueKind.Object when target == typeof(SmartCropOptions) && value.Object is null:
+            case ValueKind.Object when target == typeof(BmageSmartCropOptions) && value.Object is null:
                 return true;
         }
 
         reason = value.Kind == ValueKind.Unsupported
             ? $"'{value.Source}' is not a value this tool can build - it understands new Rectangle(x, y, width, height), " +
-              "new Rgba32(r, g, b[, a]) and new AspectRatio(width, height)"
+              "new BmageRgba32(r, g, b[, a]) and new BmageAspectRatio(width, height)"
             : $"{value.Source} is not one";
 
         return false;
@@ -509,7 +509,7 @@ public static class BmagePipelineSpec
 
         /// <summary>
         /// Everything up to the first builder call: "var pipeline = ", "await ",
-        /// "ImagePipeline.Create()" and "ImagePipeline.Empty" are all accepted and dropped.
+        /// "BmageImagePipeline.Create()" and "BmageImagePipeline.Empty" are all accepted and dropped.
         /// </summary>
         private void SkipPrefix()
         {
@@ -527,11 +527,11 @@ public static class BmagePipelineSpec
 
             if (Match("await")) SkipWhitespace();
 
-            if (Match("ImagePipeline"))
+            if (Match("BmageImagePipeline"))
             {
                 SkipWhitespace();
 
-                if (Peek != '.') throw Error("Expected '.Create()' after 'ImagePipeline'");
+                if (Peek != '.') throw Error("Expected '.Create()' after 'BmageImagePipeline'");
 
                 _position++;
                 SkipWhitespace();
@@ -542,11 +542,11 @@ public static class BmagePipelineSpec
                 {
                     SkipWhitespace();
 
-                    if (ReadArguments().Count > 0) throw Error("ImagePipeline.Create() takes no arguments");
+                    if (ReadArguments().Count > 0) throw Error("BmageImagePipeline.Create() takes no arguments");
                 }
                 else if (start is not "Empty")
                 {
-                    throw Error($"Expected 'ImagePipeline.Create()', found 'ImagePipeline.{start}'");
+                    throw Error($"Expected 'BmageImagePipeline.Create()', found 'BmageImagePipeline.{start}'");
                 }
             }
         }
@@ -648,7 +648,7 @@ public static class BmagePipelineSpec
 
             SkipWhitespace();
 
-            // Rgba32.ParseHex("#ff0000") / Rgba32.FromScaled(...) are the two calls a colour is
+            // BmageRgba32.ParseHex("#ff0000") / BmageRgba32.FromScaled(...) are the two calls a colour is
             // commonly written as.
             if (AtEnd is false && Peek == '(')
             {
@@ -656,7 +656,7 @@ public static class BmagePipelineSpec
                 var source = text[start.._position];
 
                 if (identifier.EndsWith("ParseHex", StringComparison.Ordinal) && arguments is [{ Value.Kind: ValueKind.String } hex]
-                    && Rgba32.TryParseHex(hex.Value.Text, out var parsed))
+                    && BmageRgba32.TryParseHex(hex.Value.Text, out var parsed))
                 {
                     return new Value(ValueKind.Object, source) { Object = parsed };
                 }
@@ -692,7 +692,7 @@ public static class BmagePipelineSpec
             return new Value(ValueKind.Number, text[start.._position]) { Number = number };
         }
 
-        /// <summary>new Rectangle(...), new Rgba32(...), new AspectRatio(...) - and new SmartCropOptions() for the default.</summary>
+        /// <summary>new Rectangle(...), new BmageRgba32(...), new BmageAspectRatio(...) - and new BmageSmartCropOptions() for the default.</summary>
         private Value ReadConstruction(int start)
         {
             SkipWhitespace();
@@ -710,11 +710,11 @@ public static class BmagePipelineSpec
             {
                 "Rectangle" when numbers.Length == 4 && numbers.All(double.IsFinite)
                     => new Rectangle((int)numbers[0], (int)numbers[1], (int)numbers[2], (int)numbers[3]),
-                "Rgba32" when numbers.Length is 3 or 4 && numbers.All(n => n is >= 0 and <= 255)
-                    => new Rgba32((byte)numbers[0], (byte)numbers[1], (byte)numbers[2], numbers.Length == 4 ? (byte)numbers[3] : (byte)255),
-                "AspectRatio" when numbers.Length == 2 && numbers.All(n => n > 0)
-                    => new AspectRatio(numbers[0], numbers[1]),
-                "SmartCropOptions" when arguments.Count == 0 => null,
+                nameof(BmageRgba32) when numbers.Length is 3 or 4 && numbers.All(n => n is >= 0 and <= 255)
+                    => new BmageRgba32((byte)numbers[0], (byte)numbers[1], (byte)numbers[2], numbers.Length == 4 ? (byte)numbers[3] : (byte)255),
+                nameof(BmageAspectRatio) when numbers.Length == 2 && numbers.All(n => n > 0)
+                    => new BmageAspectRatio(numbers[0], numbers[1]),
+                nameof(BmageSmartCropOptions) when arguments.Count == 0 => null,
                 // Not thrown here: the call it is an argument of may be one the spec cannot run at all,
                 // and that is the more useful thing to be told.
                 _ => Unsupported

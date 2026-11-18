@@ -484,7 +484,7 @@
 /* ---------- Drag ---------- */
 
 /* Every drag stage is its own positioning context: the captions below are absolutely placed, and
-   BmDragConstraints.Parent() measures this element. */
+   BmotionDragConstraints.Parent() measures this element. */
 /* Wide enough for the ±120px journeys and the 248px snap grid. */
 .drag-stage {
     position: relative;
@@ -606,7 +606,7 @@
     background: repeating-linear-gradient(to right, var(--demo-accent-line) 0 1px, transparent 1px 3.75rem);
 }
 
-/* The zone BmDragConstraints.Within(".drag-zone") keeps the box inside: a sibling of the box, not its parent, and
+/* The zone BmotionDragConstraints.Within(".drag-zone") keeps the box inside: a sibling of the box, not its parent, and
    drawn only - the pointer goes straight through it to the box. */
 .drag-zone {
     position: absolute;
@@ -1397,7 +1397,7 @@
     border: 1px solid var(--demo-accent-line);
 }
 
-/* A rail that scrolls sideways, for BmScrollTimeline.Container(".h-rail", BmScrollAxis.X) and a tracker on the
+/* A rail that scrolls sideways, for BmotionScrollTimeline.Container(".h-rail", BmotionScrollAxis.X) and a tracker on the
    same container: eight cards, wider together than any stage. */
 .h-rail {
     display: flex;
@@ -1602,7 +1602,7 @@
     animation-duration: .4s;
 }
 
-/* Typed transitions (BmViewTransitionOptions.Types). A view transition's motion is authored in CSS by design -
+/* Typed transitions (BmotionViewTransitionOptions.Types). A view transition's motion is authored in CSS by design -
    this is the sample's own stylesheet, not the frame around it: a "forward" switch slides the panel out to the
    left and the new one in from the right, a "backward" one the other way. Untyped, it stays the cross-fade. */
 :root:active-view-transition-type(forward)::view-transition-old(vt-panel) { animation-name: vt-out-left; }

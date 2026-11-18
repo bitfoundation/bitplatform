@@ -442,10 +442,10 @@ public static partial class BmotionCodeReview
                         Severity = "Suggestion",
                         Rule = "frame-loop-only-transition",
                         Line = i + 1,
-                        Message = "An endless BmRepeat.Reverse plays its first cycle forwards and every one after it " +
+                        Message = "An endless BmotionRepeat.Reverse plays its first cycle forwards and every one after it " +
                                   "backwards, which no single repeating recording reproduces - so it runs on the C# " +
                                   "frame loop: fine on Blazor WebAssembly, an instant jump on Blazor Server.",
-                        Fix = fix + "use BmRepeat.Mirror, which the browser plays as one recorded cycle there and back " +
+                        Fix = fix + "use BmotionRepeat.Mirror, which the browser plays as one recorded cycle there and back " +
                               "on a loop, or give the Reverse a count."
                     });
 
@@ -473,13 +473,13 @@ public static partial class BmotionCodeReview
                     Message = $"This repeat unrolls into {seconds:0.#} seconds of animation, and only a recording " +
                               "reproduces it - but the engine records at most 10 seconds, so it runs on the C# frame " +
                               "loop: fine on Blazor WebAssembly, an instant jump on Blazor Server.",
-                    Fix = fix + "shorten it, or repeat it forever instead: an endless BmRepeat.Loop or BmRepeat.Mirror " +
+                    Fix = fix + "shorten it, or repeat it forever instead: an endless BmotionRepeat.Loop or BmotionRepeat.Mirror " +
                           "records one cycle and the browser repeats it."
                 });
             }
         }
 
-        // The count a BmRepeat factory call was given: its first positional argument or 'count:', and
+        // The count a BmotionRepeat factory call was given: its first positional argument or 'count:', and
         // -1 - forever - when it was given neither, as the factories default to.
         static int RepeatCount(string arguments)
         {
@@ -491,7 +491,7 @@ public static partial class BmotionCodeReview
                 : -1;
         }
 
-        // The delay a BmRepeat factory call was given: 'delay:' or its second positional argument.
+        // The delay a BmotionRepeat factory call was given: 'delay:' or its second positional argument.
         static double RepeatDelay(string arguments)
         {
             var parts = arguments.Split(',');
@@ -558,20 +558,20 @@ public static partial class BmotionCodeReview
 
             var window = string.Join('\n', lines[i..Math.Min(lines.Length, i + 4)]);
 
-            if (window.Contains("BmRepeat.Forever", StringComparison.Ordinal) is false &&
-                window.Contains("BmRepeat.Loop()", StringComparison.Ordinal) is false) continue;
+            if (window.Contains("BmotionRepeat.Forever", StringComparison.Ordinal) is false &&
+                window.Contains("BmotionRepeat.Loop()", StringComparison.Ordinal) is false) continue;
 
-            if (window.Contains("BmEase.Linear", StringComparison.Ordinal)) continue;
+            if (window.Contains("BmotionEase.Linear", StringComparison.Ordinal)) continue;
 
             findings.Add(new BmotionReviewFindingDto
             {
                 Severity = "Warning",
                 Rule = "eased-infinite-rotation",
                 Line = i + 1,
-                Message = "A continuously repeating rotation without BmEase.Linear speeds up and slows down once " +
+                Message = "A continuously repeating rotation without BmotionEase.Linear speeds up and slows down once " +
                           "per revolution, so the spinner visibly stutters at the seam. Bm.Tween defaults to " +
-                          "BmEase.Out, which is the wrong curve for looping motion.",
-                Fix = "Pass BmEase.Linear: Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever)."
+                          "BmotionEase.Out, which is the wrong curve for looping motion.",
+                Fix = "Pass BmotionEase.Linear: Bm.Tween(1, BmotionEase.Linear, repeat: BmotionRepeat.Forever)."
             });
 
             break;
@@ -636,7 +636,7 @@ public static partial class BmotionCodeReview
                           "(IgnoreUnlessConfigured), which consults the operating system preference only inside a " +
                           "<BmotionConfig>. Users who have asked their system for less motion will get the full " +
                           "animations everywhere else.",
-                Fix = $"{setter}(o => o.ReducedMotion = BmReducedMotionMode.User) - the web-platform " +
+                Fix = $"{setter}(o => o.ReducedMotion = BmotionReducedMotionMode.User) - the web-platform " +
                       "default. Reduced motion still animates opacity and colour, so the interface stays legible."
             });
 
@@ -696,13 +696,13 @@ public static partial class BmotionCodeReview
 
     // A transition built with an object initializer, whose body may hold one level of braces - the
     // block body of an OnUpdate lambda, typically.
-    [GeneratedRegex(@"\bnew\s+Bm(?:Tween|Spring|Inertia)\s*(?:\(\s*\))?\s*\{(?<body>(?:[^{}]|\{[^{}]*\})*)\}")]
+    [GeneratedRegex(@"\bnew\s+Bmotion(?:Tween|Spring|Inertia)\s*(?:\(\s*\))?\s*\{(?<body>(?:[^{}]|\{[^{}]*\})*)\}")]
     private static partial Regex TransitionInitializerRegex();
 
     [GeneratedRegex(@"\bOnUpdate\s*=(?![=>])")]
     private static partial Regex OnUpdateAssignmentRegex();
 
-    [GeneratedRegex(@"\bBmRepeat\.(?<type>Loop|Mirror|Reverse)\s*\((?<args>[^()]*)\)")]
+    [GeneratedRegex(@"\bBmotionRepeat\.(?<type>Loop|Mirror|Reverse)\s*\((?<args>[^()]*)\)")]
     private static partial Regex RepeatCallRegex();
 
     [GeneratedRegex(@"\b(?<name>count|delay)\s*:\s*(?<value>-?\d*\.?\d+)")]

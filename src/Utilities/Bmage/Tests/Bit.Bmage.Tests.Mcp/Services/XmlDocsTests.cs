@@ -18,17 +18,17 @@ public class XmlDocsTests
 
         Assert.IsGreaterThan(500, BmageXmlDocs.Count);
 
-        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.ImagePipeline"), "The engine's documentation is missing.");
-        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.ImageExporter"), "The browser integration's documentation is missing.");
+        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.BmageImagePipeline"), "The engine's documentation is missing.");
+        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.BmageImageExporter"), "The browser integration's documentation is missing.");
         Assert.IsNotNull(BmageXmlDocs.GetSummary("P:Bit.Bmage.BmageEditor.Image"), "The editor's documentation is missing.");
     }
 
     [TestMethod]
     public void Crefs_BecomeShortNames_AndProseIsUnwrapped()
     {
-        var summary = BmageXmlDocs.GetSummary("T:Bit.Bmage.ImagePipeline")!;
+        var summary = BmageXmlDocs.GetSummary("T:Bit.Bmage.BmageImagePipeline")!;
 
-        StringAssert.Contains(summary, "ImagePipeline.ExecuteAsync");
+        StringAssert.Contains(summary, "BmageImagePipeline.ExecuteAsync");
         Assert.IsFalse(summary.Contains("M:", StringComparison.Ordinal), summary);
         Assert.IsFalse(summary.Contains('\n'), "A single paragraph kept the source's line wrapping.");
     }
@@ -36,12 +36,12 @@ public class XmlDocsTests
     [TestMethod]
     public void CodeSamples_KeepTheirLines_AndLoseTheCommentsIndentation()
     {
-        var example = BmageXmlDocs.GetSummary("M:Bit.Bmage.BitBmageBlazor.AddBitBmageServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Bit.Bmage.BitBmageOptions})");
+        var example = BmageXmlDocs.GetSummary("M:Bit.Bmage.BitBmageBlazor.AddBitBmageServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Bit.Bmage.BmageOptions})");
 
         // The <example> is not part of the summary; the remarks are, and they are paragraphs.
         Assert.IsNotNull(example);
 
-        var remarks = BmageXmlDocs.GetRemarks("M:Bit.Bmage.BitBmageBlazor.AddBitBmageServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Bit.Bmage.BitBmageOptions})")!;
+        var remarks = BmageXmlDocs.GetRemarks("M:Bit.Bmage.BitBmageBlazor.AddBitBmageServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Bit.Bmage.BmageOptions})")!;
 
         StringAssert.Contains(remarks, "\n\n", "The remarks' paragraphs ran together.");
         StringAssert.Contains(remarks, "Interactive Server");
@@ -50,13 +50,13 @@ public class XmlDocsTests
     [TestMethod]
     public void AnInexactMethodId_StillFindsAnOverload()
     {
-        Assert.IsNotNull(BmageXmlDocs.GetSummary("M:Bit.Bmage.ImagePipeline.Crop"));
+        Assert.IsNotNull(BmageXmlDocs.GetSummary("M:Bit.Bmage.BmageImagePipeline.Crop"));
     }
 
     [TestMethod]
     public void AnUnknownId_IsNull_NotAnException()
     {
         Assert.IsNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.Teleporter"));
-        Assert.IsNull(BmageXmlDocs.GetRemarks("T:Bit.Bmage.ImagePipeline.Nothing"));
+        Assert.IsNull(BmageXmlDocs.GetRemarks("T:Bit.Bmage.BmageImagePipeline.Nothing"));
     }
 }

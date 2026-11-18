@@ -14,9 +14,9 @@ namespace Bit.BevTools;
 /// <item><term>snapshot</term><description><c>{ since?, timelineAfter?, sections? }</c>: the session as <c>bit-bevtools/1</c>, or <c>{ unchanged: true }</c> when nothing changed since <c>since</c>.</description></item>
 /// <item><term>inspect</term><description><c>{ instanceId }</c>: one component's parameters, cascading values, state, services, bindings, lifecycle and renders.</description></item>
 /// <item><term>expand</term><description><c>{ instanceId, section, name, path }</c>: the children of one inspected value.</description></item>
-/// <item><term>command</term><description><c>{ name, argument? }</c>: pause, resume, clear, baseline, evaluate, dismiss, collect (a full garbage collection, then the leak check), mark (a timeline marker named by the argument), restore (a state change, by its id, through the provider's <see cref="IBevStateRestorer"/>).</description></item>
+/// <item><term>command</term><description><c>{ name, argument? }</c>: pause, resume, clear, baseline, evaluate, dismiss, collect (a full garbage collection, then the leak check), mark (a timeline marker named by the argument), restore (a state change, by its id, through the provider's <see cref="IBevToolsStateRestorer"/>).</description></item>
 /// <item><term>export</term><description><c>{ format: json | markdown | trace, since? }</c>: a file, as the About panel offers it.</description></item>
-/// <item><term>locate</term><description><c>{ instanceId }</c>: where a component's output is in the page, as a path through Blazor's logical DOM (see <see cref="BevDomMap"/>).</description></item>
+/// <item><term>locate</term><description><c>{ instanceId }</c>: where a component's output is in the page, as a path through Blazor's logical DOM (see <see cref="BevToolsDomMap"/>).</description></item>
 /// <item><term>batch</term><description><c>{ batchId }</c>: what one render batch rendered, as the Profiler shows it - its cost tree (self and subtree time, same-type siblings grouped) and its renders on a time axis - built from the retained render samples.</description></item>
 /// <item><term>resolve</term><description><c>{ path, anchored, signature, ordinal, sameCount, includeHidden? }</c>: the component that rendered the node at the end of a path.</description></item>
 /// </list>
@@ -66,7 +66,7 @@ public static class BevToolsProtocol
         }
         catch (Exception ex)
         {
-            return Error(ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message));
+            return Error(ex.GetType().Name + ": " + BevToolsRedactor.RedactText(ex.Message));
         }
     }
 
@@ -83,7 +83,7 @@ public static class BevToolsProtocol
         w.WriteString("startedAt", session.StartedAt);
         w.WriteString("bevToolsVersion", typeof(BevToolsProtocol).Assembly.GetName().Version?.ToString());
         w.WriteString("runtime", System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
-        w.WriteString("exportFormat", BevSessionExporter.Format);
+        w.WriteString("exportFormat", BevToolsSessionExporter.Format);
     });
 
     private static string Snapshot(BevToolsSession session, JsonElement args)
@@ -109,7 +109,7 @@ public static class BevToolsProtocol
             sections = list.EnumerateArray().Where(e => e.ValueKind == JsonValueKind.String).Select(e => e.GetString()!).ToHashSet(StringComparer.Ordinal);
         }
 
-        var export = BevSessionExporter.ToJson(session, new BevSessionExportOptions
+        var export = BevToolsSessionExporter.ToJson(session, new BevToolsSessionExportOptions
         {
             Indented = false,
             TimelineAfterEventId = Long(args, "timelineAfter"),
@@ -135,20 +135,20 @@ public static class BevToolsProtocol
 
         session.InspectExternally(record);
         var component = record.Component;
-        var (parameters, cascading, injected) = BevComponentMembers.Of(record.Type);
+        var (parameters, cascading, injected) = BevToolsComponentMembers.Of(record.Type);
         var graph = session.Registry.ServiceGraph;
         var byComponentId = session.Components.All.Where(c => c.ComponentId is not null && !c.IsDisposed).GroupBy(c => c.ComponentId!.Value).ToDictionary(g => g.Key, g => g.Last());
-        var wiring = BevComponentWiringReader.Read(record, cid => byComponentId.GetValueOrDefault(cid));
+        var wiring = BevToolsComponentWiringReader.Read(record, cid => byComponentId.GetValueOrDefault(cid));
         return Write(w =>
         {
             w.WriteNumber("instanceId", record.InstanceId);
             w.WriteString("type", record.TypeName);
             w.WriteString("displayName", record.DisplayName);
             w.WriteString("assembly", record.Type.Assembly.GetName().Name);
-            w.WriteString("source", BevFmt.ComponentFile(record.Type));
+            w.WriteString("source", BevToolsFmt.ComponentFile(record.Type));
             var template = session.Options.Ui.EditorUrlTemplate;
-            WriteSources(w, "sources", BevSourceLocator.Of(record.Type, template));
-            if (BevSourceLocator.NeedsDownload(record.Type.Assembly))
+            WriteSources(w, "sources", BevToolsSourceLocator.Of(record.Type, template));
+            if (BevToolsSourceLocator.NeedsDownload(record.Type.Assembly))
             {
                 // Downloaded by the page (WebAssembly): asked for now, there on a later inspect.
                 session.WantSymbols(record.Type.Assembly);
@@ -186,11 +186,11 @@ public static class BevToolsProtocol
             WriteTime(w, "disposedAt", record.DisposedAt);
 
             w.WriteStartObject("causes");
-            foreach (var cause in Enum.GetValues<BevRenderCause>())
+            foreach (var cause in Enum.GetValues<BevToolsRenderCause>())
             {
                 if (record.RendersByCause(cause) is > 0 and var count)
                 {
-                    w.WriteNumber(RenderCauseNames.Of(cause), count);
+                    w.WriteNumber(BevToolsRenderCauseNames.Of(cause), count);
                 }
             }
 
@@ -201,7 +201,7 @@ public static class BevToolsProtocol
                 w.WriteStartObject();
                 w.WriteString("at", r.At);
                 w.WriteNumber("durationMs", Math.Round(r.DurationMs, 3));
-                w.WriteString("cause", RenderCauseNames.Of(r.Cause));
+                w.WriteString("cause", BevToolsRenderCauseNames.Of(r.Cause));
                 w.WriteString("detail", r.CauseDetail);
                 w.WriteNumber("batch", r.BatchId);
                 w.WriteNumber("eventId", r.EventId);
@@ -213,21 +213,21 @@ public static class BevToolsProtocol
             }
 
             w.WriteEndArray();
-            WriteNodes(w, "parameters", parameters.Select(p => session.Inspector.Describe(p.Name, BevComponentMembers.SafeGet(p, component), "", p)));
-            WriteNodes(w, "cascading", cascading.Select(p => session.Inspector.Describe(p.Name, BevComponentMembers.SafeGet(p, component), "", p)));
-            WriteNodes(w, "state", ComponentStateReader.Fields(record.Type).Select(f => session.Inspector.Describe(f.Name, BevComponentMembers.SafeGet(f.Field, component), "", f.Member)));
+            WriteNodes(w, "parameters", parameters.Select(p => session.Inspector.Describe(p.Name, BevToolsComponentMembers.SafeGet(p, component), "", p)));
+            WriteNodes(w, "cascading", cascading.Select(p => session.Inspector.Describe(p.Name, BevToolsComponentMembers.SafeGet(p, component), "", p)));
+            WriteNodes(w, "state", BevToolsComponentStateReader.Fields(record.Type).Select(f => session.Inspector.Describe(f.Name, BevToolsComponentMembers.SafeGet(f.Field, component), "", f.Member)));
 
             w.WriteStartArray("services");
             foreach (var p in injected)
             {
                 var service = graph?.Services.LastOrDefault(s => s.ServiceType == p.PropertyType && !s.IsKeyed);
-                var value = BevComponentMembers.SafeGet(p, component);
+                var value = BevToolsComponentMembers.SafeGet(p, component);
                 w.WriteStartObject();
                 w.WriteString("name", p.Name);
-                w.WriteString("service", TypeNames.Short(p.PropertyType));
-                w.WriteString("lifetime", service is null ? null : BevFmt.Lifetime(service.Lifetime));
+                w.WriteString("service", BevToolsTypeNames.Short(p.PropertyType));
+                w.WriteString("lifetime", service is null ? null : BevToolsFmt.Lifetime(service.Lifetime));
                 // The implementation's type, never its value: services hold configuration and other users' data.
-                w.WriteString("implementation", value is BevTrackingJSRuntime tracking ? TypeNames.Short(tracking.Inner.GetType()) + " (tracked by BevTools)" : value is null ? service?.ImplementationName : TypeNames.Short(value.GetType()));
+                w.WriteString("implementation", value is BevToolsTrackingJSRuntime tracking ? BevToolsTypeNames.Short(tracking.Inner.GetType()) + " (tracked by BevTools)" : value is null ? service?.ImplementationName : BevToolsTypeNames.Short(value.GetType()));
                 w.WriteEndObject();
             }
 
@@ -242,7 +242,7 @@ public static class BevToolsProtocol
                 w.WriteString("target", b.Target);
                 w.WriteString("event", b.Event);
                 w.WriteString("handler", b.Handler);
-                if (b.HandlerMethod is { } method && BevSourceLocator.Of(method, template) is { } handlerSource)
+                if (b.HandlerMethod is { } method && BevToolsSourceLocator.Of(method, template) is { } handlerSource)
                 {
                     WriteSources(w, "handlerSource", [handlerSource]);
                 }
@@ -271,7 +271,7 @@ public static class BevToolsProtocol
             {
                 w.WriteStartObject();
                 w.WriteNumber("id", e.Id);
-                w.WriteString("type", ErrorCenter.ShortTypeName(e.ExceptionType));
+                w.WriteString("type", BevToolsErrorCenter.ShortTypeName(e.ExceptionType));
                 w.WriteString("message", e.Message);
                 w.WriteNumber("count", e.Count);
                 w.WriteEndObject();
@@ -290,7 +290,7 @@ public static class BevToolsProtocol
 
         var section = String(args, "section") ?? "";
         var name = String(args, "name") ?? "";
-        var (value, member, found) = BevComponentMembers.Read(record, section, name);
+        var (value, member, found) = BevToolsComponentMembers.Read(record, section, name);
         if (!found)
         {
             return Error("No such member.");
@@ -376,8 +376,8 @@ public static class BevToolsProtocol
         }
 
         session.RenderTracker.CloseBatch();
-        var tree = BevBatchCostTree.Build(session.Components.All, batchId, MaxBatchRows);
-        var timeline = BevBatchTimeline.Build(session.Components.All, batchId, MaxBatchRows);
+        var tree = BevToolsBatchCostTree.Build(session.Components.All, batchId, MaxBatchRows);
+        var timeline = BevToolsBatchTimeline.Build(session.Components.All, batchId, MaxBatchRows);
         return Write(w =>
         {
             w.WriteNumber("batchId", batchId);
@@ -425,12 +425,12 @@ public static class BevToolsProtocol
         var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture);
         var (fileName, contentType, content) = format switch
         {
-            "markdown" => ($"bit-bevtools-report-{session.Id}-{stamp}.md", "text/markdown", BevSessionExporter.ToMarkdownReport(session)),
-            "trace" => ($"bit-bevtools-trace-{session.Id}-{stamp}.json", "application/json", BevTraceExporter.ToChromeTrace(session, new BevTraceExportOptions
+            "markdown" => ($"bit-bevtools-report-{session.Id}-{stamp}.md", "text/markdown", BevToolsSessionExporter.ToMarkdownReport(session)),
+            "trace" => ($"bit-bevtools-trace-{session.Id}-{stamp}.json", "application/json", BevToolsTraceExporter.ToChromeTrace(session, new BevToolsTraceExportOptions
             {
                 Since = String(args, "since") is { } since && DateTimeOffset.TryParse(since, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var at) ? at : null,
             })),
-            _ => ($"bit-bevtools-session-{session.Id}-{stamp}.json", "application/json", BevSessionExporter.ToJson(session)),
+            _ => ($"bit-bevtools-session-{session.Id}-{stamp}.json", "application/json", BevToolsSessionExporter.ToJson(session)),
         };
 
         return Write(w =>
@@ -448,11 +448,11 @@ public static class BevToolsProtocol
             return Error("No such component.");
         }
 
-        return BevDomMap.Locate(session, record, out var error) is { } location ? Write(w => WriteLocation(w, location)) : Error(error!);
+        return BevToolsDomMap.Locate(session, record, out var error) is { } location ? Write(w => WriteLocation(w, location)) : Error(error!);
     }
 
-    /// <summary>The same shape the in-app panel hands the page hub, which serializes <see cref="BevDomLocation"/> itself.</summary>
-    internal static void WriteLocation(Utf8JsonWriter w, BevDomLocation location)
+    /// <summary>The same shape the in-app panel hands the page hub, which serializes <see cref="BevToolsDomLocation"/> itself.</summary>
+    internal static void WriteLocation(Utf8JsonWriter w, BevToolsDomLocation location)
     {
         w.WriteNumber("instanceId", location.InstanceId);
         w.WriteString("name", location.Name);
@@ -486,7 +486,7 @@ public static class BevToolsProtocol
             return Error("The path is too long.");
         }
 
-        var path = new List<BevDomStep>();
+        var path = new List<BevToolsDomStep>();
         foreach (var step in list.EnumerateArray())
         {
             if (step.ValueKind != JsonValueKind.Object || Long(step, "index") is not { } index || index is < 0 or > int.MaxValue || String(step, "kind") is not { } kind)
@@ -494,14 +494,14 @@ public static class BevToolsProtocol
                 return Error("Malformed path.");
             }
 
-            path.Add(new BevDomStep((int)index, kind));
+            path.Add(new BevToolsDomStep((int)index, kind));
         }
 
         var anchored = Bool(args, "anchored") ?? false;
         var includeHidden = Bool(args, "includeHidden") ?? false;
         var ordinal = (int)Math.Clamp(Long(args, "ordinal") ?? 0, 0, 10_000);
         var sameCount = (int)Math.Clamp(Long(args, "sameCount") ?? 1, 0, 10_000);
-        if (BevDomMap.Resolve(session, path, anchored, String(args, "signature"), ordinal, sameCount, includeHidden, out var error) is not { } owner)
+        if (BevToolsDomMap.Resolve(session, path, anchored, String(args, "signature"), ordinal, sameCount, includeHidden, out var error) is not { } owner)
         {
             return Error(error!);
         }
@@ -518,7 +518,7 @@ public static class BevToolsProtocol
         });
     }
 
-    private static void WriteSources(Utf8JsonWriter w, string name, IReadOnlyList<BevSourceLocation> sources)
+    private static void WriteSources(Utf8JsonWriter w, string name, IReadOnlyList<BevToolsSourceLocation> sources)
     {
         w.WriteStartArray(name);
         foreach (var source in sources)
@@ -543,7 +543,7 @@ public static class BevToolsProtocol
     private static bool? Bool(JsonElement args, string name) =>
         args.ValueKind == JsonValueKind.Object && args.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False ? value.GetBoolean() : null;
 
-    private static void WriteNodes(Utf8JsonWriter w, string name, IEnumerable<BevInspectedNode> nodes)
+    private static void WriteNodes(Utf8JsonWriter w, string name, IEnumerable<BevToolsInspectedNode> nodes)
     {
         w.WriteStartArray(name);
         foreach (var node in nodes)

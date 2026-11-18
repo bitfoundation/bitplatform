@@ -10,9 +10,9 @@ public sealed class EditSessionDraftTests
     [TestMethod]
     public async Task ADraftRendersAtHalfTheProxyResolutionAndCountsAsStale()
     {
-        using var session = new ImageEditSession(FastPathEquivalenceTests.Noise(3000, 2000, 5), new ImageEditSessionOptions { MaxProxyDimension = 2000 });
+        using var session = new BmageImageEditSession(FastPathEquivalenceTests.Noise(3000, 2000, 5), new BmageImageEditSessionOptions { MaxProxyDimension = 2000 });
         Assert.AreEqual(session.ProxyScale / 2, session.DraftScale, 1e-3);
-        session.AddOperation(new BlurFilter(4f));
+        session.AddOperation(new BmageBlurFilter(4f));
 
         var draft = await session.RenderDraftAsync();
         Assert.AreEqual(new System.Drawing.Size(1000, 667), draft.Size);
@@ -28,19 +28,19 @@ public sealed class EditSessionDraftTests
     [TestMethod]
     public async Task DraftsKeepTheirOwnCachedSteps()
     {
-        using var session = new ImageEditSession(FastPathEquivalenceTests.Noise(1600, 1200, 9), new ImageEditSessionOptions { MaxProxyDimension = 1600 });
+        using var session = new BmageImageEditSession(FastPathEquivalenceTests.Noise(1600, 1200, 9), new BmageImageEditSessionOptions { MaxProxyDimension = 1600 });
         var counting = new CountingBarrier();
         session.AddOperation(counting);
-        session.AddOperation(new BrightnessAdjustment(0.1f));
+        session.AddOperation(new BmageBrightnessAdjustment(0.1f));
 
         for (var i = 1; i <= 3; i++)
         {
-            session.ApplyTransient(d => d.ReplaceOperation(1, new BrightnessAdjustment(0.05f * i)));
+            session.ApplyTransient(d => d.ReplaceOperation(1, new BmageBrightnessAdjustment(0.05f * i)));
             await session.RenderDraftAsync();
         }
         session.Commit("brightness");
         await session.RenderPreviewAsync();
-        await session.RenderDraftAsync(d => d.AddAnnotation(new RectangleAnnotation { Rectangle = new System.Drawing.RectangleF(1, 1, 9, 9) }));
+        await session.RenderDraftAsync(d => d.AddAnnotation(new BmageRectangleAnnotation { Rectangle = new System.Drawing.RectangleF(1, 1, 9, 9) }));
 
         // Once for the draft resolution and once for the full one.
         Assert.AreEqual(2, counting.Applied);
@@ -49,19 +49,19 @@ public sealed class EditSessionDraftTests
     [TestMethod]
     public async Task ASmallImageHasNoDraft()
     {
-        using var session = new ImageEditSession(FastPathEquivalenceTests.Noise(800, 600, 2));
+        using var session = new BmageImageEditSession(FastPathEquivalenceTests.Noise(800, 600, 2));
         Assert.AreEqual(session.ProxyScale, session.DraftScale);
-        session.AddOperation(new BrightnessAdjustment(0.2f));
+        session.AddOperation(new BmageBrightnessAdjustment(0.2f));
         var draft = await session.RenderDraftAsync();
         Assert.AreEqual(new System.Drawing.Size(800, 600), draft.Size);
         Assert.IsFalse(session.IsPreviewStale, "without a draft resolution, the draft is the full preview");
     }
 
-    private sealed class CountingBarrier : ImageOperation
+    private sealed class CountingBarrier : BmageImageOperation
     {
         public int Applied { get; private set; }
         public override string Name => "Counting";
-        public override ImageBuffer Apply(ImageBuffer source, OperationContext context)
+        public override BmageImageBuffer Apply(BmageImageBuffer source, BmageOperationContext context)
         {
             Applied++;
             return GetMutableCopy(source, context);

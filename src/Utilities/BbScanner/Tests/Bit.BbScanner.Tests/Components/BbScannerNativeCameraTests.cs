@@ -6,7 +6,7 @@ using Microsoft.JSInterop;
 namespace Bit.BbScanner.Tests.Components;
 
 /// <summary>
-/// The scanner in a Blazor Hybrid app that registered a platform camera (<see cref="IBbCameraSource"/>, which
+/// The scanner in a Blazor Hybrid app that registered a platform camera (<see cref="IBbScannerCameraSource"/>, which
 /// Bit.BbScanner.Maui provides): the frames come from the source, in the app's process, and never from the page, which
 /// only shows the source's preview through itself and says where to draw it.
 /// </summary>
@@ -24,7 +24,7 @@ public class BbScannerNativeCameraTests : BunitContext
     public BbScannerNativeCameraTests()
     {
         Services.AddSingleton<IJSRuntime>(_page);
-        Services.AddSingleton<IBbCameraSource>(_camera);
+        Services.AddSingleton<IBbScannerCameraSource>(_camera);
         SetRendererInfo(new RendererInfo("WebView", isInteractive: true));
     }
 
@@ -32,16 +32,16 @@ public class BbScannerNativeCameraTests : BunitContext
     public void The_platform_camera_is_opened_and_its_frames_decoded_without_the_page_camera()
     {
         _camera.Scene = SceneWithQrCode("NATIVE-FRAME");
-        var scans = new List<BbBarcodeResult>();
+        var scans = new List<BbScannerBarcodeResult>();
 
         var scanner = Render<BbScanner>(parameters => parameters
-            .Add(p => p.Formats, BbBarcodeFormat.QrCode)
+            .Add(p => p.Formats, BbScannerBarcodeFormat.QrCode)
             .Add(p => p.OnScan, r => scans.Add(r)));
 
         WaitUntil(() => Assert.HasCount(1, scans));
         Assert.AreEqual("NATIVE-FRAME", scans[0].Text);
         Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status);
-        Assert.AreEqual(BbCameraFacing.Rear, _camera.Requests.Single().Facing);
+        Assert.AreEqual(BbScannerCameraFacing.Rear, _camera.Requests.Single().Facing);
         Assert.AreEqual(0, _page.Count("start"), "The page's camera is never asked for.");
         Assert.IsEmpty(_page.Grabs, "No frame crosses the page.");
         Assert.AreEqual(1, _page.Count("attachNativePreview"), "The page shows the native preview through itself.");
@@ -56,7 +56,7 @@ public class BbScannerNativeCameraTests : BunitContext
         _page.Place(16, 120, 360, 270);
 
         var placement = _camera.Current!.Placements.Last();
-        Assert.AreEqual(new BbPreviewPlacement(16, 120, 360, 270, 12, true, "rgb(255, 255, 255)", 0, 0, 400, 800), placement);
+        Assert.AreEqual(new BbScannerPreviewPlacement(16, 120, 360, 270, 12, true, "rgb(255, 255, 255)", 0, 0, 400, 800), placement);
     }
 
     [TestMethod]
@@ -96,7 +96,7 @@ public class BbScannerNativeCameraTests : BunitContext
     [TestMethod]
     public void A_turned_device_resizes_the_scanner_to_the_frames_it_now_delivers()
     {
-        var cameras = new List<BbCameraInfo>();
+        var cameras = new List<BbScannerCameraInfo>();
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnCameraChanged, c => cameras.Add(c)));
         WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
 
@@ -129,7 +129,7 @@ public class BbScannerNativeCameraTests : BunitContext
         WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
         var session = _camera.Current!;
 
-        session.State = BbCameraSessionState.Ended;
+        session.State = BbScannerCameraSessionState.Ended;
 
         WaitUntil(() => Assert.IsNotNull(error));
         Assert.AreEqual(BbScannerErrorKind.CameraUnavailable, error!.Kind);
@@ -162,7 +162,7 @@ public class BbScannerNativeCameraTests : BunitContext
 
         // iPad multitasking, or system pressure: the app is still in front. Released, the camera would be opened again at
         // once, into the same interruption.
-        session.State = BbCameraSessionState.Interrupted;
+        session.State = BbScannerCameraSessionState.Interrupted;
         Thread.Sleep(500);
 
         Assert.IsFalse(session.Disposed);
@@ -179,7 +179,7 @@ public class BbScannerNativeCameraTests : BunitContext
         var first = _camera.Current!;
 
         _camera.IsInBackground = true;
-        first.State = BbCameraSessionState.Ended;
+        first.State = BbScannerCameraSessionState.Ended;
         WaitUntil(() => Assert.IsTrue(first.Disposed));
         Assert.AreEqual(BbScannerStatus.Starting, scanner.Instance.Status);
 
@@ -195,7 +195,7 @@ public class BbScannerNativeCameraTests : BunitContext
         _camera.PermissionFailure = new InvalidOperationException("You need to declare using the permission: `android.permission.CAMERA`.");
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.AutoStart, false));
 
-        Assert.AreEqual(BbCameraPermission.Unknown, await scanner.InvokeAsync(() => scanner.Instance.GetCameraPermissionAsync()));
+        Assert.AreEqual(BbScannerCameraPermission.Unknown, await scanner.InvokeAsync(() => scanner.Instance.GetCameraPermissionAsync()));
     }
 
     [TestMethod]
@@ -205,7 +205,7 @@ public class BbScannerNativeCameraTests : BunitContext
         _camera.Height = 960;
         _camera.Scene = SceneWithQrCode("FULL-SIZE", 1280, 960, scale: 2);
         var scanner = Render<BbScanner>(parameters => parameters
-            .Add(p => p.Formats, BbBarcodeFormat.QrCode)
+            .Add(p => p.Formats, BbScannerBarcodeFormat.QrCode)
             .Add(p => p.MaxProcessingSize, 160));
         WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
 
@@ -218,13 +218,13 @@ public class BbScannerNativeCameraTests : BunitContext
     [TestMethod]
     public async Task The_torch_and_the_permission_are_asked_of_the_platform()
     {
-        _camera.Permission = BbCameraPermission.Prompt;
+        _camera.Permission = BbScannerCameraPermission.Prompt;
         var scanner = Render<BbScanner>();
         WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
 
         Assert.IsTrue(await scanner.InvokeAsync(() => scanner.Instance.SetTorchAsync(true)));
         Assert.IsTrue(_camera.Current!.TorchOn);
-        Assert.AreEqual(BbCameraPermission.Prompt, await scanner.InvokeAsync(() => scanner.Instance.GetCameraPermissionAsync()));
+        Assert.AreEqual(BbScannerCameraPermission.Prompt, await scanner.InvokeAsync(() => scanner.Instance.GetCameraPermissionAsync()));
         CollectionAssert.AreEqual(new[] { "Back camera", "Front camera" }, scanner.Instance.Cameras.Select(c => c.Label).ToArray());
     }
 
@@ -234,7 +234,7 @@ public class BbScannerNativeCameraTests : BunitContext
         _camera.Scene = SceneWithQrCode("STILL-SCANNING");
         var scans = new List<string>();
         var scanner = Render<BbScanner>(parameters => parameters
-            .Add(p => p.Formats, BbBarcodeFormat.QrCode | BbBarcodeFormat.Code128)
+            .Add(p => p.Formats, BbScannerBarcodeFormat.QrCode | BbScannerBarcodeFormat.Code128)
             .Add(p => p.DuplicateSuppressionWindow, TimeSpan.Zero)
             .Add(p => p.OnScan, r => { lock (scans) { scans.Add(r.Text); } }));
         WaitUntil(() => Assert.IsNotEmpty(scans));
@@ -242,7 +242,7 @@ public class BbScannerNativeCameraTests : BunitContext
         // Each change replaces the decoder, which may be decoding a frame at that moment.
         for (var i = 0; i < 20; i++)
         {
-            var formats = i % 2 == 0 ? BbBarcodeFormat.QrCode : BbBarcodeFormat.QrCode | BbBarcodeFormat.Code128;
+            var formats = i % 2 == 0 ? BbScannerBarcodeFormat.QrCode : BbScannerBarcodeFormat.QrCode | BbScannerBarcodeFormat.Code128;
             scanner.Render(parameters => parameters.Add(p => p.Formats, formats));
             Thread.Sleep(15);
         }
@@ -291,8 +291,8 @@ public class BbScannerNativeCameraTests : BunitContext
         // keeps the region it started with rather than one torn between the old and the new.
         var scans = new List<string>();
         var scanner = Render<BbScanner>(parameters => parameters
-            .Add(p => p.Formats, BbBarcodeFormat.QrCode)
-            .Add(p => p.Region, BbScanRegion.CenteredSquare(0.7))
+            .Add(p => p.Formats, BbScannerBarcodeFormat.QrCode)
+            .Add(p => p.Region, BbScannerScanRegion.CenteredSquare(0.7))
             .Add(p => p.OnScan, r => { lock (scans) { scans.Add(r.Text); } }));
         WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
 
@@ -304,7 +304,7 @@ public class BbScannerNativeCameraTests : BunitContext
         Assert.IsTrue(_camera.Reading.Wait(Wait), "A frame is read.");
 
         // A corner the symbol, in the middle of the frame, is nowhere near.
-        scanner.Render(parameters => parameters.Add(p => p.Region, new BbScanRegion(0, 0, 0.2, 0.2)));
+        scanner.Render(parameters => parameters.Add(p => p.Region, new BbScannerScanRegion(0, 0, 0.2, 0.2)));
 
         _camera.ReadGate = null;
         gate.Set();
@@ -330,7 +330,7 @@ public class BbScannerNativeCameraTests : BunitContext
 
     private static byte[] SceneWithQrCode(string text, int width = FrameWidth, int height = FrameHeight, int scale = 4)
     {
-        using var frame = BbLuminanceBuffer.Rent(width, height);
+        using var frame = BbScannerLuminanceBuffer.Rent(width, height);
         frame.Pixels.Fill(255);
         using (var symbol = SyntheticImage.FromMatrix(QrEncoder.Encode(text), scale: scale))
         {

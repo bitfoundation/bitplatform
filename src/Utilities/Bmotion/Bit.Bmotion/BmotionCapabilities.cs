@@ -42,7 +42,7 @@ public sealed class BmotionCapabilities
 
     /// <summary>
     /// <c>true</c> while the page is being prerendered or statically rendered on the server: nothing
-    /// animates in this pass (see <see cref="BmPrerenderMode"/> for what elements render instead), and
+    /// animates in this pass (see <see cref="BmotionPrerenderMode"/> for what elements render instead), and
     /// the other flags describe the server rather than the runtime that takes over once interactive.
     /// </summary>
     public bool IsPrerendering => _interop.IsPrerendering;

@@ -4,13 +4,13 @@
 /// A platform camera without a platform: what Bit.BbScanner.Maui registers, as far as the scanner can tell - cameras to
 /// list, a permission to report, and sessions whose frames are whatever the test puts in front of them.
 /// </summary>
-internal sealed class FakeCameraSource : IBbCameraSource
+internal sealed class FakeCameraSource : IBbScannerCameraSource
 {
     public bool IsSupported { get; set; } = true;
 
     public bool IsInBackground { get; set; }
 
-    public BbCameraPermission Permission { get; set; } = BbCameraPermission.Granted;
+    public BbScannerCameraPermission Permission { get; set; } = BbScannerCameraPermission.Granted;
 
     /// <summary>When set, asking for the permission fails with it, as a platform does for an app that does not declare the camera.</summary>
     public Exception? PermissionFailure { get; set; }
@@ -35,20 +35,20 @@ internal sealed class FakeCameraSource : IBbCameraSource
     public int Height { get; set; } = 480;
 
     /// <summary>Every request the scanner made, in order.</summary>
-    public List<BbCameraRequest> Requests { get; } = [];
+    public List<BbScannerCameraRequest> Requests { get; } = [];
 
     /// <summary>Every session opened, in order.</summary>
     public List<FakeCameraSession> Sessions { get; } = [];
 
     public FakeCameraSession? Current => Sessions.LastOrDefault(s => !s.Disposed);
 
-    public Task<BbCameraPermission> GetPermissionAsync()
-        => PermissionFailure is { } failure ? Task.FromException<BbCameraPermission>(failure) : Task.FromResult(Permission);
+    public Task<BbScannerCameraPermission> GetPermissionAsync()
+        => PermissionFailure is { } failure ? Task.FromException<BbScannerCameraPermission>(failure) : Task.FromResult(Permission);
 
-    public Task<IReadOnlyList<BbCameraDevice>> GetCamerasAsync()
-        => Task.FromResult<IReadOnlyList<BbCameraDevice>>([new("back", "Back camera"), new("front", "Front camera")]);
+    public Task<IReadOnlyList<BbScannerCameraDevice>> GetCamerasAsync()
+        => Task.FromResult<IReadOnlyList<BbScannerCameraDevice>>([new("back", "Back camera"), new("front", "Front camera")]);
 
-    public async Task<IBbCameraSession> OpenAsync(BbCameraRequest request, CancellationToken cancellationToken = default)
+    public async Task<IBbScannerCameraSession> OpenAsync(BbScannerCameraRequest request, CancellationToken cancellationToken = default)
     {
         lock (Requests)
         {
@@ -65,7 +65,7 @@ internal sealed class FakeCameraSource : IBbCameraSource
             throw failure;
         }
 
-        var facing = request.DeviceId == "front" || (request.DeviceId is null && request.Facing == BbCameraFacing.Front) ? "user" : "environment";
+        var facing = request.DeviceId == "front" || (request.DeviceId is null && request.Facing == BbScannerCameraFacing.Front) ? "user" : "environment";
         var session = new FakeCameraSession(this, facing);
         lock (Sessions)
         {
@@ -76,20 +76,20 @@ internal sealed class FakeCameraSource : IBbCameraSource
     }
 }
 
-internal sealed class FakeCameraSession(FakeCameraSource source, string facing) : IBbCameraSession
+internal sealed class FakeCameraSession(FakeCameraSource source, string facing) : IBbScannerCameraSession
 {
     private long _frames;
 
-    public BbCameraInfo Camera { get; private set; } = Describe(source.Width, source.Height, facing);
+    public BbScannerCameraInfo Camera { get; private set; } = Describe(source.Width, source.Height, facing);
 
-    public BbCameraSessionState State { get; set; }
+    public BbScannerCameraSessionState State { get; set; }
 
     public bool Disposed { get; private set; }
 
     public bool TorchOn { get; private set; }
 
     /// <summary>Every placement the scanner gave the preview, in order.</summary>
-    public List<BbPreviewPlacement> Placements { get; } = [];
+    public List<BbScannerPreviewPlacement> Placements { get; } = [];
 
     // A camera delivering a frame every time it is looked at.
     public long FrameCount => source.Scene is null ? 0 : Interlocked.Read(ref _frames) + 1;
@@ -125,7 +125,7 @@ internal sealed class FakeCameraSession(FakeCameraSource source, string facing) 
 
     public Task<bool> SetZoomAsync(double zoom) => Task.FromResult(false);
 
-    public void PlacePreview(BbPreviewPlacement placement)
+    public void PlacePreview(BbScannerPreviewPlacement placement)
     {
         lock (Placements)
         {
@@ -142,7 +142,7 @@ internal sealed class FakeCameraSession(FakeCameraSource source, string facing) 
         return ValueTask.CompletedTask;
     }
 
-    private static BbCameraInfo Describe(int width, int height, string facing) => new()
+    private static BbScannerCameraInfo Describe(int width, int height, string facing) => new()
     {
         DeviceId = facing == "user" ? "front" : "back",
         Label = facing == "user" ? "Front camera" : "Back camera",

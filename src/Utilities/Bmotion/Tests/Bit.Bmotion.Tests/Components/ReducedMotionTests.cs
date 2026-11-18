@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 namespace Bit.Bmotion.Tests.Components;
 
 /// <summary>
-/// Tests for the reduced-motion policy (plan item 1.3): the global <see cref="BmReducedMotionMode"/>
+/// Tests for the reduced-motion policy (plan item 1.3): the global <see cref="BmotionReducedMotionMode"/>
 /// option, OS-preference probing, and the softer selective reduction (transforms snap, opacity/color
 /// still animate).
 /// </summary>
@@ -54,7 +54,7 @@ public class ReducedMotionTests
     public void UserMode_ProbesOsPreference_WithoutConfig()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.ReducedMotion = BmReducedMotionMode.User;
+        ctx.Options.ReducedMotion = BmotionReducedMotionMode.User;
 
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Animate, Bm.To(x: 100))
@@ -81,7 +81,7 @@ public class ReducedMotionTests
     public async Task AnimateAsync_ExplicitTransition_RespectsReducedMotion()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.ReducedMotion = BmReducedMotionMode.Always;
+        ctx.Options.ReducedMotion = BmotionReducedMotionMode.Always;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.ChildContent, Div));

@@ -19,7 +19,7 @@ public sealed class BmageFontFile
     private int _indexToLocFormat;
     private uint[] _loca = [];
     private int _glyfOffset, _glyfLength;
-    private readonly Dictionary<ushort, GlyphOutline?> _glyphCache = [];
+    private readonly Dictionary<ushort, BmageGlyphOutline?> _glyphCache = [];
     private (ushort Left, ushort Right, short Value)[] _kerningPairs = [];
 
     private BmageFontFile(byte[] data) => _data = data;
@@ -48,10 +48,10 @@ public sealed class BmageFontFile
     /// <summary>True when the font contains a kerning table that this parser understands.</summary>
     public bool HasKerning => _kerningPairs.Length > 0;
 
-    /// <summary>Parses a font from its bytes. Throws <see cref="ImageDecodeException"/> for unsupported or corrupt files.</summary>
+    /// <summary>Parses a font from its bytes. Throws <see cref="BmageImageDecodeException"/> for unsupported or corrupt files.</summary>
     public static BmageFontFile Load(ReadOnlyMemory<byte> data)
     {
-        if (data.Length < 12) throw new ImageDecodeException("Font data is too short.");
+        if (data.Length < 12) throw new BmageImageDecodeException("Font data is too short.");
         var font = new BmageFontFile(data.ToArray());
         font.Parse();
         return font;
@@ -75,20 +75,20 @@ public sealed class BmageFontFile
         var offset = 0;
         if (tag == 0x74746366) // 'ttcf': font collection, take the first font
         {
-            if (d.Length < 16) throw new ImageDecodeException("Truncated font collection.");
+            if (d.Length < 16) throw new BmageImageDecodeException("Truncated font collection.");
             offset = (int)BinaryPrimitives.ReadUInt32BigEndian(d[12..]);
-            if (offset < 0 || offset + 12 > d.Length) throw new ImageDecodeException("Invalid font collection offset.");
+            if (offset < 0 || offset + 12 > d.Length) throw new BmageImageDecodeException("Invalid font collection offset.");
             tag = BinaryPrimitives.ReadUInt32BigEndian(d[offset..]);
         }
         if (tag is not (0x00010000 or 0x74727565 or 0x4F54544F)) // 1.0, 'true', 'OTTO'
-            throw new ImageDecodeException("Unsupported font format. TrueType and OpenType (glyf) fonts are supported.");
+            throw new BmageImageDecodeException("Unsupported font format. TrueType and OpenType (glyf) fonts are supported.");
 
         int numTables = BinaryPrimitives.ReadUInt16BigEndian(d[(offset + 4)..]);
-        if (numTables is <= 0 or > 512) throw new ImageDecodeException("Invalid font table count.");
+        if (numTables is <= 0 or > 512) throw new BmageImageDecodeException("Invalid font table count.");
         for (var i = 0; i < numTables; i++)
         {
             var p = offset + 12 + i * 16;
-            if (p + 16 > d.Length) throw new ImageDecodeException("Truncated font table directory.");
+            if (p + 16 > d.Length) throw new BmageImageDecodeException("Truncated font table directory.");
             var name = Encoding.ASCII.GetString(d.Slice(p, 4));
             var tableOffset = (int)BinaryPrimitives.ReadUInt32BigEndian(d[(p + 8)..]);
             var tableLength = (int)BinaryPrimitives.ReadUInt32BigEndian(d[(p + 12)..]);
@@ -97,7 +97,7 @@ public sealed class BmageFontFile
         }
 
         if (tag == 0x4F54544F && !_tables.ContainsKey("glyf"))
-            throw new ImageDecodeException("This OpenType font uses CFF (PostScript) outlines, which are not supported. Supply a TrueType font or use a browser-backed text rasteriser.");
+            throw new BmageImageDecodeException("This OpenType font uses CFF (PostScript) outlines, which are not supported. Supply a TrueType font or use a browser-backed text rasteriser.");
 
         ParseHead();
         ParseMaxp();
@@ -107,7 +107,7 @@ public sealed class BmageFontFile
         ParseCmap();
         ParseName();
         ParseKern();
-        if (_glyfLength == 0) throw new ImageDecodeException("Font has no glyph outlines (missing glyf table).");
+        if (_glyfLength == 0) throw new BmageImageDecodeException("Font has no glyph outlines (missing glyf table).");
     }
 
     private ReadOnlySpan<byte> Table(string name)
@@ -119,15 +119,15 @@ public sealed class BmageFontFile
     /// <summary>The bytes of a table, or none when the font does not have it.</summary>
     internal ReadOnlySpan<byte> GetTable(string name) => Table(name);
 
-    private OpenTypeLayout? _layout;
+    private BmageOpenTypeLayout? _layout;
 
     /// <summary>The OpenType layout tables (GDEF, GSUB, GPOS), read the first time text is shaped with the font.</summary>
-    internal OpenTypeLayout Layout => LazyInitializer.EnsureInitialized(ref _layout, () => new OpenTypeLayout(this));
+    internal BmageOpenTypeLayout Layout => LazyInitializer.EnsureInitialized(ref _layout, () => new BmageOpenTypeLayout(this));
 
     private void ParseHead()
     {
         var head = Table("head");
-        if (head.Length < 54) throw new ImageDecodeException("Font is missing a valid head table.");
+        if (head.Length < 54) throw new BmageImageDecodeException("Font is missing a valid head table.");
         UnitsPerEm = BinaryPrimitives.ReadUInt16BigEndian(head[18..]);
         if (UnitsPerEm is <= 0) UnitsPerEm = 1000;
         _indexToLocFormat = BinaryPrimitives.ReadInt16BigEndian(head[50..]);
@@ -136,7 +136,7 @@ public sealed class BmageFontFile
     private void ParseMaxp()
     {
         var maxp = Table("maxp");
-        if (maxp.Length < 6) throw new ImageDecodeException("Font is missing a valid maxp table.");
+        if (maxp.Length < 6) throw new BmageImageDecodeException("Font is missing a valid maxp table.");
         GlyphCount = BinaryPrimitives.ReadUInt16BigEndian(maxp[4..]);
     }
 
@@ -401,7 +401,7 @@ public sealed class BmageFontFile
     }
 
     /// <summary>Returns the outline of a glyph in font units, or null when the glyph is blank.</summary>
-    public GlyphOutline? GetGlyphOutline(ushort glyphIndex)
+    public BmageGlyphOutline? GetGlyphOutline(ushort glyphIndex)
     {
         if (_glyphCache.TryGetValue(glyphIndex, out var cached)) return cached;
         var budget = MaxCompositeComponents;
@@ -416,7 +416,7 @@ public sealed class BmageFontFile
     /// </summary>
     private const int MaxCompositeComponents = 512;
 
-    private GlyphOutline? LoadGlyph(ushort glyphIndex, int depth, ref int budget)
+    private BmageGlyphOutline? LoadGlyph(ushort glyphIndex, int depth, ref int budget)
     {
         if (depth > 5 || glyphIndex >= _loca.Length - 1) return null;
         var start = _loca[glyphIndex];
@@ -429,7 +429,7 @@ public sealed class BmageFontFile
         return numberOfContours >= 0 ? ParseSimpleGlyph(g, numberOfContours) : ParseCompositeGlyph(g, depth, ref budget);
     }
 
-    private static GlyphOutline? ParseSimpleGlyph(ReadOnlySpan<byte> g, int numberOfContours)
+    private static BmageGlyphOutline? ParseSimpleGlyph(ReadOnlySpan<byte> g, int numberOfContours)
     {
         if (numberOfContours == 0) return null;
         var p = 10;
@@ -496,25 +496,25 @@ public sealed class BmageFontFile
             ys[i] = y;
         }
 
-        var contours = new List<GlyphContour>(numberOfContours);
+        var contours = new List<BmageGlyphContour>(numberOfContours);
         var startIndex = 0;
         foreach (var endIndex in endPoints)
         {
             if (endIndex < startIndex || endIndex >= pointCount) { startIndex = endIndex + 1; continue; }
             var n = endIndex - startIndex + 1;
-            var points = new GlyphPoint[n];
+            var points = new BmageGlyphPoint[n];
             for (var i = 0; i < n; i++)
-                points[i] = new GlyphPoint(xs[startIndex + i], ys[startIndex + i], (flags[startIndex + i] & 1) != 0);
-            contours.Add(new GlyphContour(points));
+                points[i] = new BmageGlyphPoint(xs[startIndex + i], ys[startIndex + i], (flags[startIndex + i] & 1) != 0);
+            contours.Add(new BmageGlyphContour(points));
             startIndex = endIndex + 1;
         }
-        return contours.Count == 0 ? null : new GlyphOutline(contours);
+        return contours.Count == 0 ? null : new BmageGlyphOutline(contours);
     }
 
-    private GlyphOutline? ParseCompositeGlyph(ReadOnlySpan<byte> g, int depth, ref int budget)
+    private BmageGlyphOutline? ParseCompositeGlyph(ReadOnlySpan<byte> g, int depth, ref int budget)
     {
         var p = 10;
-        var contours = new List<GlyphContour>();
+        var contours = new List<BmageGlyphContour>();
         while (p + 4 <= g.Length)
         {
             int flags = BinaryPrimitives.ReadUInt16BigEndian(g[p..]);
@@ -561,102 +561,20 @@ public sealed class BmageFontFile
                 var m = new Matrix3x2(a, b, c, d, dx, dy);
                 foreach (var contour in component.Contours)
                 {
-                    var points = new GlyphPoint[contour.Points.Count];
+                    var points = new BmageGlyphPoint[contour.Points.Count];
                     for (var i = 0; i < points.Length; i++)
                     {
                         var pt = contour.Points[i];
                         var v = Vector2.Transform(new Vector2(pt.X, pt.Y), m);
-                        points[i] = new GlyphPoint(v.X, v.Y, pt.OnCurve);
+                        points[i] = new BmageGlyphPoint(v.X, v.Y, pt.OnCurve);
                     }
-                    contours.Add(new GlyphContour(points));
+                    contours.Add(new BmageGlyphContour(points));
                 }
             }
             if ((flags & 0x20) == 0) break; // MORE_COMPONENTS
         }
-        return contours.Count == 0 ? null : new GlyphOutline(contours);
+        return contours.Count == 0 ? null : new BmageGlyphOutline(contours);
     }
 
     private static float F2Dot14(ReadOnlySpan<byte> d, int offset) => BinaryPrimitives.ReadInt16BigEndian(d[offset..]) / 16384f;
-}
-
-/// <summary>One point of a glyph contour. Off-curve points are quadratic Bézier control points.</summary>
-public readonly record struct GlyphPoint(float X, float Y, bool OnCurve);
-
-/// <summary>One closed contour of a glyph.</summary>
-public sealed class GlyphContour
-{
-    public GlyphContour(IReadOnlyList<GlyphPoint> points) => Points = points;
-    public IReadOnlyList<GlyphPoint> Points { get; }
-}
-
-/// <summary>A glyph's outline in font units, with the Y axis pointing up as in the font format.</summary>
-public sealed class GlyphOutline
-{
-    public GlyphOutline(IReadOnlyList<GlyphContour> contours) => Contours = contours;
-    public IReadOnlyList<GlyphContour> Contours { get; }
-
-    /// <summary>
-    /// Appends the glyph to a path builder, converting quadratic segments and flipping the Y axis so the result is in
-    /// screen coordinates.
-    /// </summary>
-    public void AppendTo(BmagePathBuilder builder, Vector2 origin, float scale)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        foreach (var contour in Contours)
-        {
-            var pts = contour.Points;
-            var n = pts.Count;
-            if (n == 0) continue;
-
-            Vector2 Map(GlyphPoint p) => new(origin.X + p.X * scale, origin.Y - p.Y * scale);
-
-            // Find a starting on-curve point; if there is none, synthesise one between two off-curve points.
-            var startIndex = -1;
-            for (var i = 0; i < n; i++) if (pts[i].OnCurve) { startIndex = i; break; }
-            Vector2 startPoint;
-            if (startIndex < 0)
-            {
-                startPoint = (Map(pts[0]) + Map(pts[n - 1])) / 2;
-                // The synthesised start sits between the last and first points, so the walk begins at the last one
-                // and its first step is to point 0.
-                startIndex = n - 1;
-                builder.MoveTo(startPoint);
-                EmitFrom(builder, pts, n, startIndex, Map, startPoint, allOffCurve: true);
-            }
-            else
-            {
-                startPoint = Map(pts[startIndex]);
-                builder.MoveTo(startPoint);
-                EmitFrom(builder, pts, n, startIndex, Map, startPoint, allOffCurve: false);
-            }
-            builder.Close();
-        }
-    }
-
-    private static void EmitFrom(BmagePathBuilder builder, IReadOnlyList<GlyphPoint> pts, int n, int startIndex, Func<GlyphPoint, Vector2> map, Vector2 startPoint, bool allOffCurve)
-    {
-        Vector2? pendingControl = null;
-        var count = allOffCurve ? n : n - 1;
-        for (var k = 1; k <= count; k++)
-        {
-            var p = pts[(startIndex + k) % n];
-            var v = map(p);
-            if (p.OnCurve)
-            {
-                if (pendingControl is { } c) { builder.QuadraticTo(c, v); pendingControl = null; }
-                else builder.LineTo(v);
-            }
-            else
-            {
-                if (pendingControl is { } c)
-                {
-                    // Two consecutive off-curve points imply an on-curve point halfway between them.
-                    var implied = (c + v) / 2;
-                    builder.QuadraticTo(c, implied);
-                }
-                pendingControl = v;
-            }
-        }
-        if (pendingControl is { } last) builder.QuadraticTo(last, startPoint);
-    }
 }

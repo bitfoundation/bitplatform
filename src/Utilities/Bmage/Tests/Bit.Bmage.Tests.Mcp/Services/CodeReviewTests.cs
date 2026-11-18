@@ -14,7 +14,7 @@ public class CodeReviewTests
     public void Prerender_AJsCallInOnInitializedAsync_IsAnError()
     {
         var review = Review("""
-            @inject ImageExporter Exporter
+            @inject BmageImageExporter Exporter
 
             @code {
                 protected override async Task OnInitializedAsync()
@@ -126,7 +126,7 @@ public class CodeReviewTests
             var loaded = await Loader.LoadAsync(file);
             await SetSourceAsync(loaded, file.Size);
 
-            var canvas = ImageCanvas.Create(100, 100);
+            var canvas = BmageImageCanvas.Create(100, 100);
             using (canvas) { }
             """);
 
@@ -136,9 +136,9 @@ public class CodeReviewTests
     [TestMethod]
     public void Disposal_AnUndisposedCanvas_IsReportedAsOne()
     {
-        var finding = Single(Review("var canvas = ImageCanvas.Create(1200, 630, background);\ncanvas.FillCircle(center, 10, red);"), "image-buffer-not-disposed");
+        var finding = Single(Review("var canvas = BmageImageCanvas.Create(1200, 630, background);\ncanvas.FillCircle(center, 10, red);"), "image-buffer-not-disposed");
 
-        StringAssert.Contains(finding.Message, "ImageCanvas");
+        StringAssert.Contains(finding.Message, "BmageImageCanvas");
     }
 
     // -- borrowed-buffer-disposed / editor-owns-loaded-buffer ----------------------------------
@@ -151,7 +151,7 @@ public class CodeReviewTests
 
         None(Review("using var copy = _editor.Session.Preview.Clone();"), "borrowed-buffer-disposed");
         // Rendered from the original, not the original: the result is the caller's to dispose.
-        None(Review("using var rendered = new DocumentRenderer().Render(project.Document, project.Original);"), "borrowed-buffer-disposed");
+        None(Review("using var rendered = new BmageDocumentRenderer().Render(project.Document, project.Original);"), "borrowed-buffer-disposed");
         Single(Review("using (session.Original) { }"), "borrowed-buffer-disposed");
     }
 
@@ -244,15 +244,15 @@ public class CodeReviewTests
     [TestMethod]
     public void Registration_InjectingImageProcessorInAComponent_IsAnError()
     {
-        var finding = Single(Review("@page \"/x\"\n@inject ImageProcessor Processor"), "processor-injected-in-browser");
+        var finding = Single(Review("@page \"/x\"\n@inject BmageImageProcessor Processor"), "processor-injected-in-browser");
 
         Assert.AreEqual(2, finding.Line);
-        StringAssert.Contains(finding.Fix, "ImageProcessorFactory");
+        StringAssert.Contains(finding.Fix, "BmageImageProcessorFactory");
 
-        None(Review("@inject ImageProcessorFactory Processors"), "processor-injected-in-browser");
+        None(Review("@inject BmageImageProcessorFactory Processors"), "processor-injected-in-browser");
 
         // On a server with the headless registration, the processor is exactly what is registered.
-        None(Review("builder.Services.AddBitBmageHeadlessServices();\n[Inject] public ImageProcessor Processor { get; set; } = default!;"), "processor-injected-in-browser");
+        None(Review("builder.Services.AddBitBmageHeadlessServices();\n[Inject] public BmageImageProcessor Processor { get; set; } = default!;"), "processor-injected-in-browser");
     }
 
     [TestMethod]
@@ -261,15 +261,15 @@ public class CodeReviewTests
         var review = Review("""
             builder.Services.AddBitBmageHeadlessServices();
             // ...
-            @inject ImageLoader Loader
+            @inject BmageImageLoader Loader
             """);
 
         var finding = Single(review, "browser-services-with-headless-registration");
 
         Assert.AreEqual(3, finding.Line);
-        StringAssert.Contains(finding.Message, "ImageLoader");
+        StringAssert.Contains(finding.Message, "BmageImageLoader");
 
-        None(Review("builder.Services.AddBitBmageHeadlessServices();\napp.MapPost(\"/x\", (ImageProcessor processor) => 1);"), "browser-services-with-headless-registration");
+        None(Review("builder.Services.AddBitBmageHeadlessServices();\napp.MapPost(\"/x\", (BmageImageProcessor processor) => 1);"), "browser-services-with-headless-registration");
     }
 
     [TestMethod]
@@ -393,29 +393,29 @@ public class CodeReviewTests
     public void Formats_AvifInTheBrowserWithNoCheck_IsAWarning()
     {
         var review = Review("""
-            @inject ImageExporter Exporter
-            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = BmageImageFormat.Avif });
+            @inject BmageImageExporter Exporter
+            var encoded = await Exporter.EncodeAsync(image, new BmageImageExportOptions { Format = BmageImageFormat.Avif });
             """);
 
         Assert.AreEqual(2, Single(review, "format-without-capability-check").Line);
 
         // WebP encodes everywhere: where the browser cannot, the managed encoder does.
-        None(Review("@inject ImageExporter Exporter\nvar encoded = await Exporter.EncodeAsync(image, ImageExportOptions.WebP);"), "format-without-capability-check");
-        None(Review("@inject ImageExporter Exporter\nawait Exporter.EncodeWithFallbackAsync(image, [BmageImageFormat.Avif, BmageImageFormat.WebP]);"), "format-without-capability-check");
-        None(Review("@inject ImageExporter Exporter\nif (caps.CanEncode(BmageImageFormat.Avif)) await Exporter.EncodeAsync(image, ImageExportOptions.Avif);"), "format-without-capability-check");
-        None(Review("@inject ImageExporter Exporter\ntry { await Exporter.EncodeAsync(image, ImageExportOptions.Avif); }\ncatch (ImageCapabilityException) { _fallback = true; }"), "format-without-capability-check");
+        None(Review("@inject BmageImageExporter Exporter\nvar encoded = await Exporter.EncodeAsync(image, BmageImageExportOptions.WebP);"), "format-without-capability-check");
+        None(Review("@inject BmageImageExporter Exporter\nawait Exporter.EncodeWithFallbackAsync(image, [BmageImageFormat.Avif, BmageImageFormat.WebP]);"), "format-without-capability-check");
+        None(Review("@inject BmageImageExporter Exporter\nif (caps.CanEncode(BmageImageFormat.Avif)) await Exporter.EncodeAsync(image, BmageImageExportOptions.Avif);"), "format-without-capability-check");
+        None(Review("@inject BmageImageExporter Exporter\ntry { await Exporter.EncodeAsync(image, BmageImageExportOptions.Avif); }\ncatch (BmageImageCapabilityException) { _fallback = true; }"), "format-without-capability-check");
 
-        // A sentence about "@inject ImageProcessor" is prose, not a directive.
-        None(Review("<p>Do not @inject ImageProcessor in a browser app.</p>"), "processor-injected-in-browser");
+        // A sentence about "@inject BmageImageProcessor" is prose, not a directive.
+        None(Review("<p>Do not @inject BmageImageProcessor in a browser app.</p>"), "processor-injected-in-browser");
     }
 
     [TestMethod]
     public void Formats_AvifOnAServer_IsAnError()
     {
         var review = Review("""
-            app.MapPost("/thumb", async (IFormFile file, ImageProcessor processor) =>
+            app.MapPost("/thumb", async (IFormFile file, BmageImageProcessor processor) =>
             {
-                var result = await processor.ProcessAsync(bytes, pipeline, new ImageExportOptions { Format = BmageImageFormat.Avif });
+                var result = await processor.ProcessAsync(bytes, pipeline, new BmageImageExportOptions { Format = BmageImageFormat.Avif });
             });
             """);
 
@@ -424,8 +424,8 @@ public class CodeReviewTests
         Assert.AreEqual("Error", finding.Severity);
         Assert.AreEqual(3, finding.Line);
 
-        None(Review("app.MapPost(\"/thumb\", async (IFormFile file, ImageProcessor processor) => await processor.ProcessAsync(bytes, pipeline, ImageExportOptions.Jpeg));"), "browser-format-on-server");
-        None(Review("app.MapPost(\"/thumb\", async (IFormFile file, ImageProcessor processor) => await processor.ProcessAsync(bytes, pipeline, ImageExportOptions.WebP));"), "browser-format-on-server");
+        None(Review("app.MapPost(\"/thumb\", async (IFormFile file, BmageImageProcessor processor) => await processor.ProcessAsync(bytes, pipeline, BmageImageExportOptions.Jpeg));"), "browser-format-on-server");
+        None(Review("app.MapPost(\"/thumb\", async (IFormFile file, BmageImageProcessor processor) => await processor.ProcessAsync(bytes, pipeline, BmageImageExportOptions.WebP));"), "browser-format-on-server");
     }
 
     // -- privacy ------------------------------------------------------------------------------
@@ -433,26 +433,26 @@ public class CodeReviewTests
     [TestMethod]
     public void Privacy_Preserve_IsAWarning_UnlessTheLocationIsDroppedFirst()
     {
-        Assert.AreEqual("Warning", Single(Review("var options = new ImageExportOptions { Metadata = MetadataPolicy.Preserve };"), "metadata-preserve-keeps-location").Severity);
+        Assert.AreEqual("Warning", Single(Review("var options = new BmageImageExportOptions { Metadata = BmageMetadataPolicy.Preserve };"), "metadata-preserve-keeps-location").Severity);
 
-        None(Review("var options = new ImageExportOptions { Metadata = MetadataPolicy.StripSensitive };"), "metadata-preserve-keeps-location");
-        None(Review("image.Metadata = image.Metadata.WithExif(exif.WithoutLocation());\nvar options = new ImageExportOptions { Metadata = MetadataPolicy.Preserve };"), "metadata-preserve-keeps-location");
+        None(Review("var options = new BmageImageExportOptions { Metadata = BmageMetadataPolicy.StripSensitive };"), "metadata-preserve-keeps-location");
+        None(Review("image.Metadata = image.Metadata.WithExif(exif.WithoutLocation());\nvar options = new BmageImageExportOptions { Metadata = BmageMetadataPolicy.Preserve };"), "metadata-preserve-keeps-location");
     }
 
     [TestMethod]
     public void Privacy_AutoOrientOffWithNoRotationStep_IsAWarning()
     {
-        Single(Review("var image = await Loader.LoadAsync(file, new DecodeOptions { AutoOrient = false });"), "autoorient-off-without-rotation");
+        Single(Review("var image = await Loader.LoadAsync(file, new BmageDecodeOptions { AutoOrient = false });"), "autoorient-off-without-rotation");
 
-        None(Review("using var image = await Loader.LoadAsync(file, new DecodeOptions { AutoOrient = false });\nusing var upright = await ImagePipeline.Create().AutoOrient().ExecuteAsync(image);"), "autoorient-off-without-rotation");
+        None(Review("using var image = await Loader.LoadAsync(file, new BmageDecodeOptions { AutoOrient = false });\nusing var upright = await BmageImagePipeline.Create().AutoOrient().ExecuteAsync(image);"), "autoorient-off-without-rotation");
     }
 
     [TestMethod]
     public void Privacy_BlurredRedaction_IsASuggestion()
     {
-        Assert.AreEqual("Suggestion", Single(Review("new RedactionAnnotation { Rectangle = r, Mode = RedactionMode.Pixelate }"), "redaction-not-solid").Severity);
+        Assert.AreEqual("Suggestion", Single(Review("new BmageRedactionAnnotation { Rectangle = r, Mode = BmageRedactionMode.Pixelate }"), "redaction-not-solid").Severity);
 
-        None(Review("new RedactionAnnotation { Rectangle = r, Mode = RedactionMode.Solid }"), "redaction-not-solid");
+        None(Review("new BmageRedactionAnnotation { Rectangle = r, Mode = BmageRedactionMode.Solid }"), "redaction-not-solid");
     }
 
     [TestMethod]
@@ -469,7 +469,7 @@ public class CodeReviewTests
     public void Pipeline_PerPixelWorkBeforeTheDownscale_IsASuggestion()
     {
         var review = Review("""
-            var pipeline = ImagePipeline.Create()
+            var pipeline = BmageImagePipeline.Create()
                 .AutoOrient()
                 .Brightness(0.1f)
                 .MaxSize(1920, 1920);
@@ -480,17 +480,17 @@ public class CodeReviewTests
         Assert.AreEqual(3, finding.Line);
         StringAssert.Contains(finding.Message, "Brightness");
 
-        None(Review("var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Brightness(0.1f).Sharpen(0.3f);"), "resize-late-in-pipeline");
-        None(Review("var pipeline = ImagePipeline.Create().SmartCrop(AspectRatio.Square).Resize(256, 256);"), "resize-late-in-pipeline");
+        None(Review("var pipeline = BmageImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Brightness(0.1f).Sharpen(0.3f);"), "resize-late-in-pipeline");
+        None(Review("var pipeline = BmageImagePipeline.Create().SmartCrop(BmageAspectRatio.Square).Resize(256, 256);"), "resize-late-in-pipeline");
     }
 
     [TestMethod]
     public void Budget_MaxFileSizeWithNoHandling_IsASuggestion()
     {
-        Single(Review("await Exporter.EncodeAsync(image, new ImageExportOptions { MaxFileSize = 100 * 1024 });"), "size-budget-unhandled");
+        Single(Review("await Exporter.EncodeAsync(image, new BmageImageExportOptions { MaxFileSize = 100 * 1024 });"), "size-budget-unhandled");
 
-        None(Review("try { await Exporter.EncodeAsync(image, new ImageExportOptions { MaxFileSize = 100 * 1024 }); }\ncatch (ImageEncodeException) { }"), "size-budget-unhandled");
-        None(Review("new ImageExportOptions { MaxFileSize = null }"), "size-budget-unhandled");
+        None(Review("try { await Exporter.EncodeAsync(image, new BmageImageExportOptions { MaxFileSize = 100 * 1024 }); }\ncatch (BmageImageEncodeException) { }"), "size-budget-unhandled");
+        None(Review("new BmageImageExportOptions { MaxFileSize = null }"), "size-budget-unhandled");
     }
 
     [TestMethod]
@@ -531,18 +531,18 @@ public class CodeReviewTests
     [TestMethod]
     public void Batch_HighConcurrencyInTheBrowser_IsASuggestion()
     {
-        Single(Review("@inject ImageProcessorFactory Processors\nnew BatchOptions { MaxConcurrency = 8 }"), "batch-concurrency-high");
+        Single(Review("@inject BmageImageProcessorFactory Processors\nnew BmageBatchOptions { MaxConcurrency = 8 }"), "batch-concurrency-high");
 
-        None(Review("@inject ImageProcessorFactory Processors\nnew BatchOptions { MaxConcurrency = 2 }"), "batch-concurrency-high");
-        None(Review("var processor = new ImageProcessor();\nnew BatchOptions { MaxConcurrency = 8 }"), "batch-concurrency-high");
+        None(Review("@inject BmageImageProcessorFactory Processors\nnew BmageBatchOptions { MaxConcurrency = 2 }"), "batch-concurrency-high");
+        None(Review("var processor = new BmageImageProcessor();\nnew BmageBatchOptions { MaxConcurrency = 8 }"), "batch-concurrency-high");
     }
 
     [TestMethod]
     public void Server_DecodingAnUploadWithoutIdentify_IsASuggestion()
     {
-        Single(Review("app.MapPost(\"/x\", async (IFormFile file, ImageProcessor processor) => await processor.ProcessAsync(bytes, pipeline));"), "identify-before-decode");
+        Single(Review("app.MapPost(\"/x\", async (IFormFile file, BmageImageProcessor processor) => await processor.ProcessAsync(bytes, pipeline));"), "identify-before-decode");
 
-        None(Review("app.MapPost(\"/x\", async (IFormFile file, ImageProcessor processor) =>\n{\n    if (processor.Identify(bytes) is null) return;\n    await processor.ProcessAsync(bytes, pipeline);\n});"), "identify-before-decode");
+        None(Review("app.MapPost(\"/x\", async (IFormFile file, BmageImageProcessor processor) =>\n{\n    if (processor.Identify(bytes) is null) return;\n    await processor.ProcessAsync(bytes, pipeline);\n});"), "identify-before-decode");
     }
 
     // -- the review as a whole ----------------------------------------------------------------
@@ -562,8 +562,8 @@ public class CodeReviewTests
     {
         var review = Review("""
             _src = encoded.ToDataUrl();
-            var options = new ImageExportOptions { Metadata = MetadataPolicy.Preserve };
-            @inject ImageProcessor Processor
+            var options = new BmageImageExportOptions { Metadata = BmageMetadataPolicy.Preserve };
+            @inject BmageImageProcessor Processor
             """);
 
         CollectionAssert.AreEqual(new[] { "Error", "Warning", "Suggestion" }, review.Findings.Select(finding => finding.Severity).ToArray());

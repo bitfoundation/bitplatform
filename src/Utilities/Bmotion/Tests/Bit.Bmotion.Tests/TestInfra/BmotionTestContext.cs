@@ -16,7 +16,7 @@ internal class BmotionTestContext : Bunit.BunitContext
     public FakeBmotionInterop Interop { get; } = new();
 
     /// <summary>Library options exposed to components; mutate before rendering to adjust policy.</summary>
-    public BitBmotionOptions Options { get; } = new();
+    public BmotionOptions Options { get; } = new();
 
     public BmotionTestContext()
     {

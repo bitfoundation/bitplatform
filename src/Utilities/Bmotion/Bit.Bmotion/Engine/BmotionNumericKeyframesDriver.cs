@@ -9,7 +9,7 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
     private readonly Func<double, double>[] _eases;
     private readonly int _repeat;
     private readonly bool _isInfinite;
-    private readonly BmRepeatType _repeatType;
+    private readonly BmotionRepeatType _repeatType;
     private readonly double _repeatDelayMs;
     private readonly Action<double> _apply;
 
@@ -71,7 +71,7 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
 
         // Per-segment easing: config.Eases maps entry i onto the segment frames[i] → frames[i+1]
         // (last entry repeating when shorter); otherwise every segment shares the single easing.
-        _eases = BmEaseFunctions.GetSegmentEases(config, n - 1);
+        _eases = BmotionEaseFunctions.GetSegmentEases(config, n - 1);
     }
 
     public bool Tick(double timestamp)
@@ -96,14 +96,14 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
                 // Reverse plays the frames backwards repeatedly (1→0, 1→0, …): reverse once on the
                 // first repeat, then keep that order so each subsequent cycle replays in reverse
                 // rather than toggling back to forward.
-                if (_repeatType == BmRepeatType.Mirror)
+                if (_repeatType == BmotionRepeatType.Mirror)
                 {
                     Array.Reverse(_curFrames);
                     MirrorTimes(_times);
                     // Keep each segment paired with its easing when the frame order flips.
                     Array.Reverse(_eases);
                 }
-                else if (_repeatType == BmRepeatType.Reverse && !_reversed)
+                else if (_repeatType == BmotionRepeatType.Reverse && !_reversed)
                 {
                     Array.Reverse(_curFrames);
                     MirrorTimes(_times);
@@ -128,12 +128,12 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
         //  • Reverse plays forward once then replays reversed for every later pass, so it ends on
         //    the last frame only when there are no repeats, otherwise on the first frame.
         // Infinite repeats have no natural end, so fall through to the last frame.
-        if (!_isInfinite && _repeatType == BmRepeatType.Mirror)
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Mirror)
         {
             _apply((_repeat + 1) % 2 == 0 ? _frames[0] : _frames[^1]);
             return;
         }
-        if (!_isInfinite && _repeatType == BmRepeatType.Reverse)
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Reverse)
         {
             _apply(_repeat == 0 ? _frames[^1] : _frames[0]);
             return;

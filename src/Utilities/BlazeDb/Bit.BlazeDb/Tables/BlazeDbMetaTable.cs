@@ -1,8 +1,5 @@
 ﻿namespace Bit.BlazeDb;
 
-/// <summary>A named number the engine keeps about a database itself, such as its user version.</summary>
-internal sealed record BlazeDbMetaEntry(string Key, long Value);
-
 /// <summary>
 /// The engine's own table, registered in every database, for values about the database rather than in
 /// it - <see cref="BlazeDbDatabase.UserVersion"/> today. It is an ordinary table on purpose: a write to

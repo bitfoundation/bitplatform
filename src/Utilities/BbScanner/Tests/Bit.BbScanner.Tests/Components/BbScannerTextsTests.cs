@@ -124,17 +124,17 @@ public class BbScannerTextsTests : BunitContext
         Assert.AreEqual(BbScannerTexts.Default.NoBarcodeFound, partial.NoBarcodeFound);
     }
 
-    private static BbBarcodeResult Decode(BbBitMatrix matrix)
+    private static BbScannerBarcodeResult Decode(BbScannerBitMatrix matrix)
     {
         using var image = SyntheticImage.FromMatrix(matrix, scale: 4);
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.All, DuplicateSuppressionWindow = TimeSpan.Zero });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = BbScannerBarcodeFormat.All, DuplicateSuppressionWindow = TimeSpan.Zero });
         return decoder.Decode(image.View, suppressDuplicates: false) ?? throw new AssertFailedException("The symbol did not decode.");
     }
 
-    private static BbBarcodeResult DecodeLinear(bool[] modules)
+    private static BbScannerBarcodeResult DecodeLinear(bool[] modules)
     {
         using var image = SyntheticImage.FromLinear(modules, scale: 3, height: 40);
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.Zero });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.Zero });
         return decoder.Decode(image.View, suppressDuplicates: false) ?? throw new AssertFailedException("The symbol did not decode.");
     }
 }

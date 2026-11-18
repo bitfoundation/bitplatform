@@ -1,12 +1,12 @@
 ﻿@page "/social"
 @implements IDisposable
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
-@inject BrowserTextRasterizer TextRasterizer
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
+@inject BmageBrowserTextRasterizer TextRasterizer
 
 @* A post image composed to a platform's exact canvas: Cover crops to the preset, a look is a few
    adjustments in a row (which the optimiser fuses into one pass), and the caption is drawn onto the
-   pixels with the browser's own text engine through ImageCanvas - so system fonts, emoji and
+   pixels with the browser's own text engine through BmageImageCanvas - so system fonts, emoji and
    right-to-left scripts work without shipping a font file. *@
 
 <PageTitle>Social images · Bmage</PageTitle>
@@ -132,14 +132,14 @@
         The look is a run of per-pixel adjustments, which the optimiser fuses into a single pass over
         the pixels - <strong>Duotone</strong> maps the photo's luminance onto two colours, the poster
         look, with <code>Duotone(shadows, highlights)</code>. The caption is then drawn straight onto
-        the result through <code>ImageCanvas</code>, measured first so the gradient scrim behind it is
+        the result through <code>BmageImageCanvas</code>, measured first so the gradient scrim behind it is
         exactly as tall as the text that wraps.
     </p>
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
     <div class="bb-note">
         <p>
-            <code>BrowserTextRasterizer</code> needs a browser. On a server, register a font with
-            <code>FontTextRasterizer</code> instead - see the <a href="/headless">Headless API</a>.
+            <code>BmageBrowserTextRasterizer</code> needs a browser. On a server, register a font with
+            <code>BmageFontTextRasterizer</code> instead - see the <a href="/headless">Headless API</a>.
         </p>
     </div>
 </div>
@@ -159,16 +159,16 @@
 
     private static readonly string[] Looks = ["None", "Mono", "Sepia", "Punch", "Fade", "Duotone"];
 
-    private ImageBuffer? _source;
-    private ImageBuffer? _result;
-    private EncodedImage? _encoded;
+    private BmageImageBuffer? _source;
+    private BmageImageBuffer? _result;
+    private BmageEncodedImage? _encoded;
     private Preset _preset = Presets[3];
     private string _look = "None";
     private float _warmth;
     private float _vignette = 0.25f;
     private string _caption = string.Empty;
     private int _captionSize = 6;
-    private Rgba32 _captionColor = Rgba32.White;
+    private BmageRgba32 _captionColor = BmageRgba32.White;
     private bool _scrim = true;
     private long _version;
     private bool _busy;
@@ -181,7 +181,7 @@
 
     private const string Snippet = """
         // Cover fills the canvas exactly, cropping the overflow rather than distorting.
-        var pipeline = ImagePipeline.Create()
+        var pipeline = BmageImagePipeline.Create()
             .AutoOrient()
             .Cover(preset.Width, preset.Height)
             .Saturation(0.12f)
@@ -190,13 +190,13 @@
         using var composed = await pipeline.ExecuteAsync(source);
 
         // Draw the caption straight onto the pixels with the browser text engine.
-        using var canvas = ImageCanvas.FromBuffer(composed);
-        canvas.FillRectangle(scrimRect, new Rgba32(0, 0, 0, 130));
-        await textRasterizer.DrawTextAsync(canvas, caption, position, new TextStyle
+        using var canvas = BmageImageCanvas.FromBuffer(composed);
+        canvas.FillRectangle(scrimRect, new BmageRgba32(0, 0, 0, 130));
+        await textRasterizer.DrawTextAsync(canvas, caption, position, new BmageTextStyle
         {
             FontSize  = composed.Height * 0.06f,
             Bold      = true,
-            FillColor = Rgba32.White,
+            FillColor = BmageRgba32.White,
             Alignment = BmageTextAlignment.Center,
             MaxWidth  = composed.Width * 0.86f,
         });
@@ -227,7 +227,7 @@
         await Compose();
     }
 
-    private void SetSource(ImageBuffer image)
+    private void SetSource(BmageImageBuffer image)
     {
         _run++; // a composition still running was reading the old source
         _source?.Dispose();
@@ -264,7 +264,7 @@
 
     private void OnCaptionColorChanged(ChangeEventArgs e)
     {
-        if (e.Value is string hex && Rgba32.TryParseHex(hex, out var color))
+        if (e.Value is string hex && BmageRgba32.TryParseHex(hex, out var color))
         {
             _captionColor = color;
             Schedule();
@@ -288,7 +288,7 @@
         StateHasChanged();
         try
         {
-            var pipeline = ImagePipeline.Create()
+            var pipeline = BmageImagePipeline.Create()
                 .AutoOrient()
                 .Cover(_preset.Width, _preset.Height);
 
@@ -299,7 +299,7 @@
                 "Punch" => pipeline.Saturation(0.3f).Contrast(0.18f).ShadowsHighlights(0.1f, -0.12f),
                 "Fade" => pipeline.Saturation(-0.25f).Brightness(0.06f).Contrast(-0.12f),
                 // The poster look: shadows mapped to deep indigo, highlights to coral.
-                "Duotone" => pipeline.Contrast(0.1f).Duotone(new Rgba32(36, 24, 96), new Rgba32(255, 138, 112)),
+                "Duotone" => pipeline.Contrast(0.1f).Duotone(new BmageRgba32(36, 24, 96), new BmageRgba32(255, 138, 112)),
                 _ => pipeline,
             };
 
@@ -310,10 +310,10 @@
             try
             {
                 if (!string.IsNullOrWhiteSpace(_caption)) await DrawCaptionAsync(composed);
-                var encoded = await Exporter.EncodeWithFallbackAsync(composed, [BmageImageFormat.WebP, BmageImageFormat.Jpeg], new ImageExportOptions
+                var encoded = await Exporter.EncodeWithFallbackAsync(composed, [BmageImageFormat.WebP, BmageImageFormat.Jpeg], new BmageImageExportOptions
                 {
                     Quality = 0.86,
-                    Metadata = MetadataPolicy.Remove,
+                    Metadata = BmageMetadataPolicy.Remove,
                 });
                 if (run != _run)
                 {
@@ -350,18 +350,18 @@
     }
 
     /// <summary>Draws the caption across the lower third, over an optional gradient scrim so it stays readable.</summary>
-    private async Task DrawCaptionAsync(ImageBuffer image)
+    private async Task DrawCaptionAsync(BmageImageBuffer image)
     {
-        using var canvas = ImageCanvas.FromBuffer(image);
+        using var canvas = BmageImageCanvas.FromBuffer(image);
         var fontSize = image.Height * (_captionSize / 100f);
-        var style = new TextStyle
+        var style = new BmageTextStyle
         {
             FontFamily = "system-ui, sans-serif",
             FontSize = fontSize,
             Bold = true,
             FillColor = _captionColor,
             Alignment = BmageTextAlignment.Center,
-            Baseline = TextBaseline.Bottom,
+            Baseline = BmageTextBaseline.Bottom,
             MaxWidth = image.Width * 0.86f,
             LineHeight = 1.15f,
         };
@@ -378,7 +378,7 @@
             var paint = new BmageLinearGradientPaint(
                 new Vector2(0, top),
                 new Vector2(0, image.Height),
-                [(0f, new Rgba32(0, 0, 0, 0)), (0.55f, new Rgba32(0, 0, 0, 120)), (1f, new Rgba32(0, 0, 0, 175))]);
+                [(0f, new BmageRgba32(0, 0, 0, 0)), (0.55f, new BmageRgba32(0, 0, 0, 120)), (1f, new BmageRgba32(0, 0, 0, 175))]);
             var scrimPath = new BmagePathBuilder().AddRectangle(new System.Drawing.RectangleF(0, top, image.Width, height)).Build();
             canvas.FillPath(scrimPath, paint);
         }
@@ -415,9 +415,9 @@
 
     private static string Describe(Exception ex) => ex switch
     {
-        ImageLimitExceededException => "That image is too large to process here.",
-        ImageDecodeException => "That file could not be read as an image.",
-        ImageCapabilityException c => c.Message,
+        BmageImageLimitExceededException => "That image is too large to process here.",
+        BmageImageDecodeException => "That file could not be read as an image.",
+        BmageImageCapabilityException c => c.Message,
         _ => ex.Message,
     };
 

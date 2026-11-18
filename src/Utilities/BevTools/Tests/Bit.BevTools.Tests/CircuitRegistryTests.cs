@@ -9,7 +9,7 @@ public class CircuitRegistryTests
     [TestMethod]
     public void Registry_tracks_open_close_and_truncates_ids()
     {
-        var registry = new BevCircuitRegistry();
+        var registry = new BevToolsCircuitRegistry();
         var info = registry.Open("abcdefghijklmnop", 1);
         Assert.AreEqual("abcdefgh…", info.ShortId);
         Assert.AreEqual(1, registry.ActiveCount);
@@ -30,7 +30,7 @@ public class CircuitRegistryTests
         var services = new ServiceCollection();
         services.AddBitBevToolsServerServices(o => o.Enabled = true);
         Assert.Contains(d => d.ServiceType == typeof(CircuitHandler) && d.ImplementationType == typeof(BevToolsCircuitHandler), services);
-        Assert.Contains(d => d.ServiceType == typeof(BevCircuitRegistry), services);
+        Assert.Contains(d => d.ServiceType == typeof(BevToolsCircuitRegistry), services);
 
         using var provider = services.BuildServiceProvider();
         var registry = provider.GetRequiredService<BevToolsRegistry>();

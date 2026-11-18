@@ -149,7 +149,7 @@ public class McpServerIntegrationTests
             [nameof(McpController.AnalyzeBmotionAnimation)] = new Dictionary<string, object?> { ["properties"] = "x, opacity", ["transition"] = "tween(0.4)" },
             [nameof(McpController.ReviewBmotionCode)] = new Dictionary<string, object?> { ["code"] = "<Bmotion Animate=\"Bm.To(x: 100)\"><div /></Bmotion>" },
             [nameof(McpController.GetBmotionGuideSection)] = new Dictionary<string, object?> { ["heading"] = "Installation" },
-            [nameof(McpController.GetBmotionApiDetails)] = new Dictionary<string, object?> { ["typeName"] = "BmSpring" },
+            [nameof(McpController.GetBmotionApiDetails)] = new Dictionary<string, object?> { ["typeName"] = "BmotionSpring" },
             [nameof(McpController.GetBmotionSourceFile)] = new Dictionary<string, object?> { ["path"] = "Demo/Server/Program.cs" },
             // Tools whose arguments are all optional are called without any.
             [nameof(McpController.GetBmotionOverview)] = new Dictionary<string, object?>(),
@@ -376,7 +376,7 @@ public class McpServerIntegrationTests
 
         StringAssert.Contains(((TextResourceContents)guide.Contents[0]).Text!, "## Installation");
 
-        var type = await Server.Client.ReadResourceAsync("bmotion://api/BmSpring");
+        var type = await Server.Client.ReadResourceAsync("bmotion://api/BmotionSpring");
 
         StringAssert.Contains(((TextResourceContents)type.Contents[0]).Text!, "Stiffness");
 

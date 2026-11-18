@@ -12,8 +12,8 @@ public class SearchIndexTests
     [DataRow("strip gps location from uploads", "GetBmageRecipe(id: \"strip-location\")")]
     [DataRow("paste a screenshot and redact it", "GetBmageRecipe(id: \"annotate-redact-screenshot\")")]
     [DataRow("thumbnail endpoint on the server", "GetBmageRecipe(id: \"headless-upload-endpoint\")")]
-    [DataRow("MaxFileSize", "GetBmageApiDetails(typeName: \"ImageExportOptions.MaxFileSize\")")]
-    [DataRow("ImagePipeline", "GetBmageApiDetails(typeName: \"ImagePipeline\")")]
+    [DataRow("MaxFileSize", "GetBmageApiDetails(typeName: \"BmageImageExportOptions.MaxFileSize\")")]
+    [DataRow("BmageImagePipeline", "GetBmageApiDetails(typeName: \"BmageImagePipeline\")")]
     [DataRow("the optimiser fuses adjustments", "GetBmageDocument(name: \"pipelines\", section: \"The optimiser\")")]
     [DataRow("prerendering", "GetBmageDocument(name: \"browser-support\", section: \"Prerendering\")")]
     [DataRow("browser call during prerender", "ReviewBmageCode(code: \"...\")")]
@@ -58,12 +58,12 @@ public class SearchIndexTests
     [TestMethod]
     public void Search_AnExactTypeName_IsTheFirstHit()
     {
-        Assert.AreEqual("ImageExporter", BmageSearchIndex.Search("ImageExporter", 5).Hits.FirstOrDefault()?.Title);
+        Assert.AreEqual("BmageImageExporter", BmageSearchIndex.Search("BmageImageExporter", 5).Hits.FirstOrDefault()?.Title);
     }
 
     /// <summary>
     /// A member named like a word a sentence is phrased in is still found by its name: "without" is
-    /// filler in "shrink a photo without its location", and the name of ExifDirectory.Without. Asked
+    /// filler in "shrink a photo without its location", and the name of BmageExifDirectory.Without. Asked
     /// for alone, it shares the name with every heading phrased "... without ...", so it is among them;
     /// asked for with its type, it leads.
     /// </summary>
@@ -72,17 +72,17 @@ public class SearchIndexTests
     {
         var hits = BmageSearchIndex.Search("Without", 8).Hits;
 
-        CollectionAssert.Contains(hits.Select(hit => hit.Title).ToArray(), "ExifDirectory.Without", string.Join(" | ", hits.Select(hit => hit.Title)));
+        CollectionAssert.Contains(hits.Select(hit => hit.Title).ToArray(), "BmageExifDirectory.Without", string.Join(" | ", hits.Select(hit => hit.Title)));
     }
 
     [TestMethod]
-    [DataRow("ExifDirectory Without")]
-    [DataRow("ExifDirectory.Without")]
+    [DataRow("BmageExifDirectory Without")]
+    [DataRow("BmageExifDirectory.Without")]
     public void Search_AMemberNamedLikeAStopWord_WithItsType_IsTheFirstHit(string query)
     {
         var hits = BmageSearchIndex.Search(query, 8).Hits;
 
-        Assert.AreEqual("ExifDirectory.Without", hits.FirstOrDefault()?.Title, string.Join(" | ", hits.Select(hit => $"{hit.Kind}: {hit.Title}")));
+        Assert.AreEqual("BmageExifDirectory.Without", hits.FirstOrDefault()?.Title, string.Join(" | ", hits.Select(hit => $"{hit.Kind}: {hit.Title}")));
     }
 
     /// <summary>"bit" is not a word true of everything here: it is the bit depth the guides are about.</summary>

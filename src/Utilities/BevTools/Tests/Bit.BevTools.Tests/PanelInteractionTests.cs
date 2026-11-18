@@ -28,12 +28,12 @@ public class PanelInteractionTests : BunitContext
     private IRenderedComponent<BevToolsPanel> RenderPanel(string? prefs = null)
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true, Visibility = "visible" });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true, Visibility = "visible" });
         module.Setup<string?>("loadPrefs", _ => true).SetResult(prefs);
         module.SetupVoid("savePrefs", _ => true).SetVoidResult();
-        module.Setup<BevStorageEntry[]>("getStorage", _ => true)
-            .SetResult([new BevStorageEntry("demo:auth_token", 42, "«redacted»", true), new BevStorageEntry("theme", 4, "dark")]);
-        module.Setup<BevBrowserSnapshot>("refresh", _ => true).SetResult(new BevBrowserSnapshot { Online = true });
+        module.Setup<BevToolsStorageEntry[]>("getStorage", _ => true)
+            .SetResult([new BevToolsStorageEntry("demo:auth_token", 42, "«redacted»", true), new BevToolsStorageEntry("theme", 4, "dark")]);
+        module.Setup<BevToolsBrowserSnapshot>("refresh", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true });
         return Render<BevToolsPanel>();
     }
 
@@ -86,7 +86,7 @@ public class PanelInteractionTests : BunitContext
     {
         // Never answered: the browser bridge, the saved preferences and the stylesheet are all still on their way.
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true);
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true);
 
         var cut = Render<BevToolsPanel>();
 
@@ -99,7 +99,7 @@ public class PanelInteractionTests : BunitContext
     public void Opening_from_code_before_the_saved_preferences_are_read_keeps_them()
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true, Visibility = "visible" });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true, Visibility = "visible" });
         var prefs = module.Setup<string?>("loadPrefs", _ => true);
         module.SetupVoid("savePrefs", _ => true).SetVoidResult();
         var cut = Render<BevToolsPanel>();
@@ -178,7 +178,7 @@ public class PanelInteractionTests : BunitContext
         cut.FindAll(".bev-tab").First(t => t.TextContent.Contains("Network", StringComparison.Ordinal)).Click();
         Assert.Contains("No HTTP requests captured", cut.Markup, StringComparison.Ordinal);
 
-        Session.Http.Add(new BevHttpRecord
+        Session.Http.Add(new BevToolsHttpRecord
         {
             Id = Session.Http.NextId(),
             StartedAt = DateTimeOffset.UtcNow,
@@ -200,7 +200,7 @@ public class PanelInteractionTests : BunitContext
         cut.Find("input[aria-label='Live updates']").Change(false);
         Assert.IsFalse(Session.Ui.LiveUpdates);
 
-        Session.Http.Add(new BevHttpRecord
+        Session.Http.Add(new BevToolsHttpRecord
         {
             Id = Session.Http.NextId(),
             StartedAt = DateTimeOffset.UtcNow,
@@ -233,7 +233,7 @@ public class PanelInteractionTests : BunitContext
     public void BevTools_own_ui_never_appears_as_application_activity()
     {
         var cut = RenderPanel();
-        Session.Http.Add(new BevHttpRecord
+        Session.Http.Add(new BevToolsHttpRecord
         {
             Id = Session.Http.NextId(),
             StartedAt = DateTimeOffset.UtcNow,
@@ -299,7 +299,7 @@ public class PanelInteractionTests : BunitContext
     [TestMethod]
     public void Inspector_section_reacts_when_collapsed_parameter_changes()
     {
-        var cut = Render<BevInspectorSection>(parameters => parameters
+        var cut = Render<BevToolsInspectorSection>(parameters => parameters
             .Add(p => p.Title, "Errors")
             .Add(p => p.Collapsed, true)
             .AddChildContent("details"));
@@ -317,7 +317,7 @@ public class PanelInteractionTests : BunitContext
     [TestMethod]
     public void A_children_only_value_tree_shows_the_root_members_and_indents_nested_ones()
     {
-        var cut = Render<BevValueTree>(parameters => parameters
+        var cut = Render<BevToolsValueTree>(parameters => parameters
             .Add(p => p.Root, new SnapshotSample())
             .Add(p => p.Name, "SnapshotSample")
             .Add(p => p.Inspector, Session.Inspector)
@@ -390,11 +390,11 @@ public class PanelInteractionTests : BunitContext
     public void Interop_filter_treats_colon_identifiers_as_search_text()
     {
         var cut = RenderPanel();
-        var record = new BevJsInteropRecord
+        var record = new BevToolsJsInteropRecord
         {
             Id = Session.Interop.NextId(),
             At = DateTimeOffset.UtcNow,
-            Direction = BevJsInteropDirection.DotNetToJs,
+            Direction = BevToolsJsInteropDirection.DotNetToJs,
             Identifier = "module:invoke",
             ComponentName = "CartWidget",
         };
@@ -478,7 +478,7 @@ public class PanelInteractionTests : BunitContext
         RenderPanel();
         var navigation = Services.GetRequiredService<NavigationManager>();
 
-        // What ActivityObserver records when the router's Navigate activity starts (.NET 10), before LocationChanged
+        // What BevToolsActivityObserver records when the router's Navigate activity starts (.NET 10), before LocationChanged
         // reaches the panel.
         Session.LastNavigationEventId = Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Navigation, Category = "navigation", Title = "Navigate to /products/{id}" });
         navigation.NavigateTo("/products/1");
@@ -496,8 +496,8 @@ public class PanelInteractionTests : BunitContext
         Services.GetRequiredService<NavigationManager>().NavigateTo("/reset-password?token=abc123&step=2");
 
         var navigation = Session.Timeline.Snapshot().Last(e => e.Kind == BevToolsEventKind.Navigation);
-        Assert.AreEqual("Navigate to /reset-password?token=" + BevRedactor.RedactedValue + "&step=2", navigation.Title);
-        Assert.DoesNotContain("abc123", BevSessionExporter.ToJson(Session), StringComparison.Ordinal);
+        Assert.AreEqual("Navigate to /reset-password?token=" + BevToolsRedactor.RedactedValue + "&step=2", navigation.Title);
+        Assert.DoesNotContain("abc123", BevToolsSessionExporter.ToJson(Session), StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -506,7 +506,7 @@ public class PanelInteractionTests : BunitContext
         // An interop call that exceeds the timeout (the tab throttled, or paused in the browser's debugger) must not
         // escape OnAfterRenderAsync: on Blazor Server that would terminate the circuit.
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetException(new TaskCanceledException("interop timed out"));
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetException(new TaskCanceledException("interop timed out"));
 
         var cut = Render<BevToolsPanel>();
 

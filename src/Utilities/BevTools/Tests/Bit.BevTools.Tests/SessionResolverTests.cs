@@ -34,7 +34,7 @@ public class SessionResolverTests
         SynchronizationContext.SetSynchronizationContext(context);
         try
         {
-            SessionResolver.NoteCurrentContext(session);
+            BevToolsSessionResolver.NoteCurrentContext(session);
         }
         finally
         {

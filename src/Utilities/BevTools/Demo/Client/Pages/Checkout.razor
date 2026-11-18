@@ -9,7 +9,7 @@
     <h1>Checkout</h1>
     <p class="bb-subtitle">
         A cart, two forms and a few application settings. <code>CartState</code> and <code>AppState</code> are ordinary
-        scoped services that implement <code>IBevStateProvider</code>, so every action on them is a named state change
+        scoped services that implement <code>IBevToolsStateProvider</code>, so every action on them is a named state change
         in BevTools, with a before/after diff and the click that made it. The forms show what validates them and what
         does not, and the coupon box has an accessibility problem to find.
     </p>
@@ -134,11 +134,11 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Exposing your own state</h3>
     <p class="bb-card-desc">
-        A state container becomes a provider by implementing <code>IBevStateProvider</code> - a name, a snapshot and a
+        A state container becomes a provider by implementing <code>IBevToolsStateProvider</code> - a name, a snapshot and a
         <code>Changed</code> event carrying the action - and being registered with
         <code>AddBevToolsStateProvider</code>. This is the cart above, shortened:
     </p>
-    <pre class="bb-code"><span class="k">public sealed class</span> CartState : IBevStateProvider
+    <pre class="bb-code"><span class="k">public sealed class</span> CartState : IBevToolsStateProvider
 {
     <span class="k">public</span> List&lt;CartLine&gt; Lines { <span class="k">get</span>; } = [];
 
@@ -146,14 +146,14 @@
 
     <span class="k">public string</span>? Description =&gt; <span class="s">"scoped service, one per circuit / app"</span>;
 
-    <span class="k">public event</span> Action&lt;BevStateChangeInfo&gt;? Changed;
+    <span class="k">public event</span> Action&lt;BevToolsStateChangeInfo&gt;? Changed;
 
     <span class="k">public object</span>? GetSnapshot() =&gt; <span class="k">this</span>;
 
     <span class="k">public void</span> Add(Product product)
     {
         <span class="c">// … update Lines …</span>
-        Changed?.Invoke(<span class="k">new</span> BevStateChangeInfo(<span class="s">"Add"</span>, product.Name));
+        Changed?.Invoke(<span class="k">new</span> BevToolsStateChangeInfo(<span class="s">"Add"</span>, product.Name));
     }
 }
 

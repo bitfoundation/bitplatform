@@ -99,7 +99,7 @@ public class McpController : ControllerBase
               per-property transitions, mirrored repeats, repeat delays, springs with velocity, inertia, arcs,
               gradients, custom properties - it *records* at 60 Hz and the browser plays the recording.
             - **Only the C# frame loop can play** a transition `OnUpdate`, an SVG `d`/`points` morph, an endless
-              `BmRepeat.Reverse`, per-property transitions with an endless repeat, and a recording longer than 10
+              `BmotionRepeat.Reverse`, per-property transitions with an endless repeat, and a recording longer than 10
               seconds. That loop exists only on WebAssembly: on Server those become an instant jump, with no error
               anywhere.
             - Prefer a timeline to a recording where the motion allows: a recording sends more keyframes (a few
@@ -252,7 +252,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(ReviewBmotionCode))]
-    [Description("Reviews Razor or C# that uses Bit.Bmotion and reports the mistakes that compile cleanly and then do nothing: an Exit with no presence component around it, an animated element in a loop with no @key, a spring whose stiffness the engine discards, a nested-quote attribute that does not parse as intended, the few animations - a path morph, a transition OnUpdate, an endless BmRepeat.Reverse - that will snap rather than animate on Blazor Server. Every finding names the line and the correction. Run this on animation code before calling it done - none of these produce a compiler warning, an exception or a console message.")]
+    [Description("Reviews Razor or C# that uses Bit.Bmotion and reports the mistakes that compile cleanly and then do nothing: an Exit with no presence component around it, an animated element in a loop with no @key, a spring whose stiffness the engine discards, a nested-quote attribute that does not parse as intended, the few animations - a path morph, a transition OnUpdate, an endless BmotionRepeat.Reverse - that will snap rather than animate on Blazor Server. Every finding names the line and the correction. Run this on animation code before calling it done - none of these produce a compiler warning, an exception or a console message.")]
     public BmotionReviewDto ReviewBmotionCode(
         [Description("The Razor markup or C# to review. A component, a fragment, or just the <Bmotion> element in question.")] string code)
     {
@@ -319,7 +319,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionEasings))]
-    [Description("Lists BmEase presets with each curve sampled from the library's own easing implementation - eleven points, a text sparkline, and whether the curve leaves the 0-1 range and so makes the element overshoot. Call it when choosing an easing: the names alone do not say how BackOut differs from ExpoOut, or which presets are unusable on an element with a hard edge. Narrow it with 'filter' rather than reading all 32.")]
+    [Description("Lists BmotionEase presets with each curve sampled from the library's own easing implementation - eleven points, a text sparkline, and whether the curve leaves the 0-1 range and so makes the element overshoot. Call it when choosing an easing: the names alone do not say how BackOut differs from ExpoOut, or which presets are unusable on an element with a hard edge. Narrow it with 'filter' rather than reading all 32.")]
     public async Task<BmotionEasingDto[]> GetBmotionEasings(
         [Description("Optional. A family ('Back', 'Expo', 'Elastic', 'Bounce', 'Circ', 'Sine', 'Quad', 'Quart', 'Quint', 'Cubic', 'Linear', 'Anticipate'), a direction ('In', 'Out', 'InOut'), 'overshoots' for only the presets that travel past the target, or any substring of a preset name. Omitted, every preset is returned.")] string? filter = null)
     {
@@ -375,7 +375,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionApiDetails))]
-    [Description("Gets the full reference of one Bit.Bmotion type: its Blazor parameters with types and default values, its properties, methods, events or enum values, each with its documentation - read straight out of the shipped assembly. Call it before using a member you are unsure about, e.g. 'Bmotion', 'Bm', 'BmSpring', 'BmTween', 'BmotionAnimatePresence', 'BmVariants', 'BmDrag', 'BmScrollTimeline', 'BmotionAnimateService'. In an animation library the default values are the behaviour, so guessing at them produces motion that is subtly wrong rather than code that fails.")]
+    [Description("Gets the full reference of one Bit.Bmotion type: its Blazor parameters with types and default values, its properties, methods, events or enum values, each with its documentation - read straight out of the shipped assembly. Call it before using a member you are unsure about, e.g. 'Bmotion', 'Bm', 'BmotionSpring', 'BmotionTween', 'BmotionAnimatePresence', 'BmotionVariants', 'BmotionDrag', 'BmotionScrollTimeline', 'BmotionAnimateService'. In an animation library the default values are the behaviour, so guessing at them produces motion that is subtly wrong rather than code that fails.")]
     public BmotionApiDetailsResultDto GetBmotionApiDetails(string typeName)
     {
         var details = BmotionApiCatalog.GetTypeDetails(typeName);

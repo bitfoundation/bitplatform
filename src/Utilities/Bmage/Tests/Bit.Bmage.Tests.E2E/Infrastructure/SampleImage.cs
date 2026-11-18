@@ -27,18 +27,18 @@ public static class SampleImage
     // checkerboard gives a resampler something to blur and an encoder something to spend bytes on.
     private static byte[] Create(int width, int height)
     {
-        using var image = ImageBuffer.Create(width, height, clear: false);
+        using var image = BmageImageBuffer.Create(width, height, clear: false);
         for (var y = 0; y < height; y++)
         {
             var row = image.GetRow(y);
             for (var x = 0; x < width; x++)
             {
-                row[x] = new Rgba32(
+                row[x] = new BmageRgba32(
                     (byte)(x * 255 / Math.Max(1, width - 1)),
                     (byte)(y * 255 / Math.Max(1, height - 1)),
                     (byte)(((x >> 5) + (y >> 5)) % 2 == 0 ? 40 : 220));
             }
         }
-        return PngEncoder.Encode(image).Data;
+        return BmagePngEncoder.Encode(image).Data;
     }
 }

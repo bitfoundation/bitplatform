@@ -28,7 +28,7 @@ internal static class BmotionBrowserTiming
         if (config.Type == BmotionTransitionType.Inertia) return false;
         if (config.RepeatDelay > 0) return false;
         // Reverse plays forwards once and backwards after that - two different animations.
-        if (config.RepeatType == BmRepeatType.Reverse && (config.IsInfiniteRepeat || config.Repeat > 0)) return false;
+        if (config.RepeatType == BmotionRepeatType.Reverse && (config.IsInfiniteRepeat || config.Repeat > 0)) return false;
         // Browser keyframes sit at evenly spaced offsets.
         if (config.Times is { } times && !IsEvenlySpaced(times)) return false;
         if (!double.IsFinite(config.Delay)) return false;
@@ -47,7 +47,7 @@ internal static class BmotionBrowserTiming
     internal static (double[] Samples, double DurationMs)? SampleProgress(BmotionTransitionConfig config, Func<double, double>? ease = null)
     {
         if (config.Type == BmotionTransitionType.Spring) return SampleSpringProgress(config);
-        return (SampleTweenProgress(ease ?? BmEaseFunctions.Get(config)), config.Duration * 1000);
+        return (SampleTweenProgress(ease ?? BmotionEaseFunctions.Get(config)), config.Duration * 1000);
     }
 
     /// <summary>
@@ -59,10 +59,10 @@ internal static class BmotionBrowserTiming
     {
         if (config.Type == BmotionTransitionType.Spring) return linearSupported ? BuildLinearEasing(samples) : null;
 
-        bool hasKeyword = config.Eases is null && BmEaseFunctions.HasFaithfulCssEasing(config);
+        bool hasKeyword = config.Eases is null && BmotionEaseFunctions.HasFaithfulCssEasing(config);
         // A staircase can't be sampled: linear() interpolates between the samples, so every jump would
         // become a ramp one sample wide (tens of milliseconds on screen). steps() is the only exact form.
-        if (hasKeyword && (preferKeyword || !linearSupported || config.StepCount > 0)) return BmEaseFunctions.ToCssString(config);
+        if (hasKeyword && (preferKeyword || !linearSupported || config.StepCount > 0)) return BmotionEaseFunctions.ToCssString(config);
         // Elastic/bounce have no CSS curve: without linear() the browser can't play them.
         return linearSupported ? BuildLinearEasing(samples) : null;
     }

@@ -6,19 +6,6 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Bheadless;
 
-/// <summary>Sort direction announced by a grid column header (<c>aria-sort</c>).</summary>
-public enum BitBhSortDirection
-{
-    /// <summary>Not sorted (no <c>aria-sort</c>).</summary>
-    None,
-
-    /// <summary>Ascending.</summary>
-    Ascending,
-
-    /// <summary>Descending.</summary>
-    Descending,
-}
-
 /// <summary>
 /// A cell of a <see cref="BitBhGridRow"/>: <c>gridcell</c>, <c>columnheader</c>
 /// (<see cref="Header"/>) or <c>rowheader</c> (<see cref="RowHeader"/>). Cells are the

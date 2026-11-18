@@ -34,25 +34,3 @@ public interface IBormFieldRendererRegistry
     /// <summary>Resolves the component type for a field, returning false instead of throwing when none is registered.</summary>
     bool TryResolve(BormFieldDefinition field, [DynamicallyAccessedMembers(BormFieldRendererRegistry.Component)] out Type componentType);
 }
-
-/// <summary>Strongly-typed conveniences over <see cref="IBormFieldRendererRegistry"/>.</summary>
-public static class BormFieldRendererRegistryExtensions
-{
-    /// <summary>Maps a field type to <typeparamref name="TComponent"/>.</summary>
-    public static IBormFieldRendererRegistry Register<[DynamicallyAccessedMembers(BormFieldRendererRegistry.Component)] TComponent>(
-        this IBormFieldRendererRegistry registry, BormFieldType type)
-        where TComponent : IComponent
-    {
-        registry.Register(type, typeof(TComponent));
-        return registry;
-    }
-
-    /// <summary>Maps a custom renderer key to <typeparamref name="TComponent"/>.</summary>
-    public static IBormFieldRendererRegistry RegisterCustom<[DynamicallyAccessedMembers(BormFieldRendererRegistry.Component)] TComponent>(
-        this IBormFieldRendererRegistry registry, string key)
-        where TComponent : IComponent
-    {
-        registry.RegisterCustom(key, typeof(TComponent));
-        return registry;
-    }
-}

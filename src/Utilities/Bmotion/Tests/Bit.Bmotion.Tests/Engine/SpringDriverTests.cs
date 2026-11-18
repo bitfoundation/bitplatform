@@ -246,7 +246,7 @@ public class SpringDriverTests
             Damping = 20,
             Mass = 1,
             Repeat = 1,
-            RepeatType = BmRepeatType.Loop,
+            RepeatType = BmotionRepeatType.Loop,
         };
         var driver = new BmotionSpringDriver(0, 100, config, v => values.Add(v));
 
@@ -277,7 +277,7 @@ public class SpringDriverTests
             Damping = 20,
             Mass = 1,
             Repeat = 1,
-            RepeatType = BmRepeatType.Mirror,
+            RepeatType = BmotionRepeatType.Mirror,
         };
         double lastValue = double.NaN;
         var driver = new BmotionSpringDriver(0, 100, config, v => lastValue = v);
@@ -304,7 +304,7 @@ public class SpringDriverTests
             Damping = 20,
             Mass = 1,
             RepeatInfinite = true,
-            RepeatType = BmRepeatType.Loop,
+            RepeatType = BmotionRepeatType.Loop,
         };
         var driver = new BmotionSpringDriver(0, 100, config, _ => { });
 

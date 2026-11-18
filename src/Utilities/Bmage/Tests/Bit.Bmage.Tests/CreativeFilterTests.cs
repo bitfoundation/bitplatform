@@ -7,35 +7,35 @@ namespace Bit.Bmage.Tests;
 public sealed class RadialBlurTests
 {
     /// <summary>Colour set by the angle around the centre alone: wedges, which a zoom streaks along and so leaves alone.</summary>
-    private static ImageBuffer Wedges(int size, int count)
+    private static BmageImageBuffer Wedges(int size, int count)
     {
-        var image = ImageBuffer.Create(size, size);
+        var image = BmageImageBuffer.Create(size, size);
         var c = size / 2f;
         for (var y = 0; y < size; y++)
             for (var x = 0; x < size; x++)
             {
                 var angle = MathF.Atan2(y + 0.5f - c, x + 0.5f - c) + MathF.PI;
                 var wedge = (int)(angle / (2 * MathF.PI) * count) % count;
-                image[x, y] = wedge % 2 == 0 ? new Rgba32(230, 40, 40) : new Rgba32(30, 30, 200);
+                image[x, y] = wedge % 2 == 0 ? new BmageRgba32(230, 40, 40) : new BmageRgba32(30, 30, 200);
             }
         return image;
     }
 
     /// <summary>Colour set by the distance from the centre alone: rings, which a spin streaks along and so leaves alone.</summary>
-    private static ImageBuffer Rings(int size, float width)
+    private static BmageImageBuffer Rings(int size, float width)
     {
-        var image = ImageBuffer.Create(size, size);
+        var image = BmageImageBuffer.Create(size, size);
         var c = size / 2f;
         for (var y = 0; y < size; y++)
             for (var x = 0; x < size; x++)
             {
                 var d = MathF.Sqrt((x + 0.5f - c) * (x + 0.5f - c) + (y + 0.5f - c) * (y + 0.5f - c));
-                image[x, y] = (int)(d / width) % 2 == 0 ? Rgba32.White : Rgba32.Black;
+                image[x, y] = (int)(d / width) % 2 == 0 ? BmageRgba32.White : BmageRgba32.Black;
             }
         return image;
     }
 
-    private static double Changed(ImageBuffer a, ImageBuffer b, int margin)
+    private static double Changed(BmageImageBuffer a, BmageImageBuffer b, int margin)
     {
         long sum = 0, count = 0;
         for (var y = margin; y < a.Height - margin; y++)
@@ -52,9 +52,9 @@ public sealed class RadialBlurTests
     {
         using var wedges = Wedges(200, 12);
         using var rings = Rings(200, 8);
-        var zoom = new RadialBlurFilter(0.3f, RadialBlurMode.Zoom);
-        using var zoomedWedges = zoom.Apply(wedges, OperationContext.Default);
-        using var zoomedRings = zoom.Apply(rings, OperationContext.Default);
+        var zoom = new BmageRadialBlurFilter(0.3f, BmageRadialBlurMode.Zoom);
+        using var zoomedWedges = zoom.Apply(wedges, BmageOperationContext.Default);
+        using var zoomedRings = zoom.Apply(rings, BmageOperationContext.Default);
         // Only the wedges' edges, sampled between pixels, change at all.
         var alongWedges = Changed(wedges, zoomedWedges, 10);
         var acrossRings = Changed(rings, zoomedRings, 10);
@@ -66,9 +66,9 @@ public sealed class RadialBlurTests
     {
         using var wedges = Wedges(200, 12);
         using var rings = Rings(200, 8);
-        var spin = new RadialBlurFilter(0.5f, RadialBlurMode.Spin);
-        using var spunWedges = spin.Apply(wedges, OperationContext.Default);
-        using var spunRings = spin.Apply(rings, OperationContext.Default);
+        var spin = new BmageRadialBlurFilter(0.5f, BmageRadialBlurMode.Spin);
+        using var spunWedges = spin.Apply(wedges, BmageOperationContext.Default);
+        using var spunRings = spin.Apply(rings, BmageOperationContext.Default);
         var alongRings = Changed(rings, spunRings, 10);
         var acrossWedges = Changed(wedges, spunWedges, 10);
         // The rings' stepped edges change a little wherever a sample falls between pixels, and each pass's bilinear samples
@@ -82,7 +82,7 @@ public sealed class RadialBlurTests
         // Rings 12 pixels wide round the chosen centre: next to it a streak is under a pixel long and stays in its ring,
         // far from it a streak crosses several.
         using var rings = Rings(201, 12);
-        using var zoomed = new RadialBlurFilter(0.5f).Apply(rings, OperationContext.Default);
+        using var zoomed = new BmageRadialBlurFilter(0.5f).Apply(rings, BmageOperationContext.Default);
         double Change(int cx, int cy)
         {
             long sum = 0;
@@ -93,10 +93,10 @@ public sealed class RadialBlurTests
         var centre = Change(100, 100);
         var edge = Change(190, 100);
         Assert.IsLessThan(edge / 10, centre, $"The centre stays sharp ({centre}); the far side does not ({edge}).");
-        using var plain = ImageBuffer.Create(64, 48, new Rgba32(40, 120, 200, 180));
-        foreach (var mode in new[] { RadialBlurMode.Zoom, RadialBlurMode.Spin })
+        using var plain = BmageImageBuffer.Create(64, 48, new BmageRgba32(40, 120, 200, 180));
+        foreach (var mode in new[] { BmageRadialBlurMode.Zoom, BmageRadialBlurMode.Spin })
         {
-            using var blurred = new RadialBlurFilter(0.8f, mode).Apply(plain, OperationContext.Default);
+            using var blurred = new BmageRadialBlurFilter(0.8f, mode).Apply(plain, BmageOperationContext.Default);
             Assert.AreEqual(0, TestImages.MaxChannelDifference(plain, blurred), mode.ToString());
         }
     }
@@ -105,9 +105,9 @@ public sealed class RadialBlurTests
     public void TransparencyDoesNotDarkenTheStreaks()
     {
         // Red on transparent black: averaging premultiplied keeps every visible pixel red, only fainter.
-        using var image = ImageBuffer.Create(100, 100, Rgba32.Transparent);
-        image.Fill(new Rectangle(60, 40, 30, 20), new Rgba32(255, 0, 0));
-        using var blurred = new RadialBlurFilter(0.6f).Apply(image, OperationContext.Default);
+        using var image = BmageImageBuffer.Create(100, 100, BmageRgba32.Transparent);
+        image.Fill(new Rectangle(60, 40, 30, 20), new BmageRgba32(255, 0, 0));
+        using var blurred = new BmageRadialBlurFilter(0.6f).Apply(image, BmageOperationContext.Default);
         var visible = 0;
         foreach (var p in blurred.Pixels)
         {
@@ -122,9 +122,9 @@ public sealed class RadialBlurTests
     public void TheSamePixelsComeOutOnOneThreadOrManyAndTheRegionLimitsIt()
     {
         using var noise = ParallelProcessingTests.Noise(160, 120, seed: 9);
-        var filter = new RadialBlurFilter(0.4f, RadialBlurMode.Spin, region: new Rectangle(20, 10, 100, 80));
-        using var one = filter.Apply(noise, OperationContext.Default);
-        using var many = filter.Apply(noise, new OperationContext(maxDegreeOfParallelism: 4));
+        var filter = new BmageRadialBlurFilter(0.4f, BmageRadialBlurMode.Spin, region: new Rectangle(20, 10, 100, 80));
+        using var one = filter.Apply(noise, BmageOperationContext.Default);
+        using var many = filter.Apply(noise, new BmageOperationContext(maxDegreeOfParallelism: 4));
         Assert.AreEqual(0, TestImages.MaxChannelDifference(one, many));
         for (var y = 0; y < 120; y++)
             for (var x = 0; x < 160; x++)
@@ -135,10 +135,10 @@ public sealed class RadialBlurTests
     public void AProxyGivesWhatTheOriginalGivesReduced()
     {
         using var rings = Rings(400, 10);
-        var filter = new RadialBlurFilter(0.3f);
+        var filter = new BmageRadialBlurFilter(0.3f);
         Assert.AreSame(filter, filter.ForScale(0.5), "Relative centre and amount need no scaling.");
-        using var full = ImagePipeline.Create().Add(filter).Resize(100, 100).Execute(rings);
-        using var proxy = ImagePipeline.Create().Resize(100, 100).Add(filter.ForScale(0.25)).Execute(rings);
+        using var full = BmageImagePipeline.Create().Add(filter).Resize(100, 100).Execute(rings);
+        using var proxy = BmageImagePipeline.Create().Resize(100, 100).Add(filter.ForScale(0.25)).Execute(rings);
         Assert.IsLessThan(12, TestImages.MeanChannelDifference(full, proxy));
     }
 
@@ -146,9 +146,9 @@ public sealed class RadialBlurTests
     public void TheMemoryEstimateCountsTheWorkingCopies()
     {
         var size = new System.Drawing.Size(1000, 800);
-        var plain = ImagePipeline.Create().Vibrance(0.2f).EstimateMemory(size).PeakBytes;
-        var radial = ImagePipeline.Create().RadialBlur(0.2f).EstimateMemory(size).PeakBytes;
-        var threshold = ImagePipeline.Create().AdaptiveThreshold().EstimateMemory(size).PeakBytes;
+        var plain = BmageImagePipeline.Create().Vibrance(0.2f).EstimateMemory(size).PeakBytes;
+        var radial = BmageImagePipeline.Create().RadialBlur(0.2f).EstimateMemory(size).PeakBytes;
+        var threshold = BmageImagePipeline.Create().AdaptiveThreshold().EstimateMemory(size).PeakBytes;
         Assert.IsGreaterThanOrEqualTo(plain + 16L * 1000 * 800, radial, "Two copies at 16 bits a channel.");
         Assert.IsGreaterThanOrEqualTo(plain + 1000L * 800, threshold, "A byte of luminance a pixel.");
     }
@@ -156,13 +156,13 @@ public sealed class RadialBlurTests
     [TestMethod]
     public void ArgumentsAreChecked()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new RadialBlurFilter(-0.1f));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new RadialBlurFilter(1.1f));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new RadialBlurFilter(0.5f, (RadialBlurMode)5));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new RadialBlurFilter(0.5f, center: new PointF(float.NaN, 0)));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new RadialBlurFilter(0.5f, center: new PointF(3, 0)));
-        Assert.IsTrue(new RadialBlurFilter(0).IsIdentity);
-        Assert.AreEqual("Spin blur", new RadialBlurFilter(0.2f, RadialBlurMode.Spin).Name);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageRadialBlurFilter(-0.1f));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageRadialBlurFilter(1.1f));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageRadialBlurFilter(0.5f, (BmageRadialBlurMode)5));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageRadialBlurFilter(0.5f, center: new PointF(float.NaN, 0)));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageRadialBlurFilter(0.5f, center: new PointF(3, 0)));
+        Assert.IsTrue(new BmageRadialBlurFilter(0).IsIdentity);
+        Assert.AreEqual("Spin blur", new BmageRadialBlurFilter(0.2f, BmageRadialBlurMode.Spin).Name);
     }
 }
 
@@ -173,8 +173,8 @@ public sealed class ColorLutTests
     public void AnIdentityTableLeavesEveryPixelAlone()
     {
         using var noise = ParallelProcessingTests.Noise(120, 90, seed: 4);
-        var identity = ColorLookupTable.Create(17, c => c);
-        using var result = new ColorLutAdjustment(identity).Apply(noise, OperationContext.Default);
+        var identity = BmageColorLookupTable.Create(17, c => c);
+        using var result = new BmageColorLutAdjustment(identity).Apply(noise, BmageOperationContext.Default);
         Assert.IsLessThanOrEqualTo(1, TestImages.MaxChannelDifference(noise, result));
     }
 
@@ -183,7 +183,7 @@ public sealed class ColorLutTests
     {
         // Tetrahedral interpolation is exact for any map linear in the input, even with only two entries per axis.
         Vector3 Map(Vector3 c) => new(c.Z, 0.5f * c.X + 0.25f, 1 - c.Y);
-        var table = ColorLookupTable.Create(2, Map);
+        var table = BmageColorLookupTable.Create(2, Map);
         var random = new Random(3);
         for (var i = 0; i < 2000; i++)
         {
@@ -215,7 +215,7 @@ public sealed class ColorLutTests
             1 1 0
             1 1 1
             """;
-        var table = ColorLookupTable.ParseCube(cube);
+        var table = BmageColorLookupTable.ParseCube(cube);
         Assert.AreEqual(2, table.Size);
         Assert.AreEqual("Swap", table.Title);
         var looked = table.Lookup(new Vector3(0.9f, 0.5f, 0.2f));
@@ -223,13 +223,13 @@ public sealed class ColorLutTests
         Assert.AreEqual(0.5f, looked.Y, 1e-6);
         Assert.AreEqual(0.9f, looked.Z, 1e-6);
 
-        using var image = ImageBuffer.Create(2, 1, new Rgba32(200, 100, 10));
-        using var swapped = ImagePipeline.Create().ColorLut(table).Execute(image);
-        Assert.AreEqual(new Rgba32(10, 100, 200), swapped[0, 0]);
-        using var half = ImagePipeline.Create().ColorLut(table, 0.5f).Execute(image);
-        Assert.AreEqual(new Rgba32(105, 100, 105), half[0, 0]);
+        using var image = BmageImageBuffer.Create(2, 1, new BmageRgba32(200, 100, 10));
+        using var swapped = BmageImagePipeline.Create().ColorLut(table).Execute(image);
+        Assert.AreEqual(new BmageRgba32(10, 100, 200), swapped[0, 0]);
+        using var half = BmageImagePipeline.Create().ColorLut(table, 0.5f).Execute(image);
+        Assert.AreEqual(new BmageRgba32(105, 100, 105), half[0, 0]);
 
-        var again = ColorLookupTable.ParseCube(table.ToCube());
+        var again = BmageColorLookupTable.ParseCube(table.ToCube());
         Assert.IsTrue(table.HasSameValues(again));
         Assert.AreEqual("Swap", again.Title);
     }
@@ -241,7 +241,7 @@ public sealed class ColorLutTests
         var text = "LUT_3D_SIZE 3\nDOMAIN_MIN 0 0 0\nDOMAIN_MAX 2 2 2\n" + string.Concat(
             from b in Enumerable.Range(0, 3) from g in Enumerable.Range(0, 3) from r in Enumerable.Range(0, 3)
             select $"{r / 2.0} {g / 2.0} {b / 2.0}\n");
-        var table = ColorLookupTable.ParseCube(text);
+        var table = BmageColorLookupTable.ParseCube(text);
         var mid = table.Lookup(Vector3.One);
         Assert.AreEqual(0.5f, mid.X, 1e-5);
         Assert.AreEqual(0.25f, table.Lookup(new Vector3(0.5f, 0.5f, 0.5f)).Y, 1e-5);
@@ -254,7 +254,7 @@ public sealed class ColorLutTests
         var text = "LUT_3D_SIZE 3\nLUT_3D_INPUT_RANGE 0.0 2.0\n" + string.Concat(
             from b in Enumerable.Range(0, 3) from g in Enumerable.Range(0, 3) from r in Enumerable.Range(0, 3)
             select $"{r / 2.0} {g / 2.0} {b / 2.0}\n");
-        var table = ColorLookupTable.ParseCube(text);
+        var table = BmageColorLookupTable.ParseCube(text);
         Assert.AreEqual(0.5f, table.Lookup(Vector3.One).X, 1e-5);
         Assert.AreEqual(0.25f, table.Lookup(new Vector3(0.5f, 0.5f, 0.5f)).Y, 1e-5);
     }
@@ -272,7 +272,7 @@ public sealed class ColorLutTests
     [DataRow("LUT_3D_SIZE 2\nDOMAIN_MIN 1 0 0\nDOMAIN_MAX 1 1 1\n0 0 0\n0 0 1\n0 1 0\n0 1 1\n1 0 0\n1 0 1\n1 1 0\n1 1 1\n", "DOMAIN_MIN must be below")]
     public void AMalformedCubeIsRefusedWithAReason(string text, string reason)
     {
-        var error = Assert.ThrowsExactly<FormatException>(() => ColorLookupTable.ParseCube(text));
+        var error = Assert.ThrowsExactly<FormatException>(() => BmageColorLookupTable.ParseCube(text));
         StringAssert.Contains(error.Message, reason);
     }
 
@@ -280,7 +280,7 @@ public sealed class ColorLutTests
     public void TooManyEntriesAreRefusedOnTheirLine()
     {
         var text = "LUT_3D_SIZE 2\n" + string.Concat(Enumerable.Repeat("0 0 0\n", 9));
-        var error = Assert.ThrowsExactly<FormatException>(() => ColorLookupTable.ParseCube(text));
+        var error = Assert.ThrowsExactly<FormatException>(() => BmageColorLookupTable.ParseCube(text));
         StringAssert.Contains(error.Message, "Line 10");
     }
 
@@ -288,22 +288,22 @@ public sealed class ColorLutTests
     public void TheSamePixelsComeOutOnOneThreadOrManyAndAfterFusing()
     {
         using var noise = ParallelProcessingTests.Noise(300, 200, seed: 6);
-        var table = ColorLookupTable.Create(9, c => new Vector3(MathF.Sqrt(c.X), c.Y * c.Y, 1 - c.Z));
-        var pipeline = ImagePipeline.Create().Brightness(0.1f).ColorLut(table, 0.8f).Contrast(0.2f);
+        var table = BmageColorLookupTable.Create(9, c => new Vector3(MathF.Sqrt(c.X), c.Y * c.Y, 1 - c.Z));
+        var pipeline = BmageImagePipeline.Create().Brightness(0.1f).ColorLut(table, 0.8f).Contrast(0.2f);
         using var one = pipeline.Execute(noise);
-        using var many = pipeline.Execute(noise, new PipelineExecutionOptions { MaxDegreeOfParallelism = 4 });
+        using var many = pipeline.Execute(noise, new BmagePipelineExecutionOptions { MaxDegreeOfParallelism = 4 });
         Assert.AreEqual(0, TestImages.MaxChannelDifference(one, many));
     }
 
     [TestMethod]
     public void ArgumentsAreChecked()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => ColorLookupTable.Create(1, c => c));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => ColorLookupTable.Create(66, c => c));
-        Assert.ThrowsExactly<ArgumentException>(() => ColorLookupTable.Create(2, _ => new Vector3(float.NaN)));
-        Assert.ThrowsExactly<ArgumentException>(() => ColorLookupTable.FromValues(2, new float[23]));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new ColorLutAdjustment(null!));
-        Assert.IsTrue(new ColorLutAdjustment(ColorLookupTable.Create(2, c => c), 0).IsIdentity);
-        Assert.AreEqual("LUT: Film", new ColorLutAdjustment(ColorLookupTable.Create(2, c => c, "Film")).Name);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BmageColorLookupTable.Create(1, c => c));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BmageColorLookupTable.Create(66, c => c));
+        Assert.ThrowsExactly<ArgumentException>(() => BmageColorLookupTable.Create(2, _ => new Vector3(float.NaN)));
+        Assert.ThrowsExactly<ArgumentException>(() => BmageColorLookupTable.FromValues(2, new float[23]));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new BmageColorLutAdjustment(null!));
+        Assert.IsTrue(new BmageColorLutAdjustment(BmageColorLookupTable.Create(2, c => c), 0).IsIdentity);
+        Assert.AreEqual("LUT: Film", new BmageColorLutAdjustment(BmageColorLookupTable.Create(2, c => c, "Film")).Name);
     }
 }

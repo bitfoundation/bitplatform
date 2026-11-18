@@ -14,20 +14,20 @@ public class ImageRetentionTests
     /// <summary>The types that keep something derived from the last image in their own arrays.</summary>
     private static readonly HashSet<Type> ImageHolders =
     [
-        typeof(BbBarcodeDecoder), typeof(BbHybridBinarizer), typeof(BbAdaptiveRowBinarizer), typeof(BbLuminanceBuffer),
-        typeof(BbBitRow), typeof(BbDarkRegionFinder), typeof(BbCode93Reader), typeof(BbCodabarReader), typeof(BbDataBarReader),
-        typeof(BbBarcodeDecoder).Assembly.GetType("Bit.BbScanner.BbPdf417Locator", throwOnError: true)!,
-        typeof(BbBarcodeDecoder).Assembly.GetType("Bit.BbScanner.BbPdf417Locator+RunBuffer", throwOnError: true)!,
+        typeof(BbScannerBarcodeDecoder), typeof(BbScannerHybridBinarizer), typeof(BbScannerAdaptiveRowBinarizer), typeof(BbScannerLuminanceBuffer),
+        typeof(BbScannerBitRow), typeof(BbScannerDarkRegionFinder), typeof(BbScannerCode93Reader), typeof(BbScannerCodabarReader), typeof(BbScannerDataBarReader),
+        typeof(BbScannerBarcodeDecoder).Assembly.GetType("Bit.BbScanner.BbScannerPdf417Locator", throwOnError: true)!,
+        typeof(BbScannerBarcodeDecoder).Assembly.GetType("Bit.BbScanner.BbScannerPdf417Locator+RunBuffer", throwOnError: true)!,
     ];
 
     [TestMethod]
     public void ForgettingTheImageZeroesEverythingTheDecoderKeptOfIt()
     {
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.All, DuplicateSuppressionWindow = TimeSpan.Zero });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = BbScannerBarcodeFormat.All, DuplicateSuppressionWindow = TimeSpan.Zero });
 
         // Every stage gets something to chew on: a matrix symbol, a linear one, a noisy background, and a still
         // image's exhaustive pass on top.
-        using var qr = SyntheticImage.FromMatrix(QrEncoder.Encode("RETAINED", BbQrErrorCorrectionLevel.M, 2), 4);
+        using var qr = SyntheticImage.FromMatrix(QrEncoder.Encode("RETAINED", BbScannerQrErrorCorrectionLevel.M, 2), 4);
         using var qrFrame = ImageTransforms.Frame(qr, 640, 480);
         SyntheticImage.AddNoise(qrFrame, 20, seed: 3);
         Assert.IsNotNull(decoder.Decode(qrFrame.View, suppressDuplicates: false));
@@ -41,7 +41,7 @@ public class ImageRetentionTests
         Assert.IsNotEmpty(before, "Nothing held any image data, so this test no longer tests.");
 
         // Internal: the component calls it whenever its camera closes, and Dispose calls it too.
-        typeof(BbBarcodeDecoder).GetMethod("ForgetImage", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(decoder, null);
+        typeof(BbScannerBarcodeDecoder).GetMethod("ForgetImage", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(decoder, null);
 
         var after = NonZeroArrays(decoder);
         Assert.IsEmpty(after, $"Still holding image data: {string.Join(", ", after)}");
@@ -52,7 +52,7 @@ public class ImageRetentionTests
     {
         // The pool may hand the same array out again to anything in the process, so it must come back empty. Renting
         // straight after a return gets the same array back on this thread.
-        var buffer = BbLuminanceBuffer.Rent(64, 64);
+        var buffer = BbScannerLuminanceBuffer.Rent(64, 64);
         buffer.Pixels.Fill(200);
         buffer.Dispose();
         var again = System.Buffers.ArrayPool<byte>.Shared.Rent(64 * 64);
@@ -65,7 +65,7 @@ public class ImageRetentionTests
             System.Buffers.ArrayPool<byte>.Shared.Return(again);
         }
 
-        var matrix = new BbBitMatrix(64, 64);
+        var matrix = new BbScannerBitMatrix(64, 64);
         for (var y = 0; y < 64; y++)
         {
             for (var x = 0; x < 64; x++)
@@ -111,7 +111,7 @@ public class ImageRetentionTests
                 var index = 0;
                 foreach (var item in sequence)
                 {
-                    if (item is not null && item.GetType().Assembly == typeof(BbBarcodeDecoder).Assembly)
+                    if (item is not null && item.GetType().Assembly == typeof(BbScannerBarcodeDecoder).Assembly)
                     {
                         Walk(item, $"{path}[{index}]");
                     }
@@ -149,7 +149,7 @@ public class ImageRetentionTests
 
                             break;
                         default:
-                            if (value.GetType().Assembly == typeof(BbBarcodeDecoder).Assembly || value is IList)
+                            if (value.GetType().Assembly == typeof(BbScannerBarcodeDecoder).Assembly || value is IList)
                             {
                                 Walk(value, name);
                             }

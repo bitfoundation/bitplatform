@@ -409,10 +409,10 @@ public class EditingToolTests : DemoTest
         // A plain square on a plain background: the wand inside it selects exactly the square.
         var page = await OpenAsync("annotate");
         var file = Path.Combine(Path.GetTempPath(), $"bmage-{Guid.NewGuid():N}-square.png");
-        using (var image = ImageBuffer.Create(400, 300, Rgba32.White))
+        using (var image = BmageImageBuffer.Create(400, 300, BmageRgba32.White))
         {
-            image.Fill(new System.Drawing.Rectangle(100, 80, 120, 90), new Rgba32(30, 90, 200));
-            await File.WriteAllBytesAsync(file, PngEncoder.Encode(image).Data);
+            image.Fill(new System.Drawing.Rectangle(100, 80, 120, 90), new BmageRgba32(30, 90, 200));
+            await File.WriteAllBytesAsync(file, BmagePngEncoder.Encode(image).Data);
         }
         try
         {

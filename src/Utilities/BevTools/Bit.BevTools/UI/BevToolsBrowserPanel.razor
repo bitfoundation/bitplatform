@@ -1,0 +1,295 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-scroll" style="flex:1">
+    @{ var b = Session.Browser; }
+    @if (!b.BridgeAttached)
+    {
+        <div class="bev-empty">Browser bridge not attached@(b.BridgeError is null ? "" : ": " + b.BridgeError). Enable <code>EnableBrowserBridge</code> and make sure <code>_content/Bit.BevTools/bit-bevtools.js</code> is served.</div>
+    }
+    else
+    {
+        <div class="bev-stat-grid">
+            <div class="bev-stat"><div class="bev-stat-value">@(b.Online switch { true => "online", false => "offline", _ => "?" })</div><div class="bev-stat-label">connectivity</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@(b.Visibility ?? "?")</div><div class="bev-stat-label">page visibility</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@(b.ReconnectState ?? "–")</div><div class="bev-stat-label">reconnect state · @b.ReconnectCount reconnects</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@(b.JsHeapUsedMb is { } h ? BevToolsFmt.Num(h) + " MB" : "n/a")</div><div class="bev-stat-label">JS heap used @(b.JsHeapLimitMb is { } l ? "of " + BevToolsFmt.Num(l) + " MB" : "(Chromium only)")</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@(b.NavigationLoadMs is { } n ? BevToolsFmt.Ms(n) : "n/a")</div><div class="bev-stat-label">page load (DOMContentLoaded @(b.DomContentLoadedMs is { } d ? BevToolsFmt.Ms(d) : "n/a"))</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@(b.ResourceCount?.ToString() ?? "n/a")</div><div class="bev-stat-label">resources loaded</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@b.JsErrorCount</div><div class="bev-stat-label">JS errors</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@b.JsToDotNetCalls</div><div class="bev-stat-label">JS → .NET calls@(b.JsToDotNetUnlisted > 0 ? " · " + b.JsToDotNetUnlisted + " counted, not listed" : "")</div></div>
+        </div>
+        <div class="bev-section">
+            @{ var r = b.Responsiveness; }
+            <div class="bev-section-title">Responsiveness <span class="bev-muted" style="font-weight:normal">what the browser measured: interactions to the next paint, frames it could not paint on time</span></div>
+            <div class="bev-section-body">
+                @if (!Session.Options.TrackResponsiveness)
+                {
+                    <div class="bev-muted">Off (<code>BevToolsOptions.TrackResponsiveness</code>).</div>
+                }
+                else
+                {
+                    // A browser that reports no frames at all measured nothing: no zero to show.
+                    var framesObserved = r.Support is not { LongAnimationFrame: false, LongTask: false };
+                    <div class="bev-stat-grid">
+                        <div class="bev-stat"><div class="bev-stat-value @(r.InteractionToNextPaintMs >= Session.Options.Diagnostics.SlowInteractionMs ? "bev-err" : "")">@(r.InteractionToNextPaintMs is { } inp ? BevToolsFmt.Ms(inp) : "–")</div><div class="bev-stat-label" title="Interaction to Next Paint over the interactions BevTools saw (the newest @(BevToolsResponsiveness.InpWindow.ToString("N0", System.Globalization.CultureInfo.InvariantCulture))): the slowest, ignoring one in every 50">INP · @r.InteractionCount interactions</div></div>
+                        <div class="bev-stat"><div class="bev-stat-value">@(r.SlowestInteraction is { } slowest ? BevToolsFmt.Ms(slowest.DurationMs) : "–")</div><div class="bev-stat-label">slowest@(r.SlowestInteraction is { } s ? ": " + s.Name + (s.Target is null ? "" : " on " + s.Target) : "")</div></div>
+                        <div class="bev-stat"><div class="bev-stat-value">@(framesObserved ? r.LongFrameCount.ToString(System.Globalization.CultureInfo.InvariantCulture) : "–")</div><div class="bev-stat-label">long frames · longest @(framesObserved ? BevToolsFmt.Ms(r.LongestFrameMs) : "–")</div></div>
+                        <div class="bev-stat"><div class="bev-stat-value">@(framesObserved ? BevToolsFmt.Ms(r.TotalBlockingMs) : "–")</div><div class="bev-stat-label">blocking time in them</div></div>
+                    </div>
+                    @if (r.Support is { } support && (!support.EventTiming || !support.LongAnimationFrame))
+                    {
+                        <div class="bev-muted">This browser @(support.EventTiming ? "" : "measures no interactions (no Event Timing)")@(!support.EventTiming && !support.LongAnimationFrame ? " and " : "")@(support.LongAnimationFrame ? "" : support.LongTask ? "reports long tasks, without the scripts that ran in them" : "reports no long frames"). Chromium reports both.</div>
+                    }
+                    @if (Session.Platform == "Server")
+                    {
+                        <div class="bev-muted">On a circuit an event handler runs on the server, after the browser painted: an interaction's time is the browser's part; the circuit's is its inbound message's (Timeline).</div>
+                    }
+                    var slow = r.Interactions.Reverse().Where(i => i.DurationMs >= 50).Take(20).ToList();
+                    @if (slow.Count > 0)
+                    {
+                        <table>
+                            <thead><tr><th>Time</th><th>Interaction</th><th class="bev-num">Next paint</th><th class="bev-num">Input delay</th><th class="bev-num">Processing</th><th class="bev-num">Presentation</th><th>Ran</th></tr></thead>
+                            <tbody>
+                                @foreach (var i in slow)
+                                {
+                                    <tr class="bev-row @(i.DurationMs >= Session.Options.Diagnostics.SlowInteractionMs ? "bev-sev-warning" : "")" @onclick="() => Host.SelectEvent(i.TimelineEventId)">
+                                        <td class="bev-mono">@BevToolsFmt.Time(i.At)</td>
+                                        <td class="bev-mono bev-truncate" style="max-width:220px">@i.Name @(i.Target is null ? "" : "on " + i.Target)</td>
+                                        <td class="bev-num">@BevToolsFmt.Ms(i.DurationMs)</td>
+                                        <td class="bev-num">@BevToolsFmt.Ms(i.InputDelayMs)</td>
+                                        <td class="bev-num">@BevToolsFmt.Ms(i.ProcessingMs)</td>
+                                        <td class="bev-num">@BevToolsFmt.Ms(i.PresentationMs)</td>
+                                        <td class="bev-truncate bev-muted" style="max-width:220px" title="@i.HandlerTitle">@(i.HandlerTitle ?? "–")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    var frames = r.Frames.Reverse().Take(20).ToList();
+                    @if (frames.Count > 0)
+                    {
+                        <table>
+                            <thead><tr><th>Time</th><th class="bev-num">Frame</th><th class="bev-num">Blocking</th><th>What ran in it</th></tr></thead>
+                            <tbody>
+                                @foreach (var f in frames)
+                                {
+                                    <tr class="bev-row @(f.BlockingMs >= Session.Options.Diagnostics.LongFrameBlockingMs ? "bev-sev-warning" : "")" @onclick="() => Host.SelectEvent(f.TimelineEventId)">
+                                        <td class="bev-mono">@BevToolsFmt.Time(f.At)</td>
+                                        <td class="bev-num">@BevToolsFmt.Ms(f.DurationMs)</td>
+                                        <td class="bev-num">@BevToolsFmt.Ms(f.BlockingMs)</td>
+                                        <td class="bev-truncate" style="max-width:480px" title="@BevToolsResponsiveness.Describe(f)">@BevToolsResponsiveness.Describe(f)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else if (slow.Count == 0)
+                    {
+                        <div class="bev-muted">Nothing slow yet: interactions of 50 ms or more and frames of 50 ms or more are listed here as they happen.</div>
+                    }
+                }
+            </div>
+        </div>
+        <div class="bev-section">
+            <div class="bev-section-title">Accessibility <span class="bev-muted" style="font-weight:normal">automated checks of the page</span> <button type="button" style="margin-left:auto;font-weight:normal" @onclick="CheckAccessibilityAsync">@(b.AccessibilityCheckedAt is null ? "Check the page" : "Check again (" + BevToolsFmt.Ago(b.AccessibilityCheckedAt) + ")")</button></div>
+            <div class="bev-section-body">
+                <div class="bev-muted">
+                    Markup facts only: names of controls and fields, image alternatives, focusable content hidden from screen readers,
+                    tab order, broken id references, empty headings, the page's language. Contrast, focus order, whether a name
+                    makes sense and how a screen reader announces the page need a person (and the browser's accessibility tools).
+                </div>
+                @if (b.AccessibilityError is { } error)
+                {
+                    <div class="bev-chip bev-err">@error</div>
+                }
+                else if (b.Accessibility is { Count: 0 })
+                {
+                    <div><span class="bev-chip bev-ok">0 findings</span></div>
+                }
+                else if (b.Accessibility is { } findings)
+                {
+                    <table>
+                        <thead><tr><th>Check</th><th>WCAG</th><th>Element</th><th>Component</th><th>Why it matters</th><th></th></tr></thead>
+                        <tbody>
+                            @for (var i = 0; i < findings.Count; i++)
+                            {
+                                var index = i;
+                                var finding = findings[i];
+                                <tr>
+                                    <td class="bev-mono">@finding.Rule</td>
+                                    <td>@finding.Wcag</td>
+                                    <td class="bev-mono">@finding.Element</td>
+                                    <td>
+                                        @if (finding.InstanceId is { } owner && finding.TargetId == Session.Browser.TargetId)
+                                        {
+                                            <button type="button" class="bev-link bev-mono" @onclick="() => Host.SelectComponent(owner)">@finding.Component</button>
+                                        }
+                                        else
+                                        {
+                                            <span class="bev-muted" title="@finding.OwnerUnknown">@(finding.Component ?? (finding.OwnerUnknown is null ? "static markup" : "not found"))</span>
+                                        }
+                                    </td>
+                                    <td>@finding.Message</td>
+                                    <td>@if (finding.Element != "<html>") { <button type="button" aria-label="Show @finding.Element in the page" @onclick="() => Host.HighlightFindingAsync(index, finding.Rule)">Show</button> }</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+        <div class="bev-section">
+            <div class="bev-section-title">Storage <button type="button" style="margin-left:auto;font-weight:normal" @onclick="ReadStorageAsync">@(b.StorageReadAt is null ? "Read storage" : "Refresh (" + BevToolsFmt.Ago(b.StorageReadAt) + ")")</button></div>
+            <div class="bev-section-body">
+                @if (b.StorageReading)
+                {
+                    <div class="bev-muted">Reading…</div>
+                }
+                @if (b.StorageError is { } storageError)
+                {
+                    <div class="bev-empty">Reading browser storage failed: <span class="bev-mono">@storageError</span></div>
+                }
+                @if (b.LocalStorage is null)
+                {
+                    <div class="bev-muted">Storage is read only on request. Values are redacted in the browser when the key looks sensitive or the value looks like a token, so BevTools never receives them; other previews are truncated to 120 characters.</div>
+                }
+                else
+                {
+                    <strong>localStorage (@b.LocalStorage.Count)</strong>
+                    @StorageTable(b.LocalStorage)
+                    <strong>sessionStorage (@(b.SessionStorage?.Count ?? 0))</strong>
+                    @StorageTable(b.SessionStorage ?? [])
+                    @if (b.AppStorage is { } app)
+                    {
+                        @AppStorageView(app)
+                    }
+                }
+            </div>
+        </div>
+        <div class="bev-section">
+            <div class="bev-section-title">Environment</div>
+            <div class="bev-section-body">
+                <dl class="bev-kv">
+                    <dt>User agent</dt><dd class="bev-mono">@b.UserAgent</dd>
+                    <dt>Renderer</dt><dd>@Session.Platform @(Session.RenderModeName is null ? "" : "· " + Session.RenderModeName)</dd>
+                </dl>
+                <div class="bev-muted">Everything else (network waterfall, DOM, WebSocket frames) stays in the browser's own DevTools; this panel only adds Blazor-relevant context.</div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private async Task CheckAccessibilityAsync()
+    {
+        await Host.CheckAccessibilityAsync();
+        StateHasChanged();
+    }
+
+    private async Task ReadStorageAsync()
+    {
+        Session.Browser.StorageReading = true;
+        StateHasChanged();
+        await Host.LoadStorageAsync();
+        StateHasChanged();
+    }
+
+    private RenderFragment AppStorageView(BevToolsAppStorage app) => __builder =>
+    {
+        <strong>Quota</strong>
+        <div>
+            @if (app.UsageBytes is { } usage && app.QuotaBytes is { } quota)
+            {
+                <span>@BevToolsFmt.Bytes((long)usage) used of @BevToolsFmt.Bytes((long)quota) (@((quota <= 0 ? 0 : usage / quota * 100).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)) %)</span>
+                @if (app.UsageDetails is { Count: > 0 } details)
+                {
+                    <span class="bev-muted"> · @string.Join(", ", details.Where(d => d.Value > 0).Select(d => d.Key + " " + BevToolsFmt.Bytes((long)d.Value)))</span>
+                }
+            }
+            else
+            {
+                <span class="bev-muted">not reported by this browser</span>
+            }
+            <span class="bev-muted"> · @(app.Persisted switch { true => "persistent: kept under storage pressure", false => "best effort: the browser may clear it under storage pressure", _ => "persistence unknown" })</span>
+        </div>
+        <strong>Cookies (@app.Cookies.Length)</strong> <span class="bev-muted">names and sizes; values are never read, and HttpOnly cookies (an authentication cookie) are invisible to the page</span>
+        @if (app.Cookies.Length > 0)
+        {
+            <table>
+                <thead><tr><th>Name</th><th class="bev-num">Size</th></tr></thead>
+                <tbody>
+                    @foreach (var c in app.Cookies)
+                    {
+                        <tr><td class="bev-mono">@c.Name</td><td class="bev-num">@c.Size</td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+        <strong>IndexedDB (@(app.IndexedDb?.Length.ToString() ?? "–"))</strong> <span class="bev-muted">listed, not opened</span>
+        @if (app.IndexedDb is null)
+        {
+            <div class="bev-muted">This browser cannot list its databases.</div>
+        }
+        else
+        {
+            @foreach (var d in app.IndexedDb)
+            {
+                <div><span class="bev-mono">@d.Name</span> <span class="bev-muted">version @d.Version</span></div>
+            }
+        }
+        <strong>Cache Storage (@(app.Caches?.Length.ToString() ?? "–"))</strong>
+        @if (app.Caches is { } caches)
+        {
+            @foreach (var c in caches)
+            {
+                <div><span class="bev-mono">@c.Name</span> <span class="bev-muted">@c.Entries request@(c.Entries == 1 ? "" : "s")</span></div>
+            }
+        }
+        else
+        {
+            <div class="bev-muted">Not available (a page that is not served over HTTPS or localhost has no Cache Storage).</div>
+        }
+        <strong>Service workers (@(app.ServiceWorkers?.Length.ToString() ?? "–"))</strong> <span class="bev-muted">@(app.Controller is null ? "this page is not controlled by one" : "this page is controlled by " + app.Controller)</span>
+        @if (app.ServiceWorkers is { } workers)
+        {
+            @foreach (var w in workers)
+            {
+                <div>
+                    <span class="bev-mono">@w.Scope</span>
+                    <span class="bev-muted">@(w.Active is null ? "no active worker" : "active " + (w.ActiveState ?? "") + ": " + w.Active)</span>
+                    @if (w.Waiting is not null)
+                    {
+                        <span class="bev-chip bev-warn" title="Installed and waiting: the page keeps running the old version until every tab of it closes, or the worker calls skipWaiting">update waiting: @w.Waiting</span>
+                    }
+                    @if (w.Installing is not null)
+                    {
+                        <span class="bev-chip">installing: @w.Installing</span>
+                    }
+                </div>
+            }
+        }
+        @foreach (var error in app.Errors)
+        {
+            <div class="bev-chip bev-err">@error</div>
+        }
+    };
+
+    private RenderFragment StorageTable(IReadOnlyList<BevToolsStorageEntry> entries) => __builder =>
+    {
+        if (entries.Count == 0)
+        {
+            <div class="bev-muted">empty</div>
+            return;
+        }
+        <table>
+            <thead><tr><th>Key</th><th class="bev-num">Size</th><th>Preview</th></tr></thead>
+            <tbody>
+                @foreach (var e in entries)
+                {
+                    <tr><td class="bev-mono">@e.Key</td><td class="bev-num">@e.Size</td><td class="bev-mono bev-truncate" style="max-width:480px">@(e.Redacted ? BevToolsRedactor.RedactedValue : e.Preview)</td></tr>
+                }
+            </tbody>
+        </table>
+    };
+}

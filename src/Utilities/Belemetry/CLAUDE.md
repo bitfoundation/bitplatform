@@ -52,7 +52,7 @@ core because every host may need them and they add no dependency.
 - Comments explain *why* (trimming, WASM single-threadedness, browser quirks, spec references), not *what*.
 - Every public type and member carries XML documentation. The MCP server reflects it.
 - **No reflection-based serialization.**
-  - OTLP and Azure payloads are written by hand with `Utf8JsonWriter` or `ProtobufWriter`.
+  - OTLP and Azure payloads are written by hand with `Utf8JsonWriter` or `BelemetryProtobufWriter`.
   - Interop DTOs go through the source-generated `BelemetryJsonContext`.
   - The package is `IsTrimmable` and `IsAotCompatible`.
 - **No threads.** Browser WebAssembly is single-threaded, so the pipeline runs on async loops with timers only.
@@ -252,7 +252,7 @@ Notes on the fields:
   OTLP 429/502/503/504 only (the specification forbids the rest); Azure Monitor 408/429/439/500/502/503/504. A request
   is Azure's when its exporter is `azureMonitor` (script) or `azuremonitor`, `azuremonitor1`, ... (.NET). Sentry's
   (`sentry`; .NET `sentry`, `sentry1`, ...) retry as OTLP's.
-- A Sentry exporter's `dsn` is the public DSN (`SentryDsn.PublicDsn`): a legacy secret key is never handed over, on any
+- A Sentry exporter's `dsn` is the public DSN (`BelemetrySentryDsn.PublicDsn`): a legacy secret key is never handed over, on any
   host. The public key is public by design (Sentry's browser SDK publishes it in every page), so a server renders it.
   `minimumSeverity` is always a number (0 for all, from `LogLevel.Trace`): the script reads an absent one as 17 (ERROR),
   the C# default. An invalid DSN is left out as `BelemetrySettings` resolves the options (with a startup warning; no
@@ -446,7 +446,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 ### Sentry mapping (C# `Exporters/Sentry/`, TS `exporters/sentry.ts`; identical for a browser record)
 
 - **Endpoint:** `{scheme}://{host}{path}/api/{project}/envelope/?sentry_key={key}&sentry_version=7` from the DSN
-  `{scheme}://{key}[:{secret}]@{host}{path}/{project}` (`SentryDsn`, `parseDsn`). The key is in the URL, not a header:
+  `{scheme}://{key}[:{secret}]@{host}{path}/{project}` (`BelemetrySentryDsn`, `parseDsn`). The key is in the URL, not a header:
   no header to keep out of storage, and a stored request needs none. `Content-Type: application/x-sentry-envelope`;
   `compression: gzip` sends `Content-Encoding: gzip` (not during unload).
 - **Envelope:** one event each (Sentry takes one per envelope): `{"event_id","dsn":<public DSN>,"sdk":{"name","version"}}`
@@ -458,7 +458,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   (.NET) a log record this exporter sends is the same exception (`LoggedAs`, not dropped, at the minimum severity).
   When every .NET exporter is a Sentry exporter (`BelemetrySettings.ExportsSentryOnly`), the pipeline queues nothing
   else: no meter collector runs, a span without an exception event and a log record that is no candidate
-  (`SentryEnvelopeSerializer.IsCandidate` at `SentryMinimumSeverity`, the least severe level) are not enqueued for the
+  (`BelemetrySentryEnvelopeSerializer.IsCandidate` at `SentryMinimumSeverity`, the least severe level) are not enqueued for the
   export (the diagnostic timeline still sees them). The script is not narrowed (its `features` are consent's too).
 - **Delivery (.NET):** `BelemetryExporterSet.ExportAsync` holds back the rest of a batch's requests to a URL once one
   failed (stored, as `RetryStoredAsync` holds back a failed URL's backlog): a Sentry exporter makes one per event, and
@@ -490,7 +490,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   with no whitespace in the method, then the first `)` after which the rest is nothing, ` + 0x{hex}`, and/or
   ` in {file}:line {n}` (the file runs to the last `:line ` before the trailing digits). Numbers are ASCII digits only,
   and one past 2147483647 is no number (`ToInt`, `toInt`): no line, never a failure.
-- **Frames** (oldest first, the newest 100 per exception, at most 16 exceptions): JavaScript (`SentryStackTrace.ParseJavaScript`,
+- **Frames** (oldest first, the newest 100 per exception, at most 16 exceptions): JavaScript (`BelemetrySentryStackTrace.ParseJavaScript`,
   `parseStack`; the same cases in `SentryStackTraceTests` and `sentry.test.js`): V8 `at fn (url:l:c)` / `at url:l:c` /
   `async` / `new` / `eval at fn (url:l:c), ...` (the inner location); SpiderMonkey and JavaScriptCore `fn@url:l:c`
   (the first `@`; `async*` dropped; `url line N > eval` is the url at line N; `[native code]`); a line with neither, or
@@ -511,7 +511,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   takes the text's frames. Without the object the text alone is parsed. The frames start at the first frame line (a
   message line starting "at " is the header's; a one-word `at App!<BaseAddress>+0x..` starts them too); an
   `AggregateException`'s other inner exceptions (`---> (Inner Exception #n)`) are not the chain's.
-- **Debug image** (`SentryDebugImage`, read by hand from the PE file: System.Reflection.Metadata would weigh on every
+- **Debug image** (`BelemetrySentryDebugImage`, read by hand from the PE file: System.Reflection.Metadata would weigh on every
   WebAssembly app, which has no file): `pe_dotnet`, `code_file` (the path), `code_id` (`{COFF stamp:X8}{SizeOfImage:x}`),
   `debug_id` (CodeView GUID + `-{entry stamp:x8}` for a portable PDB, `-{age:x}` otherwise), `debug_file`,
   `debug_checksum` (`{algorithm}:{hex}`) - Sentry's .NET SDK's values. None in WebAssembly or without a file.

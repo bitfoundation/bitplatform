@@ -4,26 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.BevTools;
 
-/// <summary>Per-type lifecycle numbers observed through the framework's meters (.NET 10+): SetParametersAsync durations.</summary>
-public sealed class BevLifecycleTypeMetrics
-{
-    /// <summary>The full type name, namespace included, as the framework reports it; the same as <see cref="BevComponentRecord.TypeName"/>.</summary>
-    public required string TypeName { get; init; }
-
-    /// <summary>The type name without its namespace, for display.</summary>
-    public required string DisplayName { get; init; }
-
-    public int ParameterUpdates;
-
-    public double ParameterUpdateMs;
-
-    public double MaxParameterUpdateMs;
-
-    public int EventHandlers;
-
-    public double EventHandlerMs;
-}
-
 /// <summary>
 /// Everything BevTools knows about one Blazor session: a circuit on the server, the app in WebAssembly, a request in
 /// static rendering. Scoped service; created lazily when the first component is activated.
@@ -36,30 +16,30 @@ public sealed class BevToolsSession : IDisposable
     private int _capturing = 1;
     private int _skippedWhilePaused;
 
-    public BevToolsSession(IServiceProvider services, BitBevToolsOptions options, BevToolsRegistry registry)
+    public BevToolsSession(IServiceProvider services, BevToolsOptions options, BevToolsRegistry registry)
     {
         Id = Interlocked.Increment(ref _nextId);
         Services = services;
         Options = options;
         Registry = registry;
         IsEnabled = registry.IsEnabled;
-        Redactor = new BevRedactor(options.SensitiveNamePatterns);
+        Redactor = new BevToolsRedactor(options.SensitiveNamePatterns);
         ValueAccessIsConfigured = options.ValueAccess is not null;
-        ValueAccess = options.ValueAccess ?? (IsEnabled && IsInMultiUserHost && !IsDevelopmentHost(services) ? BevValueAccess.None : BevValueAccess.Full);
-        Inspector = new BevObjectInspector(options, Redactor, registry.Formatters, ValueAccess);
-        Overhead = new BevOverheadMeter();
-        Timeline = new Timeline(this, options.MaxEvents);
-        Components = new ComponentRegistry(this, options);
-        Leaks = new BevLeakTracker(this);
-        Forms = new BevFormTracker(this);
-        Errors = new ErrorCenter(this, options);
-        Http = new HttpStore(this, options);
-        Interop = new JsInteropStore(this, options);
-        Logs = new BevLogStore(this, options);
-        State = new StateStore(this, options);
-        Diagnostics = new DiagnosticsEngine(this, options, registry);
-        Commands = new CommandRegistry();
-        RenderTracker = new RenderTracker(this, options);
+        ValueAccess = options.ValueAccess ?? (IsEnabled && IsInMultiUserHost && !IsDevelopmentHost(services) ? BevToolsValueAccess.None : BevToolsValueAccess.Full);
+        Inspector = new BevToolsObjectInspector(options, Redactor, registry.Formatters, ValueAccess);
+        Overhead = new BevToolsOverheadMeter();
+        Timeline = new BevToolsTimeline(this, options.MaxEvents);
+        Components = new BevToolsComponentRegistry(this, options);
+        Leaks = new BevToolsLeakTracker(this);
+        Forms = new BevToolsFormTracker(this);
+        Errors = new BevToolsErrorCenter(this, options);
+        Http = new BevToolsHttpStore(this, options);
+        Interop = new BevToolsJsInteropStore(this, options);
+        Logs = new BevToolsLogStore(this, options);
+        State = new BevToolsStateStore(this, options);
+        Diagnostics = new BevToolsDiagnosticsEngine(this, options, registry);
+        Commands = new BevToolsCommandRegistry();
+        RenderTracker = new BevToolsRenderTracker(this, options);
         Ui = new BevToolsUiState
         {
             IsOpen = options.Ui.OpenByDefault,
@@ -67,13 +47,13 @@ public sealed class BevToolsSession : IDisposable
             Theme = options.Ui.Theme,
             LiveUpdates = options.Ui.LiveUpdates,
         };
-        Browser = new BevBrowserState();
+        Browser = new BevToolsBrowserState();
         StartedAt = DateTimeOffset.UtcNow;
         StartedTicks = System.Diagnostics.Stopwatch.GetTimestamp();
 
         if (IsEnabled)
         {
-            SessionResolver.Register(this);
+            BevToolsSessionResolver.Register(this);
         }
     }
 
@@ -90,41 +70,41 @@ public sealed class BevToolsSession : IDisposable
 
     public bool IsAttachedAtRuntime => Attachment is not null;
 
-    internal BevRuntimeAttachment? Attachment { get; init; }
+    internal BevToolsRuntimeAttachment? Attachment { get; init; }
 
-    public BitBevToolsOptions Options { get; }
+    public BevToolsOptions Options { get; }
 
     public BevToolsRegistry Registry { get; }
 
     internal IServiceProvider Services { get; }
 
-    public BevRedactor Redactor { get; }
+    public BevToolsRedactor Redactor { get; }
 
     /// <summary>
-    /// How much of the application's values this session reads: <see cref="BitBevToolsOptions.ValueAccess"/> when set,
+    /// How much of the application's values this session reads: <see cref="BevToolsOptions.ValueAccess"/> when set,
     /// otherwise Full, except outside Development in a process that serves many users, where it is None.
     /// </summary>
-    public BevValueAccess ValueAccess { get; }
+    public BevToolsValueAccess ValueAccess { get; }
 
     /// <summary>
-    /// True when <see cref="ValueAccess"/> comes from <see cref="BitBevToolsOptions.ValueAccess"/> rather than the
+    /// True when <see cref="ValueAccess"/> comes from <see cref="BevToolsOptions.ValueAccess"/> rather than the
     /// default: a None the app chose must not be explained as the multi-user default it did not hit.
     /// </summary>
     internal bool ValueAccessIsConfigured { get; }
 
-    public BevObjectInspector Inspector { get; }
+    public BevToolsObjectInspector Inspector { get; }
 
-    public BevOverheadMeter Overhead { get; }
+    public BevToolsOverheadMeter Overhead { get; }
 
-    internal Timeline Timeline { get; }
+    internal BevToolsTimeline Timeline { get; }
 
-    internal ComponentRegistry Components { get; }
+    internal BevToolsComponentRegistry Components { get; }
 
     /// <summary>Disposed components, held weakly, and which of them garbage collection did not reclaim.</summary>
-    internal BevLeakTracker Leaks { get; }
+    internal BevToolsLeakTracker Leaks { get; }
 
     /// <summary>The session's forms (EditContexts): fields, validation outcomes, validators and message displays.</summary>
-    internal BevFormTracker Forms { get; }
+    internal BevToolsFormTracker Forms { get; }
 
     /// <summary>
     /// Whether a developer may force a full garbage collection from BevTools: everywhere but a process that serves many
@@ -133,39 +113,39 @@ public sealed class BevToolsSession : IDisposable
     internal bool AllowsForcedCollection => !IsInMultiUserHost || IsDevelopmentHost(Services);
 
     /// <summary>
-    /// Whether BevTools may ask a state provider to restore an earlier state (<see cref="IBevStateRestorer"/>): it changes
+    /// Whether BevTools may ask a state provider to restore an earlier state (<see cref="IBevToolsStateRestorer"/>): it changes
     /// what the application does, so as forced collections, only in Development or a process that serves one user.
     /// </summary>
     internal bool AllowsStateRestore => AllowsForcedCollection;
 
-    internal ErrorCenter Errors { get; }
+    internal BevToolsErrorCenter Errors { get; }
 
-    internal HttpStore Http { get; }
+    internal BevToolsHttpStore Http { get; }
 
-    internal JsInteropStore Interop { get; }
+    internal BevToolsJsInteropStore Interop { get; }
 
     /// <summary>What the application's loggers wrote while this session's code ran.</summary>
-    internal BevLogStore Logs { get; }
+    internal BevToolsLogStore Logs { get; }
 
-    internal StateStore State { get; }
+    internal BevToolsStateStore State { get; }
 
-    internal DiagnosticsEngine Diagnostics { get; }
+    internal BevToolsDiagnosticsEngine Diagnostics { get; }
 
-    internal CommandRegistry Commands { get; }
+    internal BevToolsCommandRegistry Commands { get; }
 
-    internal RenderTracker RenderTracker { get; }
+    internal BevToolsRenderTracker RenderTracker { get; }
 
     public BevToolsUiState Ui { get; }
 
-    public BevBrowserState Browser { get; }
+    public BevToolsBrowserState Browser { get; }
 
     /// <summary>The heap, full collections and (on WebAssembly) linear memory over the last ten minutes.</summary>
-    public BevMemoryTrend Memory { get; } = new();
+    public BevToolsMemoryTrend Memory { get; } = new();
 
     /// <summary>Public timeline API for extensions.</summary>
     public IBevToolsTimeline TimelineApi => Timeline;
 
-    public IBevStateProviderRegistry StateProviders => State;
+    public IBevToolsStateProviderRegistry StateProviders => State;
 
     /// <summary>The renderer dispatcher owning this session; used to attribute ambient activity (HTTP, logs, metrics) to the session.</summary>
     public Dispatcher? Dispatcher { get; internal set; }
@@ -255,7 +235,7 @@ public sealed class BevToolsSession : IDisposable
     public bool IsInteractive { get; internal set; }
 
     /// <summary>What prerendering did for this page, handed over through persistent component state; null when the page was not prerendered, or the summary did not arrive.</summary>
-    public BevPrerenderSummary? Prerender { get; internal set; }
+    public BevToolsPrerenderSummary? Prerender { get; internal set; }
 
     public string? RenderModeName { get; internal set; }
 
@@ -331,7 +311,7 @@ public sealed class BevToolsSession : IDisposable
     internal long? LastLocationChangedEventId { get; set; }
 
     /// <summary>The UI event (or navigation) currently executing on this session, resolved from Activity context.</summary>
-    internal long? CurrentTriggerEventId => ActivityObserver.CurrentTriggerEvent(this)?.Id;
+    internal long? CurrentTriggerEventId => BevToolsActivityObserver.CurrentTriggerEvent(this)?.Id;
 
     private FailedTrigger? _failedTrigger;
 
@@ -356,7 +336,7 @@ public sealed class BevToolsSession : IDisposable
 
     private sealed record FailedTrigger(long EventId, string ErrorType, DateTimeOffset At);
 
-    internal ConcurrentDictionary<string, BevLifecycleTypeMetrics> TypeMetrics { get; } = new(StringComparer.Ordinal);
+    internal ConcurrentDictionary<string, BevToolsLifecycleTypeMetrics> TypeMetrics { get; } = new(StringComparer.Ordinal);
 
     /// <summary>Raised when something needs the symbols of an assembly that has none on disk (WebAssembly); the panel downloads them.</summary>
     internal event Action<System.Reflection.Assembly>? SymbolsWanted;
@@ -367,7 +347,7 @@ public sealed class BevToolsSession : IDisposable
 
     /// <summary>
     /// The interactive BevTools panel of this session. Its element is the one place in the page known to be rendered by
-    /// this runtime, so the page hub finds this runtime's root component from it (see <see cref="BevDomMap"/>). Held
+    /// this runtime, so the page hub finds this runtime's root component from it (see <see cref="BevToolsDomMap"/>). Held
     /// weakly, like every component BevTools knows.
     /// </summary>
     internal IComponent? PanelComponent
@@ -383,7 +363,7 @@ public sealed class BevToolsSession : IDisposable
     /// the component's state is captured on its renders from now on, so its next render says what changed, and the one
     /// inspected before stops being captured unless the in-app panel has it selected.
     /// </summary>
-    internal void InspectExternally(BevComponentRecord record)
+    internal void InspectExternally(BevToolsComponentRecord record)
     {
         if (!Options.CaptureComponentStateOnRender && _externallyInspected is { } previousId && previousId != record.InstanceId
             && previousId != Ui.SelectedComponentId && Components.Get(previousId) is { } previous)
@@ -398,7 +378,7 @@ public sealed class BevToolsSession : IDisposable
     internal void Touch() => Interlocked.Increment(ref _version);
 
     /// <summary>Called by the render tracker for each application render that happened while capture was paused.</summary>
-    internal void NoteSkippedRender(BevComponentRecord record)
+    internal void NoteSkippedRender(BevToolsComponentRecord record)
     {
         record.NoteSkippedRender();
         Interlocked.Increment(ref _skippedWhilePaused);
@@ -415,12 +395,12 @@ public sealed class BevToolsSession : IDisposable
         _activated = true;
         try
         {
-            foreach (var provider in Services.GetServices<IBevStateProvider>())
+            foreach (var provider in Services.GetServices<IBevToolsStateProvider>())
             {
                 State.Attach(provider, "DI");
             }
 
-            if (BevAuthenticationStateProvider.TryCreate(Services) is { } authentication)
+            if (BevToolsAuthenticationStateProvider.TryCreate(Services) is { } authentication)
             {
                 _authentication = authentication;
                 State.Attach(authentication, "built-in");
@@ -438,7 +418,7 @@ public sealed class BevToolsSession : IDisposable
                 }
             }
 
-            Commands.AddRange(BuiltInCommands.Create());
+            Commands.AddRange(BevToolsBuiltInCommands.Create());
             Commands.AddRange(Registry.Commands);
             Commands.AddRange(Services.GetServices<IBevToolsCommand>());
         }
@@ -451,16 +431,16 @@ public sealed class BevToolsSession : IDisposable
     }
 
     /// <summary>Whether the framework diagnostics services this session depends on are present in its container.</summary>
-    public (bool ActivitySource, bool Metrics) FrameworkInstrumentation => ActivityObserver.ResolveFrameworkServices(Services);
+    public (bool ActivitySource, bool Metrics) FrameworkInstrumentation => BevToolsActivityObserver.ResolveFrameworkServices(Services);
 
-    public IReadOnlyList<BevToolsCapability> Capabilities => CapabilityReport.Build(this);
+    public IReadOnlyList<BevToolsCapability> Capabilities => BevToolsCapabilityReport.Build(this);
 
     /// <summary>
     /// Attributes ambient activity on the current async flow (HTTP requests, framework logs, metrics) to this session
     /// until the scope is disposed. Use it in background work (Task.Run, hosted services) that runs outside the
     /// renderer's dispatcher, where the session cannot be inferred.
     /// </summary>
-    public IDisposable UseAmbient() => SessionResolver.PushAmbient(this);
+    public IDisposable UseAmbient() => BevToolsSessionResolver.PushAmbient(this);
 
     private readonly object _navigationCausesLock = new();
     private readonly Queue<long> _navigationCauseOrder = new();
@@ -505,7 +485,7 @@ public sealed class BevToolsSession : IDisposable
     public long AddMarker(string label)
     {
         ArgumentNullException.ThrowIfNull(label);
-        var text = BevRedactor.RedactText(label.Trim().ReplaceLineEndings(" "));
+        var text = BevToolsRedactor.RedactText(label.Trim().ReplaceLineEndings(" "));
         return Timeline.Record(new BevToolsEvent
         {
             Kind = BevToolsEventKind.Custom,
@@ -544,10 +524,10 @@ public sealed class BevToolsSession : IDisposable
         }
 
         IsDisposed = true;
-        SessionResolver.Unregister(this);
+        BevToolsSessionResolver.Unregister(this);
         State.Dispose();
         _authentication?.Dispose();
     }
 
-    private BevAuthenticationStateProvider? _authentication;
+    private BevToolsAuthenticationStateProvider? _authentication;
 }

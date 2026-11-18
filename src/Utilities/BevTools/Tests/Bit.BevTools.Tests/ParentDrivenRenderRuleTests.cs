@@ -33,7 +33,7 @@ public class ParentDrivenRenderRuleTests : BunitContext
         Assert.Contains("ChildComponent", finding.Diagnostic.Title, StringComparison.Ordinal);
         Assert.Contains("ParentComponent", finding.Diagnostic.Title, StringComparison.Ordinal);
         Assert.Contains("ShouldRender", finding.Diagnostic.Suggestion!, StringComparison.Ordinal);
-        Assert.AreEqual(BevDiagnosticSeverity.Info, finding.Diagnostic.Severity);
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Info, finding.Diagnostic.Severity);
     }
 
     [TestMethod]

@@ -4,37 +4,37 @@
 public sealed class ExifTests
 {
     /// <summary>Builds EXIF data resembling what a phone camera writes, including GPS.</summary>
-    private static ExifData BuildCameraExif() => new ExifData()
-        .WithPrimary(new ExifDirectory()
-            .With(ExifTag.Make, ExifValue.FromString("BlazorPhone"))
-            .With(ExifTag.Model, ExifValue.FromString("BP-9 Pro"))
-            .With(ExifTag.Software, ExifValue.FromString("BP OS 3.1"))
-            .With(ExifTag.Copyright, ExifValue.FromString("© 2026 Example"))
-            .With(ExifTag.Orientation, ExifValue.FromShort(6)))
-        .WithExif(new ExifDirectory()
-            .With(ExifTag.DateTimeOriginal, ExifValue.FromString("2026:04:17 09:31:44"))
-            .With(ExifTag.ExposureTime, ExifValue.FromRational((1, 250)))
-            .With(ExifTag.FNumber, ExifValue.FromRational((18, 10)))
-            .With(ExifTag.Iso, ExifValue.FromShort(200))
-            .With(ExifTag.FocalLength, ExifValue.FromRational((26, 1)))
-            .With(ExifTag.LensModel, ExifValue.FromString("BP 26mm f/1.8"))
-            .With(ExifTag.BodySerialNumber, ExifValue.FromString("SN-4417-XY"))
-            .With(ExifTag.UserComment, ExifValue.FromString("private note"))
-            .With(ExifTag.PixelXDimension, ExifValue.FromLong(4032))
-            .With(ExifTag.PixelYDimension, ExifValue.FromLong(3024)))
-        .WithGps(new ExifDirectory()
-            .With(ExifTag.GpsLatitudeRef, ExifValue.FromString("N"))
-            .With(ExifTag.GpsLatitude, ExifValue.FromRational((51, 1), (30, 1), (2613, 100)))
-            .With(ExifTag.GpsLongitudeRef, ExifValue.FromString("W"))
-            .With(ExifTag.GpsLongitude, ExifValue.FromRational((0, 1), (7, 1), (3924, 100)))
-            .With(ExifTag.GpsAltitudeRef, ExifValue.FromShort(0))
-            .With(ExifTag.GpsAltitude, ExifValue.FromRational((35, 1))));
+    private static BmageExifData BuildCameraExif() => new BmageExifData()
+        .WithPrimary(new BmageExifDirectory()
+            .With(BmageExifTag.Make, BmageExifValue.FromString("BlazorPhone"))
+            .With(BmageExifTag.Model, BmageExifValue.FromString("BP-9 Pro"))
+            .With(BmageExifTag.Software, BmageExifValue.FromString("BP OS 3.1"))
+            .With(BmageExifTag.Copyright, BmageExifValue.FromString("© 2026 Example"))
+            .With(BmageExifTag.Orientation, BmageExifValue.FromShort(6)))
+        .WithExif(new BmageExifDirectory()
+            .With(BmageExifTag.DateTimeOriginal, BmageExifValue.FromString("2026:04:17 09:31:44"))
+            .With(BmageExifTag.ExposureTime, BmageExifValue.FromRational((1, 250)))
+            .With(BmageExifTag.FNumber, BmageExifValue.FromRational((18, 10)))
+            .With(BmageExifTag.Iso, BmageExifValue.FromShort(200))
+            .With(BmageExifTag.FocalLength, BmageExifValue.FromRational((26, 1)))
+            .With(BmageExifTag.LensModel, BmageExifValue.FromString("BP 26mm f/1.8"))
+            .With(BmageExifTag.BodySerialNumber, BmageExifValue.FromString("SN-4417-XY"))
+            .With(BmageExifTag.UserComment, BmageExifValue.FromString("private note"))
+            .With(BmageExifTag.PixelXDimension, BmageExifValue.FromLong(4032))
+            .With(BmageExifTag.PixelYDimension, BmageExifValue.FromLong(3024)))
+        .WithGps(new BmageExifDirectory()
+            .With(BmageExifTag.GpsLatitudeRef, BmageExifValue.FromString("N"))
+            .With(BmageExifTag.GpsLatitude, BmageExifValue.FromRational((51, 1), (30, 1), (2613, 100)))
+            .With(BmageExifTag.GpsLongitudeRef, BmageExifValue.FromString("W"))
+            .With(BmageExifTag.GpsLongitude, BmageExifValue.FromRational((0, 1), (7, 1), (3924, 100)))
+            .With(BmageExifTag.GpsAltitudeRef, BmageExifValue.FromShort(0))
+            .With(BmageExifTag.GpsAltitude, BmageExifValue.FromRational((35, 1))));
 
     [TestMethod]
     public void RoundTripsThroughTiffSerialisation()
     {
         var original = BuildCameraExif();
-        var restored = ExifData.Parse(original.ToTiff());
+        var restored = BmageExifData.Parse(original.ToTiff());
         Assert.IsNotNull(restored);
         Assert.AreEqual("BlazorPhone", restored!.Make);
         Assert.AreEqual("BP-9 Pro", restored.Model);
@@ -64,18 +64,18 @@ public sealed class ExifTests
     public void ParsesDatesAndRejectsMalformedOnes()
     {
         Assert.AreEqual(new DateTimeOffset(2026, 4, 17, 9, 31, 44, TimeSpan.Zero), BuildCameraExif().DateTaken);
-        Assert.IsNull(ExifData.ParseDate("not a date"));
-        Assert.IsNull(ExifData.ParseDate("2026:13:45 99:99:99"));
-        Assert.IsNull(ExifData.ParseDate(null));
-        Assert.IsNull(ExifData.ParseDate("2026:02:30 10:00:00"));
+        Assert.IsNull(BmageExifData.ParseDate("not a date"));
+        Assert.IsNull(BmageExifData.ParseDate("2026:13:45 99:99:99"));
+        Assert.IsNull(BmageExifData.ParseDate(null));
+        Assert.IsNull(BmageExifData.ParseDate("2026:02:30 10:00:00"));
     }
 
     [TestMethod]
     public void ParsesDateOffsets()
     {
-        var exif = new ExifData().WithExif(new ExifDirectory()
-            .With(ExifTag.DateTimeOriginal, ExifValue.FromString("2026:04:17 09:31:44"))
-            .With(ExifTag.OffsetTimeOriginal, ExifValue.FromString("+02:00")));
+        var exif = new BmageExifData().WithExif(new BmageExifDirectory()
+            .With(BmageExifTag.DateTimeOriginal, BmageExifValue.FromString("2026:04:17 09:31:44"))
+            .With(BmageExifTag.OffsetTimeOriginal, BmageExifValue.FromString("+02:00")));
         Assert.AreEqual(TimeSpan.FromHours(2), exif.DateTaken!.Value.Offset);
     }
 
@@ -85,8 +85,8 @@ public sealed class ExifTests
         var stripped = BuildCameraExif().StripSensitive();
         Assert.IsNull(stripped.Location);
         Assert.IsFalse(stripped.HasLocation);
-        Assert.IsNull(stripped.Exif.Get(ExifTag.BodySerialNumber));
-        Assert.IsNull(stripped.Exif.Get(ExifTag.UserComment));
+        Assert.IsNull(stripped.Exif.Get(BmageExifTag.BodySerialNumber));
+        Assert.IsNull(stripped.Exif.Get(BmageExifTag.UserComment));
         // Descriptive data survives, which is the point of this policy.
         Assert.AreEqual("BlazorPhone", stripped.Make);
         Assert.AreEqual("© 2026 Example", stripped.Copyright);
@@ -109,12 +109,12 @@ public sealed class ExifTests
         {
             var truncated = valid[..length];
             // Must never throw, however mangled the input.
-            var result = ExifData.Parse(truncated);
+            var result = BmageExifData.Parse(truncated);
             _ = result?.Make;
             _ = result?.Location;
         }
-        Assert.IsNull(ExifData.Parse([]));
-        Assert.IsNull(ExifData.Parse([0xFF, 0xFF, 0xFF, 0xFF]));
+        Assert.IsNull(BmageExifData.Parse([]));
+        Assert.IsNull(BmageExifData.Parse([0xFF, 0xFF, 0xFF, 0xFF]));
     }
 
     [TestMethod]
@@ -124,7 +124,7 @@ public sealed class ExifTests
         // Point the first IFD entry's value offset far beyond the buffer.
         var corrupted = (byte[])data.Clone();
         for (var i = 8 + 2 + 8; i + 4 <= corrupted.Length && i < 40; i++) corrupted[i] = 0xFE;
-        var result = ExifData.Parse(corrupted);
+        var result = BmageExifData.Parse(corrupted);
         // Some fields may be lost, but parsing must complete safely.
         _ = result?.Make;
     }
@@ -132,14 +132,14 @@ public sealed class ExifTests
     [TestMethod]
     public void MetadataPolicyControlsWhatSurvives()
     {
-        var metadata = new ImageMetadata(BuildCameraExif(), new byte[] { 1, 2, 3, 4 }, "<x:xmpmeta/>"u8.ToArray(), BmageImageFormat.Jpeg);
+        var metadata = new BmageImageMetadata(BuildCameraExif(), new byte[] { 1, 2, 3, 4 }, "<x:xmpmeta/>"u8.ToArray(), BmageImageFormat.Jpeg);
 
-        var removed = metadata.Apply(MetadataPolicy.Remove, 100, 80);
+        var removed = metadata.Apply(BmageMetadataPolicy.Remove, 100, 80);
         Assert.IsNull(removed.Exif);
         Assert.IsTrue(removed.IccProfile.IsEmpty);
         Assert.IsTrue(removed.Xmp.IsEmpty);
 
-        var stripped = metadata.Apply(MetadataPolicy.StripSensitive, 100, 80);
+        var stripped = metadata.Apply(BmageMetadataPolicy.StripSensitive, 100, 80);
         Assert.IsNotNull(stripped.Exif);
         Assert.IsNull(stripped.Exif!.Location);
         Assert.AreEqual("BlazorPhone", stripped.Exif.Make);
@@ -148,7 +148,7 @@ public sealed class ExifTests
         Assert.IsTrue(stripped.Xmp.IsEmpty);
         Assert.AreEqual(100, stripped.Exif.PixelXDimension);
 
-        var preserved = metadata.Apply(MetadataPolicy.Preserve, 100, 80);
+        var preserved = metadata.Apply(BmageMetadataPolicy.Preserve, 100, 80);
         Assert.IsNotNull(preserved.Exif!.Location);
         Assert.IsFalse(preserved.Xmp.IsEmpty);
         Assert.AreEqual(100, preserved.Exif.PixelXDimension);
@@ -161,7 +161,7 @@ public sealed class ExifTests
 
         // A buffer whose pixels have been brought upright reports normal, and that is what gets written.
         var upright = metadata.WithExif(metadata.Exif!.WithOrientation(BmageOrientation.Normal));
-        Assert.AreEqual(BmageOrientation.Normal, upright.Apply(MetadataPolicy.Preserve, 100, 80).Exif!.Orientation);
+        Assert.AreEqual(BmageOrientation.Normal, upright.Apply(BmageMetadataPolicy.Preserve, 100, 80).Exif!.Orientation);
     }
 }
 
@@ -172,18 +172,18 @@ public sealed class ContainerTests
     public void JpegMetadataSurvivesAWriteReadRoundTrip()
     {
         using var image = TestImages.Gradient(32, 32);
-        var jpeg = JpegEncoder.Encode(image, new ImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.9 }).Data;
-        var metadata = new ImageMetadata(
-            new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Artist, ExifValue.FromString("A Photographer"))),
+        var jpeg = BmageJpegEncoder.Encode(image, new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.9 }).Data;
+        var metadata = new BmageImageMetadata(
+            new BmageExifData().WithPrimary(new BmageExifDirectory().With(BmageExifTag.Artist, BmageExifValue.FromString("A Photographer"))),
             sourceFormat: BmageImageFormat.Jpeg);
 
-        var withMetadata = JpegContainer.WriteMetadata(jpeg, metadata);
-        Assert.AreEqual(BmageImageFormat.Jpeg, ImageFormats.Detect(withMetadata));
-        var read = JpegContainer.ReadMetadata(withMetadata);
+        var withMetadata = BmageJpegContainer.WriteMetadata(jpeg, metadata);
+        Assert.AreEqual(BmageImageFormat.Jpeg, BmageImageFormats.Detect(withMetadata));
+        var read = BmageJpegContainer.ReadMetadata(withMetadata);
         Assert.AreEqual("A Photographer", read.Exif?.Artist);
 
         // The image must still decode after metadata surgery.
-        using var decoded = JpegDecoder.Decode(withMetadata);
+        using var decoded = BmageJpegDecoder.Decode(withMetadata);
         Assert.AreEqual(32, decoded.Width);
     }
 
@@ -191,34 +191,34 @@ public sealed class ContainerTests
     public void WritingJpegMetadataTwiceDoesNotAccumulateSegments()
     {
         using var image = TestImages.Gradient(16, 16);
-        var jpeg = JpegEncoder.Encode(image).Data;
-        var metadata = new ImageMetadata(new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Make, ExifValue.FromString("One"))));
-        var once = JpegContainer.WriteMetadata(jpeg, metadata);
-        var twice = JpegContainer.WriteMetadata(once, metadata);
+        var jpeg = BmageJpegEncoder.Encode(image).Data;
+        var metadata = new BmageImageMetadata(new BmageExifData().WithPrimary(new BmageExifDirectory().With(BmageExifTag.Make, BmageExifValue.FromString("One"))));
+        var once = BmageJpegContainer.WriteMetadata(jpeg, metadata);
+        var twice = BmageJpegContainer.WriteMetadata(once, metadata);
         // The second write replaces the first rather than appending, so sizes match closely.
         Assert.AreEqual(once.Length, twice.Length);
-        Assert.AreEqual("One", JpegContainer.ReadMetadata(twice).Exif?.Make);
+        Assert.AreEqual("One", BmageJpegContainer.ReadMetadata(twice).Exif?.Make);
     }
 
     [TestMethod]
     public void PngMetadataSurvivesAWriteReadRoundTrip()
     {
         using var image = TestImages.Gradient(24, 24);
-        var png = PngEncoder.Encode(image).Data;
+        var png = BmagePngEncoder.Encode(image).Data;
         var icc = new byte[] { 10, 20, 30, 40, 50 };
-        var metadata = new ImageMetadata(
-            new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Software, ExifValue.FromString("Bmage"))),
+        var metadata = new BmageImageMetadata(
+            new BmageExifData().WithPrimary(new BmageExifDirectory().With(BmageExifTag.Software, BmageExifValue.FromString("Bmage"))),
             icc,
             "<x:xmpmeta xmlns:x='adobe:ns:meta/'/>"u8.ToArray(),
             BmageImageFormat.Png);
 
-        var withMetadata = PngContainer.WriteMetadata(png, metadata);
-        var read = PngContainer.ReadMetadata(withMetadata);
+        var withMetadata = BmagePngContainer.WriteMetadata(png, metadata);
+        var read = BmagePngContainer.ReadMetadata(withMetadata);
         Assert.AreEqual("Bmage", read.Exif?.Software);
         Assert.AreSequenceEqual(icc, read.IccProfile.ToArray());
         Assert.Contains("xmpmeta", System.Text.Encoding.UTF8.GetString(read.Xmp.Span), StringComparison.Ordinal);
 
-        using var decoded = PngDecoder.Decode(withMetadata);
+        using var decoded = BmagePngDecoder.Decode(withMetadata);
         Assert.AreEqual(24, decoded.Width);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(image, decoded));
     }
@@ -227,8 +227,8 @@ public sealed class ContainerTests
     public void RejectsNonImageDataClearly()
     {
         var garbage = new byte[64];
-        Assert.ThrowsExactly<ImageEncodeException>(() => JpegContainer.WriteMetadata(garbage, ImageMetadata.Empty));
-        Assert.ThrowsExactly<ImageEncodeException>(() => PngContainer.WriteMetadata(garbage, ImageMetadata.Empty));
+        Assert.ThrowsExactly<BmageImageEncodeException>(() => BmageJpegContainer.WriteMetadata(garbage, BmageImageMetadata.Empty));
+        Assert.ThrowsExactly<BmageImageEncodeException>(() => BmagePngContainer.WriteMetadata(garbage, BmageImageMetadata.Empty));
     }
 
     [TestMethod]
@@ -241,7 +241,7 @@ public sealed class ContainerTests
             (byte)'V', (byte)'P', (byte)'8', (byte)' ', 0x10, 0, 0, 0,
             0, 0, 0, 0x9D, 0x01, 0x2A, 64, 0, 48, 0, 0, 0, 0, 0, 0, 0,
         };
-        var size = WebPContainer.ReadSize(webp);
+        var size = BmageWebPContainer.ReadSize(webp);
         Assert.IsNotNull(size);
         Assert.AreEqual(64, size!.Value.Width);
         Assert.AreEqual(48, size.Value.Height);
@@ -263,13 +263,13 @@ public sealed class OrientationDecodeTests
     {
         // Start from an upright image, store it rotated, and tag it so a decoder should undo the rotation.
         using var upright = TestImages.Quadrants(16, 16);
-        using var stored = new OrientationOperation(orientation.Inverse())
-            .Apply(upright, OperationContext.Default);
+        using var stored = new BmageOrientationOperation(orientation.Inverse())
+            .Apply(upright, BmageOperationContext.Default);
 
-        var png = PngEncoder.Encode(stored).Data;
-        var tagged = PngContainer.WriteMetadata(png, new ImageMetadata(ExifData.FromOrientation(orientation)));
+        var png = BmagePngEncoder.Encode(stored).Data;
+        var tagged = BmagePngContainer.WriteMetadata(png, new BmageImageMetadata(BmageExifData.FromOrientation(orientation)));
 
-        using var decoded = PngDecoder.Decode(tagged, new DecodeOptions { AutoOrient = true });
+        using var decoded = BmagePngDecoder.Decode(tagged, new BmageDecodeOptions { AutoOrient = true });
         Assert.AreEqual(upright.Size, decoded.Size);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(upright, decoded));
         Assert.AreEqual(BmageOrientation.Normal, decoded.Metadata!.Orientation);
@@ -279,9 +279,9 @@ public sealed class OrientationDecodeTests
     public void AutoOrientCanBeTurnedOff()
     {
         using var source = TestImages.Quadrants(8, 8);
-        var png = PngEncoder.Encode(source).Data;
-        var tagged = PngContainer.WriteMetadata(png, new ImageMetadata(ExifData.FromOrientation(BmageOrientation.Rotate90)));
-        using var decoded = PngDecoder.Decode(tagged, new DecodeOptions { AutoOrient = false });
+        var png = BmagePngEncoder.Encode(source).Data;
+        var tagged = BmagePngContainer.WriteMetadata(png, new BmageImageMetadata(BmageExifData.FromOrientation(BmageOrientation.Rotate90)));
+        using var decoded = BmagePngDecoder.Decode(tagged, new BmageDecodeOptions { AutoOrient = false });
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, decoded));
         // The orientation is reported rather than applied, so the caller can decide.
         Assert.AreEqual(BmageOrientation.Rotate90, decoded.Metadata!.Orientation);

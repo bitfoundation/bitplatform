@@ -20,7 +20,7 @@ public static class BbScannerApiCatalog
 {
     private const BindingFlags Declared = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
-    private static readonly Assembly _assembly = typeof(BbBarcodeDecoder).Assembly;
+    private static readonly Assembly _assembly = typeof(BbScannerBarcodeDecoder).Assembly;
 
     private static readonly Lazy<Type[]> _publicTypes = new(() =>
         [.. _assembly.GetExportedTypes()
@@ -440,12 +440,12 @@ public static class BbScannerApiCatalog
     {
         var type = value.GetType();
 
-        // A struct left at its default (BbScanDiagnostics before the first frame) says so in one word, rather
+        // A struct left at its default (BbScannerScanDiagnostics before the first frame) says so in one word, rather
         // than as the dump of every zero its ToString would print.
         if (type.IsValueType && value.Equals(Activator.CreateInstance(type))) return "default";
 
         // A default that is one of the type's own named values reads best by that name:
-        // BbScanRegion.Full, TimeSpan.Zero, EventCallback.Empty - rather than a dump of its fields.
+        // BbScannerScanRegion.Full, TimeSpan.Zero, EventCallback.Empty - rather than a dump of its fields.
         foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Static))
         {
             if (field.FieldType == type && field.IsInitOnly | field.IsLiteral && Equals(field.GetValue(null), value)) return $"{FriendlyName(type)}.{field.Name}";

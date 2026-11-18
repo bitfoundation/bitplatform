@@ -42,11 +42,11 @@
                     <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
                     <span class="bb-browser-url">Checkout.razor</span>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BbScanner</span> Formats=<span class="s">"BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13"</span>
-           Region=<span class="s">"BbScanRegion.CenteredSquare(0.7)"</span>
+                <pre class="bb-code">&lt;<span class="k">BbScanner</span> Formats=<span class="s">"BbScannerBarcodeFormat.QrCode | BbScannerBarcodeFormat.Ean13"</span>
+           Region=<span class="s">"BbScannerScanRegion.CenteredSquare(0.7)"</span>
            OnScan=<span class="s">"HandleScan"</span> /&gt;
 
-<span class="k">private void</span> HandleScan(BbBarcodeResult result)
+<span class="k">private void</span> HandleScan(BbScannerBarcodeResult result)
     =&gt; Console.WriteLine(<span class="s">$"{result.Format}: {result.Text}"</span>);</pre>
                 <div class="home-live">
                     <div class="home-viewfinder @(_hero is not null ? "home-viewfinder-found" : null)">
@@ -86,7 +86,7 @@
         <div><strong>Decoding in C#</strong><span>no barcode SDK, no JavaScript scanner library</span></div>
         <div><strong>One copy per frame</strong><span>a <code>[JSImport]</code> memory view, no JSON or base64</span></div>
         <div><strong>Nineteen symbologies</strong><span>read to specification, check digits verified</span></div>
-        <div><strong>Runs anywhere .NET runs</strong><span><code>BbBarcodeDecoder</code> needs no browser</span></div>
+        <div><strong>Runs anywhere .NET runs</strong><span><code>BbScannerBarcodeDecoder</code> needs no browser</span></div>
     </section>
 
     @* ============================== Feature grid ============================== *@
@@ -96,7 +96,7 @@
         <h2>A scanner component, and the decoder behind it</h2>
         <p class="bb-section-sub">
             <code>&lt;BbScanner&gt;</code> owns the camera, the frame loop, the overlays and the controls;
-            <code>BbBarcodeDecoder</code> turns pixels into a strongly typed <code>BbBarcodeResult</code> - with
+            <code>BbScannerBarcodeDecoder</code> turns pixels into a strongly typed <code>BbScannerBarcodeResult</code> - with
             the corner points, the raw bytes and the symbol's metadata - wherever .NET runs.
         </p>
         <div class="bb-grid">
@@ -119,7 +119,7 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Aim with a region</h3>
                 <p class="bb-card-desc">
-                    A normalized <code>BbScanRegion</code> crops the frame before any pixel is touched, so every
+                    A normalized <code>BbScannerScanRegion</code> crops the frame before any pixel is touched, so every
                     later stage gets cheaper in proportion to the area removed.
                 </p>
                 <a href="region" class="btn btn-outline">Scan region →</a>
@@ -205,8 +205,8 @@
                     </p>
                     <a href="scan">Live playground →</a>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BbScanner</span> Formats=<span class="s">"BbBarcodeFormat.Ean13"</span>
-           Region=<span class="s">"BbScanRegion.CenteredSquare(0.6)"</span>
+                <pre class="bb-code">&lt;<span class="k">BbScanner</span> Formats=<span class="s">"BbScannerBarcodeFormat.Ean13"</span>
+           Region=<span class="s">"BbScannerScanRegion.CenteredSquare(0.6)"</span>
            OnScan=<span class="s">"AddToBasket"</span> /&gt;</pre>
             </div>
             <div class="bb-walkthrough-row">
@@ -219,9 +219,9 @@
                     </p>
                     <a href="api">API reference →</a>
                 </div>
-                <pre class="bb-code"><span class="k">using var</span> decoder = <span class="k">new</span> BbBarcodeDecoder(BbScannerOptions.ForStillImages());
+                <pre class="bb-code"><span class="k">using var</span> decoder = <span class="k">new</span> BbScannerBarcodeDecoder(BbScannerOptions.ForStillImages());
 
-<span class="k">var</span> result = decoder.Decode(rgbaPixels, width, height, BbPixelFormat.Rgba32);
+<span class="k">var</span> result = decoder.Decode(rgbaPixels, width, height, BbScannerPixelFormat.Rgba32);
 <span class="k">if</span> (result <span class="k">is not null</span>)
     Console.WriteLine(<span class="s">$"{result.Format}: {result.Text}"</span>);
 
@@ -249,8 +249,8 @@
                     <tr><td>Where the decoding runs</td><td>JavaScript, outside the .NET debugger</td><td>C#, in managed code you can step into</td></tr>
                     <tr><td>What crosses interop</td><td>Results marshalled back as JSON</td><td>One memory-view copy of each frame into a reused buffer on WebAssembly; the scan region's luminance, in 30 KB slices, under Server and Hybrid</td></tr>
                     <tr><td>Dependencies</td><td>A script library to ship and keep up to date</td><td>None beyond <code>Microsoft.AspNetCore.Components.Web</code></td></tr>
-                    <tr><td>The result</td><td>Whatever shape the library returns</td><td><code>BbBarcodeResult</code>: text, raw bytes, corners, metadata</td></tr>
-                    <tr><td>Without a browser</td><td>A second decoder for the server</td><td>The same <code>BbBarcodeDecoder</code>, anywhere .NET runs</td></tr>
+                    <tr><td>The result</td><td>Whatever shape the library returns</td><td><code>BbScannerBarcodeResult</code>: text, raw bytes, corners, metadata</td></tr>
+                    <tr><td>Without a browser</td><td>A second decoder for the server</td><td>The same <code>BbScannerBarcodeDecoder</code>, anywhere .NET runs</td></tr>
                 </tbody>
             </table>
         </div>
@@ -373,7 +373,7 @@
 </div>
 
 @code {
-    private sealed record HeroHit(BbBarcodeFormat Format, string Text, double Milliseconds);
+    private sealed record HeroHit(BbScannerBarcodeFormat Format, string Text, double Milliseconds);
 
     /// <summary>The site's own address as a QR code - the first sample of the samples page.</summary>
     private static BarcodeSample Symbol => SampleCatalog.All[0];
@@ -388,9 +388,9 @@
     private void DecodeHero()
     {
         using var image = SyntheticImage.FromMatrix(Symbol.Matrix!, scale: 6);
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.All,
+            Formats = BbScannerBarcodeFormat.All,
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 

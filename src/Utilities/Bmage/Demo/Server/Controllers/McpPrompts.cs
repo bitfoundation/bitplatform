@@ -47,9 +47,9 @@ public static class McpPrompts
             5. Choose the numbers with evidence: call `RunBmagePipeline` with the pipeline you intend, the formats you
                may export and two or three qualities (and maxFileSize if there is a byte budget), on the source kind
                that matches the content. Pick the dimensions, format and quality from the measured bytes.
-            6. Write the code. Browser work goes in event handlers or OnAfterRenderAsync, every ImageBuffer you are
+            6. Write the code. Browser work goes in event handlers or OnAfterRenderAsync, every BmageImageBuffer you are
                handed is disposed, AVIF goes through EncodeWithFallbackAsync, and user files keep the default
-               MetadataPolicy.Remove unless there is a reason.
+               BmageMetadataPolicy.Remove unless there is a reason.
             7. Call `ReviewBmageCode` on everything you wrote - components, Program.cs, the .csproj, App.razor - and fix
                every Error and Warning it reports.
             8. Build the app and fix what the compiler says.
@@ -96,7 +96,7 @@ public static class McpPrompts
     [McpServerPrompt(Name = "tune-bmage-output")]
     [Description("Chooses the dimensions, format, quality and byte budget for a Bit.Bmage export by measuring the alternatives on the real engine instead of guessing at numbers.")]
     public static string TuneBmageOutput(
-        [Description("The pipeline as it is written today, e.g. 'ImagePipeline.Create().AutoOrient().MaxSize(1920, 1920)'.")] string pipeline,
+        [Description("The pipeline as it is written today, e.g. 'BmageImagePipeline.Create().AutoOrient().MaxSize(1920, 1920)'.")] string pipeline,
         [Description("What the output has to achieve - e.g. 'under 150 KB', 'smallest file that still looks good', 'fastest on a phone'.")] string goal,
         [Description("What the images are: 'photo', 'screenshot' or 'graphic' (transparent).")] string content = "photo")
     {
@@ -118,11 +118,11 @@ public static class McpPrompts
                each with `RunBmagePipeline`.
             4. AVIF cannot be measured on the server. If AVIF is the choice, plan it as
                `EncodeWithFallbackAsync([Avif, WebP])` and use the WebP numbers as the upper bound.
-            5. Check the export options you settle on with `GetBmageApiDetails` (typeName 'ImageExportOptions'), then
-               call `ReviewBmageCode` on the final code - an unhandled ImageEncodeException from a budget, or AVIF on a
+            5. Check the export options you settle on with `GetBmageApiDetails` (typeName 'BmageImageExportOptions'), then
+               call `ReviewBmageCode` on the final code - an unhandled BmageImageEncodeException from a budget, or AVIF on a
                server, are the usual findings.
 
-            Give me the replacement pipeline and ImageExportOptions, the before-and-after bytes and timings, and one
+            Give me the replacement pipeline and BmageImageExportOptions, the before-and-after bytes and timings, and one
             sentence on what a user would notice.
             """;
     }
@@ -140,7 +140,7 @@ public static class McpPrompts
 
             1. Call `ReviewBmageCode` on the component involved, and on Program.cs (both of them in a Blazor Web App),
                the .csproj and App.razor/index.html. Its rules check exactly the silent causes: browser calls in
-               OnInitialized during prerendering, the wrong registration for the host, @inject ImageProcessor in a
+               OnInitialized during prerendering, the wrong registration for the host, @inject BmageImageProcessor in a
                browser app, the missing stylesheet, undisposed or double-disposed buffers, AVIF without a fallback.
             2. Call `GetBmageDocument` with name 'troubleshooting' and find the symptom: it lists the exact exception
                messages ("Could not load the Bmage browser module", "This browser cannot encode Avif", "Cannot reach N
@@ -150,7 +150,7 @@ public static class McpPrompts
             4. If it is about output - size, format, quality, orientation - reproduce it with `RunBmagePipeline`; if it
                is about metadata, with `CompareBmageMetadataPolicies`.
             5. Confirm the API you rely on with `GetBmageApiDetails` before concluding it is a bug - check the default
-               value of the option involved (DecodeOptions.AutoOrient, ImageExportOptions.Metadata, Background).
+               value of the option involved (BmageDecodeOptions.AutoOrient, BmageImageExportOptions.Metadata, Background).
             6. If it is slow, check RunAOTCompilation in the WebAssembly project and measure the pipeline with
                `RunBmagePipeline`: the optimiser notes say what was fused and what was not.
 
@@ -168,9 +168,9 @@ public static class McpPrompts
 
             Work in this order:
 
-            1. Find every export: ImageExportOptions, ImageExporter calls, BmageEditor's ExportOptions, ProcessAsync and
-               ProcessBatchAsync on the server. Call `ReviewBmageCode` on each file - MetadataPolicy.Preserve,
-               RedactionMode.Blur/Pixelate and SVG inputs are reported there.
+            1. Find every export: BmageImageExportOptions, BmageImageExporter calls, BmageEditor's ExportOptions, ProcessAsync and
+               ProcessBatchAsync on the server. Call `ReviewBmageCode` on each file - BmageMetadataPolicy.Preserve,
+               BmageRedactionMode.Blur/Pixelate and SVG inputs are reported there.
             2. Call `CompareBmageMetadataPolicies` and use what it measured to decide the policy per export: Remove for
                anything published or uploaded (the default), StripSensitive only where camera details are a feature.
             3. Read `GetBmageDocument` with name 'metadata-and-privacy' and section 'A checklist for user uploads', and

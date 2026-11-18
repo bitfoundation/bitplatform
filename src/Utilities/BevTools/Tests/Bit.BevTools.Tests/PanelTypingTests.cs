@@ -31,7 +31,7 @@ public class PanelTypingTests : BunitContext
     public void Every_text_box_of_the_panel_leaves_its_value_to_the_browser()
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true, Visibility = "visible" });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true, Visibility = "visible" });
         module.Setup<string?>("loadPrefs", _ => true).SetResult(null);
         var cut = Render<BevToolsPanel>();
         var seen = new Dictionary<string, string?>();
@@ -57,7 +57,7 @@ public class PanelTypingTests : BunitContext
     {
         foreach (var record in Session.Components.All.Where(r => r.IsBevTools && !r.IsDisposed && r.Component is not null && r.Renderer is not null))
         {
-            if (BlazorReflection.ResolveState(record.Renderer!, record.Component!) is not { } state || BlazorReflection.CurrentFrames(state) is not { } frames)
+            if (BevToolsBlazorReflection.ResolveState(record.Renderer!, record.Component!) is not { } state || BevToolsBlazorReflection.CurrentFrames(state) is not { } frames)
             {
                 continue;
             }

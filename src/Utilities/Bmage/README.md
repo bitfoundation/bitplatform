@@ -8,15 +8,15 @@ No server round trips. No base64. No JavaScript image library.
 ```csharp
 var result = await processor.ProcessAsync(
     uploadedFile,
-    ImagePipeline.Create()
+    BmageImagePipeline.Create()
         .AutoOrient()
         .Cover(512, 512)
         .Sharpen(0.3f),
-    new ImageExportOptions
+    new BmageImageExportOptions
     {
         Format      = BmageImageFormat.WebP,
         Quality     = 0.82,
-        Metadata    = MetadataPolicy.StripSensitive,
+        Metadata    = BmageMetadataPolicy.StripSensitive,
         MaxFileSize = 120 * 1024,
     });
 ```
@@ -135,8 +135,8 @@ faster compiled ahead of time:
 ## The simple path
 
 ```razor
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
 
 <InputFile OnChange="OnChange" accept="image/*" />
 
@@ -144,13 +144,13 @@ faster compiled ahead of time:
     async Task OnChange(InputFileChangeEventArgs e)
     {
         using var image = await Loader.LoadAsync(e.File);
-        using var thumb = await ImagePipeline.Create()
+        using var thumb = await BmageImagePipeline.Create()
             .AutoOrient()
             .MaxSize(400, 400)
             .ExecuteAsync(image);
 
         await Exporter.DownloadAsync(thumb, "thumbnail",
-            new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.85 });
+            new BmageImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.85 });
     }
 }
 ```
@@ -173,7 +173,7 @@ Every part of its UI can be replaced while keeping the engine:
 ```razor
 <BmageEditor Strings="german" Direction="rtl" Class="bmg-theme-dark">
     <Toolbar Context="editor">
-        <button @onclick="() => editor.SetTool(EditorToolKind.Crop)">Crop</button>
+        <button @onclick="() => editor.SetTool(BmageEditorToolKind.Crop)">Crop</button>
         <button disabled="@(!editor.CanUndo)" @onclick="editor.Undo">Undo</button>
     </Toolbar>
 </BmageEditor>
@@ -258,7 +258,7 @@ only when its editor opens (see [lazy loading](docs/getting-started.md#lazy-load
   `RadialGradientPaint`, `FontFile`, `ResizeMode` and `Orientation` are now `BmageImageSource`, `BmageImageFormat`,
   `BmageBlendMode`, `BmageTextAlignment`, `BmageLineCap`, `BmageLineJoin`, `BmagePathBuilder`, `BmageSolidPaint`,
   `BmageLinearGradientPaint`, `BmageRadialGradientPaint`, `BmageFontFile`, `BmageResizeMode` and `BmageOrientation`.
-  Members keep their names (`Layer.BlendMode`, `ImageMetadata.Orientation`, `ImageExportOptions.Format`, ...).
+  Members keep their names (`BmageLayer.BlendMode`, `BmageImageMetadata.Orientation`, `BmageImageExportOptions.Format`, ...).
 
 ## MCP server (for AI agents)
 

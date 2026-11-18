@@ -6,7 +6,7 @@ namespace Bit.Bmotion.Tests.Components;
 
 /// <summary>
 /// Tests for <see cref="BmotionAnimatePresence"/>: an exiting subtree stays mounted until its
-/// <c>Exit</c> animations finish, the three <see cref="BmPresenceMode"/>s sequence exit and re-entry
+/// <c>Exit</c> animations finish, the three <see cref="BmotionPresenceMode"/>s sequence exit and re-entry
 /// differently, and a re-entry mid-exit cancels the exit instead of stranding the element.
 /// <para>
 /// Opacity enter/exit targets are compositor-eligible, so each one is a Web Animation the fake
@@ -21,9 +21,9 @@ public class AnimatePresenceTests
     {
         b.OpenComponent<Bmotion>(0);
         b.AddComponentParameter(1, nameof(Bmotion.Id), id);
-        b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmTarget?)Bm.To(opacity: 0));
-        b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 1));
-        if (withExit) b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmTarget?)Bm.To(opacity: 0));
+        b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmotionTarget?)Bm.To(opacity: 0));
+        b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(opacity: 1));
+        if (withExit) b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmotionTarget?)Bm.To(opacity: 0));
         b.AddComponentParameter(5, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
         {
             leaf.OpenElement(0, "div");
@@ -34,7 +34,7 @@ public class AnimatePresenceTests
     };
 
     private IRenderedComponent<BmotionAnimatePresence> RenderPresence(
-        BmotionTestContext ctx, BmPresenceMode mode, Action onExitComplete, bool isPresent = true, bool withExit = true)
+        BmotionTestContext ctx, BmotionPresenceMode mode, Action onExitComplete, bool isPresent = true, bool withExit = true)
         => ctx.Render<BmotionAnimatePresence>(ps => ps
             .Add(p => p.IsPresent, isPresent)
             .Add(p => p.Mode, mode)
@@ -60,7 +60,7 @@ public class AnimatePresenceTests
     {
         using var ctx = new BmotionTestContext();
         int exits = 0;
-        var cut = RenderPresence(ctx, BmPresenceMode.Sync, () => exits++);
+        var cut = RenderPresence(ctx, BmotionPresenceMode.Sync, () => exits++);
         await ctx.FinishWaapiAsync("box"); // the enter animation has played
 
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
@@ -81,7 +81,7 @@ public class AnimatePresenceTests
     public void InitiallyAbsent_RendersNothing_UntilPresent()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderPresence(ctx, BmPresenceMode.Sync, () => { }, isPresent: false);
+        var cut = RenderPresence(ctx, BmotionPresenceMode.Sync, () => { }, isPresent: false);
 
         Assert.AreEqual(0, cut.FindAll("div.box").Count);
         Assert.IsFalse(ctx.Interop.WasCalled("registerElement"), "nothing may mount while absent");
@@ -97,7 +97,7 @@ public class AnimatePresenceTests
     {
         using var ctx = new BmotionTestContext();
         int exits = 0;
-        var cut = RenderPresence(ctx, BmPresenceMode.Sync, () => exits++, withExit: false);
+        var cut = RenderPresence(ctx, BmotionPresenceMode.Sync, () => exits++, withExit: false);
 
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
 
@@ -110,7 +110,7 @@ public class AnimatePresenceTests
     public async Task PopLayout_PopsTheExitingElement_BeforeItsExitPlays()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderPresence(ctx, BmPresenceMode.PopLayout, () => { });
+        var cut = RenderPresence(ctx, BmotionPresenceMode.PopLayout, () => { });
         await ctx.FinishWaapiAsync("box");
         int playsBefore = ctx.Interop.CountOf("playWaapiAnimation");
 
@@ -126,7 +126,7 @@ public class AnimatePresenceTests
     public void SyncMode_DoesNotPopLayout()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderPresence(ctx, BmPresenceMode.Sync, () => { });
+        var cut = RenderPresence(ctx, BmotionPresenceMode.Sync, () => { });
 
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
 
@@ -138,7 +138,7 @@ public class AnimatePresenceTests
     {
         using var ctx = new BmotionTestContext();
         int exits = 0;
-        var cut = RenderPresence(ctx, BmPresenceMode.PopLayout, () => exits++);
+        var cut = RenderPresence(ctx, BmotionPresenceMode.PopLayout, () => exits++);
         await ctx.FinishWaapiAsync("box");
 
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
@@ -161,7 +161,7 @@ public class AnimatePresenceTests
     {
         using var ctx = new BmotionTestContext();
         int exits = 0;
-        var cut = RenderPresence(ctx, BmPresenceMode.Sync, () => exits++);
+        var cut = RenderPresence(ctx, BmotionPresenceMode.Sync, () => exits++);
         await ctx.FinishWaapiAsync("box");
 
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
@@ -177,7 +177,7 @@ public class AnimatePresenceTests
     public async Task AnExitingElement_IsInert_UntilItReEnters()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderPresence(ctx, BmPresenceMode.Sync, () => { });
+        var cut = RenderPresence(ctx, BmotionPresenceMode.Sync, () => { });
         await ctx.FinishWaapiAsync("box");
         Assert.IsFalse(ctx.Interop.WasCalled("setInert"), "an element that is entering or present stays interactive");
 
@@ -197,7 +197,7 @@ public class AnimatePresenceTests
     {
         using var ctx = new BmotionTestContext();
         ctx.Options.InertWhileExiting = false;
-        var cut = RenderPresence(ctx, BmPresenceMode.Sync, () => { });
+        var cut = RenderPresence(ctx, BmotionPresenceMode.Sync, () => { });
         await ctx.FinishWaapiAsync("box");
 
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
@@ -211,7 +211,7 @@ public class AnimatePresenceTests
     {
         using var ctx = new BmotionTestContext();
         int exits = 0;
-        var cut = RenderPresence(ctx, BmPresenceMode.Sync, () => exits++);
+        var cut = RenderPresence(ctx, BmotionPresenceMode.Sync, () => exits++);
         await ctx.FinishWaapiAsync("box");
 
         // Leave, change your mind, then leave for real.
@@ -231,7 +231,7 @@ public class AnimatePresenceTests
     {
         using var ctx = new BmotionTestContext();
         int exits = 0;
-        var cut = RenderPresence(ctx, BmPresenceMode.Wait, () => exits++);
+        var cut = RenderPresence(ctx, BmotionPresenceMode.Wait, () => exits++);
         await ctx.FinishWaapiAsync("box");
 
         cut.Render(ps => ps.Add(p => p.IsPresent, false));

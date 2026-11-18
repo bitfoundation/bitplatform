@@ -3,16 +3,6 @@ using System.Globalization;
 namespace Bit.Bmotion;
 
 /// <summary>
-/// One piece of a split text run. A chunk is either a <see cref="IsGap"/> run of whitespace
-/// (rendered verbatim, never animated, so the text still wraps and reads normally) or a group of
-/// one or more animated <see cref="Units"/>.
-/// </summary>
-/// <param name="Text">The chunk's raw text - the whitespace itself for a gap, the word/line otherwise.</param>
-/// <param name="IsGap">Whether this chunk is inter-unit whitespace rather than animated content.</param>
-/// <param name="Units">The individually animated units of this chunk (empty for a gap).</param>
-internal sealed record BmTextChunk(string Text, bool IsGap, IReadOnlyList<string> Units);
-
-/// <summary>
 /// Splits a text run into the chunks <see cref="BmotionSplitText"/> renders. Pure string work with
 /// no rendering concerns, so the splitting rules are unit-testable on their own.
 /// </summary>
@@ -23,20 +13,20 @@ internal static class BmotionTextSplitter
     /// between words is preserved as gap chunks so the rendered text still wraps, collapses and
     /// copies like the original.
     /// </summary>
-    public static List<BmTextChunk> Split(string? text, BmSplitBy by)
+    public static List<BmotionTextChunk> Split(string? text, BmotionSplitBy by)
     {
-        var chunks = new List<BmTextChunk>();
+        var chunks = new List<BmotionTextChunk>();
         if (string.IsNullOrEmpty(text)) return chunks;
 
-        if (by == BmSplitBy.Lines)
+        if (by == BmotionSplitBy.Lines)
         {
             // Authored lines: split on \n, tolerating \r\n. Empty lines are kept so blank spacing
             // in the source text survives, but they carry no animated unit of their own.
             foreach (var line in text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
             {
                 chunks.Add(line.Length == 0
-                    ? new BmTextChunk(string.Empty, IsGap: true, Array.Empty<string>())
-                    : new BmTextChunk(line, IsGap: false, new[] { line }));
+                    ? new BmotionTextChunk(string.Empty, IsGap: true, Array.Empty<string>())
+                    : new BmotionTextChunk(line, IsGap: false, new[] { line }));
             }
             return chunks;
         }
@@ -53,12 +43,12 @@ internal static class BmotionTextSplitter
 
             if (gap)
             {
-                chunks.Add(new BmTextChunk(run, IsGap: true, Array.Empty<string>()));
+                chunks.Add(new BmotionTextChunk(run, IsGap: true, Array.Empty<string>()));
             }
             else
             {
-                var units = by == BmSplitBy.Words ? new[] { run } : Graphemes(run);
-                chunks.Add(new BmTextChunk(run, IsGap: false, units));
+                var units = by == BmotionSplitBy.Words ? new[] { run } : Graphemes(run);
+                chunks.Add(new BmotionTextChunk(run, IsGap: false, units));
             }
         }
         return chunks;
@@ -78,7 +68,7 @@ internal static class BmotionTextSplitter
     }
 
     /// <summary>The number of animated units across every chunk (the stagger's <c>total</c>).</summary>
-    public static int CountUnits(List<BmTextChunk> chunks)
+    public static int CountUnits(List<BmotionTextChunk> chunks)
     {
         int total = 0;
         foreach (var chunk in chunks) total += chunk.Units.Count;

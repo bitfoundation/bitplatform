@@ -37,7 +37,7 @@ public class HttpCancellationTests
             var evt = session.Timeline.Find(record.TimelineEventId)!;
             Assert.AreEqual(BevToolsSeverity.Warning, evt.Severity);
             StringAssert.Contains(evt.Detail, "cancelled after");
-            StringAssert.Contains(BevSessionExporter.ToJson(session, new BevSessionExportOptions { Indented = false }), "\"cancelled\":true");
+            StringAssert.Contains(BevToolsSessionExporter.ToJson(session, new BevToolsSessionExportOptions { Indented = false }), "\"cancelled\":true");
         }
     }
 
@@ -87,9 +87,9 @@ public class HttpCancellationTests
     [TestMethod]
     public void An_endpoint_is_the_path_and_the_names_of_its_query_parameters()
     {
-        Assert.AreEqual("GET /api/products?page&q", BevHttpEndpoints.Of("GET", "/api/products?q=shoes&page=2"));
-        Assert.AreEqual("GET /api/products?page&q", BevHttpEndpoints.Of("GET", "/api/products?page=3&q=hats#top"));
-        Assert.AreEqual("POST https://x.test/orders", BevHttpEndpoints.Of("POST", "https://x.test/orders"));
-        Assert.AreEqual("GET /a?flag", BevHttpEndpoints.Of("GET", "/a?flag"));
+        Assert.AreEqual("GET /api/products?page&q", BevToolsHttpEndpoints.Of("GET", "/api/products?q=shoes&page=2"));
+        Assert.AreEqual("GET /api/products?page&q", BevToolsHttpEndpoints.Of("GET", "/api/products?page=3&q=hats#top"));
+        Assert.AreEqual("POST https://x.test/orders", BevToolsHttpEndpoints.Of("POST", "https://x.test/orders"));
+        Assert.AreEqual("GET /a?flag", BevToolsHttpEndpoints.Of("GET", "/a?flag"));
     }
 }

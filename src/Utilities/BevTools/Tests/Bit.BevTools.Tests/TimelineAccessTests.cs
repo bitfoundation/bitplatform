@@ -16,7 +16,7 @@ public class TimelineAccessTests : BunitContext
         {
             o.Enabled = true;
             o.Ui.OpenByDefault = true;
-            o.ValueAccess = BevValueAccess.Shallow;
+            o.ValueAccess = BevToolsValueAccess.Shallow;
         });
         JSInterop.Mode = JSRuntimeMode.Loose;
         this.UseRenderer("Server");
@@ -28,8 +28,8 @@ public class TimelineAccessTests : BunitContext
     public async Task Below_Full_the_timeline_lists_the_changes_a_render_captured_and_summarizes_other_lists()
     {
         var cut = Render<BevToolsPanel>();
-        var sample = new BevRenderSample { Sequence = 1, At = DateTimeOffset.UtcNow, StartTicks = System.Diagnostics.Stopwatch.GetTimestamp(), ChangedState = ["_counter: 0 → 1"] };
-        var render = Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Render, Category = "render", Title = "Counter", DurationMs = 1, Data = new RenderEventData(sample, 2) });
+        var sample = new BevToolsRenderSample { Sequence = 1, At = DateTimeOffset.UtcNow, StartTicks = System.Diagnostics.Stopwatch.GetTimestamp(), ChangedState = ["_counter: 0 → 1"] };
+        var render = Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Render, Category = "render", Title = "Counter", DurationMs = 1, Data = new BevToolsRenderEventData(sample, 2) });
         var order = Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.StateChange, Category = "orders", Title = "Order placed", Data = new Dictionary<string, object?> { ["items"] = new List<string> { "opaque-item" } } });
 
         await cut.InvokeAsync(() => cut.Instance.SelectEvent(render));

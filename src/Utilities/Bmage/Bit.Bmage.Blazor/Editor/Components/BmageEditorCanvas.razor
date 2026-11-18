@@ -82,23 +82,23 @@
 
 @code {
     // Resolved rather than injected, so the canvas also works when the app never called AddBitBmageServices.
-    private BrowserImageInterop Interop => field ??= BitBmageBlazor.GetEditorServices(Services).GetRequiredService<BrowserImageInterop>();
+    private BmageBrowserImageInterop Interop => field ??= BitBmageBlazor.GetEditorServices(Services).GetRequiredService<BmageBrowserImageInterop>();
 
     private readonly string _id = $"bi-{Guid.NewGuid():N}";
     private ElementReference _hostElement;
     private ElementReference _canvasElement;
     private DotNetObjectReference<BmageEditorCanvas>? _selfRef;
     private bool _touchSuppressed;
-    private ImageBuffer? _painted;
+    private BmageImageBuffer? _painted;
     private long _paintedVersion = -1;
     private int _activePointerId = -1;
-    private CropHandle? _activeHandle;
-    private CropHandle? _pendingHandle;
+    private BmageCropHandle? _activeHandle;
+    private BmageCropHandle? _pendingHandle;
     // The host's position in the viewport, read when a gesture starts. Pointer positions are measured from it.
     private PointF _hostOrigin;
 
     /// <summary>The pixels to display. The component does not take ownership.</summary>
-    [Parameter] public ImageBuffer? Image { get; set; }
+    [Parameter] public BmageImageBuffer? Image { get; set; }
 
     /// <summary>
     /// The size <see cref="Image"/> is shown at, in the image coordinates <see cref="Zoom"/>, <see cref="Pan"/> and the
@@ -147,28 +147,28 @@
     [Parameter] public bool Busy { get; set; }
 
     /// <summary>Raised when a drag starts, with the point in image coordinates.</summary>
-    [Parameter] public EventCallback<CanvasPointerArgs> OnDragStart { get; set; }
+    [Parameter] public EventCallback<BmageCanvasPointerArgs> OnDragStart { get; set; }
 
     /// <summary>Raised as a drag moves.</summary>
-    [Parameter] public EventCallback<CanvasPointerArgs> OnDragMove { get; set; }
+    [Parameter] public EventCallback<BmageCanvasPointerArgs> OnDragMove { get; set; }
 
     /// <summary>Raised when a drag ends.</summary>
-    [Parameter] public EventCallback<CanvasPointerArgs> OnDragEnd { get; set; }
+    [Parameter] public EventCallback<BmageCanvasPointerArgs> OnDragEnd { get; set; }
 
     /// <summary>Raised when a crop handle drag starts.</summary>
-    [Parameter] public EventCallback<CropHandleArgs> OnCropHandleDown { get; set; }
+    [Parameter] public EventCallback<BmageCropHandleArgs> OnCropHandleDown { get; set; }
 
     /// <summary>Raised on a wheel or pinch zoom, with the multiplier and the focal point in image coordinates.</summary>
-    [Parameter] public EventCallback<ZoomArgs> OnZoom { get; set; }
+    [Parameter] public EventCallback<BmageZoomArgs> OnZoom { get; set; }
 
     /// <summary>Raised for keys the canvas does not handle itself.</summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyPressed { get; set; }
 
-    private static readonly CropHandle[] CropHandles =
+    private static readonly BmageCropHandle[] CropHandles =
     [
-        CropHandle.TopLeft, CropHandle.Top, CropHandle.TopRight,
-        CropHandle.Left, CropHandle.Right,
-        CropHandle.BottomLeft, CropHandle.Bottom, CropHandle.BottomRight,
+        BmageCropHandle.TopLeft, BmageCropHandle.Top, BmageCropHandle.TopRight,
+        BmageCropHandle.Left, BmageCropHandle.Right,
+        BmageCropHandle.BottomLeft, BmageCropHandle.Bottom, BmageCropHandle.BottomRight,
     ];
 
     // The canvas sits at the host's origin and is moved only by Pan, so an image point maps to host coordinates as
@@ -205,7 +205,7 @@
                 await Interop.InvokeVoidAsync("suppressTouchScrolling", CancellationToken.None, _hostElement, _selfRef);
                 _touchSuppressed = true;
             }
-            catch (ImageCapabilityException)
+            catch (BmageImageCapabilityException)
             {
                 // Prerendering or a missing module: the editor still works, the page may scroll on touch.
             }
@@ -222,12 +222,12 @@
         {
             // On WebAssembly the browser module reads the pixels straight out of .NET memory; over a Server circuit, or
             // where it finds the canvas by its id (inside a shadow root, say), they have to be sent.
-            if (!OperatingSystem.IsBrowser() || !await global::Bit.Bmage.BrowserPixels.PaintAsync(Interop, $"{_id}-canvas", Image))
+            if (!OperatingSystem.IsBrowser() || !await global::Bit.Bmage.BmageBrowserPixels.PaintAsync(Interop, $"{_id}-canvas", Image))
                 await Interop.InvokeVoidAsync("paint", CancellationToken.None, _canvasElement, Image.ToArray(), Image.Width, Image.Height);
             _painted = Image;
             _paintedVersion = Version;
         }
-        catch (ImageCapabilityException) { /* not interactive yet */ }
+        catch (BmageImageCapabilityException) { /* not interactive yet */ }
         catch (Microsoft.JSInterop.JSDisconnectedException) { /* circuit closed */ }
     }
 
@@ -257,7 +257,7 @@
         {
             return await Interop.InvokeAsync<ElementMetrics?>("getElementMetrics", CancellationToken.None, _hostElement);
         }
-        catch (Exception ex) when (ex is ImageCapabilityException or Microsoft.JSInterop.JSException or Microsoft.JSInterop.JSDisconnectedException)
+        catch (Exception ex) when (ex is BmageImageCapabilityException or Microsoft.JSInterop.JSException or Microsoft.JSInterop.JSDisconnectedException)
         {
             return null;
         }
@@ -278,7 +278,7 @@
             return;
         }
         var args = BuildArgs(e);
-        if (handle is { } h) await OnCropHandleDown.InvokeAsync(new CropHandleArgs(h, args));
+        if (handle is { } h) await OnCropHandleDown.InvokeAsync(new BmageCropHandleArgs(h, args));
         else await OnDragStart.InvokeAsync(args);
     }
 
@@ -303,10 +303,10 @@
         if (Image is not null) await OnDragEnd.InvokeAsync(args);
     }
 
-    private CanvasPointerArgs BuildArgs(PointerEventArgs e)
+    private BmageCanvasPointerArgs BuildArgs(PointerEventArgs e)
         => BuildArgs(e.ClientX, e.ClientY, e.ShiftKey, e.AltKey, e.CtrlKey, e.PointerType, e.Pressure);
 
-    private CanvasPointerArgs BuildArgs(double clientX, double clientY, bool shiftKey, bool altKey, bool ctrlKey, string? pointerType, double pressure) => new(
+    private BmageCanvasPointerArgs BuildArgs(double clientX, double clientY, bool shiftKey, bool altKey, bool ctrlKey, string? pointerType, double pressure) => new(
         ToImagePoint(clientX, clientY),
         shiftKey,
         altKey,
@@ -327,7 +327,7 @@
     {
         if (Image is null || !double.IsFinite(factor) || factor <= 0) return Task.CompletedTask;
         var point = new Vector2((float)((x - Pan.X) / Zoom), (float)((y - Pan.Y) / Zoom));
-        return OnZoom.InvokeAsync(new ZoomArgs(factor, point));
+        return OnZoom.InvokeAsync(new BmageZoomArgs(factor, point));
     }
 
     // The canvas renders nothing of its own state: what it shows comes from its parameters, which only change when the
@@ -357,7 +357,7 @@
             {
                 await Interop.InvokeVoidAsync("restoreTouchScrolling", CancellationToken.None, _hostElement);
             }
-            catch (Exception ex) when (ex is Microsoft.JSInterop.JSDisconnectedException or Microsoft.JSInterop.JSException or ImageCapabilityException or ObjectDisposedException)
+            catch (Exception ex) when (ex is Microsoft.JSInterop.JSDisconnectedException or Microsoft.JSInterop.JSException or BmageImageCapabilityException or ObjectDisposedException)
             {
                 // The page is going away; nothing to restore.
             }

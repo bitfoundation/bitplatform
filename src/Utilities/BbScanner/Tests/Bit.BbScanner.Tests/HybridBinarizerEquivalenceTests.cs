@@ -23,7 +23,7 @@ public class HybridBinarizerEquivalenceTests
         {
             using var image = Picture(width, height, seed);
             using var expected = Reference(image.View);
-            using var actual = new BbHybridBinarizer().GetBlackMatrix(image.View);
+            using var actual = new BbScannerHybridBinarizer().GetBlackMatrix(image.View);
 
             Assert.IsNotNull(actual);
             for (var y = 0; y < height; y++)
@@ -40,9 +40,9 @@ public class HybridBinarizerEquivalenceTests
     }
 
     /// <summary>A gradient, blotches of ink and noise: blocks with edges, flat paper and flat ink, side by side.</summary>
-    private static BbLuminanceBuffer Picture(int width, int height, int seed)
+    private static BbScannerLuminanceBuffer Picture(int width, int height, int seed)
     {
-        var image = BbLuminanceBuffer.Rent(width, height);
+        var image = BbScannerLuminanceBuffer.Rent(width, height);
         var random = new Random(seed);
         for (var y = 0; y < height; y++)
         {
@@ -71,7 +71,7 @@ public class HybridBinarizerEquivalenceTests
     }
 
     /// <summary>The binariser as it was before it used vectors: one block, one pixel at a time.</summary>
-    private static BbBitMatrix Reference(in BbLuminanceView source)
+    private static BbScannerBitMatrix Reference(in BbScannerLuminanceView source)
     {
         const int BlockSize = 8;
         var width = source.Width;
@@ -111,15 +111,15 @@ public class HybridBinarizerEquivalenceTests
         // statistics, so a difference there would show as a difference in those statistics. Reproducing the rest here
         // would only copy the binariser, so the reference thresholds blocks with the binariser's own adjusted averages
         // when its measurements match: the comparison below is of the two pixel passes.
-        var binarizer = new BbHybridBinarizer();
+        var binarizer = new BbScannerHybridBinarizer();
         using var probe = binarizer.GetBlackMatrix(source)!;
-        var adjusted = (int[])typeof(BbHybridBinarizer)
+        var adjusted = (int[])typeof(BbScannerHybridBinarizer)
             .GetField("_blockAverages", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
             .GetValue(binarizer)!;
-        var measuredMinimums = (int[])typeof(BbHybridBinarizer)
+        var measuredMinimums = (int[])typeof(BbScannerHybridBinarizer)
             .GetField("_blockMinimums", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
             .GetValue(binarizer)!;
-        var measuredRanges = (int[])typeof(BbHybridBinarizer)
+        var measuredRanges = (int[])typeof(BbScannerHybridBinarizer)
             .GetField("_blockRanges", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
             .GetValue(binarizer)!;
         var edges = 0;
@@ -141,7 +141,7 @@ public class HybridBinarizerEquivalenceTests
 
         static int Clamp(int value, int max) => value < 2 ? 2 : (value > max ? max : value);
 
-        var matrix = new BbBitMatrix(width, height);
+        var matrix = new BbScannerBitMatrix(width, height);
         for (var by = 0; by < rows; by++)
         {
             var top = Clamp(by, rows - 3);

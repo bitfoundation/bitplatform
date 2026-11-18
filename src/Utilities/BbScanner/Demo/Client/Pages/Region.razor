@@ -23,7 +23,7 @@
             <div class="scan-view">
                 <BbScanner Region="_region"
                            ShowMask="_showMask"
-                           Formats="BbBarcodeFormat.All"
+                           Formats="BbScannerBarcodeFormat.All"
                            OnScan="r => _last = r"
                            OnDiagnostics="d => { _diagnostics = d; StateHasChanged(); }" />
 
@@ -34,14 +34,14 @@
                 <section class="scan-panel">
                     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Presets</h3>
                     <div class="bb-segmented" role="group" aria-label="Region presets">
-                        <button type="button" aria-pressed="@Pressed("Full frame")" @onclick='() => Set(BbScanRegion.Full, "Full frame")'>Full frame</button>
-                        <button type="button" aria-pressed="@Pressed("Centred square")" @onclick='() => Set(BbScanRegion.CenteredSquare(0.7), "Centred square")'>Centred square</button>
-                        <button type="button" aria-pressed="@Pressed("Linear band")" @onclick='() => Set(new BbScanRegion(0.05, 0.35, 0.9, 0.3), "Linear band")'>Linear band</button>
-                        <button type="button" aria-pressed="@Pressed("Right half")" @onclick='() => Set(new BbScanRegion(0.5, 0, 0.5, 1), "Right half")'>Right half</button>
+                        <button type="button" aria-pressed="@Pressed("Full frame")" @onclick='() => Set(BbScannerScanRegion.Full, "Full frame")'>Full frame</button>
+                        <button type="button" aria-pressed="@Pressed("Centred square")" @onclick='() => Set(BbScannerScanRegion.CenteredSquare(0.7), "Centred square")'>Centred square</button>
+                        <button type="button" aria-pressed="@Pressed("Linear band")" @onclick='() => Set(new BbScannerScanRegion(0.05, 0.35, 0.9, 0.3), "Linear band")'>Linear band</button>
+                        <button type="button" aria-pressed="@Pressed("Right half")" @onclick='() => Set(new BbScannerScanRegion(0.5, 0, 0.5, 1), "Right half")'>Right half</button>
                     </div>
                     <p class="bb-card-desc">
-                        <em>Full frame</em> is <code>BbScanRegion.Full</code>, the default. <em>Centred square</em>
-                        is <code>BbScanRegion.CenteredSquare(0.7)</code>, the usual aiming box. <em>Linear band</em>,
+                        <em>Full frame</em> is <code>BbScannerScanRegion.Full</code>, the default. <em>Centred square</em>
+                        is <code>BbScannerScanRegion.CenteredSquare(0.7)</code>, the usual aiming box. <em>Linear band</em>,
                         a wide strip across the middle, suits a one dimensional barcode held level; <em>Right half</em>
                         shows that a region need not be centred. Watch <em>Decoded size</em> and the frame time in
                         the diagnostics under the scanner shrink with the region.
@@ -75,7 +75,7 @@
                         Dim the area outside the region (<code>ShowMask</code>)
                     </label>
                     <p class="bb-card-desc">
-                        <code>new BbScanRegion(x, y, width, height)</code>, each a fraction of the frame. The same
+                        <code>new BbScannerScanRegion(x, y, width, height)</code>, each a fraction of the frame. The same
                         fraction of a wide frame's width and height are different numbers of pixels, so a square in
                         fractions is a rectangle on screen; <code>KeepSquare</code> narrows it along the longer axis
                         to the largest square it holds. <code>CenteredSquare</code> sets it: on a 1280×720 frame,
@@ -110,10 +110,10 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> In code</h3>
     <pre class="bb-code"><span class="c">@@* An aiming square, 70 % of the shorter edge, square on any camera *@@</span>
-&lt;<span class="k">BbScanner</span> Region=<span class="s">"BbScanRegion.CenteredSquare(0.7)"</span> /&gt;
+&lt;<span class="k">BbScanner</span> Region=<span class="s">"BbScannerScanRegion.CenteredSquare(0.7)"</span> /&gt;
 
 <span class="c">@@* A band across the middle for a one dimensional barcode: x, y, width, height *@@</span>
-&lt;<span class="k">BbScanner</span> Region=<span class="s">"new BbScanRegion(0.05, 0.35, 0.9, 0.3)"</span> /&gt;</pre>
+&lt;<span class="k">BbScanner</span> Region=<span class="s">"new BbScannerScanRegion(0.05, 0.35, 0.9, 0.3)"</span> /&gt;</pre>
     <p class="bb-card-desc">
         <code>Region</code> can change while the camera runs; the next frame is searched with the new one. Values
         outside 0 to 1 are clamped by <code>Normalized()</code>. <code>IsFull</code> says whether a region
@@ -122,9 +122,9 @@
 </div>
 
 @code {
-    private BbScanRegion _region = BbScanRegion.CenteredSquare(0.7);
-    private BbScanDiagnostics _diagnostics;
-    private BbBarcodeResult? _last;
+    private BbScannerScanRegion _region = BbScannerScanRegion.CenteredSquare(0.7);
+    private BbScannerScanDiagnostics _diagnostics;
+    private BbScannerBarcodeResult? _last;
     private string _label = "Centred square";
     private bool _showMask = true;
 
@@ -136,7 +136,7 @@
 
     private string Pressed(string label) => _label == label ? "true" : "false";
 
-    private void Set(BbScanRegion region, string label)
+    private void Set(BbScannerScanRegion region, string label)
     {
         _region = region;
         _label = label;
@@ -154,7 +154,7 @@
         _w = w ?? _w;
         _h = h ?? _h;
         _keepSquare = keepSquare ?? _keepSquare;
-        _region = new BbScanRegion(_x, _y, _w, _h) { KeepSquare = _keepSquare }.Normalized();
+        _region = new BbScannerScanRegion(_x, _y, _w, _h) { KeepSquare = _keepSquare }.Normalized();
         _label = "Custom";
     }
 
@@ -163,7 +163,7 @@
             ? value
             : 0;
 
-    private static string Describe(BbBarcodeResult result)
+    private static string Describe(BbScannerBarcodeResult result)
     {
         var corners = string.Join("\n  ", result.Corners.Select(p => p.ToString()));
         return $"Format: {result.Format}\nFrame:  {result.FrameWidth}x{result.FrameHeight}\nBox:    {result.BoundingBox}\nCenter: {result.BoundingBox.Center}\nPoints:\n  {corners}";

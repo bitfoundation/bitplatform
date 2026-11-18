@@ -10,7 +10,7 @@ namespace Bit.Bmage;
 /// <code>
 /// &lt;BmageEditor&gt;
 ///   &lt;Toolbar Context="editor"&gt;
-///     &lt;button @onclick="() =&gt; editor.SetTool(EditorToolKind.Crop)"&gt;Crop&lt;/button&gt;
+///     &lt;button @onclick="() =&gt; editor.SetTool(BmageEditorToolKind.Crop)"&gt;Crop&lt;/button&gt;
 ///     &lt;button disabled="@(!editor.CanUndo)" @onclick="editor.Undo"&gt;Undo&lt;/button&gt;
 ///   &lt;/Toolbar&gt;
 /// &lt;/BmageEditor&gt;
@@ -26,13 +26,13 @@ public sealed class BmageEditorContext
     public BmageEditorStrings Strings => _editor.Strings;
 
     /// <summary>The editor's <see cref="BmageEditor.ExportOptions"/>: what a save button starts from.</summary>
-    public ImageExportOptions ExportOptions => _editor.ExportOptions;
+    public BmageImageExportOptions ExportOptions => _editor.ExportOptions;
 
     /// <summary>The live editing session, or null when no image is loaded.</summary>
-    public ImageEditSession? Session => _editor.Session;
+    public BmageImageEditSession? Session => _editor.Session;
 
     /// <summary>The current document, or null when no image is loaded.</summary>
-    public ImageDocument? Document => _editor.Document;
+    public BmageImageDocument? Document => _editor.Document;
 
     /// <summary>True when an image is loaded.</summary>
     public bool HasImage => _editor.Session is not null;
@@ -41,22 +41,22 @@ public sealed class BmageEditorContext
     public bool IsBusy => _editor.IsBusy;
 
     /// <summary>The active tool.</summary>
-    public EditorToolKind Tool => _editor.Tool;
+    public BmageEditorToolKind Tool => _editor.Tool;
 
     /// <summary>The tools the editor offers, in toolbar order (<see cref="BmageEditor.Tools"/>).</summary>
-    public IReadOnlyList<EditorToolKind> OfferedTools => _editor.OfferedTools;
+    public IReadOnlyList<BmageEditorToolKind> OfferedTools => _editor.OfferedTools;
 
     /// <summary>True when the editor offers <paramref name="tool"/>.</summary>
-    public bool IsToolOffered(EditorToolKind tool) => _editor.IsToolOffered(tool);
+    public bool IsToolOffered(BmageEditorToolKind tool) => _editor.IsToolOffered(tool);
 
     /// <summary>The tabs the built-in panel shows (<see cref="BmageEditor.Panels"/>).</summary>
-    public EditorPanels Panels => _editor.Panels;
+    public BmageEditorPanels Panels => _editor.Panels;
 
     /// <summary>The current drawing settings.</summary>
-    public EditorToolSettings Settings => _editor.Settings;
+    public BmageEditorToolSettings Settings => _editor.Settings;
 
     /// <summary>The detected browser capabilities, or null before detection completes.</summary>
-    public ImageCapabilities? Capabilities => _editor.BrowserCapabilities;
+    public BmageImageCapabilities? Capabilities => _editor.BrowserCapabilities;
 
     /// <summary>Current zoom factor.</summary>
     public double Zoom => _editor.Zoom;
@@ -65,13 +65,13 @@ public sealed class BmageEditorContext
     public Guid? SelectedAnnotationId => _editor.SelectedAnnotationId;
 
     /// <summary>The selected annotation, if any.</summary>
-    public Annotation? SelectedAnnotation => SelectedAnnotationId is { } id ? Document?.FindAnnotation(id) : null;
+    public BmageAnnotation? SelectedAnnotation => SelectedAnnotationId is { } id ? Document?.FindAnnotation(id) : null;
 
     /// <summary>Annotations in the document, in draw order.</summary>
-    public IReadOnlyList<Annotation> Annotations => Document?.Annotations ?? [];
+    public IReadOnlyList<BmageAnnotation> Annotations => Document?.Annotations ?? [];
 
     /// <summary>The document's layers, bottom first.</summary>
-    public IReadOnlyList<Layer> Layers => Document?.Layers ?? [];
+    public IReadOnlyList<BmageLayer> Layers => Document?.Layers ?? [];
 
     /// <summary>True when there is something to undo.</summary>
     public bool CanUndo => Session?.History.CanUndo ?? false;
@@ -80,7 +80,7 @@ public sealed class BmageEditorContext
     public bool CanRedo => Session?.History.CanRedo ?? false;
 
     /// <summary>The history entries, oldest first.</summary>
-    public IReadOnlyList<HistoryEntry> History => Session?.History.Entries ?? [];
+    public IReadOnlyList<BmageHistoryEntry> History => Session?.History.Entries ?? [];
 
     /// <summary>Index of the current history entry.</summary>
     public int HistoryPosition => Session?.History.Position ?? 0;
@@ -100,23 +100,23 @@ public sealed class BmageEditorContext
     // ---- Actions ----
 
     /// <summary>Switches the active tool.</summary>
-    public void SetTool(EditorToolKind tool) => _editor.SetTool(tool);
+    public void SetTool(BmageEditorToolKind tool) => _editor.SetTool(tool);
 
     /// <summary>Updates the drawing settings.</summary>
-    public void SetSettings(EditorToolSettings settings) => _editor.SetSettings(settings);
+    public void SetSettings(BmageEditorToolSettings settings) => _editor.SetSettings(settings);
 
     /// <summary>Updates one field of the drawing settings.</summary>
-    public void UpdateSettings(Func<EditorToolSettings, EditorToolSettings> update)
+    public void UpdateSettings(Func<BmageEditorToolSettings, BmageEditorToolSettings> update)
     {
         ArgumentNullException.ThrowIfNull(update);
         _editor.SetSettings(update(_editor.Settings));
     }
 
     /// <summary>Sets the aspect ratio the crop tool enforces, or null for freeform.</summary>
-    public void SetCropAspect(AspectRatio? aspect) => _editor.SetCropAspect(aspect);
+    public void SetCropAspect(BmageAspectRatio? aspect) => _editor.SetCropAspect(aspect);
 
     /// <inheritdoc cref="BmageEditor.BeginCrop"/>
-    public void BeginCrop(AspectRatio? aspect = null) => _editor.BeginCrop(aspect);
+    public void BeginCrop(BmageAspectRatio? aspect = null) => _editor.BeginCrop(aspect);
 
     /// <summary>Applies the pending crop.</summary>
     public Task ApplyCropAsync() => _editor.ApplyCropAsync();
@@ -134,23 +134,23 @@ public sealed class BmageEditorContext
     /// Sets an adjustment, replacing any existing one of the same type. Pass <paramref name="transient"/> while a slider
     /// is being dragged so the history gets one entry rather than hundreds.
     /// </summary>
-    public Task SetAdjustmentAsync<TOperation>(TOperation? operation, string label, bool transient = false) where TOperation : class, IImageOperation
+    public Task SetAdjustmentAsync<TOperation>(TOperation? operation, string label, bool transient = false) where TOperation : class, IBmageImageOperation
         => _editor.SetAdjustmentAsync(operation, label, transient);
 
     /// <summary>
     /// Applies any change to the document as one history entry and one render, for edits that touch several steps at
     /// once. Pass <paramref name="transient"/> while a control is being dragged, as for <see cref="SetAdjustmentAsync"/>.
     /// </summary>
-    public Task ApplyAsync(Func<ImageDocument, ImageDocument> change, string label, bool transient = false) => _editor.ApplyAsync(change, label, transient);
+    public Task ApplyAsync(Func<BmageImageDocument, BmageImageDocument> change, string label, bool transient = false) => _editor.ApplyAsync(change, label, transient);
 
     /// <summary>Adds an arbitrary operation to the pipeline.</summary>
-    public Task AddOperationAsync(IImageOperation operation, string? label = null) => _editor.AddOperationAsync(operation, label);
+    public Task AddOperationAsync(IBmageImageOperation operation, string? label = null) => _editor.AddOperationAsync(operation, label);
 
     /// <summary>Adds an annotation.</summary>
-    public Task AddAnnotationAsync(Annotation annotation, string? label = null) => _editor.AddAnnotationAsync(annotation, label);
+    public Task AddAnnotationAsync(BmageAnnotation annotation, string? label = null) => _editor.AddAnnotationAsync(annotation, label);
 
     /// <summary>Replaces an annotation, matched by id.</summary>
-    public Task UpdateAnnotationAsync(Annotation annotation, bool transient = false) => _editor.UpdateAnnotationAsync(annotation, transient);
+    public Task UpdateAnnotationAsync(BmageAnnotation annotation, bool transient = false) => _editor.UpdateAnnotationAsync(annotation, transient);
 
     /// <summary>Removes an annotation.</summary>
     public Task DeleteAnnotationAsync(Guid id) => _editor.DeleteAnnotationAsync(id);
@@ -162,7 +162,7 @@ public sealed class BmageEditorContext
     /// Adds a layer on top of the others: an image placed on the photo, a colour fill, or an adjustment layer, each with
     /// a blend mode, an opacity and an optional mask. Coordinates are those of the edited image at full resolution.
     /// </summary>
-    public Task AddLayerAsync(Layer layer, string? label = null)
+    public Task AddLayerAsync(BmageLayer layer, string? label = null)
     {
         ArgumentNullException.ThrowIfNull(layer);
         return ApplyAsync(d => d.AddLayer(layer), label ?? Strings.FormatAddLayer(Strings.FormatKind(layer.Kind)));
@@ -172,7 +172,7 @@ public sealed class BmageEditorContext
     /// Replaces a layer, matched by id. Pass <paramref name="transient"/> while a control is being dragged, as for
     /// <see cref="SetAdjustmentAsync"/>.
     /// </summary>
-    public Task UpdateLayerAsync(Layer layer, bool transient = false)
+    public Task UpdateLayerAsync(BmageLayer layer, bool transient = false)
     {
         ArgumentNullException.ThrowIfNull(layer);
         return ApplyAsync(d => d.UpdateLayer(layer), Strings.FormatEditLayer(layer.Name ?? Strings.FormatKind(layer.Kind)), transient);
@@ -188,7 +188,7 @@ public sealed class BmageEditorContext
     public Guid? ActiveLayerId => _editor.ActiveLayerId;
 
     /// <summary>The layer selected in the layer panel, if any.</summary>
-    public Layer? ActiveLayer => ActiveLayerId is { } id ? Document?.FindLayer(id) : null;
+    public BmageLayer? ActiveLayer => ActiveLayerId is { } id ? Document?.FindLayer(id) : null;
 
     /// <summary>Selects a layer, or clears the selection.</summary>
     public void SelectLayer(Guid? id) => _editor.SelectLayer(id);
@@ -212,13 +212,13 @@ public sealed class BmageEditorContext
     public Task AddImageLayerAsync(BmageImageSource source) => _editor.AddImageLayerAsync(source);
 
     /// <summary>The pixel selection, in output coordinates, or null when nothing is selected.</summary>
-    public Mask? Selection => _editor.Selection;
+    public BmageMask? Selection => _editor.Selection;
 
     /// <summary>True when there is a pixel selection.</summary>
     public bool HasSelection => _editor.Selection is not null;
 
     /// <summary>Sets the pixel selection, or clears it with null.</summary>
-    public void SetSelection(Mask? selection) => _editor.SetSelection(selection);
+    public void SetSelection(BmageMask? selection) => _editor.SetSelection(selection);
 
     /// <summary>Selects the whole image.</summary>
     public void SelectAll() => _editor.SelectAll();
@@ -254,7 +254,7 @@ public sealed class BmageEditorContext
     public Task ResizeAsync(int width, int height) => _editor.ResizeAsync(width, height);
 
     /// <summary>Sets the canvas size without scaling the image.</summary>
-    public Task SetCanvasSizeAsync(int width, int height, Anchor anchor, Rgba32 background) => _editor.SetCanvasSizeAsync(width, height, anchor, background);
+    public Task SetCanvasSizeAsync(int width, int height, BmageAnchor anchor, BmageRgba32 background) => _editor.SetCanvasSizeAsync(width, height, anchor, background);
 
     /// <summary>Crops away plain or transparent edges.</summary>
     public Task TrimAsync() => _editor.TrimAsync();
@@ -277,7 +277,7 @@ public sealed class BmageEditorContext
     /// for an image of the size loaded now.
     /// </summary>
     /// <exception cref="ArgumentException">The document was made for an image of another size.</exception>
-    public Task RestoreDocumentAsync(ImageDocument document)
+    public Task RestoreDocumentAsync(BmageImageDocument document)
     {
         ArgumentNullException.ThrowIfNull(document);
         if (Session is { } session && document.SourceSize != session.SourceSize)
@@ -310,10 +310,10 @@ public sealed class BmageEditorContext
     public Task PasteAsync() => _editor.PasteAsync();
 
     /// <summary>Renders at full resolution and encodes.</summary>
-    public Task<EncodedImage?> ExportAsync(ImageExportOptions? options = null) => _editor.ExportAsync(options);
+    public Task<BmageEncodedImage?> ExportAsync(BmageImageExportOptions? options = null) => _editor.ExportAsync(options);
 
     /// <summary>Renders, encodes and downloads.</summary>
-    public Task DownloadAsync(string fileName, ImageExportOptions? options = null) => _editor.DownloadAsync(fileName, options);
+    public Task DownloadAsync(string fileName, BmageImageExportOptions? options = null) => _editor.DownloadAsync(fileName, options);
 
     /// <summary>Copies the result to the clipboard as PNG.</summary>
     public Task CopyToClipboardAsync() => _editor.CopyToClipboardAsync();
@@ -328,7 +328,7 @@ public sealed class BmageEditorContext
     public Task OpenProjectAsync(Microsoft.AspNetCore.Components.Forms.IBrowserFile file) => _editor.OpenProjectAsync(file);
 
     /// <summary>Finds the current value of an adjustment in the pipeline, if present.</summary>
-    public TOperation? FindAdjustment<TOperation>() where TOperation : class, IImageOperation
+    public TOperation? FindAdjustment<TOperation>() where TOperation : class, IBmageImageOperation
     {
         var pipeline = Document?.Pipeline;
         if (pipeline is null) return null;

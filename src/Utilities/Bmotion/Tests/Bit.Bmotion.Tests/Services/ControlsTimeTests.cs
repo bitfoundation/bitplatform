@@ -3,7 +3,7 @@ using Bit.Bmotion.Tests.TestInfra;
 namespace Bit.Bmotion.Tests.Services;
 
 /// <summary>
-/// <see cref="BmAnimationControls"/> reporting and moving time (motion.dev's <c>time</c>/<c>duration</c>/<c>state</c>):
+/// <see cref="BmotionAnimationControls"/> reporting and moving time (motion.dev's <c>time</c>/<c>duration</c>/<c>state</c>):
 /// how long an animation lasts, where its playhead is under pause and speed, a seek that moves browser animations in
 /// place, a seek that plays the animation again from part-way in (the frame loop, after it ended), and sequences.
 /// </summary>
@@ -40,7 +40,7 @@ public class ControlsTimeTests
         var repeated = await service.AnimateAsync("#r", Bm.To(x: 100), Bm.Tween(0.5, delay: 0.1, repeat: 2));
         Assert.AreEqual(1.6, repeated.Duration, 1e-9, "a delay and three plays");
 
-        var forever = await service.AnimateAsync("#f", Bm.To(x: 100), Bm.Tween(0.5, repeat: BmRepeat.Forever));
+        var forever = await service.AnimateAsync("#f", Bm.To(x: 100), Bm.Tween(0.5, repeat: BmotionRepeat.Forever));
         Assert.IsTrue(double.IsPositiveInfinity(forever.Duration));
         Assert.AreEqual(0, forever.Progress, "no finite length, no progress");
     }
@@ -54,16 +54,16 @@ public class ControlsTimeTests
         await using var __ = engine;
 
         var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(10));
-        Assert.AreEqual(BmPlaybackState.Running, controls.State);
+        Assert.AreEqual(BmotionPlaybackState.Running, controls.State);
 
         controls.Pause();
-        Assert.AreEqual(BmPlaybackState.Paused, controls.State);
+        Assert.AreEqual(BmotionPlaybackState.Paused, controls.State);
         double held = controls.Time;
         await Task.Delay(30);
         Assert.AreEqual(held, controls.Time, "a paused playhead doesn't move");
 
         controls.Play();
-        Assert.AreEqual(BmPlaybackState.Running, controls.State);
+        Assert.AreEqual(BmotionPlaybackState.Running, controls.State);
         await Task.Delay(30);
         Assert.IsTrue(controls.Time > held, "and moves again once played");
     }
@@ -78,7 +78,7 @@ public class ControlsTimeTests
         interop.FinishWaapi();
         await controls.WhenCompleteAsync().WaitAsync(Timeout);
 
-        Assert.AreEqual(BmPlaybackState.Finished, controls.State);
+        Assert.AreEqual(BmotionPlaybackState.Finished, controls.State);
         Assert.AreEqual(0.4, controls.Time, 1e-9);
         Assert.AreEqual(1, controls.Progress, 1e-9);
     }
@@ -94,7 +94,7 @@ public class ControlsTimeTests
         double stoppedAt = controls.Time;
         await Task.Delay(20);
 
-        Assert.AreEqual(BmPlaybackState.Stopped, controls.State);
+        Assert.AreEqual(BmotionPlaybackState.Stopped, controls.State);
         Assert.AreEqual(stoppedAt, controls.Time);
     }
 
@@ -107,7 +107,7 @@ public class ControlsTimeTests
         await using var _ = engine;
         engine.RegisterElement("box", null); // kept registered past Stop, to read where it was left
 
-        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1, BmEase.Linear));
+        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1, BmotionEase.Linear));
         controls.Pause();
         int plays = interop.CountOf("playWaapiAnimation");
 
@@ -118,7 +118,7 @@ public class ControlsTimeTests
         Assert.AreEqual("box", seek[0]);
         Assert.AreEqual(500.0, (double)seek[1]!, 1e-9);
         Assert.AreEqual(0.5, controls.Time, 1e-9);
-        Assert.AreEqual(BmPlaybackState.Paused, controls.State, "a paused animation holds at the new point");
+        Assert.AreEqual(BmotionPlaybackState.Paused, controls.State, "a paused animation holds at the new point");
 
         // The engine's mirror moved with it: stopping now freezes the element halfway.
         controls.Stop();
@@ -133,13 +133,13 @@ public class ControlsTimeTests
         var (service, engine, interop) = Create(inProcess);
         await using var _ = engine;
 
-        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1, BmEase.Linear));
+        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1, BmotionEase.Linear));
         interop.FinishWaapi();
         await controls.WhenCompleteAsync().WaitAsync(Timeout);
 
         controls.Seek(0.25);
 
-        Assert.AreEqual(BmPlaybackState.Paused, controls.State);
+        Assert.AreEqual(BmotionPlaybackState.Paused, controls.State);
         Assert.AreEqual(0.25, controls.Time, 1e-9);
         if (inProcess)
         {
@@ -154,7 +154,7 @@ public class ControlsTimeTests
         Assert.IsFalse(controls.WhenCompleteAsync().IsCompleted, "there is something to wait for again");
 
         controls.Play();
-        Assert.AreEqual(BmPlaybackState.Running, controls.State);
+        Assert.AreEqual(BmotionPlaybackState.Running, controls.State);
         interop.FinishWaapi();
         // The frame loop finishes what it holds. Frames stop once the animation has ended: the engine is
         // single-threaded, and here (no synchronization context) its completion lands on another thread.
@@ -164,7 +164,7 @@ public class ControlsTimeTests
             await Task.Delay(1);
         }
         await controls.WhenCompleteAsync().WaitAsync(Timeout);
-        Assert.AreEqual(BmPlaybackState.Finished, controls.State);
+        Assert.AreEqual(BmotionPlaybackState.Finished, controls.State);
     }
 
     [TestMethod]
@@ -181,7 +181,7 @@ public class ControlsTimeTests
         controls.Play();
 
         Assert.AreEqual(plays + 1, interop.CountOf("playWaapiAnimation"));
-        Assert.AreEqual(BmPlaybackState.Running, controls.State);
+        Assert.AreEqual(BmotionPlaybackState.Running, controls.State);
         Assert.AreEqual(0.0, (double)LastTiming(interop)["delay"]!, 1e-9);
     }
 
@@ -193,7 +193,7 @@ public class ControlsTimeTests
         interop.WebAnimationsSupported = false;
         engine.RegisterElement("box", new Dictionary<string, object?> { ["x"] = 20.0 });
 
-        var controls = await service.AnimateAsync("#box", Bm.To(x: 120), Bm.Tween(1, BmEase.Linear));
+        var controls = await service.AnimateAsync("#box", Bm.To(x: 120), Bm.Tween(1, BmotionEase.Linear));
         for (int i = 0; i <= 50; i++) engine.ComputeFrame(i * 16);
         Assert.IsTrue(X(engine) > 60, "it has moved on");
 
@@ -231,12 +231,12 @@ public class ControlsTimeTests
     {
         var interop = new FakeBmotionInterop { SelectorResolver = s => [s.TrimStart('#')] };
         interop.WebAnimationsSupported = false;
-        var engine = new BmotionAnimationEngine(interop, null, new BitBmotionOptions { ReducedMotion = BmReducedMotionMode.Always });
+        var engine = new BmotionAnimationEngine(interop, null, new BmotionOptions { ReducedMotion = BmotionReducedMotionMode.Always });
         await using var _ = engine;
         var service = new BmotionAnimateService(engine, interop);
         engine.RegisterElement("box", new Dictionary<string, object?> { ["opacity"] = 0.0 });
 
-        var controls = await service.AnimateAsync("#box", Bm.To(opacity: 1), Bm.Tween(1, BmEase.Linear));
+        var controls = await service.AnimateAsync("#box", Bm.To(opacity: 1), Bm.Tween(1, BmotionEase.Linear));
         for (int i = 0; i <= 50; i++) engine.ComputeFrame(i * 16);
 
         // The fade plays with its own transition under the instant one reduced motion wraps it in: the seek moves it.
@@ -263,9 +263,9 @@ public class ControlsTimeTests
         var (service, engine, interop) = Create();
         await using var _ = engine;
         interop.SelectorResolver = s => [s.TrimStart('#')];
-        var sequence = new BmSequence()
-            .Add("#box", Bm.To(x: 100), Bm.Tween(1, BmEase.Linear))
-            .Add("#box", Bm.To(x: 200), Bm.Tween(1, BmEase.Linear));
+        var sequence = new BmotionSequence()
+            .Add("#box", Bm.To(x: 100), Bm.Tween(1, BmotionEase.Linear))
+            .Add("#box", Bm.To(x: 200), Bm.Tween(1, BmotionEase.Linear));
 
         var controls = await service.RunAsync(sequence);
         Assert.AreEqual(2, controls.Duration, 1e-9);

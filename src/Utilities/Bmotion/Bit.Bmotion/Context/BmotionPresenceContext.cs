@@ -1,4 +1,5 @@
 namespace Bit.Bmotion;
+
 /// <summary>
 /// The presence a piece of content sits in - cascaded by <see cref="BmotionAnimatePresence"/>,
 /// <see cref="BmotionPresenceSwitch{TItem}"/> and <see cref="BmotionPresenceGroup{TItem}"/> to everything inside one
@@ -7,7 +8,7 @@ namespace Bit.Bmotion;
 /// - a CSS animation, a canvas fade - is over:
 /// <code>
 /// [CascadingParameter] public BmotionPresenceContext? Presence { get; set; }
-/// private BmPresenceRegistration? _presence;
+/// private BmotionPresenceRegistration? _presence;
 /// private bool _leaving;
 ///
 /// protected override void OnInitialized() => _presence = Presence?.Register();
@@ -57,12 +58,12 @@ public sealed class BmotionPresenceContext
     /// <summary>
     /// Takes part in this presence's exits: while the content exits, the presence keeps it mounted until every
     /// <see cref="Bmotion"/> in it has finished and every registration has called
-    /// <see cref="BmPresenceRegistration.SafeToRemove"/> (or been disposed). Register once, as the component
+    /// <see cref="BmotionPresenceRegistration.SafeToRemove"/> (or been disposed). Register once, as the component
     /// initialises, and dispose the registration when the component goes away.
     /// </summary>
-    public BmPresenceRegistration Register()
+    public BmotionPresenceRegistration Register()
     {
-        var registration = new BmPresenceRegistration(this);
+        var registration = new BmotionPresenceRegistration(this);
         Add(registration);
         return registration;
     }
@@ -116,36 +117,4 @@ public sealed class BmotionPresenceContext
 
     /// <summary>Fired when every registered child has finished its exit animation.</summary>
     internal event Action? AllExitsComplete;
-}
-
-/// <summary>
-/// A component's part in a presence's exits (see <see cref="BmotionPresenceContext.Register()"/>). Dispose it when the
-/// component is disposed: a registration that is gone holds nothing up.
-/// </summary>
-public sealed class BmPresenceRegistration : IDisposable
-{
-    private BmotionPresenceContext? _presence;
-
-    internal BmPresenceRegistration(BmotionPresenceContext presence) => _presence = presence;
-
-    /// <summary>Whether the content is present - <c>false</c> once it has been removed and is exiting.</summary>
-    public bool IsPresent => _presence?.IsPresent ?? true;
-
-    /// <summary>Whether this registration has reported the current exit over (<see cref="SafeToRemove"/>).</summary>
-    public bool IsExitComplete => _presence?.HasCompleted(this) == true;
-
-    /// <summary>
-    /// Reports this component's exit over: once everything else in the presence has finished too, the content is
-    /// removed. Ignored while the content is present - an exit cancelled by a re-entry completes nothing - so it is
-    /// safe to call from an exit that was overtaken.
-    /// </summary>
-    public void SafeToRemove() => _presence?.Complete(this);
-
-    /// <summary>Stops taking part: a presence waiting on this registration no longer does.</summary>
-    public void Dispose()
-    {
-        var presence = _presence;
-        _presence = null;
-        presence?.Remove(this);
-    }
 }

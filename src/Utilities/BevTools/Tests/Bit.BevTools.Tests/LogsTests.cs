@@ -14,7 +14,7 @@ namespace Bit.BevTools.Tests;
 [TestClass]
 public class LogsTests
 {
-    private static (BevToolsSession Session, IServiceScope Scope, ILoggerFactory Factory) Create(Action<BitBevToolsOptions>? configure = null, LogLevel factoryMinimum = LogLevel.Information)
+    private static (BevToolsSession Session, IServiceScope Scope, ILoggerFactory Factory) Create(Action<BevToolsOptions>? configure = null, LogLevel factoryMinimum = LogLevel.Information)
     {
         var (session, scope) = TestHelpers.CreateSession(configure, services => services.AddLogging(logging => logging.SetMinimumLevel(factoryMinimum)));
         return (session, scope, scope.ServiceProvider.GetRequiredService<ILoggerFactory>());
@@ -137,14 +137,14 @@ public class LogsTests
 
             var logs = session.Logs.Snapshot();
             var structured = logs[0];
-            Assert.AreEqual(BevRedactor.RedactedValue, structured.Properties.Single(p => p.Key == "Password").Value);
-            Assert.AreEqual(BevRedactor.RedactedValue, structured.Properties.Single(p => p.Key == "Token").Value);
+            Assert.AreEqual(BevToolsRedactor.RedactedValue, structured.Properties.Single(p => p.Key == "Password").Value);
+            Assert.AreEqual(BevToolsRedactor.RedactedValue, structured.Properties.Single(p => p.Key == "Token").Value);
             Assert.DoesNotContain("hunter2", structured.Message!, StringComparison.Ordinal);
             Assert.DoesNotContain("eyJ", structured.Message!, StringComparison.Ordinal);
             Assert.AreEqual("Sign-in for ada failed with «redacted» and token «redacted»", structured.Message);
 
             Assert.DoesNotContain("eyJ", logs[1].Message!, StringComparison.Ordinal, "credential shapes in free text are redacted too");
-            var json = BevSessionExporter.ToJson(session, new BevSessionExportOptions { Sections = new HashSet<string> { "logs", "timeline" } });
+            var json = BevToolsSessionExporter.ToJson(session, new BevToolsSessionExportOptions { Sections = new HashSet<string> { "logs", "timeline" } });
             Assert.DoesNotContain("hunter2", json, StringComparison.Ordinal);
             Assert.DoesNotContain("eyJhbGciOiJIUzI1NiJ9", json, StringComparison.Ordinal);
         }
@@ -153,7 +153,7 @@ public class LogsTests
     [TestMethod]
     public void Value_access_none_keeps_values_unread_and_shows_the_template()
     {
-        var (session, scope, factory) = Create(o => o.ValueAccess = BevValueAccess.None);
+        var (session, scope, factory) = Create(o => o.ValueAccess = BevToolsValueAccess.None);
         using (scope)
         {
             using (session.UseAmbient())
@@ -165,16 +165,16 @@ public class LogsTests
             var log = Assert.ContainsSingle(session.Logs.Snapshot());
             Assert.IsNull(log.Message);
             Assert.AreEqual("Loaded {Count} orders for {Customer}", log.Text);
-            Assert.IsTrue(log.Properties.All(p => p.Value == BevRedactor.HiddenValue));
+            Assert.IsTrue(log.Properties.All(p => p.Value == BevToolsRedactor.HiddenValue));
             Assert.AreEqual("CustomerId", Assert.ContainsSingle(log.Scopes), "the keys of a scope, not its values");
-            Assert.DoesNotContain("Ada", BevSessionExporter.ToJson(session), StringComparison.Ordinal);
+            Assert.DoesNotContain("Ada", BevToolsSessionExporter.ToJson(session), StringComparison.Ordinal);
         }
     }
 
     [TestMethod]
     public void Value_access_none_shows_no_message_logged_as_one_string_since_it_may_be_interpolated()
     {
-        var (session, scope, factory) = Create(o => o.ValueAccess = BevValueAccess.None);
+        var (session, scope, factory) = Create(o => o.ValueAccess = BevToolsValueAccess.None);
         using (scope)
         {
             var email = "bob@x.test";
@@ -188,10 +188,10 @@ public class LogsTests
             var log = Assert.ContainsSingle(session.Logs.Snapshot());
             Assert.IsNull(log.Message);
             Assert.IsNull(log.MessageTemplate);
-            Assert.AreEqual(BevRedactor.HiddenValue, log.Text);
-            StringAssert.Contains(Assert.ContainsSingle(session.Errors.Snapshot()).Message, BevRedactor.HiddenValue);
-            Assert.DoesNotContain(email, BevSessionExporter.ToJson(session), StringComparison.Ordinal);
-            Assert.DoesNotContain(email, BevSessionExporter.ToMarkdownReport(session), StringComparison.Ordinal);
+            Assert.AreEqual(BevToolsRedactor.HiddenValue, log.Text);
+            StringAssert.Contains(Assert.ContainsSingle(session.Errors.Snapshot()).Message, BevToolsRedactor.HiddenValue);
+            Assert.DoesNotContain(email, BevToolsSessionExporter.ToJson(session), StringComparison.Ordinal);
+            Assert.DoesNotContain(email, BevToolsSessionExporter.ToMarkdownReport(session), StringComparison.Ordinal);
         }
     }
 
@@ -221,7 +221,7 @@ public class LogsTests
     [TestMethod]
     public void A_hole_named_twice_takes_the_value_in_its_place_when_the_message_is_rebuilt()
     {
-        var (session, scope, factory) = Create(o => o.ValueAccess = BevValueAccess.Shallow);
+        var (session, scope, factory) = Create(o => o.ValueAccess = BevToolsValueAccess.Shallow);
         using (scope)
         {
             using (session.UseAmbient())
@@ -231,7 +231,7 @@ public class LogsTests
 
             var log = Assert.ContainsSingle(session.Logs.Snapshot());
             Assert.AreEqual("Moved box from A to B", log.Message);
-            var json = BevSessionExporter.ToJson(session, new BevSessionExportOptions { Sections = new HashSet<string> { "logs" } });
+            var json = BevToolsSessionExporter.ToJson(session, new BevToolsSessionExportOptions { Sections = new HashSet<string> { "logs" } });
             Assert.AreEqual(1, json.Split("\"Place\"").Length - 1, "a name once in the export's properties");
             Assert.IsNotNull(System.Text.Json.Nodes.JsonNode.Parse(json)!["logs"]!.AsArray()[0]!["properties"]!.AsObject()["Place"], "and an export a JSON reader takes");
         }
@@ -240,7 +240,7 @@ public class LogsTests
     [TestMethod]
     public void Value_access_shallow_never_prints_an_object_through_its_ToString()
     {
-        var (session, scope, factory) = Create(o => o.ValueAccess = BevValueAccess.Shallow);
+        var (session, scope, factory) = Create(o => o.ValueAccess = BevToolsValueAccess.Shallow);
         using (scope)
         {
             using (session.UseAmbient())
@@ -270,7 +270,7 @@ public class LogsTests
 
             var log = Assert.ContainsSingle(session.Logs.Snapshot());
             Assert.HasCount(2, log.Scopes);
-            Assert.AreEqual("OrderId=42, ApiKey=" + BevRedactor.RedactedValue, log.Scopes[0]);
+            Assert.AreEqual("OrderId=42, ApiKey=" + BevToolsRedactor.RedactedValue, log.Scopes[0]);
             Assert.AreEqual("Step=payment", log.Scopes[1]);
         }
     }
@@ -364,7 +364,7 @@ public class LogsTests
         {
             using (session.UseAmbient())
             {
-                using (SessionResolver.BeginBevToolsWork())
+                using (BevToolsSessionResolver.BeginBevToolsWork())
                 {
                     factory.CreateLogger("Shop").LogWarning("Asked by BevTools");
                 }
@@ -397,13 +397,13 @@ public class LogsTests
         using (scope)
         {
             session.Platform = "Server";
-            ActivityObserver.EnsureStarted();
-            using var source = new ActivitySource(ActivityObserver.SourceName);
+            BevToolsActivityObserver.EnsureStarted();
+            using var source = new ActivitySource(BevToolsActivityObserver.SourceName);
             Activity? handler;
             using (session.UseAmbient())
             {
                 // The framework starts this activity on the circuit's dispatcher when it dispatches a click.
-                handler = source.StartActivity(ActivityObserver.HandleEventName);
+                handler = source.StartActivity(BevToolsActivityObserver.HandleEventName);
             }
 
             Assert.IsNotNull(handler, "BevTools listens to the framework's source");
@@ -435,7 +435,7 @@ public class LogsTests
                 factory.CreateLogger("Shop.Payments").LogInformation("Done");
             }
 
-            var json = System.Text.Json.JsonDocument.Parse(BevSessionExporter.ToJson(session)).RootElement;
+            var json = System.Text.Json.JsonDocument.Parse(BevToolsSessionExporter.ToJson(session)).RootElement;
             Assert.AreEqual(2, json.GetProperty("logs").GetArrayLength());
             var first = json.GetProperty("logs")[0];
             Assert.AreEqual("Warning", first.GetProperty("level").GetString());
@@ -444,7 +444,7 @@ public class LogsTests
             Assert.AreEqual(1, json.GetProperty("logCounts").GetProperty("Warning").GetInt32());
             Assert.IsTrue(json.GetProperty("options").GetProperty("trackLogs").GetBoolean());
 
-            var report = BevSessionExporter.ToMarkdownReport(session);
+            var report = BevToolsSessionExporter.ToMarkdownReport(session);
             StringAssert.Contains(report, "## Logged warnings and errors (1 of 2 entries)");
             StringAssert.Contains(report, "`warn` Shop.Payments: Retrying 2");
         }
@@ -478,7 +478,7 @@ public class LogsTests
             session.Diagnostics.Evaluate(force: true);
             var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "log.flood", session.Diagnostics.Findings).Diagnostic;
             StringAssert.Contains(finding.Title, "Shop.Products: \"Rendering product {Id}\" logged 30 times");
-            Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Severity);
+            Assert.AreEqual(BevToolsDiagnosticSeverity.Warning, finding.Severity);
             Assert.IsNotEmpty(finding.RelatedEventIds!);
         }
     }
@@ -486,7 +486,7 @@ public class LogsTests
     [TestMethod]
     public void The_logs_filter_reads_levels_categories_event_ids_and_text()
     {
-        var log = new BevLogRecord
+        var log = new BevToolsLogRecord
         {
             Id = 1,
             At = DateTimeOffset.UtcNow,
@@ -499,17 +499,17 @@ public class LogsTests
             TraceId = "4bf92f3577b34da6a3ce929d0e0e4736",
         };
 
-        Assert.IsTrue(BevLogsPanel.Matches(log, BevQueryFilter.Parse("level:warn")));
-        Assert.IsTrue(BevLogsPanel.Matches(log, BevQueryFilter.Parse("level:info")));
-        Assert.IsFalse(BevLogsPanel.Matches(log, BevQueryFilter.Parse("level:error")));
-        Assert.IsFalse(BevLogsPanel.Matches(log, BevQueryFilter.Parse("level:nonsense")), "an unknown level matches nothing rather than everything");
-        Assert.IsTrue(BevLogsPanel.Matches(log, BevQueryFilter.Parse("category:payments event:7")));
-        Assert.IsFalse(BevLogsPanel.Matches(log, BevQueryFilter.Parse("event:8")));
-        Assert.IsTrue(BevLogsPanel.Matches(log, BevQueryFilter.Parse("trace:4bf9 attempt=2")));
-        Assert.IsTrue(BevLogsPanel.Matches(log, BevQueryFilter.Parse("{Attempt}")));
-        Assert.AreEqual(LogLevel.Critical, BevLogLevels.Parse("crit"));
-        Assert.AreEqual(LogLevel.Error, BevLogLevels.Parse("4"));
-        Assert.IsNull(BevLogLevels.Parse("9"));
+        Assert.IsTrue(BevToolsLogsPanel.Matches(log, BevToolsQueryFilter.Parse("level:warn")));
+        Assert.IsTrue(BevToolsLogsPanel.Matches(log, BevToolsQueryFilter.Parse("level:info")));
+        Assert.IsFalse(BevToolsLogsPanel.Matches(log, BevToolsQueryFilter.Parse("level:error")));
+        Assert.IsFalse(BevToolsLogsPanel.Matches(log, BevToolsQueryFilter.Parse("level:nonsense")), "an unknown level matches nothing rather than everything");
+        Assert.IsTrue(BevToolsLogsPanel.Matches(log, BevToolsQueryFilter.Parse("category:payments event:7")));
+        Assert.IsFalse(BevToolsLogsPanel.Matches(log, BevToolsQueryFilter.Parse("event:8")));
+        Assert.IsTrue(BevToolsLogsPanel.Matches(log, BevToolsQueryFilter.Parse("trace:4bf9 attempt=2")));
+        Assert.IsTrue(BevToolsLogsPanel.Matches(log, BevToolsQueryFilter.Parse("{Attempt}")));
+        Assert.AreEqual(LogLevel.Critical, BevToolsLogLevels.Parse("crit"));
+        Assert.AreEqual(LogLevel.Error, BevToolsLogLevels.Parse("4"));
+        Assert.IsNull(BevToolsLogLevels.Parse("9"));
     }
 
     private sealed class SecretOrder
@@ -553,7 +553,7 @@ public class LogsPanelTests : BunitContext
     public async Task A_component_that_logs_is_named_as_the_sender_and_the_panel_shows_the_entry()
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true, Visibility = "visible" });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true, Visibility = "visible" });
         module.Setup<string?>("loadPrefs", _ => true).SetResult(null);
         var row = Render<LoggingRow>(ps => ps.Add(p => p.Id, 1042));
         row.WaitForAssertion(() => Assert.AreEqual(1, Session.Logs.Count));
@@ -577,8 +577,8 @@ public class LogsPanelTests : BunitContext
     [TestMethod]
     public async Task Leaving_the_entries_for_another_view_drops_the_command_they_were_filtered_by()
     {
-        var logger = Services.GetRequiredService<ILoggerFactory>().CreateLogger(BevDbCommands.Category);
-        var executed = LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(BevDbCommands.ExecutedEventId), "Executed DbCommand ({elapsed}ms){commandText}");
+        var logger = Services.GetRequiredService<ILoggerFactory>().CreateLogger(BevToolsDbCommands.Category);
+        var executed = LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(BevToolsDbCommands.ExecutedEventId), "Executed DbCommand ({elapsed}ms){commandText}");
         using (Session.UseAmbient())
         {
             executed(logger, "4", "SELECT 1", null);

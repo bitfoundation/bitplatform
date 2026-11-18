@@ -4,7 +4,7 @@ using Microsoft.JSInterop;
 namespace Bit.BbScanner;
 
 /// <summary>
-/// The bridge where an <see cref="IBbCameraSource"/> supplies the camera: a Blazor Hybrid app with the device's own
+/// The bridge where an <see cref="IBbScannerCameraSource"/> supplies the camera: a Blazor Hybrid app with the device's own
 /// camera. The camera's frames come from the source, in the app's process; everything the page still does - the drop
 /// target, the file picker, still images, feedback, and showing the source's preview through itself - goes through
 /// <see cref="BbScannerJsRuntimeBridge"/>.
@@ -13,15 +13,15 @@ namespace Bit.BbScanner;
 /// The frames are whole, upright and already luminance, so the scanner decodes them as it decodes a frame on
 /// WebAssembly - and on a thread of its own rather than the app's UI thread, which the dispatcher of a BlazorWebView is.
 /// </remarks>
-internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCameraSource source) : BbScannerBridge
+internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbScannerCameraSource source) : BbScannerBridge
 {
     private readonly Dictionary<int, (byte[] Pixels, int Width, int Height)> _captured = [];
 
     // One camera at a time: a start waits for the one before it to finish opening, and closes what that opened.
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private IBbCameraSession? _session;
-    private DotNetObjectReference<BbNativePreviewReceiver>? _receiver;
-    private BbCameraInfo? _described;
+    private IBbScannerCameraSession? _session;
+    private DotNetObjectReference<BbScannerNativePreviewReceiver>? _receiver;
+    private BbScannerCameraInfo? _described;
     private int _generation;
     private int _videoVersion;
     private int _viewVersion;
@@ -43,7 +43,7 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
 
     public override async ValueTask<string> QueryCameraPermissionAsync()
     {
-        BbCameraPermission permission;
+        BbScannerCameraPermission permission;
         try
         {
             permission = await source.GetPermissionAsync().ConfigureAwait(false);
@@ -57,9 +57,9 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
 
         return permission switch
         {
-            BbCameraPermission.Granted => "granted",
-            BbCameraPermission.Denied => "denied",
-            BbCameraPermission.Prompt => "prompt",
+            BbScannerCameraPermission.Granted => "granted",
+            BbScannerCameraPermission.Denied => "denied",
+            BbScannerCameraPermission.Prompt => "prompt",
             _ => "",
         };
     }
@@ -67,7 +67,7 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
     public override async ValueTask<string> ListCamerasAsync()
     {
         var cameras = await source.GetCamerasAsync().ConfigureAwait(false);
-        return JsonSerializer.Serialize([.. cameras], BbScannerJsonContext.Default.BbCameraDeviceArray);
+        return JsonSerializer.Serialize([.. cameras], BbScannerJsonContext.Default.BbScannerCameraDeviceArray);
     }
 
     public override async ValueTask<string> StartAsync(string sessionId, string videoElementId, string? deviceId, int requestedWidth, int requestedHeight, string? facingMode)
@@ -75,7 +75,7 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
         // A newer start, a stop or disposal supersedes this one: a camera that opens for it after all is closed again.
         // The count goes up before the wait, so the start this one waits for already knows it is superseded.
         var generation = Interlocked.Increment(ref _generation);
-        IBbCameraSession session;
+        IBbScannerCameraSession session;
         await _gate.WaitAsync().ConfigureAwait(false);
         try
         {
@@ -84,14 +84,14 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
             // Another camera for the same scanner: the page goes on showing a preview through itself meanwhile.
             await CloseAsync(detach: false).ConfigureAwait(false);
 
-            session = await source.OpenAsync(new BbCameraRequest
+            session = await source.OpenAsync(new BbScannerCameraRequest
             {
                 DeviceId = deviceId,
                 Facing = facingMode switch
                 {
-                    "environment" => BbCameraFacing.Rear,
-                    "user" => BbCameraFacing.Front,
-                    _ => BbCameraFacing.Any,
+                    "environment" => BbScannerCameraFacing.Rear,
+                    "user" => BbScannerCameraFacing.Front,
+                    _ => BbScannerCameraFacing.Any,
                 },
                 Width = requestedWidth > 0 ? requestedWidth : 1280,
                 Height = requestedHeight > 0 ? requestedHeight : 720,
@@ -110,7 +110,7 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
             try
             {
                 // The page shows the preview through itself, and says where, for the source to draw it there.
-                _receiver ??= DotNetObjectReference.Create(new BbNativePreviewReceiver(Place));
+                _receiver ??= DotNetObjectReference.Create(new BbScannerNativePreviewReceiver(Place));
                 await page.AttachNativePreviewAsync(sessionId, videoElementId, _receiver).ConfigureAwait(false);
 
                 // A stop that came meanwhile found the gate taken, and left the camera to this.
@@ -153,7 +153,7 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
         var flags = hidden ? PollHidden : 0;
         if (_session is { } session)
         {
-            if (session.State == BbCameraSessionState.Ended)
+            if (session.State == BbScannerCameraSessionState.Ended)
             {
                 // As in the page: a camera that ends while the app is in the background is an interruption, opened
                 // again once the app is back.
@@ -286,13 +286,13 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
         return (width << 16) | height;
     }
 
-    public override async ValueTask<(byte[] Pixels, BbPixelFormat Format)?> ReadPreparedAsync(string sessionId, int requestId, int width, int height)
+    public override async ValueTask<(byte[] Pixels, BbScannerPixelFormat Format)?> ReadPreparedAsync(string sessionId, int requestId, int width, int height)
     {
         if (TakeCaptured(requestId) is { } captured)
         {
             if (captured.Width == width && captured.Height == height)
             {
-                return (captured.Pixels, BbPixelFormat.Gray8);
+                return (captured.Pixels, BbScannerPixelFormat.Gray8);
             }
 
             Array.Clear(captured.Pixels);
@@ -335,7 +335,7 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
     }
 
     /// <summary>Where the page says the scanner's video element is: the preview goes there, and the overlays follow its size.</summary>
-    private void Place(BbPreviewPlacement placement)
+    private void Place(BbScannerPreviewPlacement placement)
     {
         if (Math.Abs(placement.Width - _view.Width) >= 0.5 || Math.Abs(placement.Height - _view.Height) >= 0.5)
         {
@@ -350,7 +350,7 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
     /// Closes the camera - <paramref name="only"/>, when given, and only while it is still the one open - unless a start
     /// is still opening one: that start finds itself superseded once it has, and closes it itself.
     /// </summary>
-    private async ValueTask CloseUnlessOpeningAsync(IBbCameraSession? only = null)
+    private async ValueTask CloseUnlessOpeningAsync(IBbScannerCameraSession? only = null)
     {
         if (!await _gate.WaitAsync(0).ConfigureAwait(false))
         {
@@ -396,7 +396,7 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
     }
 
     // A camera that fails to close is closed as far as the scanner is concerned: the platform has it back either way.
-    private static async ValueTask DisposeQuietlyAsync(IBbCameraSession session, bool detach)
+    private static async ValueTask DisposeQuietlyAsync(IBbScannerCameraSession session, bool detach)
     {
         try
         {
@@ -428,15 +428,5 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
         }
     }
 
-    private static string Serialize(BbCameraInfo camera) => JsonSerializer.Serialize(camera, BbScannerJsonContext.Default.BbCameraInfo);
-}
-
-/// <summary>Receives, from the page, where the scanner's video element is, for a native camera's preview.</summary>
-internal sealed class BbNativePreviewReceiver(Action<BbPreviewPlacement> place)
-{
-    /// <summary>Called by the page whenever the element moves, resizes, shows or hides.</summary>
-    [JSInvokable]
-    public void Place(double x, double y, double width, double height, double cornerRadius, bool visible, string? backdrop,
-        double clipX, double clipY, double clipWidth, double clipHeight)
-        => place(new BbPreviewPlacement(x, y, width, height, cornerRadius, visible, backdrop, clipX, clipY, clipWidth, clipHeight));
+    private static string Serialize(BbScannerCameraInfo camera) => JsonSerializer.Serialize(camera, BbScannerJsonContext.Default.BbScannerCameraInfo);
 }

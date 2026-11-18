@@ -12,7 +12,7 @@ namespace Bit.BevTools.Tests;
 [TestClass]
 public class FormsTests : BunitContext
 {
-    private void UseBevTools(BevValueAccess? access = null) => Services.AddBitBevToolsServices(o =>
+    private void UseBevTools(BevToolsValueAccess? access = null) => Services.AddBitBevToolsServices(o =>
     {
         o.Enabled = true;
         o.ValueAccess = access;
@@ -20,7 +20,7 @@ public class FormsTests : BunitContext
 
     private BevToolsSession Session => Services.GetRequiredService<BevToolsSession>();
 
-    private BevFormInfo Form()
+    private BevToolsFormInfo Form()
     {
         Session.Components.Refresh(force: true);
         Session.Forms.Discover();
@@ -69,7 +69,7 @@ public class FormsTests : BunitContext
         Assert.DoesNotContain("ada@example", System.Text.Json.JsonSerializer.Serialize(valid), StringComparison.Ordinal);
 
         // The export carries the panel's view of the form, values included in none of it.
-        var export = BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Indented = false, Sections = new HashSet<string> { "forms" } });
+        var export = BevToolsSessionExporter.ToJson(Session, new BevToolsSessionExportOptions { Indented = false, Sections = new HashSet<string> { "forms" } });
         StringAssert.Contains(export, "\"model\":\"SignUpModel\"");
         StringAssert.Contains(export, "\"lastValidationPassed\":true");
         Assert.DoesNotContain("ada@example", export, StringComparison.Ordinal);
@@ -120,18 +120,18 @@ public class FormsTests : BunitContext
         Session.Diagnostics.Evaluate(force: true);
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "forms.validation", Session.Diagnostics.Findings).Diagnostic;
         Assert.AreEqual("SignUpForm: validation fails and no message is displayed", finding.Title);
-        Assert.AreEqual(BevDiagnosticSeverity.Info, finding.Severity);
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Info, finding.Severity);
     }
 
     [TestMethod]
     public void Without_value_access_messages_are_hidden()
     {
-        UseBevTools(BevValueAccess.None);
+        UseBevTools(BevToolsValueAccess.None);
         var cut = Render<SignUpForm>(ps => ps.Add(p => p.WithValidator, true).Add(p => p.WithSummary, true));
         cut.Find("form").Submit();
 
         var email = Form().Fields.Single(f => f.Name == "Email");
-        CollectionAssert.AreEqual(new[] { BevRedactor.HiddenValue }, email.Messages.ToArray());
+        CollectionAssert.AreEqual(new[] { BevToolsRedactor.HiddenValue }, email.Messages.ToArray());
     }
 
     [TestMethod]

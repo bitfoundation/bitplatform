@@ -15,7 +15,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     private static readonly JsonSerializerOptions PrefsJson = new(JsonSerializerDefaults.Web);
     private readonly CancellationTokenSource _cts = new();
     private IJSObjectReference? _module;
-    private DotNetObjectReference<BevJsBridge>? _bridgeRef;
+    private DotNetObjectReference<BevToolsJsBridge>? _bridgeRef;
     private long _lastVersion = -1;
     private long _lastUiVersion = -1;
     private long _viewRevision;
@@ -28,7 +28,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     /// <summary>The scope's session: the one registered with <c>AddBitBevToolsServices</c>, or the one attached since.</summary>
     public BevToolsSession Session { get; private set; } = default!;
 
-    public BitBevToolsOptions Options { get; private set; } = default!;
+    public BevToolsOptions Options { get; private set; } = default!;
 
     /// <summary>Part of <see cref="IBevToolsCommandContext"/>: commands contributed by extensions resolve services through it.</summary>
     [Inject] public IServiceProvider Services { get; set; } = default!;
@@ -39,7 +39,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     public BevToolsUiState Ui => Session.Ui;
 
-    public BevServiceGraph? Graph => Session.Registry.ServiceGraph;
+    public BevToolsServiceGraph? Graph => Session.Registry.ServiceGraph;
 
     private IReadOnlyList<BevToolsPanelDescriptor>? _extensionPanels;
     private string? _extensionPanelsPlatform;
@@ -80,7 +80,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     protected override void OnInitialized()
     {
-        Session = RuntimeAttachment.Resolve(Services)
+        Session = BevToolsRuntimeAttacher.Resolve(Services)
             ?? throw new InvalidOperationException("BevTools is not available in this scope: register it with AddBitBevToolsServices, call BitBevTools.Attach before rendering BevToolsPanel, or render BevToolsLoaderPanel (Bit.BevTools.Loader) instead.");
         Options = Session.Options;
         if (!Session.IsEnabled)
@@ -96,13 +96,13 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         if (!_interactive)
         {
             // Prerendering: this session ends with the response, so what it saw is handed to the interactive one.
-            _prerenderHandoff = BevPrerenderHandoff.RegisterWhilePrerendering(Session, Services, this, Navigation);
+            _prerenderHandoff = BevToolsPrerenderHandoff.RegisterWhilePrerendering(Session, Services, this, Navigation);
             return;
         }
 
-        Session.Prerender ??= BevPrerenderHandoff.TakeWhenInteractive(Services);
+        Session.Prerender ??= BevToolsPrerenderHandoff.TakeWhenInteractive(Services);
         Session.PanelComponent = this;
-        RuntimeAttachment.AttachToRenderer(Session, this);
+        BevToolsRuntimeAttacher.AttachToRenderer(Session, this);
         Session.EnsureActivated();
         Navigation.LocationChanged += OnLocationChanged;
         Ui.OpenedFromCode += OnOpenedFromCode;
@@ -153,7 +153,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Bit.BevTools/bit-bevtools.js");
             if (Options.EnableBrowserBridge)
             {
-                _bridgeRef = DotNetObjectReference.Create(new BevJsBridge(
+                _bridgeRef = DotNetObjectReference.Create(new BevToolsJsBridge(
                     Session,
                     () => InvokeAsync(() => { Toggle(); StateHasChanged(); }),
                     () => InvokeAsync(() => { OpenPalette(); StateHasChanged(); }),
@@ -178,7 +178,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
                         }
                     }),
                 });
-                var snapshot = await _module.InvokeAsync<BevBrowserSnapshot>("attach", _bridgeRef, new
+                var snapshot = await _module.InvokeAsync<BevToolsBrowserSnapshot>("attach", _bridgeRef, new
                 {
                     shortcut = Options.Ui.ToggleShortcut,
                     trackJsToDotNet = Options.TrackJsInterop,
@@ -188,7 +188,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
                     sensitivePatterns = Options.SensitiveNamePatterns,
                     sessionId = Session.Id,
                     // Calls into this module name it by this id over a circuit: the hub counts them as BevTools' own.
-                    moduleObjectId = BlazorReflection.JSObjectId(_module),
+                    moduleObjectId = BevToolsBlazorReflection.JSObjectId(_module),
                     platform = Session.Platform,
                     renderMode = Session.RenderModeName,
                     label = RuntimeLabel(),
@@ -206,7 +206,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             // Whatever attaching fails with - a JS error, a disconnect, an interop timeout while the tab is throttled or
             // paused in the browser's debugger, a result that does not deserialize - must not escape a lifecycle method:
             // on Blazor Server that terminates the circuit, and the diagnostics tool would take the app down with it.
-            Session.Browser.BridgeError = BevRedactor.RedactText(ex.Message);
+            Session.Browser.BridgeError = BevToolsRedactor.RedactText(ex.Message);
         }
 
         // Settled whether or not preferences were saved or could be read: an open request left pending would
@@ -323,7 +323,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     }
 
     /// <summary>
-    /// Reads the memory counters at most once a second (<see cref="BevMemoryTrend"/>), and on WebAssembly the linear
+    /// Reads the memory counters at most once a second (<see cref="BevToolsMemoryTrend"/>), and on WebAssembly the linear
     /// memory, through the in-process module - a synchronous call into the same thread, not a round trip.
     /// </summary>
     private void SampleMemory()
@@ -335,7 +335,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
         try
         {
-            var sampled = Session.Memory.Sample(Session, DateTimeOffset.UtcNow, () => BevMemoryReading.Now(
+            var sampled = Session.Memory.Sample(Session, DateTimeOffset.UtcNow, () => BevToolsMemoryReading.Now(
                 OperatingSystem.IsBrowser() && _module is IJSInProcessObjectReference inProcess ? (long?)inProcess.Invoke<double?>("wasmMemory") : null));
             if (sampled && Ui.IsOpen && Ui.ActivePanelId == "runtime")
             {
@@ -367,7 +367,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     } + " · session #" + Session.Id;
 
     /// <summary>The other runtimes on the page this panel's header can switch to.</summary>
-    internal IReadOnlyList<BevTargetInfo> OtherTargets => Session.Browser.Targets.Where(t => t.Id != Session.Browser.TargetId).ToArray();
+    internal IReadOnlyList<BevToolsTargetInfo> OtherTargets => Session.Browser.Targets.Where(t => t.Id != Session.Browser.TargetId).ToArray();
 
     /// <summary>Opens this runtime's panel and asks the hub to close the others', so one panel shows at a time.</summary>
     private async Task SwitchToAsync(string targetId)
@@ -450,20 +450,20 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         string? error = null;
         try
         {
-            var location = BevDomMap.Locate(Session, record, out error);
+            var location = BevToolsDomMap.Locate(Session, record, out error);
             if (location is null)
             {
                 await _module.InvokeVoidAsync("clearHighlight");
             }
             else
             {
-                var result = await _module.InvokeAsync<BevHighlightResult>("highlight", target, location, new { scroll = explicitRequest, durationMs = explicitRequest ? 2500 : 0 });
+                var result = await _module.InvokeAsync<BevToolsHighlightResult>("highlight", target, location, new { scroll = explicitRequest, durationMs = explicitRequest ? 2500 : 0 });
                 error = result is { Ok: false } ? result.Error : result is { Visible: false } ? record.DisplayName + " renders nothing visible right now." : null;
             }
         }
         catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException or ObjectDisposedException)
         {
-            error = BevRedactor.RedactText(ex.Message);
+            error = BevToolsRedactor.RedactText(ex.Message);
         }
         catch (Exception ex)
         {
@@ -486,7 +486,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     /// </summary>
     internal async Task LoadSymbolsAsync(System.Reflection.Assembly assembly)
     {
-        if (_module is null || !BevSourceLocator.NeedsDownload(assembly) || !_symbolsRequested.Add(assembly.FullName ?? ""))
+        if (_module is null || !BevToolsSourceLocator.NeedsDownload(assembly) || !_symbolsRequested.Add(assembly.FullName ?? ""))
         {
             return;
         }
@@ -503,7 +503,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             return;
         }
 
-        BevSourceLocator.Provide(assembly, pdb);
+        BevToolsSourceLocator.Provide(assembly, pdb);
         Refresh();
     }
 
@@ -567,11 +567,11 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
 
         // One pass, one batch: the rows of a list share their parent's frames, walked once.
-        var batch = new BevDomMapBatch();
+        var batch = new BevToolsDomMapBatch();
         var items = new List<object>(rendered.Count);
         foreach (var (record, count) in rendered)
         {
-            if (BevDomMap.Locate(Session, record, out _, batch) is { } location)
+            if (BevToolsDomMap.Locate(Session, record, out _, batch) is { } location)
             {
                 items.Add(new { location, count });
             }
@@ -682,7 +682,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
     }
 
-    private void ApplySnapshot(BevBrowserSnapshot? s)
+    private void ApplySnapshot(BevToolsBrowserSnapshot? s)
     {
         if (s is null)
         {
@@ -734,7 +734,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
                 Ui.Theme = theme;
             }
 
-            if (Enum.TryParse<BevPanelSize>(prefs.Size, true, out var size))
+            if (Enum.TryParse<BevToolsPanelSize>(prefs.Size, true, out var size))
             {
                 Ui.Size = size;
             }
@@ -1025,17 +1025,17 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         {
             var patterns = Options.SensitiveNamePatterns.ToArray();
             // Under ValueAccess None no value leaves the browser: keys and sizes only.
-            var previews = Session.ValueAccess != BevValueAccess.None;
-            Session.Browser.LocalStorage = await _module.InvokeAsync<BevStorageEntry[]>("getStorage", "local", patterns, previews);
-            Session.Browser.SessionStorage = await _module.InvokeAsync<BevStorageEntry[]>("getStorage", "session", patterns, previews);
-            Session.Browser.AppStorage = Clean(await _module.InvokeAsync<BevAppStorage>("getAppStorage"));
+            var previews = Session.ValueAccess != BevToolsValueAccess.None;
+            Session.Browser.LocalStorage = await _module.InvokeAsync<BevToolsStorageEntry[]>("getStorage", "local", patterns, previews);
+            Session.Browser.SessionStorage = await _module.InvokeAsync<BevToolsStorageEntry[]>("getStorage", "session", patterns, previews);
+            Session.Browser.AppStorage = Clean(await _module.InvokeAsync<BevToolsAppStorage>("getAppStorage"));
             Session.Browser.StorageReadAt = DateTimeOffset.UtcNow;
             Session.Browser.StorageError = null;
-            ApplySnapshot(await _module.InvokeAsync<BevBrowserSnapshot>("refresh"));
+            ApplySnapshot(await _module.InvokeAsync<BevToolsBrowserSnapshot>("refresh"));
         }
         catch (Exception ex)
         {
-            Session.Browser.StorageError = ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message);
+            Session.Browser.StorageError = ex.GetType().Name + ": " + BevToolsRedactor.RedactText(ex.Message);
             Session.Errors.Record(ex, "bevtools", "Reading browser storage failed.");
         }
         finally
@@ -1047,19 +1047,19 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     }
 
     /// <summary>What the page reported is the page's text: bounded and redacted before anything shows or exports it.</summary>
-    internal static BevAppStorage? Clean(BevAppStorage? storage)
+    internal static BevToolsAppStorage? Clean(BevToolsAppStorage? storage)
     {
         if (storage is null)
         {
             return null;
         }
 
-        static string Text(string? value, int max = 400) => BevRedactor.RedactText(value is null ? "" : value.Length <= max ? value : value[..max]);
+        static string Text(string? value, int max = 400) => BevToolsRedactor.RedactText(value is null ? "" : value.Length <= max ? value : value[..max]);
         static string? Optional(string? value) => value is null ? null : Text(value);
-        storage.Cookies = (storage.Cookies ?? []).Take(200).Select(c => new BevCookieInfo { Name = Text(c.Name, 200), Size = Math.Max(0, c.Size) }).ToArray();
-        storage.IndexedDb = storage.IndexedDb?.Take(200).Select(d => new BevIndexedDbInfo { Name = Text(d.Name, 200), Version = d.Version }).ToArray();
-        storage.Caches = storage.Caches?.Take(200).Select(c => new BevCacheInfo { Name = Text(c.Name, 200), Entries = Math.Max(0, c.Entries) }).ToArray();
-        storage.ServiceWorkers = storage.ServiceWorkers?.Take(200).Select(w => new BevServiceWorkerInfo
+        storage.Cookies = (storage.Cookies ?? []).Take(200).Select(c => new BevToolsCookieInfo { Name = Text(c.Name, 200), Size = Math.Max(0, c.Size) }).ToArray();
+        storage.IndexedDb = storage.IndexedDb?.Take(200).Select(d => new BevToolsIndexedDbInfo { Name = Text(d.Name, 200), Version = d.Version }).ToArray();
+        storage.Caches = storage.Caches?.Take(200).Select(c => new BevToolsCacheInfo { Name = Text(c.Name, 200), Entries = Math.Max(0, c.Entries) }).ToArray();
+        storage.ServiceWorkers = storage.ServiceWorkers?.Take(200).Select(w => new BevToolsServiceWorkerInfo
         {
             Scope = Text(w.Scope),
             Active = Optional(w.Active),
@@ -1086,13 +1086,13 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
         try
         {
-            Session.Browser.Accessibility = await _module.InvokeAsync<BevA11yFinding[]>("auditPage", new { includeBevTools });
+            Session.Browser.Accessibility = await _module.InvokeAsync<BevToolsA11yFinding[]>("auditPage", new { includeBevTools });
             Session.Browser.AccessibilityCheckedAt = DateTimeOffset.UtcNow;
             Session.Browser.AccessibilityError = null;
         }
         catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
         {
-            Session.Browser.AccessibilityError = ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message);
+            Session.Browser.AccessibilityError = ex.GetType().Name + ": " + BevToolsRedactor.RedactText(ex.Message);
         }
 
         Session.Diagnostics.Evaluate(force: true);
@@ -1132,7 +1132,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     private void SetSize()
     {
-        Ui.Size = Ui.Size switch { BevPanelSize.Small => BevPanelSize.Medium, BevPanelSize.Medium => BevPanelSize.Large, _ => BevPanelSize.Small };
+        Ui.Size = Ui.Size switch { BevToolsPanelSize.Small => BevToolsPanelSize.Medium, BevToolsPanelSize.Medium => BevToolsPanelSize.Large, _ => BevToolsPanelSize.Small };
         Ui.Touch();
         _ = SavePrefsAsync();
     }
@@ -1230,7 +1230,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         _prerenderHandoff?.Dispose();
         if (Session is not null)
         {
-            RuntimeAttachment.OnPanelDisposed(Session);
+            BevToolsRuntimeAttacher.OnPanelDisposed(Session);
         }
 
         if (_loop is not null)

@@ -28,7 +28,7 @@ public abstract class BmageImageSource
     public long? Length { get; protected init; }
 
     /// <summary>Reads the encoded bytes. The returned buffer is pooled; dispose it when done.</summary>
-    public abstract ValueTask<PooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default);
+    public abstract ValueTask<BmagePooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default);
 
     /// <summary>Wraps an <see cref="IBrowserFile"/> from an <c>InputFile</c> component or a drop zone.</summary>
     public static BmageImageSource FromBrowserFile(IBrowserFile file)
@@ -95,12 +95,12 @@ public abstract class BmageImageSource
             Length = file.Size;
         }
 
-        public override async ValueTask<PooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default)
+        public override async ValueTask<BmagePooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default)
         {
             if (_file.Size > maxBytes)
-                throw new ImageLimitExceededException($"'{_file.Name}' is {_file.Size} bytes, which exceeds the {maxBytes} byte limit for a single image.");
+                throw new BmageImageLimitExceededException($"'{_file.Name}' is {_file.Size} bytes, which exceeds the {maxBytes} byte limit for a single image.");
             await using var stream = _file.OpenReadStream(maxBytes, cancellationToken);
-            return await PooledBuffer.ReadAllAsync(stream, (int)_file.Size, maxBytes, cancellationToken).ConfigureAwait(false);
+            return await BmagePooledBuffer.ReadAllAsync(stream, (int)_file.Size, maxBytes, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -116,11 +116,11 @@ public abstract class BmageImageSource
             Length = bytes.Length;
         }
 
-        public override ValueTask<PooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default)
+        public override ValueTask<BmagePooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default)
         {
             if (_bytes.Length > maxBytes)
-                throw new ImageLimitExceededException($"The image is {_bytes.Length} bytes, which exceeds the {maxBytes} byte limit.");
-            return new ValueTask<PooledBuffer>(PooledBuffer.CopyOf(_bytes.Span));
+                throw new BmageImageLimitExceededException($"The image is {_bytes.Length} bytes, which exceeds the {maxBytes} byte limit.");
+            return new ValueTask<BmagePooledBuffer>(BmagePooledBuffer.CopyOf(_bytes.Span));
         }
     }
 
@@ -136,8 +136,8 @@ public abstract class BmageImageSource
             Length = length ?? (stream.CanSeek ? stream.Length : null);
         }
 
-        public override async ValueTask<PooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default)
-            => await PooledBuffer.ReadAllAsync(_stream, Length is { } l and <= int.MaxValue ? (int)l : 0, maxBytes, cancellationToken).ConfigureAwait(false);
+        public override async ValueTask<BmagePooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default)
+            => await BmagePooledBuffer.ReadAllAsync(_stream, Length is { } l and <= int.MaxValue ? (int)l : 0, maxBytes, cancellationToken).ConfigureAwait(false);
     }
 
     private sealed class UrlSource : BmageImageSource
@@ -163,8 +163,8 @@ public abstract class BmageImageSource
             catch (ArgumentException) { return null; }
         }
 
-        public override ValueTask<PooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default)
-            => throw new InvalidOperationException("A URL source is fetched by the browser. Use ImageLoader.LoadAsync, which routes it through JavaScript interop.");
+        public override ValueTask<BmagePooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default)
+            => throw new InvalidOperationException("A URL source is fetched by the browser. Use BmageImageLoader.LoadAsync, which routes it through JavaScript interop.");
     }
 
     /// <summary>True when this source must be fetched by the browser rather than read in .NET.</summary>
@@ -172,74 +172,4 @@ public abstract class BmageImageSource
 
     internal (string Url, bool WithCredentials) GetRemoteRequest()
         => this is UrlSource u ? (u.Url, u.WithCredentials) : throw new InvalidOperationException("Not a remote source.");
-}
-
-/// <summary>A pooled byte buffer holding encoded image data. Dispose to return it to the pool.</summary>
-public sealed class PooledBuffer : IDisposable
-{
-    private byte[]? _array;
-
-    private PooledBuffer(byte[] array, int length)
-    {
-        _array = array;
-        Length = length;
-    }
-
-    /// <summary>Number of valid bytes.</summary>
-    public int Length { get; }
-
-    /// <summary>The valid bytes.</summary>
-    public ReadOnlyMemory<byte> Memory => _array is null ? ReadOnlyMemory<byte>.Empty : _array.AsMemory(0, Length);
-
-    /// <summary>The valid bytes as a span.</summary>
-    public ReadOnlySpan<byte> Span => _array is null ? ReadOnlySpan<byte>.Empty : _array.AsSpan(0, Length);
-
-    /// <summary>Copies existing bytes into a pooled buffer.</summary>
-    public static PooledBuffer CopyOf(ReadOnlySpan<byte> bytes)
-    {
-        var array = ArrayPool<byte>.Shared.Rent(Math.Max(1, bytes.Length));
-        bytes.CopyTo(array);
-        return new PooledBuffer(array, bytes.Length);
-    }
-
-    /// <summary>Reads a stream fully into a pooled buffer, refusing to exceed <paramref name="maxBytes"/>.</summary>
-    public static async ValueTask<PooledBuffer> ReadAllAsync(Stream stream, int sizeHint, long maxBytes, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(stream);
-        var capacity = Math.Max(4096, sizeHint > 0 ? sizeHint : 64 * 1024);
-        var array = ArrayPool<byte>.Shared.Rent(capacity);
-        var length = 0;
-        try
-        {
-            while (true)
-            {
-                if (length == array.Length)
-                {
-                    if (array.Length >= maxBytes)
-                        throw new ImageLimitExceededException($"The image exceeds the {maxBytes} byte limit.");
-                    var bigger = ArrayPool<byte>.Shared.Rent(Math.Min((long)array.Length * 2, maxBytes + 1) is var n && n > int.MaxValue ? int.MaxValue : (int)n);
-                    array.AsSpan(0, length).CopyTo(bigger);
-                    ArrayPool<byte>.Shared.Return(array);
-                    array = bigger;
-                }
-                var read = await stream.ReadAsync(array.AsMemory(length), cancellationToken).ConfigureAwait(false);
-                if (read == 0) break;
-                length += read;
-                if (length > maxBytes)
-                    throw new ImageLimitExceededException($"The image exceeds the {maxBytes} byte limit.");
-            }
-            return new PooledBuffer(array, length);
-        }
-        catch
-        {
-            ArrayPool<byte>.Shared.Return(array);
-            throw;
-        }
-    }
-
-    public void Dispose()
-    {
-        var array = Interlocked.Exchange(ref _array, null);
-        if (array is not null) ArrayPool<byte>.Shared.Return(array);
-    }
 }

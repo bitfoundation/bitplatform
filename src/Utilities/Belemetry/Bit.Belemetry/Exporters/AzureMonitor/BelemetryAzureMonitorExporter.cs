@@ -7,15 +7,15 @@ namespace Bit.Belemetry;
 internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
 {
     private readonly BelemetryAzureMonitorExporterOptions _options;
-    private readonly AzureMonitorEnvelopeSerializer.Context _context;
+    private readonly BelemetryAzureMonitorEnvelopeSerializer.Context _context;
 
     public BelemetryAzureMonitorExporter(BelemetryAzureMonitorExporterOptions options, string name)
     {
         _options = options;
         Name = name;
-        ConnectionString = AzureMonitorConnectionString.Parse(options.ConnectionString!);
+        ConnectionString = BelemetryAzureMonitorConnectionString.Parse(options.ConnectionString!);
         MinimumSeverity = BelemetryLogger.ToMinimumSeverity(options.MinimumLogLevel);
-        _context = new AzureMonitorEnvelopeSerializer.Context(ConnectionString.InstrumentationKey, options.MaskIp,
+        _context = new BelemetryAzureMonitorEnvelopeSerializer.Context(ConnectionString.InstrumentationKey, options.MaskIp,
                                                               options.Signals.HasFlag(BelemetrySignals.Logs), MinimumSeverity);
     }
 
@@ -23,12 +23,12 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
 
     public TimeSpan Timeout => _options.Timeout;
 
-    public AzureMonitorConnectionString ConnectionString { get; }
+    public BelemetryAzureMonitorConnectionString ConnectionString { get; }
 
     internal BelemetryAzureMonitorExporterOptions Options => _options;
 
-    /// <summary>What its envelopes are written under; Live Metrics samples by the same rules (<see cref="AzureMonitorEnvelopeSerializer.IsItem(BelemetrySpanEvent, AzureMonitorEnvelopeSerializer.Context)"/>).</summary>
-    internal AzureMonitorEnvelopeSerializer.Context Context => _context;
+    /// <summary>What its envelopes are written under; Live Metrics samples by the same rules (<see cref="BelemetryAzureMonitorEnvelopeSerializer.IsItem(BelemetrySpanEvent, BelemetryAzureMonitorEnvelopeSerializer.Context)"/>).</summary>
+    internal BelemetryAzureMonitorEnvelopeSerializer.Context Context => _context;
 
     // Authentication is the connection string's key (in the body) or a token from PrepareAsync.
     public IReadOnlyDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
@@ -40,7 +40,7 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
         var filtered = Filter(batch);
         if (filtered.IsEmpty) yield break;
 
-        var body = AzureMonitorEnvelopeSerializer.Serialize(filtered, _context, out var count);
+        var body = BelemetryAzureMonitorEnvelopeSerializer.Serialize(filtered, _context, out var count);
         if (count == 0) yield break;
 
         yield return new BelemetryHttpRequest
@@ -54,7 +54,7 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
         };
     }
 
-    public int CountItems(BelemetryBatch batch) => AzureMonitorEnvelopeSerializer.Count(Filter(batch), _context);
+    public int CountItems(BelemetryBatch batch) => BelemetryAzureMonitorEnvelopeSerializer.Count(Filter(batch), _context);
 
     /// <summary>The part of <paramref name="batch"/> this exporter sends (<see cref="BelemetryAzureMonitorExporterOptions.Signals"/>).</summary>
     private BelemetryBatch Filter(BelemetryBatch batch) => new(batch.Resource,

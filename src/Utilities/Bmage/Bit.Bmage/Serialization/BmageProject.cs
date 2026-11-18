@@ -5,65 +5,6 @@ using System.Text.Json;
 
 namespace Bit.Bmage;
 
-/// <summary>How a <see cref="BmageProject"/> is written and read.</summary>
-public sealed record BmageProjectOptions
-{
-    /// <summary>The defaults: no custom codecs, the default image limits, metadata removed, at most 1 GB unpacked.</summary>
-    public static BmageProjectOptions Default { get; } = new();
-
-    /// <summary>
-    /// Codecs for custom operations, annotations, layers and masks. Their image handling is not used: a project stores
-    /// its images itself. Null for the built-in types only.
-    /// </summary>
-    public BmageJsonOptions? Json { get; init; }
-
-    /// <summary>The largest image a project may hold, checked before an image is decoded.</summary>
-    public ImageLimits Limits { get; init; } = ImageLimits.Default;
-
-    /// <summary>
-    /// The most pixels a project read may decode, its original and the images its document uses together, checked
-    /// before each is decoded; null for four times <see cref="ImageLimits.MaxPixels"/>. A PNG of one colour compresses
-    /// to almost nothing, so without this a small file could ask for many large images.
-    /// </summary>
-    public long? MaxTotalPixels
-    {
-        get;
-        init => field = value is null or > 0 ? value : throw new ArgumentOutOfRangeException(nameof(MaxTotalPixels));
-    }
-
-    internal long TotalPixelLimit => MaxTotalPixels ?? (Limits.MaxPixels > long.MaxValue / 4 ? long.MaxValue : Limits.MaxPixels * 4);
-
-    /// <summary>Where the decoded images' pixels come from, or null for the pooled allocator.</summary>
-    public IPixelAllocator? Allocator { get; init; }
-
-    /// <summary>
-    /// What of the original's metadata the project keeps: removed by default, as an export removes it, so a project
-    /// passed on does not carry the photo's location.
-    /// </summary>
-    public MetadataPolicy OriginalMetadata { get; init; } = MetadataPolicy.Remove;
-
-    /// <summary>The most files a project read may hold.</summary>
-    public int MaxEntries
-    {
-        get;
-        init => field = value > 0 ? value : throw new ArgumentOutOfRangeException(nameof(MaxEntries));
-    } = 1024;
-
-    /// <summary>The most bytes the files a project read holds may unpack to, together.</summary>
-    public long MaxUnpackedBytes
-    {
-        get;
-        init => field = value > 0 ? value : throw new ArgumentOutOfRangeException(nameof(MaxUnpackedBytes));
-    } = 1L << 30;
-
-    /// <summary>The PNG compression level the images are written with, 0 to 9.</summary>
-    public int PngCompressionLevel
-    {
-        get;
-        init => field = value is >= 0 and <= 9 ? value : throw new ArgumentOutOfRangeException(nameof(PngCompressionLevel));
-    } = 6;
-}
-
 /// <summary>
 /// A whole edit in one file: the original image, the non-destructive document, and every image the document refers
 /// to, so an edit can be closed and reopened, or moved to another machine, and edited further. Its layers, masks,
@@ -82,7 +23,7 @@ public sealed record BmageProjectOptions
 /// document uses are decoded, each checked against <see cref="BmageProjectOptions.Limits"/> and all of them against
 /// <see cref="BmageProjectOptions.MaxTotalPixels"/> before decoding; and the document is validated as
 /// <see cref="BmageJson"/> validates any document. Anything wrong is reported as an
-/// <see cref="ImageDocumentFormatException"/>, and a project that fails to load leaves nothing allocated.
+/// <see cref="BmageImageDocumentFormatException"/>, and a project that fails to load leaves nothing allocated.
 /// </para>
 /// </remarks>
 /// <example>
@@ -93,7 +34,7 @@ public sealed record BmageProjectOptions
 ///
 /// // Later, or elsewhere: everything comes back, ready to edit or render.
 /// using var project = await BmageProject.LoadAsync(File.OpenRead("holiday.bmage"));
-/// using var rendered = new DocumentRenderer().Render(project.Document, project.Original);
+/// using var rendered = new BmageDocumentRenderer().Render(project.Document, project.Original);
 /// </code>
 /// </example>
 public sealed class BmageProject : IDisposable
@@ -112,7 +53,7 @@ public sealed class BmageProject : IDisposable
     /// <summary>A document is a description; no real one comes near this.</summary>
     private const long MaxJsonBytes = 64L * 1024 * 1024;
 
-    private BmageProject(ImageBuffer original, ImageDocument document, IReadOnlyList<ImageBuffer> images)
+    private BmageProject(BmageImageBuffer original, BmageImageDocument document, IReadOnlyList<BmageImageBuffer> images)
     {
         Original = original;
         Document = document;
@@ -120,19 +61,19 @@ public sealed class BmageProject : IDisposable
     }
 
     /// <summary>The original image. Owned by the project until <see cref="Dispose"/>, or handed on with <see cref="DetachOriginal"/>.</summary>
-    public ImageBuffer Original { get; private set; }
+    public BmageImageBuffer Original { get; private set; }
 
     /// <summary>The edit.</summary>
-    public ImageDocument Document { get; }
+    public BmageImageDocument Document { get; }
 
     /// <summary>
     /// The images the document's layers, annotations and masks refer to, owned by the project: keep it alive while the
-    /// document is used, or hand them to whoever keeps the document, such as an <see cref="ImageEditSession"/>.
+    /// document is used, or hand them to whoever keeps the document, such as an <see cref="BmageImageEditSession"/>.
     /// </summary>
-    public IReadOnlyList<ImageBuffer> Images { get; private set; }
+    public IReadOnlyList<BmageImageBuffer> Images { get; private set; }
 
     /// <summary>Hands the original to the caller, who disposes it from then on.</summary>
-    public ImageBuffer DetachOriginal()
+    public BmageImageBuffer DetachOriginal()
     {
         var original = Original;
         Original = null!;
@@ -140,7 +81,7 @@ public sealed class BmageProject : IDisposable
     }
 
     /// <summary>Hands the document's images to the caller, who disposes them from then on.</summary>
-    public IReadOnlyList<ImageBuffer> DetachImages()
+    public IReadOnlyList<BmageImageBuffer> DetachImages()
     {
         var images = Images;
         Images = [];
@@ -157,7 +98,7 @@ public sealed class BmageProject : IDisposable
 
     /// <summary>Writes a project of <paramref name="original"/> and the edit <paramref name="document"/> made to it.</summary>
     /// <exception cref="ArgumentException">The document was made for an image of another size.</exception>
-    public static async Task SaveAsync(Stream destination, ImageBuffer original, ImageDocument document, BmageProjectOptions? options = null, CancellationToken cancellationToken = default)
+    public static async Task SaveAsync(Stream destination, BmageImageBuffer original, BmageImageDocument document, BmageProjectOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(destination);
         ArgumentNullException.ThrowIfNull(original);
@@ -167,7 +108,7 @@ public sealed class BmageProject : IDisposable
         options ??= BmageProjectOptions.Default;
 
         // Every image the document refers to, named in the order it is first met and stored once.
-        var names = new Dictionary<ImageBuffer, string>(ReferenceEqualityComparer.Instance);
+        var names = new Dictionary<BmageImageBuffer, string>(ReferenceEqualityComparer.Instance);
         var json = BmageJson.Serialize(document, (options.Json ?? BmageJsonOptions.Default).WithImages(image =>
         {
             if (!names.TryGetValue(image, out var name)) names[image] = name = $"images/{names.Count + 1}.png";
@@ -183,7 +124,7 @@ public sealed class BmageProject : IDisposable
             foreach (var (image, name) in names)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                WritePng(zip, name, image, options, MetadataPolicy.Remove, cancellationToken);
+                WritePng(zip, name, image, options, BmageMetadataPolicy.Remove, cancellationToken);
             }
         }
         buffer.Position = 0;
@@ -214,9 +155,9 @@ public sealed class BmageProject : IDisposable
         entry.Write(Encoding.UTF8.GetBytes(text));
     }
 
-    private static void WritePng(ZipArchive zip, string name, ImageBuffer image, BmageProjectOptions options, MetadataPolicy metadata, CancellationToken cancellationToken)
+    private static void WritePng(ZipArchive zip, string name, BmageImageBuffer image, BmageProjectOptions options, BmageMetadataPolicy metadata, CancellationToken cancellationToken)
     {
-        var encoded = PngEncoder.Encode(image, new ImageExportOptions
+        var encoded = BmagePngEncoder.Encode(image, new BmageImageExportOptions
         {
             Format = BmageImageFormat.Png,
             Metadata = metadata,
@@ -228,7 +169,7 @@ public sealed class BmageProject : IDisposable
     }
 
     /// <summary>Reads a project written by <see cref="SaveAsync"/>. The caller owns, and disposes, the result.</summary>
-    /// <exception cref="ImageDocumentFormatException">The data is not a project this version can read, or exceeds the options' limits.</exception>
+    /// <exception cref="BmageImageDocumentFormatException">The data is not a project this version can read, or exceeds the options' limits.</exception>
     public static async Task<BmageProject> LoadAsync(Stream source, BmageProjectOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -248,11 +189,11 @@ public sealed class BmageProject : IDisposable
         }
         catch (InvalidDataException ex)
         {
-            throw new ImageDocumentFormatException("The file is not a Bmage project: it is not a ZIP archive.", ex);
+            throw new BmageImageDocumentFormatException("The file is not a Bmage project: it is not a ZIP archive.", ex);
         }
 
-        var decoded = new Dictionary<string, ImageBuffer>(StringComparer.Ordinal);
-        ImageBuffer? original = null;
+        var decoded = new Dictionary<string, BmageImageBuffer>(StringComparer.Ordinal);
+        BmageImageBuffer? original = null;
         try
         {
             using (zip)
@@ -262,19 +203,19 @@ public sealed class BmageProject : IDisposable
                 using var manifest = ParseManifest(ReadEntry(zip, ManifestName, budget, MaxJsonBytes));
                 var root = manifest.RootElement;
                 if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("format", out var format) || format.ValueKind != JsonValueKind.String || format.GetString() != Format)
-                    throw new ImageDocumentFormatException("The file is not a Bmage project: its manifest does not say it is one.");
+                    throw new BmageImageDocumentFormatException("The file is not a Bmage project: its manifest does not say it is one.");
                 var version = root.TryGetProperty("version", out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var number) ? number : 0;
                 if (version is < 1 or > FormatVersion)
-                    throw new ImageDocumentFormatException($"The project is format version {version}; this version of Bmage reads versions 1 to {FormatVersion}.");
+                    throw new BmageImageDocumentFormatException($"The project is format version {version}; this version of Bmage reads versions 1 to {FormatVersion}.");
 
                 var documentName = ImageOrFileName(root, "document", allowDocument: true);
                 var originalName = ImageOrFileName(root, "original", allowDocument: false);
                 var imageNames = new HashSet<string>(StringComparer.Ordinal);
                 if (root.TryGetProperty("images", out var images))
                 {
-                    if (images.ValueKind != JsonValueKind.Array) throw new ImageDocumentFormatException("$.images in the manifest must be an array.");
+                    if (images.ValueKind != JsonValueKind.Array) throw new BmageImageDocumentFormatException("$.images in the manifest must be an array.");
                     foreach (var image in images.EnumerateArray())
-                        imageNames.Add(image.ValueKind == JsonValueKind.String ? CheckImageName(image.GetString()!) : throw new ImageDocumentFormatException("$.images may only hold file names."));
+                        imageNames.Add(image.ValueKind == JsonValueKind.String ? CheckImageName(image.GetString()!) : throw new BmageImageDocumentFormatException("$.images may only hold file names."));
                 }
 
                 original = DecodePng(zip, originalName, budget, options, cancellationToken);
@@ -289,7 +230,7 @@ public sealed class BmageProject : IDisposable
                     return decoded[name] = DecodePng(zip, name, budget, options, cancellationToken);
                 }));
                 if (document.SourceSize != original.Size)
-                    throw new ImageDocumentFormatException($"The project's document was made for a {document.SourceSize.Width}x{document.SourceSize.Height} image, but its original is {original.Width}x{original.Height}.");
+                    throw new BmageImageDocumentFormatException($"The project's document was made for a {document.SourceSize.Width}x{document.SourceSize.Height} image, but its original is {original.Width}x{original.Height}.");
                 return new BmageProject(original, document, [.. decoded.Values]);
             }
         }
@@ -299,7 +240,7 @@ public sealed class BmageProject : IDisposable
             foreach (var image in decoded.Values) image.Dispose();
             // A damaged archive is reported as any other malformed project is.
             if (ex is InvalidDataException or NotSupportedException)
-                throw new ImageDocumentFormatException($"The project file is damaged: {ex.Message}", ex);
+                throw new BmageImageDocumentFormatException($"The project file is damaged: {ex.Message}", ex);
             throw;
         }
     }
@@ -312,7 +253,7 @@ public sealed class BmageProject : IDisposable
         }
         catch (JsonException ex)
         {
-            throw new ImageDocumentFormatException($"The project's manifest is not valid JSON: {ex.Message}", ex);
+            throw new BmageImageDocumentFormatException($"The project's manifest is not valid JSON: {ex.Message}", ex);
         }
     }
 
@@ -333,13 +274,13 @@ public sealed class BmageProject : IDisposable
         long offset = BinaryPrimitives.ReadUInt32LittleEndian(zip[(end + 16)..]);
         // ZIP64 is only needed past 65535 files or 4 GB, which no project this reads comes near; it is not followed.
         if (declared == ushort.MaxValue || offset == uint.MaxValue)
-            throw new ImageDocumentFormatException("The project file is a ZIP64 archive, which projects never need and are not read as.");
-        if (declared > max) throw new ImageDocumentFormatException($"The project holds {declared} files; at most {max} are read.");
+            throw new BmageImageDocumentFormatException("The project file is a ZIP64 archive, which projects never need and are not read as.");
+        if (declared > max) throw new BmageImageDocumentFormatException($"The project holds {declared} files; at most {max} are read.");
         // The directory itself is walked too, as ZipArchive walks it, rather than trusting the count it declares.
         var count = 0;
         while (offset <= zip.Length - 46 && BinaryPrimitives.ReadUInt32LittleEndian(zip[(int)offset..]) == 0x02014b50)
         {
-            if (++count > max) throw new ImageDocumentFormatException($"The project holds more than {max} files; at most {max} are read.");
+            if (++count > max) throw new BmageImageDocumentFormatException($"The project holds more than {max} files; at most {max} are read.");
             var header = zip[(int)offset..];
             offset += 46L + BinaryPrimitives.ReadUInt16LittleEndian(header[28..]) + BinaryPrimitives.ReadUInt16LittleEndian(header[30..]) + BinaryPrimitives.ReadUInt16LittleEndian(header[32..]);
         }
@@ -349,9 +290,9 @@ public sealed class BmageProject : IDisposable
     private static string ImageOrFileName(JsonElement root, string property, bool allowDocument)
     {
         if (!root.TryGetProperty(property, out var value) || value.ValueKind != JsonValueKind.String)
-            throw new ImageDocumentFormatException($"The project's manifest names no {property}.");
+            throw new BmageImageDocumentFormatException($"The project's manifest names no {property}.");
         var name = value.GetString()!;
-        if (allowDocument) return name == DocumentName ? name : throw new ImageDocumentFormatException($"The project's manifest names '{name}' as its document; only '{DocumentName}' is read.");
+        if (allowDocument) return name == DocumentName ? name : throw new BmageImageDocumentFormatException($"The project's manifest names '{name}' as its document; only '{DocumentName}' is read.");
         return CheckImageName(name);
     }
 
@@ -359,16 +300,16 @@ public sealed class BmageProject : IDisposable
     private static string CheckImageName(string name)
     {
         if (name.Length is 0 or > 128 || !name.StartsWith("images/", StringComparison.Ordinal) || !name.EndsWith(".png", StringComparison.Ordinal))
-            throw new ImageDocumentFormatException($"The project names an image '{Shorten(name)}'; images must be PNG files under images/.");
+            throw new BmageImageDocumentFormatException($"The project names an image '{Shorten(name)}'; images must be PNG files under images/.");
         foreach (var c in name.AsSpan("images/".Length, name.Length - "images/".Length - ".png".Length))
             if (!(char.IsAsciiLetterOrDigit(c) || c is '-' or '_'))
-                throw new ImageDocumentFormatException($"The project names an image '{Shorten(name)}'; image names may hold letters, digits, '-' and '_' only.");
+                throw new BmageImageDocumentFormatException($"The project names an image '{Shorten(name)}'; image names may hold letters, digits, '-' and '_' only.");
         return name;
     }
 
     private static string Shorten(string text) => text.Length <= 64 ? text : text[..64] + "...";
 
-    private static ImageBuffer DecodePng(ZipArchive zip, string name, UnpackBudget budget, BmageProjectOptions options, CancellationToken cancellationToken)
+    private static BmageImageBuffer DecodePng(ZipArchive zip, string name, UnpackBudget budget, BmageProjectOptions options, CancellationToken cancellationToken)
     {
         var bytes = ReadEntry(zip, name, budget, budget.Remaining);
         // The size a PNG declares is in its first chunk; what fails to parse here, the decoder refuses below. PNG sizes
@@ -381,11 +322,11 @@ public sealed class BmageProject : IDisposable
         }
         try
         {
-            return PngDecoder.Decode(bytes, new DecodeOptions { Limits = options.Limits, AutoOrient = false }, options.Allocator ?? PooledPixelAllocator.Shared, cancellationToken);
+            return BmagePngDecoder.Decode(bytes, new BmageDecodeOptions { Limits = options.Limits, AutoOrient = false }, options.Allocator ?? BmagePooledPixelAllocator.Shared, cancellationToken);
         }
-        catch (ImageException ex)
+        catch (BmageImageException ex)
         {
-            throw new ImageDocumentFormatException($"The project's image '{name}' could not be read: {ex.Message}", ex);
+            throw new BmageImageDocumentFormatException($"The project's image '{name}' could not be read: {ex.Message}", ex);
         }
     }
 
@@ -395,7 +336,7 @@ public sealed class BmageProject : IDisposable
     /// </summary>
     private static byte[] ReadEntry(ZipArchive zip, string name, UnpackBudget budget, long max)
     {
-        var entry = zip.GetEntry(name) ?? throw new ImageDocumentFormatException($"The project has no '{name}'.");
+        var entry = zip.GetEntry(name) ?? throw new BmageImageDocumentFormatException($"The project has no '{name}'.");
         using var stream = entry.Open();
         using var bytes = new MemoryStream();
         var chunk = new byte[81920];
@@ -403,7 +344,7 @@ public sealed class BmageProject : IDisposable
         while ((read = stream.Read(chunk, 0, chunk.Length)) > 0)
         {
             if (bytes.Length + read > max)
-                throw new ImageDocumentFormatException($"The project's '{name}' unpacks to more than {max} bytes.");
+                throw new BmageImageDocumentFormatException($"The project's '{name}' unpacks to more than {max} bytes.");
             budget.Spend(read, name);
             bytes.Write(chunk, 0, read);
         }
@@ -418,7 +359,7 @@ public sealed class BmageProject : IDisposable
         while ((read = await source.ReadAsync(chunk, cancellationToken).ConfigureAwait(false)) > 0)
         {
             total += read;
-            if (total > max) throw new ImageDocumentFormatException($"{what} is larger than {max} bytes.");
+            if (total > max) throw new BmageImageDocumentFormatException($"{what} is larger than {max} bytes.");
             destination.Write(chunk, 0, read);
         }
     }
@@ -433,13 +374,13 @@ public sealed class BmageProject : IDisposable
         public void Spend(int count, string name)
         {
             Remaining -= count;
-            if (Remaining < 0) throw new ImageDocumentFormatException($"The project unpacks to more than the bytes allowed; it passed the limit at '{name}'.");
+            if (Remaining < 0) throw new BmageImageDocumentFormatException($"The project unpacks to more than the bytes allowed; it passed the limit at '{name}'.");
         }
 
         public void SpendPixels(long count, string name)
         {
             _pixels -= count;
-            if (_pixels < 0) throw new ImageDocumentFormatException($"The project's images hold more pixels than allowed together; they passed the limit at '{name}'.");
+            if (_pixels < 0) throw new BmageImageDocumentFormatException($"The project's images hold more pixels than allowed together; they passed the limit at '{name}'.");
         }
     }
 }

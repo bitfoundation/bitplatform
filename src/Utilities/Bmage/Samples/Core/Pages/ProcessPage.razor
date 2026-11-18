@@ -1,15 +1,15 @@
 ﻿@page "/process"
 @implements IAsyncDisposable
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
 
 <PageTitle>Process · Bmage samples</PageTitle>
 
 <h1>Process</h1>
 
 <p>
-    Load an image with <code>ImageLoader</code>, run it through an <code>ImagePipeline</code>, encode it with
-    <code>ImageExporter</code> - WebP where this browser can write it, JPEG otherwise - and preview it through an
+    Load an image with <code>BmageImageLoader</code>, run it through an <code>BmageImagePipeline</code>, encode it with
+    <code>BmageImageExporter</code> - WebP where this browser can write it, JPEG otherwise - and preview it through an
     object URL or download it. Under Interactive WebAssembly every codec is the browser's; under Interactive Server
     and in the MAUI app, PNG, JPEG, BMP and GIF are coded by .NET and only WebP and AVIF go through the browser.
 </p>
@@ -75,11 +75,11 @@
 @code {
     private static readonly string[] Looks = ["None", "Grayscale", "Sepia", "Sharpen", "Vignette"];
 
-    private ImageBuffer? _source;
+    private BmageImageBuffer? _source;
     private string? _sourceName;
     private int _maxEdge = 800;
     private string _look = "None";
-    private EncodedImage? _encoded;
+    private BmageEncodedImage? _encoded;
     private string? _previewUrl;
     private TimeSpan _elapsed;
     private string? _error;
@@ -95,15 +95,15 @@
         await LoadAsync(files[0].Name, () => Loader.LoadAsync(files[0]));
     }
 
-    // The scene is drawn, encoded to PNG and loaded back through ImageLoader, the same path an upload takes.
+    // The scene is drawn, encoded to PNG and loaded back through BmageImageLoader, the same path an upload takes.
     private Task UseSampleAsync() => LoadAsync("Sample scene", async () =>
     {
         using var scene = SampleScene.Draw(1600, 1066);
-        var png = await Exporter.EncodeAsync(scene, ImageExportOptions.Png);
+        var png = await Exporter.EncodeAsync(scene, BmageImageExportOptions.Png);
         return await Loader.LoadAsync(png.Data);
     });
 
-    private async Task LoadAsync(string name, Func<ValueTask<ImageBuffer>> load)
+    private async Task LoadAsync(string name, Func<ValueTask<BmageImageBuffer>> load)
     {
         _busy = true;
         _error = null;
@@ -138,7 +138,7 @@
         {
             var started = Stopwatch.GetTimestamp();
 
-            var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(_maxEdge, _maxEdge);
+            var pipeline = BmageImagePipeline.Create().AutoOrient().MaxSize(_maxEdge, _maxEdge);
             pipeline = _look switch
             {
                 "Grayscale" => pipeline.Grayscale(),
@@ -150,7 +150,7 @@
 
             using var processed = await pipeline.ExecuteAsync(_source);
             var encoded = await Exporter.EncodeWithFallbackAsync(processed, [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
-                new ImageExportOptions { Quality = 0.85 });
+                new BmageImageExportOptions { Quality = 0.85 });
 
             // A newer change superseded this one while it ran.
             if (version != _version) return;

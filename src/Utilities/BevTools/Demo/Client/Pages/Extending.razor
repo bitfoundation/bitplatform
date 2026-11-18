@@ -82,7 +82,7 @@ builder.Services.AddBitBevToolsServices(o =&gt; o.Extensions.Add(<span class="k"
     <ul class="bb-detail-list">
         <li><code>HideComponentsInNamespace("MyLibrary.Internal")</code> keeps a library's internal components out of the tree; the <em>internals</em> toggle in the Components tab still shows them.</li>
         <li>On members: <code>[BevToolsSensitive]</code> redacts a value, <code>[BevToolsIgnore]</code> leaves a member - or, on a class, a whole component - out of BevTools. The dashboard's <code>UserSession</code> uses both.</li>
-        <li>From code: <code>session.PauseCapture()</code> / <code>ResumeCapture()</code>, <code>session.UseAmbient()</code> to attribute background work to a session, and <code>BevSessionExporter</code> / <code>BevTraceExporter</code> for the files <em>About</em> exports.</li>
+        <li>From code: <code>session.PauseCapture()</code> / <code>ResumeCapture()</code>, <code>session.UseAmbient()</code> to attribute background work to a session, and <code>BevToolsSessionExporter</code> / <code>BevToolsTraceExporter</code> for the files <em>About</em> exports.</li>
     </ul>
 </div>
 

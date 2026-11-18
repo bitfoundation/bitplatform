@@ -52,16 +52,16 @@ public partial class BbScannerHost : Grid
 
     private readonly AbsoluteLayout _layer;
     private readonly Border _frame;
-    private BbPreviewClaim? _owner;
+    private BbScannerPreviewClaim? _owner;
     private int _releases;
-    private BbPreviewPlacement _placement;
+    private BbScannerPreviewPlacement _placement;
     private Color? _background;
     private bool _transparent;
 
     /// <summary>Creates a host; set <see cref="Content"/> to the BlazorWebView.</summary>
     public BbScannerHost()
     {
-        Preview = new BbCameraPreview();
+        Preview = new BbScannerCameraPreview();
 
         // Black until the camera's first frame, as the page's video element would be.
         _frame = new Border
@@ -96,7 +96,7 @@ public partial class BbScannerHost : Grid
     }
 
     /// <summary>The view a camera session draws its preview into.</summary>
-    internal BbCameraPreview Preview { get; }
+    internal BbScannerCameraPreview Preview { get; }
 
     /// <summary>The host a camera opened now draws its preview in: the last one loaded that still is.</summary>
     internal static BbScannerHost? Active
@@ -127,9 +127,9 @@ public partial class BbScannerHost : Grid
     /// The preview view is laid out from here on, hidden behind the WebView until the page says where it goes - a camera
     /// that draws into a view that is not laid out delivers no frames on some platforms, Android's among them.
     /// </remarks>
-    internal BbPreviewClaim Claim()
+    internal BbScannerPreviewClaim Claim()
     {
-        var claim = new BbPreviewClaim(this);
+        var claim = new BbScannerPreviewClaim(this);
         _owner = claim;
         if (!_transparent)
         {
@@ -140,7 +140,7 @@ public partial class BbScannerHost : Grid
     }
 
     /// <summary>Puts the preview where the page says the scanner's video element is, or takes it down.</summary>
-    internal void Place(BbPreviewClaim claim, BbPreviewPlacement placement) => Dispatcher.Dispatch(() =>
+    internal void Place(BbScannerPreviewClaim claim, BbScannerPreviewPlacement placement) => Dispatcher.Dispatch(() =>
     {
         if (claim != _owner)
         {
@@ -161,7 +161,7 @@ public partial class BbScannerHost : Grid
     /// A camera closed. The preview stays up a moment, for the next camera of a switch to claim, and comes down unless
     /// one does.
     /// </summary>
-    internal void Release(BbPreviewClaim claim) => Dispatcher.Dispatch(() =>
+    internal void Release(BbScannerPreviewClaim claim) => Dispatcher.Dispatch(() =>
     {
         if (claim != _owner)
         {
@@ -185,7 +185,7 @@ public partial class BbScannerHost : Grid
         });
     });
 
-    private void Apply(BbPreviewPlacement placement)
+    private void Apply(BbScannerPreviewPlacement placement)
     {
         var webView = FindWebView();
         if (webView is null)
@@ -317,20 +317,4 @@ public partial class BbScannerHost : Grid
             Hosts.RemoveAll(entry => !entry.TryGetTarget(out var target) || target == host);
         }
     }
-}
-
-/// <summary>
-/// A camera's hold on a <see cref="BbScannerHost"/>'s preview: the host draws the placements of the latest claim only,
-/// so a camera closing late never takes down the preview of the one that replaced it.
-/// </summary>
-internal sealed class BbPreviewClaim(BbScannerHost host)
-{
-    public BbScannerHost Host { get; } = host;
-
-    /// <summary>The view the camera draws its preview into.</summary>
-    public BbCameraPreview Preview => Host.Preview;
-
-    public void Place(BbPreviewPlacement placement) => Host.Place(this, placement);
-
-    public void Release() => Host.Release(this);
 }

@@ -49,9 +49,3 @@ public sealed class BaletteBrowserStorageHistoryStore : IBaletteHistoryStore
         }
     }
 }
-
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-[JsonSerializable(typeof(Dictionary<string, BaletteCommandUsage>))]
-internal sealed partial class BaletteHistoryJsonContext : JsonSerializerContext
-{
-}

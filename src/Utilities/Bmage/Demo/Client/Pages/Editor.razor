@@ -113,13 +113,13 @@
                 <tr><th scope="row"><code>Class</code>, <code>Style</code></th><td>Applied to the root element. <code>bmg-theme-dark</code> or <code>bmg-theme-light</code> force a theme.</td></tr>
                 <tr><th scope="row"><code>AriaLabel</code></th><td>The accessible name of the editor region, for a page with more than one.</td></tr>
                 <tr><th scope="row"><code>AcceptedFileTypes</code></th><td>The file types its own drop zone and file picker offer. Default <code>image/*</code>.</td></tr>
-                <tr><th scope="row"><code>TextRasterizer</code></th><td>What text and step numbers are drawn with. Null uses the <code>FontTextRasterizer</code> from the services, which draws once a font is registered with it - this site registers Noto Sans and Vazirmatn.</td></tr>
+                <tr><th scope="row"><code>TextRasterizer</code></th><td>What text and step numbers are drawn with. Null uses the <code>BmageFontTextRasterizer</code> from the services, which draws once a font is registered with it - this site registers Noto Sans and Vazirmatn.</td></tr>
                 <tr><th scope="row"><code>ShowToolbar</code>, <code>ShowPanel</code></th><td>Hide the built-in chrome without replacing it.</td></tr>
                 <tr><th scope="row"><code>Tools</code></th><td>The tools offered, or null for all of them. The toolbar shows only these, and <code>SetTool</code> selects no other - see <a href="/editor#a-cropper">a cropper</a>.</td></tr>
-                <tr><th scope="row"><code>Panels</code></th><td>The tabs of the built-in panel: any of <code>Adjust</code>, <code>Filters</code>, <code>Transform</code>, <code>Tools</code>, <code>Layers</code>, <code>History</code> and <code>Export</code>, or <code>EditorPanels.None</code> for no panel.</td></tr>
+                <tr><th scope="row"><code>Panels</code></th><td>The tabs of the built-in panel: any of <code>Adjust</code>, <code>Filters</code>, <code>Transform</code>, <code>Tools</code>, <code>Layers</code>, <code>History</code> and <code>Export</code>, or <code>BmageEditorPanels.None</code> for no panel.</td></tr>
                 <tr><th scope="row"><code>Toolbar</code>, <code>Panel</code>, <code>Footer</code></th><td>Replace the chrome entirely; each receives a <code>BmageEditorContext</code>.</td></tr>
                 <tr><th scope="row"><code>EmptyState</code></th><td>Replace the "drop an image here" view.</td></tr>
-                <tr><th scope="row"><code>MaxProxyDimension</code></th><td>Longest edge used for interactive editing. Falls back to <code>BitBmageOptions.MaxInteractiveDimension</code>, then 2048. <code>0</code> always edits at full resolution.</td></tr>
+                <tr><th scope="row"><code>MaxProxyDimension</code></th><td>Longest edge used for interactive editing. Falls back to <code>BmageOptions.MaxInteractiveDimension</code>, then 2048. <code>0</code> always edits at full resolution.</td></tr>
                 <tr><th scope="row"><code>MaxHistoryDepth</code></th><td>Undo steps kept. Default 100.</td></tr>
                 <tr><th scope="row"><code>ExportOptions</code></th><td>Settings used by the built-in save action: the Export tab starts from its format, quality and metadata policy, and keeps the rest.</td></tr>
                 <tr><th scope="row"><code>OnDocumentChanged</code>, <code>OnExported</code>, <code>OnImageLoaded</code>, <code>OnError</code></th><td>Callbacks. <code>OnImageLoaded</code> matters more than it looks: the editor can load an image through its own drop zone while your <code>Image</code> is still null, so a page whose buttons depend on an image should re-render from it.</td></tr>
@@ -146,7 +146,7 @@
                          AriaLabel="Cropper"
                          Class="@ThemeClass"
                          Tools="CropperTools"
-                         Panels="EditorPanels.None"
+                         Panels="BmageEditorPanels.None"
                          OnImageLoaded="OnCropperImageLoaded" />
         </div>
     }
@@ -313,9 +313,9 @@
         replays the edit at full resolution on export - for a 24 megapixel photo, a 25&times; cut in
         the pixels each preview touches. Because every operation rescales itself, the preview and the
         export are one edit at two resolutions rather than two code paths that could disagree.
-        <code>ImageEditSession.UsesProxy</code> and <code>ProxyScale</code> say when it is happening;
+        <code>BmageImageEditSession.UsesProxy</code> and <code>ProxyScale</code> say when it is happening;
         set <code>MaxProxyDimension="0"</code> to always edit at full resolution, or
-        <code>MaxInteractiveDimension</code> on <code>BitBmageOptions</code> to change the default for
+        <code>MaxInteractiveDimension</code> on <code>BmageOptions</code> to change the default for
         every editor in the app.
     </p>
     <p>
@@ -327,19 +327,19 @@
 @code {
     private BmageEditor? _cropper;
 
-    private static readonly EditorToolKind[] CropperTools = [EditorToolKind.Crop, EditorToolKind.Pan];
+    private static readonly BmageEditorToolKind[] CropperTools = [BmageEditorToolKind.Crop, BmageEditorToolKind.Pan];
 
     private const string CropperSnippet = """
         <BmageEditor @ref="cropper"
-                     Tools="[EditorToolKind.Crop, EditorToolKind.Pan]"
-                     Panels="EditorPanels.None"
+                     Tools="[BmageEditorToolKind.Crop, BmageEditorToolKind.Pan]"
+                     Panels="BmageEditorPanels.None"
                      OnImageLoaded="OnImageLoaded" />
 
         @code {
             private BmageEditor cropper = default!;
 
             // The largest square in the middle, ready to move, resize and apply.
-            private void OnImageLoaded(ImageBuffer image) => cropper.BeginCrop(AspectRatio.Square);
+            private void OnImageLoaded(BmageImageBuffer image) => cropper.BeginCrop(BmageAspectRatio.Square);
         }
         """;
 
@@ -360,10 +360,10 @@
         await _cropper.LoadImageAsync(SampleImages.Landscape(1200, 800));
     }
 
-    private void OnCropperImageLoaded(ImageBuffer image) => _cropper?.BeginCrop(AspectRatio.Square);
+    private void OnCropperImageLoaded(BmageImageBuffer image) => _cropper?.BeginCrop(BmageAspectRatio.Square);
 
     private BmageEditor? _editor;
-    private ImageDocument? _document;
+    private BmageImageDocument? _document;
     private string _theme = "site";
     private string _direction = "ltr";
     private string _language = "English";
@@ -386,10 +386,10 @@
         if (_editor?.Session is not null) await _editor.RefreshAsync();
     }
 
-    private static readonly ImageExportOptions ExportOptions = new()
+    private static readonly BmageImageExportOptions ExportOptions = new()
     {
         Format = BmageImageFormat.Png,
-        Metadata = MetadataPolicy.StripSensitive,
+        Metadata = BmageMetadataPolicy.StripSensitive,
     };
 
     // "site" leaves the class off, which is what lets wwwroot/demo.css point the editor at the
@@ -424,7 +424,7 @@
                      MaxProxyDimension="3000"
                      OnDocumentChanged="doc => Persist(doc)">
             <Toolbar Context="editor">
-                <button @onclick="() => editor.SetTool(EditorToolKind.Crop)">Crop</button>
+                <button @onclick="() => editor.SetTool(BmageEditorToolKind.Crop)">Crop</button>
                 <button disabled="@(!editor.CanUndo)" @onclick="editor.Undo">Undo</button>
             </Toolbar>
         </BmageEditor>
@@ -436,30 +436,30 @@
 
             void Crop16x9()
             {
-                _editor!.SetTool(EditorToolKind.Crop);
-                _editor.SetCropAspect(AspectRatio.Ratio16x9);
+                _editor!.SetTool(BmageEditorToolKind.Crop);
+                _editor.SetCropAspect(BmageAspectRatio.Ratio16x9);
             }
 
             async Task Save() => await _editor!.DownloadAsync("edited",
-                new ImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.9 });
+                new BmageImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.9 });
 
-            async Task AddCallout() => await _editor!.AddAnnotationAsync(new ArrowAnnotation
+            async Task AddCallout() => await _editor!.AddAnnotationAsync(new BmageArrowAnnotation
             {
                 Start = new Vector2(100, 400),
                 End   = new Vector2(300, 200),
-                Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 6 } },
+                Style = BmageShapeStyle.Default with { Stroke = new BmageStrokeStyle { Width = 6 } },
             });
 
             // Transforms: each one undoable, with annotations and layers kept on what they mark.
             async Task Level() => await _editor!.SetStraightenAsync(-2.5);
             async Task Shrink() => await _editor!.ResizeAsync(1600, 1200);
-            async Task Frame() => await _editor!.SetCanvasSizeAsync(2000, 2000, Anchor.Center, Rgba32.White);
+            async Task Frame() => await _editor!.SetCanvasSizeAsync(2000, 2000, BmageAnchor.Center, BmageRgba32.White);
             async Task Trim() => await _editor!.TrimAsync();
 
             // Selections: select, then act on the pixels inside.
             void SelectSky()
             {
-                _editor!.SetSelection(Mask.Gradient(new(0, 0), new(0, 0.4f)));
+                _editor!.SetSelection(BmageMask.Gradient(new(0, 0), new(0, 0.4f)));
                 _editor.InvertSelection();                       // ...or everything else
             }
             async Task CutOut() => await _editor!.ClearSelectionAsync();          // make transparent
@@ -467,7 +467,7 @@
             async Task CropToIt() => await _editor!.CropToSelectionAsync();
 
             // Layers, before and after, and projects.
-            async Task Paint() { await _editor!.AddPaintLayerAsync(); _editor.SetTool(EditorToolKind.Brush); }
+            async Task Paint() { await _editor!.AddPaintLayerAsync(); _editor.SetTool(BmageEditorToolKind.Brush); }
             async Task Compare() => await _editor!.SetCompareAsync(!_editor.IsComparing);
             async Task Keep() => await _editor!.SaveProjectAsync("holiday");      // a .bmage file
             async Task Reopen(IBrowserFile file) => await _editor!.OpenProjectAsync(file);
@@ -476,18 +476,18 @@
 
     private const string TransientSnippet = """
         async Task OnBrightnessInput(double value)
-            => await context.SetAdjustmentAsync(new BrightnessAdjustment((float)value), "Brightness", transient: true);
+            => await context.SetAdjustmentAsync(new BmageBrightnessAdjustment((float)value), "Brightness", transient: true);
 
         async Task OnBrightnessCommit()
-            => await context.SetAdjustmentAsync(context.FindAdjustment<BrightnessAdjustment>(), "Brightness");
+            => await context.SetAdjustmentAsync(context.FindAdjustment<BmageBrightnessAdjustment>(), "Brightness");
         """;
 
     private const string ToolbarSnippet = """
         <BmageEditor ExportOptions="_options">
             <Toolbar Context="editor">
                 <div class="my-toolbar">
-                    <button class="@(editor.Tool == EditorToolKind.Crop ? "on" : null)"
-                            @onclick="() => editor.SetTool(EditorToolKind.Crop)">
+                    <button class="@(editor.Tool == BmageEditorToolKind.Crop ? "on" : null)"
+                            @onclick="() => editor.SetTool(BmageEditorToolKind.Crop)">
                         Crop
                     </button>
                     <button disabled="@(!editor.CanUndo)" @onclick="editor.Undo">Undo</button>
@@ -566,7 +566,7 @@
     }
 
     /// <summary>One line a layer, a group's own layers indented under it.</summary>
-    private static void AddLayers(List<string> lines, IReadOnlyList<Layer> layers, string indent)
+    private static void AddLayers(List<string> lines, IReadOnlyList<BmageLayer> layers, string indent)
     {
         foreach (var layer in layers)
         {
@@ -576,7 +576,7 @@
             if (layer.Opacity < 1) details.Add($"{layer.Opacity * 100:0}%");
             if (!layer.IsVisible) details.Add("hidden");
             lines.Add($"{indent}{layer.Kind,-10} {string.Join(" · ", details)}".TrimEnd());
-            if (layer is GroupLayer group) AddLayers(lines, group.Layers, indent + "  ");
+            if (layer is BmageGroupLayer group) AddLayers(lines, group.Layers, indent + "  ");
         }
     }
 
@@ -588,7 +588,7 @@
         _direction = language == "فارسی" ? "rtl" : "ltr";
     }
 
-    private void OnDocumentChanged(ImageDocument document)
+    private void OnDocumentChanged(BmageImageDocument document)
     {
         _document = document;
         StateHasChanged();
@@ -596,7 +596,7 @@
 
     // A new image is a new, empty document, but not an edit, so OnDocumentChanged waits for the first change: without
     // this the readout would go on showing the previous image's edit.
-    private void OnImageLoaded(ImageBuffer image)
+    private void OnImageLoaded(BmageImageBuffer image)
     {
         _document = _editor?.Document;
         StateHasChanged();

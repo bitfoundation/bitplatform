@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Bit.Bmotion.Tests.Components;
 
 /// <summary>
-/// Tests for <see cref="BmCssSafeMode"/> beyond the single-value cases in <c>CssValidatorTests</c>:
+/// Tests for <see cref="BmotionCssSafeMode"/> beyond the single-value cases in <c>CssValidatorTests</c>:
 /// <c>Warn</c> logs but still applies, and <c>Throw</c> inspects every frame of a keyframe array as
 /// well as the free-form <c>Css</c> and <c>CssVars</c> dictionaries.
 /// </summary>
@@ -22,7 +22,7 @@ public class CssSafeModeTests
         b.CloseElement();
     };
 
-    private static void RenderWith(BmotionTestContext ctx, BmProps initial)
+    private static void RenderWith(BmotionTestContext ctx, BmotionProps initial)
         => ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, initial)
@@ -34,7 +34,7 @@ public class CssSafeModeTests
         using var ctx = new BmotionTestContext();
         var logger = new ListLogger<Bmotion>();
         ctx.Services.AddSingleton<ILogger<Bmotion>>(logger);
-        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Warn;
 
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
@@ -55,7 +55,7 @@ public class CssSafeModeTests
         using var ctx = new BmotionTestContext();
         var logger = new ListLogger<Bmotion>();
         ctx.Services.AddSingleton<ILogger<Bmotion>>(logger);
-        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Warn;
 
         RenderWith(ctx, Bm.To(boxShadow: "0 0 4px rgba(0,0,0,.5)", cssVars: new() { ["--accent"] = "#0af" }));
 
@@ -66,7 +66,7 @@ public class CssSafeModeTests
     public void ThrowMode_ChecksEveryFrameOfAKeyframeArray()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
 
         // Only the last frame is malicious: a check of the first (initial) frame alone would miss it.
         Assert.ThrowsExactly<InvalidOperationException>(() =>
@@ -77,7 +77,7 @@ public class CssSafeModeTests
     public void ThrowMode_ChecksTheFreeFormCssDictionary()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
 
         var thrown = Assert.ThrowsExactly<InvalidOperationException>(() =>
             RenderWith(ctx, Bm.To(css: new() { ["outline"] = Injected })));
@@ -88,7 +88,7 @@ public class CssSafeModeTests
     public void ThrowMode_ChecksCssVariables()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
 
         var thrown = Assert.ThrowsExactly<InvalidOperationException>(() =>
             RenderWith(ctx, Bm.To(cssVars: new() { ["--accent"] = "x</style><script>" })));
@@ -99,10 +99,10 @@ public class CssSafeModeTests
     public void ThrowMode_ChecksTheInheritedInitialVariant()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
 
-        var parentStates = new BmVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
-        var childStates = new BmVariants { ["hidden"] = Bm.To(boxShadow: $"0 0 4px {Injected}"), ["visible"] = Bm.To(boxShadow: "0 0 4px #000") };
+        var parentStates = new BmotionVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
+        var childStates = new BmotionVariants { ["hidden"] = Bm.To(boxShadow: $"0 0 4px {Injected}"), ["visible"] = Bm.To(boxShadow: "0 0 4px #000") };
 
         var thrown = Assert.ThrowsExactly<InvalidOperationException>(() => ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "parent")
@@ -119,10 +119,10 @@ public class CssSafeModeTests
         using var ctx = new BmotionTestContext();
         var logger = new ListLogger<Bmotion>();
         ctx.Services.AddSingleton<ILogger<Bmotion>>(logger);
-        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Warn;
 
-        var parentStates = new BmVariants { ["visible"] = Bm.To(opacity: 1), ["pressed"] = Bm.To(opacity: 0.5) };
-        var childStates = new BmVariants { ["visible"] = Bm.To(boxShadow: "0 0 4px #000"), ["pressed"] = Bm.To(boxShadow: $"0 0 4px {Injected}") };
+        var parentStates = new BmotionVariants { ["visible"] = Bm.To(opacity: 1), ["pressed"] = Bm.To(opacity: 0.5) };
+        var childStates = new BmotionVariants { ["visible"] = Bm.To(boxShadow: "0 0 4px #000"), ["pressed"] = Bm.To(boxShadow: $"0 0 4px {Injected}") };
 
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "parent")
@@ -136,7 +136,7 @@ public class CssSafeModeTests
         cut.WaitForAssertion(() => Assert.IsTrue(logger.Warnings.Any(w => w.Contains("boxShadow") && w.Contains("'child'"))));
     }
 
-    private static RenderFragment ChildWith(BmVariants variants) => b =>
+    private static RenderFragment ChildWith(BmotionVariants variants) => b =>
     {
         b.OpenElement(0, "div");
         b.OpenComponent<Bmotion>(1);
@@ -153,12 +153,12 @@ public class CssSafeModeTests
         using var ctx = new BmotionTestContext();
         var logger = new ListLogger<Bmotion>();
         ctx.Services.AddSingleton<ILogger<Bmotion>>(logger);
-        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Warn;
         int Logged() => logger.Warnings.Count(w => w.Contains("CSS safe mode"));
 
         // A prerendered element resolves its targets several times on the way to animating them - five checks of this
         // one value - and one value is one warning.
-        ctx.Options.Prerender = BmPrerenderMode.Animate;
+        ctx.Options.Prerender = BmotionPrerenderMode.Animate;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(boxShadow: $"0 0 4px {Injected}"))
@@ -182,7 +182,7 @@ public class CssSafeModeTests
     public async Task ThrowMode_ChecksWhatTheAnimateServiceAnimates()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
         // Resolved from the container, as an app injects it: the options reach the service through it.
         var service = ctx.Services.GetRequiredService<BmotionAnimateService>();
         var unsafeTarget = Bm.To(boxShadow: $"0 0 4px {Injected}");
@@ -192,7 +192,7 @@ public class CssSafeModeTests
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.AnimateAsync(new ElementReference("box-ref"), unsafeTarget).AsTask());
 
         // Only the last segment is unsafe: none of the sequence may start, and no element is left registered.
-        var sequence = new BmSequence().Add(".a", Bm.To(opacity: 0.5)).Add(".b", unsafeTarget);
+        var sequence = new BmotionSequence().Add(".a", Bm.To(opacity: 0.5)).Add(".b", unsafeTarget);
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.RunAsync(sequence).AsTask());
 
         Assert.IsFalse(ctx.Interop.WasCalled("resolveOrRegisterBySelector"), "a rejected target registers no element");
@@ -205,7 +205,7 @@ public class CssSafeModeTests
         using var ctx = new BmotionTestContext();
         var logger = new ListLogger<BmotionAnimateService>();
         ctx.Services.AddSingleton<ILogger<BmotionAnimateService>>(logger);
-        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Warn;
         var service = ctx.Services.GetRequiredService<BmotionAnimateService>();
 
         await service.AnimateAsync(".card", Bm.To(boxShadow: $"0 0 4px {Injected}"));
@@ -238,7 +238,7 @@ public class CssSafeModeTests
     public void ThrowMode_ChecksTheNamesOfFreeFormEntries(bool customProperty)
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
         var target = customProperty
             ? Bm.To(cssVars: new() { ["--a:0;background:url(//evil/x);--b"] = "1" })
             : Bm.To(css: new() { ["x;background-image:url(//evil);y"] = "1px" });
@@ -252,7 +252,7 @@ public class CssSafeModeTests
     public void ThrowMode_ChecksATypedValueAFreeFormEntryShadows()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
 
         Assert.ThrowsExactly<InvalidOperationException>(() =>
             RenderWith(ctx, Bm.To(backgroundColor: Injected, css: new() { ["backgroundColor"] = "red" })));
@@ -264,7 +264,7 @@ public class CssSafeModeTests
         using var ctx = new BmotionTestContext();
         var logger = new ListLogger<Bmotion>();
         ctx.Services.AddSingleton<ILogger<Bmotion>>(logger);
-        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Warn;
 
         RenderWith(ctx, Bm.To(boxShadow: "red\n[info] Admin login ok user=root" + new string('x', 100_000)));
 
@@ -282,7 +282,7 @@ public class CssSafeModeTests
         using var ctx = new BmotionTestContext();
         var logger = new ListLogger<Bmotion>();
         ctx.Services.AddSingleton<ILogger<Bmotion>>(logger);
-        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Warn;
         var many = Enumerable.Range(0, BmotionCssWarnings.Max + 6).ToDictionary(i => $"--v{i}", i => $"{i};");
         int Logged() => logger.Warnings.Count(w => w.Contains("CSS safe mode"));
 
@@ -306,7 +306,7 @@ public class CssSafeModeTests
         using var ctx = new BmotionTestContext();
         var logger = new ListLogger<BmotionAnimateService>();
         ctx.Services.AddSingleton<ILogger<BmotionAnimateService>>(logger);
-        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Warn;
         var service = ctx.Services.GetRequiredService<BmotionAnimateService>();
 
         for (int i = 0; i < 5; i++)
@@ -321,7 +321,7 @@ public class CssSafeModeTests
     public async Task ThrowMode_TheAnimateServicePlaysTheTargetAsChecked_HoweverItChangesMeanwhile()
     {
         var interop = new FakeBmotionInterop { WebAnimationsSupported = false };
-        await using var engine = new BmotionAnimationEngine(interop, null, new BitBmotionOptions { CssSafeMode = BmCssSafeMode.Throw });
+        await using var engine = new BmotionAnimationEngine(interop, null, new BmotionOptions { CssSafeMode = BmotionCssSafeMode.Throw });
         var service = new BmotionAnimateService(engine, interop);
         engine.RegisterElement("el", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
         var target = Bm.To(backgroundColor: "#ffffff");
@@ -331,7 +331,7 @@ public class CssSafeModeTests
             return ["el"];
         };
 
-        await service.AnimateAsync("#el", target, Bm.Tween(0.1, ease: BmEase.Linear));
+        await service.AnimateAsync("#el", target, Bm.Tween(0.1, ease: BmotionEase.Linear));
         for (double t = 0; t <= 300; t += 16) engine.ComputeFrame(t);
 
         var played = engine.GetDiagnostics().Single(d => d.Id == "el").StringValues["backgroundColor"];
@@ -343,7 +343,7 @@ public class CssSafeModeTests
     public async Task ThrowMode_AnElementPlaysItsTargetAsChecked_WhateverTheStartHandlerChanges()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
         ctx.Interop.WebAnimationsSupported = false;
         var target = Bm.To(backgroundColor: "#ffffff");
 
@@ -351,8 +351,8 @@ public class CssSafeModeTests
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(backgroundColor: "#000000"))
             .Add(p => p.Animate, target)
-            .Add(p => p.Transition, Bm.Tween(0.1, ease: BmEase.Linear))
-            .Add(p => p.OnAnimationStart, (BmProps? _) => target.BackgroundColor = Injected)
+            .Add(p => p.Transition, Bm.Tween(0.1, ease: BmotionEase.Linear))
+            .Add(p => p.OnAnimationStart, (BmotionProps? _) => target.BackgroundColor = Injected)
             .Add(p => p.ChildContent, Div));
         await ctx.RunFramesAsync(0, 300);
 
@@ -365,7 +365,7 @@ public class CssSafeModeTests
     public async Task ThrowMode_AServiceCreatedOnTheContainersEngine_FollowsItsOptions()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
         var service = new BmotionAnimateService(ctx.Engine, ctx.Interop);
 
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
@@ -376,7 +376,7 @@ public class CssSafeModeTests
     public void ThrowMode_AcceptsCleanArraysAndDictionaries()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Options.CssSafeMode = BmotionCssSafeMode.Throw;
 
         RenderWith(ctx, Bm.To(
             backgroundColor: new[] { "#fff", "rgb(0, 0, 0)" },

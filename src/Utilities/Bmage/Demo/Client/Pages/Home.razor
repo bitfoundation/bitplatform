@@ -102,7 +102,7 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Non-destructive by construction</h3>
                 <p class="bb-card-desc">
-                    An edit is an immutable <code>ImagePipeline</code> - a list of operations, not a mutated
+                    An edit is an immutable <code>BmageImagePipeline</code> - a list of operations, not a mutated
                     buffer. Undo costs a few hundred bytes, previews are cheap, and the optimiser fuses
                     per-pixel steps into one pass.
                 </p>
@@ -243,7 +243,7 @@
                 </thead>
                 <tbody>
                     <tr><td>Where the pixels are processed</td><td>In script, behind interop calls you write and maintain</td><td>In C# - the browser decodes, writes WebP and AVIF, and draws</td></tr>
-                    <tr><td>The API</td><td>Option bags and untyped results</td><td>An immutable <code>ImagePipeline</code> and typed export options</td></tr>
+                    <tr><td>The API</td><td>Option bags and untyped results</td><td>An immutable <code>BmageImagePipeline</code> and typed export options</td></tr>
                     <tr><td>Format support</td><td>Assumed, or read from the user agent</td><td>Probed by encoding a pixel; a substituted PNG is refused</td></tr>
                     <tr><td>Metadata</td><td>Whatever the library passes through</td><td>Removed by default, with three explicit policies</td></tr>
                     <tr><td>On a server</td><td>A second library, a second set of results</td><td>The same pipeline, headless, with the managed codecs</td></tr>
@@ -320,7 +320,7 @@
                     WebP everywhere, a server included: Bmage has its own WebP encoder, lossy and lossless,
                     for wherever the browser has none. AVIF through the browser's own codecs, wherever the
                     browser can - which Bmage probes rather than assumes. Ask for a preference order with
-                    <code>EncodeWithFallbackAsync</code>, or get an <code>ImageCapabilityException</code>
+                    <code>EncodeWithFallbackAsync</code>, or get an <code>BmageImageCapabilityException</code>
                     instead of a silently substituted PNG.
                 </p>
             </details>
@@ -363,8 +363,8 @@
 
     private static readonly string[] Looks = ["Original", "Warm", "Mono", "Vintage"];
 
-    private ImageBuffer? _source;
-    private ImageBuffer? _result;
+    private BmageImageBuffer? _source;
+    private BmageImageBuffer? _result;
     private long _version;
     private string _look = "Vintage";
     private bool _busy;
@@ -375,7 +375,7 @@
     private bool IsHydrating => RendererInfo.IsInteractive is false;
 
     /// <summary>The builder calls of a look, as source text and as the pipeline they describe - one list, so the two cannot disagree.</summary>
-    private static (string[] Lines, Func<ImagePipeline, ImagePipeline> Apply) LookOf(string look) => look switch
+    private static (string[] Lines, Func<BmageImagePipeline, BmageImagePipeline> Apply) LookOf(string look) => look switch
     {
         "Warm" => ([".Temperature(0.3f)", ".Vibrance(0.25f)"], p => p.Temperature(0.3f).Vibrance(0.25f)),
         "Mono" => ([".Grayscale()", ".Contrast(0.2f)"], p => p.Grayscale().Contrast(0.2f)),
@@ -391,9 +391,9 @@
             return $$"""
                 using var photo = await Loader.LoadAsync(e.File);
 
-                using var avatar = await ImagePipeline.Create()
+                using var avatar = await BmageImagePipeline.Create()
                     .AutoOrient()
-                    .SmartCrop(AspectRatio.Square)   // finds the subject
+                    .SmartCrop(BmageAspectRatio.Square)   // finds the subject
                     .Resize({{AvatarSize}}, {{AvatarSize}}){{string.Concat(lines)}}
                     .ExecuteAsync(photo);
                 """;
@@ -410,7 +410,7 @@
     private const string ProcessCode = """
         using var image = await Loader.LoadAsync(e.File);
 
-        using var processed = await ImagePipeline.Create()
+        using var processed = await BmageImagePipeline.Create()
             .MaxSize(800, 800)
             .Sharpen(0.3f)
             .ExecuteAsync(image);
@@ -418,7 +418,7 @@
         var encoded = await Exporter.EncodeWithFallbackAsync(
             processed,
             [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
-            new ImageExportOptions { Quality = 0.85 });
+            new BmageImageExportOptions { Quality = 0.85 });
         """;
 
     private const string EditorCode = """
@@ -454,13 +454,13 @@
 
         var run = ++_run;
         _busy = true;
-        ImageBuffer? next = null;
+        BmageImageBuffer? next = null;
         try
         {
             var started = System.Diagnostics.Stopwatch.StartNew();
-            var pipeline = LookOf(_look).Apply(ImagePipeline.Create()
+            var pipeline = LookOf(_look).Apply(BmageImagePipeline.Create()
                 .AutoOrient()
-                .SmartCrop(AspectRatio.Square)
+                .SmartCrop(BmageAspectRatio.Square)
                 .Resize(AvatarSize, AvatarSize));
 
             next = await pipeline.ExecuteAsync(source);

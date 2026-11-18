@@ -3,7 +3,7 @@
 @* A reading-progress bar for whichever page is showing, driven by the page's scroll on the browser's own scroll
    timeline: no scroll handler and no interop per frame, so it follows the scroll as closely on Server and in the MAUI
    app as on WebAssembly. An element on a timeline is prerendered at its Initial state, so the bar starts empty. *@
-<Bmotion Timeline="BmScrollTimeline.Page()" Initial="Bm.To(scaleX: 0)" Animate="Bm.To(scaleX: [0, 1])">
+<Bmotion Timeline="BmotionScrollTimeline.Page()" Initial="Bm.To(scaleX: 0)" Animate="Bm.To(scaleX: [0, 1])">
     <div class="scroll-progress" aria-hidden="true"></div>
 </Bmotion>
 

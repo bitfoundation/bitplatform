@@ -11,7 +11,7 @@
 <div class="bb-intro">
     <h1>Pipelines</h1>
     <p class="bb-subtitle">
-        An <code>ImagePipeline</code> is an <strong>immutable, ordered list of operations</strong>.
+        An <code>BmageImagePipeline</code> is an <strong>immutable, ordered list of operations</strong>.
         Building one does no work: it is a description of an edit that you can inspect, store, reuse
         across images and threads, and execute when you are ready.
     </p>
@@ -120,7 +120,7 @@
     </p>
     <CodeSnippet Code="@InspectSnippet" Language="C#" Expanded="true" />
     <p>
-        It is also an <code>IReadOnlyList&lt;IImageOperation&gt;</code>, edited the way an immutable list
+        It is also an <code>IReadOnlyList&lt;IBmageImageOperation&gt;</code>, edited the way an immutable list
         is - every call returns a new pipeline:
     </p>
     <CodeSnippet Code="@ComposeSnippet" Language="C#" Expanded="true" />
@@ -154,7 +154,7 @@
     </div>
     <p>
         Failures are wrapped with context rather than surfacing bare - an
-        <code>ImageException</code> names the operation and its step, such as
+        <code>BmageImageException</code> names the operation and its step, such as
         <em>Operation 'Crop' (step 2 of 4) failed: Crop rectangle ... does not intersect the image
         (800x600)</em>.
     </p>
@@ -175,14 +175,14 @@
                 <tr><th scope="col">Operation</th><th scope="col">What it does</th></tr>
             </thead>
             <tbody>
-                <tr><th scope="row"><code>Crop</code>, <code>CropToAspect</code>, <code>SmartCrop</code></th><td>A rectangle you give, the largest one of an aspect ratio at an anchor, or the one around the subject.</td></tr>
+                <tr><th scope="row"><code>Crop</code>, <code>CropToAspect</code>, <code>BmageSmartCrop</code></th><td>A rectangle you give, the largest one of an aspect ratio at an anchor, or the one around the subject.</td></tr>
                 <tr><th scope="row"><code>Resize</code>, <code>MaxSize</code>, <code>Cover</code></th><td>Scale in one of the six modes below, with the resampling filter of your choice.</td></tr>
                 <tr><th scope="row"><code>Orient</code>, <code>FlipHorizontal</code>, <code>FlipVertical</code></th><td>The eight lossless orientations: pixels move, nothing is resampled.</td></tr>
                 <tr><th scope="row"><code>Rotate</code></th><td>Any angle. The canvas grows to hold the corners, filled with <code>background</code>, unless <code>expandCanvas: false</code> keeps the original size.</td></tr>
                 <tr><th scope="row"><code>Straighten</code></th><td>Levels a tilt of up to 45&deg; and crops to the largest rectangle of the image's aspect ratio the turned image covers, so no corner is left empty.</td></tr>
                 <tr><th scope="row"><code>CanvasSize</code>, <code>Pad</code></th><td>Grows or shrinks the canvas without scaling the image: an exact size with an anchor, or margins on each side (negative ones cut in). A border, a square canvas for a product shot, room for a caption.</td></tr>
-                <tr><th scope="row"><code>Skew</code>, <code>AffineTransformOperation</code>, <code>PerspectiveTransformOperation</code></th><td>Shear by angles, any 2D matrix, or a four-corner warp - <code>PerspectiveTransformOperation.Straighten</code> turns a photographed document or screen into a rectangle.</td></tr>
-                <tr><th scope="row"><code>ContentBounds.Find</code></th><td>Not an operation but the measurement behind a trim: the rectangle inside transparent or uniform borders, to hand to <code>Crop</code>.</td></tr>
+                <tr><th scope="row"><code>Skew</code>, <code>BmageAffineTransformOperation</code>, <code>BmagePerspectiveTransformOperation</code></th><td>Shear by angles, any 2D matrix, or a four-corner warp - <code>BmagePerspectiveTransformOperation.Straighten</code> turns a photographed document or screen into a rectangle.</td></tr>
+                <tr><th scope="row"><code>BmageContentBounds.Find</code></th><td>Not an operation but the measurement behind a trim: the rectangle inside transparent or uniform borders, to hand to <code>Crop</code>.</td></tr>
             </tbody>
         </table>
     </div>
@@ -236,7 +236,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Smart cropping</h3>
     <p>
         A fixed anchor is wrong most of the time: centre-cropping a portrait to a square routinely cuts
-        off the top of a head. <code>SmartCrop</code> scores candidate positions on a small downscaled
+        off the top of a head. <code>BmageSmartCrop</code> scores candidate positions on a small downscaled
         copy using local detail, colour saturation and skin-like hue, then picks the best. It is a
         heuristic, not face recognition - when you do have a detector, hand it the rectangle. The
         <a href="/avatar">Avatar</a> page compares it with the fixed anchors.
@@ -272,10 +272,10 @@
                 <tr><th scope="col">Group</th><th scope="col">Builder calls</th></tr>
             </thead>
             <tbody>
-                <tr><th scope="row">Light</th><td><code>Brightness</code>, <code>Contrast</code>, <code>Exposure</code> (stops), <code>Gamma</code>, <code>ShadowsHighlights</code>, <code>WhitesBlacks</code>, <code>AutoLevels</code>, <code>AutoContrast</code>; levels and curves through <code>LevelsAdjustment</code> and <code>CurveOperation</code></td></tr>
-                <tr><th scope="row">Colour</th><td><code>Saturation</code>, <code>Vibrance</code>, <code>Hue</code> (degrees), <code>Temperature</code>, <code>Tint</code>, <code>WhiteBalance</code>, <code>AutoWhiteBalance</code>, <code>Hsl</code> (one of eight hue bands), <code>ChannelMixer</code>, <code>Colorize</code>, <code>ColorMatrix</code>, <code>Opacity</code></td></tr>
-                <tr><th scope="row">Looks</th><td><code>Grayscale</code>, <code>BlackAndWhite</code> (a channel mix), <code>Sepia</code>, <code>Invert</code>, <code>Posterize</code>, <code>Threshold</code>, <code>Duotone</code> and any <code>GradientMapOperation</code>, <code>Vignette</code></td></tr>
-                <tr><th scope="row">Detail</th><td><code>Blur</code>, <code>MotionBlur</code> (a distance and an angle), <code>Sharpen</code> (unsharp mask), <code>HighPass</code>, <code>DenoiseMedian</code>, <code>Noise</code>, <code>Pixelate</code>; any kernel through <code>ConvolutionFilter</code>, with <code>Emboss</code> and <code>EdgeDetect</code> built in</td></tr>
+                <tr><th scope="row">Light</th><td><code>Brightness</code>, <code>Contrast</code>, <code>Exposure</code> (stops), <code>Gamma</code>, <code>ShadowsHighlights</code>, <code>WhitesBlacks</code>, <code>AutoLevels</code>, <code>AutoContrast</code>; levels and curves through <code>BmageLevelsAdjustment</code> and <code>BmageCurveOperation</code></td></tr>
+                <tr><th scope="row">Colour</th><td><code>Saturation</code>, <code>Vibrance</code>, <code>Hue</code> (degrees), <code>Temperature</code>, <code>Tint</code>, <code>WhiteBalance</code>, <code>AutoWhiteBalance</code>, <code>Hsl</code> (one of eight hue bands), <code>ChannelMixer</code>, <code>Colorize</code>, <code>BmageColorMatrix</code>, <code>Opacity</code></td></tr>
+                <tr><th scope="row">Looks</th><td><code>Grayscale</code>, <code>BlackAndWhite</code> (a channel mix), <code>Sepia</code>, <code>Invert</code>, <code>Posterize</code>, <code>Threshold</code>, <code>Duotone</code> and any <code>BmageGradientMapOperation</code>, <code>Vignette</code></td></tr>
+                <tr><th scope="row">Detail</th><td><code>Blur</code>, <code>MotionBlur</code> (a distance and an angle), <code>Sharpen</code> (unsharp mask), <code>HighPass</code>, <code>DenoiseMedian</code>, <code>Noise</code>, <code>Pixelate</code>; any kernel through <code>BmageConvolutionFilter</code>, with <code>Emboss</code> and <code>EdgeDetect</code> built in</td></tr>
                 <tr><th scope="row">Selective</th><td><code>Masked</code> runs any of the above through a mask, <code>ApplyMask</code> cuts the alpha to one, and <code>RemoveBackground</code> clears a plain backdrop - see <a href="/layers-and-masks">Layers and masks</a> and <a href="/retouch">Retouching</a></td></tr>
             </tbody>
         </table>
@@ -307,7 +307,7 @@
     <p>
         Fusing per-pixel operations removes the intermediate 8-bit rounding that separate execution
         performs, so a fused chain is <em>more</em> accurate, not merely faster. Turn the optimiser off
-        with <code>new PipelineExecutionOptions { Optimize = false }</code> if you are comparing
+        with <code>new BmagePipelineExecutionOptions { Optimize = false }</code> if you are comparing
         behaviour, but there is no reason to in production.
     </p>
 </div>
@@ -326,7 +326,7 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Custom operations</h3>
     <p>
-        Implement <code>IImageOperation</code>, or derive from <code>PointOperation</code> if your
+        Implement <code>IBmageImageOperation</code>, or derive from <code>BmagePointOperation</code> if your
         operation maps each pixel independently - then it joins the single-pass run with the
         adjustments around it for free. Override <code>CanProcessRowsConcurrently</code> when
         <code>ProcessRow</code> only reads its own fields, so it can spread over threads too, and give
@@ -336,7 +336,7 @@
 </div>
 
 @code {
-    private sealed record Step(string Id, string Label, Func<ImagePipeline, ImagePipeline> Apply);
+    private sealed record Step(string Id, string Label, Func<BmageImagePipeline, BmageImagePipeline> Apply);
 
     private static readonly string[] GeometryOptions = ["None", "MaxSize 600", "Cover 400×400", "SmartCrop 1:1", "Rotate 12°", "Straighten 6°", "Pad 40px", "Flip"];
 
@@ -346,11 +346,11 @@
         new("balance", "Auto white balance", p => p.AutoWhiteBalance()),
         new("vibrance", "Vibrance +0.4", p => p.Vibrance(0.4f)),
         new("contrast", "Contrast +0.2", p => p.Contrast(0.2f)),
-        new("hsl", "Deeper blues (HSL)", p => p.Hsl(HueBand.Blues, saturation: 0.4f, lightness: -0.15f)),
+        new("hsl", "Deeper blues (HSL)", p => p.Hsl(BmageHueBand.Blues, saturation: 0.4f, lightness: -0.15f)),
         new("sepia", "Sepia", p => p.Sepia(0.8f)),
         new("grayscale", "Grayscale", p => p.Grayscale()),
         new("bw", "Black and white mix", p => p.BlackAndWhite(0.6f, 0.3f, 0.1f)),
-        new("duotone", "Duotone", p => p.Duotone(new Rgba32(24, 32, 88), new Rgba32(250, 214, 140))),
+        new("duotone", "Duotone", p => p.Duotone(new BmageRgba32(24, 32, 88), new BmageRgba32(250, 214, 140))),
         new("blur", "Blur 3px", p => p.Blur(3f)),
         new("motion", "Motion blur 12px", p => p.MotionBlur(12f)),
         new("sharpen", "Sharpen", p => p.Sharpen(0.4f)),
@@ -360,8 +360,8 @@
     // The scene is generated once, at the size the docs talk about, and every pipeline runs against it.
     private static readonly System.Drawing.Size SourceSize = new(1200, 800);
 
-    private ImageBuffer? _source;
-    private ImageBuffer? _preview;
+    private BmageImageBuffer? _source;
+    private BmageImageBuffer? _preview;
     private long _previewVersion;
     private string _geometry = "MaxSize 600";
     private readonly HashSet<string> _enabled = ["vibrance", "sharpen"];
@@ -374,20 +374,20 @@
 
     private bool IsHydrating => RendererInfo.IsInteractive is false;
 
-    private ImagePipeline Pipeline
+    private BmageImagePipeline Pipeline
     {
         get
         {
-            var pipeline = ImagePipeline.Create().AutoOrient();
+            var pipeline = BmageImagePipeline.Create().AutoOrient();
             if (_noOps) pipeline = pipeline.Brightness(0);
             pipeline = _geometry switch
             {
                 "MaxSize 600" => pipeline.MaxSize(600, 600),
                 "Cover 400×400" => pipeline.Cover(400, 400),
-                "SmartCrop 1:1" => pipeline.SmartCrop(AspectRatio.Square).MaxSize(400, 400),
-                "Rotate 12°" => pipeline.MaxSize(600, 600).Rotate(12, Rgba32.Transparent),
+                "SmartCrop 1:1" => pipeline.SmartCrop(BmageAspectRatio.Square).MaxSize(400, 400),
+                "Rotate 12°" => pipeline.MaxSize(600, 600).Rotate(12, BmageRgba32.Transparent),
                 "Straighten 6°" => pipeline.MaxSize(600, 600).Straighten(6),
-                "Pad 40px" => pipeline.MaxSize(600, 600).Pad(40, Rgba32.White),
+                "Pad 40px" => pipeline.MaxSize(600, 600).Pad(40, BmageRgba32.White),
                 "Flip" => pipeline.MaxSize(600, 600).FlipHorizontal(),
                 _ => pipeline,
             };
@@ -400,7 +400,7 @@
         }
     }
 
-    private ImagePipeline Optimized => Pipeline.Optimize(SourceSize);
+    private BmageImagePipeline Optimized => Pipeline.Optimize(SourceSize);
 
     private string PipelineText => Pipeline.ToString() ?? "";
 
@@ -411,7 +411,7 @@
         : "after a run";
 
     private const string InspectSnippet = """
-        var pipeline = ImagePipeline.Create()
+        var pipeline = BmageImagePipeline.Create()
             .AutoOrient()
             .MaxSize(1920, 1920)
             .Sharpen(0.3f);
@@ -434,20 +434,20 @@
         """;
 
     private const string ComposeSnippet = """
-        var edit = ImagePipeline.Create().AutoOrient().Brightness(0.1f).Sharpen(0.3f);
+        var edit = BmageImagePipeline.Create().AutoOrient().Brightness(0.1f).Sharpen(0.3f);
 
-        edit = edit.Replace(1, new BrightnessAdjustment(0.2f));   // change a step without redoing the rest
-        edit = edit.Insert(1, new ContrastAdjustment(0.1f));
+        edit = edit.Replace(1, new BmageBrightnessAdjustment(0.2f));   // change a step without redoing the rest
+        edit = edit.Insert(1, new BmageContrastAdjustment(0.1f));
         edit = edit.RemoveAt(edit.Count - 1);
 
-        var look = ImagePipeline.Create().Sepia(0.6f).Vignette(0.4f);
+        var look = BmageImagePipeline.Create().Sepia(0.6f).Vignette(0.4f);
         var final = edit.Concat(look);                             // two pipelines, one run
 
-        var fromList = ImagePipeline.From(savedOperations);         // any IEnumerable<IImageOperation>
+        var fromList = BmageImagePipeline.From(savedOperations);         // any IEnumerable<IBmageImageOperation>
         """;
 
     private const string ExecuteSnippet = """
-        using var result = await pipeline.ExecuteAsync(source, new PipelineExecutionOptions
+        using var result = await pipeline.ExecuteAsync(source, new BmagePipelineExecutionOptions
         {
             CancellationToken = token,
             Progress = new Progress<double>(p => _percent = p),
@@ -457,10 +457,10 @@
     private const string GeometrySnippet = """
         pipeline.AutoOrient()                       // apply the EXIF rotation so the image is upright
                 .Crop(x, y, width, height)
-                .CropToAspect(AspectRatio.Ratio16x9, Anchor.Center)
+                .CropToAspect(BmageAspectRatio.Ratio16x9, BmageAnchor.Center)
                 .Resize(width, height, mode, filter, anchor, background)
                 .MaxSize(1920, 1080)                // shrink to fit, never enlarge
-                .Cover(512, 512, Anchor.Top)        // fill exactly, cropping the overflow
+                .Cover(512, 512, BmageAnchor.Top)        // fill exactly, cropping the overflow
                 .Rotate(12.5, background)           // arbitrary angle, canvas expands
                 .Rotate(12.5, expandCanvas: false)  // ...or keeps its size, corners cut off
                 .Straighten(-3.5)                   // level a tilt and crop the empty corners
@@ -468,28 +468,28 @@
                 .FlipHorizontal()
                 .FlipVertical()
                 .Skew(10, 0)
-                .CanvasSize(1200, 1200, Anchor.Top, Rgba32.White)
-                .Pad(40, Rgba32.White);             // a 40 pixel border
+                .CanvasSize(1200, 1200, BmageAnchor.Top, BmageRgba32.White)
+                .Pad(40, BmageRgba32.White);             // a 40 pixel border
         """;
 
     private const string CanvasSnippet = """
         // Margins one side at a time; a negative margin cuts into the image.
-        pipeline.Pad(left: 0, top: 120, right: 0, bottom: 0, background: Rgba32.Black);
+        pipeline.Pad(left: 0, top: 120, right: 0, bottom: 0, background: BmageRgba32.Black);
 
         // Any 2D matrix, and a four-corner warp: a photographed page made rectangular.
-        pipeline.Apply(new AffineTransformOperation(Matrix3x2.CreateRotation(0.1f) * Matrix3x2.CreateScale(1.2f)));
-        pipeline.Apply(PerspectiveTransformOperation.Straighten(pageCorners, new Size(1240, 1754)));
+        pipeline.Apply(new BmageAffineTransformOperation(Matrix3x2.CreateRotation(0.1f) * Matrix3x2.CreateScale(1.2f)));
+        pipeline.Apply(BmagePerspectiveTransformOperation.Straighten(pageCorners, new Size(1240, 1754)));
 
         // Trim: measure the borders, then crop to what is inside them.
-        var content = ContentBounds.Find(image, new TrimOptions { Mode = TrimMode.Transparent, Padding = 8 });
+        var content = BmageContentBounds.Find(image, new BmageTrimOptions { Mode = BmageTrimMode.Transparent, Padding = 8 });
         if (content is { } bounds) pipeline = pipeline.Crop(bounds);
         """;
 
     private const string SmartCropSnippet = """
-        pipeline.SmartCrop(AspectRatio.Square);
+        pipeline.SmartCrop(BmageAspectRatio.Square);
 
         // With a face detector of your own:
-        var crop = SmartCrop.FindCrop(image, AspectRatio.Square, mustInclude: faceRectangle);
+        var crop = BmageSmartCrop.FindCrop(image, BmageAspectRatio.Square, mustInclude: faceRectangle);
         pipeline.Crop(crop.Rectangle);
         """;
 
@@ -511,24 +511,24 @@
 
         // Movement and texture.
         pipeline.MotionBlur(distance: 24, angle: -15).HighPass(radius: 3);
-        pipeline.Apply(ConvolutionFilter.Emboss());
-        pipeline.Apply(new ConvolutionFilter([0, -1, 0, -1, 5, -1, 0, -1, 0], 3, 3));   // any kernel
+        pipeline.Apply(BmageConvolutionFilter.Emboss());
+        pipeline.Apply(new BmageConvolutionFilter([0, -1, 0, -1, 5, -1, 0, -1, 0], 3, 3));   // any kernel
         """;
 
     private const string ColorSnippet = """
         // White balance: from a pixel that should be neutral, or found automatically.
-        var grey = ColorSampler.Sample(image, new Point(120, 80), radius: 3);   // the eyedropper
+        var grey = BmageColorSampler.Sample(image, new Point(120, 80), radius: 3);   // the eyedropper
         pipeline.WhiteBalance(grey);
         pipeline.AutoWhiteBalance(strength: 0.8f);
 
         // The ends of the tonal range, and the whole curve.
         pipeline.WhitesBlacks(whites: 0.2f, blacks: -0.15f);
-        pipeline.Apply(new LevelsAdjustment(inputBlack: 0.05f, inputWhite: 0.95f, gamma: 1.1f));
-        pipeline.Apply(CurveOperation.FromFunction(x => x * x * (3 - 2 * x), name: "S-curve"));
+        pipeline.Apply(new BmageLevelsAdjustment(inputBlack: 0.05f, inputWhite: 0.95f, gamma: 1.1f));
+        pipeline.Apply(BmageCurveOperation.FromFunction(x => x * x * (3 - 2 * x), name: "S-curve"));
 
         // One colour range at a time: bluer, richer skies; calmer greens.
-        pipeline.Hsl(HueBand.Blues, hue: -8, saturation: 0.3f, lightness: -0.2f)
-                .Hsl(HueBand.Greens, saturation: -0.25f);
+        pipeline.Hsl(BmageHueBand.Blues, hue: -8, saturation: 0.3f, lightness: -0.2f)
+                .Hsl(BmageHueBand.Greens, saturation: -0.25f);
 
         // Channel mixers, black and white from chosen channels, and tinting.
         pipeline.ChannelMixer(red: new(1.1f, -0.1f, 0), green: new(0, 1, 0), blue: new(0, 0.1f, 0.9f));
@@ -536,13 +536,13 @@
         pipeline.Colorize(hue: 30, saturation: 0.35f);
 
         // Map luminance onto colours: two of them, or any gradient.
-        pipeline.Duotone(shadows: new Rgba32(24, 32, 88), highlights: new Rgba32(250, 214, 140));
-        pipeline.Apply(new GradientMapOperation([(0f, Rgba32.Black), (0.5f, new Rgba32(200, 40, 90)), (1f, new Rgba32(255, 230, 120))]));
+        pipeline.Duotone(shadows: new BmageRgba32(24, 32, 88), highlights: new BmageRgba32(250, 214, 140));
+        pipeline.Apply(new BmageGradientMapOperation([(0f, BmageRgba32.Black), (0.5f, new BmageRgba32(200, 40, 90)), (1f, new BmageRgba32(255, 230, 120))]));
         """;
 
     private const string OptimizerSnippet = """
         // Three no-ops and two crops.
-        var pipeline = ImagePipeline.Create()
+        var pipeline = BmageImagePipeline.Create()
             .Brightness(0)
             .Crop(10, 10, 200, 200)
             .Crop(5, 5, 100, 100)
@@ -554,7 +554,7 @@
 
     private const string CustomSnippet = """
         // Solarize: the darkroom effect of re-exposing a print, inverting every channel above a threshold.
-        public sealed class SolarizeOperation(float threshold = 0.5f) : PointOperation
+        public sealed class SolarizeOperation(float threshold = 0.5f) : BmagePointOperation
         {
             public float Threshold { get; } = threshold;
 

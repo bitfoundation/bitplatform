@@ -21,14 +21,14 @@ public class ProfilerTimeAndRouteTests : BunitContext
         using (scope)
         {
             var alive = new List<ChildComponent>();
-            BevComponentRecord Add(BevComponentRecord? parent, long startTicks, double ms, long batch = 3)
+            BevToolsComponentRecord Add(BevToolsComponentRecord? parent, long startTicks, double ms, long batch = 3)
             {
                 var component = new ChildComponent();
                 alive.Add(component);
                 var record = session.Components.Register(component, typeof(ChildComponent), isBevTools: false, isHidden: false)!;
                 record.Parent = parent;
                 record.ParentResolved = true;
-                record.AddRender(new BevRenderSample { Sequence = 1, At = DateTimeOffset.UtcNow, StartTicks = startTicks, BatchId = batch, DurationMs = ms });
+                record.AddRender(new BevToolsRenderSample { Sequence = 1, At = DateTimeOffset.UtcNow, StartTicks = startTicks, BatchId = batch, DurationMs = ms });
                 return record;
             }
 
@@ -40,7 +40,7 @@ public class ProfilerTimeAndRouteTests : BunitContext
             var cell = Add(row2, t0 + 4 * ms, 0.5);
             Add(null, t0, 9, batch: 4);
 
-            var timeline = BevBatchTimeline.Build(session.Components.All, 3, maxBars: 300);
+            var timeline = BevToolsBatchTimeline.Build(session.Components.All, 3, maxBars: 300);
 
             Assert.HasCount(4, timeline.Bars);
             Assert.AreEqual(3, timeline.Depth);
@@ -59,7 +59,7 @@ public class ProfilerTimeAndRouteTests : BunitContext
         using (scope)
         {
             var alive = new List<ChildComponent>(20_000);
-            BevComponentRecord? parent = null;
+            BevToolsComponentRecord? parent = null;
             var t0 = Stopwatch.GetTimestamp();
             for (var i = 0; i < 20_000; i++)
             {
@@ -68,12 +68,12 @@ public class ProfilerTimeAndRouteTests : BunitContext
                 var record = session.Components.Register(component, typeof(ChildComponent), isBevTools: false, isHidden: false)!;
                 record.Parent = parent;
                 record.ParentResolved = true;
-                record.AddRender(new BevRenderSample { Sequence = i, At = DateTimeOffset.UtcNow, StartTicks = t0 + i, BatchId = 9, DurationMs = 0.01 });
+                record.AddRender(new BevToolsRenderSample { Sequence = i, At = DateTimeOffset.UtcNow, StartTicks = t0 + i, BatchId = 9, DurationMs = 0.01 });
                 parent = record;
             }
 
             var started = Stopwatch.GetTimestamp();
-            var timeline = BevBatchTimeline.Build(session.Components.All, 9, maxBars: 300);
+            var timeline = BevToolsBatchTimeline.Build(session.Components.All, 9, maxBars: 300);
             var elapsed = Stopwatch.GetElapsedTime(started);
 
             Assert.HasCount(300, timeline.Bars);
@@ -100,14 +100,14 @@ public class ProfilerTimeAndRouteTests : BunitContext
             var record = session.Components.Register(component, typeof(ChildComponent), isBevTools: false, isHidden: false)!;
             foreach (var (secondsAgo, ms) in new[] { (40, 1.0), (25, 2.0), (15, 4.0), (5, 8.0), (4, 16.0) })
             {
-                record.AddRender(new BevRenderSample { Sequence = secondsAgo, At = now.AddSeconds(-secondsAgo), StartTicks = 0, DurationMs = ms });
+                record.AddRender(new BevToolsRenderSample { Sequence = secondsAgo, At = now.AddSeconds(-secondsAgo), StartTicks = 0, DurationMs = ms });
             }
 
-            var routes = BevRouteProfile.Build(session).ToDictionary(r => r.Route);
+            var routes = BevToolsRouteProfile.Build(session).ToDictionary(r => r.Route);
 
             Assert.AreEqual((2, 3, 26.0), (routes["/products"].Visits, routes["/products"].Renders, routes["/products"].RenderMs));
             Assert.AreEqual((1, 1, 4.0), (routes["/products/{id}"].Visits, routes["/products/{id}"].Renders, routes["/products/{id}"].RenderMs));
-            Assert.AreEqual(1, routes[BevRouteProfile.BeforeFirst].Renders);
+            Assert.AreEqual(1, routes[BevToolsRouteProfile.BeforeFirst].Renders);
             Assert.AreEqual(("ChildComponent", 3, 26.0), Assert.ContainsSingle(routes["/products"].Top));
             GC.KeepAlive(component);
         }
@@ -134,7 +134,7 @@ public class ProfilerTimeAndRouteTests : BunitContext
         shell.InvokeAsync(() => navigation.NavigateTo("/bev-tests/route-b"));
         shell.InvokeAsync(() => navigation.NavigateTo("/bev-tests/route-a"));
 
-        var routes = BevRouteProfile.Build(session).ToDictionary(r => r.Route);
+        var routes = BevToolsRouteProfile.Build(session).ToDictionary(r => r.Route);
 
         var pageB = routes["/bev-tests/route-b"];
         CollectionAssert.IsSubsetOf(new[] { "RoutedPageB", "RoutedWidget" }, pageB.Top.Select(t => t.Component).ToArray(), string.Join(" | ", routes.Values.Select(r => r.Route + ": " + string.Join(", ", r.Top.Select(t => t.Component)))));
@@ -156,9 +156,9 @@ public class ProfilerTimeAndRouteTests : BunitContext
 
             var component = new ChildComponent();
             var record = session.Components.Register(component, typeof(ChildComponent), isBevTools: false, isHidden: false)!;
-            record.AddRender(new BevRenderSample { Sequence = 1, At = at, StartTicks = 0, DurationMs = 1 });
+            record.AddRender(new BevToolsRenderSample { Sequence = 1, At = at, StartTicks = 0, DurationMs = 1 });
 
-            var routes = BevRouteProfile.Build(session).ToDictionary(r => r.Route);
+            var routes = BevToolsRouteProfile.Build(session).ToDictionary(r => r.Route);
 
             Assert.AreEqual(1, routes["/account"].Renders, "a redirect on a millisecond clock: the render is the redirect target's");
             Assert.AreEqual(2, routes["/account"].Visits, "the enhanced navigation is the same page");
@@ -179,7 +179,7 @@ public class ProfilerTimeAndRouteTests : BunitContext
         JSInterop.Mode = JSRuntimeMode.Loose;
         this.UseRenderer("Server");
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true });
         module.Setup<string?>("loadPrefs", _ => true).SetResult(null);
         var panel = Render<BevToolsPanel>();
         var session = Services.GetRequiredService<BevToolsSession>();
@@ -222,7 +222,7 @@ public class ProfilerTimeAndRouteTests : BunitContext
         JSInterop.Mode = JSRuntimeMode.Loose;
         this.UseRenderer("Server");
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true });
         module.Setup<string?>("loadPrefs", _ => true).SetResult(null);
         var panel = Render<BevToolsPanel>();
         var cut = Render<ParentComponent>();

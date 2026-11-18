@@ -29,7 +29,7 @@ The extension asks for **no permission** and has **no content script**: nothing 
 talks to the inspected page only through `chrome.devtools.inspectedWindow.eval`, which DevTools allows while it is
 open on that tab, and only to the page hub BevTools exposes there (`window.__BIT_BEVTOOLS__`). Every answer comes from
 the runtime's own protocol (`BevToolsProtocol` in .NET), through the same inspection and redaction as the in-app
-panel, so the extension never sees more than the panel would; `BitBevToolsOptions.ValueAccess` applies to it as well.
+panel, so the extension never sees more than the panel would; `BevToolsOptions.ValueAccess` applies to it as well.
 A page whose BevTools is off exposes no hub, and the panel says so.
 
 | File | What it is |

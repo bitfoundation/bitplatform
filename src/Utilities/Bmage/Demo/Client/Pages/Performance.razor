@@ -267,10 +267,10 @@
     <p>
         A pipeline estimates the most pixel memory its run will hold before it runs, following the
         buffers each step keeps - a test holds the estimate between what a run really allocates and twice
-        that. A <code>BudgetedPixelAllocator</code> enforces a ceiling: every buffer and mask an operation
+        that. A <code>BmageBudgetedPixelAllocator</code> enforces a ceiling: every buffer and mask an operation
         makes comes from the allocator in its context, so one budget bounds a request, a session or a batch,
         on any number of threads, and an allocation that would pass it is refused with
-        <code>ImageMemoryBudgetExceededException</code> before it is made. A batch can also admit
+        <code>BmageImageMemoryBudgetExceededException</code> before it is made. A batch can also admit
         images by their expected peak with <code>MaxMemoryBytes</code> - see <a href="/batch">Batch processing</a>.
     </p>
     <CodeSnippet Code="@MemorySnippet" Language="C#" Expanded="true" />
@@ -297,7 +297,7 @@
         <li><strong>Add threads where one image at a time should finish sooner</strong> - a desktop app or a background job - not on a busy server.</li>
         <li><strong>Dispose buffers</strong>, and <strong>use object URLs</strong>, not data URLs.</li>
     </ul>
-    <CodeSnippet Code="ImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)" Language="C#" Expanded="true" />
+    <CodeSnippet Code="BmageImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)" Language="C#" Expanded="true" />
 </div>
 
 @code {
@@ -315,13 +315,13 @@
     ];
 
     // The same operations as the reference table, so the reader's numbers line up against it row by row.
-    private static readonly (string Name, Func<ImagePipeline> Pipeline)[] Benchmarks =
+    private static readonly (string Name, Func<BmageImagePipeline> Pipeline)[] Benchmarks =
     [
-        ("Resize to 1280, Lanczos3", () => ImagePipeline.Create().Resize(1280, 1280, BmageResizeMode.Fit, ResamplingFilter.Lanczos3)),
-        ("Brightness", () => ImagePipeline.Create().Brightness(0.2f)),
-        ("Four adjustments, fused", () => ImagePipeline.Create().Brightness(0.1f).Contrast(0.15f).Saturation(0.2f).Vibrance(0.2f)),
-        ("Gaussian blur, radius 8", () => ImagePipeline.Create().Blur(8f)),
-        ("Unsharp mask", () => ImagePipeline.Create().Sharpen(0.5f)),
+        ("Resize to 1280, Lanczos3", () => BmageImagePipeline.Create().Resize(1280, 1280, BmageResizeMode.Fit, BmageResamplingFilter.Lanczos3)),
+        ("Brightness", () => BmageImagePipeline.Create().Brightness(0.2f)),
+        ("Four adjustments, fused", () => BmageImagePipeline.Create().Brightness(0.1f).Contrast(0.15f).Saturation(0.2f).Vibrance(0.2f)),
+        ("Gaussian blur, radius 8", () => BmageImagePipeline.Create().Blur(8f)),
+        ("Unsharp mask", () => BmageImagePipeline.Create().Sharpen(0.5f)),
     ];
 
     private readonly List<Result> _results = [];
@@ -337,19 +337,19 @@
         {
             Photo = SampleImages.Landscape(width, height);
             // A product shot: a subject on a near-white backdrop, for the background removal and trimming.
-            Product = ImageBuffer.Create(width, height, new Rgba32(248, 248, 246));
-            Product.Fill(new System.Drawing.Rectangle(width / 4, height / 5, width / 2, height * 3 / 5), new Rgba32(40, 90, 160));
+            Product = BmageImageBuffer.Create(width, height, new BmageRgba32(248, 248, 246));
+            Product.Fill(new System.Drawing.Rectangle(width / 4, height / 5, width / 2, height * 3 / 5), new BmageRgba32(40, 90, 160));
             var rng = new Random(7);
-            Paint = new PaintLayer([.. Enumerable.Range(0, 20).Select(i => new PaintStroke(
+            Paint = new BmagePaintLayer([.. Enumerable.Range(0, 20).Select(i => new BmagePaintStroke(
                 [.. Enumerable.Range(0, 40).Select(j => new Vector2(rng.Next(width), rng.Next(height)) * 0.1f + new Vector2(j * width / 50f, i * height / 25f))],
-                24, new Rgba32(200, 40, 40)) { Hardness = 0.6f })]);
+                24, new BmageRgba32(200, 40, 40)) { Hardness = 0.6f })]);
         }
 
-        public ImageBuffer Photo { get; }
+        public BmageImageBuffer Photo { get; }
 
-        public ImageBuffer Product { get; }
+        public BmageImageBuffer Product { get; }
 
-        public PaintLayer Paint { get; }
+        public BmagePaintLayer Paint { get; }
 
         public void Dispose()
         {
@@ -363,31 +363,31 @@
     // runs of this page (docs/performance.md, WebAssembly: editing tools).
     private static readonly (EditingReference Reference, Func<EditingImages, IDisposable?> Run)[] EditingBenchmarks =
     [
-        (new("Canvas: 40px border", 3, 1, 1.6), i => Apply(CanvasSizeOperation.Margins(40, Rgba32.White), i.Photo)),
-        (new("Whites and blacks", 21, 7, 3.6), i => Apply(new WhitesBlacksAdjustment(0.3f, -0.2f), i.Photo)),
-        (new("Trim bounds", 44, 1, 1.3), i => { ContentBounds.Find(i.Product); return null; }),
-        (new("Auto white balance", 43, 15, 15.4), i => Apply(new AutoWhiteBalanceOperation(), i.Photo)),
-        (new("Expand a selection by 10px", 349, 91, 27.9), i => new EllipseMask(new System.Drawing.RectangleF(100, 100, 800, 600)).Expand(10).Render(i.Photo.Size)),
-        (new("Duotone", 152, 28, 28.4), i => Apply(GradientMapOperation.Duotone(new Rgba32(20, 30, 90), new Rgba32(250, 210, 120)), i.Photo)),
-        (new("Vibrance, for reference", 161, 26, 35.1), i => Apply(new VibranceAdjustment(0.4f), i.Photo)),
-        (new("Colorize", 105, 46, 50.6), i => Apply(new ColorizeAdjustment(30, 0.4f), i.Photo)),
-        (new("High pass, radius 3", 366, 66, 64.3), i => Apply(new HighPassFilter(3), i.Photo)),
-        (new("Remove a plain background", 714, 102, 66.8), i => Apply(new AlphaMaskOperation(new FloodMask([new(0, 0), new(1, 0), new(0, 1), new(1, 1)]) { Units = MaskUnits.Relative, Inverted = true }), i.Product)),
-        (new("HSL, two bands", 758, 87, 93.7), i => Apply(new HslAdjustment().With(HueBand.Blues, new HslShift(-10, 0.3f, -0.2f)).With(HueBand.Greens, new HslShift(15, -0.2f, 0)), i.Photo)),
-        (new("Straighten 5°", 1684, 88, 122), i => Apply(new StraightenOperation(5), i.Photo)),
+        (new("Canvas: 40px border", 3, 1, 1.6), i => Apply(BmageCanvasSizeOperation.Margins(40, BmageRgba32.White), i.Photo)),
+        (new("Whites and blacks", 21, 7, 3.6), i => Apply(new BmageWhitesBlacksAdjustment(0.3f, -0.2f), i.Photo)),
+        (new("Trim bounds", 44, 1, 1.3), i => { BmageContentBounds.Find(i.Product); return null; }),
+        (new("Auto white balance", 43, 15, 15.4), i => Apply(new BmageAutoWhiteBalanceOperation(), i.Photo)),
+        (new("Expand a selection by 10px", 349, 91, 27.9), i => new BmageEllipseMask(new System.Drawing.RectangleF(100, 100, 800, 600)).Expand(10).Render(i.Photo.Size)),
+        (new("Duotone", 152, 28, 28.4), i => Apply(BmageGradientMapOperation.Duotone(new BmageRgba32(20, 30, 90), new BmageRgba32(250, 210, 120)), i.Photo)),
+        (new("Vibrance, for reference", 161, 26, 35.1), i => Apply(new BmageVibranceAdjustment(0.4f), i.Photo)),
+        (new("Colorize", 105, 46, 50.6), i => Apply(new BmageColorizeAdjustment(30, 0.4f), i.Photo)),
+        (new("High pass, radius 3", 366, 66, 64.3), i => Apply(new BmageHighPassFilter(3), i.Photo)),
+        (new("Remove a plain background", 714, 102, 66.8), i => Apply(new BmageAlphaMaskOperation(new BmageFloodMask([new(0, 0), new(1, 0), new(0, 1), new(1, 1)]) { Units = BmageMaskUnits.Relative, Inverted = true }), i.Product)),
+        (new("HSL, two bands", 758, 87, 93.7), i => Apply(new BmageHslAdjustment().With(BmageHueBand.Blues, new BmageHslShift(-10, 0.3f, -0.2f)).With(BmageHueBand.Greens, new BmageHslShift(15, -0.2f, 0)), i.Photo)),
+        (new("Straighten 5°", 1684, 88, 122), i => Apply(new BmageStraightenOperation(5), i.Photo)),
         (new("Paint layer, 20 long strokes", 1383, 179, 134), i => Composite(i.Photo, i.Paint)),
-        (new("Motion blur 20px", 618, 267, 142), i => Apply(new MotionBlurFilter(20, 0), i.Photo)),
+        (new("Motion blur 20px", 618, 267, 142), i => Apply(new BmageMotionBlurFilter(20, 0), i.Photo)),
         (new("Isolated group: paint and a multiplied fill", 3281, 372, 225), i => Composite(i.Photo,
-            new GroupLayer([i.Paint, new FillLayer(new Rgba32(250, 220, 160)) { BlendMode = BmageBlendMode.Multiply }]) { Isolated = true })),
-        (new("A fill clipped to the paint layer", 2313, 327, 200), i => Composite(i.Photo, i.Paint, new FillLayer(new Rgba32(40, 90, 200)) { ClipToLayerBelow = true })),
+            new BmageGroupLayer([i.Paint, new BmageFillLayer(new BmageRgba32(250, 220, 160)) { BlendMode = BmageBlendMode.Multiply }]) { Isolated = true })),
+        (new("A fill clipped to the paint layer", 2313, 327, 200), i => Composite(i.Photo, i.Paint, new BmageFillLayer(new BmageRgba32(40, 90, 200)) { ClipToLayerBelow = true })),
     ];
 
-    private static ImageBuffer Apply(IImageOperation operation, ImageBuffer source) => operation.Apply(source, OperationContext.Default.WithMutation(false));
+    private static BmageImageBuffer Apply(IBmageImageOperation operation, BmageImageBuffer source) => operation.Apply(source, BmageOperationContext.Default.WithMutation(false));
 
-    private static ImageBuffer Composite(ImageBuffer source, params Layer[] layers)
+    private static BmageImageBuffer Composite(BmageImageBuffer source, params BmageLayer[] layers)
     {
         var target = source.Clone();
-        LayerCompositor.Composite(target, layers);
+        BmageLayerCompositor.Composite(target, layers);
         return target;
     }
 
@@ -414,7 +414,7 @@
         });
 
         // For one run:
-        using var result = pipeline.Execute(image, new PipelineExecutionOptions { MaxDegreeOfParallelism = 8 });
+        using var result = pipeline.Execute(image, new BmagePipelineExecutionOptions { MaxDegreeOfParallelism = 8 });
 
         // In a batch every image in flight uses that many: MaxConcurrency × MaxDegreeOfParallelism threads.
         """;
@@ -424,9 +424,9 @@
         estimate.PeakBytes;     // the most pixel memory the run holds at once, its result included
         estimate.OutputBytes;   // the result
 
-        // A hard ceiling: an allocation past it throws ImageMemoryBudgetExceededException before it is made.
-        var budget = new BudgetedPixelAllocator(256L * 1024 * 1024);
-        using var result = pipeline.Execute(source, new PipelineExecutionOptions { Allocator = budget });
+        // A hard ceiling: an allocation past it throws BmageImageMemoryBudgetExceededException before it is made.
+        var budget = new BmageBudgetedPixelAllocator(256L * 1024 * 1024);
+        using var result = pipeline.Execute(source, new BmagePipelineExecutionOptions { Allocator = budget });
         Console.WriteLine($"{budget.PeakBytes / 1048576.0:0.0} MB at the peak");
         """;
 

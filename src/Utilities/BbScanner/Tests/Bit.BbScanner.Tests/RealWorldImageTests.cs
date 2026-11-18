@@ -18,25 +18,25 @@ public class RealWorldImageTests
     private const string Code128Payload = "AB-1234";
     private const string Ean13Payload = "4006381333931";
 
-    private static BbLuminanceBuffer Qr(int scale = 4) =>
-        SyntheticImage.FromMatrix(QrEncoder.Encode(QrPayload, BbQrErrorCorrectionLevel.M, 2), scale);
+    private static BbScannerLuminanceBuffer Qr(int scale = 4) =>
+        SyntheticImage.FromMatrix(QrEncoder.Encode(QrPayload, BbScannerQrErrorCorrectionLevel.M, 2), scale);
 
-    private static BbLuminanceBuffer DataMatrix(int scale = 4) =>
+    private static BbScannerLuminanceBuffer DataMatrix(int scale = 4) =>
         SyntheticImage.FromMatrix(DataMatrixEncoder.Encode(DataMatrixPayload), scale);
 
-    private static BbLuminanceBuffer Code128(int scale = 3) =>
+    private static BbScannerLuminanceBuffer Code128(int scale = 3) =>
         SyntheticImage.FromLinear(LinearEncoders.Code128(Code128Payload), scale, 80);
 
-    private static BbLuminanceBuffer Ean13(int scale = 3) =>
+    private static BbScannerLuminanceBuffer Ean13(int scale = 3) =>
         SyntheticImage.FromLinear(LinearEncoders.Ean13(Ean13Payload), scale, 80);
 
-    private static string? Decode(BbLuminanceBuffer frame, BbBarcodeFormat formats, bool stillImage = false)
+    private static string? Decode(BbScannerLuminanceBuffer frame, BbScannerBarcodeFormat formats, bool stillImage = false)
     {
         var options = stillImage ? BbScannerOptions.ForStillImages() : new BbScannerOptions();
         options.Formats = formats;
         options.DuplicateSuppressionWindow = TimeSpan.Zero;
 
-        using var decoder = new BbBarcodeDecoder(options);
+        using var decoder = new BbScannerBarcodeDecoder(options);
         return decoder.Decode(frame.View, suppressDuplicates: false)?.Text;
     }
 
@@ -57,7 +57,7 @@ public class RealWorldImageTests
         using var rotated = ImageTransforms.Rotate(symbol, degrees);
         using var frame = ImageTransforms.Frame(rotated, 640, 480);
 
-        Assert.AreEqual(QrPayload, Decode(frame, BbBarcodeFormat.QrCode));
+        Assert.AreEqual(QrPayload, Decode(frame, BbScannerBarcodeFormat.QrCode));
     }
 
     [TestMethod]
@@ -74,7 +74,7 @@ public class RealWorldImageTests
         using var rotated = ImageTransforms.Rotate(symbol, degrees);
         using var frame = ImageTransforms.Frame(rotated, 640, 480);
 
-        Assert.AreEqual(DataMatrixPayload, Decode(frame, BbBarcodeFormat.DataMatrix));
+        Assert.AreEqual(DataMatrixPayload, Decode(frame, BbScannerBarcodeFormat.DataMatrix));
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public class RealWorldImageTests
         using var rotated = ImageTransforms.Rotate(symbol, degrees);
         using var frame = ImageTransforms.Frame(rotated, 640, 480);
 
-        Assert.AreEqual(Code128Payload, Decode(frame, BbBarcodeFormat.Code128));
+        Assert.AreEqual(Code128Payload, Decode(frame, BbScannerBarcodeFormat.Code128));
     }
 
     [TestMethod]
@@ -99,7 +99,7 @@ public class RealWorldImageTests
         using var rotated = ImageTransforms.Rotate(symbol, 90);
         using var frame = ImageTransforms.Frame(rotated, 640, 480);
 
-        Assert.AreEqual(Ean13Payload, Decode(frame, BbBarcodeFormat.Ean13));
+        Assert.AreEqual(Ean13Payload, Decode(frame, BbScannerBarcodeFormat.Ean13));
     }
 
     [TestMethod]
@@ -116,12 +116,12 @@ public class RealWorldImageTests
         using var code128 = Code128();
         using var rotatedCode128 = ImageTransforms.Rotate(code128, degrees);
         using var code128Frame = ImageTransforms.Frame(rotatedCode128, 640, 480);
-        Assert.AreEqual(Code128Payload, Decode(code128Frame, BbBarcodeFormat.Code128));
+        Assert.AreEqual(Code128Payload, Decode(code128Frame, BbScannerBarcodeFormat.Code128));
 
         using var ean = Ean13();
         using var rotatedEan = ImageTransforms.Rotate(ean, degrees);
         using var eanFrame = ImageTransforms.Frame(rotatedEan, 640, 480);
-        Assert.AreEqual(Ean13Payload, Decode(eanFrame, BbBarcodeFormat.Ean13));
+        Assert.AreEqual(Ean13Payload, Decode(eanFrame, BbScannerBarcodeFormat.Ean13));
     }
 
     [TestMethod]
@@ -140,7 +140,7 @@ public class RealWorldImageTests
         using var symbol = Code128();
         using var rotated = ImageTransforms.Rotate(symbol, degrees);
         using var frame = ImageTransforms.Frame(rotated, 640, 480);
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Code128, DuplicateSuppressionWindow = TimeSpan.Zero });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = BbScannerBarcodeFormat.Code128, DuplicateSuppressionWindow = TimeSpan.Zero });
 
         var frames = 0;
         string? text = null;
@@ -160,9 +160,9 @@ public class RealWorldImageTests
         using var rotated = ImageTransforms.Rotate(symbol, 90);
         using var frame = ImageTransforms.Frame(rotated, 640, 480);
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.Ean13,
+            Formats = BbScannerBarcodeFormat.Ean13,
             TryVerticalLines = false,
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
@@ -178,12 +178,12 @@ public class RealWorldImageTests
         using var qr = Qr();
         using var tiltedQr = ImageTransforms.Tilt(qr, degrees);
         using var qrFrame = ImageTransforms.Frame(tiltedQr, 640, 480);
-        Assert.AreEqual(QrPayload, Decode(qrFrame, BbBarcodeFormat.QrCode));
+        Assert.AreEqual(QrPayload, Decode(qrFrame, BbScannerBarcodeFormat.QrCode));
 
         using var dm = DataMatrix();
         using var tiltedDm = ImageTransforms.Tilt(dm, degrees);
         using var dmFrame = ImageTransforms.Frame(tiltedDm, 640, 480);
-        Assert.AreEqual(DataMatrixPayload, Decode(dmFrame, BbBarcodeFormat.DataMatrix));
+        Assert.AreEqual(DataMatrixPayload, Decode(dmFrame, BbScannerBarcodeFormat.DataMatrix));
     }
 
     [TestMethod]
@@ -194,12 +194,12 @@ public class RealWorldImageTests
         using var qr = Qr();
         using var qrFrame = ImageTransforms.Frame(qr, 640, 480);
         SyntheticImage.AddNoise(qrFrame, amplitude, seed: 7);
-        Assert.AreEqual(QrPayload, Decode(qrFrame, BbBarcodeFormat.QrCode));
+        Assert.AreEqual(QrPayload, Decode(qrFrame, BbScannerBarcodeFormat.QrCode));
 
         using var dm = DataMatrix();
         using var dmFrame = ImageTransforms.Frame(dm, 640, 480);
         SyntheticImage.AddNoise(dmFrame, amplitude, seed: 7);
-        Assert.AreEqual(DataMatrixPayload, Decode(dmFrame, BbBarcodeFormat.DataMatrix));
+        Assert.AreEqual(DataMatrixPayload, Decode(dmFrame, BbScannerBarcodeFormat.DataMatrix));
     }
 
     [TestMethod]
@@ -208,11 +208,11 @@ public class RealWorldImageTests
         // A blank block thresholded against its own mean comes out half black, and a frame of
         // speckle costs an order of magnitude more time and finds nothing. This is what the
         // binariser's noise floor estimate exists to prevent.
-        using var frame = BbLuminanceBuffer.Rent(640, 480);
+        using var frame = BbScannerLuminanceBuffer.Rent(640, 480);
         frame.Pixels.Fill(220);
         SyntheticImage.AddNoise(frame, amplitude: 25, seed: 11);
 
-        using var binary = new BbHybridBinarizer().GetBlackMatrix(frame.View);
+        using var binary = new BbScannerHybridBinarizer().GetBlackMatrix(frame.View);
         Assert.IsNotNull(binary);
 
         var ink = 0;
@@ -240,12 +240,12 @@ public class RealWorldImageTests
         using var qr = Qr();
         using var blurredQr = ImageTransforms.Blur(qr, sigma);
         using var qrFrame = ImageTransforms.Frame(blurredQr, 640, 480);
-        Assert.AreEqual(QrPayload, Decode(qrFrame, BbBarcodeFormat.QrCode));
+        Assert.AreEqual(QrPayload, Decode(qrFrame, BbScannerBarcodeFormat.QrCode));
 
         using var dm = DataMatrix();
         using var blurredDm = ImageTransforms.Blur(dm, sigma);
         using var dmFrame = ImageTransforms.Frame(blurredDm, 640, 480);
-        Assert.AreEqual(DataMatrixPayload, Decode(dmFrame, BbBarcodeFormat.DataMatrix));
+        Assert.AreEqual(DataMatrixPayload, Decode(dmFrame, BbScannerBarcodeFormat.DataMatrix));
     }
 
     [TestMethod]
@@ -256,17 +256,17 @@ public class RealWorldImageTests
             using var qr = Qr();
             using var frame = ImageTransforms.Frame(qr, 640, 480);
             using var lit = ImageTransforms.LightingGradient(frame, left, right);
-            Assert.AreEqual(QrPayload, Decode(lit, BbBarcodeFormat.QrCode));
+            Assert.AreEqual(QrPayload, Decode(lit, BbScannerBarcodeFormat.QrCode));
 
             using var dm = DataMatrix();
             using var dmFrame = ImageTransforms.Frame(dm, 640, 480);
             using var dmLit = ImageTransforms.LightingGradient(dmFrame, left, right);
-            Assert.AreEqual(DataMatrixPayload, Decode(dmLit, BbBarcodeFormat.DataMatrix));
+            Assert.AreEqual(DataMatrixPayload, Decode(dmLit, BbScannerBarcodeFormat.DataMatrix));
 
             using var ean = Ean13();
             using var eanFrame = ImageTransforms.Frame(ean, 640, 480);
             using var eanLit = ImageTransforms.LightingGradient(eanFrame, left, right);
-            Assert.AreEqual(Ean13Payload, Decode(eanLit, BbBarcodeFormat.Ean13));
+            Assert.AreEqual(Ean13Payload, Decode(eanLit, BbScannerBarcodeFormat.Ean13));
         }
     }
 
@@ -279,7 +279,7 @@ public class RealWorldImageTests
         using var faded = ImageTransforms.Contrast(qr, dark, light);
         using var frame = ImageTransforms.Frame(faded, 640, 480, light);
 
-        Assert.AreEqual(QrPayload, Decode(frame, BbBarcodeFormat.QrCode));
+        Assert.AreEqual(QrPayload, Decode(frame, BbScannerBarcodeFormat.QrCode));
     }
 
     [TestMethod]
@@ -288,17 +288,17 @@ public class RealWorldImageTests
         using var qr = Qr();
         using var inverted = ImageTransforms.Invert(qr);
         using var frame = ImageTransforms.Frame(inverted, 640, 480, background: 0);
-        Assert.AreEqual(QrPayload, Decode(frame, BbBarcodeFormat.QrCode, stillImage: true));
+        Assert.AreEqual(QrPayload, Decode(frame, BbScannerBarcodeFormat.QrCode, stillImage: true));
 
         using var dm = DataMatrix();
         using var invertedDm = ImageTransforms.Invert(dm);
         using var dmFrame = ImageTransforms.Frame(invertedDm, 640, 480, background: 0);
-        Assert.AreEqual(DataMatrixPayload, Decode(dmFrame, BbBarcodeFormat.DataMatrix, stillImage: true));
+        Assert.AreEqual(DataMatrixPayload, Decode(dmFrame, BbScannerBarcodeFormat.DataMatrix, stillImage: true));
 
         using var c128 = Code128();
         using var invertedLinear = ImageTransforms.Invert(c128);
         using var linearFrame = ImageTransforms.Frame(invertedLinear, 640, 480, background: 0);
-        Assert.AreEqual(Code128Payload, Decode(linearFrame, BbBarcodeFormat.Code128, stillImage: true));
+        Assert.AreEqual(Code128Payload, Decode(linearFrame, BbScannerBarcodeFormat.Code128, stillImage: true));
     }
 
     [TestMethod]
@@ -310,7 +310,7 @@ public class RealWorldImageTests
         using var inverted = ImageTransforms.Invert(qr);
         using var frame = ImageTransforms.Frame(inverted, 640, 480, background: 0);
 
-        Assert.IsNull(Decode(frame, BbBarcodeFormat.QrCode));
+        Assert.IsNull(Decode(frame, BbScannerBarcodeFormat.QrCode));
     }
 
     [TestMethod]
@@ -323,7 +323,7 @@ public class RealWorldImageTests
         using var scaled = ImageTransforms.Scale(qr, factor);
         using var frame = ImageTransforms.Frame(scaled, 640, 480);
 
-        Assert.AreEqual(QrPayload, Decode(frame, BbBarcodeFormat.QrCode));
+        Assert.AreEqual(QrPayload, Decode(frame, BbScannerBarcodeFormat.QrCode));
     }
 
     [TestMethod]
@@ -332,16 +332,16 @@ public class RealWorldImageTests
         foreach (var (x, y) in new[] { (20, 20), (380, 260), (20, 260), (380, 20) })
         {
             using var qr = Qr(3);
-            using var frame = BbLuminanceBuffer.Rent(640, 480);
+            using var frame = BbScannerLuminanceBuffer.Rent(640, 480);
             frame.Pixels.Fill(255);
             ImageTransforms.Paste(qr, frame, x, y);
-            Assert.AreEqual(QrPayload, Decode(frame, BbBarcodeFormat.QrCode));
+            Assert.AreEqual(QrPayload, Decode(frame, BbScannerBarcodeFormat.QrCode));
 
             using var dm = DataMatrix(4);
-            using var dmFrame = BbLuminanceBuffer.Rent(640, 480);
+            using var dmFrame = BbScannerLuminanceBuffer.Rent(640, 480);
             dmFrame.Pixels.Fill(255);
             ImageTransforms.Paste(dm, dmFrame, x, y);
-            Assert.AreEqual(DataMatrixPayload, Decode(dmFrame, BbBarcodeFormat.DataMatrix));
+            Assert.AreEqual(DataMatrixPayload, Decode(dmFrame, BbScannerBarcodeFormat.DataMatrix));
         }
     }
 
@@ -352,17 +352,17 @@ public class RealWorldImageTests
         using var frame = ImageTransforms.Frame(qr, 640, 480);
         ImageTransforms.Clutter(frame, seed: 3, (640 - qr.Width) / 2, (480 - qr.Height) / 2, qr.Width, qr.Height);
 
-        Assert.AreEqual(QrPayload, Decode(frame, BbBarcodeFormat.QrCode));
+        Assert.AreEqual(QrPayload, Decode(frame, BbScannerBarcodeFormat.QrCode));
     }
 
     [TestMethod]
     public void ACombinationOfEverydayDefectsStillDecodes()
     {
         // Slightly tilted, slightly out of focus, unevenly lit and noisy: an ordinary photograph.
-        foreach (var (symbol, format, expected) in new (Func<BbLuminanceBuffer>, BbBarcodeFormat, string)[]
+        foreach (var (symbol, format, expected) in new (Func<BbScannerLuminanceBuffer>, BbScannerBarcodeFormat, string)[]
                  {
-                     (() => Qr(), BbBarcodeFormat.QrCode, QrPayload),
-                     (() => DataMatrix(), BbBarcodeFormat.DataMatrix, DataMatrixPayload),
+                     (() => Qr(), BbScannerBarcodeFormat.QrCode, QrPayload),
+                     (() => DataMatrix(), BbScannerBarcodeFormat.DataMatrix, DataMatrixPayload),
                  })
         {
             using var image = symbol();
@@ -402,15 +402,15 @@ public class RealWorldImageTests
 
         var options = new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.QrCode,
+            Formats = BbScannerBarcodeFormat.QrCode,
             DuplicateSuppressionWindow = TimeSpan.Zero,
         };
 
-        using var decoder = new BbBarcodeDecoder(options);
-        Assert.AreEqual(QrPayload, decoder.Decode(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32, false)?.Text);
-        Assert.AreEqual(QrPayload, decoder.Decode(bgra, frame.Width, frame.Height, BbPixelFormat.Bgra32, false)?.Text);
-        Assert.AreEqual(QrPayload, decoder.Decode(rgb, frame.Width, frame.Height, BbPixelFormat.Rgb24, false)?.Text);
-        Assert.AreEqual(QrPayload, decoder.Decode(frame.Pixels.ToArray(), frame.Width, frame.Height, BbPixelFormat.Gray8, false)?.Text);
+        using var decoder = new BbScannerBarcodeDecoder(options);
+        Assert.AreEqual(QrPayload, decoder.Decode(rgba, frame.Width, frame.Height, BbScannerPixelFormat.Rgba32, false)?.Text);
+        Assert.AreEqual(QrPayload, decoder.Decode(bgra, frame.Width, frame.Height, BbScannerPixelFormat.Bgra32, false)?.Text);
+        Assert.AreEqual(QrPayload, decoder.Decode(rgb, frame.Width, frame.Height, BbScannerPixelFormat.Rgb24, false)?.Text);
+        Assert.AreEqual(QrPayload, decoder.Decode(frame.Pixels.ToArray(), frame.Width, frame.Height, BbScannerPixelFormat.Gray8, false)?.Text);
     }
 
     [TestMethod]
@@ -431,8 +431,8 @@ public class RealWorldImageTests
 
         foreach (var (width, height) in shapes)
         {
-            using var decoder = new BbBarcodeDecoder(options);
-            using var frame = BbLuminanceBuffer.Rent(width, height);
+            using var decoder = new BbScannerBarcodeDecoder(options);
+            using var frame = BbScannerLuminanceBuffer.Rent(width, height);
 
             for (var attempt = 0; attempt < 12; attempt++)
             {
@@ -471,12 +471,12 @@ public class RealWorldImageTests
         // A camera that renegotiates its resolution mid-stream hands the same decoder frames of
         // different shapes, so every cached buffer has to grow and shrink safely.
         var options = new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.Zero };
-        using var decoder = new BbBarcodeDecoder(options);
+        using var decoder = new BbScannerBarcodeDecoder(options);
 
         foreach (var (width, height) in new[] { (320, 240), (640, 480), (240, 320), (1280, 720), (64, 48), (640, 480) })
         {
             using var qr = Qr(Math.Max(2, Math.Min(width, height) / 40));
-            using var frame = BbLuminanceBuffer.Rent(width, height);
+            using var frame = BbScannerLuminanceBuffer.Rent(width, height);
             frame.Pixels.Fill(255);
             ImageTransforms.Paste(qr, frame, Math.Max(0, (width - qr.Width) / 2), Math.Max(0, (height - qr.Height) / 2));
 
@@ -497,8 +497,8 @@ public class RealWorldImageTests
         var options = BbScannerOptions.ForStillImages();
         options.DuplicateSuppressionWindow = TimeSpan.Zero;
 
-        using var decoder = new BbBarcodeDecoder(options);
-        using var frame = BbLuminanceBuffer.Rent(320, 240);
+        using var decoder = new BbScannerBarcodeDecoder(options);
+        using var frame = BbScannerLuminanceBuffer.Rent(320, 240);
 
         for (var attempt = 0; attempt < 200; attempt++)
         {

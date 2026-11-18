@@ -199,20 +199,20 @@ public class MotionLabTests
     [TestMethod]
     public async Task SampleEase_ReturnsACurveThatStartsAtZeroAndEndsAtOne()
     {
-        foreach (var ease in Enum.GetValues<BmEase>())
+        foreach (var ease in Enum.GetValues<BmotionEase>())
         {
             var curve = await BmotionMotionLab.SampleEaseAsync(ease);
 
-            Assert.AreEqual(11, curve.Length, $"BmEase.{ease} sampled {curve.Length} points.");
-            Assert.AreEqual(0, curve[0], 0.02, $"BmEase.{ease} does not start at 0.");
-            Assert.AreEqual(1, curve[^1], 0.02, $"BmEase.{ease} does not end at 1.");
+            Assert.AreEqual(11, curve.Length, $"BmotionEase.{ease} sampled {curve.Length} points.");
+            Assert.AreEqual(0, curve[0], 0.02, $"BmotionEase.{ease} does not start at 0.");
+            Assert.AreEqual(1, curve[^1], 0.02, $"BmotionEase.{ease} does not end at 1.");
         }
     }
 
     [TestMethod]
     public async Task SampleEase_Linear_IsTheIdentity()
     {
-        var curve = await BmotionMotionLab.SampleEaseAsync(BmEase.Linear);
+        var curve = await BmotionMotionLab.SampleEaseAsync(BmotionEase.Linear);
 
         for (int i = 0; i < curve.Length; i++)
         {
@@ -223,8 +223,8 @@ public class MotionLabTests
     [TestMethod]
     public async Task SampleEase_HonoursTheRequestedNumberOfPoints()
     {
-        Assert.AreEqual(5, (await BmotionMotionLab.SampleEaseAsync(BmEase.Out, 5)).Length);
-        Assert.AreEqual(21, (await BmotionMotionLab.SampleEaseAsync(BmEase.Out, 21)).Length);
+        Assert.AreEqual(5, (await BmotionMotionLab.SampleEaseAsync(BmotionEase.Out, 5)).Length);
+        Assert.AreEqual(21, (await BmotionMotionLab.SampleEaseAsync(BmotionEase.Out, 21)).Length);
     }
 
     /// <summary>
@@ -238,7 +238,7 @@ public class MotionLabTests
     [DataRow(-3)]
     public async Task SampleEase_FewerThanTwoPoints_StillSamplesTheEnds(int points)
     {
-        var curve = await BmotionMotionLab.SampleEaseAsync(BmEase.Linear, points);
+        var curve = await BmotionMotionLab.SampleEaseAsync(BmotionEase.Linear, points);
 
         Assert.AreEqual(2, curve.Length);
         Assert.AreEqual(0, curve[0], 0.02);
@@ -410,11 +410,11 @@ public class MotionLabTests
     [TestMethod]
     public async Task AnalyzePlayback_PerPropertyTransitionsMirrorsAndRepeatDelays_AreRecorded()
     {
-        var perProperty = new BmTween { Duration = 0.4, Properties = new() { ["opacity"] = new BmTween { Duration = 0.2 } } };
-        var mirrored = new BmTween { Duration = 0.4, Repeat = BmRepeat.Mirror(2) };
-        var delayed = new BmTween { Duration = 0.4, Repeat = BmRepeat.Loop(2, delay: 0.3) };
+        var perProperty = new BmotionTween { Duration = 0.4, Properties = new() { ["opacity"] = new BmotionTween { Duration = 0.2 } } };
+        var mirrored = new BmotionTween { Duration = 0.4, Repeat = BmotionRepeat.Mirror(2) };
+        var delayed = new BmotionTween { Duration = 0.4, Repeat = BmotionRepeat.Loop(2, delay: 0.3) };
 
-        foreach (var (transition, properties, cause) in new (BmTransition, string[], string)[]
+        foreach (var (transition, properties, cause) in new (BmotionTransition, string[], string)[]
         {
             (perProperty, ["x", "opacity"], "per-property"),
             (mirrored, ["x"], "mirrored"),
@@ -438,14 +438,14 @@ public class MotionLabTests
     [TestMethod]
     public async Task AnalyzePlayback_OnUpdateEndlessReverseAndLongRecordings_StayOnTheFrameLoop()
     {
-        var onUpdate = new BmTween { Duration = 0.4, OnUpdate = _ => { } };
-        var endlessReverse = new BmTween { Duration = 0.4, Repeat = BmRepeat.Reverse() };
-        var tooLong = new BmTween { Duration = 4, Repeat = BmRepeat.Mirror(2) };
+        var onUpdate = new BmotionTween { Duration = 0.4, OnUpdate = _ => { } };
+        var endlessReverse = new BmotionTween { Duration = 0.4, Repeat = BmotionRepeat.Reverse() };
+        var tooLong = new BmotionTween { Duration = 4, Repeat = BmotionRepeat.Mirror(2) };
 
-        foreach (var (transition, cause) in new (BmTransition, string)[]
+        foreach (var (transition, cause) in new (BmotionTransition, string)[]
         {
             (onUpdate, "OnUpdate"),
-            (endlessReverse, "BmRepeat.Reverse"),
+            (endlessReverse, "BmotionRepeat.Reverse"),
             (tooLong, "10 seconds"),
         })
         {
@@ -539,9 +539,9 @@ public class MotionLabTests
     public async Task TheLibrarysSpringAnalysis_AgreesWithTheEngineRunOffScreen(string spec)
     {
         // Two independent measurements of one spring: the lab plays it through a whole engine and records the frames,
-        // BmSpring.Analyze steps the driver alone. They must agree on when it rests and how far it overshoots.
+        // BmotionSpring.Analyze steps the driver alone. They must agree on when it rests and how far it overshoots.
         var lab = await BmotionMotionLab.SimulateAsync(spec, 0, 100);
-        var analysis = ((BmSpring)BmotionTransitionSpec.Parse(spec).Transition!).Analyze(0, 100);
+        var analysis = ((BmotionSpring)BmotionTransitionSpec.Parse(spec).Transition!).Analyze(0, 100);
 
         Assert.AreEqual(analysis.SettlingTime, lab.SettleSeconds, 2.0 / 60, $"{spec}: analysis {analysis.SettlingTime}s, engine {lab.SettleSeconds}s");
         Assert.AreEqual(analysis.Overshoot * 100, lab.OvershootPercent, 1, $"{spec}: analysis {analysis.Overshoot:P2}, engine {lab.OvershootPercent}%");

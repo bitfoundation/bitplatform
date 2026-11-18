@@ -150,7 +150,7 @@ public class ExtensibilityTests : BunitContext
         cut.Find(".bev-palette input").Input(">" + FailingCommandExtension.Title);
         cut.Find(".bev-palette").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
 
-        cut.WaitForAssertion(() => Assert.AreEqual("Command failed: refresh failed for token " + BevRedactor.RedactedValue, cut.Find(".bev-notification").TextContent));
+        cut.WaitForAssertion(() => Assert.AreEqual("Command failed: refresh failed for token " + BevToolsRedactor.RedactedValue, cut.Find(".bev-notification").TextContent));
     }
 }
 
@@ -169,14 +169,14 @@ public sealed class MoneyStore
     }
 }
 
-public sealed class MoneyStateProvider : IBevStateProvider
+public sealed class MoneyStateProvider : IBevToolsStateProvider
 {
     private readonly MoneyStore _store;
 
     public MoneyStateProvider(MoneyStore store)
     {
         _store = store;
-        _store.Changed += action => Changed?.Invoke(new BevStateChangeInfo(action));
+        _store.Changed += action => Changed?.Invoke(new BevToolsStateChangeInfo(action));
     }
 
     public string Name => "Acme money";
@@ -185,7 +185,7 @@ public sealed class MoneyStateProvider : IBevStateProvider
 
     public object? GetSnapshot() => new { _store.Amount };
 
-    public event Action<BevStateChangeInfo>? Changed;
+    public event Action<BevToolsStateChangeInfo>? Changed;
 }
 
 public sealed class AcmeBevToolsExtension : IBevToolsExtension
@@ -200,7 +200,7 @@ public sealed class AcmeBevToolsExtension : IBevToolsExtension
         .AddValueFormatter(typeof(Money), v => ((Money)v).Amount.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US")))
         .HideComponentsInNamespace("Acme.Internal");
 
-    private sealed class TooMuchMoneyRule : IBevDiagnosticRule
+    private sealed class TooMuchMoneyRule : IBevToolsDiagnosticRule
     {
         public string Id => "acme.too-much-money";
 
@@ -208,13 +208,13 @@ public sealed class AcmeBevToolsExtension : IBevToolsExtension
 
         public string Description => "The Acme store holds an implausible amount.";
 
-        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        public IEnumerable<BevToolsDiagnostic> Evaluate(IBevToolsDiagnosticContext context)
         {
             foreach (var change in context.Events.Where(e => e.Kind == BevToolsEventKind.StateChange && e.Category == "state:Acme money"))
             {
                 if (change.Detail?.Contains("1000000", StringComparison.Ordinal) == true)
                 {
-                    yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Warning, "Acme store holds 1,000,000", change.Detail, "Check the import.", Fingerprint: Id);
+                    yield return new BevToolsDiagnostic(Id, BevToolsDiagnosticSeverity.Warning, "Acme store holds 1,000,000", change.Detail, "Check the import.", Fingerprint: Id);
                 }
             }
         }

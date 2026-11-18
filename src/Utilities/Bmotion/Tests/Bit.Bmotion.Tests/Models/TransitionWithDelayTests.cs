@@ -1,7 +1,7 @@
 namespace Bit.Bmotion.Tests.Models;
 
 /// <summary>
-/// Tests for <see cref="BmTransition.WithDelay"/>: it must produce an independent copy that keeps
+/// Tests for <see cref="BmotionTransition.WithDelay"/>: it must produce an independent copy that keeps
 /// every other knob (including the per-type ones) so a shared transition can drive staggered
 /// elements without them fighting over its delay.
 /// </summary>
@@ -22,24 +22,24 @@ public class TransitionWithDelayTests
     [TestMethod]
     public void WithDelay_PreservesTweenSpecifics()
     {
-        var original = new BmTween
+        var original = new BmotionTween
         {
             Duration = 1.25,
-            Ease = BmEase.CircInOut,
+            Ease = BmotionEase.CircInOut,
             Bezier = [0.1, 0.2, 0.3, 0.4],
             Steps = 4,
-            StepJump = BmStepJump.Start,
+            StepJump = BmotionStepJump.Start,
             Times = [0, 0.5, 1],
-            Eases = [BmEase.BackOut],
+            Eases = [BmotionEase.BackOut],
         };
 
-        var copy = (BmTween)original.WithDelay(0.5);
+        var copy = (BmotionTween)original.WithDelay(0.5);
 
         Assert.AreEqual(1.25, copy.Duration);
-        Assert.AreEqual(BmEase.CircInOut, copy.Ease);
+        Assert.AreEqual(BmotionEase.CircInOut, copy.Ease);
         CollectionAssert.AreEqual(original.Bezier, copy.Bezier);
         Assert.AreEqual(4, copy.Steps);
-        Assert.AreEqual(BmStepJump.Start, copy.StepJump);
+        Assert.AreEqual(BmotionStepJump.Start, copy.StepJump);
         CollectionAssert.AreEqual(original.Times, copy.Times);
         CollectionAssert.AreEqual(original.Eases, copy.Eases);
     }
@@ -47,7 +47,7 @@ public class TransitionWithDelayTests
     [TestMethod]
     public void WithDelay_PreservesSpringSpecifics()
     {
-        var original = new BmSpring
+        var original = new BmotionSpring
         {
             Stiffness = 321,
             Damping = 21,
@@ -59,7 +59,7 @@ public class TransitionWithDelayTests
             Duration = 0.75,
         };
 
-        var copy = (BmSpring)original.WithDelay(0.2);
+        var copy = (BmotionSpring)original.WithDelay(0.2);
 
         Assert.AreEqual(321, copy.Stiffness);
         Assert.AreEqual(21, copy.Damping);
@@ -74,7 +74,7 @@ public class TransitionWithDelayTests
     [TestMethod]
     public void WithDelay_PreservesInertiaSpecifics()
     {
-        var original = new BmInertia
+        var original = new BmotionInertia
         {
             Velocity = 500,
             TimeConstant = 350,
@@ -84,7 +84,7 @@ public class TransitionWithDelayTests
             Max = 10,
         };
 
-        var copy = (BmInertia)original.WithDelay(0.3);
+        var copy = (BmotionInertia)original.WithDelay(0.3);
 
         Assert.AreEqual(500, copy.Velocity);
         Assert.AreEqual(350, copy.TimeConstant);
@@ -97,10 +97,10 @@ public class TransitionWithDelayTests
     [TestMethod]
     public void WithDelay_PreservesBaseFields()
     {
-        var original = new BmTween
+        var original = new BmotionTween
         {
-            ColorSpace = BmColorSpace.Oklab,
-            Repeat = BmRepeat.Mirror(),
+            ColorSpace = BmotionColorSpace.Oklab,
+            Repeat = BmotionRepeat.Mirror(),
             StaggerChildren = 0.05,
             DelayChildren = 0.2,
             Properties = new() { ["opacity"] = Bm.Tween(0.1) },
@@ -108,7 +108,7 @@ public class TransitionWithDelayTests
 
         var copy = original.WithDelay(0.4);
 
-        Assert.AreEqual(BmColorSpace.Oklab, copy.ColorSpace);
+        Assert.AreEqual(BmotionColorSpace.Oklab, copy.ColorSpace);
         Assert.AreEqual(original.Repeat, copy.Repeat);
         Assert.AreEqual(0.05, copy.StaggerChildren);
         Assert.AreEqual(0.2, copy.DelayChildren);

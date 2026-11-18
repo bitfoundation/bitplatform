@@ -1,6 +1,6 @@
 ﻿/* Styling for the Bmotion samples - enough to make the motion easy to see. The library has no stylesheet of its own to
    style anything with: _content/Bit.Bmotion/bit-bmotion.css, which the web hosts link before this file, only plays the
-   enter animations prerendered with BmPrerenderMode.Animate. */
+   enter animations prerendered with BmotionPrerenderMode.Animate. */
 
 :root {
     --primary: #1276c6;

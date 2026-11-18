@@ -79,7 +79,7 @@ public class NeutralNoneTests
         await using var engine = new BmotionAnimationEngine(interop);
         engine.RegisterElement("el", Values(("filter", "none")));
 
-        await engine.AnimateToAsync("el", Values(("filter", "blur(8px)")), Bm.Tween(0.2, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("filter", "blur(8px)")), Bm.Tween(0.2, BmotionEase.Linear).ToConfig());
 
         var written = new List<string>();
         for (int i = 0; i <= 14; i++)
@@ -95,7 +95,7 @@ public class NeutralNoneTests
         await using var engine = new BmotionAnimationEngine(interop);
         engine.RegisterElement("el", Values(("filter", "none")));
 
-        await engine.AnimateToAsync("el", Values(("filter", new[] { "none", "blur(6px)", "none" })), Bm.Tween(0.2, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("filter", new[] { "none", "blur(6px)", "none" })), Bm.Tween(0.2, BmotionEase.Linear).ToConfig());
 
         var written = new List<string>();
         for (int i = 0; i <= 16; i++)

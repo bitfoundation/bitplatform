@@ -7,8 +7,8 @@ namespace Bit.Bmotion.Demo.Server.Services;
 
 /// <summary>
 /// Reads the XML documentation the Bit.Bmotion build emits next to its assembly and flattens each
-/// entry into plain text: <c>&lt;see cref="T:Bit.Bmotion.BmSpring"/&gt;</c> becomes
-/// <c>BmSpring</c>, <c>&lt;c&gt;</c> spans become their content, and paragraphs become blank
+/// entry into plain text: <c>&lt;see cref="T:Bit.Bmotion.BmotionSpring"/&gt;</c> becomes
+/// <c>BmotionSpring</c>, <c>&lt;c&gt;</c> spans become their content, and paragraphs become blank
 /// lines. That text is the same prose a developer reads in IntelliSense, which makes it the most
 /// accurate answer an MCP client can get about a member - there is no second copy to keep in sync.
 /// </summary>
@@ -155,7 +155,7 @@ public static partial class BmotionXmlDocs
         }
     }
 
-    /// <summary>Turns a cref such as "T:Bit.Bmotion.BmSpring.Stiffness" into "BmSpring.Stiffness".</summary>
+    /// <summary>Turns a cref such as "T:Bit.Bmotion.BmotionSpring.Stiffness" into "BmotionSpring.Stiffness".</summary>
     private static string Reference(XElement element)
     {
         var target = element.Attribute("cref")?.Value ?? element.Attribute("langword")?.Value ?? element.Value;
@@ -171,7 +171,7 @@ public static partial class BmotionXmlDocs
         var arguments = target.IndexOf('(', StringComparison.Ordinal);
         if (arguments > 0) target = target[..arguments];
 
-        // Drop the arity marker of a generic type ("BmValue`1" -> "BmValue") or of a generic method,
+        // Drop the arity marker of a generic type ("BmotionValue`1" -> "BmotionValue") or of a generic method,
         // which spells its own with two backticks ("Map``1" -> "Map"); matching one backtick there
         // would leave the other behind and rename the member to "Map`". Only the marker: the
         // cref of a member on a generic type carries it in the middle, as
@@ -195,7 +195,7 @@ public static partial class BmotionXmlDocs
     private static partial Regex ParagraphBreakRegex();
 
     /// <summary>
-    /// The arity marker in a documentation id: the "`1" of a generic type's "BmValue`1", and the
+    /// The arity marker in a documentation id: the "`1" of a generic type's "BmotionValue`1", and the
     /// "``1" a generic method writes its own with.
     /// </summary>
     [GeneratedRegex(@"`{1,2}\d+")]

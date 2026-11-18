@@ -12,7 +12,7 @@ public class NumericKeyframesDriverTests
         var log = new List<double>();
         var driver = new BmotionNumericKeyframesDriver(
             [0, 100],
-            new BmotionTransitionConfig { Duration = 0.3, Ease = BmEase.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEase.Linear },
             v => log.Add(v));
 
         driver.Tick(0);   // t=0   → 0
@@ -30,7 +30,7 @@ public class NumericKeyframesDriverTests
         var log = new List<double>();
         var driver = new BmotionNumericKeyframesDriver(
             [0, 100],
-            new BmotionTransitionConfig { Duration = 0.3, Ease = BmEase.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEase.Linear },
             v => log.Add(v));
 
         driver.Tick(0);
@@ -49,7 +49,7 @@ public class NumericKeyframesDriverTests
         // times automatically: [0, 0.5, 1.0]
         var driver = new BmotionNumericKeyframesDriver(
             [0, 50, 100],
-            new BmotionTransitionConfig { Duration = 0.4, Ease = BmEase.Linear },
+            new BmotionTransitionConfig { Duration = 0.4, Ease = BmotionEase.Linear },
             v => log.Add(v));
 
         driver.Tick(0);   // t=0   → frame[0] = 0
@@ -70,7 +70,7 @@ public class NumericKeyframesDriverTests
         // First segment covers t=0..0.8, second 0.8..1.0
         var driver = new BmotionNumericKeyframesDriver(
             [0, 80, 100],
-            new BmotionTransitionConfig { Duration = 0.4, Ease = BmEase.Linear, Times = [0.0, 0.8, 1.0] },
+            new BmotionTransitionConfig { Duration = 0.4, Ease = BmotionEase.Linear, Times = [0.0, 0.8, 1.0] },
             v => log.Add(v));
 
         driver.Tick(0);   // t=0   → 0
@@ -113,7 +113,7 @@ public class NumericKeyframesDriverTests
         var log = new List<double>();
         var driver = new BmotionNumericKeyframesDriver(
             [0, 100],
-            new BmotionTransitionConfig { Duration = 0.3, Ease = BmEase.Linear, Repeat = 1 },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEase.Linear, Repeat = 1 },
             v => log.Add(v));
 
         driver.Tick(0);
@@ -133,9 +133,9 @@ public class NumericKeyframesDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmEase.Linear,
+                Ease = BmotionEase.Linear,
                 Repeat = 1,
-                RepeatType = BmRepeatType.Mirror,
+                RepeatType = BmotionRepeatType.Mirror,
             },
             v => log.Add(v));
 
@@ -156,9 +156,9 @@ public class NumericKeyframesDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmEase.Linear,
+                Ease = BmotionEase.Linear,
                 Repeat = 1,
-                RepeatType = BmRepeatType.Reverse,
+                RepeatType = BmotionRepeatType.Reverse,
             },
             v => log.Add(v));
 
@@ -180,9 +180,9 @@ public class NumericKeyframesDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmEase.Linear,
+                Ease = BmotionEase.Linear,
                 Repeat = 1,
-                RepeatType = BmRepeatType.Reverse,
+                RepeatType = BmotionRepeatType.Reverse,
             },
             v => log.Add(v));
 
@@ -255,7 +255,7 @@ public class ColorKeyframesDriverTests
         string? lastValue = null;
         var driver = new BmotionColorKeyframesDriver(
             ["#000000", "#ffffff"],
-            new BmotionTransitionConfig { Duration = 0.3, Ease = BmEase.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEase.Linear },
             v => lastValue = v);
 
         driver.Tick(0);
@@ -270,7 +270,7 @@ public class ColorKeyframesDriverTests
         string? lastValue = null;
         var driver = new BmotionColorKeyframesDriver(
             ["#000000", "#ff0000", "#0000ff"],
-            new BmotionTransitionConfig { Duration = 0.4, Ease = BmEase.Linear },
+            new BmotionTransitionConfig { Duration = 0.4, Ease = BmotionEase.Linear },
             v => lastValue = v);
 
         driver.Tick(0);
@@ -328,9 +328,9 @@ public class ColorKeyframesDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmEase.Linear,
+                Ease = BmotionEase.Linear,
                 Repeat = 1,
-                RepeatType = BmRepeatType.Mirror,
+                RepeatType = BmotionRepeatType.Mirror,
             },
             v => lastValue = v);
 
@@ -352,9 +352,9 @@ public class ColorKeyframesDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmEase.Linear,
+                Ease = BmotionEase.Linear,
                 Repeat = 1,
-                RepeatType = BmRepeatType.Reverse,
+                RepeatType = BmotionRepeatType.Reverse,
             },
             v => lastValue = v);
 
@@ -374,8 +374,8 @@ public class ColorKeyframesDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmEase.Linear,
-                RepeatType = BmRepeatType.Reverse,
+                Ease = BmotionEase.Linear,
+                RepeatType = BmotionRepeatType.Reverse,
             },
             v => lastValue = v);
 
@@ -394,9 +394,9 @@ public class ColorKeyframesDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmEase.Linear,
+                Ease = BmotionEase.Linear,
                 Repeat = 1,
-                RepeatType = BmRepeatType.Reverse,
+                RepeatType = BmotionRepeatType.Reverse,
             },
             v => lastValue = v);
 
@@ -418,8 +418,8 @@ public class ColorKeyframesDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.4,
-                Ease = BmEase.BackOut,
-                Eases = [BmEase.Linear, BmEase.Linear],
+                Ease = BmotionEase.BackOut,
+                Eases = [BmotionEase.Linear, BmotionEase.Linear],
             },
             v => log.Add(v));
 
@@ -442,8 +442,8 @@ public class ColorKeyframesDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.4,
-                Ease = BmEase.BackOut,
-                Eases = [BmEase.Linear],
+                Ease = BmotionEase.BackOut,
+                Eases = [BmotionEase.Linear],
             },
             v => log.Add(v));
 
@@ -464,10 +464,10 @@ public class ColorKeyframesDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.4,
-                Ease = BmEase.Linear,
-                Eases = [BmEase.Linear, BmEase.CircIn],
+                Ease = BmotionEase.Linear,
+                Eases = [BmotionEase.Linear, BmotionEase.CircIn],
                 Repeat = 1,
-                RepeatType = BmRepeatType.Mirror,
+                RepeatType = BmotionRepeatType.Mirror,
             },
             v => log.Add(v));
 
@@ -487,8 +487,8 @@ public class ColorKeyframesDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmEase.BackOut,
-                Eases = [BmEase.Linear],
+                Ease = BmotionEase.BackOut,
+                Eases = [BmotionEase.Linear],
             },
             v => lastValue = v);
 

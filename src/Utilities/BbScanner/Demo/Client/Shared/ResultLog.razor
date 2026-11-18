@@ -43,7 +43,7 @@
             </table>
         </div>
         <p class="bb-card-desc">
-            Each row is one <code>BbBarcodeResult</code>. <em>Position</em> is its <code>BoundingBox</code> in the
+            Each row is one <code>BbScannerBarcodeResult</code>. <em>Position</em> is its <code>BoundingBox</code> in the
             pixels of the frame it was read from: left, top · width×height. <em>Details</em> is its
             <code>Metadata</code>, where the symbology carries any: the symbol version, the error correction
             level (EC), how many codewords were repaired - a print quality signal - the ECI character set, GS1
@@ -55,7 +55,7 @@
 @code {
     /// <summary>The results to display, newest first.</summary>
     [Parameter]
-    public IReadOnlyList<BbBarcodeResult> Results { get; set; } = [];
+    public IReadOnlyList<BbScannerBarcodeResult> Results { get; set; } = [];
 
     /// <summary>Raised when the user clears the log.</summary>
     [Parameter]
@@ -63,10 +63,10 @@
 
     private Task Clear() => OnClear.InvokeAsync();
 
-    private static string Describe(BbScanRect box) =>
+    private static string Describe(BbScannerScanRect box) =>
         box.Width <= 0 ? "-" : $"{box.X:0}, {box.Y:0} · {box.Width:0}×{box.Height:0}";
 
-    private static string Describe(BbBarcodeResult result)
+    private static string Describe(BbScannerBarcodeResult result)
     {
         if (result.Metadata is not { } metadata)
         {
@@ -104,7 +104,7 @@
         if (metadata.StructuredAppendIndex is { } index)
         {
             // Data Matrix numbers its symbols from 1, QR Code and PDF417 from 0.
-            var part = result.Format == BbBarcodeFormat.DataMatrix ? index : index + 1;
+            var part = result.Format == BbScannerBarcodeFormat.DataMatrix ? index : index + 1;
             parts.Add(metadata.StructuredAppendCount is { } count ? $"part {part} of {count}" : $"part {part}");
         }
 

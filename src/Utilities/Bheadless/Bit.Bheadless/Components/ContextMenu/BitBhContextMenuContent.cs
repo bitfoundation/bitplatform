@@ -35,7 +35,7 @@ public class BitBhContextMenuContent : BitBhMenuContentBase, IBitBhPointAnchored
     }
 
     private protected override BitBhMenuLevel CreateLevel(Action refresh)
-        => new((IBitBhMenuRoot?)MenuContext?.Menu ?? DetachedMenuRoot.Instance, null, null, ContentId, Interop, refresh);
+        => new((IBitBhMenuRoot?)MenuContext?.Menu ?? BitBhDetachedMenuRoot.Instance, null, null, ContentId, Interop, refresh);
 
     private protected override BitBhMenuFocus ConsumeFocusIntent() => MenuContext?.Menu.ConsumeFocusIntent() ?? BitBhMenuFocus.Container;
 

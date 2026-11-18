@@ -29,7 +29,7 @@ public class BatchAttributionTests : BunitContext
     {
         // The queue only holds batches while render_diff measurements are expected; on .NET 10 the first real batch
         // sets that, so state it here rather than depend on which test rendered through the framework meters first.
-        ActivityObserver.MarkBatchMetricsObserved();
+        BevToolsActivityObserver.MarkBatchMetricsObserved();
         var cut = Render<ParentComponent>();
         var tracker = Session.RenderTracker;
 
@@ -83,7 +83,7 @@ public class BatchAttributionTests : BunitContext
     [TestMethod]
     public void Queue_overflow_disables_attribution_instead_of_shifting_measurements()
     {
-        ActivityObserver.MarkBatchMetricsObserved();
+        BevToolsActivityObserver.MarkBatchMetricsObserved();
         using var context = new BunitContext();
         context.Services.AddBitBevToolsServices(options =>
         {
@@ -93,7 +93,7 @@ public class BatchAttributionTests : BunitContext
         });
         var session = context.Services.GetRequiredService<BevToolsSession>();
         var cut = context.Render<ParentComponent>();
-        var batches = new List<BevRenderBatchInfo>();
+        var batches = new List<BevToolsRenderBatchInfo>();
 
         for (var i = 0; i < 6; i++)
         {
@@ -127,7 +127,7 @@ public class BatchAttributionTests : BunitContext
         Render<PanelLikeComponent>();
         var before = Session.Timeline.Snapshot().Count(e => e.Kind == BevToolsEventKind.UiEvent);
 
-        Emit("Event onclick -> Bit.BevTools.BevTimelinePanel.Select");
+        Emit("Event onclick -> Bit.BevTools.BevToolsTimelinePanel.Select");
         Emit("Event onclick -> Bit.BevTools.BevToolsPanel.Toggle");
         Assert.AreEqual(before, Session.Timeline.Snapshot().Count(e => e.Kind == BevToolsEventKind.UiEvent));
 
@@ -164,8 +164,8 @@ public class BatchAttributionTests : BunitContext
     /// <summary>Mimics ComponentsActivitySource failing an event: error.type tag and error status, set when stopping.</summary>
     private long EmitFailure(string displayName, string errorType)
     {
-        using var source = new ActivitySource(ActivityObserver.SourceName);
-        var activity = source.CreateActivity(ActivityObserver.HandleEventName, ActivityKind.Client);
+        using var source = new ActivitySource(BevToolsActivityObserver.SourceName);
+        var activity = source.CreateActivity(BevToolsActivityObserver.HandleEventName, ActivityKind.Client);
         if (activity is null)
         {
             Assert.Fail("no listener is attached to the components ActivitySource");
@@ -180,9 +180,9 @@ public class BatchAttributionTests : BunitContext
     }
 
     /// <summary>Mimics ComponentsActivitySource: display name set before the activity starts, tags only on stop.</summary>
-    private static void Emit(string displayName, string operationName = ActivityObserver.HandleEventName)
+    private static void Emit(string displayName, string operationName = BevToolsActivityObserver.HandleEventName)
     {
-        using var source = new ActivitySource(ActivityObserver.SourceName);
+        using var source = new ActivitySource(BevToolsActivityObserver.SourceName);
         var activity = source.CreateActivity(operationName, ActivityKind.Client);
         if (activity is null)
         {
@@ -201,7 +201,7 @@ public class BatchAttributionTests : BunitContext
     [DataRow("something else", true, null, null, null)]
     public void Display_names_are_parsed_back_into_their_parts(string displayName, bool hasMethod, string? type, string? method, string? attribute)
     {
-        var parsed = ActivityObserver.ParseDisplayName(displayName, hasMethod);
+        var parsed = BevToolsActivityObserver.ParseDisplayName(displayName, hasMethod);
 
         Assert.AreEqual(type, parsed.ComponentType);
         Assert.AreEqual(method, parsed.Method);
@@ -215,7 +215,7 @@ public class BatchAttributionTests : BunitContext
         // Bit.BevTools.Shop.Counter into "Bit.BevTools.Shop", which looks like BevTools' own namespace.
         Render<PanelLikeComponent>();
 
-        Emit("Route /counter -> Bit.BevTools.Shop.Counter", ActivityObserver.NavigateName);
+        Emit("Route /counter -> Bit.BevTools.Shop.Counter", BevToolsActivityObserver.NavigateName);
 
         var navigation = Assert.ContainsSingle(e => e.Kind == BevToolsEventKind.Navigation, Session.Timeline.Snapshot());
         Assert.AreEqual("Counter", navigation.ComponentName);
@@ -227,14 +227,14 @@ public class BatchAttributionTests : BunitContext
     {
         // WebAssembly: each measurement arrives while its batch is still open. The panel's own refresh is a batch
         // too; with no entry of its own, its measurement used to overwrite the application batch before it.
-        ActivityObserver.MarkBatchMetricsObserved();
+        BevToolsActivityObserver.MarkBatchMetricsObserved();
         Render<ParentComponent>();
         var tracker = Session.RenderTracker;
         var application = tracker.CurrentBatch!;
         tracker.RecordBatchDiff(3);
         tracker.RecordBatchDiffSize(30);
 
-        Render<BevInspectorSection>(ps => ps.Add(p => p.Title, "own"));
+        Render<BevToolsInspectorSection>(ps => ps.Add(p => p.Title, "own"));
         var own = tracker.CurrentBatch!;
         Assert.AreNotSame(application, own);
         Assert.IsFalse(own.IsTracked);
@@ -253,13 +253,13 @@ public class BatchAttributionTests : BunitContext
         // Blazor Server: measurements arrive with the browser's acknowledgement, after later batches started. An
         // unrecorded batch in between still produces one, which used to be handed to the next application batch,
         // shifting every later attribution by one.
-        ActivityObserver.MarkBatchMetricsObserved();
+        BevToolsActivityObserver.MarkBatchMetricsObserved();
         var cut = Render<ParentComponent>();
         var tracker = Session.RenderTracker;
         var first = tracker.CurrentBatch!;
         tracker.CloseBatch();
 
-        Render<BevInspectorSection>(ps => ps.Add(p => p.Title, "own"));
+        Render<BevToolsInspectorSection>(ps => ps.Add(p => p.Title, "own"));
         var own = tracker.CurrentBatch!;
         tracker.CloseBatch();
 
@@ -288,14 +288,14 @@ public class BatchAttributionTests : BunitContext
     [TestMethod]
     public void Missing_metrics_support_is_explained_instead_of_being_reported_as_pending()
     {
-        Assert.IsTrue(CapabilityReport.MetricsAreSupported(), "the test host supports metrics");
-        Assert.DoesNotContain("MetricsSupport", CapabilityReport.MetricsHint(metricsSupported: true), StringComparison.Ordinal);
+        Assert.IsTrue(BevToolsCapabilityReport.MetricsAreSupported(), "the test host supports metrics");
+        Assert.DoesNotContain("MetricsSupport", BevToolsCapabilityReport.MetricsHint(metricsSupported: true), StringComparison.Ordinal);
 
         AppContext.SetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", false);
         try
         {
-            Assert.IsFalse(CapabilityReport.MetricsAreSupported());
-            Assert.Contains("MetricsSupport", CapabilityReport.MetricsHint(metricsSupported: false), StringComparison.Ordinal);
+            Assert.IsFalse(BevToolsCapabilityReport.MetricsAreSupported());
+            Assert.Contains("MetricsSupport", BevToolsCapabilityReport.MetricsHint(metricsSupported: false), StringComparison.Ordinal);
         }
         finally
         {

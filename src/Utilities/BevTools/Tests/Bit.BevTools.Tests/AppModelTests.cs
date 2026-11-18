@@ -34,15 +34,15 @@ public class AppModelTests : BunitContext
         var child = Session.Components.All.Single(r => r.Type == typeof(CallbackChild));
         var byId = Session.Components.All.Where(r => r.ComponentId is not null).ToDictionary(r => r.ComponentId!.Value);
 
-        var wiring = BevComponentWiringReader.Read(record, id => byId.GetValueOrDefault(id));
+        var wiring = BevToolsComponentWiringReader.Read(record, id => byId.GetValueOrDefault(id));
 
         Assert.IsNull(wiring.Unavailable);
-        Assert.Contains(b => b is { Target: "<button#save>", Event: "onclick", Handler: "WiringComponent.Save", Kind: BevEventBindingKind.DomEvent }, wiring.Bindings);
-        Assert.Contains(b => b is { Target: "<input>", Event: "onchange", Kind: BevEventBindingKind.Bind } && b.Handler.StartsWith("@bind-value", StringComparison.Ordinal), wiring.Bindings);
+        Assert.Contains(b => b is { Target: "<button#save>", Event: "onclick", Handler: "WiringComponent.Save", Kind: BevToolsEventBindingKind.DomEvent }, wiring.Bindings);
+        Assert.Contains(b => b is { Target: "<input>", Event: "onchange", Kind: BevToolsEventBindingKind.Bind } && b.Handler.StartsWith("@bind-value", StringComparison.Ordinal), wiring.Bindings);
         Assert.Contains(b => b is { Target: "<a.nav>", Event: "onclick", Handler: "lambda in WiringComponent.BuildRenderTree" }, wiring.Bindings);
         var setter = wiring.Bindings.Single(b => b.Target == "<input.search>");
-        Assert.AreEqual(("oninput", "@bind-value → WiringComponent.OnQuery", BevEventBindingKind.Bind, "OnQuery"), (setter.Event, setter.Handler, setter.Kind, setter.HandlerMethod?.Name), "the setter @bind:set names, and where it is written");
-        var callback = wiring.Bindings.Single(b => b.Kind == BevEventBindingKind.ChildCallback);
+        Assert.AreEqual(("oninput", "@bind-value → WiringComponent.OnQuery", BevToolsEventBindingKind.Bind, "OnQuery"), (setter.Event, setter.Handler, setter.Kind, setter.HandlerMethod?.Name), "the setter @bind:set names, and where it is written");
+        var callback = wiring.Bindings.Single(b => b.Kind == BevToolsEventBindingKind.ChildCallback);
         Assert.AreEqual(("CallbackChild", "OnSelected", "WiringComponent.OnChildSelected", child.InstanceId), (callback.Target, callback.Event, callback.Handler, callback.ChildInstanceId));
         Assert.AreEqual(5, wiring.TotalBindings, "child content and plain attributes are not bindings");
     }
@@ -56,8 +56,8 @@ public class AppModelTests : BunitContext
         var parameter = Session.Inspector.Describe("OnSelected", ((CallbackChild)child.Component!).OnSelected);
 
         Assert.AreEqual("EventCallback<Int32> → WiringComponent.OnChildSelected", parameter.Display);
-        Assert.AreEqual("EventCallback (empty)", BevEventCallbacks.Describe(EventCallback.Empty));
-        Assert.AreEqual("EventCallback (empty)", BevEventCallbacks.Describe(default(EventCallback)));
+        Assert.AreEqual("EventCallback (empty)", BevToolsEventCallbacks.Describe(EventCallback.Empty));
+        Assert.AreEqual("EventCallback (empty)", BevToolsEventCallbacks.Describe(default(EventCallback)));
     }
 
     [TestMethod]
@@ -72,7 +72,7 @@ public class AppModelTests : BunitContext
         };
         Render<Router>(ps => ps.Add(p => p.AppAssembly, typeof(RoutedPage).Assembly).Add(p => p.Found, found));
 
-        var routing = BevRoutingReader.Read(Session);
+        var routing = BevToolsRoutingReader.Read(Session);
 
         var current = routing.Current;
         Assert.AreEqual("RoutedPage", current.PageDisplayName);
@@ -80,7 +80,7 @@ public class AppModelTests : BunitContext
         Assert.AreEqual("/bev-tests/routed/{id:int}", current.Template);
         Assert.Contains(v => v.Key == "id" && v.Value == "42", current.RouteValues);
         Assert.Contains(q => q.Key == "tab" && q.Value == "\"details\"", current.Query);
-        Assert.Contains(q => q.Key == "token" && q.Value == BevRedactor.RedactedValue, current.Query);
+        Assert.Contains(q => q.Key == "token" && q.Value == BevToolsRedactor.RedactedValue, current.Query);
         Assert.IsFalse(current.Uri!.Contains("abc123", StringComparison.Ordinal));
         var route = routing.Routes.Single(r => r.PageDisplayName == "RoutedPage");
         Assert.AreEqual("Authorize(Roles = Admin)", route.Authorization.Single());
@@ -92,7 +92,7 @@ public class AppModelTests : BunitContext
     {
         Render<WiringComponent>();
 
-        var routing = BevRoutingReader.Read(Session);
+        var routing = BevToolsRoutingReader.Read(Session);
 
         Assert.IsNull(routing.Current.PageType);
         StringAssert.Contains(routing.Current.Source, "No RouteView");
@@ -110,7 +110,7 @@ public class AppModelTests : BunitContext
         session.EnsureActivated();
 
         var entry = session.State.Entries.Single(e => e.Name == "Authentication");
-        var snapshot = (BevAuthenticationSnapshot)entry.Provider.GetSnapshot()!;
+        var snapshot = (BevToolsAuthenticationSnapshot)entry.Provider.GetSnapshot()!;
         Assert.IsTrue(snapshot.IsAuthenticated);
         Assert.AreEqual("ada", snapshot.Name);
         Assert.Contains("Admin", snapshot.Roles);
@@ -119,7 +119,7 @@ public class AppModelTests : BunitContext
         Assert.IsTrue(flat.Values.Any(v => v.Contains("ada@example.com", StringComparison.Ordinal)));
 
         authorization.SetNotAuthorized();
-        await WaitUntil(() => entry.ChangeCount > 0 && !((BevAuthenticationSnapshot)entry.Provider.GetSnapshot()!).IsAuthenticated);
+        await WaitUntil(() => entry.ChangeCount > 0 && !((BevToolsAuthenticationSnapshot)entry.Provider.GetSnapshot()!).IsAuthenticated);
 
         var change = entry.Changes.Last();
         Assert.AreEqual("AuthenticationStateChanged", change.Action);
@@ -131,10 +131,10 @@ public class AppModelTests : BunitContext
     public void A_request_made_while_prerendering_and_again_when_interactive_is_flagged()
     {
         var session = Session;
-        session.Prerender = new BevPrerenderSummary
+        session.Prerender = new BevToolsPrerenderSummary
         {
             Path = "/products",
-            Requests = [new BevPrerenderRequest("GET", "https://localhost:5001/api/products", 200, 40, null), new BevPrerenderRequest("GET", "https://localhost:5001/api/once", 200, 5, null)],
+            Requests = [new BevToolsPrerenderRequest("GET", "https://localhost:5001/api/products", 200, 40, null), new BevToolsPrerenderRequest("GET", "https://localhost:5001/api/once", 200, 5, null)],
         };
         AddRequest(session, "GET", "https://localhost:5001/api/products");
         AddRequest(session, "GET", "https://localhost:5001/api/other");
@@ -157,7 +157,7 @@ public class AppModelTests : BunitContext
         Render<BevToolsPanel>();
         state.TriggerOnPersisting();
 
-        Assert.IsTrue(state.TryTake<BevPrerenderSummary>(BevPrerenderSummary.StateKey, out var summary));
+        Assert.IsTrue(state.TryTake<BevToolsPrerenderSummary>(BevToolsPrerenderSummary.StateKey, out var summary));
         Assert.IsNotNull(summary);
         Assert.IsTrue(summary.Components >= 2);
         Assert.Contains(r => r.Url == "https://localhost/api/products", summary.Requests);
@@ -175,16 +175,16 @@ public class AppModelTests : BunitContext
         // A batch that ends with a render too short to measure: drawn a microsecond long, it must not run past the span.
         const long instantBatch = 9_999;
         var start = System.Diagnostics.Stopwatch.GetTimestamp();
-        var measured = new BevRenderSample { Sequence = 1, At = DateTimeOffset.UtcNow, StartTicks = start, BatchId = instantBatch };
-        var instant = new BevRenderSample { Sequence = 2, At = measured.At, StartTicks = start + System.Diagnostics.Stopwatch.Frequency / 50_000, BatchId = instantBatch };
+        var measured = new BevToolsRenderSample { Sequence = 1, At = DateTimeOffset.UtcNow, StartTicks = start, BatchId = instantBatch };
+        var instant = new BevToolsRenderSample { Sequence = 2, At = measured.At, StartTicks = start + System.Diagnostics.Stopwatch.Frequency / 50_000, BatchId = instantBatch };
         Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.RenderBatch, Category = "render-batch", Title = "Render batch #" + instantBatch, StartTicks = start, Timestamp = measured.At, Data = new Dictionary<string, object?> { ["batch"] = instantBatch } });
-        Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Render, Category = "render", Title = "Measured", DurationMs = 0.01, StartTicks = measured.StartTicks, Timestamp = measured.At, Data = new RenderEventData(measured, 1) });
-        Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Render, Category = "render", Title = "Instant", DurationMs = 0, StartTicks = instant.StartTicks, Timestamp = instant.At, Data = new RenderEventData(instant, 1) });
+        Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Render, Category = "render", Title = "Measured", DurationMs = 0.01, StartTicks = measured.StartTicks, Timestamp = measured.At, Data = new BevToolsRenderEventData(measured, 1) });
+        Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Render, Category = "render", Title = "Instant", DurationMs = 0, StartTicks = instant.StartTicks, Timestamp = instant.At, Data = new BevToolsRenderEventData(instant, 1) });
 
-        using var trace = JsonDocument.Parse(BevTraceExporter.ToChromeTrace(Session));
+        using var trace = JsonDocument.Parse(BevToolsTraceExporter.ToChromeTrace(Session));
 
         var events = trace.RootElement.GetProperty("traceEvents").EnumerateArray().ToList();
-        Assert.AreEqual(BevTraceExporter.Format, trace.RootElement.GetProperty("otherData").GetProperty("format").GetString());
+        Assert.AreEqual(BevToolsTraceExporter.Format, trace.RootElement.GetProperty("otherData").GetProperty("format").GetString());
         var renderer = events.Where(e => e.GetProperty("ph").GetString() == "X" && e.GetProperty("tid").GetInt32() == 1).ToList();
         var batches = renderer.Where(e => e.GetProperty("cat").GetString() == "render-batch").ToList();
         var renders = renderer.Where(e => e.GetProperty("cat").GetString() == "render").ToList();
@@ -212,26 +212,26 @@ public class AppModelTests : BunitContext
     [TestMethod]
     public void Render_modes_read_as_they_are_written_in_markup()
     {
-        Assert.AreEqual("InteractiveServer", BevRenderModes.Describe(RenderMode.InteractiveServer));
-        Assert.AreEqual("InteractiveWebAssembly, no prerendering", BevRenderModes.Describe(new InteractiveWebAssemblyRenderMode(prerender: false)));
-        Assert.AreEqual("InteractiveAuto", BevRenderModes.Describe(RenderMode.InteractiveAuto));
-        Assert.IsNull(BevRenderModes.Describe(null));
+        Assert.AreEqual("InteractiveServer", BevToolsRenderModes.Describe(RenderMode.InteractiveServer));
+        Assert.AreEqual("InteractiveWebAssembly, no prerendering", BevToolsRenderModes.Describe(new InteractiveWebAssemblyRenderMode(prerender: false)));
+        Assert.AreEqual("InteractiveAuto", BevToolsRenderModes.Describe(RenderMode.InteractiveAuto));
+        Assert.IsNull(BevToolsRenderModes.Describe(null));
     }
 
     [TestMethod]
     public void The_runtime_report_names_the_value_access_and_the_prerender_summary()
     {
         var session = Session;
-        session.Prerender = new BevPrerenderSummary { Path = "/", Components = 12, DurationMs = 30 };
+        session.Prerender = new BevToolsPrerenderSummary { Path = "/", Components = 12, DurationMs = 30 };
 
-        var sections = BevRuntimeInfo.Build(session);
+        var sections = BevToolsRuntimeInfo.Build(session);
 
         Assert.Contains(s => s.Title == "Rendering" && s.Facts.Any(f => f.Name == "Value access" && f.Value == "Full"), sections);
         Assert.Contains(s => s.Title == "Prerendering", sections);
         Assert.Contains(s => s.Title == ".NET runtime", sections);
     }
 
-    private static void AddRequest(BevToolsSession session, string method, string url) => session.Http.Add(new BevHttpRecord
+    private static void AddRequest(BevToolsSession session, string method, string url) => session.Http.Add(new BevToolsHttpRecord
     {
         Id = session.Http.NextId(),
         StartedAt = DateTimeOffset.UtcNow,

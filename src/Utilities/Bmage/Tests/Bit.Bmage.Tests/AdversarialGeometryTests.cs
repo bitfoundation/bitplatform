@@ -10,13 +10,13 @@ namespace Bit.Bmage.Tests;
 [TestClass]
 public sealed class AdversarialGeometryTests
 {
-    internal static ImageBuffer Noise(int w, int h, int seed = 1)
+    internal static BmageImageBuffer Noise(int w, int h, int seed = 1)
     {
         var rnd = new Random(seed);
-        var img = ImageBuffer.Create(w, h);
+        var img = BmageImageBuffer.Create(w, h);
         var px = img.Pixels;
         for (var i = 0; i < px.Length; i++)
-            px[i] = new Rgba32((byte)rnd.Next(256), (byte)rnd.Next(256), (byte)rnd.Next(256), 255);
+            px[i] = new BmageRgba32((byte)rnd.Next(256), (byte)rnd.Next(256), (byte)rnd.Next(256), 255);
         return img;
     }
 
@@ -33,7 +33,7 @@ public sealed class AdversarialGeometryTests
     public void OrientationMatrixAgreesWithPixels(BmageOrientation o)
     {
         using var src = Noise(7, 5, 3);
-        using var dst = new OrientationOperation(o).Apply(src, OperationContext.Default);
+        using var dst = new BmageOrientationOperation(o).Apply(src, BmageOperationContext.Default);
         var m = o.ToMatrix(src.Size);
         for (var y = 0; y < src.Height; y++)
         {
@@ -59,9 +59,9 @@ public sealed class AdversarialGeometryTests
             foreach (var b in all)
             {
                 using var src = Noise(6, 4, 7);
-                using var step1 = new OrientationOperation(a).Apply(src, OperationContext.Default);
-                using var step2 = new OrientationOperation(b).Apply(step1, OperationContext.Default);
-                using var combined = new OrientationOperation(a.Then(b)).Apply(src, OperationContext.Default);
+                using var step1 = new BmageOrientationOperation(a).Apply(src, BmageOperationContext.Default);
+                using var step2 = new BmageOrientationOperation(b).Apply(step1, BmageOperationContext.Default);
+                using var combined = new BmageOrientationOperation(a.Then(b)).Apply(src, BmageOperationContext.Default);
                 Assert.AreEqual(step2.Size, combined.Size);
                 Assert.IsTrue(step2.Bytes.SequenceEqual(combined.Bytes), $"{a} then {b} != {a.Then(b)}");
             }
@@ -74,8 +74,8 @@ public sealed class AdversarialGeometryTests
         foreach (var o in Enum.GetValues<BmageOrientation>().Where(o => o != BmageOrientation.Unspecified))
         {
             using var src = Noise(6, 4, 11);
-            using var fwd = new OrientationOperation(o).Apply(src, OperationContext.Default);
-            using var back = new OrientationOperation(o.Inverse()).Apply(fwd, OperationContext.Default);
+            using var fwd = new BmageOrientationOperation(o).Apply(src, BmageOperationContext.Default);
+            using var back = new BmageOrientationOperation(o.Inverse()).Apply(fwd, BmageOperationContext.Default);
             Assert.AreEqual(src.Size, back.Size);
             Assert.IsTrue(src.Bytes.SequenceEqual(back.Bytes), $"{o} then inverse is not the identity");
         }
@@ -92,8 +92,8 @@ public sealed class AdversarialGeometryTests
         {
             using var a = Noise(w, h, 13);
             using var b = a.Clone();
-            using var expected = new OrientationOperation(o).Apply(a, OperationContext.Default);
-            var mutated = new OrientationOperation(o).Apply(b, OperationContext.Default.WithMutation(true));
+            using var expected = new BmageOrientationOperation(o).Apply(a, BmageOperationContext.Default);
+            var mutated = new BmageOrientationOperation(o).Apply(b, BmageOperationContext.Default.WithMutation(true));
             Assert.IsTrue(expected.Bytes.SequenceEqual(mutated.Bytes), $"{o} in-place differs from allocating at {w}x{h}");
         }
     }
@@ -108,15 +108,15 @@ public sealed class AdversarialGeometryTests
     public void PrescalePathAgreesWithDirectPath(int sw, int sh, int dw, int dh)
     {
         // A hard vertical edge exactly in the middle: any geometric shift or stretch moves the edge.
-        using var src = ImageBuffer.Create(sw, sh, Rgba32.Black);
+        using var src = BmageImageBuffer.Create(sw, sh, BmageRgba32.Black);
         for (var y = 0; y < sh; y++)
         {
             var row = src.GetRow(y);
-            for (var x = sw / 2; x < sw; x++) row[x] = Rgba32.White;
+            for (var x = sw / 2; x < sw; x++) row[x] = BmageRgba32.White;
         }
 
-        using var viaPrescale = new ResizeOperation(dw, dh, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3)
-            .Apply(src, OperationContext.Default);
+        using var viaPrescale = new BmageResizeOperation(dw, dh, BmageResizeMode.Stretch, BmageResamplingFilter.Lanczos3)
+            .Apply(src, BmageOperationContext.Default);
         using var direct = ResampleWithoutPrescale(src, dw, dh);
 
         var mean = TestImages.MeanChannelDifference(viaPrescale, direct);
@@ -124,18 +124,18 @@ public sealed class AdversarialGeometryTests
     }
 
     /// <summary>Repeated halving never reaches the 4x ratio that triggers the box-reduce path.</summary>
-    private static ImageBuffer ResampleWithoutPrescale(ImageBuffer src, int dw, int dh)
+    private static BmageImageBuffer ResampleWithoutPrescale(BmageImageBuffer src, int dw, int dh)
     {
         var cur = src.Clone();
         while (cur.Width > dw * 2 || cur.Height > dh * 2)
         {
             var nw = Math.Max(dw, cur.Width / 2);
             var nh = Math.Max(dh, cur.Height / 2);
-            var next = new ResizeOperation(nw, nh, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(cur, OperationContext.Default);
+            var next = new BmageResizeOperation(nw, nh, BmageResizeMode.Stretch, BmageResamplingFilter.Lanczos3).Apply(cur, BmageOperationContext.Default);
             cur.Dispose();
             cur = next;
         }
-        var final = new ResizeOperation(dw, dh, BmageResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(cur, OperationContext.Default);
+        var final = new BmageResizeOperation(dw, dh, BmageResizeMode.Stretch, BmageResamplingFilter.Lanczos3).Apply(cur, BmageOperationContext.Default);
         cur.Dispose();
         return final;
     }
@@ -148,9 +148,9 @@ public sealed class AdversarialGeometryTests
     [DataRow(100, 100, 33, 33)]
     public void DownscalingSolidColourIsExact(int sw, int sh, int dw, int dh)
     {
-        var colour = new Rgba32(37, 129, 211);
-        using var src = ImageBuffer.Create(sw, sh, colour);
-        using var dst = new ResizeOperation(dw, dh, BmageResizeMode.Stretch, ResamplingFilter.Auto).Apply(src, OperationContext.Default);
+        var colour = new BmageRgba32(37, 129, 211);
+        using var src = BmageImageBuffer.Create(sw, sh, colour);
+        using var dst = new BmageResizeOperation(dw, dh, BmageResizeMode.Stretch, BmageResamplingFilter.Auto).Apply(src, BmageOperationContext.Default);
         foreach (var p in dst.Pixels.ToArray())
         {
             Assert.IsTrue(Math.Abs(p.R - colour.R) <= 1 && Math.Abs(p.G - colour.G) <= 1 && Math.Abs(p.B - colour.B) <= 1 && p.A == 255,
@@ -160,14 +160,14 @@ public sealed class AdversarialGeometryTests
 
     /// <summary>Resizing to the same size must not shift or blur the image.</summary>
     [TestMethod]
-    [DataRow(ResamplingFilter.Bilinear)]
-    [DataRow(ResamplingFilter.Bicubic)]
-    [DataRow(ResamplingFilter.Lanczos3)]
-    [DataRow(ResamplingFilter.Box)]
-    public void IdentityResizeDoesNotShift(ResamplingFilter filter)
+    [DataRow(BmageResamplingFilter.Bilinear)]
+    [DataRow(BmageResamplingFilter.Bicubic)]
+    [DataRow(BmageResamplingFilter.Lanczos3)]
+    [DataRow(BmageResamplingFilter.Box)]
+    public void IdentityResizeDoesNotShift(BmageResamplingFilter filter)
     {
         using var src = Noise(33, 21, 5);
-        using var dst = new ResizeOperation(33, 21, BmageResizeMode.Stretch, filter).Apply(src, OperationContext.Default);
+        using var dst = new BmageResizeOperation(33, 21, BmageResizeMode.Stretch, filter).Apply(src, BmageOperationContext.Default);
         var max = TestImages.MaxChannelDifference(src, dst);
         Assert.IsTrue(max <= 1, $"{filter} identity resize changed pixels by {max}");
     }
@@ -176,14 +176,14 @@ public sealed class AdversarialGeometryTests
     public void CropEntirelyOutsideImageThrowsClearly()
     {
         using var src = Noise(10, 10);
-        Assert.ThrowsExactly<ArgumentException>(() => new CropOperation(50, 50, 10, 10).Apply(src, OperationContext.Default));
+        Assert.ThrowsExactly<ArgumentException>(() => new BmageCropOperation(50, 50, 10, 10).Apply(src, BmageOperationContext.Default));
     }
 
     [TestMethod]
     public void CropLargerThanImageIsClippedNotPadded()
     {
         using var src = Noise(10, 10);
-        using var dst = new CropOperation(-5, -5, 100, 100).Apply(src, OperationContext.Default);
+        using var dst = new BmageCropOperation(-5, -5, 100, 100).Apply(src, BmageOperationContext.Default);
         Assert.AreEqual(new Size(10, 10), dst.Size);
         Assert.IsTrue(src.Bytes.SequenceEqual(dst.Bytes));
     }
@@ -193,7 +193,7 @@ public sealed class AdversarialGeometryTests
     [DataRow(0, 0, 1, 0)]
     [DataRow(0, 0, -1, 5)]
     public void CropWithNonPositiveSizeThrows(int x, int y, int w, int h)
-        => Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CropOperation(x, y, w, h));
+        => Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageCropOperation(x, y, w, h));
 
     [TestMethod]
     [DataRow(1, 1)]
@@ -203,7 +203,7 @@ public sealed class AdversarialGeometryTests
     public void ExtremeAspectResizeWorks(int w, int h)
     {
         using var src = Noise(64, 48, 29);
-        using var dst = new ResizeOperation(w, h, BmageResizeMode.Stretch, ResamplingFilter.Auto).Apply(src, OperationContext.Default);
+        using var dst = new BmageResizeOperation(w, h, BmageResizeMode.Stretch, BmageResamplingFilter.Auto).Apply(src, BmageOperationContext.Default);
         Assert.AreEqual(new Size(w, h), dst.Size);
     }
 
@@ -221,17 +221,17 @@ public sealed class AdversarialGeometryTests
         {
             foreach (var (tw, th) in new[] { (1, 1), (16, 16), (2000, 3), (300, 300) })
             {
-                using var src = ImageBuffer.Create(sw, sh, new Rgba32(10, 20, 30));
-                var op = new ResizeOperation(tw, th, mode);
+                using var src = BmageImageBuffer.Create(sw, sh, new BmageRgba32(10, 20, 30));
+                var op = new BmageResizeOperation(tw, th, mode);
                 var predicted = op.GetOutputSize(src.Size);
                 // Min enlarges until both dimensions reach the target, which for an extreme aspect ratio can demand
                 // an enormous canvas. GetOutputSize must say so up front so a caller can check before allocating.
-                if (!ImageLimits.Default.Allows(predicted.Width, predicted.Height))
+                if (!BmageImageLimits.Default.Allows(predicted.Width, predicted.Height))
                 {
-                    Assert.ThrowsExactly<ImageLimitExceededException>(() => op.Apply(src, OperationContext.Default).Dispose());
+                    Assert.ThrowsExactly<BmageImageLimitExceededException>(() => op.Apply(src, BmageOperationContext.Default).Dispose());
                     continue;
                 }
-                using var dst = op.Apply(src, OperationContext.Default);
+                using var dst = op.Apply(src, BmageOperationContext.Default);
                 Assert.IsTrue(dst.Width > 0 && dst.Height > 0);
                 Assert.AreEqual(predicted, dst.Size);
                 if (mode is BmageResizeMode.Fit or BmageResizeMode.Max)
@@ -257,9 +257,9 @@ public sealed class AdversarialGeometryTests
     public void RotateProducesPredictedSize(double degrees)
     {
         using var src = Noise(40, 24, 31);
-        var op = new RotateOperation(degrees);
+        var op = new BmageRotateOperation(degrees);
         var predicted = op.GetOutputSize(src.Size);
-        using var dst = op.Apply(src, OperationContext.Default);
+        using var dst = op.Apply(src, BmageOperationContext.Default);
         Assert.AreEqual(predicted, dst.Size);
     }
 
@@ -270,7 +270,7 @@ public sealed class AdversarialGeometryTests
         var cur = src.Clone();
         for (var i = 0; i < 4; i++)
         {
-            var next = new RotateOperation(90).Apply(cur, OperationContext.Default);
+            var next = new BmageRotateOperation(90).Apply(cur, BmageOperationContext.Default);
             cur.Dispose();
             cur = next;
         }
@@ -287,8 +287,8 @@ public sealed class AdversarialGeometryTests
     [DataRow(359.99)]
     public void ArbitraryRotationKeepsContent(double degrees)
     {
-        using var src = ImageBuffer.Create(64, 48, new Rgba32(200, 100, 50));
-        using var dst = new RotateOperation(degrees).Apply(src, OperationContext.Default);
+        using var src = BmageImageBuffer.Create(64, 48, new BmageRgba32(200, 100, 50));
+        using var dst = new BmageRotateOperation(degrees).Apply(src, BmageOperationContext.Default);
         var centre = dst[dst.Width / 2, dst.Height / 2];
         Assert.AreEqual(255, centre.A);
         Assert.IsInRange(190, 210, centre.R);
@@ -301,10 +301,10 @@ public sealed class AdversarialGeometryTests
     /// mean the fast path is sampling somewhere else.
     /// </summary>
     [TestMethod]
-    [DataRow(WarpSampling.NearestNeighbor)]
-    [DataRow(WarpSampling.Bilinear)]
-    [DataRow(WarpSampling.Bicubic)]
-    public void AffineWarpFastPathMatchesTheGeneralPath(WarpSampling sampling)
+    [DataRow(BmageWarpSampling.NearestNeighbor)]
+    [DataRow(BmageWarpSampling.Bilinear)]
+    [DataRow(BmageWarpSampling.Bicubic)]
+    public void AffineWarpFastPathMatchesTheGeneralPath(BmageWarpSampling sampling)
     {
         foreach (var degrees in new[] { 13.37, 37, 45, 200.5, 359.99 })
         {
@@ -313,12 +313,12 @@ public sealed class AdversarialGeometryTests
             var forward = Matrix3x2.CreateRotation(radians, new Vector2(src.Width / 2f, src.Height / 2f));
             Assert.IsTrue(Matrix3x2.Invert(forward, out var inverse));
 
-            using var viaFastPath = ImageBuffer.Create(src.Width, src.Height, clear: false);
-            using var viaGeneralPath = ImageBuffer.Create(src.Width, src.Height, clear: false);
-            var background = new Rgba32(10, 20, 30, 200);
+            using var viaFastPath = BmageImageBuffer.Create(src.Width, src.Height, clear: false);
+            using var viaGeneralPath = BmageImageBuffer.Create(src.Width, src.Height, clear: false);
+            var background = new BmageRgba32(10, 20, 30, 200);
 
-            Warp.RunAffine(src, viaFastPath, inverse, sampling, background, OperationContext.Default);
-            Warp.Run(src, viaGeneralPath, p => Vector2.Transform(p, inverse), sampling, background, OperationContext.Default);
+            BmageWarp.RunAffine(src, viaFastPath, inverse, sampling, background, BmageOperationContext.Default);
+            BmageWarp.Run(src, viaGeneralPath, p => Vector2.Transform(p, inverse), sampling, background, BmageOperationContext.Default);
 
             var maxDifference = TestImages.MaxChannelDifference(viaFastPath, viaGeneralPath);
             Assert.IsTrue(maxDifference <= 1,
@@ -341,26 +341,26 @@ public sealed class AdversarialGeometryTests
     {
         // A 90 degree skew is not an invertible transform; it must be rejected up front rather than
         // throwing from GetOutputSize or Apply later on.
-        Assert.Throws<ArgumentException>(() => new SkewOperation(90, 90));
+        Assert.Throws<ArgumentException>(() => new BmageSkewOperation(90, 90));
     }
 
     [TestMethod]
     public void AllocationBeyondLimitsThrowsBeforeAllocating()
-        => Assert.ThrowsExactly<ImageLimitExceededException>(() => ImageBuffer.Create(100000, 100000));
+        => Assert.ThrowsExactly<BmageImageLimitExceededException>(() => BmageImageBuffer.Create(100000, 100000));
 
     [TestMethod]
     public void ResizeBeyondLimitsThrowsInsteadOfExhaustingMemory()
     {
         using var src = Noise(16, 16);
-        Assert.ThrowsExactly<ImageLimitExceededException>(
-            () => new ResizeOperation(30000, 30000, BmageResizeMode.Stretch).Apply(src, OperationContext.Default));
+        Assert.ThrowsExactly<BmageImageLimitExceededException>(
+            () => new BmageResizeOperation(30000, 30000, BmageResizeMode.Stretch).Apply(src, BmageOperationContext.Default));
     }
 
     [TestMethod]
     public void RotationBeyondLimitsThrowsInsteadOfExhaustingMemory()
     {
-        using var src = ImageBuffer.Create(16000, 3000, Rgba32.White);
+        using var src = BmageImageBuffer.Create(16000, 3000, BmageRgba32.White);
         // The expanded canvas of a 45 degree rotation exceeds the default 16384px limit.
-        Assert.ThrowsExactly<ImageLimitExceededException>(() => new RotateOperation(45).Apply(src, OperationContext.Default));
+        Assert.ThrowsExactly<BmageImageLimitExceededException>(() => new BmageRotateOperation(45).Apply(src, BmageOperationContext.Default));
     }
 }

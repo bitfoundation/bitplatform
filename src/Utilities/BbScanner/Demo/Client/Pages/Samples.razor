@@ -22,7 +22,7 @@
 <div class="bb-card bb-page-wide">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two dimensional</h3>
     <div class="sample-grid">
-        @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbBarcodeFormat.AllMatrix) != 0))
+        @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbScannerBarcodeFormat.AllMatrix) != 0))
         {
             <BarcodeSvg Matrix="sample.Matrix" Format="sample.Format" Caption="@sample.Caption" Value="@sample.Value" Size="200" />
         }
@@ -32,7 +32,7 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Linear</h3>
     <div class="sample-grid sample-grid-linear">
-        @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbBarcodeFormat.AllLinear) != 0))
+        @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbScannerBarcodeFormat.AllLinear) != 0))
         {
             @* Two CSS pixels per module, so the bars survive rasterisation on a 1x display and a
                phone camera can read them off the screen. *@
@@ -49,7 +49,7 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Which is which</h3>
     <p class="bb-card-desc">
-        Each symbology is one flag of <code>BbBarcodeFormat</code>; combine them with <code>|</code>, or use
+        Each symbology is one flag of <code>BbScannerBarcodeFormat</code>; combine them with <code>|</code>, or use
         <code>AllMatrix</code>, <code>AllLinear</code> or <code>All</code> (the default).
     </p>
     <div class="bb-scroll">
@@ -90,7 +90,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Decode them right here</h3>
     <p class="bb-card-desc">
         The same symbols, decoded in place without a camera: each one is rasterised into a grayscale
-        buffer and pushed through <code>BbBarcodeDecoder</code>, exactly as a camera frame would be. Every
+        buffer and pushed through <code>BbScannerBarcodeDecoder</code>, exactly as a camera frame would be. Every
         symbology is enabled for every sample, so a match also shows that none was mistaken for another.
     </p>
 
@@ -163,9 +163,9 @@
 
             var start = System.Diagnostics.Stopwatch.GetTimestamp();
 
-            using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+            using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
             {
-                Formats = BbBarcodeFormat.All,
+                Formats = BbScannerBarcodeFormat.All,
                 DuplicateSuppressionWindow = TimeSpan.Zero,
                 MaxScanLines = 30,
             });

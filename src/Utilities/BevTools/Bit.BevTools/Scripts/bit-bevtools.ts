@@ -206,7 +206,7 @@ function focusedTarget(): BevTarget | null {
     return open || last;
 }
 
-// ----- redaction (kept in step with BevRedactor) -----
+// ----- redaction (kept in step with BevToolsRedactor) -----
 
 const REDACTED = "«redacted»";
 
@@ -221,7 +221,7 @@ function looksLikeSecret(value: string) {
 }
 
 // A header of "ey" and six or more base64url characters, a dot, a payload of six or more, a dot - TryFindJwt in
-// BevRedactor, scanned the same way, run by run. The header starts a run, or, when the payload starts with "eyJ" (the {"
+// BevToolsRedactor, scanned the same way, run by run. The header starts a run, or, when the payload starts with "eyJ" (the {"
 // every token's JSON starts with), it is the first "eyJ" inside the run: a token right after an escape ("%3DeyJ…",
 // "\neyJ…") runs into the characters before it. An "ey" inside a run without such a payload is part of a word
 // ("survey_results.annual_report.pdf", "monkey-business.example-site.com"), not a token. A pattern tried from every "ey"
@@ -1492,7 +1492,7 @@ function removePageListeners() {
 // a node's logical children and a pointer to its logical parent, and a `true` marker on the container of every
 // interactive root component while it is attached. The keys carry no description, so they are learned from a node
 // known to be Blazor's - a BevTools panel's element - by the one relation that defines them: the parent's children
-// array holds the node. Paths through the tree come from .NET (BevDomMap), computed from the components' render
+// array holds the node. Paths through the tree come from .NET (BevToolsDomMap), computed from the components' render
 // trees, and every step is checked against the node found here: a mismatch is reported, never guessed around.
 
 export interface BevDomStep {
@@ -1669,7 +1669,7 @@ function unanchoredRoots(fresh = false): Node[] {
     return rootsCache.roots;
 }
 
-/** "3|div,#text,#c", as BevDomMap.Signature computes it from the root's frames. */
+/** "3|div,#text,#c", as BevToolsDomMap.Signature computes it from the root's frames. */
 function signatureOf(container: Node): string {
     const list = logicalChildren(container) || [];
     return list.length + "|" + list.slice(0, 12).map(kindOf).join(",");
