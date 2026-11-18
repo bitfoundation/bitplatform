@@ -1050,7 +1050,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return (await Gh(["auth", "status"], cancellationToken)).Succeeded is false;
     }
 
-    public async Task<StepResult> GitHubSignInAsync(Action<string> progress, CancellationToken cancellationToken)
+    public Task<StepResult> GitHubSignInAsync(Action<string> progress, CancellationToken cancellationToken) => GitHubSignInAsync("bit goes on without the GitHub repo", progress, cancellationToken);
+
+    private async Task<StepResult> GitHubSignInAsync(string withoutIt, Action<string> progress, CancellationToken cancellationToken)
     {
         await Gh(["auth", "setup-git", "--hostname", "github.com", "--force"], cancellationToken);
 
@@ -1061,7 +1063,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         {
             FileName = "gh",
             Arguments = ["auth", "login", "--web", "--clipboard", "--git-protocol", "https", "--hostname", "github.com"],
-            WorkingDirectory = project.Directory,
+            WorkingDirectory = ExistingDirectory,
             Timeout = TimeSpan.FromMinutes(15),
             OnOutputLine = line =>
             {
@@ -1070,7 +1072,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
                 var copied = line.Contains("copied to clipboard", StringComparison.OrdinalIgnoreCase) ? " [grey](copied to the clipboard)[/]" : "";
                 cli.Console.Out.MarkupLine($"    Enter [bold]{code.Value}[/]{copied} at {GitHubDevicePage}, which opens in your browser.");
-                cli.Console.Out.MarkupLine("    [grey]Press Esc to skip signing in; bit goes on without the GitHub repo.[/]");
+                cli.Console.Out.MarkupLine($"    [grey]Press Esc to skip signing in; {Markup.Escape(withoutIt)}.[/]");
                 ProjectRun.OpenInBrowser(cli, GitHubDevicePage);
             }
         }, signIn.Token);
@@ -1179,8 +1181,103 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private Task<ProcessResult> Gh(string[] arguments, CancellationToken cancellationToken, Action<string>? progress = null)
     {
-        return Runner.RunAsync(new ProcessSpec { FileName = "gh", Arguments = arguments, WorkingDirectory = project.Directory, OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(5) }, cancellationToken);
+        return Runner.RunAsync(new ProcessSpec { FileName = "gh", Arguments = arguments, WorkingDirectory = ExistingDirectory, OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(5) }, cancellationToken);
     }
+
+    /// <summary>The project's folder, or the current one while bit setup has yet to clone the project into it.</summary>
+    private string ExistingDirectory => System.IO.Directory.Exists(project.Directory) ? project.Directory : cli.Environment.CurrentDirectory;
+
+    /// <summary>
+    /// Clones the project bit setup was given the address of into its folder. On github.com it first tries without git's
+    /// prompts, which is all a public repository, or one git already has a sign-in for, needs; then it signs in with the
+    /// GitHub CLI in the browser and tries again, as git over HTTPS can't sign in to GitHub on its own on every OS. On any
+    /// other host, and over SSH, git keeps the terminal, so it or its credential manager can ask.
+    /// </summary>
+    public async Task<StepResult> CloneAsync(RepositoryAddress repository, Action<string> progress, CancellationToken cancellationToken)
+    {
+        var title = $"Couldn't clone {repository.Name}";
+        var again = $"bit setup {repository.Url}";
+        var parent = Path.GetDirectoryName(project.Directory)!;
+
+        if (Runner.FindExecutable("git") is null)
+            return StepResult.Failed(title, "git isn't installed", again, resultCode: "tool.git.missing", hint: "Install it from https://git-scm.com/downloads");
+
+        System.IO.Directory.CreateDirectory(parent);
+
+        // A project's paths go past Windows' 260 characters, as GitAsync allows for a new one
+        if (cli.Environment.IsWindows && (await Git(["config", "--global", "--get", "core.longpaths"], cancellationToken, parent)).Output.Trim() is not "true")
+        {
+            await Git(["config", "--global", "core.longpaths", "true"], cancellationToken, parent);
+        }
+
+        if (repository.SignsInWithGitHubCli is false)
+        {
+            var cloned = await CloneAsync(repository, cli.HasTerminal, progress, cancellationToken);
+            return cloned.Succeeded ? Cloned(repository) : CloneFailed(repository, cloned, title, again, hint: null);
+        }
+
+        var first = await CloneAsync(repository, prompts: false, progress, cancellationToken);
+
+        if (first.Succeeded)
+            return Cloned(repository);
+
+        if (await CanSignInToGitHubAsync(cancellationToken) is false)
+        {
+            var signedIn = Runner.FindExecutable("gh") is not null && (await Gh(["auth", "status"], cancellationToken)).Succeeded;
+
+            return signedIn
+                ? CloneFailed(repository, first, title, again, "If it's private, ask its owner to give your GitHub account access, then run this again.")
+                : CloneFailed(repository, first, title, $"gh auth login --web && gh auth setup-git && {again}", "If it's private, sign in to GitHub first.");
+        }
+
+        var signIn = await GitHubSignInAsync("bit can't clone a private repository without it", progress, cancellationToken);
+
+        if (signIn.Status is not StepStatus.Succeeded)
+            return StepResult.Failed(title, "you didn't sign in to GitHub", $"gh auth login --web && gh auth setup-git && {again}", resultCode: "github.signin");
+
+        var second = await CloneAsync(repository, prompts: false, progress, cancellationToken);
+
+        return second.Succeeded
+            ? Cloned(repository)
+            : CloneFailed(repository, second, title, again, "If it's private, ask its owner to give your GitHub account access, then run this again.");
+    }
+
+    private Task<ProcessResult> CloneAsync(RepositoryAddress repository, bool prompts, Action<string> progress, CancellationToken cancellationToken)
+    {
+        var environment = new Dictionary<string, string?>(GitWithoutAutoMaintenance);
+
+        if (prompts is false)
+        {
+            // Fail instead of waiting for a password nobody can type, here or in Git Credential Manager's window
+            environment["GIT_TERMINAL_PROMPT"] = "0";
+            environment["GCM_INTERACTIVE"] = "never";
+        }
+
+        return Runner.RunAsync(new ProcessSpec
+        {
+            FileName = "git",
+            Arguments = ["clone", repository.Url, project.Directory],
+            WorkingDirectory = Path.GetDirectoryName(project.Directory),
+            Environment = environment,
+            Interactive = prompts,
+            OnOutputLine = prompts ? null : progress,
+            Timeout = TimeSpan.FromMinutes(30)
+        }, cancellationToken);
+    }
+
+    private StepResult Cloned(RepositoryAddress repository) => StepResult.Succeeded($"Cloned {repository.Name}", ProjectLocation.ForDisplay(cli.Environment.CurrentDirectory, project.Directory));
+
+    private static StepResult CloneFailed(RepositoryAddress repository, ProcessResult result, string title, string followUp, string? hint)
+    {
+        var failed = StepResult.FromProcess(result, "", title, followUp);
+
+        return NoAccessRegex().IsMatch(result.Output)
+            ? failed with { Detail = $"{repository.Host} didn't let this computer read {repository.Path}", Hint = hint ?? failed.Hint, ResultCode = "clone.no-access" }
+            : failed;
+    }
+
+    [GeneratedRegex(@"Repository not found|Authentication failed|could not read Username|terminal prompts disabled|Permission denied|returned error: 40[134]", RegexOptions.IgnoreCase)]
+    private static partial Regex NoAccessRegex();
 
     private Task<ProcessResult> Git(string[] arguments, CancellationToken cancellationToken, string? workingDirectory = null)
     {

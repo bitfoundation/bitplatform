@@ -184,6 +184,146 @@ public class NewWorkflowTests
     }
 
     [TestMethod]
+    public async Task SetupWithARepositoryAddress_Should_CloneItThenSetItUpTrustItAndOpenVsCode()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.AllToolsInstalled();
+        host.Runner.Executables["git"] = "git";
+        ClonesProject(host, "Contoso");
+        var directory = Path.Combine(host.WorkingDirectory, "Contoso");
+
+        Assert.AreEqual(0, await host.RunAsync("setup", "https://github.com/contoso/Contoso.git", "--yes", "--no-run", "--no-browsers"), host.Output);
+
+        var clone = host.Runner.Calls.Single(c => c.FileName is "git" && c.Arguments.FirstOrDefault() is "clone");
+        CollectionAssert.AreEqual(new[] { "clone", "https://github.com/contoso/Contoso.git", directory }, clone.Arguments.ToArray());
+        Assert.AreEqual("0", clone.Environment!["GIT_TERMINAL_PROMPT"], "Nobody could answer git's prompt for a password here, so it fails rather than waits.");
+        AssertInOrder(host, ["clone", "build src/Workbench/Contoso.Workbench.csproj", "restore Contoso.Web.slnf", "build Contoso.Web.slnf", "--disable-workspace-trust"]);
+        StringAssert.Contains(host.FlatOutput, "Cloned Contoso");
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("Trusted for|Couldn't trust the folder"));
+        StringAssert.Contains(host.FlatOutput, "Opened");
+        StringAssert.Contains(host.FlatOutput, "Contoso is ready");
+    }
+
+    [TestMethod]
+    public async Task SetupWithTheAddressOfAProjectAlreadyCloned_Should_SetItUpWithoutCloningItAgain()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["git"] = "git";
+        WriteProject(Path.Combine(host.WorkingDirectory, "Contoso"), "Contoso");
+        host.Runner.On("git", "remote get-url origin", 0, "git@github.com:Contoso/contoso.git\n");
+
+        Assert.AreEqual(0, await host.RunAsync("setup", "https://github.com/contoso/Contoso", "--yes", "--no-tools", "--no-run", "--no-browsers", "--no-open"), host.Output);
+
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "clone"), Calls(host));
+        StringAssert.Contains(host.FlatOutput, "Contoso is already cloned");
+        StringAssert.Contains(host.FlatOutput, "Contoso is ready");
+    }
+
+    [TestMethod]
+    public async Task SetupWithAnAddress_Should_LeaveAFolderOfTheSameNameThatHoldsSomethingElse()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["git"] = "git";
+        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "Contoso")).FullName, "notes.txt"), "");
+        host.Runner.On("git", "remote get-url origin", 2, "error: No such remote 'origin'");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("setup", "https://github.com/contoso/Contoso", "--yes"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "isn't a clone of https://github.com/contoso/Contoso");
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "clone"), Calls(host));
+    }
+
+    [TestMethod]
+    public async Task ARepositoryTheSignedInAccountCantRead_Should_StopTheSetupWithWhatToDo()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.AllToolsInstalled();
+        host.Runner.Executables["git"] = "git";
+        host.Runner.Executables["gh"] = "gh";
+        host.Runner.On("git", "clone", 128, "remote: Repository not found.\nfatal: repository 'https://github.com/contoso/Contoso/' not found");
+        host.Runner.On("gh", "auth status", 0, "github.com\n  ✓ Logged in to github.com account contoso");
+
+        Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("setup", "https://github.com/contoso/Contoso", "--yes"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "github.com didn't let this computer read contoso/Contoso");
+        StringAssert.Contains(host.FlatOutput, "ask its owner to give your GitHub account access");
+        StringAssert.Contains(host.FlatOutput, "bit setup https://github.com/contoso/Contoso");
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "restore" or "build"), "There's no project to set up: " + Calls(host));
+    }
+
+    [TestMethod]
+    public async Task APrivateRepositoryWithoutASignInOrATerminal_Should_SayHowToSignInFirst()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.AllToolsInstalled();
+        host.Runner.Executables["git"] = "git";
+        host.Runner.Executables["gh"] = "gh";
+        host.Runner.On("git", "clone", 128, "fatal: could not read Username for 'https://github.com': terminal prompts disabled");
+        host.Runner.On("gh", "auth status", 1, "You are not logged into any GitHub hosts.");
+
+        Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("setup", "https://github.com/contoso/Contoso", "--yes"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "gh auth login --web && gh auth setup-git && bit setup https://github.com/contoso/Contoso");
+    }
+
+    [TestMethod]
+    public async Task AnAddressOutsideGitHub_Should_BeClonedWithoutTheGitHubCli()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.AllToolsInstalled();
+        host.Runner.Executables["git"] = "git";
+        ClonesProject(host, "Contoso");
+
+        Assert.AreEqual(0, await host.RunAsync("setup", "git@gitlab.com:contoso/apps/Contoso.git", "--yes", "--no-run", "--no-browsers", "--no-open"), host.Output);
+
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "gh"), Calls(host));
+        Assert.IsTrue(Directory.Exists(Path.Combine(host.WorkingDirectory, "Contoso")));
+    }
+
+    [TestMethod]
+    public async Task SetupInAFolderBitCantWriteTo_Should_CloneIntoSourceReposInTheHomeFolder()
+    {
+        if (Environment.UserName is "root")
+            return;
+
+        using var host = new TestHost();
+        host.Runner.Executables["git"] = "git";
+        ClonesProject(host, "Contoso");
+        var expected = Path.Combine(host.Home, "source", "repos", "Contoso");
+        int exitCode;
+
+        using (DenyWrites(host.WorkingDirectory))
+        {
+            exitCode = await host.RunAsync("setup", "https://github.com/contoso/Contoso", "--yes", "--no-tools", "--no-run", "--no-build", "--no-open");
+        }
+
+        Assert.AreEqual(0, exitCode, host.Output);
+        StringAssert.Contains(host.FlatOutput, $"bit can't write to {host.WorkingDirectory}, so bit clones Contoso into {expected}.");
+        Assert.IsTrue(File.Exists(Path.Combine(expected, "Contoso.slnx")), host.Output);
+    }
+
+    [TestMethod]
+    public async Task SetupWithSomethingThatOnlyLooksLikeAnAddress_Should_BeRefused()
+    {
+        using var host = new TestHost(HostOs.Linux);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("setup", "https://github.com/contoso/Contoso?tab=readme", "--yes"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "isn't a repository address bit can clone");
+        Assert.IsEmpty(host.Runner.Calls, Calls(host));
+    }
+
+    [TestMethod]
+    public async Task SetupOutsideAProject_Should_SayItCanCloneOneFirst()
+    {
+        using var host = new TestHost(HostOs.Linux);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("setup", "--yes"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "bit setup https://github.com/contoso/Contoso");
+    }
+
+    [TestMethod]
     public async Task ThePlan_Should_OpenTheWorkbenchThenTheLandingPageAndSetUpTheNativeAppsLast()
     {
         using var host = new TestHost(HostOs.Linux, prompter: new ScriptedPrompter());
@@ -398,6 +538,16 @@ public class NewWorkflowTests
             File.WriteAllText(Path.Combine(directory, $"{name}.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
 
             return new ProcessResult { ExitCode = 0, Output = "The template \"bit Boilerplate\" was created successfully." };
+        });
+    }
+
+    /// <summary>git clone, as the fake runner answers it: the project lands in the folder its last argument names.</summary>
+    private static void ClonesProject(TestHost host, string name)
+    {
+        host.Runner.On("git", "clone", spec =>
+        {
+            WriteProject(spec.Arguments[^1], name);
+            return new ProcessResult { ExitCode = 0, Output = $"Cloning into '{name}'..." };
         });
     }
 

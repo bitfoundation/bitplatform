@@ -95,14 +95,25 @@ And these of its own:
 
 ## bit setup
 
-Gets an existing project ready on this machine, e.g. after cloning it, or adds a platform later:
+Gets an existing project ready on this machine, such as a teammate's project on their computer, or yours on another one, or adds a platform later:
 
 ```bash
+bit setup https://github.com/contoso/Contoso
 bit setup
 bit setup --platforms android
 ```
 
-With a native platform, it first checks that the app id in Client.Maui's project file is one the native apps can have. It installs missing tools, builds the Workbench and the landing page and opens them the way `bit new` does, installs the WebAssembly build support, restores and builds the web app, installs Playwright's Chromium for the UI tests, installs the VS Code extensions the project recommends when VS Code is installed, and starts the project the way `bit new` does. The native apps' build support, packages and build come after that, while the project runs.
+Given a repository's address, `https://host/owner/name` or `git@host:owner/name`, it clones the project first, into the folder `bit new` would create it in: `./<name>`, or `~/source/repos/<name>` when that's a system folder or one bit can't write to. It installs git first when it's missing, and on github.com the GitHub CLI too: when the clone fails without a sign-in, as it does for a private repository on a computer that hasn't signed in to GitHub yet, it signs in in your browser and clones again. On any other host, and over SSH, git asks for what it needs itself. When that folder is already a clone of the same repository, it sets it up instead of cloning it again, so running the same line twice does no harm; any other folder of that name stops it. bitfabric.co/setup gives the line that installs .NET and bit CLI and runs `bit setup` with your repository's address, for a computer that has neither yet.
+
+Without an address it works in the current folder, or in the folder you name. With a native platform, it first checks that the app id in Client.Maui's project file is one the native apps can have. It installs missing tools, builds the Workbench and the landing page and opens them the way `bit new` does, installs the WebAssembly build support, restores and builds the web app, installs Playwright's Chromium for the UI tests, trusts the folder for VS Code and the AI coding tools, installs the VS Code extensions the project recommends when VS Code is installed, and starts the project the way `bit new` does. The native apps' build support, packages and build come after that, while the project runs. Last, it opens the project in VS Code when it's installed.
+
+| Option | What it does |
+|---|---|
+| `--ide <code\|vs\|rider\|none>` | Open the project in this IDE when done. Default: VS Code, when it's installed. |
+| `--no-trust` | Don't mark the folder as trusted for VS Code and the AI coding tools. CI never does. |
+| `--no-open` | Don't open an IDE. |
+
+It takes `bit new`'s `--platforms`, `--tools`, `--yes`, `--non-interactive`, `--no-tools`, `--no-workloads`, `--no-restore`, `--no-build`, `--no-browsers`, `--no-run` and `-p` as well.
 
 ## bit run
 

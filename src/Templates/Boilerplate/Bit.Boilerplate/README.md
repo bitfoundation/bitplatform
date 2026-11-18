@@ -2,6 +2,18 @@
 
 Thank you for creating a new project with bit platform! We appreciate your trust in our platform and are excited to see what you'll build.
 
+## On another computer, or a teammate's
+
+Open [bitfabric.co/setup](https://bitfabric.co/setup), paste this repository's address and copy the line it gives for that
+computer into a terminal there. It installs what's missing, clones the project, signs in to GitHub in the browser when the
+repository is private, gets the project ready and opens it in VS Code.
+
+Where .NET and bit CLI are installed already, that's one command, with this repository's address:
+
+```bash
+bit setup https://github.com/<owner>/<repository>
+```
+
 ## Seeded accounts
 
 So that the app is usable and testable the moment it is generated, the database seed

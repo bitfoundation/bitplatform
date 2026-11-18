@@ -86,6 +86,12 @@ public sealed record ToolNeeds
 
     public bool GitHubRepo { get; init; }
 
+    /// <summary>bit setup clones the project first, so git is needed for that rather than for a new project's history.</summary>
+    public bool ClonesProject { get; init; }
+
+    /// <summary>The project is cloned from github.com over HTTPS, where the GitHub CLI signs in to a private repository.</summary>
+    public bool CloneFromGitHub { get; init; }
+
     public IReadOnlySet<Platform> Platforms { get; init; } = new HashSet<Platform> { Platform.Web };
 
     public string? Ide { get; init; }
