@@ -603,8 +603,8 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             directories.AddRange(["/opt/homebrew/bin", "/usr/local/bin"]);
         }
 
-        directories.Add(Path.Combine(cli.Environment.HomeDirectory, ".dotnet", "tools"));
         directories.Add(Path.Combine(cli.Environment.HomeDirectory, ".aspire", "bin"));
+        directories.Add(Path.Combine(cli.Environment.HomeDirectory, ".dotnet", "tools"));
         cli.Environment.PrependToPath(directories);
         cli.Environment.PrependToPath(firstOnPath, moveToFront: true);
     }

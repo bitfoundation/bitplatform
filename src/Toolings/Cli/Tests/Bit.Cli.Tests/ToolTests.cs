@@ -88,12 +88,16 @@ public class ToolTests
             host.Runner.On("aspire", "--version", 0, "13.6.5+b33d222049f1ecc3bc7257ec07b622fe550b2580");
             return new ProcessResult { ExitCode = 0 };
         });
+        var native = Directory.CreateDirectory(Path.Combine(host.Home, ".aspire", "bin")).FullName;
+        var dotnetTools = Directory.CreateDirectory(Path.Combine(host.Home, ".dotnet", "tools")).FullName;
 
         var steps = new StepRunner(host.Services);
         await new ToolInstaller(host.Services, steps).InstallAsync([aspire], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, steps.Reports.Single(r => r.Id == "aspire").Result.Status);
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["tool", ..]));
+        var path = host.Environment.GetVariable("PATH")!.Split(Path.PathSeparator).ToList();
+        Assert.IsLessThan(path.IndexOf(dotnetTools), path.IndexOf(native), "An older aspire among the .NET tools would hide the one just installed.");
     }
 
     [TestMethod]
