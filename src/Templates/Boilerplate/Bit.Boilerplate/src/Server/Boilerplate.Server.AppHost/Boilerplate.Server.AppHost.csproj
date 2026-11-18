@@ -5,6 +5,7 @@
         <TargetFramework>net11.0</TargetFramework>
         <Features Condition=" '$(framework)' != 'net10.0' ">$(Features);runtime-async=on</Features>
         <EntryPointAccessibility>public</EntryPointAccessibility>
+        <ASPIRE_SUPPRESS_CLI_RUN_HOOK>true</ASPIRE_SUPPRESS_CLI_RUN_HOOK>
         <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
     </PropertyGroup>
 

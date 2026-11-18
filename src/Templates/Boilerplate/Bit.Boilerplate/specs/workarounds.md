@@ -20,6 +20,16 @@ Code that works around a defect in a library, a tool or the platform this app bu
 - **Workaround:** `LandingChatSurface` (`src/LandingPage/Boilerplate.LandingPage.Client/Components/Chat/LandingChatSurface.razor.cs` and its `.razor.scss`) gives the checked microphone an `lp-chat-dictating` class through `BitAiPromptInputParams.Classes.VoiceInput.Button.Checked`, which paints it in the page's accent and pulses it, or rings it under reduced motion.
 - **Upstream:** https://github.com/bitfoundation/bitplatform/issues/14996 (Bit.BlazorUI.AI 11.0.0-pre-19, reported 2026-11-13).
 - **Remove when:** `BitAiVoiceInput` shows that the browser's speech recognition is listening, and that it failed. To check, remove the class and its rule, then press the microphone on the landing page.
+<!--#if (aspire == true)-->
+
+## `dotnet run` doesn't start the app host
+
+- **Symptom:** `dotnet run` of the app host stops at once with "The --no-build option cannot be used when watch mode is enabled."
+- **Cause:** Aspire 17 runs an app host's `dotnet run` as `aspire run --project <app host> --no-build`, and the Aspire CLI refuses `--no-build` while `aspire.config.json` turns `defaultWatchEnabled` on, as this project's does.
+- **Workaround:** `ASPIRE_SUPPRESS_CLI_RUN_HOOK` in `src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj` turns that hand off, so `dotnet run` starts the app host itself, as it did before Aspire 17. `aspire start` keeps watch mode.
+- **Upstream:** not reported yet (Aspire 17.0.0, found 2026-11-18).
+- **Remove when:** `dotnet run` of an app host works with watch mode on. To check, remove the property, then `dotnet run` the app host must log "Distributed application started".
+<!--#endif-->
 <!--#if (aspire == true && redis == true)-->
 
 ## Published Redis runs without persistence
