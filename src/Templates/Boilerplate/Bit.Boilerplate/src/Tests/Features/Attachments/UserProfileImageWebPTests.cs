@@ -54,7 +54,7 @@ public partial class UserProfileImageWebPTests
             var sourceImageBytes = await httpClient.GetByteArrayAsync("images/icons/bit-icon-512.png", TestContext.CancellationToken);
 
             // Sanity: the source really is NOT WebP, otherwise the assertion below would be meaningless.
-            Assert.AreNotEqual(ImageFormat.WebP, TestImageFactory.Identify(sourceImageBytes).Format);
+            Assert.AreNotEqual(BmageImageFormat.WebP, TestImageFactory.Identify(sourceImageBytes).Format);
 
             using var form = new MultipartFormDataContent();
             using var fileContent = new ByteArrayContent(sourceImageBytes);
@@ -74,7 +74,7 @@ public partial class UserProfileImageWebPTests
             var downloadedInfo = TestImageFactory.Identify(downloadedBytes);
 
             // The core assertion: the stored/served small profile image is genuinely WebP, regardless of the PNG we uploaded.
-            Assert.AreEqual(ImageFormat.WebP, downloadedInfo.Format);
+            Assert.AreEqual(BmageImageFormat.WebP, downloadedInfo.Format);
             Assert.AreEqual(256, downloadedInfo.Width);
             Assert.AreEqual(256, downloadedInfo.Height);
         }

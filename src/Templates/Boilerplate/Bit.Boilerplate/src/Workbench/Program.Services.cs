@@ -59,9 +59,9 @@ public static partial class Program
             services.AddBitBortableServices();
             services.AddBitBmotionServices(options =>
             {
-                options.ReducedMotion = BmReducedMotionMode.User;
+                options.ReducedMotion = BmotionReducedMotionMode.User;
                 // Animates in CSS from the first paint, as content that waits for the circuit stays blank for seconds on a cold start.
-                options.Prerender = BmPrerenderMode.Animate;
+                options.Prerender = BmotionPrerenderMode.Animate;
             });
 
             // Sends the browser's and the server's logs, traces and metrics to the OTLP endpoint the OTEL_ variables name, such as the Aspire dashboard's.

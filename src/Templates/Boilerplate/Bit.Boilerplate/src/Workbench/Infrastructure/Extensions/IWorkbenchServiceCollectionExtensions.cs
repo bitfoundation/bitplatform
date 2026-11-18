@@ -1,7 +1,6 @@
 //+:cnd:noEmit
 using Bit.Bonboarding;
 using Bit.Bcrdt;
-using Bit.Bcrdt.Server;
 using Microsoft.Extensions.Localization;
 using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Attachments;

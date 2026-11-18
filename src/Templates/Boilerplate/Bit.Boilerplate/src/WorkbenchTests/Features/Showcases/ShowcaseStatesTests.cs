@@ -1,6 +1,6 @@
 //+:cnd:noEmit
 using Bunit;
-using Bit.Blex.Blazor;
+using Bit.Blex;
 using Boilerplate.Workbench.Components.Preview;
 using Microsoft.AspNetCore.Components.Authorization;
 

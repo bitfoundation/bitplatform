@@ -39,7 +39,7 @@
         <Using Include="Bit.BlazorUI" />
         <Using Include="Bit.Bmotion" />
         <Using Include="Bit.Blex" />
-        <Using Include="Bit.Blex.Blazor" />
+        <Using Include="Bit.Blex" />
         <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Shared.Resources" />
         <Using Include="Boilerplate.Shared.Infrastructure.Services" />
