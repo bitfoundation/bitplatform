@@ -68,6 +68,7 @@ public class ToolTests
         Assert.AreEqual("/bin/sh", missing.Action!.Commands.Single().FileName);
         StringAssert.Contains(missing.Action.Commands.Single().Arguments[^1], "https://aspire.dev/install.sh");
         StringAssert.Contains(missing.Action.Commands.Single().Arguments[^1], "--version '13.6.0'");
+        StringAssert.Contains(missing.Action.Commands.Single().Arguments[^1], $"--install-path '{Path.Combine(host.Home, ".aspire", "bin")}'", "The PATH refresh after the install looks there.");
         CollectionAssert.AreEqual(new[] { "tool", "install", "--global", "Aspire.Cli", "--version", "13.6.0" }, missing.Action.Fallback.Single().Arguments.ToArray());
 
         host.Runner.On("aspire", "--version", 0, "13.7.0+1a2b3c4");
@@ -134,12 +135,14 @@ public class ToolTests
             host.Runner.On("aspire", "--version", 0, "13.6.5+b33d222049f1ecc3bc7257ec07b622fe550b2580");
             return new ProcessResult { ExitCode = 1, Output = "Error: Failed to update the shell profile" };
         });
+        var checks = host.Runner.Calls.Count(c => c.FileName is "aspire");
 
         var steps = new StepRunner(host.Services);
         await new ToolInstaller(host.Services, steps).InstallAsync([aspire], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, steps.Reports.Single(r => r.Id == "aspire").Result.Status);
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["tool", ..]), "A second aspire, from dotnet tool, would only compete with the first on PATH.");
+        Assert.AreEqual(checks + 1, host.Runner.Calls.Count(c => c.FileName is "aspire"), "The check that skipped the .NET tool also decides the result.");
     }
 
     [TestMethod]

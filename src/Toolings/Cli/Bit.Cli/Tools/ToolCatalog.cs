@@ -842,16 +842,18 @@ public static partial class ToolCatalog
 
         private static ProcessSpec NativeInstaller(ToolContext context, string? version)
         {
+            var installPath = Path.Combine(context.Environment.HomeDirectory, ".aspire", "bin");
+
             if (context.Environment.IsWindows)
             {
                 var script = "$installer = Join-Path ([IO.Path]::GetTempPath()) ('aspire-install-' + [guid]::NewGuid().ToString('N') + '.ps1'); " +
                     "Invoke-WebRequest -UseBasicParsing -Uri 'https://aspire.dev/install.ps1' -OutFile $installer -ErrorAction Stop; " +
-                    $"& $installer{(version is null ? "" : $" -Version '{version}'")}; if (-not $?) {{ exit 1 }}; exit $LASTEXITCODE";
+                    $"& $installer -InstallPath '{installPath.Replace("'", "''", StringComparison.Ordinal)}'{(version is null ? "" : $" -Version '{version}'")}; if (-not $?) {{ exit 1 }}; exit $LASTEXITCODE";
 
                 return new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script], Environment = new Dictionary<string, string?> { ["PSModulePath"] = null }, Timeout = TimeSpan.FromMinutes(10) };
             }
 
-            var shell = $"set -e; installer=\"$(mktemp -d)/aspire-install.sh\"; curl -fsSL -o \"$installer\" https://aspire.dev/install.sh; bash \"$installer\"{(version is null ? "" : $" --version '{version}'")}";
+            var shell = $"set -e; installer=\"$(mktemp -d)/aspire-install.sh\"; curl -fsSL -o \"$installer\" https://aspire.dev/install.sh; bash \"$installer\" --install-path '{installPath.Replace("'", "'\\''", StringComparison.Ordinal)}'{(version is null ? "" : $" --version '{version}'")}";
 
             return new ProcessSpec { FileName = "/bin/sh", Arguments = ["-c", shell], Timeout = TimeSpan.FromMinutes(10) };
         }

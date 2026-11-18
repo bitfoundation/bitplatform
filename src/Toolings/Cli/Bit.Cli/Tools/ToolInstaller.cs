@@ -147,15 +147,18 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
             var commands = action.Commands;
             var last = await RunCommandsAsync(commands);
+            ToolStatus? beforeFallback = null;
 
             if (Succeeded(last) is false && action.Fallback.Count > 0)
             {
                 RefreshPath();
+                beforeFallback = detect is null ? null : await detect(ct);
 
-                if (detect is null || await detect(ct) is { IsSatisfied: false })
+                if (beforeFallback is not { IsSatisfied: true })
                 {
                     commands = action.Fallback;
                     last = await RunCommandsAsync(commands);
+                    beforeFallback = null;
                 }
             }
 
@@ -211,7 +214,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             {
                 RefreshPath();
 
-                if (await detect(ct) is { IsSatisfied: true } installedAnyway)
+                if ((beforeFallback ?? await detect(ct)) is { IsSatisfied: true } installedAnyway)
                     return StepResult.Succeeded(done, installedAnyway.Version);
             }
 
