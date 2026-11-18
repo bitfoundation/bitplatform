@@ -5,6 +5,22 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### Five of `BitDataGrid`'s helper types are internal ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+`BitDataGridDataProcessor`, `BitDataGridQueryableProcessor`, `BitDataGridPropertyAccessor<TItem>`,
+`BitDataGridColumnSlot<TItem>` and `BitDataGridExcelStyle` are the machinery `BitDataGrid` works with, and none of
+its parameters, callbacks or templates hands one of them out, so they are no longer public:
+
+- **The two processors** apply a search, filters, sorts, groups and aggregates through the grid's own column
+  components, keyed by their ids, and read each column's field through a reader the column sets up only as it renders
+  inside a grid. Columns built outside one are skipped, so the processors could not apply a
+  `BitDataGridReadRequest` anywhere but in the grid. The grid still applies all of it to the rows it is given in
+  `Items`, a list or an `IQueryable<TItem>` (which a provider such as EF Core runs at the source). An `OnRead`
+  handler applies the request's `Search`, `Filters`, `Sorts`, `Skip` and `Take` to its own data source, as before.
+- **`BitDataGridPropertyAccessor<TItem>`** is how a column reads and writes the field its `Field` or `Property` names.
+- **`BitDataGridColumnSlot<TItem>`** is a cell position while `VirtualizeColumns` is on.
+- **`BitDataGridExcelStyle`** carries the colors and fonts read off the rendered grid when `ExcelExportStyled` is set.
+
 ### `BitFullCalendarChangeNotifier`, `BitFullCalendarColorScheme` and `BitFullCalendarHelpers` are internal ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 These are the machinery `BitFullCalendar` and its parts work with: the change notifier that hands a drag, a resize or
