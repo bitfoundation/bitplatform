@@ -265,7 +265,7 @@
             if ((el as any)[boundKey]) return;
             (el as any)[boundKey] = true;
 
-            // A resize is serialized per event (per dotNetRef), not per handle: BitFcTimelineEventBlock
+            // A resize is serialized per event (per dotNetRef), not per handle: _BitFcTimelineEventBlock
             // wires both resize handles (start/end) to the same dotNetRef, so this shared flag ensures
             // only one resize runs at a time across both handles. Cleared on end/cancel/abort.
             const activeKey = "__bitFcResizeActive";

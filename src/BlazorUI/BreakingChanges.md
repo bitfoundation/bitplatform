@@ -5,6 +5,28 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitFullCalendar`'s `BitFc*` parts are `_BitFc*` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The 40 `BitFc*` components are the header, views, dialogs, event blocks and other parts `BitFullCalendar` draws
+itself with. Each one runs on the calendar's own state, change notifier and settings, which the calendar cascades to
+it (16 of them also on a cascade the library keeps internal), so they cannot be used on their own, and they were public
+only because a Razor component cannot be anything else. They now carry the leading underscore of the library's other
+parts (`_BitNavBarChild`, `_BitDataGridRow`) and are hidden from IntelliSense: `BitFcX` is `_BitFcX`, for every one of
+
+`BitFcAddEditEventDialog`, `BitFcAgendaEvents`, `BitFcBackgroundEvents`, `BitFcBody`, `BitFcDateNavigator`,
+`BitFcDateTimePicker`, `BitFcDayBackgroundLabels`, `BitFcDayCell`, `BitFcDayView`, `BitFcDayViewMultiDayEventsRow`,
+`BitFcDraggableEvent`, `BitFcDroppableArea`, `BitFcEventBlock`, `BitFcEventBullet`, `BitFcEventDetailsDialog`,
+`BitFcEventListDialog`, `BitFcEventTemplateHost`, `BitFcFilterEvents`, `BitFcHeader`, `BitFcMiniCalendar`,
+`BitFcModeTabs`, `BitFcMonthEventBadge`, `BitFcMonthView`, `BitFcNowIndicator`, `BitFcRecurrenceScopeDialog`,
+`BitFcRenderGroupedEvents`, `BitFcSettings`, `BitFcTimeColumn`, `BitFcTimelineDayView`, `BitFcTimelineEventBlock`,
+`BitFcTimelineLayout`, `BitFcTimelineMonthView`, `BitFcTimelineNowIndicator`, `BitFcTimelineWeekView`, `BitFcToast`,
+`BitFcTodayButton`, `BitFcViewTabs`, `BitFcWeekView`, `BitFcWeekViewMultiDayEventsRow` and `BitFcYearView`.
+
+An app that only uses `BitFullCalendar` has nothing to change, and what the calendar renders is unchanged. The
+calendar's models, settings, texts and state (`BitFullCalendarEvent`, `BitFullCalendarSettings`,
+`BitFullCalendar.State`, ...) keep their names. The day cell's `LastColumn` and `TabStop`, below, are parameters of
+`_BitFcDayCell`.
+
 ### `BitDataGridRow`, `BitDataGridCell` and `BitDataGridCellEditor` are `_BitDataGridRow`, `_BitDataGridCell` and `_BitDataGridCellEditor` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 These are the row, the cell and the built-in cell editor `BitDataGrid` renders for itself. They take the grid itself

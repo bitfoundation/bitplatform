@@ -74,9 +74,9 @@ trimmed - off the app's type references and everything they reach. A piece left 
 
 - **A script is kept by what names it.** An interop identifier in C# (`"BitBlazorUI.Utils.isRtl"` keeps the file
   exporting `Utils.isRtl`) - always a **literal**, never put together at run time; the one exception, BitMap's providers,
-  names its provider types instead. Or a comment in the file: `// bit-trim: owners BitNav` (kept with that type; `BitFc*`
-  for a family), `// bit-trim: markup data-bit-esc` (kept when the code an app can run, or its static html, holds that
-  text - for a script acting on what markup says), `// bit-trim: always`. A file that runs code as it loads - its top
+  names its provider types instead. Or a comment in the file: `// bit-trim: owners BitNav` (kept with that type;
+  `_BitFc*` for a family), `// bit-trim: markup data-bit-esc` (kept when the code an app can run, or its static html,
+  holds that text - for a script acting on what markup says), `// bit-trim: always`. A file that runs code as it loads - its top
   level, or a function invoked where it is written, calls anything, constructs anything but a plain `Map` / `Set`, or
   assigns to the platform (`window.onresize = ...`) - must carry one of these (or `on-demand`): `build-assets.mjs` fails
   on one that does not. A stylesheet says `always` or `owners` only.
@@ -96,7 +96,7 @@ trimmed - off the app's type references and everything they reach. A piece left 
   `@extend` of another component, no keyframes of another component, and no global token (`:root`) declared in it: those
   go in `general.scss` or the theme files, which every bundle keeps. It is kept for the component of its file name; a
   stylesheet styling the parts of a family that are components of their own says so (`// bit-trim: owners BitFullCalendar
-  BitFc*`). `build-assets.mjs` fails when the pieces do not add up to the whole bundle byte for byte.
+  _BitFc*`). `build-assets.mjs` fails when the pieces do not add up to the whole bundle byte for byte.
 - **The Extras' and AI's scripts call the core's through their `Scripts/BitBlazorUI.d.ts`**, which is also what keeps
   those core functions in a trimmed core bundle: declare every core member a script of the package uses.
 - **A folder of vendored files** (a library a component loads at run time, a set of images) is declared as a

@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Components.Extras.FullCalendar;
 
 /// <summary>
-/// Covers <see cref="BitFcYearView"/> through the calendar that renders it: the twelve month grids and their headers,
+/// Covers <see cref="_BitFcYearView"/> through the calendar that renders it: the twelve month grids and their headers,
 /// which days are marked busy and how they are named, the bullets, the drill-down of a month title, the event list a
 /// busy day opens, and the roving tab stop the keys walk across the busy days of the year.
 /// </summary>
