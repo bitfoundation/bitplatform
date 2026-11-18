@@ -1720,14 +1720,21 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
         $process = [Diagnostics.Process]::Start($start)
         $process.StandardInput.Close()
         $copies = @($process.StandardOutput.BaseStream.CopyToAsync($output), $process.StandardError.BaseStream.CopyToAsync($errors))
-        $answeredAt = $idleAt = $null
+        $answers = 0
+        $answeredAt = $waitingAt = $null
 
         while (-not $process.WaitForExit(5000)) {
-            $state = Get-AgentTurnState $log
-            $idleAt = $state -eq 'working' ? $null : ($idleAt ?? (Get-Date))
-            $answeredAt = $state -eq 'answered' ? ($answeredAt ?? (Get-Date)) : $null
+            $turn = Get-AgentTurnState $log
 
-            if (($answeredAt -and ((Get-Date) - $answeredAt).TotalSeconds -gt 60) -or ($idleAt -and ((Get-Date) - $idleAt).TotalMinutes -gt 10)) {
+            if ($turn.Answers -ne $answers) {
+                $answers = $turn.Answers
+                $answeredAt = $null
+            }
+
+            $waitingAt = $turn.State -eq 'waiting' ? ($waitingAt ?? (Get-Date)) : $null
+            $answeredAt = $turn.State -eq 'answered' ? ($answeredAt ?? (Get-Date)) : $null
+
+            if (($answeredAt -and ((Get-Date) - $answeredAt).TotalSeconds -gt 60) -or ($waitingAt -and ((Get-Date) - $waitingAt).TotalMinutes -gt 10)) {
                 taskkill /PID $process.Id /T /F 2>&1 | Out-Null
                 break
             }
@@ -1750,16 +1757,16 @@ function Get-AgentTurnState([string] $log) {
 
     try {
         $lines = (New-Object IO.StreamReader $stream).ReadToEnd() -split "`n" | Where-Object {
-            $_.StartsWith('{') -and ($_.Contains('"type":"result"') -or $_.Contains('"subtype":"task_') -or
-                $_.Contains('"subtype":"background_tasks_changed"') -or ($_.Contains('"type":"assistant"') -and $_.Contains('"parent_tool_use_id":null')))
+            $_.StartsWith('{') -and ($_.Contains('"type":"result"') -or $_.Contains('"subtype":"task_started"') -or
+                $_.Contains('"subtype":"task_notification"') -or ($_.Contains('"type":"assistant"') -and $_.Contains('"parent_tool_use_id":null')))
         }
 
-        $endless = 'dotnet (watch|run)|/api/progress/'
         $commands = @{}
-        $tasks = @{}
-        $running = @()
-        $answered = $false
-        $woken = $null
+        $endless = @{}
+        $ended = [Collections.Generic.HashSet[string]]::new()
+        $woken = [Collections.Generic.List[string]]::new()
+        $answered = $aside = $false
+        $answers = 0
 
         foreach ($line in $lines) {
             try {
@@ -1770,33 +1777,52 @@ function Get-AgentTurnState([string] $log) {
             }
 
             if ($event.type -eq 'assistant') {
-                $answered = $answered -and $woken -and $tasks[$woken] -match $endless
+                $aside = $answered -and $woken.Count -gt 0 -and -not ($woken | Where-Object { -not $endless[$_] })
+
+                if (-not $aside) {
+                    $answered = $false
+                    $woken.Clear()
+                }
+
                 $event.message.content | Where-Object type -eq 'tool_use' | ForEach-Object { $commands[$_.id] = "$($_.input.command)" }
             }
             elseif ($event.type -eq 'result') {
                 if ($event.num_turns -gt 0) {
+                    $answers += $aside ? 0 : 1
                     $answered = $true
-                    $woken = $null
+                    $aside = $false
+                    $woken.Clear()
                 }
             }
+            elseif (-not $event.task_id) {
+                continue
+            }
             elseif ($event.subtype -eq 'task_started') {
-                $tasks[$event.task_id] = $commands[$event.tool_use_id]
+                $endless[$event.task_id] = Test-EndlessCommand ($event.tool_use_id ? $commands[$event.tool_use_id] : $null)
             }
-            elseif ($event.subtype -eq 'task_notification') {
-                $woken = $event.task_id
-            }
-            elseif ($event.subtype -eq 'background_tasks_changed') {
-                $running = @($event.tasks | ForEach-Object task_id)
+            else {
+                $ended.Add($event.task_id) | Out-Null
+
+                if ($answered) {
+                    $woken.Add($event.task_id)
+                }
             }
         }
 
-        $awaited = $running | Where-Object { $tasks.ContainsKey($_) -and $tasks[$_] -notmatch $endless }
+        $awaited = $endless.Keys | Where-Object { -not $endless[$_] -and -not $ended.Contains($_) }
+        $pending = $woken | Where-Object { $endless.ContainsKey($_) -and -not $endless[$_] }
+        $state = if (-not $answered) { 'working' } elseif ($awaited -or $pending) { 'waiting' } else { 'answered' }
 
-        if (-not $answered) { 'working' } elseif ($awaited) { 'waiting' } else { 'answered' }
+        [pscustomobject]@{ State = $state; Answers = $answers }
     }
     finally {
         $stream.Dispose()
     }
+}
+
+function Test-EndlessCommand([string] $command) {
+    $command -match '/api/progress/' -or $command -match '\bdotnet watch\b' -or
+        ($command -match '\bdotnet run\b' -and $command -match 'Server\.Web|LandingPage\.Server|Workbench|AppHost|--urls')
 }
 
 function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
