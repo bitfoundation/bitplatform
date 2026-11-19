@@ -361,9 +361,12 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
         if (appleSignings.TryGetValue((bundleId, profileName), out var signing) is false)
         {
+            AppleEntitlements? entitlements = null;
+
             try
             {
-                signing = await new AppleSigning(appleHttp).CreateAppStoreSigningAsync(appleKey, bundleId, profileName, cancellationToken);
+                entitlements = ProjectContext.FindProjectName(root) is { } name ? AppleEntitlements.ForProject(root, name) : null;
+                signing = await new AppleSigning(appleHttp).CreateAppStoreSigningAsync(appleKey, bundleId, profileName, entitlements, cancellationToken);
             }
             catch (AppleSigningException exp)
             {
@@ -375,6 +378,20 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             }
 
             appleSignings[(bundleId, profileName)] = signing;
+
+            if (entitlements is null)
+            {
+                cli.Console.StepWarning("bit didn't check the bundle id's capabilities", "it found no entitlements file the iOS app signs with in the repository");
+            }
+            else if (signing.EnabledCapabilities.Count > 0)
+            {
+                cli.Console.Step(StepStatus.Succeeded, $"Turned on {string.Join(", ", signing.EnabledCapabilities)}", $"for {bundleId}, which {Path.GetFileName(entitlements.FilePath)} needs");
+            }
+
+            if (entitlements?.UnknownWarning is { } unknown)
+            {
+                cli.Console.StepWarning(unknown);
+            }
 
             var copy = Path.Combine(KeyFolder.For(cli.Environment, repository), $"{bundleId}.{DateTimeOffset.UtcNow:yyyyMMddHHmmss}.p12");
             KeyFolder.WriteSecret(copy, signing.Pkcs12);

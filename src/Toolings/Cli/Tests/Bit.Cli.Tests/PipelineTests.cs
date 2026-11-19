@@ -266,12 +266,19 @@ public class PipelineTests
             """);
         host.Runner.On("gh", "variable get APP_ID", 0, "com.contoso.shop\n");
         host.Runner.On("gh", "variable get IOS_CODE_SIGN_PROVISION", 1, "variable IOS_CODE_SIGN_PROVISION was not found");
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "Shop.slnx"), "<Solution />");
+        var maui = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "src", "Client", "Shop.Client.Maui")).FullName;
+        File.WriteAllText(Path.Combine(maui, "Shop.Client.Maui.csproj"), "<Project><PropertyGroup><ApplicationId>com.contoso.shop</ApplicationId></PropertyGroup></Project>");
+        KeysTests.Plist(Path.Combine(maui, "Platforms", "iOS"), "Entitlements.plist", KeysTests.AssociatedDomains);
 
         Assert.AreEqual(0, await new PipelineSetup(host.Services, new PipelineOptions([], false, false, false), apple).RunAsync(CancellationToken.None), host.Output);
 
         var sets = host.Runner.Calls.Where(c => c.Arguments is ["secret", "set", ..]).ToList();
         Assert.HasCount(10, sets, host.Output);
         Assert.AreEqual(1, apple.Requests.Count(r => r.Line is "POST /v1/certificates"));
+        Assert.AreEqual("ASSOCIATED_DOMAINS", (string?)apple.Body("POST /v1/bundleIdCapabilities")["data"]!["attributes"]!["capabilityType"]);
+        Assert.IsLessThan(apple.Requests.FindIndex(r => r.Line is "POST /v1/profiles"), apple.Requests.FindIndex(r => r.Line is "POST /v1/bundleIdCapabilities"));
+        StringAssert.Contains(host.FlatOutput, "Turned on ASSOCIATED_DOMAINS for com.contoso.shop, which Entitlements.plist needs");
 
         foreach (var environment in new[] { "Production", "Test" })
         {
