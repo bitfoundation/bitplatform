@@ -429,7 +429,8 @@ provider outage does not take an otherwise healthy instance out of the load bala
 - **`entraId`**: reads the tenant's discovery document, then asks for an app-only token, sending the secret only to an
   https token endpoint on the authority's own origin. Only a token, `invalid_scope` or `invalid_resource` passes, so
   `unauthorized_client` (unknown client id), `invalid_client` (wrong secret) and throttling all fail the check.
-- **`appleSignIn`**: signs the client secret with `AppleAuthKey.p8` (so a missing or broken key fails the check) and
+- **`appleSignIn`**: signs the client secret with `Authentication:Apple:PrivateKey`, or else `AppleAuthKey.p8` (so a
+  missing or broken key fails the check), and
   makes sure Apple is reachable. Apple checks the authorization code before the client, so the secret itself can't be
   verified.
 - **`googleSignIn`** and **`gitHubSignIn`**: redeem an authorization code that doesn't exist with the app's client id and
@@ -447,7 +448,9 @@ provider outage does not take an otherwise healthy instance out of the load bala
   made-up subscription before it looks at the signature, and Apple's leaves some bad signatures unanswered, so neither is
   asked.
 - **`firebase`** and **`apns`**: send to a device token that does not exist. Firebase and APNs reject the token only
-  after they accept the credentials, so a token error means the check passed.
+  after they accept the credentials, so a token error means the check passed. APNs gives the same answer for a token of
+  its other environment, so outside Development `apns` reports Degraded while `AdsPushAPNS:EnvironmentType` is
+  `Development`, the sandbox, from which TestFlight and App Store installs get no push.
 - **`aiChat`**: gets a real answer (at most 16 output tokens) from an Agent Framework agent
   built on the app's `IChatClient`, so it also catches exhausted quota or billing.
 - **`aiEmbedding`**: embeds one word with the app's embedding generator, whichever provider is configured (OpenAI

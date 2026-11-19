@@ -218,6 +218,7 @@ jobs:
 #if (notification == true)
           VAPID_PRIVATE_KEY: ${{ secrets.PRIVATE_VAPIDKEY }}
           VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          APP_ID: ${{ vars.APP_ID }}
 #endif
         run: |
           project="$(printf '%s' "boilerplate-$ENV_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_\n-' '-')"
@@ -368,6 +369,14 @@ jobs:
             jq -r 'to_entries[] | select(.key | contains("__") or . == "APP_VERSION") | "variable\t\(.key)\t\(.value | @base64)"' <<< "$VARIABLES"
             jq -r 'to_entries[] | select(.key | contains("__") or . == "APP_VERSION") | "secret\t\(.key)\t\(.value | @base64)"' <<< "$SECRETS"
           )
+          #if (notification == true)
+
+          # iOS pushes go to the bundle id the iOS job builds the app with, unless a setting of its own names another.
+          apns_topic="${settings_file[SERVERAPI]}:ADSPUSHAPNS__APPBUNDLEIDENTIFIER"
+          if [[ -n "$APP_ID" && -z "${set_by[$apns_topic]:-}" ]]; then
+            setting "${settings_file[SERVERAPI]}" AdsPushAPNS__AppBundleIdentifier "$APP_ID" APP_ID
+          fi
+          #endif
           #if (cloudflare != true)
 
           # The web app's and the landing page's /v1/ paths, where their pages and the apps post their telemetry, go to the
@@ -772,6 +781,11 @@ jobs:
       id-token: write
       attestations: write
     environment: ${{ inputs.ENV_NAME }}
+#if (notification == true)
+    env:
+      # Optional, and a step's if can't read a secret: the csproj leaves google-services.json out when it isn't there.
+      GOOGLE_SERVICES_JSON_FILE_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_FILE_BASE64 }}
+#endif
 
     steps:
       - name: Checkout source code
@@ -797,6 +811,21 @@ jobs:
           fileDir: './src/Client/Boilerplate.Client.Maui/'
           fileName: 'Boilerplate.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+#if (notification == true)
+
+      # Firebase's google-services.json, without which the app gets no push token (See .docs/22).
+      - name: Extract google-services.json
+        if: env.GOOGLE_SERVICES_JSON_FILE_BASE64 != ''
+        uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
+        with:
+          fileDir: './src/Client/Boilerplate.Client.Maui/Platforms/Android/'
+          fileName: 'google-services.json'
+          encodedString: ${{ secrets.GOOGLE_SERVICES_JSON_FILE_BASE64 }}
+
+      - name: Warn that the app gets no push notifications
+        if: env.GOOGLE_SERVICES_JSON_FILE_BASE64 == ''
+        run: echo "::warning::GOOGLE_SERVICES_JSON_FILE_BASE64 is not set, so the Android app gets no push notifications."
+#endif
 
       - name: Translate .resx files
         timeout-minutes: 15

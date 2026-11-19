@@ -32,6 +32,10 @@ public sealed partial class AppleSigning(HttpMessageHandler? handler = null)
 
     public const string IdentifiersPage = "https://developer.apple.com/account/resources/identifiers/list";
 
+    public const string KeysPage = "https://developer.apple.com/account/resources/authkeys/list";
+
+    public const string AccountPage = "https://developer.apple.com/account";
+
     public const string CertificateType = "DISTRIBUTION";
 
     public const string ProfileType = "IOS_APP_STORE";
@@ -50,7 +54,12 @@ public sealed partial class AppleSigning(HttpMessageHandler? handler = null)
             + "The same can be done by hand at https://developer.apple.com/account/resources.";
 
     /// <param name="entitlements">The entitlements the app signs with, whose capabilities the bundle id gets. Null checks none.</param>
-    public async Task<AppleSigningResult> CreateAppStoreSigningAsync(AppleApiKey key, string bundleId, string profileName, AppleEntitlements? entitlements, CancellationToken cancellationToken)
+    public Task<AppleSigningResult> CreateAppStoreSigningAsync(AppleApiKey key, string bundleId, string profileName, AppleEntitlements? entitlements, CancellationToken cancellationToken)
+        => CreateAppStoreSigningAsync(key, bundleId, profileName, entitlements, [], cancellationToken);
+
+    /// <param name="entitlements">The entitlements the app signs with, whose capabilities the bundle id gets. Null checks none.</param>
+    /// <param name="capabilities">Capabilities the bundle id gets on top of those, like <see cref="AppleEntitlements.SignInWithApple"/>.</param>
+    public async Task<AppleSigningResult> CreateAppStoreSigningAsync(AppleApiKey key, string bundleId, string profileName, AppleEntitlements? entitlements, IReadOnlyList<AppleCapability> capabilities, CancellationToken cancellationToken)
     {
         ImportKey(key.PrivateKey).Dispose();
 
@@ -60,7 +69,8 @@ public sealed partial class AppleSigning(HttpMessageHandler? handler = null)
         var bundle = await FindOrRegisterBundleIdAsync(http, key, bundleId, cancellationToken);
 
         // A profile carries the capabilities its bundle id has when it's created, so they're turned on first.
-        IReadOnlyList<string> enabled = entitlements is null ? [] : await EnableCapabilitiesAsync(http, key, bundleId, bundle.Id, entitlements.Capabilities, cancellationToken);
+        IReadOnlyList<AppleCapability> wanted = [.. (entitlements?.Capabilities ?? []).Concat(capabilities).DistinctBy(c => c.Type)];
+        IReadOnlyList<string> enabled = await EnableCapabilitiesAsync(http, key, bundleId, bundle.Id, wanted, cancellationToken);
 
         using var privateKey = RSA.Create(2048);
         var (certificateId, certificate) = await CreateCertificateAsync(http, key, CreateSigningRequest(privateKey), cancellationToken);

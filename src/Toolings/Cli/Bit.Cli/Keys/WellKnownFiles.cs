@@ -73,4 +73,27 @@ public static class WellKnownFiles
 
         return changed;
     }
+
+    /// <summary>
+    /// The App ID prefix of the app's entry, <c>&lt;prefix&gt;.&lt;bundle id&gt;</c>, or null. <see cref="AddAppleApp"/> writes the
+    /// team id there, which an old team's prefix may not be.
+    /// </summary>
+    public static string? AppIdPrefixOf(string path, string bundleId)
+    {
+        try
+        {
+            if (File.Exists(path) is false || JsonNode.Parse(File.ReadAllText(path)) is not JsonObject association)
+                return null;
+
+            var appIds = new[] { association["activitycontinuation"]?["apps"], association["webcredentials"]?["apps"] }.OfType<JsonArray>().SelectMany(apps => apps)
+                .Concat((association["applinks"]?["details"] as JsonArray)?.OfType<JsonObject>().Select(d => d["appID"]) ?? []);
+
+            return appIds.OfType<JsonValue>().Select(id => id.TryGetValue<string>(out var text) ? text : null)
+                .FirstOrDefault(id => id is not null && id.Length == bundleId.Length + 11 && id.EndsWith($".{bundleId}", StringComparison.Ordinal))?[..10];
+        }
+        catch (Exception exp) when (exp is JsonException or IOException)
+        {
+            return null;
+        }
+    }
 }

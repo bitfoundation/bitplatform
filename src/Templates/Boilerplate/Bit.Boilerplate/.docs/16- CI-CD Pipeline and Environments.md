@@ -153,7 +153,9 @@ that environment's apps.
 Run `bit pipeline` in the repository. It reads the secrets the workflows use, creates the environments they deploy to,
 and stores each secret in its environment. It creates what it can on its own: the app certificate, the VAPID key pair,
 the database and Redis passwords and the Android signing key, and with an App Store Connect API key you give it, the iOS
-app's signing. It asks for the rest, and an empty answer skips one. `bit pipeline --check` only lists what's missing.
+app's signing. It asks for the rest, and an empty answer skips one: among them the files only you can make at Google and
+Apple for push notifications and Sign in with Apple, from which it stores their secrets (`.docs/22`, `.docs/07`).
+`bit pipeline --check` only lists what's missing.
 
 | Name | Kind | Holds |
 | --- | --- | --- |
@@ -193,7 +195,12 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 <!--#if (notification == true)-->
 | `PUBLIC_VAPIDKEY`, `PRIVATE_VAPIDKEY` | secret | The environment's web push key pair |
 | `VAPID_SUBJECT` | secret | The contact the push services see, such as `mailto:you@example.com` |
+| `SERVERAPI__ADSPUSHFIREBASE__*`, `SERVERAPI__ADSPUSHAPNS__*` | secret, optional | The server's credentials for Android and iOS push, which `bit pipeline` stores from a Firebase service account and an APNs key (`.docs/22`) |
 <!--#endif-->
+| `SERVERAPI__AUTHENTICATION__APPLE__*` | secret, optional | Sign in with Apple's Services ID, key id, team id and key, which `bit pipeline` stores from the key's `.p8` (`.docs/07`) |
+<!--#endif-->
+<!--#if (notification == true)-->
+| `GOOGLE_SERVICES_JSON_FILE_BASE64` | secret, optional | The Android app's `google-services.json` in base64. Without it the Android app gets no push notifications (`.docs/22`) |
 <!--#endif-->
 | `ANDROID_RELEASE_*`, `APPSTORE_*`, `IOS_CODE_SIGN_PROVISION` | secret, variable | Signing the Android and iOS apps |
 | `CODE_SIGNING_*`, `WINDOWS_UPDATE_FILES_URL` | secret, variable | Signing the Windows app, and where it looks for updates |
@@ -249,6 +256,11 @@ break. It reads them with `jq`, which the server needs installed.
 <!--#if (cloudflare == true)-->
 The api's `Cloudflare` token and zone come from `CLOUDFLARE_TOKEN` and `CLOUDFLARE_ZONE`, so they need no secret of
 their own.
+<!--#endif-->
+<!--#if (notification == true)-->
+The api's `AdsPushAPNS:AppBundleIdentifier` comes from `APP_ID`, the bundle id the iOS job builds the app with, unless a
+setting of its own names another, and `AdsPushAPNS:EnvironmentType` is `Production` outside Development, so iOS push
+needs only the key's three secrets.
 <!--#endif-->
 <!--#endif-->
 

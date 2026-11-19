@@ -57,6 +57,7 @@ using Hangfire.Redis.StackExchange;
 //#if (notification == true)
 using AdsPush;
 using AdsPush.Abstraction;
+using AdsPush.Abstraction.APNS;
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
 using Azure.Storage.Blobs;
@@ -210,6 +211,8 @@ public static partial class Program
 
             if (string.IsNullOrWhiteSpace(appSettings.AdsPushAPNS?.P8PrivateKey) is false)
             {
+                appSettings.AdsPushAPNS.P8PrivateKey = AppleP8Key.Body(appSettings.AdsPushAPNS.P8PrivateKey);
+
                 adsPushSenderBuilder = adsPushSenderBuilder.ConfigureApns(appSettings.AdsPushAPNS, sp.GetRequiredService<IHttpClientFactory>().CreateClient("APNS"));
             }
 
@@ -892,11 +895,8 @@ public static partial class Program
         {
             authenticationBuilder.AddApple(options =>
             {
-                options.UsePrivateKey(keyId =>
-                {
-                    return env.ContentRootFileProvider.GetFileInfo("AppleAuthKey.p8");
-                });
                 configuration.GetRequiredSection("Authentication:Apple").Bind(options);
+                options.UsePrivateKey(configuration["Authentication:Apple:PrivateKey"], env.ContentRootFileProvider);
             });
         }
 
@@ -1193,8 +1193,10 @@ public static partial class Program
         AddCachedCheckIfConfigured("firebase", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(appSettings.AdsPushFirebase?.PrivateKey) is false, "AdsPushFirebase",
             sp => ActivatorUtilities.CreateInstance<PushNotificationHealthCheck>(sp, AdsPushTarget.Android), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
+        // TestFlight and App Store installs get no push from APNs' sandbox (See PushNotificationHealthCheck).
+        var apnsSandbox = builder.Environment.IsDevelopment() is false && appSettings.AdsPushAPNS?.EnvironmentType is APNSEnvironmentType.Development;
         AddCachedCheckIfConfigured("apns", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(appSettings.AdsPushAPNS?.P8PrivateKey) is false, "AdsPushAPNS",
-            sp => ActivatorUtilities.CreateInstance<PushNotificationHealthCheck>(sp, AdsPushTarget.Ios), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+            sp => ActivatorUtilities.CreateInstance<PushNotificationHealthCheck>(sp, AdsPushTarget.Ios, apnsSandbox), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
         //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
