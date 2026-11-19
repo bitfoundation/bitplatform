@@ -206,6 +206,33 @@ test('inside icons hug the bar edges without displacing the labels outside it', 
     assert.equal(byText.end.x, node.x + node.width + gap);
 });
 
+test('center icons move clear of the icons inside the bar when centering would cover them', () => {
+    // An 80px bar: the two inside start icons cover 3-38px of it, so the center
+    // icon centered on the bar (32-48px) would sit on the second one.
+    const engine = makeSceneEngine([
+        bar('a', 'r0', 1, 3, {
+            height: 24,
+            icons: [
+                { source: 'one.png', position: 'start', inside: true },
+                { source: 'two.png', position: 'start', inside: true },
+                { source: 'center.png', position: 'center' }
+            ]
+        })
+    ]);
+    const loaded = { complete: true, naturalWidth: 16, naturalHeight: 16 };
+    engine._getImage = () => loaded;
+
+    const node = engine.buildScene().bars[0];
+    const gap = engine.config.barLabelGap;
+    const icons = Object.fromEntries(node.icons.map(i => [i.source, i]));
+    const inner = icons['two.png'];
+    const center = icons['center.png'];
+
+    assert.ok(node.x + node.width / 2 - center.width / 2 < inner.x + inner.width, 'centered, it would overlap');
+    assert.equal(center.x, inner.x + inner.width + gap, 'the center icon must clear the inside icons');
+    assert.ok(center.x + center.width <= node.x + node.width - gap, 'and stay inside the bar');
+});
+
 test('inside icons anchored above and below hug the bar\'s top and bottom', () => {
     const engine = makeSceneEngine([
         bar('a', 'r0', 1, 6, {

@@ -223,14 +223,43 @@ test('section text stays drawn at every zoom once its section has room for it', 
         engine._pixelsPerMs = pph / HOUR;
         engine.visibleTimeRange = engine.calculateVisibleTimeRange();
         const node = engine.buildScene().bars[0];
-        // 20%-60% of the 1h-6h bar is 2h-4h.
-        const room = engine.getTimeToX(at(4)) - engine.getTimeToX(at(2));
+        const gap = engine.config.barLabelGap;
+        // The 16px image at the default icon size, which the 20px bar keeps.
+        const iconWidth = Math.min(engine.config.barIconSize, 20);
+        const width = 'Hello world'.length * 7;
+        // 20%-60% of the 1h-6h bar is 2h-4h. The room left beside the start
+        // icon is worked out in the order the engine works it out, so the two
+        // round alike at the zoom where the text just fits.
+        const left = engine.getTimeToX(at(2));
+        const right = engine.getTimeToX(at(4));
+        const lo = (left + gap) + (iconWidth + gap);
+        const hi = right - gap;
+        const fits = lo + width / 2 <= hi - width / 2;
         const drawn = !!(node.labels && node.labels.length);
         if (shown) assert.ok(drawn, `the text must not hide again at ${pph}px per hour`);
-        assert.equal(drawn, room >= 3 + 16 + 3 + 77 + 3, `at ${pph}px per hour (${room}px section)`);
+        assert.equal(drawn, fits, `at ${pph}px per hour (${right - left}px section)`);
         shown = drawn;
     }
     assert.ok(shown);
+});
+
+test('centered text moved clear of an edge icon is kept off the bar\'s center icons too', () => {
+    // The section of the test above, on a bar with a center icon: moved clear of
+    // the section's start icon, the text would sit on the bar's center icon, and
+    // has no room beside it within the section, so it is left out.
+    const engine = makeSceneEngine([
+        sectioned([{ startTime: at(2), endTime: at(4.6), icon: 'a.png', text: 'Hello world' }],
+            { icons: [{ source: 'center.png', position: 'center' }] })
+    ]);
+    const node = engine.buildScene().bars[0];
+    const gap = engine.config.barLabelGap;
+
+    assert.equal(node.labels, null);
+    assert.equal(node.icons.length, 2);
+    const sectionIcon = node.icons.find(i => i.source === 'a.png');
+    assert.equal(sectionIcon.x, engine.getTimeToX(at(2)) + gap);
+    const barIcon = node.icons.find(i => i.source === 'center.png');
+    assert.equal(barIcon.x + barIcon.width / 2, node.x + node.width / 2);
 });
 
 test('a centered icon stays clear of text at the section\'s edge', () => {
