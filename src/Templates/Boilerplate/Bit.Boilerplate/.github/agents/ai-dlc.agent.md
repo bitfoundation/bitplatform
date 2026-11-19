@@ -45,7 +45,7 @@ A worktree is a whole copy of the project, and what is built in it stays there: 
 4. Once its pull request is merged, delete its branch: the local one with `git branch -D <branch>`, since a squash merge leaves the branch's own commits out of `main`, and the one on the remote if the merge left it (`git push origin --delete <branch>`). A branch whose pull request was closed, or whose work was dropped, stays unless the user says otherwise.
 5. Delete what it left outside its folder, such as an `artifacts/workbench-<port>` folder that a Workbench of its own built into in another working tree.
 <!--#if (aspire == true)-->
-6. Remove the containers and data volumes its app's runs left in Docker, its development database among them. Aspire names them with the SHA-256 of the full path of its app host's `.csproj` in lower case: a container's name ends in the first eight characters of it (`<resource>-<hash>`), and a volume's has the first ten after the app host's name (`<app host>-<hash>-<resource>-data`). Remove them with `docker rm -f` and `docker volume rm`.
+6. Remove the containers and data volumes that the runs of its app and its tests left in Docker, its development database among them. Aspire names them with the SHA-256 of the full path of its app host's `.csproj` in lower case: a container's name ends in the first eight characters of it (`<resource>-<hash>`), and a volume's has the first ten after the app host's name (`<app host>-<hash>-<resource>-data`). Remove them with `docker rm -f -v`, which takes the containers' unnamed volumes too, and `docker volume rm`.
 <!--#endif-->
 
 Measure what you remove before it goes, and tell the user in one line how much space it freed.
