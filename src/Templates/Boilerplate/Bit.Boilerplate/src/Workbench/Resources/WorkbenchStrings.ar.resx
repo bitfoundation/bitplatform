@@ -1395,6 +1395,30 @@
     <data name="SettingsConfirmAsk" xml:space="preserve">
         <value>يطلب رمزًا أولًا</value>
     </data>
+    <data name="NotAuthorizedTitle" xml:space="preserve">
+        <value>غير مصرح له</value>
+    </data>
+    <data name="NotAuthorizedDescription" xml:space="preserve">
+        <value>صفحة عدم التصريح في التطبيق بكل حالاتها، لتُرى كل حالة دون أن تُرفض.</value>
+    </data>
+    <data name="NotAuthorizedCaption" xml:space="preserve">
+        <value>هناك دائمًا طريق للمتابعة</value>
+    </data>
+    <data name="NotAuthorizedSwitchCase" xml:space="preserve">
+        <value>الحالة</value>
+    </data>
+    <data name="NotAuthorizedCaseNoTenant" xml:space="preserve">
+        <value>لم يُختر مستأجر</value>
+    </data>
+    <data name="NotAuthorizedCaseNoTenants" xml:space="preserve">
+        <value>لا يوجد مستأجر للتبديل إليه</value>
+    </data>
+    <data name="NotAuthorizedCasePrivilege" xml:space="preserve">
+        <value>لا توجد جلسة مميزة</value>
+    </data>
+    <data name="NotAuthorizedCaseForbidden" xml:space="preserve">
+        <value>لا صلاحية</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>يوم</value>
     </data>

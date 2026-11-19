@@ -1395,6 +1395,30 @@
     <data name="SettingsConfirmAsk" xml:space="preserve">
         <value>पहले कोड मांगता है</value>
     </data>
+    <data name="NotAuthorizedTitle" xml:space="preserve">
+        <value>अधिकृत नहीं</value>
+    </data>
+    <data name="NotAuthorizedDescription" xml:space="preserve">
+        <value>ऐप का अनधिकृत पेज अपनी हर स्थिति में, ताकि हर स्थिति बिना रोके गए देखी जा सके।</value>
+    </data>
+    <data name="NotAuthorizedCaption" xml:space="preserve">
+        <value>आगे बढ़ने का रास्ता हमेशा</value>
+    </data>
+    <data name="NotAuthorizedSwitchCase" xml:space="preserve">
+        <value>स्थिति</value>
+    </data>
+    <data name="NotAuthorizedCaseNoTenant" xml:space="preserve">
+        <value>कोई टेनेंट चुना नहीं गया</value>
+    </data>
+    <data name="NotAuthorizedCaseNoTenants" xml:space="preserve">
+        <value>बदलने के लिए कोई टेनेंट नहीं</value>
+    </data>
+    <data name="NotAuthorizedCasePrivilege" xml:space="preserve">
+        <value>कोई विशेषाधिकार प्राप्त सत्र नहीं</value>
+    </data>
+    <data name="NotAuthorizedCaseForbidden" xml:space="preserve">
+        <value>कोई अनुमति नहीं</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>दिन</value>
     </data>

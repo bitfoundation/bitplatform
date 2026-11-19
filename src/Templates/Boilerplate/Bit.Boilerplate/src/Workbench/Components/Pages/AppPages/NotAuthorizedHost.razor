@@ -1,0 +1,14 @@
+@* The not-authorized page in the case the Case switch picks, whoever the view is signed in as. *@
+@inherits WorkbenchComponentBase
+
+@if (Scenario.Data is WorkbenchDataState.Loading)
+{
+    @* The app shows this while it checks the user's access again (See the app's NotAuthorizedPage). *@
+    <Boilerplate.Client.Core.Components.Common.LoadingComponent />
+}
+else
+{
+    <CascadingValue Value="authenticationState">
+        <NotAuthorizedPage Case="@pageCase" />
+    </CascadingValue>
+}

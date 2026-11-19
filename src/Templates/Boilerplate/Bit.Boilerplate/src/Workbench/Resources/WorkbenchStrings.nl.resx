@@ -1395,6 +1395,30 @@
     <data name="SettingsConfirmAsk" xml:space="preserve">
         <value>Vraagt eerst om een code</value>
     </data>
+    <data name="NotAuthorizedTitle" xml:space="preserve">
+        <value>Niet geautoriseerd</value>
+    </data>
+    <data name="NotAuthorizedDescription" xml:space="preserve">
+        <value>De pagina van de app voor wie geen toegang heeft, in elk van haar gevallen, zodat je ze allemaal ziet zonder geweigerd te worden.</value>
+    </data>
+    <data name="NotAuthorizedCaption" xml:space="preserve">
+        <value>Altijd een weg verder</value>
+    </data>
+    <data name="NotAuthorizedSwitchCase" xml:space="preserve">
+        <value>Geval</value>
+    </data>
+    <data name="NotAuthorizedCaseNoTenant" xml:space="preserve">
+        <value>Geen tenant gekozen</value>
+    </data>
+    <data name="NotAuthorizedCaseNoTenants" xml:space="preserve">
+        <value>Geen tenant om naar te wisselen</value>
+    </data>
+    <data name="NotAuthorizedCasePrivilege" xml:space="preserve">
+        <value>Geen geprivilegieerde sessie</value>
+    </data>
+    <data name="NotAuthorizedCaseForbidden" xml:space="preserve">
+        <value>Geen toestemming</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>Dag</value>
     </data>

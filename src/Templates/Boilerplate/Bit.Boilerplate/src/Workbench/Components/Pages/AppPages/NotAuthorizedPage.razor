@@ -6,7 +6,8 @@
 <AuthorizeView>
     <Authorized>
         <section>
-            <BitStack HorizontalAlign="BitAlignment.Center" Style="--bit-Button-min-width:min(300px, 100%)">
+            @* NoShrinkContent: on a small screen the page scrolls instead of squeezing the image. *@
+            <BitStack NoShrinkContent HorizontalAlign="BitAlignment.Center" Style="--bit-Button-min-width:min(300px, 100%)">
                 <BitImage Alt="" Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
 
                 <BitText Typography="BitTypography.H5" Element="h2" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
@@ -19,6 +20,12 @@
                 @if (lacksSelectedTenant)
                 {
                     <BitText Align="BitTextAlign.Center">@AppLocalizer[nameof(AppStrings.SelectTenantMessage)]</BitText>
+
+                    @if (tenants.Count > 0)
+                    {
+                        @* No OnSwitch: there's no server to switch on here. *@
+                        <Boilerplate.Client.Core.Components.Pages.Tenants.TenantSwitchList Tenants="tenants" IsGlobalAdmin="isGlobalAdmin" />
+                    }
 
                     <BitButton>
                         @AppLocalizer[nameof(AppStrings.ManageMyTenants)]

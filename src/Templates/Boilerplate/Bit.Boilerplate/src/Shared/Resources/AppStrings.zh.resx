@@ -1840,6 +1840,9 @@
     <data name="PendingInvitation" xml:space="preserve">
     <value>待处理的邀请</value>
   </data>
+    <data name="PendingInvitations" xml:space="preserve">
+    <value>待处理的邀请</value>
+  </data>
     <data name="CurrentTenant" xml:space="preserve">
     <value>当前租户</value>
   </data>

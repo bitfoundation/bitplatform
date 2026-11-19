@@ -1840,6 +1840,9 @@
     <data name="PendingInvitation" xml:space="preserve">
     <value>लंबित आमंत्रण</value>
   </data>
+    <data name="PendingInvitations" xml:space="preserve">
+    <value>लंबित आमंत्रण</value>
+  </data>
     <data name="CurrentTenant" xml:space="preserve">
     <value>वर्तमान टेनेंट</value>
   </data>
