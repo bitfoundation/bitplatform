@@ -67,6 +67,7 @@ public class CrossTabTests
         /// <summary>Built on the calling thread, so the provider captures the test's <see cref="SingleThreadContext"/>.</summary>
         public static async Task<Peer> JoinAsync(BcrdtInMemoryNetwork network)
         {
+            SingleThreadContext.EnsureCurrent();
             var doc = new BcrdtDocument();
             BcrdtSyncProvider provider = new(doc, network.CreateTransport(ServerRoom), null, SyncOptions());
             await provider.ConnectAsync();
@@ -153,13 +154,10 @@ public class CrossTabTests
     // Online
     // ---------------------------------------------------------------------------------------------
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     [DynamicData(nameof(Seeds))]
     public async Task Online_each_change_reaches_the_server_once_and_every_tab_once(int seed)
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         var network = new BcrdtInMemoryNetwork();
         var traffic = new Traffic(network);
         await using Peer server = await Peer.JoinAsync(network);
@@ -200,12 +198,9 @@ public class CrossTabTests
         }
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task An_edit_in_a_tab_with_read_access_only_reaches_neither_another_tab_nor_the_server()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         var network = new BcrdtInMemoryNetwork();
         await using Peer server = await Peer.JoinAsync(network);
 
@@ -234,12 +229,9 @@ public class CrossTabTests
         Assert.AreEqual("accepted ", server.Doc.GetText("body").ToString(), "nor the server");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Without_the_forwarding_filter_every_tab_would_hand_the_server_each_change_again()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         // What the collaboration service avoids: two providers per document, both with the default of passing on
         // everything they did not receive themselves.
         var network = new BcrdtInMemoryNetwork();
@@ -279,12 +271,9 @@ public class CrossTabTests
         }
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_provider_sends_on_only_the_changes_its_filter_lets_through()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         var network = new BcrdtInMemoryNetwork();
         var traffic = new Traffic(network);
         await using Peer server = await Peer.JoinAsync(network);
@@ -322,13 +311,10 @@ public class CrossTabTests
     // Offline
     // ---------------------------------------------------------------------------------------------
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     [DynamicData(nameof(Seeds))]
     public async Task Tabs_that_are_all_offline_keep_each_other_up_to_date_and_the_server_catches_up_on_reconnection(int seed)
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         var network = new BcrdtInMemoryNetwork();
         var traffic = new Traffic(network);
         await using Peer server = await Peer.JoinAsync(network);
@@ -371,13 +357,10 @@ public class CrossTabTests
         }
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     [DynamicData(nameof(Seeds))]
     public async Task A_tab_offline_among_online_ones_shares_its_changes_with_them_and_the_server_gets_them_when_it_reconnects(int seed)
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         var network = new BcrdtInMemoryNetwork();
         var traffic = new Traffic(network);
         await using Peer server = await Peer.JoinAsync(network);
@@ -425,12 +408,9 @@ public class CrossTabTests
         }
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Over_a_bare_relay_a_change_building_on_an_offline_tabs_waits_until_that_tab_reconnects()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         // The price of passing on only a tab's own changes: an online tab that builds on what an offline tab wrote
         // sends a change its peers cannot place until the offline tab brings them what it builds on.
         var network = new BcrdtInMemoryNetwork();
@@ -453,12 +433,9 @@ public class CrossTabTests
         Assert.AreEqual("Written offline. Continued online.", elsewhere.Doc.GetText("notes").ToString());
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task With_a_document_host_a_change_building_on_an_offline_tabs_reaches_everyone_at_once()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         // The host asks the sender of a change it cannot place for what the change builds on - and the online tab
         // has it, from the offline one.
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -527,12 +504,9 @@ public class CrossTabTests
         Assert.AreEqual(1, network.MemberCount(TabsRoom));
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task The_tabs_stay_connected_when_the_document_is_taken_offline_and_disconnect_when_it_closes()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         var network = new BcrdtInMemoryNetwork();
         await using Peer server = await Peer.JoinAsync(network);
         await using BcrdtCollaborationService tab = Tab(network);
@@ -552,12 +526,9 @@ public class CrossTabTests
     // Presence
     // ---------------------------------------------------------------------------------------------
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Presence_crosses_only_the_network()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         var network = new BcrdtInMemoryNetwork();
         var traffic = new Traffic(network);
         await using Peer server = await Peer.JoinAsync(network);

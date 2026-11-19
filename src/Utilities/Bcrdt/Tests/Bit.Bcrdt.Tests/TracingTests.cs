@@ -40,15 +40,15 @@ public class TracingTests
     };
 
     /// <summary>Built on the calling thread, so the provider captures the test's <see cref="SingleThreadContext"/>.</summary>
-    private static BcrdtSyncProvider CreateProvider(BcrdtDocument doc, IBcrdtTransport transport, TimeSpan handshakeTimeout) =>
-        new(doc, transport, options: Options(handshakeTimeout));
+    private static BcrdtSyncProvider CreateProvider(BcrdtDocument doc, IBcrdtTransport transport, TimeSpan handshakeTimeout)
+    {
+        SingleThreadContext.EnsureCurrent();
+        return new(doc, transport, options: Options(handshakeTimeout));
+    }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_provider_handshake_is_one_span_from_announcement_to_synced()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         using var spans = new SpanRecorder();
         using Activity parent = TestSource.StartActivity("handshake-test")!;
 
@@ -83,12 +83,9 @@ public class TracingTests
         AssertCarriesNoIdentifier(spans.InTrace(parent));
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_remote_change_is_applied_under_a_span_with_its_kind_and_size()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         using var spans = new SpanRecorder();
         var network = new BcrdtInMemoryNetwork();
         using var firstDoc = new BcrdtDocument(new BcrdtDocumentOptions { Id = DocumentId, ClientId = FirstClient });
@@ -115,12 +112,9 @@ public class TracingTests
         }
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_handshake_span_ends_when_the_connection_drops_and_its_reconnection_is_traced()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         using var spans = new SpanRecorder();
         using Activity parent = TestSource.StartActivity("drop-test")!;
 
@@ -183,12 +177,9 @@ public class TracingTests
         Assert.AreEqual(1, spans.InTrace(parent).Count(span => span.OperationName == BcrdtDiagnostics.HandshakeSpan));
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_handshake_span_ends_on_a_deliberate_disconnection()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         using var spans = new SpanRecorder();
         using Activity parent = TestSource.StartActivity("disconnect-test")!;
 
@@ -362,13 +353,10 @@ public class TracingTests
     /// Runs alone, after the parallel tests: while it runs, nothing listens to the source but the listener it
     /// adds, which declines every span. That is what an application that does not trace amounts to.
     /// </summary>
-    [TestMethod]
+    [SingleThreadTestMethod]
     [DoNotParallelize]
     public async Task Nothing_is_created_while_nobody_listens()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         Assert.IsNull(BcrdtDiagnostics.Start(BcrdtDiagnostics.HostLoadSpan));
         Assert.IsNull(BcrdtDiagnostics.StartDetached(BcrdtDiagnostics.HandshakeSpan));
         Assert.IsNull(BcrdtDiagnostics.StartHostMessage(BcrdtSyncProtocol.EncodeUpdate(Seed())));

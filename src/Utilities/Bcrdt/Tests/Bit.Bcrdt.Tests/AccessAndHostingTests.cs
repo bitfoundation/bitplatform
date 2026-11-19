@@ -37,8 +37,11 @@ public class AccessAndHostingTests
         BcrdtDocument doc,
         IBcrdtTransport transport,
         BcrdtAwarenessStore? awareness = null,
-        BcrdtSyncProviderOptions? options = null) =>
-        new(doc, transport, awareness, options ?? Options());
+        BcrdtSyncProviderOptions? options = null)
+    {
+        SingleThreadContext.EnsureCurrent();
+        return new(doc, transport, awareness, options ?? Options());
+    }
 
     private static async Task AssertEventuallyAsync(Func<bool> condition, string because)
     {
@@ -86,12 +89,9 @@ public class AccessAndHostingTests
     // The provider
     // ---------------------------------------------------------------------------------------------
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_read_only_provider_answers_nobody_and_keeps_its_local_edits_to_itself()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         var network = new BcrdtInMemoryNetwork();
         RawPeer server = await RawPeer.JoinAsync(network, "room");
 
@@ -123,12 +123,9 @@ public class AccessAndHostingTests
         Assert.IsTrue(errors.Any(e => e is InvalidOperationException), "a local edit on a read-only connection must be reported");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_reply_without_its_delta_does_not_complete_the_handshake()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         var network = new BcrdtInMemoryNetwork();
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
 
@@ -146,12 +143,9 @@ public class AccessAndHostingTests
         await AssertEventuallyAsync(() => provider.IsSynced, "the delta completes the handshake");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_connection_dropped_as_soon_as_it_opens_is_retried_with_a_growing_delay()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         await using var transport = new FlappingTransport();
         using var doc = new BcrdtDocument();
         await using BcrdtSyncProvider provider = CreateProvider(doc, transport, options: Options(
@@ -166,12 +160,9 @@ public class AccessAndHostingTests
         Assert.IsLessThan(15, transport.ConnectCalls, $"{transport.ConnectCalls} attempts in two seconds");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_document_larger_than_the_relays_message_limit_still_reaches_a_newcomer()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         // A relay that drops anybody sending more than 64 KB at once, and a document of several times that.
         await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket(
             "/ws/{documentId}",
@@ -210,12 +201,9 @@ public class AccessAndHostingTests
     // Read-only access through the relays
     // ---------------------------------------------------------------------------------------------
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task The_websocket_relay_carries_nothing_a_reader_writes()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket(
             "/ws/{documentId}",
             options: new BcrdtWebSocketEndpointOptions { AuthorizeAccess = AccessFromQuery }));
@@ -249,12 +237,9 @@ public class AccessAndHostingTests
         Assert.AreEqual("hello", writerDoc.GetText("body").ToString());
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task The_hub_carries_nothing_a_reader_writes()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         await using LoopbackHost host = await LoopbackHost.StartAsync(
             app => app.MapHub<ReaderAwareHub>("/hub"),
             builder => builder.Services.AddBitBcrdtHub<ReaderAwareHub>());
@@ -283,12 +268,9 @@ public class AccessAndHostingTests
     // The document host
     // ---------------------------------------------------------------------------------------------
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_hosted_document_outlives_its_last_client_and_its_host()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         var store = new BcrdtInMemoryDocumentStore();
         await using (var documentHost = new BcrdtDocumentHost(new BcrdtDocumentHostOptions { Store = store, UnloadDelay = TimeSpan.Zero }))
         {
@@ -323,12 +305,9 @@ public class AccessAndHostingTests
         Assert.AreEqual("kept by the server", await restarted.ReadAsync("notes", doc => doc.GetText("body").ToString()));
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_client_returning_from_offline_hands_its_work_to_the_host()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         await using var documentHost = new BcrdtDocumentHost();
         await using LoopbackHost host = await HostedWebSocketAsync(documentHost);
 
@@ -345,12 +324,9 @@ public class AccessAndHostingTests
             "the host should collect the offline work, deletions included");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_change_made_on_the_server_reaches_connected_clients()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         await using var documentHost = new BcrdtDocumentHost();
         await using LoopbackHost host = await HostedWebSocketAsync(documentHost);
 
@@ -365,12 +341,9 @@ public class AccessAndHostingTests
         await AssertEventuallyAsync(() => doc.GetMap("").Get("status") as string == "approved", "the server's change should arrive");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Revoking_a_connection_ends_its_access_at_once_and_leaves_the_others_alone()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         await using var documentHost = new BcrdtDocumentHost();
         await using LoopbackHost host = await HostedWebSocketAsync(documentHost);
 
@@ -557,12 +530,9 @@ public class AccessAndHostingTests
         public void Refuse(string reason) => RefusedWith = reason;
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_change_the_host_rejects_refuses_its_sender_and_reaches_nobody()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         await using var documentHost = new BcrdtDocumentHost(new BcrdtDocumentHostOptions
         {
             // The rule is checked against what the document would become, on a scratch copy.
@@ -929,12 +899,9 @@ public class AccessAndHostingTests
         Assert.AreEqual("Ada", observed.GetField(42, "name"));
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task One_host_behind_both_relays_carries_changes_between_their_clients()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         await using LoopbackHost host = await LoopbackHost.StartAsync(
             app =>
             {
@@ -967,14 +934,11 @@ public class AccessAndHostingTests
         await AssertEventuallyAsync(() => signalRDoc.GetText("body").ToString() == "from SignalR. From WebSocket.", "and the SignalR client the other way");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     [DataRow("team/notes")]
     [DataRow("50%2F off/q?x#y")]
     public async Task A_document_identifier_holding_a_slash_is_one_document_on_both_relays(string documentId)
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         // The WebSocket client escapes a "/" as %2F, which the server leaves escaped in a path: the relay saw
         // "team%2Fnotes" where the hub, the host and the application saw "team/notes". An identifier holding the
         // text %2F itself must stay that text.
@@ -1167,12 +1131,9 @@ public class AccessAndHostingTests
         Assert.AreEqual(0, documentHost.LoadedDocuments.Count, "nor anything loaded");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_hub_with_a_registered_host_keeps_documents_after_everyone_leaves()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         await using LoopbackHost host = await LoopbackHost.StartAsync(
             app => app.MapHub<BcrdtHub>("/hub"),
             builder =>
@@ -1204,12 +1165,9 @@ public class AccessAndHostingTests
         await AssertEventuallyAsync(() => newcomerProvider.IsSynced, "and the newcomer should be synced");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_hosted_document_larger_than_a_clients_queue_still_reaches_it_in_one_connection()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         // The host answers in far more parts, and far more bytes, than the queue in front of one client
         // may hold - all produced at once.
         await using var documentHost = new BcrdtDocumentHost(new BcrdtDocumentHostOptions { MaxMessageSize = 16 * 1024 });

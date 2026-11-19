@@ -126,12 +126,9 @@ public class PendingBoundTests
         Assert.AreEqual("", reader.GetText("body").ToString());
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_provider_asks_for_what_its_document_discarded()
     {
-        using var thread = new SingleThreadContext();
-        await thread.SwitchTo();
-
         var network = new BcrdtInMemoryNetwork();
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1, MaxPendingSize = 1024 });
 

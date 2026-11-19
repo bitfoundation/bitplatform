@@ -29,16 +29,18 @@ namespace Bit.Bcrdt;
 /// handshake on it: inline when already there, posted otherwise. Construct it on the thread that
 /// edits the document. When there is no context to capture, the provider serializes its own access
 /// to the document under a private lock, and applies what arrives on whichever thread delivered it;
-/// the application must then not touch the document concurrently with the provider - not even to
-/// read it: asking for a root whose content arrived before the application declared it, with
+/// the application then reads and edits the document through <see cref="InvokeAsync(Action, CancellationToken)"/>,
+/// which runs its work under that lock. Touching it any other way races the provider - even a read:
+/// asking for a root whose content arrived before the application declared it, with
 /// <see cref="BcrdtDocument.GetText"/> say, moves that content to the root it returns.
 /// </para>
 /// <para>
 /// Transport sends and the provider's own <see cref="StatusChanged"/>, <see cref="Synced"/> and
 /// <see cref="AuthorizationDenied"/> events are queued and run once that lock is released, on the
-/// context when there is one. Two things do run under it: the document's and the awareness store's
-/// own observers, which applying an update or publishing presence raises synchronously - so an
-/// observer must not block waiting on another thread that needs this provider - and nothing else.
+/// context when there is one. What does run under it is the work handed to
+/// <see cref="InvokeAsync(Action, CancellationToken)"/>, and the document's and the awareness store's
+/// own observers, which applying an update or publishing presence raises synchronously - so neither
+/// may block waiting on another thread that needs this provider - and nothing else.
 /// <see cref="Error"/> may additionally be raised from a background continuation, such as a failed
 /// send, so its handlers must not assume they are on the context.
 /// </para>
@@ -321,6 +323,51 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         {
             if (_transport.State == BcrdtTransportState.Connected) Send(BcrdtSyncExchange.CreateAnnouncement(_doc));
         }, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Runs the application's own work on the document - a read or an edit - where it cannot overlap what the
+    /// provider applies.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// With a synchronization context the work runs on it, inline when the caller is already there, which is
+    /// where the provider applies everything anyway: a Blazor component, already on the renderer's context, can
+    /// touch the document directly and has no need of this.
+    /// </para>
+    /// <para>
+    /// Without one - in a console app, a worker or a server-side replica - the work runs on the calling thread
+    /// under the provider's lock, and this is how such an application reads or edits a connected document
+    /// safely. The provider applies what arrives on whichever thread delivered it, so even a read can race it:
+    /// <see cref="BcrdtDocument.GetText"/> on a root whose content arrived before the application declared it
+    /// moves that content to the root it returns.
+    /// </para>
+    /// <para>
+    /// What the work changes is sent once it returns, like any other local change. The document's own observers
+    /// run inside it, so neither the work nor they may block waiting on another thread that needs this provider.
+    /// Cancelling stops the wait for the provider's context, never work already running.
+    /// </para>
+    /// </remarks>
+    public async ValueTask InvokeAsync(Action work, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        await RunAsync(work, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Runs the application's own work on the document - a read, say - where it cannot overlap what the provider
+    /// applies, and returns what it produced.
+    /// </summary>
+    /// <remarks>See <see cref="InvokeAsync(Action, CancellationToken)"/>.</remarks>
+    public async ValueTask<T> InvokeAsync<T>(Func<T> work, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+
+        T result = default!;
+        await InvokeAsync(() => { result = work(); }, cancellationToken).ConfigureAwait(false);
+        return result;
     }
 
     private void OnDocumentUpdated(BcrdtUpdateEventArgs args)
