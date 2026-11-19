@@ -30,7 +30,7 @@ public class NavMenuService
     /// </summary>
     public bool IsDocsRoute => IsTemplateDocRoute || IsToolingsDocRoute;
 
-    public bool IsProductsRoute => IsDocsRoute;
+    public bool IsProductsRoute => IsDocsRoute || CurrentUrl == Urls.Products;
 
     /// <summary>
     /// Idempotent; called by every component that reacts to LocationChanged, whichever fires first.

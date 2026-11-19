@@ -1,8 +1,8 @@
 ﻿@inherits AppComponentBase
 <div>
-    @for (var i = 0; i < products.Length; i++)
+    @for (var i = 0; i < visibleProducts.Length; i++)
     {
-        var product = products[i];
+        var product = visibleProducts[i];
 
         @if (i > 0)
         {
@@ -35,14 +35,16 @@
     [
         new()
         {
-            Title = "Your app starts finished",
-            Subtitle = "bit Boilerplate · feature-rich project template",
+            Title = "A full-stack app on day one",
+            Subtitle = "bit Boilerplate · full-stack Blazor project template",
             LinkUrl = Urls.Templates,
+            IsCore = true,
             IsExpanded = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Boilerplate hands you a real app on day one - sign-in, admin panel, payments, SEO, offline, monitoring and much more already working -
-                    for PWA/SSR enabled websites and Android, iOS, macOS, Windows apps.
+                    One bit new command creates a complete ASP.NET Core and Blazor solution - passkey and 2FA sign-in, multi-tenancy,
+                    an AI chatbot, push notifications and .NET Aspire included - that ships as a PWA and as Android, iOS, Windows and macOS apps.
+                    Turn on only the features you need.
                 </BitText>
                 <div class="template-terminal">
                     <BitIcon IconName="ChevronRight" /> <span>bit</span> <span>new</span> <span>MyAwesomeProject</span>
@@ -57,53 +59,63 @@
         },
         new()
         {
-            Title = "100+ ready-made UI components",
-            Subtitle = "bit BlazorUI · native components with dark/light theming",
+            Title = "100+ components, from inputs to data grids",
+            Subtitle = "bit BlazorUI · Blazor components with built-in theming",
             LinkUrl = Urls.BlazorUI,
+            IsCore = true,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit BlazorUI components are native, easy-to-customize, and work seamlessly in all interactive Blazor modes (WASM, Server, Hybrid, pre-rendering),
-                    saving you time and making development enjoyable.
+                    bit BlazorUI covers everything from inputs and date pickers to a data grid, charts, maps, a PDF viewer, a rich text editor
+                    and an AI chat kit. The components behave the same in WebAssembly, Server, Hybrid and prerendering, and re-skin with
+                    Fluent, Material or Cupertino presets or from a single brand color.
                 </BitText>
                 <div>
-                    <CodeBox HideCopyButton>&lt;BitDropdown @@bind-Values="comboValues"
-             Label="Multi select combo box"
-             Placeholder="Select options"
-             Items="comboBoxItems"
-             Combo Chips Dynamic Responsive
-             OnDynamicAdd="(BitDropdownItem&lt;string> item) => HandleOnDynamicAdd(item)" /></CodeBox>
+                    <CodeBox HideCopyButton>&lt;BitDropdown @@bind-Values="tags" Items="tagItems"
+             Label="Tags" Placeholder="Pick or type a tag"
+             MultiSelect Combo Chips Dynamic Responsive
+             DynamicValueGenerator="(BitDropdownItem&lt;string> item) => item.Text ?? string.Empty"
+             OnDynamicAdd="(BitDropdownItem&lt;string> item) => AddTag(item)" /></CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "Camera, location, bluetooth, storage",
-            Subtitle = "bit Butil · browser APIs in C#, without JavaScript",
+            Title = "130+ browser APIs, called from C#",
+            Subtitle = "bit Butil · browser APIs as typed C# services",
             LinkUrl = Urls.Butil,
+            IsCore = true,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Butil brings the browser APIs that normally need JavaScript into your app, ready to use in C#.
+                    bit Butil turns storage, clipboard, geolocation, camera, Bluetooth, passkeys, crypto, workers and more into injectable,
+                    strongly typed services. Calls are safe during prerendering, and a published app ships only the JavaScript it actually uses.
                 </BitText>
                 <div>
-                    <CodeBox HideCopyButton>@@inject Bit.Butil.Crypto crypto
+                    <CodeBox HideCopyButton>@@inject Bit.Butil.Geolocation geolocation
+@@inject Bit.Butil.Clipboard clipboard
 
 @@code {
-    var encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
+    async Task CopyLocation()
+    {
+        var c = (await geolocation.GetCurrentPosition()).Coords;
+        await clipboard.WriteText($"{c.Latitude}, {c.Longitude}");
+    }
 }</CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "Installs like a real app",
-            Subtitle = "bit Bswup · PWA, offline support and background updates",
+            Title = "Offline-ready, with updates users can see",
+            Subtitle = "bit Bswup · service worker with update progress",
             LinkUrl = Urls.Bswup,
+            IsCore = true,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bswup makes your app installable, usable offline, and updated in the background - with a visible install progress your users can watch.
+                    bit Bswup caches your Blazor app for offline use and shows real download progress on the first load and on every update.
+                    It checks for new versions, keeps every open tab on the same one, and can let users choose when to reload.
                 </BitText>
                 <br />
                 <div style="text-align:center">
@@ -114,162 +126,178 @@
         },
         new()
         {
-            Title = "Clean URLs and deep links",
-            Subtitle = "bit Brouter · modern declarative Blazor router",
+            Title = "Routing with guards and data loaders",
+            Subtitle = "bit Brouter · nested, declarative Blazor router",
             LinkUrl = Urls.Brouter,
+            IsCore = true,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Brouter is a modern, declarative, nestable router for Blazor with async guards, data loaders,
-                    named routes, programmatic navigation, query string binding, and global navigation hooks.
+                    bit Brouter adds what the built-in router lacks: async and leave guards, cached data loaders with link preloading,
+                    keep-alive pages, view transitions and typed URLs generated at compile time - while your existing @@page components
+                    and [Authorize] keep working.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>&lt;Brouter NotFoundUrl="404">
     &lt;Broute Path="/" RedirectTo="/home" />
-    &lt;Broute Name="home" Path="/home">
-        &lt;Content>&lt;HomePage />&lt;/Content>
-    &lt;/Broute>
-    &lt;Broute Name="user" Path="/users/{id:int}" Component="@@typeof(UserPage)" />
+    &lt;Broute Path="/admin" Guard="@@RequireAdmin" Component="@@typeof(AdminPage)" />
+    &lt;Broute Name="user" Path="/users/{id:int}" Loader="@@LoadUser"
+            StaleTime="@@TimeSpan.FromMinutes(1)" Component="@@typeof(UserPage)" />
 &lt;/Brouter></CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "Motion that feels native",
-            Subtitle = "bit Bmotion · Blazor-native animation library",
+            Title = "Fluid animation, declared in Razor",
+            Subtitle = "bit Bmotion · Motion-style animation for Blazor",
             LinkUrl = Urls.Bmotion,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bmotion is a Blazor-native animation library with springs, gestures, keyframes, variants, drag,
-                    layout animations, shared-element transitions and exit animations, no manual JavaScript wiring required.
+                    bit Bmotion brings springs, gestures, drag, exit and layout animations to your markup the way Motion (Framer Motion) does.
+                    The math runs in C#, the browser plays it off the main thread, and it works on WebAssembly and Server.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>&lt;Bmotion Initial="Bm.To(opacity: 0, y: 20)"
-         Animate="Bm.To(opacity: 1, y: 0)"></CodeBox>
+         Animate="Bm.To(opacity: 1, y: 0)"
+         WhileHover="Bm.To(scale: 1.05)"
+         Transition="Bm.Spring(bounce: 0.4, duration: 0.6)">
+    &lt;div class="card">Hello&lt;/div>
+&lt;/Bmotion></CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "Images, processed on the device",
-            Subtitle = "bit Bmage · Blazor-native image processing",
+            Title = "Edit and shrink images before upload",
+            Subtitle = "bit Bmage · image editor and processing engine",
             LinkUrl = Urls.Bmage,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bmage loads, crops, resizes, adjusts, annotates and exports images in the browser from strongly typed C#,
-                    with a full image editor component, EXIF privacy by default, and no server round trips.
+                    bit Bmage crops, resizes, adjusts and annotates images with its own C# codecs, then exports them to a file-size budget
+                    with GPS and other metadata removed by default. Use the full editor component, or run the same pipeline headless.
                 </BitText>
                 <div>
-                    <CodeBox HideCopyButton>BmageImagePipeline.Create()
-    .AutoOrient()
-    .Cover(512, 512)
-    .Sharpen(0.3f)</CodeBox>
+                    <CodeBox HideCopyButton>await processor.ProcessAsync(bytes,
+    BmageImagePipeline.Create().AutoOrient().Cover(512, 512),
+    new BmageImageExportOptions
+    {
+        Format = BmageImageFormat.WebP,
+        MaxFileSize = 120 * 1024 // metadata is removed by default
+    });</CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "SQLite and EF Core, in the browser tab",
-            Subtitle = "bit Bsqlite · EF Core on SQLite for Blazor",
+            Title = "Your EF Core model, client-side",
+            Subtitle = "bit Bsqlite · SQLite and EF Core in the browser",
             LinkUrl = Urls.Bsqlite,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bsqlite runs SQLite and the stock EF Core provider in a worker in the user's browser, over OPFS, IndexedDB
-                    or Cache Storage, with the same entities and migrations as the server and live queries across tabs.
+                    bit Bsqlite runs SQLite and the stock EF Core provider inside the browser - or on a device file in Blazor Hybrid -
+                    so your server's entities and migrations work unchanged. Live queries re-run on every write, even one from another tab.
                 </BitText>
                 <div>
-                    <CodeBox HideCopyButton>builder.Services.AddBitBsqliteServices(sqlite => sqlite
-    .AddStorageProvider&lt;BsqliteOpfsStorageProvider&gt;()
-    .UseStorage(s => s.Prefer("opfs"))
-    .AddDatabase("app.db"));</CodeBox>
+                    <CodeBox HideCopyButton>await using var live = db.Orders
+    .Where(o => o.Status == OrderStatus.Open)
+    .AsLiveQuery();
+
+live.Changed += (_, rows) => InvokeAsync(StateHasChanged);</CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "Ink that feels like paper",
-            Subtitle = "bit Bink · Blazor-native drawing and ink",
+            Title = "From signature pad to whiteboard",
+            Subtitle = "bit Bink · drawing and ink engine",
             LinkUrl = Urls.Bink,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bink is a Blazor-native drawing and ink library with pressure- and tilt-aware strokes, brushes, erasers,
-                    shapes, annotations, selection, layers, undo/redo, real-time collaboration and SVG/PNG export, all in C#.
+                    bit Bink turns pressure-sensitive pen, touch and mouse input into an editable vector document - with brushes, shapes,
+                    layers, undo and live collaboration - and exports it to SVG, PNG or PDF exactly as drawn.
                 </BitText>
                 <div>
-                    <CodeBox HideCopyButton>&lt;BinkCanvas @@ref="canvas" Width="400px" Height="180px"
-            AriaLabel="Signature" /></CodeBox>
+                    <CodeBox HideCopyButton>&lt;BinkCanvas @@ref="canvas" Height="200px" AriaLabel="Signature" />
+
+@@code {
+    BinkCanvas? canvas;
+    Task&lt;string> SaveAsync() => canvas!.ExportSvgAsync();
+}</CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "Everything one keystroke away",
-            Subtitle = "bit Balette · Blazor-native command palette",
+            Title = "A Ctrl+K command palette for your app",
+            Subtitle = "bit Balette · keyboard-first command palette",
             LinkUrl = Urls.Balette,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Balette is a Blazor-native, keyboard-first command palette with fzf-style fuzzy search, nested pages,
-                    prefix modes, async sources, recents, global shortcuts and sequences, prompts and multi-select, all in C#.
+                    bit Balette gives your app the Ctrl+K / ⌘K box from VS Code, Linear and Raycast: fuzzy, typo-tolerant search over every
+                    page, action and API result, with nested pages, global shortcuts and full screen-reader support.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>Palette.Register(
-    BaletteCmd.Navigate("Settings", "/settings").Shortcut("G S"),
+    BaletteCmd.Navigate("Settings", "/settings").Keywords("preferences").Shortcut("G S"),
     BaletteCmd.Action("Toggle sidebar", Toggle).Shortcut("Mod+B"));</CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "Barcodes read in C#",
-            Subtitle = "bit BbScanner · Blazor-native barcode scanner",
+            Title = "Scan barcodes without an SDK",
+            Subtitle = "bit BbScanner · camera and image barcode scanner",
             LinkUrl = Urls.BbScanner,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit BbScanner is a dependency-free barcode scanner that reads QR Code, Data Matrix, Code 128, Code 39,
-                    EAN-13, EAN-8, UPC-A, UPC-E and ITF from the camera or from still images, with the decoding written in C#.
+                    bit BbScanner reads 19 symbologies - QR, Data Matrix, PDF417, Aztec, EAN/UPC, GS1 DataBar and more - from the camera
+                    or still images, with a decoder written from scratch in .NET. It verifies every read before reporting it, and runs on
+                    WebAssembly, Server and MAUI.
                 </BitText>
                 <div>
-                    <CodeBox HideCopyButton>&lt;BbScanner Formats="BbScannerBarcodeFormat.QrCode"
+                    <CodeBox HideCopyButton>&lt;BbScanner Formats="BbScannerBarcodeFormat.QrCode | BbScannerBarcodeFormat.Ean13"
+           Region="BbScannerScanRegion.CenteredSquare(0.7)"
            OnScan="HandleScan" /></CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "Drag, drop, done",
-            Subtitle = "bit Bdnd · declarative drag and drop for Blazor",
+            Title = "Drag and drop for every input",
+            Subtitle = "bit Bdnd · typed drag and drop for Blazor",
             LinkUrl = Urls.Bdnd,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bdnd is a declarative drag-and-drop library for Blazor, inspired by React DnD: typed items matched to
-                    drop targets by type, custom drag previews, drag handles, sortable lists, nesting and native file drops,
-                    with the drag state kept in C#.
+                    bit Bdnd turns drag sources and drop targets into components that pass strongly typed items, matched by type. Mouse,
+                    touch, pen and keyboard all work, with screen-reader announcements, sortable lists and trees, custom previews and
+                    file drops from the desktop.
                 </BitText>
                 <div>
-                    <CodeBox HideCopyButton>&lt;BdndDraggable TItem="Card" Type="card" Item="card" />
-&lt;BdndDropTarget TItem="Card" Accept="card" OnDrop="HandleDrop" /></CodeBox>
+                    <CodeBox HideCopyButton>&lt;BdndProvider>
+    &lt;BdndDraggable TItem="Card" Type="card" Item="card" />
+    &lt;BdndDropTarget TItem="Card" Accept="card" OnDrop="HandleDrop" />
+&lt;/BdndProvider></CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "Data that stays in the browser",
-            Subtitle = "bit BlazeDb · memory-first database for Blazor",
+            Title = "Instant queries, no SQL or interop",
+            Subtitle = "bit BlazeDb · in-memory database for Blazor WebAssembly",
             LinkUrl = Urls.BlazeDb,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit BlazeDb is a memory-first, SQL-free embedded database for Blazor WebAssembly: rows live in memory as your
-                    own objects, reads are index lookups with no interop, and commits persist to OPFS in the background - with
-                    transactions, encryption, multi-tab replicas and an EF Core provider, all in C#.
+                    bit BlazeDb keeps rows in memory as your own typed objects, so a read is an index lookup - no JS interop, no SQL.
+                    Commits persist to OPFS in the background, and live queries re-render only when their data changes.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>var open = todos.Lookup(TodoItem.Indexes.Done, false);</CodeBox>
@@ -278,15 +306,14 @@
         },
         new()
         {
-            Title = "Diagrams that connect",
-            Subtitle = "bit Blow · Blazor-native node-based editors",
+            Title = "Build node editors and workflows",
+            Subtitle = "bit Blow · node-based editors and flow charts",
             LinkUrl = Urls.Blow,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Blow is a Blazor-native library for node-based editors, flow charts and diagrams - a Blazor counterpart
-                    to React Flow - with draggable, resizable and connectable nodes, sub-flows, auto-layout, undo/redo and full
-                    keyboard accessibility, all in C#.
+                    bit Blow is a Blazor counterpart to React Flow: pan, zoom, connect, group and auto-lay out nodes, with undo/redo and
+                    keyboard support. The graph is plain C# you can validate, export to Mermaid or GraphML, and run on a server.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>&lt;BlowCanvas Nodes="nodes" Edges="edges" FitViewOnInit="true">
@@ -298,15 +325,14 @@
         },
         new()
         {
-            Title = "Forms that describe themselves",
-            Subtitle = "bit Borm · Schema-driven forms for Blazor",
+            Title = "Describe a form once, render it anywhere",
+            Subtitle = "bit Borm · schema-driven forms for Blazor",
             LinkUrl = Urls.Borm,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Borm is a schema-driven form engine for Blazor: describe a form once, from a C# type, a fluent builder or
-                    a JSON Schema document, and it renders, validates and tracks it - conditions, computed values, cascading
-                    options, wizards and repeaters included, all decided in C#.
+                    bit Borm builds a working form from a C# type, a fluent builder or a JSON Schema the server sends. It handles validation,
+                    conditions, computed values, wizards and repeaters with no JavaScript, and exports back to JSON Schema.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>&lt;BormView Definition="BormSchemaGenerator.Generate&lt;Contact>()"
@@ -316,18 +342,17 @@
         },
         new()
         {
-            Title = "Editing that merges",
+            Title = "Shared editing, online or offline",
             Subtitle = "bit Bcrdt · real-time collaboration for Blazor",
             LinkUrl = Urls.Bcrdt,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bcrdt lets several people edit the same text, list or form at once - online or offline - and never
-                    lose anyone's work: a CRDT engine, a sync protocol, presence and cursors, offline-first persistence and
-                    selective undo, all written in C#, over SignalR, WebSockets or any transport.
+                    bit Bcrdt lets several people edit the same text, list or form at once, and every copy ends up identical - even after
+                    days offline. Sync, presence and selective undo are pure .NET, with no Yjs or JavaScript CRDT library underneath.
                 </BitText>
                 <div>
-                    <CodeBox HideCopyButton>&lt;BcrdtCollaborationScope DocumentId="notes-42" User="me" Context="doc">
+                    <CodeBox HideCopyButton>&lt;BcrdtCollaborationScope DocumentId="notes-42" User="_me" Context="doc">
     &lt;BcrdtPresenceView Presence="doc.Presence" />
     &lt;BcrdtTextArea Text="@@doc.Text("body")" Presence="doc.Presence" />
 &lt;/BcrdtCollaborationScope></CodeBox>
@@ -336,37 +361,43 @@
         },
         new()
         {
-            Title = "Onboarding that guides",
-            Subtitle = "bit Bonboarding · Blazor-native product tours",
+            Title = "Guide new users step by step",
+            Subtitle = "bit Bonboarding · product tours, hints and checklists",
             LinkUrl = Urls.Bonboarding,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bonboarding is a Blazor-native onboarding library with multi-step tours, spotlights, collision-aware
-                    placement, branching and multi-page flows, persistence and built-in accessibility, all decided in C#.
+                    bit Bonboarding builds multi-step tours, spotlights, beacons and self-checking checklists in Razor. Steps can wait for
+                    elements that aren't rendered yet, advance when the user really clicks, branch, and carry on across pages - with focus
+                    trapping and screen-reader announcements built in.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>&lt;BonboardingTour Id="welcome" AutoStart="BonboardingAutoStart.Once">
     &lt;BonboardingStep Anchor="new-project" Title="Create a project" />
     &lt;BonboardingStep Anchor="search" Title="Find anything" />
-&lt;/BonboardingTour></CodeBox>
+&lt;/BonboardingTour>
+
+&lt;button data-bonboarding-anchor="new-project">New project&lt;/button></CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "Lists that reorder",
-            Subtitle = "bit Bortable · Blazor-native sortable lists",
+            Title = "Drag to reorder, by mouse or keyboard",
+            Subtitle = "bit Bortable · drag-and-drop lists and boards",
             LinkUrl = Urls.Bortable,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bortable is a Blazor-native drag-and-drop sortable list inspired by SortableJS - reorder items or drag
-                    them between lists that share a group, with live reordering, cloning, drag handles, nested lists, swap
-                    mode and multi-drag, all decided in C#.
+                    bit Bortable reorders a list, or moves items between lists that share a group - kanban boards, palettes, nested trees.
+                    It sorts your own IList&lt;T&gt; in place, borrows SortableJS's swap behavior, lets your code approve each drop, and
+                    works fully by keyboard and screen reader.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>&lt;Bortable @@bind-Items="todo" TItem="string" Group="board">
+    &lt;ItemTemplate Context="item">@@item&lt;/ItemTemplate>
+&lt;/Bortable>
+&lt;Bortable @@bind-Items="done" TItem="string" Group="board">
     &lt;ItemTemplate Context="item">@@item&lt;/ItemTemplate>
 &lt;/Bortable></CodeBox>
                 </div>
@@ -374,14 +405,15 @@
         },
         new()
         {
-            Title = "State that stays in sync",
-            Subtitle = "bit Blex · reactive state management for Blazor and .NET MAUI",
+            Title = "State management without the boilerplate",
+            Subtitle = "bit Blex · reactive state for Blazor and .NET MAUI",
             LinkUrl = Urls.Blex,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Blex turns plain C# fields and methods into observable stores with a source generator: computed state,
-                    effects, middleware, persistence, undo/redo and Redux DevTools time-travel, with no reducer boilerplate.
+                    Mark fields and methods with attributes and the bit Blex source generator writes the store - reactive properties,
+                    memoized computed values, actions and async effects. Persistence, undo/redo and Redux DevTools time-travel are built in,
+                    with no action, reducer or feature classes.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>[BlexStore(Name = "counter")]
@@ -396,34 +428,36 @@ public partial class CounterStore
         },
         new()
         {
-            Title = "Telemetry without the weight",
-            Subtitle = "bit Belemetry · OpenTelemetry for every Blazor app",
+            Title = "Browser and .NET telemetry, one SDK",
+            Subtitle = "bit Belemetry · OpenTelemetry-compatible telemetry for Blazor",
             LinkUrl = Urls.Belemetry,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Belemetry collects page views, web vitals, JS errors and fetch calls in the browser plus ILogger,
-                    Activity and Meter data in .NET, and exports it over OTLP or to Azure Monitor - in WebAssembly,
-                    Server and Hybrid apps, without the OpenTelemetry packages, and with per-feature GDPR consent.
+                    bit Belemetry collects page views, web vitals, JS errors and fetch calls from the browser, plus ILogger, Activity and
+                    Meter data from .NET, and exports them over OTLP or to Azure Monitor or Sentry - with no OpenTelemetry packages, and
+                    nothing sent until the user consents.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>builder.Services.AddBitBelemetryServices(o =>
-    o.AddOtlpExporter("http://localhost:4318"));</CodeBox>
+{
+    o.AddOtlpExporter("http://localhost:4318");
+    o.AddSentryExporter(sentryDsn);
+});</CodeBox>
                 </div>
             </text>
         },
         new()
         {
-            Title = "Accessibility without the styling",
-            Subtitle = "bit Bheadless · accessible, unstyled UI primitives for Blazor",
+            Title = "Accessible components, your styles",
+            Subtitle = "bit Bheadless · unstyled, accessible UI primitives",
             LinkUrl = Urls.Bheadless,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bheadless gives Blazor the hard parts of interactive UI - keyboard interaction, focus management,
-                    WAI-ARIA semantics, positioning and dismissal - as unstyled components that render semantic HTML, so
-                    plain CSS, Tailwind or your own design system does the rest. An accessibility test toolkit built on
-                    bUnit ships with it.
+                    bit Bheadless gives you menus, comboboxes, dialogs, date pickers, data grids and more, with keyboard interaction, focus,
+                    ARIA and positioning handled for you - rendered as plain semantic HTML for your CSS or Tailwind. A bUnit toolkit for
+                    testing your own components' accessibility ships alongside.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>&lt;BitBhMenu>

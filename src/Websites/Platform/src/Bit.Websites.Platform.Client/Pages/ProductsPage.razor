@@ -1,0 +1,82 @@
+﻿@page "/products"
+@using Bit.Websites.Platform.Client.Pages.Home
+@inherits AppComponentBase
+
+<PageOutlet Url="products"
+            Title="Products"
+            Description="Every bit platform product in one place: the Boilerplate project template, BlazorUI components, focused Blazor libraries and the tools to build, optimize and ship your apps." />
+
+<div class="page-container">
+    <section class="page-section intro-section">
+        <div class="page-section-content">
+            <BitText Typography="BitTypography.H1" Gutter Class="page-title">Our products</BitText>
+            <BitText Typography="BitTypography.H5" Element="p" Class="page-subtitle">
+                Everything you need to build, polish and ship your apps - free, open source and MIT licensed.
+            </BitText>
+        </div>
+    </section>
+
+    <section class="page-section">
+        <div class="page-section-content">
+            <div class="section-title-container">
+                <div class="section-title-line reversed"></div>
+                <BitText Typography="BitTypography.H2" Class="section-title">Core products</BitText>
+                <div class="section-title-line"></div>
+            </div>
+            <BitText Typography="BitTypography.Subtitle1" Element="p" Class="section-subtitle">
+                The foundation of every bit platform app.
+            </BitText>
+            <Products Group="ProductGroup.Core" />
+        </div>
+    </section>
+
+    <section class="page-section">
+        <div class="page-section-content">
+            <div class="section-title-container">
+                <div class="section-title-line reversed"></div>
+                <BitText Typography="BitTypography.H2" Class="section-title">Utilities</BitText>
+                <div class="section-title-line"></div>
+            </div>
+            <BitText Typography="BitTypography.Subtitle1" Element="p" Class="section-subtitle">
+                Focused Blazor libraries for the parts every app needs sooner or later.
+            </BitText>
+            <Products Group="ProductGroup.Utilities" />
+        </div>
+    </section>
+
+    <section class="page-section">
+        <div class="page-section-content">
+            <div class="section-title-container">
+                <div class="section-title-line reversed"></div>
+                <BitText Typography="BitTypography.H2" Class="section-title">Toolings</BitText>
+                <div class="section-title-line"></div>
+            </div>
+            <BitText Typography="BitTypography.Subtitle1" Element="p" Class="section-subtitle">
+                Tools that make building, checking and shipping your apps faster.
+            </BitText>
+            <div class="tooling-list">
+                @foreach (var tooling in toolings)
+                {
+                    <a class="tooling-card" href="@tooling.Url">
+                        <span class="tooling-title">@tooling.Title</span>
+                        <span class="tooling-desc">@tooling.Description</span>
+                        <span class="tooling-link">Learn more <span class="tooling-link-arrow"></span></span>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+</div>
+
+@code {
+    private sealed record Tooling(string Title, string Description, string Url);
+
+    private static readonly Tooling[] toolings =
+    [
+        new("bit CLI", "Ready-to-run projects in one command.", Urls.Cli),
+        new("Minifier", "Smaller Blazor WebAssembly downloads.", Urls.Minifier),
+        new("BlazorES2019", "Blazor apps on older browsers.", Urls.BlazorES2019),
+        new("Code Analyzers", "Best practices checked as you type.", Urls.CodeAnalyzers),
+        new("Source Generators", "Less code to write and review.", Urls.SourceGenerators),
+    ];
+}

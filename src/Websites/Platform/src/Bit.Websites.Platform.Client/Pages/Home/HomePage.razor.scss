@@ -379,6 +379,28 @@
 .products-section {
     padding-top: 0;
     scroll-margin: 5rem;
+
+    // The home page lists only the core products; the rest live on the products page.
+    .products-more {
+        display: flex;
+        margin-top: 2.5rem;
+        justify-content: center;
+    }
+
+    .products-more-btn {
+        gap: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        @include GradientCtaButton;
+
+        .products-more-arrow {
+            transition: transform 0.2s $MotionEase;
+        }
+
+        &:hover .products-more-arrow {
+            transform: translateX(3px);
+        }
+    }
 }
 
 .tech-section {
