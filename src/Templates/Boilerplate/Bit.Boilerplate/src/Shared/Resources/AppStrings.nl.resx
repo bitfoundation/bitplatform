@@ -1840,6 +1840,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="PendingInvitation" xml:space="preserve">
     <value>Openstaande uitnodiging</value>
   </data>
+    <data name="PendingInvitations" xml:space="preserve">
+    <value>Openstaande uitnodigingen</value>
+  </data>
     <data name="CurrentTenant" xml:space="preserve">
     <value>Huidige tenant</value>
   </data>

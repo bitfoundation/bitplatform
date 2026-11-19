@@ -1,6 +1,9 @@
 //+:cnd:noEmit
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+//#if (multitenant == true)
+using Boilerplate.Shared.Features.Tenants.Dtos;
+//#endif
 
 namespace Boilerplate.Workbench.Components.Pages.AppPages;
 
@@ -9,7 +12,9 @@ public partial class NotAuthorizedPage
 {
     private bool lacksValidPrivilege;
     //#if (multitenant == true)
+    private bool isGlobalAdmin;
     private bool lacksSelectedTenant;
+    private List<TenantDto> tenants = [];
     //#endif
 
     [Parameter] public Type? PageType { get; set; }
@@ -23,8 +28,31 @@ public partial class NotAuthorizedPage
         lacksValidPrivilege = failedPolicies.Contains(AuthPolicies.PRIVILEGED_ACCESS);
         //#if (multitenant == true)
         lacksSelectedTenant = failedPolicies.Contains(AuthPolicies.TENANT_SELECTED);
+
+        if (lacksSelectedTenant)
+        {
+            isGlobalAdmin = await AuthorizationService.IsAuthorized(user, AppFeatures.Management.Tenants_Manage_Global);
+            tenants = GetSampleTenants();
+        }
         //#endif
     }
+
+    //#if (multitenant == true)
+    /// <summary>
+    /// The sample tenants in place of what the app's UserController.GetTenants returns: the view's user belongs to the first
+    /// and has been invited to the others.
+    /// </summary>
+    private List<TenantDto> GetSampleTenants()
+    {
+        return [.. WorkbenchDemoUsers.TenantKeys.Select((key, index) => new TenantDto
+        {
+            Id = new(index + 1, 0, 0, new byte[8]),
+            Name = key.ToLowerInvariant(),
+            Title = Localizer[key],
+            CurrentUserMembershipStatus = index is 0 ? TenantMembershipStatus.Member : TenantMembershipStatus.Invited
+        })];
+    }
+    //#endif
 
     private async Task<List<string>> GetFailedPolicies(ClaimsPrincipal user)
     {

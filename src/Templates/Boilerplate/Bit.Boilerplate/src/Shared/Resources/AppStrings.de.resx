@@ -1840,6 +1840,9 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="PendingInvitation" xml:space="preserve">
     <value>Ausstehende Einladung</value>
   </data>
+    <data name="PendingInvitations" xml:space="preserve">
+    <value>Ausstehende Einladungen</value>
+  </data>
     <data name="CurrentTenant" xml:space="preserve">
     <value>Aktueller Mandant</value>
   </data>

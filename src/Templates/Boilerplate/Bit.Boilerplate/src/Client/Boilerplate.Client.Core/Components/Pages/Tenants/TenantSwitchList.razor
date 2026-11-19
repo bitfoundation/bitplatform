@@ -1,0 +1,49 @@
+@using Boilerplate.Shared.Features.Tenants.Dtos
+@inherits AppComponentBase
+
+@* The width of the buttons around it on the not-authorized page, and the default min-width of the buttons inside it,
+   which that page sets wider for its own buttons. *@
+<BitStack FitHeight Gap="0.5rem" Style="width:min(300px, 100%);--bit-Button-min-width:initial">
+    @if (invitations.Length > 0)
+    {
+        <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(AppStrings.PendingInvitations)]</BitText>
+
+        @foreach (var tenant in invitations)
+        {
+            <BitStack @key="tenant.Id" Horizontal FitHeight VerticalAlign="BitAlignment.Center">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Warning" />
+                @* A tenant without a title is listed by its name, which has no space to break at: BreakWord keeps a
+                   long one from pushing Accept out of the row. *@
+                <BitText BreakWord Style="flex-grow:1">@GetDisplayName(tenant)</BitText>
+                @* Accepting is switching into the tenant (See IdentityController.Refresh). *@
+                <BitButton Color="BitColor.Success"
+                           IconName="@BitIconName.Accept"
+                           Loading="IsSwitching(tenant)"
+                           Disabled="IsWaiting(tenant)"
+                           OnClick="WrapHandled(() => SwitchTo(tenant))">
+                    @Localizer[nameof(AppStrings.AcceptInvitation)]
+                </BitButton>
+            </BitStack>
+        }
+    }
+
+    @if (switchTargets.Length > 0)
+    {
+        <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(AppStrings.SwitchTenant)]</BitText>
+
+        @foreach (var tenant in switchTargets)
+        {
+            @* The same long name breaks inside its button instead of running out of it. *@
+            <BitButton @key="tenant.Id"
+                       FullWidth
+                       Variant="BitVariant.Outline"
+                       IconName="@BitIconName.Org"
+                       Styles="@(new() { Primary = "overflow-wrap:anywhere" })"
+                       Loading="IsSwitching(tenant)"
+                       Disabled="IsWaiting(tenant)"
+                       OnClick="WrapHandled(() => SwitchTo(tenant))">
+                @GetDisplayName(tenant)
+            </BitButton>
+        }
+    }
+</BitStack>

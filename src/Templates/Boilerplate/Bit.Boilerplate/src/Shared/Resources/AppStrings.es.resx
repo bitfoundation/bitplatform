@@ -1840,6 +1840,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="PendingInvitation" xml:space="preserve">
     <value>Invitación pendiente</value>
   </data>
+    <data name="PendingInvitations" xml:space="preserve">
+    <value>Invitaciones pendientes</value>
+  </data>
     <data name="CurrentTenant" xml:space="preserve">
     <value>Inquilino actual</value>
   </data>

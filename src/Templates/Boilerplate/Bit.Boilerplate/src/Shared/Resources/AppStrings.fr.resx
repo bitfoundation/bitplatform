@@ -1840,6 +1840,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="PendingInvitation" xml:space="preserve">
     <value>Invitation en attente</value>
   </data>
+    <data name="PendingInvitations" xml:space="preserve">
+    <value>Invitations en attente</value>
+  </data>
     <data name="CurrentTenant" xml:space="preserve">
     <value>Locataire actuel</value>
   </data>

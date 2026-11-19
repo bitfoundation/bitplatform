@@ -1056,7 +1056,8 @@
                         "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",
                         "src/Tests/Features/RateLimiting/IdentityRateLimitTests.cs",
                         "src/Tests/Features/Identity/RoleQuotaClaimLifecycleTests.cs",
-                        "src/Tests/Features/Tenants/TenantMembershipStateTests.cs"
+                        "src/Tests/Features/Tenants/TenantMembershipStateTests.cs",
+                        "src/Tests/Features/Tenants/TenantSwitchListTests.cs"
                     ]
                 },
                 {
@@ -1318,7 +1319,8 @@
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
                         "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs",
-                        "src/Tests/Features/Identity/NotAuthorizedPageTests.cs"
+                        "src/Tests/Features/Identity/NotAuthorizedPageTests.cs",
+                        "src/Tests/Features/Tenants/TenantSwitchListTests.cs"
                     ]
                 },
                 {
