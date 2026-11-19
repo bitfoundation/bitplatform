@@ -74,8 +74,11 @@ public static class WellKnownFiles
         return changed;
     }
 
-    /// <summary>The team id of the app's entry, <c>&lt;team id&gt;.&lt;bundle id&gt;</c> as <see cref="AddAppleApp"/> adds it, or null.</summary>
-    public static string? AppleTeamIdOf(string path, string bundleId)
+    /// <summary>
+    /// The App ID prefix of the app's entry, <c>&lt;prefix&gt;.&lt;bundle id&gt;</c>, or null. <see cref="AddAppleApp"/> writes the
+    /// team id there, which an old team's prefix may not be.
+    /// </summary>
+    public static string? AppIdPrefixOf(string path, string bundleId)
     {
         try
         {

@@ -200,7 +200,7 @@ Apple for push notifications and Sign in with Apple, from which it stores their 
 | `SERVERAPI__AUTHENTICATION__APPLE__*` | secret, optional | Sign in with Apple's Services ID, key id, team id and key, which `bit pipeline` stores from the key's `.p8` (`.docs/07`) |
 <!--#endif-->
 <!--#if (notification == true)-->
-| `GOOGLE_SERVICES_JSON` | secret, optional | The Android app's `google-services.json`, as it is or in base64. Without it the Android app gets no push notifications (`.docs/22`) |
+| `GOOGLE_SERVICES_JSON_FILE_BASE64` | secret, optional | The Android app's `google-services.json` in base64. Without it the Android app gets no push notifications (`.docs/22`) |
 <!--#endif-->
 | `ANDROID_RELEASE_*`, `APPSTORE_*`, `IOS_CODE_SIGN_PROVISION` | secret, variable | Signing the Android and iOS apps |
 | `CODE_SIGNING_*`, `WINDOWS_UPDATE_FILES_URL` | secret, variable | Signing the Windows app, and where it looks for updates |
@@ -258,8 +258,9 @@ The api's `Cloudflare` token and zone come from `CLOUDFLARE_TOKEN` and `CLOUDFLA
 their own.
 <!--#endif-->
 <!--#if (notification == true)-->
-The api's `AdsPushAPNS:AppBundleIdentifier` comes from `APP_ID`, the bundle id the iOS job builds the app with, and
-`AdsPushAPNS:EnvironmentType` is `Production` outside Development, so iOS push needs only the key's three secrets.
+The api's `AdsPushAPNS:AppBundleIdentifier` comes from `APP_ID`, the bundle id the iOS job builds the app with, unless a
+setting of its own names another, and `AdsPushAPNS:EnvironmentType` is `Production` outside Development, so iOS push
+needs only the key's three secrets.
 <!--#endif-->
 <!--#endif-->
 

@@ -339,13 +339,6 @@ jobs:
             setting "${settings_file[SERVERAPI]}" Cloudflare__ZoneIds__0 "$CLOUDFLARE_ZONE" CLOUDFLARE_ZONE
           fi
           #endif
-          #if (notification == true)
-
-          # iOS pushes go to the bundle id the iOS job builds the app with.
-          if [[ -n "$APP_ID" ]]; then
-            setting "${settings_file[SERVERAPI]}" AdsPushAPNS__AppBundleIdentifier "$APP_ID" APP_ID
-          fi
-          #endif
 
           # Every other setting is a variable or a secret of its own, named <SERVICE>__<Section>__<Key>:
           # SERVERAPI__SMS__PROVIDERS__TWILIO__AUTHTOKEN is the api's Sms:Providers:Twilio:AuthToken. A secret for a key, a
@@ -376,6 +369,14 @@ jobs:
             jq -r 'to_entries[] | select(.key | contains("__") or . == "APP_VERSION") | "variable\t\(.key)\t\(.value | @base64)"' <<< "$VARIABLES"
             jq -r 'to_entries[] | select(.key | contains("__") or . == "APP_VERSION") | "secret\t\(.key)\t\(.value | @base64)"' <<< "$SECRETS"
           )
+          #if (notification == true)
+
+          # iOS pushes go to the bundle id the iOS job builds the app with, unless a setting of its own names another.
+          apns_topic="${settings_file[SERVERAPI]}:ADSPUSHAPNS__APPBUNDLEIDENTIFIER"
+          if [[ -n "$APP_ID" && -z "${set_by[$apns_topic]:-}" ]]; then
+            setting "${settings_file[SERVERAPI]}" AdsPushAPNS__AppBundleIdentifier "$APP_ID" APP_ID
+          fi
+          #endif
           #if (cloudflare != true)
 
           # The web app's and the landing page's /v1/ paths, where their pages and the apps post their telemetry, go to the
@@ -780,6 +781,11 @@ jobs:
       id-token: write
       attestations: write
     environment: ${{ inputs.ENV_NAME }}
+#if (notification == true)
+    env:
+      # Optional, and a step's if can't read a secret: the csproj leaves google-services.json out when it isn't there.
+      GOOGLE_SERVICES_JSON_FILE_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_FILE_BASE64 }}
+#endif
 
     steps:
       - name: Checkout source code
@@ -807,29 +813,18 @@ jobs:
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
 #if (notification == true)
 
-      # Firebase's google-services.json, as it is or in base64: without it the app gets no push token (See .docs/22).
-      - name: Write google-services.json
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-          APP_ID: ${{ vars.APP_ID }}
-        run: |
-          if [[ -z "$GOOGLE_SERVICES_JSON" ]]; then
-            echo "::warning::GOOGLE_SERVICES_JSON is not set, so the Android app gets no push notifications."
-            exit 0
-          fi
-          file=src/Client/Boilerplate.Client.Maui/Platforms/Android/google-services.json
-          if [[ "$GOOGLE_SERVICES_JSON" =~ ^[[:space:]]*\{ ]]; then
-            printf '%s' "$GOOGLE_SERVICES_JSON" > "$file"
-          else
-            printf '%s' "$GOOGLE_SERVICES_JSON" | base64 -d > "$file" || true
-          fi
-          if ! jq -e . "$file" > /dev/null 2>&1; then
-            echo "::error::GOOGLE_SERVICES_JSON is neither a google-services.json nor one in base64."
-            exit 1
-          fi
-          if ! jq -e --arg id "$APP_ID" 'any(.client[]?; .client_info.android_client_info.package_name == $id)' "$file" > /dev/null; then
-            echo "::warning::GOOGLE_SERVICES_JSON has no Android app with the package name $APP_ID, so the app gets no push notifications. Add the app to the Firebase project and download the file again."
-          fi
+      # Firebase's google-services.json, without which the app gets no push token (See .docs/22).
+      - name: Extract google-services.json
+        if: env.GOOGLE_SERVICES_JSON_FILE_BASE64 != ''
+        uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
+        with:
+          fileDir: './src/Client/Boilerplate.Client.Maui/Platforms/Android/'
+          fileName: 'google-services.json'
+          encodedString: ${{ secrets.GOOGLE_SERVICES_JSON_FILE_BASE64 }}
+
+      - name: Warn that the app gets no push notifications
+        if: env.GOOGLE_SERVICES_JSON_FILE_BASE64 == ''
+        run: echo "::warning::GOOGLE_SERVICES_JSON_FILE_BASE64 is not set, so the Android app gets no push notifications."
 #endif
 
       - name: Translate .resx files

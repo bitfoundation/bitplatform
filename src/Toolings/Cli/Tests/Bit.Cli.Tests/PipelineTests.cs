@@ -495,10 +495,12 @@ public class PipelineTests
     {
         using var host = new TestHost();
         Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    env:\n      SECRETS: ${{ toJSON( secrets ) }}\n    steps:\n      - run: echo\n  build:\n    runs-on: ubuntu-latest\n    environment: Test\n    steps:\n      - run: echo ${{ secrets.TOKEN }}\n");
+        Workflow(host, "staging.yml", "on: push\nenv:\n  SECRETS: ${{ toJSON(secrets) }}\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Staging\n    steps:\n      - run: echo\n");
 
         var scan = await new GitHubWorkflows(host.WorkingDirectory).ScanAsync(CancellationToken.None);
 
-        CollectionAssert.AreEqual(new[] { "Production" }, scan.SettingsEnvironments.ToArray());
+        CollectionAssert.AreEqual(new[] { "Production", "Staging" }, scan.SettingsEnvironments.ToArray(), "A workflow's own env reads them for each of its jobs.");
+        CollectionAssert.AreEqual(new[] { "Production", "Staging", "Test" }, scan.Environments.ToArray(), "An environment that only reads every secret still gets its settings, such as Production's branch rule.");
     }
 
     [TestMethod]
@@ -511,7 +513,7 @@ public class PipelineTests
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("pipeline", "--check"), host.Output);
 
         StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("SERVERAPI__ADSPUSHFIREBASE__PRIVATEKEY not set, optional"));
-        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("GOOGLE_SERVICES_JSON not set, optional"));
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("GOOGLE_SERVICES_JSON_FILE_BASE64 not set, optional"));
         StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("SERVERAPI__ADSPUSHAPNS__P8PRIVATEKEY set"), "A SERVERWEB__ secret is the same setting with an integrated api.");
         StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("SERVERAPI__AUTHENTICATION__APPLE__PRIVATEKEY not set, optional"));
     }
@@ -552,7 +554,7 @@ public class PipelineTests
         Assert.AreEqual("firebase-adminsdk@contoso-shop.iam.gserviceaccount.com", stored["SERVERAPI__ADSPUSHFIREBASE__CLIENTEMAIL"]);
         Assert.AreEqual("1234567890", stored["SERVERAPI__ADSPUSHFIREBASE__CLIENTID"]);
         StringAssert.StartsWith(stored["SERVERAPI__ADSPUSHFIREBASE__CLIENTX509CERTURL"], "https://www.googleapis.com/robot/");
-        Assert.AreEqual(File.ReadAllText(googleServices), stored[PipelineSetup.GoogleServicesJson]);
+        CollectionAssert.AreEqual(File.ReadAllBytes(googleServices), Convert.FromBase64String(stored[PipelineSetup.GoogleServicesJson]));
 
         Assert.AreEqual(Body(apns), stored["SERVERAPI__ADSPUSHAPNS__P8PRIVATEKEY"]);
         Assert.AreEqual("ABCDE12345", stored["SERVERAPI__ADSPUSHAPNS__P8PRIVATEKEYID"]);
@@ -570,7 +572,7 @@ public class PipelineTests
     }
 
     [TestMethod]
-    public async Task Pipeline_Should_AskForTheKeysAndTakeTheTeamIdFromAppleAppSiteAssociation()
+    public async Task Pipeline_Should_AskForTheKeysAndOfferTheAppIdPrefixAsTheTeamId()
     {
         var prompter = new ScriptedPrompter();
         using var host = Repository(prompter);
@@ -590,7 +592,7 @@ public class PipelineTests
         Assert.IsNotNull(prompter.Find("Firebase service account"));
         Assert.IsNotNull(prompter.Find("google-services.json"));
         Assert.IsNull(prompter.Find("Sign in with Apple"), "It's set, as SERVERWEB__AUTHENTICATION__APPLE__PRIVATEKEY.");
-        Assert.IsNull(prompter.Find("team id"));
+        CollectionAssert.AreEqual(new[] { "TEAM654321" }, prompter.Find("team id")!.Preselected.ToArray(), "An old team's App ID prefix isn't its team id, so it's only offered.");
         StringAssert.Contains(host.FlatOutput, "Skipped Android push's server settings");
     }
 
@@ -611,7 +613,7 @@ public class PipelineTests
     /// <summary>A bit Boilerplate project whose server has push notifications and Sign in with Apple, deployed as the template's CD does.</summary>
     private static void PushAndSignInProject(TestHost host)
     {
-        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.DATABASE_PASSWORD }} ${{ secrets.GOOGLE_SERVICES_JSON }}\n        env:\n          SECRETS: ${{ toJSON(secrets) }}\n");
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.DATABASE_PASSWORD }} ${{ secrets.GOOGLE_SERVICES_JSON_FILE_BASE64 }}\n        env:\n          SECRETS: ${{ toJSON(secrets) }}\n");
         File.WriteAllText(Path.Combine(host.WorkingDirectory, "Shop.slnx"), "<Solution />");
         var api = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "src", "Server", "Shop.Server.Api")).FullName;
         File.WriteAllText(Path.Combine(api, "appsettings.json"), """

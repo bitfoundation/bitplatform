@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Formats.Asn1;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 namespace Bit.Cli.Keys;
@@ -17,11 +18,18 @@ public static partial class AppleP8Key
     {
         try
         {
+            var pkcs8 = Convert.FromBase64String(body);
             using var key = ECDsa.Create();
-            key.ImportPkcs8PrivateKey(Convert.FromBase64String(body), out _);
-            return key.KeySize is 256;
+            key.ImportPkcs8PrivateKey(pkcs8, out _);
+
+            // The curve as PKCS#8 names it, the same on every platform: PrivateKeyInfo's AlgorithmIdentifier parameters.
+            var info = new AsnReader(pkcs8, AsnEncodingRules.DER).ReadSequence();
+            info.ReadInteger();
+            var algorithm = info.ReadSequence();
+            algorithm.ReadObjectIdentifier();
+            return algorithm.ReadObjectIdentifier() == ECCurve.NamedCurves.nistP256.Oid.Value;
         }
-        catch (Exception exp) when (exp is FormatException or CryptographicException)
+        catch (Exception exp) when (exp is FormatException or CryptographicException or AsnContentException)
         {
             return false;
         }

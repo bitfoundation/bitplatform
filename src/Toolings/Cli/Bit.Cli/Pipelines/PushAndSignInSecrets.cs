@@ -10,11 +10,11 @@ namespace Bit.Cli.Pipelines;
 /// <summary>
 /// Push notifications and Sign in with Apple, whose secrets only files made at Google and Apple give. bit Boilerplate's CD
 /// reads the server's as a secret per setting through toJSON(secrets), which no workflow names, and the Android app's
-/// google-services.json from GOOGLE_SERVICES_JSON.
+/// google-services.json from GOOGLE_SERVICES_JSON_FILE_BASE64.
 /// </summary>
 public sealed partial class PipelineSetup
 {
-    public const string GoogleServicesJson = "GOOGLE_SERVICES_JSON";
+    public const string GoogleServicesJson = "GOOGLE_SERVICES_JSON_FILE_BASE64";
     public const string FirebaseSettings = "SERVERAPI__ADSPUSHFIREBASE__PRIVATEKEY";
     public const string ApnsSettings = "SERVERAPI__ADSPUSHAPNS__P8PRIVATEKEY";
     public const string SignInWithAppleSettings = "SERVERAPI__AUTHENTICATION__APPLE__PRIVATEKEY";
@@ -157,7 +157,7 @@ public sealed partial class PipelineSetup
             return;
         }
 
-        await SetAsync(environment, GoogleServicesJson, text, $"from {Path.GetFileName(path)}", cancellationToken);
+        await SetAsync(environment, GoogleServicesJson, Convert.ToBase64String(await File.ReadAllBytesAsync(path, cancellationToken)), $"{Path.GetFileName(path)} in base64", cancellationToken);
 
         if (await VariableAsync(environment, "APP_ID", cancellationToken) is { } appId && packages.Contains(appId, StringComparer.Ordinal) is false)
         {
@@ -243,20 +243,24 @@ public sealed partial class PipelineSetup
     }
 
     /// <summary>
-    /// Given, from the App Store signing bit created in this run, from the app's entry in apple-app-site-association.json that
-    /// such a signing added, or else asked for.
+    /// Given, from the App Store signing bit created in this run, or else asked for.
     /// </summary>
     private async Task<string?> TeamIdAsync(string? environment, CancellationToken cancellationToken)
     {
-        appleTeamId ??= options.AppleTeamId
-            ?? appleSignings.Values.Select(s => s.TeamId).OfType<string>().FirstOrDefault()
-            ?? (ProjectContext.FindProjectName(root) is { } project && await VariableAsync(environment, "APP_ID", cancellationToken) is { } appId
-                ? WellKnownFiles.AppleTeamIdOf(WellKnownFiles.AppleAppSiteAssociationPath(root, project), appId)
-                : null);
+        appleTeamId ??= options.AppleTeamId ?? appleSignings.Values.Select(s => s.TeamId).OfType<string>().FirstOrDefault();
 
-        if (appleTeamId is null && CanAsk && cli.Prompter.Text($"Your Apple team id, under Membership details at {AppleSigning.AccountPage}", "").Trim() is { Length: > 0 } answer)
+        if (appleTeamId is null && CanAsk)
         {
-            appleTeamId = answer;
+            // The app's entry in apple-app-site-association.json starts with its App ID prefix, which is the team id for all
+            // but old teams, so it's only offered.
+            var offered = ProjectContext.FindProjectName(root) is { } project && await VariableAsync(environment, "APP_ID", cancellationToken) is { } appId
+                ? WellKnownFiles.AppIdPrefixOf(WellKnownFiles.AppleAppSiteAssociationPath(root, project), appId)
+                : null;
+
+            if (cli.Prompter.Text($"Your Apple team id, under Membership details at {AppleSigning.AccountPage}", offered ?? "").Trim() is { Length: > 0 } answer)
+            {
+                appleTeamId = answer;
+            }
         }
 
         return appleTeamId;

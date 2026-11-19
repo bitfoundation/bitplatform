@@ -8,7 +8,7 @@ public sealed record WorkflowSecret(string Name, string? Environment, IReadOnlyL
 
 public sealed record WorkflowScan(IReadOnlyList<WorkflowSecret> Secrets, IReadOnlyList<string> Notes, IReadOnlyList<string> Texts)
 {
-    public IReadOnlyList<string> Environments => [.. Secrets.Select(s => s.Environment).OfType<string>().Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+    public IReadOnlyList<string> Environments => [.. Secrets.Select(s => s.Environment).OfType<string>().Concat(SettingsEnvironments).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
 
     /// <summary>
     /// The environments of the jobs that read every secret through <c>toJSON(secrets)</c>, as bit Boilerplate's CD does for
@@ -74,6 +74,7 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
             .Where(c => Scalar(c.Key) is not "jobs" and not "on")
             .SelectMany(c => SecretsIn(c.Value))
             .ToList();
+        var workflowReadsEverySecret = workflow.Children.Where(c => Scalar(c.Key) is not "jobs" and not "on").Any(c => ReadsEverySecret(c.Value));
 
         if (workflow.Children.TryGetValue(new YamlScalarNode("jobs"), out var jobsNode) is false || jobsNode is not YamlMappingNode jobs)
             return;
@@ -92,7 +93,7 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
             }
 
             var names = SecretsIn(job).Concat(workflowSecrets).Distinct(StringComparer.Ordinal).ToList();
-            var readsEverySecret = ReadsEverySecret(job);
+            var readsEverySecret = workflowReadsEverySecret || ReadsEverySecret(job);
 
             if (names.Count == 0 && readsEverySecret is false)
                 continue;

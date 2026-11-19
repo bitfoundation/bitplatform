@@ -18,11 +18,11 @@ public static class PipelineCommand
         var yesOption = new Option<bool>("--yes", "-y") { Description = "Store the secrets bit creates and turn on the repository's settings without asking, and skip the secrets only you can give." };
         var rotateOption = new Option<bool>("--rotate-certificate") { Description = "Give each environment a new app certificate, keeping the old one as APP_CERTIFICATE_RETIRED so nobody is signed out." };
         var firebaseOption = new Option<string?>("--firebase-service-account") { Description = "Android push: the Firebase service account key (.json) the server sends with, stored as its six SERVERAPI__ADSPUSHFIREBASE__ settings.", HelpName = "file" };
-        var googleServicesOption = new Option<string?>("--google-services-json") { Description = "Android push: the Android app's google-services.json, stored as GOOGLE_SERVICES_JSON.", HelpName = "file" };
+        var googleServicesOption = new Option<string?>("--google-services-json") { Description = "Android push: the Android app's google-services.json, stored in base64 as GOOGLE_SERVICES_JSON_FILE_BASE64.", HelpName = "file" };
         var apnsOption = new Option<string?>("--apns-key") { Description = "iOS push: the APNs key's AuthKey_<key id>.p8, stored as the server's SERVERAPI__ADSPUSHAPNS__ settings.", HelpName = "file" };
         var signInWithAppleOption = new Option<string?>("--sign-in-with-apple-key") { Description = "Sign in with Apple: its key's AuthKey_<key id>.p8, stored with --apple-services-id as the server's SERVERAPI__AUTHENTICATION__APPLE__ settings.", HelpName = "file" };
         var servicesIdOption = new Option<string?>("--apple-services-id") { Description = "Sign in with Apple's Services ID, e.g. com.contoso.shop.signin." };
-        var teamIdOption = new Option<string?>("--apple-team-id") { Description = "The Apple team id, for the APNs and Sign in with Apple keys. Default: the one of the App Store signing bit creates, or of the app in apple-app-site-association.json." };
+        var teamIdOption = new Option<string?>("--apple-team-id") { Description = "The Apple team id, for the APNs and Sign in with Apple keys. Default: the one of the App Store signing bit creates in the same run; otherwise bit asks." };
 
         var command = new Command("pipeline", "Fill in the secrets your GitHub Actions workflows use: bit reads them from the workflows, creates the environments they deploy to, creates the keys it can and asks for the rest. It also locks down the repository: only collaborators open pull requests, the workflows' token is read-only, Production deploys from main only and Dependabot alerts are on.")
         {

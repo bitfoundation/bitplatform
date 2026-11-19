@@ -403,7 +403,8 @@ ID or the key, so those steps are yours, at
 3. Add a key with Sign in with Apple, configured for the same primary App ID, and download its `AuthKey_<key id>.p8`.
    Apple lets you download it only once.
 4. Run `bit pipeline`: it asks for the `.p8` and the Services ID (or takes `--sign-in-with-apple-key <file>
-   --apple-services-id <id>`), reads the key id from the file's name and the team id from App Store Connect, and stores
+   --apple-services-id <id>`), reads the key id from the file's name, asks for the team id (or takes `--apple-team-id`)
+   unless it made the App Store signing in the same run, and stores
    `SERVERAPI__AUTHENTICATION__APPLE__CLIENTID`, `__KEYID`, `__TEAMID` and `__PRIVATEKEY` in each environment. In
    development, set the same settings with `dotnet user-secrets set` in the server project.
 5. Users can hide their email address behind Apple's Private Email Relay. Mail reaches such an address only from a

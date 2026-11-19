@@ -377,7 +377,7 @@ public static partial class KeysCommand
 
         if (request.SignInWithApple)
         {
-            await SignInWithAppleStepsAsync(cli, directory, bundleId, cancellationToken);
+            await SignInWithAppleStepsAsync(cli, directory, bundleId, result.EnabledCapabilities.Contains(AppleEntitlements.SignInWithApple.Type), cancellationToken);
         }
 
         return CliApp.ExitOk;
@@ -386,7 +386,7 @@ public static partial class KeysCommand
     /// <summary>
     /// What Apple has no API for: the Services ID of the web flow, with each GitHub environment's domain and return URL, and the key.
     /// </summary>
-    private static async Task SignInWithAppleStepsAsync(CliServices cli, string directory, string bundleId, CancellationToken cancellationToken)
+    private static async Task SignInWithAppleStepsAsync(CliServices cli, string directory, string bundleId, bool turnedOn, CancellationToken cancellationToken)
     {
         var console = cli.Console;
         var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadLeft(7).PadRight(2)).AddColumn(new GridColumn().NoWrap().PadRight(2)).AddColumn();
@@ -404,7 +404,18 @@ public static partial class KeysCommand
         }
 
         console.Out.WriteLine();
-        console.Out.MarkupLine($"[green]{console.OkSymbol}[/] {Markup.Escape(bundleId)} is a primary App ID with Sign in with Apple. Apple has no API for the rest, at {AppleSigning.IdentifiersPage}:");
+
+        if (turnedOn)
+        {
+            console.Out.MarkupLine($"[green]{console.OkSymbol}[/] Turned on Sign in with Apple for {Markup.Escape(bundleId)}, as a primary App ID.");
+        }
+        else
+        {
+            // Apple may have it grouped with another primary App ID, which the API doesn't tell apart.
+            console.Warn($"{bundleId} already has Sign in with Apple, which bit left as it is. Check at {AppleSigning.IdentifiersPage} that it's a primary App ID, not grouped with another one: a Services ID needs a primary App ID.");
+        }
+
+        console.Dim($"Apple has no API for the rest, at {AppleSigning.IdentifiersPage}:");
         console.Out.MarkupLine($"  1. Add a Services ID, such as {Markup.Escape(bundleId)}.signin, and turn on Sign in with Apple for it.");
         console.Out.MarkupLine($"  2. Configure it with {Markup.Escape(bundleId)} as its primary App ID, and each environment's domain and return URL:");
         console.Out.Write(grid);
