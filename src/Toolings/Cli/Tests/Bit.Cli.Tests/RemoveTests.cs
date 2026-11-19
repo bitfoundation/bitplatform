@@ -162,6 +162,7 @@ public class RemoveTests
     [DataRow("above program files", "holds a system folder")]
     [DataRow("bit", "is bit's own folder")]
     [DataRow("unix top level", "is a system folder")]
+    [DataRow("documents through links", "is one of your account's own folders")]
     public async Task Remove_Should_KeepTheFoldersItMustNeverDelete(string which, string says)
     {
         if (which is "unix top level" && OperatingSystem.IsWindows())
@@ -183,6 +184,7 @@ public class RemoveTests
                 "program files" => Directory.CreateDirectory(programFiles).FullName,
                 "above program files" => Directory.CreateDirectory(programFiles).Parent!.FullName,
                 "bit" => AppContext.BaseDirectory,
+                "documents through links" => ThroughLinks(host, system),
                 _ => "/usr"
             };
 
@@ -287,6 +289,32 @@ public class RemoveTests
         StringAssert.Contains(host.FlatOutput, "the folder you're in, so bit remove won't delete it from there.");
         Assert.IsTrue(File.Exists(Path.Combine(main, "README.md")));
         CollectionAssert.AreEquivalent(new[] { "main", "work" }, await WorktreesAsync(main));
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_LeaveAWorktreeThatMovedWhileItAsked()
+    {
+        if (await GitIdentity.GitAvailableAsync() is false)
+            return;
+
+        var prompter = new ScriptedPrompter();
+        using var host = new TestHost(variables: GitIdentity.RealPath(), prompter: prompter, realProcesses: true);
+        using var identity = new GitIdentity(host.Root);
+        var (main, worktrees) = await CreateRepositoryAsync(host, "feature");
+        var moved = Path.Combine(host.Root, "moved");
+
+        prompter.On("Delete", new Func<bool>(() =>
+        {
+            GitAsync(main, "worktree", "move", worktrees[0], moved).GetAwaiter().GetResult();
+            return true;
+        }));
+
+        Assert.AreEqual(0, await host.RunAsync("remove", worktrees[0]), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "Left its repository's worktrees as they are");
+        Assert.IsTrue(File.Exists(Path.Combine(moved, "README.md")));
+        CollectionAssert.AreEquivalent(new[] { "main", "moved" }, await WorktreesAsync(main));
+        StringAssert.Contains(await GitAsync(moved, "status", "--short", "--branch"), "feature");
     }
 
     [TestMethod]
@@ -612,6 +640,35 @@ public class RemoveTests
         Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
 
         Assert.IsFalse(Directory.Exists(folder));
+    }
+
+    /// <summary>
+    /// The home folder's Documents, through a link whose target is itself through a link: links/view leads to links/parents/home, and links/parents to the folder that holds home.
+    /// </summary>
+    private static string ThroughLinks(TestHost host, string links)
+    {
+        Directory.CreateDirectory(Path.Combine(host.Home, "Documents"));
+        var parents = Path.Combine(links, "parents");
+        var view = Path.Combine(links, "view");
+
+        Link(parents, host.Root);
+        Link(view, Path.Combine(parents, Path.GetFileName(host.Home)));
+
+        return Path.Combine(view, "Documents");
+    }
+
+    private static void Link(string link, string target)
+    {
+        if (OperatingSystem.IsWindows() is false)
+        {
+            Directory.CreateSymbolicLink(link, target);
+            return;
+        }
+
+        using var junction = Process.Start(new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"), $"/c mklink /J \"{link}\" \"{target}\"") { UseShellExecute = false, RedirectStandardOutput = true, CreateNoWindow = true })!;
+        junction.StandardOutput.ReadToEnd();
+        junction.WaitForExit();
+        Assert.AreEqual(0, junction.ExitCode, $"mklink /J {link} {target}");
     }
 
     private static Process HoldFile(string shell, string file, int depth = 0)

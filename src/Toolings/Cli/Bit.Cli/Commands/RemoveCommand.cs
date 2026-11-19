@@ -443,6 +443,13 @@ public static class RemoveCommand
 
         if (Directory.Exists(git.GitDirectory) && SamePath(Path.GetDirectoryName(git.GitDirectory)!, worktrees))
         {
+            // The worktree's own folder points back to the worktree's .git file. When it no longer points to this folder, the worktree
+            // was moved (git worktree move) while bit asked, and the administrative folder is the moved worktree's, which stays.
+            var now = WorktreeOf(git.GitDirectory);
+
+            if (now is null || SamePath(now, git.TopLevel) is false)
+                return StepResult.Warning("Left its repository's worktrees as they are", now is null ? $"{git.GitDirectory} doesn't say which folder it's for" : $"the worktree is in {now} now");
+
             FolderRemover.Delete(git.GitDirectory);
 
             try
@@ -460,6 +467,21 @@ public static class RemoveCommand
         return Directory.Exists(git.GitDirectory)
             ? StepResult.Warning("Couldn't remove it from its repository's worktrees", git.Repository, hint: $"Run this in {git.Repository}: git worktree remove {ProcessSpec.Quote(git.RawTopLevel)}")
             : StepResult.Succeeded("Removed it from its repository's worktrees", git.Repository);
+    }
+
+    /// <summary>The folder a worktree's administrative folder says the worktree is in, from its gitdir file, which git may write relative to it.</summary>
+    private static string? WorktreeOf(string administrativeFolder)
+    {
+        try
+        {
+            var gitFile = File.ReadAllText(Path.Combine(administrativeFolder, "gitdir")).Trim();
+
+            return gitFile.Length == 0 ? null : RealPath(Path.GetDirectoryName(Path.GetFullPath(gitFile, administrativeFolder))!);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            return null;
+        }
     }
 
     private static Task<ProcessResult> Git(CliServices cli, string folder, string[] arguments, CancellationToken cancellationToken)
@@ -495,8 +517,9 @@ public static class RemoveCommand
 
     /// <summary>
     /// The path with every symbolic link and junction in it followed, the way git reports paths, so /tmp on macOS, a link to /private/tmp, is the same folder as git's /private/tmp.
+    /// A link's target is followed the same way, since links may be in its folders too, up to a depth that stops a cycle.
     /// </summary>
-    private static string RealPath(string path)
+    private static string RealPath(string path, int depth = 0)
     {
         var full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
         var root = Path.GetPathRoot(full) ?? "";
@@ -510,7 +533,8 @@ public static class RemoveCommand
             {
                 if (new DirectoryInfo(real).ResolveLinkTarget(returnFinalTarget: true) is { } target)
                 {
-                    real = Path.TrimEndingDirectorySeparator(Path.GetFullPath(target.FullName));
+                    var targetPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(target.FullName));
+                    real = depth < 32 ? RealPath(targetPath, depth + 1) : targetPath;
                 }
             }
             catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
