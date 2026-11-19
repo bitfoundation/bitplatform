@@ -4,9 +4,9 @@ using ModelContextProtocol.Server;
 namespace Bit.BlazorUI.Demo.Server.Controllers;
 
 /// <summary>
-/// Ready-made workflows for the five things people actually ask a component library for: add it to
+/// Ready-made workflows for the six things people actually ask a component library for: add it to
 /// an app, build a screen with it, replace another library or hand-written markup, make it match a
-/// brand, and work out why something looks wrong.
+/// brand, bring an app up to a new version of it, and work out why something looks wrong.
 /// <para>
 /// Each prompt spends its words on the order to call the tools in, because the failure mode of an
 /// agent here is not ignorance, it is writing markup from a remembered API before it has read the
@@ -136,6 +136,39 @@ public static class McpPrompts
             5. If the app renders on the server, handle the first frame - "Server-side rendering" - or the app
                flashes the wrong theme before any JavaScript has run.
             6. Show me the diff, and say which layer each change landed in and why.
+            """;
+    }
+
+    [McpServerPrompt(Name = "upgrade-bit-blazorui", Title = "Upgrade an app's bit BlazorUI packages")]
+    [Description("Brings an app's code in line with the bit BlazorUI packages it was just upgraded to: every removed or renamed parameter, component and type it still uses, fixed.")]
+    public static string Upgrade(
+        [Description("The version of the bit BlazorUI packages the app was on before the upgrade, e.g. '10.5.0'. Pass 'unknown' to have it determined from the project's history first.")] string fromVersion = "unknown")
+    {
+        return $"""
+            The bit BlazorUI packages of this app were upgraded. The version it was on before: {fromVersion}.
+
+            Work in this order:
+
+            1. If that version is 'unknown', determine it: the Bit.BlazorUI PackageReference in the project files (or a
+               Directory.Packages.props) as it was before the upgrade, from the version control history. Do not guess
+               it - every change after it applies, and a version guessed too late skips the ones that matter.
+            2. Call `GetBitBlazorUIBreakingChanges` with that version. It lists every name removed or renamed since,
+               with what to write instead.
+            3. Search the whole app - every .razor, .razor.cs and .cs file, not only the ones that fail to build - for
+               each old name as a whole word, and fix every use the way its row says. A removed parameter left on a
+               component still compiles and silently does nothing, so a clean build is not proof. Mind the fixes that
+               invert a value (IsEnabled="false" is Disabled) or depend on the value written (a placement, a
+               direction).
+            4. Build. The packages' analyzer reports what is left as BITBC001 and BITBC002 errors, each with its fix; call
+               `GetBitBlazorUIBreakingChanges` with `names` for any you want explained. Fix them all, then the remaining
+               compiler errors - for a name that is not in the list, `GetBitBlazorUIComponent` or `GetBitBlazorUIType`
+               says what exists now.
+            5. Read the sections of BreakingChanges.md for the versions since {fromVersion} for the changes no name
+               shows - markup, CSS classes, defaults, behaviour - and apply the ones that touch this app: its
+               stylesheets, its test locators, the defaults it relied on.
+
+            Report the edits file by file, and list separately anything you changed in behaviour rather than in name and
+            anything you were unsure of.
             """;
     }
 

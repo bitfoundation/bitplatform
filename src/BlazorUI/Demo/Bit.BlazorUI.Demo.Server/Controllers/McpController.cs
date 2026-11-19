@@ -17,7 +17,7 @@ namespace Bit.BlazorUI.Demo.Server.Controllers;
 /// plain HTTP GET endpoints under /api/mcp/..., which makes each of them inspectable from a browser.
 /// </para>
 /// <para>
-/// There are seven of them, and the count is the design rather than what was left over. A tool's
+/// There are eight of them, and the count is the design rather than what was left over. A tool's
 /// description is paid for in every request of every session a client has this server connected,
 /// and it is paid for again in the model's attention every time it chooses between two tools that
 /// sound alike. So a listing is not a tool - it is what a retrieval tool answers when it is asked
@@ -152,4 +152,13 @@ public partial class McpController : AppControllerBase
         [Description("What the glyph shows, e.g. 'save', 'chevron down', 'shopping cart', 'calendar'.")] string query,
         [Description("How many names to return.")] int limit = 40)
         => BlazorUIIconCatalog.Search(query, limit);
+
+    [HttpGet]
+    [McpServerTool(Name = nameof(GetBitBlazorUIBreakingChanges), Title = "What to change after upgrading",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
+    [Description("Lists the parameters, members, components and types of bit BlazorUI that were removed or renamed after a version, each with what to write instead and how (some renames invert the value) - the fixes to apply to an app after upgrading its bit BlazorUI packages, and the same ones the build errors BITBC001 and BITBC002 name. Many of these are not compile errors on their own: a removed parameter written on a component renders as an HTML attribute and silently does nothing. Pass the version the app was on; pass names to look up particular ones, such as the name in a build error or a parameter that stopped working.")]
+    public string GetBitBlazorUIBreakingChanges(
+        [Description("The version of the bit BlazorUI packages the app was on before upgrading, e.g. '10.5.0' or '10.7.0' (a 'v-' prefix or a '-pre-NN' suffix is fine). Omitted, every change since 10.5.0 is listed.")] string? fromVersion = null,
+        [Description("Optional. Old names to look up, separated by commas: 'IsEnabled', 'BitButton.IsLoading', 'BitPanelPosition', 'IsCheckedChanged'. Omitted, every change after fromVersion is listed.")] string? names = null)
+        => BlazorUIBreakingChanges.Get(fromVersion, names);
 }

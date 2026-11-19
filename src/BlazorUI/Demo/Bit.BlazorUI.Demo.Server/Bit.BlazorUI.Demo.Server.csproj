@@ -84,6 +84,12 @@
          code samples themselves are reflected off the compiled page types; only the markup that
          orders and names them lives here, and only in this assembly - embedding them in the client
          would add four megabytes to what a WebAssembly visitor downloads. -->
+    <!-- The names removed or renamed since 10.5.0 that GetBitBlazorUIBreakingChanges answers with: the analyzer's own
+         list, the one an app's build reports them from, so the two always say the same fix. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\..\Bit.BlazorUI.Analyzers\BreakingChanges.json" LogicalName="BitBlazorUIBreakingChanges.json" />
+    </ItemGroup>
+
     <ItemGroup>
         <EmbeddedResource Include="..\Client\Bit.BlazorUI.Demo.Client.Core\Pages\**\*.razor">
             <LogicalName>BitBlazorUIDemoSource/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>

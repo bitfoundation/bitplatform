@@ -3,6 +3,7 @@
     "path": "Bit.BlazorUI.slnx",
     "projects": [
       "Bit.BlazorUI\\Bit.BlazorUI.csproj",
+      "Bit.BlazorUI.Analyzers\\Bit.BlazorUI.Analyzers.csproj",
       "Bit.BlazorUI.Assets\\Bit.BlazorUI.Assets.csproj",
       "Bit.BlazorUI.Build\\Bit.BlazorUI.Build.csproj",
       "Bit.BlazorUI.Extras\\Bit.BlazorUI.Extras.csproj",

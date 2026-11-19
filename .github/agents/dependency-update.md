@@ -57,9 +57,11 @@ for the oldest supported SDK:
 | Package | Pinned | Where |
 |---|---|---|
 | `Microsoft.CodeAnalysis.Analyzers` | 3.3.3 | `Bit.BlazorUI.SourceGenerators`, `Bit.SourceGenerators` |
+| `Microsoft.CodeAnalysis.Analyzers` | 3.3.4 | `Bit.BlazorUI.Analyzers` (the lowest `Microsoft.CodeAnalysis.CSharp` 4.8.0 accepts) |
 | `Microsoft.CodeAnalysis.CSharp.Workspaces` | 4.3.1 | `Bit.BlazorUI.SourceGenerators`, `Bit.SourceGenerators` |
 | `Microsoft.CodeAnalysis.Workspaces.Common` | 4.3.1 | `Bit.CodeAnalyzers` |
 | `Microsoft.CodeAnalysis.CSharp` | 4.8.0 | `Bit.Brouter.Generators`, `Bit.Blex.Generators`, `Bit.BlazeDb.Generators` + their test projects, and `Bit.Blex.Demo.Server` and `Bit.BlazeDb.Demo.Server` (run their generators for their MCP servers) (must match) |
+| `Microsoft.CodeAnalysis.CSharp` | 4.8.0 | `Bit.BlazorUI.Analyzers` (the breaking-change analyzer the Bit.BlazorUI package ships into an app's build) |
 | `Microsoft.CodeAnalysis.CSharp` | 4.14.0 | `Bit.CodeAnalyzers` |
 | `Microsoft.Build.Utilities.Core` | 17.7.2 | `Bit.Butil.Build`, `Bit.BlazorUI.Build` |
 | `System.Reflection.Metadata` | 1.6.0 | `Bit.BlazorUI.Build` |

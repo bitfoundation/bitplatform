@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- The Roslyn analyzer that ships inside the Bit.BlazorUI NuGet package and runs in an app's build: it fails the build
+         on a name the packages removed or renamed since 10.5.0 that the app still uses, and says what to write instead
+         (BITBC001 for a parameter or member, BITBC002 for a component or type). Most of these breaks are silent without
+         it: a component passes an attribute it does not take on to its element, so a removed parameter still compiles,
+         and a removed component's tag renders as an unknown HTML element.
+
+         What changed is data, not code: BreakingChanges.json beside this file, embedded into the assembly, is the one
+         list of every change, read by the analyzer and by the MCP server's GetBitBlazorUIBreakingChanges (which embeds
+         the same file). A rename or a removal in the public API adds its entry there, with its BreakingChanges.md entry;
+         BitBreakingChangesDataTests checks every entry against the compiled packages.
+
+         Packed by Bit.BlazorUI under bit-analyzers\ (not analyzers\ nor any folder whose name starts with that word,
+         which the .NET SDK would add on its own, so the opt-out could not take it away) and added to an app's compilation by buildTransitive\Bit.BlazorUI.targets, unless the
+         app sets <BitBlazorUIBreakingChangeAnalyzer>false</BitBlazorUIBreakingChangeAnalyzer>.
+
+         netstandard2.0 and Microsoft.CodeAnalysis 4.8, so it loads in the compiler of every SDK the packages support.
+         Not signed and not packable on its own, like Bit.BlazorUI.Build. -->
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <SignAssembly>False</SignAssembly>
+        <RootNamespace>Bit.BlazorUI.Analyzers</RootNamespace>
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <IsTrimmable>false</IsTrimmable>
+        <!-- The messages end with the hint of the change, a sentence of its own that the data ends with a period. -->
+        <NoWarn>$(NoWarn);RS1032</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="BreakingChanges.json" LogicalName="Bit.BlazorUI.BreakingChanges.json" />
+        <None Include="AnalyzerReleases.Shipped.md;AnalyzerReleases.Unshipped.md" />
+        <AdditionalFiles Include="AnalyzerReleases.Shipped.md;AnalyzerReleases.Unshipped.md" />
+    </ItemGroup>
+
+</Project>

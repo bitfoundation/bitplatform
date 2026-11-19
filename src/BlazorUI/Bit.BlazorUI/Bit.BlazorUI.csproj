@@ -88,6 +88,26 @@
     </PropertyGroup>
     <Import Project="..\Bit.BlazorUI.Build\Bit.BlazorUI.Assets.targets" />
 
+    <!-- The breaking-change analyzer an app's build runs (see buildTransitive\Bit.BlazorUI.targets), packed under
+         bit-analyzers\ rather than analyzers\, which NuGet would add to every app on its own: the targets add it, so
+         BitBlazorUIBreakingChangeAnalyzer=false can leave it out. Built, not referenced, like the task. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI.Analyzers\Bit.BlazorUI.Analyzers.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeBitBlazorUIAnalyzerInPackage</TargetsForTfmSpecificContentInPackage>
+    </PropertyGroup>
+
+    <Target Name="IncludeBitBlazorUIAnalyzerInPackage" Condition="'$(TargetFramework)' == '$(_BitBlazorUIPackedTfm)'">
+        <MSBuild Projects="..\Bit.BlazorUI.Analyzers\Bit.BlazorUI.Analyzers.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)" RemoveProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier">
+            <Output TaskParameter="TargetOutputs" ItemName="_BitBlazorUIAnalyzerAssembly" />
+        </MSBuild>
+        <ItemGroup>
+            <TfmSpecificPackageFile Include="@(_BitBlazorUIAnalyzerAssembly)" PackagePath="bit-analyzers\%(Filename)%(Extension)" />
+        </ItemGroup>
+    </Target>
+
     <Target Name="BeforeBuildTasks" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript;BuildCss" />
 
     <Target Name="IncludeGeneratedAssets" BeforeTargets="ResolveProjectStaticWebAssets" DependsOnTargets="BeforeBuildTasksOnce" Condition=" '$(DesignTimeBuild)' != 'true' ">
