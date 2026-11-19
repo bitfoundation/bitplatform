@@ -17,7 +17,12 @@ public static class ProjectProcesses
     private static readonly HashSet<string> buildProcesses = new(["dotnet", "MSBuild", "VBCSCompiler", "XamlCompiler"], StringComparer.OrdinalIgnoreCase);
     private static readonly HashSet<string> projectHosts = new([.. buildProcesses, "aspire"], StringComparer.OrdinalIgnoreCase);
 
-    public static async Task<IReadOnlySet<int>> StopAsync(CliServices cli, StepRunner steps, string folder, CancellationToken cancellationToken)
+    public static Task<IReadOnlySet<int>> StopAsync(CliServices cli, StepRunner steps, string folder, CancellationToken cancellationToken)
+    {
+        return StopAsync(cli, steps, folder, "the project's files", cancellationToken);
+    }
+
+    public static async Task<IReadOnlySet<int>> StopAsync(CliServices cli, StepRunner steps, string folder, string files, CancellationToken cancellationToken)
     {
         var stoppedBuilds = new HashSet<int>();
 
@@ -25,7 +30,7 @@ public static class ProjectProcesses
             return stoppedBuilds;
 
         var root = Path.GetFullPath(folder);
-        var found = await cli.Console.RunWithStatusAsync("Looking for apps that use the project's files", _ => Task.Run(() => Find(root), cancellationToken));
+        var found = await cli.Console.RunWithStatusAsync($"Looking for apps that use {files}", _ => Task.Run(() => Find(root), cancellationToken));
 
         foreach (var (process, name, id) in found)
         {
