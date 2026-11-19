@@ -7,8 +7,9 @@
          and a removed component's tag renders as an unknown HTML element.
 
          What changed is data, not code: BreakingChanges.json beside this file, embedded into the assembly, is the one
-         list of every change, read by the analyzer and by the MCP server's GetBitBlazorUIBreakingChanges (which embeds
-         the same file). A rename or a removal in the public API adds its entry there, with its BreakingChanges.md entry;
+         list of every change, read by the analyzer and by the MCP server's GetBitBlazorUIBreakingChanges (which
+         references this project and reads it through BitBreakingChanges, the analyzer's own parser - so keep that class and
+         BitBreakingChange free of Roslyn types, which the server does not carry). A rename or a removal in the public API adds its entry there, with its BreakingChanges.md entry;
          BitBreakingChangesDataTests checks every entry against the compiled packages.
 
          Packed by Bit.BlazorUI under bit-analyzers\ (not analyzers\ nor any folder whose name starts with that word,

@@ -187,6 +187,135 @@ public sealed class BitBreakingChangesAnalyzerTests
     }
 
     [TestMethod]
+    public async Task AnUpperCaseTagNestedInAnElementOfTheContentIsNoChildContentTag()
+    {
+        var razor = """
+                    <BitMediaQuery>
+                        <div><Matched>@wide</Matched></div>
+                        <div><NotMatched>narrow</NotMatched></div>
+                    </BitMediaQuery>
+                    """;
+
+        // Razor binds a template parameter to a tag right inside the component's content only.
+        var generated = Page("""
+                    __builder.OpenComponent<global::Bit.BlazorUI.BitMediaQuery>(0);
+                    __builder.AddComponentParameter(1, "ChildContent", (global::Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
+                        __builder2.OpenElement(2, "div");
+                        __builder2.OpenElement(3, "Matched");
+                        __builder2.AddContent(4, "wide");
+                        __builder2.CloseElement();
+                        __builder2.CloseElement();
+                        __builder2.AddMarkupContent(5, "<div><NotMatched>narrow</NotMatched></div>");
+                    }));
+                    __builder.CloseComponent();
+            """);
+
+        var diagnostics = await Analyze(generated, razor);
+
+        Assert.AreEqual(0, diagnostics.Length, Describe(diagnostics));
+    }
+
+    [TestMethod]
+    public async Task AGenericComponentWhoseTypeArgumentsAreInferredIsReadAtItsTag()
+    {
+        var razor = """
+                    <BitMediaQuery>
+                        <BitDropdown Items="items" Value="value" IsLoading="true">
+                            <Matched>x</Matched>
+                        </BitDropdown>
+                    </BitMediaQuery>
+                    <BitDropdown Items="items" Value="value" IsLoading="true" />
+                    """;
+
+        // Razor opens such a component in a TypeInference helper at the end of the file, called where the tag is with
+        // the values of its attributes; its child content is an argument of the call.
+        var generated = Page($$"""
+                    __builder.OpenComponent<global::Bit.BlazorUI.BitMediaQuery>(0);
+                    __builder.AddComponentParameter(1, "ChildContent", (global::Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
+                        global::__Blazor.App.Page.TypeInference.CreateBitDropdown_0(__builder2, 2, 3, {{Mapped(2, 25, "items")}}, 4, {{Mapped(2, 39, "value")}}, 5, "true", 6, (__builder3) => {
+                            __builder3.OpenElement(7, "Matched");
+                            __builder3.AddContent(8, "x");
+                            __builder3.CloseElement();
+                        });
+                    }));
+                    __builder.CloseComponent();
+                    global::__Blazor.App.Page.TypeInference.CreateBitDropdown_1(__builder, 9, 10, {{Mapped(6, 21, "items")}}, 11, {{Mapped(6, 35, "value")}}, 12, "true");
+            """, after: """
+                        namespace __Blazor.App.Page
+                        {
+                            #line hidden
+                            internal static class TypeInference
+                            {
+                                public static void CreateBitDropdown_0<TItem, TValue>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, int __seq0, global::System.Collections.Generic.ICollection<TItem> __arg0, int __seq1, TValue __arg1, int __seq2, global::System.Object __arg2, int __seq3, global::Microsoft.AspNetCore.Components.RenderFragment __arg3) where TItem : class, new()
+                                {
+                                __builder.OpenComponent<global::Bit.BlazorUI.BitDropdown<TItem, TValue>>(seq);
+                                __builder.AddComponentParameter(__seq0, nameof(global::Bit.BlazorUI.BitDropdown<TItem, TValue>.Items), __arg0);
+                                __builder.AddComponentParameter(__seq1, nameof(global::Bit.BlazorUI.BitDropdown<TItem, TValue>.Value), __arg1);
+                                __builder.AddAttribute(__seq2, "IsLoading", __arg2);
+                                __builder.AddComponentParameter(__seq3, nameof(global::Bit.BlazorUI.BitDropdown<TItem, TValue>.ChildContent), __arg3);
+                                __builder.CloseComponent();
+                                }
+
+                                public static void CreateBitDropdown_1<TItem, TValue>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, int __seq0, global::System.Collections.Generic.ICollection<TItem> __arg0, int __seq1, TValue __arg1, int __seq2, global::System.Object __arg2) where TItem : class, new()
+                                {
+                                __builder.OpenComponent<global::Bit.BlazorUI.BitDropdown<TItem, TValue>>(seq);
+                                __builder.AddComponentParameter(__seq0, nameof(global::Bit.BlazorUI.BitDropdown<TItem, TValue>.Items), __arg0);
+                                __builder.AddComponentParameter(__seq1, nameof(global::Bit.BlazorUI.BitDropdown<TItem, TValue>.Value), __arg1);
+                                __builder.AddAttribute(__seq2, "IsLoading", __arg2);
+                                __builder.CloseComponent();
+                                }
+                            }
+                        }
+                        """);
+
+        var diagnostics = await Analyze(generated, razor);
+
+        // Matched is BitMediaQuery's template that is gone, but the tag is in the dropdown's content, not the query's.
+        Assert.AreEqual(2, diagnostics.Length, Describe(diagnostics));
+        AssertAt(diagnostics[0], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 2, 46);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "of BitDropdown");
+        AssertAt(diagnostics[1], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 6, 42);
+        StringAssert.Contains(diagnostics[1].GetMessage(), "Loading");
+    }
+
+    [TestMethod]
+    public async Task ATagInAnHtmlCommentOrInTheCSharpOfTheFileIsNoComponentTag()
+    {
+        var razor = """
+                    <!-- <BitProModal /> was here -->
+                    <BitProPanel />
+                    @code {
+                        private string html = "<BitProModal>";
+                        private System.Collections.Generic.List<BitProModal> modals = new();
+                    }
+                    """;
+
+        // The @code block is C#, mapped back to the .razor file: a type it names is the C# analysis's to report, once.
+        var generated = Page("", members: """
+
+                    #nullable restore
+                    #line (3,8)-(6,1) "C:\app\Pages\Page.razor"
+
+                        private string html = "<BitProModal>";
+                        private System.Collections.Generic.List<BitProModal> modals = new();
+
+                    #line default
+                    #line hidden
+                    #nullable disable
+
+                    """);
+
+        var diagnostics = await Analyze(generated, razor);
+
+        Assert.AreEqual(2, diagnostics.Length, Describe(diagnostics));
+        AssertAt(diagnostics[0], BitBreakingChangesAnalyzer.TypeDiagnosticId, RazorPath, 2, 2);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "BitProPanel");
+        Assert.AreEqual(BitBreakingChangesAnalyzer.TypeDiagnosticId, diagnostics[1].Id, diagnostics[1].ToString());
+        Assert.AreEqual(4, diagnostics[1].Location.GetMappedLineSpan().StartLinePosition.Line, diagnostics[1].ToString());
+        StringAssert.Contains(diagnostics[1].GetMessage(), "BitProModal");
+    }
+
+    [TestMethod]
     public async Task TheTagOfAComponentThatIsGoneIsReportedUnlessItIsInACommentOrTheAppHasOneOfThatName()
     {
         var razor = """
@@ -242,6 +371,39 @@ public sealed class BitBreakingChangesAnalyzerTests
     }
 
     [TestMethod]
+    public async Task CSharpThatWritesTheNameAnyOtherWayIsToldToo()
+    {
+        var source = """
+                     using B = Bit.BlazorUI;
+
+                     namespace App;
+
+                     public class Code
+                     {
+                         public void M(global::Bit.BlazorUI.BitButton? button, global::Bit.BlazorUI.BitMapMarker marker)
+                         {
+                             var qualified = Bit.BlazorUI.BitPanelPosition.End;
+                             var global = global::Bit.BlazorUI.BitPanelPosition.End;
+                             var aliased = B.BitPanelPosition.End;
+                             var conditional = button?.IsEnabled;
+                             var copy = marker with { TooltipDirection = null };
+                             var texts = new global::Bit.BlazorUI.BitFullCalendarTexts { BitFcTodayButton = "Today" };
+                         }
+                     }
+                     """;
+
+        var diagnostics = await Analyze(source);
+
+        // BitFcTodayButton is also the name of a component that is gone, but an initializer sets a member: one error, the member's.
+        CollectionAssert.AreEquivalent(
+            new[] { "BITBC002 BitPanelPosition", "BITBC002 BitPanelPosition", "BITBC002 BitPanelPosition", "BITBC001 IsEnabled", "BITBC001 TooltipDirection", "BITBC001 BitFcTodayButton" },
+            diagnostics.Select(d => $"{d.Id} {d.Location.SourceTree!.GetText().ToString(d.Location.SourceSpan)}").ToArray(),
+            Describe(diagnostics));
+
+        StringAssert.Contains(diagnostics.Single(d => d.GetMessage().Contains("BitFcTodayButton")).GetMessage(), "TodayButton");
+    }
+
+    [TestMethod]
     public async Task AProjectThatDoesNotReferenceThePackagesIsNotAnalyzed()
     {
         var source = """
@@ -272,7 +434,11 @@ public sealed class BitBreakingChangesAnalyzerTests
         Assert.IsTrue(blanked.EndsWith(" b"));
     }
 
-    private static string Page(string body, string extra = "")
+    /// <summary>
+    /// A generated .razor file: <paramref name="body"/> in BuildRenderTree, <paramref name="members"/> (an @code block) in
+    /// the class, <paramref name="extra"/> beside it and <paramref name="after"/> after its namespace (the type-inference helpers).
+    /// </summary>
+    private static string Page(string body, string extra = "", string members = "", string after = "")
         => $$"""
              #pragma checksum "C:\app\Pages\Page.razor" "{8829d00f-11b8-4213-878b-770e8597ac16}" "00"
              // <auto-generated/>
@@ -298,10 +464,14 @@ public sealed class BitBreakingChangesAnalyzerTests
                      private bool flag = true;
                      private bool on;
                      private string wide = "";
+                     private global::System.Collections.Generic.List<global::Bit.BlazorUI.BitDropdownItem<string>> items = new();
+                     private string value = "";
+             {{members}}
                  }
                  {{extra}}
              }
              #pragma warning restore 1591
+             {{after}}
              """;
 
     /// <summary>A C# expression of the markup as the Razor compiler writes it: on lines of its own, mapped to the .razor file.</summary>

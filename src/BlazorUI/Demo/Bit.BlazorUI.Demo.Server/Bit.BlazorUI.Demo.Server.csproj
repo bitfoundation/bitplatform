@@ -79,17 +79,19 @@
         </EmbeddedResource>
     </ItemGroup>
 
+    <!-- The names removed or renamed since 10.5.0 that GetBitBlazorUIBreakingChanges answers with: the analyzer's own
+         list, read by the analyzer's own parser (BitBreakingChanges, off the BreakingChanges.json its assembly embeds), so
+         the tool and an app's build always read the same entries the same way and say the same fix. Only those two
+         classes are used here, which touch nothing of Roslyn: the analyzer keeps Microsoft.CodeAnalysis to itself. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BlazorUI.Analyzers\Bit.BlazorUI.Analyzers.csproj" />
+    </ItemGroup>
+
     <!-- The demo pages the MCP server reads to answer with each component's examples: their titles,
          their explanatory prose and which code field each one shows. The parameter tables and the
          code samples themselves are reflected off the compiled page types; only the markup that
          orders and names them lives here, and only in this assembly - embedding them in the client
          would add four megabytes to what a WebAssembly visitor downloads. -->
-    <!-- The names removed or renamed since 10.5.0 that GetBitBlazorUIBreakingChanges answers with: the analyzer's own
-         list, the one an app's build reports them from, so the two always say the same fix. -->
-    <ItemGroup>
-        <EmbeddedResource Include="..\..\Bit.BlazorUI.Analyzers\BreakingChanges.json" LogicalName="BitBlazorUIBreakingChanges.json" />
-    </ItemGroup>
-
     <ItemGroup>
         <EmbeddedResource Include="..\Client\Bit.BlazorUI.Demo.Client.Core\Pages\**\*.razor">
             <LogicalName>BitBlazorUIDemoSource/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>

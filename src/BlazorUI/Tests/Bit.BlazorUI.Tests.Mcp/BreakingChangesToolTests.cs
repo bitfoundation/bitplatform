@@ -6,8 +6,9 @@ namespace Bit.BlazorUI.Tests.Mcp;
 
 /// <summary>
 /// <c>GetBitBlazorUIBreakingChanges</c>: what an agent upgrading an app's packages works through, answered from the
-/// analyzer's own BreakingChanges.json, which the .csproj embeds - so the way it goes quietly blank is a deployment that
-/// lost the resource, and the way it goes quietly wrong is a version filter that drops the changes an app needs.
+/// analyzer's own BreakingChanges.json, read by the analyzer's own parser off the analyzer's assembly - so the way it
+/// goes quietly blank is a deployment that lost that assembly, and the ways it goes quietly wrong are a version filter
+/// that drops the changes an app needs and a lookup that misses the name a build error wrote.
 /// </summary>
 [TestClass]
 public class BreakingChangesToolTests : McpTestBase
@@ -63,6 +64,23 @@ public class BreakingChangesToolTests : McpTestBase
     }
 
     [TestMethod]
+    public async Task A_pre_release_still_lists_the_changes_of_the_version_it_comes_before()
+    {
+        using var scope = Assert.Scope();
+
+        // An app on a pre-release of 11.0.0 has the 11.0.0 changes made after its pre-release still to make.
+        var answer = await CallAsync("GetBitBlazorUIBreakingChanges", new { fromVersion = "11.0.0-pre-03" });
+
+        StringAssert.Contains(answer, "## Gone in 11.0.0");
+        StringAssert.Contains(answer, "`IsLoading`");
+        StringAssert.Contains(answer, "from 11.0.0-pre-03");
+        Assert.DoesNotContain("## Gone in 10.7.0", answer, "A pre-release of 11.0.0 already had the 10.7.0 changes.");
+
+        var narrowed = await CallAsync("GetBitBlazorUIBreakingChanges", new { fromVersion = "11.0.0-pre-03", names = "IsLoading" });
+        CollectionAssert.AreEquivalent(new[] { "IsLoading" }, AllRows(narrowed, MembersHeading).Select(r => r[0]).ToArray());
+    }
+
+    [TestMethod]
     public async Task Names_narrow_the_answer_and_take_the_forms_a_build_error_writes()
     {
         using var scope = Assert.Scope();
@@ -74,6 +92,25 @@ public class BreakingChangesToolTests : McpTestBase
 
         CollectionAssert.AreEquivalent(new[] { "IsLoading", "IsChecked" }, members);
         CollectionAssert.AreEquivalent(new[] { "BitProModal" }, types);
+    }
+
+    [TestMethod]
+    public async Task A_component_named_before_a_member_of_its_base_class_finds_it()
+    {
+        using var scope = Assert.Scope();
+
+        // BITBC001 says "'IsEnabled' of BitButton"; the entry is on BitComponentBase, which BitButton derives from. The
+        // items' IsEnabled is another entry, on types BitButton is not.
+        var answer = await CallAsync("GetBitBlazorUIBreakingChanges", new { names = "BitButton.IsEnabled" });
+
+        var rows = AllRows(answer, MembersHeading);
+        Assert.HasCount(1, rows, answer);
+        Assert.AreEqual("IsEnabled", rows[0][0]);
+        StringAssert.Contains(rows[0][1], "BitComponentBase");
+
+        // A type of the packages that never had it is still told apart.
+        var miss = await CallAsync("GetBitBlazorUIBreakingChanges", new { names = "BitDropdownItem.IsLoading" });
+        StringAssert.Contains(miss, "is a name bit BlazorUI removed or renamed");
     }
 
     [TestMethod]
