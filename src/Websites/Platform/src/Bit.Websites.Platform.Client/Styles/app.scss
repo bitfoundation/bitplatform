@@ -394,8 +394,12 @@ a {
 }
 
 // Full-page loads between pages (before the app takes over routing) cross-fade instead of flashing.
-@view-transition {
-    navigation: auto;
+// Only for those who have not asked for less motion: the reduced-motion reset below does not reach
+// the ::view-transition-* pseudo-elements, so the opt-in itself is what has to be gated.
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+        navigation: auto;
+    }
 }
 
 // One switch for everyone who asked the OS for less motion: the site's own entrance, reveal and hover
