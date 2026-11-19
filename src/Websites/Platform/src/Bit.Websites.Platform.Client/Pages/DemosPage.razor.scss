@@ -265,8 +265,5 @@
 }
 
 .highlight-1 {
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
+    @include BrandGradientText;
 }

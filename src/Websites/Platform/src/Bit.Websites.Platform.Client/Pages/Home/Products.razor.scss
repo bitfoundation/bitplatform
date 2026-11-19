@@ -235,25 +235,11 @@
 }
 
 .template-link {
-    display: flex;
     cursor: pointer;
-    font-weight: 700;
-    align-items: center;
-    font-size: rem2(14px);
     flex-flow: row nowrap;
     line-height: rem2(32px);
     transition: all 0.2s linear;
-    color: $bit-color-primary;
-
-    .template-link-arrow {
-        width: rem2(16px);
-        height: rem2(16px);
-        margin-left: rem2(8px);
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-image: url('/images/arrow-right-blue-icon.svg');
-    }
+    @include ArrowLink('.template-link-arrow');
 
     &:hover {
         transform: translateX(5px);

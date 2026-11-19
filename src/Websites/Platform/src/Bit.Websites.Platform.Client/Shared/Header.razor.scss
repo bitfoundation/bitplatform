@@ -19,13 +19,19 @@
 // At the top of the page the bar stays fully see-through (the home hero glow runs under it); over
 // the first few pixels of scrolling it frosts up with a tint of the page background and a hairline
 // underneath. Driven by the scroll position on the compositor - no scroll listener, no re-render.
+// It stays on under reduced motion: it is a state tied to the scroll position (nothing moves or
+// plays on its own), and without it page content scrolls under the nav links with no backdrop.
 // Browsers without scroll-driven animations keep the plain blurred bar.
 @supports (animation-timeline: scroll()) {
-    @media (prefers-reduced-motion: no-preference) {
-        .main-header {
-            animation: header-scrolled linear both;
-            animation-timeline: scroll(root block);
-            animation-range: 0 rem2(64px);
+    .main-header {
+        animation: header-scrolled linear both;
+        animation-timeline: scroll(root block);
+        animation-range: 0 rem2(64px);
+
+        // Out of app.scss's reduced-motion reset, which squeezes every animation to 0.01ms: a
+        // scroll-driven one spans its scroll range whatever its time, but auto states that plainly.
+        @media (prefers-reduced-motion: reduce) {
+            animation-duration: auto !important;
         }
     }
 }
@@ -464,9 +470,12 @@
     }
 }
 
-// The Utilities entry closes the main list in both the desktop popup and the mobile nav.
+// The Utilities entry closes the main list in both the desktop popup and the mobile nav, and the
+// All products entry closes the whole menu, each behind a hairline.
 .menu-sub,
-.header-nav-sub {
+.header-nav-sub,
+.menu-all,
+.header-nav-all {
     margin-top: rem2(4px);
     padding-top: rem2(4px);
     border-top: 1px solid $bit-color-border-secondary;

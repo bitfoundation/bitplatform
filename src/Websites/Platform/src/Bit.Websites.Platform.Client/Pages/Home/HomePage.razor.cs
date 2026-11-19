@@ -7,6 +7,13 @@ public partial class HomePage
     private const string OUR_PRODUCTS_SECTION_ID = "our-products";
     private const string HERO_INTRO_STATE_KEY = "home-hero-intro";
 
+    // The hero pill announces the release the site is built with. The site takes the bit packages of the
+    // current release (see the csproj), and BlazorUI's Info.Version is a ReleaseVersionLiteral that its build
+    // checks against Bit.Build.props, so the pill follows every version bump - preview to stable, and on to
+    // the next major - with nothing here to update. Each bit major targets the .NET of the same number.
+    private static readonly string releaseMajor = Bit.BlazorUI.Info.Version.Split('.')[0];
+    private static readonly bool isPreviewRelease = Bit.BlazorUI.Info.Version.Contains("-pre-");
+
     private bool animateHeroIntro = true;
 
     private ElementReference ourProductsRef = default!;

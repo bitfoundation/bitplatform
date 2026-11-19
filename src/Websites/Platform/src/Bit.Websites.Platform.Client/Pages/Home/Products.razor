@@ -31,14 +31,13 @@
 </div>
 
 @code {
-    private readonly ProductAccordionItem[] products =
+    private ProductAccordionItem[] CreateCoreProducts() =>
     [
         new()
         {
             Title = "A full-stack app on day one",
             Subtitle = "bit Boilerplate · full-stack Blazor project template",
             LinkUrl = Urls.Templates,
-            IsCore = true,
             IsExpanded = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
@@ -62,7 +61,6 @@
             Title = "100+ components, from inputs to data grids",
             Subtitle = "bit BlazorUI · Blazor components with built-in theming",
             LinkUrl = Urls.BlazorUI,
-            IsCore = true,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
@@ -84,7 +82,6 @@
             Title = "130+ browser APIs, called from C#",
             Subtitle = "bit Butil · browser APIs as typed C# services",
             LinkUrl = Urls.Butil,
-            IsCore = true,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
@@ -110,7 +107,6 @@
             Title = "Offline-ready, with updates users can see",
             Subtitle = "bit Bswup · service worker with update progress",
             LinkUrl = Urls.Bswup,
-            IsCore = true,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
@@ -129,7 +125,6 @@
             Title = "Routing with guards and data loaders",
             Subtitle = "bit Brouter · nested, declarative Blazor router",
             LinkUrl = Urls.Brouter,
-            IsCore = true,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
@@ -147,6 +142,10 @@
                 </div>
             </text>
         },
+    ];
+
+    private ProductAccordionItem[] CreateUtilityProducts() =>
+    [
         new()
         {
             Title = "Fluid animation, declared in Razor",
@@ -202,11 +201,14 @@
                     so your server's entities and migrations work unchanged. Live queries re-run on every write, even one from another tab.
                 </BitText>
                 <div>
-                    <CodeBox HideCopyButton>await using var live = db.Orders
+                    <CodeBox HideCopyButton>// A field, disposed in the component's DisposeAsync,
+// so the subscription lives as long as the component.
+_live = db.Orders
     .Where(o => o.Status == OrderStatus.Open)
     .AsLiveQuery();
 
-live.Changed += (_, rows) => InvokeAsync(StateHasChanged);</CodeBox>
+_live.Changed += (_, rows) => { _open = rows; _ = InvokeAsync(StateHasChanged); };
+_open = await _live.RefreshAsync();</CodeBox>
                 </div>
             </text>
         },

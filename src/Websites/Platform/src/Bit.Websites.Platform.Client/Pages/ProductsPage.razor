@@ -55,7 +55,7 @@
                 Tools that make building, checking and shipping your apps faster.
             </BitText>
             <div class="tooling-list">
-                @foreach (var tooling in toolings)
+                @foreach (var tooling in ProductCatalog.Toolings)
                 {
                     <a class="tooling-card" href="@tooling.Url">
                         <span class="tooling-title">@tooling.Title</span>
@@ -68,15 +68,3 @@
     </section>
 </div>
 
-@code {
-    private sealed record Tooling(string Title, string Description, string Url);
-
-    private static readonly Tooling[] toolings =
-    [
-        new("bit CLI", "Ready-to-run projects in one command.", Urls.Cli),
-        new("Minifier", "Smaller Blazor WebAssembly downloads.", Urls.Minifier),
-        new("BlazorES2019", "Blazor apps on older browsers.", Urls.BlazorES2019),
-        new("Code Analyzers", "Best practices checked as you type.", Urls.CodeAnalyzers),
-        new("Source Generators", "Less code to write and review.", Urls.SourceGenerators),
-    ];
-}

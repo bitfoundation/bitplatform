@@ -1,7 +1,8 @@
-﻿﻿namespace Bit.Websites.Platform.Client.Pages.Home;
+﻿namespace Bit.Websites.Platform.Client.Pages.Home;
 
 public partial class Products
 {
+    private ProductGroup? builtGroup;
     private ProductAccordionItem[] visibleProducts = [];
 
     /// <summary>
@@ -11,7 +12,18 @@ public partial class Products
 
     protected override async Task OnParamsSetAsync()
     {
-        visibleProducts = [.. products.Where(p => p.IsCore == (Group is ProductGroup.Core))];
+        // Only the requested group's items are built, and only when the group changes: every parent re-render
+        // sets the parameters again, and rebuilding then would also collapse the accordions the user expanded.
+        if (builtGroup != Group)
+        {
+            builtGroup = Group;
+            visibleProducts = Group switch
+            {
+                ProductGroup.Core => CreateCoreProducts(),
+                ProductGroup.Utilities => CreateUtilityProducts(),
+                _ => throw new ArgumentOutOfRangeException(nameof(Group), Group, "Unknown product group.")
+            };
+        }
 
         await base.OnParamsSetAsync();
     }
@@ -22,7 +34,6 @@ public partial class Products
         public required string Subtitle { get; init; }
         public required string LinkUrl { get; init; }
         public bool External { get; init; }
-        public bool IsCore { get; init; }
         public bool IsExpanded { get; set; }
         public required RenderFragment Body { get; init; }
     }

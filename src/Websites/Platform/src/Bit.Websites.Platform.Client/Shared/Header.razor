@@ -67,13 +67,16 @@
                                 </div>
                             </div>
                         }
+                        <div class="menu-all">
+                            @ProductMenuItemTemplate(allProductsMenuItem, HandleProductMenuItemClick)
+                        </div>
                     </div>
                 </div>
             </div>
-            <a class="header-link @(navMenuService.CurrentUrl == Urls.Demos ? "header-link--active" : null)" href="@Urls.Demos">Demos</a>
-            <a class="header-link @(navMenuService.CurrentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
-            <a class="header-link @(navMenuService.CurrentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
-            <a class="header-link @(navMenuService.CurrentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
+            <a class="header-link @(navMenuService.IsCurrentUrl(Urls.Demos) ? "header-link--active" : null)" href="@Urls.Demos">Demos</a>
+            <a class="header-link @(navMenuService.IsCurrentUrl(Urls.Pricing) ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
+            <a class="header-link @(navMenuService.IsCurrentUrl(Urls.AboutUs) ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
+            <a class="header-link @(navMenuService.IsCurrentUrl(Urls.ContactUs) ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
         </div>
         <div class="right-section">
             <a class="github-container" target="_blank" rel="noopener" aria-label="GitHub repository" title="GitHub repository" href="@Urls.GithubRepo">
@@ -157,20 +160,23 @@
                             }
                         </div>
                     }
+                    <div class="header-nav-all">
+                        @ProductMenuItemTemplate(allProductsMenuItem, ToggleHeaderMenu)
+                    </div>
                 </div>
             }
         </div>
-        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.Demos ? "header-nav-link--active" : null)" href="@Urls.Demos" @onclick=@WrapHandled(ToggleHeaderMenu)>Demos</a>
-        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
-        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
-        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
+        <a class="header-nav-link @(navMenuService.IsCurrentUrl(Urls.Demos) ? "header-nav-link--active" : null)" href="@Urls.Demos" @onclick=@WrapHandled(ToggleHeaderMenu)>Demos</a>
+        <a class="header-nav-link @(navMenuService.IsCurrentUrl(Urls.Pricing) ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
+        <a class="header-nav-link @(navMenuService.IsCurrentUrl(Urls.AboutUs) ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
+        <a class="header-nav-link @(navMenuService.IsCurrentUrl(Urls.ContactUs) ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
     </nav>
 }
 
 @code {
     // Shared between the desktop popup (and its Utilities flyout) and the mobile list; only the
     // click behavior differs.
-    private RenderFragment ProductMenuItemTemplate(ProductMenuItem item, Func<Task> onClick) =>
+    private RenderFragment ProductMenuItemTemplate(ProductLink item, Func<Task> onClick) =>
         @<text>
             @if (item.Disabled)
             {

@@ -19,7 +19,7 @@ public class NavMenuService
     }
 
 
-    /// <summary>Current base-relative path, without query or fragment, with a leading slash.</summary>
+    /// <summary>Current base-relative path, without query, fragment or trailing slash, with a leading slash.</summary>
     public string CurrentUrl { get; private set; } = "/";
 
     public bool IsTemplateDocRoute { get; private set; }
@@ -30,7 +30,13 @@ public class NavMenuService
     /// </summary>
     public bool IsDocsRoute => IsTemplateDocRoute || IsToolingsDocRoute;
 
-    public bool IsProductsRoute => IsDocsRoute || CurrentUrl == Urls.Products;
+    public bool IsProductsRoute => IsDocsRoute || IsCurrentUrl(Urls.Products);
+
+    /// <summary>
+    /// Whether <paramref name="url"/> is the current page. Case-insensitive, like the Blazor router,
+    /// which serves /Products the same page as /products.
+    /// </summary>
+    public bool IsCurrentUrl(string url) => string.Equals(CurrentUrl, url, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Idempotent; called by every component that reacts to LocationChanged, whichever fires first.
@@ -43,7 +49,10 @@ public class NavMenuService
             currentUrl = currentUrl[..fragmentIndex];
         }
 
-        CurrentUrl = currentUrl;
+        // The router ignores a trailing slash, so /products/ renders the /products page and has to match it too.
+        currentUrl = currentUrl.TrimEnd('/');
+
+        CurrentUrl = currentUrl.Length == 0 ? "/" : currentUrl;
 
         IsTemplateDocRoute = currentUrl.Contains("/templates") || currentUrl.Contains("/boilerplate");
         IsToolingsDocRoute = currentUrl.Contains("/toolings");
