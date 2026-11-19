@@ -9,6 +9,12 @@ public sealed record WorkflowSecret(string Name, string? Environment, IReadOnlyL
 public sealed record WorkflowScan(IReadOnlyList<WorkflowSecret> Secrets, IReadOnlyList<string> Notes, IReadOnlyList<string> Texts)
 {
     public IReadOnlyList<string> Environments => [.. Secrets.Select(s => s.Environment).OfType<string>().Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+
+    /// <summary>
+    /// The environments of the jobs that read every secret through <c>toJSON(secrets)</c>, as bit Boilerplate's CD does for
+    /// the apps' settings, a secret each (<c>SERVERAPI__&lt;Section&gt;__&lt;Key&gt;</c>) that no workflow names.
+    /// </summary>
+    public IReadOnlyList<string> SettingsEnvironments { get; init; } = [];
 }
 
 public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, CancellationToken, Task<string?>>? fetchRemote = null)
@@ -16,6 +22,7 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
     private const int MaxDepth = 10;
 
     private readonly Dictionary<(string Name, string? Environment), SortedSet<string>> found = [];
+    private readonly SortedSet<string> settingsEnvironments = new(StringComparer.Ordinal);
     private readonly List<string> notes = [];
     private readonly Dictionary<string, (YamlMappingNode? Workflow, string? Text)> loaded = new(StringComparer.Ordinal);
 
@@ -45,7 +52,7 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
             .ThenBy(s => s.Name, StringComparer.Ordinal)
             .ToList();
 
-        return new(secrets, [.. notes.Distinct(StringComparer.Ordinal)], [.. loaded.Values.Select(l => l.Text).OfType<string>()]);
+        return new(secrets, [.. notes.Distinct(StringComparer.Ordinal)], [.. loaded.Values.Select(l => l.Text).OfType<string>()]) { SettingsEnvironments = [.. settingsEnvironments] };
     }
 
     private async Task VisitAsync(string file, YamlMappingNode workflow, IReadOnlyDictionary<string, string?> given, Func<string, IEnumerable<string>> passedSecrets, IReadOnlyList<string> chain, CancellationToken cancellationToken)
@@ -85,11 +92,17 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
             }
 
             var names = SecretsIn(job).Concat(workflowSecrets).Distinct(StringComparer.Ordinal).ToList();
+            var readsEverySecret = ReadsEverySecret(job);
 
-            if (names.Count == 0)
+            if (names.Count == 0 && readsEverySecret is false)
                 continue;
 
             var (environment, unresolved) = EnvironmentOf(job, inputs);
+
+            if (readsEverySecret && environment is not null)
+            {
+                settingsEnvironments.Add(environment);
+            }
 
             if (unresolved is not null)
             {
@@ -298,6 +311,14 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
         }
     }
 
+    private static bool ReadsEverySecret(YamlNode node) => node switch
+    {
+        YamlScalarNode { Value: { } value } => ExpressionRegex().Matches(value).Any(expression => EverySecretRegex().IsMatch(expression.Groups["body"].Value)),
+        YamlSequenceNode sequence => sequence.Children.Any(ReadsEverySecret),
+        YamlMappingNode mapping => mapping.Children.Any(c => ReadsEverySecret(c.Key) || ReadsEverySecret(c.Value)),
+        _ => false
+    };
+
     private static string? Child(YamlMappingNode mapping, string key) => mapping.Children.TryGetValue(new YamlScalarNode(key), out var value) ? Scalar(value) : null;
 
     private static string? Scalar(YamlNode node) => (node as YamlScalarNode)?.Value;
@@ -310,4 +331,7 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
 
     [GeneratedRegex(@"^\$\{\{\s*(github\.event\.)?inputs\.(?<name>[A-Za-z_][A-Za-z0-9_-]*)\s*\}\}$")]
     private static partial Regex InputExpressionRegex();
+
+    [GeneratedRegex(@"\btoJSON\s*\(\s*secrets\s*\)", RegexOptions.IgnoreCase)]
+    private static partial Regex EverySecretRegex();
 }

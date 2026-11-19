@@ -20,12 +20,13 @@ public class PipelineTests
         {
             var names = scan.Secrets.Where(s => s.Environment == environment).Select(s => s.Name).ToList();
 
-            foreach (var name in new[] { "PUBLIC_VAPIDKEY", "PRIVATE_VAPIDKEY", "VAPID_SUBJECT", "APP_CERTIFICATE", "APP_CERTIFICATE_RETIRED", "SMTP_CONNECTION_STRING", "DATABASE_PASSWORD", "REDIS_CACHE_PASSWORD", "CLOUDFLARE_TUNNEL_TOKEN", "ANDROID_RELEASE_KEYSTORE_FILE_BASE64", "APPSTORE_API_KEY_ID" })
+            foreach (var name in new[] { "PUBLIC_VAPIDKEY", "PRIVATE_VAPIDKEY", "VAPID_SUBJECT", "APP_CERTIFICATE", "APP_CERTIFICATE_RETIRED", "SMTP_CONNECTION_STRING", "DATABASE_PASSWORD", "REDIS_CACHE_PASSWORD", "CLOUDFLARE_TUNNEL_TOKEN", "ANDROID_RELEASE_KEYSTORE_FILE_BASE64", "APPSTORE_API_KEY_ID", PipelineSetup.GoogleServicesJson })
             {
                 CollectionAssert.Contains(names, name, $"{environment}: {string.Join(", ", names)}");
             }
         }
 
+        CollectionAssert.AreEquivalent(new[] { "Production", "Test" }, scan.SettingsEnvironments.ToArray(), "The deployment reads a secret per setting through toJSON(secrets) in each environment.");
         Assert.IsFalse(scan.Secrets.Any(s => s.Name is "GITHUB_TOKEN"));
         Assert.IsEmpty(scan.Notes, string.Join(Environment.NewLine, scan.Notes));
     }
@@ -488,6 +489,149 @@ public class PipelineTests
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("pipeline"));
         StringAssert.Contains(host.FlatOutput, "no GitHub Actions workflows");
     }
+
+    [TestMethod]
+    public async Task TheScan_Should_FindTheEnvironmentsWhoseJobsReadEverySecret()
+    {
+        using var host = new TestHost();
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    env:\n      SECRETS: ${{ toJSON( secrets ) }}\n    steps:\n      - run: echo\n  build:\n    runs-on: ubuntu-latest\n    environment: Test\n    steps:\n      - run: echo ${{ secrets.TOKEN }}\n");
+
+        var scan = await new GitHubWorkflows(host.WorkingDirectory).ScanAsync(CancellationToken.None);
+
+        CollectionAssert.AreEqual(new[] { "Production" }, scan.SettingsEnvironments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task Check_Should_ListPushAndSignInWithAppleAsOptional()
+    {
+        using var host = Repository();
+        PushAndSignInProject(host);
+        host.Runner.On("gh", "secret list --repo contoso/shop --env Production", 0, "DATABASE_PASSWORD\nSERVERWEB__ADSPUSHAPNS__P8PRIVATEKEY\n");
+
+        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("pipeline", "--check"), host.Output);
+
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("SERVERAPI__ADSPUSHFIREBASE__PRIVATEKEY not set, optional"));
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("GOOGLE_SERVICES_JSON not set, optional"));
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("SERVERAPI__ADSPUSHAPNS__P8PRIVATEKEY set"), "A SERVERWEB__ secret is the same setting with an integrated api.");
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("SERVERAPI__AUTHENTICATION__APPLE__PRIVATEKEY not set, optional"));
+    }
+
+    [TestMethod]
+    public async Task Pipeline_Should_StorePushAndSignInWithApplesSecretsFromTheirFiles()
+    {
+        using var host = Repository();
+        PushAndSignInProject(host);
+        host.Runner.On("gh", "secret list --repo contoso/shop --env Production", 0, "DATABASE_PASSWORD\n");
+        host.Runner.On("gh", "variable get APP_ID", 0, "com.contoso.shop\n");
+        host.Runner.On("gh", "variable get SERVER_API_ADDRESS", 1, "variable SERVER_API_ADDRESS was not found");
+        host.Runner.On("gh", "variable get SERVER_ADDRESS", 0, "https://shop.contoso.com/\n");
+
+        var serviceAccount = Path.Combine(host.Root, "contoso-shop-1a2b3c.json");
+        File.WriteAllText(serviceAccount, new System.Text.Json.Nodes.JsonObject
+        {
+            ["type"] = "service_account",
+            ["project_id"] = "contoso-shop",
+            ["private_key_id"] = "1a2b3c",
+            ["private_key"] = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg\n-----END PRIVATE KEY-----\n",
+            ["client_email"] = "firebase-adminsdk@contoso-shop.iam.gserviceaccount.com",
+            ["client_id"] = "1234567890",
+            ["client_x509_cert_url"] = "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk%40contoso-shop.iam.gserviceaccount.com"
+        }.ToJsonString());
+        var googleServices = Path.Combine(host.Root, "google-services.json");
+        File.WriteAllText(googleServices, """{"project_info":{"project_id":"contoso-shop"},"client":[{"client_info":{"android_client_info":{"package_name":"com.contoso.shop.test"}}}]}""");
+        var apns = AppleKey(host, "AuthKey_ABCDE12345.p8");
+        var signInWithApple = AppleKey(host, "AuthKey_FGHIJ67890.p8");
+
+        Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes", "--firebase-service-account", serviceAccount, "--google-services-json", googleServices,
+            "--apns-key", apns, "--sign-in-with-apple-key", signInWithApple, "--apple-services-id", "com.contoso.shop.signin", "--apple-team-id", "TEAM123456"), host.Output);
+
+        var stored = Stored(host);
+        Assert.AreEqual("contoso-shop", stored["SERVERAPI__ADSPUSHFIREBASE__PROJECTID"]);
+        Assert.AreEqual("1a2b3c", stored["SERVERAPI__ADSPUSHFIREBASE__PRIVATEKEYID"]);
+        Assert.AreEqual(@"-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg\n-----END PRIVATE KEY-----\n", stored["SERVERAPI__ADSPUSHFIREBASE__PRIVATEKEY"], "The deployment refuses a line break, and the server reads \\n.");
+        Assert.AreEqual("firebase-adminsdk@contoso-shop.iam.gserviceaccount.com", stored["SERVERAPI__ADSPUSHFIREBASE__CLIENTEMAIL"]);
+        Assert.AreEqual("1234567890", stored["SERVERAPI__ADSPUSHFIREBASE__CLIENTID"]);
+        StringAssert.StartsWith(stored["SERVERAPI__ADSPUSHFIREBASE__CLIENTX509CERTURL"], "https://www.googleapis.com/robot/");
+        Assert.AreEqual(File.ReadAllText(googleServices), stored[PipelineSetup.GoogleServicesJson]);
+
+        Assert.AreEqual(Body(apns), stored["SERVERAPI__ADSPUSHAPNS__P8PRIVATEKEY"]);
+        Assert.AreEqual("ABCDE12345", stored["SERVERAPI__ADSPUSHAPNS__P8PRIVATEKEYID"]);
+        Assert.AreEqual("TEAM123456", stored["SERVERAPI__ADSPUSHAPNS__TEAMID"]);
+
+        Assert.AreEqual("com.contoso.shop.signin", stored["SERVERAPI__AUTHENTICATION__APPLE__CLIENTID"]);
+        Assert.AreEqual("FGHIJ67890", stored["SERVERAPI__AUTHENTICATION__APPLE__KEYID"]);
+        Assert.AreEqual("TEAM123456", stored["SERVERAPI__AUTHENTICATION__APPLE__TEAMID"]);
+        Assert.AreEqual(Body(signInWithApple), stored["SERVERAPI__AUTHENTICATION__APPLE__PRIVATEKEY"]);
+
+        Assert.IsTrue(stored.Where(s => s.Key.Contains("__", StringComparison.Ordinal)).All(s => s.Value.Contains('\n', StringComparison.Ordinal) is false && s.Value.Contains('\'', StringComparison.Ordinal) is false), "The deployment refuses a line break or a single quote in a setting.");
+        Assert.IsTrue(host.Runner.Calls.All(c => stored.Values.All(v => c.Arguments.Any(a => a.Contains(v, StringComparison.Ordinal)) is false)), "a secret was passed on a command line");
+        StringAssert.Contains(host.FlatOutput, "google-services.json has no Android app for com.contoso.shop");
+        StringAssert.Contains(host.FlatOutput, "the domain shop.contoso.com and the return URL https://shop.contoso.com/signin-apple");
+    }
+
+    [TestMethod]
+    public async Task Pipeline_Should_AskForTheKeysAndTakeTheTeamIdFromAppleAppSiteAssociation()
+    {
+        var prompter = new ScriptedPrompter();
+        using var host = Repository(prompter);
+        PushAndSignInProject(host);
+        host.Runner.On("gh", "secret list --repo contoso/shop --env Production", 0, "DATABASE_PASSWORD\nSERVERWEB__AUTHENTICATION__APPLE__PRIVATEKEY\n");
+        host.Runner.On("gh", "variable get APP_ID", 0, "com.contoso.shop\n");
+        var association = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "src", "Client", "Shop.Client.Web", "wwwroot", ".well-known")).FullName;
+        File.WriteAllText(Path.Combine(association, "apple-app-site-association.json"), """{"applinks":{"details":[{"appID":"TEAM654321.com.contoso.shop","paths":["*"]}]}}""");
+        var apns = AppleKey(host, "AuthKey_ABCDE12345.p8");
+        prompter.On("iOS push", apns);
+
+        Assert.AreEqual(0, await new PipelineSetup(host.Services, new PipelineOptions([], false, false, false)).RunAsync(CancellationToken.None), host.Output);
+
+        var stored = Stored(host);
+        CollectionAssert.AreEquivalent(new[] { "SERVERAPI__ADSPUSHAPNS__P8PRIVATEKEY", "SERVERAPI__ADSPUSHAPNS__P8PRIVATEKEYID", "SERVERAPI__ADSPUSHAPNS__TEAMID" }, stored.Keys.ToArray(), host.Output);
+        Assert.AreEqual("TEAM654321", stored["SERVERAPI__ADSPUSHAPNS__TEAMID"]);
+        Assert.IsNotNull(prompter.Find("Firebase service account"));
+        Assert.IsNotNull(prompter.Find("google-services.json"));
+        Assert.IsNull(prompter.Find("Sign in with Apple"), "It's set, as SERVERWEB__AUTHENTICATION__APPLE__PRIVATEKEY.");
+        Assert.IsNull(prompter.Find("team id"));
+        StringAssert.Contains(host.FlatOutput, "Skipped Android push's server settings");
+    }
+
+    [TestMethod]
+    public async Task Pipeline_Should_RefuseAFileThatIsNoAppleKey()
+    {
+        using var host = Repository();
+        PushAndSignInProject(host);
+        var notAKey = Path.Combine(host.Root, "AuthKey_ABCDE12345.p8");
+        File.WriteAllText(notAKey, "-----BEGIN PRIVATE KEY-----\nbm90IGEga2V5\n-----END PRIVATE KEY-----\n");
+
+        Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("pipeline", "--yes", "--apns-key", notAKey, "--apple-team-id", "TEAM123456"), host.Output);
+
+        Assert.IsFalse(Stored(host).Keys.Any(k => k.Contains("ADSPUSHAPNS", StringComparison.Ordinal)), host.Output);
+        StringAssert.Contains(host.FlatOutput, "isn't an Apple .p8 key");
+    }
+
+    /// <summary>A bit Boilerplate project whose server has push notifications and Sign in with Apple, deployed as the template's CD does.</summary>
+    private static void PushAndSignInProject(TestHost host)
+    {
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.DATABASE_PASSWORD }} ${{ secrets.GOOGLE_SERVICES_JSON }}\n        env:\n          SECRETS: ${{ toJSON(secrets) }}\n");
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "Shop.slnx"), "<Solution />");
+        var api = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "src", "Server", "Shop.Server.Api")).FullName;
+        File.WriteAllText(Path.Combine(api, "appsettings.json"), """
+            {
+                "AdsPushAPNS": { "P8PrivateKey": null },
+                "AdsPushFirebase": { "PrivateKey": null },
+                "Authentication": { "Apple": { "ClientId": null } }
+            }
+            """);
+    }
+
+    private static string AppleKey(TestHost host, string name)
+    {
+        using var key = System.Security.Cryptography.ECDsa.Create(System.Security.Cryptography.ECCurve.NamedCurves.nistP256);
+        var path = Path.Combine(host.Root, name);
+        File.WriteAllText(path, key.ExportPkcs8PrivateKeyPem().ReplaceLineEndings("\r\n"));
+        return path;
+    }
+
+    private static string Body(string p8) => string.Concat(File.ReadAllLines(p8).Where(l => l.StartsWith("-----", StringComparison.Ordinal) is false));
 
     private static TestHost Repository(IPrompter? prompter = null)
     {

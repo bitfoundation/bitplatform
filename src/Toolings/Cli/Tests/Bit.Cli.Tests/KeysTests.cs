@@ -560,6 +560,37 @@ public class KeysTests
     }
 
     [TestMethod]
+    public async Task KeysApple_Should_MakeAPrimaryAppIdForSignInWithAppleAndPrintEachEnvironmentsServicesIdSettings()
+    {
+        using var host = new TestHost();
+        using var apple = new FakeAppStoreConnect();
+        apple.BundleIds.Add(("B7", "com.contoso.shop", "SEED123456"));
+        apple.Capabilities["B7"] = ["IN_APP_PURCHASE"];
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "AuthKey.p8"), apple.Key.PrivateKey);
+        host.Runner.Executables["gh"] = "gh";
+        host.Runner.On("gh", "repo view", 0, "contoso/shop\n");
+        host.Runner.On("gh", "api repos/contoso/shop/environments", 0, "Production\nTest\n");
+        host.Runner.On("gh", "variable get SERVER_API_ADDRESS --repo contoso/shop --env Production", 0, "https://api.contoso.com\n");
+        host.Runner.On("gh", "variable get SERVER_API_ADDRESS --repo contoso/shop --env Test", 1, "variable SERVER_API_ADDRESS was not found");
+        host.Runner.On("gh", "variable get SERVER_ADDRESS --repo contoso/shop --env Test", 0, "https://test.contoso.com/\n");
+
+        Assert.AreEqual(0, await KeysCommand.AppleAsync(host.Services, new AppleKeysRequest("issuer-id", "KEY", "AuthKey.p8", "com.contoso.shop", null, "signing", SignInWithApple: true), CancellationToken.None, apple), host.Output);
+
+        var setting = apple.Body("POST /v1/bundleIdCapabilities")["data"]!["attributes"]!;
+        Assert.AreEqual("APPLE_ID_AUTH", (string?)setting["capabilityType"]);
+        Assert.AreEqual("APPLE_ID_AUTH_APP_CONSENT", (string?)setting["settings"]![0]!["key"]);
+        Assert.AreEqual("PRIMARY_APP_CONSENT", (string?)setting["settings"]![0]!["options"]![0]!["key"]);
+        Assert.IsLessThan(apple.Requests.FindIndex(r => r.Line is "POST /v1/profiles"), apple.Requests.FindIndex(r => r.Line is "POST /v1/bundleIdCapabilities"), "A profile carries only the capabilities its bundle id had when it was made.");
+
+        foreach (var text in new[] { "com.contoso.shop is a primary App ID with Sign in with Apple", "com.contoso.shop.signin", "Production api.contoso.com https://api.contoso.com/signin-apple", "Test test.contoso.com https://test.contoso.com/signin-apple", AppleSigning.KeysPage })
+        {
+            StringAssert.Contains(host.FlatOutput, text);
+        }
+
+        Assert.IsFalse(host.FlatOutput.Contains("Turned on APPLE_ID_AUTH", StringComparison.Ordinal), "No entitlement asks for it.");
+    }
+
+    [TestMethod]
     public void TheTemplatesIosApp_Should_NeedAssociatedDomainsAndPushNotificationsOutsideDevelopment()
     {
         var template = Path.GetDirectoryName(TestHost.RepositoryFile("src", "Templates", "Boilerplate", "Bit.Boilerplate", "Boilerplate.slnx"))!;

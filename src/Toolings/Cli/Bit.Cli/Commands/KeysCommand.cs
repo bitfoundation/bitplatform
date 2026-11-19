@@ -8,7 +8,7 @@ using Spectre.Console;
 
 namespace Bit.Cli.Commands;
 
-public sealed record AppleKeysRequest(string IssuerId, string KeyId, string PrivateKeyPath, string? BundleId, string? ProfileName, string? Output, string? EntitlementsPath = null);
+public sealed record AppleKeysRequest(string IssuerId, string KeyId, string PrivateKeyPath, string? BundleId, string? ProfileName, string? Output, string? EntitlementsPath = null, bool SignInWithApple = false);
 
 public static partial class KeysCommand
 {
@@ -204,6 +204,7 @@ public static partial class KeysCommand
         var profileNameOption = new Option<string?>("--profile-name") { Description = "The provisioning profile's name. A profile with this name is replaced. Default: \"<bundle id> App Store\"." };
         var outputOption = new Option<string?>("--output", "-o") { Description = "The folder to write the .p12 and .mobileprovision files to. Default: the current folder." };
         var entitlementsOption = new Option<string?>("--entitlements") { Description = "The .plist the iOS app's Release build signs with, whose capabilities the bundle id gets. Default: the CodesignEntitlements the project's Client.Maui sets for iOS outside Development, in a bit Boilerplate project's folder." };
+        var signInWithAppleOption = new Option<bool>("--sign-in-with-apple") { Description = "Also make the bundle id a primary App ID with Sign in with Apple (APPLE_ID_AUTH), which a Services ID for its web flow needs, and print what to configure for that Services ID in each environment." };
 
         var command = new Command("apple", "Create an Apple Distribution certificate and an App Store provisioning profile with an App Store Connect API key, so the CD signs the iOS app without a Mac. The bundle id gets the capabilities the app's entitlements need first.")
         {
@@ -213,7 +214,8 @@ public static partial class KeysCommand
             bundleIdOption,
             profileNameOption,
             outputOption,
-            entitlementsOption
+            entitlementsOption,
+            signInWithAppleOption
         };
 
         command.SetAction((parseResult, cancellationToken) => AppleAsync(services(), new AppleKeysRequest(
@@ -223,7 +225,8 @@ public static partial class KeysCommand
             parseResult.GetValue(bundleIdOption)?.Trim(),
             parseResult.GetValue(profileNameOption)?.Trim(),
             parseResult.GetValue(outputOption),
-            parseResult.GetValue(entitlementsOption)), cancellationToken));
+            parseResult.GetValue(entitlementsOption),
+            parseResult.GetValue(signInWithAppleOption)), cancellationToken));
 
         return command;
     }
@@ -295,7 +298,7 @@ public static partial class KeysCommand
 
         try
         {
-            result = await cli.Console.RunWithStatusAsync($"Creating the App Store signing of {bundleId}", _ => new AppleSigning(http).CreateAppStoreSigningAsync(key, bundleId, profileName, entitlements, cancellationToken));
+            result = await cli.Console.RunWithStatusAsync($"Creating the App Store signing of {bundleId}", _ => new AppleSigning(http).CreateAppStoreSigningAsync(key, bundleId, profileName, entitlements, request.SignInWithApple ? [AppleEntitlements.SignInWithApple] : [], cancellationToken));
         }
         catch (AppleSigningException exp)
         {
@@ -318,6 +321,7 @@ public static partial class KeysCommand
         await File.WriteAllBytesAsync(profilePath, result.Profile, CancellationToken.None);
 
         var console = cli.Console;
+        var forEntitlements = result.EnabledCapabilities.Where(type => entitlements?.Capabilities.Any(c => c.Type == type) is true).ToList();
 
         if (entitlements is null)
         {
@@ -325,9 +329,9 @@ public static partial class KeysCommand
                 ? "bit didn't check the bundle id's capabilities, since it had no entitlements to check them against. Pass the .plist the iOS app's Release build signs with as --entitlements, or run this in a bit Boilerplate project's folder."
                 : $"bit didn't check the bundle id's capabilities: {ProjectContext.FindMauiProject(directory, projectName)} names no entitlements file for iOS. Pass the .plist the iOS app's Release build signs with as --entitlements.");
         }
-        else if (result.EnabledCapabilities.Count > 0)
+        else if (forEntitlements.Count > 0)
         {
-            console.Out.MarkupLine($"[green]{console.OkSymbol}[/] Turned on {Markup.Escape(string.Join(", ", result.EnabledCapabilities))} for {Markup.Escape(bundleId)}, which {Markup.Escape(Path.GetFileName(entitlements.FilePath))} needs.");
+            console.Out.MarkupLine($"[green]{console.OkSymbol}[/] Turned on {Markup.Escape(string.Join(", ", forEntitlements))} for {Markup.Escape(bundleId)}, which {Markup.Escape(Path.GetFileName(entitlements.FilePath))} needs.");
         }
         else
         {
@@ -370,7 +374,79 @@ public static partial class KeysCommand
         console.Dim(cli.Environment.Os is HostOs.Windows ? "Get the file in base64 with this PowerShell command:" : "Get the file in base64 with:");
         console.UnwrappedLine($"  {base64Command}");
         console.Dim("The password is shown only this once. The .p12 and .p8 files hold private keys: keep them out of the repository.");
+
+        if (request.SignInWithApple)
+        {
+            await SignInWithAppleStepsAsync(cli, directory, bundleId, cancellationToken);
+        }
+
         return CliApp.ExitOk;
+    }
+
+    /// <summary>
+    /// What Apple has no API for: the Services ID of the web flow, with each GitHub environment's domain and return URL, and the key.
+    /// </summary>
+    private static async Task SignInWithAppleStepsAsync(CliServices cli, string directory, string bundleId, CancellationToken cancellationToken)
+    {
+        var console = cli.Console;
+        var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadLeft(7).PadRight(2)).AddColumn(new GridColumn().NoWrap().PadRight(2)).AddColumn();
+        var sites = await ApiAddressesAsync(cli, directory, cancellationToken);
+
+        foreach (var (environment, address) in sites)
+        {
+            var site = SignInWithAppleSite.For(address);
+            grid.AddRow(Markup.Escape(environment), Markup.Escape(site?.Domain ?? "<api host>"), Markup.Escape(site?.ReturnUrl ?? $"<SERVER_API_ADDRESS or SERVER_ADDRESS>{SignInWithAppleSite.CallbackPath}"));
+        }
+
+        if (sites.Count is 0)
+        {
+            grid.AddRow("Each environment", "<api host>", Markup.Escape($"<api address>{SignInWithAppleSite.CallbackPath}"));
+        }
+
+        console.Out.WriteLine();
+        console.Out.MarkupLine($"[green]{console.OkSymbol}[/] {Markup.Escape(bundleId)} is a primary App ID with Sign in with Apple. Apple has no API for the rest, at {AppleSigning.IdentifiersPage}:");
+        console.Out.MarkupLine($"  1. Add a Services ID, such as {Markup.Escape(bundleId)}.signin, and turn on Sign in with Apple for it.");
+        console.Out.MarkupLine($"  2. Configure it with {Markup.Escape(bundleId)} as its primary App ID, and each environment's domain and return URL:");
+        console.Out.Write(grid);
+        console.Out.MarkupLine($"  3. Add a key with Sign in with Apple for {Markup.Escape(bundleId)} at {AppleSigning.KeysPage}, and download its AuthKey_<key id>.p8, which Apple lets you download only once.");
+        console.Out.MarkupLine("  4. Give the .p8 and the Services ID to bit pipeline, which stores the server's Authentication:Apple settings in each environment.");
+    }
+
+    /// <summary>Each GitHub environment of the repository the folder is in, and the address its api answers at, as far as gh tells.</summary>
+    private static async Task<IReadOnlyList<(string Environment, string? Address)>> ApiAddressesAsync(CliServices cli, string directory, CancellationToken cancellationToken)
+    {
+        if (cli.Runner.FindExecutable("gh") is null || Directory.Exists(directory) is false)
+            return [];
+
+        Task<ProcessResult> Gh(params string[] arguments) => cli.Runner.RunAsync(new ProcessSpec { FileName = "gh", Arguments = arguments, WorkingDirectory = directory, Timeout = TimeSpan.FromSeconds(30) }, cancellationToken);
+
+        var repository = (await Gh("repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner")) is { Succeeded: true } view ? view.Output.Trim() : "";
+
+        if (repository.Length is 0 || await Gh("api", $"repos/{repository}/environments", "--jq", ".environments[].name") is not { Succeeded: true } environments)
+            return [];
+
+        var sites = new List<(string, string?)>();
+
+        foreach (var environment in environments.OutputLines.Select(l => l.Trim()).Where(l => l.Length > 0))
+        {
+            string? address = null;
+
+            // The environment's own variable, or else the repository's, as the workflows read them.
+            foreach (var variable in new[] { "SERVER_API_ADDRESS", "SERVER_ADDRESS" })
+            {
+                foreach (var scope in new[] { ["--env", environment], Array.Empty<string>() })
+                {
+                    if (address is null && await Gh(["variable", "get", variable, "--repo", repository, .. scope]) is { Succeeded: true } found && found.Output.Trim() is { Length: > 0 } value)
+                    {
+                        address = value;
+                    }
+                }
+            }
+
+            sites.Add((environment, address));
+        }
+
+        return sites;
     }
 
     [GeneratedRegex(@"^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$")]

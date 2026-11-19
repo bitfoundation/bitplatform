@@ -73,4 +73,24 @@ public static class WellKnownFiles
 
         return changed;
     }
+
+    /// <summary>The team id of the app's entry, <c>&lt;team id&gt;.&lt;bundle id&gt;</c> as <see cref="AddAppleApp"/> adds it, or null.</summary>
+    public static string? AppleTeamIdOf(string path, string bundleId)
+    {
+        try
+        {
+            if (File.Exists(path) is false || JsonNode.Parse(File.ReadAllText(path)) is not JsonObject association)
+                return null;
+
+            var appIds = new[] { association["activitycontinuation"]?["apps"], association["webcredentials"]?["apps"] }.OfType<JsonArray>().SelectMany(apps => apps)
+                .Concat((association["applinks"]?["details"] as JsonArray)?.OfType<JsonObject>().Select(d => d["appID"]) ?? []);
+
+            return appIds.OfType<JsonValue>().Select(id => id.TryGetValue<string>(out var text) ? text : null)
+                .FirstOrDefault(id => id is not null && id.Length == bundleId.Length + 11 && id.EndsWith($".{bundleId}", StringComparison.Ordinal))?[..10];
+        }
+        catch (Exception exp) when (exp is JsonException or IOException)
+        {
+            return null;
+        }
+    }
 }
