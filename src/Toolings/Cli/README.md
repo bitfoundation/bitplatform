@@ -425,6 +425,27 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - `--no-update`, or `BIT_CLI_NO_UPDATE=1`, keeps the bit you have.
 - `bit update` updates the installed bit on request.
 
+### The bit a project works with
+
+A project says in its `bit.json` which bit versions it works with:
+
+```json
+"cli": {
+    "minVersion": "11.2.0",
+    "maxVersion": "11.4.0"
+}
+```
+
+`minVersion` is the oldest bit that understands the project and `maxVersion` the newest; either can be left out. bit Boilerplate sets only `minVersion`, and moves it when a change in the template needs a newer bit.
+
+In the project's folder, or any folder under it, bit reads the nearest `bit.json` before it runs a command. When the bit you run fits, nothing else happens. When it doesn't, it takes the newest bit that fits, from `~/.bitplatform/cli` when one is already there, otherwise from this machine's NuGet sources, and the same command carries on with it in the same terminal. When yours was too old, the installed global tool also updates to that version once the run ends, so the next command runs directly.
+
+- Every command does this except `bit new`, which always takes the newest bit, and `bit remove`, `bit decode`, `bit update`, `bit about` and `bit telemetry`, which don't read the project. `bit setup` also does it for the folder it's given, and for a repository right after cloning it.
+- A stable bit takes a stable version when one fits. When only a prerelease fits, it runs the command with that one and leaves the installed bit as it is.
+- When no bit that fits can be found or downloaded, such as without a connection, bit says so and goes on with the one you have.
+- In CI, under `dnx`, in a `--tool-path` install and with `BIT_CLI_NO_UPDATE=1`, bit runs the version you gave it and only says that the project needs another one. A build from source doesn't check.
+- A copy a project used stays in `~/.bitplatform/cli` for 30 days after its last use. `bit new` deletes the others once the installed bit is at least as new.
+
 ## What it changes on your machine
 
 - **Tools** you tick, with `winget` on Windows, Homebrew on macOS and the distribution's package manager on Linux. Each command is shown before it runs.
@@ -437,7 +458,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **Administrator rights**: on Windows, the steps that need them (long paths, WSL, installers that need admin) run in one elevated PowerShell, so Windows asks once. It runs only the script bit wrote, checked by its hash, gives each command a time limit, and Ctrl+C stops it. On macOS and Linux, `sudo` asks for your password once.
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
-- **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
+- **bit itself**, when a newer version is out or a project needs another one: a copy for the run in `~/.bitplatform/cli`, then, when that copy is newer, `dotnet tool update --global Bit.Cli` once the run ends.
 - **Secrets, environments and pull request and Actions settings** of your GitHub repository, only with `bit pipeline`, after you confirm or with `--yes`.
 - **oasdiff**, for `bit api`, in `~/.bitplatform/tools`.
 - **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, the repositories `bit diff` creates, and in `keys` the keys `bit pipeline` and `bit keys android` create, which only your user can read on macOS and Linux.

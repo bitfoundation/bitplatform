@@ -32,7 +32,9 @@ Three kinds of place:
 - **Core**: only major.minor.patch, moved only when that changes (from a stable release to the next version's first pre,
   or to a patch). These are the `bitplatform.dev/mcp?v=` URLs in the coding agents' MCP configs.
 - **Kept**: a version written down on purpose, never moved. The Boilerplate's `specs/workarounds.md` names the bit
-  package version a defect was seen in; whoever comes back to the entry checks it again and updates it.
+  package version a defect was seen in; whoever comes back to the entry checks it again and updates it. Its `bit.json`
+  names under `cli` the oldest bit CLI the template works with: a change to the template that an older bit can't
+  handle sets it to the next version, the one that change ships in.
 
 A plain search and replace only works while the version is a unique prerelease string. A stable `X.Y.Z` is shared with
 Microsoft packages of the same major after its GA, version ranges, changelog headings, examples and test data, and the

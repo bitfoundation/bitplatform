@@ -22,7 +22,12 @@ public sealed record DiffRequest
     public IReadOnlyDictionary<string, string> TemplateValues { get; init; } = new Dictionary<string, string>();
 }
 
-public sealed record ProjectRecord(string? Version, string? Name, IReadOnlyDictionary<string, string> Options);
+public sealed record ProjectRecord(string? Version, string? Name, IReadOnlyDictionary<string, string> Options)
+{
+    public string? CliMinVersion { get; init; }
+
+    public string? CliMaxVersion { get; init; }
+}
 
 public sealed class TemplateDiff(CliServices cli)
 {
@@ -244,7 +249,11 @@ public sealed class TemplateDiff(CliServices cli)
             if (root.ValueKind is not JsonValueKind.Object)
                 return null;
 
-            string? Text(string name) => root.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.String ? value.GetString() : null;
+            static string? TextOf(JsonElement parent, string name) => parent.ValueKind is JsonValueKind.Object && parent.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.String ? value.GetString() : null;
+
+            string? Text(string name) => TextOf(root, name);
+
+            var cli = root.TryGetProperty("cli", out var cliValues) ? cliValues : default;
 
             var options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -259,7 +268,7 @@ public sealed class TemplateDiff(CliServices cli)
                 }
             }
 
-            return new ProjectRecord(Text("version"), Text("name"), options);
+            return new ProjectRecord(Text("version"), Text("name"), options) { CliMinVersion = TextOf(cli, "minVersion"), CliMaxVersion = TextOf(cli, "maxVersion") };
         }
         catch (JsonException)
         {

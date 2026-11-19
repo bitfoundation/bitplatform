@@ -77,6 +77,13 @@
     "why": "Template version the bit CLI reads"
   },
   {
+    "id": "boilerplate-bit-json-cli",
+    "kind": "kept",
+    "files": ["src/Templates/Boilerplate/Bit.Boilerplate/bit.json"],
+    "regex": "\"minVersion\": \"{V}\"",
+    "why": "The oldest bit CLI the template works with; it moves by hand, to the next version, in the change that needs a newer bit"
+  },
+  {
     "id": "dependency-update-agent",
     "kind": "full",
     "files": [".github/agents/dependency-update.md"],

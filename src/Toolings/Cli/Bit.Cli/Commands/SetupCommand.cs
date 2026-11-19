@@ -77,6 +77,11 @@ public static class SetupCommand
                 }
             }
 
+            string[] arguments = [.. parseResult.Tokens.Select(t => t.Value)];
+
+            if ((repository is null || cloned) && await cli.SelfUpdate.HandOffToProjectBitAsync(directory, arguments, cancellationToken) is { } handedOff)
+                return handedOff;
+
             var name = repository is null && Directory.Exists(directory) ? ProjectContext.FindProjectName(directory) : null;
 
             if (repository is null && name is null)
@@ -97,6 +102,7 @@ public static class SetupCommand
             if (interactive && parseResult.GetResult(shared.Platforms) is null)
             {
                 platforms = NewWorkflow.AskPlatforms(cli, platforms);
+                arguments = [.. arguments, "--platforms", string.Join(',', platforms.Order().Select(Platforms.Name))];
             }
 
             var stopwatch = Stopwatch.StartNew();
@@ -124,6 +130,9 @@ public static class SetupCommand
 
                     if (clone.Status is StepStatus.Failed)
                         return WriteSummary(cli, steps, repository.Name, stopwatch.Elapsed);
+
+                    if (await cli.SelfUpdate.HandOffToProjectBitAsync(directory, arguments, cancellationToken) is { } handedOffAfterClone)
+                        return handedOffAfterClone;
                 }
 
                 name = ProjectContext.FindProjectName(directory);

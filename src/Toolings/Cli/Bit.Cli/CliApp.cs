@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Text;
 using Bit.Cli.Commands;
 using Bit.Cli.Infrastructure;
@@ -42,7 +43,46 @@ public static class CliApp
             AdminHelperCommand.Create(services)
         };
 
+        foreach (var command in root.Subcommands.Where(c => SelfUpdate.CommandsWithoutAProject.Contains(c.Name) is false))
+        {
+            RunWithTheProjectsBit(command, services);
+        }
+
         return root;
+    }
+
+    private static void RunWithTheProjectsBit(Command command, Func<CliServices> services)
+    {
+        if (command.Action is { } action)
+        {
+            command.Action = new ProjectBitAction(action, services);
+        }
+
+        foreach (var subcommand in command.Subcommands)
+        {
+            RunWithTheProjectsBit(subcommand, services);
+        }
+    }
+
+    private sealed class ProjectBitAction(CommandLineAction action, Func<CliServices> services) : AsynchronousCommandLineAction
+    {
+        public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default)
+        {
+            var cli = services();
+
+            // System.CommandLine listens for Ctrl+C only once this method has handed its task back
+            await Task.Yield();
+
+            if (await cli.SelfUpdate.HandOffToProjectBitAsync(cli.Environment.CurrentDirectory, [.. parseResult.Tokens.Select(t => t.Value)], cancellationToken) is { } exitCode)
+                return exitCode;
+
+            return action switch
+            {
+                AsynchronousCommandLineAction asynchronous => await asynchronous.InvokeAsync(parseResult, cancellationToken),
+                SynchronousCommandLineAction synchronous => synchronous.Invoke(parseResult),
+                _ => ExitFailed
+            };
+        }
     }
 
     public static async Task<int> RunAsync(string[] args)

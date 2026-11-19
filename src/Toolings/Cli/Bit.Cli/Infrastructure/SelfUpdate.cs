@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using Bit.Cli.Commands;
+using Bit.Cli.Projects;
 using Bit.Cli.Telemetry;
 
 namespace Bit.Cli.Infrastructure;
@@ -11,6 +12,14 @@ public sealed partial class SelfUpdate(CliServices cli)
 
     public const string OptOutVariable = "BIT_CLI_NO_UPDATE";
 
+    public const string ProjectMarker = "used-by-a-project";
+
+    public static readonly TimeSpan ProjectCopyLifetime = TimeSpan.FromDays(30);
+
+    public static readonly IReadOnlySet<string> CommandsWithoutAProject = new HashSet<string> { "new", "remove", "decode", "update", "about", "telemetry", Tools.AdministratorSession.CommandName };
+
+    private readonly HashSet<string> checkedProjects = new(cli.Environment.IsLinux ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
+
     public string CurrentVersion { get; init; } = BuildInfo.Version;
 
     public bool IsOfficialBuild { get; init; } = BuildInfo.IsOfficialBuild;
@@ -18,6 +27,8 @@ public sealed partial class SelfUpdate(CliServices cli)
     public string InstallMethod { get; init; } = CliTelemetry.InstallMethod();
 
     public string BaseDirectory { get; init; } = AppContext.BaseDirectory;
+
+    public TimeSpan HandOffGrace { get; init; } = TimeSpan.FromSeconds(8);
 
     private string CopiesDirectory => Path.Combine(cli.Environment.BitDirectory, "cli");
 
@@ -79,6 +90,87 @@ public sealed partial class SelfUpdate(CliServices cli)
         return result.NotFound ? null : result.ExitCode;
     }
 
+    public async Task<int?> HandOffToProjectBitAsync(string directory, IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await HandOffToFittingBitAsync(directory, arguments, cancellationToken);
+        }
+        catch (Exception exp) when (exp is not OperationCanceledException)
+        {
+            cli.Telemetry.RecordException(null, exp);
+            cli.Log.Write(exp.ToString());
+            return null;
+        }
+    }
+
+    private async Task<int?> HandOffToFittingBitAsync(string directory, IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    {
+        if (IsOfficialBuild is false || cli.Environment.GetVariable(HandedOffVariable) is not null)
+            return null;
+
+        if (ProjectBit.Find(directory) is not { } project || project.Fits(CurrentVersion) || checkedProjects.Add(project.FilePath) is false)
+            return null;
+
+        var tooOld = project.NeedsNewerThan(CurrentVersion);
+        var needs = tooOld ? $"needs bit {project.MinVersion} or newer" : $"works with bit up to {project.MaxVersion}";
+
+        cli.Log.Write($"{project.FilePath}: this project {needs}, and this is bit {CurrentVersion}");
+
+        if (InstallMethod is not "tool" || cli.Environment.IsCI || cli.Environment.IsVariableTrue(OptOutVariable))
+        {
+            cli.Console.Warn($"This project {needs}, and this is bit {CurrentVersion}.");
+            return null;
+        }
+
+        var target = PickFitting(project, Copies());
+
+        if (target is null)
+        {
+            var prerelease = new[] { CurrentVersion, project.MinVersion, project.MaxVersion }.Any(v => v is not null && IsPrerelease(v));
+            target = PickFitting(project, await cli.Console.RunWithStatusAsync(tooOld ? "Looking for a newer bit" : "Looking for an older bit", _ => FindVersionsAsync(prerelease, cancellationToken)));
+        }
+
+        if (target is null)
+        {
+            cli.Console.Warn($"This project {needs}, and bit couldn't find one, so bit {CurrentVersion} goes on.");
+            return null;
+        }
+
+        var updateInstalled = tooOld && File.Exists(CopyExecutable(target)) is false && (IsPrerelease(CurrentVersion) || IsPrerelease(target) is false);
+
+        cli.Console.Text($"This project {needs}, so bit {target} runs this{(updateInstalled ? ", and your installed bit updates to it when the run ends" : "")}.");
+
+        var executable = await GetCopyAsync(target, cancellationToken);
+
+        if (executable is null)
+        {
+            cli.Console.Warn($"Couldn't get bit {target}, so bit {CurrentVersion} goes on.");
+            return null;
+        }
+
+        MarkUsedByAProject(target);
+
+        if (updateInstalled)
+        {
+            ScheduleInstalledUpdate(target);
+        }
+
+        using var stopIt = new CancellationTokenSource();
+        using var whenCanceled = cancellationToken.Register(() => stopIt.CancelAfter(HandOffGrace));
+
+        var result = await cli.Runner.RunAsync(new ProcessSpec
+        {
+            FileName = executable,
+            Arguments = arguments,
+            WorkingDirectory = cli.Environment.CurrentDirectory,
+            Environment = new Dictionary<string, string?> { [HandedOffVariable] = CurrentVersion },
+            Interactive = true
+        }, stopIt.Token);
+
+        return result.NotFound ? null : result.ExitCode;
+    }
+
     public async Task<int> UpdateAsync(CancellationToken cancellationToken)
     {
         if (IsOfficialBuild is false)
@@ -122,8 +214,16 @@ public sealed partial class SelfUpdate(CliServices cli)
 
     public async Task<string?> LatestVersionAsync(CancellationToken cancellationToken)
     {
-        var prerelease = CurrentVersion.Contains('-', StringComparison.Ordinal);
+        var prerelease = IsPrerelease(CurrentVersion);
 
+        return (await FindVersionsAsync(prerelease, cancellationToken))
+            .Where(v => prerelease || IsPrerelease(v) is false)
+            .OrderDescending(Comparer<string>.Create(CompareVersions))
+            .FirstOrDefault();
+    }
+
+    private async Task<IReadOnlyList<string>> FindVersionsAsync(bool prerelease, CancellationToken cancellationToken)
+    {
         var result = await cli.Runner.RunAsync(new ProcessSpec
         {
             FileName = "dotnet",
@@ -132,10 +232,14 @@ public sealed partial class SelfUpdate(CliServices cli)
             Timeout = TimeSpan.FromSeconds(20)
         }, cancellationToken);
 
-        return ParseVersions(result.Output)
-            .Where(v => prerelease || v.Contains('-', StringComparison.Ordinal) is false)
-            .OrderDescending(Comparer<string>.Create(CompareVersions))
-            .FirstOrDefault();
+        return ParseVersions(result.Output);
+    }
+
+    private string? PickFitting(ProjectBit project, IEnumerable<string> versions)
+    {
+        var fitting = versions.Where(project.Fits).OrderDescending(Comparer<string>.Create(CompareVersions)).ToList();
+
+        return (IsPrerelease(CurrentVersion) ? null : fitting.FirstOrDefault(v => IsPrerelease(v) is false)) ?? fitting.FirstOrDefault();
     }
 
     public static IReadOnlyList<string> ParseVersions(string output)
@@ -184,10 +288,33 @@ public sealed partial class SelfUpdate(CliServices cli)
 
     public static bool IsValidVersion(string version) => VersionPattern().IsMatch(version);
 
+    public static bool IsPrerelease(string version) => version.Split('+')[0].Contains('-', StringComparison.Ordinal);
+
+    private string CopyExecutable(string version) => Path.Combine(CopiesDirectory, version, cli.Environment.IsWindows ? "bit.exe" : "bit");
+
+    private IReadOnlyList<string> Copies()
+    {
+        try
+        {
+            return Directory.Exists(CopiesDirectory)
+                ? [.. Directory.EnumerateDirectories(CopiesDirectory).Select(d => Path.GetFileName(d)).Where(v => IsValidVersion(v) && File.Exists(CopyExecutable(v)))]
+                : [];
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return [];
+        }
+    }
+
     private async Task<string?> GetCopyAsync(string version, CancellationToken cancellationToken)
     {
         var directory = Path.Combine(CopiesDirectory, version);
-        var executable = Path.Combine(directory, cli.Environment.IsWindows ? "bit.exe" : "bit");
+        var executable = CopyExecutable(version);
+
+        if (File.Exists(executable))
+            return executable;
+
+        using var installing = await LockCopiesAsync(cancellationToken);
 
         if (File.Exists(executable))
             return executable;
@@ -204,8 +331,57 @@ public sealed partial class SelfUpdate(CliServices cli)
         if (result.Succeeded && File.Exists(executable))
             return executable;
 
-        TryDelete(directory);
+        DeleteCopy(directory);
         return null;
+    }
+
+    private Task<FileStream?> LockCopiesAsync(CancellationToken cancellationToken) => LockAsync(Path.Combine(CopiesDirectory, ".lock"), TimeSpan.FromMinutes(5), cancellationToken);
+
+    public static async Task<FileStream?> LockAsync(string file, TimeSpan patience, CancellationToken cancellationToken)
+    {
+        var giveUpAt = DateTime.UtcNow + patience;
+
+        while (true)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+                return new FileStream(file, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException exp) when (IsHeldByAnotherProcess(exp) && DateTime.UtcNow < giveUpAt)
+            {
+                await Task.Delay(250, cancellationToken);
+            }
+            catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+            {
+                return null;
+            }
+        }
+    }
+
+    private static bool IsHeldByAnotherProcess(IOException exp) => OperatingSystem.IsWindows() ? (exp.HResult & 0xFFFF) is 32 or 33 : exp.HResult is 11 or 35;
+
+    private void MarkUsedByAProject(string version)
+    {
+        try
+        {
+            File.WriteAllBytes(Path.Combine(CopiesDirectory, version, ProjectMarker), []);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
+
+    private bool IsUsedByAProject(string directory)
+    {
+        try
+        {
+            return DateTime.UtcNow - File.GetLastWriteTimeUtc(Path.Combine(directory, ProjectMarker)) < ProjectCopyLifetime;
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return true;
+        }
     }
 
     private void ScheduleInstalledUpdate(string version)
@@ -239,15 +415,38 @@ public sealed partial class SelfUpdate(CliServices cli)
         if (Directory.Exists(CopiesDirectory) is false)
             return;
 
-        foreach (var directory in Directory.EnumerateDirectories(CopiesDirectory))
+        foreach (var directory in Directory.EnumerateDirectories(CopiesDirectory).ToList())
         {
             var version = Path.GetFileName(directory);
 
-            if (string.Equals(version, keep, StringComparison.OrdinalIgnoreCase) is false && (IsValidVersion(version) is false || CompareVersions(version, CurrentVersion) <= 0))
+            if (string.Equals(version, keep, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (IsValidVersion(version) is false)
             {
                 TryDelete(directory);
             }
+            else if (CompareVersions(version, CurrentVersion) <= 0 && IsUsedByAProject(directory) is false)
+            {
+                DeleteCopy(directory);
+            }
         }
+    }
+
+    private void DeleteCopy(string directory)
+    {
+        var removing = Path.Combine(CopiesDirectory, $".removing-{Guid.NewGuid():N}");
+
+        try
+        {
+            Directory.Move(directory, removing);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return;
+        }
+
+        TryDelete(removing);
     }
 
     private static void TryDelete(string directory)
