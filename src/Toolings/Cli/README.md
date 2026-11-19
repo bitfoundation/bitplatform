@@ -259,14 +259,17 @@ Then review the changes with `git diff`, and run `bit setup` to restore and buil
 ```bash
 bit remove
 bit remove ../Contoso.Shop --yes
+bit remove ../Contoso.Shop-cart --yes
 ```
 
-Deletes a project's folder for good. On Windows that fails while the app, a build process or Node.js still holds its files, so:
+Deletes a folder for good, any folder: a project, a repository `bit diff` created, a git worktree. On Windows that fails while an app, a build process or Node.js still holds its files, so:
 
-- It asks first, and says when the project has changes that aren't committed or commits that aren't pushed. Without a terminal to ask in, it needs `--yes`.
+- It asks first, and says what would be lost: changes that aren't committed, commits that aren't pushed, and, when the folder holds the repository itself, its other branches' commits that aren't pushed, its stashes and its other worktrees. Without a terminal to ask in, it needs `--yes`.
 - It stops the apps that run from the folder, the same way `bit clean` does, then deletes the folder, read-only files like git's included. When a file is still in use, it stops the build process that holds it, if one does, like `bit clean` does, and tries once more. The failure names any other app that still holds a file.
+- When the folder is a linked git worktree (`git worktree add`), it also takes it off its repository's worktrees, the way `git worktree remove` does, so its branch can be deleted or checked out elsewhere and its path used again. Only that worktree: `git worktree prune` isn't needed, and isn't run, since it also clears every other worktree of the repository whose folder is gone. The branch stays in the repository, and when it has commits that aren't pushed, or no upstream, it says so first.
 - When a terminal is still in the folder, everything in it is deleted and the empty folder stays. Delete it after leaving it.
-- The project's Aspire containers and volumes stay in Docker. Remove them in Docker when you no longer need their data.
+- It never deletes a drive's root, your home folder, a folder of your account like Documents or AppData, a system folder like Program Files, bit's own folder or the .NET it runs on, or a folder that holds one of them. Run in a git worktree, it doesn't delete the folder that holds that worktree's repository either.
+- A project's Aspire containers and volumes stay in Docker. Remove them in Docker when you no longer need their data.
 
 ## bit migration
 

@@ -7,7 +7,8 @@ namespace Bit.Cli.Tests.Infrastructure;
 
 public sealed class TestHost : IDisposable
 {
-    public TestHost(HostOs? os = null, IDictionary<string, string>? variables = null, IPrompter? prompter = null)
+    /// <param name="realProcesses">Runs the commands bit starts for real, instead of answering them from <see cref="Runner"/>.</param>
+    public TestHost(HostOs? os = null, IDictionary<string, string>? variables = null, IPrompter? prompter = null, bool realProcesses = false)
     {
         Root = Directory.CreateTempSubdirectory("bit-cli-tests-").FullName;
         Home = Directory.CreateDirectory(Path.Combine(Root, "home")).FullName;
@@ -42,7 +43,7 @@ public sealed class TestHost : IDisposable
         Out = new TestConsole().Width(140);
         Error = new TestConsole().Width(140);
         Console = new CliConsole(Out, Error);
-        Services = new CliServices(Environment, Console, prompter, Runner);
+        Services = new CliServices(Environment, Console, prompter, realProcesses ? new ProcessRunner(Environment, CliLog.None) : Runner);
     }
 
     public string Root { get; }
