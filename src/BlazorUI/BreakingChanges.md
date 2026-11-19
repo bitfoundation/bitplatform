@@ -8,7 +8,10 @@ analyzer that reports every one your code still uses - a parameter on a componen
 type (`BITBC002`) - at the line it is written on, with what to write instead. Without it most of them would build
 silently: a component renders an attribute it does not take as an HTML attribute, and the setting does nothing. Set
 `<BitBlazorUIBreakingChangeAnalyzer>false</BitBlazorUIBreakingChangeAnalyzer>` in the project file to turn it off, or
-change one rule's severity in an `.editorconfig` (`dotnet_diagnostic.BITBC001.severity = warning`). An AI agent connected
+change one rule's severity in a `.globalconfig` beside the project file (`is_global = true`, then
+`dotnet_diagnostic.BITBC001.severity = warning`), or silence it with `<NoWarn>$(NoWarn);BITBC001</NoWarn>`. An
+`.editorconfig` cannot do it for the markup: those errors point into the `.razor` file, which no `.editorconfig` section
+applies to. An AI agent connected
 to the bit BlazorUI MCP server gets the same list from `GetBitBlazorUIBreakingChanges`, and the `upgrade-bit-blazorui`
 prompt walks it through an upgrade. What changed without a name changing - markup, CSS classes, defaults, behaviour - is
 only in this file.

@@ -194,7 +194,9 @@
                                                 packages, directly or through another package.
                                          false  It is not added to the compilation.
 
-    A single rule is turned off or down in an .editorconfig instead: dotnet_diagnostic.BITBC001.severity = warning.
+    A single rule is turned down in a .globalconfig instead (is_global = true, then dotnet_diagnostic.BITBC001.severity =
+    warning), or off with <NoWarn>$(NoWarn);BITBC001</NoWarn>. Not in an .editorconfig: the errors of the markup are
+    located in the .razor file, which is no C# file of the compilation, so only the global options reach them.
 
     The analyzer ships in the package's bit-analyzers\ folder rather than analyzers\, which NuGet would hand the compiler
     by itself, so that this switch can leave it out - and under a name that does not start with "analyzers" either: the

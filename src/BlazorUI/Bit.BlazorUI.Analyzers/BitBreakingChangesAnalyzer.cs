@@ -92,13 +92,43 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
             // Nothing to look for in a project that does not reference the packages.
             if (start.Compilation.ReferencedAssemblyNames.Any(a => a.Name.StartsWith("Bit.BlazorUI", StringComparison.Ordinal)) is false) return;
 
-            // The tree generated for each .razor file, found once per compilation rather than once per file.
+            // The tree generated for each .razor file and the .razor file of each tree, indexed once per compilation rather
+            // than searched once per file: an app of a thousand components would otherwise compare a million paths.
             var compilation = start.Compilation;
-            var generated = new Lazy<List<(string Path, SyntaxTree Tree)>>(() => RazorTrees(compilation), LazyThreadSafetyMode.PublicationOnly);
+            var additionalFiles = start.Options.AdditionalFiles;
+            var generated = new Lazy<PathIndex<SyntaxTree>>(() => new PathIndex<SyntaxTree>(RazorTrees(compilation)), LazyThreadSafetyMode.PublicationOnly);
+            var files = new Lazy<PathIndex<AdditionalText>>(() => new PathIndex<AdditionalText>(additionalFiles.Select(f => (f.Path, f))), LazyThreadSafetyMode.PublicationOnly);
 
-            start.RegisterSemanticModelAction(AnalyzeTree);
+            start.RegisterSemanticModelAction(ctx => AnalyzeTree(ctx, files.Value));
             start.RegisterAdditionalFileAction(ctx => AnalyzeRazorFile(ctx, generated.Value));
         });
+    }
+
+    /// <summary>Items by the file they are of, looked up by a path naming that file (<see cref="SamePath"/>).</summary>
+    private sealed class PathIndex<T>
+    {
+        private readonly List<(string Path, T Item)> _all = [];
+        private readonly Dictionary<string, List<T>> _byFullPath = new(StringComparer.OrdinalIgnoreCase);
+
+        public PathIndex(IEnumerable<(string Path, T Item)> items)
+        {
+            foreach (var (path, item) in items)
+            {
+                _all.Add((path, item));
+                if (IsRooted(path) is false) continue;
+                var key = NormalizePath(path, rooted: true);
+                if (_byFullPath.TryGetValue(key, out var list) is false) _byFullPath[key] = list = [];
+                list.Add(item);
+            }
+        }
+
+        public IReadOnlyList<T> Find(string path)
+        {
+            if (IsRooted(path) && _byFullPath.TryGetValue(NormalizePath(path, rooted: true), out var items)) return items;
+
+            // A path relative to the project (as a generator may name it), or one no item has as a full path.
+            return _all.Where(e => SamePath(e.Path, path)).Select(e => e.Item).ToList();
+        }
     }
 
     // ---- C# and the code generated for markup -------------------------------------------------------------------------
@@ -108,19 +138,22 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
     /// is open for the arguments of the call (its child content), up to <see cref="ScopeEnd"/>; one the builder opens
     /// itself, until its <c>CloseComponent</c> (-1).
     /// </summary>
-    private readonly struct Frame(ITypeSymbol? component, int scopeEnd)
+    private readonly struct Frame(ITypeSymbol? component, int scopeEnd, int? razorTag = null)
     {
         public ITypeSymbol? Component { get; } = component;
 
         public int ScopeEnd { get; } = scopeEnd;
+
+        /// <summary>Where the component's start tag is in the .razor file, when it was found there.</summary>
+        public int? RazorTag { get; } = razorTag;
     }
 
-    private void AnalyzeTree(SemanticModelAnalysisContext ctx)
+    private void AnalyzeTree(SemanticModelAnalysisContext ctx, PathIndex<AdditionalText> files)
     {
         var model = ctx.SemanticModel;
         var tree = model.SyntaxTree;
         var root = tree.GetRoot(ctx.CancellationToken);
-        var razor = new RazorMapping(tree, ctx.Options.AdditionalFiles, ctx.CancellationToken);
+        var razor = new RazorMapping(tree, files, ctx.CancellationToken);
 
         // Innermost last.
         var frames = new List<Frame>();
@@ -176,7 +209,7 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
 
         if (name is not ("OpenComponent" or "CloseComponent" or "OpenElement" or "CloseElement" or "AddComponentParameter" or "AddAttribute" or "AddMarkupContent")) return;
 
-        if (model.GetSymbolInfo(invocation, ctx.CancellationToken).Symbol is not IMethodSymbol method
+        if (Method(model, invocation, ctx.CancellationToken) is not { } method
             || method.ContainingType?.Name != "RenderTreeBuilder") return;
 
         // The body of a type-inference helper is read at its call, where the tag is written.
@@ -187,18 +220,23 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
         switch (name)
         {
             case "OpenComponent":
-                frames.Add(new Frame(method.IsGenericMethod ? method.TypeArguments[0] : null, -1));
-                return;
+                {
+                    var component = method.IsGenericMethod ? method.TypeArguments[0] : null;
+                    // Every component's tag is looked up, the app's own too, so the search goes through the file in step
+                    // with the generated code, which renders the tags in the order they are written.
+                    frames.Add(new Frame(component, -1, component is null ? null : razor.LocateStartTag(invocation, component.Name)));
+                    return;
+                }
             case "OpenElement":
                 {
                     var tag = args.Count > 1 ? Constant(model, args[1].Expression) : null;
-                    var component = ParentComponent(frames);
+                    var parent = Parent(frames);
                     frames.Add(new Frame(null, -1));
                     // A template parameter that is gone, written as a child content tag (<NotMatched>...</NotMatched>):
                     // Razor no longer knows it and takes it for an element of the content. Only a tag right inside the
                     // component's content is one: Razor binds no template to a tag nested in an element there.
-                    if (tag is not null && component is not null && char.IsUpper(tag[0]))
-                        ReportMember(ctx, component, tag, args[1].Expression, razor, childTag: true, exactCase: true);
+                    if (tag is not null && parent.Component is { } component && char.IsUpper(tag[0]))
+                        ReportMember(ctx, component, tag, args[1].Expression, razor, parent.RazorTag, childTag: true, exactCase: true);
                     return;
                 }
             case "CloseComponent":
@@ -207,24 +245,35 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
                 return;
             case "AddMarkupContent":
                 {
-                    var component = ParentComponent(frames);
+                    var parent = Parent(frames);
                     var markup = args.Count > 1 ? Constant(model, args[1].Expression) : null;
-                    if (component is null || markup is null) return;
+                    if (parent.Component is not { } component || markup is null) return;
                     // Static markup is collapsed into one string, child content tags that are gone included.
                     foreach (var tag in TopLevelTags(markup))
-                        ReportMember(ctx, component, tag, args[1].Expression, razor, childTag: true, exactCase: true);
+                        ReportMember(ctx, component, tag, args[1].Expression, razor, parent.RazorTag, childTag: true, exactCase: true);
                     return;
                 }
             default: // AddComponentParameter, AddAttribute
                 {
-                    if (ParentComponent(frames) is not { } component) return; // an element's attribute
+                    var parent = Parent(frames);
+                    if (parent.Component is not { } component) return; // an element's attribute
                     if (args.Count < 2) return;
                     var attribute = Constant(model, args[1].Expression);
                     if (attribute is null) return;
-                    ReportMember(ctx, component, attribute, args[1].Expression, razor, childTag: false, exactCase: false);
+                    ReportMember(ctx, component, attribute, args[1].Expression, razor, parent.RazorTag, childTag: false, exactCase: false);
                     return;
                 }
         }
+    }
+
+    /// <summary>
+    /// The method a call binds to, or would: a call whose argument does not bind - a name that is gone, written in the
+    /// value of an attribute that is gone too - has candidates only, and is still the attribute it adds.
+    /// </summary>
+    private static IMethodSymbol? Method(SemanticModel model, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
+    {
+        var info = model.GetSymbolInfo(invocation, cancellationToken);
+        return info.Symbol as IMethodSymbol ?? info.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault();
     }
 
     /// <summary>
@@ -236,7 +285,7 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
     private void AnalyzeTypeInferenceCall(SemanticModelAnalysisContext ctx, SemanticModel model, InvocationExpressionSyntax invocation,
                                           List<Frame> frames, RazorMapping razor)
     {
-        if (model.GetSymbolInfo(invocation, ctx.CancellationToken).Symbol is not IMethodSymbol { IsStatic: true } method) return;
+        if (Method(model, invocation, ctx.CancellationToken) is not { IsStatic: true } method) return;
 
         var body = method.OriginalDefinition.DeclaringSyntaxReferences
                          .Where(r => r.SyntaxTree == model.SyntaxTree)
@@ -274,11 +323,13 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
 
         if (component is null) return;
 
+        var razorTag = razor.LocateStartTag(invocation, component.Name);
+
         // In the order they are written, which the search through the .razor file goes by.
         foreach (var (attribute, at) in attributes.OrderBy(a => a.At.SpanStart))
-            ReportMember(ctx, component, attribute, at, razor, childTag: false, exactCase: false);
+            ReportMember(ctx, component, attribute, at, razor, razorTag, childTag: false, exactCase: false);
 
-        frames.Add(new Frame(component, invocation.Span.End));
+        frames.Add(new Frame(component, invocation.Span.End, razorTag));
     }
 
     /// <summary>The argument of a call that is passed for the parameter named <paramref name="parameter"/>.</summary>
@@ -311,9 +362,9 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
     private static bool IsInTypeInferenceHelper(SyntaxNode node)
         => node.Ancestors().OfType<ClassDeclarationSyntax>().Any(c => c.Identifier.ValueText == "TypeInference");
 
-    /// <summary>The component whose content <paramref name="frames"/> is right inside, or null inside an element.</summary>
-    private static ITypeSymbol? ParentComponent(List<Frame> frames)
-        => frames.Count > 0 ? frames[frames.Count - 1].Component : null;
+    /// <summary>What <paramref name="frames"/> is right inside: a component, an element (no component), or nothing.</summary>
+    private static Frame Parent(List<Frame> frames)
+        => frames.Count > 0 ? frames[frames.Count - 1] : default;
 
     /// <summary>The start tags of static markup that are not inside another element of it, with an upper-case name.</summary>
     private static IEnumerable<string> TopLevelTags(string markup)
@@ -338,8 +389,12 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    /// <param name="razorTag">
+    /// Where the start tag of the component is in the .razor file, when it was found: the tag the attribute is in, or the
+    /// tag whose content the child content tag is right inside.
+    /// </param>
     private void ReportMember(SemanticModelAnalysisContext ctx, ITypeSymbol component, string written, ExpressionSyntax at,
-                              RazorMapping razor, bool childTag, bool exactCase)
+                              RazorMapping razor, int? razorTag, bool childTag, bool exactCase)
     {
         // @bind-Old writes Old and OldChanged.
         var bound = BoundName(written);
@@ -353,7 +408,7 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
         var change = Match(component, candidates, exactCase ? name : null);
         if (change is null) return;
 
-        var location = razor.Locate(at, written, childTag ? null : component.Name, out var found);
+        var location = razor.Locate(at, written, childTag ? null : component.Name, razorTag, out var found);
 
         // @bind-Old writes Old and then OldChanged, and only Old is in the .razor file: the one error on Old says both -
         // whether OldChanged is told through Old's entry or has one of its own.
@@ -532,7 +587,7 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
 
     // ---- the tags of removed components in .razor files ----------------------------------------------------------------
 
-    private void AnalyzeRazorFile(AdditionalFileAnalysisContext ctx, List<(string Path, SyntaxTree Tree)> generated)
+    private void AnalyzeRazorFile(AdditionalFileAnalysisContext ctx, PathIndex<SyntaxTree> generated)
     {
         var path = ctx.AdditionalFile.Path;
         if (path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase) is false) return;
@@ -542,9 +597,8 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
 
         var content = WithoutComments(text.ToString());
 
-        // The C# of the file (@code, @{ }, an expression, a directive): its own tree's diagnostics cover what is written
-        // there, and a string or a type argument there is no tag. The generated code maps each piece of it back here.
-        var code = CodeSpans(generated, path, text, ctx.CancellationToken);
+        IReadOnlyList<SyntaxTree>? trees = null;
+        List<TextSpan>? code = null;
 
         foreach (Match tag in ComponentTag.Matches(content))
         {
@@ -552,9 +606,15 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
             if (_changes.TypesByName.TryGetValue(name, out var change) is false || change.Component is false) continue;
             // <Bit.BlazorUI.BitProModal> is the packages' component as much as <BitProModal>; another namespace's is not.
             if (tag.Groups[1].Length > 0 && tag.Groups[1].Value != "Bit.BlazorUI.") continue;
+
+            // The C# of the file (@code, @{ }, an expression, a directive): its own tree's diagnostics cover what is
+            // written there, and a string or a type argument there is no tag. The generated code maps each piece of it
+            // back here. Read only for a file that names a removed component at all.
+            trees ??= generated.Find(path);
+            code ??= CodeSpans(trees, path, text, ctx.CancellationToken);
             if (code.Any(s => s.Contains(tag.Index))) continue;
             // Razor bound the tag to a component of that name after all: an app's own, or one the packages have again.
-            if (BindsToComponent(ctx.Compilation, generated, path, name, ctx.CancellationToken)) continue;
+            if (BindsToComponent(ctx.Compilation, trees, name, ctx.CancellationToken)) continue;
 
             var span = new TextSpan(tag.Groups[2].Index, name.Length);
             var location = Location.Create(path, span, text.Lines.GetLinePositionSpan(span));
@@ -563,26 +623,51 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>The spans of a .razor file that its generated tree maps C# to.</summary>
-    private static List<TextSpan> CodeSpans(List<(string Path, SyntaxTree Tree)> generated, string path, SourceText text, CancellationToken cancellationToken)
+    private static List<TextSpan> CodeSpans(IReadOnlyList<SyntaxTree> trees, string path, SourceText text, CancellationToken cancellationToken)
     {
         var spans = new List<TextSpan>();
+        var isPath = PathMatcher(path);
 
-        foreach (var (razorPath, tree) in generated)
+        foreach (var tree in trees)
         {
-            if (SamePath(razorPath, path) is false) continue;
-
             foreach (var mapping in tree.GetLineMappings(cancellationToken))
             {
-                if (mapping.IsHidden || mapping.MappedSpan.HasMappedPath is false || SamePath(mapping.MappedSpan.Path, path) is false) continue;
+                if (mapping.IsHidden || mapping.MappedSpan.HasMappedPath is false || isPath(mapping.MappedSpan.Path) is false) continue;
 
                 var start = Position(text, mapping.MappedSpan.StartLinePosition);
-                var end = Position(text, mapping.MappedSpan.EndLinePosition);
+                var end = Position(text, MappedEnd(mapping.MappedSpan));
                 if (end > start) spans.Add(TextSpan.FromBounds(start, end));
             }
         }
 
         return spans;
     }
+
+    /// <summary>
+    /// Whether a path names the file <paramref name="path"/> names (<see cref="SamePath"/>), for the paths of a tree's
+    /// mappings: all but a few are one string, compared once.
+    /// </summary>
+    private static Func<string, bool> PathMatcher(string path)
+    {
+        string? last = null;
+        var lastResult = false;
+        return other =>
+        {
+            if (ReferenceEquals(other, last) || other == last) return lastResult;
+            last = other;
+            return lastResult = SamePath(other, path);
+        };
+    }
+
+    /// <summary>
+    /// The end of the piece of the .razor file a <c>#line (l,c)-(l,c)</c> region maps: the Razor compiler writes the end
+    /// column 1-based and exclusive, and Roslyn keeps the number as it is written, which is one character past the piece -
+    /// the &lt; of a tag right after a C# block (<c>@if (x) { ... }</c>) included.
+    /// </summary>
+    private static LinePosition MappedEnd(FileLinePositionSpan span)
+        => span.EndLinePosition.Character > 0 && span.EndLinePosition > span.StartLinePosition
+               ? new LinePosition(span.EndLinePosition.Line, span.EndLinePosition.Character - 1)
+               : span.EndLinePosition;
 
     private static int Position(SourceText text, LinePosition position)
     {
@@ -657,11 +742,9 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
     /// the file opens a component of that name (a tag it does not bind is an element, or static markup). Without that
     /// code, whether the compilation has a component of the name - a type of the name that is no component never is one.
     /// </summary>
-    private static bool BindsToComponent(Compilation compilation, List<(string Path, SyntaxTree Tree)> generated, string path, string name,
-                                         CancellationToken cancellationToken)
+    /// <param name="trees">The trees generated for the .razor file.</param>
+    private static bool BindsToComponent(Compilation compilation, IReadOnlyList<SyntaxTree> trees, string name, CancellationToken cancellationToken)
     {
-        var trees = generated.Where(g => SamePath(g.Path, path)).Select(g => g.Tree).ToList();
-
         if (trees.Count > 0)
         {
             return trees.Any(tree => tree.GetRoot(cancellationToken)
@@ -712,15 +795,18 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
     private sealed class RazorMapping
     {
         private readonly SyntaxTree _tree;
-        private readonly ImmutableArray<AdditionalText> _files;
+        private readonly PathIndex<AdditionalText> _files;
         private readonly CancellationToken _cancellationToken;
         private List<(int GeneratedLine, LinePosition RazorStart, LinePosition RazorEnd)>? _anchors;
+        // The C# pieces of the .razor file, by where they start; they never overlap.
+        private List<(int Start, int End)>? _code;
         private string? _path;
         private SourceText? _text;
         private string? _content;
         private int _consumed;
+        private int _lastTag = -1;
 
-        public RazorMapping(SyntaxTree tree, ImmutableArray<AdditionalText> files, CancellationToken cancellationToken)
+        public RazorMapping(SyntaxTree tree, PathIndex<AdditionalText> files, CancellationToken cancellationToken)
         {
             _tree = tree;
             _files = files;
@@ -735,7 +821,7 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
         /// of a start tag of <paramref name="tag"/>, or a child content tag when that is null.
         /// <paramref name="found"/> says whether the name itself was found there, rather than only the region it is in.
         /// </summary>
-        public Location? Locate(SyntaxNode node, string name, string? tag, out bool found)
+        public Location? Locate(SyntaxNode node, string name, string? tag, int? razorTag, out bool found)
         {
             found = true;
 
@@ -748,32 +834,238 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
 
             // Between the last position mapped before the name and the first one after it: the C# values of the markup
             // around it (the value bound by a @bind- is one), which keeps the search inside the tag it belongs to.
-            var line = _tree.GetLineSpan(node.Span, _cancellationToken).StartLinePosition.Line;
-            var anchor = new LinePosition(0, 0);
-            LinePosition? bound = null;
-            foreach (var a in _anchors!)
-            {
-                if (a.GeneratedLine > line)
-                {
-                    bound = a.RazorStart;
-                    break;
-                }
-                anchor = a.RazorEnd;
-            }
+            var (anchor, bound) = Around(node);
 
             if (_text is null || _content is null)
                 return Location.Create(_path, default, new LinePositionSpan(anchor, anchor));
 
             var from = Math.Max(Position(_text, anchor), _consumed);
             var to = bound is { } b ? Math.Max(from, Position(_text, b)) : _content.Length;
-            var index = Find(_content, name, from, to, tag);
-            if (index < 0)
-                return Location.Create(_path, default, new LinePositionSpan(anchor, anchor));
+
+            int index;
+            if (razorTag is { } start)
+            {
+                // The component's start tag is known: an attribute is in it, a child content tag right inside its content.
+                // Razor writes some attributes out of the order they are written in (@key, @ref) and a mapped value may
+                // be out of step, so the whole tag, or the whole content, is searched when the stretch between the values
+                // around the name does not hold it.
+                var end = StartTagEnd(_content, start);
+                index = tag is null
+                    ? FindChildTag(name, Math.Max(from, end), to, end) is var c and >= 0 ? c : FindChildTag(name, end, _content.Length, end)
+                    : FindAttribute(_content, name, Math.Max(from, start), Math.Min(to, end), start) is var a and >= 0 ? a : FindAttribute(_content, name, start, end, start);
+
+                // Not there (a @bind-'s OldChanged, of which only Old is written): at the component's name in its tag.
+                if (index < 0)
+                {
+                    var nameStart = start + 1;
+                    var nameEnd = nameStart;
+                    while (nameEnd < _content.Length && (IsWordCharacter(_content[nameEnd]) || _content[nameEnd] == '.')) nameEnd++;
+                    var tagSpan = TextSpan.FromBounds(nameStart, nameEnd);
+                    return Location.Create(_path, tagSpan, _text.Lines.GetLinePositionSpan(tagSpan));
+                }
+            }
+            else
+            {
+                index = Find(_content, name, from, to, tag);
+                if (index < 0)
+                    return Location.Create(_path, default, new LinePositionSpan(anchor, anchor));
+            }
 
             found = true;
-            _consumed = index + name.Length;
+            _consumed = Math.Max(_consumed, index + name.Length);
             var span = new TextSpan(index, name.Length);
             return Location.Create(_path, span, _text.Lines.GetLinePositionSpan(span));
+        }
+
+        /// <summary>
+        /// Where the start tag that a component opened at <paramref name="node"/> is written in the .razor file: the next
+        /// &lt;<paramref name="name"/> (or a fully qualified one) after what the search has already passed, outside the
+        /// C# of the file. Null for a component opened in C# written by hand, or one whose tag is not found.
+        /// </summary>
+        public int? LocateStartTag(SyntaxNode node, string name)
+        {
+            if (name.Length == 0 || _tree.GetLineVisibility(node.SpanStart, _cancellationToken) != LineVisibility.Hidden) return null;
+
+            EnsureAnchors();
+            if (_path is null || _text is null || _content is null) return null;
+
+            var from = Math.Max(Position(_text, Around(node).Anchor), _consumed);
+
+            // Already inside the tag: a generic component whose type arguments Razor infers and cascades to its content
+            // has the values of its attributes captured, and so mapped, before the call that opens it - the search then
+            // starts in the value of one. Never the tag of the component before (its @ref and @key are mapped after it).
+            for (var start = from > 0 ? _content.LastIndexOf('<', from - 1) : -1; start > _lastTag; start = start > 0 ? _content.LastIndexOf('<', start - 1) : -1)
+            {
+                if (StartTagName(start, name) is false || IsInCode(start)) continue;
+                if (from < StartTagEnd(_content, start)) return Located(start, from);
+                break;
+            }
+
+            for (var i = _content.IndexOf(name, from, StringComparison.Ordinal); i >= 0; i = _content.IndexOf(name, i + 1, StringComparison.Ordinal))
+            {
+                var end = i + name.Length;
+                if (end < _content.Length && (char.IsWhiteSpace(_content[end]) || _content[end] is '/' or '>') is false) continue;
+
+                // Right after the <, or after the namespace written before it.
+                var start = i - 1;
+                if (start >= 0 && _content[start] == '.')
+                {
+                    while (start >= 0 && (IsWordCharacter(_content[start]) || _content[start] == '.')) start--;
+                }
+                if (start < 0 || _content[start] != '<' || IsInCode(start)) continue;
+
+                return Located(start, end);
+            }
+
+            return null;
+
+            int Located(int start, int passed)
+            {
+                _lastTag = start;
+                _consumed = Math.Max(_consumed, passed);
+                return start;
+            }
+        }
+
+        /// <summary>Whether the tag at <paramref name="start"/> (a &lt;) is named <paramref name="name"/>, short or fully qualified.</summary>
+        private bool StartTagName(int start, string name)
+        {
+            var content = _content!;
+            var nameEnd = start + 1;
+            while (nameEnd < content.Length && (IsWordCharacter(content[nameEnd]) || content[nameEnd] == '.')) nameEnd++;
+            if (nameEnd < content.Length && (char.IsWhiteSpace(content[nameEnd]) || content[nameEnd] is '/' or '>') is false) return false;
+
+            var written = content.Substring(start + 1, nameEnd - start - 1);
+            return written == name || written.EndsWith("." + name, StringComparison.Ordinal);
+        }
+
+        /// <summary>The last position the generated code maps before <paramref name="node"/>, and the first after it.</summary>
+        private (LinePosition Anchor, LinePosition? Bound) Around(SyntaxNode node)
+        {
+            var line = _tree.GetLineSpan(node.Span, _cancellationToken).StartLinePosition.Line;
+            var anchor = new LinePosition(0, 0);
+            foreach (var a in _anchors!)
+            {
+                if (a.GeneratedLine > line) return (anchor, a.RazorStart);
+                anchor = a.RazorEnd;
+            }
+            return (anchor, null);
+        }
+
+        /// <summary>Whether <paramref name="index"/> is in the C# of the .razor file: a piece the generated code maps.</summary>
+        private bool IsInCode(int index)
+        {
+            // The last piece starting at or before the index.
+            var code = _code!;
+            int low = 0, high = code.Count - 1, found = -1;
+            while (low <= high)
+            {
+                var mid = low + (high - low) / 2;
+                if (code[mid].Start <= index)
+                {
+                    found = mid;
+                    low = mid + 1;
+                }
+                else high = mid - 1;
+            }
+            return found >= 0 && index < code[found].End;
+        }
+
+        /// <summary>
+        /// The first occurrence of <paramref name="name"/> in [<paramref name="from"/>, <paramref name="to"/>) that is an
+        /// attribute of the start tag at <paramref name="tagStart"/>: the name on its own or after "@bind-", case ignored,
+        /// never part of a longer or a dotted name, nor in an attribute's value.
+        /// </summary>
+        private static int FindAttribute(string content, string name, int from, int to, int tagStart)
+        {
+            for (var i = from; to - i >= name.Length; i++)
+            {
+                i = content.IndexOf(name, i, to - i, StringComparison.OrdinalIgnoreCase);
+                if (i < 0) return -1;
+
+                var before = i > 0 ? content[i - 1] : '\0';
+                var end = i + name.Length;
+                var after = end < content.Length ? content[end] : '\0';
+
+                if (IsWordCharacter(before) is false && before != '.' && IsWordCharacter(after) is false
+                    && IsBetweenAttributes(content, tagStart, i)) return i;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Where the name is of the first &lt;<paramref name="name"/> (case kept) in [<paramref name="from"/>,
+        /// <paramref name="to"/>) that is a tag right inside the content starting at <paramref name="contentStart"/>, not
+        /// nested in an element of it.
+        /// </summary>
+        private int FindChildTag(string name, int from, int to, int contentStart)
+        {
+            var content = _content!;
+
+            for (var i = from; to - i >= name.Length + 1; i++)
+            {
+                i = content.IndexOf("<" + name, i, to - i, StringComparison.Ordinal);
+                if (i < 0) return -1;
+
+                var end = i + 1 + name.Length;
+                var after = end < content.Length ? content[end] : '\0';
+                if ((char.IsWhiteSpace(after) || after is '/' or '>') is false || IsInCode(i)) continue;
+
+                switch (Depth(contentStart, i))
+                {
+                    case 0: return i + 1; // the name
+                    case < 0: return -1; // past the end of the component's content
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// How deep in elements <paramref name="index"/> is, from <paramref name="contentStart"/>: 0 right inside, more in
+        /// an element, less once the element the content belongs to has ended.
+        /// </summary>
+        private int Depth(int contentStart, int index)
+        {
+            var content = _content!;
+            var depth = 0;
+
+            for (var tag = MarkupTag.Match(content, contentStart); tag.Success && tag.Index < index; tag = tag.NextMatch())
+            {
+                if (tag.Groups[2].Success is false || IsInCode(tag.Index)) continue; // a comment, or C# (a generic type)
+
+                if (tag.Groups[1].Length > 0)
+                {
+                    if (--depth < 0) return depth;
+                }
+                else if (tag.Groups[3].Length == 0 && VoidElements.Contains(tag.Groups[2].Value) is false)
+                {
+                    depth++;
+                }
+            }
+
+            return depth;
+        }
+
+        /// <summary>The position right after the &gt; ending the start tag at <paramref name="tagStart"/>.</summary>
+        private static int StartTagEnd(string content, int tagStart)
+        {
+            var quote = '\0';
+            var depth = 0;
+            for (var i = tagStart + 1; i < content.Length; i++)
+            {
+                var c = content[i];
+                if (quote != '\0')
+                {
+                    if (c == quote) quote = '\0';
+                }
+                else if (c is '"' or '\'') quote = c;
+                else if (c == '(') depth++;
+                else if (c == ')' && depth > 0) depth--;
+                else if (c == '>' && depth == 0 && content[i - 1] != '=') return i + 1;
+            }
+            return content.Length;
         }
 
         /// <summary>
@@ -812,23 +1104,33 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
         /// </summary>
         private static bool IsInStartTagOf(string content, int index, string tag)
         {
-            // The tag the index is in starts at the nearest < before it that a name follows.
-            var start = index - 1;
-            while (start >= 0)
+            // The tag the index is in starts at the nearest <tag before it: a < of another name before it is either another
+            // element, whose > ends before the index if the index is outside it, or a type argument in a value (List<string>).
+            for (var start = content.LastIndexOf('<', index - 1); start >= 0; start = start > 0 ? content.LastIndexOf('<', start - 1) : -1)
             {
-                start = content.LastIndexOf('<', start);
-                if (start < 0) return false;
-                if (start + 1 < content.Length && (char.IsLetter(content[start + 1]) || content[start + 1] == '_')) break;
-                start--;
+                var nameEnd = start + 1;
+                while (nameEnd < content.Length && (IsWordCharacter(content[nameEnd]) || content[nameEnd] == '.')) nameEnd++;
+                if (nameEnd == start + 1) continue;
+
+                var written = content.Substring(start + 1, nameEnd - start - 1);
+                if (written != tag && written.EndsWith("." + tag, StringComparison.Ordinal) is false) continue;
+
+                return IsBetweenAttributes(content, start, index);
             }
-            if (start < 0) return false;
 
-            var nameEnd = start + 1;
+            return false;
+        }
+
+        /// <summary>
+        /// Whether <paramref name="index"/> is past the name of the start tag at <paramref name="tagStart"/> and before its
+        /// &gt;, outside its attributes' quoted values and the parentheses of an expression (a lambda's =&gt; is no end).
+        /// </summary>
+        private static bool IsBetweenAttributes(string content, int tagStart, int index)
+        {
+            var nameEnd = tagStart + 1;
             while (nameEnd < content.Length && (IsWordCharacter(content[nameEnd]) || content[nameEnd] == '.')) nameEnd++;
-            var written = content.Substring(start + 1, nameEnd - start - 1);
-            if (written != tag && written.EndsWith("." + tag, StringComparison.Ordinal) is false) return false;
+            if (index < nameEnd) return false;
 
-            // Up to the index: neither in a quoted value nor past the tag's > (one of a lambda's => or in parentheses is not it).
             var quote = '\0';
             var depth = 0;
             for (var i = nameEnd; i < index; i++)
@@ -844,13 +1146,14 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
                 else if (c == '>' && depth == 0 && content[i - 1] != '=') return false;
             }
 
-            return quote == '\0';
+            return quote == '\0' && depth == 0;
         }
 
         private void EnsureAnchors()
         {
             if (_anchors is not null) return;
             _anchors = [];
+            _code = [];
 
             var mappings = _tree.GetLineMappings(_cancellationToken)
                                 .Where(m => m.MappedSpan.HasMappedPath && m.IsHidden is false)
@@ -867,16 +1170,26 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
 
             if (_path is null) return;
 
+            var isPath = PathMatcher(_path);
             foreach (var m in mappings)
             {
-                if (SamePath(m.MappedSpan.Path, _path) is false) continue;
-                _anchors.Add((m.Span.Start.Line, m.MappedSpan.StartLinePosition, m.MappedSpan.EndLinePosition));
+                if (isPath(m.MappedSpan.Path) is false) continue;
+                _anchors.Add((m.Span.Start.Line, m.MappedSpan.StartLinePosition, MappedEnd(m.MappedSpan)));
             }
             _anchors.Sort((a, b) => a.GeneratedLine.CompareTo(b.GeneratedLine));
 
-            var file = _files.FirstOrDefault(f => SamePath(f.Path, _path!));
+            var file = _files.Find(_path).FirstOrDefault();
             _text = file?.GetText(_cancellationToken);
             _content = _text is null ? null : WithoutComments(_text.ToString());
+
+            if (_text is null) return;
+            foreach (var a in _anchors)
+            {
+                var start = Position(_text, a.RazorStart);
+                var end = Position(_text, a.RazorEnd);
+                if (end > start) _code.Add((start, end));
+            }
+            _code.Sort((a, b) => a.Start.CompareTo(b.Start));
         }
     }
 }

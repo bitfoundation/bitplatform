@@ -104,6 +104,156 @@ public sealed class BitBreakingChangesAnalyzerTests
     }
 
     [TestMethod]
+    public async Task TheChangedCallbackOfABindingIsNotTakenFromTheNextTag()
+    {
+        var razor = """
+                    <BitToggleButton @bind-IsChecked="on" />
+                    <BitToggleButton IsChecked="on" IsCheckedChanged="cb" />
+                    """;
+
+        // As the Razor compiler writes it: the binding's callback is hidden code of its own, and the attributes of a name
+        // that is no parameter are string literals, so nothing of the second tag is mapped.
+        var generated = Page($"""
+                    __builder.OpenComponent<global::Bit.BlazorUI.BitToggleButton>(0);
+                    __builder.AddComponentParameter(1, "IsChecked", {Mapped(1, 35, "on")});
+                    __builder.AddComponentParameter(2, "IsCheckedChanged", global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => on = __value, on));
+                    __builder.CloseComponent();
+                    __builder.AddMarkupContent(3, "\n");
+                    __builder.OpenComponent<global::Bit.BlazorUI.BitToggleButton>(4);
+                    __builder.AddComponentParameter(5, "IsChecked", "on");
+                    __builder.AddComponentParameter(6, "IsCheckedChanged", "cb");
+                    __builder.CloseComponent();
+            """);
+
+        var diagnostics = await Analyze(generated, razor);
+
+        Assert.AreEqual(3, diagnostics.Length, Describe(diagnostics));
+        AssertAt(diagnostics[0], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 1, 24);
+        AssertAt(diagnostics[1], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 2, 18);
+        AssertAt(diagnostics[2], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 2, 33);
+        StringAssert.Contains(diagnostics[2].GetMessage(), "IsCheckedChanged is CheckedChanged");
+    }
+
+    [TestMethod]
+    public async Task AnAttributeIsFoundInItsTagPastTypeArgumentsAndDirectivesWrittenOutOfOrder()
+    {
+        var razor = """
+                    <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="items" IsLoading="true" />
+                    <BitButton @key="1" @ref="btn" isenabled="false" />
+                    """;
+
+        // The < of a type argument is no tag, and Razor maps @key and @ref after the attributes they are written before.
+        var generated = Page($$"""
+                    __builder.OpenComponent<global::Bit.BlazorUI.BitDropdown<{{Mapped(1, 21, "BitDropdownItem<string>")}}, {{Mapped(1, 54, "string")}}>>(0);
+                    __builder.AddComponentParameter(1, nameof(global::Bit.BlazorUI.BitDropdown<BitDropdownItem<string>, string>.Items), {{Mapped(1, 69, "items")}});
+                    __builder.AddComponentParameter(2, "IsLoading", "true");
+                    __builder.CloseComponent();
+                    __builder.AddMarkupContent(3, "\n");
+                    __builder.OpenComponent<global::Bit.BlazorUI.BitButton>(4);
+                    __builder.AddAttribute(5, "isenabled", "false");
+                    __builder.SetKey({{Mapped(2, 18, "1")}});
+                    __builder.AddComponentReferenceCapture(6, (__value) => { {{Mapped(2, 27, "btn")}} = (global::Bit.BlazorUI.BitButton)__value; });
+                    __builder.CloseComponent();
+            """);
+
+        var diagnostics = await Analyze(generated, razor);
+
+        Assert.AreEqual(2, diagnostics.Length, Describe(diagnostics));
+        AssertAt(diagnostics[0], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 1, 76);
+        AssertAt(diagnostics[1], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 2, 32);
+    }
+
+    [TestMethod]
+    public async Task AnAttributeIsReportedWhenAValueBesideItDoesNotCompile()
+    {
+        var razor = """
+                    <BitButton IsEnabled="@missing" />
+                    """;
+
+        // The call adding it does not bind: its argument is an error of its own (CS0103).
+        var generated = Page($"""
+                    __builder.OpenComponent<global::Bit.BlazorUI.BitButton>(0);
+                    __builder.AddAttribute(1, "IsEnabled", {Mapped(1, 24, "missing")});
+                    __builder.CloseComponent();
+            """);
+
+        var diagnostics = await Analyze(generated, razor);
+
+        Assert.AreEqual(1, diagnostics.Length, Describe(diagnostics));
+        AssertAt(diagnostics[0], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 1, 12);
+    }
+
+    [TestMethod]
+    public async Task AGenericComponentWhoseTypeIsCascadedIsReadAtItsOwnTag()
+    {
+        var razor = """
+                    <MyGrid Items="names" IsEnabled="false" />
+                    <MyGrid Items="names" IsEnabled="false" />
+                    """;
+
+        // A type parameter cascaded to the content has every attribute's value captured, and so mapped, before the call
+        // that opens the component.
+        var generated = Page($$"""
+                    {
+                        global::__Blazor.App.Page.TypeInference.CreateMyGrid_0_CaptureParameters({{Mapped(1, 16, "names")}}, out var __typeInferenceArg_0___arg0, "false", out var __typeInferenceArg_0___arg1);
+                        global::__Blazor.App.Page.TypeInference.CreateMyGrid_0(__builder, 0, 1, __typeInferenceArg_0___arg0, 2, __typeInferenceArg_0___arg1);
+                    }
+                    __builder.AddMarkupContent(3, "\n");
+                    {
+                        global::__Blazor.App.Page.TypeInference.CreateMyGrid_1_CaptureParameters({{Mapped(2, 16, "names")}}, out var __typeInferenceArg_0___arg0, "false", out var __typeInferenceArg_0___arg1);
+                        global::__Blazor.App.Page.TypeInference.CreateMyGrid_1(__builder, 4, 5, __typeInferenceArg_0___arg0, 6, __typeInferenceArg_0___arg1);
+                    }
+            """, extra: """
+                        [global::Microsoft.AspNetCore.Components.CascadingTypeParameter("TItem")]
+                        public class MyGrid<TItem> : global::Bit.BlazorUI.BitButton
+                        {
+                            [global::Microsoft.AspNetCore.Components.Parameter] public global::System.Collections.Generic.List<TItem>? Items { get; set; }
+                        }
+                        """, after: """
+                        namespace __Blazor.App.Page
+                        {
+                            #line hidden
+                            internal static class TypeInference
+                            {
+                                public static void CreateMyGrid_0<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, int __seq0, global::System.Collections.Generic.List<TItem> __arg0, int __seq1, global::System.Object __arg1)
+                                {
+                                __builder.OpenComponent<global::App.MyGrid<TItem>>(seq);
+                                __builder.AddComponentParameter(__seq0, nameof(global::App.MyGrid<TItem>.Items), __arg0);
+                                __builder.AddAttribute(__seq1, "IsEnabled", __arg1);
+                                __builder.CloseComponent();
+                                }
+
+                                public static void CreateMyGrid_0_CaptureParameters<TItem>(global::System.Collections.Generic.List<TItem> __arg0, out global::System.Collections.Generic.List<TItem> __arg0_out, global::System.Object __arg1, out global::System.Object __arg1_out)
+                                {
+                                    __arg0_out = __arg0;
+                                    __arg1_out = __arg1;
+                                }
+
+                                public static void CreateMyGrid_1<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, int __seq0, global::System.Collections.Generic.List<TItem> __arg0, int __seq1, global::System.Object __arg1)
+                                {
+                                __builder.OpenComponent<global::App.MyGrid<TItem>>(seq);
+                                __builder.AddComponentParameter(__seq0, nameof(global::App.MyGrid<TItem>.Items), __arg0);
+                                __builder.AddAttribute(__seq1, "IsEnabled", __arg1);
+                                __builder.CloseComponent();
+                                }
+
+                                public static void CreateMyGrid_1_CaptureParameters<TItem>(global::System.Collections.Generic.List<TItem> __arg0, out global::System.Collections.Generic.List<TItem> __arg0_out, global::System.Object __arg1, out global::System.Object __arg1_out)
+                                {
+                                    __arg0_out = __arg0;
+                                    __arg1_out = __arg1;
+                                }
+                            }
+                        }
+                        """);
+
+        var diagnostics = await Analyze(generated, razor);
+
+        Assert.AreEqual(2, diagnostics.Length, Describe(diagnostics));
+        AssertAt(diagnostics[0], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 1, 23);
+        AssertAt(diagnostics[1], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 2, 23);
+    }
+
+    [TestMethod]
     public async Task AParameterOfTheBaseComponentIsReportedOnEveryComponentAndOnAnAppsSubclass()
     {
         var razor = """
@@ -213,6 +363,48 @@ public sealed class BitBreakingChangesAnalyzerTests
         var diagnostics = await Analyze(generated, razor);
 
         Assert.AreEqual(0, diagnostics.Length, Describe(diagnostics));
+    }
+
+    [TestMethod]
+    public async Task AChildContentTagIsLookedForInTheContentOfItsOwnComponent()
+    {
+        var razor = """
+                    <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="items"><ItemTemplate><div><Matched>q</Matched></div></ItemTemplate></BitDropdown>
+                    <BitMediaQuery><BitButton>in</BitButton><Matched>a</Matched></BitMediaQuery>
+                    """;
+
+        // Nothing is mapped between the first <Matched>, nested in an element of the dropdown's template, and the second,
+        // right inside the query's content after a component.
+        var generated = Page($$"""
+                    __builder.OpenComponent<global::Bit.BlazorUI.BitDropdown<{{Mapped(1, 21, "BitDropdownItem<string>")}}, {{Mapped(1, 54, "string")}}>>(0);
+                    __builder.AddComponentParameter(1, nameof(global::Bit.BlazorUI.BitDropdown<BitDropdownItem<string>, string>.Items), {{Mapped(1, 69, "items")}});
+                    __builder.AddAttribute(2, "ItemTemplate", (global::Microsoft.AspNetCore.Components.RenderFragment<BitDropdownItem<string>>)((context) => (__builder2) => {
+                        __builder2.OpenElement(3, "div");
+                        __builder2.OpenElement(4, "Matched");
+                        __builder2.AddContent(5, "q");
+                        __builder2.CloseElement();
+                        __builder2.CloseElement();
+                    }));
+                    __builder.CloseComponent();
+                    __builder.AddMarkupContent(6, "\n");
+                    __builder.OpenComponent<global::Bit.BlazorUI.BitMediaQuery>(7);
+                    __builder.AddAttribute(8, "ChildContent", (global::Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
+                        __builder2.OpenComponent<global::Bit.BlazorUI.BitButton>(9);
+                        __builder2.AddAttribute(10, "ChildContent", (global::Microsoft.AspNetCore.Components.RenderFragment)((__builder3) => {
+                            __builder3.AddContent(11, "in");
+                        }));
+                        __builder2.CloseComponent();
+                        __builder2.OpenElement(12, "Matched");
+                        __builder2.AddContent(13, "a");
+                        __builder2.CloseElement();
+                    }));
+                    __builder.CloseComponent();
+            """);
+
+        var diagnostics = await Analyze(generated, razor);
+
+        Assert.AreEqual(1, diagnostics.Length, Describe(diagnostics));
+        AssertAt(diagnostics[0], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 2, 42);
     }
 
     [TestMethod]
@@ -344,6 +536,42 @@ public sealed class BitBreakingChangesAnalyzerTests
         var withOwnType = await Analyze(Page("", extra: "public class BitProModal { }"), razor);
 
         Assert.AreEqual(2, withOwnType.Length, Describe(withOwnType));
+    }
+
+    [TestMethod]
+    public async Task TheTagOfAComponentThatIsGoneRightAfterACSharpBlockIsReported()
+    {
+        var razor = """
+                    @if (count > 0) { <span>x</span> }
+                    <BitProModal />
+                    """;
+
+        // The Razor compiler writes the end column of a mapped piece exclusive, and Roslyn reads it as written: the } of
+        // the block maps to (1,34)-(2,1), whose end is the < of the tag.
+        var generated = Page("""
+            #nullable restore
+            #line (1,2)-(1,18) "C:\app\Pages\Page.razor"
+            if (count > 0) {
+
+            #line default
+            #line hidden
+            #nullable disable
+                    __builder.AddMarkupContent(0, "<span>x</span>");
+            #nullable restore
+            #line (1,34)-(2,1) "C:\app\Pages\Page.razor"
+            }
+
+            #line default
+            #line hidden
+            #nullable disable
+                    __builder.OpenElement(1, "BitProModal");
+                    __builder.CloseElement();
+            """);
+
+        var diagnostics = await Analyze(generated, razor);
+
+        Assert.AreEqual(1, diagnostics.Length, Describe(diagnostics));
+        AssertAt(diagnostics[0], BitBreakingChangesAnalyzer.TypeDiagnosticId, RazorPath, 2, 2);
     }
 
     [TestMethod]
@@ -561,6 +789,9 @@ public sealed class BitBreakingChangesAnalyzerTests
                      private string wide = "";
                      private global::System.Collections.Generic.List<global::Bit.BlazorUI.BitDropdownItem<string>> items = new();
                      private string value = "";
+                     private int count;
+                     private global::Bit.BlazorUI.BitButton? btn;
+                     private global::System.Collections.Generic.List<string> names = new();
              {{members}}
                  }
                  {{extra}}
