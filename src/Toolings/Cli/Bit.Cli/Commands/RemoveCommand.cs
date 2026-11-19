@@ -443,11 +443,12 @@ public static class RemoveCommand
 
         if (Directory.Exists(git.GitDirectory) && SamePath(Path.GetDirectoryName(git.GitDirectory)!, worktrees))
         {
-            // The worktree's own folder points back to the worktree's .git file. When it no longer points to this folder, the worktree
-            // was moved (git worktree move) while bit asked, and the administrative folder is the moved worktree's, which stays.
+            // The worktree's own folder points back to the worktree's .git file. When it no longer points to this folder, or a .git file is
+            // still where it points, the worktree was moved (git worktree move) while bit asked, to another folder or, where the file system
+            // tells cases apart, to another case of this one, and the administrative folder is the moved worktree's, which stays.
             var now = WorktreeOf(git.GitDirectory);
 
-            if (now is null || SamePath(now, git.TopLevel) is false)
+            if (now is null || SamePath(now, git.TopLevel) is false || File.Exists(Path.Combine(now, ".git")))
                 return StepResult.Warning("Left its repository's worktrees as they are", now is null ? $"{git.GitDirectory} doesn't say which folder it's for" : $"the worktree is in {now} now");
 
             FolderRemover.Delete(git.GitDirectory);
@@ -513,10 +514,7 @@ public static class RemoveCommand
         }
     }
 
-    /// <summary>Linux tells folders whose names differ only in case apart; Windows and macOS, by default, don't.</summary>
-    private static readonly StringComparison pathComparison = OperatingSystem.IsLinux() ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-
-    private static bool SamePath(string path, string other) => string.Equals(Path.TrimEndingDirectorySeparator(path), Path.TrimEndingDirectorySeparator(other), pathComparison);
+    private static bool SamePath(string path, string other) => string.Equals(Path.TrimEndingDirectorySeparator(path), Path.TrimEndingDirectorySeparator(other), StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// The path with every symbolic link and junction in it followed, the way git reports paths, so /tmp on macOS, a link to /private/tmp, is the same folder as git's /private/tmp.
