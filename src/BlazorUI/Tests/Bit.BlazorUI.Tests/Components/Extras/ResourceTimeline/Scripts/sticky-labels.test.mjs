@@ -251,6 +251,52 @@ test('a section\'s centered text with no room beside the center icons is left ou
     assert.equal(label(barNode(engine), 'Go').x, 570);
 });
 
+test('a section\'s pinned centered text stays clear of the section\'s start icon', () => {
+    // Section 24.75h-26.25h: x 140-200 scrolled, its start icon at x 143-159.
+    // Pinned at the edge of the bars area the text would cover x 153-181, over
+    // the icon; it is held clear of it instead.
+    const engine = makeSceneEngine([longBar({
+        height: 20,
+        sections: [{ startTime: at(24.75), endTime: at(26.25), icon: 'a.png', text: 'Hold' }]
+    })]);
+    scrollTo(engine, 1000);
+    const node = barNode(engine);
+    const gap = engine.config.barLabelGap;
+    const [icon] = node.icons;
+    const text = label(node, 'Hold');
+
+    assert.equal(icon.x, 140 + gap);
+    assert.equal(text.align, 'center');
+    assert.equal(text.x - 'Hold'.length * CHAR / 2, icon.x + icon.width + gap);
+});
+
+test('a section\'s pinned centered text steps aside for the center icons, clear of its start icon', () => {
+    const sections = (endHour) => [{ startTime: at(24), endTime: at(endHour), icon: 'a.png', text: 'Hold' }];
+    const icons = [{ source: 'center.png', position: 'center' }];
+
+    // Section 24h-27h: x 110-230 scrolled, its start icon at x 113-129. The bar's
+    // center icon is pinned at x 153-169, over the text; the side before it
+    // would cover the start icon, so the text goes after it.
+    const engine = makeSceneEngine([longBar({ height: 20, icons, sections: sections(27) })]);
+    scrollTo(engine, 1000);
+    const node = barNode(engine);
+    const gap = engine.config.barLabelGap;
+    const centerIcon = node.icons.find(i => i.source === 'center.png');
+    const text = label(node, 'Hold');
+
+    assert.equal(centerIcon.x, 150 + gap);
+    assert.equal(text.x - 'Hold'.length * CHAR / 2, centerIcon.x + centerIcon.width + gap);
+
+    // Section 24h-26h: x 110-190. There is no room after the center icon either,
+    // and the side before it is the start icon's, so the text is left out.
+    const narrow = makeSceneEngine([longBar({ height: 20, icons, sections: sections(26) })]);
+    scrollTo(narrow, 1000);
+    const narrowNode = barNode(narrow);
+    assert.equal(narrowNode.labels, null);
+    assert.equal(narrowNode.icons.length, 2);
+    assert.equal(narrowNode.icons.find(i => i.source === 'a.png').x, 110 + gap);
+});
+
 test('a label wider than the bars area is centered in it', () => {
     const wide = 'X'.repeat(42); // 294px
     const engine = makeSceneEngine([longBar({ textAbove: wide })]);

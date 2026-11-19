@@ -857,7 +857,7 @@ public partial class BitResourceTimelineDemo
             Items =
             [
                 new() { Name = "Start", Value = "0", Description = "Just inside the start edge of the section." },
-                new() { Name = "Center", Value = "1", Description = "Centered horizontally within the section." },
+                new() { Name = "Center", Value = "1", Description = "Centered horizontally within the section, or moved in just far enough to stay clear of what sits at the edges of the section when centering would overlap it." },
                 new() { Name = "End", Value = "2", Description = "Just inside the end edge of the section." },
             ]
         },
