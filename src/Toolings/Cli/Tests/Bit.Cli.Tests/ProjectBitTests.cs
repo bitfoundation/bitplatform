@@ -430,6 +430,8 @@ public class ProjectBitTests
     [DataRow("rename Fabrikam {0}")]
     [DataRow("diff --project {0}")]
     [DataRow("setup {0} --platforms web,android -p:Configuration=Release --yes")]
+    [DataRow("setup {0} --an-option-only-the-other-bit-knows")]
+    [DataRow("clean {0} --an-option-only-the-other-bit-knows")]
     public async Task ACommandGivenAnotherFolder_Should_GoByThatProject(string command)
     {
         using var host = new TestHost(HostOs.Linux);
@@ -450,6 +452,9 @@ public class ProjectBitTests
 
     [TestMethod]
     [DataRow("clean {0}", CliApp.ExitUsage)]
+    [DataRow("clean {0} --not-an-option", CliApp.ExitFailed)]
+    [DataRow("setup {0} --not-an-option", CliApp.ExitFailed)]
+    [DataRow("setup https://github.com/contoso/Contoso --not-an-option", CliApp.ExitFailed)]
     [DataRow("setup {0} --yes --no-tools --no-workloads --no-restore --no-build --no-browsers --no-run --no-trust --no-open", CliApp.ExitOk)]
     public async Task ACommandGivenAnotherFolder_Should_LeaveTheProjectItRunsInOutOfIt(string command, int exitCode)
     {

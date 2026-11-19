@@ -16,7 +16,7 @@ public static class CliApp
 
     private static readonly string[] longRunningCommands = ["new", "setup", "run", "diff", "translate", "doctor", "clean", "aot-profile", "migration", "pipeline", "api"];
 
-    private static readonly Dictionary<string, string> projectFolders = new() { ["diff"] = "--project", ["clean"] = "path", ["rename"] = "path" };
+    private static readonly Dictionary<string, string> projectFolders = new() { ["setup"] = "folder-or-repository", ["diff"] = "--project", ["clean"] = "path", ["rename"] = "path" };
 
     public static RootCommand BuildRootCommand(Func<CliServices> services)
     {
@@ -64,23 +64,26 @@ public static class CliApp
 
         var current = services.Environment.CurrentDirectory;
         var command = CommandPath(parseResult.CommandResult, root).FirstOrDefault();
+        var unread = parseResult.Errors.Count > 0;
 
-        if (command is not null && SelfUpdate.CommandsWithoutAProject.Contains(command))
-            return null;
+        if (command is null)
+            return unread ? current : null;
 
-        if (parseResult.Errors.Count > 0)
-            return current;
-
-        if (command is null or "setup")
+        if (SelfUpdate.CommandsWithoutAProject.Contains(command) || (command is "setup" && unread is false))
             return null;
 
         try
         {
-            return projectFolders.TryGetValue(command, out var symbol) && parseResult.GetValue<string?>(symbol) is { } folder ? Path.GetFullPath(folder, current) : current;
+            if (projectFolders.TryGetValue(command, out var symbol) is false || parseResult.GetValue<string?>(symbol) is not { } folder)
+                return current;
+
+            var given = Path.GetFullPath(folder, current);
+
+            return command is "setup" && Directory.Exists(given) is false ? null : given;
         }
         catch (Exception exp) when (exp is InvalidOperationException or ArgumentException or NotSupportedException)
         {
-            return current;
+            return command is "setup" ? null : current;
         }
     }
 
