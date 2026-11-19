@@ -4,10 +4,10 @@
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
 .container {
-    height: 3rem;
     display: flex;
-    padding: 1rem 0;
-    align-content: center;
+    min-height: 3rem;
+    padding: 0.5rem 0;
+    align-items: center;
     justify-content: space-between;
 }
 
@@ -22,13 +22,11 @@
     // A tint instead of the old growing padding, so hovering no longer shifts the layout.
     &:has(.link):hover {
         border-color: var(--app-hairline);
-        background-color: color-mix(in srgb, $bit-color-primary 8%, transparent);
+        background-color: var(--app-tint);
     }
 }
 
 .link {
-    height: 100%;
-    outline: none;
     display: flex;
     align-items: center;
     color: $bit-color-primary;

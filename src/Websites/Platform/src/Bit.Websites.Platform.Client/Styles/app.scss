@@ -1,4 +1,6 @@
-﻿// Brand palette overrides on top of the Fluent theme. Light mode swaps the default Fluent
+﻿@import 'abstracts/_vars.scss';
+
+// Brand palette overrides on top of the Fluent theme. Light mode swaps the default Fluent
 // blue/orange for the bit brand blue (see $B* in abstracts/_colors.scss) and the indigo of the
 // home page hero gradients, and cools the neutral ramps toward the same hue so surfaces, text
 // and strokes read as one family. Dark mode does the same over the existing navy surfaces.
@@ -309,12 +311,17 @@
     --app-radius-sm: 0.5rem;
     --app-radius-md: 0.75rem;
     --app-radius-lg: 1rem;
+    --app-radius-xl: 1.5rem;
     // A hairline that follows the palette: a faint wash of the foreground over whatever surface it sits on.
     --app-hairline: color-mix(in srgb, var(--bit-clr-fg-pri) 12%, transparent);
     --app-hairline-strong: color-mix(in srgb, var(--bit-clr-pri) 45%, var(--app-hairline));
+    // The quiet brand wash behind hovered and open menu rows and buttons.
+    --app-tint: color-mix(in srgb, var(--bit-clr-pri) 8%, transparent);
     // Layered, low-contrast elevation: a tight contact shadow plus a wide soft one.
     --app-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px -12px rgba(15, 23, 42, 0.12);
     --app-shadow-card-hover: 0 1px 2px rgba(15, 23, 42, 0.08), 0 16px 40px -16px rgba(82, 74, 221, 0.35);
+    // Floating surfaces (menus, flyouts) sit higher than cards, so they cast a deeper shadow.
+    --app-shadow-popup: 0 1px 2px rgba(0, 0, 0, 0.06), 0 16px 40px -12px rgba(15, 23, 42, 0.28);
 }
 
 :root[bit-theme="dark"] {
@@ -324,9 +331,8 @@
 
 * {
     box-sizing: border-box;
-    // Segoe UI Variable is Windows 11's own variable face (optical sizes, finer weights); system-ui
-    // picks the platform UI font elsewhere. All local - no web font download on the critical path.
-    font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    // The local Segoe UI Variable / system-ui stack (see $FontText in abstracts/_vars.scss).
+    font-family: $FontText;
     // 100% (not none) keeps the page-zoom text scaling mobile browsers offer for accessibility.
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
@@ -378,12 +384,11 @@ a {
     outline-offset: 2px;
 }
 
-// Embedded videos keep their 16:9 shape at any width (the width/height attributes only cap them) and
-// get the same soft corners as the cards around them.
+// Embedded videos keep their 16:9 shape at any width and get the same soft corners as the cards
+// around them. The width attribute sets each one's size; max-width only shrinks it to fit narrow screens.
 .video-container iframe {
-    width: 100%;
     height: auto;
-    max-width: 800px;
+    max-width: 100%;
     aspect-ratio: 16 / 9;
     border-radius: var(--app-radius-md);
 }
@@ -393,12 +398,15 @@ a {
     navigation: auto;
 }
 
-// One switch for everyone who asked the OS for less motion: entrance, reveal and hover animations
-// collapse to their end state.
+// One switch for everyone who asked the OS for less motion: the site's own entrance, reveal and hover
+// animations collapse to their end state. bit components (any bit-* class) are left out, as they are by
+// the focus ring above: BlazorUI scales its own motion under reduced motion and keeps its loading and
+// progress loops running (slower), which this reset would freeze into a page that looks hung. The
+// site's own loading grid (LoadingComponent) is a loop too, so its dots are left out with it.
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    :where(:not([class^="bit-"], [class*=" bit-"], .bit-lds-grid div)),
+    :where(:not([class^="bit-"], [class*=" bit-"], .bit-lds-grid div))::before,
+    :where(:not([class^="bit-"], [class*=" bit-"], .bit-lds-grid div))::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;

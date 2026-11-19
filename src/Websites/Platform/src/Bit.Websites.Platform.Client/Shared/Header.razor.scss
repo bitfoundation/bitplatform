@@ -1,5 +1,6 @@
 ﻿@import '../Styles/abstracts/_vars.scss';
 @import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_mixins.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
@@ -379,11 +380,8 @@
     pointer-events: none;
     flex-flow: row nowrap;
     padding: rem2(8px);
-    border-radius: var(--app-radius-md);
     transform: translateY(rem2(-8px));
-    border: 1px solid var(--app-hairline);
-    background-color: $bit-color-background-primary;
-    box-shadow: 0 rem2(1px) rem2(2px) rgba(0, 0, 0, 0.06), 0 rem2(16px) rem2(40px) rem2(-12px) rgba(15, 23, 42, 0.28);
+    @include SurfaceCard($radius: var(--app-radius-md), $shadow: var(--app-shadow-popup));
 
     // Visibility flips at the END of the fade-out (the 180ms delay) and instantly on fade-in.
     transition: opacity 180ms $MotionEase 0ms,
@@ -420,7 +418,7 @@
     // A tint instead of the old bolder title: no width change, so the row never reflows on hover.
     &:hover {
         transform: translateX(rem2(3px));
-        background-color: color-mix(in srgb, $bit-color-primary 8%, transparent);
+        background-color: var(--app-tint);
 
         .item-title {
             color: $bit-color-primary;
@@ -527,11 +525,8 @@
     // A themed thumb: the popup's black webkit one vanishes on the dark theme, hiding that the
     // list scrolls.
     scrollbar-color: $bit-color-border-primary transparent;
-    border-radius: var(--app-radius-md);
     transform: translateX(rem2(-8px));
-    border: 1px solid var(--app-hairline);
-    background-color: $bit-color-background-primary;
-    box-shadow: 0 rem2(1px) rem2(2px) rgba(0, 0, 0, 0.06), 0 rem2(16px) rem2(40px) rem2(-12px) rgba(15, 23, 42, 0.28);
+    @include SurfaceCard($radius: var(--app-radius-md), $shadow: var(--app-shadow-popup));
     // Hiding waits a beat (hover intent), so a diagonal pass over the neighboring items on the way to
     // the flyout does not close it; visibility flips at the end of the fade-out.
     transition: opacity 150ms $MotionEase 200ms,
@@ -545,7 +540,7 @@
 
 @mixin menu-sub-open {
     .menu-sub-trigger {
-        background-color: color-mix(in srgb, $bit-color-primary 8%, transparent);
+        background-color: var(--app-tint);
     }
 
     .menu-sub-chevron {

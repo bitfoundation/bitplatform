@@ -156,7 +156,7 @@
                 line-height: 1.05;
                 letter-spacing: -0.03em;
                 font-size: clamp(3.5rem, 12vw, 9rem);
-                font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+                font-family: $FontDisplay;
                 background-clip: text;
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
@@ -252,7 +252,7 @@
         margin-bottom: 2rem;
         letter-spacing: -0.025em;
         font-size: clamp(1.75rem, 6vw, 6rem);
-        font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-family: $FontDisplay;
 
         @include lt-lg {
             margin-bottom: 1rem;
@@ -308,13 +308,14 @@
         padding: 1.5rem 1rem;
         align-items: center;
         flex-flow: column nowrap;
-        border-radius: var(--app-radius-lg);
-        border: 1px solid var(--app-hairline);
-        background-color: color-mix(in srgb, $bit-color-background-secondary 60%, transparent);
+        // A flat tile: the strip reads as one band, so the tiles cast no shadow of their own.
+        @include SurfaceCard($shadow: null, $background: color-mix(in srgb, $bit-color-background-secondary 60%, transparent));
     }
 
     .stats-number {
-        font-size: 3rem;
+        // Scales with the viewport so the four-across tiles just above the md breakpoint (about 96px
+        // of content each) still hold "1.4K+"; 2rem from there down, 3rem on wide screens.
+        font-size: clamp(2rem, 4.5vw, 3rem);
         font-weight: 700;
         line-height: 1.1;
         letter-spacing: -0.02em;
@@ -323,10 +324,6 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
-
-        @include lt-md {
-            font-size: 2rem;
-        }
     }
 
     .stats-label {
@@ -351,8 +348,7 @@
         overflow: hidden;
         position: relative;
         padding-block: 4rem;
-        border-radius: rem2(24px);
-        border: 1px solid var(--app-hairline);
+        @include SurfaceCard($radius: var(--app-radius-xl), $shadow: null, $background: null);
         background: radial-gradient(ellipse 70% 60% at 50% 0%, var(--hero-glow), transparent 70%),
             color-mix(in srgb, $bit-color-background-secondary 70%, transparent);
 

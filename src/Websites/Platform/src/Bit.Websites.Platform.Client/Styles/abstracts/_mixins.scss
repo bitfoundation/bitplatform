@@ -32,12 +32,14 @@
 }
 
 // The site's one card surface: a hairline border, soft corners and a quiet layered shadow, the same
-// in both themes (the tokens live in app.scss). Pass $interactive to lift it on hover.
-@mixin SurfaceCard($interactive: false) {
-    border-radius: var(--app-radius-lg);
+// in both themes (the tokens live in app.scss). Pass $interactive to lift it on hover. $radius and
+// $shadow take other --app-* tokens (popups use --app-shadow-popup); null leaves the property out, as
+// does a null $background for surfaces that paint their own.
+@mixin SurfaceCard($interactive: false, $radius: var(--app-radius-lg), $shadow: var(--app-shadow-card), $background: $bit-color-background-primary) {
+    border-radius: $radius;
     border: 1px solid var(--app-hairline);
-    box-shadow: var(--app-shadow-card);
-    background-color: $bit-color-background-primary;
+    box-shadow: $shadow;
+    background-color: $background;
 
     @if $interactive {
         transition: transform 0.2s $MotionEase, box-shadow 0.2s $MotionEase, border-color 0.2s $MotionEase;

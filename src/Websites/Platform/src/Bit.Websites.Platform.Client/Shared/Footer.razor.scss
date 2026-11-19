@@ -170,8 +170,10 @@ footer {
     background-image: url('/images/bit-blue-icon.svg');
 }
 
-// Quiet column headings and muted links that brighten on hover - the footer stays calm and the
-// brand color is kept for the things that are actually actionable in the page above.
+// Quiet column headings and links that take the brand color and an underline on hover - the footer
+// stays calm and the brand color is kept for the things that are actually actionable in the page
+// above. Links sit in the primary foreground and the not-yet-live entries in the dimmer, italic
+// tertiary one, so what is a link still reads at rest (and on touch, with no hover).
 .footer-col-title {
     margin: 0;
     line-height: 1.5;
@@ -189,19 +191,23 @@ footer {
     font-size: rem2(14px);
     text-decoration: none;
     margin-top: rem2(10px);
-    color: $bit-color-foreground-secondary;
+    text-underline-offset: 0.2em;
+    color: $bit-color-foreground-primary;
     transition: color 0.15s $MotionEase;
 
     &:hover {
         color: $bit-color-primary;
+        text-decoration: underline;
     }
 
     &.coming-soon {
         cursor: default;
-        color: $bit-color-foreground-secondary;
+        font-style: italic;
+        color: $bit-color-foreground-tertiary;
 
         &:hover {
             text-decoration: none;
+            color: $bit-color-foreground-tertiary;
         }
     }
 }

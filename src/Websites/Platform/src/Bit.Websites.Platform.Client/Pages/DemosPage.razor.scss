@@ -86,14 +86,11 @@
 .template-img {
     width: 100%;
     height: auto;
-    border-radius: var(--app-radius-md);
-    border: 1px solid var(--app-hairline);
-    box-shadow: var(--app-shadow-card);
+    @include SurfaceCard($radius: var(--app-radius-md), $background: null);
 }
 
 .primary-btn {
     border: 0;
-    outline: 0;
     width: 100%;
     cursor: pointer;
     font-weight: 600;
@@ -119,7 +116,6 @@
 }
 
 .secondary-btn {
-    outline: 0;
     width: 100%;
     cursor: pointer;
     font-weight: 600;
