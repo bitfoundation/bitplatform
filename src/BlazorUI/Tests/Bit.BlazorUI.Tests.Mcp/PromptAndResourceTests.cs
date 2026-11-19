@@ -18,11 +18,12 @@ public class PromptAndResourceTests : McpTestBase
         "build-bit-blazorui-screen",
         "migrate-to-bit-blazorui",
         "theme-bit-blazorui-app",
+        "upgrade-bit-blazorui",
         "debug-bit-blazorui-issue"
     ];
 
     [TestMethod]
-    public async Task Publishes_the_five_prompts_with_titles_and_descriptions()
+    public async Task Publishes_the_six_prompts_with_titles_and_descriptions()
     {
         var prompts = await Mcp.ListPromptsAsync(cancellationToken: Ct);
 
@@ -44,7 +45,7 @@ public class PromptAndResourceTests : McpTestBase
 
         foreach (var name in _prompts)
         {
-            // Every argument gets a value: three of the five are prose a caller has to supply, and a
+            // Every argument gets a value: three of the six are prose a caller has to supply, and a
             // prompt whose subject is missing is not the thing this test is about.
             var arguments = (await Mcp.ListPromptsAsync(cancellationToken: Ct))
                 .First(p => p.Name == name).ProtocolPrompt.Arguments?

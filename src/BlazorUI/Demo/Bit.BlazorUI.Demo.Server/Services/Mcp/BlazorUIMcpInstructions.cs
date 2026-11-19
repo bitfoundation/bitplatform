@@ -6,7 +6,7 @@
 /// <para>
 /// It is the only place this server gets to speak before it is asked anything, and it is paid for
 /// on every request of every session, so it carries exactly two things a per-tool description
-/// cannot: which of the seven tools to reach for first, and the handful of facts about this library
+/// cannot: which of the eight tools to reach for first, and the handful of facts about this library
 /// that decide whether markup that compiles also looks right. Everything else - what a parameter is
 /// called, what an enum's values are - is a tool call away and belongs there, where it is only paid
 /// for when it is wanted.
@@ -42,8 +42,9 @@ public static class BlazorUIMcpInstructions
         GetBitBlazorUIComponentExamples for the one you are least sure of - the examples are the working code
         from the documentation site rather than a sketch of it. GetBitBlazorUISetupGuide is called once per
         app, for its hosting model. The rest answer one thing each: GetBitBlazorUIType for any type a
-        signature names, GetBitBlazorUIThemingGuide for anything about colors, tokens or dark mode, and
-        FindBitBlazorUIIcons for a glyph. Call GetBitBlazorUIComponent, GetBitBlazorUIType or
+        signature names, GetBitBlazorUIThemingGuide for anything about colors, tokens or dark mode,
+        FindBitBlazorUIIcons for a glyph, and GetBitBlazorUIBreakingChanges when the app's packages were
+        upgraded or a build reports BITBC001 / BITBC002. Call GetBitBlazorUIComponent, GetBitBlazorUIType or
         GetBitBlazorUIThemingGuide with no argument to get the list of what each can return, rather than
         looking for a separate tool that lists them.
 

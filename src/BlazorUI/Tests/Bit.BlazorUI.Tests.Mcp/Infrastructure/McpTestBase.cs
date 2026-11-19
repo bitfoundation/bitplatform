@@ -27,7 +27,8 @@ public abstract class McpTestBase
         "GetBitBlazorUIType",
         "GetBitBlazorUISetupGuide",
         "GetBitBlazorUIThemingGuide",
-        "FindBitBlazorUIIcons"
+        "FindBitBlazorUIIcons",
+        "GetBitBlazorUIBreakingChanges"
     ];
 
     private CancellationTokenSource _cancellation = null!;

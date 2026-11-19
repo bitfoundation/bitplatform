@@ -3,6 +3,19 @@
 Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`, `Bit.BlazorUI.Extras`,
 `Bit.BlazorUI.AI`, `Bit.BlazorUI.Assets`), newest version first, each with what to change in your code.
 
+**A name removed or renamed since 10.5.0 fails your build** once you upgrade: the `Bit.BlazorUI` package ships an
+analyzer that reports every one your code still uses - a parameter on a component (`BITBC001`), a component's tag or a
+type (`BITBC002`) - at the line it is written on, with what to write instead. Without it most of them would build
+silently: a component renders an attribute it does not take as an HTML attribute, and the setting does nothing. Set
+`<BitBlazorUIBreakingChangeAnalyzer>false</BitBlazorUIBreakingChangeAnalyzer>` in the project file to turn it off, or
+change one rule's severity in a `.globalconfig` beside the project file (`is_global = true`, then
+`dotnet_diagnostic.BITBC001.severity = warning`), or silence it with `<NoWarn>$(NoWarn);BITBC001</NoWarn>`. An
+`.editorconfig` cannot do it for the markup: those errors point into the `.razor` file, which no `.editorconfig` section
+applies to. An AI agent connected
+to the bit BlazorUI MCP server gets the same list from `GetBitBlazorUIBreakingChanges`, and the `upgrade-bit-blazorui`
+prompt walks it through an upgrade. What changed without a name changing - markup, CSS classes, defaults, behaviour - is
+only in this file.
+
 ## 11.0.0
 
 ### `BitFullCalendarState` is read-only, but for its filters ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
