@@ -971,7 +971,7 @@ public class AppLayerRegressionTests : IDisposable
         public IBcrdtTransport Create(string documentId) => new StalledTransport();
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Opening_a_document_does_not_wait_for_the_network()
     {
         var store = new BcrdtInMemoryDocumentStore();
@@ -1031,7 +1031,7 @@ public class AppLayerRegressionTests : IDisposable
         Assert.ContainsSingle(service.OpenDocuments);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Closing_a_document_tells_peers_at_once_that_the_participant_left()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -1048,7 +1048,7 @@ public class AppLayerRegressionTests : IDisposable
         await WaitUntilAsync(() => b.Presence.Others.Count == 0, "B sees that A left");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Reconnecting_restores_who_the_participant_is()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -1093,36 +1093,6 @@ public class AppLayerRegressionTests : IDisposable
         Assert.IsTrue(inner.IsNested);
     }
 
-    private sealed class PumpingContext : SynchronizationContext, IDisposable
-    {
-        private readonly BlockingCollection<(SendOrPostCallback Callback, object? State)> _queue = [];
-
-        public PumpingContext() => new Thread(Pump) { IsBackground = true, Name = "test-dispatcher" }.Start();
-
-        public override void Post(SendOrPostCallback d, object? state) => _queue.Add((d, state));
-
-        public override void Send(SendOrPostCallback d, object? state) => throw new NotSupportedException();
-
-        public Task<T> RunAsync<T>(Func<Task<T>> work)
-        {
-            var completion = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
-            Post(async _ =>
-            {
-                try { completion.SetResult(await work()); }
-                catch (Exception ex) { completion.SetException(ex); }
-            }, null);
-            return completion.Task;
-        }
-
-        public void Dispose() => _queue.CompleteAdding();
-
-        private void Pump()
-        {
-            SetSynchronizationContext(this);
-            foreach ((SendOrPostCallback callback, object? state) in _queue.GetConsumingEnumerable()) callback(state);
-        }
-    }
-
     private sealed class SlowStore(IBcrdtDocumentStore inner) : IBcrdtDocumentStore
     {
         public async ValueTask<BcrdtStoredDocument> LoadAsync(string documentId, CancellationToken cancellationToken = default)
@@ -1147,7 +1117,7 @@ public class AppLayerRegressionTests : IDisposable
     [TestMethod]
     public async Task A_document_is_wired_to_the_network_on_the_context_that_opened_it()
     {
-        using var context = new PumpingContext();
+        using var context = new SingleThreadContext();
         SynchronizationContext? wiredOn = null;
         var network = new BcrdtInMemoryNetwork();
         BcrdtCollaborationService service = CreateClient(
@@ -1155,14 +1125,11 @@ public class AppLayerRegressionTests : IDisposable
 
         // Loading from the store completes on a thread-pool thread; the sync provider must still be
         // created back on the opening context, because that is the context it applies updates on.
-        await context.RunAsync(async () => await service.OpenAsync("doc"));
+        await context.InvokeAsync(async () => await service.OpenAsync("doc"));
         Assert.AreSame(context, wiredOn);
 
-        await context.RunAsync(async () =>
-        {
-            await service.DisposeAsync();
-            return 0;
-        });
+        await context.InvokeAsync(async () => await service.DisposeAsync());
+        Assert.IsEmpty(context.Faults);
     }
 
     // ---------------------------------------------------------------- Second review

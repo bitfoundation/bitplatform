@@ -17,7 +17,7 @@ public class RelayRevocationTests
     private static readonly TimeSpan Patience = TimeSpan.FromSeconds(15);
     private static readonly TimeSpan QuietPeriod = TimeSpan.FromMilliseconds(300);
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_bare_hub_revokes_a_connection_and_relays_nothing_more_to_or_from_it()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -61,7 +61,7 @@ public class RelayRevocationTests
         await AssertEventuallyAsync(() => connections.Documents.Count == 0, "the list must empty as clients leave");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_bare_websocket_relay_revokes_connections_and_closes_a_socket_that_ignores_its_refusal()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -113,7 +113,7 @@ public class RelayRevocationTests
         await AssertEventuallyAsync(() => connections.Documents.Count == 0, "the list must empty as clients leave");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task With_a_host_revoking_through_the_list_withdraws_presence_and_revokes_in_the_host_too()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -164,7 +164,7 @@ public class RelayRevocationTests
         CollectionAssert.AreEquivalent(new[] { "alice" }, connections.GetConnections("doc").Select(connection => connection.UserId).ToArray());
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Revoking_across_every_document_reaches_both_relays_and_their_host()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -212,7 +212,7 @@ public class RelayRevocationTests
         Assert.AreEqual("", bobOnTwo.Body);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Narrowing_a_grant_makes_a_hub_connection_read_only_without_disconnecting_it()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -247,7 +247,7 @@ public class RelayRevocationTests
         Assert.AreEqual(0, bob.Denied);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task A_narrowed_socket_that_ignores_its_grant_changes_nothing(bool hosted)
@@ -387,16 +387,17 @@ public class RelayRevocationTests
 
         private static async Task<Participant> ConnectAsync(ulong clientId, IBcrdtTransport transport)
         {
+            SingleThreadContext.EnsureCurrent();
             var participant = new Participant(clientId, transport);
 
-            // Built on the pool, so the provider captures no synchronization context. On a bare relay nobody answers
+            // Built on the calling thread, so the provider captures the test's context. On a bare relay nobody answers
             // the first one in, so a short handshake timeout is what lets it count as synced.
-            participant.Provider = await Task.Run(() => new BcrdtSyncProvider(participant.Doc, transport, participant.Presence, new BcrdtSyncProviderOptions
+            participant.Provider = new BcrdtSyncProvider(participant.Doc, transport, participant.Presence, new BcrdtSyncProviderOptions
             {
                 HeartbeatInterval = TimeSpan.Zero,
                 HandshakeTimeout = TimeSpan.FromMilliseconds(300),
                 Reconnect = new BcrdtReconnectPolicy { BaseDelay = TimeSpan.FromMilliseconds(5), MaxDelay = TimeSpan.FromMilliseconds(20) },
-            }));
+            });
             participant.Provider.AuthorizationDenied += reason =>
             {
                 participant.DeniedWith = reason;

@@ -51,7 +51,7 @@ public class SyncStatusTests
         Assert.AreEqual("local", BcrdtSyncStatus.StatusName(status));
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task The_snapshot_follows_the_connection_offline_and_back()
     {
         var network = new BcrdtInMemoryNetwork();

@@ -29,13 +29,19 @@ public class AccessAndHostingTests
         Reconnect = reconnect ?? new BcrdtReconnectPolicy { BaseDelay = TimeSpan.FromMilliseconds(5), MaxDelay = TimeSpan.FromMilliseconds(20) },
     };
 
-    /// <summary>Built on the pool, so the provider captures no synchronization context.</summary>
-    private static Task<BcrdtSyncProvider> ProviderAsync(
+    /// <summary>
+    /// Built on the calling thread, so the provider captures the test's <see cref="SingleThreadContext"/> and
+    /// applies what it receives there - never while the test reads or edits the document.
+    /// </summary>
+    private static BcrdtSyncProvider CreateProvider(
         BcrdtDocument doc,
         IBcrdtTransport transport,
         BcrdtAwarenessStore? awareness = null,
-        BcrdtSyncProviderOptions? options = null) =>
-        Task.Run(() => new BcrdtSyncProvider(doc, transport, awareness, options ?? Options()));
+        BcrdtSyncProviderOptions? options = null)
+    {
+        SingleThreadContext.EnsureCurrent();
+        return new(doc, transport, awareness, options ?? Options());
+    }
 
     private static async Task AssertEventuallyAsync(Func<bool> condition, string because)
     {
@@ -83,7 +89,7 @@ public class AccessAndHostingTests
     // The provider
     // ---------------------------------------------------------------------------------------------
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_read_only_provider_answers_nobody_and_keeps_its_local_edits_to_itself()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -91,7 +97,7 @@ public class AccessAndHostingTests
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         doc.GetText("body").Insert(0, "mine");
-        await using BcrdtSyncProvider provider = await ProviderAsync(doc, network.CreateTransport("room"));
+        await using BcrdtSyncProvider provider = CreateProvider(doc, network.CreateTransport("room"));
         var errors = new ConcurrentQueue<Exception>();
         provider.Error += errors.Enqueue;
         int accessChanges = 0;
@@ -117,14 +123,14 @@ public class AccessAndHostingTests
         Assert.IsTrue(errors.Any(e => e is InvalidOperationException), "a local edit on a read-only connection must be reported");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_reply_without_its_delta_does_not_complete_the_handshake()
     {
         var network = new BcrdtInMemoryNetwork();
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
-        await using BcrdtSyncProvider provider = await ProviderAsync(doc, network.CreateTransport("room"));
+        await using BcrdtSyncProvider provider = CreateProvider(doc, network.CreateTransport("room"));
         await provider.ConnectAsync();
         await AssertEventuallyAsync(() => peer.Received.Any(m => m.Kind == BcrdtSyncMessageKind.SyncStep1), "the announcement should arrive");
 
@@ -137,12 +143,12 @@ public class AccessAndHostingTests
         await AssertEventuallyAsync(() => provider.IsSynced, "the delta completes the handshake");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_connection_dropped_as_soon_as_it_opens_is_retried_with_a_growing_delay()
     {
         await using var transport = new FlappingTransport();
         using var doc = new BcrdtDocument();
-        await using BcrdtSyncProvider provider = await ProviderAsync(doc, transport, options: Options(
+        await using BcrdtSyncProvider provider = CreateProvider(doc, transport, options: Options(
             reconnect: new BcrdtReconnectPolicy { BaseDelay = TimeSpan.FromMilliseconds(100), MaxDelay = TimeSpan.FromSeconds(10) }));
 
         await provider.ConnectAsync();
@@ -154,7 +160,7 @@ public class AccessAndHostingTests
         Assert.IsLessThan(15, transport.ConnectCalls, $"{transport.ConnectCalls} attempts in two seconds");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_document_larger_than_the_relays_message_limit_still_reaches_a_newcomer()
     {
         // A relay that drops anybody sending more than 64 KB at once, and a document of several times that.
@@ -172,13 +178,13 @@ public class AccessAndHostingTests
         using var holder = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         holder.GetText("body").Insert(0, string.Concat(Enumerable.Repeat("The quick brown fox jumps over the lazy dog. ", 6_000)));
         await using var holderTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/big"));
-        await using BcrdtSyncProvider holderProvider = await ProviderAsync(holder, holderTransport, options: options);
+        await using BcrdtSyncProvider holderProvider = CreateProvider(holder, holderTransport, options: options);
         await holderProvider.ConnectAsync();
         await AssertEventuallyAsync(() => holderProvider.IsSynced, "alone in the room");
 
         using var newcomer = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using var newcomerTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/big"));
-        await using BcrdtSyncProvider newcomerProvider = await ProviderAsync(newcomer, newcomerTransport, options: options);
+        await using BcrdtSyncProvider newcomerProvider = CreateProvider(newcomer, newcomerTransport, options: options);
         await newcomerProvider.ConnectAsync();
 
         await AssertEventuallyAsync(() => newcomer.GetText("body").Count == holder.GetText("body").Count, "the whole document should arrive");
@@ -195,7 +201,7 @@ public class AccessAndHostingTests
     // Read-only access through the relays
     // ---------------------------------------------------------------------------------------------
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task The_websocket_relay_carries_nothing_a_reader_writes()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket(
@@ -206,8 +212,8 @@ public class AccessAndHostingTests
         using var readerDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using var writerTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/doc"));
         await using var readerTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/doc?role=reader"));
-        await using BcrdtSyncProvider writer = await ProviderAsync(writerDoc, writerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
-        await using BcrdtSyncProvider reader = await ProviderAsync(readerDoc, readerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
+        await using BcrdtSyncProvider writer = CreateProvider(writerDoc, writerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
+        await using BcrdtSyncProvider reader = CreateProvider(readerDoc, readerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
 
         await writer.ConnectAsync();
         await reader.ConnectAsync();
@@ -231,7 +237,7 @@ public class AccessAndHostingTests
         Assert.AreEqual("hello", writerDoc.GetText("body").ToString());
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task The_hub_carries_nothing_a_reader_writes()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -242,8 +248,8 @@ public class AccessAndHostingTests
         using var readerDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using var writerTransport = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "doc");
         await using var readerTransport = new BcrdtSignalRTransport(host.BaseUrl + "/hub?role=reader", "doc");
-        await using BcrdtSyncProvider writer = await ProviderAsync(writerDoc, writerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
-        await using BcrdtSyncProvider reader = await ProviderAsync(readerDoc, readerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
+        await using BcrdtSyncProvider writer = CreateProvider(writerDoc, writerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
+        await using BcrdtSyncProvider reader = CreateProvider(readerDoc, readerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
 
         await writer.ConnectAsync();
         await reader.ConnectAsync();
@@ -262,7 +268,7 @@ public class AccessAndHostingTests
     // The document host
     // ---------------------------------------------------------------------------------------------
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_hosted_document_outlives_its_last_client_and_its_host()
     {
         var store = new BcrdtInMemoryDocumentStore();
@@ -274,7 +280,7 @@ public class AccessAndHostingTests
             using (var author = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }))
             {
                 await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/notes"));
-                await using BcrdtSyncProvider provider = await ProviderAsync(author, transport);
+                await using BcrdtSyncProvider provider = CreateProvider(author, transport);
                 await provider.ConnectAsync();
                 await AssertEventuallyAsync(() => provider.IsSynced, "the host answers the handshake");
 
@@ -287,7 +293,7 @@ public class AccessAndHostingTests
             // A newcomer to the empty room is given the document by the host alone.
             using var newcomer = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
             await using var newcomerTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/notes"));
-            await using BcrdtSyncProvider newcomerProvider = await ProviderAsync(newcomer, newcomerTransport);
+            await using BcrdtSyncProvider newcomerProvider = CreateProvider(newcomer, newcomerTransport);
             await newcomerProvider.ConnectAsync();
 
             await AssertEventuallyAsync(() => newcomerProvider.IsSynced, "the newcomer should be synced");
@@ -299,7 +305,7 @@ public class AccessAndHostingTests
         Assert.AreEqual("kept by the server", await restarted.ReadAsync("notes", doc => doc.GetText("body").ToString()));
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_client_returning_from_offline_hands_its_work_to_the_host()
     {
         await using var documentHost = new BcrdtDocumentHost();
@@ -310,7 +316,7 @@ public class AccessAndHostingTests
         doc.GetText("body").Delete(0, 8);
 
         await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/offline"));
-        await using BcrdtSyncProvider provider = await ProviderAsync(doc, transport);
+        await using BcrdtSyncProvider provider = CreateProvider(doc, transport);
         await provider.ConnectAsync();
 
         await AssertEventuallyAsync(
@@ -318,7 +324,7 @@ public class AccessAndHostingTests
             "the host should collect the offline work, deletions included");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_change_made_on_the_server_reaches_connected_clients()
     {
         await using var documentHost = new BcrdtDocumentHost();
@@ -326,7 +332,7 @@ public class AccessAndHostingTests
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/board"));
-        await using BcrdtSyncProvider provider = await ProviderAsync(doc, transport);
+        await using BcrdtSyncProvider provider = CreateProvider(doc, transport);
         await provider.ConnectAsync();
         await AssertEventuallyAsync(() => provider.IsSynced, "connected");
 
@@ -335,7 +341,7 @@ public class AccessAndHostingTests
         await AssertEventuallyAsync(() => doc.GetMap("").Get("status") as string == "approved", "the server's change should arrive");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Revoking_a_connection_ends_its_access_at_once_and_leaves_the_others_alone()
     {
         await using var documentHost = new BcrdtDocumentHost();
@@ -345,8 +351,8 @@ public class AccessAndHostingTests
         using var revokedDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using var keptTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/shared"));
         await using var revokedTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/shared"));
-        await using BcrdtSyncProvider kept = await ProviderAsync(keptDoc, keptTransport);
-        await using BcrdtSyncProvider revoked = await ProviderAsync(revokedDoc, revokedTransport);
+        await using BcrdtSyncProvider kept = CreateProvider(keptDoc, keptTransport);
+        await using BcrdtSyncProvider revoked = CreateProvider(revokedDoc, revokedTransport);
         int denied = 0;
         revoked.AuthorizationDenied += _ => Interlocked.Increment(ref denied);
 
@@ -524,7 +530,7 @@ public class AccessAndHostingTests
         public void Refuse(string reason) => RefusedWith = reason;
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_change_the_host_rejects_refuses_its_sender_and_reaches_nobody()
     {
         await using var documentHost = new BcrdtDocumentHost(new BcrdtDocumentHostOptions
@@ -544,8 +550,8 @@ public class AccessAndHostingTests
         using var badDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using var goodTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/rules"));
         await using var badTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/rules"));
-        await using BcrdtSyncProvider good = await ProviderAsync(goodDoc, goodTransport);
-        await using BcrdtSyncProvider bad = await ProviderAsync(badDoc, badTransport);
+        await using BcrdtSyncProvider good = CreateProvider(goodDoc, goodTransport);
+        await using BcrdtSyncProvider bad = CreateProvider(badDoc, badTransport);
         int denied = 0;
         bad.AuthorizationDenied += _ => Interlocked.Increment(ref denied);
 
@@ -893,7 +899,7 @@ public class AccessAndHostingTests
         Assert.AreEqual("Ada", observed.GetField(42, "name"));
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task One_host_behind_both_relays_carries_changes_between_their_clients()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -915,8 +921,8 @@ public class AccessAndHostingTests
         using var socketDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using var signalR = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "shared");
         await using var socket = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/shared"));
-        await using BcrdtSyncProvider overSignalR = await ProviderAsync(signalRDoc, signalR);
-        await using BcrdtSyncProvider overSocket = await ProviderAsync(socketDoc, socket);
+        await using BcrdtSyncProvider overSignalR = CreateProvider(signalRDoc, signalR);
+        await using BcrdtSyncProvider overSocket = CreateProvider(socketDoc, socket);
         await overSignalR.ConnectAsync();
         await overSocket.ConnectAsync();
         await AssertEventuallyAsync(() => overSignalR.IsSynced && overSocket.IsSynced, "both connected");
@@ -928,7 +934,7 @@ public class AccessAndHostingTests
         await AssertEventuallyAsync(() => signalRDoc.GetText("body").ToString() == "from SignalR. From WebSocket.", "and the SignalR client the other way");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     [DataRow("team/notes")]
     [DataRow("50%2F off/q?x#y")]
     public async Task A_document_identifier_holding_a_slash_is_one_document_on_both_relays(string documentId)
@@ -960,8 +966,8 @@ public class AccessAndHostingTests
         using var signalRDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using IBcrdtTransport socket = new BcrdtWebSocketTransportFactory(host.WebSocketBase + "/ws/{documentId}").Create(documentId);
         await using var signalR = new BcrdtSignalRTransport(host.BaseUrl + "/hub", documentId);
-        await using BcrdtSyncProvider overSocket = await ProviderAsync(socketDoc, socket);
-        await using BcrdtSyncProvider overSignalR = await ProviderAsync(signalRDoc, signalR);
+        await using BcrdtSyncProvider overSocket = CreateProvider(socketDoc, socket);
+        await using BcrdtSyncProvider overSignalR = CreateProvider(signalRDoc, signalR);
         await overSocket.ConnectAsync();
         await overSignalR.ConnectAsync();
         await AssertEventuallyAsync(() => overSocket.IsSynced && overSignalR.IsSynced, "both connected");
@@ -1125,7 +1131,7 @@ public class AccessAndHostingTests
         Assert.AreEqual(0, documentHost.LoadedDocuments.Count, "nor anything loaded");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_hub_with_a_registered_host_keeps_documents_after_everyone_leaves()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -1139,7 +1145,7 @@ public class AccessAndHostingTests
         using (var author = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }))
         {
             await using var transport = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "notes");
-            await using BcrdtSyncProvider provider = await ProviderAsync(author, transport);
+            await using BcrdtSyncProvider provider = CreateProvider(author, transport);
             await provider.ConnectAsync();
             await AssertEventuallyAsync(() => provider.IsSynced, "the host answers the handshake");
             author.GetText("body").Insert(0, "kept");
@@ -1152,14 +1158,14 @@ public class AccessAndHostingTests
 
         using var newcomer = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using var newcomerTransport = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "notes");
-        await using BcrdtSyncProvider newcomerProvider = await ProviderAsync(newcomer, newcomerTransport);
+        await using BcrdtSyncProvider newcomerProvider = CreateProvider(newcomer, newcomerTransport);
         await newcomerProvider.ConnectAsync();
 
         await AssertEventuallyAsync(() => newcomer.GetText("body").ToString() == "kept", "the host should hand the document over");
         await AssertEventuallyAsync(() => newcomerProvider.IsSynced, "and the newcomer should be synced");
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_hosted_document_larger_than_a_clients_queue_still_reaches_it_in_one_connection()
     {
         // The host answers in far more parts, and far more bytes, than the queue in front of one client
@@ -1184,7 +1190,7 @@ public class AccessAndHostingTests
         {
             if (change.State == BcrdtTransportState.Connected) Interlocked.Increment(ref connections);
         };
-        await using BcrdtSyncProvider provider = await ProviderAsync(newcomer, transport);
+        await using BcrdtSyncProvider provider = CreateProvider(newcomer, transport);
         await provider.ConnectAsync();
 
         int expected = await documentHost.ReadAsync("big", doc => doc.GetText("body").Count);

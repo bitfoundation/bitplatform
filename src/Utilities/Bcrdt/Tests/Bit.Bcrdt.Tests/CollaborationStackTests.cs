@@ -28,7 +28,7 @@ public class CollaborationStackTests
 
     private static async Task SettleAsync() => await Task.Delay(50);
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task An_edit_in_one_client_reaches_another()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -45,7 +45,7 @@ public class CollaborationStackTests
         Assert.AreEqual("hello from A", b.Text("body").ToString());
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_client_joining_late_receives_the_existing_document()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -64,7 +64,7 @@ public class CollaborationStackTests
         Assert.IsTrue(b.IsSynced);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Offline_edits_on_both_sides_merge_on_reconnect()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -98,7 +98,7 @@ public class CollaborationStackTests
         BcrdtConvergenceHarness.AssertConverged(a.Crdt, b.Crdt);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Presence_propagates_between_clients()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -116,7 +116,7 @@ public class CollaborationStackTests
         Assert.Contains(other => other.User.Name == "Grace", a.Presence.Others);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Presence_is_not_written_to_storage()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -138,7 +138,7 @@ public class CollaborationStackTests
         Assert.DoesNotContain("Ada", BcrdtConvergenceHarness.Describe(reloaded));
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Opening_the_same_document_twice_returns_one_replica()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -150,7 +150,7 @@ public class CollaborationStackTests
         Assert.AreSame(first, second);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_transaction_batches_changes_into_a_single_update()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -172,7 +172,7 @@ public class CollaborationStackTests
         Assert.AreEqual(3, doc.Array("items").Count);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_dropped_connection_is_reported_and_reconnection_restores_sync()
     {
         var network = new BcrdtInMemoryNetwork();

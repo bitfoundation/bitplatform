@@ -1583,7 +1583,9 @@ relays between two others never holds back what it could pass on.
   storage. On reconnect one exchange in each direction reconciles an arbitrarily long divergence.
 - **Thread-affine.** A document is not thread-safe, but transports raise their events on whatever thread their I/O
   completes on. `BcrdtSyncProvider` captures the `SynchronizationContext` it was created on - the renderer's, in Blazor -
-  and runs every transport callback, heartbeat and reconnect step there.
+  and runs every transport callback, heartbeat and reconnect step there. With no context to capture - a console app, a
+  worker - it applies what arrives under a lock of its own, and the application reads and edits the document through
+  `provider.InvokeAsync(...)`, which runs its work under that lock; even a read made any other way can race it.
 
 A provider sends on every change to its document but the ones it received itself, which it never echoes. With two
 providers on one document - the server's and the other tabs' - that rule would make each the other's echo: whatever
