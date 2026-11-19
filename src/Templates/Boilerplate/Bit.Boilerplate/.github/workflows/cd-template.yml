@@ -56,8 +56,7 @@ jobs:
         with:
           global-json-file: global.json
 
-      # bit setup has a time limit of its own, as in ci.yml, since it hangs without a word when a download stalls in CI.
-      # The other steps that can take long have one too.
+      # bit setup and the other steps that can take long have a time limit of their own, as in ci.yml.
       - name: Prepare this machine with bit setup
         uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-22
         timeout-minutes: 20
@@ -693,7 +692,7 @@ jobs:
         with:
           global-json-file: global.json
 
-      # A time limit of its own, as in ci.yml: bit setup hangs without a word when a download stalls in CI.
+      # A time limit of its own, as in ci.yml.
       - name: Prepare this machine with bit setup
         uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-22
         timeout-minutes: 20
@@ -785,7 +784,7 @@ jobs:
         with:
           global-json-file: global.json
 
-      # A time limit of its own, as in ci.yml: bit setup hangs without a word when a download stalls in CI.
+      # A time limit of its own, as in ci.yml.
       - name: Prepare this machine with bit setup
         uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-22
         timeout-minutes: 20
@@ -871,7 +870,7 @@ jobs:
         with:
           xcode-version: '27.2'
 
-      # A time limit of its own, as in ci.yml: bit setup hangs without a word when a download stalls in CI.
+      # A time limit of its own, as in ci.yml.
       - name: Prepare this machine with bit setup
         uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-22
         timeout-minutes: 20
