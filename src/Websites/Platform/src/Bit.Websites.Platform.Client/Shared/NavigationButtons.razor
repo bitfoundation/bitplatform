@@ -4,19 +4,19 @@
     <div class="button">
         @if (string.IsNullOrWhiteSpace(Prev) is false)
         {
-            <a class="link" href="@PrevUrl">
+            <BitLink Class="link" Href="@PrevUrl" NoColor NoUnderline>
                 <BitIcon IconName="ChevronRight" Style="transform:rotate(180deg)" />
-                <span class="left">@Prev</span>
-            </a>
+                <BitText Typography="BitTypography.Inherit" Element="span" Class="left">@Prev</BitText>
+            </BitLink>
         }
     </div>
     <div class="button">
         @if (string.IsNullOrWhiteSpace(Next) is false)
         {
-            <a class="link" href="@NextUrl">
-                <span class="right">@Next</span>
+            <BitLink Class="link" Href="@NextUrl" NoColor NoUnderline>
+                <BitText Typography="BitTypography.Inherit" Element="span" Class="right">@Next</BitText>
                 <BitIcon IconName="ChevronRight" />
-            </a>
+            </BitLink>
         }
     </div>
 </div>

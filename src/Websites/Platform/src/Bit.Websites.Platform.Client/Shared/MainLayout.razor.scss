@@ -24,6 +24,12 @@
     width: 100%;
     margin: 0 auto;
     position: relative;
+
+    // The skip link (a BitLink to #main-content) moves the focus here so the next Tab starts in the
+    // content; the whole content area is not a control, so it draws no ring of its own.
+    &:focus {
+        outline: none;
+    }
     padding-top: rem2(65px);
     padding-left: rem2(60px);
     padding-right: rem2(60px);

@@ -119,6 +119,18 @@
     ::deep .code-box-content {
         background-color: $bit-color-background-primary;
     }
+
+    ::deep .template-link {
+        cursor: pointer;
+        flex-flow: row nowrap;
+        line-height: rem2(32px);
+        transition: all 0.2s linear;
+        @include ArrowLink('.template-link-arrow');
+
+        &:hover {
+            transform: translateX(5px);
+        }
+    }
 }
 
 .template-terminal {
@@ -231,17 +243,5 @@
             opacity: 0;
             transform: translateY(15px);
         }
-    }
-}
-
-.template-link {
-    cursor: pointer;
-    flex-flow: row nowrap;
-    line-height: rem2(32px);
-    transition: all 0.2s linear;
-    @include ArrowLink('.template-link-arrow');
-
-    &:hover {
-        transform: translateX(5px);
     }
 }

@@ -26,7 +26,7 @@
     }
 }
 
-.link {
+.button ::deep .link {
     display: flex;
     align-items: center;
     color: $bit-color-primary;
@@ -39,7 +39,7 @@
         padding-left: 0.5rem;
     }
 
-    ::deep .bit-ico {
+    .bit-ico {
         color: inherit;
     }
 }

@@ -4,20 +4,20 @@
     <div class="question-head">
         @if (HeadingElement is "h3")
         {
-            <h3 class="question-title is-small" id="@headingId">@Title</h3>
+            <BitText Typography="BitTypography.Inherit" Element="h3" Class="question-title is-small" Id="@headingId">@Title</BitText>
         }
         else
         {
-            <h2 class="question-title" id="@headingId">@Title</h2>
+            <BitText Typography="BitTypography.Inherit" Element="h2" Class="question-title" Id="@headingId">@Title</BitText>
         }
         @if (Topic is not null)
         {
-            <button type="button" class="help-link" aria-label="@($"Help me choose: {Title}")" @onclick="() => PageState?.OpenHelp(Topic)">Help me choose</button>
+            <BitLink Class="help-link" AriaLabel="@($"Help me choose: {Title}")" OnClick="() => PageState?.OpenHelp(Topic)">Help me choose</BitLink>
         }
     </div>
     @if (Lead is not null)
     {
-        <p class="question-lead">@Lead</p>
+        <BitText Typography="BitTypography.Inherit" Element="p" Class="question-lead">@Lead</BitText>
     }
     <div class="question-body">
         @ChildContent

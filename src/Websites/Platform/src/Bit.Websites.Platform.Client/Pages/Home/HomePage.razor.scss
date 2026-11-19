@@ -36,13 +36,18 @@
         }
     }
 
-    .hero-image {
+    ::deep .hero-image {
         width: 100%;
         height: auto;
         margin: auto;
         padding: 1rem;
         max-width: rem2(800px);
         filter: drop-shadow(0 24px 48px rgba(24, 120, 253, 0.18));
+
+        img {
+            width: 100%;
+            height: auto;
+        }
     }
 }
 
@@ -143,12 +148,12 @@
             justify-content: center;
         }
 
-        .hero-cta {
+        ::deep .hero-cta {
             @include GradientCtaButton;
         }
 
         // The release pill above the title.
-        .hero-eyebrow {
+        ::deep .hero-eyebrow {
             gap: 0.5rem;
             display: inline-flex;
             align-items: center;
@@ -278,21 +283,23 @@
         @include SurfaceCard($shadow: null, $background: color-mix(in srgb, $bit-color-background-secondary 60%, transparent));
     }
 
-    .stats-number {
-        // Scales with the viewport so the four-across tiles just above the md breakpoint (about 96px
-        // of content each) still hold "1.4K+"; 2rem from there down, 3rem on wide screens.
-        font-size: clamp(2rem, 4.5vw, 3rem);
-        font-weight: 700;
-        line-height: 1.1;
-        letter-spacing: -0.02em;
-        font-variant-numeric: tabular-nums;
-        @include BrandGradientText;
-    }
+    ::deep {
+        .stats-number {
+            // Scales with the viewport so the four-across tiles just above the md breakpoint (about 96px
+            // of content each) still hold "1.4K+"; 2rem from there down, 3rem on wide screens.
+            font-size: clamp(2rem, 4.5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+            @include BrandGradientText;
+        }
 
-    .stats-label {
-        font-size: 0.875rem;
-        text-align: center;
-        color: $bit-color-foreground-secondary;
+        .stats-label {
+            font-size: 0.875rem;
+            text-align: center;
+            color: $bit-color-foreground-secondary;
+        }
     }
 }
 
@@ -334,7 +341,7 @@
         justify-content: center;
     }
 
-    .cta-btn {
+    ::deep .cta-btn {
         @include GradientCtaButton;
     }
 }
@@ -343,6 +350,10 @@
     padding-top: 0;
     scroll-margin: 5rem;
 
+    &:focus {
+        outline: none;
+    }
+
     // The home page lists only the core products; the rest live on the products page.
     .products-more {
         display: flex;
@@ -350,7 +361,7 @@
         justify-content: center;
     }
 
-    .products-more-btn {
+    ::deep .products-more-btn {
         gap: 0.5rem;
         display: inline-flex;
         align-items: center;
@@ -375,6 +386,14 @@
         margin: 0;
     }
 
+    .tech-list {
+        width: 100%;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: center;
+    }
+
     ::deep {
         .tech-subtitle {
             @include lt-md {
@@ -385,65 +404,58 @@
                 font-size: 1rem;
             }
         }
-    }
 
-    .tech-list {
-        width: 100%;
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        justify-content: center;
-    }
+        .tech-item {
+            width: rem2(70px);
+            height: rem2(70px);
+            margin: rem2(20px);
+            border-radius: 0.5rem;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            // A quiet, monochrome logo wall that comes to color under the pointer or keyboard focus.
+            opacity: 0.75;
+            filter: grayscale(1);
+            transition: transform 0.2s $MotionEase, filter 0.2s $MotionEase, opacity 0.2s $MotionEase;
 
-    .tech-item {
-        width: rem2(70px);
-        height: rem2(70px);
-        margin: rem2(20px);
-        border-radius: 0.5rem;
-        background-size: contain;
-        background-position: center;
-        background-repeat: no-repeat;
-        // A quiet, monochrome logo wall that comes to color under the pointer or keyboard focus.
-        opacity: 0.75;
-        filter: grayscale(1);
-        transition: transform 0.2s $MotionEase, filter 0.2s $MotionEase, opacity 0.2s $MotionEase;
+            &:hover,
+            &:focus-visible {
+                opacity: 1;
+                transform: translateY(-6px) scale(1.08);
+                filter: grayscale(0) drop-shadow(0 10px 16px rgba(82, 74, 221, 0.35));
+            }
 
-        &:hover,
-        &:focus-visible {
-            opacity: 1;
-            transform: translateY(-6px) scale(1.08);
-            filter: grayscale(0) drop-shadow(0 10px 16px rgba(82, 74, 221, 0.35));
+            &:focus-visible {
+                outline: 2px solid $bit-color-primary;
+                outline-offset: 4px;
+                --bit-focus-ring-own: none;
+            }
         }
 
-        &:focus-visible {
-            outline: 2px solid $bit-color-primary;
-            outline-offset: 4px;
+        .blazor-item {
+            background-image: url('/images/home/tech/blazor-logo.webp');
         }
-    }
 
-    .blazor-item {
-        background-image: url('/images/home/tech/blazor-logo.webp');
-    }
+        .csharp-item {
+            background-image: url('/images/home/tech/csharp-logo.webp');
+        }
 
-    .csharp-item {
-        background-image: url('/images/home/tech/csharp-logo.webp');
-    }
+        .sass-item {
+            background-image: url('/images/home/tech/sass-logo.webp');
+        }
 
-    .sass-item {
-        background-image: url('/images/home/tech/sass-logo.webp');
-    }
+        .vs-item {
+            background-image: url('/images/home/tech/visual-studio-logo.webp');
+        }
 
-    .vs-item {
-        background-image: url('/images/home/tech/visual-studio-logo.webp');
-    }
+        .git-item {
+            background-image: url('/images/home/tech/git-logo.webp');
+        }
 
-    .git-item {
-        background-image: url('/images/home/tech/git-logo.webp');
-    }
-
-    .github-item {
-        svg path {
-            fill: $bit-color-foreground-primary;
+        .github-item {
+            svg path {
+                fill: $bit-color-foreground-primary;
+            }
         }
     }
 }
@@ -453,7 +465,7 @@
 @media (prefers-reduced-motion: no-preference) {
     .hero-section-content.animate-intro {
 
-        .hero-eyebrow,
+        ::deep .hero-eyebrow,
         ::deep .hero-title,
         ::deep .hero-subtitle,
         .hero-cta-container {
@@ -477,7 +489,7 @@
 // Scroll-driven reveals ignore animation-duration, so the reduced-motion opt-out has to be explicit.
 @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
-        .page-container .hero-image,
+        .page-container ::deep .hero-image,
         .page-section:not(.hero-section) .page-section-content {
             animation: section-reveal linear both;
             animation-timeline: view();

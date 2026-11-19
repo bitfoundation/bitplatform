@@ -11,12 +11,12 @@ else if (ErrorContent is null)
             <BitButton OnClick="Recover" IconName="Cancel" Variant="BitVariant.Text" />
         </div>
         <div>
-            <img src="/images/error-triangle.svg" alt="" />
+            <BitImage Src="/images/error-triangle.svg" Alt="" Class="error-image" />
         </div>
-        <h1 class="title">Oops, something went wrong...</h1>
+        <BitText Typography="BitTypography.Inherit" Element="h1" Class="title">Oops, something went wrong...</BitText>
         @if (showException)
         {
-            <div class="exception">@CurrentException?.ToString()</div>
+            <BitText Typography="BitTypography.Inherit" Element="div" Class="exception">@CurrentException?.ToString()</BitText>
         }
         <div class="buttons">
             <BitButton OnClick="Refresh" Variant="BitVariant.Fill">Refresh</BitButton>

@@ -21,9 +21,9 @@
             <ChildContent>
                 <div class="content-container">
                     @product.Body
-                    <a class="template-link" href="@product.LinkUrl" target="@(product.External ? "_blank" : null)" rel="@(product.External ? "noopener" : null)">
+                    <BitLink Class="template-link" Href="@product.LinkUrl" Target="@(product.External ? "_blank" : null)" NoColor NoUnderline>
                         Learn more <span class="template-link-arrow"></span>
-                    </a>
+                    </BitLink>
                 </div>
             </ChildContent>
         </BitAccordion>
@@ -115,7 +115,11 @@
                 </BitText>
                 <br />
                 <div style="text-align:center">
-                    <img src="/images/home/bswup.webp" style="max-width:100%;" alt="bit Bswup service worker update flow in a Blazor PWA" loading="lazy" />
+                    <BitImage Src="/images/home/bswup.webp"
+                              Fluid
+                              Style="display:inline-block"
+                              Alt="bit Bswup service worker update flow in a Blazor PWA"
+                              Loading="BitImageLoading.Lazy" />
                 </div>
                 <br />
             </text>

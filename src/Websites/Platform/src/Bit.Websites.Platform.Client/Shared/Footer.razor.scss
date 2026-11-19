@@ -91,28 +91,37 @@ footer {
     columns: 2;
     column-gap: rem2(20px);
     align-self: stretch;
-
-    .footer-link {
-        margin-top: 0;
-        display: block;
-        break-inside: avoid;
-        padding-top: rem2(10px);
-    }
 }
 
-.go-to-top {
+.footer-products .footer-product-links ::deep .footer-link {
+    margin-top: 0;
+    display: block;
+    break-inside: avoid;
+    padding-top: rem2(10px);
+}
+
+.footer-links-container ::deep .go-to-top {
+    gap: 0;
     bottom: rem2(16px);
     font: inherit;
+    min-width: 0;
+    min-height: 0;
     cursor: pointer;
     right: rem2(20px);
     position: absolute;
     font-size: rem2(14px);
     border-radius: 2rem;
+    letter-spacing: inherit;
+    text-transform: none;
     padding: rem2(6px) rem2(14px);
     color: $bit-color-foreground-secondary;
     border: 1px solid var(--app-hairline);
     background-color: $bit-color-background-secondary;
     transition: color 0.2s $MotionEase, border-color 0.2s $MotionEase;
+
+    .bit-btn-prt {
+        font-size: inherit;
+    }
 
     &:hover {
         color: $bit-color-foreground-primary;
@@ -129,17 +138,13 @@ footer {
         margin-bottom: rem2(30px);
     }
 
-    a {
-        text-decoration: none;
-    }
-
-    .address, .tel, .country {
+    ::deep .address, ::deep .tel, ::deep .country {
         padding-left: rem2(20px);
         background-repeat: no-repeat;
         background-position-y: rem2(4px);
     }
 
-    .address, .tel {
+    ::deep .address, ::deep .tel {
         color: $bit-color-primary;
 
         &:hover {
@@ -147,15 +152,15 @@ footer {
         }
     }
 
-    .address {
+    ::deep .address {
         background-image: url('/images/footer/location-icon.svg');
     }
 
-    .country {
+    ::deep .country {
         line-height: 2;
     }
 
-    .tel {
+    ::deep .tel {
         background-image: url('/images/footer/tel-icon.svg');
     }
 }
@@ -174,7 +179,7 @@ footer {
 // stays calm and the brand color is kept for the things that are actually actionable in the page
 // above. Links sit in the primary foreground and the not-yet-live entries in the dimmer, italic
 // tertiary one, so what is a link still reads at rest (and on touch, with no hover).
-.footer-col-title {
+.footer-col ::deep .footer-col-title {
     margin: 0;
     line-height: 1.5;
     font-weight: 600;
@@ -184,7 +189,7 @@ footer {
     color: $bit-color-foreground-primary;
 }
 
-.footer-link {
+.footer-col ::deep .footer-link {
     line-height: 1.5;
     font-weight: 400;
     letter-spacing: 0;
@@ -212,7 +217,7 @@ footer {
     }
 }
 
-.copyright-txt {
+.footer-section ::deep .copyright-txt {
     line-height: 1.5;
     font-weight: 400;
     letter-spacing: 0;
@@ -232,7 +237,7 @@ footer {
     }
 }
 
-.social-link {
+.social-link-group ::deep .social-link {
     cursor: pointer;
     width: rem2(36px);
     height: rem2(36px);
@@ -249,7 +254,7 @@ footer {
     }
 }
 
-.twitter-link {
+.social-link-group ::deep .twitter-link {
     background-image: url('/images/footer/twitter-icon.svg');
 
     &:hover {
@@ -257,7 +262,7 @@ footer {
     }
 }
 
-.github-link {
+.social-link-group ::deep .github-link {
     background-image: url('/images/footer/github-icon.svg');
 
     &:hover {
@@ -265,7 +270,7 @@ footer {
     }
 }
 
-.youtube-link {
+.social-link-group ::deep .youtube-link {
     background-image: url('/images/footer/youtube-icon.svg');
 
     &:hover {
@@ -273,7 +278,7 @@ footer {
     }
 }
 
-.linkedin-link {
+.social-link-group ::deep .linkedin-link {
     background-image: url('/images/footer/linkedin-icon.svg');
 
     &:hover {

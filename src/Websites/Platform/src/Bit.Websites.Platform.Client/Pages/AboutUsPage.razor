@@ -46,12 +46,12 @@
     <section class="page-section download-section">
         <div class="page-section-content">
             <BitText Typography="BitTypography.H3" Gutter>10M</BitText>
-            <hr style="width:100%" />
-            <a href="https://www.nuget.org/profiles/bit-foundation" target="_blank" rel="noopener">
+            <BitSeparator Style="width:100%" />
+            <BitLink Href="https://www.nuget.org/profiles/bit-foundation" Target="_blank" NoUnderline>
                 <BitText Typography="BitTypography.H5" Class="blue-txt">
                     Total downloads of packages
                 </BitText>
-            </a>
+            </BitLink>
         </div>
     </section>
 
@@ -62,52 +62,25 @@
             <div class="member-card-list">
 
                 <div class="member-card">
-                    <img class="member-img" src="/images/about-us/team/yaser-moradi.webp" alt="Yaser Moradi" width="70" height="70" />
+                    <BitImage Class="member-img" Src="/images/about-us/team/yaser-moradi.webp" Alt="Yaser Moradi" ImageFit="BitImageFit.Cover" ImageAttributes="@(new() { ["width"] = "70", ["height"] = "70" })" />
                     <div class="member-container">
-                        <div class="member-name">Yaser Moradi</div>
-                        <div class="member-position">Co-Founder</div>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-name">Yaser Moradi</BitText>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-position">Co-Founder</BitText>
                         <div class="contact-grp">
-                            <a class="contact-lnk github" href="https://github.com/ysmoradi" target="_blank" rel="noopener" aria-label="Yaser Moradi on GitHub"></a>
-                            <a class="contact-lnk twitter" href="https://twitter.com/ysmoradi" target="_blank" rel="noopener" aria-label="Yaser Moradi on X (Twitter)"></a>
+                            <BitLink Class="contact-lnk github" Href="https://github.com/ysmoradi" Target="_blank" AriaLabel="Yaser Moradi on GitHub" NoColor NoUnderline />
+                            <BitLink Class="contact-lnk twitter" Href="https://twitter.com/ysmoradi" Target="_blank" AriaLabel="Yaser Moradi on X (Twitter)" NoColor NoUnderline />
                         </div>
                     </div>
                 </div>
 
                 <div class="member-card">
-                    <img class="member-img" src="/images/about-us/team/saleh-yousefnejad.webp" alt="Saleh Yusefnejad" width="70" height="70" />
+                    <BitImage Class="member-img" Src="/images/about-us/team/saleh-yousefnejad.webp" Alt="Saleh Yusefnejad" ImageFit="BitImageFit.Cover" ImageAttributes="@(new() { ["width"] = "70", ["height"] = "70" })" />
                     <div class="member-container">
-                        <div class="member-name">Saleh Yusefnejad</div>
-                        <div class="member-position">Co-Founder</div>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-name">Saleh Yusefnejad</BitText>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-position">Co-Founder</BitText>
                         <div class="contact-grp">
-                            <a class="contact-lnk github" href="https://github.com/msynk" target="_blank" rel="noopener" aria-label="Saleh Yusefnejad on GitHub"></a>
-                            <a class="contact-lnk twitter" href="https://twitter.com/SalehYusefnejad" target="_blank" rel="noopener" aria-label="Saleh Yusefnejad on X (Twitter)"></a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="member-card-list">
-
-                <div class="member-card">
-                    <img class="member-img" src="/images/about-us/team/mohammad-aminsafaei.webp" alt="Mohammad Aminsafaei" width="70" height="70" />
-                    <div class="member-container">
-                        <div class="member-name">Mohammad Aminsafaei</div>
-                        <div class="member-position">Developer</div>
-                        <div class="contact-grp">
-                            <a class="contact-lnk github" href="https://github.com/Cyrus-Sushiant" target="_blank" rel="noopener" aria-label="Mohammad Aminsafaei on GitHub"></a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="member-card">
-                    <img class="member-img" src="/images/about-us/team/mh-rastegari.webp" alt="M. H. Rastegarinia" width="70" height="70" />
-                    <div class="member-container">
-                        <div class="member-name">M. H. Rastegarinia</div>
-                        <div class="member-position">Developer</div>
-                        <div class="contact-grp">
-                            <a class="contact-lnk github" href="https://github.com/mhrastegari" target="_blank" rel="noopener" aria-label="M. H. Rastegarinia on GitHub"></a>
-                            <a class="contact-lnk twitter" href="https://twitter.com/mhrastegari77" target="_blank" rel="noopener" aria-label="M. H. Rastegarinia on X (Twitter)"></a>
+                            <BitLink Class="contact-lnk github" Href="https://github.com/msynk" Target="_blank" AriaLabel="Saleh Yusefnejad on GitHub" NoColor NoUnderline />
+                            <BitLink Class="contact-lnk twitter" Href="https://twitter.com/SalehYusefnejad" Target="_blank" AriaLabel="Saleh Yusefnejad on X (Twitter)" NoColor NoUnderline />
                         </div>
                     </div>
                 </div>
@@ -117,23 +90,50 @@
             <div class="member-card-list">
 
                 <div class="member-card">
-                    <img class="member-img" src="/images/about-us/team/zahra-sangtarash.webp" alt="Zahra Sangtarash" width="70" height="70" />
+                    <BitImage Class="member-img" Src="/images/about-us/team/mohammad-aminsafaei.webp" Alt="Mohammad Aminsafaei" ImageFit="BitImageFit.Cover" ImageAttributes="@(new() { ["width"] = "70", ["height"] = "70" })" />
                     <div class="member-container">
-                        <div class="member-name">Zahra Sangtarash</div>
-                        <div class="member-position">UI/UX designer</div>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-name">Mohammad Aminsafaei</BitText>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-position">Developer</BitText>
                         <div class="contact-grp">
-                            <a class="contact-lnk github" href="https://github.com/ZahraSng" target="_blank" rel="noopener" aria-label="Zahra Sangtarash on GitHub"></a>
+                            <BitLink Class="contact-lnk github" Href="https://github.com/Cyrus-Sushiant" Target="_blank" AriaLabel="Mohammad Aminsafaei on GitHub" NoColor NoUnderline />
                         </div>
                     </div>
                 </div>
 
                 <div class="member-card">
-                    <img class="member-img" src="/images/about-us/team/zahra-yousefi.webp" alt="Zahra Yousefi" width="70" height="70" />
+                    <BitImage Class="member-img" Src="/images/about-us/team/mh-rastegari.webp" Alt="M. H. Rastegarinia" ImageFit="BitImageFit.Cover" ImageAttributes="@(new() { ["width"] = "70", ["height"] = "70" })" />
                     <div class="member-container">
-                        <div class="member-name">Zahra Yousefi</div>
-                        <div class="member-position">UI/UX designer</div>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-name">M. H. Rastegarinia</BitText>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-position">Developer</BitText>
                         <div class="contact-grp">
-                            <a class="contact-lnk github" href="https://github.com/zahra-yousefi" target="_blank" rel="noopener" aria-label="Zahra Yousefi on GitHub"></a>
+                            <BitLink Class="contact-lnk github" Href="https://github.com/mhrastegari" Target="_blank" AriaLabel="M. H. Rastegarinia on GitHub" NoColor NoUnderline />
+                            <BitLink Class="contact-lnk twitter" Href="https://twitter.com/mhrastegari77" Target="_blank" AriaLabel="M. H. Rastegarinia on X (Twitter)" NoColor NoUnderline />
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="member-card-list">
+
+                <div class="member-card">
+                    <BitImage Class="member-img" Src="/images/about-us/team/zahra-sangtarash.webp" Alt="Zahra Sangtarash" ImageFit="BitImageFit.Cover" ImageAttributes="@(new() { ["width"] = "70", ["height"] = "70" })" />
+                    <div class="member-container">
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-name">Zahra Sangtarash</BitText>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-position">UI/UX designer</BitText>
+                        <div class="contact-grp">
+                            <BitLink Class="contact-lnk github" Href="https://github.com/ZahraSng" Target="_blank" AriaLabel="Zahra Sangtarash on GitHub" NoColor NoUnderline />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="member-card">
+                    <BitImage Class="member-img" Src="/images/about-us/team/zahra-yousefi.webp" Alt="Zahra Yousefi" ImageFit="BitImageFit.Cover" ImageAttributes="@(new() { ["width"] = "70", ["height"] = "70" })" />
+                    <div class="member-container">
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-name">Zahra Yousefi</BitText>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="member-position">UI/UX designer</BitText>
+                        <div class="contact-grp">
+                            <BitLink Class="contact-lnk github" Href="https://github.com/zahra-yousefi" Target="_blank" AriaLabel="Zahra Yousefi on GitHub" NoColor NoUnderline />
                         </div>
                     </div>
                 </div>

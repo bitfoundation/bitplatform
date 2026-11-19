@@ -13,13 +13,13 @@
     <section class="page-section hero-section">
         <div class="page-section-content">
             <div class="hero-section-content @(animateHeroIntro ? "animate-intro" : null)">
-                <a class="hero-eyebrow" href="@($"{Urls.GithubRepo}/releases")" target="_blank" rel="noopener">
+                <BitLink Class="hero-eyebrow" Href="@($"{Urls.GithubRepo}/releases")" Target="_blank" NoColor NoUnderline>
                     <span class="hero-eyebrow-tag">v@(releaseMajor)</span>
                     <span>@(isPreviewRelease ? "Now in preview" : "Now available") on .NET @releaseMajor</span>
                     <svg class="hero-eyebrow-arrow" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
-                </a>
+                </BitLink>
                 <BitText Typography="BitTypography.H1" Gutter Class="hero-title">
                     bit platform
                 </BitText>
@@ -29,8 +29,8 @@
                     without starting from scratch
                 </BitText>
                 <div class="hero-cta-container">
-                    <a class="hero-cta primary" href="#@OUR_PRODUCTS_SECTION_ID" @onclick="ScrollToProducts" @onclick:preventDefault>Explore products</a>
-                    <a class="hero-cta secondary" href="@Urls.Templates">Get started with templates</a>
+                    <BitLink Class="hero-cta primary" Href="@($"#{OUR_PRODUCTS_SECTION_ID}")" NoColor NoUnderline>Explore products</BitLink>
+                    <BitLink Class="hero-cta secondary" Href="@Urls.Templates" NoColor NoUnderline>Get started with templates</BitLink>
                 </div>
             </div>
         </div>
@@ -60,26 +60,31 @@
         </div>
     </section>
 
-    <img src="/images/home/hero-image.webp" class="hero-image" alt="bit platform apps running on web, mobile, and desktop" width="877" height="668" loading="lazy" decoding="async" />
+    <BitImage Src="/images/home/hero-image.webp"
+              Class="hero-image"
+              Alt="bit platform apps running on web, mobile, and desktop"
+              Loading="BitImageLoading.Lazy"
+              Decoding="BitImageDecoding.Async"
+              ImageAttributes="@(new() { ["width"] = "877", ["height"] = "668" })" />
 
     <section class="page-section stats-section" aria-label="bit platform statistics">
         <div class="page-section-content">
             <div class="stats-list">
                 <div class="stats-item">
-                    <span class="stats-number">10M+</span>
-                    <span class="stats-label">NuGet downloads</span>
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="stats-number">10M+</BitText>
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="stats-label">NuGet downloads</BitText>
                 </div>
                 <div class="stats-item">
-                    <span class="stats-number">1.4K+</span>
-                    <span class="stats-label">GitHub stars</span>
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="stats-number">1.4K+</BitText>
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="stats-label">GitHub stars</BitText>
                 </div>
                 <div class="stats-item">
-                    <span class="stats-number">150+</span>
-                    <span class="stats-label">Contributors</span>
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="stats-number">150+</BitText>
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="stats-label">Contributors</BitText>
                 </div>
                 <div class="stats-item">
-                    <span class="stats-number">100+</span>
-                    <span class="stats-label">UI components</span>
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="stats-number">100+</BitText>
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="stats-label">UI components</BitText>
                 </div>
             </div>
         </div>
@@ -127,12 +132,12 @@
             <br />
             <Products Group="ProductGroup.Core" />
             <div class="products-more">
-                <a class="products-more-btn secondary" href="@Urls.Products">
+                <BitLink Class="products-more-btn secondary" Href="@Urls.Products" NoColor NoUnderline>
                     See all products
                     <svg class="products-more-arrow" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
-                </a>
+                </BitLink>
             </div>
         </div>
     </section>
@@ -146,16 +151,16 @@
             </div>
             <br /><br /><br />
             <div class="tech-list">
-                <a target="_blank" rel="noopener" title="C#" aria-label="C#" class="tech-item csharp-item" href="https://dotnet.microsoft.com/en-us/languages/csharp"></a>
-                <a target="_blank" rel="noopener" title="Blazor" aria-label="Blazor" class="tech-item blazor-item" href="https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor"></a>
-                <a target="_blank" rel="noopener" title="Visual Studio" aria-label="Visual Studio" class="tech-item vs-item" href="https://visualstudio.microsoft.com/"></a>
-                <a target="_blank" rel="noopener" title="git" aria-label="git" class="tech-item git-item" href="https://git-scm.com/"></a>
-                <a target="_blank" rel="noopener" title="GitHub" aria-label="GitHub" class="tech-item github-item" href="https://github.com">
+                <BitLink Target="_blank" Title="C#" AriaLabel="C#" Class="tech-item csharp-item" Href="https://dotnet.microsoft.com/en-us/languages/csharp" NoColor NoUnderline />
+                <BitLink Target="_blank" Title="Blazor" AriaLabel="Blazor" Class="tech-item blazor-item" Href="https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor" NoColor NoUnderline />
+                <BitLink Target="_blank" Title="Visual Studio" AriaLabel="Visual Studio" Class="tech-item vs-item" Href="https://visualstudio.microsoft.com/" NoColor NoUnderline />
+                <BitLink Target="_blank" Title="git" AriaLabel="git" Class="tech-item git-item" Href="https://git-scm.com/" NoColor NoUnderline />
+                <BitLink Target="_blank" Title="GitHub" AriaLabel="GitHub" Class="tech-item github-item" Href="https://github.com" NoColor NoUnderline>
                     <svg height="70" width="70" viewBox="0 0 16 16">
                         <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
                     </svg>
-                </a>
-                <a target="_blank" rel="noopener" title="Sass" aria-label="Sass" class="tech-item sass-item" href="https://sass-lang.com/"></a>
+                </BitLink>
+                <BitLink Target="_blank" Title="Sass" AriaLabel="Sass" Class="tech-item sass-item" Href="https://sass-lang.com/" NoColor NoUnderline />
             </div>
             <br /><br />
             <BitText Typography="BitTypography.H4" Class="tech-subtitle">
@@ -199,8 +204,8 @@
 bit new MyFirstProject</CodeBox>
             </div>
             <div class="cta-buttons">
-                <a class="cta-btn primary" href="@Urls.Templates">Get started</a>
-                <a class="cta-btn secondary" href="@Urls.GithubRepo" target="_blank" rel="noopener">Star on GitHub</a>
+                <BitLink Class="cta-btn primary" Href="@Urls.Templates" NoColor NoUnderline>Get started</BitLink>
+                <BitLink Class="cta-btn secondary" Href="@Urls.GithubRepo" Target="_blank" NoColor NoUnderline>Star on GitHub</BitLink>
             </div>
         </div>
     </section>

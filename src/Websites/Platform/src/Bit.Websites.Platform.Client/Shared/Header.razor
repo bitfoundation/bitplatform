@@ -1,7 +1,7 @@
 ﻿@inherits AppComponentBase
 
 <header class="main-header">
-    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <BitLink Class="skip-link" Href="#main-content" NoColor NoUnderline>Skip to main content</BitLink>
     <div class="header-main-container">
         <div class="header-content-container">
             @if (navMenuService.IsDocsRoute)
@@ -17,23 +17,24 @@
                     </svg>
                 </BitButton>
             }
-            <a class="header-logo" href="@Urls.Home" aria-label="bit platform home page" />
+            <BitLink Class="header-logo" Href="@Urls.Home" AriaLabel="bit platform home page" NoColor NoUnderline />
             @* The mouseenter handler is attached only while force-closed is set (it just lifts that
                flag), so the common hover path stays pure CSS with no interop roundtrip or re-render. *@
             <div class="header-link header-ps-btn @(navMenuService.IsProductsRoute ? "header-link--active" : null) @(isProductsMenuOpen ? "open" : null) @(isProductsMenuForceClosed ? "force-closed" : null)"
                  @onmouseenter="ProductsMenuMouseEnterCallback"
                  @onkeydown="WrapHandled<KeyboardEventArgs>(HandleProductsMenuKeyDown)">
-                <button type="button"
-                        class="header-ps-trigger"
-                        aria-haspopup="true"
-                        aria-controls="header-products-menu"
-                        aria-expanded="@(isProductsMenuOpen ? "true" : "false")"
-                        @onclick=@WrapHandled(ToggleProductsMenu)>
+                <BitLink Class="header-ps-trigger"
+                         NoColor
+                         NoUnderline
+                         aria-haspopup="true"
+                         aria-controls="header-products-menu"
+                         aria-expanded="@(isProductsMenuOpen ? "true" : "false")"
+                         OnClick=@WrapHandled(ToggleProductsMenu)>
                     Products
                     <svg class="ps-chevron" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
-                </button>
+                </BitLink>
                 <div class="header-menu-popup" id="header-products-menu">
                     <div class="col">
                         @foreach (var item in mainProductMenuItems)
@@ -45,20 +46,21 @@
                         @foreach (var subMenu in productSubMenus)
                         {
                             <div class="menu-sub @(openSubMenu == subMenu ? "open" : null)">
-                                <button type="button"
-                                        class="menu-item menu-sub-trigger @(IsSubMenuActive(subMenu) ? "active" : null)"
-                                        aria-haspopup="true"
-                                        aria-controls="header-@(subMenu.Id)-menu"
-                                        aria-expanded="@(openSubMenu == subMenu ? "true" : "false")"
-                                        @onclick=@WrapHandled(() => ToggleSubMenu(subMenu))>
+                                <BitLink Class="@($"menu-item menu-sub-trigger {(IsSubMenuActive(subMenu) ? "active" : null)}")"
+                                         NoColor
+                                         NoUnderline
+                                         aria-haspopup="true"
+                                         aria-controls="@($"header-{subMenu.Id}-menu")"
+                                         aria-expanded="@(openSubMenu == subMenu ? "true" : "false")"
+                                         OnClick=@WrapHandled(() => ToggleSubMenu(subMenu))>
                                     <div class="menu-item-content">
-                                        <div class="item-title">@subMenu.Title</div>
-                                        <div class="item-desc">@subMenu.Description</div>
+                                        <BitText Typography="BitTypography.Inherit" Element="div" Class="item-title">@subMenu.Title</BitText>
+                                        <BitText Typography="BitTypography.Inherit" Element="div" Class="item-desc">@subMenu.Description</BitText>
                                     </div>
                                     <svg class="menu-sub-chevron" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
                                         <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
-                                </button>
+                                </BitLink>
                                 <div class="menu-sub-popup" id="header-@(subMenu.Id)-menu">
                                     @foreach (var item in subMenu.Items)
                                     {
@@ -73,26 +75,26 @@
                     </div>
                 </div>
             </div>
-            <a class="header-link @(navMenuService.IsCurrentUrl(Urls.Demos) ? "header-link--active" : null)" href="@Urls.Demos">Demos</a>
-            <a class="header-link @(navMenuService.IsCurrentUrl(Urls.Pricing) ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
-            <a class="header-link @(navMenuService.IsCurrentUrl(Urls.AboutUs) ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
-            <a class="header-link @(navMenuService.IsCurrentUrl(Urls.ContactUs) ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
+            <BitLink Class="@($"header-link {(navMenuService.IsCurrentUrl(Urls.Demos) ? "header-link--active" : null)}")" Href="@Urls.Demos" NoColor NoUnderline>Demos</BitLink>
+            <BitLink Class="@($"header-link {(navMenuService.IsCurrentUrl(Urls.Pricing) ? "header-link--active" : null)}")" Href="@Urls.Pricing" NoColor NoUnderline>Pricing</BitLink>
+            <BitLink Class="@($"header-link {(navMenuService.IsCurrentUrl(Urls.AboutUs) ? "header-link--active" : null)}")" Href="@Urls.AboutUs" NoColor NoUnderline>About us</BitLink>
+            <BitLink Class="@($"header-link {(navMenuService.IsCurrentUrl(Urls.ContactUs) ? "header-link--active" : null)}")" Href="@Urls.ContactUs" NoColor NoUnderline>Contact us</BitLink>
         </div>
         <div class="right-section">
-            <a class="github-container" target="_blank" rel="noopener" aria-label="GitHub repository" title="GitHub repository" href="@Urls.GithubRepo">
+            <BitLink Class="github-container" Href="@Urls.GithubRepo" Target="_blank" AriaLabel="GitHub repository" Title="GitHub repository" NoColor NoUnderline>
                 <span class="github-btn"></span>
-            </a>
+            </BitLink>
 
-            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light" aria-label="Switch to light theme">
+            <BitLink OnClick="WrapHandled(ToggleTheme)" Class="toggle-theme-btn dark-theme" Title="Turn on light" AriaLabel="Switch to light theme" NoColor NoUnderline>
                 <span class="icon-container">
-                    <img src="/images/sun.svg" alt="" />
+                    <BitImage Src="/images/sun.svg" Alt="" Class="theme-icon" />
                 </span>
-            </button>
-            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn light-theme" title="Turn off light" aria-label="Switch to dark theme">
+            </BitLink>
+            <BitLink OnClick="WrapHandled(ToggleTheme)" Class="toggle-theme-btn light-theme" Title="Turn off light" AriaLabel="Switch to dark theme" NoColor NoUnderline>
                 <span class="icon-container">
-                    <img src="/images/moon.svg" alt="" />
+                    <BitImage Src="/images/moon.svg" Alt="" Class="theme-icon" />
                 </span>
-            </button>
+            </BitLink>
         </div>
     </div>
 
@@ -116,16 +118,17 @@
                    AriaLabel="Close site navigation"
                    OnClick="@WrapHandled(ToggleHeaderMenu)" />
         <div class="header-nav-item">
-            <button type="button"
-                    class="header-nav-link header-nav-products-trigger @(navMenuService.IsProductsRoute ? "header-nav-link--active" : null)"
-                    aria-controls="@(isMobileProductsOpen ? "header-nav-products" : null)"
-                    aria-expanded="@(isMobileProductsOpen ? "true" : "false")"
-                    @onclick=@WrapHandled(ToggleMobileProducts)>
+            <BitLink Class="@($"header-nav-link header-nav-products-trigger {(navMenuService.IsProductsRoute ? "header-nav-link--active" : null)}")"
+                     NoColor
+                     NoUnderline
+                     aria-controls="@(isMobileProductsOpen ? "header-nav-products" : null)"
+                     aria-expanded="@(isMobileProductsOpen ? "true" : "false")"
+                     OnClick=@WrapHandled(ToggleMobileProducts)>
                 Products
                 <svg class="ps-chevron @(isMobileProductsOpen ? "open" : null)" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
-            </button>
+            </BitLink>
             @if (isMobileProductsOpen)
             {
                 <div class="header-nav-products" id="header-nav-products">
@@ -136,19 +139,20 @@
                     @foreach (var subMenu in productSubMenus)
                     {
                         <div class="header-nav-sub">
-                            <button type="button"
-                                    class="menu-item header-nav-sub-trigger @(IsSubMenuActive(subMenu) ? "active" : null)"
-                                    aria-controls="@(openMobileSubMenu == subMenu ? $"header-nav-{subMenu.Id}" : null)"
-                                    aria-expanded="@(openMobileSubMenu == subMenu ? "true" : "false")"
-                                    @onclick=@WrapHandled(() => ToggleMobileSubMenu(subMenu))>
+                            <BitLink Class="@($"menu-item header-nav-sub-trigger {(IsSubMenuActive(subMenu) ? "active" : null)}")"
+                                     NoColor
+                                     NoUnderline
+                                     aria-controls="@(openMobileSubMenu == subMenu ? $"header-nav-{subMenu.Id}" : null)"
+                                     aria-expanded="@(openMobileSubMenu == subMenu ? "true" : "false")"
+                                     OnClick=@WrapHandled(() => ToggleMobileSubMenu(subMenu))>
                                 <div class="menu-item-content">
-                                    <div class="item-title">@subMenu.Title</div>
-                                    <div class="item-desc">@subMenu.Description</div>
+                                    <BitText Typography="BitTypography.Inherit" Element="div" Class="item-title">@subMenu.Title</BitText>
+                                    <BitText Typography="BitTypography.Inherit" Element="div" Class="item-desc">@subMenu.Description</BitText>
                                 </div>
                                 <svg class="ps-chevron @(openMobileSubMenu == subMenu ? "open" : null)" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
                                     <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
-                            </button>
+                            </BitLink>
                             @if (openMobileSubMenu == subMenu)
                             {
                                 <div class="header-nav-sub-list" id="header-nav-@(subMenu.Id)">
@@ -166,10 +170,10 @@
                 </div>
             }
         </div>
-        <a class="header-nav-link @(navMenuService.IsCurrentUrl(Urls.Demos) ? "header-nav-link--active" : null)" href="@Urls.Demos" @onclick=@WrapHandled(ToggleHeaderMenu)>Demos</a>
-        <a class="header-nav-link @(navMenuService.IsCurrentUrl(Urls.Pricing) ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
-        <a class="header-nav-link @(navMenuService.IsCurrentUrl(Urls.AboutUs) ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
-        <a class="header-nav-link @(navMenuService.IsCurrentUrl(Urls.ContactUs) ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
+        <BitLink Class="@($"header-nav-link {(navMenuService.IsCurrentUrl(Urls.Demos) ? "header-nav-link--active" : null)}")" Href="@Urls.Demos" OnClick=@WrapHandled(ToggleHeaderMenu) NoColor NoUnderline>Demos</BitLink>
+        <BitLink Class="@($"header-nav-link {(navMenuService.IsCurrentUrl(Urls.Pricing) ? "header-nav-link--active" : null)}")" Href="@Urls.Pricing" OnClick=@WrapHandled(ToggleHeaderMenu) NoColor NoUnderline>Pricing</BitLink>
+        <BitLink Class="@($"header-nav-link {(navMenuService.IsCurrentUrl(Urls.AboutUs) ? "header-nav-link--active" : null)}")" Href="@Urls.AboutUs" OnClick=@WrapHandled(ToggleHeaderMenu) NoColor NoUnderline>About us</BitLink>
+        <BitLink Class="@($"header-nav-link {(navMenuService.IsCurrentUrl(Urls.ContactUs) ? "header-nav-link--active" : null)}")" Href="@Urls.ContactUs" OnClick=@WrapHandled(ToggleHeaderMenu) NoColor NoUnderline>Contact us</BitLink>
     </nav>
 }
 
@@ -182,23 +186,24 @@
             {
                 <div class="menu-item menu-item--disabled" aria-disabled="true">
                     <div class="menu-item-content">
-                        <div class="item-title">@((MarkupString)item.Title)</div>
-                        <div class="item-desc">@item.Description</div>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="item-title">@((MarkupString)item.Title)</BitText>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="item-desc">@item.Description</BitText>
                     </div>
                 </div>
             }
             else
             {
-                <a class="menu-item @(IsMenuItemActive(item) ? "active" : null)"
-                   href="@item.Url"
-                   target="@(item.External ? "_blank" : null)"
-                   rel="@(item.External ? "noopener" : null)"
-                   @onclick="WrapHandled(onClick)">
+                <BitLink Class="@($"menu-item {(IsMenuItemActive(item) ? "active" : null)}")"
+                         Href="@item.Url"
+                         Target="@(item.External ? "_blank" : null)"
+                         NoColor
+                         NoUnderline
+                         OnClick="WrapHandled(onClick)">
                     <div class="menu-item-content">
-                        <div class="item-title">@((MarkupString)item.Title)</div>
-                        <div class="item-desc">@item.Description</div>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="item-title">@((MarkupString)item.Title)</BitText>
+                        <BitText Typography="BitTypography.Inherit" Element="div" Class="item-desc">@item.Description</BitText>
                     </div>
-                </a>
+                </BitLink>
             }
         </text>;
 }

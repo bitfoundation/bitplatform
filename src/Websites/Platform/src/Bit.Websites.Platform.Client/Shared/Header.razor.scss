@@ -43,7 +43,7 @@
     }
 }
 
-.skip-link {
+.main-header ::deep .skip-link {
     position: absolute;
     z-index: 200;
     left: rem2(8px);
@@ -92,7 +92,7 @@
     flex-flow: row nowrap;
 }
 
-.header-logo {
+.header-content-container ::deep .header-logo {
     cursor: pointer;
     width: rem2(50px);
     height: rem2(50px);
@@ -103,7 +103,7 @@
     background-image: url('/images/bit-blue-icon.svg');
 }
 
-.header-link {
+.header-content-container ::deep .header-link {
     height: 100%;
     cursor: pointer;
     line-height: 1.5;
@@ -139,7 +139,7 @@
     }
 }
 
-.header-link--active {
+.header-content-container ::deep .header-link--active {
     color: $bit-color-primary;
 
     &::after {
@@ -157,7 +157,7 @@
     align-items: center;
 }
 
-.github-container {
+.right-section ::deep .github-container {
     display: flex;
     align-items: center;
 }
@@ -171,7 +171,7 @@
     transition: transform 200ms $MotionEase 0ms;
 }
 
-.github-container {
+.right-section ::deep .github-container {
     &:hover .github-btn {
         transform: scale(1.1);
     }
@@ -182,7 +182,7 @@
 }
 
 // Visibility (dark-theme/light-theme classes) is owned by the global themed utilities in app.scss.
-.toggle-theme-btn {
+.right-section ::deep .toggle-theme-btn {
     padding: 0;
     border: none;
     cursor: pointer;
@@ -200,17 +200,20 @@
         align-items: center;
         justify-content: center;
 
-        img {
+        .theme-icon {
+            transition: transform 300ms $MotionEase 0ms;
+        }
+
+        .bit-img-img {
             width: 19px;
             height: 19px;
-            transition: transform 300ms $MotionEase 0ms;
         }
     }
 
     &:hover {
         transform: scale(1.1);
 
-        img {
+        .theme-icon {
             transform: rotate(30deg);
         }
     }
@@ -268,7 +271,7 @@
 
     // Staggered entry for the nav entries; `backwards` keeps each one invisible until its delay hits.
     >.header-nav-item,
-    >.header-nav-link {
+    > ::deep .header-nav-link {
         animation: header-fade-slide-in 300ms $MotionEase backwards;
 
         @for $i from 1 through 7 {
@@ -290,7 +293,7 @@
     width: 100%;
 }
 
-.header-nav-link {
+.header-nav ::deep .header-nav-link {
     width: 100%;
     line-height: 1.5;
     font-weight: 500;
@@ -302,11 +305,11 @@
     color: $bit-color-foreground-secondary;
 }
 
-.header-nav-link--active {
+.header-nav ::deep .header-nav-link--active {
     color: $bit-color-primary;
 }
 
-.header-nav-products-trigger {
+.header-nav ::deep .header-nav-products-trigger {
     border: none;
     gap: rem2(6px);
     cursor: pointer;
@@ -335,7 +338,7 @@
 
     // The single-line descriptions of the desktop popup overflow a narrow phone, worst under the
     // indented utilities list, so they wrap here.
-    .item-desc {
+    ::deep .item-desc {
         white-space: normal;
     }
 }
@@ -410,7 +413,7 @@
     padding: rem2(8px) 0;
 }
 
-.menu-item {
+::deep .menu-item {
     display: flex;
     cursor: pointer;
     align-items: center;
@@ -438,14 +441,14 @@
     }
 }
 
-.item-title {
+::deep .item-title {
     font-weight: 600;
     white-space: nowrap;
     font-size: rem2(16px);
     color: $bit-color-foreground-primary;
 }
 
-.item-desc {
+::deep .item-desc {
     font-weight: 600;
     white-space: nowrap;
     font-size: rem2(14px);
@@ -455,8 +458,8 @@
 .menu-item--disabled {
     cursor: default;
 
-    .item-title,
-    .item-desc {
+    ::deep .item-title,
+    ::deep .item-desc {
         color: $bit-color-foreground-disabled;
     }
 
@@ -464,7 +467,7 @@
         transform: none;
         background-color: transparent;
 
-        .item-title {
+        ::deep .item-title {
             color: $bit-color-foreground-disabled;
         }
     }
@@ -488,8 +491,8 @@
     border-top: none;
 }
 
-.menu-sub-trigger,
-.header-nav-sub-trigger {
+::deep .menu-sub-trigger,
+::deep .header-nav-sub-trigger {
     margin: 0;
     width: 100%;
     border: none;
@@ -542,13 +545,13 @@
         transform 150ms $MotionEase 200ms,
         visibility 0s linear 350ms;
 
-    .item-desc {
+    ::deep .item-desc {
         white-space: normal;
     }
 }
 
 @mixin menu-sub-open {
-    .menu-sub-trigger {
+    ::deep .menu-sub-trigger {
         background-color: var(--app-tint);
     }
 
@@ -568,7 +571,7 @@
     }
 }
 
-.header-ps-trigger {
+.header-ps-btn ::deep .header-ps-trigger {
     margin: 0;
     padding: 0;
     border: none;

@@ -316,6 +316,9 @@
 // every bit component in one place, and the --app-* ones carry the same scale to the site's own
 // cards, so both stay one family. Fluent's 2px default reads dated next to the soft surfaces here.
 :root {
+    // A BitLink takes the typeface of the text around it (the site's own stack, see * below) rather than
+    // the theme's, so the site's links read the same whether they are BitLinks or not.
+    --bit-Link-font-family: inherit;
     --bit-shp-radius-control: 0.5rem;
     --bit-shp-radius-surface: 0.75rem;
     --bit-shp-radius-popup: 0.75rem;
@@ -417,12 +420,13 @@ a {
 // One switch for everyone who asked the OS for less motion: the site's own entrance, reveal and hover
 // animations collapse to their end state. bit components (any bit-* class) are left out, as they are by
 // the focus ring above: BlazorUI scales its own motion under reduced motion and keeps its loading and
-// progress loops running (slower), which this reset would freeze into a page that looks hung. The
-// site's own loading grid (LoadingComponent) is a loop too, so its dots are left out with it.
+// progress loops running (slower), which this reset would freeze into a page that looks hung. BitLink,
+// BitText and BitImage run no loops, and the site animates many of them through its own classes (the
+// hero, the CTAs, the cards), so their roots are put back in.
 @media (prefers-reduced-motion: reduce) {
-    :where(:not([class^="bit-"], [class*=" bit-"], .bit-lds-grid div)),
-    :where(:not([class^="bit-"], [class*=" bit-"], .bit-lds-grid div))::before,
-    :where(:not([class^="bit-"], [class*=" bit-"], .bit-lds-grid div))::after {
+    :where(:not([class^="bit-"], [class*=" bit-"]), .bit-lnk, .bit-txt, .bit-img),
+    :where(:not([class^="bit-"], [class*=" bit-"]), .bit-lnk, .bit-txt, .bit-img)::before,
+    :where(:not([class^="bit-"], [class*=" bit-"]), .bit-lnk, .bit-txt, .bit-img)::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;

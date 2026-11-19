@@ -131,9 +131,11 @@
         }
     }
 
+    // The CTAs are BitLinks: their own outline replaces BitLink's box-shadow ring, so focus shows one ring.
     &:focus-visible {
         outline: 2px solid $bit-color-primary;
         outline-offset: 2px;
+        --bit-focus-ring-own: none;
     }
 }
 

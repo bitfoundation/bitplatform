@@ -3,7 +3,7 @@
 <BitModal @bind-IsOpen="isOpen">
     <div class="main">
         <div class="header">
-            <span class="title">@title</span>
+            <BitText Typography="BitTypography.Inherit" Element="span" Class="title">@title</BitText>
             <BitButton IconName="Cancel" OnClick="OnCloseClick" Variant="BitVariant.Text" />
         </div>
         <div class="body">

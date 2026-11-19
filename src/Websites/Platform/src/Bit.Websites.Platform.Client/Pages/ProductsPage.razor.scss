@@ -73,41 +73,42 @@
     gap: 1rem;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(rem2(260px), 1fr));
-}
 
-.tooling-card {
-    gap: 0.5rem;
-    display: flex;
-    padding: 1.5rem;
-    text-decoration: none;
-    flex-flow: column nowrap;
-    @include SurfaceCard($interactive: true);
+    ::deep .tooling-card {
+        gap: 0.5rem;
+        display: flex;
+        padding: 1.5rem;
+        text-decoration: none;
+        flex-flow: column nowrap;
+        @include SurfaceCard($interactive: true);
 
-    .tooling-title {
-        font-weight: 600;
-        font-size: 1.25rem;
-        color: $bit-color-foreground-primary;
-    }
+        .tooling-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: $bit-color-foreground-primary;
+        }
 
-    .tooling-desc {
-        flex-grow: 1;
-        color: $bit-color-foreground-secondary;
-    }
+        .tooling-desc {
+            flex-grow: 1;
+            color: $bit-color-foreground-secondary;
+        }
 
-    .tooling-link {
-        @include ArrowLink('.tooling-link-arrow');
-    }
+        .tooling-link {
+            @include ArrowLink('.tooling-link-arrow');
+        }
 
-    .tooling-link-arrow {
-        transition: transform 0.2s $MotionEase;
-    }
+        .tooling-link-arrow {
+            transition: transform 0.2s $MotionEase;
+        }
 
-    &:hover .tooling-link-arrow {
-        transform: translateX(5px);
-    }
+        &:hover .tooling-link-arrow {
+            transform: translateX(5px);
+        }
 
-    &:focus-visible {
-        outline: 2px solid $bit-color-primary;
-        outline-offset: 2px;
+        &:focus-visible {
+            outline: 2px solid $bit-color-primary;
+            outline-offset: 2px;
+            --bit-focus-ring-own: none;
+        }
     }
 }

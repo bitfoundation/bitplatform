@@ -57,11 +57,11 @@
             <div class="tooling-list">
                 @foreach (var tooling in ProductCatalog.Toolings)
                 {
-                    <a class="tooling-card" href="@tooling.Url">
-                        <span class="tooling-title">@tooling.Title</span>
-                        <span class="tooling-desc">@tooling.Description</span>
+                    <BitLink Class="tooling-card" Href="@tooling.Url" NoColor NoUnderline>
+                        <BitText Typography="BitTypography.Inherit" Element="span" Class="tooling-title">@tooling.Title</BitText>
+                        <BitText Typography="BitTypography.Inherit" Element="span" Class="tooling-desc">@tooling.Description</BitText>
                         <span class="tooling-link">Learn more <span class="tooling-link-arrow"></span></span>
-                    </a>
+                    </BitLink>
                 }
             </div>
         </div>

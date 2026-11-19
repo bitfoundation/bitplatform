@@ -93,7 +93,7 @@
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>Reading a stack trace</BitText>
             Every publish writes a map of the names it changed to <code>obj/&lt;configuration>/&lt;tfm>/bit-minifier.map</code>.
-            The <a href="@Urls.Cli">bit CLI</a> reads a stack trace your app logged back into the names its source has, without installing anything:
+            The <BitLink Href="@Urls.Cli">bit CLI</BitLink> reads a stack trace your app logged back into the names its source has, without installing anything:
             <CodeBox>dnx Bit.Cli --version 11.0.0-pre-22 -- decode bit-minifier.map trace.txt</CodeBox>
             turns
             <CodeBox HideCopyButton>   at _aN+_a.MoveNext()
@@ -104,7 +104,7 @@
             Every publish renames afresh, so keep each release's map with the release, not next to the app.
             <code>BitMinifyMapOutputPath</code> copies it out of <code>obj</code> for a CI job to collect:
             <CodeBox>dotnet publish MyApp.Client.csproj -c Release -p:BitMinifyMapOutputPath=bit-minifier.map</CodeBox>
-            The full reference is in the <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Minifier" target="_blank" rel="noopener">bit Minifier's README</a>.
+            The full reference is in the <BitLink Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Minifier" Target="_blank">bit Minifier's README</BitLink>.
         </div>
     </section>
 </div>
