@@ -39,13 +39,16 @@ public class TracingTests
         Reconnect = new BcrdtReconnectPolicy { BaseDelay = TimeSpan.FromMilliseconds(5), MaxDelay = TimeSpan.FromMilliseconds(20) },
     };
 
-    /// <summary>Built on the pool, so the provider captures no synchronization context.</summary>
-    private static Task<BcrdtSyncProvider> ProviderAsync(BcrdtDocument doc, IBcrdtTransport transport, TimeSpan handshakeTimeout) =>
-        Task.Run(() => new BcrdtSyncProvider(doc, transport, options: Options(handshakeTimeout)));
+    /// <summary>Built on the calling thread, so the provider captures the test's <see cref="SingleThreadContext"/>.</summary>
+    private static BcrdtSyncProvider CreateProvider(BcrdtDocument doc, IBcrdtTransport transport, TimeSpan handshakeTimeout) =>
+        new(doc, transport, options: Options(handshakeTimeout));
 
     [TestMethod]
     public async Task A_provider_handshake_is_one_span_from_announcement_to_synced()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         using var spans = new SpanRecorder();
         using Activity parent = TestSource.StartActivity("handshake-test")!;
 
@@ -54,8 +57,8 @@ public class TracingTests
         using var secondDoc = new BcrdtDocument(new BcrdtDocumentOptions { Id = DocumentId, ClientId = SecondClient });
         firstDoc.GetText("body").Insert(0, "hello");
 
-        await using BcrdtSyncProvider first = await ProviderAsync(firstDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(100));
-        await using BcrdtSyncProvider second = await ProviderAsync(secondDoc, network.CreateTransport(Room), TimeSpan.FromMinutes(5));
+        await using BcrdtSyncProvider first = CreateProvider(firstDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(100));
+        await using BcrdtSyncProvider second = CreateProvider(secondDoc, network.CreateTransport(Room), TimeSpan.FromMinutes(5));
 
         // Alone in the room, the first concludes that nobody is there; the second is answered by the first.
         await first.ConnectAsync();
@@ -83,12 +86,15 @@ public class TracingTests
     [TestMethod]
     public async Task A_remote_change_is_applied_under_a_span_with_its_kind_and_size()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         using var spans = new SpanRecorder();
         var network = new BcrdtInMemoryNetwork();
         using var firstDoc = new BcrdtDocument(new BcrdtDocumentOptions { Id = DocumentId, ClientId = FirstClient });
         using var secondDoc = new BcrdtDocument(new BcrdtDocumentOptions { Id = DocumentId, ClientId = SecondClient });
-        await using BcrdtSyncProvider first = await ProviderAsync(firstDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50));
-        await using BcrdtSyncProvider second = await ProviderAsync(secondDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50));
+        await using BcrdtSyncProvider first = CreateProvider(firstDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50));
+        await using BcrdtSyncProvider second = CreateProvider(secondDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50));
         await first.ConnectAsync();
         await second.ConnectAsync();
         await EventuallyAsync(() => first.IsSynced && second.IsSynced, "both should sync");
@@ -112,6 +118,9 @@ public class TracingTests
     [TestMethod]
     public async Task A_handshake_span_ends_when_the_connection_drops_and_its_reconnection_is_traced()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         using var spans = new SpanRecorder();
         using Activity parent = TestSource.StartActivity("drop-test")!;
 
@@ -120,7 +129,7 @@ public class TracingTests
         BcrdtInMemoryTransport transport = network.CreateTransport(Room);
         Activity reconnected;
         Activity resumed;
-        await using (BcrdtSyncProvider provider = await ProviderAsync(doc, transport, TimeSpan.FromMinutes(5)))
+        await using (BcrdtSyncProvider provider = CreateProvider(doc, transport, TimeSpan.FromMinutes(5)))
         {
             // Nobody answers and the timeout is long: the handshake is still under way when the connection drops.
             await provider.ConnectAsync();
@@ -177,12 +186,15 @@ public class TracingTests
     [TestMethod]
     public async Task A_handshake_span_ends_on_a_deliberate_disconnection()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         using var spans = new SpanRecorder();
         using Activity parent = TestSource.StartActivity("disconnect-test")!;
 
         var network = new BcrdtInMemoryNetwork();
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { Id = DocumentId, ClientId = FirstClient });
-        await using BcrdtSyncProvider provider = await ProviderAsync(doc, network.CreateTransport(Room), TimeSpan.FromMinutes(5));
+        await using BcrdtSyncProvider provider = CreateProvider(doc, network.CreateTransport(Room), TimeSpan.FromMinutes(5));
 
         await provider.ConnectAsync();
         await provider.DisconnectAsync();
@@ -354,6 +366,9 @@ public class TracingTests
     [DoNotParallelize]
     public async Task Nothing_is_created_while_nobody_listens()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         Assert.IsNull(BcrdtDiagnostics.Start(BcrdtDiagnostics.HostLoadSpan));
         Assert.IsNull(BcrdtDiagnostics.StartDetached(BcrdtDiagnostics.HandshakeSpan));
         Assert.IsNull(BcrdtDiagnostics.StartHostMessage(BcrdtSyncProtocol.EncodeUpdate(Seed())));
@@ -377,8 +392,8 @@ public class TracingTests
         using var secondDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = SecondClient });
         await using (BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(
             firstDoc, new BcrdtInMemoryDocumentStore(), options: new BcrdtDocumentPersistenceOptions { CompactionThreshold = 1 }))
-        await using (BcrdtSyncProvider first = await ProviderAsync(firstDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50)))
-        await using (BcrdtSyncProvider second = await ProviderAsync(secondDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50)))
+        await using (BcrdtSyncProvider first = CreateProvider(firstDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50)))
+        await using (BcrdtSyncProvider second = CreateProvider(secondDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50)))
         {
             await first.ConnectAsync();
             await second.ConnectAsync();

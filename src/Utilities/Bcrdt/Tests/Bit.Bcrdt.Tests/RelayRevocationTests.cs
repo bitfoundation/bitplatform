@@ -20,6 +20,9 @@ public class RelayRevocationTests
     [TestMethod]
     public async Task A_bare_hub_revokes_a_connection_and_relays_nothing_more_to_or_from_it()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         await using LoopbackHost host = await LoopbackHost.StartAsync(
             app =>
             {
@@ -64,6 +67,9 @@ public class RelayRevocationTests
     [TestMethod]
     public async Task A_bare_websocket_relay_revokes_connections_and_closes_a_socket_that_ignores_its_refusal()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         await using LoopbackHost host = await LoopbackHost.StartAsync(
             app =>
             {
@@ -116,6 +122,9 @@ public class RelayRevocationTests
     [TestMethod]
     public async Task With_a_host_revoking_through_the_list_withdraws_presence_and_revokes_in_the_host_too()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         await using LoopbackHost host = await LoopbackHost.StartAsync(
             app =>
             {
@@ -167,6 +176,9 @@ public class RelayRevocationTests
     [TestMethod]
     public async Task Revoking_across_every_document_reaches_both_relays_and_their_host()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         await using LoopbackHost host = await LoopbackHost.StartAsync(
             app =>
             {
@@ -215,6 +227,9 @@ public class RelayRevocationTests
     [TestMethod]
     public async Task Narrowing_a_grant_makes_a_hub_connection_read_only_without_disconnecting_it()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         await using LoopbackHost host = await LoopbackHost.StartAsync(
             app =>
             {
@@ -252,6 +267,9 @@ public class RelayRevocationTests
     [DataRow(true)]
     public async Task A_narrowed_socket_that_ignores_its_grant_changes_nothing(bool hosted)
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         await using var documentHost = new BcrdtDocumentHost();
         var connections = new BcrdtRelayConnections();
         await using LoopbackHost host = await LoopbackHost.StartAsync(app =>
@@ -389,14 +407,14 @@ public class RelayRevocationTests
         {
             var participant = new Participant(clientId, transport);
 
-            // Built on the pool, so the provider captures no synchronization context. On a bare relay nobody answers
+            // Built on the calling thread, so the provider captures the test's context. On a bare relay nobody answers
             // the first one in, so a short handshake timeout is what lets it count as synced.
-            participant.Provider = await Task.Run(() => new BcrdtSyncProvider(participant.Doc, transport, participant.Presence, new BcrdtSyncProviderOptions
+            participant.Provider = new BcrdtSyncProvider(participant.Doc, transport, participant.Presence, new BcrdtSyncProviderOptions
             {
                 HeartbeatInterval = TimeSpan.Zero,
                 HandshakeTimeout = TimeSpan.FromMilliseconds(300),
                 Reconnect = new BcrdtReconnectPolicy { BaseDelay = TimeSpan.FromMilliseconds(5), MaxDelay = TimeSpan.FromMilliseconds(20) },
-            }));
+            });
             participant.Provider.AuthorizationDenied += reason =>
             {
                 participant.DeniedWith = reason;

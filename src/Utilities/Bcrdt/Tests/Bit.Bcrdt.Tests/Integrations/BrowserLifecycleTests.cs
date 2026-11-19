@@ -33,6 +33,9 @@ public class BrowserLifecycleTests
     [TestMethod]
     public async Task Coming_back_online_reconnects_a_document_waiting_out_its_backoff_at_once()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         var link = new SwitchableNetwork(network) { Up = false };
         await using BcrdtCollaborationService client = CreateClient(link);
@@ -61,6 +64,9 @@ public class BrowserLifecycleTests
     [TestMethod]
     public async Task A_failed_attempt_on_coming_back_online_leaves_one_reconnection_loop()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var link = new SwitchableNetwork(new BcrdtInMemoryNetwork()) { Up = false };
         await using BcrdtCollaborationService client = CreateClient(link);
         var browser = new FakeBrowser();
@@ -83,6 +89,9 @@ public class BrowserLifecycleTests
     [TestMethod]
     public async Task Being_shown_again_reconnects_unless_the_browser_is_offline()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         var link = new SwitchableNetwork(network) { Up = false };
         await using BcrdtCollaborationService client = CreateClient(link);
@@ -121,6 +130,9 @@ public class BrowserLifecycleTests
     [TestMethod]
     public async Task Turning_reconnection_off_leaves_the_backoff_alone()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var link = new SwitchableNetwork(new BcrdtInMemoryNetwork()) { Up = false };
         await using BcrdtCollaborationService client = CreateClient(link);
         var browser = new FakeBrowser();
@@ -220,6 +232,9 @@ public class BrowserLifecycleTests
     [TestMethod]
     public async Task Leaving_the_page_withdraws_presence_and_coming_back_restores_it()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService client = CreateClient(new SwitchableNetwork(network));
         await using BcrdtCollaborationService peer = CreateClient(new SwitchableNetwork(network));
@@ -304,6 +319,9 @@ public class BrowserLifecycleTests
     [TestMethod]
     public async Task Signals_after_disposal_are_ignored()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var link = new SwitchableNetwork(new BcrdtInMemoryNetwork()) { Up = false };
         await using BcrdtCollaborationService client = CreateClient(link);
         var browser = new FakeBrowser();

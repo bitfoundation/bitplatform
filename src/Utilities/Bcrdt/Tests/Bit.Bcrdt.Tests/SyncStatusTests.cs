@@ -34,6 +34,9 @@ public class SyncStatusTests
     [TestMethod]
     public async Task A_document_without_a_transport_is_local_only()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         await using var service = new BcrdtCollaborationService(new BcrdtCollaborationOptions { CreateUndoManager = false });
         BcrdtCollaborativeDocument document = await service.OpenAsync("alone");
 
@@ -54,6 +57,9 @@ public class SyncStatusTests
     [TestMethod]
     public async Task The_snapshot_follows_the_connection_offline_and_back()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using var service = new BcrdtCollaborationService(
             new BcrdtCollaborationOptions

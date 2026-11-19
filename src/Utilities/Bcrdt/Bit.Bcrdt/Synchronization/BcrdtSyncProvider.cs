@@ -28,8 +28,10 @@ namespace Bit.Bcrdt;
 /// in Blazor, the renderer's context - and runs every transport callback, heartbeat tick, resync and
 /// handshake on it: inline when already there, posted otherwise. Construct it on the thread that
 /// edits the document. When there is no context to capture, the provider serializes its own access
-/// to the document under a private lock; the application must then not mutate the document
-/// concurrently with the provider.
+/// to the document under a private lock, and applies what arrives on whichever thread delivered it;
+/// the application must then not touch the document concurrently with the provider - not even to
+/// read it: asking for a root whose content arrived before the application declared it, with
+/// <see cref="BcrdtDocument.GetText"/> say, moves that content to the root it returns.
 /// </para>
 /// <para>
 /// Transport sends and the provider's own <see cref="StatusChanged"/>, <see cref="Synced"/> and

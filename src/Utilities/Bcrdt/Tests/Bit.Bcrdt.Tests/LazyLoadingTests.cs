@@ -56,6 +56,9 @@ public class LazyLoadingTests
     [TestMethod]
     public async Task The_configuration_gives_the_service_its_transport_and_its_store()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         var store = new BcrdtInMemoryDocumentStore();
         using ServiceProvider tabA = Connection(new WebAssemblyJSRuntime());

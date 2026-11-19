@@ -974,6 +974,9 @@ public class AppLayerRegressionTests : IDisposable
     [TestMethod]
     public async Task Opening_a_document_does_not_wait_for_the_network()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var store = new BcrdtInMemoryDocumentStore();
         using (var saved = new BcrdtDocument())
         {
@@ -1034,6 +1037,9 @@ public class AppLayerRegressionTests : IDisposable
     [TestMethod]
     public async Task Closing_a_document_tells_peers_at_once_that_the_participant_left()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService clientA = CreateClient(network);
         await using BcrdtCollaborationService clientB = CreateClient(network);
@@ -1051,6 +1057,9 @@ public class AppLayerRegressionTests : IDisposable
     [TestMethod]
     public async Task Reconnecting_restores_who_the_participant_is()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService clientA = CreateClient(network);
         await using BcrdtCollaborationService clientB = CreateClient(network);
@@ -1147,6 +1156,9 @@ public class AppLayerRegressionTests : IDisposable
     [TestMethod]
     public async Task A_document_is_wired_to_the_network_on_the_context_that_opened_it()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         using var context = new PumpingContext();
         SynchronizationContext? wiredOn = null;
         var network = new BcrdtInMemoryNetwork();

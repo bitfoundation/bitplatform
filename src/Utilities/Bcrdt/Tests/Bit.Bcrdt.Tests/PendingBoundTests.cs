@@ -129,6 +129,9 @@ public class PendingBoundTests
     [TestMethod]
     public async Task A_provider_asks_for_what_its_document_discarded()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1, MaxPendingSize = 1024 });
 
@@ -137,12 +140,12 @@ public class PendingBoundTests
         rawTransport.MessageReceived += message => heard.Enqueue(BcrdtSyncProtocol.Decode(message.ToArray()));
         await rawTransport.ConnectAsync();
 
-        await using BcrdtSyncProvider provider = await Task.Run(() => new BcrdtSyncProvider(doc, network.CreateTransport("room"), null, new BcrdtSyncProviderOptions
+        await using BcrdtSyncProvider provider = new(doc, network.CreateTransport("room"), null, new BcrdtSyncProviderOptions
         {
             HeartbeatInterval = TimeSpan.Zero,
             HandshakeTimeout = TimeSpan.FromMilliseconds(50),
             SyncAwareness = false,
-        }));
+        });
         await provider.ConnectAsync();
         Assert.IsTrue(await EventuallyAsync(() => provider.Status == BcrdtConnectionStatus.Synced), "nobody answers, so it settles alone");
         heard.Clear();

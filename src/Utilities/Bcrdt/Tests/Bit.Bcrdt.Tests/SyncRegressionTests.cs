@@ -73,6 +73,10 @@ public class SyncRegressionTests
         // B lives on the thread pool, with no context at all, and edits from there.
         BcrdtSyncProvider providerB = await Task.Run(() => new BcrdtSyncProvider(docB, network.CreateTransport("room"), null, Options()));
         await Task.Run(() => providerB.ConnectAsync().AsTask());
+
+        // B applies what A sends under its own lock, on whichever thread delivers it, while the edit below takes no
+        // lock at all: it waits for the handshake to finish, after which nothing reaches B until it edits.
+        await AssertEventuallyAsync(() => providerB.IsSynced, "B should finish its handshake");
         await Task.Run(() => docB.GetText("t").Insert(0, "from B"));
 
         await AssertEventuallyAsync(
@@ -95,6 +99,9 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_reconnect_attempt_that_throws_OperationCanceledException_is_retried()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         // SignalR reports a handshake timeout as an OperationCanceledException nobody asked for.
         var transport = new ScriptedTransport
         {
@@ -102,7 +109,7 @@ public class SyncRegressionTests
                 ? Task.FromException(new OperationCanceledException("The handshake timed out."))
                 : Task.CompletedTask,
         };
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), transport);
 
         await provider.ConnectAsync();
 
@@ -115,8 +122,11 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task Cancelling_ConnectAsync_throws_and_leaves_the_provider_disconnected()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var transport = new ScriptedTransport { OnConnect = (_, token) => Task.Delay(Timeout.Infinite, token) };
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), transport);
 
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
         await Assert.ThrowsAsync<OperationCanceledException>(() => provider.ConnectAsync(cancellation.Token).AsTask());
@@ -129,11 +139,14 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_transport_refusal_is_final_and_reported()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var transport = new ScriptedTransport
         {
             OnConnect = (_, _) => Task.FromException(new BcrdtTransportAuthorizationException("No entry.")),
         };
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), transport);
         int denials = 0;
         provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
 
@@ -149,9 +162,12 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_drop_with_reconnection_disabled_reports_disconnected()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         BcrdtInMemoryTransport transport = network.CreateTransport("room");
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(
+        await using BcrdtSyncProvider provider = CreateProvider(
             new BcrdtDocument(), transport, options: Options(handshakeTimeout: TimeSpan.FromMilliseconds(10), reconnect: BcrdtReconnectPolicy.None));
 
         await provider.ConnectAsync();
@@ -167,6 +183,9 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task Disconnecting_cancels_a_pending_reconnect_attempt()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         int cancelled = 0;
         var transport = new ScriptedTransport
         {
@@ -184,7 +203,7 @@ public class SyncRegressionTests
                 }
             },
         };
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), transport);
 
         await provider.ConnectAsync();
         transport.Raise(BcrdtTransportState.Faulted, new IOException("Dropped."));
@@ -202,12 +221,15 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task One_loss_reported_twice_starts_a_single_reconnect_loop()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var transport = new ScriptedTransport
         {
             OnConnect = (attempt, token) => attempt == 1 ? Task.CompletedTask : release.Task.WaitAsync(token),
         };
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), transport);
 
         await provider.ConnectAsync();
         transport.Raise(BcrdtTransportState.Faulted, new IOException("Send failed."));
@@ -228,10 +250,13 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_refusal_from_the_peer_leaves_the_status_faulted_and_drops_the_connection()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
         BcrdtInMemoryTransport transport = network.CreateTransport("room");
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), transport);
         string? reason = null;
         provider.AuthorizationDenied += denied => reason = denied;
 
@@ -248,8 +273,11 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task Connecting_an_already_connected_provider_does_not_lose_its_status()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(
+        await using BcrdtSyncProvider provider = CreateProvider(
             new BcrdtDocument(), network.CreateTransport("room"), options: Options(handshakeTimeout: TimeSpan.FromMilliseconds(10)));
 
         await provider.ConnectAsync();
@@ -263,12 +291,15 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_provider_over_an_already_connected_transport_runs_the_handshake()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
         BcrdtInMemoryTransport transport = network.CreateTransport("room");
         await transport.ConnectAsync();
 
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), transport);
         await provider.ConnectAsync();
 
         await AssertEventuallyAsync(
@@ -280,8 +311,11 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_replica_alone_in_a_room_reaches_synced_once_nobody_answers()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(
+        await using BcrdtSyncProvider provider = CreateProvider(
             new BcrdtDocument(), network.CreateTransport("room"), options: Options(handshakeTimeout: TimeSpan.FromMilliseconds(50)));
         int synced = 0;
         provider.Synced += () => Interlocked.Increment(ref synced);
@@ -294,14 +328,17 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_late_joiner_is_synced_by_the_peers_reply()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         using var docA = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         docA.GetText("body").Insert(0, "already here");
-        await using BcrdtSyncProvider providerA = await CreateProviderAsync(docA, network.CreateTransport("room"));
+        await using BcrdtSyncProvider providerA = CreateProvider(docA, network.CreateTransport("room"));
         await providerA.ConnectAsync();
 
         using var docB = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
-        await using BcrdtSyncProvider providerB = await CreateProviderAsync(docB, network.CreateTransport("room"));
+        await using BcrdtSyncProvider providerB = CreateProvider(docB, network.CreateTransport("room"));
         await providerB.ConnectAsync();
 
         // The handshake timeout is minutes: only the reply can have done this.
@@ -312,10 +349,13 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task Relayed_updates_and_other_peers_deltas_do_not_mark_a_replica_synced()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(doc, network.CreateTransport("room"));
+        await using BcrdtSyncProvider provider = CreateProvider(doc, network.CreateTransport("room"));
         await provider.ConnectAsync();
 
         using var elsewhere = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 7 });
@@ -335,11 +375,14 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task Offline_deletions_reach_the_room_on_reconnect()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         using var docA = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         using var docB = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
-        await using BcrdtSyncProvider providerA = await CreateProviderAsync(docA, network.CreateTransport("room"));
-        await using BcrdtSyncProvider providerB = await CreateProviderAsync(docB, network.CreateTransport("room"));
+        await using BcrdtSyncProvider providerA = CreateProvider(docA, network.CreateTransport("room"));
+        await using BcrdtSyncProvider providerB = CreateProvider(docB, network.CreateTransport("room"));
         await providerA.ConnectAsync();
         await providerB.ConnectAsync();
 
@@ -389,6 +432,9 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_returning_replica_does_not_push_deletions_the_room_already_has()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         // The room deleted text while this replica was away. Its reply arrives before the delta that
         // carries those deletions, so its digest cannot be matched yet; answering it at once would send
         // the room this replica's whole delete set, which a relay hands to every member.
@@ -400,7 +446,7 @@ public class SyncRegressionTests
 
         var network = new BcrdtInMemoryNetwork();
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(doc, network.CreateTransport("room"));
+        await using BcrdtSyncProvider provider = CreateProvider(doc, network.CreateTransport("room"));
         await provider.ConnectAsync();
 
         await AnswerAnnouncementAsync(peer, room);
@@ -414,6 +460,9 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_returning_replica_pushes_its_own_offline_deletions_once_the_rooms_have_arrived()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         using var room = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         room.GetText("body").Insert(0, "hello world");
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
@@ -425,7 +474,7 @@ public class SyncRegressionTests
 
         var network = new BcrdtInMemoryNetwork();
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(doc, network.CreateTransport("room"));
+        await using BcrdtSyncProvider provider = CreateProvider(doc, network.CreateTransport("room"));
         await provider.ConnectAsync();
 
         await AnswerAnnouncementAsync(peer, room);
@@ -459,6 +508,9 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task The_heartbeat_survives_a_throwing_presence_subscriber()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         using var awareness = new BcrdtAwarenessStore(1);
         awareness.SetLocalState(new Dictionary<string, object?> { ["name"] = "Ada" });
@@ -478,7 +530,7 @@ public class SyncRegressionTests
             }
         };
 
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(
+        await using BcrdtSyncProvider provider = CreateProvider(
             new BcrdtDocument(), network.CreateTransport("room"), awareness, Options(heartbeat: TimeSpan.FromMilliseconds(20)));
         int errors = 0;
         provider.Error += _ => Interlocked.Increment(ref errors);
@@ -495,6 +547,9 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task The_heartbeat_does_not_broadcast_pings()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         ConcurrentBag<BcrdtSyncMessageKind> kinds = [];
         network.MessageSent += (_, message) => kinds.Add(BcrdtSyncProtocol.Decode(message.ToArray()).Kind);
@@ -505,7 +560,7 @@ public class SyncRegressionTests
         awareness.Updated += _ => Interlocked.Increment(ref republished);
 
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(
+        await using BcrdtSyncProvider provider = CreateProvider(
             new BcrdtDocument(), network.CreateTransport("room"), awareness, Options(heartbeat: TimeSpan.FromMilliseconds(20)));
         await provider.ConnectAsync();
 
@@ -516,13 +571,16 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_deliberate_disconnect_hides_presence_and_reconnecting_restores_it()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         using var awarenessA = new BcrdtAwarenessStore(1);
         using var awarenessB = new BcrdtAwarenessStore(2);
         awarenessA.SetLocalState(new Dictionary<string, object?> { ["name"] = "Ada" });
 
-        await using BcrdtSyncProvider providerA = await CreateProviderAsync(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }), network.CreateTransport("room"), awarenessA);
-        await using BcrdtSyncProvider providerB = await CreateProviderAsync(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 }), network.CreateTransport("room"), awarenessB);
+        await using BcrdtSyncProvider providerA = CreateProvider(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }), network.CreateTransport("room"), awarenessA);
+        await using BcrdtSyncProvider providerB = CreateProvider(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 }), network.CreateTransport("room"), awarenessB);
         await providerB.ConnectAsync();
         await providerA.ConnectAsync();
         await AssertEventuallyAsync(() => Equals(awarenessB.GetField(1, "name"), "Ada"), "B should see Ada");
@@ -538,13 +596,16 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task Disposing_a_connected_provider_announces_departure()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         using var awarenessA = new BcrdtAwarenessStore(1);
         using var awarenessB = new BcrdtAwarenessStore(2);
         awarenessA.SetLocalState(new Dictionary<string, object?> { ["name"] = "Ada" });
 
-        BcrdtSyncProvider providerA = await CreateProviderAsync(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }), network.CreateTransport("room"), awarenessA);
-        await using BcrdtSyncProvider providerB = await CreateProviderAsync(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 }), network.CreateTransport("room"), awarenessB);
+        BcrdtSyncProvider providerA = CreateProvider(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }), network.CreateTransport("room"), awarenessA);
+        await using BcrdtSyncProvider providerB = CreateProvider(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 }), network.CreateTransport("room"), awarenessB);
         await providerB.ConnectAsync();
         await providerA.ConnectAsync();
         await AssertEventuallyAsync(() => Equals(awarenessB.GetField(1, "name"), "Ada"), "B should see Ada");
@@ -557,6 +618,9 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task Awareness_queries_are_answered_with_the_local_entry_only()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         using var awareness = new BcrdtAwarenessStore(1);
         awareness.SetLocalState(new Dictionary<string, object?> { ["name"] = "Ada" });
@@ -567,7 +631,7 @@ public class SyncRegressionTests
         awareness.ApplyUpdate(ghost.EncodeAll());
 
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), network.CreateTransport("room"), awareness);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), network.CreateTransport("room"), awareness);
         await provider.ConnectAsync();
         await AssertEventuallyAsync(() => peer.Received.Any(message => message.Kind == BcrdtSyncMessageKind.AwarenessQuery), "the handshake should settle");
         peer.Received.Clear();
@@ -586,11 +650,14 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task With_awareness_sync_off_remote_presence_is_not_applied()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         using var awareness = new BcrdtAwarenessStore(1);
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(doc, network.CreateTransport("room"), awareness, Options(syncAwareness: false));
+        await using BcrdtSyncProvider provider = CreateProvider(doc, network.CreateTransport("room"), awareness, Options(syncAwareness: false));
         await provider.ConnectAsync();
 
         using var remote = new BcrdtAwarenessStore(77);
@@ -843,6 +910,9 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task Connecting_to_a_server_that_never_answers_times_out_and_can_be_abandoned()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         using var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
         ConcurrentBag<Socket> held = [];
@@ -866,7 +936,7 @@ public class SyncRegressionTests
         }
 
         var slowTransport = new BcrdtWebSocketTransport(address) { ConnectTimeout = TimeSpan.FromSeconds(30) };
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), slowTransport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), slowTransport);
         Task connecting = provider.ConnectAsync().AsTask();
 
         await provider.DisconnectAsync().AsTask().WaitAsync(Patience);
@@ -897,6 +967,9 @@ public class SyncRegressionTests
     [DataRow(true)]
     public async Task A_refused_socket_is_reported_as_a_refusal_and_not_retried(bool byAccess)
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         // Refused after the upgrade, with an Auth message granting nothing, rather than with a 403 a browser's
         // WebSocket cannot read - so a browser stops as surely as any other client.
         int requests = 0;
@@ -933,7 +1006,7 @@ public class SyncRegressionTests
         }
 
         await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/doc"));
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), transport);
         int denials = 0;
         provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
         await provider.ConnectAsync();
@@ -1067,12 +1140,15 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_refused_join_leaves_the_provider_faulted()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         await using LoopbackHost host = await LoopbackHost.StartAsync(
             app => app.MapHub<DenyHub>("/deny"),
             builder => builder.Services.AddBitBcrdtHub<DenyHub>());
 
         await using var transport = new BcrdtSignalRTransport(host.BaseUrl + "/deny", "secret");
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), transport);
         int denials = 0;
         provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
 
@@ -1088,6 +1164,9 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_401_from_the_hub_negotiation_is_retried_with_a_fresh_connection()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         // What an access token that expired while the device slept looks like: the next attempt asks the
         // token provider again and gets through. Treating the first 401 as final stopped the provider
         // for good.
@@ -1109,7 +1188,7 @@ public class SyncRegressionTests
             builder => builder.Services.AddBitBcrdtHub());
 
         await using var transport = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "doc");
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), transport);
         int denials = 0;
         provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
         await provider.ConnectAsync();
@@ -1122,6 +1201,9 @@ public class SyncRegressionTests
     [TestMethod]
     public async Task A_401_that_persists_from_the_hub_negotiation_becomes_a_refusal()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         int negotiations = 0;
         await using LoopbackHost host = await LoopbackHost.StartAsync(
             app =>
@@ -1141,7 +1223,7 @@ public class SyncRegressionTests
             builder => builder.Services.AddBitBcrdtHub());
 
         await using var transport = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "doc");
-        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        await using BcrdtSyncProvider provider = CreateProvider(new BcrdtDocument(), transport);
         int denials = 0;
         provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
         await provider.ConnectAsync();
@@ -1319,15 +1401,15 @@ public class SyncRegressionTests
         };
 
     /// <summary>
-    /// Builds a provider on the thread pool, so it captures no synchronization context whatever the
-    /// test runner has installed, and serializes its own work under its lock.
+    /// Builds a provider on the calling thread, so it captures the test's <see cref="SingleThreadContext"/> and
+    /// applies what it receives there - never while the test reads or edits the document.
     /// </summary>
-    private static Task<BcrdtSyncProvider> CreateProviderAsync(
+    private static BcrdtSyncProvider CreateProvider(
         BcrdtDocument doc,
         IBcrdtTransport transport,
         BcrdtAwarenessStore? awareness = null,
         BcrdtSyncProviderOptions? options = null) =>
-        Task.Run(() => new BcrdtSyncProvider(doc, transport, awareness, options ?? Options()));
+        new(doc, transport, awareness, options ?? Options());
 
     private static async Task<bool> EventuallyAsync(Func<bool> condition, TimeSpan? timeout = null)
     {
@@ -1480,65 +1562,6 @@ public class SyncRegressionTests
         }
 
         public ValueTask SendAsync(byte[] message) => _transport.SendAsync(message);
-    }
-
-    /// <summary>A synchronization context backed by one dedicated thread, like a UI thread.</summary>
-    private sealed class SingleThreadContext : SynchronizationContext, IDisposable
-    {
-        private readonly BlockingCollection<(SendOrPostCallback Callback, object? State)> _queue = [];
-        private readonly Thread _thread;
-
-        public SingleThreadContext()
-        {
-            _thread = new Thread(Run) { IsBackground = true, Name = "single-thread-context" };
-            _thread.Start();
-        }
-
-        public int ThreadId => _thread.ManagedThreadId;
-
-        public override void Post(SendOrPostCallback d, object? state)
-        {
-            try
-            {
-                _queue.Add((d, state));
-            }
-            catch (InvalidOperationException)
-            {
-                // Shut down; like a closed window, it no longer runs work.
-            }
-        }
-
-        public override void Send(SendOrPostCallback d, object? state) => throw new NotSupportedException();
-
-        public Task<T> InvokeAsync<T>(Func<T> work)
-        {
-            var completion = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
-            Post(_ =>
-            {
-                try
-                {
-                    completion.SetResult(work());
-                }
-                catch (Exception ex)
-                {
-                    completion.SetException(ex);
-                }
-            }, null);
-            return completion.Task;
-        }
-
-        public Task InvokeAsync(Func<Task> work) => InvokeAsync<Task>(work).Unwrap();
-
-        public void Dispose() => _queue.CompleteAdding();
-
-        private void Run()
-        {
-            SetSynchronizationContext(this);
-            foreach ((SendOrPostCallback callback, object? state) in _queue.GetConsumingEnumerable())
-            {
-                callback(state);
-            }
-        }
     }
 
     /// <summary>A Kestrel host on a loopback port chosen by the operating system.</summary>

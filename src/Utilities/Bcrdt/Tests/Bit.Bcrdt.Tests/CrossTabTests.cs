@@ -64,11 +64,11 @@ public class CrossTabTests
 
         public BcrdtSyncProvider Provider { get; }
 
-        /// <summary>Built on the pool, so the provider captures no synchronization context.</summary>
+        /// <summary>Built on the calling thread, so the provider captures the test's <see cref="SingleThreadContext"/>.</summary>
         public static async Task<Peer> JoinAsync(BcrdtInMemoryNetwork network)
         {
             var doc = new BcrdtDocument();
-            BcrdtSyncProvider provider = await Task.Run(() => new BcrdtSyncProvider(doc, network.CreateTransport(ServerRoom), null, SyncOptions()));
+            BcrdtSyncProvider provider = new(doc, network.CreateTransport(ServerRoom), null, SyncOptions());
             await provider.ConnectAsync();
             await AssertEventuallyAsync(() => provider.IsSynced, "the peer should settle in its room");
             return new Peer(doc, provider);
@@ -157,6 +157,9 @@ public class CrossTabTests
     [DynamicData(nameof(Seeds))]
     public async Task Online_each_change_reaches_the_server_once_and_every_tab_once(int seed)
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         var traffic = new Traffic(network);
         await using Peer server = await Peer.JoinAsync(network);
@@ -200,6 +203,9 @@ public class CrossTabTests
     [TestMethod]
     public async Task An_edit_in_a_tab_with_read_access_only_reaches_neither_another_tab_nor_the_server()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using Peer server = await Peer.JoinAsync(network);
 
@@ -231,6 +237,9 @@ public class CrossTabTests
     [TestMethod]
     public async Task Without_the_forwarding_filter_every_tab_would_hand_the_server_each_change_again()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         // What the collaboration service avoids: two providers per document, both with the default of passing on
         // everything they did not receive themselves.
         var network = new BcrdtInMemoryNetwork();
@@ -243,8 +252,8 @@ public class CrossTabTests
             for (int i = 0; i < 3; i++)
             {
                 var doc = new BcrdtDocument();
-                BcrdtSyncProvider toServer = await Task.Run(() => new BcrdtSyncProvider(doc, network.CreateTransport(ServerRoom), null, SyncOptions()));
-                BcrdtSyncProvider toTabs = await Task.Run(() => new BcrdtSyncProvider(doc, network.CreateTransport(TabsRoom), null, SyncOptions()));
+                BcrdtSyncProvider toServer = new(doc, network.CreateTransport(ServerRoom), null, SyncOptions());
+                BcrdtSyncProvider toTabs = new(doc, network.CreateTransport(TabsRoom), null, SyncOptions());
                 tabs.Add((doc, toServer, toTabs));
                 await toServer.ConnectAsync();
                 await toTabs.ConnectAsync();
@@ -273,18 +282,21 @@ public class CrossTabTests
     [TestMethod]
     public async Task A_provider_sends_on_only_the_changes_its_filter_lets_through()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         var traffic = new Traffic(network);
         await using Peer server = await Peer.JoinAsync(network);
 
         using var doc = new BcrdtDocument();
         object quiet = new();
-        await using BcrdtSyncProvider provider = await Task.Run(() => new BcrdtSyncProvider(doc, network.CreateTransport(ServerRoom), null, new BcrdtSyncProviderOptions
+        await using BcrdtSyncProvider provider = new(doc, network.CreateTransport(ServerRoom), null, new BcrdtSyncProviderOptions
         {
             HeartbeatInterval = TimeSpan.Zero,
             HandshakeTimeout = TimeSpan.FromMilliseconds(200),
             ShouldForward = args => args.Origin != quiet,
-        }));
+        });
         await provider.ConnectAsync();
         await AssertEventuallyAsync(() => provider.IsSynced, "the provider should settle");
         traffic.Clear();
@@ -314,6 +326,9 @@ public class CrossTabTests
     [DynamicData(nameof(Seeds))]
     public async Task Tabs_that_are_all_offline_keep_each_other_up_to_date_and_the_server_catches_up_on_reconnection(int seed)
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         var traffic = new Traffic(network);
         await using Peer server = await Peer.JoinAsync(network);
@@ -360,6 +375,9 @@ public class CrossTabTests
     [DynamicData(nameof(Seeds))]
     public async Task A_tab_offline_among_online_ones_shares_its_changes_with_them_and_the_server_gets_them_when_it_reconnects(int seed)
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         var traffic = new Traffic(network);
         await using Peer server = await Peer.JoinAsync(network);
@@ -410,6 +428,9 @@ public class CrossTabTests
     [TestMethod]
     public async Task Over_a_bare_relay_a_change_building_on_an_offline_tabs_waits_until_that_tab_reconnects()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         // The price of passing on only a tab's own changes: an online tab that builds on what an offline tab wrote
         // sends a change its peers cannot place until the offline tab brings them what it builds on.
         var network = new BcrdtInMemoryNetwork();
@@ -435,6 +456,9 @@ public class CrossTabTests
     [TestMethod]
     public async Task With_a_document_host_a_change_building_on_an_offline_tabs_reaches_everyone_at_once()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         // The host asks the sender of a change it cannot place for what the change builds on - and the online tab
         // has it, from the offline one.
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -451,7 +475,7 @@ public class CrossTabTests
         await using var second = new BcrdtCollaborationService(options, relay, null, new Rooms(network, "tabs:"));
 
         using var elsewhere = new BcrdtDocument();
-        await using BcrdtSyncProvider elsewhereProvider = await Task.Run(() => new BcrdtSyncProvider(elsewhere, relay.Create(DocumentId), null, SyncOptions()));
+        await using BcrdtSyncProvider elsewhereProvider = new(elsewhere, relay.Create(DocumentId), null, SyncOptions());
         await elsewhereProvider.ConnectAsync();
         await AssertEventuallyAsync(() => elsewhereProvider.IsSynced, "somebody else's browser should be in the room");
 
@@ -506,6 +530,9 @@ public class CrossTabTests
     [TestMethod]
     public async Task The_tabs_stay_connected_when_the_document_is_taken_offline_and_disconnect_when_it_closes()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using Peer server = await Peer.JoinAsync(network);
         await using BcrdtCollaborationService tab = Tab(network);
@@ -528,6 +555,9 @@ public class CrossTabTests
     [TestMethod]
     public async Task Presence_crosses_only_the_network()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         var traffic = new Traffic(network);
         await using Peer server = await Peer.JoinAsync(network);

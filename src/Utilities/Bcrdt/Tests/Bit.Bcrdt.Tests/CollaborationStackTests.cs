@@ -31,6 +31,9 @@ public class CollaborationStackTests
     [TestMethod]
     public async Task An_edit_in_one_client_reaches_another()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService clientA = CreateClient(network);
         await using BcrdtCollaborationService clientB = CreateClient(network);
@@ -48,6 +51,9 @@ public class CollaborationStackTests
     [TestMethod]
     public async Task A_client_joining_late_receives_the_existing_document()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService clientA = CreateClient(network);
 
@@ -67,6 +73,9 @@ public class CollaborationStackTests
     [TestMethod]
     public async Task Offline_edits_on_both_sides_merge_on_reconnect()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService clientA = CreateClient(network);
         await using BcrdtCollaborationService clientB = CreateClient(network);
@@ -101,6 +110,9 @@ public class CollaborationStackTests
     [TestMethod]
     public async Task Presence_propagates_between_clients()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService clientA = CreateClient(network);
         await using BcrdtCollaborationService clientB = CreateClient(network);
@@ -119,6 +131,9 @@ public class CollaborationStackTests
     [TestMethod]
     public async Task Presence_is_not_written_to_storage()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         var store = new BcrdtInMemoryDocumentStore();
         await using BcrdtCollaborationService client = CreateClient(network, store);
@@ -141,6 +156,9 @@ public class CollaborationStackTests
     [TestMethod]
     public async Task Opening_the_same_document_twice_returns_one_replica()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService client = CreateClient(network);
 
@@ -153,6 +171,9 @@ public class CollaborationStackTests
     [TestMethod]
     public async Task A_transaction_batches_changes_into_a_single_update()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService client = CreateClient(network);
         BcrdtCollaborativeDocument doc = await client.OpenAsync("shared");
@@ -175,6 +196,9 @@ public class CollaborationStackTests
     [TestMethod]
     public async Task A_dropped_connection_is_reported_and_reconnection_restores_sync()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         var transport = network.CreateTransport("shared");
 

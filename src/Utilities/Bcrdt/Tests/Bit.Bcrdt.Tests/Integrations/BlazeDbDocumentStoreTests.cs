@@ -516,6 +516,9 @@ public class BlazeDbDocumentStoreTests
     [TestMethod]
     public async Task A_replica_kept_in_BlazeDb_reopens_offline_and_converges_with_a_second_replica()
     {
+        using var thread = new SingleThreadContext();
+        await thread.SwitchTo();
+
         var network = new BcrdtInMemoryNetwork();
         var storage = new BlazeDbInMemoryStorage();
         BlazeDbDatabase database = await OpenAsync(storage);
