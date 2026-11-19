@@ -32,17 +32,18 @@ public partial class NotAuthorizedPage
 
     protected override async Task OnParametersSetAsync()
     {
+        var user = (await AuthenticationStateTask).User;
+
         if (Case is not null)
         {
             lacksValidPrivilege = Case is PrivilegeCase;
             //#if (multitenant == true)
             lacksSelectedTenant = Case is NoTenantCase or NoTenantsCase;
+            isGlobalAdmin = await AuthorizationService.IsAuthorized(user, AppFeatures.Management.Tenants_Manage_Global);
             tenants = Case is NoTenantCase ? GetSampleTenants() : [];
             //#endif
             return;
         }
-
-        var user = (await AuthenticationStateTask).User;
 
         var failedPolicies = await GetFailedPolicies(user);
 

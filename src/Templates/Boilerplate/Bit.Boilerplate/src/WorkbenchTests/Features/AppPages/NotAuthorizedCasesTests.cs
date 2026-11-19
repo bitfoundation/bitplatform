@@ -20,7 +20,8 @@ public class NotAuthorizedCasesTests
     {
         foreach (var auth in signIns)
         {
-            var text = await Render(NotAuthorizedPage.NoTenantCase, new() { Auth = auth });
+            // The tenant admin: a member of one tenant, invited to the other.
+            var text = await Render(NotAuthorizedPage.NoTenantCase, new() { Auth = auth, User = 1 });
 
             Assert.Contains(AppStrings.SelectTenantMessage, text);
             Assert.Contains(AppStrings.PendingInvitations, text);
@@ -29,6 +30,17 @@ public class NotAuthorizedCasesTests
             Assert.Contains(AppStrings.SwitchTenant, text);
             Assert.Contains(WorkbenchStrings.DemoTenantStore, text);
         }
+    }
+
+    [TestMethod]
+    public async Task NoTenant_Should_OfferAGlobalAdminNoInvitation()
+    {
+        var text = await Render(NotAuthorizedPage.NoTenantCase, new() { User = 0 });
+
+        Assert.Contains(AppStrings.SwitchTenant, text);
+        Assert.Contains(WorkbenchStrings.DemoTenantHeadOffice, text);
+        Assert.DoesNotContain(AppStrings.PendingInvitations, text);
+        Assert.DoesNotContain(AppStrings.AcceptInvitation, text);
     }
 
     [TestMethod]
