@@ -57,8 +57,8 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
         description: "The tag of a component that no longer exists compiles with only the warning RZ10012 and renders as an unknown HTML element. Replace it as the message says. Turn the check off with <BitBlazorUIBreakingChangeAnalyzer>false</BitBlazorUIBreakingChangeAnalyzer> in the project file.",
         helpLinkUri: HelpLink);
 
-    /// <summary>A tag that may be a component's in a .razor file.</summary>
-    private static readonly Regex ComponentTag = new(@"<([A-Z][A-Za-z0-9_]*)(?=[\s/>])");
+    /// <summary>A tag that may be a component's in a .razor file: its namespace when written fully qualified, its name.</summary>
+    private static readonly Regex ComponentTag = new(@"<((?:[A-Za-z_][A-Za-z0-9_]*\.)*)([A-Z][A-Za-z0-9_]*)(?=[\s/>])");
 
     /// <summary>A comment or a start or end tag of static markup: the end tag's slash, the name, the self-closing slash.</summary>
     private static readonly Regex MarkupTag = new(@"<!--[\s\S]*?-->|<(/?)([A-Za-z][A-Za-z0-9:_.-]*)(?:[^>""']|""[^""]*""|'[^']*')*?(/?)>");
@@ -342,15 +342,8 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
                               RazorMapping razor, bool childTag, bool exactCase)
     {
         // @bind-Old writes Old and OldChanged.
-        var name = written;
-        var suffix = string.Empty;
-        if (_changes.MembersByName.ContainsKey(name) is false && name.EndsWith("Changed", StringComparison.Ordinal))
-        {
-            name = name.Substring(0, name.Length - "Changed".Length);
-            suffix = "Changed";
-        }
-
-        if (_changes.MembersByName.TryGetValue(name, out var candidates) is false) return;
+        var bound = BoundName(written);
+        if (Candidates(written, out var name, out var suffix) is not { } candidates) return;
 
         // A name the component still takes is its parameter, whatever it used to be. Not for a child content tag: Razor
         // binds one to a template parameter of its name, so a tag it left as an element has none, whatever else that
@@ -360,18 +353,45 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
         var change = Match(component, candidates, exactCase ? name : null);
         if (change is null) return;
 
-        var location = razor.Locate(at, written, childTag, out var found);
+        var location = razor.Locate(at, written, childTag ? null : component.Name, out var found);
 
-        // @bind-Old writes Old and then OldChanged, and only Old is in the .razor file: the one error on Old says both.
-        if (found is false && suffix.Length > 0 && razor.LastReported is { } last
-            && SymbolEqualityComparer.Default.Equals(last.Component, component) && string.Equals(last.Name, name, StringComparison.OrdinalIgnoreCase))
+        // @bind-Old writes Old and then OldChanged, and only Old is in the .razor file: the one error on Old says both -
+        // whether OldChanged is told through Old's entry or has one of its own.
+        if (found is false && bound is not null && razor.LastReported is { } last
+            && SymbolEqualityComparer.Default.Equals(last.Component, component) && string.Equals(last.Name, bound, StringComparison.OrdinalIgnoreCase))
             return;
 
         razor.LastReported = (component, name);
 
-        var hint = suffix.Length > 0 && change.Use.Length > 0 ? $"{change.Hint} ({written} is {change.Use}{suffix}.)" : change.Hint;
-        ctx.ReportDiagnostic(Diagnostic.Create(MemberRule, location ?? at.GetLocation(), written, component.Name, change.Since, hint));
+        ctx.ReportDiagnostic(Diagnostic.Create(MemberRule, location ?? at.GetLocation(), written, component.Name, change.Since, Hint(change, written, suffix)));
     }
+
+    /// <summary>The name a <c>...Changed</c> callback is the callback of (<c>IsChecked</c> of <c>IsCheckedChanged</c>), or null.</summary>
+    private static string? BoundName(string name)
+        => name.Length > "Changed".Length && name.EndsWith("Changed", StringComparison.Ordinal) ? name.Substring(0, name.Length - "Changed".Length) : null;
+
+    /// <summary>
+    /// The entries of <paramref name="written"/>: its own, else - for an <c>OldChanged</c> callback - those of the
+    /// <c>Old</c> it is the callback of, with <paramref name="suffix"/> "Changed".
+    /// </summary>
+    private ImmutableArray<BitBreakingChange>? Candidates(string written, out string name, out string suffix)
+    {
+        name = written;
+        suffix = string.Empty;
+        if (_changes.MembersByName.TryGetValue(written, out var own)) return own;
+
+        if (BoundName(written) is { } bound && _changes.MembersByName.TryGetValue(bound, out var ofBound))
+        {
+            name = bound;
+            suffix = "Changed";
+            return ofBound;
+        }
+
+        return null;
+    }
+
+    private static string Hint(BitBreakingChange change, string written, string suffix)
+        => suffix.Length > 0 && change.Use.Length > 0 ? $"{change.Hint} ({written} is {change.Use}{suffix}.)" : change.Hint;
 
     private static BitBreakingChange? Match(ITypeSymbol type, ImmutableArray<BitBreakingChange> candidates, string? exactName)
     {
@@ -398,7 +418,8 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
             {
                 if (member is IPropertySymbol p
                     && string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)
-                    && p.GetAttributes().Any(a => a.AttributeClass?.Name is "ParameterAttribute" or "CascadingParameterAttribute"))
+                    // Only a [Parameter] takes an attribute: a [CascadingParameter] alone refuses one at run time.
+                    && p.GetAttributes().Any(a => a.AttributeClass?.Name is "ParameterAttribute"))
                     return true;
             }
         }
@@ -421,8 +442,8 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
     /// <summary><c>receiver.Name</c> and <c>receiver?.Name</c> alike.</summary>
     private void AnalyzeMemberAccess(SemanticModelAnalysisContext ctx, SemanticModel model, SimpleNameSyntax nameNode, ExpressionSyntax receiverExpression)
     {
-        var name = nameNode.Identifier.ValueText;
-        if (_changes.MembersByName.TryGetValue(name, out var candidates) is false) return;
+        var written = nameNode.Identifier.ValueText;
+        if (Candidates(written, out var name, out var suffix) is not { } candidates) return;
         if (IsResolved(model, nameNode, ctx)) return;
 
         var receiver = Unwrap(model.GetTypeInfo(receiverExpression, ctx.CancellationToken).Type);
@@ -431,13 +452,13 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
         var change = Match(receiver, candidates, name);
         if (change is null) return;
 
-        ctx.ReportDiagnostic(Diagnostic.Create(MemberRule, nameNode.GetLocation(), name, receiver.Name, change.Since, change.Hint));
+        ctx.ReportDiagnostic(Diagnostic.Create(MemberRule, nameNode.GetLocation(), written, receiver.Name, change.Since, Hint(change, written, suffix)));
     }
 
     private void AnalyzeInitializer(SemanticModelAnalysisContext ctx, SemanticModel model, AssignmentExpressionSyntax assignment, IdentifierNameSyntax left)
     {
-        var name = left.Identifier.ValueText;
-        if (_changes.MembersByName.TryGetValue(name, out var candidates) is false) return;
+        var written = left.Identifier.ValueText;
+        if (Candidates(written, out var name, out var suffix) is not { } candidates) return;
         if (IsResolved(model, left, ctx)) return;
 
         // new T { Old = ... }, x with { Old = ... } and the nested new() { Old = { ... } } of a name selector alike.
@@ -453,7 +474,7 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
         var change = Match(created, candidates, name);
         if (change is null) return;
 
-        ctx.ReportDiagnostic(Diagnostic.Create(MemberRule, left.GetLocation(), name, created.Name, change.Since, change.Hint));
+        ctx.ReportDiagnostic(Diagnostic.Create(MemberRule, left.GetLocation(), written, created.Name, change.Since, Hint(change, written, suffix)));
     }
 
     /// <summary>The <c>T</c> of a <c>T?</c> that is a value type; anything else as it is.</summary>
@@ -527,13 +548,15 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
 
         foreach (Match tag in ComponentTag.Matches(content))
         {
-            var name = tag.Groups[1].Value;
+            var name = tag.Groups[2].Value;
             if (_changes.TypesByName.TryGetValue(name, out var change) is false || change.Component is false) continue;
+            // <Bit.BlazorUI.BitProModal> is the packages' component as much as <BitProModal>; another namespace's is not.
+            if (tag.Groups[1].Length > 0 && tag.Groups[1].Value != "Bit.BlazorUI.") continue;
             if (code.Any(s => s.Contains(tag.Index))) continue;
-            // An app's own component of that name, or one the packages have again.
-            if (IsKnownType(ctx.Compilation, name)) continue;
+            // Razor bound the tag to a component of that name after all: an app's own, or one the packages have again.
+            if (BindsToComponent(ctx.Compilation, generated, path, name, ctx.CancellationToken)) continue;
 
-            var span = new TextSpan(tag.Groups[1].Index, name.Length);
+            var span = new TextSpan(tag.Groups[2].Index, name.Length);
             var location = Location.Create(path, span, text.Lines.GetLinePositionSpan(span));
             ctx.ReportDiagnostic(Diagnostic.Create(TypeRule, location, name, change.Since, change.Hint));
         }
@@ -629,16 +652,47 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
         return path.Replace('\\', '/').TrimStart('.', '/');
     }
 
-    private static bool IsKnownType(Compilation compilation, string name)
+    /// <summary>
+    /// Whether Razor bound a tag of <paramref name="name"/> in the .razor file to a component: the code it generated for
+    /// the file opens a component of that name (a tag it does not bind is an element, or static markup). Without that
+    /// code, whether the compilation has a component of the name - a type of the name that is no component never is one.
+    /// </summary>
+    private static bool BindsToComponent(Compilation compilation, List<(string Path, SyntaxTree Tree)> generated, string path, string name,
+                                         CancellationToken cancellationToken)
     {
-        if (compilation.GetSymbolsWithName(name, SymbolFilter.Type).Any()) return true;
+        var trees = generated.Where(g => SamePath(g.Path, path)).Select(g => g.Tree).ToList();
+
+        if (trees.Count > 0)
+        {
+            return trees.Any(tree => tree.GetRoot(cancellationToken)
+                                         .DescendantNodes()
+                                         .OfType<GenericNameSyntax>()
+                                         .Any(g => g.Identifier.ValueText == "OpenComponent"
+                                                   && g.TypeArgumentList.Arguments.Count == 1
+                                                   && RightmostName(g.TypeArgumentList.Arguments[0]) == name));
+        }
+
+        var component = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.IComponent");
+        if (component is null) return false;
+
+        var candidates = compilation.GetSymbolsWithName(name, SymbolFilter.Type, cancellationToken).OfType<ITypeSymbol>().ToList();
         for (var arity = 0; arity <= 3; arity++)
         {
-            var metadataName = arity == 0 ? $"Bit.BlazorUI.{name}" : $"Bit.BlazorUI.{name}`{arity}";
-            if (compilation.GetTypeByMetadataName(metadataName) is not null) return true;
+            if (compilation.GetTypeByMetadataName(arity == 0 ? $"Bit.BlazorUI.{name}" : $"Bit.BlazorUI.{name}`{arity}") is { } type) candidates.Add(type);
         }
-        return false;
+
+        return candidates.Any(t => t.AllInterfaces.Contains(component, SymbolEqualityComparer.Default));
     }
+
+    /// <summary>The name a type is written with, without its namespace or type arguments (<c>BitDropdown</c> of <c>global::Bit.BlazorUI.BitDropdown&lt;T&gt;</c>).</summary>
+    private static string? RightmostName(TypeSyntax type)
+        => type switch
+        {
+            QualifiedNameSyntax q => q.Right.Identifier.ValueText,
+            AliasQualifiedNameSyntax a => a.Name.Identifier.ValueText,
+            SimpleNameSyntax s => s.Identifier.ValueText,
+            _ => null
+        };
 
     /// <summary>Blanks out @* ... *@ comments, keeping every other character where it was.</summary>
     public static string WithoutRazorComments(string text) => RazorComment.Replace(text, Blank);
@@ -677,10 +731,11 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
         public (ITypeSymbol Component, string Name)? LastReported { get; set; }
 
         /// <summary>
-        /// The position of <paramref name="name"/> in the .razor file, or null for the node's own position.
+        /// The position of <paramref name="name"/> in the .razor file, or null for the node's own position: an attribute
+        /// of a start tag of <paramref name="tag"/>, or a child content tag when that is null.
         /// <paramref name="found"/> says whether the name itself was found there, rather than only the region it is in.
         /// </summary>
-        public Location? Locate(SyntaxNode node, string name, bool childTag, out bool found)
+        public Location? Locate(SyntaxNode node, string name, string? tag, out bool found)
         {
             found = true;
 
@@ -711,7 +766,7 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
 
             var from = Math.Max(Position(_text, anchor), _consumed);
             var to = bound is { } b ? Math.Max(from, Position(_text, b)) : _content.Length;
-            var index = Find(_content, name, from, to, childTag);
+            var index = Find(_content, name, from, to, tag);
             if (index < 0)
                 return Location.Create(_path, default, new LinePositionSpan(anchor, anchor));
 
@@ -723,11 +778,13 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
 
         /// <summary>
         /// The first occurrence of <paramref name="name"/> in [<paramref name="from"/>, <paramref name="to"/>): as a child
-        /// content tag (right after a &lt;, case kept), or as an attribute - the name on its own or after "@bind-", case
-        /// ignored, never part of a longer name or of a dotted one.
+        /// content tag (right after a &lt;, case kept) when <paramref name="tag"/> is null, or as an attribute of a start
+        /// tag of <paramref name="tag"/> - the name on its own or after "@bind-", case ignored, never part of a longer name
+        /// or of a dotted one, nor in an attribute's value or another element's tag.
         /// </summary>
-        private static int Find(string content, string name, int from, int to, bool childTag)
+        private static int Find(string content, string name, int from, int to, string? tag)
         {
+            var childTag = tag is null;
             var comparison = childTag ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
             for (var i = from; to - i >= name.Length; i++)
@@ -741,12 +798,53 @@ public sealed class BitBreakingChangesAnalyzer : DiagnosticAnalyzer
 
                 var isName = childTag
                     ? before == '<' && (char.IsWhiteSpace(after) || after is '/' or '>')
-                    : IsWordCharacter(before) is false && before != '.' && IsWordCharacter(after) is false;
+                    : IsWordCharacter(before) is false && before != '.' && IsWordCharacter(after) is false && IsInStartTagOf(content, i, tag!);
 
                 if (isName) return i;
             }
 
             return -1;
+        }
+
+        /// <summary>
+        /// Whether <paramref name="index"/> is between the name and the end of a start tag of <paramref name="tag"/>
+        /// (written short or fully qualified), outside its attributes' quoted values.
+        /// </summary>
+        private static bool IsInStartTagOf(string content, int index, string tag)
+        {
+            // The tag the index is in starts at the nearest < before it that a name follows.
+            var start = index - 1;
+            while (start >= 0)
+            {
+                start = content.LastIndexOf('<', start);
+                if (start < 0) return false;
+                if (start + 1 < content.Length && (char.IsLetter(content[start + 1]) || content[start + 1] == '_')) break;
+                start--;
+            }
+            if (start < 0) return false;
+
+            var nameEnd = start + 1;
+            while (nameEnd < content.Length && (IsWordCharacter(content[nameEnd]) || content[nameEnd] == '.')) nameEnd++;
+            var written = content.Substring(start + 1, nameEnd - start - 1);
+            if (written != tag && written.EndsWith("." + tag, StringComparison.Ordinal) is false) return false;
+
+            // Up to the index: neither in a quoted value nor past the tag's > (one of a lambda's => or in parentheses is not it).
+            var quote = '\0';
+            var depth = 0;
+            for (var i = nameEnd; i < index; i++)
+            {
+                var c = content[i];
+                if (quote != '\0')
+                {
+                    if (c == quote) quote = '\0';
+                }
+                else if (c is '"' or '\'') quote = c;
+                else if (c == '(') depth++;
+                else if (c == ')' && depth > 0) depth--;
+                else if (c == '>' && depth == 0 && content[i - 1] != '=') return false;
+            }
+
+            return quote == '\0';
         }
 
         private void EnsureAnchors()

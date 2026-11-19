@@ -219,8 +219,14 @@
     <Target Name="_BitBlazorUIAddBreakingChangeAnalyzer" BeforeTargets="CoreCompile" Condition="'$(BitBlazorUIBreakingChangeAnalyzer)' == 'true' and '$(Language)' == 'C#'">
         <PropertyGroup>
             <_BitBlazorUIAnalyzerAssembly>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\bit-analyzers\Bit.BlazorUI.Analyzers.dll'))</_BitBlazorUIAnalyzerAssembly>
-            <_BitBlazorUIAnalyzerAssembly Condition="!Exists('$(_BitBlazorUIAnalyzerAssembly)')">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\Bit.BlazorUI.Analyzers\bin\$(Configuration)\netstandard2.0\Bit.BlazorUI.Analyzers.dll'))</_BitBlazorUIAnalyzerAssembly>
+            <_BitBlazorUIAnalyzerProject>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\Bit.BlazorUI.Analyzers\Bit.BlazorUI.Analyzers.csproj'))</_BitBlazorUIAnalyzerProject>
         </PropertyGroup>
+        <!-- The source tree: wherever the analyzer project builds to, asked of the project as the package's pack asks it. -->
+        <MSBuild Condition="!Exists('$(_BitBlazorUIAnalyzerAssembly)') and Exists('$(_BitBlazorUIAnalyzerProject)')"
+                 Projects="$(_BitBlazorUIAnalyzerProject)" Targets="GetTargetPath" Properties="Configuration=$(Configuration)"
+                 RemoveProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier">
+            <Output TaskParameter="TargetOutputs" PropertyName="_BitBlazorUIAnalyzerAssembly" />
+        </MSBuild>
         <ItemGroup Condition="Exists('$(_BitBlazorUIAnalyzerAssembly)')">
             <Analyzer Remove="$(_BitBlazorUIAnalyzerAssembly)" />
             <Analyzer Include="$(_BitBlazorUIAnalyzerAssembly)" />

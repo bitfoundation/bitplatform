@@ -316,7 +316,7 @@ public sealed class BitBreakingChangesAnalyzerTests
     }
 
     [TestMethod]
-    public async Task TheTagOfAComponentThatIsGoneIsReportedUnlessItIsInACommentOrTheAppHasOneOfThatName()
+    public async Task TheTagOfAComponentThatIsGoneIsReportedUnlessItIsInACommentOrRazorBindsItToTheAppsComponent()
     {
         var razor = """
                     @* <BitProPanel /> was the panel *@
@@ -331,10 +331,102 @@ public sealed class BitBreakingChangesAnalyzerTests
         StringAssert.Contains(withoutOwn[0].GetMessage(), "BitModal");
         AssertAt(withoutOwn[1], BitBreakingChangesAnalyzer.TypeDiagnosticId, RazorPath, 3, 2);
 
-        var withOwn = await Analyze(Page("", extra: "public class BitProModal : global::Microsoft.AspNetCore.Components.ComponentBase { }"), razor);
+        // Razor bound the tag to the app's own component of the name: the generated code opens it.
+        var withOwn = await Analyze(Page("""
+                    __builder.OpenComponent<global::App.BitProModal>(0);
+                    __builder.CloseComponent();
+            """, extra: "public class BitProModal : global::Microsoft.AspNetCore.Components.ComponentBase { }"), razor);
 
         Assert.AreEqual(1, withOwn.Length, Describe(withOwn));
         StringAssert.Contains(withOwn[0].GetMessage(), "BitQuickGrid");
+
+        // A type of the name that is no component binds no tag.
+        var withOwnType = await Analyze(Page("", extra: "public class BitProModal { }"), razor);
+
+        Assert.AreEqual(2, withOwnType.Length, Describe(withOwnType));
+    }
+
+    [TestMethod]
+    public async Task AFullyQualifiedTagOfAComponentThatIsGoneIsReportedAtItsName()
+    {
+        var razor = """
+                    <Bit.BlazorUI.BitProModal IsOpen="true" />
+                    <App.Shared.BitProModal />
+                    """;
+
+        var diagnostics = await Analyze(Page(""), razor);
+
+        Assert.AreEqual(1, diagnostics.Length, Describe(diagnostics));
+        AssertAt(diagnostics[0], BitBreakingChangesAnalyzer.TypeDiagnosticId, RazorPath, 1, 15);
+    }
+
+    [TestMethod]
+    public async Task AnAttributeIsFoundInItsComponentsTagNotInAnElementsValueBeforeIt()
+    {
+        var razor = """
+                    <div title="IsEnabled is gone" data-x='IsEnabled'><BitButton IsEnabled="false" /></div>
+                    """;
+
+        var generated = Page("""
+                    __builder.OpenElement(0, "div");
+                    __builder.AddAttribute(1, "title", "IsEnabled is gone");
+                    __builder.AddAttribute(2, "data-x", "IsEnabled");
+                    __builder.OpenComponent<global::Bit.BlazorUI.BitButton>(3);
+                    __builder.AddComponentParameter(4, "IsEnabled", false);
+                    __builder.CloseComponent();
+                    __builder.CloseElement();
+            """);
+
+        var diagnostics = await Analyze(generated, razor);
+
+        Assert.AreEqual(1, diagnostics.Length, Describe(diagnostics));
+        AssertAt(diagnostics[0], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 1, 62);
+    }
+
+    [TestMethod]
+    public async Task ANameThatIsOnlyACascadingParameterNowIsStillReported()
+    {
+        var razor = """
+                    <MyButton IsLoading="true" />
+                    """;
+
+        var generated = Page("""
+                    __builder.OpenComponent<global::App.MyButton>(0);
+                    __builder.AddComponentParameter(1, "IsLoading", true);
+                    __builder.CloseComponent();
+            """, extra: """
+                        public class MyButton : global::Bit.BlazorUI.BitButton
+                        {
+                            [global::Microsoft.AspNetCore.Components.CascadingParameter] public bool IsLoading { get; set; }
+                        }
+                        """);
+
+        var diagnostics = await Analyze(generated, razor);
+
+        Assert.AreEqual(1, diagnostics.Length, Describe(diagnostics));
+        AssertAt(diagnostics[0], BitBreakingChangesAnalyzer.MemberDiagnosticId, RazorPath, 1, 11);
+    }
+
+    [TestMethod]
+    public async Task CSharpThatNamesTheChangedCallbackOfARenamedValueIsToldItsNewName()
+    {
+        var source = """
+                     namespace App;
+
+                     public class Code
+                     {
+                         public void M(global::Bit.BlazorUI.BitToggleButton toggle)
+                         {
+                             var callback = toggle.IsCheckedChanged;
+                         }
+                     }
+                     """;
+
+        var diagnostics = await Analyze(source);
+
+        Assert.AreEqual(1, diagnostics.Length, Describe(diagnostics));
+        Assert.AreEqual(BitBreakingChangesAnalyzer.MemberDiagnosticId, diagnostics[0].Id, diagnostics[0].ToString());
+        StringAssert.Contains(diagnostics[0].GetMessage(), "IsCheckedChanged is CheckedChanged");
     }
 
     [TestMethod]
@@ -406,18 +498,21 @@ public sealed class BitBreakingChangesAnalyzerTests
     [TestMethod]
     public async Task AProjectThatDoesNotReferenceThePackagesIsNotAnalyzed()
     {
-        var source = """
-                     public class BitPanelPosition { }
-                     public class Code { void M() { var x = BitPanelPositio.End; } }
-                     """;
+        // The very name that is reported in a project referencing the packages.
+        var source = "public class Code { void M() { var x = BitPanelPosition.End; } }";
+
+        var withPackages = await Analyze(source);
+
+        Assert.AreEqual(1, withPackages.Length, Describe(withPackages));
+        Assert.AreEqual(BitBreakingChangesAnalyzer.TypeDiagnosticId, withPackages[0].Id, withPackages[0].ToString());
 
         var compilation = CSharpCompilation.Create("NoBit", [CSharpSyntaxTree.ParseText(source)],
                                                    References().Where(r => r.Display?.Contains("Bit.BlazorUI") is not true),
                                                    new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var diagnostics = await compilation.WithAnalyzers([new BitBreakingChangesAnalyzer()]).GetAnalyzerDiagnosticsAsync();
+        var withoutPackages = await compilation.WithAnalyzers([new BitBreakingChangesAnalyzer()]).GetAnalyzerDiagnosticsAsync();
 
-        Assert.AreEqual(0, diagnostics.Length, Describe(diagnostics));
+        Assert.AreEqual(0, withoutPackages.Length, Describe(withoutPackages));
     }
 
     [TestMethod]
