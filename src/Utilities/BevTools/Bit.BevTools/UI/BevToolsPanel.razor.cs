@@ -140,6 +140,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         if (!firstRender)
         {
             await FocusAfterRenderAsync();
+            await RevealActiveTabAsync();
             return;
         }
 
@@ -1210,6 +1211,46 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
         catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
         {
+        }
+    }
+
+    /// <summary>
+    /// The tab last brought into view, so the call happens once per tab shown, not on every refresh. A row that cannot
+    /// scroll yet (the wide layout, or hidden while picking) is not forgotten: the hub watches its size and brings the
+    /// active tab into view once it starts to scroll.
+    /// </summary>
+    private string? _revealedTab;
+
+    /// <summary>
+    /// On a narrow panel the tabs are one row that scrolls sideways: a tab shown from elsewhere than its own button (the
+    /// palette, a link in another panel, the saved preferences) is brought into view.
+    /// </summary>
+    private async Task RevealActiveTabAsync()
+    {
+        if (!Ui.IsOpen)
+        {
+            _revealedTab = null;
+            return;
+        }
+
+        if (_revealedTab == Ui.ActivePanelId || _module is null || Session.Browser.TargetId is not { } target)
+        {
+            return;
+        }
+
+        // Remembered before the call, so a render while it is in flight does not ask again.
+        var revealing = _revealedTab = Ui.ActivePanelId;
+        try
+        {
+            await _module.InvokeVoidAsync("revealActiveTab", target);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+            // Not shown after all (a reconnecting circuit, say): the next render asks again.
+            if (_revealedTab == revealing)
+            {
+                _revealedTab = null;
+            }
         }
     }
 

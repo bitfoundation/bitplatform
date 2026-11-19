@@ -49,7 +49,7 @@
         var hiddenRoot = ChildrenOnly && node.Path.Length == 0;
         if (!hiddenRoot)
         {
-            <div class="bev-vt-row" style="padding-left:@(depth * 14)px" title="@node.TypeName">
+            <div class="bev-vt-row" style="padding-left:calc(@(depth) * var(--bev-indent))" title="@node.TypeName">
                 @if (node.IsExpandable)
                 {
                     <span class="bev-caret" @onclick="() => Toggle(node.Path)">@(open ? "▾" : "▸")</span>

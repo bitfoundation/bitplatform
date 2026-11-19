@@ -172,6 +172,17 @@ describe('roots that are gone, and roots that look alike', () => {
 });
 
 describe('picking details', () => {
+    function touchEvent(type, target, list, x, y, fingers) {
+        const e = new Event(type, { bubbles: true, cancelable: true });
+        e[list] = [{ clientX: x, clientY: y }];
+        if (fingers !== undefined) e.touches = Array.from({ length: fingers }, () => ({ clientX: x, clientY: y }));
+        target.dispatchEvent(e);
+        return e;
+    }
+    const touchStart = (target, x, y, fingers = 1) => touchEvent('touchstart', target, 'touches', x, y, fingers);
+    const touchMove = (target, x, y) => touchEvent('touchmove', target, 'touches', x, y);
+    const touchEnd = (target, x, y, fingersLeft) => touchEvent('touchend', target, 'changedTouches', x, y, fingersLeft);
+
     function page() {
         document.body.innerHTML = '';
         const anchor = webRoot();
@@ -224,11 +235,147 @@ describe('picking details', () => {
         document.elementFromPoint = () => p;
 
         hub.startPick('t1', { tellPanel: false });
-        const touch = new Event('touchend', { bubbles: true, cancelable: true });
-        touch.changedTouches = [{ clientX: 10, clientY: 110 }];
-        p.dispatchEvent(touch);
+        touchStart(p, 10, 110);
+        const touch = touchEnd(p, 10, 110);
         expect(touch.defaultPrevented).toBe(true);
         await vi.waitFor(() => expect(hub.lastPick()?.instanceId).toBe(5));
+    });
+
+    it('a swipe while picking scrolls the page: the touch is kept from the app, not cancelled, and picks nothing', async () => {
+        const { p } = page();
+        const hub = await loadHub();
+        hub.attach(runtime({ resolve: () => ({ instanceId: 5, name: 'Island', depth: -1 }) }), { platform: 'Server' });
+        document.elementFromPoint = () => p;
+        const appSaw = vi.fn();
+        for (const type of ['touchstart', 'touchmove', 'touchend']) p.addEventListener(type, () => appSaw(type));
+
+        hub.startPick('t1', { tellPanel: false });
+        const start = touchStart(p, 10, 300);
+        expect(start.defaultPrevented, 'cancelling the touch would stop the page from scrolling').toBe(false);
+        expect(touchMove(p, 11, 200).defaultPrevented).toBe(false);
+        const end = touchEnd(p, 12, 120);
+        expect(end.defaultPrevented).toBe(false);
+        expect(appSaw, 'the app never saw the touch start, so it sees none of it').not.toHaveBeenCalled();
+        expect(hub.isPicking()).toBe(true);
+
+        // The tap that follows picks.
+        touchStart(p, 10, 110);
+        const tapEnd = touchEnd(p, 13, 112);
+        expect(tapEnd.defaultPrevented).toBe(true);
+        await vi.waitFor(() => expect(hub.lastPick()?.instanceId).toBe(5));
+    });
+
+    it('a pinch while picking picks nothing when its fingers lift, even where they touched', async () => {
+        const { p } = page();
+        const hub = await loadHub();
+        hub.attach(runtime({ resolve: () => ({ instanceId: 5, name: 'Island', depth: -1 }) }), { platform: 'Server' });
+        document.elementFromPoint = () => p;
+
+        hub.startPick('t1', { tellPanel: false });
+        touchStart(p, 10, 110);
+        touchStart(p, 10, 110, 2);
+        expect(touchEnd(p, 10, 110, 1).defaultPrevented).toBe(false);
+        expect(touchEnd(p, 10, 110, 0).defaultPrevented).toBe(false);
+        expect(hub.isPicking()).toBe(true);
+        // Its window listeners would otherwise outlive this test's hub and take the next test's touches.
+        hub.stopPick();
+    });
+
+    it('a touch that ends before picking saw it start picks nothing', async () => {
+        const { p } = page();
+        const hub = await loadHub();
+        hub.attach(runtime({ resolve: () => ({ instanceId: 5, name: 'Island', depth: -1 }) }), { platform: 'Server' });
+        document.elementFromPoint = () => p;
+
+        hub.startPick('t1', { tellPanel: false });
+        expect(touchEnd(p, 10, 110).defaultPrevented).toBe(false);
+        // The browser still makes a click of it: ignored, and kept from the app.
+        const appClicked = vi.fn();
+        p.addEventListener('click', appClicked);
+        const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+        p.dispatchEvent(click);
+        expect(appClicked).not.toHaveBeenCalled();
+        expect(hub.isPicking()).toBe(true);
+        // Its window listeners would otherwise outlive this test's hub and take the next test's touches.
+        hub.stopPick();
+    });
+
+    it('a finger that moves past the slop and comes back picks nothing', async () => {
+        const { p } = page();
+        const hub = await loadHub();
+        hub.attach(runtime({ resolve: () => ({ instanceId: 5, name: 'Island', depth: -1 }) }), { platform: 'Server' });
+        document.elementFromPoint = () => p;
+
+        hub.startPick('t1', { tellPanel: false });
+        touchStart(p, 10, 110);
+        touchMove(p, 10, 160);
+        touchMove(p, 11, 111);
+        expect(touchEnd(p, 11, 111).defaultPrevented).toBe(false);
+        expect(hub.isPicking()).toBe(true);
+
+        // A finger that stays within the slop still taps.
+        touchStart(p, 10, 110);
+        touchMove(p, 14, 113);
+        expect(touchEnd(p, 14, 113).defaultPrevented).toBe(true);
+        await vi.waitFor(() => expect(hub.lastPick()?.instanceId).toBe(5));
+    });
+
+    it('a tap that stops a scroll still coasting from a flick picks nothing; the next tap picks', async () => {
+        const { p } = page();
+        const hub = await loadHub();
+        hub.attach(runtime({ resolve: () => ({ instanceId: 5, name: 'Island', depth: -1 }) }), { platform: 'Server' });
+        document.elementFromPoint = () => p;
+        hub.startPick('t1', { tellPanel: false });
+        window.dispatchEvent(new Event('scroll'));
+        touchStart(p, 10, 110);
+        expect(touchEnd(p, 10, 110).defaultPrevented).toBe(false);
+        expect(hub.isPicking()).toBe(true);
+
+        // Once the page has settled.
+        await new Promise(resolve => setTimeout(resolve, 200));
+        touchStart(p, 10, 110);
+        expect(touchEnd(p, 10, 110).defaultPrevented).toBe(true);
+        await vi.waitFor(() => expect(hub.lastPick()?.instanceId).toBe(5));
+    });
+
+    it('the active tab is brought into view in a row that scrolls, and again whenever the row changes size', async () => {
+        document.body.innerHTML = '';
+        const observed = [];
+        let callback;
+        const original = window.ResizeObserver;
+        window.ResizeObserver = class {
+            constructor(cb) { callback = cb; }
+            observe(el) { observed.push(el); }
+            unobserve() {}
+        };
+        try {
+            const { panel } = panelIn(webRoot());
+            const row = document.createElement('div');
+            row.className = 'bev-tabs';
+            const tab = document.createElement('button');
+            tab.className = 'bev-tab bev-active';
+            row.appendChild(tab);
+            panel.appendChild(row);
+            rect(row, 0, 0, 300, 30);
+            rect(tab, 500, 0, 60, 30);
+            const hub = await loadHub();
+
+            // The wide layout: the row wraps, nothing to scroll.
+            Object.defineProperty(row, 'scrollWidth', { configurable: true, value: 300 });
+            Object.defineProperty(row, 'clientWidth', { configurable: true, value: 300 });
+            expect(hub.revealActiveTab('t1')).toBe(false);
+            expect(observed).toEqual([row]);
+            expect(hub.revealActiveTab('t1'), 'the row is watched once').toBe(false);
+            expect(observed).toEqual([row]);
+
+            // The panel narrows (the phone turned, docked right): the row scrolls, and the tab is brought into view.
+            Object.defineProperty(row, 'scrollWidth', { configurable: true, value: 900 });
+            row.scrollLeft = 0;
+            callback([{ target: row }]);
+            expect(row.scrollLeft).toBe(500 - (300 - 60) / 2);
+        } finally {
+            window.ResizeObserver = original;
+        }
     });
 
     it('hovering a row of BevTools\' own tree asks the runtime where its component is, without a Blazor event', async () => {

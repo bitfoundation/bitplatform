@@ -32,6 +32,11 @@
     line-height: 1.4;
     color: var(--bev-fg);
     box-sizing: border-box;
+    /* One level of a tree; narrower on a narrow panel, where depth would push the names out of view. */
+    --bev-indent: 14px;
+    /* Phones enlarge text they take for too small to read in landscape; the panel's sizes are deliberate. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 .bev-root[data-theme="dark"] {
@@ -91,8 +96,9 @@
 }
 
 .bev-root *, .bev-root *::before, .bev-root *::after { box-sizing: border-box; }
-.bev-root button { font: inherit; color: inherit; background: none; border: 1px solid transparent; padding: 2px 6px; border-radius: 4px; cursor: pointer; }
-.bev-root button:hover { background: var(--bev-bg3); }
+.bev-root button { font: inherit; color: inherit; background: none; border: 1px solid transparent; padding: 2px 6px; border-radius: 4px; cursor: pointer; touch-action: manipulation; }
+/* Only where a pointer really hovers: a touch screen keeps :hover on the last tapped button until the next tap. */
+@media (hover: hover) { .bev-root button:hover { background: var(--bev-bg3); } }
 .bev-root button:focus-visible, .bev-root [tabindex]:focus-visible, .bev-root input:focus-visible { outline: 2px solid var(--bev-accent); outline-offset: -2px; }
 .bev-root input[type="text"], .bev-root input[type="search"] { font: inherit; color: var(--bev-fg); background: var(--bev-bg); border: 1px solid var(--bev-border); border-radius: 4px; padding: 3px 6px; min-width: 0; }
 .bev-root code, .bev-mono { font-family: var(--bev-mono); font-size: 11.5px; }
@@ -112,27 +118,41 @@
 .bev-muted { color: var(--bev-fg2); }
 .bev-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bev-nowrap { white-space: nowrap; }
-.bev-pre { font-family: var(--bev-mono); font-size: 11px; white-space: pre-wrap; word-break: break-word; margin: 0; background: var(--bev-bg2); padding: 6px; border-radius: 4px; max-height: 260px; overflow: auto; }
+.bev-pre { font-family: var(--bev-mono); font-size: 11px; white-space: pre-wrap; word-break: break-word; margin: 0; background: var(--bev-bg2); padding: 6px; border-radius: 4px; max-height: 260px; overflow: auto; overscroll-behavior: contain; }
 
 /* Badge (closed state) */
-.bev-badge { position: fixed; right: 12px; bottom: 12px; z-index: 2147483000; background: var(--bev-bg2); color: var(--bev-fg); border: 1px solid var(--bev-border); border-radius: 999px; padding: 4px 10px; font-family: var(--bev-sans); font-size: 12px; display: flex; gap: 8px; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.2); cursor: pointer; }
-.bev-badge .bev-pill { padding: 0 6px; border-radius: 999px; font-weight: 600; }
+.bev-root .bev-badge { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 2147483000; background: var(--bev-bg2); color: var(--bev-fg); border: 1px solid var(--bev-border); border-radius: 999px; padding: 4px 10px; font-family: var(--bev-sans); font-size: 12px; display: flex; gap: 8px; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.2); cursor: pointer; }
+.bev-root .bev-badge .bev-pill { padding: 0 6px; border-radius: 999px; font-weight: 600; }
 /* Blazor's own error bar (#blazor-error-ui in every project template, shown with display: block) runs along the bottom
    with its dismiss button at the right, where the badge sits: the badge moves above it while it shows. */
-body:has(#blazor-error-ui[style*="display: block"]) .bev-badge { bottom: 60px; }
+body:has(#blazor-error-ui[style*="display: block"]) .bev-root .bev-badge { bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
 
-/* Panel shell */
-.bev-panel { position: fixed; z-index: 2147483000; background: var(--bev-bg); color: var(--bev-fg); border: 1px solid var(--bev-border); display: flex; flex-direction: column; box-shadow: 0 -2px 12px rgba(0,0,0,.2); overflow: hidden; }
-.bev-panel.bev-dock-bottom { left: 0; right: 0; bottom: 0; }
-.bev-panel.bev-dock-bottom.bev-size-small { height: 32vh; }
-.bev-panel.bev-dock-bottom.bev-size-medium { height: 48vh; }
-.bev-panel.bev-dock-bottom.bev-size-large { height: 72vh; }
-.bev-panel.bev-dock-right { top: 0; right: 0; bottom: 0; }
+/* Panel shell. The panel is the container its compact layout is keyed on (below): its own size decides, so a panel
+   docked right on a desktop gets the layout a phone gets, and a phone on its side the header a phone upright gets. */
+.bev-panel { position: fixed; z-index: 2147483000; background: var(--bev-bg); color: var(--bev-fg); border: 1px solid var(--bev-border); display: flex; flex-direction: column; box-shadow: 0 -2px 12px rgba(0,0,0,.2); overflow: hidden; container: bev-panel / size; }
+/* The home indicator and the notch: the panel's content stays clear of them on phones (env() is 0 everywhere else). */
+.bev-panel.bev-dock-bottom { left: 0; right: 0; bottom: 0; padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+/* vh first for browsers without dvh; dvh follows a mobile browser's address bar instead of hiding under it. */
+.bev-panel.bev-dock-bottom.bev-size-small { height: 32vh; height: 32dvh; }
+.bev-panel.bev-dock-bottom.bev-size-medium { height: 48vh; height: 48dvh; }
+.bev-panel.bev-dock-bottom.bev-size-large { height: 72vh; height: 72dvh; }
+.bev-panel.bev-dock-right { top: 0; right: 0; bottom: 0; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) 0; }
 .bev-panel.bev-dock-right.bev-size-small { width: 420px; }
 .bev-panel.bev-dock-right.bev-size-medium { width: 580px; }
 .bev-panel.bev-dock-right.bev-size-large { width: 760px; }
-@media (max-width: 800px) { .bev-panel.bev-dock-right { width: 100% !important; } }
-.bev-panel.bev-picking { height: auto !important; bottom: 0; top: auto !important; width: auto !important; left: auto; right: 0; }
+@media (max-width: 800px) { .bev-panel.bev-dock-right { width: 100% !important; padding-left: env(safe-area-inset-left, 0px); } }
+/* A phone, upright or on its side: a third of its screen is a few rows. Every size is taller, and Large is the whole
+   screen (the header's close button and the toggle shortcut still close it). */
+@media (max-width: 640px), (max-height: 500px) {
+    .bev-panel.bev-dock-bottom.bev-size-small { height: 50vh; height: 50dvh; }
+    .bev-panel.bev-dock-bottom.bev-size-medium { height: 70vh; height: 70dvh; }
+    .bev-panel.bev-dock-bottom.bev-size-large { top: 0; height: auto; border: 0; padding-top: env(safe-area-inset-top, 0px); }
+}
+/* While picking its size follows its content, which a size container cannot do: it would collapse to nothing. */
+.bev-panel.bev-picking { height: auto !important; bottom: 0; top: auto !important; width: auto !important; left: auto; right: 0; container-type: normal; }
+/* On a phone the picking header spans the screen's width instead, which keeps it a container of its width (its height
+   still follows its content), so it keeps the compact header below rather than wrapping its full labels over the page. */
+@media (max-width: 640px) { .bev-panel.bev-picking { left: 0; container-type: inline-size; } }
 .bev-panel.bev-picking .bev-body, .bev-panel.bev-picking .bev-tabs { display: none; }
 
 .bev-header { display: flex; align-items: center; gap: 4px; padding: 3px 6px; border-bottom: 1px solid var(--bev-border); background: var(--bev-bg2); flex-wrap: wrap; }
@@ -151,10 +171,10 @@ body:has(#blazor-error-ui[style*="display: block"]) .bev-badge { bottom: 60px; }
 .bev-root button.bev-paused { background: var(--bev-warn-bg); color: var(--bev-warn); border-color: var(--bev-warn); font-weight: 600; }
 .bev-changes { margin: 0 0 6px 16px; padding: 0; }
 .bev-changes li { list-style: disc; }
-.bev-search { width: 260px; }
+.bev-search { width: 260px; max-width: 100%; }
 
 /* A render batch on a time axis: one row per depth, each render where it started. */
-.bev-root .bev-time-axis { position: relative; padding-top: 16px; max-height: 40vh; overflow: auto; }
+.bev-root .bev-time-axis { position: relative; padding-top: 16px; max-height: 40vh; overflow: auto; overscroll-behavior: contain; }
 .bev-root .bev-time-scale { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10px; color: var(--bev-fg2); }
 .bev-root .bev-time-rows { position: relative; min-width: 100%; }
 .bev-root .bev-time-bar { position: absolute; height: 16px; line-height: 16px; padding: 0 3px; box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: clip; font-family: var(--bev-mono); font-size: 10.5px; color: var(--bev-fg); background: var(--bev-accent-bg); border: 1px solid var(--bev-accent); border-radius: 2px; cursor: pointer; }
@@ -191,12 +211,13 @@ body:has(#blazor-error-ui[style*="display: block"]) .bev-badge { bottom: 60px; }
 /* Generic split layouts */
 .bev-split { display: flex; flex: 1 1 auto; min-height: 0; min-width: 0; }
 .bev-split > .bev-left { flex: 0 0 45%; min-width: 0; display: flex; flex-direction: column; border-right: 1px solid var(--bev-border); }
-.bev-split > .bev-right { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; overflow: auto; }
+.bev-split > .bev-right { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; overflow: auto; overscroll-behavior: contain; }
 .bev-dock-right .bev-split { flex-direction: column; }
 .bev-dock-right .bev-split > .bev-left { flex: 0 0 45%; border-right: none; border-bottom: 1px solid var(--bev-border); }
 .bev-toolbar { display: flex; gap: 4px; align-items: center; padding: 3px 6px; border-bottom: 1px solid var(--bev-border); flex-wrap: wrap; }
 .bev-toolbar input[type="text"] { flex: 1 1 120px; }
-.bev-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; }
+/* overscroll-behavior: a swipe that reaches the end of a list stops there instead of scrolling the page behind the panel. */
+.bev-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; }
 .bev-empty { padding: 16px; color: var(--bev-fg2); }
 .bev-section { border-bottom: 1px solid var(--bev-border); }
 .bev-section-title, .bev-root button.bev-section-title { display: flex; align-items: center; gap: 6px; width: 100%; padding: 4px 8px; border: 0; color: inherit; background: var(--bev-bg2); font: inherit; font-weight: 600; text-align: left; user-select: none; }
@@ -265,8 +286,11 @@ tr.bev-row.bev-sev-warning > td:first-child { box-shadow: inset 3px 0 0 var(--be
 .bev-ev-row .bev-time { color: var(--bev-fg2); font-family: var(--bev-mono); width: 78px; flex: none; }
 .bev-ev-row .bev-ev-title { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
 .bev-ev-row .bev-ev-dur { color: var(--bev-fg2); font-family: var(--bev-mono); width: 70px; text-align: right; flex: none; }
-.bev-lanes { border-bottom: 1px solid var(--bev-border); background: var(--bev-bg2); }
-.bev-lanes svg { display: block; width: 100%; height: 96px; }
+.bev-lanes { position: relative; border-bottom: 1px solid var(--bev-border); background: var(--bev-bg2); }
+.bev-lane-labels { position: absolute; inset: 0; pointer-events: none; }
+.bev-lane-labels > span { position: absolute; left: 2px; line-height: 14px; font-size: 9px; color: var(--bev-fg2); }
+/* Positioned, so the bars paint over the labels (which come first) as they did when the labels were drawn in the SVG. */
+.bev-lanes svg { position: relative; display: block; width: 100%; height: 96px; }
 .bev-chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .bev-chips button.bev-chip { border: 1px solid transparent; }
 .bev-chips button.bev-chip.bev-off { opacity: .45; text-decoration: line-through; }
@@ -275,7 +299,7 @@ tr.bev-row.bev-sev-warning > td:first-child { box-shadow: inset 3px 0 0 var(--be
 .bev-palette-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.25); z-index: 10; display: flex; justify-content: center; align-items: flex-start; padding-top: 32px; }
 .bev-palette { width: min(640px, 92%); background: var(--bev-bg); border: 1px solid var(--bev-border); border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.35); overflow: hidden; }
 .bev-palette input { width: 100%; border: none; border-bottom: 1px solid var(--bev-border); border-radius: 0; padding: 8px 10px; font-size: 13px; }
-.bev-palette-list { max-height: 320px; overflow: auto; }
+.bev-palette-list { max-height: 320px; overflow: auto; overscroll-behavior: contain; }
 .bev-palette-item { display: flex; gap: 8px; padding: 5px 10px; cursor: pointer; align-items: center; }
 .bev-palette-item.bev-active { background: var(--bev-accent-bg); }
 .bev-palette-item .bev-cat { color: var(--bev-fg2); font-size: 11px; min-width: 80px; }
@@ -299,6 +323,82 @@ tr.bev-row.bev-sev-warning > td:first-child { box-shadow: inset 3px 0 0 var(--be
 .bev-stat .bev-stat-value { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .bev-stat .bev-stat-label { color: var(--bev-fg2); font-size: 11px; }
 .bev-panel-host { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+
+/* A narrow panel: a phone upright, or a desktop panel docked right. The header takes two rows instead of up to five:
+   the buttons lose their words (each keeps its symbol, title and accessible name) and share the first row with the
+   title, and the tabs become one row that scrolls sideways instead of wrapping. */
+@container bev-panel (max-width: 640px) {
+    .bev-root .bev-header { gap: 2px 4px; }
+    .bev-root .bev-tools { justify-content: flex-end; }
+    .bev-root .bev-tools button { padding-inline: 7px; }
+    .bev-root .bev-tools label { padding-inline: 4px; }
+    .bev-root .bev-tabs { order: 1; flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+    .bev-root .bev-tab { flex: none; }
+    .bev-root .bev-label { display: none; }
+}
+
+/* The same header on a short screen, a phone on its side, where a panel of any size is a few rows high. The screen
+   decides, not the panel's height: a bottom panel on a desktop is as low, but has room for the words. */
+@media (max-height: 500px) {
+    .bev-root .bev-header { gap: 2px 4px; }
+    .bev-root .bev-tools { justify-content: flex-end; }
+    .bev-root .bev-tools button { padding-inline: 7px; }
+    .bev-root .bev-tools label { padding-inline: 4px; }
+    .bev-root .bev-tabs { order: 1; flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+    .bev-root .bev-tab { flex: none; }
+    .bev-root .bev-label { display: none; }
+}
+
+/* A phone's width leaves no room for the title next to the buttons; the tabs below say what this is. */
+@container bev-panel (max-width: 480px) {
+    .bev-root .bev-title { display: none; }
+}
+
+/* A narrow panel: a list and its details stack instead of sharing the width, and grids take narrower columns. */
+@container bev-panel (max-width: 640px) {
+    .bev-root .bev-split { flex-direction: column; }
+    /* Over the panels' own side-by-side proportions, which are inline styles. */
+    .bev-root .bev-split > .bev-left { flex: 0 0 45% !important; border-right: none; border-bottom: 1px solid var(--bev-border); }
+    .bev-root .bev-kv { grid-template-columns: fit-content(40%) minmax(0, 1fr); }
+    .bev-root .bev-kv > dt { white-space: normal; overflow-wrap: anywhere; }
+    .bev-root .bev-stat-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+    .bev-root .bev-toolbar input[type="text"], .bev-root .bev-toolbar input[type="search"] { flex-basis: 100%; }
+    .bev-root .bev-palette-backdrop { padding: 8px; }
+    .bev-root .bev-palette { width: 100%; }
+    .bev-root .bev-palette-item { flex-wrap: wrap; row-gap: 0; }
+    .bev-root .bev-palette-item .bev-cat { min-width: 0; }
+    .bev-root .bev-notification { max-width: calc(100% - 16px); }
+    /* Every tree's indent (the component tree, value trees, services and the profiler's batch tree): depth would
+       otherwise push the names out of view. */
+    .bev-root .bev-body { --bev-indent: 10px; }
+    /* The Timeline's kind filters: one row that scrolls sideways, not three rows above the events. */
+    .bev-root .bev-chips { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+    .bev-root .bev-chips > * { flex: none; }
+}
+
+/* Touch: targets big enough for a finger (WCAG 2.5.8 asks for at least 24 px; these reach 32), and text inputs at
+   16 px, below which iOS zooms the whole page in when one is focused. Virtualize measures the rows it renders, so
+   taller rows keep its lists scrolling right. */
+@media (pointer: coarse) {
+    .bev-root button, .bev-root .bev-file { min-height: 32px; padding: 4px 10px; }
+    .bev-root .bev-link, .bev-root th .bev-sort { min-height: 0; padding: 0; }
+    .bev-root .bev-tools label { min-height: 32px; padding: 4px 8px; }
+    .bev-root .bev-toolbar label { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; }
+    .bev-root input[type="checkbox"] { width: 18px; height: 18px; }
+    .bev-root input[type="text"], .bev-root input[type="search"], .bev-root .bev-palette input { font-size: 16px; padding: 6px 8px; }
+    .bev-root .bev-tree-row, .bev-root .bev-ev-row { height: 34px; }
+    .bev-root .bev-tree-row .bev-caret { width: 28px; align-self: stretch; display: flex; align-items: center; justify-content: center; }
+    .bev-root .bev-vt-row { padding: 5px 0; }
+    .bev-root .bev-vt-row .bev-caret { width: 24px; text-align: center; }
+    .bev-root td { padding: 7px 6px; }
+    .bev-root th { padding: 6px; }
+    .bev-root .bev-section-title, .bev-root button.bev-section-title { min-height: 36px; padding: 6px 8px; }
+    .bev-root .bev-chips button.bev-chip { min-height: 28px; padding: 2px 10px; }
+    .bev-root .bev-palette-item { padding: 10px; }
+    /* Its keys are a keyboard's. */
+    .bev-root .bev-palette-footer { display: none; }
+    .bev-root .bev-badge { padding: 8px 14px; font-size: 13px; }
+}
 
 /* The page overlay: component outlines, picking, render flashes. Outside every element the app renders, above it but
    below the panel and the badge (one step under their z-index), so an outline never covers BevTools' own UI; never in

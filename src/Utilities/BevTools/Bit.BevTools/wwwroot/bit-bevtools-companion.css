@@ -41,6 +41,9 @@
 
 html, body { height: 100%; margin: 0; }
 
+/* Phones enlarge text they take for too small to read in landscape; the companion's sizes are deliberate. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
 .bc-root {
     display: flex;
     flex-direction: column;
@@ -57,9 +60,11 @@ button {
     border-radius: 4px;
     padding: 2px 8px;
     cursor: pointer;
+    touch-action: manipulation;
 }
 
-button:hover { background: var(--bc-bg3); }
+/* Only where a pointer really hovers: a touch screen keeps :hover on the last tapped element until the next tap. */
+@media (hover: hover) { button:hover { background: var(--bc-bg3); } }
 
 button:focus-visible, input:focus-visible, .bc-tree-row:focus-visible { outline: 2px solid var(--bc-accent); outline-offset: -2px; }
 
@@ -68,7 +73,8 @@ input[type="search"] {
     border: 1px solid var(--bc-border);
     border-radius: 4px;
     padding: 3px 6px;
-    min-width: 280px;
+    width: 280px;
+    max-width: 100%;
 }
 
 .bc-header { border-bottom: 1px solid var(--bc-border); background: var(--bc-bg2); }
@@ -216,3 +222,30 @@ a { color: var(--bc-accent); }
 .bc-cap-available { color: var(--bc-ok); }
 
 .bc-cap-notavailable, .bc-cap-notreliable { color: var(--bc-err); }
+
+/* A narrow window: a phone, or the extension's panel in browser developer tools docked to the side. The tabs become one
+   row that scrolls sideways, and a list and its details stack instead of sharing the width. */
+@media (max-width: 640px) {
+    .bc-tabs { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+    .bc-tab { flex: none; }
+    .bc-toolbar { flex-wrap: wrap; }
+    .bc-toolbar input[type="search"] { flex: 1 1 100%; width: auto; }
+    .bc-split { flex-direction: column; }
+    .bc-split > .bc-left { flex: 0 0 45%; border-right: none; border-bottom: 1px solid var(--bc-border); }
+    .bc-split > .bc-right { flex: 1 1 0; }
+    .bc-truncate { max-width: 60vw; }
+    .bc-kv { grid-template-columns: fit-content(40%) minmax(0, 1fr); }
+    .bc-stats { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+}
+
+.bc-scroll { overscroll-behavior: contain; }
+
+/* Touch: targets big enough for a finger, and text inputs at 16 px, below which iOS zooms the page in on focus. */
+@media (pointer: coarse) {
+    button { min-height: 32px; padding: 4px 10px; }
+    input[type="search"] { font-size: 16px; padding: 6px 8px; }
+    th, td { padding: 7px 6px; }
+    .bc-tree-row { min-height: 34px; }
+    .bc-caret { width: 24px; text-align: center; }
+    .bc-section > summary { padding: 8px; }
+}

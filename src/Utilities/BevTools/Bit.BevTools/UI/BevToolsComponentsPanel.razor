@@ -27,7 +27,7 @@
                     }
                     <div class="bev-tree-row @(selected ? "bev-selected" : "") @(flash ? "bev-flash" : "") @(record.IsHidden ? "bev-hidden-comp" : "")"
                          role="treeitem" aria-level="@(row.Node.Depth + 1)" aria-selected="@(selected ? "true" : "false")" aria-expanded="@(hasChildren ? (collapsed ? "false" : "true") : null)"
-                         style="padding-left:@(row.Node.Depth * 14 + 4)px" @onclick="() => Select(record.InstanceId)" data-bev-id="@record.InstanceId" title="@record.TypeName">
+                         style="padding-left:calc(@(row.Node.Depth) * var(--bev-indent) + 4px)" @onclick="() => Select(record.InstanceId)" data-bev-id="@record.InstanceId" title="@record.TypeName">
                         @if (hasChildren)
                         {
                             <span class="bev-caret" role="presentation" @onclick:stopPropagation="true" @onclick="() => ToggleCollapse(record.InstanceId)">@(collapsed ? "▸" : "▾")</span>
