@@ -62,8 +62,11 @@ jobs:
     - name: Setup bit CLI
       uses: ./.github/actions/setup-bit-cli
 
+    # bit setup prints nothing while one of its steps runs, so a download that stalls in CI hangs it without a word, up to
+    # the job's six hours. It takes about 5 minutes here.
     - name: Set up and build Boilerplate with bit setup
       run: bit setup src/Templates/Boilerplate/Bit.Boilerplate --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
+      timeout-minutes: 20
 
     - name: Verify formatting
       run: dotnet format whitespace src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx --verify-no-changes

@@ -44,21 +44,28 @@ jobs:
     - name: Verify formatting
       run: dotnet format whitespace --folder . --verify-no-changes
 
+    # bit setup prints nothing while one of its steps runs, so a download that stalls in CI hangs it without a word. This
+    # step and the other long ones have a time limit of their own, well past their usual time (about 10 minutes for this
+    # one), so a stalled step fails under its own name instead of running to the job's limit.
     - name: Set up and build with bit setup
       uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-22
+      timeout-minutes: 25
       with:
         arguments: --platforms android -p:EnforceCodeStyleInBuild=true
 
     - name: Check that the api still works for the app versions it supports
       run: bit api check
+      timeout-minutes: 10
 
     - name: Test
       id: test
       run: cd src/Tests && dotnet test
+      timeout-minutes: 20
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: ${{ failure() && steps.test.conclusion == 'failure' }}
+      timeout-minutes: 10
       with:
         name: tests-artifact
         path: ./src/Tests/TestResults
@@ -68,7 +75,9 @@ jobs:
     - name: Test the landing page
       if: ${{ !cancelled() }}
       run: cd src/LandingPage/Boilerplate.LandingPage.Tests && dotnet test
+      timeout-minutes: 10
 
+    # The job's time limit is this step's own: how long the Workbench's tests take grows with the project's pages.
     - name: Test the Workbench
       id: test-workbench
       if: ${{ !cancelled() }}
@@ -77,6 +86,7 @@ jobs:
     - name: Upload Workbench Tests Artifact
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: ${{ failure() && steps.test-workbench.conclusion == 'failure' }}
+      timeout-minutes: 10
       with:
         name: workbench-tests-artifact
         path: ./src/WorkbenchTests/TestResults
