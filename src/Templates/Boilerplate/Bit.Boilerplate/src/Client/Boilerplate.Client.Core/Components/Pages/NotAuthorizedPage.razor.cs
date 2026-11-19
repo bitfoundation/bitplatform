@@ -77,11 +77,6 @@ public partial class NotAuthorizedPage
     }
 
     //#if (multitenant == true)
-    /// <summary>
-    /// Loads the tenants the account menu lists, so the user can switch into one right here: hers, and the ones she has
-    /// only been invited to, where switching in is what accepts the invitation (See IdentityController.Refresh). A global
-    /// admin is listed every active tenant, and nothing is an invitation to her (See ManageMyTenantsPage.IsPendingInvitation).
-    /// </summary>
     private async Task LoadTenants(ClaimsPrincipal user)
     {
         isGlobalAdmin = await AuthorizationService.IsAuthorized(user, AppFeatures.Management.Tenants_Manage_Global);
@@ -90,11 +85,9 @@ public partial class NotAuthorizedPage
 
     private async Task SwitchTenant(TenantDto tenant)
     {
-        // Switching calls the refresh token api that stores the new tenant id in the token's claims (See IdentityController.Refresh).
         if (await AuthManager.SwitchTenant(tenant.Id, CurrentCancellationToken))
         {
-            // As the account menu's switch does: the app is rebuilt, and the page that was refused renders again, now
-            // with a tenant.
+            // As in AppMenu: the refused page renders again, now with a tenant.
             PubSubService.Publish(ClientAppMessages.SOFT_RESTART);
         }
     }

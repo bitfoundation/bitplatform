@@ -38,10 +38,7 @@ public partial class NotAuthorizedPage
     }
 
     //#if (multitenant == true)
-    /// <summary>
-    /// The sample tenants in place of what the app's UserController.GetTenants returns: the view's user belongs to the first
-    /// and has been invited to the others.
-    /// </summary>
+    /// <summary>Stands in for UserController.GetTenants.</summary>
     private List<TenantDto> GetSampleTenants()
     {
         return [.. WorkbenchDemoUsers.TenantKeys.Select((key, index) => new TenantDto

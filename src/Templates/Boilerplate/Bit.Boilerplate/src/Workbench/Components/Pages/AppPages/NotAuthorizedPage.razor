@@ -6,7 +6,7 @@
 <AuthorizeView>
     <Authorized>
         <section>
-            @* NoShrinkContent: what doesn't fit makes the page scroll, rather than squeezing the image out of sight. *@
+            @* NoShrinkContent: on a small screen the page scrolls instead of squeezing the image. *@
             <BitStack NoShrinkContent HorizontalAlign="BitAlignment.Center" Style="--bit-Button-min-width:min(300px, 100%)">
                 <BitImage Alt="" Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
 
@@ -23,7 +23,7 @@
 
                     @if (tenants.Count > 0)
                     {
-                        @* The app's own list, on sample tenants; with no server to switch on, a switch here goes nowhere. *@
+                        @* No OnSwitch: there's no server to switch on here. *@
                         <Boilerplate.Client.Core.Components.Pages.Tenants.TenantSwitchList Tenants="tenants" IsGlobalAdmin="isGlobalAdmin" />
                     }
 

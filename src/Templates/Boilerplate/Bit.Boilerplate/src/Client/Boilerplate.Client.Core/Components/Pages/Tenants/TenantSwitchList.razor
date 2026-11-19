@@ -1,8 +1,7 @@
 @using Boilerplate.Shared.Features.Tenants.Dtos
 @inherits AppComponentBase
 
-@* The width of the buttons around it on the not-authorized page, and the default min-width of the buttons inside it,
-   which that page sets wider for its own buttons. *@
+@* As wide as the not-authorized page's buttons, without the min-width that page gives them. *@
 <BitStack FitHeight Gap="0.5rem" Style="width:min(300px, 100%);--bit-Button-min-width:initial">
     @if (invitations.Length > 0)
     {
@@ -12,10 +11,9 @@
         {
             <BitStack @key="tenant.Id" Horizontal FitHeight VerticalAlign="BitAlignment.Center">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Warning" />
-                @* A tenant without a title is listed by its name, which has no space to break at: BreakWord keeps a
-                   long one from pushing Accept out of the row. *@
+                @* A tenant's name has no space to wrap at, so a long one would push Accept out of the row. *@
                 <BitText BreakWord Style="flex-grow:1">@GetDisplayName(tenant)</BitText>
-                @* Accepting is switching into the tenant (See IdentityController.Refresh). *@
+                @* Switching in is what accepts the invitation (See IdentityController.Refresh). *@
                 <BitButton Color="BitColor.Success"
                            IconName="@BitIconName.Accept"
                            Loading="IsSwitching(tenant)"
@@ -33,7 +31,6 @@
 
         @foreach (var tenant in switchTargets)
         {
-            @* The same long name breaks inside its button instead of running out of it. *@
             <BitButton @key="tenant.Id"
                        FullWidth
                        Variant="BitVariant.Outline"

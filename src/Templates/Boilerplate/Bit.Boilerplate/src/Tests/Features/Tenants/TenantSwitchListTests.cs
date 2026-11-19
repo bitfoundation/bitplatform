@@ -6,11 +6,7 @@ using Boilerplate.Client.Core.Components.Pages.Tenants;
 
 namespace Boilerplate.Tests.Features.Tenants;
 
-/// <summary>
-/// The list the not-authorized page shows a user without a selected tenant (See NotAuthorizedPageTests for the page
-/// itself, on the real api). Rendered here on tenants of the test's own, since what decides its layout is the membership
-/// state of each one, and whether the user is a global admin.
-/// </summary>
+/// <summary>The list on tenants of the test's own; NotAuthorizedPageTests covers the page on the real api.</summary>
 [TestClass, TestCategory("UITest"), Retry(2)]
 public class TenantSwitchListTests
 {
@@ -28,10 +24,9 @@ public class TenantSwitchListTests
 
         await using var ctx = server.CreateBunitContext();
 
-        // In the api's order, by name: the invitation is in between the tenants she belongs to.
+        // The api's order, by name, puts the invitation between the memberships.
         var cut = Render(ctx, [alpha, beta, gamma], isGlobalAdmin: false, onSwitch: _ => Task.CompletedTask);
 
-        // The headings and the buttons, in the order they are on the page.
         var order = cut.FindAll("h3, button").Select(element => element.TextContent.Trim()).ToList();
         string[] expected = [AppStrings.PendingInvitations, AppStrings.AcceptInvitation, AppStrings.SwitchTenant, "Alpha", "Gamma"];
 
@@ -49,10 +44,6 @@ public class TenantSwitchListTests
         Assert.DoesNotContain("Alpha", accept.ParentElement.TextContent);
     }
 
-    /// <summary>
-    /// A global admin is listed every active tenant and switches into any of them, as she does from the account menu and
-    /// the Manage my tenants page (See ManageMyTenantsPage.IsPendingInvitation), so nothing is offered to her as an invitation.
-    /// </summary>
     [TestMethod]
     public async Task TenantSwitchList_Should_OfferNoInvitation_ToAGlobalAdmin()
     {
