@@ -55,8 +55,11 @@
     flex-flow: column;
     max-width: rem2(600px);
     box-sizing: border-box;
-    border-radius: rem2(4px);
-    box-shadow: $bit-box-shadow-callout;
+    @include SurfaceCard;
+
+    @include sm {
+        padding: 1.5rem;
+    }
 }
 
 ::deep {

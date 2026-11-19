@@ -12,6 +12,28 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     padding-top: var(--bit-status-bar-height);
+    border-bottom: 1px solid transparent;
+}
+
+// At the top of the page the bar stays fully see-through (the home hero glow runs under it); over
+// the first few pixels of scrolling it frosts up with a tint of the page background and a hairline
+// underneath. Driven by the scroll position on the compositor - no scroll listener, no re-render.
+// Browsers without scroll-driven animations keep the plain blurred bar.
+@supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+        .main-header {
+            animation: header-scrolled linear both;
+            animation-timeline: scroll(root block);
+            animation-range: 0 rem2(64px);
+        }
+    }
+}
+
+@keyframes header-scrolled {
+    to {
+        border-bottom-color: var(--app-hairline);
+        background-color: color-mix(in srgb, $bit-color-background-primary 85%, transparent);
+    }
 }
 
 .skip-link {
@@ -79,7 +101,8 @@
     cursor: pointer;
     line-height: 1.5;
     position: relative;
-    font-size: rem2(18px);
+    font-weight: 500;
+    font-size: rem2(16px);
     text-decoration: none;
     box-sizing: border-box;
     padding: rem2(10px) rem2(16px);
@@ -263,10 +286,12 @@
 .header-nav-link {
     width: 100%;
     line-height: 1.5;
-    padding: rem2(16px) 0;
-    font-size: rem2(14px);
+    font-weight: 500;
+    padding: rem2(14px) 0;
+    font-size: rem2(16px);
     text-decoration: none;
-    margin-bottom: rem2(16px);
+    margin-bottom: rem2(8px);
+    border-bottom: 1px solid var(--app-hairline);
     color: $bit-color-foreground-secondary;
 }
 
@@ -294,10 +319,10 @@
     display: flex;
     padding: rem2(8px);
     box-sizing: border-box;
-    border-radius: rem2(4px);
+    border-radius: var(--app-radius-md);
     flex-flow: column nowrap;
     margin-bottom: rem2(16px);
-    border: 1px solid $bit-color-border-secondary;
+    border: 1px solid var(--app-hairline);
     background-color: $bit-color-background-secondary;
     animation: header-fade-slide-in 200ms $MotionEase 0ms;
 
@@ -353,12 +378,12 @@
     visibility: hidden;
     pointer-events: none;
     flex-flow: row nowrap;
-    border-radius: rem2(4px);
-    padding: rem2(8px) rem2(16px);
+    padding: rem2(8px);
+    border-radius: var(--app-radius-md);
     transform: translateY(rem2(-8px));
-    border: 1px solid $bit-color-border-secondary;
-    background-color: $bit-color-background-secondary;
-    box-shadow: 0 rem2(8px) rem2(24px) rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--app-hairline);
+    background-color: $bit-color-background-primary;
+    box-shadow: 0 rem2(1px) rem2(2px) rgba(0, 0, 0, 0.06), 0 rem2(16px) rem2(40px) rem2(-12px) rgba(15, 23, 42, 0.28);
 
     // Visibility flips at the END of the fade-out (the 180ms delay) and instantly on fade-in.
     transition: opacity 180ms $MotionEase 0ms,
@@ -386,18 +411,19 @@
     cursor: pointer;
     align-items: center;
     flex-flow: row nowrap;
-    border-radius: rem2(4px);
+    border-radius: var(--app-radius-sm);
     justify-content: flex-start;
     padding: rem2(8px) rem2(16px);
     transition: background-color 150ms $MotionEase 0ms,
         transform 150ms $MotionEase 0ms;
 
+    // A tint instead of the old bolder title: no width change, so the row never reflows on hover.
     &:hover {
         transform: translateX(rem2(3px));
-        background-color: $bit-color-background-secondary-hover;
+        background-color: color-mix(in srgb, $bit-color-primary 8%, transparent);
 
         .item-title {
-            font-weight: 800;
+            color: $bit-color-primary;
         }
     }
 
@@ -435,7 +461,7 @@
         background-color: transparent;
 
         .item-title {
-            font-weight: 600;
+            color: $bit-color-foreground-disabled;
         }
     }
 }
@@ -492,20 +518,20 @@
     overflow-y: auto;
     position: absolute;
     visibility: hidden;
-    padding: rem2(16px);
+    padding: rem2(8px);
     box-sizing: border-box;
     flex-flow: column nowrap;
-    border-radius: rem2(4px);
     width: calc(100% + 2px);
     scrollbar-width: thin;
     overscroll-behavior: contain;
     // A themed thumb: the popup's black webkit one vanishes on the dark theme, hiding that the
     // list scrolls.
     scrollbar-color: $bit-color-border-primary transparent;
+    border-radius: var(--app-radius-md);
     transform: translateX(rem2(-8px));
-    border: 1px solid $bit-color-border-secondary;
-    background-color: $bit-color-background-secondary;
-    box-shadow: 0 rem2(8px) rem2(24px) rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--app-hairline);
+    background-color: $bit-color-background-primary;
+    box-shadow: 0 rem2(1px) rem2(2px) rgba(0, 0, 0, 0.06), 0 rem2(16px) rem2(40px) rem2(-12px) rgba(15, 23, 42, 0.28);
     // Hiding waits a beat (hover intent), so a diagonal pass over the neighboring items on the way to
     // the flyout does not close it; visibility flips at the end of the fade-out.
     transition: opacity 150ms $MotionEase 200ms,
@@ -519,7 +545,7 @@
 
 @mixin menu-sub-open {
     .menu-sub-trigger {
-        background-color: $bit-color-background-secondary-hover;
+        background-color: color-mix(in srgb, $bit-color-primary 8%, transparent);
     }
 
     .menu-sub-chevron {

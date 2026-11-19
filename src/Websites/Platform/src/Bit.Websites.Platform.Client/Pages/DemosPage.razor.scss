@@ -36,6 +36,7 @@
 
 .mid-section {
     padding-block: 4rem;
+    border-block: 1px solid var(--app-hairline);
     background: $bit-color-background-secondary;
 
     .mid-container {
@@ -84,7 +85,10 @@
 // Visibility (dark-image/light-image classes) is owned by the global themed utilities in app.scss.
 .template-img {
     width: 100%;
-    border: 1px solid $bit-color-border-secondary;
+    height: auto;
+    border-radius: var(--app-radius-md);
+    border: 1px solid var(--app-hairline);
+    box-shadow: var(--app-shadow-card);
 }
 
 .primary-btn {
@@ -101,13 +105,15 @@
     display: inline-flex;
     text-decoration: none;
     justify-content: center;
-    border-radius: rem2(4px);
+    border-radius: var(--app-radius-sm);
     margin-bottom: rem2(8px);
     padding: rem2(12px) rem2(16px);
     color: $bit-color-primary-text;
     background-color: $bit-color-primary;
+    transition: background-color 0.2s $MotionEase, transform 0.2s $MotionEase;
 
     &:hover {
+        transform: translateY(-1px);
         background-color: $bit-color-primary-hover;
     }
 }
@@ -125,13 +131,14 @@
     min-width: rem2(64px);
     text-decoration: none;
     box-sizing: border-box;
-    border-radius: rem2(4px);
+    border-radius: var(--app-radius-sm);
     margin-bottom: rem2(8px);
     justify-content: center;
     padding: rem2(12px) rem2(16px);
     color: $bit-color-primary;
     background-color: $bit-color-background-primary;
-    border: rem2(1px) solid $bit-color-border-secondary;
+    border: rem2(1px) solid var(--app-hairline);
+    transition: background-color 0.2s $MotionEase, border-color 0.2s $MotionEase;
 
     &.disabled {
         cursor: default;
@@ -139,6 +146,7 @@
     }
 
     &:hover {
+        border-color: var(--app-hairline-strong);
         background-color: $bit-color-background-primary-hover;
     }
 }
@@ -197,6 +205,7 @@
 
     video {
         width: 100%;
+        border-radius: var(--app-radius-md);
     }
 }
 
@@ -244,12 +253,18 @@
     a {
         margin: 0.5em;
         border: 1px solid;
-        border-radius: 0.5em;
-        padding: 0.25em 0.5em;
+        border-radius: 2em;
+        padding: 0.25em 0.75em;
         text-decoration: none;
         color: $bit-color-primary-dark;
-        border-color: $bit-color-primary-dark;
-        background-color: rgb(150 150 250 / 0.05);
+        border-color: color-mix(in srgb, $bit-color-primary-dark 50%, transparent);
+        background-color: color-mix(in srgb, $bit-color-primary 6%, transparent);
+        transition: background-color 0.2s $MotionEase, border-color 0.2s $MotionEase;
+
+        &:hover {
+            border-color: $bit-color-primary-dark;
+            background-color: color-mix(in srgb, $bit-color-primary 12%, transparent);
+        }
     }
 }
 

@@ -5,10 +5,13 @@
 <PageOutlet Url="demos"
             Title="Demos"
             Description="Real, open source apps running on web, Android, iOS, Windows and macOS - all built on bit Boilerplate, all with the source code included.">
-    <link rel="prerender" href="https://todo.bitplatform.dev/" />
-    <link rel="prerender" href="https://sales.bitplatform.dev/" />
-    <link rel="prerender" href="https://blazorui.bitplatform.dev/" />
-    <link rel="prerender" href="https://adminpanel.bitplatform.dev/" />
+    @* rel=prerender is obsolete: browsers treat it as a no-state prefetch that downloads all four demo
+       sites up front. A preconnect only warms the connection, so a click still opens fast without the
+       bandwidth and memory cost on every visit. *@
+    <link rel="preconnect" href="https://todo.bitplatform.dev" />
+    <link rel="preconnect" href="https://sales.bitplatform.dev" />
+    <link rel="preconnect" href="https://blazorui.bitplatform.dev" />
+    <link rel="preconnect" href="https://adminpanel.bitplatform.dev" />
 </PageOutlet>
 
 <div class="page-container">

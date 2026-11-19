@@ -1,4 +1,5 @@
-﻿@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
@@ -12,12 +13,16 @@
 
 .button {
     display: flex;
+    padding: 0.5rem;
     align-items: center;
-    transition: all 0.2s;
-    border-radius: 0.5rem;
+    border-radius: var(--app-radius-sm);
+    border: 1px solid transparent;
+    transition: background-color 0.2s $MotionEase, border-color 0.2s $MotionEase;
 
-    &:hover {
-        padding: 0.5rem;
+    // A tint instead of the old growing padding, so hovering no longer shifts the layout.
+    &:has(.link):hover {
+        border-color: var(--app-hairline);
+        background-color: color-mix(in srgb, $bit-color-primary 8%, transparent);
     }
 }
 

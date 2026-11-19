@@ -76,13 +76,12 @@
 
     .value-card {
         flex-grow: 0;
-        padding: rem2(20px);
+        padding: rem2(24px);
         min-width: rem2(325px);
         min-height: rem2(200px);
-        border-radius: rem2(4px);
         max-width: calc((100% / 3) - 20px);
         flex-basis: calc((100% / 3) - 20px);
-        box-shadow: $bit-box-shadow-callout;
+        @include SurfaceCard(true);
 
         @include lt-md {
             min-width: 18rem;
@@ -94,6 +93,7 @@
     margin: 5rem 0;
     padding: 7rem 0;
     text-align: center;
+    border-block: 1px solid var(--app-hairline);
     background-color: $bit-color-background-secondary;
 }
 
@@ -116,15 +116,15 @@
         min-width: 21rem;
         max-width: 21rem;
         padding: rem2(20px);
-        border-radius: rem2(4px);
         justify-content: flex-start;
-        box-shadow: $bit-box-shadow-callout;
+        @include SurfaceCard(true);
     }
 
     .member-img {
         width: rem2(150px);
         height: rem2(150px);
-        border-radius: rem2(4px);
+        object-fit: cover;
+        border-radius: var(--app-radius-md);
     }
 
     .member-container {
@@ -155,6 +155,11 @@
         background-size: rem2(20px);
         background-position: center;
         background-repeat: no-repeat;
+        transition: background-color 0.2s $MotionEase;
+
+        &:hover {
+            background-color: $bit-color-background-secondary;
+        }
     }
 
     .github {

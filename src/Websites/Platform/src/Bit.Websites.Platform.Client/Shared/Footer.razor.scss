@@ -1,4 +1,5 @@
-﻿@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
@@ -11,6 +12,7 @@ footer {
     box-sizing: border-box;
     flex-flow: column nowrap;
     justify-content: flex-start;
+    border-top: 1px solid var(--app-hairline);
     background-color: $bit-color-background-primary;
 }
 
@@ -99,15 +101,22 @@ footer {
 }
 
 .go-to-top {
-    bottom: 0;
+    bottom: rem2(16px);
+    font: inherit;
     cursor: pointer;
-    right: rem2(2px);
+    right: rem2(20px);
     position: absolute;
-    padding: rem2(8px) rem2(12px);
+    font-size: rem2(14px);
+    border-radius: 2rem;
+    padding: rem2(6px) rem2(14px);
+    color: $bit-color-foreground-secondary;
+    border: 1px solid var(--app-hairline);
     background-color: $bit-color-background-secondary;
+    transition: color 0.2s $MotionEase, border-color 0.2s $MotionEase;
 
     &:hover {
-        background-color: $bit-color-background-secondary-hover;
+        color: $bit-color-foreground-primary;
+        border-color: var(--app-hairline-strong);
     }
 }
 
@@ -161,11 +170,16 @@ footer {
     background-image: url('/images/bit-blue-icon.svg');
 }
 
+// Quiet column headings and muted links that brighten on hover - the footer stays calm and the
+// brand color is kept for the things that are actually actionable in the page above.
 .footer-col-title {
     margin: 0;
     line-height: 1.5;
-    letter-spacing: 0;
-    font-size: rem2(14px);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    font-size: rem2(12px);
+    text-transform: uppercase;
+    color: $bit-color-foreground-primary;
 }
 
 .footer-link {
@@ -175,10 +189,11 @@ footer {
     font-size: rem2(14px);
     text-decoration: none;
     margin-top: rem2(10px);
-    color: $bit-color-primary;
+    color: $bit-color-foreground-secondary;
+    transition: color 0.15s $MotionEase;
 
     &:hover {
-        text-decoration: underline;
+        color: $bit-color-primary;
     }
 
     &.coming-soon {
@@ -195,8 +210,9 @@ footer {
     line-height: 1.5;
     font-weight: 400;
     letter-spacing: 0;
-    font-size: rem2(14px);
+    font-size: rem2(13px);
     margin-top: rem2(16px);
+    color: $bit-color-foreground-secondary;
 }
 
 .social-link-group {
@@ -212,14 +228,19 @@ footer {
 
 .social-link {
     cursor: pointer;
-    width: rem2(32px);
-    height: rem2(32px);
-    margin: 0 rem2(10px);
+    width: rem2(36px);
+    height: rem2(36px);
+    margin: 0 rem2(6px);
     border-radius: 50%;
-    background-color: #a19f9d;
+    background-color: #8a93a5;
     background-size: rem2(18px);
     background-position: center;
     background-repeat: no-repeat;
+    transition: background-color 0.2s $MotionEase, transform 0.2s $MotionEase;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
 }
 
 .twitter-link {

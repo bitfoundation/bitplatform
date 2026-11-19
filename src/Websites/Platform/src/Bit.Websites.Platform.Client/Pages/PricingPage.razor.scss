@@ -64,32 +64,37 @@
 
     .plan-card {
         display: flex;
+        overflow: hidden;
         width: rem2(432px);
+        max-width: 100%;
         min-height: rem2(564px);
-        border-radius: rem2(4px);
         flex-flow: column nowrap;
-        box-shadow: $bit-box-shadow-callout;
+        // Last, so its hover rule follows every plain declaration (Sass mixed-decls).
+        @include SurfaceCard(true);
     }
 
+    // A soft brand wash across the top of each plan instead of a flat grey band.
     .plan-card-header {
         display: flex;
         height: rem2(80px);
         align-items: center;
-        padding-left: rem2(20px);
+        padding-left: rem2(24px);
         justify-content: flex-start;
-        background-color: $bit-color-background-secondary;
+        border-bottom: 1px solid var(--app-hairline);
+        background: linear-gradient(120deg, color-mix(in srgb, $bit-color-primary 12%, transparent), color-mix(in srgb, #524add 10%, transparent));
     }
 
     .plan-card-body {
         flex-grow: 1;
         display: flex;
-        padding: rem2(20px);
+        padding: rem2(24px);
         flex-direction: column;
     }
 
     .plan-card-title {
         display: flex;
-        align-items: center;
+        align-items: baseline;
+        font-variant-numeric: tabular-nums;
         justify-content: flex-start;
         padding: rem2(12px) 0 rem2(16px) 0;
         border-bottom: 1px solid $bit-color-border-secondary;
@@ -139,6 +144,10 @@
     .form {
         padding: 3rem;
         text-align: center;
+
+        @include sm {
+            padding: 3rem 1.5rem 1.5rem;
+        }
     }
 
     .modal-text-field {
@@ -161,7 +170,7 @@
 
     .plan-card-button {
         display: flex;
-        height: rem2(40px);
+        height: rem2(44px);
         align-items: center;
         justify-content: center;
     }

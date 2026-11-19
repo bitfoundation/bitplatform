@@ -6,13 +6,20 @@
             Description="Start from a full-featured app, customize it with AI, and publish to web, Android, iOS, Windows and macOS - with the full source code and no lock-in.">
 </PageOutlet>
 
+@* The hero glow and dot grid are painted by CSS (see .page-container::before / .hero-section::before),
+   which replaced two large blurred SVG images: no extra requests and a far cheaper first paint. *@
 <div class="page-container">
-    <img src="/images/home/hero-gradient-dark.svg" class="hero-gradient dark-theme" alt="" role="presentation" />
-    <img src="/images/home/hero-gradient-light.svg" class="hero-gradient light-theme" alt="" role="presentation" />
 
     <section class="page-section hero-section">
         <div class="page-section-content">
             <div class="hero-section-content @(animateHeroIntro ? "animate-intro" : null)">
+                <a class="hero-eyebrow" href="@($"{Urls.GithubRepo}/releases")" target="_blank" rel="noopener">
+                    <span class="hero-eyebrow-tag">v11</span>
+                    <span>Now in preview on .NET 10</span>
+                    <svg class="hero-eyebrow-arrow" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </a>
                 <BitText Typography="BitTypography.H1" Gutter Class="hero-title">
                     bit platform
                 </BitText>
@@ -53,7 +60,7 @@
         </div>
     </section>
 
-    <img src="/images/home/hero-image.webp" class="hero-image" alt="bit platform apps running on web, mobile, and desktop" loading="lazy" />
+    <img src="/images/home/hero-image.webp" class="hero-image" alt="bit platform apps running on web, mobile, and desktop" width="877" height="668" loading="lazy" decoding="async" />
 
     <section class="page-section stats-section" aria-label="bit platform statistics">
         <div class="page-section-content">
@@ -170,7 +177,7 @@
     </section>
 
     <section class="page-section cta-section">
-        <div class="page-section-content">
+        <div class="page-section-content cta-card">
             <BitText Typography="BitTypography.H2" Class="text-title">
                 start building <span class="highlight-1">today</span>
             </BitText>

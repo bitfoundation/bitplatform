@@ -31,17 +31,34 @@
     color: $bit-color-foreground-secondary;
 }
 
+// The site's one card surface: a hairline border, soft corners and a quiet layered shadow, the same
+// in both themes (the tokens live in app.scss). Pass $interactive to lift it on hover.
+@mixin SurfaceCard($interactive: false) {
+    border-radius: var(--app-radius-lg);
+    border: 1px solid var(--app-hairline);
+    box-shadow: var(--app-shadow-card);
+    background-color: $bit-color-background-primary;
+
+    @if $interactive {
+        transition: transform 0.2s $MotionEase, box-shadow 0.2s $MotionEase, border-color 0.2s $MotionEase;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--app-shadow-card-hover);
+            border-color: var(--app-hairline-strong);
+        }
+    }
+}
+
 @mixin SectionCard {
+    @include SurfaceCard;
     width: 100%;
     overflow: auto;
     position: relative;
     padding: rem2(28px);
     word-wrap: break-word;
-    border-radius: rem2(4px);
     margin-bottom: rem2(28px);
     background-clip: padding-box;
-    box-shadow: $bit-box-shadow-callout;
-    background-color: $bit-color-background-primary;
 }
 
 @mixin SectionCardTitle {
@@ -119,7 +136,8 @@
 }
 
 @mixin HighLightText {
-    background-color: $B11Color;
+    // A tint of the brand color rather than a fixed light blue, so it reads on the dark theme too.
+    background-color: color-mix(in srgb, $bit-color-primary 14%, transparent);
     border-radius: rem2(4px);
     padding: rem2(4px);
     margin: rem2(2px) 0;
