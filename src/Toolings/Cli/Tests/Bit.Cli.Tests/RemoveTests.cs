@@ -292,16 +292,19 @@ public class RemoveTests
     }
 
     [TestMethod]
-    public async Task Remove_Should_LeaveAWorktreeThatMovedWhileItAsked()
+    [DataRow("moved")]
+    [DataRow("Feature")]
+    public async Task Remove_Should_LeaveAWorktreeThatMovedWhileItAsked(string movedTo)
     {
-        if (await GitIdentity.GitAvailableAsync() is false)
+        // A move that changes only the case of the folder's name moves it only where the file system tells the cases apart.
+        if ((movedTo is "Feature" && OperatingSystem.IsLinux() is false) || await GitIdentity.GitAvailableAsync() is false)
             return;
 
         var prompter = new ScriptedPrompter();
         using var host = new TestHost(variables: GitIdentity.RealPath(), prompter: prompter, realProcesses: true);
         using var identity = new GitIdentity(host.Root);
         var (main, worktrees) = await CreateRepositoryAsync(host, "feature");
-        var moved = Path.Combine(host.Root, "moved");
+        var moved = Path.Combine(host.Root, movedTo);
 
         prompter.On("Delete", new Func<bool>(() =>
         {
@@ -313,7 +316,7 @@ public class RemoveTests
 
         StringAssert.Contains(host.FlatOutput, "Left its repository's worktrees as they are");
         Assert.IsTrue(File.Exists(Path.Combine(moved, "README.md")));
-        CollectionAssert.AreEquivalent(new[] { "main", "moved" }, await WorktreesAsync(main));
+        CollectionAssert.AreEquivalent(new[] { "main", movedTo }, await WorktreesAsync(main));
         StringAssert.Contains(await GitAsync(moved, "status", "--short", "--branch"), "feature");
     }
 

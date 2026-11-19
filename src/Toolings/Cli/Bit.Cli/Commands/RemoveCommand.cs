@@ -513,7 +513,10 @@ public static class RemoveCommand
         }
     }
 
-    private static bool SamePath(string path, string other) => string.Equals(Path.TrimEndingDirectorySeparator(path), Path.TrimEndingDirectorySeparator(other), StringComparison.OrdinalIgnoreCase);
+    /// <summary>Linux tells folders whose names differ only in case apart; Windows and macOS, by default, don't.</summary>
+    private static readonly StringComparison pathComparison = OperatingSystem.IsLinux() ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+    private static bool SamePath(string path, string other) => string.Equals(Path.TrimEndingDirectorySeparator(path), Path.TrimEndingDirectorySeparator(other), pathComparison);
 
     /// <summary>
     /// The path with every symbolic link and junction in it followed, the way git reports paths, so /tmp on macOS, a link to /private/tmp, is the same folder as git's /private/tmp.
