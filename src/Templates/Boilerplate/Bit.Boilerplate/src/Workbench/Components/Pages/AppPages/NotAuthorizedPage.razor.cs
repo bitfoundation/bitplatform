@@ -10,6 +10,14 @@ namespace Boilerplate.Workbench.Components.Pages.AppPages;
 /// <summary>The Workbench copy of the app's not-authorized page; its sign-in button explains why no sign-in page opens here.</summary>
 public partial class NotAuthorizedPage
 {
+    //#if (multitenant == true)
+    public const string NoTenantCase = "no-tenant";
+    public const string NoTenantsCase = "no-tenants";
+    //#endif
+    public const string PrivilegeCase = "privilege";
+    public const string ForbiddenCase = "forbidden";
+    public const string SignedOutCase = "signed-out";
+
     private bool lacksValidPrivilege;
     //#if (multitenant == true)
     private bool isGlobalAdmin;
@@ -19,8 +27,21 @@ public partial class NotAuthorizedPage
 
     [Parameter] public Type? PageType { get; set; }
 
+    /// <summary>Shows this case instead of the one <see cref="PageType"/> refuses the view's user for (See NotAuthorizedHost).</summary>
+    [Parameter] public string? Case { get; set; }
+
     protected override async Task OnParametersSetAsync()
     {
+        if (Case is not null)
+        {
+            lacksValidPrivilege = Case is PrivilegeCase;
+            //#if (multitenant == true)
+            lacksSelectedTenant = Case is NoTenantCase or NoTenantsCase;
+            tenants = Case is NoTenantCase ? GetSampleTenants() : [];
+            //#endif
+            return;
+        }
+
         var user = (await AuthenticationStateTask).User;
 
         var failedPolicies = await GetFailedPolicies(user);
