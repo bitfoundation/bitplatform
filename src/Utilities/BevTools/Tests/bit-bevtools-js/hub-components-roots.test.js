@@ -289,9 +289,35 @@ describe('picking details', () => {
 
         hub.startPick('t1', { tellPanel: false });
         expect(touchEnd(p, 10, 110).defaultPrevented).toBe(false);
+        // The browser still makes a click of it: ignored, and kept from the app.
+        const appClicked = vi.fn();
+        p.addEventListener('click', appClicked);
+        const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+        p.dispatchEvent(click);
+        expect(appClicked).not.toHaveBeenCalled();
         expect(hub.isPicking()).toBe(true);
         // Its window listeners would otherwise outlive this test's hub and take the next test's touches.
         hub.stopPick();
+    });
+
+    it('a finger that moves past the slop and comes back picks nothing', async () => {
+        const { p } = page();
+        const hub = await loadHub();
+        hub.attach(runtime({ resolve: () => ({ instanceId: 5, name: 'Island', depth: -1 }) }), { platform: 'Server' });
+        document.elementFromPoint = () => p;
+
+        hub.startPick('t1', { tellPanel: false });
+        touchStart(p, 10, 110);
+        touchMove(p, 10, 160);
+        touchMove(p, 11, 111);
+        expect(touchEnd(p, 11, 111).defaultPrevented).toBe(false);
+        expect(hub.isPicking()).toBe(true);
+
+        // A finger that stays within the slop still taps.
+        touchStart(p, 10, 110);
+        touchMove(p, 14, 113);
+        expect(touchEnd(p, 14, 113).defaultPrevented).toBe(true);
+        await vi.waitFor(() => expect(hub.lastPick()?.instanceId).toBe(5));
     });
 
     it('a tap that stops a scroll still coasting from a flick picks nothing; the next tap picks', async () => {

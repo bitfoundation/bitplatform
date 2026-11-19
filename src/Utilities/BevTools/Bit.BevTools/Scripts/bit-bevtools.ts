@@ -2010,6 +2010,12 @@ const TAP_SLOP_PX = 10;
  */
 const SCROLL_SETTLE_MS = 150;
 
+/**
+ * How long after a touch that picked nothing a click is taken to be that touch's: browsers fire the click a tap becomes
+ * right after its end, or up to about 350 ms later where they still wait to tell it from a double tap.
+ */
+const CLICK_AFTER_TOUCH_MS = 1000;
+
 function onPick(type: string, handler: (e: any) => void, options: AddEventListenerOptions = PICK_LISTENER) {
     window.addEventListener(type, handler, options);
     pickListeners.push(() => window.removeEventListener(type, handler, options));
@@ -2062,6 +2068,7 @@ export function startPick(targetId?: string | null, options?: { includeHidden?: 
     };
     let touchStart: { x: number; y: number; tap: boolean } | null = null;
     let lastScrollAt = 0;
+    let ignoreClickUntil = 0;
     // Capturing on window hears every element's scroll too, though scroll events do not bubble.
     onPick("scroll", () => { lastScrollAt = Date.now(); }, PICK_WATCHER);
     onPick("touchstart", (e: TouchEvent) => {
@@ -2071,7 +2078,14 @@ export function startPick(targetId?: string | null, options?: { includeHidden?: 
         else if (touchStart) touchStart.tap = false;
         keepFromApp(e);
     });
-    onPick("touchmove", keepFromApp, PICK_WATCHER);
+    onPick("touchmove", (e: TouchEvent) => {
+        // Past the slop it is a swipe until every finger has lifted: coming back to where it touched does not make it a tap again.
+        const touch = e.touches && e.touches[0];
+        if (touchStart && touchStart.tap && (!touch || e.touches.length !== 1 || Math.hypot(touch.clientX - touchStart.x, touch.clientY - touchStart.y) > TAP_SLOP_PX)) {
+            touchStart.tap = false;
+        }
+        keepFromApp(e);
+    }, PICK_WATCHER);
     onPick("touchcancel", (e: TouchEvent) => {
         touchStart = null;
         keepFromApp(e);
@@ -2124,6 +2138,12 @@ export function startPick(targetId?: string | null, options?: { includeHidden?: 
         if (isPickToggle(e.target as Node)) return;
         if (inBevTools(e.target as Node)) { stopPick("cancelled"); return; }
         swallow(e);
+        // The click a touch that picked nothing became (one that started before picking did, whose end is all the hub
+        // heard): kept from the application like the touch, and no pick. A mouse's click is never a touch's.
+        if (Date.now() < ignoreClickUntil && (e as PointerEvent).pointerType !== "mouse") {
+            ignoreClickUntil = 0;
+            return;
+        }
         pickAt(e.target as Node, e.clientX, e.clientY);
     });
     onPick("touchend", (e: TouchEvent) => {
@@ -2133,8 +2153,11 @@ export function startPick(targetId?: string | null, options?: { includeHidden?: 
         const fingersLeft = e.touches ? e.touches.length : 0;
         if (!fingersLeft) touchStart = null;
         // A swipe, a pinch, a touch that stopped a coasting scroll, or one that started before picking did: not a tap,
-        // so picking goes on (no click follows any of them). The application, which never saw it start, does not see it end.
+        // so picking goes on. The application, which never saw it start, does not see it end. It is not cancelled, which
+        // would stop a swipe's scroll, so a touch the browser still makes a click of (one that started before picking,
+        // and lifted where it touched) has that click ignored.
         if (!start || !start.tap || fingersLeft || Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > TAP_SLOP_PX) {
+            if (!fingersLeft) ignoreClickUntil = Date.now() + CLICK_AFTER_TOUCH_MS;
             keepFromApp(e);
             return;
         }

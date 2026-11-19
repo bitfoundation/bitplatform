@@ -1238,13 +1238,19 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             return;
         }
 
-        _revealedTab = Ui.ActivePanelId;
+        // Remembered before the call, so a render while it is in flight does not ask again.
+        var revealing = _revealedTab = Ui.ActivePanelId;
         try
         {
             await _module.InvokeVoidAsync("revealActiveTab", target);
         }
         catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
         {
+            // Not shown after all (a reconnecting circuit, say): the next render asks again.
+            if (_revealedTab == revealing)
+            {
+                _revealedTab = null;
+            }
         }
     }
 
