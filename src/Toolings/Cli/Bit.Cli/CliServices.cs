@@ -36,6 +36,8 @@ public sealed class CliServices : IDisposable
 
     public SelfUpdate SelfUpdate { get; set; }
 
+    public IReadOnlyList<string> Arguments { get; set; } = [];
+
     public Tools.AdministratorSession? Administrator { get; set; }
 
     public bool AdministratorDeclined { get; set; }

@@ -95,41 +95,49 @@ public class ProjectBitTests
     public async Task ABitTooOldForTheProject_Should_HandTheCommandToTheNewestAndUpdateItself(HostOs os, string executable, string updater)
     {
         using var host = new TestHost(os);
-        host.Services.SelfUpdate = Official(host);
+        var copies = Official(host).CopiesDirectory;
         WriteBitJson(host.Root, "1.7.0", null);
         host.Runner.On("dotnet", "package search", 0, Search("1.6.2", "1.7.0", "1.8.0", "1.9.0-pre-01"));
         var copy = InstallsCopy(host, "1.8.0", executable);
-        host.Runner.On("bit", "", 7);
+        RunsCopy(host, 7);
 
         Assert.AreEqual(7, await host.RunAsync("migration", "add", "AddRating", "--offline"), host.Output);
 
         StringAssert.Contains(host.FlatOutput, "This project needs bit 1.7.0 or newer, so bit 1.8.0 runs this, and your installed bit updates to it when the run ends.");
-        CollectionAssert.AreEqual(new[] { "package", "search", "Bit.Cli", "--exact-match", "--format", "json" }, host.Runner.Calls[0].Arguments.ToArray());
-        CollectionAssert.AreEqual(new[] { "tool", "install", "Bit.Cli", "--version", "1.8.0", "--tool-path", copy }, host.Runner.Calls[1].Arguments.ToArray());
+
+        var search = host.Runner.Calls[0];
+        CollectionAssert.AreEqual(new[] { "package", "search", "Bit.Cli", "--exact-match", "--format", "json", "--prerelease" }, search.Arguments.ToArray());
+        Assert.AreEqual(copies, search.WorkingDirectory, "The project's global.json and NuGet.config have no say in which bit runs.");
+
+        var install = host.Runner.Calls[1];
+        CollectionAssert.AreEqual(new[] { "tool", "install", "Bit.Cli", "--version", "1.8.0", "--tool-path", copy }, install.Arguments.ToArray());
+        Assert.AreEqual(copies, install.WorkingDirectory);
 
         var handOff = host.Runner.Calls[2];
         Assert.AreEqual(Path.Combine(copy, executable), handOff.FileName);
         Assert.IsTrue(handOff.Interactive);
+        Assert.IsTrue(handOff.TakesOver, "Ctrl+C is the other bit's to handle.");
         Assert.AreEqual(host.WorkingDirectory, handOff.WorkingDirectory);
         CollectionAssert.AreEqual(new[] { "migration", "add", "AddRating", "--offline" }, handOff.Arguments.ToArray());
         Assert.AreEqual("1.6.2", handOff.Environment![SelfUpdate.HandedOffVariable]);
-        Assert.AreEqual(3, host.Runner.Calls.Count, "The command itself is the other bit's to run.");
+        Assert.IsFalse(host.Runner.Calls.Skip(3).Any(c => c.Arguments is not ["--version"]), "The command itself is the other bit's to run.");
 
         var update = host.Runner.Detached.Single();
         Assert.AreEqual(updater, update.FileName);
+        Assert.AreEqual(copies, update.WorkingDirectory);
         StringAssert.Contains(update.Arguments[^1], "tool update --global Bit.Cli --version 1.8.0");
         Assert.IsTrue(File.Exists(Path.Combine(copy, SelfUpdate.ProjectMarker)));
+        Assert.IsTrue(File.Exists(Path.Combine(copy, executable)), "A copy that answers stays, whatever the command's exit code.");
     }
 
     [TestMethod]
     public async Task ABitTooNewForTheProject_Should_HandTheCommandToTheNewestTheProjectWorksWith()
     {
         using var host = new TestHost(HostOs.Linux);
-        host.Services.SelfUpdate = Official(host);
         WriteBitJson(host.WorkingDirectory, "1.4.0", "1.5.0");
         host.Runner.On("dotnet", "package search", 0, Search("1.3.0", "1.4.0", "1.4.2", "1.5.1", "1.6.2", "1.7.0"));
         var copy = InstallsCopy(host, "1.4.2", "bit");
-        host.Runner.On("bit", "", 0);
+        RunsCopy(host, 0);
 
         Assert.AreEqual(0, await host.RunAsync("run", "android"), host.Output);
 
@@ -142,7 +150,7 @@ public class ProjectBitTests
     public async Task ABitThatFitsTheProject_Should_RunTheCommandItself()
     {
         using var host = new TestHost(HostOs.Linux);
-        host.Services.SelfUpdate = Official(host);
+        Official(host);
         WriteBitJson(host.WorkingDirectory, "1.6.0", "1.6.2");
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
@@ -156,60 +164,76 @@ public class ProjectBitTests
     public async Task ACopyThatFits_Should_RunTheCommandWithoutLookingForANewerOne()
     {
         using var host = new TestHost(HostOs.Linux);
-        host.Services.SelfUpdate = Official(host);
         WriteBitJson(host.WorkingDirectory, "1.7.0", null);
         var older = WriteCopy(host, "1.6.9", "bit");
         var copy = WriteCopy(host, "1.7.1", "bit");
-        host.Runner.On("bit", "", 0);
+        RunsCopy(host, 0);
 
         Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, "This project needs bit 1.7.0 or newer, so bit 1.7.1 runs this.");
+        StringAssert.Contains(host.FlatOutput, "This project needs bit 1.7.0 or newer, so bit 1.7.1 runs this, and your installed bit updates to it when the run ends.");
         Assert.AreEqual(Path.Combine(copy, "bit"), host.Runner.Calls.Single().FileName);
-        Assert.IsEmpty(host.Runner.Detached, "Only a copy bit has just got starts the installed bit's update.");
+        StringAssert.Contains(host.Runner.Detached.Single().Arguments[^1], "tool update --global Bit.Cli --version 1.7.1");
         Assert.IsTrue(File.Exists(Path.Combine(copy, SelfUpdate.ProjectMarker)));
         Assert.IsFalse(File.Exists(Path.Combine(older, SelfUpdate.ProjectMarker)));
+
+        Official(host);
+        Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
+
+        Assert.HasCount(2, host.Runner.Calls);
+        Assert.HasCount(1, host.Runner.Detached, "The update that was just started isn't started again by the next command.");
+        StringAssert.EndsWith(host.FlatOutput.TrimEnd(), "so bit 1.7.1 runs this.");
+
+        File.SetLastWriteTimeUtc(Path.Combine(copy, SelfUpdate.UpdateMarker), DateTime.UtcNow - SelfUpdate.UpdatePause - TimeSpan.FromMinutes(1));
+        Official(host);
+        Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
+
+        Assert.HasCount(2, host.Runner.Detached, "An update that didn't get through is tried again later.");
     }
 
     [TestMethod]
-    public async Task AStableBit_Should_TakeAPrereleaseOnlyWhenNothingElseFits()
+    public async Task AStableBit_Should_TakeAPrereleaseOnlyWhileNothingElseFits()
     {
         using var host = new TestHost(HostOs.Linux);
-        host.Services.SelfUpdate = Official(host);
-        WriteBitJson(host.WorkingDirectory, "1.7.0-pre-02", null);
-        host.Runner.On("dotnet", "package search", 0, Search("1.6.2", "1.7.0-pre-01", "1.7.0-pre-03"));
+        WriteBitJson(host.WorkingDirectory, "1.7.0-pre-02", "1.8.0");
+        host.Runner.On("dotnet", "package search", 0, Search("1.6.2", "1.7.0-pre-01", "1.7.0-pre-03", "1.9.0"));
         var prerelease = InstallsCopy(host, "1.7.0-pre-03", "bit");
-        host.Runner.On("bit", "", 0);
+        RunsCopy(host, 0);
 
         Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
 
-        CollectionAssert.Contains(host.Runner.Calls[0].Arguments.ToList(), "--prerelease");
         StringAssert.Contains(host.FlatOutput, "This project needs bit 1.7.0-pre-02 or newer, so bit 1.7.0-pre-03 runs this.");
         Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName == Path.Combine(prerelease, "bit")));
         Assert.IsEmpty(host.Runner.Detached, "A stable bit isn't replaced by a prerelease because of one project.");
 
-        using var released = new TestHost(HostOs.Linux);
-        released.Services.SelfUpdate = Official(released);
-        WriteBitJson(released.WorkingDirectory, "1.7.0-pre-02", null);
-        released.Runner.On("dotnet", "package search", 0, Search("1.6.2", "1.7.0-pre-03", "1.7.0", "1.8.0-pre-01"));
-        var stable = InstallsCopy(released, "1.7.0", "bit");
-        released.Runner.On("bit", "", 0);
+        host.Runner.On("dotnet", "package search", 0, Search("1.6.2", "1.7.0-pre-03", "1.7.0", "1.8.0-pre-01"));
+        var stable = InstallsCopy(host, "1.7.0", "bit");
+        Official(host);
+        Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
 
-        Assert.AreEqual(0, await released.RunAsync("clean"), released.Output);
+        Assert.HasCount(1, host.Runner.Calls.Where(c => c.Arguments is ["package", "search", ..]).ToList(), "It doesn't look again right away.");
+        Assert.AreEqual(Path.Combine(prerelease, "bit"), host.Runner.Calls[^1].FileName);
 
-        Assert.IsTrue(released.Runner.Calls.Any(c => c.FileName == Path.Combine(stable, "bit")), released.Output);
-        StringAssert.Contains(released.Runner.Detached.Single().Arguments[^1], "tool update --global Bit.Cli --version 1.7.0");
+        foreach (var lookedUp in Directory.GetFiles(Official(host).CopiesDirectory, ".looked-up-*"))
+        {
+            File.SetLastWriteTimeUtc(lookedUp, DateTime.UtcNow - SelfUpdate.LookupPause - TimeSpan.FromMinutes(1));
+        }
+
+        Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
+
+        Assert.AreEqual(Path.Combine(stable, "bit"), host.Runner.Calls[^1].FileName, "Once a stable bit that fits is out, it takes over.");
+        StringAssert.Contains(host.Runner.Detached.Single().Arguments[^1], "tool update --global Bit.Cli --version 1.7.0");
     }
 
     [TestMethod]
     public async Task APrereleaseBit_Should_TakeTheNewestThatFits()
     {
         using var host = new TestHost(HostOs.Linux);
-        host.Services.SelfUpdate = Official(host, "1.7.0-pre-01");
+        Official(host, "1.7.0-pre-01");
         WriteBitJson(host.WorkingDirectory, "1.7.0-pre-02", null);
         host.Runner.On("dotnet", "package search", 0, Search("1.6.2", "1.7.0-pre-03", "1.7.0", "1.8.0-pre-01"));
         var copy = InstallsCopy(host, "1.8.0-pre-01", "bit");
-        host.Runner.On("bit", "", 0);
+        RunsCopy(host, 0);
 
         Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
 
@@ -225,10 +249,10 @@ public class ProjectBitTests
         await AssertSaysAndStaysAsync(h => Official(h, install: "dnx"));
         await AssertSaysAndStaysAsync(h => Official(h, install: "tool-path"));
 
-        static async Task AssertSaysAndStaysAsync(Func<TestHost, SelfUpdate> update, Dictionary<string, string>? variables = null)
+        static async Task AssertSaysAndStaysAsync(Action<TestHost> update, Dictionary<string, string>? variables = null)
         {
             using var host = new TestHost(HostOs.Linux, variables);
-            host.Services.SelfUpdate = update(host);
+            update(host);
             WriteBitJson(host.WorkingDirectory, "1.7.0", null);
             WriteCopy(host, "1.7.0", "bit");
 
@@ -243,13 +267,13 @@ public class ProjectBitTests
     [TestMethod]
     public async Task ABuildFromSourceAndABitHandedTheCommand_Should_NeverCheckTheProject()
     {
-        await AssertSilentAsync(h => new SelfUpdate(h.Services) { CurrentVersion = "1.6.2", IsOfficialBuild = false, InstallMethod = "tool" });
+        await AssertSilentAsync(h => h.Services.SelfUpdate = new SelfUpdate(h.Services) { CurrentVersion = "1.6.2", IsOfficialBuild = false, InstallMethod = "tool" });
         await AssertSilentAsync(h => Official(h), new() { [SelfUpdate.HandedOffVariable] = "1.6.1" });
 
-        static async Task AssertSilentAsync(Func<TestHost, SelfUpdate> update, Dictionary<string, string>? variables = null)
+        static async Task AssertSilentAsync(Action<TestHost> update, Dictionary<string, string>? variables = null)
         {
             using var host = new TestHost(HostOs.Linux, variables);
-            host.Services.SelfUpdate = update(host);
+            update(host);
             WriteBitJson(host.WorkingDirectory, "1.7.0", null);
             WriteCopy(host, "1.7.0", "bit");
 
@@ -264,7 +288,7 @@ public class ProjectBitTests
     public async Task ABitThatCantBeFoundOrDownloaded_Should_LeaveTheCommandToThisOne()
     {
         using var offline = new TestHost(HostOs.Linux);
-        offline.Services.SelfUpdate = Official(offline);
+        Official(offline);
         WriteBitJson(offline.WorkingDirectory, "1.7.0", null);
         offline.Runner.On("dotnet", "package search", 1, "error: Unable to load the service index for source https://api.nuget.org/v3/index.json.");
 
@@ -273,8 +297,13 @@ public class ProjectBitTests
         StringAssert.Contains(offline.FlatOutput, "This project needs bit 1.7.0 or newer, and bit couldn't find one, so bit 1.6.2 goes on.");
         StringAssert.Contains(offline.FlatOutput, "isn't a bit Boilerplate project folder");
 
+        Official(offline);
+        Assert.AreEqual(CliApp.ExitUsage, await offline.RunAsync("run"), offline.Output);
+
+        Assert.HasCount(1, offline.Runner.Calls, "The next command doesn't wait for a lookup that just found nothing.");
+
         using var notOut = new TestHost(HostOs.Linux);
-        notOut.Services.SelfUpdate = Official(notOut);
+        Official(notOut);
         WriteBitJson(notOut.WorkingDirectory, "1.7.0", null);
         notOut.Runner.On("dotnet", "package search", 0, Search("1.6.2", "1.6.3"));
 
@@ -284,7 +313,7 @@ public class ProjectBitTests
         Assert.IsFalse(notOut.Runner.Calls.Any(c => c.Arguments is ["tool", "install", ..]));
 
         using var failing = new TestHost(HostOs.Linux);
-        failing.Services.SelfUpdate = Official(failing);
+        Official(failing);
         WriteBitJson(failing.WorkingDirectory, "1.7.0", null);
         failing.Runner.On("dotnet", "package search", 0, Search("1.7.0"));
         failing.Runner.On("dotnet", "tool install", 1, "error NU1101: Unable to find package Bit.Cli.");
@@ -295,6 +324,58 @@ public class ProjectBitTests
         StringAssert.Contains(failing.FlatOutput, "isn't a bit Boilerplate project folder");
         Assert.IsEmpty(failing.Runner.Detached);
         Assert.IsFalse(Directory.Exists(Path.Combine(failing.Environment.BitDirectory, "cli", "1.7.0")));
+
+        Official(failing);
+        Assert.AreEqual(CliApp.ExitUsage, await failing.RunAsync("run"), failing.Output);
+
+        Assert.HasCount(2, failing.Runner.Calls, "A download that just failed isn't tried again by the next command.");
+    }
+
+    [TestMethod]
+    public async Task ACopyThatCantStart_Should_LeaveTheCommandToThisOne()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host);
+        WriteBitJson(host.WorkingDirectory, "1.7.0", null);
+        WriteCopy(host, "1.7.0", "bit");
+        host.Runner.NotFound("bit");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "Couldn't start bit 1.7.0, so bit 1.6.2 goes on.");
+        StringAssert.Contains(host.FlatOutput, "isn't a bit Boilerplate project folder");
+    }
+
+    [TestMethod]
+    public async Task ABrokenCopy_Should_BeRemovedSoTheNextCommandGetsAWholeOne()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host);
+        WriteBitJson(host.WorkingDirectory, "1.7.0", null);
+        var copy = WriteCopy(host, "1.7.0", "bit");
+        host.Runner.On("bit", "", 131, "The application to execute does not exist");
+
+        Assert.AreEqual(131, await host.RunAsync("clean"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "The copy of bit 1.7.0 that ran this is broken, so bit removed it. Run the command again.");
+        Assert.IsFalse(Directory.Exists(copy));
+        CollectionAssert.AreEqual(new[] { "--version" }, host.Runner.Calls[^1].Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task ACommandStoppedBeforeTheOtherBitStarts_Should_NotStartIt()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host);
+        WriteBitJson(host.WorkingDirectory, "1.7.0", null);
+        WriteCopy(host, "1.7.0", "bit");
+        using var stopped = new CancellationTokenSource();
+        stopped.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => host.Services.SelfUpdate.HandOffToProjectBitAsync(host.WorkingDirectory, ["clean"], stopped.Token));
+
+        Assert.IsEmpty(host.Runner.Calls);
+        Assert.IsEmpty(host.Runner.Detached);
     }
 
     [TestMethod]
@@ -302,39 +383,88 @@ public class ProjectBitTests
     [DataRow("about")]
     [DataRow("update")]
     [DataRow("new Contoso --dry-run --yes --no-update")]
+    [DataRow("new --not-an-option")]
     [DataRow("remove nothing-here --yes")]
     [DataRow("decode nothing.map nothing.txt")]
+    [DataRow("trust nothing-here")]
+    [DataRow("run --help")]
+    [DataRow("frobnicate --help")]
+    [DataRow("--version")]
+    [DataRow("")]
     public async Task ACommandThatDoesntReadTheProject_Should_RunWithAnyBit(string command)
     {
         using var host = new TestHost(HostOs.Linux);
         host.AllToolsInstalled();
-        host.Services.SelfUpdate = Official(host);
+        Official(host);
         WriteBitJson(host.WorkingDirectory, "1.7.0", null);
         WriteCopy(host, "1.7.0", "bit");
         host.Runner.On("dotnet", "package search", 0, Search("1.6.2"));
 
-        await host.RunAsync(command.Split(' '));
+        await host.RunAsync(command.Split(' ', StringSplitOptions.RemoveEmptyEntries));
 
         Assert.IsFalse(host.Output.Contains("This project", StringComparison.Ordinal), host.Output);
         Assert.IsFalse(host.Runner.Calls.Any(c => Path.GetFileNameWithoutExtension(c.FileName) is "bit"), host.Output);
     }
 
     [TestMethod]
-    public async Task SetupOfAnotherFolder_Should_GoByThatProject()
+    [DataRow("frobnicate --fast")]
+    [DataRow("run --a-new-option=--yes -- android")]
+    [DataRow("migration squash")]
+    public async Task ACommandOnlyTheOtherBitKnows_Should_ReachItAsItWasTyped(string command)
     {
         using var host = new TestHost(HostOs.Linux);
-        host.Services.SelfUpdate = Official(host);
+        Official(host);
+        WriteBitJson(host.WorkingDirectory, "1.7.0", null);
+        var copy = WriteCopy(host, "1.7.0", "bit");
+        RunsCopy(host, 0);
+
+        Assert.AreEqual(0, await host.RunAsync(command.Split(' ')), host.Output);
+
+        var handOff = host.Runner.Calls.Single();
+        Assert.AreEqual(Path.Combine(copy, "bit"), handOff.FileName);
+        CollectionAssert.AreEqual(command.Split(' '), handOff.Arguments.ToArray());
+    }
+
+    [TestMethod]
+    [DataRow("clean {0}")]
+    [DataRow("rename Fabrikam {0}")]
+    [DataRow("diff --project {0}")]
+    [DataRow("setup {0} --platforms web,android -p:Configuration=Release --yes")]
+    public async Task ACommandGivenAnotherFolder_Should_GoByThatProject(string command)
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host);
         var project = Path.Combine(host.Root, "Contoso");
         WriteProject(project, "1.7.0");
         var copy = WriteCopy(host, "1.7.0", "bit");
-        host.Runner.On("bit", "", 0);
+        RunsCopy(host, 0);
+        var arguments = string.Format(command, project).Split(' ');
 
-        Assert.AreEqual(0, await host.RunAsync("setup", project, "--platforms", "web,android", "-p:Configuration=Release", "--yes"), host.Output);
+        Assert.AreEqual(0, await host.RunAsync(arguments), host.Output);
 
         var handOff = host.Runner.Calls.Single();
         Assert.AreEqual(Path.Combine(copy, "bit"), handOff.FileName);
         Assert.AreEqual(host.WorkingDirectory, handOff.WorkingDirectory);
-        CollectionAssert.AreEqual(new[] { "setup", project, "--platforms", "web,android", "-p", "Configuration=Release", "--yes" }, handOff.Arguments.ToArray());
+        CollectionAssert.AreEqual(arguments, handOff.Arguments.ToArray());
+    }
+
+    [TestMethod]
+    [DataRow("clean {0}", CliApp.ExitUsage)]
+    [DataRow("setup {0} --yes --no-tools --no-workloads --no-restore --no-build --no-browsers --no-run --no-trust --no-open", CliApp.ExitOk)]
+    public async Task ACommandGivenAnotherFolder_Should_LeaveTheProjectItRunsInOutOfIt(string command, int exitCode)
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host);
+        WriteBitJson(host.WorkingDirectory, "1.7.0", null);
+        WriteCopy(host, "1.7.0", "bit");
+        var project = Path.Combine(host.Root, "Contoso");
+        WriteProject(project, "1.6.0");
+        File.WriteAllText(Path.Combine(project, "bit.json"), """{ "cli": { "maxVersion": "1.6.2" }, "name": "Contoso" }""");
+
+        Assert.AreEqual(exitCode, await host.RunAsync(string.Format(command, project).Split(' ')), host.Output);
+
+        Assert.IsFalse(host.Output.Contains("This project", StringComparison.Ordinal), host.Output);
+        Assert.IsFalse(host.Runner.Calls.Any(c => Path.GetFileNameWithoutExtension(c.FileName) is "bit"), host.Output);
     }
 
     [TestMethod]
@@ -344,14 +474,14 @@ public class ProjectBitTests
         using var host = new TestHost(HostOs.Linux, prompter: prompter);
         host.AllToolsInstalled();
         host.Runner.Executables["git"] = "git";
-        host.Services.SelfUpdate = Official(host);
+        Official(host);
         host.Runner.On("git", "clone", spec =>
         {
             WriteProject(spec.Arguments[^1], "1.7.0");
             return new ProcessResult { ExitCode = 0 };
         });
         var copy = WriteCopy(host, "1.7.0", "bit");
-        host.Runner.On("bit", "", 0);
+        RunsCopy(host, 0);
 
         Assert.AreEqual(0, await host.RunAsync("setup", "https://github.com/contoso/Contoso", "--no-tools"), host.Output);
 
@@ -362,52 +492,8 @@ public class ProjectBitTests
 
         var handOff = host.Runner.Calls[^1];
         Assert.AreEqual(Path.Combine(copy, "bit"), handOff.FileName);
-        CollectionAssert.AreEqual(new[] { "setup", "https://github.com/contoso/Contoso", "--no-tools", "--platforms", "web,android" }, handOff.Arguments.ToArray(), "The other bit doesn't ask again what this one asked.");
-    }
-
-    [TestMethod]
-    public async Task ABitToldToStop_Should_WaitForTheOtherBitThenStopIt()
-    {
-        using var host = new TestHost(HostOs.Linux);
-        host.Services.SelfUpdate = new SelfUpdate(host.Services) { CurrentVersion = "1.6.2", IsOfficialBuild = true, InstallMethod = "tool", HandOffGrace = TimeSpan.FromMilliseconds(300) };
-        WriteBitJson(host.WorkingDirectory, "1.7.0", null);
-        WriteCopy(host, "1.7.0", "bit");
-        var started = new TaskCompletionSource();
-        var ends = new TaskCompletionSource<int>();
-        host.Runner.OnAsync("bit", "", async (_, stopped) =>
-        {
-            started.TrySetResult();
-            return new ProcessResult { ExitCode = await ends.Task.WaitAsync(stopped) };
-        });
-
-        using var ctrlC = new CancellationTokenSource();
-        var handOff = host.Services.SelfUpdate.HandOffToProjectBitAsync(host.WorkingDirectory, ["clean"], ctrlC.Token);
-        await started.Task.WaitAsync(TimeSpan.FromSeconds(20));
-        ctrlC.Cancel();
-        ends.SetResult(130);
-
-        Assert.AreEqual(130, await handOff.WaitAsync(TimeSpan.FromSeconds(20)), "The other bit got the Ctrl+C too and ended by itself, so its exit code is the run's.");
-
-        using var deaf = new TestHost(HostOs.Linux);
-        deaf.Services.SelfUpdate = new SelfUpdate(deaf.Services) { CurrentVersion = "1.6.2", IsOfficialBuild = true, InstallMethod = "tool", HandOffGrace = TimeSpan.FromMilliseconds(300) };
-        WriteBitJson(deaf.WorkingDirectory, "1.7.0", null);
-        WriteCopy(deaf, "1.7.0", "bit");
-        var running = new TaskCompletionSource();
-        deaf.Runner.OnAsync("bit", "", async (_, stopped) =>
-        {
-            running.TrySetResult();
-            await Task.Delay(Timeout.Infinite, stopped);
-            return new ProcessResult { ExitCode = 0 };
-        });
-
-        using var terminated = new CancellationTokenSource();
-        var orphan = deaf.Services.SelfUpdate.HandOffToProjectBitAsync(deaf.WorkingDirectory, ["clean"], terminated.Token);
-        await running.Task.WaitAsync(TimeSpan.FromSeconds(20));
-        await Task.Delay(600);
-        Assert.IsFalse(orphan.IsCompleted, "Nobody stopped it yet.");
-        terminated.Cancel();
-
-        await Assert.ThrowsAsync<OperationCanceledException>(() => orphan.WaitAsync(TimeSpan.FromSeconds(20)));
+        CollectionAssert.AreEqual(new[] { "setup", Path.Combine(host.WorkingDirectory, "Contoso"), "--no-tools", "--platforms", "web,android" }, handOff.Arguments.ToArray(),
+            "The other bit gets the folder that is cloned by now, and doesn't ask again what this one asked.");
     }
 
     [TestMethod]
@@ -415,7 +501,7 @@ public class ProjectBitTests
     {
         using var host = new TestHost(HostOs.Linux);
         host.AllToolsInstalled();
-        host.Services.SelfUpdate = Official(host);
+        var copies = Official(host).CopiesDirectory;
         host.Runner.On("dotnet", "package search", 0, Search("1.6.2"));
         var used = WriteCopy(host, "1.5.0", "bit");
         var forgotten = WriteCopy(host, "1.4.0", "bit");
@@ -425,13 +511,20 @@ public class ProjectBitTests
         File.WriteAllText(Path.Combine(forgotten, SelfUpdate.ProjectMarker), "");
         File.SetLastWriteTimeUtc(Path.Combine(forgotten, SelfUpdate.ProjectMarker), DateTime.UtcNow - SelfUpdate.ProjectCopyLifetime - TimeSpan.FromHours(1));
 
+        using (var busy = await SelfUpdate.LockAsync(Path.Combine(copies, ".lock"), TimeSpan.Zero, CancellationToken.None))
+        {
+            Assert.IsNotNull(busy);
+            Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--dry-run", "--yes"), host.Output);
+            Assert.HasCount(4, Directory.GetDirectories(copies), "While another bit gets a copy, nothing is cleared.");
+        }
+
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--dry-run", "--yes"), host.Output);
 
         Assert.IsTrue(Directory.Exists(used));
         Assert.IsTrue(Directory.Exists(newer));
         Assert.IsFalse(Directory.Exists(forgotten));
         Assert.IsFalse(Directory.Exists(unused));
-        CollectionAssert.AreEquivalent(new[] { "1.5.0", "1.7.0" }, Directory.GetDirectories(Path.Combine(host.Environment.BitDirectory, "cli")).Select(Path.GetFileName).ToArray());
+        CollectionAssert.AreEquivalent(new[] { "1.5.0", "1.7.0" }, Directory.GetDirectories(copies).Select(Path.GetFileName).ToArray());
     }
 
     [TestMethod]
@@ -452,15 +545,48 @@ public class ProjectBitTests
         using var held = await second.WaitAsync(TimeSpan.FromSeconds(20));
         Assert.IsNotNull(held);
 
-        Assert.IsNull(await SelfUpdate.LockAsync(file, TimeSpan.FromMilliseconds(300), CancellationToken.None), "It gives up when its patience runs out, and bit goes on without it.");
+        Assert.IsNull(await SelfUpdate.LockAsync(file, TimeSpan.FromMilliseconds(300), CancellationToken.None), "It gives up when its patience runs out.");
 
         File.WriteAllText(Path.Combine(host.Root, "a-file"), "");
         Assert.IsNull(await SelfUpdate.LockAsync(Path.Combine(host.Root, "a-file", ".lock"), TimeSpan.FromSeconds(30), CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(10)), "A folder that can't be made isn't waited for.");
     }
 
+    [TestMethod]
+    public async Task ACopyAnotherBitIsStillGetting_Should_NotBeGotTwice()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var copies = Official(host).CopiesDirectory;
+        WriteBitJson(host.WorkingDirectory, "1.7.0", null);
+        host.Runner.On("dotnet", "package search", 0, Search("1.7.0"));
+        RunsCopy(host, 0);
+
+        using var other = await SelfUpdate.LockAsync(Path.Combine(copies, ".lock"), TimeSpan.Zero, CancellationToken.None);
+        var run = host.RunAsync("clean");
+        await Task.Delay(800);
+        Assert.IsFalse(run.IsCompleted, "It waits for the bit that is getting the copy.");
+
+        var copy = WriteCopy(host, "1.7.0", "bit");
+        other!.Dispose();
+
+        Assert.AreEqual(0, await run.WaitAsync(TimeSpan.FromSeconds(20)), host.Output);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["tool", "install", ..]), "The other bit's copy is the one to use.");
+        Assert.AreEqual(Path.Combine(copy, "bit"), host.Runner.Calls[^1].FileName);
+    }
+
     private static SelfUpdate Official(TestHost host, string version = "1.6.2", string install = "tool")
     {
-        return new SelfUpdate(host.Services) { CurrentVersion = version, IsOfficialBuild = true, InstallMethod = install };
+        return host.Services.SelfUpdate = new SelfUpdate(host.Services) { CurrentVersion = version, IsOfficialBuild = true, InstallMethod = install };
+    }
+
+    private static void RunsCopy(TestHost host, int exitCode)
+    {
+        if (host.Services.SelfUpdate.IsOfficialBuild is false)
+        {
+            Official(host);
+        }
+
+        host.Runner.On("bit", "", exitCode);
+        host.Runner.On("bit", "--version", 0);
     }
 
     private static void WriteBitJson(string directory, string? min, string? max)

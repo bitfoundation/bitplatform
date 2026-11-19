@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Text;
 using Bit.Cli.Commands;
 using Bit.Cli.Infrastructure;
@@ -16,6 +15,8 @@ public static class CliApp
     public const int ExitCheckFailed = 3;
 
     private static readonly string[] longRunningCommands = ["new", "setup", "run", "diff", "translate", "doctor", "clean", "aot-profile", "migration", "pipeline", "api"];
+
+    private static readonly Dictionary<string, string> projectFolders = new() { ["diff"] = "--project", ["clean"] = "path", ["rename"] = "path" };
 
     public static RootCommand BuildRootCommand(Func<CliServices> services)
     {
@@ -43,45 +44,43 @@ public static class CliApp
             AdminHelperCommand.Create(services)
         };
 
-        foreach (var command in root.Subcommands.Where(c => SelfUpdate.CommandsWithoutAProject.Contains(c.Name) is false))
-        {
-            RunWithTheProjectsBit(command, services);
-        }
-
         return root;
     }
 
-    private static void RunWithTheProjectsBit(Command command, Func<CliServices> services)
+    public static async Task<int> InvokeAsync(RootCommand root, ParseResult parseResult, CliServices services, string[] args, InvocationConfiguration configuration)
     {
-        if (command.Action is { } action)
-        {
-            command.Action = new ProjectBitAction(action, services);
-        }
+        services.Arguments = args;
 
-        foreach (var subcommand in command.Subcommands)
-        {
-            RunWithTheProjectsBit(subcommand, services);
-        }
+        if (ProjectFolder(root, parseResult, services, args) is { } folder && await services.SelfUpdate.HandOffToProjectBitAsync(folder, args, CancellationToken.None) is { } exitCode)
+            return exitCode;
+
+        return await parseResult.InvokeAsync(configuration);
     }
 
-    private sealed class ProjectBitAction(CommandLineAction action, Func<CliServices> services) : AsynchronousCommandLineAction
+    private static string? ProjectFolder(RootCommand root, ParseResult parseResult, CliServices services, string[] args)
     {
-        public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default)
+        if (args.Length == 0 || args.Any(a => a is "--help" or "-h" or "-?" or "/?" or "--version"))
+            return null;
+
+        var current = services.Environment.CurrentDirectory;
+        var command = CommandPath(parseResult.CommandResult, root).FirstOrDefault();
+
+        if (command is not null && SelfUpdate.CommandsWithoutAProject.Contains(command))
+            return null;
+
+        if (parseResult.Errors.Count > 0)
+            return current;
+
+        if (command is null or "setup")
+            return null;
+
+        try
         {
-            var cli = services();
-
-            // System.CommandLine listens for Ctrl+C only once this method has handed its task back
-            await Task.Yield();
-
-            if (await cli.SelfUpdate.HandOffToProjectBitAsync(cli.Environment.CurrentDirectory, [.. parseResult.Tokens.Select(t => t.Value)], cancellationToken) is { } exitCode)
-                return exitCode;
-
-            return action switch
-            {
-                AsynchronousCommandLineAction asynchronous => await asynchronous.InvokeAsync(parseResult, cancellationToken),
-                SynchronousCommandLineAction synchronous => synchronous.Invoke(parseResult),
-                _ => ExitFailed
-            };
+            return projectFolders.TryGetValue(command, out var symbol) && parseResult.GetValue<string?>(symbol) is { } folder ? Path.GetFullPath(folder, current) : current;
+        }
+        catch (Exception exp) when (exp is InvalidOperationException or ArgumentException or NotSupportedException)
+        {
+            return current;
         }
     }
 
@@ -135,7 +134,7 @@ public static class CliApp
 
         try
         {
-            exitCode = await parseResult.InvokeAsync(new InvocationConfiguration { EnableDefaultExceptionHandler = false, ProcessTerminationTimeout = TimeSpan.FromSeconds(10) });
+            exitCode = await InvokeAsync(root, parseResult, services, args, new InvocationConfiguration { EnableDefaultExceptionHandler = false, ProcessTerminationTimeout = TimeSpan.FromSeconds(10) });
             return exitCode;
         }
         catch (OperationCanceledException)

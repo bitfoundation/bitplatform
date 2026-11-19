@@ -438,13 +438,17 @@ A project says in its `bit.json` which bit versions it works with:
 
 `minVersion` is the oldest bit that understands the project and `maxVersion` the newest; either can be left out. bit Boilerplate sets only `minVersion`, and moves it when a change in the template needs a newer bit.
 
-In the project's folder, or any folder under it, bit reads the nearest `bit.json` before it runs a command. When the bit you run fits, nothing else happens. When it doesn't, it takes the newest bit that fits, from `~/.bitplatform/cli` when one is already there, otherwise from this machine's NuGet sources, and the same command carries on with it in the same terminal. When yours was too old, the installed global tool also updates to that version once the run ends, so the next command runs directly.
+In the project's folder, or any folder under it, bit reads the nearest `bit.json` before it runs a command. When the bit you run fits, nothing else happens. When it doesn't, it takes the newest bit that fits, from `~/.bitplatform/cli` when one is already there, otherwise from this machine's NuGet sources, and the same command carries on with it in the same terminal, with the same exit code. When yours was too old, the installed global tool also updates to that version once the run ends, so the next command runs directly.
 
-- Every command does this except `bit new`, which always takes the newest bit, and `bit remove`, `bit decode`, `bit update`, `bit about` and `bit telemetry`, which don't read the project. `bit setup` also does it for the folder it's given, and for a repository right after cloning it.
-- A stable bit takes a stable version when one fits. When only a prerelease fits, it runs the command with that one and leaves the installed bit as it is.
-- When no bit that fits can be found or downloaded, such as without a connection, bit says so and goes on with the one you have.
+- Every command does this except `bit new`, which always takes the newest bit, and `bit remove`, `bit decode`, `bit trust`, `bit update`, `bit about` and `bit telemetry`, which don't read the project. `bit --version` and `--help` are the installed bit's own.
+- It happens before bit reads the command, so a command or an option that only the other bit knows still reaches it, exactly as it was typed.
+- `bit setup`, `bit clean`, `bit rename` and `bit diff --project` go by the folder they're given, not the one they run in. `bit setup` with a repository's address checks right after cloning it.
+- bit looks the other bit up, and downloads it, from its own folder, so the project's `global.json` and `NuGet.config` have no say in it: it works before the project's .NET SDK is installed.
+- A stable bit takes a stable version when one fits. While only a prerelease fits, it runs the command with that one and leaves the installed bit as it is.
+- When no bit that fits can be found or downloaded, such as without a connection, bit says so and goes on with the one you have. It doesn't try again for 15 minutes, so the commands in between don't wait for it. An update of the installed bit that didn't get through is tried again an hour later.
+- Ctrl+C is the other bit's to handle, as if you had run it yourself, and a SIGTERM sent to bit is passed on to it.
 - In CI, under `dnx`, in a `--tool-path` install and with `BIT_CLI_NO_UPDATE=1`, bit runs the version you gave it and only says that the project needs another one. A build from source doesn't check.
-- A copy a project used stays in `~/.bitplatform/cli` for 30 days after its last use. `bit new` deletes the others once the installed bit is at least as new.
+- A copy a project used stays in `~/.bitplatform/cli` for 30 days after its last use. `bit new` deletes the others once the installed bit is at least as new. A copy that turns out to be broken is removed, and the next command gets it again.
 
 ## What it changes on your machine
 

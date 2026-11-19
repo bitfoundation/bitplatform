@@ -77,9 +77,7 @@ public static class SetupCommand
                 }
             }
 
-            string[] arguments = [.. parseResult.Tokens.Select(t => t.Value)];
-
-            if ((repository is null || cloned) && await cli.SelfUpdate.HandOffToProjectBitAsync(directory, arguments, cancellationToken) is { } handedOff)
+            if ((repository is null || cloned) && await cli.SelfUpdate.HandOffToProjectBitAsync(directory, cli.Arguments, cancellationToken) is { } handedOff)
                 return handedOff;
 
             var name = repository is null && Directory.Exists(directory) ? ProjectContext.FindProjectName(directory) : null;
@@ -99,10 +97,12 @@ public static class SetupCommand
 
             NewWorkflow.WriteHeader(cli);
 
+            var askedPlatforms = false;
+
             if (interactive && parseResult.GetResult(shared.Platforms) is null)
             {
                 platforms = NewWorkflow.AskPlatforms(cli, platforms);
-                arguments = [.. arguments, "--platforms", string.Join(',', platforms.Order().Select(Platforms.Name))];
+                askedPlatforms = true;
             }
 
             var stopwatch = Stopwatch.StartNew();
@@ -131,7 +131,7 @@ public static class SetupCommand
                     if (clone.Status is StepStatus.Failed)
                         return WriteSummary(cli, steps, repository.Name, stopwatch.Elapsed);
 
-                    if (await cli.SelfUpdate.HandOffToProjectBitAsync(directory, arguments, cancellationToken) is { } handedOffAfterClone)
+                    if (await cli.SelfUpdate.HandOffToProjectBitAsync(directory, ForTheClone(cli.Arguments, argument!, directory, askedPlatforms ? platforms : null), cancellationToken) is { } handedOffAfterClone)
                         return handedOffAfterClone;
                 }
 
@@ -238,6 +238,19 @@ public static class SetupCommand
         });
 
         return command;
+    }
+
+    private static string[] ForTheClone(IReadOnlyList<string> arguments, string address, string directory, IEnumerable<Platform>? askedPlatforms)
+    {
+        var forTheClone = arguments.Select(a => a == address ? directory : a).ToList();
+
+        if (askedPlatforms is not null)
+        {
+            var separator = forTheClone.IndexOf("--");
+            forTheClone.InsertRange(separator < 0 ? forTheClone.Count : separator, ["--platforms", string.Join(',', askedPlatforms.Order().Select(Platforms.Name))]);
+        }
+
+        return [.. forTheClone];
     }
 
     private static int WriteSummary(CliServices cli, StepRunner steps, string name, TimeSpan elapsed)
