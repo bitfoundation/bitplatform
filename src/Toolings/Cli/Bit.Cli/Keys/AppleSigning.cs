@@ -14,7 +14,13 @@ namespace Bit.Cli.Keys;
 
 public sealed record AppleApiKey(string IssuerId, string KeyId, string PrivateKey);
 
-public sealed record AppleSigningResult(byte[] Pkcs12, string Pkcs12Password, string ProfileName, byte[] Profile, string? TeamId, DateTimeOffset CertificateExpiry);
+public sealed record AppleSigningResult(byte[] Pkcs12, string Pkcs12Password, string ProfileName, byte[] Profile, string? TeamId, DateTimeOffset CertificateExpiry)
+{
+    /// <summary>
+    /// The capabilities bit turned on for the bundle id, so the profile grants the app's entitlements.
+    /// </summary>
+    public IReadOnlyList<string> EnabledCapabilities { get; init; } = [];
+}
 
 public sealed class AppleSigningException(string message) : Exception(message);
 
@@ -23,6 +29,8 @@ public sealed partial class AppleSigning(HttpMessageHandler? handler = null)
     public const string ApiAddress = "https://api.appstoreconnect.apple.com/";
 
     public const string CertificatesPage = "https://developer.apple.com/account/resources/certificates/list";
+
+    public const string IdentifiersPage = "https://developer.apple.com/account/resources/identifiers/list";
 
     public const string CertificateType = "DISTRIBUTION";
 
@@ -36,11 +44,13 @@ public sealed partial class AppleSigning(HttpMessageHandler? handler = null)
 
     public static string Attempt(AppleApiKey key, string bundleId, string profileName)
         => $"bit was creating the App Store signing of {bundleId} with the App Store Connect API ({ApiAddress}v1) and the API key {key.KeyId}: "
-            + $"register the bundle id if Apple doesn't have it, create an Apple Distribution certificate ({CertificateType}) for a new RSA 2048 key, "
+            + "register the bundle id if Apple doesn't have it, turn on the capabilities the app's entitlements need that it lacks, "
+            + $"create an Apple Distribution certificate ({CertificateType}) for a new RSA 2048 key, "
             + $"create the App Store provisioning profile ({ProfileType}) \"{profileName}\" for the two, and put the certificate and its key in a .p12. "
             + "The same can be done by hand at https://developer.apple.com/account/resources.";
 
-    public async Task<AppleSigningResult> CreateAppStoreSigningAsync(AppleApiKey key, string bundleId, string profileName, CancellationToken cancellationToken)
+    /// <param name="entitlements">The entitlements the app signs with, whose capabilities the bundle id gets. Null checks none.</param>
+    public async Task<AppleSigningResult> CreateAppStoreSigningAsync(AppleApiKey key, string bundleId, string profileName, AppleEntitlements? entitlements, CancellationToken cancellationToken)
     {
         ImportKey(key.PrivateKey).Dispose();
 
@@ -48,6 +58,9 @@ public sealed partial class AppleSigning(HttpMessageHandler? handler = null)
         using var http = new HttpClient(handler ?? ownHandler!, disposeHandler: false) { BaseAddress = new Uri(ApiAddress), Timeout = TimeSpan.FromMinutes(1) };
 
         var bundle = await FindOrRegisterBundleIdAsync(http, key, bundleId, cancellationToken);
+
+        // A profile carries the capabilities its bundle id has when it's created, so they're turned on first.
+        IReadOnlyList<string> enabled = entitlements is null ? [] : await EnableCapabilitiesAsync(http, key, bundleId, bundle.Id, entitlements.Capabilities, cancellationToken);
 
         using var privateKey = RSA.Create(2048);
         var (certificateId, certificate) = await CreateCertificateAsync(http, key, CreateSigningRequest(privateKey), cancellationToken);
@@ -59,7 +72,7 @@ public sealed partial class AppleSigning(HttpMessageHandler? handler = null)
                 var (name, profile) = await ReplaceProfileAsync(http, key, profileName, bundle.Id, certificateId, cancellationToken);
                 var password = CreatePassword();
 
-                return new AppleSigningResult(ExportPkcs12(certificate, privateKey, password), password, name, profile, TeamIdOf(certificate) ?? bundle.SeedId, new DateTimeOffset(certificate.NotAfter.ToUniversalTime()));
+                return new AppleSigningResult(ExportPkcs12(certificate, privateKey, password), password, name, profile, TeamIdOf(certificate) ?? bundle.SeedId, new DateTimeOffset(certificate.NotAfter.ToUniversalTime())) { EnabledCapabilities = enabled };
             }
             catch
             {
@@ -158,6 +171,47 @@ public sealed partial class AppleSigning(HttpMessageHandler? handler = null)
 
         var data = Data(created.Body);
         return (Id(data), Text(Attributes(data), "seedId"));
+    }
+
+    private static async Task<IReadOnlyList<string>> EnableCapabilitiesAsync(HttpClient http, AppleApiKey key, string bundleId, string bundleResourceId, IReadOnlyList<AppleCapability> capabilities, CancellationToken cancellationToken)
+    {
+        if (capabilities.Count is 0)
+            return [];
+
+        var current = await SendAsync(http, key, HttpMethod.Get, $"v1/bundleIds/{Uri.EscapeDataString(bundleResourceId)}/bundleIdCapabilities?limit=200", null, cancellationToken);
+
+        if (current.Succeeded is false)
+            throw Failure(current, $"read the capabilities of the bundle id {bundleId}");
+
+        var on = Items(current.Body).Select(item => Text(Attributes(item), "capabilityType")).OfType<string>().ToHashSet(StringComparer.Ordinal);
+        var enabled = new List<string>();
+
+        foreach (var capability in capabilities.Where(c => on.Contains(c.Type) is false))
+        {
+            var attributes = new JsonObject { ["capabilityType"] = capability.Type };
+
+            if (capability is { SettingKey: { } settingKey, SettingOption: { } settingOption })
+            {
+                attributes["settings"] = new JsonArray(new JsonObject { ["key"] = settingKey, ["options"] = new JsonArray(new JsonObject { ["key"] = settingOption }) });
+            }
+
+            var created = await SendAsync(http, key, HttpMethod.Post, "v1/bundleIdCapabilities", new JsonObject
+            {
+                ["data"] = new JsonObject
+                {
+                    ["type"] = "bundleIdCapabilities",
+                    ["attributes"] = attributes,
+                    ["relationships"] = new JsonObject { ["bundleId"] = new JsonObject { ["data"] = new JsonObject { ["type"] = "bundleIds", ["id"] = bundleResourceId } } }
+                }
+            }, cancellationToken);
+
+            if (created.Succeeded is false)
+                throw Failure(created, $"turn on the capability {capability.Type} of the bundle id {bundleId}");
+
+            enabled.Add(capability.Type);
+        }
+
+        return enabled;
     }
 
     private static async Task<(string Id, X509Certificate2 Certificate)> CreateCertificateAsync(HttpClient http, AppleApiKey key, string signingRequest, CancellationToken cancellationToken)
