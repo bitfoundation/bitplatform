@@ -425,7 +425,9 @@ that carries each one counts as BevTools' own traffic, and changes to the overla
 whose a render batch was.
 
 Picking runs in the hub: capture-phase listeners on `window` swallow pointer, click and touch events outside BevTools'
-own UI until a click or Escape, so the application never sees the picking click. The overlay is a `.bev-root` element
+own UI until a click or Escape, so the application never sees the picking click. A touch is kept from the
+application but not cancelled, so the page still scrolls while picking; a touch that ends more than 10 px from where it
+started was a swipe and picks nothing, and a tap's `touchend` is cancelled so no click follows it. The overlay is a `.bev-root` element
 appended to `body`, outside every element Blazor manages, so its DOM changes count as BevTools' own for render-batch
 classification; the crosshair cursor comes from a stylesheet rule keyed on the overlay, not from writing the app's DOM.
 An outline follows its component on scroll and resize. *Flash renders* is driven from the panel's refresh loop: the

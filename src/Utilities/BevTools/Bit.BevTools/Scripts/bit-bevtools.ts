@@ -1993,6 +1993,9 @@ const pickListeners: (() => void)[] = [];
 // Not passive: a touch must be able to cancel the click it would become (Chromium makes window touch listeners passive by default).
 const PICK_LISTENER: AddEventListenerOptions = { capture: true, passive: false };
 
+/** How far a finger may move between touching and lifting for it to still be a tap (browsers use about 10 px). */
+const TAP_SLOP_PX = 10;
+
 function onPick(type: string, handler: (e: any) => void) {
     window.addEventListener(type, handler, PICK_LISTENER);
     pickListeners.push(() => window.removeEventListener(type, handler, PICK_LISTENER));
@@ -2034,7 +2037,17 @@ export function startPick(targetId?: string | null, options?: { includeHidden?: 
         e.stopPropagation();
         e.stopImmediatePropagation();
     };
-    for (const type of ["pointerdown", "pointerup", "mousedown", "mouseup", "dblclick", "auxclick", "contextmenu", "touchstart", "submit"]) onPick(type, swallow);
+    for (const type of ["pointerdown", "pointerup", "mousedown", "mouseup", "dblclick", "auxclick", "contextmenu", "submit"]) onPick(type, swallow);
+    // A touch that starts is kept from the application but not cancelled: cancelling it would stop the page from
+    // scrolling, and on a phone the component to pick is often further down. Where it started tells a tap from a swipe.
+    let touchStart: { x: number; y: number } | null = null;
+    onPick("touchstart", (e: TouchEvent) => {
+        const touch = e.touches && e.touches[0];
+        touchStart = touch && e.touches.length === 1 ? { x: touch.clientX, y: touch.clientY } : null;
+        if (inBevTools(e.target as Node)) return;
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+    });
     onPick("mousemove", (e: MouseEvent) => {
         const state = picking;
         const node = e.target as Node;
@@ -2088,6 +2101,10 @@ export function startPick(targetId?: string | null, options?: { includeHidden?: 
     onPick("touchend", (e: TouchEvent) => {
         const touch = e.changedTouches && e.changedTouches[0];
         if (!picking || !touch) return;
+        const start = touchStart;
+        touchStart = null;
+        // The end of a swipe that scrolled the page, not a tap: picking goes on (no click follows a scroll).
+        if (start && Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > TAP_SLOP_PX) return;
         const node = document.elementFromPoint(touch.clientX, touch.clientY);
         if (isPickToggle(node)) return;
         if (inBevTools(node)) { stopPick("cancelled"); return; }
@@ -2265,6 +2282,23 @@ export function focusIn(targetId: string, selector: string, onlyFromPanel?: bool
     const element = root.querySelector(selector) as HTMLElement | null;
     if (!element || typeof element.focus !== "function") return false;
     element.focus();
+    return true;
+}
+
+/**
+ * Brings the active tab into view in a tab row that scrolls sideways (a narrow panel shows its tabs in one row), so a
+ * tab opened from the palette, a link or the saved preferences is not hidden past the edge. Scrolls only the row: the
+ * page and focus stay where they are, which scrollIntoView would not promise.
+ */
+export function revealActiveTab(targetId: string) {
+    const root = document.querySelector(".bev-root[data-bev-target=\"" + String(targetId).replace(/["\\]/g, "") + "\"]");
+    const tab = root && root.querySelector(".bev-tab.bev-active") as HTMLElement | null;
+    const row = tab && tab.parentElement;
+    if (!tab || !row || row.scrollWidth <= row.clientWidth) return false;
+    const tabBox = tab.getBoundingClientRect();
+    const rowBox = row.getBoundingClientRect();
+    if (tabBox.left >= rowBox.left && tabBox.right <= rowBox.right) return false;
+    row.scrollLeft += tabBox.left - rowBox.left - (rowBox.width - tabBox.width) / 2;
     return true;
 }
 

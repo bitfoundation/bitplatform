@@ -20,11 +20,17 @@
         @if (_showLanes)
         {
             <div class="bev-lanes" title="Last @WindowSeconds seconds; click a bar to select">
+                @* The labels are HTML over the drawing: the drawing stretches to the panel's width, which would squeeze text drawn in it on a narrow panel. *@
+                <div class="bev-lane-labels">
+                    @for (var i = 0; i < Lanes.Length; i++)
+                    {
+                        <span style="top:@(i * 16)px">@Lanes[i].Label</span>
+                    }
+                </div>
                 <svg viewBox="0 0 1000 96" preserveAspectRatio="none">
                     @for (var i = 0; i < Lanes.Length; i++)
                     {
                         var y = i * 16;
-                        @((MarkupString)$"<text x=\"2\" y=\"{y + 11}\" font-size=\"9\" fill=\"var(--bev-fg2)\" font-family=\"var(--bev-sans)\">{Lanes[i].Label}</text>")
                         <line x1="0" x2="1000" y1="@(y + 15.5)" y2="@(y + 15.5)" stroke="var(--bev-border)" stroke-width="0.5" />
                     }
                     @foreach (var bar in _bars)

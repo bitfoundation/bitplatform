@@ -140,6 +140,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         if (!firstRender)
         {
             await FocusAfterRenderAsync();
+            await RevealActiveTabAsync();
             return;
         }
 
@@ -1213,7 +1214,37 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
     }
 
-    private string ThemeAttribute => Ui.Theme.ToString().ToLowerInvariant();
+    /// <summary>The tab last brought into view, so the call happens once per tab shown, not on every refresh.</summary>
+    private string? _revealedTab;
+
+    /// <summary>
+    /// On a narrow panel the tabs are one row that scrolls sideways: a tab shown from elsewhere than its own button (the
+    /// palette, a link in another panel, the saved preferences) is brought into view.
+    /// </summary>
+    private async Task RevealActiveTabAsync()
+    {
+        if (!Ui.IsOpen)
+        {
+            _revealedTab = null;
+            return;
+        }
+
+        if (_revealedTab == Ui.ActivePanelId || _module is null || Session.Browser.TargetId is not { } target)
+        {
+            return;
+        }
+
+        _revealedTab = Ui.ActivePanelId;
+        try
+        {
+            await _module.InvokeVoidAsync("revealActiveTab", target);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+        }
+    }
+
+    private string ThemeAttribute =>Ui.Theme.ToString().ToLowerInvariant();
 
     // While picking, the panel shrinks to its header: what it covers of the page has to be reachable.
     private string PanelClass => $"bev-panel bev-dock-{Ui.Dock.ToString().ToLowerInvariant()} bev-size-{Ui.Size.ToString().ToLowerInvariant()}" + (Ui.Picking ? " bev-picking" : "");

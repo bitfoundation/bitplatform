@@ -908,3 +908,50 @@ Everything the roadmap's *Next* and the audit's area Q listed, taken to an end: 
 **Found on the way.** EF Core 10 and 11 log the elapsed time as a culture-formatted string; a seekable stream reports
 its length (so it is safe to read, and is), while a forward-only one does not; JSON snapshots were never diffed, since
 the inspector shows JSON as text - now flattened for diffs.
+
+## Round 24 — small screens
+
+**Gap.** On a phone the panel was hard to use. Measured in Chromium emulating a 390 × 844 touch screen on the Server
+sample: the header took 150 px of a 405 px panel (title, fifteen tabs wrapping onto three rows, nine buttons with words
+onto two more), every list and its details shared the width side by side (about 175 px each), buttons and rows were
+20-22 px tall, text fields at 12 px made iOS zoom the page in on focus, `32vh` left a few rows under a mobile browser's
+address bar, and a touch while picking was cancelled, so the page could not scroll to the component to pick. On its
+side (844 × 390) the header was 154 px of a 273 px panel. The closed badge had lost its background, border and pill
+shape on every screen to the generic `.bev-root button` reset, which outranked `.bev-badge`.
+
+**Changes**
+
+- **The panel is a size container** (`container: bev-panel / size`; `normal` while picking, when its size follows its
+  content). Narrower than 640 px or lower than 420 px: header buttons keep their symbol, title and accessible name and
+  drop their words (`.bev-label`; *Search* gained an `aria-label` for it), the tabs are one row that scrolls sideways,
+  and the title goes under 480 px. Narrower than 640 px: `.bev-split` stacks (45 % list over its details, over the
+  panels' inline proportions), definition lists, stat grids, the palette and the Timeline's kind filters fit the width,
+  and the component tree indents 10 px a level (`--bev-indent`). A desktop panel docked right gets the same layout.
+- **The active tab is brought into view** after it changes (`revealActiveTab` in the hub, once per tab shown): a tab
+  opened from the palette, a link or the saved preferences was otherwise past the edge of the scrolling row. It scrolls
+  only the row, never the page or focus.
+- **Phones** (`max-width: 640px` or `max-height: 500px`): Small 50 %, Medium 70 %, Large the whole screen. Heights in
+  `dvh` with a `vh` fallback; the panel and badge keep clear of `env(safe-area-inset-*)`.
+- **Touch** (`pointer: coarse`): buttons, tabs and checkbox labels at least 32 px, tree and event rows 34 px with a
+  28 px expand target, table cells, section titles, chips and palette items padded, text fields at 16 px, the palette's
+  keyboard hints hidden. Hover backgrounds only where a pointer hovers; `touch-action: manipulation` on buttons;
+  `overscroll-behavior: contain` on every scrolling area, so a swipe at the end of a list does not scroll the page.
+- **Picking by touch scrolls.** `touchstart` is stopped from reaching the application but not cancelled; a touch that
+  ends more than 10 px from its start picks nothing.
+- **The Timeline's lane labels** are HTML over the drawing: as SVG text in a drawing stretched to the panel's width
+  they were squeezed to illegible on a narrow panel.
+- **The badge** uses `.bev-root .bev-badge`, so its own look applies.
+- **The companion** stacks its splits, scrolls its tabs and fits its search field under 640 px, and has the same touch
+  sizes.
+
+**Verification**
+
+- .NET: 1354/1354 (677 on net10.0 and on net11.0). vitest 94/94 (new: a swipe while picking leaves the touch
+  uncancelled, keeps it from the app, picks nothing, and the tap after it picks).
+- Browser (Chromium, the Server sample, touch emulation): at 390 × 844 the header is 89 px, nothing scrolls sideways,
+  Network opened from the preferences shows its tab, Large fills the screen; at 844 × 390 the header is 89 px of the
+  273 px panel; at 1440 × 900 without touch the bottom panel looks as before, and the 420 px right dock gets the
+  narrow layout.
+
+**Left.** Hover-only information (`title` tooltips on truncated cells and buttons) has no touch equivalent yet; the
+details pane already shows most of it for the selected row.

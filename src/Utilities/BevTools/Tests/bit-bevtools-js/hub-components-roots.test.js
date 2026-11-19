@@ -231,6 +231,38 @@ describe('picking details', () => {
         await vi.waitFor(() => expect(hub.lastPick()?.instanceId).toBe(5));
     });
 
+    it('a swipe while picking scrolls the page: the touch is kept from the app, not cancelled, and picks nothing', async () => {
+        const { p } = page();
+        const hub = await loadHub();
+        hub.attach(runtime({ resolve: () => ({ instanceId: 5, name: 'Island', depth: -1 }) }), { platform: 'Server' });
+        document.elementFromPoint = () => p;
+        const appSaw = vi.fn();
+        p.addEventListener('touchstart', appSaw);
+
+        hub.startPick('t1', { tellPanel: false });
+        const start = new Event('touchstart', { bubbles: true, cancelable: true });
+        start.touches = [{ clientX: 10, clientY: 300 }];
+        p.dispatchEvent(start);
+        expect(start.defaultPrevented, 'cancelling the touch would stop the page from scrolling').toBe(false);
+        expect(appSaw).not.toHaveBeenCalled();
+
+        const end = new Event('touchend', { bubbles: true, cancelable: true });
+        end.changedTouches = [{ clientX: 12, clientY: 120 }];
+        p.dispatchEvent(end);
+        expect(end.defaultPrevented).toBe(false);
+        expect(hub.isPicking()).toBe(true);
+
+        // The tap that follows picks.
+        const tapStart = new Event('touchstart', { bubbles: true, cancelable: true });
+        tapStart.touches = [{ clientX: 10, clientY: 110 }];
+        p.dispatchEvent(tapStart);
+        const tapEnd = new Event('touchend', { bubbles: true, cancelable: true });
+        tapEnd.changedTouches = [{ clientX: 13, clientY: 112 }];
+        p.dispatchEvent(tapEnd);
+        expect(tapEnd.defaultPrevented).toBe(true);
+        await vi.waitFor(() => expect(hub.lastPick()?.instanceId).toBe(5));
+    });
+
     it('hovering a row of BevTools\' own tree asks the runtime where its component is, without a Blazor event', async () => {
         const { row } = page();
         const hub = await loadHub();
