@@ -304,7 +304,8 @@ there, and the setting or secret that carries it. Every environment gets its own
 <!--#endif-->
 <!--#if (notification == true)-->
 - **Push notifications**: VAPID keys for web push, a Firebase project for Android and an APNs key for iOS and macOS,
-  each only for a platform the app ships on.
+  each only for a platform the app ships on. The user makes the Firebase files and the APNs key, and `bit pipeline`
+  stores them (`.docs/22`, Turning Push Notifications On).
 <!--#endif-->
 <!--#if (captcha == "reCaptcha")-->
 - **reCAPTCHA**: a key pair registered for the environment's domain.
@@ -313,7 +314,8 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **Cloudflare cache purge**: the zone id, and an API token that may purge its cache only, which you mint in section 8.
 <!--#endif-->
 - **External sign-in**: only the providers under `Authentication` the user wants to offer, each one registered with the
-  environment's address.
+  environment's address. Sign in with Apple takes a Services ID and a key the user makes at Apple, which `bit pipeline`
+  stores (`.docs/07`, Sign in with Apple).
 - **App certificate**: a new `AppCertificate` for each environment, never the development one (see `AppCertificate.md`
   in the server project). Generate it yourself.
 - **Client apps**: the Android, iOS, macOS and Windows signing keys, only for the apps the user ships

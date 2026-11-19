@@ -5,7 +5,8 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace Boilerplate.Server.Api.Features.Identity.HealthChecks;
 
 /// <summary>
-/// Signs the client secret as sign in does (a missing or invalid AppleAuthKey.p8 fails), then makes sure Apple answers.
+/// Signs the client secret as sign in does, with Authentication:Apple:PrivateKey or else AppleAuthKey.p8 (a missing or invalid
+/// key fails), then makes sure Apple answers.
 /// Apple checks the authorization code first, so the secret itself can't be verified.
 /// </summary>
 public partial class AppleSignInHealthCheck : IHealthCheck

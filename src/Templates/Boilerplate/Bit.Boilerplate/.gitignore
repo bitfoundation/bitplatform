@@ -247,6 +247,7 @@ NUL
 *.keystore
 *.jks
 *.p12
+*.p8
 *.pfx
 *.mobileprovision
 *.cer

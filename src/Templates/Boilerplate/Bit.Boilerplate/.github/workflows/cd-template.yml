@@ -218,6 +218,7 @@ jobs:
 #if (notification == true)
           VAPID_PRIVATE_KEY: ${{ secrets.PRIVATE_VAPIDKEY }}
           VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          APP_ID: ${{ vars.APP_ID }}
 #endif
         run: |
           project="$(printf '%s' "boilerplate-$ENV_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_\n-' '-')"
@@ -336,6 +337,13 @@ jobs:
           if [[ -n "$CLOUDFLARE_TOKEN" && -n "$CLOUDFLARE_ZONE" ]]; then
             setting "${settings_file[SERVERAPI]}" Cloudflare__ApiToken "$CLOUDFLARE_TOKEN" CLOUDFLARE_TOKEN
             setting "${settings_file[SERVERAPI]}" Cloudflare__ZoneIds__0 "$CLOUDFLARE_ZONE" CLOUDFLARE_ZONE
+          fi
+          #endif
+          #if (notification == true)
+
+          # iOS pushes go to the bundle id the iOS job builds the app with.
+          if [[ -n "$APP_ID" ]]; then
+            setting "${settings_file[SERVERAPI]}" AdsPushAPNS__AppBundleIdentifier "$APP_ID" APP_ID
           fi
           #endif
 
@@ -797,6 +805,32 @@ jobs:
           fileDir: './src/Client/Boilerplate.Client.Maui/'
           fileName: 'Boilerplate.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+#if (notification == true)
+
+      # Firebase's google-services.json, as it is or in base64: without it the app gets no push token (See .docs/22).
+      - name: Write google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          APP_ID: ${{ vars.APP_ID }}
+        run: |
+          if [[ -z "$GOOGLE_SERVICES_JSON" ]]; then
+            echo "::warning::GOOGLE_SERVICES_JSON is not set, so the Android app gets no push notifications."
+            exit 0
+          fi
+          file=src/Client/Boilerplate.Client.Maui/Platforms/Android/google-services.json
+          if [[ "$GOOGLE_SERVICES_JSON" =~ ^[[:space:]]*\{ ]]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > "$file"
+          else
+            printf '%s' "$GOOGLE_SERVICES_JSON" | base64 -d > "$file" || true
+          fi
+          if ! jq -e . "$file" > /dev/null 2>&1; then
+            echo "::error::GOOGLE_SERVICES_JSON is neither a google-services.json nor one in base64."
+            exit 1
+          fi
+          if ! jq -e --arg id "$APP_ID" 'any(.client[]?; .client_info.android_client_info.package_name == $id)' "$file" > /dev/null; then
+            echo "::warning::GOOGLE_SERVICES_JSON has no Android app with the package name $APP_ID, so the app gets no push notifications. Add the app to the Firebase project and download the file again."
+          fi
+#endif
 
       - name: Translate .resx files
         timeout-minutes: 15

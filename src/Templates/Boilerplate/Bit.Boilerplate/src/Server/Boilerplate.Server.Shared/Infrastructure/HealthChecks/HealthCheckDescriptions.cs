@@ -42,7 +42,7 @@ public class HealthCheckDescriptions : Dictionary<string, HealthCheckDescription
         this["sms"] = new("SMS", "CellPhone", "The Twilio account is active.");
         this["webPush"] = new("Web push", "Ringer", "FCM, the push service Chrome uses, accepts the VAPID signature.");
         this["firebase"] = new("Android push", "Ringer", "Firebase Cloud Messaging accepts the credentials.");
-        this["apns"] = new("Apple push", "Ringer", "APNs accepts the credentials.");
+        this["apns"] = new("Apple push", "Ringer", "APNs accepts the credentials, on its production environment outside Development.");
         this["azureSignalR"] = new("Azure SignalR", "Streaming", "The service is healthy and accepts the access key.");
 
         this["keycloakIdentity"] = new("Keycloak", "Permissions", "The realm's discovery document answers.");

@@ -363,9 +363,10 @@ A few rules sit on top of the mechanism:
 
 ## 6. External providers
 
-Google, Microsoft/Entra, Apple, Facebook, GitHub, Twitter (X) and Keycloak are pre-wired. Each is enabled simply by
-filling in its client id and secret under the `Authentication` section of `appsettings.json` - a provider with no
-credentials is not registered and its button does not appear.
+Google, Microsoft/Entra, Apple, Facebook, GitHub, Twitter (X) and Keycloak are pre-wired. Each is enabled by filling in
+its settings under the `Authentication` section of `appsettings.json` - a client id and secret for most, while Apple
+takes a key instead of a secret (see [Sign in with Apple](#sign-in-with-apple)). A provider with no credentials is not
+registered and its button does not appear.
 
 The flow is ordinary OAuth/OIDC, with a Boilerplate-specific ending:
 
@@ -383,6 +384,36 @@ The flow is ordinary OAuth/OIDC, with a Boilerplate-specific ending:
 > with self-registration, Entra with personal accounts, or any OIDC provider you add. There, anyone could claim
 > someone else's address and take over their account. In that case, require the provider's `email_verified` claim
 > before that fallback, or replace it with an explicit link-your-account flow.
+
+### Sign in with Apple
+
+Every platform of the app signs in with Apple's web flow, which takes four settings under `Authentication:Apple`:
+`ClientId` (a Services ID), `KeyId`, `TeamId` and `PrivateKey`, the key's `AuthKey_<KeyId>.p8`, whole or its body on one
+line. Without `PrivateKey`, the server reads `AppleAuthKey.p8` from its content root. Apple has no API for the Services
+ID or the key, so those steps are yours, at
+[Certificates, Identifiers & Profiles](https://developer.apple.com/account/resources/identifiers/list):
+
+1. Make the app's bundle id a primary App ID with Sign in with Apple: `bit keys apple --sign-in-with-apple` turns it on
+   and makes the App Store profile again, since a profile made before doesn't carry a capability turned on after it.
+2. Add a Services ID, such as `com.contoso.shop.signin`, turn on Sign in with Apple for it and configure it: the bundle id
+   as its primary App ID, then each environment's api host (`api.contoso.com`) as a domain and its address followed by
+   `/signin-apple` (`https://api.contoso.com/signin-apple`) as a return URL. One Services ID serves every environment.
+   `bit keys apple --sign-in-with-apple` and `bit pipeline` print these values for each environment. Apple takes only
+   https addresses on a public domain, so in development sign in through a tunnel to the app, not `localhost`.
+3. Add a key with Sign in with Apple, configured for the same primary App ID, and download its `AuthKey_<key id>.p8`.
+   Apple lets you download it only once.
+4. Run `bit pipeline`: it asks for the `.p8` and the Services ID (or takes `--sign-in-with-apple-key <file>
+   --apple-services-id <id>`), reads the key id from the file's name and the team id from App Store Connect, and stores
+   `SERVERAPI__AUTHENTICATION__APPLE__CLIENTID`, `__KEYID`, `__TEAMID` and `__PRIVATEKEY` in each environment. In
+   development, set the same settings with `dotnet user-secrets set` in the server project.
+5. Users can hide their email address behind Apple's Private Email Relay. Mail reaches such an address only from a
+   sender domain or address registered under Services, Sign in with Apple for Email Communication, and only when it
+   passes SPF or DKIM
+   ([Configure Private Email Relay Service](https://developer.apple.com/help/account/configure-app-capabilities/configure-private-email-relay-service)).
+   The `emailDelivery` health check reminds you of it.
+
+See Apple's
+[Configuring your environment for Sign in with Apple](https://developer.apple.com/documentation/signinwithapple/configuring-your-environment-for-sign-in-with-apple).
 
 ---
 
